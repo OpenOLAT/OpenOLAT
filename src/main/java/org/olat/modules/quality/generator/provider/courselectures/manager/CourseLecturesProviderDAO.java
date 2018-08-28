@@ -32,6 +32,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.OrganisationRef;
 import org.olat.modules.curriculum.CurriculumElementRef;
+import org.olat.modules.quality.QualityDataCollectionStatus;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -133,7 +134,7 @@ public class CourseLecturesProviderDAO {
 		sb.append("        , lb.fk_entry as course_key");
 		sb.append("        , lb.l_end_date as lecture_end_date");
 		sb.append("        , sum(lb.l_planned_lectures_num) OVER (PARTITION BY lb.fk_entry, tm.fk_identity_id ) as total_lectures");
-		sb.append("        , sum(lb.l_planned_lectures_num) OVER (PARTITION BY lb.fk_entry, tm.fk_identity_id order by lb.l_end_date) - lb.l_planned_lectures_num as first_lecture");
+		sb.append("        , sum(lb.l_planned_lectures_num) OVER (PARTITION BY lb.fk_entry, tm.fk_identity_id order by lb.l_end_date) - lb.l_planned_lectures_num + 1 as first_lecture");
 		sb.append("        , sum(lb.l_planned_lectures_num) OVER (PARTITION BY lb.fk_entry, tm.fk_identity_id order by lb.l_end_date) as last_lecture");
 		sb.append("     from o_lecture_block lb");
 		sb.append("          inner join o_repositoryentry course");
@@ -164,13 +165,42 @@ public class CourseLecturesProviderDAO {
 			sb.append("     where el.id in :curriculumElementKeys");
 			sb.append("    )");
 		}
+		if (searchParams.getFinishedDataCollectionForGeneratorAndTopicIdentityRef() != null) {
+			sb.and().append("(tm.fk_identity_id, lb.fk_entry) in (");
+			sb.append("              select dc.q_topic_fk_identity, dc.q_generator_provider_key");
+			sb.append("                from o_qual_data_collection dc");
+			sb.append("               where dc.q_topic_fk_identity = tm.fk_identity_id");
+			sb.append("                 and dc.q_generator_provider_key = lb.fk_entry");
+			sb.append("                 and dc.fk_generator = :generatorIdentKey");
+			sb.append("                 and dc.q_status = '").append(QualityDataCollectionStatus.FINISHED).append("'");
+			sb.append("              )");
+		}
+		if (searchParams.getFinishedDataCollectionForGeneratorAndTopicRepositoryRef() != null) {
+			sb.and().append("(tm.fk_identity_id, lb.fk_entry) in (");
+			sb.append("              select dc.q_generator_provider_key, dc.q_topic_fk_repository");
+			sb.append("                from o_qual_data_collection dc");
+			sb.append("               where dc.q_generator_provider_key = tm.fk_identity_id");
+			sb.append("                 and dc.q_topic_fk_repository = lb.fk_entry");
+			sb.append("                 and dc.fk_generator = :generatorRepoKey");
+			sb.append("                 and dc.q_status = '").append(QualityDataCollectionStatus.FINISHED).append("'");
+			sb.append("              )");
+		}
 		if (searchParams.getExcludeGeneratorAndTopicIdentityRef() != null) {
 			sb.and().append("(tm.fk_identity_id, lb.fk_entry) not in (");
 			sb.append("              select dc.q_topic_fk_identity, dc.q_generator_provider_key");
 			sb.append("                from o_qual_data_collection dc");
 			sb.append("               where dc.q_topic_fk_identity = tm.fk_identity_id");
 			sb.append("                 and dc.q_generator_provider_key = lb.fk_entry");
-			sb.append("                 and dc.fk_generator = :generatorKey");
+			sb.append("                 and dc.fk_generator = :excludeGeneratorIdentKey");
+			sb.append("              )");
+		}
+		if (searchParams.getExcludeGeneratorAndTopicRepositoryRef() != null) {
+			sb.and().append("(tm.fk_identity_id, lb.fk_entry) not in (");
+			sb.append("              select dc.q_generator_provider_key, dc.q_topic_fk_repository");
+			sb.append("                from o_qual_data_collection dc");
+			sb.append("               where dc.q_generator_provider_key = tm.fk_identity_id");
+			sb.append("                 and dc.q_topic_fk_repository = lb.fk_entry");
+			sb.append("                 and dc.fk_generator = :excludeGeneratorRepoKey");
 			sb.append("              )");
 		}
 		if (searchParams.getFrom() != null) {
@@ -190,8 +220,11 @@ public class CourseLecturesProviderDAO {
 			sb.and().append("total_lectures >= :minTotalLectures");
 		}
 		if (searchParams.getSelectingLecture() != null) {
-			sb.and().append("first_lecture < :selectingLecture");
+			sb.and().append("first_lecture <= :selectingLecture");
 			sb.and().append("last_lecture >= :selectingLecture");
+		}
+		if (searchParams.isLastLectureBlock()) {
+			sb.and().append("last_lecture = total_lectures");
 		}
 	}
 	
@@ -232,7 +265,7 @@ public class CourseLecturesProviderDAO {
 		sb.append("            and membership2.identity.key = membership.identity.key");
 		sb.append("       ) as lectures_total");
 		sb.append("     , (");
-		sb.append("         select sum(lectureblock2.plannedLecturesNumber)");
+		sb.append("         select 1 + sum(lectureblock2.plannedLecturesNumber)");
 		sb.append("           from lectureblock as lectureblock2");
 		sb.append("                inner join lectureblock2.entry as course2");
 		sb.append("                inner join lectureblock2.teacherGroup as teacherGroup2");
@@ -267,7 +300,10 @@ public class CourseLecturesProviderDAO {
 		if (searchParams.getSelectingLecture() != null) {
 			infos.removeIf(lb -> 
 					   lb.getFirstLecture() > searchParams.getSelectingLecture() 
-					|| lb.getLastLecture() <= searchParams.getSelectingLecture());
+					|| lb.getLastLecture() < searchParams.getSelectingLecture());
+		}
+		if (searchParams.isLastLectureBlock()) {
+			infos.removeIf(lb -> !lb.getLastLecture().equals(lb.getLecturesTotal()));
 		}
 		return infos;
 	}
@@ -281,12 +317,34 @@ public class CourseLecturesProviderDAO {
 
 	private void appendWhereHql(QueryBuilder sb, SearchParameters searchParams) {
 		sb.and().append("course.status").in(RepositoryEntryStatusEnum.preparationToClosed());
+		if (searchParams.getFinishedDataCollectionForGeneratorAndTopicIdentityRef() != null) {
+			sb.and();
+			sb.append("(membership.identity.key, course.key) in (");
+			sb.append("    select datacollection.topicIdentity.key, datacollection.generatorProviderKey");
+			sb.append("      from qualitydatacollection as datacollection");
+			sb.append("     where datacollection.generator.key = :generatorIdentKey");
+			sb.append("       and datacollection.topicIdentity.key = membership.identity.key");
+			sb.append("       and datacollection.generatorProviderKey = course.key");
+			sb.append("       and datacollection.status = '").append(QualityDataCollectionStatus.FINISHED).append("'");
+			sb.append("    )");
+		}
+		if (searchParams.getFinishedDataCollectionForGeneratorAndTopicRepositoryRef() != null) {
+			sb.and();
+			sb.append("(membership.identity.key, course.key) in (");
+			sb.append("    select datacollection.generatorProviderKey, datacollection.topicRepositoryEntry.key");
+			sb.append("      from qualitydatacollection as datacollection");
+			sb.append("     where datacollection.generator.key = :generatorRepoKey");
+			sb.append("       and datacollection.topicRepositoryEntry.key = course.key");
+			sb.append("       and datacollection.generatorProviderKey = membership.identity.key");
+			sb.append("       and datacollection.status = '").append(QualityDataCollectionStatus.FINISHED).append("'");
+			sb.append("    )");
+		}
 		if (searchParams.getExcludeGeneratorAndTopicIdentityRef() != null) {
 			sb.and();
 			sb.append("(membership.identity.key, course.key) not in (");
 			sb.append("    select datacollection.topicIdentity.key, datacollection.generatorProviderKey");
 			sb.append("      from qualitydatacollection as datacollection");
-			sb.append("     where datacollection.generator.key = :generatorIdentKey");
+			sb.append("     where datacollection.generator.key = :excludeGeneratorIdentKey");
 			sb.append("       and datacollection.topicIdentity.key = membership.identity.key");
 			sb.append("       and datacollection.generatorProviderKey = course.key");
 			sb.append("    )");
@@ -296,7 +354,7 @@ public class CourseLecturesProviderDAO {
 			sb.append("(membership.identity.key, course.key) not in (");
 			sb.append("    select datacollection.generatorProviderKey, datacollection.topicRepositoryEntry.key");
 			sb.append("      from qualitydatacollection as datacollection");
-			sb.append("     where datacollection.generator.key = :generatorRepoKey");
+			sb.append("     where datacollection.generator.key = :excludeGeneratorRepoKey");
 			sb.append("       and datacollection.topicRepositoryEntry.key = course.key");
 			sb.append("       and datacollection.generatorProviderKey = membership.identity.key");
 			sb.append("    )");
@@ -334,11 +392,17 @@ public class CourseLecturesProviderDAO {
 	}
 
 	private void appendParameters(Query query, SearchParameters searchParams) {
+		if (searchParams.getFinishedDataCollectionForGeneratorAndTopicIdentityRef() != null) {
+			query.setParameter("generatorIdentKey", searchParams.getFinishedDataCollectionForGeneratorAndTopicIdentityRef().getKey());
+		}
+		if (searchParams.getFinishedDataCollectionForGeneratorAndTopicRepositoryRef() != null) {
+			query.setParameter("generatorRepoKey", searchParams.getFinishedDataCollectionForGeneratorAndTopicRepositoryRef().getKey());
+		}
 		if (searchParams.getExcludeGeneratorAndTopicIdentityRef() != null) {
-			query.setParameter("generatorIdentKey", searchParams.getExcludeGeneratorAndTopicIdentityRef().getKey());
+			query.setParameter("excludeGeneratorIdentKey", searchParams.getExcludeGeneratorAndTopicIdentityRef().getKey());
 		}
 		if (searchParams.getExcludeGeneratorAndTopicRepositoryRef() != null) {
-			query.setParameter("generatorRepoKey", searchParams.getExcludeGeneratorAndTopicRepositoryRef().getKey());
+			query.setParameter("excludeGeneratorRepoKey", searchParams.getExcludeGeneratorAndTopicRepositoryRef().getKey());
 		}
 		if (searchParams.getTeacherRef() != null) {
 			query.setParameter("teacherKey", searchParams.getTeacherRef().getKey());

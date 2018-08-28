@@ -44,8 +44,8 @@ public class LectureBlockInfo {
 		this.courseRepoKey = courseRepoKey;
 		this.lectureEndDate = lectureEndDate;
 		this.lecturesTotal = lecturesTotal;
-		this.firstLecture = firstLecture != null ? 1 + firstLecture: 1;
-		this.lastLecture = lastLecture != null ? 1 + lastLecture: 1;
+		this.firstLecture = firstLecture != null ? firstLecture: 1;
+		this.lastLecture = lastLecture != null ? lastLecture: 1;
 	}
 
 	public Long getLectureBlockKey() {

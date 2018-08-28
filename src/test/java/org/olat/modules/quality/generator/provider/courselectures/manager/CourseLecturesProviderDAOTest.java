@@ -42,6 +42,7 @@ import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.quality.QualityDataCollection;
+import org.olat.modules.quality.QualityDataCollectionStatus;
 import org.olat.modules.quality.QualityDataCollectionTopicType;
 import org.olat.modules.quality.QualityService;
 import org.olat.modules.quality.generator.QualityGenerator;
@@ -155,9 +156,9 @@ public class CourseLecturesProviderDAOTest extends OlatTestCase {
 		List<LectureBlockInfo> infos = sut.loadLectureBlockInfo(searchParams);
 
 		Map<Long, Long> keysToTo = infos.stream().collect(Collectors.toMap(LectureBlockInfo::getLectureBlockKey, LectureBlockInfo::getLastLecture));
-		assertThat(keysToTo.get(lectureBlock1.getKey())).isEqualTo(1 + lecturesPlaned1);
-		assertThat(keysToTo.get(lectureBlock2.getKey())).isEqualTo(1 + lecturesPlaned1 + lecturesPlaned2);
-		assertThat(keysToTo.get(lectureBlock3.getKey())).isEqualTo(1 + lecturesPlaned1 + lecturesPlaned2 + lecturesPlaned3);
+		assertThat(keysToTo.get(lectureBlock1.getKey())).isEqualTo(lecturesPlaned1);
+		assertThat(keysToTo.get(lectureBlock2.getKey())).isEqualTo(lecturesPlaned1 + lecturesPlaned2);
+		assertThat(keysToTo.get(lectureBlock3.getKey())).isEqualTo(lecturesPlaned1 + lecturesPlaned2 + lecturesPlaned3);
 	}
 	
 	@Test
@@ -192,8 +193,7 @@ public class CourseLecturesProviderDAOTest extends OlatTestCase {
 		searchParams.setCourseRefs(Arrays.asList(course1, course2));
 		List<LectureBlockInfo> infos = sut.loadLectureBlockInfo(searchParams);
 
-		List<Long> courseKeys = infos.stream().map(LectureBlockInfo::getCourseRepoKey).collect(Collectors.toList());
-		assertThat(courseKeys)
+		assertThat(infos).extracting(LectureBlockInfo::getCourseRepoKey)
 				.containsExactlyInAnyOrder(course1.getKey(), course2.getKey())
 				.doesNotContain(otherCourse.getKey());
 	}
@@ -221,8 +221,7 @@ public class CourseLecturesProviderDAOTest extends OlatTestCase {
 		searchParams.setCurriculumElementRefs(Arrays.asList(element));
 		List<LectureBlockInfo> infos = sut.loadLectureBlockInfo(searchParams);
 
-		List<Long> courseKeys = infos.stream().map(LectureBlockInfo::getCourseRepoKey).collect(Collectors.toList());
-		assertThat(courseKeys)
+		assertThat(infos).extracting(LectureBlockInfo::getCourseRepoKey)
 				.containsExactlyInAnyOrder(course1.getKey(), course2.getKey())
 				.doesNotContain(otherCourse.getKey());
 	}
@@ -253,14 +252,93 @@ public class CourseLecturesProviderDAOTest extends OlatTestCase {
 		searchParams.setTo(to);
 		List<LectureBlockInfo> infos = sut.loadLectureBlockInfo(searchParams);
 
-		List<Long> courseKeys = infos.stream().map(LectureBlockInfo::getCourseRepoKey).collect(Collectors.toList());
-		assertThat(courseKeys)
+		assertThat(infos).extracting(LectureBlockInfo::getCourseRepoKey)
 				.containsExactlyInAnyOrder(course1.getKey(), course2.getKey())
 				.doesNotContain(otherEndDate.getKey());
 	}
 
 	@Test
-	public void shouldFilterLectureBlockInfosByAlreadyCreatedForTopicIdentity() {
+	public void shouldFilterLectureBlockInfosByFinishedDataCollectionForTopicIdentity() {
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("");
+		Organisation organisation = organisationService.createOrganisation("", "", null, null, null);
+		List<Organisation> organisations = Collections.singletonList(organisation);
+		RepositoryEntry courseNoDC = JunitTestHelper.createAndPersistRepositoryEntry();
+		repositoryService.addOrganisation(courseNoDC, organisation);
+		RepositoryEntry courseRunningDC = JunitTestHelper.createAndPersistRepositoryEntry();
+		repositoryService.addOrganisation(courseRunningDC, organisation);
+		RepositoryEntry courseFinishedDC = JunitTestHelper.createAndPersistRepositoryEntry();
+		repositoryService.addOrganisation(courseFinishedDC, organisation);
+		createLectureBlock(courseNoDC, teacher, 1);
+		createLectureBlock(courseRunningDC, teacher, 1);
+		createLectureBlock(courseFinishedDC, teacher, 1);
+		QualityGenerator generator = generatorService.createGenerator("", organisations);
+		dbInstance.commitAndCloseSession();
+		
+		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		QualityDataCollection runningDataCollection = qualityService.createDataCollection(organisations, formEntry, generator, courseRunningDC.getKey());
+		runningDataCollection.setTopicIdentity(teacher);
+		runningDataCollection.setTopicType(QualityDataCollectionTopicType.IDENTIY);
+		runningDataCollection.setStatus(QualityDataCollectionStatus.RUNNING);
+		qualityService.updateDataCollection(runningDataCollection);
+		QualityDataCollection finishedDataCollection = qualityService.createDataCollection(organisations, formEntry, generator, courseFinishedDC.getKey());
+		finishedDataCollection.setTopicIdentity(teacher);
+		finishedDataCollection.setTopicType(QualityDataCollectionTopicType.IDENTIY);
+		finishedDataCollection.setStatus(QualityDataCollectionStatus.FINISHED);
+		qualityService.updateDataCollection(finishedDataCollection);
+		dbInstance.commitAndCloseSession();
+
+		SearchParameters searchParams = new SearchParameters();
+		searchParams.setTeacherRef(teacher);
+		searchParams.setFinishedDataCollectionForGeneratorAndTopicIdentityRef(generator);
+		List<LectureBlockInfo> infos = sut.loadLectureBlockInfo(searchParams);
+
+		assertThat(infos).extracting(LectureBlockInfo::getCourseRepoKey)
+				.containsExactlyInAnyOrder(courseFinishedDC.getKey())
+				.doesNotContain(courseNoDC.getKey(), courseRunningDC.getKey());
+	}
+	
+	@Test
+	public void shouldFilterLectureBlockInfosByFinishedDataCollectionForTopicRepository() {
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("");
+		Organisation organisation = organisationService.createOrganisation("", "", null, null, null);
+		List<Organisation> organisations = Collections.singletonList(organisation);
+		RepositoryEntry courseNoDC = JunitTestHelper.createAndPersistRepositoryEntry();
+		repositoryService.addOrganisation(courseNoDC, organisation);
+		RepositoryEntry courseRunningDC = JunitTestHelper.createAndPersistRepositoryEntry();
+		repositoryService.addOrganisation(courseRunningDC, organisation);
+		RepositoryEntry courseFinishedDC = JunitTestHelper.createAndPersistRepositoryEntry();
+		repositoryService.addOrganisation(courseFinishedDC, organisation);
+		createLectureBlock(courseNoDC, teacher, 1);
+		createLectureBlock(courseRunningDC, teacher, 1);
+		createLectureBlock(courseFinishedDC, teacher, 1);
+		QualityGenerator generator = generatorService.createGenerator("", organisations);
+		dbInstance.commitAndCloseSession();
+		
+		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		QualityDataCollection runningDataCollection = qualityService.createDataCollection(organisations, formEntry, generator, teacher.getKey());
+		runningDataCollection.setTopicRepositoryEntry(courseRunningDC);
+		runningDataCollection.setTopicType(QualityDataCollectionTopicType.REPOSITORY);
+		runningDataCollection.setStatus(QualityDataCollectionStatus.RUNNING);
+		qualityService.updateDataCollection(runningDataCollection);
+		QualityDataCollection finishedDataCollection = qualityService.createDataCollection(organisations, formEntry, generator, teacher.getKey());
+		finishedDataCollection.setTopicRepositoryEntry(courseFinishedDC);
+		finishedDataCollection.setTopicType(QualityDataCollectionTopicType.REPOSITORY);
+		finishedDataCollection.setStatus(QualityDataCollectionStatus.FINISHED);
+		qualityService.updateDataCollection(finishedDataCollection);
+		dbInstance.commitAndCloseSession();
+
+		SearchParameters searchParams = new SearchParameters();
+		searchParams.setTeacherRef(teacher);
+		searchParams.setFinishedDataCollectionForGeneratorAndTopicRepositoryRef(generator);
+		List<LectureBlockInfo> infos = sut.loadLectureBlockInfo(searchParams);
+
+		assertThat(infos).extracting(LectureBlockInfo::getCourseRepoKey)
+				.containsExactlyInAnyOrder(courseFinishedDC.getKey())
+				.doesNotContain(courseNoDC.getKey(), courseRunningDC.getKey());
+	}
+
+	@Test
+	public void shouldFilterLectureBlockInfosByExcludeForTopicIdentity() {
 		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("");
 		Organisation organisation = organisationService.createOrganisation("", "", null, null, null);
 		List<Organisation> organisations = Collections.singletonList(organisation);
@@ -288,14 +366,13 @@ public class CourseLecturesProviderDAOTest extends OlatTestCase {
 		searchParams.setExcludeGeneratorAndTopicIdentityRef(generator);
 		List<LectureBlockInfo> infos = sut.loadLectureBlockInfo(searchParams);
 
-		List<Long> courseKeys = infos.stream().map(LectureBlockInfo::getCourseRepoKey).collect(Collectors.toList());
-		assertThat(courseKeys)
+		assertThat(infos).extracting(LectureBlockInfo::getCourseRepoKey)
 				.containsExactlyInAnyOrder(course1.getKey(), course2.getKey())
 				.doesNotContain(otherCourse.getKey());
 	}
 	
 	@Test
-	public void shouldFilterLectureBlockInfosByAlreadyCreatedForTopicRepository() {
+	public void shouldFilterLectureBlockInfosByExcludeForTopicRepository() {
 		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("");
 		Organisation organisation = organisationService.createOrganisation("", "", null, null, null);
 		List<Organisation> organisations = Collections.singletonList(organisation);
@@ -323,8 +400,7 @@ public class CourseLecturesProviderDAOTest extends OlatTestCase {
 		searchParams.setExcludeGeneratorAndTopicRepositoryRef(generator);
 		List<LectureBlockInfo> infos = sut.loadLectureBlockInfo(searchParams);
 
-		List<Long> courseKeys = infos.stream().map(LectureBlockInfo::getCourseRepoKey).collect(Collectors.toList());
-		assertThat(courseKeys)
+		assertThat(infos).extracting(LectureBlockInfo::getCourseRepoKey)
 				.containsExactlyInAnyOrder(course1.getKey(), course2.getKey())
 				.doesNotContain(otherCourse.getKey());
 	}
@@ -348,8 +424,7 @@ public class CourseLecturesProviderDAOTest extends OlatTestCase {
 		searchParams.setOrgansationRefs(Arrays.asList(organisation));
 		List<LectureBlockInfo> infos = sut.loadLectureBlockInfo(searchParams);
 
-		List<Long> courseKeys = infos.stream().map(LectureBlockInfo::getCourseRepoKey).collect(Collectors.toList());
-		assertThat(courseKeys)
+		assertThat(infos).extracting(LectureBlockInfo::getCourseRepoKey)
 				.containsExactlyInAnyOrder(course1.getKey(), course2.getKey())
 				.doesNotContain(otherCourse.getKey());
 	}
@@ -371,8 +446,7 @@ public class CourseLecturesProviderDAOTest extends OlatTestCase {
 		searchParams.setMinTotalLectures(6);
 		List<LectureBlockInfo> infos = sut.loadLectureBlockInfo(searchParams);
 
-		List<Long> lectureBlocksKeys = infos.stream().map(LectureBlockInfo::getLectureBlockKey).collect(Collectors.toList());
-		assertThat(lectureBlocksKeys)
+		assertThat(infos).extracting(LectureBlockInfo::getLectureBlockKey)
 				.containsExactlyInAnyOrder(lectureBlock1.getKey(), lectureBlock2.getKey(), lectureBlock3.getKey())
 				.doesNotContain(lectureBlock4.getKey());
 	}
@@ -399,10 +473,28 @@ public class CourseLecturesProviderDAOTest extends OlatTestCase {
 		searchParams.setSelectingLecture(10);
 		infos = sut.loadLectureBlockInfo(searchParams);
 
-		lectureBlocksKeys = infos.stream().map(LectureBlockInfo::getLectureBlockKey).collect(Collectors.toList());
-		assertThat(lectureBlocksKeys)
+		assertThat(infos).extracting(LectureBlockInfo::getLectureBlockKey)
 				.containsExactlyInAnyOrder(lectureBlock2.getKey())
 				.doesNotContain(lectureBlock1.getKey(), lectureBlock3.getKey());
+	}
+	
+	@Test
+	public void shouldFilterLectureBlockInfosByLastLectureBlock() {
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("");
+		RepositoryEntry course = JunitTestHelper.createAndPersistRepositoryEntry();
+		LectureBlock lectureBlock1 = createLectureBlock(course, teacher, 5);
+		LectureBlock lectureBlock2 = createLectureBlock(course, teacher, 5);
+		LectureBlock lectureBlock3 = createLectureBlock(course, teacher, 5);
+		dbInstance.commitAndCloseSession();
+
+		SearchParameters searchParams = new SearchParameters();
+		searchParams.setTeacherRef(teacher);
+		searchParams.setLastLectureBlock(true);
+		List<LectureBlockInfo> infos = sut.loadLectureBlockInfo(searchParams);
+
+		assertThat(infos).extracting(LectureBlockInfo::getLectureBlockKey)
+				.containsExactlyInAnyOrder(lectureBlock3.getKey())
+				.doesNotContain(lectureBlock1.getKey(), lectureBlock2.getKey());
 	}
 	
 	@Test
@@ -425,8 +517,7 @@ public class CourseLecturesProviderDAOTest extends OlatTestCase {
 		searchParams.setCourseRefs(Arrays.asList(course1, trashed));
 		List<LectureBlockInfo> infos = sut.loadLectureBlockInfo(searchParams);
 
-		List<Long> courseKeys = infos.stream().map(LectureBlockInfo::getCourseRepoKey).collect(Collectors.toList());
-		assertThat(courseKeys)
+		assertThat(infos).extracting(LectureBlockInfo::getCourseRepoKey)
 				.containsExactlyInAnyOrder(course1.getKey())
 				.doesNotContain(deleted.getKey(), trashed.getKey());
 	}

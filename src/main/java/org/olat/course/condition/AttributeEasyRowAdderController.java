@@ -394,7 +394,7 @@ public class AttributeEasyRowAdderController extends FormBasicController {
 		attribute.addActionListener(FormEvent.ONCHANGE);
 		columnAttribute.add(rowPos, attribute.getName());
 
-		// 2b) Operator selector
+		// 2b) LimitCheck selector
 		final String[] values = OperatorManager.getRegisteredAndAlreadyTranslatedOperatorLabels(getLocale(), operatorKeys);
 		final FormItem operator = uifactory.addDropdownSingleselect(PRE_OPERATOR + rowCreationCounter, null, flc, operatorKeys, values, null);
 		operator.setUserObject(Integer.valueOf(rowPos));

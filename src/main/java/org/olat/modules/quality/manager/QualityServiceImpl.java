@@ -54,6 +54,7 @@ import org.olat.modules.quality.QualityContextRef;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityDataCollectionLight;
 import org.olat.modules.quality.QualityDataCollectionRef;
+import org.olat.modules.quality.QualityDataCollectionSearchParams;
 import org.olat.modules.quality.QualityDataCollectionStatus;
 import org.olat.modules.quality.QualityDataCollectionToOrganisation;
 import org.olat.modules.quality.QualityDataCollectionView;
@@ -115,22 +116,29 @@ public class QualityServiceImpl implements QualityService, OrganisationDataDelet
 	public QualityDataCollection createDataCollection(Collection<Organisation> organisations,
 			RepositoryEntry formEntry) {
 		QualityDataCollection dataCollection = dataCollectionDao.createDataCollection();
-		createDataCollectionReferences(organisations, formEntry, dataCollection);
+		createDataCollectionReferences(organisations, formEntry, dataCollection, null);
 		return dataCollection;
 	}
 
 	@Override
 	public QualityDataCollection createDataCollection(Collection<Organisation> organisations, RepositoryEntry formEntry,
 			QualityGenerator generator, Long generatorProviderKey) {
+		return createDataCollection(organisations, formEntry, generator, generatorProviderKey, null);
+	}
+
+	@Override
+	public QualityDataCollection createDataCollection(Collection<Organisation> organisations, RepositoryEntry formEntry,
+			QualityGenerator generator, Long generatorProviderKey, QualityDataCollection previous) {
 		QualityDataCollection dataCollection = dataCollectionDao.createDataCollection(generator, generatorProviderKey);
-		createDataCollectionReferences(organisations, formEntry, dataCollection);
+		createDataCollectionReferences(organisations, formEntry, dataCollection, previous);
 		log.info("Quality data collection " + dataCollection + " created by generator " + generator);
 		return dataCollection;
 	}
 
 	private void createDataCollectionReferences(Collection<Organisation> organisations, RepositoryEntry formEntry,
-			QualityDataCollection dataCollection) {
-		evaluationFormManager.createSurvey(dataCollection, null, formEntry);
+			QualityDataCollection dataCollection, QualityDataCollection previous) {
+		EvaluationFormSurvey previousSurvey = evaluationFormManager.loadSurvey(previous, null);
+		evaluationFormManager.createSurvey(dataCollection, null, formEntry, previousSurvey);
 		resourceManager.findOrPersistResourceable(dataCollection);
 		referenceManager.addReference(dataCollection, formEntry.getOlatResource(), null);
 		for (Organisation organisation : organisations) {
@@ -151,6 +159,11 @@ public class QualityServiceImpl implements QualityService, OrganisationDataDelet
 	@Override
 	public QualityDataCollection loadDataCollectionByKey(QualityDataCollectionRef dataCollectionRef) {
 		return dataCollectionDao.loadDataCollectionByKey(dataCollectionRef);
+	}
+
+	@Override
+	public List<QualityDataCollection> loadDataCollections(QualityDataCollectionSearchParams searchParams) {
+		return dataCollectionDao.loadDataCollections(searchParams);
 	}
 
 	@Override
@@ -216,6 +229,11 @@ public class QualityServiceImpl implements QualityService, OrganisationDataDelet
 	public RepositoryEntry loadFormEntry(QualityDataCollectionLight dataCollection) {
 		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(dataCollection, null);
 		return survey.getFormEntry() != null? survey.getFormEntry(): null;
+	}
+	
+	@Override
+	public EvaluationFormSurvey loadSurvey(QualityDataCollectionLight dataCollection) {
+		return evaluationFormManager.loadSurvey(dataCollection, null);
 	}
 
 	@Override
@@ -373,7 +391,7 @@ public class QualityServiceImpl implements QualityService, OrganisationDataDelet
 	}
 
 	@Override
-	public void sendRemainders(Date until) {		
+	public void sendReminders(Date until) {		
 		Collection<QualityReminder> reminders = reminderDao.loadPending(until);
 		log.debug("Send emails for quality remiders. Number of pending reminders: " + reminders.size());
 		for (QualityReminder reminder: reminders) {

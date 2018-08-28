@@ -28,6 +28,7 @@ import javax.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.OrganisationRef;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.quality.generator.QualityGenerator;
 import org.olat.modules.quality.generator.QualityGeneratorRef;
 import org.olat.modules.quality.generator.QualityGeneratorSearchParams;
@@ -142,6 +143,9 @@ public class QualityGeneratorDAO {
 				sb.append("      where generatorToOrganisation.organisation.key in :organisationKeys");
 				sb.append(" )");
 			}
+			if (StringHelper.containsNonWhitespace(searchParams.getProviderType())) {
+				sb.append(" and generator.type = :providerType");
+			}
 		}
 	}
 
@@ -155,6 +159,9 @@ public class QualityGeneratorDAO {
 			if (searchParams.getOrganisationRefs() != null && !searchParams.getOrganisationRefs().isEmpty()) {
 				List<Long> organiationKeys = searchParams.getOrganisationRefs().stream().map(OrganisationRef::getKey).collect(toList());
 				query.setParameter("organisationKeys", organiationKeys);
+			}
+			if (StringHelper.containsNonWhitespace(searchParams.getProviderType())) {
+				query.setParameter("providerType", searchParams.getProviderType());
 			}
 		}
 	}

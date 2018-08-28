@@ -21,7 +21,6 @@ package org.olat.modules.quality.generator.manager;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
-import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
@@ -34,6 +33,7 @@ import org.olat.core.id.Organisation;
 import org.olat.modules.quality.generator.QualityGenerator;
 import org.olat.modules.quality.generator.QualityGeneratorRef;
 import org.olat.modules.quality.generator.QualityGeneratorSearchParams;
+import org.olat.modules.quality.generator.QualityGeneratorService;
 import org.olat.modules.quality.generator.QualityGeneratorView;
 import org.olat.modules.quality.manager.QualityTestHelper;
 import org.olat.repository.RepositoryEntry;
@@ -54,6 +54,8 @@ public class QualityGeneratorDAOTest extends OlatTestCase {
 	private DB dbInstance;
 	@Autowired
 	private QualityTestHelper qualityTestHelper;
+	@Autowired
+	private QualityGeneratorService generatorService;
 	
 	@Autowired
 	private QualityGeneratorDAO sut;
@@ -169,8 +171,7 @@ public class QualityGeneratorDAOTest extends OlatTestCase {
 		searchParams.setGeneratorRefs(asList(generator2, generator1));
 		List<QualityGeneratorView> generators = sut.load(searchParams);
 		
-		List<Long> generatorKeys = generators.stream().map(QualityGeneratorRef::getKey).collect(toList());
-		assertThat(generatorKeys)
+		assertThat(generators).extracting(QualityGeneratorRef::getKey)
 				.containsExactlyInAnyOrder(generator1.getKey(), generator2.getKey())
 				.doesNotContain(otherGenerator.getKey());
 	}
@@ -189,8 +190,28 @@ public class QualityGeneratorDAOTest extends OlatTestCase {
 		searchParams.setOrganisationRefs(singletonList(organisation1));
 		List<QualityGeneratorView> generators = sut.load(searchParams);
 		
-		List<Long> generatorKeys = generators.stream().map(QualityGeneratorRef::getKey).collect(toList());
-		assertThat(generatorKeys)
+		assertThat(generators).extracting(QualityGeneratorRef::getKey)
+				.containsExactlyInAnyOrder(generator1.getKey(), generator2.getKey())
+				.doesNotContain(otherGenerator.getKey());
+	}
+	
+	
+	@Test
+	public void shouldFilterGeneratorViewByProviderType() {
+		Organisation organisation = qualityTestHelper.createOrganisation();
+		List<Organisation> organisations = singletonList(organisation);
+		String providerType = "ptype";
+		String otherProviderType = "optype";
+		QualityGenerator generator1 = generatorService.createGenerator(providerType, organisations);
+		QualityGenerator generator2 = generatorService.createGenerator(providerType, organisations);
+		QualityGenerator otherGenerator = generatorService.createGenerator(otherProviderType, organisations);
+		dbInstance.commitAndCloseSession();
+		
+		QualityGeneratorSearchParams searchParams = new QualityGeneratorSearchParams();
+		searchParams.setProviderType(providerType);
+		List<QualityGeneratorView> generators = sut.load(searchParams);
+		
+		assertThat(generators).extracting(QualityGeneratorRef::getKey)
 				.containsExactlyInAnyOrder(generator1.getKey(), generator2.getKey())
 				.doesNotContain(otherGenerator.getKey());
 	}

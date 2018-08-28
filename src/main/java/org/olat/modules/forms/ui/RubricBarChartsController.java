@@ -39,11 +39,11 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.forms.EvaluationFormSessionRef;
+import org.olat.modules.forms.SliderStatistic;
 import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.forms.model.xml.Rubric.SliderType;
 import org.olat.modules.forms.model.xml.Slider;
 import org.olat.modules.forms.ui.component.ResponsiveBarChartComponent;
-import org.olat.modules.forms.ui.model.SliderStatistic;
 
 /**
  * 

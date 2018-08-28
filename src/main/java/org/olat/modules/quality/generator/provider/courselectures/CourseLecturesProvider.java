@@ -19,8 +19,10 @@
  */
 package org.olat.modules.quality.generator.provider.courselectures;
 
+import static org.olat.modules.quality.generator.ProviderHelper.addDays;
+import static org.olat.modules.quality.generator.ProviderHelper.addMinutes;
+
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -78,6 +80,7 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 
 	private static final OLog log = Tracing.createLoggerFor(CourseLecturesProvider.class);
 
+	public static final String TYPE = "course-lecture";
 	public static final String CONFIG_KEY_DURATION_DAYS = "duration.days";
 	public static final String CONFIG_KEY_INVITATION_AFTER_DC_START_DAYS = "invitation.after.dc.start.days";
 	public static final String CONFIG_KEY_MINUTES_BEFORE_END = "minutes before end";
@@ -109,7 +112,7 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 	
 	@Override
 	public String getType() {
-		return "course-lecture";
+		return TYPE;
 	}
 
 	@Override
@@ -166,12 +169,10 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 		RepositoryEntry formEntry = generator.getFormEntry();
 		RepositoryEntry course = repositoryService.loadByKey(lectureBlockInfo.getCourseRepoKey());
 		Identity teacher = securityManager.loadIdentityByKey(lectureBlockInfo.getTeacherKey());
-		
-		String topicKey = configs.getValue(CONFIG_KEY_TOPIC);
-		topicKey = StringHelper.containsNonWhitespace(topicKey)? topicKey: CONFIG_KEY_TOPIC_COACH;
+		String topicKey =  getTopicKey(configs);
 		
 		// create data collection	
-		Long generatorProviderKey = CONFIG_KEY_TOPIC_COACH.equals(topicKey)? teacher.getKey(): course.getKey();
+		Long generatorProviderKey = CONFIG_KEY_TOPIC_COACH.equals(topicKey)? course.getKey(): teacher.getKey();
 		QualityDataCollection dataCollection = qualityService.createDataCollection(organisations, formEntry, generator, generatorProviderKey);
 
 		// fill in data collection attributes
@@ -245,27 +246,15 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 			qualityService.createReminder(dataCollection, reminder2Date, QualityReminderType.REMINDER2);
 		}
 	}
-
-	private Date addDays(Date date, String daysToAdd) {
-		int days = Integer.parseInt(daysToAdd);
-		Calendar c = Calendar.getInstance();
-		c.setTime(date);
-		c.add(Calendar.DATE, days);
-		return c.getTime();
-	}
 	
-	private Date addMinutes(Date date, String minutesToAdd) {
-		int days = Integer.parseInt(minutesToAdd);
-		Calendar c = Calendar.getInstance();
-		c.setTime(date);
-		c.add(Calendar.MINUTE, days);
-		return c.getTime();
-	}
-
 	private SearchParameters getSeachParameters(QualityGenerator generator, QualityGeneratorConfigs configs,
 			Collection<? extends OrganisationRef> organisations, Date fromDate, Date toDate) {
 		SearchParameters searchParams = new SearchParameters();
-		searchParams.setExcludeGeneratorAndTopicIdentityRef(generator);
+		if (CONFIG_KEY_TOPIC_COACH.equals(getTopicKey(configs))) {
+			searchParams.setExcludeGeneratorAndTopicIdentityRef(generator);
+		} else {
+			searchParams.setExcludeGeneratorAndTopicRepositoryRef(generator);
+		}
 		searchParams.setOrgansationRefs(organisations);
 
 		String minutesBeforeEnd = configs.getValue(CONFIG_KEY_MINUTES_BEFORE_END);
@@ -285,6 +274,11 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 		searchParams.setSelectingLecture(selectingLecture);
 		
 		return searchParams;
+	}
+
+	private String getTopicKey(QualityGeneratorConfigs configs) {
+		String topicKey = configs.getValue(CONFIG_KEY_TOPIC);
+		return StringHelper.containsNonWhitespace(topicKey)? topicKey: CONFIG_KEY_TOPIC_COACH;
 	}
 
 }

@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.forms.ui.model;
+package org.olat.modules.forms.model.jpa;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -29,8 +29,9 @@ import java.util.stream.Collectors;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.modules.forms.EvaluationFormSessionRef;
+import org.olat.modules.forms.RubricStatistic;
+import org.olat.modules.forms.SliderStatistic;
 import org.olat.modules.forms.manager.EvaluationFormReportDAO;
-import org.olat.modules.forms.model.jpa.CalculatedLong;
 import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.forms.model.xml.Slider;
 
@@ -40,18 +41,18 @@ import org.olat.modules.forms.model.xml.Slider;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class RubricStatistic {
+public class RubricStatisticImpl implements RubricStatistic {
 	
 	private final Rubric rubric;
 	private final List<CalculatedLong> countedResponses;
 	private final List<CalculatedLong> countedNoResponses;
-	private Map<Slider, SliderStatistic> sliderToStatistic;
+	private Map<Slider, SliderStatisticImpl> sliderToStatistic;
 	private SliderStatistic totalStatistic;
 	
 	private final EvaluationFormReportDAO reportDao;
 
 	
-	public RubricStatistic(Rubric rubric, List<? extends EvaluationFormSessionRef> sessions) {
+	public RubricStatisticImpl(Rubric rubric, List<? extends EvaluationFormSessionRef> sessions) {
 		this.rubric = rubric;
 		reportDao = CoreSpringFactory.getImpl(EvaluationFormReportDAO.class);
 		
@@ -63,10 +64,12 @@ public class RubricStatistic {
 		calculateStatistics();
 	}
 	
+	@Override
 	public SliderStatistic getSliderStatistic(Slider slider) {
 		return sliderToStatistic.get(slider);
 	}
 	
+	@Override
 	public SliderStatistic getTotalStatistic() {
 		return totalStatistic;
 	}
@@ -86,7 +89,7 @@ public class RubricStatistic {
 			Double average = getAverage(stepCounts);
 			Double variance = getVariance(stepCounts);
 			Double stdDev = getStdDev(stepCounts);
-			SliderStatistic sliderStatistic = new SliderStatistic(numOfNoRespones, numOfResponses, median, average, variance, stdDev, stepCounts);
+			SliderStatisticImpl sliderStatistic = new SliderStatisticImpl(numOfNoRespones, numOfResponses, median, average, variance, stdDev, stepCounts);
 			sliderToStatistic.put(slider, sliderStatistic);
 		}
 	}
@@ -205,7 +208,7 @@ public class RubricStatistic {
 		Double average = getAverage(totalStepCounts);
 		Double variance = getVariance(totalStepCounts);
 		Double stdDev = getStdDev(totalStepCounts);
-		totalStatistic = new SliderStatistic(numberOfNoResponses, numOfResponses, median, average, variance, stdDev, totalStepCounts);
+		totalStatistic = new SliderStatisticImpl(numberOfNoResponses, numOfResponses, median, average, variance, stdDev, totalStepCounts);
 	}
 
 	private List<Long> getTotalStepCounts() {

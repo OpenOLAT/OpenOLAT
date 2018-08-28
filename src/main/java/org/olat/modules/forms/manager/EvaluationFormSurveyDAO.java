@@ -45,7 +45,8 @@ class EvaluationFormSurveyDAO {
 	@Autowired
 	private DB dbInstance;
 
-	EvaluationFormSurvey createSurvey(OLATResourceable ores, String subIdent, RepositoryEntry formEntry) {
+	public EvaluationFormSurvey createSurvey(OLATResourceable ores, String subIdent, RepositoryEntry formEntry,
+			EvaluationFormSurvey previous) {
 		EvaluationFormSurveyImpl survey = new EvaluationFormSurveyImpl();
 		survey.setCreationDate(new Date());
 		survey.setLastModified(survey.getCreationDate());
@@ -53,6 +54,7 @@ class EvaluationFormSurveyDAO {
 		survey.setResId(ores.getResourceableId());
 		survey.setResSubident(subIdent);
 		survey.setFormEntry(formEntry);
+		survey.setPrevious(previous);
 		dbInstance.getCurrentEntityManager().persist(survey);
 		return survey;
 	}

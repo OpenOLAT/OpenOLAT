@@ -26,7 +26,6 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.quality.generator.QualityGenerator;
 import org.olat.modules.quality.generator.QualityGeneratorConfig;
 import org.olat.modules.quality.generator.QualityGeneratorConfigs;
-import org.olat.modules.quality.generator.QualityGeneratorService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -41,12 +40,12 @@ public class QualityGeneratorConfigsImpl implements QualityGeneratorConfigs {
 	private final List<QualityGeneratorConfig> configs;
 
 	@Autowired
-	private QualityGeneratorService generatorService;
+	private QualityGeneratorConfigDAO generatorConfigDao;
 	
 	public QualityGeneratorConfigsImpl(QualityGenerator generator) {
 		CoreSpringFactory.autowireObject(this);
 		this.generator = generator;
-		this.configs = generatorService.loadGeneratorConfigs(generator);
+		this.configs = generatorConfigDao.loadByGenerator(generator);
 	}
 
 	@Override
@@ -78,7 +77,7 @@ public class QualityGeneratorConfigsImpl implements QualityGeneratorConfigs {
 		int configIndex = getConfigIndex(identifier);
 		if (configIndex > -1) {
 			QualityGeneratorConfig config = configs.get(configIndex);
-			generatorService.deleteConfig(config);
+			generatorConfigDao.delete(config);
 			configs.remove(configIndex);
 		}
 	}
@@ -93,14 +92,14 @@ public class QualityGeneratorConfigsImpl implements QualityGeneratorConfigs {
 			QualityGeneratorConfig config = configs.get(configIndex);
 			if (!config.getValue().equals(value)) {
 				config.setValue(value);
-				config = generatorService.updateGeneratorConfig(config);
+				config = generatorConfigDao.save(config);
 				configs.set(configIndex, config);
 			}
 		}
 	}
 
 	private void createConfig(String identifier, String value) {
-		QualityGeneratorConfig config = generatorService.createGeneratorConfig(generator, identifier, value);
+		QualityGeneratorConfig config = generatorConfigDao.create(generator, identifier, value);
 		configs.add(config);
 	}
 	

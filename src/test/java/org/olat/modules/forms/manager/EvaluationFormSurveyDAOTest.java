@@ -59,15 +59,17 @@ public class EvaluationFormSurveyDAOTest extends OlatTestCase {
 		OLATResourceable ores = JunitTestHelper.createRandomResource();
 		String subIdent = UUID.randomUUID().toString();
 		RepositoryEntry formEntry = evaTestHelper.createFormEntry();
+		EvaluationFormSurvey previous = evaTestHelper.createSurvey();
 		dbInstance.commit();
 		
-		EvaluationFormSurvey survey = sut.createSurvey(ores, subIdent, formEntry);
+		EvaluationFormSurvey survey = sut.createSurvey(ores, subIdent, formEntry, previous);
 		dbInstance.commit();
 		
 		assertThat(survey).isNotNull();
 		assertThat(survey.getCreationDate()).isNotNull();
 		assertThat(survey.getLastModified()).isNotNull();
 		assertThat(survey.getFormEntry()).isEqualTo(formEntry);
+		assertThat(survey.getPrevious()).isEqualTo(previous);
 	}
 	
 	@Test
@@ -75,7 +77,7 @@ public class EvaluationFormSurveyDAOTest extends OlatTestCase {
 		OLATResourceable ores = JunitTestHelper.createRandomResource();
 		String subIdent = UUID.randomUUID().toString();
 		RepositoryEntry formEntry = evaTestHelper.createFormEntry();
-		EvaluationFormSurvey survey = sut.createSurvey(ores, subIdent, formEntry);
+		EvaluationFormSurvey survey = sut.createSurvey(ores, subIdent, formEntry, null);
 		dbInstance.commit();
 		
 		EvaluationFormSurvey loadedSurvey = sut.loadByResourceable(ores, subIdent);
@@ -87,7 +89,7 @@ public class EvaluationFormSurveyDAOTest extends OlatTestCase {
 	public void shouldLoadByResourceableWithoutSubident() {
 		OLATResourceable ores = JunitTestHelper.createRandomResource();
 		RepositoryEntry formEntry = evaTestHelper.createFormEntry();
-		EvaluationFormSurvey survey = sut.createSurvey(ores, null, formEntry);
+		EvaluationFormSurvey survey = sut.createSurvey(ores, null, formEntry, null);
 		dbInstance.commit();
 		
 		EvaluationFormSurvey loadedSurvey = sut.loadByResourceable(ores, null);
@@ -99,7 +101,7 @@ public class EvaluationFormSurveyDAOTest extends OlatTestCase {
 	public void shouldDeleteSurvey() {
 		OLATResourceable ores = JunitTestHelper.createRandomResource();
 		RepositoryEntry formEntry = evaTestHelper.createFormEntry();
-		EvaluationFormSurvey survey = sut.createSurvey(ores, null, formEntry);
+		EvaluationFormSurvey survey = sut.createSurvey(ores, null, formEntry, null);
 		dbInstance.commit();
 		
 		sut.delete(survey);

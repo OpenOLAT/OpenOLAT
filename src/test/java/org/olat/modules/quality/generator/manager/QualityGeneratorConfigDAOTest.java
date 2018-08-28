@@ -67,7 +67,27 @@ public class QualityGeneratorConfigDAOTest extends OlatTestCase {
 		QualityGeneratorConfig config = sut.create(generator, IDENTIFIER, VALUE);
 		dbInstance.commitAndCloseSession();
 		
+
+		assertThat(config)
+				.isNotNull()
+				.extracting(
+						o -> o.getKey(),
+						o -> o.getCreationDate(),
+						o -> o.getLastModified())
+				.doesNotContainNull();
+		assertThat(config)
+				.hasFieldOrPropertyWithValue("identifier", IDENTIFIER)
+				.hasFieldOrPropertyWithValue("value", VALUE);
+		assertThat(config)
+				.extracting(
+						QualityGeneratorConfig::getIdentifier,
+						QualityGeneratorConfig::getValue)
+				.containsExactly(
+						IDENTIFIER,
+						VALUE);
+		
 		assertThat(config).isNotNull();
+		assertThat(config.getKey()).isNotNull();
 		assertThat(config.getCreationDate()).isNotNull();
 		assertThat(config.getLastModified()).isNotNull();
 		assertThat(config.getIdentifier()).isEqualTo(IDENTIFIER);
@@ -102,6 +122,12 @@ public class QualityGeneratorConfigDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		List<QualityGeneratorConfig> configs = sut.loadByGenerator(generator);
+		
+		assertThat(configs)
+				.hasSize(1)
+				.extracting(QualityGeneratorConfig::getValue)
+				.containsExactly(changedValue);
+		
 		QualityGeneratorConfig reloadedConfig = configs.get(0);
 		assertThat(reloadedConfig.getValue()).isEqualTo(changedValue);
 	}
@@ -116,7 +142,7 @@ public class QualityGeneratorConfigDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		List<QualityGeneratorConfig> configs = sut.loadByGenerator(generator);
-		assertThat(configs).hasSize(0);
+		assertThat(configs).isEmpty();;
 	}
 
 	@Test

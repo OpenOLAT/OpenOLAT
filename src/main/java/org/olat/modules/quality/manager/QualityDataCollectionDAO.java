@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
 import javax.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OrganisationRef;
@@ -40,6 +41,7 @@ import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityDataCollectionLight;
 import org.olat.modules.quality.QualityDataCollectionRef;
+import org.olat.modules.quality.QualityDataCollectionSearchParams;
 import org.olat.modules.quality.QualityDataCollectionStatus;
 import org.olat.modules.quality.QualityDataCollectionTopicType;
 import org.olat.modules.quality.QualityDataCollectionView;
@@ -141,7 +143,51 @@ public class QualityDataCollectionDAO {
 				.setParameter("until", until)
 				.getResultList();
 	}
+
+	List<QualityDataCollection> loadDataCollections(QualityDataCollectionSearchParams searchParams) {
+		QueryBuilder sb = new QueryBuilder(512);
+		sb.append("select collection");
+		sb.append("  from qualitydatacollection as collection");
+		appendWhere(sb, searchParams);
+		
+		TypedQuery<QualityDataCollection> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), QualityDataCollection.class);
+		appendParameters(query, searchParams);
+		
+		return query.getResultList();
+	}
 	
+	private void appendWhere(QueryBuilder sb, QualityDataCollectionSearchParams searchParams) {
+		if (searchParams.getGeneratorRef() != null) {
+			sb.and().append("collection.generator.key = :generatorKey");
+		}
+		if (searchParams.getGeneratorProviderKey() != null) {
+			sb.and().append("collection.generatorProviderKey = :generatorProviderKey");
+		}
+		if (searchParams.getTopicIdentityRef() != null) {
+			sb.and().append("collection.topicIdentity.key = :topicIdentityKey");
+		}
+		if (searchParams.getTopicRepositoryRef() != null) {
+			sb.and().append("collection.topicRepositoryEntry.key = :topicRepositoryKey");
+		}
+	}
+
+	private void appendParameters(TypedQuery<QualityDataCollection> query,
+			QualityDataCollectionSearchParams searchParams) {
+		if (searchParams.getGeneratorRef() != null) {
+			query.setParameter("generatorKey", searchParams.getGeneratorRef().getKey());
+		}
+		if (searchParams.getGeneratorProviderKey() != null) {
+			query.setParameter("generatorProviderKey", searchParams.getGeneratorProviderKey());
+		}
+		if (searchParams.getTopicIdentityRef() != null) {
+			query.setParameter("topicIdentityKey", searchParams.getTopicIdentityRef().getKey());
+		}
+		if (searchParams.getTopicRepositoryRef() != null) {
+			query.setParameter("topicRepositoryKey", searchParams.getTopicRepositoryRef().getKey());
+		}
+	}
+
 	List<QualityDataCollection> loadDataCollectionsByTaxonomyLevel(TaxonomyLevelRef taxonomyLevel) {
 		if (taxonomyLevel == null || taxonomyLevel.getKey() == null) return Collections.emptyList();
 			

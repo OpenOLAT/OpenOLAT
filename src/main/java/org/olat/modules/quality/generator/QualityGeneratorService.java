@@ -58,13 +58,7 @@ public interface QualityGeneratorService {
 
 	public List<Organisation> loadGeneratorOrganisations(QualityGeneratorRef generatorRef);
 
-	public QualityGeneratorConfig createGeneratorConfig(QualityGenerator generator, String identifier, String value);
-
-	public QualityGeneratorConfig updateGeneratorConfig(QualityGeneratorConfig config);
-
-	public List<QualityGeneratorConfig> loadGeneratorConfigs(QualityGeneratorRef generatorRef);
-
-	public void deleteConfig(QualityGeneratorConfig config);
+	public QualityGeneratorConfigs loadGeneratorConfigs(QualityGenerator generator);
 
 	public String getProviderDisplayName(QualityGeneratorProviderReferenceable providerRef, Locale locale);
 	

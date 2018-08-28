@@ -19,6 +19,8 @@
  */
 package org.olat.modules.forms.manager;
 
+import static org.olat.modules.forms.handler.EvaluationFormResource.FORM_XML_FILE;
+
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -33,6 +35,8 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.xml.XStreamHelper;
+import org.olat.fileresource.FileResourceManager;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationIdentifier;
@@ -44,7 +48,12 @@ import org.olat.modules.forms.EvaluationFormSessionRef;
 import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.modules.forms.EvaluationFormStatistic;
 import org.olat.modules.forms.EvaluationFormSurvey;
+import org.olat.modules.forms.RubricStatistic;
 import org.olat.modules.forms.model.jpa.EvaluationFormResponses;
+import org.olat.modules.forms.model.jpa.RubricStatisticImpl;
+import org.olat.modules.forms.model.xml.Form;
+import org.olat.modules.forms.model.xml.FormXStream;
+import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,10 +78,25 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 	private EvaluationFormResponseDAO evaluationFormResponseDao;
 	@Autowired
 	private EvaluationFormStorage evaluationFormStorage;
+
+	@Override
+	public Form loadForm(RepositoryEntry formEntry) {
+		File repositoryDir = new File(
+				FileResourceManager.getInstance().getFileResourceRoot(formEntry.getOlatResource()),
+				FileResourceManager.ZIPDIR);
+		File formFile = new File(repositoryDir, FORM_XML_FILE);
+		return (Form) XStreamHelper.readObject(FormXStream.getXStream(), formFile);
+	}
 	
 	@Override
 	public EvaluationFormSurvey createSurvey(OLATResourceable ores, String subIdent, RepositoryEntry formEntry) {
-		return evaluationFormSurveyDao.createSurvey(ores, subIdent, formEntry);
+		return createSurvey(ores, subIdent, formEntry, null);
+	}
+	
+	@Override
+	public EvaluationFormSurvey createSurvey(OLATResourceable ores, String subIdent, RepositoryEntry formEntry,
+			EvaluationFormSurvey previous) {
+		return evaluationFormSurveyDao.createSurvey(ores, subIdent, formEntry, previous);
 	}
 
 	@Override
@@ -380,6 +404,11 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 		statistic.setAverageDuration(averageDuration);
 		
 		return statistic;
+	}
+
+	@Override
+	public RubricStatistic getRubricStatistic(Rubric rubric, List<? extends EvaluationFormSessionRef> sessions) {
+		return new RubricStatisticImpl(rubric, sessions);
 	}
 
 }

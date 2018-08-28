@@ -37,11 +37,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityDataCollectionRef;
+import org.olat.modules.quality.QualityDataCollectionSearchParams;
 import org.olat.modules.quality.QualityDataCollectionStatus;
 import org.olat.modules.quality.QualityDataCollectionTopicType;
 import org.olat.modules.quality.QualityDataCollectionView;
@@ -49,6 +51,7 @@ import org.olat.modules.quality.QualityDataCollectionViewSearchParams;
 import org.olat.modules.quality.generator.QualityGenerator;
 import org.olat.modules.quality.ui.DataCollectionDataModel.DataCollectionCols;
 import org.olat.repository.RepositoryEntry;
+import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -228,6 +231,94 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 		assertThat(dataCollections)
 				.containsExactlyInAnyOrder(pastRunning1, pastRunning2, pastReady)
 				.doesNotContain(future1, future2, noDeadline, pastFinished, pastPreparation);
+	}
+	
+	@Test
+	public void shouldFilterDataCollectionsByTopicIdentity() {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("");
+		QualityDataCollection dataCollection1 = qualityTestHelper.createDataCollection();
+		dataCollection1.setTopicIdentity(identity);
+		dataCollection1 = sut.updateDataCollection(dataCollection1);
+		QualityDataCollection dataCollection2 = qualityTestHelper.createDataCollection();
+		dataCollection2.setTopicIdentity(identity);
+		dataCollection2 = sut.updateDataCollection(dataCollection2);
+		Identity otherIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("");
+		QualityDataCollection dataCollectionOtherIdentity = qualityTestHelper.createDataCollection();
+		dataCollectionOtherIdentity.setTopicIdentity(otherIdentity);
+		dataCollectionOtherIdentity = sut.updateDataCollection(dataCollectionOtherIdentity);
+		QualityDataCollection dataCollectionNoIdentity = qualityTestHelper.createDataCollection();
+		dbInstance.commitAndCloseSession();
+		
+		QualityDataCollectionSearchParams searchParams = new QualityDataCollectionSearchParams();
+		searchParams.setTopicIdentityRef(identity);
+		List<QualityDataCollection> collections = sut.loadDataCollections(searchParams);
+		
+		assertThat(collections)
+				.containsExactlyInAnyOrder(dataCollection1, dataCollection2)
+				.doesNotContain(dataCollectionOtherIdentity, dataCollectionNoIdentity);
+	}
+	
+	@Test
+	public void shouldFilterByTopicRepository() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		QualityDataCollection dataCollection1 = qualityTestHelper.createDataCollection();
+		dataCollection1.setTopicRepositoryEntry(entry);
+		dataCollection1 = sut.updateDataCollection(dataCollection1);
+		QualityDataCollection dataCollection2 = qualityTestHelper.createDataCollection();
+		dataCollection2.setTopicRepositoryEntry(entry);
+		dataCollection2 = sut.updateDataCollection(dataCollection2);
+		RepositoryEntry otherEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		QualityDataCollection dataCollectionOtherEntry = qualityTestHelper.createDataCollection();
+		dataCollectionOtherEntry.setTopicRepositoryEntry(otherEntry);
+		dataCollectionOtherEntry = sut.updateDataCollection(dataCollectionOtherEntry);
+		QualityDataCollection dataCollectionNoEntry = qualityTestHelper.createDataCollection();
+		dbInstance.commitAndCloseSession();
+		
+		QualityDataCollectionSearchParams searchParams = new QualityDataCollectionSearchParams();
+		searchParams.setTopicRepositoryRef(entry);
+		List<QualityDataCollection> collections = sut.loadDataCollections(searchParams);
+		
+		assertThat(collections)
+				.containsExactlyInAnyOrder(dataCollection1, dataCollection2)
+				.doesNotContain(dataCollectionOtherEntry, dataCollectionNoEntry);
+	}
+
+	@Test
+	public void shouldFilterByGenerator() {
+		QualityGenerator generator = qualityTestHelper.createGenerator();
+		QualityDataCollection dataCollection1 = sut.createDataCollection(generator, null);
+		QualityDataCollection dataCollection2 = sut.createDataCollection(generator, null);
+		QualityGenerator otherGenerator = qualityTestHelper.createGenerator();
+		QualityDataCollection dataCollectionOtherGenerator = sut.createDataCollection(otherGenerator, null);
+		QualityDataCollection dataCollectionNoGenerator = sut.createDataCollection();
+		dbInstance.commitAndCloseSession();
+		
+		QualityDataCollectionSearchParams searchParams = new QualityDataCollectionSearchParams();
+		searchParams.setGeneratorRef(generator);
+		List<QualityDataCollection> collections = sut.loadDataCollections(searchParams);
+		
+		assertThat(collections)
+				.containsExactlyInAnyOrder(dataCollection1, dataCollection2)
+				.doesNotContain(dataCollectionOtherGenerator, dataCollectionNoGenerator);
+	}
+
+	@Test
+	public void shouldFilterByGeneratorReferenceKey() {
+		Long key = 123L;
+		QualityDataCollection dataCollection1 = sut.createDataCollection(null, key);
+		QualityDataCollection dataCollection2 = sut.createDataCollection(null, key);
+		Long otherKey = 999L;
+		QualityDataCollection dataCollectionOtherKey = sut.createDataCollection(null, otherKey);
+		QualityDataCollection dataCollectionNoKey = sut.createDataCollection();
+		dbInstance.commitAndCloseSession();
+		
+		QualityDataCollectionSearchParams searchParams = new QualityDataCollectionSearchParams();
+		searchParams.setGeneratorProviderKey(key);
+		List<QualityDataCollection> collections = sut.loadDataCollections(searchParams);
+		
+		assertThat(collections)
+				.containsExactlyInAnyOrder(dataCollection1, dataCollection2)
+				.doesNotContain(dataCollectionOtherKey, dataCollectionNoKey);
 	}
 
 	@Test

@@ -19,44 +19,44 @@
  */
 package org.olat.modules.quality.generator;
 
-import java.util.Collection;
+import java.util.Calendar;
+import java.util.Date;
 
-import org.olat.core.id.OrganisationRef;
+import org.olat.core.util.StringHelper;
 
 /**
  * 
- * Initial date: 13.08.2018<br>
+ * Initial date: 29.08.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class QualityGeneratorSearchParams {
+public class ProviderHelper {
+
+	public static Date addDays(Date date, String daysToAdd) {
+		int days = Integer.parseInt(daysToAdd);
+		Calendar c = Calendar.getInstance();
+		c.setTime(date);
+		c.add(Calendar.DATE, days);
+		return c.getTime();
+	}
 	
-	private Collection<? extends QualityGeneratorRef> generatorRefs;
-	private Collection<? extends OrganisationRef> organisationRefs;
-	private String providerType;
-
-	public Collection<? extends QualityGeneratorRef> getGeneratorRefs() {
-		return generatorRefs;
+	public static Date addMinutes(Date date, String minutesToAdd) {
+		int days = Integer.parseInt(minutesToAdd);
+		Calendar c = Calendar.getInstance();
+		c.setTime(date);
+		c.add(Calendar.MINUTE, days);
+		return c.getTime();
 	}
-
-	public void setGeneratorRefs(Collection<? extends QualityGeneratorRef> generatorRefs) {
-		this.generatorRefs = generatorRefs;
+	
+	public static Double toDouble(String value) {
+		if (StringHelper.containsNonWhitespace(value)) {
+			try {
+				return Double.valueOf(value);
+			} catch (NumberFormatException e) {
+				// 
+			}
+		}
+		return null;
 	}
-
-	public Collection<? extends OrganisationRef> getOrganisationRefs() {
-		return organisationRefs;
-	}
-
-	public void setOrganisationRefs(Collection<? extends OrganisationRef> organisationRefs) {
-		this.organisationRefs = organisationRefs;
-	}
-
-	public String getProviderType() {
-		return providerType;
-	}
-
-	public void setProviderType(String providerType) {
-		this.providerType = providerType;
-	}
-
+	
 }

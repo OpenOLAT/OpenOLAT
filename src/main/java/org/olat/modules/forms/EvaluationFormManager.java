@@ -30,6 +30,8 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.forms.model.jpa.EvaluationFormResponses;
+import org.olat.modules.forms.model.xml.Form;
+import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 
@@ -42,7 +44,12 @@ import org.olat.repository.RepositoryEntryRef;
  */
 public interface EvaluationFormManager {
 
+	public Form loadForm(RepositoryEntry formEntry);
+
 	public EvaluationFormSurvey createSurvey(OLATResourceable ores, String subIdent, RepositoryEntry formEntry);
+	
+	public EvaluationFormSurvey createSurvey(OLATResourceable ores, String subIdent, RepositoryEntry formEntry,
+			EvaluationFormSurvey previous);
 
 	public EvaluationFormSurvey loadSurvey(OLATResourceable ores, String subIdent);
 
@@ -189,5 +196,7 @@ public interface EvaluationFormManager {
 	public boolean isEvaluationFormActivelyUsed(RepositoryEntryRef formEntry);
 	
 	public EvaluationFormStatistic getSessionsStatistic(List<? extends EvaluationFormSessionRef> sessionRefs);
+	
+	public RubricStatistic getRubricStatistic(Rubric rubric, List<? extends EvaluationFormSessionRef> sessions);
 
 }

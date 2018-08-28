@@ -24,10 +24,12 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormSessionRef;
+import org.olat.modules.forms.RubricStatistic;
+import org.olat.modules.forms.SliderStatistic;
 import org.olat.modules.forms.model.xml.Rubric;
-import org.olat.modules.forms.ui.model.RubricStatistic;
-import org.olat.modules.forms.ui.model.SliderStatistic;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -36,6 +38,9 @@ import org.olat.modules.forms.ui.model.SliderStatistic;
  *
  */
 public class RubricTotalBarChartsController extends RubricBarChartsController {
+	
+	@Autowired
+	private EvaluationFormManager evaluationFormManager;
 
 	public RubricTotalBarChartsController(UserRequest ureq, WindowControl wControl, Rubric rubric,
 			List<? extends EvaluationFormSessionRef> sessions) {
@@ -46,7 +51,7 @@ public class RubricTotalBarChartsController extends RubricBarChartsController {
 	@Override
 	protected RubricWrapper createRubricWrapper() {
 		String name = translate("rubric.report.total", new String[] {getRubric().getName()});
-		RubricStatistic rubricStatistic = new RubricStatistic(getRubric(), getSessions());
+		RubricStatistic rubricStatistic = evaluationFormManager.getRubricStatistic(getRubric(), getSessions());
 		SliderStatistic totalStatistic = rubricStatistic.getTotalStatistic();
 		List<SliderWrapper> sliderWrappers = new ArrayList<>();
 		SliderWrapper sliderWrapper = createSliderWrapper(name, null, totalStatistic);

@@ -75,7 +75,7 @@ public class ExtendedCondition implements Serializable {
 			}			
 		}
 		if (this.operator == null)
-			throw new OLATRuntimeException("Attention: Operator " + operator + " given for extended condition, but no belonging Operator class found. Taking EqualsOperator fallback!", new IllegalArgumentException());
+			throw new OLATRuntimeException("Attention: LimitCheck " + operator + " given for extended condition, but no belonging LimitCheck class found. Taking EqualsOperator fallback!", new IllegalArgumentException());
 		this.value = value;
 	}
 	

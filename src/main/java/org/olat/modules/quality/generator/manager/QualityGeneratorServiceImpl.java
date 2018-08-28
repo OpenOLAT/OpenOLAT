@@ -38,7 +38,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.modules.quality.QualityGeneratorProviderReferenceable;
 import org.olat.modules.quality.QualitySecurityCallback;
 import org.olat.modules.quality.generator.QualityGenerator;
-import org.olat.modules.quality.generator.QualityGeneratorConfig;
+import org.olat.modules.quality.generator.QualityGeneratorConfigs;
 import org.olat.modules.quality.generator.QualityGeneratorProvider;
 import org.olat.modules.quality.generator.QualityGeneratorRef;
 import org.olat.modules.quality.generator.QualityGeneratorSearchParams;
@@ -65,8 +65,6 @@ public class QualityGeneratorServiceImpl implements QualityGeneratorService {
 	private QualityGeneratorDAO generatorDao;
 	@Autowired
 	private QualityGeneratorToOrganisationDAO generatorToOrganisationDao;
-	@Autowired
-	private QualityGeneratorConfigDAO generatorConfigDao;
 	@Autowired
 	private QualityGeneratorProviderFactory providerFactory;
 
@@ -138,23 +136,8 @@ public class QualityGeneratorServiceImpl implements QualityGeneratorService {
 	}
 
 	@Override
-	public QualityGeneratorConfig createGeneratorConfig(QualityGenerator generator, String identifier, String value) {
-		return generatorConfigDao.create(generator, identifier, value);
-	}
-
-	@Override
-	public QualityGeneratorConfig updateGeneratorConfig(QualityGeneratorConfig config) {
-		return generatorConfigDao.save(config);
-	}
-
-	@Override
-	public List<QualityGeneratorConfig> loadGeneratorConfigs(QualityGeneratorRef generatorRef) {
-		return generatorConfigDao.loadByGenerator(generatorRef);
-	}
-
-	@Override
-	public void deleteConfig(QualityGeneratorConfig config) {
-		generatorConfigDao.delete(config);
+	public QualityGeneratorConfigs loadGeneratorConfigs(QualityGenerator generator) {
+		return new QualityGeneratorConfigsImpl(generator);
 	}
 
 	@Override

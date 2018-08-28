@@ -29,6 +29,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -71,6 +72,9 @@ public class EvaluationFormSurveyImpl implements EvaluationFormSurvey, Persistab
 	@ManyToOne(targetEntity=RepositoryEntry.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="fk_form_entry", nullable=false, insertable=true, updatable=true)
 	private RepositoryEntry formEntry;
+	@OneToOne(targetEntity=EvaluationFormSurveyImpl.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_previous", nullable=true, insertable=true, updatable=true)
+	private EvaluationFormSurvey previous;
 	
 	@Override
 	public Long getKey() {
@@ -131,6 +135,15 @@ public class EvaluationFormSurveyImpl implements EvaluationFormSurvey, Persistab
 
 	public void setFormEntry(RepositoryEntry formEntry) {
 		this.formEntry = formEntry;
+	}
+
+	@Override
+	public EvaluationFormSurvey getPrevious() {
+		return previous;
+	}
+
+	public void setPrevious(EvaluationFormSurvey previous) {
+		this.previous = previous;
 	}
 
 	@Override

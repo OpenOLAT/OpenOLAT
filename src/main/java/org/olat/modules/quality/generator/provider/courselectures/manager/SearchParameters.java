@@ -32,13 +32,17 @@ import org.olat.repository.RepositoryEntryRef;
 /**
  * 
  * Initial date: 22.08.2018<br>
+ * 
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
 public class SearchParameters {
-	
+
 	private Integer minTotalLectures;
 	private Integer selectingLecture;
+	private boolean lastLectureBlock = false;
+	private QualityGeneratorRef finishedDataCollectionForGeneratorAndTopicIdentityRef;
+	private QualityGeneratorRef finishedDataCollectionForGeneratorAndTopicRepositoryRef;
 	private QualityGeneratorRef excludeGeneratorAndTopicIdentityRef;
 	private QualityGeneratorRef excludeGeneratorAndTopicRepositoryRef;
 	private IdentityRef teacherRef;
@@ -62,6 +66,30 @@ public class SearchParameters {
 
 	public void setSelectingLecture(Integer selectingLecture) {
 		this.selectingLecture = selectingLecture;
+	}
+
+	public boolean isLastLectureBlock() {
+		return lastLectureBlock;
+	}
+
+	public void setLastLectureBlock(boolean lastLectureBlock) {
+		this.lastLectureBlock = lastLectureBlock;
+	}
+
+	public QualityGeneratorRef getFinishedDataCollectionForGeneratorAndTopicIdentityRef() {
+		return finishedDataCollectionForGeneratorAndTopicIdentityRef;
+	}
+
+	public void setFinishedDataCollectionForGeneratorAndTopicIdentityRef(QualityGeneratorRef generatorRef) {
+		this.finishedDataCollectionForGeneratorAndTopicIdentityRef = generatorRef;
+	}
+
+	public QualityGeneratorRef getFinishedDataCollectionForGeneratorAndTopicRepositoryRef() {
+		return finishedDataCollectionForGeneratorAndTopicRepositoryRef;
+	}
+
+	public void setFinishedDataCollectionForGeneratorAndTopicRepositoryRef(QualityGeneratorRef generatorRef) {
+		this.finishedDataCollectionForGeneratorAndTopicRepositoryRef = generatorRef;
 	}
 
 	public QualityGeneratorRef getExcludeGeneratorAndTopicIdentityRef() {
@@ -136,6 +164,5 @@ public class SearchParameters {
 	public void setTo(Date to) {
 		this.to = to;
 	}
-
 
 }

@@ -23,10 +23,10 @@ import java.util.Collections;
 import java.util.List;
 
 import org.olat.core.util.StringHelper;
+import org.olat.modules.forms.SliderStatistic;
 import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.forms.model.xml.Rubric.SliderType;
 import org.olat.modules.forms.model.xml.Slider;
-import org.olat.modules.forms.ui.model.SliderStatistic;
 
 /**
  * 

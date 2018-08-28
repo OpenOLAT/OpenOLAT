@@ -32,6 +32,7 @@ import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationRef;
+import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.quality.generator.QualityGenerator;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.repository.RepositoryEntry;
@@ -47,14 +48,19 @@ public interface QualityService {
 	public QualityDataCollection createDataCollection(Collection<Organisation> organisations,
 			RepositoryEntry formEntry);
 	
-	public QualityDataCollection createDataCollection(Collection<Organisation> organisations,
-			RepositoryEntry formEntry, QualityGenerator generator, Long generatorProviderKey);
+	public QualityDataCollection createDataCollection(Collection<Organisation> organisations, RepositoryEntry formEntry,
+			QualityGenerator generator, Long generatorProviderKey);
+
+	public QualityDataCollection createDataCollection(Collection<Organisation> organisations, RepositoryEntry formEntry,
+			QualityGenerator generator, Long generatorProviderKey, QualityDataCollection previous);
 	
 	public QualityDataCollection updateDataCollection(QualityDataCollection dataCollection);
 
 	public List<QualityDataCollection> loadAllDataCollections();
 
 	public QualityDataCollection loadDataCollectionByKey(QualityDataCollectionRef dataCollectionRef);
+	
+	public List<QualityDataCollection> loadDataCollections(QualityDataCollectionSearchParams searchParams);
 	
 	/**
 	 * Updates the status to RUNNING for data collections which are READY and have passed the start date.
@@ -85,6 +91,8 @@ public interface QualityService {
 	public void deleteDataCollection(QualityDataCollectionLight dataCollection);
 	
 	public RepositoryEntry loadFormEntry(QualityDataCollectionLight dataCollection);
+	
+	public EvaluationFormSurvey loadSurvey(QualityDataCollectionLight dataCollection);
 
 	public boolean isFormEntryUpdateable(QualityDataCollection dataCollection);
 
@@ -173,6 +181,6 @@ public interface QualityService {
 	 *
 	 * @param until all reminders with a planed date before this date
 	 */
-	public void sendRemainders(Date until);
+	public void sendReminders(Date until);
 
 }

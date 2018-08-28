@@ -19,30 +19,28 @@
  */
 package org.olat.modules.forms;
 
-import org.olat.core.id.CreateInfo;
-import org.olat.core.id.ModifiedInfo;
-import org.olat.repository.RepositoryEntry;
+import java.util.List;
 
 /**
  * 
- * Initial date: 29.04.2018<br>
+ * Initial date: 29.08.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface EvaluationFormSurvey extends CreateInfo, ModifiedInfo {
-	
-	public Long getKey();
-	
-	/**
-	 *
-	 * @return the ReositoryEntry of the evaluation form (questionnaire)
-	 */
-	public RepositoryEntry getFormEntry();
+public interface SliderStatistic {
 
-	/**
-	 *
-	 * @return the previous survey in a serie.
-	 */
-	public EvaluationFormSurvey getPrevious();
+	public Long getNumberOfNoResponses();
+
+	public Long getNumberOfResponses();
+
+	public Double getMedian();
+
+	public Double getAvg();
+
+	public Double getVariance();
+
+	public Double getStdDev();
+
+	public List<Long> getStepCounts();
 
 }

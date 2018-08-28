@@ -98,6 +98,9 @@ public class EvaluationFormTestsHelper {
 				.createQuery("delete from evaluationformparticipation")
 				.executeUpdate();
 		dbInstance.getCurrentEntityManager()
+				.createQuery("update evaluationformsurvey s set s.previous.key = null")
+				.executeUpdate();
+		dbInstance.getCurrentEntityManager()
 				.createQuery("delete from evaluationformsurvey")
 				.executeUpdate();
 		dbInstance.commitAndCloseSession();

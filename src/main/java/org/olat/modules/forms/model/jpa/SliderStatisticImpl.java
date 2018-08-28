@@ -17,9 +17,11 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.forms.ui.model;
+package org.olat.modules.forms.model.jpa;
 
 import java.util.List;
+
+import org.olat.modules.forms.SliderStatistic;
 
 /**
  * 
@@ -27,7 +29,7 @@ import java.util.List;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class SliderStatistic {
+public class SliderStatisticImpl implements SliderStatistic {
 
 	private final Long numberOfNoResponses;
 	private final Long numberOfResponses;
@@ -37,9 +39,7 @@ public class SliderStatistic {
 	private final Double stdDev;
 	private final List<Long> stepCounts;
 	
-
-
-	public SliderStatistic(Long numberOfNoResponses, Long numberOfResponses, Double median, Double avg, Double variance,
+	public SliderStatisticImpl(Long numberOfNoResponses, Long numberOfResponses, Double median, Double avg, Double variance,
 			Double stdDev, List<Long> stepCounts) {
 		super();
 		this.numberOfNoResponses = numberOfNoResponses;
@@ -51,30 +51,37 @@ public class SliderStatistic {
 		this.stepCounts = stepCounts;
 	}
 
+	@Override
 	public Long getNumberOfNoResponses() {
 		return numberOfNoResponses;
 	}
 
+	@Override
 	public Long getNumberOfResponses() {
 		return numberOfResponses;
 	}
 
+	@Override
 	public Double getMedian() {
 		return median;
 	}
 
+	@Override
 	public Double getAvg() {
 		return avg;
 	}
 
+	@Override
 	public Double getVariance() {
 		return variance;
 	}
 
+	@Override
 	public Double getStdDev() {
 		return stdDev;
 	}
 
+	@Override
 	public List<Long> getStepCounts() {
 		return stepCounts;
 	}

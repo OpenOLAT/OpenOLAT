@@ -367,16 +367,41 @@ public class QualityUIFactory {
 			if(StringHelper.containsNonWhitespace(val)) {
 				
 				try {
-					double value = Integer.parseInt(val);
+					int value = Integer.parseInt(val);
 					if(min > value) {
-						el.setErrorKey("error.wrong.int", null);
+						el.setErrorKey("error.wrong.number", null);
 						allOk = false;
 					} else if(max < value) {
-						el.setErrorKey("error.wrong.int", null);
+						el.setErrorKey("error.wrong.number", null);
 						allOk = false;
 					}
 				} catch (NumberFormatException e) {
-					el.setErrorKey("error.wrong.int", null);
+					el.setErrorKey("error.wrong.number", null);
+					allOk = false;
+				}
+			}
+		}
+		return allOk;
+	}
+	
+	public static boolean validateDouble(TextElement el, int min, int max) {
+		boolean allOk = true;
+		el.clearError();
+		if(el.isEnabled()) {
+			String val = el.getValue();
+			if(StringHelper.containsNonWhitespace(val)) {
+				
+				try {
+					double value = Double.parseDouble(val);
+					if(min > value) {
+						el.setErrorKey("error.wrong.number", null);
+						allOk = false;
+					} else if(max < value) {
+						el.setErrorKey("error.wrong.number", null);
+						allOk = false;
+					}
+				} catch (NumberFormatException e) {
+					el.setErrorKey("error.wrong.number", null);
 					allOk = false;
 				}
 			}

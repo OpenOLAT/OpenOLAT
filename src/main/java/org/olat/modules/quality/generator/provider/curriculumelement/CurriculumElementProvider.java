@@ -20,8 +20,8 @@
 package org.olat.modules.quality.generator.provider.curriculumelement;
 
 import static java.util.Collections.singletonList;
+import static org.olat.modules.quality.generator.ProviderHelper.addDays;
 
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -238,14 +238,6 @@ public class CurriculumElementProvider implements QualityGeneratorProvider {
 			Date reminder2Date = addDays(dcStart, reminder2Day);
 			qualityService.createReminder(dataCollection, reminder2Date, QualityReminderType.REMINDER2);
 		}
-	}
-
-	private Date addDays(Date date, String daysToAdd) {
-		int days = Integer.parseInt(daysToAdd);
-		Calendar c = Calendar.getInstance();
-		c.setTime(date);
-		c.add(Calendar.DATE, days);
-		return c.getTime();
 	}
 
 }
