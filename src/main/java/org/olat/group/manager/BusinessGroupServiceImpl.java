@@ -1109,7 +1109,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 	}
 
 	@Override
-	public void removeMembers(Identity ureqIdentity, List<Identity> identities, OLATResource resource, MailPackage mailing) {
+	public void removeMembers(Identity ureqIdentity, List<Identity> identities, OLATResource resource, MailPackage mailing, boolean overrideManaged) {
 		if(identities == null || identities.isEmpty() || resource == null) return;//nothing to do
 		
 		List<BusinessGroup> groups = null;
@@ -1128,10 +1128,12 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 		}
 		
 		//remove managed groups
-		for(Iterator<BusinessGroup> groupIt=groups.iterator(); groupIt.hasNext(); ) {
-			boolean managed = BusinessGroupManagedFlag.isManaged(groupIt.next(), BusinessGroupManagedFlag.membersmanagement);
-			if(managed) {
-				groupIt.remove();
+		if(!overrideManaged) {
+			for(Iterator<BusinessGroup> groupIt=groups.iterator(); groupIt.hasNext(); ) {
+				boolean managed = BusinessGroupManagedFlag.isManaged(groupIt.next(), BusinessGroupManagedFlag.membersmanagement);
+				if(managed) {
+					groupIt.remove();
+				}
 			}
 		}
 		

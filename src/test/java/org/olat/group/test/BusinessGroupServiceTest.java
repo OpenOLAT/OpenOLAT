@@ -588,7 +588,7 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		List<Identity> identitiesToRemove = new ArrayList<Identity>();
 		identitiesToRemove.add(ident1);
 		identitiesToRemove.add(ident3);
-		businessGroupService.removeMembers(admin, identitiesToRemove, resource.getOlatResource(), null);
+		businessGroupService.removeMembers(admin, identitiesToRemove, resource.getOlatResource(), null, false);
 		dbInstance.commitAndCloseSession();
 
 		//check in group1 stay only id2 in waiting list

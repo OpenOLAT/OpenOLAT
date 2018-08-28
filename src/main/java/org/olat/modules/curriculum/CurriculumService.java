@@ -332,7 +332,7 @@ public interface CurriculumService {
 	 * @param entry The repository entry
 	 * @param members The memberss
 	 */
-	public void removeMembers(CurriculumElement element, List<Identity> members);
+	public void removeMembers(CurriculumElement element, List<Identity> members, boolean overrideManaged);
 	
 	/**
 	 * The all list of repository entries hold by the specified curriculum element.

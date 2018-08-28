@@ -419,8 +419,8 @@ public class CurriculumServiceImpl implements CurriculumService {
 	}
 
 	@Override
-	public void removeMembers(CurriculumElement element, List<Identity> members) {
-		if(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.members)) {
+	public void removeMembers(CurriculumElement element, List<Identity> members, boolean overrideManaged) {
+		if(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.members) || overrideManaged) {
 			for(Identity member:members) {
 				groupDao.removeMembership(element.getGroup(), member);
 			}

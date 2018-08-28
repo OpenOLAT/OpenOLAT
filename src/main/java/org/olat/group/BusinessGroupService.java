@@ -491,7 +491,7 @@ public interface BusinessGroupService {
 	 * @param identities
 	 * @param group
 	 */
-	public void removeMembers(Identity ureqIdentity, List<Identity> identities, OLATResource resource, MailPackage mailing);
+	public void removeMembers(Identity ureqIdentity, List<Identity> identities, OLATResource resource, MailPackage mailing, boolean overrideManaged);
 
 	
 	/**
