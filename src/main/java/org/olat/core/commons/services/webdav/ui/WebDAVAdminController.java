@@ -43,6 +43,7 @@ public class WebDAVAdminController extends FormBasicController {
 	private MultipleSelectionElement enableLinkEl;
 	private MultipleSelectionElement enableDigestEl;
 	private MultipleSelectionElement enableTermsFoldersEl;
+	private MultipleSelectionElement enableManagedFoldersEl;
 	private MultipleSelectionElement enableCurriculumElementFoldersEl;
 	private MultipleSelectionElement learnersAsParticipantEl;
 	private MultipleSelectionElement learnersBookmarkEl;
@@ -91,6 +92,11 @@ public class WebDAVAdminController extends FormBasicController {
 		enableCurriculumElementFoldersEl.select("xx", webDAVModule.isCurriculumElementFoldersEnabled());
 		enableCurriculumElementFoldersEl.addActionListener(FormEvent.ONCHANGE);
 		enableCurriculumElementFoldersEl.setEnabled(enabled);
+		
+		enableManagedFoldersEl = uifactory.addCheckboxesHorizontal("webdavManagedFolders", "webdav.managedfolders", formLayout, onKeys, values);
+		enableManagedFoldersEl.select("xx", webDAVModule.isManagedFoldersEnabled());
+		enableManagedFoldersEl.addActionListener(FormEvent.ONCHANGE);
+		enableManagedFoldersEl.setEnabled(enabled);
 		
 		prependReferenceEl = uifactory.addCheckboxesHorizontal("webdavPrepend", "webdav.prepend.reference", formLayout, onKeys, values);
 		prependReferenceEl.select("xx", webDAVModule.isPrependCourseReferenceToTitle());
@@ -146,6 +152,9 @@ public class WebDAVAdminController extends FormBasicController {
 		} else if(source == prependReferenceEl) {
 			boolean enabled = prependReferenceEl.isAtLeastSelected(1);
 			webDAVModule.setPrependCourseReferenceToTitle(enabled);
+		} else if(source == enableManagedFoldersEl) {
+			boolean enabled = enableManagedFoldersEl.isAtLeastSelected(1);
+			webDAVModule.setManagedFoldersEnabled(enabled);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}

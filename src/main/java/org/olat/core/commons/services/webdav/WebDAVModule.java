@@ -49,6 +49,7 @@ public class WebDAVModule extends AbstractSpringModule implements ConfigOnOff {
 	private static final String LEARNERS_PARTICIPATING_COURSES = "webdav.learners.participating.courses";
 	private static final String PREPEND_COURSE_REFERENCE_TO_TITLE = "webdav.prepend.course.reference.to.title";
 	private static final String CURRICULUM_ELEMENTS_FOLDERS_ENABLED = "webdav.curriculumelements.folders.enabled";
+	private static final String MANAGED_FOLDERS_ENABLED = "webdav.managed.folders.enabled";
 	
 	@Autowired
 	private List<WebDAVProvider> webdavProviders;
@@ -61,6 +62,8 @@ public class WebDAVModule extends AbstractSpringModule implements ConfigOnOff {
 	private boolean digestAuthenticationEnabled;
 	@Value("${webdav.termsfolders.enabled:true}")
 	private boolean termsFoldersEnabled;
+	@Value("${webdav.managed.folders.enabled:false}")
+	private boolean managedFoldersEnabled;
 	@Value("${webdav.curriculumelements.folders.enabled:false}")
 	private boolean curriculumElementFoldersEnabled;
 	@Value("${webdav.prepend.course.reference.to.title:false}")
@@ -100,6 +103,11 @@ public class WebDAVModule extends AbstractSpringModule implements ConfigOnOff {
 		String termsFoldersEnabledObj = getStringPropertyValue(TERMS_FOLDERS_ENABLED, true);
 		if(StringHelper.containsNonWhitespace(termsFoldersEnabledObj)) {
 			termsFoldersEnabled = "true".equals(termsFoldersEnabledObj);
+		}
+		
+		String managedFoldersEnabledObj = getStringPropertyValue(MANAGED_FOLDERS_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(managedFoldersEnabledObj)) {
+			managedFoldersEnabled = "true".equals(managedFoldersEnabledObj);
 		}
 		
 		String curriculumElementsFoldersEnabledObj = getStringPropertyValue(CURRICULUM_ELEMENTS_FOLDERS_ENABLED, true);
@@ -167,6 +175,14 @@ public class WebDAVModule extends AbstractSpringModule implements ConfigOnOff {
 		setStringProperty(TERMS_FOLDERS_ENABLED, enabledStr, true);
 	}
 
+	public boolean isManagedFoldersEnabled() {
+		return managedFoldersEnabled;
+	}
+
+	public void setManagedFoldersEnabled(boolean enabled) {
+		managedFoldersEnabled = enabled;
+		setStringProperty(MANAGED_FOLDERS_ENABLED, Boolean.toString(enabled), true);
+	}
 
 	public boolean isCurriculumElementFoldersEnabled() {
 		return curriculumElementFoldersEnabled;
