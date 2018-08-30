@@ -767,6 +767,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 			</span>
 			*/
 			String id = attrId.getValue().toString();
+			String uniqueId = id + CodeHelper.getForeverUniqueID();
 			Attribute<?> dataAttr = object.getAttributes().get("data");
 			String data = dataAttr.getValue().toString();
 			Attribute<?> attrDataMovie = object.getAttributes().get("data-oo-movie");
@@ -795,9 +796,10 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 					width = dataMovieParts[2];
 					height = dataMovieParts[3];
 				}
+				dataMovie = dataMovie.replace(id, uniqueId);
 			}
 
-			sb.append("<span id=\"").append(id).append("\" class=\"olatFlashMovieViewer\" style=\"display:block;border:solid 1px #000; width:").append(width).append("px; height:").append(height).append("px;\">\n")
+			sb.append("<span id=\"").append(uniqueId).append("\" class=\"olatFlashMovieViewer\" style=\"display:block;border:solid 1px #000; width:").append(width).append("px; height:").append(height).append("px;\">\n")
 			  .append(" <script src=\"");
 			Renderer.renderStaticURI(sb, "movie/player.js");
 			sb.append("\" type=\"text/javascript\"></script>\n")
@@ -807,7 +809,6 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 			  .append("</span>\n");
 		} else {
 			renderStartHtmlTag(sb, component, resolvedAssessmentItem, object, null);
-			//TODO object.getObjectFlows();
 			renderEndTag(sb, object);
 		}
 	}
