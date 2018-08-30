@@ -174,7 +174,7 @@ public class WebappHelper implements Initializable, Destroyable, ServletContextA
 	public void destroy() {
 		log.info("");
 		log.info("*********************************************");
-		log.info("*                SHUTDOWM                    ");
+		log.info("*                SHUTDOWN                    ");
 		log.info("*********************************************");
 		log.info("* Application:   " + applicationName);
 		log.info("* StopTimeStamp: " + new Date());

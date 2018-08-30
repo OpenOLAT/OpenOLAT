@@ -1847,7 +1847,7 @@
 		<dependency>
 			<groupId>org.apache.pdfbox</groupId>
 			<artifactId>pdfbox</artifactId>
-			<version>1.8.13</version>
+			<version>1.8.15</version>
 			<exclusions>
 				<exclusion>
 					<groupId>commons-logging</groupId>

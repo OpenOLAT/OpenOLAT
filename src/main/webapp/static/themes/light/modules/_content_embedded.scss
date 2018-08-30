@@ -72,8 +72,11 @@ div.b_scrollblock {
 		background: darken($bgcolor,10%);
 		font-weight: bold;
 	}	
+	tbody tr:nth-child(even) td {
+		background: lighten($bgcolor,5%);
+		border: 1px solid $bgcolor;
+	}
 }
-
 
 /* nice table formatting */
 table {
@@ -147,7 +150,7 @@ table {
 	}
 	&.b_red { 
 		@include o-make-colored-table($o-box-error-bg);
-	}	
+	}
 }
 
 /* font styles  */
