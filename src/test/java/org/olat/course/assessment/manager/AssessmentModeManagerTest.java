@@ -1036,6 +1036,27 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 		Assert.assertTrue(allowed);
 	}
 	
+	/**
+	 * SEB 2.1 and SEB 2.2 use slightly different URLs to calculate
+	 * the hash. The first use the raw URL, the second remove the
+	 * trailing /.
+	 */
+	@Test
+	public void isSafelyAllowed_seb22() {
+		String safeExamBrowserKey = "a3fa755508fa1ed69de26840012fb397bb0a527b55ca35f299fa89cb4da232c6";
+		String url = "http://kivik.frentix.com";
+		String hash = Encoder.sha256Exam(url + safeExamBrowserKey);
+
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.setServerName("kivik.frentix.com");
+		request.setScheme("http");
+		request.addHeader("x-safeexambrowser-requesthash", hash);
+		request.setRequestURI("/");
+		
+		boolean allowed = assessmentModeMgr.isSafelyAllowed(request, safeExamBrowserKey);
+		Assert.assertTrue(allowed);
+	}
+	
 	@Test
 	public void isSafelyAllowed_fail() {
 		String safeExamBrowserKey = "gdfkhjsduzezrutuzsf";

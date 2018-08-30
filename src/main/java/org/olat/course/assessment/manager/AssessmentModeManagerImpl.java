@@ -319,6 +319,15 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 				if(safeExamHash != null && safeExamHash.equals(hash)) {
 					safe = true;
 				}
+
+				if(!safe && url.endsWith("/")) {
+					String strippedUrl = url.substring(0, url.length() - 1);
+					String strippedHash = Encoder.sha256Exam(strippedUrl + safeExamBrowserKey);
+					if(safeExamHash != null && safeExamHash.equals(strippedHash)) {
+						safe = true;
+					}
+				}
+				
 				if(debug) {
 					if(safeExamHash == null) {
 						log.debug("Failed safeexambrowser request hash is null for URL: " + url + " and key: " + safeExamBrowserKey);
