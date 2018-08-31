@@ -26,6 +26,7 @@ import java.util.List;
 import org.olat.core.commons.persistence.DB;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityDataCollectionRef;
+import org.olat.modules.quality.QualityDataCollectionStatus;
 import org.olat.modules.quality.QualityReminder;
 import org.olat.modules.quality.QualityReminderType;
 import org.olat.modules.quality.model.QualityDataCollectionImpl;
@@ -107,6 +108,7 @@ public class QualityReminderDAO {
 		sb.append("  from qualityreminder as reminder");
 		sb.append("  join fetch reminder.dataCollection as collection");
 		sb.append(" where reminder.sendDone is null");
+		sb.append("   and collection.status = '").append(QualityDataCollectionStatus.RUNNING).append("'");
 		sb.append("   and reminder.sendPlaned <= :until");
 		
 		return dbInstance.getCurrentEntityManager()

@@ -28,7 +28,9 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
+import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityDataCollectionRef;
+import org.olat.modules.quality.QualityDataCollectionStatus;
 import org.olat.modules.quality.QualityReminder;
 import org.olat.modules.quality.QualityReminderType;
 import org.olat.test.OlatTestCase;
@@ -113,18 +115,19 @@ public class QualityReminderDAOTest extends OlatTestCase {
 	@Test
 	public void shouldLoadPending() {
 		Date until = (new GregorianCalendar(2013,1,28,1,1,1)).getTime();
-		QualityDataCollectionRef dataCollectionRef = qualityTestHelper.createDataCollection();
+		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
+		qualityTestHelper.updateStatus(dataCollection, QualityDataCollectionStatus.RUNNING);
 		QualityReminderType type = QualityReminderType.REMINDER1;
 		Date afterUntil1 = (new GregorianCalendar(2013,1,28,2,1,1)).getTime();
-		QualityReminder reminderAfter1 = sut.create(dataCollectionRef, afterUntil1, type);
+		QualityReminder reminderAfter1 = sut.create(dataCollection, afterUntil1, type);
 		Date afterUntil2 = (new GregorianCalendar(2013,1,28,3,1,1)).getTime();
-		QualityReminder reminderAfter2 = sut.create(dataCollectionRef, afterUntil2, type);
+		QualityReminder reminderAfter2 = sut.create(dataCollection, afterUntil2, type);
 		Date beforeUntil1 = (new GregorianCalendar(2013,1,27,2,1,1)).getTime();
-		QualityReminder reminderBefore1 = sut.create(dataCollectionRef, beforeUntil1, type);
+		QualityReminder reminderBefore1 = sut.create(dataCollection, beforeUntil1, type);
 		Date beforeUntil2 = (new GregorianCalendar(2013,1,26,2,1,1)).getTime();
-		QualityReminder reminderBefore2 = sut.create(dataCollectionRef, beforeUntil2, type);
+		QualityReminder reminderBefore2 = sut.create(dataCollection, beforeUntil2, type);
 		Date beforeUntilSent = (new GregorianCalendar(2013,1,26,2,1,1)).getTime();
-		QualityReminder reminderBeforeDone = sut.create(dataCollectionRef, beforeUntilSent, type);
+		QualityReminder reminderBeforeDone = sut.create(dataCollection, beforeUntilSent, type);
 		reminderBeforeDone = sut.updateDateDone(reminderBeforeDone, beforeUntilSent);
 		dbInstance.commitAndCloseSession();
 		
@@ -132,6 +135,32 @@ public class QualityReminderDAOTest extends OlatTestCase {
 		
 		assertThat(pending).containsExactlyInAnyOrder(reminderBefore1, reminderBefore2)
 				.doesNotContain(reminderAfter1, reminderAfter2, reminderBeforeDone);
+	}
+	
+	@Test
+	public void shouldLoadPendingOnlyIfDataCollectionIsRunning() {
+		Date until = (new GregorianCalendar(2013,1,28,1,1,1)).getTime();
+		Date beforeUntil = (new GregorianCalendar(2013,1,26,2,1,1)).getTime();
+		QualityReminderType type = QualityReminderType.REMINDER1;
+		QualityDataCollection dataCollectionPreaparation = qualityTestHelper.createDataCollection();
+		qualityTestHelper.updateStatus(dataCollectionPreaparation, QualityDataCollectionStatus.PREPARATION);
+		QualityReminder reminderPreparation = sut.create(dataCollectionPreaparation, beforeUntil, type);
+		QualityDataCollection dataCollectionReady = qualityTestHelper.createDataCollection();
+		qualityTestHelper.updateStatus(dataCollectionReady, QualityDataCollectionStatus.READY);
+		QualityReminder reminderReady = sut.create(dataCollectionReady, beforeUntil, type);
+		QualityDataCollection dataCollectionRunning = qualityTestHelper.createDataCollection();
+		qualityTestHelper.updateStatus(dataCollectionRunning, QualityDataCollectionStatus.RUNNING);
+		QualityReminder reminderRunning = sut.create(dataCollectionRunning, beforeUntil, type);
+		QualityDataCollection dataCollectionFinished = qualityTestHelper.createDataCollection();
+		qualityTestHelper.updateStatus(dataCollectionFinished, QualityDataCollectionStatus.FINISHED);
+		QualityReminder reminderFinished = sut.create(dataCollectionFinished, beforeUntil, type);
+		dbInstance.commitAndCloseSession();
+		
+		List<QualityReminder> pending = sut.loadPending(until);
+		
+		assertThat(pending)
+				.containsExactlyInAnyOrder(reminderRunning)
+				.doesNotContain(reminderPreparation, reminderReady, reminderFinished);
 	}
 
 	@Test
