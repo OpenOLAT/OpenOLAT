@@ -38,6 +38,7 @@ public class BinderRow implements BinderRef {
 	private final BinderStatistics binderStats;
 	private VFSLeaf image;
 	private final FormLink openLink;
+	private final FormLink toolsLink;
 	private final boolean newBinder;
 	
 	public BinderRow() {
@@ -45,12 +46,14 @@ public class BinderRow implements BinderRef {
 		image = null;
 		openLink = null;
 		newBinder = true;
+		toolsLink = null;
 	}
 	
-	public BinderRow(BinderStatistics binderStats, VFSLeaf image, FormLink openLink) {
+	public BinderRow(BinderStatistics binderStats, VFSLeaf image, FormLink openLink, FormLink toolsLink) {
 		this.binderStats = binderStats;
 		this.image = image;
 		this.openLink = openLink;
+		this.toolsLink = toolsLink;
 		newBinder = false;
 	}
 	
@@ -101,6 +104,10 @@ public class BinderRow implements BinderRef {
 		return openLink;
 	}
 	
+	public FormLink getToolsLink() {
+		return toolsLink;
+	}
+	
 	public boolean isBackground() {
 		return image != null;
 	}
@@ -116,4 +123,24 @@ public class BinderRow implements BinderRef {
 	public String getImageName() {
 		return image == null ? null : image.getName();
 	}
+
+	@Override
+	public int hashCode() {
+		Long key = getKey();
+		return key == null ? 36578 : key.hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj) {
+			return true;
+		}
+		if(obj instanceof BinderRow) {
+			BinderRow row = (BinderRow)obj;
+			return (newBinder && row.newBinder) || (getKey() != null && getKey().equals(row.getKey()));		
+		}
+		return false;
+	}
+	
+	
 }

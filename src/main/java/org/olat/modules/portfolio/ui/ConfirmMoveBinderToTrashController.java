@@ -32,6 +32,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.portfolio.model.BinderStatistics;
+import org.olat.modules.portfolio.ui.model.BinderRow;
 
 /**
  * 
@@ -45,6 +46,7 @@ public class ConfirmMoveBinderToTrashController extends FormBasicController {
 	
 	private MultipleSelectionElement acknowledgeEl;
 	
+	private BinderRow userObject;
 	private final List<BinderStatistics> stats;
 	
 	public ConfirmMoveBinderToTrashController(UserRequest ureq, WindowControl wControl, BinderStatistics stats) {
@@ -57,6 +59,14 @@ public class ConfirmMoveBinderToTrashController extends FormBasicController {
 		initForm(ureq);
 	}
 	
+	public BinderRow getUserObject() {
+		return userObject;
+	}
+
+	public void setUserObject(BinderRow userObject) {
+		this.userObject = userObject;
+	}
+
 	public List<BinderStatistics> getBinderStatistics() {
 		return stats;
 	}
@@ -100,14 +110,14 @@ public class ConfirmMoveBinderToTrashController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		if(!acknowledgeEl.isAtLeastSelected(1)) {
 			acknowledgeEl.setErrorKey("form.mandatory.hover", null);
 			allOk &= false;
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override

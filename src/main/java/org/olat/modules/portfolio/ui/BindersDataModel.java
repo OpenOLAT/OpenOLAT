@@ -19,6 +19,8 @@
  */
 package org.olat.modules.portfolio.ui;
 
+import java.util.List;
+
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -43,6 +45,19 @@ public class BindersDataModel extends DefaultFlexiTableDataModel<BinderRow> {
 			case key: return portfolio.getKey();
 			case title: return portfolio.getTitle();
 			case open: return portfolio.getOpenLink();
+			case tools: return portfolio.getToolsLink();
+		}
+		return null;
+	}
+	
+	public BinderRow getObjectByKey(Long key) {
+		if(key == null) return null;
+		
+		List<BinderRow> rows = getObjects();
+		for(BinderRow row:rows) {
+			if(key.equals(row.getKey())) {
+				return row;
+			}
 		}
 		return null;
 	}
@@ -55,7 +70,8 @@ public class BindersDataModel extends DefaultFlexiTableDataModel<BinderRow> {
 	public enum PortfolioCols implements FlexiSortableColumnDef {
 		key("table.header.key"),
 		title("table.header.title"),
-		open("table.header.open");
+		open("table.header.open"),
+		tools("table.header.tools");
 		
 		private final String i18nKey;
 		

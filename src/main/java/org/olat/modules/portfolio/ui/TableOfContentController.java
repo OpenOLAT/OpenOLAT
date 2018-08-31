@@ -563,8 +563,7 @@ public class TableOfContentController extends BasicController implements TooledC
 				loadModel();
 				fireEvent(ureq, new RestoreBinderEvent());
 			}	
-		}
-		else if(commentsCtrl == source) {
+		} else if(commentsCtrl == source) {
 			if("comment_count_changed".equals(event.getCommand())) {
 				loadModel();
 				fireEvent(ureq, Event.CHANGED_EVENT);

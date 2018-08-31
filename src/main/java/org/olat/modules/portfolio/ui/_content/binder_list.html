@@ -1,9 +1,33 @@
 <div class="clearfix">
 	$r.contextHelpWithWrapper("My portfolio binders")		
 </div>
-$r.render("table")
+<div id="o_my_binders_list">$r.render("table")</div>
 #if($r.available("delete.binder"))
 <div class="o_button_group">
 	$r.render("delete.binder")
 </div>
 #end
+<script>
+/* <![CDATA[ */ 
+jQuery(function() {
+	var container = jQuery('#o_my_binders_list .o_table_body').get(0);
+	dragula([container], {
+		copy: function (el, source) {
+		    return false;
+		},
+		accepts: function (el, target) {
+			return true;
+		},
+		moves: function (el, container, handle) {
+			return handle.classList.contains('panel-heading') || handle.classList.contains('panel-title');
+		}
+	}).on('drop', function(el, target, source, sibling) {
+		var draggedId = jQuery(".o_binder", el).attr('id');
+		var siblingId = jQuery(".o_binder", sibling).attr('id');
+		var draggedKey = draggedId.substring(9, draggedId.length);
+		var siblingKey = siblingId.substring(9, siblingId.length);
+		$r.openNoResponseJavaScriptCommand("drop-binder"), "dragged", draggedKey, "sibling", siblingKey);
+	});
+});
+/* ]]> */
+</script>

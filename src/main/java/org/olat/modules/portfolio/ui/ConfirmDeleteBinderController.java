@@ -31,6 +31,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.portfolio.BinderRef;
 import org.olat.modules.portfolio.model.BinderStatistics;
 
 /**
@@ -45,6 +46,7 @@ public class ConfirmDeleteBinderController extends FormBasicController {
 	
 	private MultipleSelectionElement acknowledgeEl, acknowledge2El;
 	
+	private BinderRef userObject;
 	private final List<BinderStatistics> stats;
 	
 	public ConfirmDeleteBinderController(UserRequest ureq, WindowControl wControl, BinderStatistics stats) {
@@ -57,6 +59,14 @@ public class ConfirmDeleteBinderController extends FormBasicController {
 		initForm(ureq);
 	}
 	
+	public BinderRef getUserObject() {
+		return userObject;
+	}
+
+	public void setUserObject(BinderRef userObject) {
+		this.userObject = userObject;
+	}
+
 	public List<BinderStatistics> getBinderStatistics() {
 		return stats;
 	}
@@ -103,7 +113,7 @@ public class ConfirmDeleteBinderController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		acknowledgeEl.clearError();
 		if(!acknowledgeEl.isAtLeastSelected(1)) {
@@ -117,7 +127,7 @@ public class ConfirmDeleteBinderController extends FormBasicController {
 			allOk &= false;
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override

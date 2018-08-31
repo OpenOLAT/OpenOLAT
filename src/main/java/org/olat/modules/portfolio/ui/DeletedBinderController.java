@@ -95,14 +95,16 @@ public class DeletedBinderController extends BinderListController {
 	}
 
 	@Override
-	protected void loadModel() {
+	protected void loadModel(UserRequest ureq, boolean reset) {
 		List<BinderStatistics> binderRows = portfolioService.searchOwnedDeletedBinders(getIdentity());
 		List<BinderRow> rows = new ArrayList<>(binderRows.size());
 		for(BinderStatistics binderRow:binderRows) {
 			rows.add(forgePortfolioRow(binderRow));
 		}
 		model.setObjects(rows);
-		tableEl.reset();
+		if(reset) {
+			tableEl.reset();
+		}
 		tableEl.reloadData();
 	}
 	
@@ -110,20 +112,20 @@ public class DeletedBinderController extends BinderListController {
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(binderCtrl == source) {
 			if(event instanceof RestoreBinderEvent || event instanceof DeleteBinderEvent) {
-				loadModel();
+				loadModel(ureq, true);
 				fireEvent(ureq, event);
 			}
 		} else if(deleteBinderCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				doDelete(deleteBinderCtrl.getBinderStatistics());
-				loadModel();
+				loadModel(ureq, true);
 			}
 			cmc.deactivate();
 			cleanUp();
 		} else if(confirmRestoreBinderCtrl == source) {
 			if(DialogBoxUIFactory.isYesEvent(event)) {
 				doRestore((BinderRow)confirmRestoreBinderCtrl.getUserObject());
-				loadModel();
+				loadModel(ureq, true);
 			}	
 		}
 		super.event(ureq, source, event);

@@ -143,6 +143,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_language:before { content: $fa-var-globe; }
 .o_icon_layout:before { content: $fa-var-file-image-o; }
 .o_icon_lecture:before { content: $fa-var-book; }
+.o_icon_left:before { content: $fa-var-arrow-circle-left; }
 .o_icon_levels:before { content: $fa-var-sitemap; }
 .o_icon_line:before { content: $fa-var-check; }
 .o_icon_link:before { content: $fa-var-link; }
@@ -251,6 +252,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_results_visible:before { content: $fa-var-eye;}
 .o_icon_results_hidden:before { content: $fa-var-eye-slash;}
 .o_icon_reviewer:before { content: $fa-var-user-md;}
+.o_icon_right:before { content: $fa-var-arrow-circle-right; }
 .o_icon_rss:before { content: $fa-var-rss;}
 .o_icon_rss_unsubscribe:before { content: $fa-var-rss; color: #996633;}
 .o_icon_rubric:before { content: $fa-var-sliders; }

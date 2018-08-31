@@ -13,13 +13,13 @@
 		</div>
 	</div>
 #else
-	<div class="panel panel-default o_binder #if($r.isNotNull($row.referenceEntryName)) o_portfolio_assignments #end #if($row.background) panel-imagebg" style="background-image:url('$mapperThumbnailUrl/$row.key/${row.imageName}');" #else " #end>
+	<div id="o_binder_$row.key" class="panel panel-default o_binder #if($r.isNotNull($row.referenceEntryName)) o_portfolio_assignments #end #if($row.background) panel-imagebg" style="background-image:url('$mapperThumbnailUrl/$row.key/${row.imageName}');" #else " #end>
 		<div class="panel-heading">
 			<h4 class="panel-title">#if(${row.isDeleted()})<i class="o_icon o_icon_pf_entry_deleted o_icon-fw"> </i> #end$r.escapeHtml($row.title)
+			<span class="o_binder_tools pull-right">$r.render($row.toolsLink)</span>
 			#if($r.isNotNull($row.referenceEntryName))
 				<small class="text-muted"><br /><i class="o_icon o_CourseModule_icon"> </i> $r.translate("binder.entry.name"): $r.escapeHtml($row.referenceEntryName)</small>
-			#end
-			</h4>
+			#end</h4>
 		</div>
 		<div class="panel-body">
 			<ul>
@@ -27,7 +27,7 @@
 				<li><span>$r.translate("binder.num.sections.pages", $row.numOfSectionsAndPages)</span></li>
 				<li><span>$r.translate("binder.num.comments", $row.numOfComments)</span></li>
 			</ul>
-			<div class="pull-right">$r.render($row.openLink)</div>	
+			<div class="pull-right">$r.render($row.openLink)</div>
 		</div>
 	</div>
 #end

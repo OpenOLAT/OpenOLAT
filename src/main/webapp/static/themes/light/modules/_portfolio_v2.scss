@@ -185,6 +185,14 @@
 		ul {
 			padding-left: 2em;
 		}
+		
+		.oo-accepted {
+			box-shadow: 10px 10px 10px pink;
+		}
+		
+		.o_binder_tools a {
+			color: $text-color;
+		}
 	}	
 	
 	.panel-imagebg .panel-body ul {
