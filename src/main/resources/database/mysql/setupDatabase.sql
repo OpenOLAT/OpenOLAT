@@ -1827,6 +1827,7 @@ create table o_eva_form_survey (
    e_resid bigint not null,
    e_sub_ident varchar(2048),
    fk_form_entry bigint not null,
+   fk_previous bigint,
    primary key (id)
 );
 
@@ -3390,6 +3391,7 @@ alter table o_pf_page_user_infos add constraint user_pfpage_idx foreign key (fk_
 alter table o_pf_page_user_infos add constraint page_pfpage_idx foreign key (fk_page_id) references o_pf_page (id);
 
 -- evaluation form
+alter table o_eva_form_survey add constraint eva_surv_to_surv_idx foreign key (fk_previous) references o_eva_form_survey (id);
 create unique index idx_eva_surv_ores_idx on o_eva_form_survey (e_resid, e_resname, e_sub_ident(255));
 
 alter table o_eva_form_participation add constraint eva_part_to_surv_idx foreign key (fk_survey) references o_eva_form_survey (id);
