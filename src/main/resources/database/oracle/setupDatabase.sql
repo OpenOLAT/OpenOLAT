@@ -1785,6 +1785,8 @@ create table o_eva_form_session (
    e_gender varchar2(1024),
    e_org_unit varchar2(1024),
    e_study_subject varchar2(1024),
+   fk_survey number(20),
+   fk_participation number(20) unique,
    fk_identity number(20) not null,
    fk_page_body number(20) not null,
    fk_form_entry number(20) not null,
@@ -3096,7 +3098,6 @@ alter table o_repositoryentry  add constraint FK2F9C439888C31018 foreign key (fk
 -- index created by unique constraint
 
 create index descritpion_idx on o_repositoryentry (description);
-create index access_idx on o_repositoryentry (accesscode);
 create index initialAuthor_idx on o_repositoryentry (initialauthor);
 create index resource_idx on o_repositoryentry (resourcename);
 create index displayname_idx on o_repositoryentry (displayname);
@@ -3147,7 +3148,6 @@ create index paypal_pay_key_idx on o_ac_paypal_transaction (pay_key);
 create index paypal_pay_trx_id_idx on o_ac_paypal_transaction (ipn_transaction_id);
 create index paypal_pay_s_trx_id_idx on o_ac_paypal_transaction (ipn_sender_transaction_id);
 
-create index idx_ac_aao_id_idx on o_ac_auto_advance_order(id);
 create index idx_ac_aao_identifier_idx on o_ac_auto_advance_order(a_identifier_key, a_identifier_value);
 create index idx_ac_aao_ident_idx on o_ac_auto_advance_order(fk_identity);
 alter table o_ac_auto_advance_order add constraint aao_ident_idx foreign key (fk_identity) references o_bs_identity (id);
