@@ -42,10 +42,11 @@ public class QualityExcecutorParticipationImpl implements QualityExecutorPartici
 	private final QualityDataCollectionTopicType topicType;
 	private final String translatedTopicType;
 	private final String topic;
+	private final String previousTitle;
 	
 	public QualityExcecutorParticipationImpl(Long participationKey, Integer executionStatusOrder, Date start,
 			Date deadline, String title, QualityDataCollectionTopicType topicType, String translatedTopicType,
-			String topic) {
+			String topic, String previousTitle) {
 		super();
 		this.participationKey = participationKey;
 		this.executionStatus = QualityExecutorParticipationStatus.getEnum(executionStatusOrder);
@@ -55,17 +56,12 @@ public class QualityExcecutorParticipationImpl implements QualityExecutorPartici
 		this.topicType = topicType;
 		this.translatedTopicType = translatedTopicType;
 		this.topic = topic;
+		this.previousTitle = previousTitle;
 	}
 	
 	@Override
 	public EvaluationFormParticipationRef getParticipationRef() {
-		return new EvaluationFormParticipationRef() {
-			
-			@Override
-			public Long getKey() {
-				return participationKey;
-			}
-		};
+		return () -> participationKey;
 	}
 
 	@Override
@@ -101,6 +97,11 @@ public class QualityExcecutorParticipationImpl implements QualityExecutorPartici
 	@Override
 	public String getTopic() {
 		return topic;
+	}
+
+	@Override
+	public String getPreviousTitle() {
+		return previousTitle;
 	}
 
 }

@@ -193,6 +193,7 @@ class QualityParticipationDAO {
 		sb.append("            when '").append(QualityDataCollectionTopicType.REPOSITORY).append("'");
 		sb.append("            then repository.displayname");
 		sb.append("       end as topic");
+		sb.append("     , previousCollection.title as previousTitle");
 		sb.append("       )");
 		sb.append("  from evaluationformparticipation as participation");
 		sb.append("       inner join participation.survey as survey");
@@ -205,6 +206,9 @@ class QualityParticipationDAO {
 		sb.append("       left join collection.topicCurriculumElement as curriculumElement");
 		sb.append("       left join curriculumElement.type as curriculumElementType");
 		sb.append("       left join collection.topicRepositoryEntry as repository");
+		sb.append("       left join survey.previous as previousSurvey");
+		sb.append("       left join qualitydatacollection as previousCollection on previousSurvey.resName = '").append(QualityDataCollectionLight.RESOURCEABLE_TYPE_NAME).append("'");
+		sb.append("                                                            and previousSurvey.resId = previousCollection.key");
 		sb.append(" where survey.resName = '").append(QualityDataCollectionLight.RESOURCEABLE_TYPE_NAME).append("'");
 		appendWhereClause(sb, searchParam);
 		

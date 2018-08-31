@@ -124,6 +124,9 @@ class QualityMailing {
 		String title = participation != null && participation.getTitle() != null
 				? participation.getTitle()
 				: "";
+		String previousTitle = participation != null && participation.getPreviousTitle() != null
+				? participation.getPreviousTitle()
+				: "";
 		String invitation = invitationReminder != null && invitationReminder.getSendDone() != null
 				? formatter.formatDateAndTime(invitationReminder.getSendDone())
 				: "";
@@ -144,6 +147,7 @@ class QualityMailing {
 				context.put("topictype", topictype);
 				context.put("topic", topic);
 				context.put("title", title);
+				context.put("previousTitle", previousTitle);
 				context.put("url", url);
 				context.put("invitation", invitation);
 			}

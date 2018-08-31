@@ -162,6 +162,16 @@ public class QualityServiceImpl implements QualityService, OrganisationDataDelet
 	}
 
 	@Override
+	public QualityDataCollection loadPrevious(QualityDataCollectionRef dataCollectionRef) {
+		return dataCollectionDao.loadPrevious(dataCollectionRef);
+	}
+
+	@Override
+	public QualityDataCollection loadFollowUp(QualityDataCollectionRef dataCollectionRef) {
+		return dataCollectionDao.loadFollowUp(dataCollectionRef);
+	}
+
+	@Override
 	public List<QualityDataCollection> loadDataCollections(QualityDataCollectionSearchParams searchParams) {
 		return dataCollectionDao.loadDataCollections(searchParams);
 	}

@@ -113,6 +113,46 @@ public class QualityDataCollectionDAO {
 		return dataCollections.isEmpty() ? null : dataCollections.get(0);
 	}
 
+	public QualityDataCollection loadPrevious(QualityDataCollectionRef dataCollectionRef) {
+		if (dataCollectionRef == null || dataCollectionRef.getKey() == null) return null;
+		
+		StringBuilder sb = new StringBuilder(512);
+		sb.append("select previousCollection");
+		sb.append("  from qualitydatacollection as followUpCollection");
+		sb.append("       join evaluationformsurvey followUpSurvey on followUpSurvey.resName = '").append(QualityDataCollectionLight.RESOURCEABLE_TYPE_NAME).append("'");
+		sb.append("                                               and followUpSurvey.resId = followUpCollection.key");
+		sb.append("       join followUpSurvey.previous as previousSurvey");
+		sb.append("       join qualitydatacollection as previousCollection on previousSurvey.resName = '").append(QualityDataCollectionLight.RESOURCEABLE_TYPE_NAME).append("'");
+		sb.append("                                                       and previousSurvey.resId = previousCollection.key");
+		sb.append(" where followUpCollection.key =: collectionKey");
+		
+		 List<QualityDataCollection> dataCollections = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), QualityDataCollection.class)
+				.setParameter("collectionKey", dataCollectionRef.getKey())
+				.getResultList();
+		return dataCollections.isEmpty() ? null : dataCollections.get(0);
+	}
+
+	public QualityDataCollection loadFollowUp(QualityDataCollectionRef dataCollectionRef) {
+		if (dataCollectionRef == null || dataCollectionRef.getKey() == null) return null;
+		
+		StringBuilder sb = new StringBuilder(512);
+		sb.append("select followUpCollection");
+		sb.append("  from qualitydatacollection as followUpCollection");
+		sb.append("       join evaluationformsurvey followUpSurvey on followUpSurvey.resName = '").append(QualityDataCollectionLight.RESOURCEABLE_TYPE_NAME).append("'");
+		sb.append("                                               and followUpSurvey.resId = followUpCollection.key");
+		sb.append("       join followUpSurvey.previous as previousSurvey");
+		sb.append("       join qualitydatacollection as previousCollection on previousSurvey.resName = '").append(QualityDataCollectionLight.RESOURCEABLE_TYPE_NAME).append("'");
+		sb.append("                                                       and previousSurvey.resId = previousCollection.key");
+		sb.append(" where previousCollection.key =: collectionKey");
+		
+		 List<QualityDataCollection> dataCollections = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), QualityDataCollection.class)
+				.setParameter("collectionKey", dataCollectionRef.getKey())
+				.getResultList();
+		return dataCollections.isEmpty() ? null : dataCollections.get(0);
+	}
+
 	Collection<QualityDataCollection> loadWithPendingStart(Date until) {
 		if (until == null) return Collections.emptyList();
 		
@@ -310,6 +350,7 @@ public class QualityDataCollectionDAO {
 		sb.append("            when '").append(QualityDataCollectionTopicType.REPOSITORY).append("'");
 		sb.append("            then repository.displayname");
 		sb.append("       end as topic");
+		sb.append("     , previousCollection.title as previousTitle");
 		sb.append("     , ( select count(participation.key)");
 		sb.append("           from evaluationformparticipation participation");
 		sb.append("          where participation.survey.key = survey.key");
@@ -326,6 +367,9 @@ public class QualityDataCollectionDAO {
 		sb.append("       left join collection.topicCurriculumElement as curriculumElement");
 		sb.append("       left join curriculumElement.type as curriculumElementType");
 		sb.append("       left join collection.topicRepositoryEntry as repository");
+		sb.append("       left join survey.previous as previousSurvey");
+		sb.append("       left join qualitydatacollection as previousCollection on previousSurvey.resName = '").append(QualityDataCollectionLight.RESOURCEABLE_TYPE_NAME).append("'");
+		sb.append("                                                            and previousSurvey.resId = previousCollection.key");
 		sb.append(" where 1=1");
 		appendWhereClause(sb, searchParams);
 		

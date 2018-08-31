@@ -31,6 +31,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.modules.forms.EvaluationFormManager;
@@ -90,6 +91,9 @@ public class DataCollectionReportController extends AbstractDataCollectionEditCo
 		List<EvaluationFormFigure> figures = new ArrayList<>();
 		figures.add(new EvaluationFormFigure(translate("data.collection.figures.title"), dataCollectionView.getTitle()));
 		figures.add(new EvaluationFormFigure(translate("data.collection.figures.topic"), formatTopic(dataCollectionView)));
+		if (StringHelper.containsNonWhitespace(dataCollectionView.getPreviousTitle())) {
+			figures.add(new EvaluationFormFigure(translate("data.collection.figures.previous.title"), dataCollectionView.getPreviousTitle()));
+		}
 		String period = EvaluationFormFormatter.period(dataCollectionView.getStart(), dataCollectionView.getDeadline(),
 				getLocale());
 		figures.add(new EvaluationFormFigure(translate("data.collection.figures.period"), period));

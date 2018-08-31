@@ -202,7 +202,8 @@ public class QualityParticipationDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldLoadExecutorParticipations() {
-		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
+		QualityDataCollection previous = qualityTestHelper.createDataCollection();
+		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection(previous);
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("quality-");
 		qualityTestHelper.addParticipations(dataCollection, Arrays.asList(identity));
 		dbInstance.commitAndCloseSession();
@@ -219,6 +220,7 @@ public class QualityParticipationDAOTest extends OlatTestCase {
 		assertThat(participation.getTopicType()).isNotNull();
 		assertThat(participation.getTranslatedTopicType()).isNotNull();
 		assertThat(participation.getTopic()).isNotNull();
+		assertThat(participation.getPreviousTitle()).isNotNull();
 	}
 	
 	@Test

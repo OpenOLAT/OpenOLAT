@@ -113,6 +113,10 @@ public class ExecutionController extends BasicController {
 		if (topicKeyValue != null) {
 			wrapper.add(topicKeyValue);
 		}
+		KeyValue previousKeyValue = createPreviousKeyValue();
+		if (previousKeyValue != null) {
+			wrapper.add(previousKeyValue);
+		}
 		KeyValue roleKeyValue = createRoleKeyValue(context);
 		if (roleKeyValue != null) {
 			wrapper.add(roleKeyValue);
@@ -137,6 +141,16 @@ public class ExecutionController extends BasicController {
 		if (qualityParticipation.getTopic() != null) {
 			String key = translate("executor.participation.topic.title");
 			String value = formatTopic(qualityParticipation);
+			keyValue = new KeyValue(key, value);
+		}
+		return keyValue;
+	}
+
+	private KeyValue createPreviousKeyValue() {
+		KeyValue keyValue = null;
+		if (qualityParticipation.getPreviousTitle() != null) {
+			String key = translate("executor.participation.previous.title");
+			String value = qualityParticipation.getPreviousTitle();
 			keyValue = new KeyValue(key, value);
 		}
 		return keyValue;

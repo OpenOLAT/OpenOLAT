@@ -40,5 +40,7 @@ public interface QualityDataCollectionView extends QualityDataCollectionLight, C
 	public Long getNumberOfParticipants();
 	
 	public String getGeneratorTitle();
+	
+	public String getPreviousTitle();
 
 }

@@ -90,10 +90,10 @@ public class QualityTestHelper {
 		evaTestHelper.deleteAll();
 	}
 
-	QualityDataCollection createDataCollection(String title, Organisation organisation) {
+	QualityDataCollection createDataCollection(String title, Organisation organisation, QualityDataCollection previous) {
 		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		List<Organisation> organisations = Collections.singletonList(organisation);
-		QualityDataCollection dataCollection = qualityService.createDataCollection(organisations, formEntry);
+		QualityDataCollection dataCollection = qualityService.createDataCollection(organisations, formEntry, null, null, previous);
 		dataCollection.setTitle(title);
 		dataCollection.setStart(new Date());
 		dataCollection.setDeadline(new Date());
@@ -107,11 +107,15 @@ public class QualityTestHelper {
 	}
 	
 	QualityDataCollection createDataCollection(String title) {
-		return createDataCollection(title, organisationService.getDefaultOrganisation());
+		return createDataCollection(title, organisationService.getDefaultOrganisation(), null);
 	}
 	
 	QualityDataCollection createDataCollection(Organisation organisation) {
-		return createDataCollection(UUID.randomUUID().toString(), organisation);
+		return createDataCollection(UUID.randomUUID().toString(), organisation, null);
+	}
+	
+	QualityDataCollection createDataCollection(QualityDataCollection previous) {
+		return createDataCollection(UUID.randomUUID().toString(), organisationService.getDefaultOrganisation(), previous);
 	}
 	
 	QualityDataCollection createDataCollectionWithoutValues() {

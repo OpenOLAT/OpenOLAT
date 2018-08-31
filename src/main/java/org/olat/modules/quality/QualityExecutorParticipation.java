@@ -46,5 +46,7 @@ public interface QualityExecutorParticipation {
 	public String getTranslatedTopicType();
 	
 	public String getTopic();
+	
+	public String getPreviousTitle();
 
 }

@@ -60,6 +60,10 @@ public interface QualityService {
 
 	public QualityDataCollection loadDataCollectionByKey(QualityDataCollectionRef dataCollectionRef);
 	
+	public QualityDataCollection loadPrevious(QualityDataCollectionRef dataCollectionRef);
+
+	public QualityDataCollection loadFollowUp(QualityDataCollectionRef dataCollectionRef);
+
 	public List<QualityDataCollection> loadDataCollections(QualityDataCollectionSearchParams searchParams);
 	
 	/**

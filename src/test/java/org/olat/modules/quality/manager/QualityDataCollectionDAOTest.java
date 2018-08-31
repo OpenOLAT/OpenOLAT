@@ -19,6 +19,7 @@
  */
 package org.olat.modules.quality.manager;
 
+import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.olat.modules.quality.QualityDataCollectionStatus.FINISHED;
@@ -48,6 +49,7 @@ import org.olat.modules.quality.QualityDataCollectionStatus;
 import org.olat.modules.quality.QualityDataCollectionTopicType;
 import org.olat.modules.quality.QualityDataCollectionView;
 import org.olat.modules.quality.QualityDataCollectionViewSearchParams;
+import org.olat.modules.quality.QualityService;
 import org.olat.modules.quality.generator.QualityGenerator;
 import org.olat.modules.quality.ui.DataCollectionDataModel.DataCollectionCols;
 import org.olat.repository.RepositoryEntry;
@@ -69,6 +71,8 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 	private DB dbInstance;
 	@Autowired
 	private QualityTestHelper qualityTestHelper;
+	@Autowired
+	private QualityService qualityService;
 	
 	@Autowired
 	private QualityDataCollectionDAO sut;
@@ -181,6 +185,30 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 		QualityDataCollection loadDataCollection = sut.loadDataCollectionByKey(dataCollection);
 		
 		assertThat(loadDataCollection).isEqualTo(dataCollection);
+	}
+	
+	@Test
+	public void shouldLoadPreviousDataCollection() {
+		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		QualityDataCollection first = qualityService.createDataCollection(emptyList(), formEntry);
+		QualityDataCollection second = qualityService.createDataCollection(emptyList(), formEntry, null, null, first);
+		dbInstance.commitAndCloseSession();
+		
+		QualityDataCollection previous = sut.loadPrevious(second);
+		
+		assertThat(previous).isEqualTo(first);
+	}
+
+	@Test
+	public void shouldLoadFollowUpDataCollection() {
+		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		QualityDataCollection first = qualityService.createDataCollection(emptyList(), formEntry);
+		QualityDataCollection second = qualityService.createDataCollection(emptyList(), formEntry, null, null, first);
+		dbInstance.commitAndCloseSession();
+		
+		QualityDataCollection followUp = sut.loadFollowUp(first);
+		
+		assertThat(followUp).isEqualTo(second);
 	}
 	
 	@Test
