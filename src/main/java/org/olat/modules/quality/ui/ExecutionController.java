@@ -27,6 +27,8 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -58,6 +60,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class ExecutionController extends BasicController {
 
 	private VelocityContainer mainVC;
+	private Link back;
 	private Controller executionCtrl;
 	
 	private final QualityExecutorParticipation qualityParticipation;
@@ -77,6 +80,9 @@ public class ExecutionController extends BasicController {
 	}
 
 	protected void initVelocityContainer(UserRequest ureq) {
+		back = LinkFactory.createLinkBack(mainVC, this);
+		mainVC.put("back", back);
+		
 		mainVC.contextPut("title", qualityParticipation.getTitle());
 		mainVC.contextPut("contexts", createContextWrappers());
 		
@@ -235,7 +241,9 @@ public class ExecutionController extends BasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		//
+		if (source == back) {
+			fireEvent(ureq, Event.CLOSE_EVENT);
+		}
 	}
 
 	@Override

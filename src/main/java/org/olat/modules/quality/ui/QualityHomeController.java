@@ -144,7 +144,7 @@ public class QualityHomeController extends BasicController implements Activateab
 		stackPanel.popUpToRootController(ureq);
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(ORES_MY_TYPE, 0l);
 		WindowControl bwControl = addToHistory(ureq, ores, null);
-		executorParticipationListCtrl = new ExecutorParticipationsListController(ureq, bwControl, stackPanel, secCallback);
+		executorParticipationListCtrl = new ExecutorParticipationsListController(ureq, bwControl, secCallback);
 		listenTo(executorParticipationListCtrl);
 		stackPanel.pushController(translate("breadcrumb.executor.participations"), executorParticipationListCtrl);
 	}

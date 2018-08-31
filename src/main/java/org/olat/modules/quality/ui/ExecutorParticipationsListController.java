@@ -27,7 +27,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import org.olat.core.commons.fullWebApp.LayoutMain3ColsBackController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -40,9 +39,10 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
-import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
+import org.olat.core.gui.control.ScreenMode.Mode;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.OLATResourceable;
@@ -74,15 +74,12 @@ public class ExecutorParticipationsListController extends FormBasicController im
 	private FlexiTableElement tableEl;
 
 	private ExecutionController executionCtrl;
-	private LayoutMain3ColsBackController fullLayoutCtrl;
 	
-	private final TooledStackedPanel stackPanel;
 	private final QualitySecurityCallback secCallback;
 
 	public ExecutorParticipationsListController(UserRequest ureq, WindowControl wControl,
-			TooledStackedPanel stackPanel, QualitySecurityCallback secCallback) {
+			QualitySecurityCallback secCallback) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
-		this.stackPanel = stackPanel;
 		this.secCallback = secCallback;
 		initForm(ureq);
 	}
@@ -161,29 +158,31 @@ public class ExecutorParticipationsListController extends FormBasicController im
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == executionCtrl && event == Event.DONE_EVENT) {
-			showInfo("executor.participation.future.done.message");
-			doDeactivateExecution(ureq);
-		} else if (source == fullLayoutCtrl) {
-			doDeactivateExecution(ureq);
+		if (source == executionCtrl) {
+			if (event == Event.DONE_EVENT) {
+				showInfo("executor.participation.future.done.message");
+				doDeactivateExecution(ureq);
+			} else if (event == Event.CLOSE_EVENT) {
+				doDeactivateExecution(ureq);
+			}
 		}
 		super.event(ureq, source, event);
 	}
 
 	private void doDeactivateExecution(UserRequest ureq) {
 		addToHistory(ureq, this);
-		fullLayoutCtrl.deactivate();
+		getWindowControl().pop();
+		getWindowControl().getWindowBackOffice().getChiefController().getScreenMode().setMode(Mode.standard);
 		cleanUp();
 		tableEl.reloadData();
 	}
 
 	private void cleanUp() {
-		removeAsListenerAndDispose(fullLayoutCtrl);
 		removeAsListenerAndDispose(executionCtrl);
-		fullLayoutCtrl = null;
 		executionCtrl = null;
 	}
 
+	@SuppressWarnings("deprecation")
 	private void doExecute(UserRequest ureq, QualityExecutorParticipation participation) {
 		if (FUTURE.equals(participation.getExecutionStatus())) {
 			showInfo("executor.participation.future", participation.getTitle());
@@ -205,11 +204,9 @@ public class ExecutorParticipationsListController extends FormBasicController im
 		executionCtrl = new ExecutionController(ureq, bwControl, participation);
 		listenTo(executionCtrl);
 		
-		fullLayoutCtrl = new LayoutMain3ColsBackController(ureq, getWindowControl(), null,
-				executionCtrl.getInitialComponent(), null);
-		fullLayoutCtrl.addDisposableChildController(executionCtrl);
-		fullLayoutCtrl.activate();
-		listenTo(fullLayoutCtrl);
+		ChiefController cc = getWindowControl().getWindowBackOffice().getChiefController();
+		cc.getScreenMode().setMode(Mode.full);
+		getWindowControl().pushToMainArea(executionCtrl.getInitialComponent());
 	}
 
 	@Override

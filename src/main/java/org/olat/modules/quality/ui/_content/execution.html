@@ -1,3 +1,12 @@
+#if($r.available("back"))
+	<div id="o_back_wrapper" class="o_toolbar clearfix">
+		<div class="o_breadcrumb">
+			<ol class="breadcrumb">
+				<li>$r.render("back")</li>
+			</ol>
+		</div>
+	</div>
+#end
 <div class="o_qual_execute">
 	#if( $r.isNotNull($title) )
 		<h2>$r.escapeHtml($title)</h2>
