@@ -21,15 +21,15 @@ package org.olat.repository.ui.author;
 
 import java.util.Locale;
 
-import org.olat.core.CoreSpringFactory;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
+import org.olat.core.gui.components.table.CustomCellRenderer;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
-import org.olat.login.LoginModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryLight;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -41,13 +41,11 @@ import org.olat.repository.RepositoryService;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AccessRenderer implements FlexiCellRenderer {
+public class AccessRenderer implements FlexiCellRenderer, CustomCellRenderer {
 	
-	private final boolean guestLoginEnabled;
 	private final Translator translator;
 	
 	public AccessRenderer(Locale locale) {
-		guestLoginEnabled = CoreSpringFactory.getImpl(LoginModule.class).isGuestLoginLinksEnabled();
 		translator = Util.createPackageTranslator(RepositoryService.class, locale);
 	}
 
@@ -56,25 +54,25 @@ public class AccessRenderer implements FlexiCellRenderer {
 			int row, FlexiTableComponent source, URLBuilder ubu, Translator trans)  {
 		if(val instanceof RepositoryEntryLight) {
 			RepositoryEntryLight re = (RepositoryEntryLight)val;
-			render(sb, re.getEntryStatus(), re.isAllUsers(), re.isGuests());
+			render(sb, re.getEntryStatus());
 		} else if(val instanceof RepositoryEntry) {
 			RepositoryEntry re = (RepositoryEntry)val;
-			render(sb, re.getEntryStatus(), re.isAllUsers(), re.isGuests());
+			render(sb, re.getEntryStatus());
 		}
 	}
-	
-	private void render(StringOutput sb, RepositoryEntryStatusEnum status, boolean allUsers, boolean guests) {
-		if(status == RepositoryEntryStatusEnum.trash || status == RepositoryEntryStatusEnum.deleted) {
-			sb.append(translator.translate("table.header.access.deleted"));
-		} else  {
-			
-			sb.append(translator.translate("table.status.".concat(status.name())));
-			if(allUsers) {
-				sb.append(translator.translate("table.allusers"));
-			}
-			if(guests && guestLoginEnabled) {
-				sb.append(translator.translate("table.guests"));
-			}
-		}
+
+	@Override
+	public void render(StringOutput sb, Renderer renderer, Object val, Locale locale, int alignment, String action) {
+		// use the FlexiCellRenderer method
+		this.render(renderer, sb, val, -1, null, null, null);
+	}
+
+	public void render(StringOutput sb, RepositoryEntryStatusEnum status) {
+		
+		sb.append("<span class='o_labeled_light o_repo_status_").append(status.name());
+		sb.append("' title=\"").append(StringEscapeUtils.escapeHtml(translator.translate("status." + status.name() + ".desc"))).append("\">");
+		sb.append("<i class='o_icon o_icon-fw o_icon_repo_status_").append(status.name()).append("'> </i> <span>");
+		sb.append(translator.translate("table.status.".concat(status.name())));
+		sb.append("</span></span>");
 	}
 }

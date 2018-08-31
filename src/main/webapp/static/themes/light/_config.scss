@@ -316,6 +316,15 @@ $o-coursesite-details-border	: darken($o-coursesite-details-bg, 5%) !default;
 $o-coursesite-go-xs-color		: $o-coursesite-start-color !default; 
 $o-coursesite-go-xs-bg			: $o-coursesite-start-bg !default;
 
+/* Repository */
+$o-repo-preparation-color			: #4a6785;	/* blue */
+$o-repo-review-color				: #FCCA46;	/* yellow */
+$o-repo-coachpublished-color		: #1DC63F;	/* green-light */
+$o-repo-published-color				: #14892c;	/* green */
+$o-repo-closed-color				: #99583D;	/* brown */
+$o-repo-trash-color					: #5A5958;	/* gray */
+$o-repo-deleted-color				: #888;		/* black */
+
 /* Curriculum in course site */
 $o-coursesite-curriculum-rowelem-height-md :	40px !default;
 
@@ -708,7 +717,6 @@ $o-qpool-review-color-dark			: #333;
 $o-qpool-revised-color				: #993333;
 $o-qpool-finalVersion-color			: #14892c;
 $o-qpool-endOfLife-color			: #aaa;
-
 
 /* other configurations */
 $o-portrait-radius				: 50% !default;

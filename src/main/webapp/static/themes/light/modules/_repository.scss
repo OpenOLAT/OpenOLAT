@@ -119,11 +119,52 @@ tr.o_entry_deleted {
 
 }
 
-.o_repo_status_filter > div {
-	display:inline-block;
+.o_repo_status_filter {
+	.control-label {
+		margin-right: 0.5em;
+		&:after {
+			content: ':';
+		}
+	} 
 	
-	label {
-		font-weight: normal;
+ 	> div {
+		display:inline-block;
+	
+		label {
+			font-weight: normal;
+		}
 	}
+}
+
+/* Status light */
+.o_labeled_light {
+	&.o_repo_status_preparation {
+	    border-color: 		$o-repo-preparation-color;
+	    color: 				$o-repo-preparation-color;
+	}
+	&.o_repo_status_review {
+	    border-color: 		$o-repo-review-color;
+	    color: 				$o-repo-review-color;
+	}
+	&.o_repo_status_coachpublished {
+	    border-color: 		$o-repo-coachpublished-color;
+	    color: 				$o-repo-coachpublished-color;
+	}
+	&.o_repo_status_published {
+	    border-color: 		$o-repo-published-color;
+	    color: 				$o-repo-published-color;
+	}
+	&.o_repo_status_closed {
+	    border-color: 		$o-repo-closed-color;
+	    color: 				$o-repo-closed-color;
+	}
+	&.o_repo_status_trash {
+	    border-color: 		$o-repo-trash-color;
+	    color: 				$o-repo-trash-color;
+	}
+	&.o_repo_status_deleted {
+	    border-color: 		$o-repo-deleted-color;
+	    color: 				$o-repo-deleted-color;
+	}	
 }
 

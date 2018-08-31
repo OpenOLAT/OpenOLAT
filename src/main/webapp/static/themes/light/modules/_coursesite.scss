@@ -244,6 +244,9 @@
 		}
 		.o_repoentry_ac {
 			color: $gray;
+			ul {
+				display: inline-block;
+			}
 		}
 	}
 }

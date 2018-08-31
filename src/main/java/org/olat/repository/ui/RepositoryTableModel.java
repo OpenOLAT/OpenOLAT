@@ -48,13 +48,13 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.login.LoginModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
 import org.olat.repository.model.RepositoryEntryLifecycle;
+import org.olat.repository.ui.author.AccessRenderer;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.model.OLATResourceAccess;
@@ -91,11 +91,11 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 	private static final int COLUMN_COUNT = 7;
 	private final Translator translator;
 	private final ACService acService;
-	private final LoginModule loginModule;
 	private final AccessControlModule acModule;
 	private final RepositoryModule repositoryModule;
 	private final RepositoryEntryLifecycleDAO lifecycleDao;
 	private final UserManager userManager;
+	private final AccessRenderer accessRenderer;
 	
 	private final Map<Long,OLATResourceAccess> repoEntriesWithOffer = new HashMap<>();
 	private final Map<String,String> fullNames = new HashMap<>();
@@ -108,11 +108,11 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 		super(new ArrayList<RepositoryEntry>());
 		translator = Util.createPackageTranslator(RepositoryService.class, locale);
 		acService = CoreSpringFactory.getImpl(ACService.class);
-		loginModule = CoreSpringFactory.getImpl(LoginModule.class);
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		acModule = CoreSpringFactory.getImpl(AccessControlModule.class);
 		repositoryModule = CoreSpringFactory.getImpl(RepositoryModule.class);
 		lifecycleDao = CoreSpringFactory.getImpl(RepositoryEntryLifecycleDAO.class);
+		accessRenderer = new AccessRenderer(locale);
 	}
 
 	/**
@@ -213,7 +213,7 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 				RepoCols.lifecycleEnd.ordinal(), null, loc, ColumnDescriptor.ALIGNMENT_LEFT, dateRenderer));
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.author", RepoCols.author.ordinal(), null, loc));
 
-		CustomCellRenderer accessRenderer = new RepositoryEntryAccessColumnDescriptor(translator);
+		AccessRenderer accessRenderer = new AccessRenderer(translator.getLocale());
 		ColumnDescriptor accessColDesc = new CustomRenderColumnDescriptor("table.header.access", RepoCols.repoEntry.ordinal(), null, loc, 
 				ColumnDescriptor.ALIGNMENT_LEFT, accessRenderer) {
 			@Override
@@ -282,18 +282,16 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 				}
 				return access;
 			}
+			case acGuest: {
+				return re.isGuests();
+			}
 			case repoEntry: return re; 
 			case displayname: return getDisplayName(re, translator.getLocale());
 			case author: return getFullname(re.getInitialAuthor());
 			case access: {
-				StringBuilder sb = new StringBuilder(32);
-				sb.append(translator.translate("table.status.".concat(re.getEntryStatus().name())));
-				if(re.isAllUsers()) {
-					sb.append(translator.translate("table.allusers"));
-				}
-				if(re.isGuests() && loginModule.isGuestLoginEnabled()) {
-					sb.append(translator.translate("table.guests"));
-				}
+				// delegate to specific access renderer
+				StringOutput sb = new StringOutput(32);
+				accessRenderer.render(sb, re.getEntryStatus());
 				return sb.toString();
 			}
 			case creationDate: return re.getCreationDate();
@@ -322,6 +320,7 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 	
 	public enum RepoCols {
 		ac,
+		acGuest,
 		repoEntry,
 		displayname,
 		author,

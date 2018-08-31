@@ -687,7 +687,7 @@ ul.o_assessment_docs>li:last-child {
 	font-weight: bold !important;
 	line-height: 1;
 	white-space: nowrap;
-    	border: 1px solid;
+   	border: 1px solid;
 	border-radius: 3px;
 	padding: 2px 5px;
     background-color: $o-labeled_bg-color;
@@ -708,8 +708,8 @@ ul.o_assessment_docs>li:last-child {
  	display: flex;
 	span:not(.o_ms_carret) {
  		text-overflow: ellipsis;
-    		overflow: hidden;
-    		white-space: nowrap; 
+   		overflow: hidden;
+   		white-space: nowrap; 
 	}
 	.o_ms_carret {
 		margin: auto 0 auto auto;

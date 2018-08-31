@@ -346,6 +346,15 @@ $fa-css-prefix: "o_icon" !default;
 .o_FileResource-VIDEO_icon:before { content: $fa-var-film; }
 .o_CourseModule_icon_closed:before { content: $fa-var-ban; }
 
+/* Repository status icon */
+.o_icon_repo_status_preparation:before { content: $fa-var-pencil;}
+.o_icon_repo_status_review:before { content: $fa-var-star-o;}
+.o_icon_repo_status_coachpublished:before { content: $fa-var-check;}
+.o_icon_repo_status_published:before { content: $fa-var-check;}
+.o_icon_repo_status_closed:before { content: $fa-var-ban; }
+.o_icon_repo_status_trash:before { content: $fa-var-trash-o;}
+.o_icon_repo_status_deleted:before { content: $fa-var-trash-o;}
+
 /* course element icons */
 .o_sp_icon:before { content: $fa-var-file-text-o; }
 .o_st_icon:before { content: $fa-var-cubes; }
@@ -546,6 +555,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_ac_free_icon:before { content: $fa-var-gift;}
 .o_ac_group_icon:before { content: $fa-var-group;}
 .o_ac_membersonly_icon:before { content: $fa-var-lock;}
+.o_ac_guests_icon:before { content: $fa-var-user-secret;}
 .o_ac_paypal_icon:before { content: $fa-var-cc-paypal;}
 .o_ac_status_canceled_icon:before { content: $fa-var-minus; color: $brand-warning;}
 .o_ac_status_error_icon:before { content: $fa-var-times; color: $brand-danger;}

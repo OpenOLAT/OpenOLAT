@@ -28,6 +28,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.ui.PriceMethod;
 import org.olat.repository.ui.catalog.CatalogEntryRow;
 
@@ -48,17 +49,35 @@ public class ACRenderer implements FlexiCellRenderer {
 			for(Object accessType:accessTypes) {
 				if(accessType instanceof String) {
 					String type = (String)accessType;
-					sb.append("<i class='o_icon ").append(type).append(" o_icon-lg'></i>");
+					sb.append("<i class='o_icon o_icon-fw ").append(type).append(" o_icon-lg'> </i>");
 				}
 			}
 		} else if(val instanceof Boolean) {
 			boolean acessControlled = ((Boolean)val).booleanValue();
 			if(acessControlled) {
-				sb.append("<i class='o_icon o_ac_group_icon o_icon-lg'></i>");
+				sb.append("<i class='o_icon o_icon-fw o_ac_group_icon o_icon-lg'> </i>");
 			}
 		} else if (val instanceof AuthoringEntryRow) {
-			AuthoringEntryRow entry = (AuthoringEntryRow)val;
-			renderPriceMethods(renderer, sb, entry.getAccessTypes());
+			AuthoringEntryRow entry = (AuthoringEntryRow)val;			
+			if(entry.getEntryStatus() != RepositoryEntryStatusEnum.trash && entry.getEntryStatus() != RepositoryEntryStatusEnum.deleted) {
+
+	// TODO: move to separate column renderer
+	//			boolean guestLoginEnabled = CoreSpringFactory.getImpl(LoginModule.class).isGuestLoginLinksEnabled();
+	//			if(entry.isGuests() && guestLoginEnabled) {
+	//				if(entry.isAllUsers()) {
+	//					sb.append(",");
+	//				}
+	//			}				
+				StringOutput methodsSb = new StringOutput();
+				renderPriceMethods(renderer, methodsSb, entry.getAccessTypes());
+				sb.append(methodsSb);
+				if (methodsSb.length() == 0 && entry.isAllUsers()) {
+					sb.append(" <span class='o_small text-muted'>");
+					sb.append(translator.translate("table.allusers"));
+					sb.append("</span>");
+				}
+			}
+
 		} else if (val instanceof CatalogEntryRow) {
 			CatalogEntryRow entry = (CatalogEntryRow)val;
 			renderPriceMethods(renderer, sb, entry.getAccessTypes());
@@ -80,7 +99,7 @@ public class ACRenderer implements FlexiCellRenderer {
 				for (PriceMethod priceMethod : methods) {
 					String price = priceMethod.getPrice();
 					String type = priceMethod.getType();
-					sb.append("<li title=\"").append(priceMethod.getDisplayName()).append("\"><i class='o_icon ").append(type).append(" o_icon-lg'></i>");
+					sb.append("<li title=\"").append(priceMethod.getDisplayName()).append("\"><i class='o_icon o_icon-fw ").append(type).append(" o_icon-lg'> </i>");
 					if(price != null && !price.isEmpty()) {
 						sb.append(" ").append(price);
 					}
