@@ -1384,11 +1384,9 @@ function o_ffXHRNFEvent(formNam, dispIdField, dispId, eventIdField, eventInt) {
 
 function o_XHRWikiEvent(link) {
 	var href = jQuery(link).attr('href');
-	console.log(href);
 	if(href.indexOf(o_info.serverUri) == 0) {
 		href = href.substring(o_info.serverUri.length, href.length);
 	}
-	console.log(href);
 	o_XHREvent(href, false, true);
 	return false;
 }
