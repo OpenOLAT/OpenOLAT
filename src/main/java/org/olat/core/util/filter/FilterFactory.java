@@ -28,6 +28,7 @@ import org.olat.core.util.filter.impl.SimpleHTMLTagsFilter;
 import org.olat.core.util.filter.impl.SmileysCssToDataUriFilter;
 import org.olat.core.util.filter.impl.XMLValidCharacterFilter;
 import org.olat.core.util.filter.impl.XMLValidEntityFilter;
+import org.olat.core.util.filter.impl.OWASPAntiSamyXSSFilter.Variant;
 
 /**
  * Description:<br>
@@ -108,7 +109,12 @@ public class FilterFactory {
 	 */
 	public static Filter getXSSFilterForTextField(int maxLength) {
 		// currently the XSS filter is statefull
-		return new OWASPAntiSamyXSSFilter(maxLength, false, false);
+		return new OWASPAntiSamyXSSFilter(maxLength, false, Variant.tinyMce, false);
+	}
+	
+	public static Filter getXSSFilterForWiki(int maxLength) {
+		// currently the XSS filter is statefull
+		return new OWASPAntiSamyXSSFilter(maxLength, false, Variant.wiki, false);
 	}
 
 	/**

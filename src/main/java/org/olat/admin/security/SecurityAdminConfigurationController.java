@@ -19,7 +19,6 @@
  */
 package org.olat.admin.security;
 
-import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderModule;
@@ -51,7 +50,6 @@ public class SecurityAdminConfigurationController extends FormBasicController {
 	
 	private static final String EXAMPLE = "https://example.com";
 	
-	private MultipleSelectionElement wikiEl;
 	private MultipleSelectionElement topFrameEl;
 	private MultipleSelectionElement forceDownloadEl;
 	
@@ -78,8 +76,6 @@ public class SecurityAdminConfigurationController extends FormBasicController {
 	private CSPModule cspModule;
 	@Autowired
 	private FolderModule folderModule;
-	@Autowired
-	private BaseSecurityModule securityModule;
 	
 	private final HeadersFilter headersProvider;
 	
@@ -99,13 +95,6 @@ public class SecurityAdminConfigurationController extends FormBasicController {
 		resourcesCont.setFormTitle(translate("sec.title"));
 		resourcesCont.setFormDescription(translate("sec.description"));
 		resourcesCont.setFormContextHelp("Security");
-		
-		// on: block wiki (more security); off: do not block wiki (less security)
-		wikiEl = uifactory.addCheckboxesHorizontal("sec.wiki", "sec.wiki", resourcesCont, keys, values);
-		wikiEl.addActionListener(FormEvent.ONCHANGE);
-		if(!securityModule.isWikiEnabled()) {
-			wikiEl.select("on", true);
-		}
 
 		// on: force file download in folder component (more security); off: allow execution of content (less security)
 		forceDownloadEl = uifactory.addCheckboxesHorizontal("sec.download", "sec.force.download", resourcesCont, keys, values);
@@ -226,7 +215,6 @@ public class SecurityAdminConfigurationController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		cspModule.setForceTopFrame(topFrameEl.isAtLeastSelected(1));
-		securityModule.setWikiEnabled(!wikiEl.isAtLeastSelected(1));
 		cspModule.setXFrameOptionsSameoriginEnabled(xFrameOptionsSameoriginEl.isAtLeastSelected(1));
 		cspModule.setStrictTransportSecurity(strictTransportSecurityEl.isAtLeastSelected(1));
 		cspModule.setxContentTypeOptions(xContentTypeOptionsEl.isAtLeastSelected(1));

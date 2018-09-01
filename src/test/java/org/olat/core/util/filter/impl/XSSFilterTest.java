@@ -26,6 +26,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.olat.core.util.filter.Filter;
+import org.olat.core.util.filter.impl.OWASPAntiSamyXSSFilter.Variant;
 
 /**
  * Description:<br>
@@ -291,13 +292,13 @@ public class XSSFilterTest {
 	
 	@Test
 	public void test_rawText() {
-		OWASPAntiSamyXSSFilter intlFilter = new OWASPAntiSamyXSSFilter(-1, false, true);
+		OWASPAntiSamyXSSFilter intlFilter = new OWASPAntiSamyXSSFilter(-1, false, Variant.tinyMce, true);
 		t("Stéphane Rossé", "Stéphane Rossé", intlFilter);
 	}
 	
 	@Test
 	public void test_rawTextAttaqu() {
-		OWASPAntiSamyXSSFilter intlFilter = new OWASPAntiSamyXSSFilter(-1, false, true);
+		OWASPAntiSamyXSSFilter intlFilter = new OWASPAntiSamyXSSFilter(-1, false, Variant.tinyMce, true);
 		t("&lt;script&gt;alert('hello');&lt;//script&gt;", "&lt;script&gt;alert('hello');&lt;//script&gt;", intlFilter);
 	}
 

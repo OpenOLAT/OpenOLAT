@@ -28,7 +28,6 @@ package org.olat.repository.handlers;
 import java.io.File;
 import java.util.Locale;
 
-import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.notifications.NotificationsManager;
@@ -62,6 +61,7 @@ import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.fileresource.types.WikiResource;
 import org.olat.modules.wiki.WikiMainController;
 import org.olat.modules.wiki.WikiManager;
+import org.olat.modules.wiki.WikiModule;
 import org.olat.modules.wiki.WikiSecurityCallback;
 import org.olat.modules.wiki.WikiSecurityCallbackImpl;
 import org.olat.modules.wiki.WikiToZipUtils;
@@ -90,7 +90,7 @@ public class WikiHandler implements RepositoryHandler {
 
 	@Override
 	public boolean isCreate() {
-		return true;
+		return CoreSpringFactory.getImpl(WikiModule.class).isWikiEnabled();
 	}
 	
 	@Override
@@ -177,8 +177,8 @@ public class WikiHandler implements RepositoryHandler {
 	@Override
 	public MainLayoutController createLaunchController(RepositoryEntry re, RepositoryEntrySecurity reSecurity, UserRequest ureq, WindowControl wControl) {
 		// first handle special case: disabled wiki for security (XSS Attacks) reasons
-		BaseSecurityModule securityModule = CoreSpringFactory.getImpl(BaseSecurityModule.class); 
-		if (!securityModule.isWikiEnabled()) {
+		WikiModule wikiModule = CoreSpringFactory.getImpl(WikiModule.class); 
+		if (!wikiModule.isWikiEnabled()) {
 			return RepositoyUIFactory.createRepoEntryDisabledDueToSecurityMessageController(ureq, wControl);
 		}
 
