@@ -6,27 +6,23 @@
 			<th>$r.translate("upc.defaulttranslation")</th>
 			<th>$r.translate("upc.group")</th>
 			<th>$r.translate("upc.active")</th>
-			<th>$r.translate("upc.deletable")</th>
 			<th>$r.translate("upc.translate")</th>
 			<th>$r.translate("upc.hndlconfig")</th>
 		</tr>
 	</thead>
 	<tbody>
-	#foreach( $handler in $rows ) 
+	#foreach($handler in $rows)
 		<tr>
-		#set($name = $handler.getName())
-		#set($defaulttranslation = "transname_" + $name)
-		#set($tglname = "tgl_" + $name)
-		#set($handlername = "hndl_" + $name)
-		#set($translate = "translate_"+$name)
-		#set($group = "grpn_" + $name)
-		#set($deletable = $handler.isDeletable())
-		
+			#set($name = $handler.getName())
+			#set($defaulttranslation = "transname_" + $name)
+			#set($tglname = "tgl_" + $name)
+			#set($handlername = "hndl_" + $name)
+			#set($translate = "translate_"+$name)
+			#set($group = "grpn_" + $name)
 			<td>$name</td>
 			<td>$r.render($defaulttranslation)</td>
 			<td>$r.render($group)</td>
 			<td>$r.render($tglname)</td>
-			<td>$deletable</td>
 			<td>$r.render($translate)</td>
 			<td>
 			#if($r.available($handlername))

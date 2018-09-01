@@ -1379,6 +1379,17 @@ function o_ffXHRNFEvent(formNam, dispIdField, dispId, eventIdField, eventInt) {
 	})
 }
 
+function o_XHRWikiEvent(link) {
+	var href = jQuery(link).attr('href');
+	console.log(href);
+	if(href.indexOf(o_info.serverUri) == 0) {
+		href = href.substring(o_info.serverUri.length, href.length);
+	}
+	console.log(href);
+	o_XHREvent(href, false, true);
+	return false;
+}
+
 function o_XHREvent(targetUrl, dirtyCheck, push) {
 	if(dirtyCheck && o2c==1) {
 		// Copy function arguments and set the dirtyCheck to false for execution in callback.

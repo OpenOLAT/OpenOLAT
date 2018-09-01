@@ -13,5 +13,24 @@
 		<property name="fileResourceManager" ref="fileresourceManager"></property>
 		<property name="resourceManager" ref="resourceManager"></property>
 	</bean>
+	
+	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+		<property name="order" value="7210" />
+		<property name="actionController">	
+			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+				<property name="className" value="org.olat.modules.wiki.WikiAdminController"/>
+			</bean>
+		</property>
+		<property name="navigationKey" value="wiki" />
+		<property name="parentTreeNodeIdentifier" value="modulesParent" /> 
+		<property name="i18nActionKey" value="admin.menu.title"/>
+		<property name="i18nDescriptionKey" value="admin.menu.title.alt"/>
+		<property name="translationPackage" value="org.olat.modules.wiki"/>
+		<property name="extensionPoints">
+			<list>	
+				<value>org.olat.admin.SystemAdminMainController</value>		
+			</list>
+		</property>
+	</bean>
 
 </beans>

@@ -27,7 +27,6 @@ package org.olat.collaboration;
 
 import java.util.ArrayList;
 
-import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.commons.calendar.CalendarModule;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.OLATResourceable;
@@ -41,6 +40,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.modules.openmeetings.OpenMeetingsModule;
 import org.olat.modules.portfolio.PortfolioV2Module;
+import org.olat.modules.wiki.WikiModule;
 import org.olat.portfolio.PortfolioModule;
 
 /**
@@ -93,8 +93,8 @@ public class CollaborationToolsFactory {
 		if (CoreSpringFactory.getImpl(InstantMessagingModule.class).isEnabled()) {
 			toolArr.add(CollaborationTools.TOOL_CHAT);
 		}
-		BaseSecurityModule securityModule = CoreSpringFactory.getImpl(BaseSecurityModule.class); 
-		if (securityModule.isWikiEnabled()) {
+		WikiModule wikiModule = CoreSpringFactory.getImpl(WikiModule.class); 
+		if (wikiModule.isWikiEnabled()) {
 			toolArr.add(CollaborationTools.TOOL_WIKI);			
 		}
 		PortfolioModule portfolioModule = CoreSpringFactory.getImpl(PortfolioModule.class);

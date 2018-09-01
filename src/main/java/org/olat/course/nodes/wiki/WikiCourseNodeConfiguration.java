@@ -27,7 +27,6 @@ package org.olat.course.nodes.wiki;
 
 import java.util.Locale;
 
-import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
@@ -37,6 +36,7 @@ import org.olat.course.nodes.CourseNodeConfiguration;
 import org.olat.course.nodes.CourseNodeGroup;
 import org.olat.course.nodes.WikiCourseNode;
 import org.olat.modules.wiki.Wiki;
+import org.olat.modules.wiki.WikiModule;
 /**
  * 
  * Description:<br>
@@ -56,7 +56,7 @@ public class WikiCourseNodeConfiguration extends AbstractCourseNodeConfiguration
 
 	@Override
 	public boolean isEnabled() {
-		return CoreSpringFactory.getImpl(BaseSecurityModule.class).isWikiEnabled() && super.isEnabled();
+		return CoreSpringFactory.getImpl(WikiModule.class).isWikiEnabled() && super.isEnabled();
 	}
 
 	@Override

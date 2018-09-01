@@ -30,7 +30,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.olat.NewControllerFactory;
-import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
@@ -95,6 +94,7 @@ import org.olat.modules.co.ContactFormController;
 import org.olat.modules.openmeetings.OpenMeetingsModule;
 import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.wiki.WikiManager;
+import org.olat.modules.wiki.WikiModule;
 import org.olat.portfolio.PortfolioModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
@@ -1179,8 +1179,8 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			root.addChild(gtnChild);
 		}
 
-		BaseSecurityModule securityModule = CoreSpringFactory.getImpl(BaseSecurityModule.class); 
-		if (collabTools.isToolEnabled(CollaborationTools.TOOL_WIKI) && securityModule.isWikiEnabled()) {
+		WikiModule wikiModule = CoreSpringFactory.getImpl(WikiModule.class); 
+		if (collabTools.isToolEnabled(CollaborationTools.TOOL_WIKI) && wikiModule.isWikiEnabled()) {
 			gtnChild = new GenericTreeNode(nodeIdPrefix.concat("wiki"));
 			gtnChild.setTitle(translate("menutree.wiki"));
 			gtnChild.setUserObject(ACTIVITY_MENUSELECT_WIKI);
