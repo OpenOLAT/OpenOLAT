@@ -155,7 +155,7 @@ public class MetaInfoController extends FormBasicController {
 				licenseFreetextEl = uifactory.addStaticTextElement("mf.freetext",
 						LicenseUIFactory.getFormattedLicenseText(license), formLayout);
 			}
-		;
+		}
 
 		// creator
 		String creatorVal = StringHelper.escapeHtml(meta != null ? meta.getCreator() : null);
@@ -188,10 +188,11 @@ public class MetaInfoController extends FormBasicController {
 
 		// url/link
 		String urlVal = StringHelper.escapeHtml(meta != null ? meta.getUrl() : null);
-		url = uifactory.addStaticTextElement("mf.url", urlVal, formLayout);}
+		url = uifactory.addStaticTextElement("mf.url", urlVal, formLayout);
 
 		/* static fields */
-		String sizeText, typeText;
+		String sizeText;
+		String typeText;
 		if (item instanceof VFSLeaf) {
 			sizeText = Formatter.formatBytes(((VFSLeaf) item).getSize());
 			typeText = FolderHelper.extractFileType(item.getName(), getLocale());
