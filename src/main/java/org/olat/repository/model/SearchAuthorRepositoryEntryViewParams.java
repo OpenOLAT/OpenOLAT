@@ -219,7 +219,8 @@ public class SearchAuthorRepositoryEntryViewParams {
 		references,
 		deletionDate,
 		deletedBy,
-		lectureEnabled
+		lectureEnabled,
+		guests
 	}
 	
 	public enum ResourceUsage {

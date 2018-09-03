@@ -28,51 +28,37 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryEntryLight;
-import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryService;
 
 /**
  * 
- * Initial date: 29.04.2014<br>
+ * Initial date: 3 sept. 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AccessRenderer implements FlexiCellRenderer, CustomCellRenderer {
+public class GuestAccessRenderer implements FlexiCellRenderer, CustomCellRenderer  {
 	
 	private final Translator translator;
 	
-	public AccessRenderer(Locale locale) {
+	public GuestAccessRenderer(Locale locale) {
 		translator = Util.createPackageTranslator(RepositoryService.class, locale);
 	}
 
 	@Override
-	public void render(Renderer renderer, StringOutput sb, Object val,
-			int row, FlexiTableComponent source, URLBuilder ubu, Translator trans)  {
-		if(val instanceof RepositoryEntryLight) {
-			RepositoryEntryLight re = (RepositoryEntryLight)val;
-			render(sb, re.getEntryStatus());
-		} else if(val instanceof RepositoryEntry) {
-			RepositoryEntry re = (RepositoryEntry)val;
-			render(sb, re.getEntryStatus());
-		}
+	public void render(StringOutput sb, Renderer renderer, Object val, Locale locale, int alignment, String action) {
+		render(sb, val);
 	}
 
 	@Override
-	public void render(StringOutput sb, Renderer renderer, Object val, Locale locale, int alignment, String action) {
-		// use the FlexiCellRenderer method
-		this.render(renderer, sb, val, -1, null, null, null);
+	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
+			URLBuilder ubu, Translator tr) {
+		render(target, cellValue);
 	}
-
-	public void render(StringOutput sb, RepositoryEntryStatusEnum status) {
-		
-		sb.append("<span class='o_labeled_light o_repo_status_").append(status.name());
-		sb.append("' title=\"").append(StringHelper.escapeHtml(translator.translate("status." + status.name() + ".desc"))).append("\">");
-		sb.append("<i class='o_icon o_icon-fw o_icon_repo_status_").append(status.name()).append("'> </i> <span>");
-		sb.append(translator.translate("table.status.".concat(status.name())));
-		sb.append("</span></span>");
+	
+	private void render(StringOutput sb, Object cellValue) {
+		if(cellValue instanceof Boolean && ((Boolean)cellValue).booleanValue()) {
+			sb.append(translator.translate("table.guests.enabled"));
+		}
 	}
 }

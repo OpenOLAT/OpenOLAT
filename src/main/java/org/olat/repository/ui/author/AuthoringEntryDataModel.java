@@ -104,6 +104,7 @@ class AuthoringEntryDataModel extends DefaultFlexiTableDataSourceModel<Authoring
 			case license: return item.getLicense();
 			case location: return item.getLocation();
 			case access: return item;
+			case guests: return item.isGuests();
 			case creationDate: return item.getCreationDate();
 			case lastUsage: return item.getLastUsage();
 			case deletedBy: return item.getDeletedByFullName();
@@ -166,7 +167,8 @@ class AuthoringEntryDataModel extends DefaultFlexiTableDataSourceModel<Authoring
 		detailsSupported("table.header.details"),
 		tools("table.header.actions"),
 		editionSupported("table.header.edit"),
-		lectureInfos("table.header.lecture.infos");
+		lectureInfos("table.header.lecture.infos"),
+		guests("table.header.guests");
 		
 		private final String i18nKey;
 		

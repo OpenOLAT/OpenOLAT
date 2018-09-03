@@ -49,6 +49,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Organisation;
 import org.olat.core.util.Util;
 import org.olat.course.CourseModule;
+import org.olat.login.LoginModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryService;
@@ -59,6 +60,7 @@ import org.olat.repository.ui.RepositoryEntryIconRenderer;
 import org.olat.repository.ui.RepositoryFlexiTableModel;
 import org.olat.repository.ui.RepositoryFlexiTableModel.RepoCols;
 import org.olat.repository.ui.author.AccessRenderer;
+import org.olat.repository.ui.author.GuestAccessRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -80,6 +82,8 @@ public class OrganisationResourceListController extends FormBasicController impl
 	
 	private final Organisation organisation;
 	
+	@Autowired
+	private LoginModule loginModule;
 	@Autowired
 	private RepositoryService repositoryService;
 	
@@ -111,6 +115,9 @@ public class OrganisationResourceListController extends FormBasicController impl
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, RepoCols.lifecycleEnd, new DateFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RepoCols.author));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RepoCols.access, new AccessRenderer(getLocale())));
+		if(loginModule.isGuestLoginEnabled()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RepoCols.guests, new GuestAccessRenderer(getLocale())));
+		}
 
 		tableModel = new RepositoryFlexiTableModel(columnsModel, getLocale()); 
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);

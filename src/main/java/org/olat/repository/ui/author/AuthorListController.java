@@ -92,6 +92,7 @@ import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CorruptedCourseException;
 import org.olat.course.CourseModule;
+import org.olat.login.LoginModule;
 import org.olat.modules.quality.QualityDataCollectionLight;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
@@ -172,6 +173,8 @@ public class AuthorListController extends FormBasicController implements Activat
 	private UserManager userManager;
 	@Autowired
 	private MarkManager markManager;
+	@Autowired
+	private LoginModule loginModule;
 	@Autowired
 	protected RepositoryModule repositoryModule;
 	@Autowired
@@ -319,6 +322,10 @@ public class AuthorListController extends FormBasicController implements Activat
 				true, OrderBy.access.name(), FlexiColumnModel.ALIGNMENT_LEFT, new AccessRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.ac.i18nKey(), Cols.ac.ordinal(),
 				true, OrderBy.ac.name(), FlexiColumnModel.ALIGNMENT_LEFT, new ACRenderer()));
+		if(loginModule.isGuestLoginEnabled()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.guests.i18nKey(), Cols.guests.ordinal(),
+					true, OrderBy.guests.name(), FlexiColumnModel.ALIGNMENT_LEFT, new GuestAccessRenderer(getLocale())));
+		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.creationDate.i18nKey(), Cols.creationDate.ordinal(),
 				true, OrderBy.creationDate.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.lastUsage.i18nKey(), Cols.lastUsage.ordinal(),

@@ -211,7 +211,8 @@ implements SortableFlexiTableDataModel<RepositoryEntry> {
 		lifecycleLabel("table.header.lifecycle.label"),
 		lifecycleSoftKey("table.header.lifecycle.softkey"),
 		lifecycleStart("table.header.lifecycle.start"),
-		lifecycleEnd("table.header.lifecycle.end");
+		lifecycleEnd("table.header.lifecycle.end"),
+		guests("table.header.guests");
 		
 		private final String i18nKey;
 		

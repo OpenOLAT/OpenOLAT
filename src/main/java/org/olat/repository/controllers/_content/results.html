@@ -7,13 +7,6 @@
 	<div class="o_warning" >${r.translate("filtered.first")}${r.render("repo.login")}${r.translate("filtered.second")}</div>
 #end
 $r.render("repotable")
-#if ($hasResults)
-	<div class="o_xsmall">$r.translate("table.header.access.desc")</div>
-	#if ($withCancel)
-		<div class="o_button_group">$r.render("cancel")<div>
-	#end
-#else
-	#if ($withCancel)
-		<div class="o_button_group">$r.render("cancel")<div>
-	#end
+#if ($withCancel)
+	<div class="o_button_group">$r.render("cancel")<div>
 #end
