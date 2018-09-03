@@ -79,4 +79,6 @@ public interface QualitySecurityCallback {
 
 	public boolean canDeleteGenerator(long numberDataCollections);
 
+	public boolean canViewAnalysis();
+
 }

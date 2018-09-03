@@ -38,6 +38,7 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.quality.QualitySecurityCallback;
 import org.olat.modules.quality.generator.ui.GeneratorListController;
+import org.olat.modules.quality.report.ui.AnalysisListController;
 
 /**
  * 
@@ -50,16 +51,19 @@ public class QualityHomeController extends BasicController implements Activateab
 	private static final String ORES_MY_TYPE = "my";
 	private static final String ORES_DATA_COLLECTIONS_TYPE = "datacollections";
 	private static final String ORES_GENERATORS_TYPE = "generators";
+	private static final String ORES_ANALYSIS_TYPE = "analysis";
 	
 	private final VelocityContainer mainVC;
 	private Link dataCollectionLink;
 	private Link executorParticipationLink;
 	private Link generatorsLink;
+	private Link analysisLink;
 	
 	private final TooledStackedPanel stackPanel;
 	private DataCollectionListController dataCollectionListCtrl;
 	private ExecutorParticipationsListController executorParticipationListCtrl;
 	private GeneratorListController generatorsListCtrl;
+	private AnalysisListController analysisListCtrl;
 	
 	private final QualitySecurityCallback secCallback;
 	
@@ -89,6 +93,13 @@ public class QualityHomeController extends BasicController implements Activateab
 			generatorsLink.setIconRightCSS("o_icon o_icon_start");
 			wrappers.add(new PanelWrapper(translate("goto.generator.title"),
 					translate("goto.generator.help"), generatorsLink));
+		}
+		
+		if (secCallback.canViewAnalysis()) {
+			analysisLink = LinkFactory.createLink("goto.analysis.link", mainVC, this);
+			analysisLink.setIconRightCSS("o_icon o_icon_start");
+			wrappers.add(new PanelWrapper(translate("goto.analysis.title"),
+					translate("goto.analysis.help"), analysisLink));
 		}
 		
 		mainVC.contextPut("panels", wrappers);
@@ -137,6 +148,8 @@ public class QualityHomeController extends BasicController implements Activateab
 			doOpenDataCollection(ureq);
 		} else if (generatorsLink == source) {
 			doOpenGenerators(ureq);
+		} else if (analysisLink == source) {
+			doOpenReports(ureq);
 		}
 	}
 
@@ -165,6 +178,15 @@ public class QualityHomeController extends BasicController implements Activateab
 		generatorsListCtrl = new GeneratorListController(ureq, bwControl, stackPanel, secCallback);
 		listenTo(generatorsListCtrl);
 		stackPanel.pushController(translate("breadcrumb.generators"), generatorsListCtrl);
+	}
+
+	private void doOpenReports(UserRequest ureq) {
+		stackPanel.popUpToRootController(ureq);
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance(ORES_ANALYSIS_TYPE, 0l);
+		WindowControl bwControl = addToHistory(ureq, ores, null);
+		analysisListCtrl = new AnalysisListController(ureq, bwControl, stackPanel, secCallback);
+		listenTo(analysisListCtrl);
+		stackPanel.pushController(translate("breadcrumb.analysis"), analysisListCtrl);
 	}
 
 	@Override

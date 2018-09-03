@@ -190,4 +190,9 @@ public class QualitySecurityCallbackImpl implements QualitySecurityCallback {
 		return canDeleteGenerators() && numberDataCollections < 1;
 	}
 
+	@Override
+	public boolean canViewAnalysis() {
+		return roles.isQualityManager() || roles.isAdministrator();
+	}
+
 }
