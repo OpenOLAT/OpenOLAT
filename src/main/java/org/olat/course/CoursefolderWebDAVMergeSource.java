@@ -184,7 +184,13 @@ class CoursefolderWebDAVMergeSource extends WebDAVMergeSource {
 			termed = true;
 		}
 		
-		if(namingAndGrouping.isUseCurriculumElementsTerms() && namingAndGrouping.hasCurriculumElements(re)) {
+		if(namingAndGrouping.isUseManaged() && re.getEntryStatus() == RepositoryEntryStatusEnum.closed) {
+			String courseTitle = getCourseTitle(re, namingAndGrouping.isPrependReference());
+			String name = namingAndGrouping.getNoTermUniqueName(courseTitle);
+			NamedContainerImpl cfContainer = new CoursefolderWebDAVNamedContainer(name, re, editor ? null : identityEnv);
+			noTermContainer.add(re, cfContainer);
+			termed = true;
+		} else if(namingAndGrouping.isUseCurriculumElementsTerms() && namingAndGrouping.hasCurriculumElements(re)) {
 			List<CurriculumElementWebDAVInfos> elements = namingAndGrouping.getCurriculumElementInfos().get(re.getKey());
 			for(CurriculumElementWebDAVInfos element:elements) {
 				String termSoftKey = getTermSoftKey(element);
@@ -238,6 +244,7 @@ class CoursefolderWebDAVMergeSource extends WebDAVMergeSource {
 	
 	private static class NoTermContainer {
 	
+		private final Set<RepositoryEntry> entriesSet = new HashSet<>();
 		private final VirtualContainer noTermContainer = new VirtualContainer("_other");
 		private final VirtualContainer finishedContainer = new VirtualContainer("_finished");
 		
@@ -306,6 +313,11 @@ class CoursefolderWebDAVMergeSource extends WebDAVMergeSource {
 		}
 		
 		public void add(RepositoryEntry entry, VFSContainer container) {
+			if(entriesSet.contains(entry)) {
+				return;
+			} else {
+				entriesSet.add(entry);
+			}
 			if(namingAndGrouping.isUseManaged()) {
 				if(StringHelper.containsNonWhitespace(entry.getManagedFlagsString())) {
 					if(entry.getEntryStatus() == RepositoryEntryStatusEnum.closed) {
