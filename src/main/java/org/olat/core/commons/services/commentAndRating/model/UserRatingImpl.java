@@ -76,7 +76,7 @@ public class UserRatingImpl implements Persistable, CreateInfo, UserRating {
 	private Date creationDate;
 	
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="lastmodified", nullable=false, insertable=true, updatable=true)
+	@Column(name="lastmodified", nullable=true, insertable=true, updatable=true)
 	private Date modifiedDate;
 
 	@Column(name="resname", nullable=false, insertable=true, updatable=false)
