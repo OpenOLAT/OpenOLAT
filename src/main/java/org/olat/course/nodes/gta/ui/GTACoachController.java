@@ -247,6 +247,15 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 			}  else {
 				TextFactory.createTextComponentFromI18nKey("submittedDocs", "coach.submitted.nofiles", getTranslator(), null, true, mainVC);			
 			}
+		} else {
+			File documentsDir;
+			if(GTAType.group.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))) {
+				documentsDir = gtaManager.getSubmitDirectory(courseEnv, gtaNode, assessedGroup);
+			} else {
+				documentsDir = gtaManager.getSubmitDirectory(courseEnv, gtaNode, assessedIdentity);
+			}
+			boolean hasDocuments = TaskHelper.hasDocuments(documentsDir);
+			mainVC.contextPut("hasUploadedDocs", hasDocuments);
 		}
 		return assignedTask;
 	}
@@ -263,8 +272,7 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 	}
 	
 	private void collect(Task assignedTask) {
-		DueDate dueDate = getSubmissionDueDate(assignedTask);
-		if(!coachCourseEnv.isCourseReadOnly() && (dueDate == null || dueDate.getDueDate() == null)) {
+		if(!coachCourseEnv.isCourseReadOnly()) {
 			collectSubmissionsLink = LinkFactory.createButton("coach.collect.task", mainVC, this);
 			collectSubmissionsLink.setUserObject(assignedTask);
 		}

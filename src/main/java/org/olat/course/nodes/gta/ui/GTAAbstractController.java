@@ -364,8 +364,13 @@ public abstract class GTAAbstractController extends BasicController implements G
 						&& date.compareTo(new Date()) < 0) {
 					//push to the next step
 					int numOfDocs = getNumberOfSubmittedDocuments();
-					assignedTask = gtaManager.submitTask(assignedTask, gtaNode, numOfDocs, Role.auto);
-					doUpdateAttempts();
+					if (numOfDocs > 0 || getDoer() != Role.coach) {
+						assignedTask = gtaManager.submitTask(assignedTask, gtaNode, numOfDocs, Role.auto);
+						doUpdateAttempts();
+						if (numOfDocs > 0) {
+							showInfo("info.task.collected");
+						}
+					}
 				}
 			} else if(dueDate.getMessageKey() != null) {
 				mainVC.contextPut("submitDueDateMsg", translate(dueDate.getMessageKey(), dueDate.getMessageArg()));

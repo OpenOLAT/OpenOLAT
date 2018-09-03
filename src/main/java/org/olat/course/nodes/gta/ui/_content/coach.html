@@ -54,7 +54,11 @@
 		#else
 			<b>$r.translate("coach.waiting.submitted.documents")</b>
 			<br />
-			$r.translate("coach.waiting.submitted.documents.description")
+			#if($hasUploadedDocs)
+				$r.translate("coach.waiting.submitted.documents.ready.description")
+			#else 
+				$r.translate("coach.waiting.submitted.documents.description")
+			#end
 		#end
 		#if($r.available("coach.collect.task") && $r.visible("coach.collect.task"))
 			<h5>$r.translate("coach.collect.confirm.title")</h5>
