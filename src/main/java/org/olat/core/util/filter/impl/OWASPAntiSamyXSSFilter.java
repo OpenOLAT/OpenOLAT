@@ -56,29 +56,40 @@ public class OWASPAntiSamyXSSFilter implements Filter {
 
 	//to be found in /_resources
 	private static final String POLICY_FILE = "antisamy-tinymce.xml";
+	private static final String WIKI_POLICY_FILE = "antisamy-wiki.xml";
 	private static boolean jUnitDebug;
 	private CleanResults cr;
 	private final int maxLength;
+	private final Variant variant;
 	private final boolean entityEncodeIntlChars;
 	
 	private static Policy tinyMcePolicy;
 	private static Policy internalionalTinyMcePolicy;
+	private static Policy wikiPolicy;
+	private static Policy internalionalWikiPolicy;
 	
 	static {
-		try {
-			String fPath = VFSManager.sanitizePath(OWASPAntiSamyXSSFilter.class.getPackage().getName());
-			fPath = fPath.replace('.', '/');
-			fPath = fPath + "/_resources/" + POLICY_FILE;
-			InputStream inStream = OWASPAntiSamyXSSFilter.class.getResourceAsStream(fPath);
+		String fPath = VFSManager.sanitizePath(OWASPAntiSamyXSSFilter.class.getPackage().getName());
+		fPath = fPath.replace('.', '/');
+		String tinyPath = fPath + "/_resources/" + POLICY_FILE;
+		try(InputStream inStream = OWASPAntiSamyXSSFilter.class.getResourceAsStream(tinyPath)) {
 			tinyMcePolicy = Policy.getInstance(inStream);
 			internalionalTinyMcePolicy = tinyMcePolicy.cloneWithDirective("entityEncodeIntlChars", "false");
+		} catch (Exception e) {
+			log.error("", e);
+		}
+		
+		String wikiPath = fPath + "/_resources/" + WIKI_POLICY_FILE;
+		try(InputStream inStream = OWASPAntiSamyXSSFilter.class.getResourceAsStream(wikiPath)) {
+			wikiPolicy = Policy.getInstance(inStream);
+			internalionalWikiPolicy = wikiPolicy.cloneWithDirective("entityEncodeIntlChars", "false");
 		} catch (Exception e) {
 			log.error("", e);
 		}
 	}
 	
 	public OWASPAntiSamyXSSFilter(){
-		this(-1, true, false);
+		this(-1, true, Variant.tinyMce, false);
 	}
 
 	/**
@@ -86,18 +97,16 @@ public class OWASPAntiSamyXSSFilter implements Filter {
 	 * @param junitDebug
 	 */
 	public OWASPAntiSamyXSSFilter(int maxLength, boolean junitDebug){
-		this(maxLength, true, junitDebug);
+		this(maxLength, true, Variant.tinyMce, junitDebug);
 	}
 	
-	public OWASPAntiSamyXSSFilter(int maxLength, boolean entityEncodeIntlChars, boolean junitDebug){
+	public OWASPAntiSamyXSSFilter(int maxLength, boolean entityEncodeIntlChars, Variant variant, boolean junitDebug){
 		OWASPAntiSamyXSSFilter.jUnitDebug = junitDebug;
+		this.variant = variant;
 		this.maxLength = maxLength;
 		this.entityEncodeIntlChars = entityEncodeIntlChars;
 	}
 	
-	/**
-	 * @see org.olat.core.util.filter.Filter#filter(java.lang.String)
-	 */
 	@Override
     public String filter(String original) {
         if (original == null) {
@@ -106,7 +115,7 @@ public class OWASPAntiSamyXSSFilter implements Filter {
         }
         String output = getCleanHTML(original);
         if (original.equals(output)) {
-//            logInfo("          filter worked correctly!", null);
+        	// works
 		} else {
 			String errMsg = getOrPrintErrorMessages();
 			if (!errMsg.equals("")) {
@@ -130,11 +139,20 @@ public class OWASPAntiSamyXSSFilter implements Filter {
 	
 	private String getCleanHTML(String original)	{
 		Policy policy;
-		if(entityEncodeIntlChars) {
-			policy = tinyMcePolicy;
+		if(variant == Variant.wiki) {
+			if(entityEncodeIntlChars) {
+				policy = wikiPolicy;
+			} else {
+				policy = internalionalWikiPolicy;
+			}
 		} else {
-			policy = internalionalTinyMcePolicy;
+			if(entityEncodeIntlChars) {
+				policy = tinyMcePolicy;
+			} else {
+				policy = internalionalTinyMcePolicy;
+			}
 		}
+		
 		if(maxLength > 0) {
 			policy = policy.cloneWithDirective("maxInputSize", Integer.toString(maxLength));
 		}
@@ -185,5 +203,11 @@ public class OWASPAntiSamyXSSFilter implements Filter {
 			}
 		}
 		return errors;
+	}
+	
+	public enum Variant {
+		tinyMce,
+		wiki
+		
 	}
 }
