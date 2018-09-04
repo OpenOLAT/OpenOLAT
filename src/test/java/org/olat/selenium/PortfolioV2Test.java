@@ -896,6 +896,7 @@ public class PortfolioV2Test extends Deployments {
 		EntriesPage trash = portfolio
 			.clickToolbarBack()
 			.clickToolbarBack()
+			.clickToolbarBack()
 			.openDeletedEntries();
 		
 		trash
@@ -912,6 +913,7 @@ public class PortfolioV2Test extends Deployments {
 			.moveEntryToTrash();
 		
 		trash = portfolio
+			.clickToolbarBack()
 			.clickToolbarBack()
 			.clickToolbarBack()
 			.openDeletedEntries();
