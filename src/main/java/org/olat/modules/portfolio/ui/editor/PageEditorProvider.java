@@ -41,4 +41,11 @@ public interface PageEditorProvider extends PageProvider {
 	
 	public void moveDownPageElement(PageElement element);
 	
+	/**
+	 * Move the specified element before the sibling element.
+	 * @param element
+	 * @param sibling The reference object
+	 */
+	public void movePageElement(PageElement element, PageElement sibling);
+	
 }

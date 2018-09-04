@@ -26,6 +26,7 @@ import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -38,6 +39,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings.Callout
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.portfolio.ui.editor.event.AddElementEvent;
 import org.olat.modules.portfolio.ui.editor.event.ChangePartEvent;
 import org.olat.modules.portfolio.ui.editor.event.ClosePartEvent;
@@ -69,14 +71,7 @@ public class PageEditorController extends BasicController {
 		super(ureq, wControl, fallbackTranslator);
 		this.provider = provider;
 		this.secCallback = secCallback;
-		// Set a fallback translator from runtime package. Important to not do it the other way round
-		// because they have same keys in the package and overwrite each other otherwise.
-		/*PackageTranslator fallbackTrans = (PackageTranslator)Util.createPackageTranslator(PageRunController.class, getLocale());
-		if (getTranslator() instanceof PackageTranslator) {
-			PackageTranslator myTrans = (PackageTranslator) getTranslator();
-			myTrans.setFallBack(fallbackTrans);
-		}*/
-		
+
 		mainVC = createVelocityContainer("page_editor");
 		for(PageElementHandler handler:provider.getAvailableHandlers()) {
 			handlerMap.put(handler.getType(), handler);
@@ -95,6 +90,13 @@ public class PageEditorController extends BasicController {
 		}
 		
 		mainVC.contextPut("addElementLinks", addElements);
+		
+		String[] jss = new String[] {
+				"js/dragula/dragula.js"
+		};
+		JSAndCSSComponent js = new JSAndCSSComponent("js", jss, null);
+		mainVC.put("js", js);
+		
 		loadModel(ureq);
 		putInitialPanel(mainVC);
 	}
@@ -220,6 +222,10 @@ public class PageEditorController extends BasicController {
 					}
 				}
 				doEditElement(selectedFragment);
+			} else if("drop_fragment".equals(event.getCommand())) {
+				String fragmentCmpId = ureq.getParameter("dragged");
+				String siblingCmpId = ureq.getParameter("sibling");
+				doMove(ureq, fragmentCmpId, siblingCmpId);
 			}
 		}
 	}
@@ -234,16 +240,16 @@ public class PageEditorController extends BasicController {
 		addAboveLink.setIconLeftCSS("o_icon o_icon-sm o_icon_element_before");
 		addAboveLink.setElementCssClass("o_sel_add_element_above");
 		addAboveLink.setUserObject(fragment);
-		addAboveLink.setVisible(provider.getCreateHandlers().size() > 0);
-		addAboveLink.setEnabled(provider.getCreateHandlers().size() > 0);
+		addAboveLink.setVisible(!provider.getCreateHandlers().isEmpty());
+		addAboveLink.setEnabled(!provider.getCreateHandlers().isEmpty());
 		fragment.setAddElementAboveLink(addAboveLink);
 
 		Link addBelowLink = LinkFactory.createLink("add.element.below", "add.element.below", getTranslator(), mainVC, this, Link.LINK);
 		addBelowLink.setIconLeftCSS("o_icon o_icon-sm o_icon_element_after");
 		addBelowLink.setElementCssClass("o_sel_add_element_below");
 		addBelowLink.setUserObject(fragment);
-		addBelowLink.setVisible(provider.getCreateHandlers().size() > 0);
-		addBelowLink.setEnabled(provider.getCreateHandlers().size() > 0);
+		addBelowLink.setVisible(!provider.getCreateHandlers().isEmpty());
+		addBelowLink.setEnabled(!provider.getCreateHandlers().isEmpty());
 		fragment.setAddElementBelowLink(addBelowLink);
 
 		Link saveLink = LinkFactory.createLink("save.and.close", "save.element", getTranslator(), mainVC, this, Link.LINK);
@@ -396,10 +402,45 @@ public class PageEditorController extends BasicController {
 		}
 	}
 	
+	private void doMove(UserRequest ureq, String fragmentCmpId, String siblingCmpId) {
+		if(!StringHelper.containsNonWhitespace(fragmentCmpId)) return;
+		
+		EditorFragment fragment = getFragmentByCmpId(fragmentCmpId);
+		if(fragment == null) return;
+		
+		EditorFragment sibling = getFragmentByCmpId(siblingCmpId);
+
+		if(fragments.remove(fragment)) {
+			int index = fragments.size();
+			PageElement siblingElement = null;
+			if(sibling != null && fragments.contains(sibling)) {
+				index = fragments.indexOf(sibling);
+				siblingElement = sibling.getPageElement();
+			}
+			fragments.add(index, fragment);
+			provider.movePageElement(fragment.getPageElement(), siblingElement);
+		}
+		mainVC.setDirty(true);
+		fireEvent(ureq, Event.CHANGED_EVENT);
+	}
+	
+	private EditorFragment getFragmentByCmpId(String cmpId) {
+		if(!StringHelper.containsNonWhitespace(cmpId)) return null;
+		
+		for(EditorFragment fragment:fragments) {
+			if(fragment.getCmpId().equals(cmpId)) {
+				return fragment;
+			}
+		}
+		return null;
+	}
+	
+	
 	private EditorFragment createFragment(UserRequest ureq, PageElement element) {
 		PageElementHandler handler = handlerMap.get(element.getType());
 		if(handler == null) {
 			logError("Cannot find an handler of type: " + element.getType(), null);
+			return null;
 		}
 		Controller editorPart = handler.getEditor(ureq, getWindowControl(), element);
 		listenTo(editorPart);
@@ -450,7 +491,7 @@ public class PageEditorController extends BasicController {
 		}
 
 		public String getComponentName() {
-			return cmpId;
+			return getCmpId();
 		}
 		
 		public Controller getEditorPart() {

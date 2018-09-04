@@ -417,6 +417,22 @@ public class PageDAO {
 		}
 	}
 	
+	public void movePart(PageBody body, PagePart part, PagePart sibling) {
+		body.getParts().size();
+		body.getParts().remove(part);
+		
+		int index;
+		if(sibling == null) {
+			index = body.getParts().size();
+		} else {
+			index = body.getParts().indexOf(sibling);
+		}	
+			
+		body.getParts().add(index, part);
+		((PageBodyImpl)body).setLastModified(new Date());
+		dbInstance.getCurrentEntityManager().merge(body);
+	}
+	
 	public List<PagePart> getParts(PageBody body) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select part from pfpagepart as part")

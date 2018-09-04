@@ -725,6 +725,13 @@ public class PageRunController extends BasicController implements TooledControll
 				portfolioService.moveDownPagePart(page, (PagePart)element);
 			}
 		}
+
+		@Override
+		public void movePageElement(PageElement element, PageElement sibling) {
+			if(element instanceof PagePart && (sibling == null || sibling instanceof PagePart)) {
+				portfolioService.movePagePart(page, (PagePart)element, (PagePart)sibling);
+			}
+		}
 	}
 	
 	public static class OtherArtefactsHandler implements PageElementHandler, InteractiveAddPageElementHandler {

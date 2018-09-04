@@ -220,5 +220,13 @@ public class EvaluationFormEditorController extends BasicController {
 				persistForm();
 			}
 		}
+
+		@Override
+		public void movePageElement(PageElement element, PageElement sibling) {
+			if(element instanceof AbstractElement && (sibling == null || sibling instanceof AbstractElement)) {
+				form.moveElement((AbstractElement)element, (AbstractElement)sibling);
+				persistForm();
+			}
+		}
 	}
 }

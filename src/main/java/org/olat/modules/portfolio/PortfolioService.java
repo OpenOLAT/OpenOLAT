@@ -552,6 +552,8 @@ public interface PortfolioService {
 	
 	public void moveDownPagePart(Page page, PagePart part);
 	
+	public void movePagePart(Page page, PagePart part, PagePart sibling);
+	
 	/**
 	 * Remove the page from the section, remove relations to the
 	 * binder and set the status to deleted.

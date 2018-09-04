@@ -975,6 +975,12 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 
 	@Override
+	public void movePagePart(Page page, PagePart part, PagePart sibling) {
+		PageBody body = pageDao.loadPageBodyByKey(page.getBody().getKey());
+		pageDao.movePart(body, part, sibling);
+	}
+
+	@Override
 	public Page removePage(Page page) {
 		return pageDao.removePage(page);
 	}	

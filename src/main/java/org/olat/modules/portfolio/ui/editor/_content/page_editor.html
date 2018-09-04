@@ -1,7 +1,7 @@
 <div class="o_pf_content_editor">
 	#foreach($fragment in $fragments)
 		#if($fragment.editMode)
-			<div class="o_page_fragment_edit">
+			<div class="o_page_fragment_edit" data-oo-page-fragment="$fragment.componentName">
 				<div class="o_page_tools_above clearfix">
 					#if($r.visible($fragment.addElementAboveLink))
 					<div class="o_page_add_above">
@@ -60,8 +60,7 @@
 	</div>
 	#end
 </div>
-
-<script type="text/javascript">
+<script>
 /* <![CDATA[ */
 jQuery(function() {
 	jQuery(".o_page_part").each(function(index, el) {
@@ -75,3 +74,26 @@ jQuery(function() {
 });
 /* ]]> */
 </script>
+<script>
+/* <![CDATA[ */ 
+jQuery(function() {
+	var container = jQuery('.o_pf_content_editor').get(0);
+	dragula([container], {
+		copy: function (el, source) {
+		    return false;
+		},
+		accepts: function (el, target) {
+			return true;
+		},
+		moves: function (el, container, handle) {
+			return handle.classList.contains('o_page_tools_dd') ;
+		}
+	}).on('drop', function(el, target, source, sibling) {
+		var draggedId = jQuery(el).data('oo-page-fragment');
+		var siblingId = jQuery(sibling).data('oo-page-fragment');
+		$r.openJavaScriptCommand("drop_fragment"), "dragged", draggedId, "sibling", siblingId);
+	});
+});
+/* ]]> */
+</script>
+
