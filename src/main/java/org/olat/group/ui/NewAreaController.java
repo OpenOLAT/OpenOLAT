@@ -29,7 +29,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -44,6 +43,7 @@ import org.olat.group.area.BGAreaManager;
 import org.olat.group.ui.area.BGAreaFormController;
 import org.olat.resource.OLATResource;
 import org.olat.util.logging.activity.LoggingResourceable;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -65,7 +65,9 @@ public class NewAreaController extends BasicController {
 	private boolean bulkMode = false;
 	private Set<BGArea> newAreas;
 	private HashSet<String> newAreaNames;
-	private final BGAreaManager areaManager;
+	
+	@Autowired
+	private BGAreaManager areaManager;
 
 	/**
 	 * 
@@ -81,8 +83,7 @@ public class NewAreaController extends BasicController {
 		this.resource = resource;
 		this.bulkMode = bulkMode;
 		//
-		areaManager = CoreSpringFactory.getImpl(BGAreaManager.class);
-		contentVC = this.createVelocityContainer("areaform");
+		contentVC = createVelocityContainer("areaform");
 		contentVC.contextPut("bulkMode", bulkMode ? Boolean.TRUE : Boolean.FALSE);
 		//
 		areaCreateController = new BGAreaFormController(ureq, wControl, null, bulkMode);
@@ -94,21 +95,12 @@ public class NewAreaController extends BasicController {
 		}
 		putInitialPanel(contentVC);
 	}
-	
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
+
 	@Override
 	protected void doDispose() {
-		// Don't dispose anything
-		
+		//
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		// Don't do anything.
@@ -120,7 +112,7 @@ public class NewAreaController extends BasicController {
 			if (event == Event.DONE_EVENT) {
 				String areaDesc = this.areaCreateController.getAreaDescription();
 				
-				Set<String> allNames = new HashSet<String>();
+				Set<String> allNames = new HashSet<>();
 				if (this.bulkMode) {
 					allNames = this.areaCreateController.getGroupNames();
 				} else {
@@ -128,8 +120,8 @@ public class NewAreaController extends BasicController {
 				}
 
 				// create bulkgroups only if there is no name which already exists. 
-				newAreas = new HashSet<BGArea>();
-				newAreaNames = new HashSet<String>();
+				newAreas = new HashSet<>();
+				newAreaNames = new HashSet<>();
 				for (String areaName : allNames) {
 					BGArea newArea = areaManager.createAndPersistBGArea(areaName, areaDesc, resource);
 					newAreas.add(newArea);
@@ -178,7 +170,7 @@ public class NewAreaController extends BasicController {
 	}
 	
 	public List<Long> getCreatedAreaKeys(){
-		List<Long> areaKeys = new ArrayList<Long>();
+		List<Long> areaKeys = new ArrayList<>();
 		for(BGArea newArea:newAreas) {
 			areaKeys.add(newArea.getKey());
 		}

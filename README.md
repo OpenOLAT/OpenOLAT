@@ -396,7 +396,7 @@ The beginning of the installation is the same as Tomcat as described above. To c
      
 #### Configuration WildFly (JBoss AS 10.1)
 
-We need Hibernate 5.2, you need to use the utorial to update the version of hibernate
+We need Hibernate 5.2, you need to use the tutorial to update the version of hibernate
 in Widlfly: http://docs.jboss.org/hibernate/orm/5.2/topical/html_single/wildfly/Wildfly.html
 
 Define a JDBC connection pool in your standalone.xml configuration with a jndi-name like:
