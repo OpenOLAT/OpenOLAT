@@ -19,7 +19,6 @@
  */
 package org.olat.modules.forms.model.jpa;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -113,9 +112,9 @@ public class RubricStatisticImpl implements RubricStatistic {
 	}
 	
 	private Long getValue(List<CalculatedLong> calculatedLongs, String identifier, int step) {
-		String subidentifier = BigDecimal.valueOf((double)step).toPlainString();
 		for (CalculatedLong calculatedLong: calculatedLongs) {
-			if (calculatedLong.getIdentifier().equals(identifier) && calculatedLong.getSubIdentifier().equals(subidentifier)) {
+			int calculatedStep = Double.valueOf(calculatedLong.getSubIdentifier()).intValue();
+			if (calculatedLong.getIdentifier().equals(identifier) && calculatedStep == step) {
 				return calculatedLong.getValue();
 			}
 		}

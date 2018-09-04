@@ -327,6 +327,11 @@ public class CurriculumServiceImpl implements CurriculumService {
 	}
 
 	@Override
+	public List<CurriculumElement> getCurriculumElementsByCurriculums(Collection<? extends CurriculumRef> curriculumRefs) {
+		return curriculumElementDao.loadElementsByCurriculums(curriculumRefs);
+	}
+
+	@Override
 	public List<CurriculumElement> searchCurriculumElements(String externalId, String identifier, Long key) {
 		return curriculumElementDao.searchElements(externalId, identifier, key);
 	}

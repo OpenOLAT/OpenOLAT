@@ -30,7 +30,7 @@ import org.olat.modules.quality.analysis.EvaluationFormView;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class AnalysisRow {
+public class AnalysisRow implements EvaluationFormView {
 	
 	private final EvaluationFormView formView;
 	private final FormLink openLink;
@@ -39,31 +39,48 @@ public class AnalysisRow {
 		this.formView = formView;
 		this.openLink = openLink;
 	}
+
+	@Override
+	public String getResourceableTypeName() {
+		return formView.getResourceableTypeName();
+	}
+
+	@Override
+	public Long getResourceableId() {
+		return formView.getResourceableId();
+	}
 	
+	@Override
 	public Long getFormEntryKey() {
 		return formView.getFormEntryKey();
 	}
 	
+	@Override
 	public Date getFormCreatedDate() {
 		return formView.getFormCreatedDate();
 	}
 
+	@Override
 	public String getFormTitle() {
 		return formView.getFormTitle();
 	}
 
+	@Override
 	public Long getNumberDataCollections() {
 		return formView.getNumberDataCollections();
 	}
 
+	@Override
 	public Date getSoonestDataCollectionDate() {
 		return formView.getSoonestDataCollectionDate();
 	}
 
+	@Override
 	public Date getLatestDataCollectionDate() {
 		return formView.getLatestDataCollectionDate();
 	}
 
+	@Override
 	public Long getNumberParticipationsDone() {
 		return formView.getNumberParticipationsDone();
 	}

@@ -27,10 +27,12 @@ import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
@@ -38,6 +40,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -75,6 +78,7 @@ public class AnalysisListController extends FormBasicController implements Flexi
 	private QualityAnalysisService analysisService;
 	@Autowired
 	private OrganisationService organisationService;
+	private AnalysisSegmentsController analysisCtrl;
 	
 	public AnalysisListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			QualitySecurityCallback secCallback) {
@@ -137,7 +141,7 @@ public class AnalysisListController extends FormBasicController implements Flexi
 	
 	private AnalysisRow forgeRow(EvaluationFormView form) {
 		String openLinkId = "open_" + (++counter);
-		FormLink openLink = uifactory.addFormLink(openLinkId, "analysis.table.open", "analysis.table.open", null, flc, Link.LINK);
+		FormLink openLink = uifactory.addFormLink(openLinkId, CMD_OPEN, "analysis.table.open", null, flc, Link.LINK);
 		openLink.setElementCssClass("o_qual_ana_open_link");
 		openLink.setIconRightCSS("o_icon o_icon_start");
 
@@ -154,6 +158,34 @@ public class AnalysisListController extends FormBasicController implements Flexi
 			components.add(elRow.getOpenLink().getComponent());
 		}
 		return components;
+	}
+	
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source == tableEl && event instanceof SelectionEvent) {
+			SelectionEvent se = (SelectionEvent)event;
+			String cmd = se.getCommand();
+			AnalysisRow row = dataModel.getObject(se.getIndex());
+			if (CMD_OPEN.equals(cmd)) {
+				doOpenAnalysis(ureq, row);
+			}
+		} else if (source instanceof FormLink) {
+			FormLink link = (FormLink)source;
+			if(CMD_OPEN.equals(link.getCmd())) {
+				doOpenAnalysis(ureq, (AnalysisRow)link.getUserObject());
+			}
+		}
+		
+		super.formInnerEvent(ureq, source, event);
+	}
+
+	private void doOpenAnalysis(UserRequest ureq, EvaluationFormView formView) {
+		WindowControl bwControl = addToHistory(ureq, formView, null);
+		analysisCtrl = new AnalysisSegmentsController(ureq, bwControl, secCallback, stackPanel, formView);
+		listenTo(analysisCtrl);
+		String title = formView.getFormTitle();
+		stackPanel.pushController(title, analysisCtrl);
+		analysisCtrl.activate(ureq, null, null);
 	}
 
 	@Override

@@ -153,13 +153,7 @@ public class QualityUIFactory {
 		if (StringHelper.containsNonWhitespace(curriculumKey)) {
 			try {
 				Long key = Long.valueOf(curriculumKey);
-				return new CurriculumRef() {
-					
-					@Override
-					public Long getKey() {
-						return key;
-					}
-				};
+				return () -> key;
 			} catch (Exception e) {
 				//
 			}
@@ -214,13 +208,7 @@ public class QualityUIFactory {
 		if (StringHelper.containsNonWhitespace(curriculumElementKey)) {
 			try {
 				Long key = Long.valueOf(curriculumElementKey);
-				return new CurriculumElementRef() {
-					
-					@Override
-					public Long getKey() {
-						return key;
-					}
-				};
+				return () -> key;
 			} catch (Exception e) {
 				//
 			}
@@ -271,17 +259,11 @@ public class QualityUIFactory {
 		return String.valueOf(organisation.getKey());
 	}
 
-	static OrganisationRef getOrganisationRef(String organisationKey) {
+	public static OrganisationRef getOrganisationRef(String organisationKey) {
 		if (StringHelper.containsNonWhitespace(organisationKey)) {
 			try {
 				Long key = Long.valueOf(organisationKey);
-				return new OrganisationRef() {
-					
-					@Override
-					public Long getKey() {
-						return key;
-					}
-				};
+				return () -> key;
 			} catch (Exception e) {
 				//
 			}

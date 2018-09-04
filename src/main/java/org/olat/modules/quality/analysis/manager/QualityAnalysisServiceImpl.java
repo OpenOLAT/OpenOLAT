@@ -19,8 +19,14 @@
  */
 package org.olat.modules.quality.analysis.manager;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.core.id.Organisation;
+import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.quality.analysis.AnalysisSearchParameter;
 import org.olat.modules.quality.analysis.EvaluationFormView;
 import org.olat.modules.quality.analysis.EvaluationFormViewSearchParams;
 import org.olat.modules.quality.analysis.QualityAnalysisService;
@@ -37,10 +43,51 @@ import org.springframework.stereotype.Service;
 public class QualityAnalysisServiceImpl implements QualityAnalysisService {
 
 	@Autowired
+	private AnalysisFilterDAO filterDao;
+	@Autowired
 	private EvaluationFormDAO evaluationFromDao;
+	@Autowired
+	private CurriculumService curriculumService;
 
 	@Override
 	public List<EvaluationFormView> loadEvaluationForms(EvaluationFormViewSearchParams searchParams) {
 		return evaluationFromDao.load(searchParams);
+	}
+
+	@Override
+	public List<Organisation> loadFilterOrganisations(AnalysisSearchParameter searchParams) {
+		return filterDao.loadOrganisations(searchParams);
+	}
+
+	@Override
+	public List<Curriculum> loadFilterCurriculums(AnalysisSearchParameter searchParams) {
+		return filterDao.loadCurriculums(searchParams);
+	}
+
+	@Override
+	public List<CurriculumElement> loadFilterCurriculumElements(AnalysisSearchParameter searchParams) {
+		if (searchParams == null || searchParams.getCurriculumRefs() == null) {
+			return new ArrayList<>(0);
+		}
+
+		List<CurriculumElement> elementsOfCurriculums = curriculumService
+				.getCurriculumElementsByCurriculums(searchParams.getCurriculumRefs());
+		List<String> pathes = filterDao.loadCurriculumElementPathes(searchParams);
+		elementsOfCurriculums.removeIf(e -> isUnusedLeaf(e, pathes));
+		return elementsOfCurriculums;
+	}
+
+	private boolean isUnusedLeaf(CurriculumElement e, List<String> pathsOfContexts) {
+		for (String path : pathsOfContexts) {
+			if (path.contains(e.getMaterializedPathKeys())) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	@Override
+	public Long loadFilterDataCollectionCount(AnalysisSearchParameter searchParams) {
+		return filterDao.loadFilterDataCollectionCount(searchParams);
 	}
 }

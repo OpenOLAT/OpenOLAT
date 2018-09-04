@@ -19,7 +19,10 @@
  */
 package org.olat.modules.curriculum.manager;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -34,6 +37,7 @@ import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementMembership;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumElementType;
+import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementImpl;
@@ -171,6 +175,26 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 		List<CurriculumElement> relations = curriculumElementDao.loadElements(entry);
 		Assert.assertEquals(1, relations.size());
 		Assert.assertEquals(element, relations.get(0));
+	}
+	
+	@Test
+	public void loadElementsByCurriculums() {
+		Curriculum curriculum1 = curriculumDao.createAndPersist("", "", null, null);
+		CurriculumElement parentElement = curriculumElementDao.createCurriculumElement("", "", null, null,  null, null, curriculum1);
+		CurriculumElement element1 = curriculumElementDao.createCurriculumElement("", "", null, null, parentElement, null, curriculum1);
+		CurriculumElement element2 = curriculumElementDao.createCurriculumElement("", "", null, null, parentElement, null, curriculum1);
+		Curriculum curriculum2 = curriculumDao.createAndPersist("", "", null, null);
+		CurriculumElement parentElement2 = curriculumElementDao.createCurriculumElement("", "", null, null,  null, null, curriculum2);
+		Curriculum otherCurriculum = curriculumDao.createAndPersist("", "", null, null);
+		CurriculumElement otherElement = curriculumElementDao.createCurriculumElement("", "", null, null,  null, null, otherCurriculum);
+		dbInstance.commitAndCloseSession();
+		
+		Collection<CurriculumRef> curriculumRefs = Arrays.asList(curriculum1, curriculum2);
+		 List<CurriculumElement> elements = curriculumElementDao.loadElementsByCurriculums(curriculumRefs);
+		
+		assertThat(elements)
+				.containsExactlyInAnyOrder(parentElement, element1, element2, parentElement2)
+				.doesNotContain(otherElement);
 	}
 
 	@Test

@@ -21,14 +21,18 @@ package org.olat.modules.quality.analysis;
 
 import java.util.Date;
 
+import org.olat.core.id.OLATResourceable;
+
 /**
  * 
  * Initial date: 03.09.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface EvaluationFormView {
+public interface EvaluationFormView extends OLATResourceable {
 	
+	public String RESOURCEABLE_TYPE = "form";
+
 	public Long getFormEntryKey();
 	
 	public Date getFormCreatedDate();

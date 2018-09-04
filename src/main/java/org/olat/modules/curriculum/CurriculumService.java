@@ -196,7 +196,7 @@ public interface CurriculumService {
 	
 	
 	public CurriculumElement getCurriculumElement(CurriculumElementRef element);
-	
+
 	public List<CurriculumElement> getCurriculumElements(Collection<CurriculumElementRef> elementRefs);
 	
 	public void deleteCurriculumElement(CurriculumElementRef element);
@@ -209,6 +209,8 @@ public interface CurriculumService {
 	 * @return A list of curriculum elements
 	 */
 	public List<CurriculumElement> getCurriculumElements(CurriculumRef curriculum, CurriculumElementStatus[] status);
+	
+	public List<CurriculumElement> getCurriculumElementsByCurriculums(Collection<? extends CurriculumRef> curriculumRefs);
 	
 	/**
 	 * Return all the elements of a curriculum, flat, with additional informations

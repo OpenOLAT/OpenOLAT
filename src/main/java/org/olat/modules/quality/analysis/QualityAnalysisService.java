@@ -21,6 +21,10 @@ package org.olat.modules.quality.analysis;
 
 import java.util.List;
 
+import org.olat.core.id.Organisation;
+import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumElement;
+
 /**
  * 
  * Initial date: 03.09.2018<br>
@@ -30,5 +34,13 @@ import java.util.List;
 public interface QualityAnalysisService {
 	
 	public List<EvaluationFormView> loadEvaluationForms(EvaluationFormViewSearchParams searchParams);
+	
+	public List<Organisation> loadFilterOrganisations(AnalysisSearchParameter searchParams);
+
+	public List<Curriculum> loadFilterCurriculums(AnalysisSearchParameter searchParams);
+
+	public List<CurriculumElement> loadFilterCurriculumElements(AnalysisSearchParameter searchParams);
+
+	public Long loadFilterDataCollectionCount(AnalysisSearchParameter searchParams);
 
 }

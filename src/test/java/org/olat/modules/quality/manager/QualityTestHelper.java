@@ -215,11 +215,11 @@ public class QualityTestHelper {
 		return organisationService.createOrganisation(UUID.randomUUID().toString(), UUID.randomUUID().toString(), null, null, null);
 	}
 
-	Curriculum createCurriculum() {
+	public Curriculum createCurriculum() {
 		return curriculumService.createCurriculum("i", "d", "d", createOrganisation());
 	}
 
-	CurriculumElement createCurriculumElement() {
+	public CurriculumElement createCurriculumElement() {
 		return curriculumService.createCurriculumElement("i", "d", null, null, null, null, createCurriculum());
 	}
 

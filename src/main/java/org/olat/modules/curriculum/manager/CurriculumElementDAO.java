@@ -19,6 +19,8 @@
  */
 package org.olat.modules.curriculum.manager;
 
+import static java.util.stream.Collectors.toList;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -251,6 +253,21 @@ public class CurriculumElementDAO {
 				.setParameter("entryKey", entry.getKey())
 				.getResultList();
 	}
+
+	public List<CurriculumElement> loadElementsByCurriculums(Collection<? extends CurriculumRef> curriculumRefs) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select el");
+		sb.append("  from curriculumelement el");
+		sb.append("       inner join fetch el.curriculum curriculum");
+		sb.append("       left join el.parent parentEl");
+		sb.and().append("el.curriculum.key in :curriculumKeys");
+		
+		List<Long> curriculumKeys = curriculumRefs.stream().map(CurriculumRef::getKey).collect(toList());
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), CurriculumElement.class)
+				.setParameter("curriculumKeys", curriculumKeys)
+				.getResultList();
+	}
 	
 	public List<CurriculumElement> searchElements(String externalId, String identifier, Long key) {
 		StringBuilder sb = new StringBuilder(256);
@@ -474,4 +491,5 @@ public class CurriculumElementDAO {
 			return len1 - len2;
 		}
 	}
+
 }

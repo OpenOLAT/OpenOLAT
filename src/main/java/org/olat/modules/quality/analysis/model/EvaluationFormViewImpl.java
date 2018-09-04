@@ -51,6 +51,16 @@ public class EvaluationFormViewImpl implements EvaluationFormView {
 	}
 
 	@Override
+	public String getResourceableTypeName() {
+		return EvaluationFormView.RESOURCEABLE_TYPE;
+	}
+
+	@Override
+	public Long getResourceableId() {
+		return formEntryKey;
+	}
+
+	@Override
 	public Long getFormEntryKey() {
 		return formEntryKey;
 	}
