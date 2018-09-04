@@ -62,13 +62,13 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<targetJdk>1.8</targetJdk>
-		<org.springframework.version>5.0.7.RELEASE</org.springframework.version>
-		<org.hibernate.version>5.3.3.Final</org.hibernate.version>
+		<org.springframework.version>5.0.8.RELEASE</org.springframework.version>
+		<org.hibernate.version>5.3.6.Final</org.hibernate.version>
 		<com.sun.jersey.version>1.19.4</com.sun.jersey.version>
 		<apache.cxf>3.2.4</apache.cxf>
 		<jackson.version>2.9.5</jackson.version>
 		<org.mysql.version>5.1.46</org.mysql.version>
-		<org.postgresql.version>42.2.4</org.postgresql.version>
+		<org.postgresql.version>42.2.5</org.postgresql.version>
 		<org.infinispan.version>9.2.3.Final</org.infinispan.version>
 		<lucene.version>4.8.0</lucene.version>
 		<version.selenium>3.13.0</version.selenium>
