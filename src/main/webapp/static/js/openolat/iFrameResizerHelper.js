@@ -3,12 +3,9 @@ var debugIFRH = false;
 
 function registerIFrame(iFrameId) {
 	// Activate the iFrameResizer script for the iFrame.
-	// Set initially scrolling to true as fallback if the site in the iFrame
-	// has not loaded the contentWindow script.
 	jQuery("#" + iFrameId).iFrameResize({
 		checkOrigin: false,
 		warningTimeout: 0,
-		scrolling: "true",
 		initCallback: function(iframe) {
 			if (debugIFRH) console.log("iFrame %s registered.", iFrameId);
 			iframe.style.overflow = "hidden";
