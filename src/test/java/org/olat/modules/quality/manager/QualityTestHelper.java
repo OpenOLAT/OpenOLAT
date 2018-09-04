@@ -169,7 +169,7 @@ public class QualityTestHelper {
 		return calendar.getTime();
 	}
 	
-	QualityDataCollection updateStatus(QualityDataCollection dataCollection, QualityDataCollectionStatus status) {
+	public QualityDataCollection updateStatus(QualityDataCollection dataCollection, QualityDataCollectionStatus status) {
 		dataCollection.setStatus(status);
 		return qualityService.updateDataCollection(dataCollection);
 	}
