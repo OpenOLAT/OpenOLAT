@@ -477,6 +477,27 @@
 			width: $o-portfolio-editor-border-width;
 			height: 100%;
 			background: $o-portfolio-editor-border-color;
+			
+			/* d&d handle: dotted surface */
+			&:before {
+				content: ' ';
+				width: $o-portfolio-editor-border-width;
+				height: 100%;
+				position: absolute;
+				left: 0;
+				top: 0;
+				border: 3px $o-portfolio-editor-border-color solid;
+				border-bottom: ($o-portfolio-editor-border-width + 3px) $o-portfolio-editor-border-color solid;
+				
+				background-image: -webkit-repeating-radial-gradient(center center, rgb(255,255,255), rgb(255,255,255) 1px, transparent 1px, transparent 100%);
+				background-image: -moz-repeating-radial-gradient(center center, rgb(255,255,255), rgb(255,255,255) 1px, transparent 1px, transparent 100%);
+				background-image: -ms-repeating-radial-gradient(center center, rgb(255,255,255), rgb(255,255,255) 1px, transparent 1px, transparent 100%);
+				background-image: repeating-radial-gradient(center center, rgb(255,255,255), rgb(255,255,255) 1px, transparent 1px, transparent 100%);
+				-webkit-background-size: 3px 3px;
+				-moz-background-size: 3px 3px;
+				background-size: 3px 3px;
+			}
+			
 			a {				
 				position: absolute;
 				display: inline-block;
@@ -485,6 +506,7 @@
 				line-height: $o-portfolio-editor-border-width;
 				text-align: center;
 				vertical-align: middle;
+				background: $o-portfolio-editor-border-color;
 
 				color: #fff;
 				&:hover {
