@@ -37,8 +37,8 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.quality.QualitySecurityCallback;
+import org.olat.modules.quality.analysis.ui.AnalysisListController;
 import org.olat.modules.quality.generator.ui.GeneratorListController;
-import org.olat.modules.quality.report.ui.AnalysisListController;
 
 /**
  * 
@@ -134,6 +134,7 @@ public class QualityHomeController extends BasicController implements Activateab
 		} else if (canOnlyExecute()) {
 			doOpenUserParticipations(ureq);
 		}
+		//TODO uh activate analysis
 	}
 
 	private boolean canOnlyExecute() {
