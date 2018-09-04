@@ -32,15 +32,17 @@ import org.olat.modules.quality.analysis.EvaluationFormView;
 public class EvaluationFormViewImpl implements EvaluationFormView {
 
 	private final Long formEntryKey;
+	private final Date formCreatedDate;
 	private final String formTitle;
 	private final Long numberDataCollections;
 	private final Date soonestDataCollectionDate;
 	private final Date latestDataCollectionDate;
 	private final Long numberParticipationsDone;
 	
-	public EvaluationFormViewImpl(Long formEntryKey, String formTitle, Long numberDataCollections,
+	public EvaluationFormViewImpl(Long formEntryKey, Date formCreatedDate, String formTitle, Long numberDataCollections,
 			Date soonestDataCollectionDate, Date latestDataCollectionDate, Long numberParticipationsDone) {
 		this.formEntryKey = formEntryKey;
+		this.formCreatedDate = formCreatedDate;
 		this.formTitle = formTitle;
 		this.numberDataCollections = numberDataCollections;
 		this.soonestDataCollectionDate = soonestDataCollectionDate;
@@ -51,6 +53,11 @@ public class EvaluationFormViewImpl implements EvaluationFormView {
 	@Override
 	public Long getFormEntryKey() {
 		return formEntryKey;
+	}
+
+	@Override
+	public Date getFormCreatedDate() {
+		return formCreatedDate;
 	}
 
 	@Override

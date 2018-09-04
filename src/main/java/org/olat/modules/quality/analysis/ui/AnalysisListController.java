@@ -26,14 +26,21 @@ import java.util.List;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Organisation;
@@ -50,11 +57,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class AnalysisListController extends FormBasicController {
+public class AnalysisListController extends FormBasicController implements FlexiTableComponentDelegate {
 
 	private static final String CMD_OPEN = "open";
-	private static final Comparator<? super EvaluationFormView> SOONEST_DESC = 
-			(f1, f2) -> f2.getSoonestDataCollectionDate().compareTo(f1.getSoonestDataCollectionDate());
+	private static final Comparator<? super EvaluationFormView> CREATED_DESC = 
+			(f1, f2) -> f2.getFormCreatedDate().compareTo(f1.getFormCreatedDate());
 	
 	private final TooledStackedPanel stackPanel;
 	private final QualitySecurityCallback secCallback;
@@ -62,6 +69,7 @@ public class AnalysisListController extends FormBasicController {
 	private AnalysisDataModel dataModel;
 	
 	private final List<Organisation> organisations;
+	private int counter;
 
 	@Autowired
 	private QualityAnalysisService analysisService;
@@ -70,7 +78,7 @@ public class AnalysisListController extends FormBasicController {
 	
 	public AnalysisListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			QualitySecurityCallback secCallback) {
-		super(ureq, wControl, LAYOUT_BAREBONE);
+		super(ureq, wControl, "analysis_list");
 		this.stackPanel = stackPanel;
 		this.secCallback = secCallback;
 		this.organisations = organisationService.getOrganisations(getIdentity(), ureq.getUserSession().getRoles(),
@@ -82,6 +90,7 @@ public class AnalysisListController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AnalysisCols.formTitle, CMD_OPEN));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AnalysisCols.formCreated));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AnalysisCols.soonest));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AnalysisCols.latest));
 		DefaultFlexiColumnModel numDataCollectionsColumn = new DefaultFlexiColumnModel(AnalysisCols.numberDataCollections);
@@ -94,9 +103,21 @@ public class AnalysisListController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(numParticipationsColumn);
 		
 		dataModel = new AnalysisDataModel(columnsModel, getLocale());
-		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
+		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 8, false, getTranslator(), formLayout);
+		tableEl.setAvailableRendererTypes(FlexiTableRendererType.custom, FlexiTableRendererType.classic);
+		tableEl.setRendererType(FlexiTableRendererType.custom);
+		tableEl.setElementCssClass("o_qual_ana_table");
+		tableEl.setSearchEnabled(false);
+		tableEl.setCustomizeColumns(false);
+		tableEl.setNumOfRowsEnabled(true);
 		tableEl.setAndLoadPersistedPreferences(ureq, "quality-analysis");
 		tableEl.setEmtpyTableMessageKey("analysis.table.empty");
+		
+		VelocityContainer row = createVelocityContainer("analysis_row");
+		row.setDomReplacementWrapperRequired(false); // sets its own DOM id in velocity container
+		tableEl.setRowRenderer(row, this);
+		tableEl.setCssDelegate(new AnalysisCssDelegate());
+		
 		loadModel();
 	}
 	
@@ -104,14 +125,35 @@ public class AnalysisListController extends FormBasicController {
 		EvaluationFormViewSearchParams searchParams = new EvaluationFormViewSearchParams();
 		searchParams.setOrganisationRefs(organisations);
 		List<EvaluationFormView> forms = analysisService.loadEvaluationForms(searchParams);
-		forms.sort(SOONEST_DESC);
+		forms.sort(CREATED_DESC);
 		List<AnalysisRow> rows = new ArrayList<>(forms.size());
 		for (EvaluationFormView form: forms) {
-			AnalysisRow row = new AnalysisRow(form);
+			AnalysisRow row = forgeRow(form);
 			rows.add(row);
 		}
 		dataModel.setObjects(rows);
 		tableEl.reset(true, true, true);
+	}
+	
+	private AnalysisRow forgeRow(EvaluationFormView form) {
+		String openLinkId = "open_" + (++counter);
+		FormLink openLink = uifactory.addFormLink(openLinkId, "analysis.table.open", "analysis.table.open", null, flc, Link.LINK);
+		openLink.setElementCssClass("o_qual_ana_open_link");
+		openLink.setIconRightCSS("o_icon o_icon_start");
+
+		AnalysisRow row = new AnalysisRow(form, openLink);
+		openLink.setUserObject(row);
+		return row;
+	}
+
+	@Override
+	public Iterable<Component> getComponents(int row, Object rowObject) {
+		AnalysisRow elRow = dataModel.getObject(row);
+		List<Component> components = new ArrayList<>(1);
+		if (elRow.getOpenLink() != null) {
+			components.add(elRow.getOpenLink().getComponent());
+		}
+		return components;
 	}
 
 	@Override
@@ -123,6 +165,13 @@ public class AnalysisListController extends FormBasicController {
 	protected void doDispose() {
 		if (stackPanel != null) {
 			stackPanel.removeListener(this);
+		}
+	}
+	
+	private static class AnalysisCssDelegate extends DefaultFlexiTableCssDelegate {
+		@Override
+		public String getRowCssClass(FlexiTableRendererType type, int pos) {
+			return "o_qual_ana_row";
 		}
 	}
 

@@ -21,6 +21,7 @@ package org.olat.modules.quality.analysis.ui;
 
 import java.util.Date;
 
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.modules.quality.analysis.EvaluationFormView;
 
 /**
@@ -32,13 +33,19 @@ import org.olat.modules.quality.analysis.EvaluationFormView;
 public class AnalysisRow {
 	
 	private final EvaluationFormView formView;
+	private final FormLink openLink;
 
-	public AnalysisRow(EvaluationFormView formView) {
+	public AnalysisRow(EvaluationFormView formView, FormLink openLink) {
 		this.formView = formView;
+		this.openLink = openLink;
 	}
 	
 	public Long getFormEntryKey() {
 		return formView.getFormEntryKey();
+	}
+	
+	public Date getFormCreatedDate() {
+		return formView.getFormCreatedDate();
 	}
 
 	public String getFormTitle() {
@@ -59,6 +66,10 @@ public class AnalysisRow {
 
 	public Long getNumberParticipationsDone() {
 		return formView.getNumberParticipationsDone();
+	}
+
+	public FormLink getOpenLink() {
+		return openLink;
 	}
 	
 }

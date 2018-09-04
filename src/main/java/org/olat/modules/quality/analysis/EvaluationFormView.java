@@ -31,6 +31,8 @@ public interface EvaluationFormView {
 	
 	public Long getFormEntryKey();
 	
+	public Date getFormCreatedDate();
+	
 	public String getFormTitle();
 	
 	public Long getNumberDataCollections();

@@ -1,0 +1,17 @@
+<div class="col-sm-6">
+	<div class="panel panel-default">
+		<div class="panel-heading">
+			<h4 class="panel-title">$r.escapeHtml($row.formTitle)</h4>
+		</div>
+		<div class="panel-body">
+			<p class="text-muted">$r.translate("analysis.table.form.created.on", $r.formatDate($row.FormCreatedDate))</p>
+			<ul class="list-unstyled">
+				<li><span>$r.translate("analysis.table.data.collections.soonest"): $r.formatDate($row.soonestDataCollectionDate)</span></li>
+				<li><span>$r.translate("analysis.table.data.collections.latest"): $r.formatDate($row.latestDataCollectionDate)</span></li>
+				<li><span>$r.translate("analysis.table.data.collections.number"): $row.numberDataCollections</span></li>
+				<li><span>$r.translate("analysis.table.participations.number"): $row.numberParticipationsDone</span></li>
+			</ul>
+			<div class="pull-right">$r.render($row.openLink)</div>	
+		</div>
+	</div>
+</div>
