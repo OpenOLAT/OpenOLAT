@@ -68,7 +68,7 @@ public class TeacherRollCallDataModel extends DefaultFlexiTableDataModel<Teacher
 				case status: return row.getRollCallStatusEl();
 				case authorizedAbsence: return row.getAuthorizedAbsenceCont();
 				case comment: return row.getCommentEl();
-				case all: return secCallback.canEditAbsences();
+				case all: return row.getAllLink();
 				default: return null;
 			}
 		} else if(col < TeacherRollCallController.CHECKBOX_OFFSET) {

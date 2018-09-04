@@ -39,13 +39,10 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -95,7 +92,9 @@ public class TeacherRollCallController extends FormBasicController {
 	private FlexiTableElement tableEl;
 	private TeacherRollCallDataModel tableModel;
 	private FormSubmit quickSaveButton;
-	private FormLink reopenButton, cancelLectureBlockButton, closeLectureBlocksButton;
+	private FormLink reopenButton;
+	private FormLink cancelLectureBlockButton;
+	private FormLink closeLectureBlocksButton;
 	
 	private ReasonController reasonCtrl;
 	private CloseableModalController cmc;
@@ -170,11 +169,11 @@ public class TeacherRollCallController extends FormBasicController {
 			String endTime = formatter.formatTimeShort(lectureBlock.getEndDate());
 			
 			String[] args = new String[] {
-					lectureBlock.getTitle(),	// {0}	
-					sb.toString(),				// {1}
-					date,						// {2}
-					startTime,					// {3}
-					endTime						// {4}
+					lectureBlock.getTitle(),	// 0	
+					sb.toString(),				// 1
+					date,						// 2
+					startTime,					// 3
+					endTime						// 4
 			};
 		
 			layoutCont.contextPut("date", date);
@@ -214,9 +213,7 @@ public class TeacherRollCallController extends FormBasicController {
 			columnsModel.addFlexiColumnModel(col);
 			colPos++;
 			
-			if(!options.hasDefaultOrderBy()) {
-				options.setDefaultOrderBy(new SortKey(propName, true));
-			} else if(UserConstants.LASTNAME.equals(propName)) {
+			if(!options.hasDefaultOrderBy() || UserConstants.LASTNAME.equals(propName)) {
 				options.setDefaultOrderBy(new SortKey(propName, true));
 			}
 		}
@@ -231,9 +228,7 @@ public class TeacherRollCallController extends FormBasicController {
 			}
 			
 			//all button
-			DefaultFlexiColumnModel allCol = new DefaultFlexiColumnModel("all",
-					RollCols.all.ordinal(), "all",
-					new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("all"), "all", null, null, translate("all.desc")), null));
+			DefaultFlexiColumnModel allCol = new DefaultFlexiColumnModel(RollCols.all);
 			allCol.setAlwaysVisible(true);
 			columnsModel.addFlexiColumnModel(allCol);
 			if(secCallback.canViewAuthorizedAbsences() || secCallback.canEditAuthorizedAbsences()) {
@@ -371,6 +366,14 @@ public class TeacherRollCallController extends FormBasicController {
 			row.setAuthorizedAbsenceCont(absenceCont);
 			absenceCont.contextPut("row", row);
 		}
+		
+		if(secCallback.canEditAbsences()) {
+			FormLink allLink = uifactory.addFormLink("all_".concat(Integer.toString(++counter)), "all", null, flc, Link.LINK);
+			allLink.setTitle("all.desc");
+			allLink.setDomReplacementWrapperRequired(false);
+			allLink.setUserObject(row);
+			row.setAllLink(allLink);
+		}
 
 		String comment = rollCall == null ? "" : rollCall.getComment();
 		String commentId = "comment_".concat(Integer.toString(++counter));
@@ -439,7 +442,7 @@ public class TeacherRollCallController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 
 		for(int i=tableModel.getRowCount(); i-->0; ) {
 			TeacherRollCallRow row = tableModel.getObject(i);
@@ -459,21 +462,12 @@ public class TeacherRollCallController extends FormBasicController {
 			}
 		}
 
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(source == tableEl) {
-			if(event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
-				String cmd = se.getCommand();
-				TeacherRollCallRow row = tableModel.getObject(se.getIndex());
-				if("all".equals(cmd)) {
-					doCheckAllRow(row);
-				}
-			}
-		} else if(source instanceof MultipleSelectionElement) {
+		if(source instanceof MultipleSelectionElement) {
 			MultipleSelectionElement check = (MultipleSelectionElement)source;
 			TeacherRollCallRow row = (TeacherRollCallRow)check.getUserObject();
 			if(row.getAuthorizedAbsence() == check) {
@@ -497,9 +491,13 @@ public class TeacherRollCallController extends FormBasicController {
 		} else if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			String cmd = link.getCmd();
-			if(cmd != null && cmd.startsWith("abs_reason_")) {
-				TeacherRollCallRow row = (TeacherRollCallRow)link.getUserObject();
-				doCalloutReasonAbsence(ureq, link.getFormDispatchId(), row);
+			if(cmd != null) {
+				if(cmd.startsWith("abs_reason_")) {
+					TeacherRollCallRow row = (TeacherRollCallRow)link.getUserObject();
+					doCalloutReasonAbsence(ureq, link.getFormDispatchId(), row);
+				} else if(cmd.startsWith("all_")) {
+					doCheckAllRow((TeacherRollCallRow)link.getUserObject());
+				}
 			}
 		}
 		super.formInnerEvent(ureq, source, event);

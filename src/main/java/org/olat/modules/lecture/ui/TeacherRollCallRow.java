@@ -41,6 +41,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
 public class TeacherRollCallRow extends UserPropertiesRow {
 	
 	private Identity identity;
+	private FormLink allLink;
 	private FormLink reasonLink;
 	private TextElement commentEl;
 	private LectureBlockRollCall rollCall;
@@ -99,6 +100,14 @@ public class TeacherRollCallRow extends UserPropertiesRow {
 
 	public void setAuthorizedAbsence(MultipleSelectionElement authorizedAbsence) {
 		this.authorizedAbsence = authorizedAbsence;
+	}
+
+	public FormLink getAllLink() {
+		return allLink;
+	}
+
+	public void setAllLink(FormLink allLink) {
+		this.allLink = allLink;
 	}
 
 	public FormLink getReasonLink() {
