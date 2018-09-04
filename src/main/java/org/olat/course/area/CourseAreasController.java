@@ -61,6 +61,7 @@ public class CourseAreasController extends MainLayoutBasicController {
 	private static final String TABLE_ACTION_DELETE = "tbl_del";
 	
 	private final StackedPanel mainPanel;
+	
 	private final Link createAreaLink;
 	private final VelocityContainer mainVC;
 	private final TableController tableCtrl;
@@ -77,7 +78,6 @@ public class CourseAreasController extends MainLayoutBasicController {
 	
 	public CourseAreasController(UserRequest ureq, WindowControl wControl, OLATResource resource, boolean readOnly) {
 		super(ureq, wControl);
-		
 		this.resource = resource;
 
 		Translator resourceTrans = Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator());
@@ -188,10 +188,4 @@ public class CourseAreasController extends MainLayoutBasicController {
 		listenTo(editController);
 		mainPanel.pushContent(editController.getInitialComponent());
 	}
-	
-	
-
-
-
-	
 }

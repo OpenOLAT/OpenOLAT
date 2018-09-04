@@ -25,9 +25,9 @@
 
 package org.olat.group.ui.area;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -41,6 +41,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.GroupLoggingAction;
@@ -50,6 +51,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
 import org.olat.util.logging.activity.LoggingResourceable;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<BR>
@@ -74,10 +76,15 @@ public class BGAreaEditController extends BasicController {
 	private BGArea area;
 	private OLATResource resource;
 	private RepositoryEntry repoEntry;
-	private List<BusinessGroup> allGroups, inAreaGroups;
-	// managers
-	private final BGAreaManager areaManager;
-	private final BusinessGroupService businessGroupService;
+	private List<BusinessGroup> allGroups;
+	private List<BusinessGroup> inAreaGroups;
+
+	@Autowired
+	private BGAreaManager areaManager;
+	@Autowired
+	private RepositoryManager repositoryManager;
+	@Autowired
+	private BusinessGroupService businessGroupService;
 
 	/**
 	 * Constructor for the business group area edit controller
@@ -90,10 +97,8 @@ public class BGAreaEditController extends BasicController {
 		super(ureq, wControl);
 
 		this.area = area;
-		areaManager = CoreSpringFactory.getImpl(BGAreaManager.class);
 		resource = area.getResource();
-		repoEntry = RepositoryManager.getInstance().lookupRepositoryEntry(resource, false);
-		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		repoEntry = repositoryManager.lookupRepositoryEntry(resource, false);
 
 		// tabbed pane
 		tabbedPane = new TabbedPane("tabbedPane", ureq.getLocale());
@@ -109,7 +114,7 @@ public class BGAreaEditController extends BasicController {
 			mainVC.put("backLink", backLink);
 		}
 		mainVC.put("tabbedpane", tabbedPane);
-		mainVC.contextPut("title", translate("area.edit.title", new String[] { StringEscapeUtils.escapeHtml(area.getName()).toString() }));
+		mainVC.contextPut("title", translate("area.edit.title", new String[] { StringHelper.escapeHtml(area.getName()) }));
 		putInitialPanel(mainVC);
 	}
 
@@ -134,22 +139,25 @@ public class BGAreaEditController extends BasicController {
 		tabbedPane.addTab(translate("tab.groups"), groupsTabVC);
 
 		allGroups = businessGroupService.findBusinessGroups(null, repoEntry, 0, -1);
+		List<BusinessGroup> repoGroups = new ArrayList<>(allGroups);
 		inAreaGroups = areaManager.findBusinessGroupsOfArea(area);
-		groupsDataModel = new GroupsToAreaDataModel(allGroups, inAreaGroups);
+		for(BusinessGroup inAreaGroup:inAreaGroups) {
+			if(!allGroups.contains(inAreaGroup)) {
+				allGroups.add(inAreaGroup);
+			}
+		}
+		groupsDataModel = new GroupsToAreaDataModel(allGroups, repoGroups, inAreaGroups, getTranslator());
 
 		groupsChoice = new Choice("groupsChoice", getTranslator());
 		groupsChoice.setSubmitKey("submit");
 		groupsChoice.setCancelKey("cancel");
 		groupsChoice.setModel(groupsDataModel);
+		groupsChoice.setEscapeHtml(false);
 		groupsChoice.addListener(this);
 		groupsTabVC.put("groupsChoice", groupsChoice);
-		groupsTabVC.contextPut("noGroupsFound", (allGroups.size() > 0 ? Boolean.FALSE : Boolean.TRUE));
+		groupsTabVC.contextPut("noGroupsFound", Boolean.valueOf(allGroups.isEmpty()));
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == groupsChoice) {
@@ -180,7 +188,7 @@ public class BGAreaEditController extends BasicController {
 					getWindowControl().setWarning(translate("error.area.name.exists"));
 				} else {
 					area = updatedArea;
-					mainVC.contextPut("title", translate("area.edit.title", new String[] { StringEscapeUtils.escapeHtml(area.getName()).toString() }));
+					mainVC.contextPut("title", translate("area.edit.title", new String[] { StringHelper.escapeHtml(area.getName()) }));
 				}
 			} else if (event == Event.CANCELLED_EVENT) {
 				// area might have been changed, reload from db
@@ -227,13 +235,10 @@ public class BGAreaEditController extends BasicController {
 		for (Integer position:removedGroups) {
 			BusinessGroup group = groupsDataModel.getObject(position.intValue());
 			areaManager.removeBGFromArea(group, area);
-			this.inAreaGroups.remove(group);
+			inAreaGroups.remove(group);
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
 	@Override
 	protected void doDispose() {
 		// don't dispose anything

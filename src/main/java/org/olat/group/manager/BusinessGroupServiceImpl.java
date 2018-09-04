@@ -1626,7 +1626,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 	}
 
 	@Override
-	public void removeResourceFrom(List<BusinessGroup> groups, RepositoryEntryRef re) {
+	public void removeResourceFrom(List<BusinessGroup> groups, RepositoryEntry re) {
 		if(groups == null || groups.isEmpty()) {
 			return; // nothing to do
 		}
@@ -1636,6 +1636,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 		int count = 0;
 		for(BusinessGroup group:groups) {
 			businessGroupRelationDAO.deleteRelation(group, re);
+			areaManager.removeBGFromAreas(group, re.getOlatResource());
 			events.add(new BusinessGroupRelationModified(BusinessGroupRelationModified.RESOURCE_REMOVED_EVENT, group.getKey(), re.getKey()));
 			if(count++ % 20 == 0) {
 				dbInstance.commit();
@@ -1650,7 +1651,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 	}
 	
 	@Override
-	public void removeResource(RepositoryEntryRef re) {
+	public void removeResource(RepositoryEntry re) {
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
 		List<BusinessGroup> groups = findBusinessGroups(params, re, 0, -1);
 		removeResourceFrom(groups, re);

@@ -28,6 +28,8 @@ package org.olat.group.ui.area;
 import java.util.List;
 
 import org.olat.core.gui.components.choice.ChoiceModel;
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 
 /**
@@ -37,8 +39,11 @@ import org.olat.group.BusinessGroup;
  * @author gnaegi
  */
 public class GroupsToAreaDataModel implements ChoiceModel {
+	
+	private final Translator translator;
 	private final List<BusinessGroup> allGroups;
 	private final List<BusinessGroup> inAreaGroups;
+	private final List<BusinessGroup> repoGroups;
 
 	/**
 	 * Constructor for the GroupsToAreaDataModel
@@ -47,9 +52,12 @@ public class GroupsToAreaDataModel implements ChoiceModel {
 	 * @param inAreaGroups All groups that are associated to the group area. The
 	 *          checked rows.
 	 */
-	public GroupsToAreaDataModel(List<BusinessGroup> allGroups, List<BusinessGroup> inAreaGroups) {
+	public GroupsToAreaDataModel(List<BusinessGroup> allGroups, List<BusinessGroup> repoGroups,
+			List<BusinessGroup> inAreaGroups, Translator translator) {
 		this.allGroups = allGroups;
 		this.inAreaGroups = inAreaGroups;
+		this.repoGroups = repoGroups;
+		this.translator = translator;
 	}
 
 	@Override
@@ -64,7 +72,13 @@ public class GroupsToAreaDataModel implements ChoiceModel {
 
 	@Override
 	public String getLabel(int row) {
-		return getObject(row).getName();
+		BusinessGroup group = getObject(row);
+		String label = StringHelper.escapeHtml(group.getName());
+		if(inAreaGroups.contains(group) && !repoGroups.contains(group)) {
+			String explain = translator.translate("");
+			label += " <span title='" + explain + "'><i class='o_icon o_icon_warn'> </i></span>";
+		}
+		return label;
 	}
 
 	@Override

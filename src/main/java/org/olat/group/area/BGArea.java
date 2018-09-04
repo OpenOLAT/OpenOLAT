@@ -42,7 +42,7 @@ import org.olat.resource.OLATResource;
 public interface BGArea extends Persistable, CreateInfo, ShortName {
 	/** regular expression to check for valid area names */
 	// commas are not allowed. name is used in course conditions for weak binding
-	public final static String VALID_AREANAME_REGEXP = "^[^,\"]*$";
+	public static final String VALID_AREANAME_REGEXP = "^[^,\"]*$";
 
 	/**
 	 * @return The group area description

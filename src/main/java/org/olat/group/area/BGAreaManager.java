@@ -105,6 +105,8 @@ public interface BGAreaManager {
 	 * @param area
 	 */
 	public void removeBGFromArea(BusinessGroup group, BGArea area);
+	
+	public void removeBGFromAreas(BusinessGroup group, OLATResource resource);
 
 	/**
 	 * Deletes all business group to area relations from the given business group
