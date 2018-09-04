@@ -45,6 +45,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionE
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.link.LinkPopupSettings;
+import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.components.text.TextComponent;
@@ -112,6 +113,7 @@ public class BinderPageListController extends AbstractPageListController {
 			BinderSecurityCallback secCallback, Binder binder, BinderConfiguration config) {
 		super(ureq, wControl, stackPanel, secCallback, config, "binder_pages", true);
 		this.binder = binder;
+		stackPanel.addListener(this);
 		owners = portfolioService.getMembers(binder, PortfolioRoles.owner.name());
 		
 		summaryComp = TextFactory.createTextComponentFromString("summaryCmp" + CodeHelper.getRAMUniqueID(), "", "o_block_large_bottom", false, null);
@@ -346,7 +348,7 @@ public class BinderPageListController extends AbstractPageListController {
 					categories = new HashSet<>();
 					sectionAggregatedCategoriesMap.put(section, categories);
 				}
-				if(pageRow.getPageCategories() != null && pageRow.getPageCategories().size() > 0) {
+				if(pageRow.getPageCategories() != null && !pageRow.getPageCategories().isEmpty()) {
 					categories.addAll(pageRow.getPageCategories());
 				}
 				
@@ -387,11 +389,11 @@ public class BinderPageListController extends AbstractPageListController {
 			flc.remove(newSectionButton);
 		}
 		if(newEntryLink != null && !newEntryLink.isVisible()) {
-			newEntryLink.setVisible(rows.size() > 0);
+			newEntryLink.setVisible(!rows.isEmpty());
 			stackPanel.setDirty(true);
 		}
 		if(newAssignmentLink != null && !newAssignmentLink.isVisible()) {
-			newAssignmentLink.setVisible(rows.size() > 0);
+			newAssignmentLink.setVisible(!rows.isEmpty());
 			stackPanel.setDirty(true);
 		}
 
@@ -419,6 +421,9 @@ public class BinderPageListController extends AbstractPageListController {
 	
 	@Override
 	protected void doDispose() {
+		if(stackPanel != null) {
+			stackPanel.removeListener(this);
+		}
 		removeAsListenerAndDispose(summaryCtrl);
 		summaryCtrl = null;
 		super.doDispose();
@@ -486,6 +491,10 @@ public class BinderPageListController extends AbstractPageListController {
 			doExportBinderAsPdf(ureq);
 		} else if(printLink == source) {
 			doPrint(ureq);
+		} else if(stackPanel == source) {
+			if(event instanceof PopEvent && pageCtrl != null && ((PopEvent)event).getController() == pageCtrl && pageCtrl.getSection() != null) {
+				doFilterSection(pageCtrl.getSection());
+			}
 		}
 		super.event(ureq, source, event);
 	}
@@ -660,15 +669,12 @@ public class BinderPageListController extends AbstractPageListController {
 	}
 	
 	private void doPrint(UserRequest ureq) {
-		ControllerCreator ctrlCreator = new ControllerCreator() {
-			@Override
-			public Controller createController(UserRequest lureq, WindowControl lwControl) {
-				BinderOnePageController printCtrl = new BinderOnePageController(lureq, lwControl, binder,
-						ExtendedMediaRenderingHints.toPrint(), true);
-				LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, lwControl, printCtrl);
-				layoutCtr.addDisposableChildController(printCtrl); // dispose controller on layout dispose
-				return layoutCtr;
-			}					
+		ControllerCreator ctrlCreator = (lureq, lwControl) -> {
+			BinderOnePageController printCtrl = new BinderOnePageController(lureq, lwControl, binder,
+					ExtendedMediaRenderingHints.toPrint(), true);
+			LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, lwControl, printCtrl);
+			layoutCtr.addDisposableChildController(printCtrl); // dispose controller on layout dispose
+			return layoutCtr;				
 		};
 		ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createPrintPopupLayout(ctrlCreator);
 		openInNewBrowserWindow(ureq, layoutCtrlr);

@@ -114,19 +114,22 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 	public static final int PICTURE_HEIGHT = 230 * 2 ; 	// max size for large images, see CSS, x2 for high res displays
 
 	protected TimelineElement timelineEl;
-	private FormLink timelineSwitchOnButton, timelineSwitchOffButton;
+	private FormLink timelineSwitchOnButton;
+	private FormLink timelineSwitchOffButton;
 	
 	protected FlexiTableElement tableEl;
 	protected PageListDataModel model;
 	protected final TooledStackedPanel stackPanel;
 	protected final VelocityContainer rowVC;
 	
-	private PageRunController pageCtrl;
+	protected PageRunController pageCtrl;
 	private CloseableModalController cmc;
 	private UserCommentsController commentsCtrl;
 	private AssignmentEditController editAssignmentCtrl;
 	private AssignmentMoveController moveAssignmentCtrl;
-	private DialogBoxController confirmCloseSectionCtrl, confirmReopenSectionCtrl, confirmDeleteAssignmentCtrl;
+	private DialogBoxController confirmCloseSectionCtrl;
+	private DialogBoxController confirmReopenSectionCtrl;
+	private DialogBoxController confirmDeleteAssignmentCtrl;
 	
 	protected int counter;
 	protected final boolean withSections;
@@ -328,7 +331,7 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 	
 	protected void disposeRows() {
 		List<PortfolioElementRow> rows = model.getObjects();
-		if(rows != null && rows.size() > 0) {
+		if(rows != null && !rows.isEmpty()) {
 			for(PortfolioElementRow row:rows) {
 				if(row.getPoster() != null) {
 					row.getPoster().dispose();
@@ -513,7 +516,7 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 	private List<String> getCategories(OLATResourceable ores, Map<OLATResourceable,List<Category>> categorizedElementMap) {
 		List<String> strings = null;
 		List<Category> categories = categorizedElementMap.get(ores);
-		if(categories != null && categories.size() > 0) {
+		if(categories != null && !categories.isEmpty()) {
 			strings = new ArrayList<>(categories.size());
 			for(Category category:categories) {
 				strings.add(category.getName());
@@ -875,6 +878,11 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 				&& (reloadedPage.getPageStatus() == null || reloadedPage.getPageStatus() == PageStatus.draft || reloadedPage.getPageStatus() == PageStatus.inRevision));
 		pageCtrl = new PageRunController(ureq, swControl, stackPanel, secCallback, reloadedPage, openInEditMode);
 		listenTo(pageCtrl);
+		
+		if(reloadedPage.getSection() != null) {
+			Section section = reloadedPage.getSection();
+			stackPanel.pushController(section.getTitle(), null, new ListSection(section));
+		}
 		stackPanel.pushController(reloadedPage.getTitle(), pageCtrl);
 	}
 	
@@ -886,6 +894,32 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 			selectedRows.add(row);
 		}
 		return selectedRows;
+	}
+	
+	public static final class ListSection {
+		
+		private final Section section;
+		
+		public ListSection(Section section) {
+			this.section = section;
+		}
+
+		@Override
+		public int hashCode() {
+			return section == null ? 7346576 : section.hashCode();
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) {
+				return true;
+			}
+			if (obj instanceof ListSection) {
+				ListSection ls = (ListSection) obj;
+				return section != null && section.equals(ls.section);
+			}
+			return true;
+		}
 	}
 	
 	private static final class PageImageMapper implements Mapper {
@@ -909,7 +943,7 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 				int index = path.indexOf('/');
 				if(index > 0) {
 					String pageKey = path.substring(0, index);
-					Long key = new Long(pageKey);
+					Long key = Long.valueOf(pageKey);
 					for(int i=model.getRowCount(); i-->0; ) {
 						PortfolioElementRow row = model.getObject(i);
 						if(row.isPage() && row.getPage().getKey().equals(key)) {

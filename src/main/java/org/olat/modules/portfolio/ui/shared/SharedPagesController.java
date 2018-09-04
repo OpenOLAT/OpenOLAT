@@ -125,10 +125,10 @@ public class SharedPagesController extends FormBasicController implements Activa
 		this.searchParams = searchParams;
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, isAdministrativeUser);
+		stackPanel.addListener(this);
 
 		initForm(ureq);
 		loadModel(true, true);
-		stackPanel.addListener(this);
 	}
 	
 	public int getRowCount() {
@@ -302,6 +302,9 @@ public class SharedPagesController extends FormBasicController implements Activa
 				PopEvent pe = (PopEvent)event;
 				if(pe.getController() == pageCtrl) {
 					loadModel(false, false);
+					if(pageCtrl != null && pageCtrl.getPage() != null) {
+						stackPanel.popUserObject(new SharedPageAuthor(pageCtrl.getPage().getKey()));
+					}
 				}
 			}
 		}
@@ -354,7 +357,38 @@ public class SharedPagesController extends FormBasicController implements Activa
 		BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCallbackForCoach(binder, rights);
 		pageCtrl = new PageRunController(ureq, swControl, stackPanel, secCallback, reloadedPage, false);
 		listenTo(pageCtrl);
+		
+		if(row.getIdentityKey() != null) {
+			String author = userManager.getUserDisplayName(row.getIdentityKey());
+			stackPanel.pushController(author, null, new SharedPageAuthor(row.getPageKey()));
+		}
 		stackPanel.pushController(reloadedPage.getTitle(), pageCtrl);
 		return pageCtrl;
+	}
+	
+	private static final class SharedPageAuthor {
+		
+		private final Long pageKey;
+		
+		public SharedPageAuthor(Long pageKey) {
+			this.pageKey = pageKey;
+		}
+
+		@Override
+		public int hashCode() {
+			return pageKey.hashCode();
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if(this == obj) {
+				return true;
+			}
+			if(obj instanceof SharedPageAuthor) {
+				SharedPageAuthor spa = (SharedPageAuthor)obj;
+				return pageKey.equals(spa.pageKey);
+			}
+			return false;
+		}
 	}
 }

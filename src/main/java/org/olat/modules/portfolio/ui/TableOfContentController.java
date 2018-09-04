@@ -36,6 +36,7 @@ import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.link.LinkPopupSettings;
+import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledController;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
@@ -148,6 +149,7 @@ public class TableOfContentController extends BasicController implements TooledC
 		this.stackPanel = stackPanel;
 		this.secCallback = secCallback;
 		
+		stackPanel.addListener(this);
 		mainVC = createVelocityContainer("table_of_contents");
 
 		owners = portfolioService.getMembers(binder, PortfolioRoles.owner.name());
@@ -464,6 +466,9 @@ public class TableOfContentController extends BasicController implements TooledC
 
 	@Override
 	protected void doDispose() {
+		if(stackPanel != null) {
+			stackPanel.removeListener(this);
+		}
 		removeAsListenerAndDispose(summaryCtrl);
 		summaryCtrl = null;
 	}
@@ -620,6 +625,11 @@ public class TableOfContentController extends BasicController implements TooledC
 			doPrint(ureq);
 		} else if(exportBinderAsPdfLink == source) {
 			doExportBinderAsPdf(ureq);
+		} else if(stackPanel == source) {
+			if(event instanceof PopEvent && pageCtrl != null && ((PopEvent)event).getController() == pageCtrl && pageCtrl.getSection() != null) {
+				stackPanel.popUserObject(new TOCSection(pageCtrl.getSection()));
+				addToHistory(ureq, this);
+			}
 		} else if(source instanceof Link) {
 			Link link = (Link)source;
 			String cmd = link.getCommand();
@@ -736,6 +746,11 @@ public class TableOfContentController extends BasicController implements TooledC
 				&& (reloadedPage.getPageStatus() == null || reloadedPage.getPageStatus() == PageStatus.draft || reloadedPage.getPageStatus() == PageStatus.inRevision));
 		pageCtrl = new PageRunController(ureq, swControl, stackPanel, secCallback, reloadedPage, openInEditMode);
 		listenTo(pageCtrl);
+		
+		Section section = page.getSection();
+		if(section != null) {
+			stackPanel.pushController(section.getTitle(), null, new TOCSection(section));
+		}
 		stackPanel.pushController(page.getTitle(), pageCtrl);
 		return pageCtrl;
 	}
@@ -877,14 +892,11 @@ public class TableOfContentController extends BasicController implements TooledC
 	}
 	
 	private void doPrint(UserRequest ureq) {
-		ControllerCreator ctrlCreator = new ControllerCreator() {
-			@Override
-			public Controller createController(UserRequest lureq, WindowControl lwControl) {			
-				BinderOnePageController printCtrl = new BinderOnePageController(lureq, lwControl, binder, ExtendedMediaRenderingHints.toPrint(), true);
-				LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, lwControl, printCtrl);
-				layoutCtr.addDisposableChildController(printCtrl); // dispose controller on layout dispose
-				return layoutCtr;
-			}					
+		ControllerCreator ctrlCreator = (lureq, lwControl) -> {			
+			BinderOnePageController printCtrl = new BinderOnePageController(lureq, lwControl, binder, ExtendedMediaRenderingHints.toPrint(), true);
+			LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, lwControl, printCtrl);
+			layoutCtr.addDisposableChildController(printCtrl); // dispose controller on layout dispose
+			return layoutCtr;				
 		};
 		ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createPrintPopupLayout(ctrlCreator);
 		openInNewBrowserWindow(ureq, layoutCtrlr);
@@ -1023,6 +1035,32 @@ public class TableOfContentController extends BasicController implements TooledC
 
 		public void setDownSectionLink(Link downSectionLink) {
 			this.downSectionLink = downSectionLink;
+		}
+	}
+	
+	private static class TOCSection {
+		
+		private final Section section;
+		
+		public TOCSection(Section section) {
+			this.section = section;
+		}
+
+		@Override
+		public int hashCode() {
+			return section.hashCode();
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if(this == obj) {
+				return true;
+			}
+			if(obj instanceof TOCSection) {
+				TOCSection tocs = (TOCSection)obj;
+				return section.equals(tocs.section);
+			}
+			return false;
 		}
 	}
 }

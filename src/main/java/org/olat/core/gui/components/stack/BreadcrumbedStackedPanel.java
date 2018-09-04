@@ -319,6 +319,22 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Bre
 			updateCloseLinkTitle();
 		}
 	}
+	
+	@Override
+	public void popUserObject(Object uobject) {
+		int index = getIndex(uobject);
+		if(index > 0 && index < stack.size()) {
+			BreadCrumb popedCrumb = null;
+			for(int i=stack.size(); i--> index; ) {
+				Link link = stack.remove(i);
+				popedCrumb = (BreadCrumb)link.getUserObject();
+				popedCrumb.dispose();
+			}
+			
+			setContent(index - 1);
+			updateCloseLinkTitle();
+		}
+	}
 
 	@Override
 	public void pushContent(Component newContent) {
@@ -330,6 +346,17 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Bre
 		for(int i=0; i<stack.size(); i++) {
 			BreadCrumb crumb = (BreadCrumb)stack.get(i).getUserObject();
 			if(crumb.getController() == controller) {
+				index = i;
+			}
+		}
+		return index;
+	}
+	
+	private int getIndex(Object uobject) {
+		int index = -1;
+		for(int i=0; i<stack.size(); i++) {
+			BreadCrumb crumb = (BreadCrumb)stack.get(i).getUserObject();
+			if(crumb.getUserObject() != null && crumb.getUserObject().equals(uobject)) {
 				index = i;
 			}
 		}

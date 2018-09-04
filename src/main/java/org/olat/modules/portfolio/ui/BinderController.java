@@ -147,6 +147,10 @@ public class BinderController extends BasicController implements TooledControlle
 		}
 	}
 	
+	public Binder getBinder() {
+		return binder;
+	}
+	
 	protected void setSegmentButtonsVisible(boolean enabled) {
 		if(segmentButtonsCmp != null) {
 			segmentButtonsCmp.setVisible(enabled);

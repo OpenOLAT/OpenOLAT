@@ -273,6 +273,14 @@ public class PageRunController extends BasicController implements TooledControll
 		mainVC.put("meta", pageMetaCtrl.getInitialComponent());
 	}
 	
+	public Page getPage() {
+		return page;
+	}
+	
+	public Section getSection() {
+		return page.getSection();
+	}
+	
 	@Override
 	protected void doDispose() {
 		//

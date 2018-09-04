@@ -106,6 +106,8 @@ public interface BreadcrumbPanel extends StackedPanel {
 	 */
 	public void popController(Controller controller);
 	
+	public void popUserObject(Object uobject);
+	
 	
 
 }
