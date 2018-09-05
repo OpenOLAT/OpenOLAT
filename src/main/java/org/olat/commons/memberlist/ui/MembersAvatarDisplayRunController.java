@@ -529,7 +529,7 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 			lwControl.getWindowBackOffice().getChiefController().addBodyCssClass("o_cmembers_print");
 			return new MembersPrintController(lureq, lwControl, getTranslator(), owners, coaches,
 					participants, waiting, curriculumInfos, showOwners, showCoaches, showParticipants, showWaiting, 
-					title);
+					deduplicateList, title);
 		};
 		ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createPrintPopupLayout(printControllerCreator);
 		openInNewBrowserWindow(ureq, layoutCtrlr);

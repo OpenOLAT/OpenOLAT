@@ -103,6 +103,7 @@ public class MembersListDisplayRunController extends BasicController {
 	private final boolean showCoaches;
 	private final boolean showParticipants;
 	private final boolean showWaiting;
+	private final boolean deduplicateList;
 	
 	private final UserCourseEnvironment userCourseEnv;
 	private final BusinessGroup businessGroup;
@@ -159,6 +160,7 @@ public class MembersListDisplayRunController extends BasicController {
 		this.showCoaches = showCoaches;
 		this.showParticipants = showParticipants;
 		this.showWaiting = showWaiting;
+		this.deduplicateList = deduplicateList;
 		
 		if(canEmail) {
 			allEmailLink = LinkFactory.createLink(null, "email", "email.all", "members.email.title", getTranslator(), mainVC, this, Link.BUTTON);
@@ -335,7 +337,7 @@ public class MembersListDisplayRunController extends BasicController {
 		ControllerCreator printControllerCreator = (lureq, lwControl) -> {
 			lwControl.getWindowBackOffice().getChiefController().addBodyCssClass("o_cmembers_print");
 			return new MembersPrintController(lureq, lwControl, getTranslator(), owners, coaches,
-					participants, waiting, curriculumInfos, showOwners, showCoaches, showParticipants, showWaiting, title);
+					participants, waiting, curriculumInfos, showOwners, showCoaches, showParticipants, showWaiting, deduplicateList, title);
 		};
 		ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createPrintPopupLayout(printControllerCreator);
 		openInNewBrowserWindow(ureq, layoutCtrlr);

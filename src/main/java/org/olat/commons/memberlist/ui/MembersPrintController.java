@@ -19,11 +19,13 @@
  */
 package org.olat.commons.memberlist.ui;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -77,7 +79,7 @@ public class MembersPrintController extends BasicController {
 	
 	public MembersPrintController(UserRequest ureq, WindowControl wControl, Translator translator, List<Identity> owners,
 			List<Identity> coaches, List<Identity> participants, List<Identity> waiting, Map<Long,CurriculumMemberInfos> curriculumInfos,
-			boolean showOwners, boolean showCoaches, boolean showParticipants, boolean showWaiting, String title) {
+			boolean showOwners, boolean showCoaches, boolean showParticipants, boolean showWaiting, boolean deduplicateList, String title) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(translator, getTranslator(), getLocale()));
 
@@ -91,17 +93,18 @@ public class MembersPrintController extends BasicController {
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		userPropertyPrintHandlers = userManager.getUserPropertyHandlersFor(MembersDisplayRunController.USER_PROPS_PRINT_ID, isAdministrativeUser);
 		
+		Set<Identity> duplicateCatcher = deduplicateList ? new HashSet<>() : null;
 		if(showOwners && owners != null && !owners.isEmpty()) {
-			initFormMemberList("owners", translate("members.owners"), owners, curriculumInfos);
+			initFormMemberList("owners", translate("members.owners"), owners, duplicateCatcher, curriculumInfos);
 		}
 		if(showCoaches && coaches != null && !coaches.isEmpty()) {
-			initFormMemberList("coaches", translate("members.coaches"), coaches, curriculumInfos);
+			initFormMemberList("coaches", translate("members.coaches"), coaches, duplicateCatcher, curriculumInfos);
 		}
 		if(showParticipants && participants != null && !participants.isEmpty()) {
-			initFormMemberList("participants", translate("members.participants"), participants, curriculumInfos);
+			initFormMemberList("participants", translate("members.participants"), participants, duplicateCatcher, curriculumInfos);
 		}
 		if(showWaiting && waiting != null && !waiting.isEmpty()) {
-			initFormMemberList("waiting", translate("members.waiting"), waiting, curriculumInfos);
+			initFormMemberList("waiting", translate("members.waiting"), waiting, duplicateCatcher, curriculumInfos);
 		}
 
 		MainPanel mainPanel = new MainPanel("membersPrintPanel");
@@ -109,10 +112,20 @@ public class MembersPrintController extends BasicController {
 		putInitialPanel(mainPanel);
 	}
 	
-	private void initFormMemberList(String name, String label, List<Identity> members, Map<Long,CurriculumMemberInfos> curriculumInfos) {
-		List<Member> memberWrappers = members.stream()
-				.map(m -> createMember(m, curriculumInfos)).collect(Collectors.toList());
-		
+	private void initFormMemberList(String name, String label, List<Identity> members, Set<Identity> duplicateCatcher, Map<Long,CurriculumMemberInfos> curriculumInfos) {
+		if(duplicateCatcher == null) {
+			duplicateCatcher = new HashSet<>();
+		}
+
+		List<Member> memberWrappers = new ArrayList<>(members.size());
+		for(Identity identity:members) {
+			if(duplicateCatcher.contains(identity)) {
+				continue;
+			}
+			duplicateCatcher.add(identity);
+			memberWrappers.add(createMember(identity, curriculumInfos));
+		}
+
 		VelocityContainer listVC = createVelocityContainer("printList");
 		listVC.contextPut("label", label);
 		listVC.contextPut("avatarBaseURL", avatarBaseURL);
