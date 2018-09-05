@@ -84,6 +84,10 @@ public class MembersOverviewIdentitiesController extends StepFormBasicController
 			@SuppressWarnings("unchecked")
 			List<String> keys = (List<String>)runContext.get("keys");
 			loadModel(keys);
+		} else if(containsRunContextKey("identities")) {
+			@SuppressWarnings("unchecked")
+			List<Identity> identities = (List<Identity>)runContext.get("identities");
+			loadModelByIdentities(identities);
 		}
 
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
@@ -133,6 +137,20 @@ public class MembersOverviewIdentitiesController extends StepFormBasicController
 				isAdministrativeUser, getLocale(), tableColumnModel);
 		FlexiTableElement tableEl = uifactory.addTableElement(getWindowControl(), "users", userTableModel, myTrans, formLayout);
 		tableEl.setCustomizeColumns(false);
+	}
+	
+	private void loadModelByIdentities(List<Identity> identities) {
+		oks = new ArrayList<>();
+		List<String> isanonymous = new ArrayList<>();
+		notfounds = new ArrayList<>();
+
+		for (Identity ident : identities) {
+			if (organisationService.hasRole(ident, OrganisationRoles.guest)) {
+				isanonymous.add(ident.getKey().toString());
+			} else if (!PersistenceHelper.containsPersistable(oks, ident)) {
+				oks.add(ident);
+			}
+		}
 	}
 	
 	private void loadModel(List<String> keys) {

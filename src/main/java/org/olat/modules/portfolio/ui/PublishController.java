@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.Invitation;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -71,7 +72,9 @@ import org.olat.modules.portfolio.ui.event.AccessRightsEvent;
 import org.olat.modules.portfolio.ui.renderer.PortfolioRendererHelper;
 import org.olat.modules.portfolio.ui.wizard.AccessRightsContext;
 import org.olat.modules.portfolio.ui.wizard.AddMember_1_ChooseMemberStep;
+import org.olat.modules.portfolio.ui.wizard.AddMember_1_CourseMemberChoiceStep;
 import org.olat.modules.portfolio.ui.wizard.AddMember_3_ChoosePermissionStep;
+import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -85,6 +88,8 @@ public class PublishController extends BasicController implements TooledControll
 	
 	private Link addInvitationLink;
 	private Link addAccessRightsLink;
+	private Link addCoachAccessRightsLink;
+	private Link addParticipantAccessRightsLink;
 	private final VelocityContainer mainVC;
 	private final TooledStackedPanel stackPanel;
 
@@ -96,6 +101,7 @@ public class PublishController extends BasicController implements TooledControll
 	
 	private int counter;
 	private Binder binder;
+	private RepositoryEntry entry;
 	private PortfolioElementRow binderRow;
 	private final BinderConfiguration config;
 	private final BinderSecurityCallback secCallback;
@@ -117,6 +123,10 @@ public class PublishController extends BasicController implements TooledControll
 		this.secCallback = secCallback;
 		this.stackPanel = stackPanel;
 		
+		if(binder.getEntry() != null) {
+			entry = binder.getEntry();
+		}
+		
 		mainVC = createVelocityContainer("publish");
 		mainVC.contextPut("binderTitle", StringHelper.escapeHtml(binder.getTitle()));
 		
@@ -134,17 +144,31 @@ public class PublishController extends BasicController implements TooledControll
 			accessDropdown.setElementCssClass("o_sel_pf_access");
 			accessDropdown.setOrientation(DropdownOrientation.right);
 			
+			if(entry != null) {
+				addCoachAccessRightsLink = LinkFactory.createToolLink("add.course.coach", translate("add.course.coach"), this);
+				addCoachAccessRightsLink.setIconLeftCSS("o_icon o_icon-fw o_icon-lg o_icon_user_vip");
+				addCoachAccessRightsLink.setElementCssClass("o_sel_pf_access_course_coach");
+				accessDropdown.addComponent(addCoachAccessRightsLink);
+				
+				addParticipantAccessRightsLink = LinkFactory.createToolLink("add.course.participant", translate("add.course.participant"), this);
+				addParticipantAccessRightsLink.setIconLeftCSS("o_icon o_icon-fw o_icon-lg o_icon_group");
+				addParticipantAccessRightsLink.setElementCssClass("o_sel_pf_access_course_participant");
+				accessDropdown.addComponent(addParticipantAccessRightsLink);
+			}
+			
 			addAccessRightsLink = LinkFactory.createToolLink("add.member", translate("add.member"), this);
-			addAccessRightsLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
+			addAccessRightsLink.setIconLeftCSS("o_icon o_icon-fw o_icon-lg o_icon_user");
 			addAccessRightsLink.setElementCssClass("o_sel_pf_access_member");
 			accessDropdown.addComponent(addAccessRightsLink);
 			
 			if(loginModule.isInvitationEnabled()) {
 				addInvitationLink = LinkFactory.createToolLink("add.invitation", translate("add.invitation"), this);
-				addInvitationLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
+				addInvitationLink.setIconLeftCSS("o_icon o_icon-fw o_icon-lg o_icon_user_anonymous");
 				addInvitationLink.setElementCssClass("o_sel_pf_access_invitation");
 				accessDropdown.addComponent(addInvitationLink);
 			}
+			
+			
 			
 			stackPanel.addTool(accessDropdown, Align.right);
 		}
@@ -244,6 +268,10 @@ public class PublishController extends BasicController implements TooledControll
 			doAddAccessRights(ureq);
 		} else if(addInvitationLink == source) {
 			doAddInvitationEmail(ureq);
+		} else if(addCoachAccessRightsLink == source) {
+			doAddCoachAccessRights(ureq);
+		} else if(addParticipantAccessRightsLink == source) {
+			doAddParticipantAccessRights(ureq);
 		} else if(source instanceof Link) {
 			Link link = (Link)source;
 			String cmd = link.getCommand();
@@ -374,6 +402,40 @@ public class PublishController extends BasicController implements TooledControll
 		cmc = new CloseableModalController(getWindowControl(), null, addInvitationCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
+	}
+	
+	private void doAddCoachAccessRights(UserRequest ureq) {
+		removeAsListenerAndDispose(addMembersWizard);
+
+		Step start = new AddMember_1_CourseMemberChoiceStep(ureq, binder, entry, GroupRoles.coach);
+		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
+			AccessRightsContext rightsContext = (AccessRightsContext)runContext.get("rightsContext");
+			MailTemplate mailTemplate = (MailTemplate)runContext.get("mailTemplate");
+			addMembers(rightsContext, mailTemplate);
+			return StepsMainRunController.DONE_MODIFIED;
+		};
+		
+		addMembersWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
+				translate("add.course.coach"), "o_sel_course_member_import_1_wizard");
+		listenTo(addMembersWizard);
+		getWindowControl().pushAsModalDialog(addMembersWizard.getInitialComponent());
+	}
+	
+	private void doAddParticipantAccessRights(UserRequest ureq) {
+		removeAsListenerAndDispose(addMembersWizard);
+
+		Step start = new AddMember_1_CourseMemberChoiceStep(ureq, binder, entry, GroupRoles.participant);
+		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
+			AccessRightsContext rightsContext = (AccessRightsContext)runContext.get("rightsContext");
+			MailTemplate mailTemplate = (MailTemplate)runContext.get("mailTemplate");
+			addMembers(rightsContext, mailTemplate);
+			return StepsMainRunController.DONE_MODIFIED;
+		};
+		
+		addMembersWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
+				translate("add.course.participant"), "o_sel_course_member_import_1_wizard");
+		listenTo(addMembersWizard);
+		getWindowControl().pushAsModalDialog(addMembersWizard.getInitialComponent());
 	}
 	
 	private void doAddAccessRights(UserRequest ureq) {
