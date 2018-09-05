@@ -38,7 +38,7 @@ public class AddMember_2_ConfirmMemberChoiceStep extends BasicStep {
 	
 	public AddMember_2_ConfirmMemberChoiceStep(UserRequest ureq, Binder binder) {
 		super(ureq);
-		setNextStep(new AddMember_3_ChoosePermissionStep(ureq, binder));
+		setNextStep(new AddMember_3_ChoosePermissionStep(ureq, binder, null));
 		setI18nTitleAndDescr("add.confirm.title", "add.confirm.title");
 	}
 
@@ -49,7 +49,6 @@ public class AddMember_2_ConfirmMemberChoiceStep extends BasicStep {
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
-		MembersOverviewIdentitiesController controller = new MembersOverviewIdentitiesController(ureq, wControl, form, runContext);
-		return controller;
+		return new MembersOverviewIdentitiesController(ureq, wControl, form, runContext);
 	}
 }

@@ -105,11 +105,16 @@ public class InvitationEditRightsController extends FormBasicController {
 	@Autowired
 	private OrganisationService organisationService;
 	
-	public InvitationEditRightsController(UserRequest ureq, WindowControl wControl, Binder binder, String email) {
+	public InvitationEditRightsController(UserRequest ureq, WindowControl wControl, Binder binder, String email, Identity existingInvitee) {
 		super(ureq, wControl, "invitee_access_rights");
 		this.email = email;
 		this.binder = binder;
-		invitee = userManager.findUniqueIdentityByEmail(email);
+		if(existingInvitee != null) {
+			invitee = existingInvitee;
+		} else {
+			invitee = userManager.findUniqueIdentityByEmail(email);
+		}
+		
 		if(invitee != null) {
 			invitation = invitationDao.findInvitation(binder.getBaseGroup(), invitee);
 		} 

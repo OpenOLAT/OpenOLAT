@@ -66,7 +66,7 @@ public class MemberSearchController extends StepFormBasicController {
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 		} else if(event instanceof MultiIdentityChosenEvent) {
 			MultiIdentityChosenEvent e = (MultiIdentityChosenEvent)event;
-			Collection<String> keys = new ArrayList<String>();
+			Collection<String> keys = new ArrayList<>();
 			for(Identity identity: e.getChosenIdentities()) {
 				keys.add(identity.getKey().toString());
 			}
@@ -80,7 +80,7 @@ public class MemberSearchController extends StepFormBasicController {
 	@Override
 	protected void formNext(UserRequest ureq) {
 		List<Identity> identities = searchController.getSelectedIdentities();
-		Collection<String> keys = new ArrayList<String>();
+		Collection<String> keys = new ArrayList<>();
 		for(Identity identity: identities) {
 			keys.add(identity.getKey().toString());
 		}

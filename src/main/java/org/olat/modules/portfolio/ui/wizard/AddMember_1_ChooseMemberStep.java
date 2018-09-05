@@ -52,7 +52,6 @@ public class AddMember_1_ChooseMemberStep extends BasicStep {
 		if(!runContext.containsKey("rightsContext")) {
 			runContext.put("rightsContext", new AccessRightsContext());
 		}
-		MemberSearchController controller = new MemberSearchController(ureq, wControl, form, runContext);
-		return controller;
+		return new MemberSearchController(ureq, wControl, form, runContext);
 	}
 }

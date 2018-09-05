@@ -19,6 +19,8 @@
  */
 package org.olat.modules.portfolio.ui.wizard;
 
+import java.util.Collections;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.WindowControl;
@@ -26,6 +28,7 @@ import org.olat.core.gui.control.generic.wizard.BasicStep;
 import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.id.Identity;
 import org.olat.modules.portfolio.Binder;
 
 /**
@@ -37,24 +40,32 @@ import org.olat.modules.portfolio.Binder;
 public class AddMember_3_ChoosePermissionStep extends BasicStep {
 
 	private final Binder binder;
+	private final Identity preselectedIdentity;
 	
-	public AddMember_3_ChoosePermissionStep(UserRequest ureq, Binder binder) {
+	public AddMember_3_ChoosePermissionStep(UserRequest ureq, Binder binder, Identity preselectedIdentity) {
 		super(ureq);
 		this.binder = binder;
+		this.preselectedIdentity = preselectedIdentity;
 		setNextStep(new AddMember_4_MailStep(ureq, binder));
 		setI18nTitleAndDescr("add.permission.title", "add.permission.title");
 	}
 
 	@Override
 	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
-		return new PrevNextFinishConfig(true, true, false);
+		boolean back = preselectedIdentity == null;
+		return new PrevNextFinishConfig(back, true, false);
 	}
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
-		AccessRightsEditStepController controller
-			= new AccessRightsEditStepController(ureq, wControl, binder, form, runContext);
-		return controller;
+		if(preselectedIdentity != null) {
+			AccessRightsContext rightsContext = (AccessRightsContext)runContext.get("rightsContext");
+			if(rightsContext == null) {
+				rightsContext = new AccessRightsContext();
+			}
+			rightsContext.setIdentities(Collections.singletonList(preselectedIdentity));
+			runContext.put("rightsContext", rightsContext);
+		}
+		return new AccessRightsEditStepController(ureq, wControl, binder, form, runContext);
 	}
-	
 }

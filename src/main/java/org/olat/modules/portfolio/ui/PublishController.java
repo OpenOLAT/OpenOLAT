@@ -44,7 +44,6 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
-import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.ContactList;
@@ -72,6 +71,7 @@ import org.olat.modules.portfolio.ui.event.AccessRightsEvent;
 import org.olat.modules.portfolio.ui.renderer.PortfolioRendererHelper;
 import org.olat.modules.portfolio.ui.wizard.AccessRightsContext;
 import org.olat.modules.portfolio.ui.wizard.AddMember_1_ChooseMemberStep;
+import org.olat.modules.portfolio.ui.wizard.AddMember_3_ChoosePermissionStep;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -83,8 +83,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class PublishController extends BasicController implements TooledController {
 	
-	private Dropdown accessDropdown;
-	private Link addAccessRightsLink, addInvitationLink;
+	private Link addInvitationLink;
+	private Link addAccessRightsLink;
 	private final VelocityContainer mainVC;
 	private final TooledStackedPanel stackPanel;
 
@@ -129,7 +129,7 @@ public class PublishController extends BasicController implements TooledControll
 	@Override
 	public void initTools() {
 		if(secCallback.canEditAccessRights(binder)) {
-			accessDropdown = new Dropdown("access.rights", "access.rights", false, getTranslator());
+			Dropdown accessDropdown = new Dropdown("access.rights", "access.rights", false, getTranslator());
 			accessDropdown.setIconCSS("o_icon o_icon-fw o_icon_new_portfolio");
 			accessDropdown.setElementCssClass("o_sel_pf_access");
 			accessDropdown.setOrientation(DropdownOrientation.right);
@@ -272,11 +272,16 @@ public class PublishController extends BasicController implements TooledControll
 		} else if(addInvitationEmailCtrl == source) {
 			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				String email = addInvitationEmailCtrl.getEmail();
+				Identity invitee = addInvitationEmailCtrl.getInvitee();
 				cmc.deactivate();
 				cleanUp();
 				
 				if(event == Event.DONE_EVENT) {
-					doAddInvitation(ureq, email);
+					if(invitee != null) {
+						doAddInvitation(ureq, invitee);
+					} else {
+						doAddInvitation(ureq, email);
+					}
 				}
 			}
 		} else if(addInvitationCtrl == source) {
@@ -333,13 +338,30 @@ public class PublishController extends BasicController implements TooledControll
 	private void doAddInvitation(UserRequest ureq, String email) {
 		if(addInvitationCtrl != null) return;
 		
-		addInvitationCtrl = new InvitationEditRightsController(ureq, getWindowControl(), binder, email);
+		addInvitationCtrl = new InvitationEditRightsController(ureq, getWindowControl(), binder, email, null);
 		listenTo(addInvitationCtrl);
 		
 		String title = translate("add.invitation");
 		cmc = new CloseableModalController(getWindowControl(), null, addInvitationCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
+	}
+	
+	private void doAddInvitation(UserRequest ureq, Identity invitee) {
+		removeAsListenerAndDispose(addMembersWizard);
+		
+		Step start = new AddMember_3_ChoosePermissionStep(ureq, binder, invitee);
+		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
+			AccessRightsContext rightsContext = (AccessRightsContext)runContext.get("rightsContext");
+			MailTemplate mailTemplate = (MailTemplate)runContext.get("mailTemplate");
+			addMembers(rightsContext, mailTemplate);
+			return StepsMainRunController.DONE_MODIFIED;
+		};
+		
+		addMembersWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
+				translate("add.member"), "o_sel_course_member_import_1_wizard");
+		listenTo(addMembersWizard);
+		getWindowControl().pushAsModalDialog(addMembersWizard.getInitialComponent());
 	}
 	
 	private void doEditInvitation(UserRequest ureq, Identity invitee) {
@@ -358,14 +380,11 @@ public class PublishController extends BasicController implements TooledControll
 		removeAsListenerAndDispose(addMembersWizard);
 
 		Step start = new AddMember_1_ChooseMemberStep(ureq, binder);
-		StepRunnerCallback finish = new StepRunnerCallback() {
-			@Override
-			public Step execute(UserRequest uureq, WindowControl wControl, StepsRunContext runContext) {
-				AccessRightsContext rightsContext = (AccessRightsContext)runContext.get("rightsContext");
-				MailTemplate mailTemplate = (MailTemplate)runContext.get("mailTemplate");
-				addMembers(rightsContext, mailTemplate);
-				return StepsMainRunController.DONE_MODIFIED;
-			}
+		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
+			AccessRightsContext rightsContext = (AccessRightsContext)runContext.get("rightsContext");
+			MailTemplate mailTemplate = (MailTemplate)runContext.get("mailTemplate");
+			addMembers(rightsContext, mailTemplate);
+			return StepsMainRunController.DONE_MODIFIED;
 		};
 		
 		addMembersWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
