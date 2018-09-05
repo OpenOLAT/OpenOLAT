@@ -449,10 +449,10 @@ public class LectureBlockRollCallDAO {
 		}
 	}
 	
-	public List<LectureBlockStatistics> getStatistics(IdentityRef identity, boolean authorizedAbsenceEnabled,
-			boolean absenceDefaultAuthorized, boolean countAuthorizedAbsenceAsAttendant,
+	public List<LectureBlockStatistics> getStatistics(IdentityRef identity, RepositoryEntryStatusEnum[] entryStatus,
+			boolean authorizedAbsenceEnabled, boolean absenceDefaultAuthorized, boolean countAuthorizedAbsenceAsAttendant,
 			boolean calculateAttendanceRate, double requiredAttendanceRateDefault) {
-		StringBuilder sb = new StringBuilder();
+		QueryBuilder sb = new QueryBuilder(5000);
 		sb.append("select call.key as callKey, ")
 		  .append("  call.lecturesAttendedNumber as attendedLectures,")
 		  .append("  call.lecturesAbsentNumber as absentLectures,")
@@ -480,7 +480,9 @@ public class LectureBlockRollCallDAO {
 		  .append(" inner join lectureentryconfig as config on (re.key=config.entry.key)")
 		  .append(" left join lectureparticipantsummary as summary on (summary.identity.key=membership.identity.key and summary.entry.key=block.entry.key)")
 		  .append(" left join lectureblockrollcall as call on (call.identity.key=membership.identity.key and call.lectureBlock.key=block.key)")
-		  .append(" where config.lectureEnabled=true and membership.identity.key=:identityKey and membership.role='").append(GroupRoles.participant.name()).append("'");
+		  .append(" where config.lectureEnabled=true and membership.identity.key=:identityKey")
+		  .append(" and membership.role='").append(GroupRoles.participant.name()).append("'")
+		  .append(" and re.status ").in(entryStatus);
 		
 		//take in account: requiredAttendanceRateDefault, from repo config requiredAttendanceRate
 		//take in account: authorized absence

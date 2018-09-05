@@ -95,6 +95,7 @@ import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryRelationType;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.manager.RepositoryEntryDAO;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.user.UserDataDeletable;
@@ -994,8 +995,8 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 		boolean absenceDefaultAuthorized = lectureModule.isAbsenceDefaultAuthorized();
 		boolean countAuthorizedAbsenceAsAttendant = lectureModule.isCountAuthorizedAbsenceAsAttendant();
 		double defaultRequiredAttendanceRate = lectureModule.getRequiredAttendanceRateDefault();
-		return lectureBlockRollCallDao.getStatistics(identity, authorizedAbsenceEnabled,
-				absenceDefaultAuthorized, countAuthorizedAbsenceAsAttendant,
+		return lectureBlockRollCallDao.getStatistics(identity, RepositoryEntryStatusEnum.publishedAndClosed(),
+				authorizedAbsenceEnabled, absenceDefaultAuthorized, countAuthorizedAbsenceAsAttendant,
 				calculateAttendanceRate, defaultRequiredAttendanceRate);
 	}
 
