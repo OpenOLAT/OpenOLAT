@@ -52,6 +52,9 @@
 				<entry key="/math/">
 					<ref bean="mathwebbean" />
 				</entry>
+				<entry key="/tiny/">
+					<ref bean="tinywebbean" />
+				</entry>
 				<entry key="/podcast/">
 					<ref bean="podcastMediaBean" />
 				</entry>
@@ -232,6 +235,9 @@
 		
 	<bean id="mathwebbean"
 		class="org.olat.ims.qti21.restapi.MathWebDispatcher" />
+		
+	<bean id="tinywebbean"
+		class="org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.olatmovieviewer.TinyDispatcher" />
 
 	<!-- podcast media dispatcher -->
 	<bean id="podcastMediaBean" class="org.olat.modules.webFeed.dispatching.FeedMediaDispatcher" />

@@ -70,6 +70,8 @@ var BPlayer = {
 				jwplayer(domId).setup(args);
 			};			
 			BPlayer._loadJWPlayer(afterloadCallback);
+		} else if(provider == "nanoo" || videoUrl.indexOf('nanoo.tv/') >= 0) {
+			BPlayer._loadNanooTv(domId, args);
 		} else {
 			// After loading immediately insert HTML5 player
 			var afterloadCallback = function() {
@@ -112,6 +114,70 @@ var BPlayer = {
 					}
 				});
 		}
+	},
+	
+	_loadNanooTv : function(domId, config) {
+		var frameName = domId + "_frame";
+		for(i=jQuery('#' + frameName).length; i-->0; ) {
+			jQuery('#' + frameName).remove();
+		}
+		
+		if (config.image === undefined || config.image === null || config.image.length == 0) {
+			BPlayer._loadNanooTvFrame(domId, frameName, config);
+		} else {
+			BPlayer._loadNanooTvPoster(domId, frameName, config);
+		}
+	},
+	
+	_loadNanooTvPoster : function(domId, frameName, config) {
+		if(jQuery('#mediaelementplayercss').length == 0) {
+			var mediaElementBaseUrl = BPlayer._mediaElementBaseUrl();
+			var mediaElementcss = mediaElementBaseUrl + (BPlayer.debugEnabled ? 'mediaelementplayer.css' : 'mediaelementplayer.min.css');
+			jQuery('<link>')
+			  .appendTo('head')
+			  .attr({id : 'mediaelementplayercss', type : 'text/css', rel : 'stylesheet'})
+			  .attr('href', mediaElementcss);
+		}
+		
+		var poster = "<div id='" + frameName + "' class='mejs__container' role='application' style='width:" + config.width + "px; height:" + config.height + "px; overflow:hidden; overflow-x:hidden; overflow-y:hidden;'>"
+			       + "<div class='mejs__layers'>"
+		           + "<div class='mejs__poster mejs__layer' style='background-image: url(" + config.image + "); width: 100%; height: 100%;'><img src='" + config.image + "' width='0' height='0'></img></div>"
+		           + "<div class='mejs__overlay mejs__layer mejs__overlay-play' style='width: 100%; height: 100%; z-index:10;'><div class='mejs__overlay-button' style='z-index:10;' role='button' tabindex='0' aria-label='Play' aria-pressed='false'></div></div>"
+		           + "</div>"
+		           + "</div>";
+		jQuery('#' + domId).append(jQuery(poster));
+		jQuery('#' + domId).css("border", "none");
+		jQuery('#' + domId + ' div.mejs__overlay-button').on('click', function(el, index) {
+			var cloneConfig = {
+				file: config.file,
+				width: config.width,
+				height: config.height,
+				autostart: true
+			};
+			BPlayer._loadNanooTvFrame(domId, frameName, cloneConfig);
+		})
+	},
+	
+	_loadNanooTvFrame : function(domId, frameName, config) {
+		for(i=jQuery('#' + frameName).length; i-->0; ) {
+			jQuery('#' + frameName).remove();
+		}
+		
+		var url = config.file;
+		var parts = url.split('?');
+		var nanooId = parts[0].substring(url.lastIndexOf('/') + 1);
+		if(config.autostart) {
+			url = "https://www.nanoo.tv/link/w/" + nanooId;
+		} else {
+			url = "https://www.nanoo.tv/link/n/" + nanooId;
+		}
+		var iframe = '<iframe name="' + frameName + '" id="' + frameName
+		           + '" src="' + url
+		           + '" style="width:' + config.width + 'px; height:' + config.height + 'px; overflow:hidden;"'
+		           + ' frameborder="0"'
+		           + '></iframe>';
+		jQuery('#' + domId).append(jQuery(iframe));
+		jQuery('#' + domId).css("border", "none");
 	},
 
 	/*
