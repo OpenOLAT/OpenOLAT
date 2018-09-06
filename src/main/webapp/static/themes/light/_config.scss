@@ -365,7 +365,7 @@ $o-portfolio-entry-draft-color						: $brand-warning !default;
 $o-portfolio-entry-published-color					: $brand-primary !default;
 $o-portfolio-entry-inrevision-color					: $brand-danger !default;
 $o-portfolio-entry-closed-color						: $brand-success !default;
-$o-portfolio-entry-deleted-color						: #000 !default;
+$o-portfolio-entry-deleted-color					: #000 !default;
 $o-portfolio-entry-incoming-color					: $brand-success !default;
 $o-portfolio-entry-inprocess-color					: #c8c8c8 !default;
 $o-portfolio-entry-done-color						: $brand-success !default;
@@ -375,9 +375,15 @@ $o-portfolio-lead-space-sm							: $padding-large-vertical !default;
 $o-portfolio-lead-background-color					: lighten($gray-base, 95%) !default;
 $o-portfolio-lead-border-color						: darken($o-portfolio-lead-background-color,10%) !default;
 $o-portfolio-lead-border-radius						: $border-radius-small !default;
-$o-portfolio-lead-ended-background-color				: lighten($brand-danger, 30%) !default;
-$o-portfolio-lead-ended-border-color					: darken($o-portfolio-lead-ended-background-color	,10%) !default;
+$o-portfolio-lead-ended-background-color			: lighten($brand-danger, 30%) !default;
+$o-portfolio-lead-ended-border-color				: darken($o-portfolio-lead-ended-background-color	,10%) !default;
 $o-portfolio-page-summary-font-size					: $font-size-large !default;
+
+/* Editor */
+$o-editor-settings-bg								: #f9f9f9 !default;
+$o-editor-title-dark								: #000 !default;
+$o-editor-title-bright								: #f9f9f9 !default;
+
 
 /* QTI2 eAssessment */
 $o-qti-status-notPresented-color					: lighten($text-muted,40%) !default;
@@ -698,7 +704,7 @@ $o-slider-background				: #f9f9f9 !default;
 $o-slider-handler-border-color		: $brand-primary !default;
 $o-slider-handler-background-color	: $brand-primary !default;
 
-/* Lables */
+/* Labels */
 $o-labeled_color					: #fff;
 $o-labeled_bg-color					: #777;
 $o-labeled-light-bg-color			: $o-toolbar-bg-color;

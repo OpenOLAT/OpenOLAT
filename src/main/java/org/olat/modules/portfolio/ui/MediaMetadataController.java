@@ -88,8 +88,8 @@ public class MediaMetadataController extends BasicController {
 		}
 		
 		List<Category> categories = portfolioService.getCategories(media);
-		if(categories != null && categories.size() > 0) {
-			List<String> categoriesList = categories.stream().map(c -> c.getName())
+		if(categories != null && !categories.isEmpty()) {
+			List<String> categoriesList = categories.stream().map(Category::getName)
 					.collect(Collectors.toList());
 			metaVC.contextPut("categoriesList", categoriesList);
 		}

@@ -1,11 +1,26 @@
-<div class="o_image">
+#set($imageWidth = ${imageSize.width} + 25)
+<div class="o_image o_image_size_style_${imageSizeStyle} #if($r.isNotEmpty($alignment)) o_image_align_$alignment #end  #if($r.isNotEmpty($style)) $style #end" style='#if($imageSizeStyle == "none" && $r.isNotNull($imageSize)) width:${imageWidth}px #end'>
+	#if($r.isTrue($showDescription))
+		<span id="ldesc_${someId}" onclick="o_popoverWithTitle('ldesc_${someId}','desc_${someId}','$r.translate("show.description")','top').popover('show');"><i class="o_icon o_icon-lg o_icon_help"> </i></span>
+	#end
+	#if($r.isTrue($showSource))
+		<span id="lsource_${someId}" onclick="o_popoverWithTitle('lsource_${someId}','source_${someId}','$r.translate("show.source")','top').popover('show');"><i class="o_icon o_icon-lg o_icon_origin"> </i></span>
+	#end
 	<div class="o_figure_caption_bottom">
+		#if($r.isTrue($showTitle) && $titlePosition == "above")
+			<h4 #if($r.isNotEmpty($titleStyle)) class="$titleStyle" #end>$r.escapeHtml($title)</h4>
+		#end
 		<figure class="o_image">
-			$r.render("image")
-			#if($r.isNotEmpty($media.description))
-			<figcaption>
-				$media.description
-			</figcaption>
+			#if($r.isTrue($showTitle) && ($titlePosition == "top" || $titlePosition == "centered" || $titlePosition == "bottom"))
+				<div class="o_image_title">
+					<h4 class="o_image_title_${titlePosition} #if($r.isNotEmpty($titleStyle))${titleStyle}#end">$r.escapeHtml($title)</h4>
+					$r.render("image")
+				</div>
+			#else
+				$r.render("image")
+			#end
+			#if($r.isTrue($showCaption))
+			<figcaption>$r.xssScan($caption)</figcaption>
 			#end
 		</figure>
 	</div>
@@ -13,5 +28,11 @@
 		<div class="panel panel-default o_artefact_metadata">
 			$r.render("meta")
 		</div>
+	#end
+	#if($r.isTrue($showDescription))
+		<div id="desc_${someId}" style="display:none;"><div>$r.xssScan($description)</div></div>
+	#end
+	#if($r.isTrue($showSource))
+		<div id="source_${someId}" style="display:none;"><div>$r.xssScan($source)</div></div>
 	#end
 </div>

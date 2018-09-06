@@ -47,10 +47,15 @@ import org.olat.modules.portfolio.MediaRenderingHints;
 import org.olat.modules.portfolio.PortfolioLoggingAction;
 import org.olat.modules.portfolio.manager.MediaDAO;
 import org.olat.modules.portfolio.manager.PortfolioFileStorage;
+import org.olat.modules.portfolio.model.MediaPart;
 import org.olat.modules.portfolio.ui.editor.InteractiveAddPageElementHandler;
+import org.olat.modules.portfolio.ui.editor.PageElement;
 import org.olat.modules.portfolio.ui.editor.PageElementAddController;
+import org.olat.modules.portfolio.ui.editor.PageElementRenderingHints;
+import org.olat.modules.portfolio.ui.editor.PageRunElement;
 import org.olat.modules.portfolio.ui.media.CollectImageMediaController;
 import org.olat.modules.portfolio.ui.media.ImageMediaController;
+import org.olat.modules.portfolio.ui.media.ImageMediaEditorController;
 import org.olat.modules.portfolio.ui.media.UploadMedia;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.olat.user.manager.ManifestBuilder;
@@ -164,6 +169,23 @@ public class ImageHandler extends AbstractMediaHandler implements InteractiveAdd
 	@Override
 	public Media createMedia(AbstractArtefact artefact) {
 		return null;//no specific image document in old portfolio
+	}
+
+	@Override
+	public Controller getEditor(UserRequest ureq, WindowControl wControl, PageElement element) {
+		if(element instanceof MediaPart) {
+			MediaPart mediaPart = (MediaPart)element;
+			return new ImageMediaEditorController(ureq, wControl, mediaPart);
+		}
+		return super.getEditor(ureq, wControl, element);
+	}
+
+	@Override
+	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, PageElementRenderingHints options) {
+		if(element instanceof MediaPart) {
+			return new ImageMediaController(ureq, wControl, (MediaPart)element, new RenderingHints(options));
+		}
+		return super.getContent(ureq, wControl, element, options);
 	}
 
 	@Override

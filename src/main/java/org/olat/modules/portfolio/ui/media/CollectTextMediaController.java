@@ -154,7 +154,7 @@ public class CollectTextMediaController extends FormBasicController implements P
 	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		titleEl.clearError();
 		if (titleEl.isEmpty()) {
@@ -162,7 +162,7 @@ public class CollectTextMediaController extends FormBasicController implements P
 			allOk &= false;
 		}
 
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override

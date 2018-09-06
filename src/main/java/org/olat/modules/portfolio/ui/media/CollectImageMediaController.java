@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.olat.core.commons.modules.bc.meta.MetaInfoController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -75,6 +76,7 @@ public class CollectImageMediaController extends FormBasicController implements 
 	
 	private FileElement fileEl;
 	private TextElement titleEl;
+	private TextElement sourceEl;
 	private RichTextElement descriptionEl;
 	private TextBoxListElement categoriesEl;
 
@@ -91,6 +93,7 @@ public class CollectImageMediaController extends FormBasicController implements 
 
 	public CollectImageMediaController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(MetaInfoController.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(PortfolioHomeController.class, getLocale(), getTranslator()));
 		businessPath = "[HomeSite:" + getIdentity().getKey() + "][PortfolioV2:0][MediaCenter:0]";
 		initForm(ureq);
@@ -160,6 +163,8 @@ public class CollectImageMediaController extends FormBasicController implements 
 		categoriesEl.setHelpText(translate("categories.hint"));
 		categoriesEl.setElementCssClass("o_sel_ep_tagsinput");
 		categoriesEl.setAllowDuplicates(false);
+		
+		initMetadataForm(formLayout);
 
 		Date collectDate = mediaReference == null ? new Date() : mediaReference.getCollectionDate();
 		String date = Formatter.getInstance(getLocale()).formatDate(collectDate);
@@ -176,6 +181,11 @@ public class CollectImageMediaController extends FormBasicController implements 
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 	
+	protected void initMetadataForm(FormItemContainer formLayout) {
+		String source = (mediaReference != null ? mediaReference.getSource() : null);
+		sourceEl = uifactory.addTextElement("source", "mf.source", -1, source, formLayout);
+	}
+	
 	@Override
 	protected void doDispose() {
 		//
@@ -183,7 +193,7 @@ public class CollectImageMediaController extends FormBasicController implements 
 	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		fileEl.clearError();
 		if(fileEl.getInitialFile() == null && (fileEl.getUploadFile() == null || fileEl.getUploadSize() < 1)) {
@@ -197,15 +207,15 @@ public class CollectImageMediaController extends FormBasicController implements 
 			allOk &= false;
 		}
 
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(fileEl == source) {
-			if (this.titleEl.isEmpty()) {
-				this.titleEl.setValue(fileEl.getUploadFileName());
-				this.titleEl.getComponent().setDirty(true);
+			if (titleEl.isEmpty()) {
+				titleEl.setValue(fileEl.getUploadFileName());
+				titleEl.getComponent().setDirty(true);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -222,6 +232,7 @@ public class CollectImageMediaController extends FormBasicController implements 
 		} else {
 			mediaReference.setTitle(titleEl.getValue());
 			mediaReference.setDescription(descriptionEl.getValue());
+			mediaReference.setSource(sourceEl.getValue());
 			mediaReference = portfolioService.updateMedia(mediaReference);
 		}
 

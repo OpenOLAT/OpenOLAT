@@ -128,6 +128,9 @@ public class ImageRenderer extends DefaultComponentRenderer {
 		// The inner component 
 		String imgId = divWrapper ? "o_img" + ic.getDispatchID() : compId;
 		sb.append("<img").append(" id='").append(imgId).append("'");
+		if(StringHelper.containsNonWhitespace(ic.getCssClasses())) {
+			sb.append(" class=\"").append(ic.getCssClasses()).append("\"");
+		}
 		if (scaledSize != null) {
 			sb.append(" width=\"").append(scaledSize.getWidth()).append("\"");
 			sb.append(" height=\"").append(scaledSize.getHeight()).append("\"");

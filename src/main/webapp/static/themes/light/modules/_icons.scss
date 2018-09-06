@@ -26,6 +26,9 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_accessibility:before { content: $fa-var-wheelchair; }
 .o_icon_actions:before { content: $fa-var-gears;}
 .o_icon_add_html:before { content: $fa-var-code; }
+.o_icon_align_left:before { content: $fa-var-align-left; }
+.o_icon_align_middle:before { content: $fa-var-align-center; }
+.o_icon_align_right:before { content: $fa-var-align-right; }
 .o_icon_archive_tool:before { content: $fa-var-download;}
 .o_icon_assessment_mode:before { content: $fa-var-pencil-square-o;}
 .o_icon_assessment_tool:before { content: $fa-var-trophy;}
@@ -191,6 +194,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_open_togglebox:before { content: $fa-var-caret-right;}
 .o_icon_openolat:before, %o_icon_openolat { content:"\E600"; font-family: openolat; font-size: 10px; }
 .o_icon_options:before { content: $fa-var-toggle-on; }
+.o_icon_origin:before { content: $fa-var-globe; }
 .o_icon_others:before { content: $fa-var-star; }
 .o_icon_pageing:before { content: $fa-var-ellipsis-h;}
 .o_icon_paragraph:before { content: $fa-var-paragraph; }

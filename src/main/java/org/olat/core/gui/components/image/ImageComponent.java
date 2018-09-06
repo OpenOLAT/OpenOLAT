@@ -63,6 +63,7 @@ public class ImageComponent extends AbstractComponent implements Disposable {
 	private String mimeType;
 
 	private String alt;
+	private String cssClasses;
 	private final MapperKey mapperUrl;
 	private final VFSMediaMapper mapper;
 
@@ -76,6 +77,8 @@ public class ImageComponent extends AbstractComponent implements Disposable {
 	private float scalingFactor;
 	private boolean divImageWrapper = true;
 	private boolean cropSelectionEnabled = false;
+	
+	private final MapperService mapperService;
 
 	/**
 	 * @param name
@@ -84,11 +87,11 @@ public class ImageComponent extends AbstractComponent implements Disposable {
 		super(name);
 		mapper = new VFSMediaMapper();
 		String mapperId = UUID.randomUUID().toString();
-		mapperUrl = CoreSpringFactory.getImpl(MapperService.class).register(usess, mapperId, mapper);
+		mapperService = CoreSpringFactory.getImpl(MapperService.class);
+		mapperUrl = mapperService.register(usess, mapperId, mapper);
 		// optional poster frame for videos
 		posterMapper = new VFSMediaMapper();
-		mapperId = UUID.randomUUID().toString();
-		posterMapperUrl = CoreSpringFactory.getImpl(MapperService.class).register(usess, mapperId, posterMapper);		
+		posterMapperUrl = mapperService.register(usess, mapperId + "-poster", posterMapper);		
 		// renderer provides own DOM ID
 		setDomReplacementWrapperRequired(false);
 	}
@@ -109,9 +112,6 @@ public class ImageComponent extends AbstractComponent implements Disposable {
 		this.divImageWrapper = divImageWrapper;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.Component#dispatchRequest(org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void doDispatchRequest(UserRequest ureq) {
 		//
@@ -123,6 +123,14 @@ public class ImageComponent extends AbstractComponent implements Disposable {
 	
 	public void setCropSelectionEnabled(boolean enable) {
 		cropSelectionEnabled = enable;
+	}
+
+	public String getCssClasses() {
+		return cssClasses;
+	}
+
+	public void setCssClasses(String cssClasses) {
+		this.cssClasses = cssClasses;
 	}
 
 	/**
@@ -161,10 +169,10 @@ public class ImageComponent extends AbstractComponent implements Disposable {
 	@Override
 	public void dispose() {
 		if(mapper != null) {
-			CoreSpringFactory.getImpl(MapperService.class).cleanUp(Collections.<MapperKey>singletonList(mapperUrl));
+			mapperService.cleanUp(Collections.<MapperKey>singletonList(mapperUrl));
 		}
 		if(posterMapper != null) {
-			CoreSpringFactory.getImpl(MapperService.class).cleanUp(Collections.<MapperKey>singletonList(posterMapperUrl));
+			mapperService.cleanUp(Collections.<MapperKey>singletonList(posterMapperUrl));
 		}
 	}
 

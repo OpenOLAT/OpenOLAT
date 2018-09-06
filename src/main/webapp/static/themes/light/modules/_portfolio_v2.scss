@@ -368,6 +368,92 @@
 		.o_artefact_metadata {
 			text-align: left;
 		}
+		
+		&.o_image_align_left {
+			float: left;
+		}
+		&.o_image_align_right {
+			float: right;
+		}
+		&.o_image_align_middle {
+			clear:both;
+			margin-left: 50%;
+			transform: translate(-50%, 0%);
+		}
+		
+		&.o_image_size_style_none {
+		
+		}
+		
+		&.o_image_size_style_small {
+		
+		}
+		
+		&.o_image_size_style_medium {
+			width: 50%;
+			img {
+				width: 100%;
+			}
+		}
+		
+		&.o_image_size_style_fill {
+			width: 100%;
+			img {
+				width: 100%;
+			}
+		}
+		
+		img.o_image_round {
+			border: 1px #f8f8f8 solid;
+			border-radius: 10px;
+		}
+		img.o_image_shadow {
+			box-shadow: 0px 0px 10px #777;
+			border: none;
+		}
+		img.o_image_classic {
+			box-shadow: none;
+			border: none;
+			border-radius: 0px;
+		}
+		
+		.o_image_title_dark {
+			color: $o-editor-title-dark;
+		}
+		.o_image_title_bright {
+			color: $o-editor-title-bright;
+		}
+		
+		.o_image_title {
+			position: relative;
+			
+			.o_image_title_top {
+				position: absolute;
+				top: 0px;
+				left: 50%;
+				margin-right: -50%;
+				transform: translate(-50%, -50%);
+			}
+			
+			.o_image_title_centered {
+				position: absolute;
+				top: 50%;
+				left: 50%;
+				margin-right: -50%;
+				transform: translate(-50%, -50%);
+			}
+			
+			.o_image_title_bottom {
+				position: absolute;
+				bottom: 0px;
+				left: 50%;
+				margin-right: -50%;
+				transform: translate(-50%, -50%);
+			}
+		}
+		
+
+		
 	}
 	
 	.o_efficiencystatement, .o_feed, .o_forum, .o_wiki  {
@@ -618,6 +704,10 @@
 	clear:both;
 	width: 300px;
 	padding: 5px;
+	position: absolute;
+	top: 2px;
+	right: 25px;
+	background-color: $o-editor-settings-bg;
 }
 
 .o_binder_page_listing {
