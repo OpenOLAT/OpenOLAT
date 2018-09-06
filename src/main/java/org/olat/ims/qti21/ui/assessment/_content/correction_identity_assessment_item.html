@@ -1,4 +1,4 @@
-<div class="o_assessmentitem_wrapper clearfix">
+<div id="o_assessmentitem_$r.getCId()" class="o_assessmentitem_wrapper clearfix">
 	<h4 class="itemTitle"><i class="o_icon $labelCssClass"> </i> $r.escapeHtml($label)</h4>
 	$r.render("interactions")
 	<div class="o_button_group o_assessmentitem_scoring_buttons">
@@ -8,3 +8,4 @@
 		$r.render("save.back")
 	</div>
 </div>
+$r.mathJax("o_assessmentitem_${r.getCId()}")

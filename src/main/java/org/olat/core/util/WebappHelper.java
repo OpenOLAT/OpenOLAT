@@ -448,7 +448,7 @@ public class WebappHelper implements Initializable, Destroyable, ServletContextA
 	private void testUtf8FileSystem() {
 		File tmpDir = new File(new File(WebappHelper.getUserDataRoot()), "tmp");
 		if (!tmpDir.exists()) tmpDir.mkdir();
-		File writeFile = new File(tmpDir, "UTF-8 test läsÖiç-首页|新");
+		File writeFile = new File(tmpDir, "UTF-8 test läsÖiç-首页f新");
 		if (writeFile.exists()) {
 			// remove exising files first
 			writeFile.delete();
@@ -464,7 +464,7 @@ public class WebappHelper implements Initializable, Destroyable, ServletContextA
 		if(tmpFiles != null){
 			for (int i = 0; i < tmpFiles.length; i++) {
 				File tmpFile = tmpFiles[i];
-				if (tmpFile.getName().equals("UTF-8 test läsÖiç-首页|新")) {
+				if (tmpFile.getName().equals("UTF-8 test läsÖiç-首页f新")) {
 					foundUtf8File = true;
 					break;
 				}
