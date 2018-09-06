@@ -64,6 +64,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.gui.control.winmgr.ScrollTopCommand;
 import org.olat.core.gui.media.FileMediaResource;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
@@ -93,6 +94,7 @@ import org.olat.modules.portfolio.ui.component.CategoriesCellRenderer;
 import org.olat.modules.portfolio.ui.component.TimelineElement;
 import org.olat.modules.portfolio.ui.event.PageDeletedEvent;
 import org.olat.modules.portfolio.ui.event.PageRemovedEvent;
+import org.olat.modules.portfolio.ui.event.SelectPageEvent;
 import org.olat.modules.portfolio.ui.model.PortfolioElementRow;
 import org.olat.modules.portfolio.ui.model.ReadOnlyCommentsSecurityCallback;
 import org.olat.modules.portfolio.ui.renderer.PortfolioElementCellRenderer;
@@ -566,6 +568,15 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 			} else if(event instanceof PageDeletedEvent) {
 				loadModel(ureq, null);
 				fireEvent(ureq, event);
+			} else if(event instanceof SelectPageEvent) {
+				SelectPageEvent spe = (SelectPageEvent)event;
+				if(SelectPageEvent.NEXT_PAGE.equals(spe.getCommand())) {
+					doNextPage(ureq, pageCtrl.getPage());
+				} else if(SelectPageEvent.PREVIOUS_PAGE.equals(spe.getCommand())) {
+					doPreviousPage(ureq, pageCtrl.getPage());
+				} else if(SelectPageEvent.ALL_PAGES.equals(spe.getCommand())) {
+					doAllPages();
+				}
 			}
 		} else if(commentsCtrl == source) {
 			if(event == Event.CHANGED_EVENT || "comment_count_changed".equals(event.getCommand())) {
@@ -870,6 +881,43 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		}
 	}
 	
+	protected void doPreviousPage(UserRequest ureq, Page currentPage) {
+		List<PortfolioElementRow> rows = model.getObjects();
+		Page selectedPage = currentPage;
+		for(int i=0; i<rows.size(); i++) {
+			PortfolioElementRow row = rows.get(i);
+			if(row.isPage() && currentPage.equals(row.getPage()) && i > 0 && rows.get(i-1).isPage()) {
+				selectedPage = rows.get(i - 1).getPage();
+			}
+		}
+
+		stackPanel.popUpToController(this);
+		Page reloadedPage = portfolioService.getPageByKey(selectedPage.getKey());
+		doOpenPage(ureq, reloadedPage, false);
+		getWindowControl().getWindowBackOffice().sendCommandTo(new ScrollTopCommand());
+	}
+	
+	protected void doNextPage(UserRequest ureq, Page currentPage) {
+		List<PortfolioElementRow> rows = model.getObjects();
+		Page selectedPage = currentPage;
+		for(int i=0; i<rows.size(); i++) {
+			PortfolioElementRow row = rows.get(i);
+			if(row.isPage() && currentPage.equals(row.getPage()) && i+1 < rows.size() && rows.get(i+1).isPage()) {
+				selectedPage = rows.get(i+1).getPage();
+			}
+		}
+
+		stackPanel.popUpToController(this);
+		Page reloadedPage = portfolioService.getPageByKey(selectedPage.getKey());
+		doOpenPage(ureq, reloadedPage, false);
+		getWindowControl().getWindowBackOffice().sendCommandTo(new ScrollTopCommand());
+	}
+	
+	protected void doAllPages() {
+		stackPanel.popController(pageCtrl);
+		getWindowControl().getWindowBackOffice().sendCommandTo(new ScrollTopCommand());
+	}
+	
 	protected void doOpenPage(UserRequest ureq, Page reloadedPage, boolean newElement) {
 		OLATResourceable pageOres = OresHelper.createOLATResourceableInstance("Entry", reloadedPage.getKey());
 		WindowControl swControl = addToHistory(ureq, pageOres, null);
@@ -884,6 +932,17 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 			stackPanel.pushController(section.getTitle(), null, new ListSection(section));
 		}
 		stackPanel.pushController(reloadedPage.getTitle(), pageCtrl);
+		
+		List<PortfolioElementRow> rows = model.getObjects();
+		int numOfRows = rows.size();
+		for(int i=0; i<numOfRows; i++) {
+			PortfolioElementRow row = rows.get(i);
+			if(row.isPage() && reloadedPage.equals(row.getPage())) {
+				boolean hasPrevious = (i > 0 && rows.get(i-1).isPage());	
+				boolean hasNext = (i + 1 < numOfRows && rows.get(i + 1).isPage());
+				pageCtrl.initPaging(hasPrevious, hasNext);	
+			}
+		}
 	}
 	
 	protected List<PortfolioElementRow> getSelectedRows() {

@@ -92,15 +92,14 @@ public class CollectImageMediaController extends FormBasicController implements 
 	private PortfolioService portfolioService;
 
 	public CollectImageMediaController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl);
-		setTranslator(Util.createPackageTranslator(MetaInfoController.class, getLocale(), getTranslator()));
+		super(ureq, wControl, Util.createPackageTranslator(MetaInfoController.class, ureq.getLocale()));
 		setTranslator(Util.createPackageTranslator(PortfolioHomeController.class, getLocale(), getTranslator()));
 		businessPath = "[HomeSite:" + getIdentity().getKey() + "][PortfolioV2:0][MediaCenter:0]";
 		initForm(ureq);
 	}
 	
 	public CollectImageMediaController(UserRequest ureq, WindowControl wControl, Media media) {
-		super(ureq, wControl);
+		super(ureq, wControl, Util.createPackageTranslator(MetaInfoController.class, ureq.getLocale()));
 		setTranslator(Util.createPackageTranslator(PortfolioHomeController.class, getLocale(), getTranslator()));
 		businessPath = media.getBusinessPath();
 		mediaReference = media;

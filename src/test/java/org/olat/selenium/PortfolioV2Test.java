@@ -566,7 +566,7 @@ public class PortfolioV2Test extends Deployments {
 		BinderPublicationPage binderPublish = binder
 			.selectPublish()
 			.openAccessMenu()
-			.addInvitation("c.l@frentix.com")
+			.addInvitation("c.l." + UUID.randomUUID() + "@frentix.com")
 			.fillInvitation("Clara", "Vigne")
 			.fillAccessRights("3. Page", Boolean.TRUE);
 		String url = binderPublish.getInvitationURL();

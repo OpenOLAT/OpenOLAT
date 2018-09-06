@@ -6,3 +6,10 @@ $r.render("meta")
 #if($r.available("comments"))
 <div class="o_pf_comments clearfix">$r.render("comments")</div>
 #end
+#if($r.visible("page.paging.next"))
+<div class="o_button_group"><div class="btn-group">
+	$r.render("page.paging.previous")
+	$r.render("page.paging.all")
+	$r.render("page.paging.next")
+</div></div>
+#end

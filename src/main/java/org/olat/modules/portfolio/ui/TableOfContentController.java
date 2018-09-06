@@ -53,6 +53,7 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.control.generic.spacesaver.ToggleBoxController;
+import org.olat.core.gui.control.winmgr.ScrollTopCommand;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -86,6 +87,7 @@ import org.olat.modules.portfolio.ui.event.PageDeletedEvent;
 import org.olat.modules.portfolio.ui.event.PageRemovedEvent;
 import org.olat.modules.portfolio.ui.event.RestoreBinderEvent;
 import org.olat.modules.portfolio.ui.event.SectionSelectionEvent;
+import org.olat.modules.portfolio.ui.event.SelectPageEvent;
 import org.olat.modules.portfolio.ui.export.ExportBinderAsCPResource;
 import org.olat.modules.portfolio.ui.export.ExportBinderAsPDFResource;
 import org.olat.modules.portfolio.ui.model.ReadOnlyCommentsSecurityCallback;
@@ -518,6 +520,15 @@ public class TableOfContentController extends BasicController implements TooledC
 				stackPanel.popController(pageCtrl);
 				loadModel();
 				fireEvent(ureq, Event.CHANGED_EVENT);
+			} else if(event instanceof SelectPageEvent) {
+				SelectPageEvent spe = (SelectPageEvent)event;
+				if(SelectPageEvent.NEXT_PAGE.equals(spe.getCommand())) {
+					doNextPage(ureq, pageCtrl.getPage());
+				} else if(SelectPageEvent.PREVIOUS_PAGE.equals(spe.getCommand())) {
+					doPreviousPage(ureq, pageCtrl.getPage());
+				} else if(SelectPageEvent.ALL_PAGES.equals(spe.getCommand())) {
+					doAllPages();
+				}
 			}
 		} else if(binderMetadataCtrl == source) {
 			if(event == Event.DONE_EVENT) {
@@ -735,6 +746,47 @@ public class TableOfContentController extends BasicController implements TooledC
 		cmc.activate();
 	}
 	
+	protected void doPreviousPage(UserRequest ureq, Page currentPage) {
+		Page selectedPage = currentPage;
+		for(SectionRow sectionRow:sectionList) {
+			int numOfPages = sectionRow.getPages() == null ? 0 : sectionRow.getPages().size();
+			for(int i=0; i<numOfPages; i++) {
+				PageRow pageRow = sectionRow.getPages().get(i);
+				if(currentPage.equals(pageRow.getPage()) && i > 0) {
+					selectedPage = sectionRow.getPages().get(i-1).getPage();
+				}
+			}
+		}
+
+		stackPanel.popController(pageCtrl);
+		Page reloadedPage = portfolioService.getPageByKey(selectedPage.getKey());
+		doOpenPage(ureq, reloadedPage);
+		getWindowControl().getWindowBackOffice().sendCommandTo(new ScrollTopCommand());
+	}
+	
+	protected void doNextPage(UserRequest ureq, Page currentPage) {
+		Page selectedPage = currentPage;
+		for(SectionRow sectionRow:sectionList) {
+			int numOfPages = sectionRow.getPages() == null ? 0 : sectionRow.getPages().size();
+			for(int i=0; i<numOfPages; i++) {
+				PageRow pageRow = sectionRow.getPages().get(i);
+				if(currentPage.equals(pageRow.getPage()) && i+1 < numOfPages) {
+					selectedPage = sectionRow.getPages().get(i+1).getPage();
+				}
+			}
+		}
+
+		stackPanel.popController(pageCtrl);
+		Page reloadedPage = portfolioService.getPageByKey(selectedPage.getKey());
+		doOpenPage(ureq, reloadedPage);
+		getWindowControl().getWindowBackOffice().sendCommandTo(new ScrollTopCommand());
+	}
+	
+	protected void doAllPages() {
+		stackPanel.popController(pageCtrl);
+		getWindowControl().getWindowBackOffice().sendCommandTo(new ScrollTopCommand());
+	}
+	
 	private PageRunController doOpenPage(UserRequest ureq, Page page) {
 		removeAsListenerAndDispose(pageCtrl);
 
@@ -752,6 +804,19 @@ public class TableOfContentController extends BasicController implements TooledC
 			stackPanel.pushController(section.getTitle(), null, new TOCSection(section));
 		}
 		stackPanel.pushController(page.getTitle(), pageCtrl);
+		
+		for(SectionRow sectionRow:sectionList) {
+			int numOfPages = sectionRow.getPages() == null ? 0 : sectionRow.getPages().size();
+			for(int i=0; i<numOfPages; i++) {
+				PageRow pageRow = sectionRow.getPages().get(i);
+				if(page.equals(pageRow.getPage())) {
+					boolean hasPrevious = (i > 0);
+					boolean hasNext = (i + 1 < numOfPages);
+					pageCtrl.initPaging(hasPrevious, hasNext);
+				}
+			}
+		}
+		
 		return pageCtrl;
 	}
 	

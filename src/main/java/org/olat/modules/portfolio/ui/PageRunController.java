@@ -92,6 +92,7 @@ import org.olat.modules.portfolio.ui.event.PageRemovedEvent;
 import org.olat.modules.portfolio.ui.event.PublishEvent;
 import org.olat.modules.portfolio.ui.event.ReopenPageEvent;
 import org.olat.modules.portfolio.ui.event.RevisionEvent;
+import org.olat.modules.portfolio.ui.event.SelectPageEvent;
 import org.olat.modules.portfolio.ui.export.ExportBinderAsPDFResource;
 import org.olat.modules.portfolio.ui.model.ReadOnlyCommentsSecurityCallback;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -105,7 +106,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class PageRunController extends BasicController implements TooledController, Activateable2  {
 
 	private VelocityContainer mainVC;
-	private Link editLink, editMetadataLink, moveToTrashLink, restoreLink, deleteLink,
+	private Link previousPageLink;
+	private Link nextPageLink;
+	private Link allPagesLink;
+	private Link editLink;
+	private Link editMetadataLink, moveToTrashLink, restoreLink, deleteLink,
 		printLink, exportPageAsPdfLink;
 	protected final TooledStackedPanel stackPanel;
 	
@@ -148,6 +153,15 @@ public class PageRunController extends BasicController implements TooledControll
 		mainVC.put("page", pageCtrl.getInitialComponent());
 		loadModel(ureq, false);
 		stackPanel.addListener(this);
+		
+		previousPageLink = LinkFactory.createButton("page.paging.previous", mainVC, this);
+		previousPageLink.setVisible(false);
+		previousPageLink.setIconLeftCSS("o_icon o_icon_move_left");
+		nextPageLink = LinkFactory.createButton("page.paging.next", mainVC, this);
+		nextPageLink.setVisible(false);
+		nextPageLink.setIconRightCSS("o_icon o_icon_move_right");
+		allPagesLink = LinkFactory.createButton("page.paging.all", mainVC, this);
+		allPagesLink.setVisible(false);
 
 		putInitialPanel(mainVC);
 		
@@ -162,6 +176,14 @@ public class PageRunController extends BasicController implements TooledControll
 				mainVC.remove(commentsCtrl.getInitialComponent());
 			}
 		}
+	}
+	
+	public void initPaging(boolean hasPrevious, boolean hasNext) {
+		previousPageLink.setVisible(true);
+		previousPageLink.setEnabled(hasPrevious);
+		nextPageLink.setVisible(true);
+		nextPageLink.setEnabled(hasNext);
+		allPagesLink.setVisible(true);
 	}
 
 	@Override
@@ -305,7 +327,7 @@ public class PageRunController extends BasicController implements TooledControll
 			} else if(event instanceof PublishEvent) {
 				doConfirmPublish(ureq);
 			}
-		} else if(editMetadataCtrl == source) {
+		} else if(editMetadataCtrl == source || restorePageCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				loadMeta(ureq);
 				fireEvent(ureq, Event.CHANGED_EVENT);
@@ -327,13 +349,6 @@ public class PageRunController extends BasicController implements TooledControll
 				// categories modified, just propagate
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
-		} else if(restorePageCtrl == source) {
-			if(event == Event.DONE_EVENT) {
-				loadMeta(ureq);
-				fireEvent(ureq, Event.CHANGED_EVENT);
-			}
-			cmc.deactivate();
-			cleanUp();
 		} else if(commentsCtrl == source) {
 			if(event == Event.CANCELLED_EVENT) {
 				commentsCtrl.collapseComments();
@@ -404,6 +419,12 @@ public class PageRunController extends BasicController implements TooledControll
 			doPrint(ureq);
 		} else if(exportPageAsPdfLink == source) {
 			doExportBinderAsPdf(ureq);
+		} else if(previousPageLink == source) {
+			fireEvent(ureq, new SelectPageEvent(SelectPageEvent.PREVIOUS_PAGE));
+		} else if(nextPageLink == source) {
+			fireEvent(ureq, new SelectPageEvent(SelectPageEvent.NEXT_PAGE));
+		} else if(allPagesLink == source) {
+			fireEvent(ureq, new SelectPageEvent(SelectPageEvent.ALL_PAGES));
 		}
 	}
 	
@@ -436,7 +457,7 @@ public class PageRunController extends BasicController implements TooledControll
 		String title = translate("publish.confirm.title");
 		String text = translate("publish.confirm.descr", new String[]{ StringHelper.escapeHtml(page.getTitle()) });
 		
-		if(messages.size() > 0) {
+		if(!messages.isEmpty()) {
 			StringBuilder sb = new StringBuilder();
 			sb.append("<p>").append(text).append("</p>");
 			for(ValidationMessage message:messages) {
@@ -591,14 +612,11 @@ public class PageRunController extends BasicController implements TooledControll
 	}
 	
 	private void doPrint(UserRequest ureq) {
-		ControllerCreator ctrlCreator = new ControllerCreator() {
-			@Override
-			public Controller createController(UserRequest lureq, WindowControl lwControl) {			
-				BinderOnePageController printCtrl = new BinderOnePageController(lureq, lwControl, page, ExtendedMediaRenderingHints.toPrint(), true);
-				LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, lwControl, printCtrl);
-				layoutCtr.addDisposableChildController(printCtrl); // dispose controller on layout dispose
-				return layoutCtr;
-			}					
+		ControllerCreator ctrlCreator = (lureq, lwControl) -> {
+			BinderOnePageController printCtrl = new BinderOnePageController(lureq, lwControl, page, ExtendedMediaRenderingHints.toPrint(), true);
+			LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, lwControl, printCtrl);
+			layoutCtr.addDisposableChildController(printCtrl); // dispose controller on layout dispose
+			return layoutCtr;
 		};
 		ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createPrintPopupLayout(ctrlCreator);
 		openInNewBrowserWindow(ureq, layoutCtrlr);
