@@ -80,6 +80,8 @@ import uk.ac.ed.ph.jqtiplus.state.TestPlanNode;
 import uk.ac.ed.ph.jqtiplus.state.TestPlanNodeKey;
 import uk.ac.ed.ph.jqtiplus.state.TestSessionState;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
+import uk.ac.ed.ph.jqtiplus.types.ResponseData;
+import uk.ac.ed.ph.jqtiplus.types.StringResponseData;
 import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
 
 /**
@@ -170,6 +172,7 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 		
 		viewSolutionButton = uifactory.addFormLink("view.solution", formLayout);
 		viewSolutionButton.setIconLeftCSS("o_icon o_icon_open_togglebox");
+		viewSolutionButton.setVisible(hasSolution());
 		
 		solutionItem = initFormExtendedTextInteraction(testPlanNodeKey, testSessionState, testSession, formLayout);	
 		solutionItem.setVisible(false);
@@ -273,6 +276,7 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
 			layoutCont.contextPut("interactionWrapper", wrapper);
+			layoutCont.contextPut("autoSaved", Boolean.valueOf(isAutoSaved(testPlanNodeKey, testSessionState)));
 		}
 	}
 	
@@ -308,6 +312,49 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 		feedbackItem.setMapperUri(mapperUri);
 		layoutCont.add(feedbackItem);
 		return feedbackItem;
+	}
+	
+	private boolean isAutoSaved(TestPlanNodeKey testPlanNodeKey, TestSessionState testSessionState) {
+		for(Interaction interaction:assessmentItem.getItemBody().findInteractions()) {
+			if(!(interaction instanceof ExtendedTextInteraction)) {
+				return false;
+			}
+		}
+		
+		ItemSessionState sessionState = testSessionState.getItemSessionStates().get(testPlanNodeKey);
+		if(sessionState == null) {
+			return false;
+		}
+		Map<Identifier, ResponseData> raws = sessionState.getRawResponseDataMap();
+		if(raws == null || raws.isEmpty()) {
+			return false;
+		}
+		
+		for(ResponseData data:raws.values()) {
+			if(data instanceof StringResponseData) {
+				StringResponseData stringData = (StringResponseData)data;
+				if(stringData.getResponseData() != null) {
+					for(String string:stringData.getResponseData()) {
+						if(StringHelper.containsNonWhitespace(string)) {
+							return true;
+						}
+					}
+				}
+			}
+		}
+		
+		return false;
+	}
+	
+	private boolean hasSolution() {
+		for(Interaction interaction:assessmentItem.getItemBody().findInteractions()) {
+			if(!(interaction instanceof ExtendedTextInteraction)
+					&& !(interaction instanceof DrawingInteraction)
+					&& !(interaction instanceof UploadInteraction)) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	private boolean hasCorrectSolution() {
@@ -473,7 +520,7 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 			solutionItem.setVisible(false);
 		} else {
 			viewSolutionButton.setIconLeftCSS("o_icon o_icon_close_togglebox");
-			solutionItem.setVisible(true);
+			solutionItem.setVisible(hasSolution());
 		}
 	}
 	

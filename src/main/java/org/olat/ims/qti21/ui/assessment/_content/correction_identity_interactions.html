@@ -1,5 +1,6 @@
 #if(!${interactionWrapper.isItemSessionStateFinal()})
-	<div class="o_assessment_item_not_final o_warning">$r.translate("warning.not.submitted")</div>
+	<div class="o_assessment_item_not_final o_warning">$r.translate("warning.not.submitted")
+	 #if($r.isTrue($autoSaved))<br>$r.translate("warning.not.submitted.autosave")#end</div>
 #end
 <div class="o_qti_item_body clearfix">$r.render("answer")</div>
 
@@ -10,9 +11,13 @@
 	<div class="o_assessmentitem_controls"> </div>
 	#end
 #elseif($r.visible("view.correct.solution"))
-	<div class="o_assessmentitem_control_view_solution">$r.render("view.solution")</div>
-#else
+	#if($r.visible("view.solution"))
+		<div class="o_assessmentitem_control_view_solution">$r.render("view.solution")</div>
+	#end
+#elseif($r.visible("view.solution"))
 	<div class="o_assessmentitem_controls">$r.render("view.solution")</div>
+#else
+	<div class="o_assessmentitem_controls"> </div>
 #end
 
 #if($r.visible("view.correct.solution"))

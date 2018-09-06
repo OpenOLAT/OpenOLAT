@@ -379,6 +379,9 @@ public class VelocityRenderDecorator implements Closeable {
 		return sb;
 	}
 
+	public String mathJax(String targetDomId) {
+		return Formatter.elementLatexFormattingScript(targetDomId);
+	}
 	
 	/**
 	 * e.g. "/olat/"

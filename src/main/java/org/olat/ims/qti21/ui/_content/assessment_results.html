@@ -1,4 +1,4 @@
-<div class="o_assessment_test_results">
+<div id="o_assessment_test_results_$r.getCId()" class="o_assessment_test_results">
 <a id="o_result_overview" title="$r.translateInAttribute("head.assessment.details")"></a>
 
 <div class="o_header_with_buttons o_qti_assessment_title">
@@ -548,3 +548,5 @@
 </script>
 #end
 </div> ## END of o_assessment_test_results
+$r.mathJax("o_assessment_test_results_${r.getCId()}")
+
