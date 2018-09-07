@@ -30,18 +30,18 @@ public class Alignment {
 	public static final String TOP = "top";
 	
 	private final String vertical;
-	private final String wraptext;
+	private final String wrapText;
 	
-	public Alignment(String vertical, String wraptext) {
+	public Alignment(String vertical, String wrapText) {
 		this.vertical = vertical;
-		this.wraptext = wraptext;
+		this.wrapText = wrapText;
 	}
 
 	public String getVertical() {
 		return vertical;
 	}
 
-	public String getWraptext() {
-		return wraptext;
+	public String getWrapText() {
+		return wrapText;
 	}
 }

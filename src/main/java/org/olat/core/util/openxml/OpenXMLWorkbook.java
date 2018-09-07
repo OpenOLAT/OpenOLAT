@@ -706,7 +706,7 @@ public class OpenXMLWorkbook implements Closeable {
 			writer.writeAttribute("applyNumberFormat", style.getApplyNumberFormat());
 		}
 		if(StringHelper.containsNonWhitespace(style.getApplyAlignment())) {
-			writer.writeAttribute("applyalignment", style.getApplyAlignment());
+			writer.writeAttribute("applyAlignment", style.getApplyAlignment());
 		}
 		
 		if(style.getAlignment() != null) {
@@ -714,8 +714,8 @@ public class OpenXMLWorkbook implements Closeable {
 			if(StringHelper.containsNonWhitespace(style.getAlignment().getVertical())) {
 				writer.writeAttribute("vertical", style.getAlignment().getVertical());
 			}
-			if(StringHelper.containsNonWhitespace(style.getAlignment().getWraptext())) {
-				writer.writeAttribute("wraptext", style.getAlignment().getWraptext());
+			if(StringHelper.containsNonWhitespace(style.getAlignment().getWrapText())) {
+				writer.writeAttribute("wrapText", style.getAlignment().getWrapText());
 			}
 			writer.writeEndElement();
 		}
