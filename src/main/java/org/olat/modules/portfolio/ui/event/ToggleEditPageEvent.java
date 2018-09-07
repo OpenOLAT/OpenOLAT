@@ -17,7 +17,9 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio.ui.editor;
+package org.olat.modules.portfolio.ui.event;
+
+import org.olat.core.gui.control.Event;
 
 /**
  * 
@@ -25,15 +27,13 @@ package org.olat.modules.portfolio.ui.editor;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class TextSettings {
+public class ToggleEditPageEvent extends Event {
+
+	private static final long serialVersionUID = 4310436525791846517L;
+	private static final String TOGGLE_EDIT = "toggle-edit-page";
 	
-	private int numOfColumns;
-
-	public int getNumOfColumns() {
-		return numOfColumns;
+	public ToggleEditPageEvent() {
+		super(TOGGLE_EDIT);
 	}
 
-	public void setNumOfColumns(int numOfColumns) {
-		this.numOfColumns = numOfColumns;
-	}
 }

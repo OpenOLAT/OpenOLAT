@@ -237,7 +237,7 @@ public class BinderPageListController extends AbstractPageListController {
 	@Override
 	protected void loadModel(UserRequest ureq, String searchString) {
 		if (StringHelper.containsNonWhitespace(binder.getSummary())) {
-			summaryComp.setText(binder.getSummary());
+			summaryComp.setText(StringHelper.xssScan(binder.getSummary()));
 			flc.getFormItemComponent().put("summary", summaryCtrl.getInitialComponent());
 		} else {
 			flc.getFormItemComponent().remove("summary");
@@ -263,7 +263,7 @@ public class BinderPageListController extends AbstractPageListController {
 		//assessment sections
 		List<AssessmentSection> assessmentSections = portfolioService.getAssessmentSections(binder, getIdentity());
 		Map<Section,AssessmentSection> sectionToAssessmentSectionMap = assessmentSections.stream()
-				.collect(Collectors.toMap(as -> as.getSection(), as -> as));
+				.collect(Collectors.toMap(AssessmentSection::getSection, as -> as));
 
 		List<PortfolioElementRow> rows = new ArrayList<>();
 

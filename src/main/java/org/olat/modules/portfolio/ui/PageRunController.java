@@ -93,6 +93,7 @@ import org.olat.modules.portfolio.ui.event.PublishEvent;
 import org.olat.modules.portfolio.ui.event.ReopenPageEvent;
 import org.olat.modules.portfolio.ui.event.RevisionEvent;
 import org.olat.modules.portfolio.ui.event.SelectPageEvent;
+import org.olat.modules.portfolio.ui.event.ToggleEditPageEvent;
 import org.olat.modules.portfolio.ui.export.ExportBinderAsPDFResource;
 import org.olat.modules.portfolio.ui.model.ReadOnlyCommentsSecurityCallback;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -241,6 +242,10 @@ public class PageRunController extends BasicController implements TooledControll
 			}
 			editLink.setVisible(secCallback.canEditPage(page));
 			editLink.setUserObject(edit);
+			
+			if(pageMetaCtrl != null) {
+				pageMetaCtrl.editLink(edit);
+			}
 		}
 		return editLink;
 	}
@@ -290,7 +295,7 @@ public class PageRunController extends BasicController implements TooledControll
 		removeAsListenerAndDispose(pageMetaCtrl);
 		
 		mainVC.contextPut("pageTitle", page.getTitle());
-		pageMetaCtrl = new PageMetadataController(ureq, getWindowControl(), secCallback, page);
+		pageMetaCtrl = new PageMetadataController(ureq, getWindowControl(), secCallback, page, openInEditMode);
 		listenTo(pageMetaCtrl);
 		mainVC.put("meta", pageMetaCtrl.getInitialComponent());
 	}
@@ -348,6 +353,8 @@ public class PageRunController extends BasicController implements TooledControll
 			} else if(event == Event.CHANGED_EVENT) {
 				// categories modified, just propagate
 				fireEvent(ureq, Event.CHANGED_EVENT);
+			} else if(event instanceof ToggleEditPageEvent) {
+				doEditPage(ureq);
 			}
 		} else if(commentsCtrl == source) {
 			if(event == Event.CANCELLED_EVENT) {

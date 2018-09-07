@@ -66,6 +66,7 @@ import org.olat.modules.portfolio.ui.event.DonePageEvent;
 import org.olat.modules.portfolio.ui.event.PublishEvent;
 import org.olat.modules.portfolio.ui.event.ReopenPageEvent;
 import org.olat.modules.portfolio.ui.event.RevisionEvent;
+import org.olat.modules.portfolio.ui.event.ToggleEditPageEvent;
 import org.olat.modules.portfolio.ui.model.UserAssignmentInfos;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -81,7 +82,8 @@ public class PageMetadataController extends BasicController {
 	
 	public static final int PICTURE_WIDTH = 970 * 2;	// max width for large images: 1294 * 75% , x2 for high res displays
 	public static final int PICTURE_HEIGHT = 300 * 2 ; 	// max size for large images, see CSS, x2 for high res displays
-	
+
+	private Link editLink;
 	private Link publishButton, revisionButton, closeButton, reopenButton, bookmarkButton;
 	private ImageComponent imageCmp;
 	private String mapperThumbnailUrl;
@@ -104,7 +106,8 @@ public class PageMetadataController extends BasicController {
 	@Autowired
 	private PortfolioFileStorage fileStorage;
 	
-	public PageMetadataController(UserRequest ureq, WindowControl wControl, BinderSecurityCallback secCallback, Page page) {
+	public PageMetadataController(UserRequest ureq, WindowControl wControl, BinderSecurityCallback secCallback,
+			Page page, boolean openInEditMode) {
 		super(ureq, wControl);
 		this.page = page;
 		this.secCallback = secCallback;
@@ -119,6 +122,7 @@ public class PageMetadataController extends BasicController {
 		initMetadata(ureq);
 		initAssignments(ureq);
 		initStatus();
+		editLink(!openInEditMode);
 		putInitialPanel(mainVC);
 	}
 	
@@ -218,7 +222,7 @@ public class PageMetadataController extends BasicController {
 			File storage = fileStorage.getAssignmentDirectory(assignment);
 			if(storage != null) {
 				documents = Arrays.<File>asList(storage.listFiles());
-				if(documents.size() > 0) {
+				if(!documents.isEmpty()) {
 					needMapper = true;
 				}
 			}
@@ -244,7 +248,7 @@ public class PageMetadataController extends BasicController {
 			}
 			String status = translate("status." + pageStatus.name());
 			mainVC.contextPut("pageStatus", status);
-			
+
 			if(secCallback.canPublish(page)) {
 				publishButton = LinkFactory.createButtonSmall("publish", mainVC, this);
 				publishButton.setIconLeftCSS("o_icon o_icon_publish o_icon-fw");
@@ -270,6 +274,25 @@ public class PageMetadataController extends BasicController {
 		}
 	}
 	
+	protected Link editLink(boolean edit) {
+		if(page.isEditable()) {
+			if(editLink == null) {
+				editLink = LinkFactory.createToolLink("edit.page.meta", translate("edit.page"), this);
+				editLink.setElementCssClass("o_sel_pf_edit_page_meta");
+				mainVC.put("edit.page.meta", editLink);
+			}
+			if(edit) {
+				editLink.setCustomDisplayText(translate("edit.page.meta"));
+				editLink.setIconRightCSS("o_icon o_icon-lg o_icon_toggle_on");
+			} else {
+				editLink.setCustomDisplayText(translate("edit.page.close"));
+				editLink.setIconRightCSS("o_icon o_icon-lg o_icon_toggle_off");
+			}
+			editLink.setVisible(secCallback.canEditPage(page));
+		}
+		return editLink;
+	}
+	
 	@Override
 	protected void doDispose() {
 		//
@@ -287,6 +310,8 @@ public class PageMetadataController extends BasicController {
 			fireEvent(ureq, new ReopenPageEvent());
 		} else if(bookmarkButton == source) {
 			toogleBookmark();
+		} else if(editLink == source) {
+			fireEvent(ureq, new ToggleEditPageEvent());
 		}
 	}
 
@@ -345,11 +370,11 @@ public class PageMetadataController extends BasicController {
 			if(relPath.startsWith("/")) {
 				relPath = relPath.substring(1, relPath.length());
 			}
-			int index = relPath.indexOf("/");
+			int index = relPath.indexOf('/');
 			if(index > 0) {
 				String assignmentKey = relPath.substring(0, index);
 				
-				int indexName = relPath.indexOf("/");
+				int indexName = relPath.indexOf('/');
 				if(indexName > 0) {
 					String filename = relPath.substring(indexName + 1);
 					
@@ -359,11 +384,12 @@ public class PageMetadataController extends BasicController {
 							storage = fileStorage.getAssignmentDirectory(assignment);
 						}
 					}
-					
-					File[] documents = storage.listFiles();
-					for(File document:documents) {
-						if(filename.equalsIgnoreCase(document.getName())) {
-							return new FileMediaResource(document);
+					if(storage != null) {
+						File[] documents = storage.listFiles();
+						for(File document:documents) {
+							if(filename.equalsIgnoreCase(document.getName())) {
+								return new FileMediaResource(document);
+							}
 						}
 					}
 				}

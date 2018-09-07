@@ -149,7 +149,7 @@ public class BinderOnePageController extends BasicController {
 		components.add(id);
 		
 		BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getReadOnlyCallback();
-		PageMetadataController metadatCtrl = new PageMetadataController(ureq, getWindowControl(), secCallback, page);
+		PageMetadataController metadatCtrl = new PageMetadataController(ureq, getWindowControl(), secCallback, page, false);
 		listenTo(metadatCtrl);
 		
 		Component pageMetaCmp = metadatCtrl.getInitialComponent();

@@ -260,7 +260,7 @@ public class TableOfContentController extends BasicController implements TooledC
 		mainVC.contextPut("binderTitle", StringHelper.escapeHtml(binder.getTitle()));
 
 		if (StringHelper.containsNonWhitespace(binder.getSummary())) {
-			summaryComp.setText(binder.getSummary());
+			summaryComp.setText(StringHelper.xssScan(binder.getSummary()));
 			mainVC.put("summary", summaryCtrl.getInitialComponent());
 		} else {
 			mainVC.remove("summary");

@@ -336,7 +336,7 @@ public class ExportBinderAsCPResource implements MediaResource {
 	private void exportPage(Page page, ZipOutputStream zout) throws IOException {
 		WindowControl mockwControl = new WindowControlMocker();
 		BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getReadOnlyCallback();
-		PageMetadataController metadatCtrl = new PageMetadataController(ureq, mockwControl, secCallback, page);
+		PageMetadataController metadatCtrl = new PageMetadataController(ureq, mockwControl, secCallback, page, false);
 
 		PageController pageCtrl = new PageController(ureq, mockwControl, new PortfolioPageProvider(page), ExtendedMediaRenderingHints.toPrint());
 		pageCtrl.loadElements(ureq);

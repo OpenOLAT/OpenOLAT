@@ -59,7 +59,7 @@ public class BinderSecurityCallbackFactory {
 	}
 	
 	public static final BinderSecurityCallback getReadOnlyCallback() {
-		return new BinderSecurityCallbackImpl(false, false, null);
+		return new ReadOnlyBinderSecurityCallback();
 	}
 	
 	public static final BinderSecurityCallback getCallbackForTemplate(RepositoryEntrySecurity security) {
@@ -102,6 +102,18 @@ public class BinderSecurityCallbackFactory {
 	 */
 	public static final BinderSecurityCallback getCallbackForBusinessGroup() {
 		return new BinderSecurityCallbackGroup(true, false, null);
+	}
+	
+	private static class ReadOnlyBinderSecurityCallback extends BinderSecurityCallbackImpl {
+		
+		public ReadOnlyBinderSecurityCallback() {
+			super(false, false, null);
+		}
+
+		@Override
+		public boolean canPageUserInfosStatus() {
+			return false;
+		}
 	}
 
 	private static class BinderSecurityCallbackForDeletedPages extends DefaultBinderSecurityCallback {
