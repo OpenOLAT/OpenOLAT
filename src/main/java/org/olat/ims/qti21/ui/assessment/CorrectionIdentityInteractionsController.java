@@ -70,6 +70,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.ModalFeedback;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.DrawingInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.EndAttemptInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ExtendedTextInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.UploadInteraction;
@@ -316,7 +317,7 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 	
 	private boolean isAutoSaved(TestPlanNodeKey testPlanNodeKey, TestSessionState testSessionState) {
 		for(Interaction interaction:assessmentItem.getItemBody().findInteractions()) {
-			if(!(interaction instanceof ExtendedTextInteraction)) {
+			if(!(interaction instanceof ExtendedTextInteraction) && !(interaction instanceof EndAttemptInteraction)) {
 				return false;
 			}
 		}
@@ -350,7 +351,8 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 		for(Interaction interaction:assessmentItem.getItemBody().findInteractions()) {
 			if(!(interaction instanceof ExtendedTextInteraction)
 					&& !(interaction instanceof DrawingInteraction)
-					&& !(interaction instanceof UploadInteraction)) {
+					&& !(interaction instanceof UploadInteraction)
+					&& !(interaction instanceof EndAttemptInteraction)) {
 				return true;
 			}
 		}
