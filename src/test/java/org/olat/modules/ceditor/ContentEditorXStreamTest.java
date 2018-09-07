@@ -21,7 +21,7 @@ package org.olat.modules.ceditor;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.olat.modules.ceditor.ContentEditorXStream;
+import org.olat.modules.portfolio.ui.editor.TextSettings;
 import org.olat.modules.portfolio.ui.media.ImageHorizontalAlignment;
 import org.olat.modules.portfolio.ui.media.ImageSettings;
 import org.olat.modules.portfolio.ui.media.ImageSize;
@@ -64,6 +64,19 @@ public class ContentEditorXStreamTest {
 		Assert.assertEquals("A title", deserializedSettings.getTitle());
 		Assert.assertEquals(ImageTitlePosition.above, deserializedSettings.getTitlePosition());
 		Assert.assertEquals("o_image_title_style", deserializedSettings.getTitleStyle());
+	}
+	
+	@Test
+	public void textSettingsToXmlAndFrom() {
+		TextSettings settings = new TextSettings();
+		settings.setNumOfColumns(3);
+		// serialize
+		String xml = ContentEditorXStream.toXml(settings);
+		// read
+		TextSettings deserializedSettings = ContentEditorXStream.fromXml(xml, TextSettings.class);
+		//check
+		Assert.assertNotNull(deserializedSettings);
+		Assert.assertEquals(3, deserializedSettings.getNumOfColumns());
 	}
 
 }

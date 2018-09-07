@@ -20,6 +20,7 @@
 package org.olat.modules.portfolio.ui.editor;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -233,6 +234,11 @@ public class PageEditorController extends BasicController {
 	private void doEditElement(EditorFragment fragment) {
 		for(EditorFragment eFragment:fragments) {
 			eFragment.setEditMode(eFragment.equals(fragment));
+			
+			List<Link> additionalTools = eFragment.getAdditionalTools();
+			for(Link additionalTool:additionalTools) {
+				mainVC.put(additionalTool.getComponentName(), additionalTool);
+			}
 		}
 		//The link must every time created as new
 
@@ -285,7 +291,7 @@ public class PageEditorController extends BasicController {
 		deleteLink.setVisible(secCallback.canDeleteElement());
 		deleteLink.setEnabled(secCallback.canDeleteElement());
 		fragment.setDeleteLink(deleteLink);
-		
+
 		mainVC.setDirty(true);
 	}
 	
@@ -544,6 +550,13 @@ public class PageEditorController extends BasicController {
 
 		public void setMoveDownLink(Link moveDownLink) {
 			this.moveDownLink = moveDownLink;
+		}
+		
+		public List<Link> getAdditionalTools() {
+			if(editorPart instanceof PageElementEditorController) {
+				return ((PageElementEditorController)editorPart).getOptionLinks();
+			}
+			return Collections.emptyList();
 		}
 		
 		public String getType() {

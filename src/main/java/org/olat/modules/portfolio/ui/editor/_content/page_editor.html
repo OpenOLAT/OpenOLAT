@@ -11,9 +11,13 @@
 					
 					<div class="o_page_others_above">
 						<span class="o_page_type"><i class="o_icon $fragment.typeCssClass"> </i> $r.translate($fragment.type)</span>
+						
 						$r.render($fragment.saveLink)
 						#if($r.visible($fragment.deleteLink))
 							$r.render($fragment.deleteLink)
+						#end
+						#foreach($additionalTool in $fragment.additionalTools)
+							$r.render($additionalTool)
 						#end
 					</div>
 				</div>

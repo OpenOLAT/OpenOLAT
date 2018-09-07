@@ -356,6 +356,22 @@
 		border-radius: $o-panel-placeholder-border-radius;
 	}
 	
+	.o_pf_html_raw {
+		
+		&.o_html_col2 {
+			column-count: 2;
+			column-gap: 1em;
+		}
+		&.o_html_col3 {
+			column-count: 3;
+			column-gap: 1em;
+		}
+		&.o_html_col4 {
+			column-count: 4;
+			column-gap: 1em;
+		}
+	}
+	
 	.o_image, .o_video {
 		@extend %o_block_large;
 		padding: $o-portfolio-media-content-space;
