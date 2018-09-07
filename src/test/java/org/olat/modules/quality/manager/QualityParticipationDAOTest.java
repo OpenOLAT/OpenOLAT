@@ -19,9 +19,11 @@
  */
 package org.olat.modules.quality.manager;
 
+import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.olat.modules.quality.QualityDataCollectionStatus.FINISHED;
+import static org.olat.modules.quality.QualityDataCollectionStatus.PREPARATION;
 import static org.olat.modules.quality.QualityDataCollectionStatus.READY;
 import static org.olat.modules.quality.QualityDataCollectionStatus.RUNNING;
 
@@ -195,6 +197,7 @@ public class QualityParticipationDAOTest extends OlatTestCase {
 		
 		QualityExecutorParticipationSearchParams searchParams = new QualityExecutorParticipationSearchParams();
 		searchParams.setExecutorRef(identity);
+		searchParams.setDataCollectionStatus(asList(FINISHED, PREPARATION, READY, RUNNING));
 		int count = sut.getExecutorParticipationCount(searchParams);
 		
 		assertThat(count).isEqualTo(2);

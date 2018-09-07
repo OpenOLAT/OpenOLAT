@@ -25,6 +25,7 @@ import java.util.List;
 import javax.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.translator.Translator;
 import org.olat.modules.forms.EvaluationFormParticipationStatus;
@@ -134,13 +135,10 @@ class QualityParticipationDAO {
 	int getExecutorParticipationCount(QualityExecutorParticipationSearchParams searchParam) {
 		if (searchParam == null) return 0;
 		
-		StringBuilder sb = new StringBuilder();
+		QueryBuilder sb = new QueryBuilder();
 		sb.append("select count(participation.key)");
-		sb.append("  from evaluationformparticipation as participation");
-		sb.append(" inner join participation.survey as survey");
-		sb.append(" inner join participation.executor as executor");
-		sb.append(" where survey.resName = '").append(QualityDataCollectionLight.RESOURCEABLE_TYPE_NAME).append("'");
-		sb.append("   and executor.key = :executorKey");
+		appendFrom(sb);
+		appendWhereClause(sb, searchParam);;
 		
 		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Long.class);
@@ -153,7 +151,7 @@ class QualityParticipationDAO {
 			QualityExecutorParticipationSearchParams searchParam, int firstResult, int maxResults, SortKey... orderBy) {
 		if (searchParam == null) return new ArrayList<>();
 		
-		StringBuilder sb = new StringBuilder();
+		QueryBuilder sb = new QueryBuilder();
 		sb.append("select new org.olat.modules.quality.model.QualityExcecutorParticipationImpl(");
 		sb.append("       participation.key as participationKey");
 		sb.append("     , case");
@@ -195,21 +193,7 @@ class QualityParticipationDAO {
 		sb.append("       end as topic");
 		sb.append("     , previousCollection.title as previousTitle");
 		sb.append("       )");
-		sb.append("  from evaluationformparticipation as participation");
-		sb.append("       inner join participation.survey as survey");
-		sb.append("       inner join participation.executor as executor");
-		sb.append("       left join evaluationformsession as session on session.participation.key = participation.key");
-		sb.append("       inner join qualitydatacollection as collection on collection.key = survey.resId");
-		sb.append("       left join collection.topicIdentity.user as user");
-		sb.append("       left join collection.topicOrganisation as organisation");
-		sb.append("       left join collection.topicCurriculum as curriculum");
-		sb.append("       left join collection.topicCurriculumElement as curriculumElement");
-		sb.append("       left join curriculumElement.type as curriculumElementType");
-		sb.append("       left join collection.topicRepositoryEntry as repository");
-		sb.append("       left join survey.previous as previousSurvey");
-		sb.append("       left join qualitydatacollection as previousCollection on previousSurvey.resName = '").append(QualityDataCollectionLight.RESOURCEABLE_TYPE_NAME).append("'");
-		sb.append("                                                            and previousSurvey.resId = previousCollection.key");
-		sb.append(" where survey.resName = '").append(QualityDataCollectionLight.RESOURCEABLE_TYPE_NAME).append("'");
+		appendFrom(sb);
 		appendWhereClause(sb, searchParam);
 		
 		appendExecutorParticipationOrderBy(sb, orderBy);
@@ -227,23 +211,40 @@ class QualityParticipationDAO {
 		return query.getResultList();
 	}
 
-	private void appendWhereClause(StringBuilder sb, QualityExecutorParticipationSearchParams searchParam) {
+	public void appendFrom(QueryBuilder sb) {
+		sb.append("  from evaluationformparticipation as participation");
+		sb.append("       inner join participation.survey as survey");
+		sb.append("       inner join participation.executor as executor");
+		sb.append("       left join evaluationformsession as session on session.participation.key = participation.key");
+		sb.append("       inner join qualitydatacollection as collection on collection.key = survey.resId");
+		sb.append("       left join collection.topicIdentity.user as user");
+		sb.append("       left join collection.topicOrganisation as organisation");
+		sb.append("       left join collection.topicCurriculum as curriculum");
+		sb.append("       left join collection.topicCurriculumElement as curriculumElement");
+		sb.append("       left join curriculumElement.type as curriculumElementType");
+		sb.append("       left join collection.topicRepositoryEntry as repository");
+		sb.append("       left join survey.previous as previousSurvey");
+		sb.append("       left join qualitydatacollection as previousCollection on previousSurvey.resName = '").append(QualityDataCollectionLight.RESOURCEABLE_TYPE_NAME).append("'");
+		sb.append("                                                            and previousSurvey.resId = previousCollection.key");
+	}
+
+	private void appendWhereClause(QueryBuilder sb, QualityExecutorParticipationSearchParams searchParam) {
+		sb.and().append("survey.resName = '").append(QualityDataCollectionLight.RESOURCEABLE_TYPE_NAME).append("'");
 		if (searchParam.getExecutorRef() != null && searchParam.getExecutorRef().getKey() != null) {
-			sb.append(" and executor.key = :executorKey");
+			sb.and().append("executor.key = :executorKey");
 		}
 		if (searchParam.getDataCollectionRef() != null && searchParam.getDataCollectionRef().getKey() != null) {
-			sb.append(" and collection.key = :dataCollectionKey");
+			sb.and().append("collection.key = :dataCollectionKey");
 		}
 		if (searchParam.getParticipationStatus() != null) {
-			sb.append(" and participation.status = :participationStatus");
+			sb.and().append("participation.status = :participationStatus");
 		}
 		if (searchParam.getDataCollectionStatus() != null && !searchParam.getDataCollectionStatus().isEmpty()) {
-			sb.append(" and collection.status in :collectionStatus");
+			sb.and().append("collection.status in :collectionStatus");
 		}
 	}
 
-	private void appendWhereParameters(TypedQuery<?> query,
-			QualityExecutorParticipationSearchParams searchParam) {
+	private void appendWhereParameters(TypedQuery<?> query, QualityExecutorParticipationSearchParams searchParam) {
 		if (searchParam.getExecutorRef() != null && searchParam.getExecutorRef().getKey() != null) {
 				query.setParameter("executorKey", searchParam.getExecutorRef().getKey());
 		}
@@ -258,13 +259,13 @@ class QualityParticipationDAO {
 		}
 	}
 
-	private void appendExecutorParticipationOrderBy(StringBuilder sb, SortKey... orderBy) {
+	private void appendExecutorParticipationOrderBy(QueryBuilder sb, SortKey... orderBy) {
 		if(orderBy != null && orderBy.length > 0 && orderBy[0] != null) {
 			String sortKey = orderBy[0].getKey();
 			boolean asc = orderBy[0].isAsc();
 			sb.append(" order by ");
 			sb.append(sortKey);
-			appendAsc(sb, asc);
+			sb.appendAsc(asc);
 		} else {
 			sb.append(" order by executionStatus asc, start desc ");
 		}
