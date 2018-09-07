@@ -31,6 +31,7 @@ import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.LectureService;
+import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
 import org.olat.modules.lecture.model.LectureBlockReminderImpl;
 import org.olat.modules.lecture.model.LectureBlockToTeacher;
 import org.olat.repository.RepositoryEntry;
@@ -193,6 +194,12 @@ public class LectureBlockReminderDAOTest extends OlatTestCase {
 	
 	private LectureBlock createMinimalLectureBlock(int dayInThePast) {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		
+		RepositoryEntryLectureConfiguration config = lectureService.getRepositoryEntryLectureConfiguration(entry);
+		config.setLectureEnabled(true);
+		lectureService.updateRepositoryEntryLectureConfiguration(config);
+		dbInstance.commit();
+		
 		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry);
 		
 		Calendar cal = Calendar.getInstance();

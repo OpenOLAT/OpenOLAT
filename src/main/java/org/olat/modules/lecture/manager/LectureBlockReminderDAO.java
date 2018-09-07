@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockStatus;
@@ -56,14 +57,15 @@ public class LectureBlockReminderDAO {
 	}
 	
 	public List<LectureBlockToTeacher> getLectureBlockTeachersToReminder(Date date) {
-		StringBuilder sb = new StringBuilder(256);
+		QueryBuilder sb = new QueryBuilder(512);
 		sb.append("select block, teacher from lectureblock block")
 		  .append(" inner join fetch block.entry re")
 		  .append(" inner join block.teacherGroup tGroup")
 		  .append(" inner join tGroup.members membership")
 		  .append(" inner join membership.identity teacher")
 		  .append(" inner join fetch teacher.user teacherUser")
-		  .append(" where block.endDate<:date and not exists (")
+		  .append(" inner join lectureentryconfig as config on (re.key=config.entry.key)")
+		  .append(" where config.lectureEnabled=true and block.endDate<:date and not exists (")
 		  .append("   select reminder.key from lecturereminder reminder")
 		  .append("   where block.key=reminder.lectureBlock.key and teacher.key=reminder.identity.key")
 		  .append(" ) and block.statusString<>'").append(LectureBlockStatus.cancelled.name()).append("'")
