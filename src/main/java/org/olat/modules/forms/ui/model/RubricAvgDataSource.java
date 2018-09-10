@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.olat.core.CoreSpringFactory;
-import org.olat.modules.forms.EvaluationFormSessionRef;
+import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.manager.EvaluationFormReportDAO;
 import org.olat.modules.forms.model.jpa.CalculatedDouble;
 import org.olat.modules.forms.model.xml.Rubric;
@@ -38,21 +38,21 @@ import org.olat.modules.forms.model.xml.Slider;
 public class RubricAvgDataSource implements CalculatedDoubleDataSource {
 
 	private final Rubric rubric;
-	private final List<? extends EvaluationFormSessionRef> sessions;
+	private final SessionFilter filter;
 	
 	private EvaluationFormReportDAO reportDAO;
 	
-	public RubricAvgDataSource(Rubric rubric, List<? extends EvaluationFormSessionRef> sessions) {
+	public RubricAvgDataSource(Rubric rubric, SessionFilter filter) {
 		super();
 		this.rubric = rubric;
-		this.sessions = sessions;
+		this.filter = filter;
 		this.reportDAO = CoreSpringFactory.getImpl(EvaluationFormReportDAO.class);
 	}
 	
 	@Override
 	public List<CalculatedDouble> getResponses() {
 		List<String> responseIdentifiers = rubric.getSliders().stream().map(Slider::getId).collect(Collectors.toList());
-		return reportDAO.getAvgByResponseIdentifiers(responseIdentifiers, sessions);
+		return reportDAO.getAvgByResponseIdentifiers(responseIdentifiers, filter);
 	}
 
 }

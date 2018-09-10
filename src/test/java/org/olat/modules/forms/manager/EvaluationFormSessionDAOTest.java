@@ -31,8 +31,9 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSessionRef;
-import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.modules.forms.EvaluationFormSurvey;
+import org.olat.modules.forms.SessionFilter;
+import org.olat.modules.forms.SessionFilterFactory;
 import org.olat.modules.forms.ui.SessionSelectionModel.SessionSelectionCols;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -118,14 +119,15 @@ public class EvaluationFormSessionDAOTest extends OlatTestCase {
 	}
 
 	@Test
-	public void shouldLoadByKeys() {
+	public void shouldLoadFiltered() {
 		EvaluationFormSession session1 = evaTestHelper.createSession();
 		EvaluationFormSession session2 = evaTestHelper.createSession();
 		EvaluationFormSession otherSession = evaTestHelper.createSession();
 		dbInstance.commit();
 		
 		List<EvaluationFormSession> sessions = Arrays.asList(session1, session2);
-		List<EvaluationFormSession> loadedSessions = sut.loadSessionsByKey(sessions, 0, -1);
+		SessionFilter filter = SessionFilterFactory.create(sessions);
+		List<EvaluationFormSession> loadedSessions = sut.loadSessionsFiltered(filter, 0, -1);
 		
 		assertThat(loadedSessions)
 				.containsExactlyInAnyOrder(session1, session2)
@@ -133,27 +135,29 @@ public class EvaluationFormSessionDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void shouldLoadByKeysPaged() {
+	public void shouldLoadFilteredPaged() {
 		EvaluationFormSession session1 = evaTestHelper.createSession();
 		EvaluationFormSession session2 = evaTestHelper.createSession();
 		dbInstance.commit();
 		
 		List<EvaluationFormSession> sessions = Arrays.asList(session1, session2);
-		List<EvaluationFormSession> unpaged = sut.loadSessionsByKey(sessions, 0, -1);
+		SessionFilter filter = SessionFilterFactory.create(sessions);
+		List<EvaluationFormSession> unpaged = sut.loadSessionsFiltered(filter, 0, -1);
 		assertThat(unpaged) .hasSize(2);
 		
-		List<EvaluationFormSession> paged = sut.loadSessionsByKey(sessions, 1, 1);
+		List<EvaluationFormSession> paged = sut.loadSessionsFiltered(filter, 1, 1);
 		assertThat(paged).hasSize(1);
 	}
 	
 	@Test
-	public void shouldLoadByPagedOrdered€() {
+	public void shouldLoadFilteredOrdered() {
 		EvaluationFormSession session1 = evaTestHelper.createSession();
 		dbInstance.commit();
 		
 		List<EvaluationFormSession> sessions = Arrays.asList(session1);
+		SessionFilter filter = SessionFilterFactory.create(sessions);
 		SortKey sortKey = new SortKey(SessionSelectionCols.email.name(), true);
-		List<EvaluationFormSession> loadedSessions = sut.loadSessionsByKey(sessions, 0, -1, sortKey);
+		List<EvaluationFormSession> loadedSessions = sut.loadSessionsFiltered(filter, 0, -1, sortKey);
 		
 		assertThat(loadedSessions).containsExactlyInAnyOrder(session1);
 	}
@@ -168,25 +172,6 @@ public class EvaluationFormSessionDAOTest extends OlatTestCase {
 		
 		assertThat(loadedSession).isNotNull();
 		assertThat(loadedSession).isEqualTo(session);
-	}
-	
-	@Test
-	public void shouldLoadSessionsBySurvey() {
-		EvaluationFormSurvey survey = evaTestHelper.createSurvey();
-		EvaluationFormSession session1 = evaTestHelper.createSession(survey);
-		sut.changeStatus(session1, EvaluationFormSessionStatus.done);
-		EvaluationFormSession session2 = evaTestHelper.createSession(survey);
-		sut.changeStatus(session2, EvaluationFormSessionStatus.done);
-		EvaluationFormSession openSession = evaTestHelper.createSession(survey);
-		EvaluationFormSession otherSession = evaTestHelper.createSession();
-		sut.changeStatus(otherSession, EvaluationFormSessionStatus.done);
-		dbInstance.commit();
-		
-		List<EvaluationFormSession> loadedSessions = sut.loadSessionsBySurvey(survey, EvaluationFormSessionStatus.done);
-		
-		assertThat(loadedSessions)
-				.containsExactlyInAnyOrder(session1, session2)
-				.doesNotContain(openSession, otherSession);
 	}
 	
 	@Test

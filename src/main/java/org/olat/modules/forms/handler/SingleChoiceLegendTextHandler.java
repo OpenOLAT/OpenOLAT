@@ -19,13 +19,11 @@
  */
 package org.olat.modules.forms.handler;
 
-import java.util.List;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.ceditor.PageElement;
-import org.olat.modules.forms.EvaluationFormSessionRef;
+import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.model.xml.SingleChoice;
 import org.olat.modules.forms.ui.LegendTextController;
 import org.olat.modules.forms.ui.ReportHelper;
@@ -49,10 +47,10 @@ public class SingleChoiceLegendTextHandler implements EvaluationFormReportHandle
 
 	@Override
 	public EvaluationFormReportElement getReportElement(UserRequest ureq, WindowControl windowControl, PageElement element,
-			List<? extends EvaluationFormSessionRef> sessions, ReportHelper reportHelper) {
+			SessionFilter filter, ReportHelper reportHelper) {
 		if (element instanceof SingleChoice) {
 			SingleChoice singleChoice = (SingleChoice) element;
-			LegendTextDataSource dataSource = new SingleChoiceLegendTextDataSource(singleChoice, sessions, reportHelper);
+			LegendTextDataSource dataSource = new SingleChoiceLegendTextDataSource(singleChoice, filter, reportHelper);
 			Controller ctrl = new LegendTextController(ureq, windowControl, dataSource, reportHelper);
 			return new EvaluationFormControllerReportElement(ctrl);
 		}

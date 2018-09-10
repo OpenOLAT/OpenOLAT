@@ -129,11 +129,8 @@ public interface EvaluationFormManager {
 
 	public EvaluationFormSession loadSessionByParticipation(EvaluationFormParticipationRef participation);
 	
-	public List<EvaluationFormSession> loadSessionsByKey(List<? extends EvaluationFormSessionRef> sessionRefs,
-			int firstResult, int maxResults, SortKey... orderBy);
-
-	public List<EvaluationFormSession> loadSessionsBySurvey(EvaluationFormSurvey survey,
-			EvaluationFormSessionStatus status);
+	public List<EvaluationFormSession> loadSessionsFiltered(SessionFilter filter, int firstResult, int maxResults,
+			SortKey... orderBy);
 
 	public EvaluationFormSession updateSession(EvaluationFormSession session, String email, String firstname, String lastname,
 			String age, String gender, String orgUnit, String studySubject);
@@ -177,7 +174,7 @@ public interface EvaluationFormManager {
 
 	public EvaluationFormResponse updateNoResponse(EvaluationFormResponse response);
 
-	public EvaluationFormResponses loadResponsesBySessions(List<? extends EvaluationFormSessionRef> sessionRefs);
+	public EvaluationFormResponses loadResponsesBySessions(SessionFilter filter);
 
 	public File loadResponseFile(EvaluationFormResponse response);
 
@@ -195,8 +192,8 @@ public interface EvaluationFormManager {
 	 */
 	public boolean isEvaluationFormActivelyUsed(RepositoryEntryRef formEntry);
 	
-	public EvaluationFormStatistic getSessionsStatistic(List<? extends EvaluationFormSessionRef> sessionRefs);
+	public EvaluationFormStatistic getSessionsStatistic(SessionFilter filter);
 	
-	public RubricStatistic getRubricStatistic(Rubric rubric, List<? extends EvaluationFormSessionRef> sessions);
+	public RubricStatistic getRubricStatistic(Rubric rubric, SessionFilter filter);
 
 }

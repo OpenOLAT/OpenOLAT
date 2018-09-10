@@ -26,12 +26,14 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.persistence.TypedQuery;
+
 import org.olat.core.commons.persistence.DB;
 import org.olat.modules.forms.EvaluationFormParticipationRef;
 import org.olat.modules.forms.EvaluationFormResponse;
 import org.olat.modules.forms.EvaluationFormSession;
-import org.olat.modules.forms.EvaluationFormSessionRef;
 import org.olat.modules.forms.EvaluationFormSurvey;
+import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.model.jpa.EvaluationFormResponseImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -77,23 +79,29 @@ public class EvaluationFormResponseDAO {
 
 	public EvaluationFormResponse updateResponse(BigDecimal numericalValue, String stringuifiedResponse,
 			Path fileResponse, EvaluationFormResponse response) {
-		EvaluationFormResponseImpl evalResponse = (EvaluationFormResponseImpl)response;
-		evalResponse.setLastModified(new Date());
-		evalResponse.setNoResponse(false);
-		evalResponse.setNumericalResponse(numericalValue);
-		evalResponse.setStringuifiedResponse(stringuifiedResponse);
-		evalResponse.setFileResponse(fileResponse);
-		return dbInstance.getCurrentEntityManager().merge(response);
+		if (response instanceof EvaluationFormResponseImpl) {
+			EvaluationFormResponseImpl evalResponse = (EvaluationFormResponseImpl)response;
+			evalResponse.setLastModified(new Date());
+			evalResponse.setNoResponse(false);
+			evalResponse.setNumericalResponse(numericalValue);
+			evalResponse.setStringuifiedResponse(stringuifiedResponse);
+			evalResponse.setFileResponse(fileResponse);
+			return dbInstance.getCurrentEntityManager().merge(response);
+		}
+		return response;
 	}
 
 	public EvaluationFormResponse updateNoResponse(EvaluationFormResponse response) {
-		EvaluationFormResponseImpl evalResponse = (EvaluationFormResponseImpl)response;
-		evalResponse.setLastModified(new Date());
-		evalResponse.setNoResponse(true);
-		evalResponse.setNumericalResponse(null);
-		evalResponse.setStringuifiedResponse(null);
-		evalResponse.setFileResponse(null);
-		return dbInstance.getCurrentEntityManager().merge(response);
+		if (response instanceof EvaluationFormResponseImpl) {
+			EvaluationFormResponseImpl evalResponse = (EvaluationFormResponseImpl)response;
+			evalResponse.setLastModified(new Date());
+			evalResponse.setNoResponse(true);
+			evalResponse.setNumericalResponse(null);
+			evalResponse.setStringuifiedResponse(null);
+			evalResponse.setFileResponse(null);
+			return dbInstance.getCurrentEntityManager().merge(response);
+		}
+		return response;
 	}
 
 	public void deleteResponses(List<Long> keys) {
@@ -106,20 +114,22 @@ public class EvaluationFormResponseDAO {
 				.executeUpdate();
 	}
 
-	public List<EvaluationFormResponse> loadResponsesBySessions(List<? extends EvaluationFormSessionRef> sessionRefs) {
-		if (sessionRefs == null || sessionRefs.isEmpty()) return new ArrayList<>(0);
+	public List<EvaluationFormResponse> loadResponsesBySessions(SessionFilter filter) {
+		if (filter == null) return new ArrayList<>(0);
 		
 		StringBuilder sb = new StringBuilder();
 		sb.append("select response from evaluationformresponse as response");
 		sb.append(" inner join fetch response.session as session");
 		sb.append("  left outer join fetch session.participation as participation");
 		sb.append("  left outer join fetch participation.executor as executor");
-		sb.append(" where session.key in (:sessionKeys)");
+		sb.append(" where session.key in (");
+		sb.append(filter.getSelectKeys());
+		sb.append("       )");
 		
-		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), EvaluationFormResponse.class)
-				.setParameter("sessionKeys", getSessionKeys(sessionRefs))
-				.getResultList();
+		TypedQuery<EvaluationFormResponse> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), EvaluationFormResponse.class);
+		filter.addParameters(query);
+		return query.getResultList();
 	}
 
 	List<EvaluationFormResponse> loadResponsesBySurvey(EvaluationFormSurvey survey) {
@@ -157,10 +167,6 @@ public class EvaluationFormResponseDAO {
 	
 	private Object getParticipationsKeys(List<? extends EvaluationFormParticipationRef> participationRefs) {
 		return participationRefs.stream().map(EvaluationFormParticipationRef::getKey).collect(Collectors.toList());
-	}
-
-	private List<Long> getSessionKeys(List<? extends EvaluationFormSessionRef> sessionRefs) {
-		return sessionRefs.stream().map(EvaluationFormSessionRef::getKey).collect(Collectors.toList());
 	}
 
 }

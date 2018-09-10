@@ -37,7 +37,7 @@ import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.forms.EvaluationFormResponse;
 import org.olat.modules.forms.EvaluationFormSession;
-import org.olat.modules.forms.EvaluationFormSessionRef;
+import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.manager.EvaluationFormReportDAO;
 import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.forms.model.xml.Rubric.SliderType;
@@ -64,12 +64,12 @@ public class RubricRadarController extends FormBasicController {
 	private EvaluationFormReportDAO reportDAO;
 
 	public RubricRadarController(UserRequest ureq, WindowControl wControl, Rubric rubric,
-			List<? extends EvaluationFormSessionRef> sessions, ReportHelper reportHelper) {
+			SessionFilter filter, ReportHelper reportHelper) {
 		super(ureq, wControl, "rubric_radar");
 		this.rubric = rubric;
 		this.reportHelper = reportHelper;
 		List<String> responseIdentifiers = rubric.getSliders().stream().map(Slider::getId).collect(Collectors.toList());
-		identifierToResponses = reportDAO.getResponses(responseIdentifiers , sessions).stream()
+		identifierToResponses = reportDAO.getResponses(responseIdentifiers , filter).stream()
 				.collect(Collectors.groupingBy(EvaluationFormResponse::getResponseIdentifier));
 
 		initForm(ureq);

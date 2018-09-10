@@ -19,8 +19,6 @@
  */
 package org.olat.course.nodes;
 
-import static org.olat.modules.forms.handler.EvaluationFormResource.FORM_XML_FILE;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -39,7 +37,6 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.ICourse;
 import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.CourseEditorEnv;
@@ -56,15 +53,13 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.statistic.StatisticResourceOption;
 import org.olat.course.statistic.StatisticResourceResult;
 import org.olat.course.statistic.StatisticType;
-import org.olat.fileresource.FileResourceManager;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.forms.EvaluationFormManager;
-import org.olat.modules.forms.EvaluationFormSession;
-import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.modules.forms.EvaluationFormSurvey;
+import org.olat.modules.forms.SessionFilter;
+import org.olat.modules.forms.SessionFilterFactory;
 import org.olat.modules.forms.handler.EvaluationFormResource;
 import org.olat.modules.forms.model.xml.Form;
-import org.olat.modules.forms.model.xml.FormXStream;
 import org.olat.modules.forms.ui.EvaluationFormExcelExport;
 import org.olat.modules.forms.ui.LegendNameGenerator;
 import org.olat.modules.forms.ui.ReportHelper;
@@ -260,22 +255,17 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public boolean archiveNodeData(Locale locale, ICourse course, ArchiveOptions options, ZipOutputStream exportStream,
 			String charset) {
-		RepositoryEntry ores = RepositoryManager.getInstance().lookupRepositoryEntry(course, true);
 		EvaluationFormManager evaluationFormManager = CoreSpringFactory.getImpl(EvaluationFormManager.class);
+		
+		RepositoryEntry ores = RepositoryManager.getInstance().lookupRepositoryEntry(course, true);
 		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(ores, getIdent());
-		List<EvaluationFormSession> sessions = evaluationFormManager.loadSessionsBySurvey(survey,
-				EvaluationFormSessionStatus.done);
-
-		File repositoryDir = new File(
-				FileResourceManager.getInstance().getFileResourceRoot(survey.getFormEntry().getOlatResource()),
-				FileResourceManager.ZIPDIR);
-		File formFile = new File(repositoryDir, FORM_XML_FILE);
-		Form form = (Form) XStreamHelper.readObject(FormXStream.getXStream(), formFile);
-
-		LegendNameGenerator legendNameGenerator = new SessionInformationLegendNameGenerator(sessions);
+		SessionFilter filter = SessionFilterFactory.create(survey);
+		Form form = evaluationFormManager.loadForm(survey.getFormEntry());
+		
+		LegendNameGenerator legendNameGenerator = new SessionInformationLegendNameGenerator(filter);
 		ReportHelper reportHelper = ReportHelper.builder(locale).withLegendNameGenrator(legendNameGenerator).build();
 
-		EvaluationFormExcelExport evaluationFormExport = new EvaluationFormExcelExport(form, sessions, reportHelper,
+		EvaluationFormExcelExport evaluationFormExport = new EvaluationFormExcelExport(form, filter, reportHelper,
 				getShortName());
 		try {
 			evaluationFormExport.export(exportStream);

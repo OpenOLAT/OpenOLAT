@@ -24,7 +24,7 @@ import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.modules.forms.EvaluationFormResponse;
-import org.olat.modules.forms.EvaluationFormSessionRef;
+import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.manager.EvaluationFormReportDAO;
 import org.olat.modules.forms.ui.ReportHelper;
 
@@ -37,16 +37,15 @@ import org.olat.modules.forms.ui.ReportHelper;
 public class TextInputLegendTextDataSource implements LegendTextDataSource {
 
 	private final String responseIdentifier;
-	private final List<? extends EvaluationFormSessionRef> sessions;
+	private final SessionFilter filter;
 	private final ReportHelper reportHelper;
 	
 	private EvaluationFormReportDAO reportDAO;
 	
-	public TextInputLegendTextDataSource(String responseIdentifier, List<? extends EvaluationFormSessionRef> sessions,
-			ReportHelper reportHelper) {
+	public TextInputLegendTextDataSource(String responseIdentifier, SessionFilter filter, ReportHelper reportHelper) {
 		super();
 		this.responseIdentifier = responseIdentifier;
-		this.sessions = sessions;
+		this.filter = filter;
 		this.reportHelper = reportHelper;
 		this.reportDAO = CoreSpringFactory.getImpl(EvaluationFormReportDAO.class);
 	}
@@ -54,7 +53,7 @@ public class TextInputLegendTextDataSource implements LegendTextDataSource {
 	@Override
 	public List<SessionText> getResponses() {
 		List<SessionText> sessionTexts = new ArrayList<>();
-		List<EvaluationFormResponse> responses = reportDAO.getResponses(responseIdentifier, sessions);
+		List<EvaluationFormResponse> responses = reportDAO.getResponses(responseIdentifier, filter);
 		responses.sort((r1, r2) -> reportHelper.getComparator().compare(r1.getSession(), r2.getSession()));
 		for (EvaluationFormResponse response : responses) {
 			SessionText sessionText = new SessionText(response.getSession(), response.getStringuifiedResponse());

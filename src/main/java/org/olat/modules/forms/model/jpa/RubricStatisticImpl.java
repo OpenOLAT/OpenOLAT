@@ -27,8 +27,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.olat.core.CoreSpringFactory;
-import org.olat.modules.forms.EvaluationFormSessionRef;
 import org.olat.modules.forms.RubricStatistic;
+import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.SliderStatistic;
 import org.olat.modules.forms.manager.EvaluationFormReportDAO;
 import org.olat.modules.forms.model.xml.Rubric;
@@ -51,14 +51,14 @@ public class RubricStatisticImpl implements RubricStatistic {
 	private final EvaluationFormReportDAO reportDao;
 
 	
-	public RubricStatisticImpl(Rubric rubric, List<? extends EvaluationFormSessionRef> sessions) {
+	public RubricStatisticImpl(Rubric rubric, SessionFilter filter) {
 		this.rubric = rubric;
 		reportDao = CoreSpringFactory.getImpl(EvaluationFormReportDAO.class);
 		
 		List<String> responseIdentifiers = rubric.getSliders().stream().map(Slider::getId).collect(Collectors.toList());
-		countedResponses = reportDao.getCountByIdentifiersAndNumerical(responseIdentifiers , sessions);
+		countedResponses = reportDao.getCountByIdentifiersAndNumerical(responseIdentifiers , filter);
 		countedNoResponses = rubric.isNoResponseEnabled()
-				? reportDao.getCountNoResponsesByIdentifiers(responseIdentifiers, sessions)
+				? reportDao.getCountNoResponsesByIdentifiers(responseIdentifiers, filter)
 				: Collections.emptyList();
 		calculateStatistics();
 	}

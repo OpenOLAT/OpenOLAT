@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 import org.olat.core.CoreSpringFactory;
 import org.olat.modules.forms.EvaluationFormResponse;
 import org.olat.modules.forms.EvaluationFormSession;
-import org.olat.modules.forms.EvaluationFormSessionRef;
+import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.manager.EvaluationFormReportDAO;
 import org.olat.modules.forms.model.xml.Choice;
 import org.olat.modules.forms.model.xml.MultipleChoice;
@@ -42,16 +42,16 @@ import org.olat.modules.forms.ui.ReportHelper;
 public class MultipleChoiceLegendTextDataSource implements LegendTextDataSource {
 
 	private final MultipleChoice multipleChoice;
-	private final List<? extends EvaluationFormSessionRef> sessions;
+	private final SessionFilter filter;
 	private final ReportHelper reportHelper;
 	
 	private EvaluationFormReportDAO reportDAO;
 	
-	public MultipleChoiceLegendTextDataSource(MultipleChoice multipleChoice,
-			List<? extends EvaluationFormSessionRef> sessions, ReportHelper reportHelper) {
+	public MultipleChoiceLegendTextDataSource(MultipleChoice multipleChoice, SessionFilter filter,
+			ReportHelper reportHelper) {
 		super();
 		this.multipleChoice = multipleChoice;
-		this.sessions = sessions;
+		this.filter = filter;
 		this.reportHelper = reportHelper;
 		this.reportDAO = CoreSpringFactory.getImpl(EvaluationFormReportDAO.class);
 	}
@@ -59,7 +59,7 @@ public class MultipleChoiceLegendTextDataSource implements LegendTextDataSource 
 	@Override
 	public List<SessionText> getResponses() {
 		List<SessionText> sessionTexts = new ArrayList<>();
-		List<EvaluationFormResponse> responses = reportDAO.getResponses(multipleChoice.getId(), sessions);
+		List<EvaluationFormResponse> responses = reportDAO.getResponses(multipleChoice.getId(), filter);
 		Map<EvaluationFormSession, List<EvaluationFormResponse>> sessionToResponse = responses.stream()
 				.collect(Collectors.groupingBy(EvaluationFormResponse::getSession));
 		

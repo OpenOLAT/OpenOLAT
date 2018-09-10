@@ -29,7 +29,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
-import org.olat.modules.forms.EvaluationFormSessionRef;
+import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.handler.DefaultReportProvider;
 import org.olat.modules.forms.handler.EvaluationFormReportHandler;
 import org.olat.modules.forms.handler.EvaluationFormReportProvider;
@@ -46,34 +46,33 @@ import org.olat.modules.forms.ui.model.EvaluationFormReportElement;
 public class EvaluationFormReportController extends FormBasicController {
 	
 	private final Form form;
-	private final List<? extends EvaluationFormSessionRef> sessions;
+	private final SessionFilter filter;
 	private final EvaluationFormReportProvider provider;
 	private final ReportHelper reportHelper;
 	
 	private final Component header;
 	private final List<ReportFragment> fragments = new ArrayList<>();
 	
-	public EvaluationFormReportController(UserRequest ureq, WindowControl wControl, Form form,
-			List<? extends EvaluationFormSessionRef> sessions) {
-			this(ureq, wControl, form, sessions, null, null, null);
+	public EvaluationFormReportController(UserRequest ureq, WindowControl wControl, Form form, SessionFilter filter) {
+			this(ureq, wControl, form, filter, null, null, null);
 	}
 	
-	public EvaluationFormReportController(UserRequest ureq, WindowControl wControl, Form form,
-			List<? extends EvaluationFormSessionRef> sessions, EvaluationFormReportProvider provider) {
-		this(ureq, wControl, form, sessions, provider, null, null);
+	public EvaluationFormReportController(UserRequest ureq, WindowControl wControl, Form form, SessionFilter filter,
+			EvaluationFormReportProvider provider) {
+		this(ureq, wControl, form, filter, provider, null, null);
 	}
-	
-	public EvaluationFormReportController(UserRequest ureq, WindowControl wControl, Form form,
-			List<? extends EvaluationFormSessionRef> sessions, EvaluationFormReportProvider provider, ReportHelper reportHelper) {
-		this(ureq, wControl, form, sessions, provider, reportHelper, null);
+
+	public EvaluationFormReportController(UserRequest ureq, WindowControl wControl, Form form, SessionFilter filter,
+			EvaluationFormReportProvider provider, ReportHelper reportHelper) {
+		this(ureq, wControl, form, filter, provider, reportHelper, null);
 	}
 
 	public EvaluationFormReportController(UserRequest ureq, WindowControl wControl, Form form,
-			List<? extends EvaluationFormSessionRef> sessions, EvaluationFormReportProvider provider, ReportHelper reportHelper,
+			SessionFilter filter, EvaluationFormReportProvider provider, ReportHelper reportHelper,
 			Component header) {
 		super(ureq, wControl, "report");
 		this.form = form;
-		this.sessions = sessions;
+		this.filter = filter;
 		this.provider = provider != null? provider: new DefaultReportProvider();
 		this.reportHelper = reportHelper != null? reportHelper: ReportHelper.builder(getLocale()).build();
 		this.header = header;
@@ -88,7 +87,7 @@ public class EvaluationFormReportController extends FormBasicController {
 		for (AbstractElement element: form.getElements()) {
 			EvaluationFormReportHandler reportHandler = provider.getReportHandler(element);
 			if (reportHandler != null) {
-				EvaluationFormReportElement reportElement = reportHandler.getReportElement(ureq, getWindowControl(), element, sessions,
+				EvaluationFormReportElement reportElement = reportHandler.getReportElement(ureq, getWindowControl(), element, filter,
 						reportHelper);
 				String cmpId = "cpt-" + CodeHelper.getRAMUniqueID();
 				flc.put(cmpId, reportElement.getReportComponent());

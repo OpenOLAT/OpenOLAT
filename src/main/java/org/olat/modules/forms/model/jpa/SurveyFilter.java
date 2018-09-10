@@ -17,26 +17,42 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.forms.handler;
+package org.olat.modules.forms.model.jpa;
 
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.WindowControl;
-import org.olat.modules.ceditor.PageElement;
+import javax.persistence.Query;
+
+import org.olat.core.commons.persistence.QueryBuilder;
+import org.olat.modules.forms.EvaluationFormSessionStatus;
+import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.SessionFilter;
-import org.olat.modules.forms.ui.ReportHelper;
-import org.olat.modules.forms.ui.model.EvaluationFormReportElement;
 
 /**
  * 
- * Initial date: 04.05.2018<br>
+ * Initial date: 10.09.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface EvaluationFormReportHandler {
-	
-	public String getType();
+public class SurveyFilter implements SessionFilter {
 
-	public EvaluationFormReportElement getReportElement(UserRequest ureq, WindowControl windowControl,
-			PageElement element, SessionFilter filter, ReportHelper reportHelper);
+	private final EvaluationFormSurvey survey;
+
+	public SurveyFilter(EvaluationFormSurvey survey) {
+		this.survey = survey;
+	}
+
+	@Override
+	public String getSelectKeys() {
+		QueryBuilder sb = new QueryBuilder(128);
+		sb.append("select sessionFilter.key");
+		sb.append("  from evaluationformsession sessionFilter");
+		sb.and().append("sessionFilter.status = '").append(EvaluationFormSessionStatus.done).append("'");
+		sb.and().append("sessionFilter.survey.key = :surveyFilterKey");
+		return sb.toString();
+	}
+
+	@Override
+	public void addParameters(Query query) {
+		query.setParameter("surveyFilterKey", survey.getKey());
+	}
 
 }

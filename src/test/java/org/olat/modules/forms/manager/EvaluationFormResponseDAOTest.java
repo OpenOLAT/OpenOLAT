@@ -25,7 +25,6 @@ import java.math.BigDecimal;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -37,6 +36,8 @@ import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormResponse;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSurvey;
+import org.olat.modules.forms.SessionFilter;
+import org.olat.modules.forms.SessionFilterFactory;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -162,7 +163,8 @@ public class EvaluationFormResponseDAOTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		List<EvaluationFormSession> sessions = Arrays.asList(session1, session2);
-		List<EvaluationFormResponse> loadedResponses = sut.loadResponsesBySessions(sessions);
+		SessionFilter filter = SessionFilterFactory.create(sessions);
+		List<EvaluationFormResponse> loadedResponses = sut.loadResponsesBySessions(filter);
 		
 		assertThat(loadedResponses)
 				.contains(response11, response12, response21)
@@ -177,15 +179,16 @@ public class EvaluationFormResponseDAOTest extends OlatTestCase {
 		createResponse(session, responseIdentifier);
 		createResponse(session, responseIdentifier);
 		dbInstance.commit();
-		
-		List<EvaluationFormResponse> responses = sut.loadResponsesBySessions(Collections.singletonList(session));
+
+		SessionFilter filter = SessionFilterFactory.create(session);
+		List<EvaluationFormResponse> responses = sut.loadResponsesBySessions(filter);
 		assertThat(responses).hasSize(3);
 		
 		List<Long> keys = responses.stream().map(EvaluationFormResponse::getKey).collect(Collectors.toList());
 		sut.deleteResponses(keys);
 		dbInstance.commit();
 		
-		responses = sut.loadResponsesBySessions(Collections.singletonList(session));
+		responses = sut.loadResponsesBySessions(filter);
 		assertThat(responses).hasSize(0);
 	}
 	

@@ -35,6 +35,8 @@ import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormResponse;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSessionRef;
+import org.olat.modules.forms.SessionFilter;
+import org.olat.modules.forms.SessionFilterFactory;
 import org.olat.modules.forms.model.jpa.CalculatedDouble;
 import org.olat.modules.forms.model.jpa.CalculatedLong;
 import org.olat.test.OlatTestCase;
@@ -88,7 +90,8 @@ public class EvaluationFormReportDAOTest extends OlatTestCase {
 		
 		List<String> responseIdentifiers = Arrays.asList(responseIdentifier1, responseIdentifier2);
 		List<EvaluationFormSession> sessions = Arrays.asList(session1, session2);
-		List<EvaluationFormResponse> responses = sut.getResponses(responseIdentifiers, sessions);
+		SessionFilter filter = SessionFilterFactory.create(sessions);
+		List<EvaluationFormResponse> responses = sut.getResponses(responseIdentifiers, filter);
 		
 		assertThat(responses)
 				.containsExactlyInAnyOrder(response111, response112, response121, response221)
@@ -124,7 +127,8 @@ public class EvaluationFormReportDAOTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		List<EvaluationFormSession> sessions = Arrays.asList(session1, session2, session3, session4, session5);
-		List<CalculatedLong> counts = sut.getCountByStringuifideResponse(responseIdentifier, sessions);
+		SessionFilter filter = SessionFilterFactory.create(sessions);
+		List<CalculatedLong> counts = sut.getCountByStringuifideResponse(responseIdentifier, filter);
 		
 		assertThat(counts).hasSize(2);
 		Map<String, Long> identToValue = counts.stream()
@@ -160,7 +164,8 @@ public class EvaluationFormReportDAOTest extends OlatTestCase {
 		
 		List<String> responseIdentifiers = Arrays.asList(responseIdentifier1, responseIdentifier2);
 		List<EvaluationFormSession> sessions = Arrays.asList(session1, session2, session3);
-		List<CalculatedLong> counts = sut.getCountByIdentifiersAndNumerical(responseIdentifiers, sessions);
+		SessionFilter filter = SessionFilterFactory.create(sessions);
+		List<CalculatedLong> counts = sut.getCountByIdentifiersAndNumerical(responseIdentifiers, filter);
 		
 		assertThat(counts).hasSize(3);
 		assertThat(getValue(counts, responseIdentifier1, numberThreeTimes.toPlainString())).isEqualTo(3);
@@ -205,7 +210,8 @@ public class EvaluationFormReportDAOTest extends OlatTestCase {
 
 		List<String> responseIdentifiers = Arrays.asList(responseIdentifier1, responseIdentifier2);
 		List<EvaluationFormSession> sessions = Arrays.asList(session1, session2, session3, session4);
-		List<CalculatedLong> counts = sut.getCountNoResponsesByIdentifiers(responseIdentifiers, sessions);
+		SessionFilter filter = SessionFilterFactory.create(sessions);
+		List<CalculatedLong> counts = sut.getCountNoResponsesByIdentifiers(responseIdentifiers, filter);
 		
 		assertThat(counts).hasSize(2);
 		Map<String, Long> identToValue = counts.stream()
@@ -243,7 +249,8 @@ public class EvaluationFormReportDAOTest extends OlatTestCase {
 		
 		List<String> responseIdentifiers = Arrays.asList(responseIdentifier1, responseIdentifier2, identifierNoResponse);
 		List<? extends EvaluationFormSessionRef> sessions = Arrays.asList(session1, session2, session3, session4, session5);
-		List<CalculatedDouble> avg = sut.getAvgByResponseIdentifiers(responseIdentifiers, sessions);
+		SessionFilter filter = SessionFilterFactory.create(sessions);
+		List<CalculatedDouble> avg = sut.getAvgByResponseIdentifiers(responseIdentifiers, filter);
 
 		assertThat(avg).hasSize(2);
 		Map<String, Double> identToValue = avg.stream()

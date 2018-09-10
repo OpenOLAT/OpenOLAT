@@ -19,10 +19,8 @@
  */
 package org.olat.modules.quality.ui;
 
-import static org.olat.modules.forms.handler.EvaluationFormResource.FORM_XML_FILE;
 import static org.olat.modules.quality.ui.QualityUIFactory.formatTopic;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,14 +30,11 @@ import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.xml.XStreamHelper;
-import org.olat.fileresource.FileResourceManager;
 import org.olat.modules.forms.EvaluationFormManager;
-import org.olat.modules.forms.EvaluationFormSession;
-import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.modules.forms.EvaluationFormSurvey;
+import org.olat.modules.forms.SessionFilter;
+import org.olat.modules.forms.SessionFilterFactory;
 import org.olat.modules.forms.model.xml.Form;
-import org.olat.modules.forms.model.xml.FormXStream;
 import org.olat.modules.forms.ui.EvaluationFormFigure;
 import org.olat.modules.forms.ui.EvaluationFormFormatter;
 import org.olat.modules.forms.ui.EvaluationFormReportsController;
@@ -74,16 +69,6 @@ public class DataCollectionReportController extends AbstractDataCollectionEditCo
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(dataCollection, null);
-		File repositoryDir = new File(
-				FileResourceManager.getInstance().getFileResourceRoot(survey.getFormEntry().getOlatResource()),
-				FileResourceManager.ZIPDIR);
-		File formFile = new File(repositoryDir, FORM_XML_FILE);
-		Form form = (Form) XStreamHelper.readObject(FormXStream.getXStream(), formFile);
-
-		List<EvaluationFormSession> sessions = evaluationFormManager.loadSessionsBySurvey(survey,
-				EvaluationFormSessionStatus.done);
-		
 		QualityDataCollectionViewSearchParams searchParams = new QualityDataCollectionViewSearchParams();
 		searchParams.setDataCollectionRef(dataCollection);
 		QualityDataCollectionView dataCollectionView = qualityService.loadDataCollections(getTranslator(), searchParams, 0, -1).get(0);
@@ -98,8 +83,12 @@ public class DataCollectionReportController extends AbstractDataCollectionEditCo
 				getLocale());
 		figures.add(new EvaluationFormFigure(translate("data.collection.figures.period"), period));
 		
+		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(dataCollection, null);
+		Form form = evaluationFormManager.loadForm(survey.getFormEntry());
+		SessionFilter filter = SessionFilterFactory.create(survey);
+		
 		reportsCtrl = new EvaluationFormReportsController(ureq, getWindowControl(), form,
-				sessions, reportHeaderCtrl.getInitialComponent(), figures);
+				filter, reportHeaderCtrl.getInitialComponent(), figures);
 		flc.put("report", reportsCtrl.getInitialComponent());
 	}
 	

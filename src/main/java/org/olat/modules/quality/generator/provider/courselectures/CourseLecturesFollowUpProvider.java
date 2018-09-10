@@ -46,10 +46,10 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
-import org.olat.modules.forms.EvaluationFormSession;
-import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.RubricStatistic;
+import org.olat.modules.forms.SessionFilter;
+import org.olat.modules.forms.SessionFilterFactory;
 import org.olat.modules.forms.SliderStatistic;
 import org.olat.modules.forms.model.xml.AbstractElement;
 import org.olat.modules.forms.model.xml.Rubric;
@@ -331,8 +331,7 @@ public class CourseLecturesFollowUpProvider implements QualityGeneratorProvider 
 		// Load evaluation form and sessions
 		EvaluationFormSurvey survey = qualityService.loadSurvey(dataCollection);
 		org.olat.modules.forms.model.xml.Form evaluationForm = evaluationFormManager.loadForm(survey.getFormEntry());
-		List<EvaluationFormSession> sessions = evaluationFormManager.loadSessionsBySurvey(survey,
-				EvaluationFormSessionStatus.done);
+		SessionFilter filter = SessionFilterFactory.create(survey);
 
 		// Load results and calculate if grade is sufficient
 		long numberResponses = 0;
@@ -340,7 +339,7 @@ public class CourseLecturesFollowUpProvider implements QualityGeneratorProvider 
 		for (AbstractElement element: evaluationForm.getElements()) {
 			if (Rubric.TYPE.equals(element.getType())) {
 				Rubric rubric = (Rubric) element;
-				RubricStatistic rubricStatistic = evaluationFormManager.getRubricStatistic(rubric, sessions);
+				RubricStatistic rubricStatistic = evaluationFormManager.getRubricStatistic(rubric, filter);
 				SliderStatistic totalStatistic = rubricStatistic.getTotalStatistic();
 				numberResponses = numberResponses + totalStatistic.getNumberOfResponses();
 				sumOfAvgs = sumOfAvgs + totalStatistic.getNumberOfResponses() * totalStatistic.getAvg();

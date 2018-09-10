@@ -23,7 +23,6 @@ import static org.olat.modules.forms.handler.EvaluationFormResource.FORM_XML_FIL
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,6 +53,8 @@ import org.olat.modules.ceditor.ui.ValidationMessage.Level;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSessionStatus;
+import org.olat.modules.forms.SessionFilter;
+import org.olat.modules.forms.SessionFilterFactory;
 import org.olat.modules.forms.handler.AllHandlerPageProvider;
 import org.olat.modules.forms.handler.EvaluationFormElementHandler;
 import org.olat.modules.forms.model.jpa.EvaluationFormResponses;
@@ -138,7 +139,8 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 		if (responses != null) {
 			this.responses = responses;
 		} else {
-			this.responses = evaluationFormManager.loadResponsesBySessions(Collections.singletonList(session));
+			SessionFilter filter = SessionFilterFactory.create(session);
+			this.responses = evaluationFormManager.loadResponsesBySessions(filter);
 		}
 		
 		initForm(ureq);

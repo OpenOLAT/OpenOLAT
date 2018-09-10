@@ -113,7 +113,7 @@ public class EvaluationFormTestsHelper {
 		return repositoryService.create(author, null, "", "Display name", "Description", resource, RepositoryEntryStatusEnum.preparation, null);
 	}
 	
-	EvaluationFormSurvey createSurvey() {
+	public EvaluationFormSurvey createSurvey() {
 		OLATResourceable ores = JunitTestHelper.createRandomResource();
 		String subIdent = UUID.randomUUID().toString();
 		RepositoryEntry formEntry = createFormEntry();
@@ -134,7 +134,7 @@ public class EvaluationFormTestsHelper {
 		return createSession(participation);
 	}
 	
-	EvaluationFormSession createSession(EvaluationFormSurvey survey) {
+	public EvaluationFormSession createSession(EvaluationFormSurvey survey) {
 		EvaluationFormParticipation participation = createParticipation(survey);
 		return createSession(participation);
 	}

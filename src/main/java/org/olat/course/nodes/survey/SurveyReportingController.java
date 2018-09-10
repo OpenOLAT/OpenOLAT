@@ -19,8 +19,6 @@
  */
 package org.olat.course.nodes.survey;
 
-import java.util.List;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -28,9 +26,9 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.modules.forms.EvaluationFormManager;
-import org.olat.modules.forms.EvaluationFormSession;
-import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.modules.forms.EvaluationFormSurvey;
+import org.olat.modules.forms.SessionFilter;
+import org.olat.modules.forms.SessionFilterFactory;
 import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.ui.EvaluationFormReportsController;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,11 +50,9 @@ public class SurveyReportingController extends BasicController {
 		super(ureq, wControl);
 		mainVC = createVelocityContainer("reporting");
 
-		List<EvaluationFormSession> sessions = evaluationFormManager.loadSessionsBySurvey(survey,
-				EvaluationFormSessionStatus.done);
-
 		Form form = evaluationFormManager.loadForm(survey.getFormEntry());
-		EvaluationFormReportsController reportsCtrl = new EvaluationFormReportsController(ureq, wControl, form, sessions);
+		SessionFilter filter = SessionFilterFactory.create(survey);
+		EvaluationFormReportsController reportsCtrl = new EvaluationFormReportsController(ureq, wControl, form, filter);
 		mainVC.put("report", reportsCtrl.getInitialComponent());
 
 		putInitialPanel(mainVC);

@@ -19,7 +19,6 @@
  */
 package org.olat.modules.forms.handler;
 
-import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
@@ -41,7 +40,7 @@ import org.olat.modules.ceditor.model.HTMLRawElement;
 import org.olat.modules.ceditor.ui.ComponentsFactory;
 import org.olat.modules.ceditor.ui.HTMLRawEditorController;
 import org.olat.modules.ceditor.ui.PageRunComponent;
-import org.olat.modules.forms.EvaluationFormSessionRef;
+import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.model.xml.HTMLRaw;
 import org.olat.modules.forms.ui.ReportHelper;
 import org.olat.modules.forms.ui.model.EvaluationFormComponentElement;
@@ -115,7 +114,7 @@ public class HTMLRawHandler implements EvaluationFormElementHandler, PageElement
 
 	@Override
 	public EvaluationFormReportElement getReportElement(UserRequest ureq, WindowControl windowControl, PageElement element,
-			List<? extends EvaluationFormSessionRef> sessions, ReportHelper reportHelper) {
+			SessionFilter filter, ReportHelper reportHelper) {
 		return new EvaluationFormComponentReportElement(getComponent(element));
 	}
 

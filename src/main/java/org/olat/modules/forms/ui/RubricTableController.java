@@ -35,8 +35,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.forms.EvaluationFormManager;
-import org.olat.modules.forms.EvaluationFormSessionRef;
 import org.olat.modules.forms.RubricStatistic;
+import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.SliderStatistic;
 import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.forms.model.xml.Rubric.SliderType;
@@ -54,7 +54,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class RubricTableController extends FormBasicController {
 	
 	private final Rubric rubric;
-	private final List<? extends EvaluationFormSessionRef> sessions;
+	private final SessionFilter filter;
 	
 	private RubricDataModel dataModel;
 	private FlexiTableElement tableEl;
@@ -62,11 +62,10 @@ public class RubricTableController extends FormBasicController {
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
 
-	public RubricTableController(UserRequest ureq, WindowControl wControl, Rubric rubric,
-			List<? extends EvaluationFormSessionRef> sessions) {
+	public RubricTableController(UserRequest ureq, WindowControl wControl, Rubric rubric, SessionFilter filter) {
 		super(ureq, wControl, LAYOUT_HORIZONTAL);
 		this.rubric = rubric;
-		this.sessions = sessions;
+		this.filter = filter;
 		initForm(ureq);
 		loadModel();
 	}
@@ -144,7 +143,7 @@ public class RubricTableController extends FormBasicController {
 	}
 	
 	private void loadModel() {
-		RubricStatistic rubricStatistic = evaluationFormManager.getRubricStatistic(rubric, sessions);
+		RubricStatistic rubricStatistic = evaluationFormManager.getRubricStatistic(rubric, filter);
 		List<RubricRow> rows = new ArrayList<>();
 		for (Slider slider: rubric.getSliders()) {
 			SliderStatistic sliderStatistic = rubricStatistic.getSliderStatistic(slider);

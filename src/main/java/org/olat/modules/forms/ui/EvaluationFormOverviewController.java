@@ -32,8 +32,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.forms.EvaluationFormManager;
-import org.olat.modules.forms.EvaluationFormSessionRef;
 import org.olat.modules.forms.EvaluationFormStatistic;
+import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.handler.EvaluationFormReportHandler;
 import org.olat.modules.forms.handler.EvaluationFormReportProvider;
 import org.olat.modules.forms.handler.RubricBarChartsHandler;
@@ -59,13 +59,13 @@ public class EvaluationFormOverviewController extends BasicController {
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
 
-	public EvaluationFormOverviewController(UserRequest ureq, WindowControl wControl, Form form,
-			List<? extends EvaluationFormSessionRef> sessions, List<EvaluationFormFigure> figures) {
+	public EvaluationFormOverviewController(UserRequest ureq, WindowControl wControl, Form form, SessionFilter filter,
+			List<EvaluationFormFigure> figures) {
 		super(ureq, wControl);
 
 		mainVC = createVelocityContainer("overview");
 
-		EvaluationFormStatistic statistic = evaluationFormManager.getSessionsStatistic(sessions);
+		EvaluationFormStatistic statistic = evaluationFormManager.getSessionsStatistic(filter);
 		String submissionPeriod = EvaluationFormFormatter.period(statistic.getFirstSubmission(),
 				statistic.getLastSubmission(), getLocale());
 		List<EvaluationFormFigure> allFigures = new ArrayList<>();
@@ -81,7 +81,7 @@ public class EvaluationFormOverviewController extends BasicController {
 		mainVC.contextPut("figures", allFigures);
 
 		if (hasRubrics(form)) {
-			Controller reportCtrl = new EvaluationFormReportController(ureq, wControl, form, sessions, PROVIDER);
+			Controller reportCtrl = new EvaluationFormReportController(ureq, wControl, form, filter, PROVIDER);
 			mainVC.put("report", reportCtrl.getInitialComponent());
 		}
 

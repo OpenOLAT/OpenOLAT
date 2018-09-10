@@ -23,9 +23,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormSession;
+import org.olat.modules.forms.SessionFilter;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -39,8 +43,12 @@ public class SessionInformationLegendNameGenerator implements LegendNameGenerato
 
 	private final List<? extends EvaluationFormSession> sessions;
 	
-	public SessionInformationLegendNameGenerator(List<EvaluationFormSession> sessions) {
-		this.sessions = sessions;
+	@Autowired
+	private EvaluationFormManager evaluationFormManager;
+	
+	public SessionInformationLegendNameGenerator(SessionFilter filter) {
+		CoreSpringFactory.autowireObject(this);
+		this.sessions = evaluationFormManager.loadSessionsFiltered(filter, 0, -1);
 	}
 
 	@Override

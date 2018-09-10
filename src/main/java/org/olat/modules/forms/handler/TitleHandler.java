@@ -19,7 +19,6 @@
  */
 package org.olat.modules.forms.handler;
 
-import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -40,7 +39,7 @@ import org.olat.modules.ceditor.SimpleAddPageElementHandler;
 import org.olat.modules.ceditor.model.TitleElement;
 import org.olat.modules.ceditor.ui.PageRunComponent;
 import org.olat.modules.ceditor.ui.TitleEditorController;
-import org.olat.modules.forms.EvaluationFormSessionRef;
+import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.model.xml.Title;
 import org.olat.modules.forms.ui.ReportHelper;
 import org.olat.modules.forms.ui.model.EvaluationFormComponentElement;
@@ -117,7 +116,7 @@ public class TitleHandler implements EvaluationFormElementHandler, PageElementSt
 
 	@Override
 	public EvaluationFormReportElement getReportElement(UserRequest ureq, WindowControl windowControl, PageElement element,
-			List<? extends EvaluationFormSessionRef> sessions, ReportHelper reportHelper) {
+			SessionFilter filter, ReportHelper reportHelper) {
 		return new EvaluationFormComponentReportElement(getComponent(element));
 	}
 

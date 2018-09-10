@@ -38,7 +38,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
-import org.olat.modules.forms.EvaluationFormSessionRef;
+import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.SliderStatistic;
 import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.forms.model.xml.Rubric.SliderType;
@@ -54,13 +54,12 @@ import org.olat.modules.forms.ui.component.ResponsiveBarChartComponent;
 public abstract class RubricBarChartsController extends FormBasicController {
 
 	private final Rubric rubric;
-	private final List<? extends EvaluationFormSessionRef> sessions;
+	private final SessionFilter filter;
 
-	public RubricBarChartsController(UserRequest ureq, WindowControl wControl, Rubric rubric,
-			List<? extends EvaluationFormSessionRef> sessions) {
+	public RubricBarChartsController(UserRequest ureq, WindowControl wControl, Rubric rubric, SessionFilter filter) {
 		super(ureq, wControl, "rubric_bar_charts");
 		this.rubric = rubric;
-		this.sessions = sessions;
+		this.filter = filter;
 	}
 
 	protected abstract RubricWrapper createRubricWrapper();
@@ -69,8 +68,8 @@ public abstract class RubricBarChartsController extends FormBasicController {
 		return rubric;
 	}
 
-	public List<? extends EvaluationFormSessionRef> getSessions() {
-		return sessions;
+	public SessionFilter getFilter() {
+		return filter;
 	}
 
 	@Override

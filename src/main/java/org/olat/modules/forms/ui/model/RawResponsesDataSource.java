@@ -23,7 +23,7 @@ import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.modules.forms.EvaluationFormResponse;
-import org.olat.modules.forms.EvaluationFormSessionRef;
+import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.manager.EvaluationFormReportDAO;
 
 /**
@@ -35,20 +35,20 @@ import org.olat.modules.forms.manager.EvaluationFormReportDAO;
 public class RawResponsesDataSource implements ResponseDataSource {
 
 	private final String responseIdentifier;
-	private final List<? extends EvaluationFormSessionRef> sessions;
+	private final SessionFilter filter;
 	
 	private EvaluationFormReportDAO reportDAO;
 	
-	public RawResponsesDataSource(String responseIdentifier, List<? extends EvaluationFormSessionRef> sessions) {
+	public RawResponsesDataSource(String responseIdentifier, SessionFilter filter) {
 		super();
 		this.responseIdentifier = responseIdentifier;
-		this.sessions = sessions;
+		this.filter = filter;
 		this.reportDAO = CoreSpringFactory.getImpl(EvaluationFormReportDAO.class);
 	}
 
 	@Override
 	public List<EvaluationFormResponse> getResponses() {
-		return reportDAO.getResponses(responseIdentifier, sessions);
+		return reportDAO.getResponses(responseIdentifier, filter);
 	}
 
 }

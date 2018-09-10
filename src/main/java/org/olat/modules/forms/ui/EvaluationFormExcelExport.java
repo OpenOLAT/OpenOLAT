@@ -43,6 +43,7 @@ import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormResponse;
 import org.olat.modules.forms.EvaluationFormSession;
+import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.model.jpa.EvaluationFormResponses;
 import org.olat.modules.forms.model.xml.AbstractElement;
 import org.olat.modules.forms.model.xml.Choice;
@@ -73,21 +74,23 @@ public class EvaluationFormExcelExport {
 
 	private final String fileName;
 	private final Form form;
-	private List<EvaluationFormSession> sessions;
 	private final ReportHelper reportHelper;
 	private final EvaluationFormResponses responses;
+	private final List<EvaluationFormSession> sessions;
+
 	
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
 
-	public EvaluationFormExcelExport(Form form, List<EvaluationFormSession> sessions, ReportHelper reportHelper, String surveyName) {
+	public EvaluationFormExcelExport(Form form, SessionFilter filter, ReportHelper reportHelper, String surveyName) {
 		this.fileName = getFileName(surveyName);
 		this.form = form;
-		this.sessions = sessions;
 		this.reportHelper = reportHelper;
 
 		CoreSpringFactory.autowireObject(this);
-		responses = evaluationFormManager.loadResponsesBySessions(sessions);
+		responses = evaluationFormManager.loadResponsesBySessions(filter);
+		sessions = evaluationFormManager.loadSessionsFiltered(filter, 0, -1);
+		sessions.sort(reportHelper.getComparator());
 	}
 	
 	private String getFileName(String surveyName) {
@@ -100,9 +103,6 @@ public class EvaluationFormExcelExport {
 	}
 	
 	public OpenXMLWorkbookResource createMediaResource() {
-		// refresh to avoid lazy instantiation exception
-		sessions = evaluationFormManager.loadSessionsByKey(sessions, 0, -1);
-		sessions.sort(reportHelper.getComparator());
 		return new OpenXMLWorkbookResource(fileName) {
 			@Override
 			protected void generate(OutputStream out) {

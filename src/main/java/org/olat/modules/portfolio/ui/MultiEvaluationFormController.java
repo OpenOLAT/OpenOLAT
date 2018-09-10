@@ -19,9 +19,6 @@
  */
 package org.olat.modules.portfolio.ui;
 
-import static org.olat.modules.forms.handler.EvaluationFormResource.FORM_XML_FILE;
-
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -42,15 +39,14 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.xml.XStreamHelper;
-import org.olat.fileresource.FileResourceManager;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationStatus;
 import org.olat.modules.forms.EvaluationFormSession;
-import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.modules.forms.EvaluationFormSurvey;
+import org.olat.modules.forms.SessionFilter;
+import org.olat.modules.forms.SessionFilterFactory;
 import org.olat.modules.forms.handler.EvaluationFormReportHandler;
 import org.olat.modules.forms.handler.EvaluationFormReportProvider;
 import org.olat.modules.forms.handler.FileUploadListingHandler;
@@ -63,7 +59,6 @@ import org.olat.modules.forms.handler.TextInputLegendTextHandler;
 import org.olat.modules.forms.handler.TitleHandler;
 import org.olat.modules.forms.model.xml.FileUpload;
 import org.olat.modules.forms.model.xml.Form;
-import org.olat.modules.forms.model.xml.FormXStream;
 import org.olat.modules.forms.model.xml.HTMLRaw;
 import org.olat.modules.forms.model.xml.MultipleChoice;
 import org.olat.modules.forms.model.xml.Rubric;
@@ -311,12 +306,12 @@ public class MultiEvaluationFormController extends BasicController {
 	}
 	
 	private EvaluationFormReportController createReportController(UserRequest ureq) {
-		File repositoryDir = new File(FileResourceManager.getInstance().getFileResourceRoot(survey.getFormEntry().getOlatResource()), FileResourceManager.ZIPDIR);
-		File formFile = new File(repositoryDir, FORM_XML_FILE);
-		Form form = (Form)XStreamHelper.readObject(FormXStream.getXStream(), formFile);
+		Form form = evaluationFormManager.loadForm(survey.getFormEntry());
 				
-		List<EvaluationFormSession> sessions = evaluationFormManager.loadSessionsBySurvey(survey, EvaluationFormSessionStatus.done);
+		SessionFilter surveyFilter = SessionFilterFactory.create(survey);
+		List<EvaluationFormSession> sessions = evaluationFormManager.loadSessionsFiltered(surveyFilter, 0, -1);
 		sessions.removeIf(session -> notEvaluator(session));
+		SessionFilter filter = SessionFilterFactory.create(sessions);
 		
 		EvaluationFormReportProvider provider = new ReportProvider();
 
@@ -325,7 +320,7 @@ public class MultiEvaluationFormController extends BasicController {
 				.withColors()
 				.withLegendNameGenrator(legendNameGenerator)
 				.build();
-		return new EvaluationFormReportController(ureq, getWindowControl(), form, sessions, provider, reportHelper);
+		return new EvaluationFormReportController(ureq, getWindowControl(), form, filter, provider, reportHelper);
 	}
 	
 	private boolean notEvaluator(EvaluationFormSession session) {

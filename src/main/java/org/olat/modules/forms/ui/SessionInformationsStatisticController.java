@@ -20,7 +20,6 @@
 package org.olat.modules.forms.ui;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -30,7 +29,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormSession;
-import org.olat.modules.forms.EvaluationFormSessionRef;
+import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.ui.ReportHelper.Legend;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -49,27 +48,11 @@ public class SessionInformationsStatisticController extends FormBasicController 
 	private EvaluationFormManager evluationFormManager;
 
 	public SessionInformationsStatisticController(UserRequest ureq, WindowControl wControl,
-			List<? extends EvaluationFormSessionRef> sessionRefs, ReportHelper reportHelper) {
+			SessionFilter filter, ReportHelper reportHelper) {
 		super(ureq, wControl, LAYOUT_HORIZONTAL);
-		this.sessions = loadSessions(sessionRefs);
+		this.sessions = evluationFormManager.loadSessionsFiltered(filter, 0, -1);
 		this.reportHelper = reportHelper;
 		initForm(ureq);
-	}
-
-	private List<? extends EvaluationFormSession> loadSessions(List<? extends EvaluationFormSessionRef> sessionRefs) {
-		if (hasOnlySessions(sessionRefs)) {
-			return sessionRefs.stream().map(ref -> (EvaluationFormSession)ref).collect(Collectors.toList());
-		}
-		return evluationFormManager.loadSessionsByKey(sessionRefs, 0, -1);
-	}
-	
-	private boolean hasOnlySessions(List<? extends EvaluationFormSessionRef> sessionRefs) {
-		for (EvaluationFormSessionRef ref: sessionRefs) {
-			if (!(ref instanceof EvaluationFormSession)) {
-				return false;
-			}
-		}
-		return true;
 	}
 
 	@Override

@@ -33,6 +33,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.modules.forms.EvaluationFormSession;
+import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.model.xml.Form;
 
 /**
@@ -54,25 +55,23 @@ public class EvaluationFormReportsController extends BasicController {
 	private EvaluationFormPrintSelectionController printSelectionCtrl;
 	
 	private final Form form;
-	private final List<EvaluationFormSession> sessions;
+	private final SessionFilter filter;
 	private final List<EvaluationFormFigure> figures;
 	private final ReportHelper reportHelper;
 	
-	public EvaluationFormReportsController(UserRequest ureq, WindowControl wControl, Form form,
-			List<EvaluationFormSession> sessions) {
-		this(ureq, wControl, form, sessions, null, null);
+	public EvaluationFormReportsController(UserRequest ureq, WindowControl wControl, Form form, SessionFilter filter) {
+		this(ureq, wControl, form, filter, null, null);
 	}
 
-	public EvaluationFormReportsController(UserRequest ureq, WindowControl wControl, Form form,
-			List<EvaluationFormSession> sessions, Component formHeader, List<EvaluationFormFigure> figures) {
+	public EvaluationFormReportsController(UserRequest ureq, WindowControl wControl, Form form, SessionFilter filter,
+			Component formHeader, List<EvaluationFormFigure> figures) {
 		super(ureq, wControl);
 		this.form = form;
-		this.sessions = sessions;
+		this.filter = filter;
 		this.figures = figures;
 		
 		Comparator<EvaluationFormSession> comparator = new NameShuffleAnonymousComparator();
-		sessions.sort(comparator);
-		LegendNameGenerator legendNameGenerator = new SessionInformationLegendNameGenerator(sessions);
+		LegendNameGenerator legendNameGenerator = new SessionInformationLegendNameGenerator(filter);
 		this.reportHelper = ReportHelper.builder(getLocale())
 				.withLegendNameGenrator(legendNameGenerator)
 				.withSessionComparator(comparator)
@@ -88,7 +87,7 @@ public class EvaluationFormReportsController extends BasicController {
 		exportLink.setIconLeftCSS("o_icon o_icon-fw o_icon_eva_export");
 
 		segmentsController = new EvaluationFormReportSegmentsController(ureq,
-				getWindowControl(), form, sessions, formHeader, figures, reportHelper);
+				getWindowControl(), form, filter, formHeader, figures, reportHelper);
 		mainVC.put("segments", segmentsController.getInitialComponent());
 
 		putInitialPanel(mainVC);
@@ -131,7 +130,7 @@ public class EvaluationFormReportsController extends BasicController {
 
 	private void doOpenPrintSelection(UserRequest ureq) {
 		if (printSelectionCtrl == null) {
-			printSelectionCtrl = new EvaluationFormPrintSelectionController(ureq, getWindowControl(), form, sessions,
+			printSelectionCtrl = new EvaluationFormPrintSelectionController(ureq, getWindowControl(), form, filter,
 					figures, reportHelper);
 			listenTo(printSelectionCtrl);
 		}
@@ -145,7 +144,7 @@ public class EvaluationFormReportsController extends BasicController {
 
 	private void doExport(UserRequest ureq) {
 		String surveyName = "survey";
-		EvaluationFormExcelExport export = new EvaluationFormExcelExport(form, sessions, reportHelper, surveyName);
+		EvaluationFormExcelExport export = new EvaluationFormExcelExport(form, filter, reportHelper, surveyName);
 		ureq.getDispatchResult().setResultingMediaResource(export.createMediaResource());
 	}
 

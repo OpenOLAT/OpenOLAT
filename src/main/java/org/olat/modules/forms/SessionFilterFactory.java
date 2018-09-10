@@ -17,26 +17,33 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.forms.handler;
+package org.olat.modules.forms;
 
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.WindowControl;
-import org.olat.modules.ceditor.PageElement;
-import org.olat.modules.forms.SessionFilter;
-import org.olat.modules.forms.ui.ReportHelper;
-import org.olat.modules.forms.ui.model.EvaluationFormReportElement;
+import static java.util.Collections.singletonList;
+
+import java.util.Collection;
+
+import org.olat.modules.forms.model.jpa.SessionRefFilter;
+import org.olat.modules.forms.model.jpa.SurveyFilter;
 
 /**
  * 
- * Initial date: 04.05.2018<br>
+ * Initial date: 10.09.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface EvaluationFormReportHandler {
+public class SessionFilterFactory {
 	
-	public String getType();
+	public static SessionFilter create(EvaluationFormSessionRef sessionRef) {
+		return new SessionRefFilter(singletonList(sessionRef));
+	}
+	
+	public static SessionFilter create(Collection<? extends EvaluationFormSessionRef> sessionRefs) {
+		return new SessionRefFilter(sessionRefs);
+	}
 
-	public EvaluationFormReportElement getReportElement(UserRequest ureq, WindowControl windowControl,
-			PageElement element, SessionFilter filter, ReportHelper reportHelper);
+	public static SessionFilter create(EvaluationFormSurvey survey) {
+		return new SurveyFilter(survey);
+	}
 
 }

@@ -19,13 +19,11 @@
  */
 package org.olat.modules.forms.handler;
 
-import java.util.List;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.ceditor.PageElement;
-import org.olat.modules.forms.EvaluationFormSessionRef;
+import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.forms.ui.ReportHelper;
 import org.olat.modules.forms.ui.RubricTableController;
@@ -47,10 +45,10 @@ public class RubricTableHandler implements EvaluationFormReportHandler {
 
 	@Override
 	public EvaluationFormReportElement getReportElement(UserRequest ureq, WindowControl windowControl, PageElement element,
-			List<? extends EvaluationFormSessionRef> sessions, ReportHelper reportHelper) {
+			SessionFilter filter, ReportHelper reportHelper) {
 		if (element instanceof Rubric) {
 			Rubric rubric = (Rubric) element;
-			Controller ctrl = new RubricTableController(ureq, windowControl, rubric, sessions);
+			Controller ctrl = new RubricTableController(ureq, windowControl, rubric, filter);
 			return new EvaluationFormControllerReportElement(ctrl);
 		}
 		return null;

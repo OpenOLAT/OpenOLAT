@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.chart.BarSeries;
 import org.olat.core.util.filter.impl.OWASPAntiSamyXSSFilter;
-import org.olat.modules.forms.EvaluationFormSessionRef;
+import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.manager.EvaluationFormReportDAO;
 import org.olat.modules.forms.model.jpa.CalculatedLong;
 import org.olat.modules.forms.model.xml.Choice;
@@ -42,15 +42,15 @@ import org.olat.modules.forms.model.xml.SingleChoice;
 public class SingleChoiceDataSource implements CountDataSource, BarSeriesDataSource {
 
 	private final SingleChoice singleChoice;
-	private final List<? extends EvaluationFormSessionRef> sessions;
+	private final SessionFilter filter;
 	
 	private OWASPAntiSamyXSSFilter xssFilter;
 	private EvaluationFormReportDAO reportDAO;
 	
-	public SingleChoiceDataSource(SingleChoice singleChoice, List<? extends EvaluationFormSessionRef> sessions) {
+	public SingleChoiceDataSource(SingleChoice singleChoice, SessionFilter filter) {
 		super();
 		this.singleChoice = singleChoice;
-		this.sessions = sessions;
+		this.filter = filter;
 		this.xssFilter = new OWASPAntiSamyXSSFilter();
 		this.reportDAO = CoreSpringFactory.getImpl(EvaluationFormReportDAO.class);
 	}
@@ -86,7 +86,7 @@ public class SingleChoiceDataSource implements CountDataSource, BarSeriesDataSou
 
 	private Map<String, Long> loadIdentToCount() {
 		String responseIdentifier = singleChoice.getId();
-		List<CalculatedLong> counts = reportDAO.getCountByStringuifideResponse(responseIdentifier, sessions);
+		List<CalculatedLong> counts = reportDAO.getCountByStringuifideResponse(responseIdentifier, filter);
 		Map<String, Long> identToValue = counts.stream()
 				.collect(Collectors.toMap(CalculatedLong::getIdentifier, CalculatedLong::getValue));
 		return identToValue;

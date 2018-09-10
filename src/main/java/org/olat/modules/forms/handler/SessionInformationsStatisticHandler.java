@@ -19,13 +19,11 @@
  */
 package org.olat.modules.forms.handler;
 
-import java.util.List;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.ceditor.PageElement;
-import org.olat.modules.forms.EvaluationFormSessionRef;
+import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.ui.ReportHelper;
 import org.olat.modules.forms.ui.SessionInformationsStatisticController;
 import org.olat.modules.forms.ui.model.EvaluationFormControllerReportElement;
@@ -46,8 +44,8 @@ public class SessionInformationsStatisticHandler implements EvaluationFormReport
 
 	@Override
 	public EvaluationFormReportElement getReportElement(UserRequest ureq, WindowControl windowControl, PageElement element,
-			List<? extends EvaluationFormSessionRef> sessions, ReportHelper reportHelper) {
-		Controller ctrl = new SessionInformationsStatisticController(ureq, windowControl, sessions, reportHelper);
+			SessionFilter filter, ReportHelper reportHelper) {
+		Controller ctrl = new SessionInformationsStatisticController(ureq, windowControl, filter, reportHelper);
 		return new EvaluationFormControllerReportElement(ctrl);
 	}
 

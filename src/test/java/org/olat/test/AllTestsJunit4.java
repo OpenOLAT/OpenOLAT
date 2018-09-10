@@ -197,6 +197,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.forms.manager.EvaluationFormSessionDAOTest.class,
 	org.olat.modules.forms.manager.EvaluationFormStorageTest.class,
 	org.olat.modules.forms.manager.EvaluationFormSurveyDAOTest.class,
+	org.olat.modules.forms.model.jpa.SurveyFilterTest.class,
 	org.olat.modules.gotomeeting.manager.GoToJsonUtilTest.class,
 	org.olat.modules.gotomeeting.manager.GoToMeetingDAOTest.class,
 	org.olat.modules.gotomeeting.manager.GoToOrganizerDAOTest.class,

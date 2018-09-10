@@ -51,6 +51,7 @@ import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.modules.forms.EvaluationFormStatistic;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.RubricStatistic;
+import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.SessionStatusHandler;
 import org.olat.modules.forms.SessionStatusInformation;
 import org.olat.modules.forms.model.jpa.EvaluationFormResponses;
@@ -220,15 +221,9 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 	}
 
 	@Override
-	public List<EvaluationFormSession> loadSessionsByKey(List<? extends EvaluationFormSessionRef> sessionRefs,
-			int firstResult, int maxResults, SortKey... orderBy) {
-		return evaluationFormSessionDao.loadSessionsByKey(sessionRefs, firstResult, maxResults, orderBy);
-	}
-
-	@Override
-	public List<EvaluationFormSession> loadSessionsBySurvey(EvaluationFormSurvey survey,
-			EvaluationFormSessionStatus status) {
-		return evaluationFormSessionDao.loadSessionsBySurvey(survey, status);
+	public List<EvaluationFormSession> loadSessionsFiltered(SessionFilter filter, int firstResult, int maxResults,
+			SortKey... orderBy) {
+		return evaluationFormSessionDao.loadSessionsFiltered(filter, firstResult, maxResults, orderBy);
 	}
 
 	@Override
@@ -341,8 +336,8 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 	}
 
 	@Override
-	public EvaluationFormResponses loadResponsesBySessions(List<? extends EvaluationFormSessionRef> sessionRefs) {
-		List<EvaluationFormResponse> responses = evaluationFormResponseDao.loadResponsesBySessions(sessionRefs);
+	public EvaluationFormResponses loadResponsesBySessions(SessionFilter filter) {
+		List<EvaluationFormResponse> responses = evaluationFormResponseDao.loadResponsesBySessions(filter);
 		return new EvaluationFormResponses(responses);
 	}
 
@@ -384,10 +379,10 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 	}
 
 	@Override
-	public EvaluationFormStatistic getSessionsStatistic(List<? extends EvaluationFormSessionRef> sessionRefs) {
+	public EvaluationFormStatistic getSessionsStatistic(SessionFilter filter) {
 		EvaluationFormStatistic statistic = new EvaluationFormStatistic();
 		
-		List<EvaluationFormSession> sessions = evaluationFormSessionDao.loadSessionsByKey(sessionRefs, 0, -1);
+		List<EvaluationFormSession> sessions = evaluationFormSessionDao.loadSessionsFiltered(filter, 0, -1);
 		int numOfDoneSessions = 0;
 		Date firstSubmission = null;
 		Date lastSubmission = null;
@@ -427,8 +422,8 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 	}
 
 	@Override
-	public RubricStatistic getRubricStatistic(Rubric rubric, List<? extends EvaluationFormSessionRef> sessions) {
-		return new RubricStatisticImpl(rubric, sessions);
+	public RubricStatistic getRubricStatistic(Rubric rubric, SessionFilter filter) {
+		return new RubricStatisticImpl(rubric, filter);
 	}
 
 }

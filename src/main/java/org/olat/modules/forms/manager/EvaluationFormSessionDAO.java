@@ -19,7 +19,6 @@
  */
 package org.olat.modules.forms.manager;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -34,6 +33,7 @@ import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSessionRef;
 import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.modules.forms.EvaluationFormSurvey;
+import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.model.jpa.EvaluationFormSessionImpl;
 import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,20 +77,18 @@ class EvaluationFormSessionDAO {
 		return sessions.isEmpty()? null: sessions.get(0);
 	}
 	
-	List<EvaluationFormSession> loadSessionsByKey(List<? extends EvaluationFormSessionRef> sessions, int firstResult,
-			int maxResults, SortKey... orderBy) {
-		if (sessions == null || sessions.isEmpty())
-			return new ArrayList<>();
+	List<EvaluationFormSession> loadSessionsFiltered(SessionFilter filter, int firstResult, int maxResults,
+			SortKey... orderBy) {
 
 		StringBuilder sb = new StringBuilder();
 		sb.append("select session from evaluationformsession as session");
-		sb.append(" where session.key in (:sessionKeys)");
+		sb.append(" where session.key in (").append(filter.getSelectKeys()).append(")");
 		
 		appendOrderBy(sb, orderBy);
 
 		TypedQuery<EvaluationFormSession> query = dbInstance.getCurrentEntityManager().
-				createQuery(sb.toString(), EvaluationFormSession.class)
-				.setParameter("sessionKeys", getSessionKeys(sessions));
+				createQuery(sb.toString(), EvaluationFormSession.class);
+		filter.addParameters(query);
 		if(firstResult >= 0) {
 			query.setFirstResult(firstResult);
 		}
@@ -134,25 +132,6 @@ class EvaluationFormSessionDAO {
 				.setParameter("participationKey", participation.getKey())
 				.getResultList();
 		return sessions == null || sessions.isEmpty() ? null : sessions.get(0);
-	}
-
-	List<EvaluationFormSession> loadSessionsBySurvey(EvaluationFormSurvey survey, EvaluationFormSessionStatus status) {
-		if (survey == null || status == null) return new ArrayList<>();
-		
-		StringBuilder sb = new StringBuilder();
-		sb.append("select session from evaluationformsession as session");
-		sb.append(" where session.survey.key=:surveyKey");
-		sb.append("   and session.status=:status");
-		
-		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), EvaluationFormSession.class)
-				.setParameter("surveyKey", survey.getKey())
-				.setParameter("status", status.toString())
-				.getResultList();
-	}
-	
-	private List<Long> getSessionKeys(List<? extends EvaluationFormSessionRef> sessions) {
-		return sessions.stream().map(EvaluationFormSessionRef::getKey).collect(Collectors.toList());
 	}
 
 	EvaluationFormSession updateSession(EvaluationFormSession session, String email, String firstname,

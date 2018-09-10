@@ -20,7 +20,6 @@
 package org.olat.modules.forms.ui;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -40,6 +39,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormSession;
+import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.model.jpa.EvaluationFormResponses;
 import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.model.xml.SessionInformations.InformationType;
@@ -62,7 +62,7 @@ public class EvaluationFormSessionSelectionController extends FormBasicControlle
 	private FlexiTableElement tableEl;
 
 	private final Form form;
-	private final List<EvaluationFormSession> sessions;
+	private final SessionFilter filter;
 	private final ReportHelper reportHelper;
 	private final Component formHeader;
 	private EvaluationFormExecutionController executionCtrl;
@@ -71,10 +71,10 @@ public class EvaluationFormSessionSelectionController extends FormBasicControlle
 	private EvaluationFormManager evaluationFormManager;
 
 	public EvaluationFormSessionSelectionController(UserRequest ureq, WindowControl wControl, Form form,
-			List<EvaluationFormSession> sessions, ReportHelper reportHelper, Component formHeader) {
+			SessionFilter filter, ReportHelper reportHelper, Component formHeader) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		this.form = form;
-		this.sessions = sessions;
+		this.filter = filter;
 		this.reportHelper = reportHelper;
 		this.formHeader = formHeader;
 		initForm(ureq);
@@ -134,6 +134,7 @@ public class EvaluationFormSessionSelectionController extends FormBasicControlle
 	private void loadModel() {
 		List<SessionSelectionRow> rows = new ArrayList<>();
 		int count = 1;
+		List<EvaluationFormSession> sessions = evaluationFormManager.loadSessionsFiltered(filter, 0, -1);
 		sessions.sort(reportHelper.getComparator());
 		for (EvaluationFormSession session: sessions) {
 			String participant = new StringBuilder()
@@ -164,7 +165,7 @@ public class EvaluationFormSessionSelectionController extends FormBasicControlle
 
 	private void doShowQuickview(UserRequest ureq, SessionSelectionRow row) {
 		EvaluationFormSession reloadedSession = evaluationFormManager.loadSessionByKey(row.getSession());
-		EvaluationFormResponses responses = evaluationFormManager.loadResponsesBySessions(Collections.singletonList(reloadedSession));
+		EvaluationFormResponses responses = evaluationFormManager.loadResponsesBySessions(filter);
 		String legendName = reportHelper.getLegend(reloadedSession).getName();
 		executionCtrl = new EvaluationFormExecutionController(ureq, getWindowControl(),
 				reloadedSession, responses, form, formHeader);

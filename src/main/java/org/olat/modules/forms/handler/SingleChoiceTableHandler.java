@@ -19,13 +19,11 @@
  */
 package org.olat.modules.forms.handler;
 
-import java.util.List;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.ceditor.PageElement;
-import org.olat.modules.forms.EvaluationFormSessionRef;
+import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.model.xml.SingleChoice;
 import org.olat.modules.forms.ui.CountTableController;
 import org.olat.modules.forms.ui.ReportHelper;
@@ -49,10 +47,10 @@ public class SingleChoiceTableHandler implements EvaluationFormReportHandler {
 
 	@Override
 	public EvaluationFormReportElement getReportElement(UserRequest ureq, WindowControl windowControl, PageElement element,
-			List<? extends EvaluationFormSessionRef> sessions, ReportHelper reportHelper) {
+			SessionFilter filter, ReportHelper reportHelper) {
 		if (element instanceof SingleChoice) {
 			SingleChoice singleChoice = (SingleChoice) element;
-			CountDataSource dataSource = new SingleChoiceDataSource(singleChoice, sessions);
+			CountDataSource dataSource = new SingleChoiceDataSource(singleChoice, filter);
 			Controller ctrl = new CountTableController(ureq, windowControl, dataSource);
 			return new EvaluationFormControllerReportElement(ctrl);
 		}
