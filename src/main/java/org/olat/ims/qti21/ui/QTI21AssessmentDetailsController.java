@@ -302,6 +302,11 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 			} else if(event == Event.CANCELLED_EVENT) {
 				stackPanel.popController(correctionCtrl);
 				cleanUp();
+			} else if(event == Event.BACK_EVENT) {
+				stackPanel.popController(correctionCtrl);
+				cleanUp();
+				updateModel();
+				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 		} else if(retrieveConfirmationCtr == source) {
 			if(DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
