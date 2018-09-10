@@ -166,10 +166,9 @@ public class EvaluationFormSessionSelectionController extends FormBasicControlle
 	private void doShowQuickview(UserRequest ureq, SessionSelectionRow row) {
 		EvaluationFormSession reloadedSession = evaluationFormManager.loadSessionByKey(row.getSession());
 		EvaluationFormResponses responses = evaluationFormManager.loadResponsesBySessions(filter);
-		String legendName = reportHelper.getLegend(reloadedSession).getName();
 		executionCtrl = new EvaluationFormExecutionController(ureq, getWindowControl(),
 				reloadedSession, responses, form, formHeader);
-		stackPanel.pushController(legendName, executionCtrl);
+		stackPanel.pushController(row.getParticipant(), executionCtrl);
 	}
 
 	@Override
