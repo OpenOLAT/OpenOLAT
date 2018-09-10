@@ -262,14 +262,18 @@ public class ReminderServiceImpl implements ReminderService {
 		for(Identity identityToRemind:identitiesToRemind) {
 			String status;
 			MailBundle bundle = mailManager.makeMailBundle(context, identityToRemind, template, null, metaId, overviewResult);
-			MailerResult result = mailManager.sendMessage(bundle);
-			overviewResult.append(result);
-			
-			List<Identity> failedIdentities = result.getFailedIdentites();
-			if(failedIdentities != null && failedIdentities.contains(identityToRemind)) {
+			if(bundle == null) {
 				status = "error";
 			} else {
-				status = "ok";
+				MailerResult result = mailManager.sendMessage(bundle);
+				overviewResult.append(result);
+				
+				List<Identity> failedIdentities = result.getFailedIdentites();
+				if(failedIdentities != null && failedIdentities.contains(identityToRemind)) {
+					status = "error";
+				} else {
+					status = "ok";
+				}
 			}
 			reminderDao.markAsSend(reminder, identityToRemind, status);
 		}
