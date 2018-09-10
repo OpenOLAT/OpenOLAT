@@ -19,13 +19,15 @@
  */
 package org.olat.modules.forms.model.xml;
 
+import org.olat.modules.ceditor.model.TitleElement;
+
 /**
  * 
  * Initial date: 7 déc. 2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class Title extends AbstractHTMLElement {
+public class Title extends AbstractHTMLElement implements TitleElement {
 
 	private static final long serialVersionUID = 1567753376804106600L;
 

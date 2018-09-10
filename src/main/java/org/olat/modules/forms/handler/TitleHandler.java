@@ -34,13 +34,15 @@ import org.olat.core.util.Util;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementEditorController;
 import org.olat.modules.ceditor.PageElementRenderingHints;
+import org.olat.modules.ceditor.PageElementStore;
 import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.SimpleAddPageElementHandler;
+import org.olat.modules.ceditor.model.TitleElement;
 import org.olat.modules.ceditor.ui.PageRunComponent;
+import org.olat.modules.ceditor.ui.TitleEditorController;
 import org.olat.modules.forms.EvaluationFormSessionRef;
 import org.olat.modules.forms.model.xml.Title;
 import org.olat.modules.forms.ui.ReportHelper;
-import org.olat.modules.forms.ui.TitleEditorController;
 import org.olat.modules.forms.ui.model.EvaluationFormComponentElement;
 import org.olat.modules.forms.ui.model.EvaluationFormComponentReportElement;
 import org.olat.modules.forms.ui.model.EvaluationFormExecutionElement;
@@ -52,7 +54,7 @@ import org.olat.modules.forms.ui.model.EvaluationFormReportElement;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class TitleHandler implements EvaluationFormElementHandler, SimpleAddPageElementHandler, EvaluationFormReportHandler {
+public class TitleHandler implements EvaluationFormElementHandler, PageElementStore<TitleElement>, SimpleAddPageElementHandler, EvaluationFormReportHandler {
 
 	private static final AtomicInteger idGenerator = new AtomicInteger();
 	
@@ -75,7 +77,7 @@ public class TitleHandler implements EvaluationFormElementHandler, SimpleAddPage
 	@Override
 	public PageElementEditorController getEditor(UserRequest ureq, WindowControl wControl, PageElement element) {
 		if(element instanceof Title) {
-			return new TitleEditorController(ureq, wControl, (Title)element);
+			return new TitleEditorController(ureq, wControl, (Title)element, this);
 		}
 		return null;
 	}
@@ -88,6 +90,11 @@ public class TitleHandler implements EvaluationFormElementHandler, SimpleAddPage
 		part.setId(UUID.randomUUID().toString());
 		part.setContent(content);
 		return part;
+	}
+
+	@Override
+	public TitleElement savePageElement(TitleElement element) {
+		return element;
 	}
 
 	@Override
@@ -105,8 +112,7 @@ public class TitleHandler implements EvaluationFormElementHandler, SimpleAddPage
 		if(element instanceof Title) {
 			content = ((Title)element).getContent();
 		}
-		Component cmp = TextFactory.createTextComponentFromString("title_" + idGenerator.incrementAndGet(), content, null, false, null);
-		return cmp;
+		return TextFactory.createTextComponentFromString("title_" + idGenerator.incrementAndGet(), content, null, false, null);
 	}
 
 	@Override

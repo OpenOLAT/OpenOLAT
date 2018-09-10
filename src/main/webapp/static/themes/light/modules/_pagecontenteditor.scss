@@ -1,0 +1,214 @@
+.o_page_content_editor {
+	.o_toolbar  	{
+		border:none;
+	}
+	.o_page_part {
+		border: $o-panel-placeholder-border-width solid transparent;
+		&:hover {
+			border: $o-panel-placeholder-border-width dotted $o-portfolio-editor-border-color;
+		}
+		/* visually compensate for border 
+		margin-left: -$o-panel-placeholder-border-width;
+		margin-right: -$o-panel-placeholder-border-width;
+		*/
+	}
+}
+
+.o_page_fragment_edit  {
+	position: relative;
+	
+	.o_page_tools_above {
+		height: $o-portfolio-editor-border-width;
+		width: 100%;
+		background: $o-portfolio-editor-border-color;
+		position: absolute;
+		z-index: 3;
+		left: 0;
+		top: -$o-portfolio-editor-border-width;
+		box-shadow: 3px -8px 10px 0px rgba(0, 0, 0, 0.2);
+	
+		.o_page_add_above {
+			position: absolute;
+			left: 0;
+			top: -$o-portfolio-editor-border-width;		
+			height: $o-portfolio-editor-border-width;
+			border-left: $o-panel-placeholder-border-width dashed $o-portfolio-editor-border-color;
+			border-top: $o-panel-placeholder-border-width dashed $o-portfolio-editor-border-color;
+			border-right: $o-panel-placeholder-border-width dashed $o-portfolio-editor-border-color;
+			border-radius: $o-panel-placeholder-border-radius $o-panel-placeholder-border-radius 0 0;
+			box-shadow: 0 -5px 10px 0px rgba(0, 0, 0, 0.2);
+			background: #fff;
+		}
+		.o_sel_add_element_above {
+			display: inline-block;
+			padding: 5px 5px 0 5px;
+		}
+		
+		.o_page_others_above {
+			padding-right: $o-portfolio-editor-border-width;
+			line-height: $o-portfolio-editor-border-width;
+			vertical-align: middle;
+			.o_page_type {
+				display: none;
+			}
+			a {
+				float: right;
+				color: #fff;
+				padding-right: 1em;
+				&:hover {
+					color: darken(#fff, 10%);	
+				}				
+			}
+		}		
+	}
+	
+	.o_page_tools_dd {
+		position: absolute;
+		z-index: 4;
+		top: 0;
+		right: 0;
+		width: $o-portfolio-editor-border-width;
+		height: 100%;
+		background: $o-portfolio-editor-border-color;
+		
+		/* d&d handle: dotted surface */
+		&:before {
+			content: ' ';
+			width: $o-portfolio-editor-border-width;
+			height: 100%;
+			position: absolute;
+			left: 0;
+			top: 0;
+			border: 3px $o-portfolio-editor-border-color solid;
+			border-bottom: ($o-portfolio-editor-border-width + 3px) $o-portfolio-editor-border-color solid;
+			
+			background-image: -webkit-repeating-radial-gradient(center center, rgb(255,255,255), rgb(255,255,255) 1px, transparent 1px, transparent 100%);
+			background-image: -moz-repeating-radial-gradient(center center, rgb(255,255,255), rgb(255,255,255) 1px, transparent 1px, transparent 100%);
+			background-image: -ms-repeating-radial-gradient(center center, rgb(255,255,255), rgb(255,255,255) 1px, transparent 1px, transparent 100%);
+			background-image: repeating-radial-gradient(center center, rgb(255,255,255), rgb(255,255,255) 1px, transparent 1px, transparent 100%);
+			-webkit-background-size: 3px 3px;
+			-moz-background-size: 3px 3px;
+			background-size: 3px 3px;
+		}
+		
+		a {				
+			position: absolute;
+			display: inline-block;
+			width: $o-portfolio-editor-border-width;
+			height: $o-portfolio-editor-border-width;
+			line-height: $o-portfolio-editor-border-width;
+			text-align: center;
+			vertical-align: middle;
+			background: $o-portfolio-editor-border-color;
+
+			color: #fff;
+			&:hover {
+				color: darken(#fff, 10%);	
+			}
+			
+			&.o_disabled {
+				color: rgba(255,255,255,0.5) !important;
+				&:hover {
+					color: rgba(255,255,255,0.5) !important;	
+				}
+			}
+							
+			&.o_sel_move_up_element {
+				z-index: 4;
+				top: -$o-portfolio-editor-border-width;			
+			}
+			&.o_sel_move_down_element {
+				bottom: 0;
+			}
+		}
+	}
+
+	.o_page_part.o_page_edit {
+		padding-right: $o-portfolio-editor-border-width; /* space for d&d handel */
+		border: $o-panel-placeholder-border-width solid $o-portfolio-editor-border-color;
+		box-shadow: 5px 5px 10px 0px rgba(0, 0, 0, 0.2);
+		&:hover {
+			border: $o-panel-placeholder-border-width solid $o-portfolio-editor-border-color;
+		}
+		.o_page_edit_toolbar {
+			position: absolute;
+			z-index: 5;
+			left: 5px;
+			top: -$o-portfolio-editor-border-width;
+			display: inline-block;
+			height: $o-portfolio-editor-border-width;
+			line-height: $o-portfolio-editor-border-width;
+			vertical-align: middle;
+			a {				
+				color: #fff;
+				&:hover {
+					color: darken(#fff, 10%);	
+				}				
+				&.o_disabled {
+					color: rgba(255,255,255,0.5) !important;
+					&:hover {
+						color: rgba(255,255,255,0.5) !important;	
+					}
+				}
+			}
+		}
+		
+		.o_page_edit_title .o_page_edit_toolbar li {
+			font-weight: bold;
+		}
+		
+		.o_richtext_mce textarea {
+			border: 0;
+		}
+		
+	}
+	
+	.o_page_add_below {
+		position: absolute;
+		z-index: 3;
+		left: 0;
+		bottom: -$o-portfolio-editor-border-width;
+		height: $o-portfolio-editor-border-width;
+		border-left: $o-panel-placeholder-border-width dashed $o-portfolio-editor-border-color;
+		border-bottom: $o-panel-placeholder-border-width dashed $o-portfolio-editor-border-color;
+		border-right: $o-panel-placeholder-border-width dashed $o-portfolio-editor-border-color;
+		border-radius: 0 0 $o-panel-placeholder-border-radius $o-panel-placeholder-border-radius;
+		box-shadow: 3px 8px 10px 0px rgba(0, 0, 0, 0.2);
+		background: #fff;
+
+		.o_sel_add_element_below {
+			display: inline-block;
+			padding: 0 5px 5px 5px;
+		}
+	}
+	
+	/* hide overlapping menu items when in drag&drop mode for better drop zone visibility */
+	&.gu-mirror,
+	&.gu-transit {
+		.o_page_add_below,
+		.o_page_add_above {
+			display: none;
+		}
+	}
+}
+
+.o_page_add_contents {
+	margin-top: 30px;
+}
+
+
+.o_ce_html_raw {
+		
+		&.o_html_col2 {
+			column-count: 2;
+			column-gap: 1em;
+		}
+		&.o_html_col3 {
+			column-count: 3;
+			column-gap: 1em;
+		}
+		&.o_html_col4 {
+			column-count: 4;
+			column-gap: 1em;
+		}
+	}

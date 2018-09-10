@@ -1,4 +1,4 @@
-<div class="o_pf_content_editor">
+<div class="o_page_content_editor">
 	#foreach($fragment in $fragments)
 		#if($fragment.editMode)
 			<div class="o_page_fragment_edit" data-oo-page-fragment="$fragment.componentName">
@@ -47,7 +47,7 @@
 	#end
 	
 	#if($r.isNotEmpty($addElementLinks))
-	<div class="o_pf_add_contents panel panel-placeholder">
+	<div class="o_page_add_contents panel panel-placeholder">
 		<div class="panel-heading">
 			<h4 class="panel-title">$r.translate("add.content.title")</h4>
 		</div>
@@ -81,7 +81,7 @@ jQuery(function() {
 <script>
 /* <![CDATA[ */ 
 jQuery(function() {
-	var container = jQuery('.o_pf_content_editor').get(0);
+	var container = jQuery('.o_page_content_editor').get(0);
 	dragula([container], {
 		copy: function (el, source) {
 		    return false;

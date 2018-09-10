@@ -34,12 +34,15 @@ import org.olat.core.util.Util;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementEditorController;
 import org.olat.modules.ceditor.PageElementRenderingHints;
+import org.olat.modules.ceditor.PageElementStore;
 import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.SimpleAddPageElementHandler;
+import org.olat.modules.ceditor.model.HTMLRawElement;
+import org.olat.modules.ceditor.ui.ComponentsFactory;
+import org.olat.modules.ceditor.ui.HTMLRawEditorController;
 import org.olat.modules.ceditor.ui.PageRunComponent;
 import org.olat.modules.forms.EvaluationFormSessionRef;
 import org.olat.modules.forms.model.xml.HTMLRaw;
-import org.olat.modules.forms.ui.HTMLRawEditorController;
 import org.olat.modules.forms.ui.ReportHelper;
 import org.olat.modules.forms.ui.model.EvaluationFormComponentElement;
 import org.olat.modules.forms.ui.model.EvaluationFormComponentReportElement;
@@ -52,7 +55,7 @@ import org.olat.modules.forms.ui.model.EvaluationFormReportElement;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class HTMLRawHandler implements EvaluationFormElementHandler, SimpleAddPageElementHandler, EvaluationFormReportHandler {
+public class HTMLRawHandler implements EvaluationFormElementHandler, PageElementStore<HTMLRawElement>, SimpleAddPageElementHandler, EvaluationFormReportHandler {
 
 	@Override
 	public String getType() {
@@ -73,7 +76,7 @@ public class HTMLRawHandler implements EvaluationFormElementHandler, SimpleAddPa
 	@Override
 	public PageElementEditorController getEditor(UserRequest ureq, WindowControl wControl, PageElement element) {
 		if(element instanceof HTMLRaw) {
-			return new HTMLRawEditorController(ureq, wControl, (HTMLRaw)element);
+			return new HTMLRawEditorController(ureq, wControl, (HTMLRaw)element, this);
 		}
 		return null;
 	}
@@ -89,6 +92,11 @@ public class HTMLRawHandler implements EvaluationFormElementHandler, SimpleAddPa
 	}
 
 	@Override
+	public HTMLRawElement savePageElement(HTMLRawElement element) {
+		return element;
+	}
+
+	@Override
 	public EvaluationFormExecutionElement getExecutionElement(UserRequest ureq, WindowControl wControl, Form rootForm,
 			PageElement element) {
 		PageRunElement runElement = getContent(ureq, wControl, element, null);
@@ -99,12 +107,10 @@ public class HTMLRawHandler implements EvaluationFormElementHandler, SimpleAddPa
 	}
 
 	private Component getComponent(PageElement element) {
-		String content = "";
 		if(element instanceof HTMLRaw) {
-			content = ((HTMLRaw)element).getContent();
+			return ComponentsFactory.getContent((HTMLRaw)element);
 		}
-		Component cmp = TextFactory.createTextComponentFromString("htmlraw_" + CodeHelper.getRAMUniqueID(), content, null, false, null);
-		return cmp;
+		return TextFactory.createTextComponentFromString("htmlraw_" + CodeHelper.getRAMUniqueID(), "", null, false, null);
 	}
 
 	@Override

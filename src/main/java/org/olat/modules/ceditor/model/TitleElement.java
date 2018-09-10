@@ -17,31 +17,23 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio.model;
+package org.olat.modules.ceditor.model;
 
-import javax.persistence.Entity;
-import javax.persistence.Transient;
-
-import org.olat.modules.ceditor.model.HTMLRawElement;
+import org.olat.modules.ceditor.PageElement;
 
 /**
+ * This is an abstract title element to use the generic
+ * title / heading editor.
  * 
- * Initial date: 09.06.2016<br>
+ * 
+ * Initial date: 10 sept. 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-@Entity(name="pfhtmlpart")
-public class HTMLPart extends AbstractPart implements HTMLRawElement {
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 7060103983145628108L;
-
-	@Override
-	@Transient
-	public String getType() {
-		return "htmlraw";
-	}
+public interface TitleElement extends PageElement {
 	
+	public String getContent();
+	
+	public void setContent(String content);
+
 }

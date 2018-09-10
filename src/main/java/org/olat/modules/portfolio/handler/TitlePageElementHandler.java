@@ -17,77 +17,74 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.ceditor.ui.handler;
+package org.olat.modules.portfolio.handler;
 
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.text.TextComponent;
 import org.olat.core.gui.components.text.TextFactory;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.util.CodeHelper;
-import org.olat.core.util.Formatter;
-import org.olat.core.util.StringHelper;
-import org.olat.modules.ceditor.ContentEditorXStream;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementEditorController;
 import org.olat.modules.ceditor.PageElementHandler;
 import org.olat.modules.ceditor.PageElementRenderingHints;
+import org.olat.modules.ceditor.PageElementStore;
 import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.SimpleAddPageElementHandler;
-import org.olat.modules.ceditor.model.TextSettings;
-import org.olat.modules.ceditor.ui.HTMLRawEditorController;
+import org.olat.modules.ceditor.model.TitleElement;
 import org.olat.modules.ceditor.ui.PageRunComponent;
-import org.olat.modules.portfolio.model.HTMLPart;
+import org.olat.modules.ceditor.ui.TitleEditorController;
+import org.olat.modules.portfolio.PortfolioService;
+import org.olat.modules.portfolio.model.TitlePart;
 
 /**
  * 
- * Initial date: 01.07.2016<br>
+ * Initial date: 04.07.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class HTMLRawPageElementHandler implements PageElementHandler, SimpleAddPageElementHandler {
+public class TitlePageElementHandler implements PageElementHandler, PageElementStore<TitleElement>, SimpleAddPageElementHandler {
 
+	private static final AtomicInteger idGenerator = new AtomicInteger();
+	
 	@Override
 	public String getType() {
-		return "htmlraw";
+		return "htitle";
 	}
 
 	@Override
 	public String getIconCssClass() {
-		// For now we use the paragraph icon until we have a minimized paragraph element o_icon_code
-		return "o_icon_paragraph";
+		return "o_icon_header";
 	}
 
 	@Override
 	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, PageElementRenderingHints options) {
 		String content = "";
-		int numOfColumns = 1;
-		if(element instanceof HTMLPart) {
-			HTMLPart htmlPart = (HTMLPart)element;
-			content = htmlPart.getContent();
-			content = Formatter.formatLatexFormulas(content);
-			
-			if(StringHelper.containsNonWhitespace(htmlPart.getLayoutOptions())) {
-				TextSettings settings = ContentEditorXStream.fromXml(htmlPart.getLayoutOptions(), TextSettings.class);
-				numOfColumns = settings.getNumOfColumns();
-			}
+		if(element instanceof TitlePart) {
+			content = ((TitlePart)element).getContent();
 		}
-		TextComponent cmp = TextFactory.createTextComponentFromString("htmlRawCmp" + CodeHelper.getRAMUniqueID(), content, null, false, null);
-		cmp.setElementCssClass("o_pf_html_raw o_html_col" + numOfColumns);
+		TextComponent cmp = TextFactory.createTextComponentFromString("title_" + idGenerator.incrementAndGet(), content, null, false, null);
 		return new PageRunComponent(cmp);
 	}
 
 	@Override
 	public PageElementEditorController getEditor(UserRequest ureq, WindowControl wControl, PageElement element) {
-		if(element instanceof HTMLPart) {
-			return new HTMLRawEditorController(ureq, wControl, (HTMLPart)element);
+		if(element instanceof TitlePart) {
+			return new TitleEditorController(ureq, wControl, (TitlePart)element, this);
 		}
 		return null;
 	}
 
 	@Override
 	public PageElement createPageElement(Locale locale) {
-		return new HTMLPart();
+		return new TitlePart();
+	}
+
+	@Override
+	public TitleElement savePageElement(TitleElement element) {
+		return CoreSpringFactory.getImpl(PortfolioService.class).updatePart((TitlePart)element);
 	}
 }

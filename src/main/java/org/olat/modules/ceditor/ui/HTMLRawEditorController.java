@@ -42,11 +42,10 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.modules.ceditor.ContentEditorXStream;
 import org.olat.modules.ceditor.PageElementEditorController;
+import org.olat.modules.ceditor.PageElementStore;
+import org.olat.modules.ceditor.model.HTMLRawElement;
 import org.olat.modules.ceditor.model.TextSettings;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
-import org.olat.modules.portfolio.PortfolioService;
-import org.olat.modules.portfolio.model.HTMLPart;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -64,15 +63,14 @@ public class HTMLRawEditorController extends FormBasicController implements Page
 	private RichTextElement htmlItem;
 	private StaticTextElement staticItem;
 	
-	private HTMLPart htmlPart;
+	private HTMLRawElement htmlPart;
 	private boolean editMode = false;
+	private final PageElementStore<HTMLRawElement> store;
 	
-	@Autowired
-	private PortfolioService portfolioService;
-	
-	public HTMLRawEditorController(UserRequest ureq, WindowControl wControl, HTMLPart htmlPart) {
+	public HTMLRawEditorController(UserRequest ureq, WindowControl wControl, HTMLRawElement htmlPart, PageElementStore<HTMLRawElement> store) {
 		super(ureq, wControl, "html_raw_editor");
 		this.htmlPart = htmlPart;
+		this.store = store;
 		
 		initForm(ureq);
 		setEditMode(editMode);
@@ -152,7 +150,7 @@ public class HTMLRawEditorController extends FormBasicController implements Page
 		if(htmlItem == source) {
 			String content = htmlItem.getValue();
 			htmlPart.setContent(content);
-			htmlPart = portfolioService.updatePart(htmlPart);
+			htmlPart = store.savePageElement(htmlPart);
 			String formattedContent = Formatter.formatLatexFormulas(contentOrExample(content));
 			staticItem.setValue(formattedContent);
 			fireEvent(ureq, new ChangePartEvent(htmlPart));
@@ -164,7 +162,7 @@ public class HTMLRawEditorController extends FormBasicController implements Page
 	protected void formOK(UserRequest ureq) {
 		String content = htmlItem.getValue();
 		htmlPart.setContent(content);
-		htmlPart = portfolioService.updatePart(htmlPart);
+		htmlPart = store.savePageElement(htmlPart);
 
 		String formattedContent = Formatter.formatLatexFormulas(contentOrExample(content));
 		staticItem.setValue(formattedContent);
@@ -185,7 +183,7 @@ public class HTMLRawEditorController extends FormBasicController implements Page
 		} else if(numOfColumns == 4) {
 			column4Link.setIconLeftCSS("o_icon o_icon_check");
 		}
-		flc.getFormItemComponent().contextPut("htmlRawClass", "o_pf_html_raw o_html_col" + numOfColumns);
+		flc.getFormItemComponent().contextPut("htmlRawClass", "o_ce_html_raw o_html_col" + numOfColumns);
 		flc.setDirty(true);
 	}
 	
@@ -201,7 +199,7 @@ public class HTMLRawEditorController extends FormBasicController implements Page
 
 		String settingsXml = ContentEditorXStream.toXml(settings);
 		htmlPart.setLayoutOptions(settingsXml);
-		htmlPart = portfolioService.updatePart(htmlPart);
+		htmlPart = store.savePageElement(htmlPart);
 		setActiveColumLink(numOfColumns);
 	}
 	

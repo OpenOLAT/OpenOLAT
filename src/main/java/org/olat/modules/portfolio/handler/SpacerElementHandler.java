@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.ceditor.ui.handler;
+package org.olat.modules.portfolio.handler;
 
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicInteger;

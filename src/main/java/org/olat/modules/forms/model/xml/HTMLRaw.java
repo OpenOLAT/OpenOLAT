@@ -19,23 +19,37 @@
  */
 package org.olat.modules.forms.model.xml;
 
+import org.olat.modules.ceditor.model.HTMLRawElement;
+
 /**
  * 
  * Initial date: 12 déc. 2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class HTMLRaw extends AbstractHTMLElement {
+public class HTMLRaw extends AbstractHTMLElement implements HTMLRawElement {
 
 	private static final long serialVersionUID = 1567753376804106600L;
 
 	public static final String TYPE = "formhtmlraw";
+	
+	private String layoutOptions;
 
 	@Override
 	public String getType() {
 		return TYPE;
 	}
-	
+
+	@Override
+	public String getLayoutOptions() {
+		return layoutOptions;
+	}
+
+	@Override
+	public void setLayoutOptions(String layoutOptions) {
+		this.layoutOptions = layoutOptions;
+	}
+
 	@Override
 	public boolean equals(Object obj) {
 		if(this == obj) {

@@ -17,31 +17,34 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio.model;
+package org.olat.modules.ceditor.ui;
 
-import javax.persistence.Entity;
-import javax.persistence.Transient;
-
+import org.olat.core.gui.components.text.TextComponent;
+import org.olat.core.gui.components.text.TextFactory;
+import org.olat.core.util.CodeHelper;
+import org.olat.core.util.Formatter;
 import org.olat.modules.ceditor.model.HTMLRawElement;
+import org.olat.modules.ceditor.model.TextSettings;
 
 /**
  * 
- * Initial date: 09.06.2016<br>
+ * Initial date: 10 sept. 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-@Entity(name="pfhtmlpart")
-public class HTMLPart extends AbstractPart implements HTMLRawElement {
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 7060103983145628108L;
-
-	@Override
-	@Transient
-	public String getType() {
-		return "htmlraw";
-	}
+public class ComponentsFactory {
 	
+	
+	public static final TextComponent getContent(HTMLRawElement element) {
+		int numOfColumns = 1;
+		String content = element.getContent();
+		content = Formatter.formatLatexFormulas(content);
+		TextSettings settings = element.getTextSettings();
+		numOfColumns = settings.getNumOfColumns();
+
+		TextComponent cmp = TextFactory.createTextComponentFromString("htmlRawCmp" + CodeHelper.getRAMUniqueID(), content, null, false, null);
+		cmp.setElementCssClass("o_ce_html_raw o_html_col" + numOfColumns);
+		return cmp;
+	}
+
 }

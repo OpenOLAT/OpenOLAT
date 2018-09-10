@@ -37,10 +37,9 @@ import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.modules.ceditor.PageElementEditorController;
+import org.olat.modules.ceditor.PageElementStore;
+import org.olat.modules.ceditor.model.TitleElement;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
-import org.olat.modules.portfolio.PortfolioService;
-import org.olat.modules.portfolio.model.TitlePart;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -53,15 +52,14 @@ public class TitleEditorController extends FormBasicController implements PageEl
 	private RichTextElement titleItem;
 	private StaticTextElement staticItem;
 	
-	private TitlePart titlePart;
+	private TitleElement title;
 	private boolean editMode = false;
+	private final PageElementStore<TitleElement> store;
 	
-	@Autowired
-	private PortfolioService portfolioService;
-	
-	public TitleEditorController(UserRequest ureq, WindowControl wControl, TitlePart titlePart) {
+	public TitleEditorController(UserRequest ureq, WindowControl wControl, TitleElement title, PageElementStore<TitleElement> store) {
 		super(ureq, wControl, "title_editor");
-		this.titlePart = titlePart;
+		this.title = title;
+		this.store = store;
 		
 		initForm(ureq);
 		setEditMode(editMode);
@@ -77,7 +75,7 @@ public class TitleEditorController extends FormBasicController implements PageEl
 		this.editMode = editMode;
 		titleItem.setVisible(editMode);
 		staticItem.setVisible(!editMode);
-		flc.getFormItemComponent().contextPut("editMode", new Boolean(editMode));
+		flc.getFormItemComponent().contextPut("editMode", Boolean.valueOf(editMode));
 	}
 
 	@Override
@@ -90,7 +88,11 @@ public class TitleEditorController extends FormBasicController implements PageEl
 		flc.getFormItemComponent().contextPut("headingFormatLinkNames", headingFormatLinkNames);
 
 		String cmpId = "title-" + CodeHelper.getRAMUniqueID() + "h";
-		String content = titlePart.getContent();
+		String content = title.getContent();
+		if(!StringHelper.containsNonWhitespace(content)) {
+			content = "<h1></h1>";
+		}
+		
 		titleItem = uifactory.addRichTextElementForStringDataCompact(cmpId, null, content, 8, 80, null, formLayout, ureq.getUserSession(), getWindowControl());
 		titleItem.getEditorConfiguration().setSendOnBlur(true);
 		titleItem.getEditorConfiguration().disableMenuAndMenuBar();
@@ -101,7 +103,7 @@ public class TitleEditorController extends FormBasicController implements PageEl
 
 	@Override
 	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent fe) {
-		//super.propagateDirtinessToContainer(fiSrc, fe);
+		//
 	}
 
 	@Override
@@ -125,25 +127,25 @@ public class TitleEditorController extends FormBasicController implements PageEl
 	
 	private void doChangeHeading(UserRequest ureq, String heading) {
 		String content = titleItem.getValue();
-		String title = FilterFactory.getHtmlTagsFilter().filter(content);
+		String text = FilterFactory.getHtmlTagsFilter().filter(content);
 		StringBuilder sb = new StringBuilder();
-		sb.append("<").append(heading).append(">").append(title).append("</").append(heading).append(">");
+		sb.append("<").append(heading).append(">").append(text).append("</").append(heading).append(">");
 		titleItem.setValue(sb.toString());
 		doSave(ureq);
 	}
 	
 	private void doSave(UserRequest ureq) {
 		String content = titleItem.getValue();
-		titlePart.setContent(content);
-		titlePart = portfolioService.updatePart(titlePart);
+		title.setContent(content);
+		title = store.savePageElement(title);
 		staticItem.setValue(contentOrExample(content));
-		fireEvent(ureq, new ChangePartEvent(titlePart));
+		fireEvent(ureq, new ChangePartEvent(title));
 	}
 
 	private String contentOrExample(String content) {
-		String title = FilterFactory.getHtmlTagsFilter().filter(content);
+		String text = FilterFactory.getHtmlTagsFilter().filter(content);
 		String staticContent = content;
-		if (!StringHelper.containsNonWhitespace(title)) {
+		if (!StringHelper.containsNonWhitespace(text)) {
 			staticContent = getTranslator().translate("title.example");
 		}
 		return staticContent;

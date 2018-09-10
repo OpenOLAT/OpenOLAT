@@ -22,6 +22,8 @@ package org.olat.modules.portfolio.model;
 import javax.persistence.Entity;
 import javax.persistence.Transient;
 
+import org.olat.modules.ceditor.model.TitleElement;
+
 /**
  * 
  * Initial date: 09.06.2016<br>
@@ -29,7 +31,7 @@ import javax.persistence.Transient;
  *
  */
 @Entity(name="pftitlepart")
-public class TitlePart extends AbstractPart {
+public class TitlePart extends AbstractPart implements TitleElement {
 
 	private static final long serialVersionUID = 7060103983145628108L;
 
