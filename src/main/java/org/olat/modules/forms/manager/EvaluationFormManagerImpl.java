@@ -29,8 +29,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.olat.basesecurity.IdentityRef;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -49,6 +51,8 @@ import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.modules.forms.EvaluationFormStatistic;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.RubricStatistic;
+import org.olat.modules.forms.SessionStatusHandler;
+import org.olat.modules.forms.SessionStatusInformation;
 import org.olat.modules.forms.model.jpa.EvaluationFormResponses;
 import org.olat.modules.forms.model.jpa.RubricStatisticImpl;
 import org.olat.modules.forms.model.xml.Form;
@@ -236,16 +240,24 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 	@Override
 	public EvaluationFormSession finishSession(EvaluationFormSessionRef sessionRef) {
 		if (sessionRef == null) return null;
-		EvaluationFormSession sesssion = evaluationFormSessionDao.loadSessionByKey(sessionRef);
-		EvaluationFormParticipation participation = sesssion.getParticipation();
+		EvaluationFormSession session = evaluationFormSessionDao.loadSessionByKey(sessionRef);
+		EvaluationFormParticipation participation = session.getParticipation();
 		if (participation != null) {
 			participation = evaluationFormParticipationDao.changeStatus(participation, EvaluationFormParticipationStatus.done);
 			if (participation.isAnonymous()) {
-				sesssion = evaluationFormSessionDao.makeAnonymous(sesssion);
+				session = evaluationFormSessionDao.makeAnonymous(session);
 			}
 		}
-		sesssion = evaluationFormSessionDao.changeStatus(sesssion, EvaluationFormSessionStatus.done);
-		return sesssion;
+		session = evaluationFormSessionDao.changeStatus(session, EvaluationFormSessionStatus.done);
+		
+		SessionStatusInformation infos = new SessionStatusInformation();
+		infos.setParticipation(participation);
+		infos.setSession(session);
+		Map<String, SessionStatusHandler> statusHandler = CoreSpringFactory.getBeansOfType(SessionStatusHandler.class);
+		for (SessionStatusHandler handler: statusHandler.values()) {
+			handler.onFinish(infos);
+		}
+		return session;
 	}
 	
 	@Override
@@ -256,6 +268,14 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 		if (participation != null) {
 			participation = evaluationFormParticipationDao.changeStatus(participation, EvaluationFormParticipationStatus.prepared);
 			finishedSesssion = evaluationFormSessionDao.changeStatus(finishedSesssion, EvaluationFormSessionStatus.inProgress);
+			
+			SessionStatusInformation infos = new SessionStatusInformation();
+			infos.setParticipation(participation);
+			infos.setSession(session);
+			Map<String, SessionStatusHandler> statusHandler = CoreSpringFactory.getBeansOfType(SessionStatusHandler.class);
+			for (SessionStatusHandler handler: statusHandler.values()) {
+				handler.onReopen(infos);
+			}
 		}
 		return finishedSesssion;
 	}

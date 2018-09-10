@@ -36,6 +36,7 @@ import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
+import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.manager.EvaluationFormTestsHelper;
 import org.olat.modules.quality.QualityContext;
@@ -205,6 +206,10 @@ public class QualityTestHelper {
 
 	EvaluationFormParticipation createParticipation(EvaluationFormSurvey survey, Identity identity) {
 		return evaluationFormManager.createParticipation(survey, identity);
+	}
+
+	EvaluationFormSession createSession(EvaluationFormParticipation participation) {
+		return evaluationFormManager.createSession(participation);
 	}
 
 	List<EvaluationFormParticipation> addParticipations(QualityDataCollection dataCollection, List<Identity> executors) {

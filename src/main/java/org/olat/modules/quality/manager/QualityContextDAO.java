@@ -24,12 +24,14 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationRef;
+import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.quality.QualityContext;
 import org.olat.modules.quality.QualityContextRef;
 import org.olat.modules.quality.QualityContextRole;
@@ -230,6 +232,50 @@ class QualityContextDAO {
 				.setMaxResults(1)
 				.getResultList();
 		return keys != null && !keys.isEmpty() && keys.get(0) != null && keys.get(0).longValue() > 0;
+	}
+
+	QualityContext finish(EvaluationFormParticipation participation, EvaluationFormSession session) {
+		if (participation == null || session == null) return null;
+		
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select context");
+		sb.append("  from qualitycontext as context");
+		sb.and().append("context.evaluationFormParticipation.key = :participationKey");
+		
+		List<QualityContextImpl> participations = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), QualityContextImpl.class)
+				.setParameter("participationKey", participation.getKey())
+				.getResultList();
+		if (!participations.isEmpty()) {
+			QualityContextImpl context = participations.get(0);
+			context.setEvaluationFormSession(session);
+			context.setEvaluationFormParticipation(null);
+			context.setLastModified(new Date());
+			return dbInstance.getCurrentEntityManager().merge(context);
+		}
+		return null;
+	}
+	
+	QualityContext reopen(EvaluationFormSession session, EvaluationFormParticipation participation) {
+		if (participation == null || session == null) return null;
+		
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select context");
+		sb.append("  from qualitycontext as context");
+		sb.and().append("context.evaluationFormSession.key = :sessionKey");
+		
+		List<QualityContextImpl> participations = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), QualityContextImpl.class)
+				.setParameter("sessionKey", session.getKey())
+				.getResultList();
+		if (!participations.isEmpty()) {
+			QualityContextImpl context = participations.get(0);
+			context.setEvaluationFormSession(null);
+			context.setEvaluationFormParticipation(participation);
+			context.setLastModified(new Date());
+			return dbInstance.getCurrentEntityManager().merge(context);
+		}
+		return null;
 	}
 	
 	void deleteContext(QualityContextRef contextRef) {

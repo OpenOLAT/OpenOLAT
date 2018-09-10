@@ -160,7 +160,7 @@ public interface QualityService {
 			EvaluationFormParticipation participation, CurriculumElement curriculumElement, CurriculumRoles role);
 	
 	public List<QualityContext> loadContextByParticipation(EvaluationFormParticipationRef participationRef);
-
+	
 	public void deleteContext(QualityContextRef contextRef);
 
 	/**

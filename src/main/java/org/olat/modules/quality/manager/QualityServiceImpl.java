@@ -48,6 +48,8 @@ import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationRef;
 import org.olat.modules.forms.EvaluationFormParticipationStatus;
 import org.olat.modules.forms.EvaluationFormSurvey;
+import org.olat.modules.forms.SessionStatusHandler;
+import org.olat.modules.forms.SessionStatusInformation;
 import org.olat.modules.quality.QualityContext;
 import org.olat.modules.quality.QualityContextBuilder;
 import org.olat.modules.quality.QualityContextRef;
@@ -81,7 +83,8 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class QualityServiceImpl implements QualityService, OrganisationDataDeletable, CurriculumDataDeletable {
+public class QualityServiceImpl
+		implements QualityService, OrganisationDataDeletable, CurriculumDataDeletable, SessionStatusHandler {
 
 	private static final OLog log = Tracing.createLoggerFor(QualityServiceImpl.class);
 
@@ -456,5 +459,15 @@ public class QualityServiceImpl implements QualityService, OrganisationDataDelet
 		return !contextDao.hasContexts(curriculumElement)
 				&& !contextToCurriculumElementDao.hasRelations(curriculumElement)
 				&& !dataCollectionDao.hasDataCollection(curriculumElement);
+	}
+
+	@Override
+	public void onFinish(SessionStatusInformation infos) {
+		contextDao.finish(infos.getParticipation(), infos.getSession());
+	}
+
+	@Override
+	public void onReopen(SessionStatusInformation infos) {
+		contextDao.reopen(infos.getSession(), infos.getParticipation());
 	}
 }

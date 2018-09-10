@@ -28,6 +28,7 @@ import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.forms.EvaluationFormParticipation;
+import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.quality.QualityContext;
 import org.olat.modules.quality.QualityContextRole;
 import org.olat.modules.quality.QualityDataCollection;
@@ -191,6 +192,35 @@ public class QualityContextDAOTest extends OlatTestCase {
 		boolean hasContexts = sut.hasContexts(evaluationFormParticipation);
 
 		assertThat(hasContexts).isFalse();
+	}
+	
+	@Test
+	public void shouldAddSessionAndRemovePaticipationWhenFinishing() {
+		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
+		EvaluationFormParticipation participation = qualityTestHelper.createParticipation();
+		sut.createContext(dataCollection, participation, null, null, null);
+		dbInstance.commitAndCloseSession();
+		
+		EvaluationFormSession session = qualityTestHelper.createSession(participation);
+		QualityContext context = sut.finish(participation, session);
+		
+		assertThat(context.getEvaluationFormParticipation()).isNull();
+		assertThat(context.getEvaluationFormSession()).isEqualTo(session);
+	}
+
+	@Test
+	public void shouldAddParticipationAndRemoveSessionWhenReopen() {
+		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
+		EvaluationFormParticipation participation = qualityTestHelper.createParticipation();
+		sut.createContext(dataCollection, participation, null, null, null);
+		EvaluationFormSession session = qualityTestHelper.createSession(participation);
+		sut.finish(participation, session);
+		dbInstance.commitAndCloseSession();
+		
+		QualityContext context = sut.reopen(session, participation);
+		
+		assertThat(context.getEvaluationFormSession()).isNull();
+		assertThat(context.getEvaluationFormParticipation()).isEqualTo(participation);
 	}
 
 }
