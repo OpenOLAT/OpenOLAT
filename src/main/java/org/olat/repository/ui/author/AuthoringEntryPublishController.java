@@ -177,6 +177,7 @@ public class AuthoringEntryPublishController extends FormBasicController {
 		final boolean managedSettings = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.settings);
 		final boolean managedAccess = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.access);
 		final boolean closedOrDeleted = entry.getEntryStatus() == RepositoryEntryStatusEnum.closed
+				|| entry.getEntryStatus() == RepositoryEntryStatusEnum.trash
 				|| entry.getEntryStatus() == RepositoryEntryStatusEnum.deleted;
 		
 		String[] publishedKeys;
@@ -185,12 +186,14 @@ public class AuthoringEntryPublishController extends FormBasicController {
 			publishedKeys = new String[] {
 					RepositoryEntryStatusEnum.preparation.name(), RepositoryEntryStatusEnum.review.name(),
 					RepositoryEntryStatusEnum.coachpublished.name(), RepositoryEntryStatusEnum.published.name(),
-					RepositoryEntryStatusEnum.closed.name(), RepositoryEntryStatusEnum.deleted.name()
+					RepositoryEntryStatusEnum.closed.name(), RepositoryEntryStatusEnum.trash.name(),
+					RepositoryEntryStatusEnum.deleted.name()
 			};
 			publishedValues = new String[] {
 					translate("cif.status.preparation"), translate("cif.status.review"),
 					translate("cif.status.coachpublished"), translate("cif.status.published"),
-					translate("cif.status.closed"), translate("cif.status.deleted")
+					translate("cif.status.closed"), translate("cif.status.trash"),
+					translate("cif.status.deleted")
 			};
 		} else {
 			publishedKeys = new String[] {
