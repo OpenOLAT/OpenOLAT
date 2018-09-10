@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio.ui.editor;
+package org.olat.modules.ceditor.ui;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -41,9 +41,17 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
-import org.olat.modules.portfolio.ui.editor.event.AddElementEvent;
-import org.olat.modules.portfolio.ui.editor.event.ChangePartEvent;
-import org.olat.modules.portfolio.ui.editor.event.ClosePartEvent;
+import org.olat.modules.ceditor.InteractiveAddPageElementHandler;
+import org.olat.modules.ceditor.PageEditorProvider;
+import org.olat.modules.ceditor.PageEditorSecurityCallback;
+import org.olat.modules.ceditor.PageElement;
+import org.olat.modules.ceditor.PageElementAddController;
+import org.olat.modules.ceditor.PageElementEditorController;
+import org.olat.modules.ceditor.PageElementHandler;
+import org.olat.modules.ceditor.SimpleAddPageElementHandler;
+import org.olat.modules.ceditor.ui.event.AddElementEvent;
+import org.olat.modules.ceditor.ui.event.ChangePartEvent;
+import org.olat.modules.ceditor.ui.event.ClosePartEvent;
 
 /**
  * 

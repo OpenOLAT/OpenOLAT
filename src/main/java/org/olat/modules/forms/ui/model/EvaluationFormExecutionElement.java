@@ -20,9 +20,9 @@
 package org.olat.modules.forms.ui.model;
 
 import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.model.jpa.EvaluationFormResponses;
-import org.olat.modules.portfolio.ui.editor.PageRunElement;
 
 /**
  * 

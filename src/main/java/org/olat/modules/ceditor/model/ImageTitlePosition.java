@@ -17,16 +17,17 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio.ui.editor;
+package org.olat.modules.ceditor.model;
 
 /**
  * 
- * Initial date: 01.07.2016<br>
+ * Initial date: 6 sept. 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface PageElement {
-	
-	public String getType();
-
+public enum ImageTitlePosition {
+	above,
+	top,
+	centered,
+	bottom
 }

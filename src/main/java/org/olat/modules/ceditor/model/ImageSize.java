@@ -17,18 +17,17 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio.ui.editor;
-
-import java.util.Locale;
+package org.olat.modules.ceditor.model;
 
 /**
  * 
- * Initial date: 04.07.2016<br>
+ * Initial date: 5 sept. 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface SimpleAddPageElementHandler {
-	
-	public PageElement createPageElement(Locale locale);
-
+public enum ImageSize {
+	none,
+	small,
+	medium,
+	fill
 }

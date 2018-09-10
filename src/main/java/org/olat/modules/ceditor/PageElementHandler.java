@@ -1,4 +1,5 @@
 /**
+
  * <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
@@ -17,13 +18,11 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio.ui.editor;
+package org.olat.modules.ceditor;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.WindowControl;
 
 /**
  * 
@@ -31,24 +30,14 @@ import org.olat.core.gui.control.Controller;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface PageElementEditorController extends Controller {
+public interface PageElementHandler {
 	
+	public String getType();
 	
-	/**
-	 *
-	 * @return True if the table is in editing mode
-	 */
-	public boolean isEditMode();
-
-	/**
-	 * Set a visual change but do not change anything on the model
-	 * @param editMode
-	 */
-	public void setEditMode(boolean editMode);
+	public String getIconCssClass();
 	
+	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, PageElementRenderingHints options);
 	
-	public default List<Link> getOptionLinks() {
-		return new ArrayList<>(1);
-	}
-
+	public Controller getEditor(UserRequest ureq, WindowControl wControl, PageElement element);
+	
 }

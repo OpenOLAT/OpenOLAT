@@ -35,6 +35,11 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
 import org.olat.fileresource.FileResourceManager;
+import org.olat.modules.ceditor.PageElement;
+import org.olat.modules.ceditor.PageElementHandler;
+import org.olat.modules.ceditor.PageElementRenderingHints;
+import org.olat.modules.ceditor.PageRunElement;
+import org.olat.modules.ceditor.ui.PageRunControllerElement;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.ui.EvaluationFormExecutionController;
@@ -48,11 +53,6 @@ import org.olat.modules.portfolio.model.AccessRights;
 import org.olat.modules.portfolio.model.EvaluationFormPart;
 import org.olat.modules.portfolio.ui.MultiEvaluationFormController;
 import org.olat.modules.portfolio.ui.PortfolioHomeController;
-import org.olat.modules.portfolio.ui.editor.PageElement;
-import org.olat.modules.portfolio.ui.editor.PageElementHandler;
-import org.olat.modules.portfolio.ui.editor.PageElementRenderingHints;
-import org.olat.modules.portfolio.ui.editor.PageRunControllerElement;
-import org.olat.modules.portfolio.ui.editor.PageRunElement;
 import org.olat.repository.RepositoryEntry;
 
 /**

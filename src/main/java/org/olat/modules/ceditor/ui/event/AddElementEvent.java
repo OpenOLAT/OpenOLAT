@@ -17,12 +17,12 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio.ui.editor.event;
+package org.olat.modules.ceditor.ui.event;
 
 import org.olat.core.gui.control.Event;
-import org.olat.modules.portfolio.ui.editor.PageEditorController.EditorFragment;
-import org.olat.modules.portfolio.ui.editor.PageElementHandler;
-import org.olat.modules.portfolio.ui.editor.PageElementTarget;
+import org.olat.modules.ceditor.ui.PageEditorController.EditorFragment;
+import org.olat.modules.ceditor.PageElementHandler;
+import org.olat.modules.ceditor.ui.PageElementTarget;
 
 /**
  * 

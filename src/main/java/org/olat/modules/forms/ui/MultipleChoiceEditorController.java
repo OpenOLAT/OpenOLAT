@@ -42,10 +42,10 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.CodeHelper;
+import org.olat.modules.ceditor.PageElementEditorController;
 import org.olat.modules.forms.model.xml.Choice;
 import org.olat.modules.forms.model.xml.MultipleChoice;
 import org.olat.modules.forms.ui.ChoiceDataModel.ChoiceCols;
-import org.olat.modules.portfolio.ui.editor.PageElementEditorController;
 
 /**
  * 

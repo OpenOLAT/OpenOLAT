@@ -17,16 +17,38 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio.ui.media;
+package org.olat.modules.ceditor;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.control.Controller;
 
 /**
  * 
- * Initial date: 5 sept. 2018<br>
+ * Initial date: 04.07.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public enum ImageHorizontalAlignment {
-	left,
-	middle,
-	right
+public interface PageElementEditorController extends Controller {
+	
+	
+	/**
+	 *
+	 * @return True if the table is in editing mode
+	 */
+	public boolean isEditMode();
+
+	/**
+	 * Set a visual change but do not change anything on the model
+	 * @param editMode
+	 */
+	public void setEditMode(boolean editMode);
+	
+	
+	public default List<Link> getOptionLinks() {
+		return new ArrayList<>(1);
+	}
+
 }

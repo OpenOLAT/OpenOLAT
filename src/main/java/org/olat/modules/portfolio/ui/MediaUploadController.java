@@ -42,13 +42,13 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.modules.ceditor.PageElement;
+import org.olat.modules.ceditor.PageElementAddController;
+import org.olat.modules.ceditor.ui.AddElementInfos;
 import org.olat.modules.portfolio.Media;
 import org.olat.modules.portfolio.MediaHandler;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.model.MediaPart;
-import org.olat.modules.portfolio.ui.editor.AddElementInfos;
-import org.olat.modules.portfolio.ui.editor.PageElement;
-import org.olat.modules.portfolio.ui.editor.PageElementAddController;
 import org.olat.modules.portfolio.ui.media.UploadMedia;
 import org.springframework.beans.factory.annotation.Autowired;
 

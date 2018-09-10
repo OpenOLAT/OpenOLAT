@@ -19,7 +19,7 @@
  */
 package org.olat.modules.forms.handler;
 
-import org.olat.modules.portfolio.ui.editor.PageElement;
+import org.olat.modules.ceditor.PageElement;
 
 /**
  * 

@@ -31,12 +31,18 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.xml.XStreamHelper;
+import org.olat.modules.ceditor.PageEditorProvider;
+import org.olat.modules.ceditor.PageEditorSecurityCallback;
+import org.olat.modules.ceditor.PageElement;
+import org.olat.modules.ceditor.PageElementHandler;
+import org.olat.modules.ceditor.ui.FullEditorSecurityCallback;
+import org.olat.modules.ceditor.ui.PageEditorController;
 import org.olat.modules.forms.handler.DisclaimerHandler;
 import org.olat.modules.forms.handler.FileUploadHandler;
-import org.olat.modules.forms.handler.SessionInformationsHandler;
 import org.olat.modules.forms.handler.HTMLRawHandler;
 import org.olat.modules.forms.handler.MultipleChoiceHandler;
 import org.olat.modules.forms.handler.RubricHandler;
+import org.olat.modules.forms.handler.SessionInformationsHandler;
 import org.olat.modules.forms.handler.SingleChoiceHandler;
 import org.olat.modules.forms.handler.SpacerHandler;
 import org.olat.modules.forms.handler.TextInputHandler;
@@ -44,12 +50,6 @@ import org.olat.modules.forms.handler.TitleHandler;
 import org.olat.modules.forms.model.xml.AbstractElement;
 import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.model.xml.FormXStream;
-import org.olat.modules.portfolio.ui.editor.FullEditorSecurityCallback;
-import org.olat.modules.portfolio.ui.editor.PageEditorController;
-import org.olat.modules.portfolio.ui.editor.PageEditorProvider;
-import org.olat.modules.portfolio.ui.editor.PageEditorSecurityCallback;
-import org.olat.modules.portfolio.ui.editor.PageElement;
-import org.olat.modules.portfolio.ui.editor.PageElementHandler;
 
 /**
  * 

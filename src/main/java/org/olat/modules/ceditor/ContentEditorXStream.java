@@ -20,11 +20,11 @@
 package org.olat.modules.ceditor;
 
 import org.olat.core.util.xml.XStreamHelper;
-import org.olat.modules.portfolio.ui.editor.TextSettings;
-import org.olat.modules.portfolio.ui.media.ImageHorizontalAlignment;
-import org.olat.modules.portfolio.ui.media.ImageSettings;
-import org.olat.modules.portfolio.ui.media.ImageSize;
-import org.olat.modules.portfolio.ui.media.ImageTitlePosition;
+import org.olat.modules.ceditor.model.ImageHorizontalAlignment;
+import org.olat.modules.ceditor.model.ImageSettings;
+import org.olat.modules.ceditor.model.ImageSize;
+import org.olat.modules.ceditor.model.ImageTitlePosition;
+import org.olat.modules.ceditor.model.TextSettings;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.security.ExplicitTypePermission;

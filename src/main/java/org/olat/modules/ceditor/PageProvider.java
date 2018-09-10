@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio.ui.editor;
+package org.olat.modules.ceditor;
 
 import java.util.List;
 
@@ -27,25 +27,10 @@ import java.util.List;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface PageEditorProvider extends PageProvider {
+public interface PageProvider {
 	
-	public List<PageElementHandler> getCreateHandlers();
-	
-	public PageElement appendPageElement(PageElement element);
-	
-	public PageElement appendPageElementAt(PageElement element, int index);
-	
-	public void removePageElement(PageElement element);
+	public List<? extends PageElement> getElements();
 
-	public void moveUpPageElement(PageElement element);
-	
-	public void moveDownPageElement(PageElement element);
-	
-	/**
-	 * Move the specified element before the sibling element.
-	 * @param element
-	 * @param sibling The reference object
-	 */
-	public void movePageElement(PageElement element, PageElement sibling);
-	
+	public List<? extends PageElementHandler> getAvailableHandlers();
+
 }

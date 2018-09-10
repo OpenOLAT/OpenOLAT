@@ -32,10 +32,10 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
+import org.olat.modules.ceditor.PageElementEditorController;
+import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.forms.EvaluationFormsModule;
 import org.olat.modules.forms.model.xml.FileUpload;
-import org.olat.modules.portfolio.ui.editor.PageElementEditorController;
-import org.olat.modules.portfolio.ui.editor.event.ChangePartEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**

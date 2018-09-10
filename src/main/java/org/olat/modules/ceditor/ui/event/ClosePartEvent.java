@@ -17,10 +17,10 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio.ui.editor.event;
+package org.olat.modules.ceditor.ui.event;
 
 import org.olat.core.gui.control.Event;
-import org.olat.modules.portfolio.ui.editor.PageElement;
+import org.olat.modules.ceditor.PageElement;
 
 /**
  * 

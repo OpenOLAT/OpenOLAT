@@ -17,22 +17,18 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio.ui.editor;
-
-import org.olat.core.gui.control.Controller;
+package org.olat.modules.ceditor;
 
 /**
  * 
- * Initial date: 01.07.2016<br>
+ * Initial date: 14 déc. 2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface PageElementAddController extends Controller {
+public interface PageEditorSecurityCallback {
 	
-	public PageElement getPageElement();
+	public boolean canDeleteElement();
 	
-	public void setUserObject(AddElementInfos uobject);
-	
-	public AddElementInfos getUserObject();
+	public boolean canMoveUpAndDown();
 
 }

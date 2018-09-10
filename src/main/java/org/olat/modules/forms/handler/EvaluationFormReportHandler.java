@@ -23,10 +23,10 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.forms.EvaluationFormSessionRef;
 import org.olat.modules.forms.ui.ReportHelper;
 import org.olat.modules.forms.ui.model.EvaluationFormReportElement;
-import org.olat.modules.portfolio.ui.editor.PageElement;
 
 /**
  * 

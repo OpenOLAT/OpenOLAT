@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio.ui.media;
+package org.olat.modules.ceditor.model;
 
 /**
  * 

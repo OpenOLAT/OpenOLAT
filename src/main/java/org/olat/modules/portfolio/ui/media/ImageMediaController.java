@@ -36,13 +36,15 @@ import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.ceditor.ContentEditorXStream;
+import org.olat.modules.ceditor.PageRunElement;
+import org.olat.modules.ceditor.model.ImageSettings;
+import org.olat.modules.ceditor.model.ImageTitlePosition;
+import org.olat.modules.ceditor.ui.PageEditorController;
+import org.olat.modules.ceditor.ui.ValidationMessage;
 import org.olat.modules.portfolio.Media;
 import org.olat.modules.portfolio.MediaRenderingHints;
 import org.olat.modules.portfolio.model.MediaPart;
 import org.olat.modules.portfolio.ui.MediaMetadataController;
-import org.olat.modules.portfolio.ui.editor.PageEditorController;
-import org.olat.modules.portfolio.ui.editor.PageRunElement;
-import org.olat.modules.portfolio.ui.editor.ValidationMessage;
 
 /**
  * 

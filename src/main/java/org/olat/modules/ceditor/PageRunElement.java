@@ -17,20 +17,27 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio.ui.editor;
+package org.olat.modules.ceditor;
+
+import java.util.List;
+
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
+import org.olat.modules.ceditor.ui.ValidationMessage;
 
 /**
  * 
- * Initial date: 24 août 2017<br>
+ * Initial date: 23 déc. 2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface PageElementRenderingHints {
+public interface PageRunElement {
 	
-	public boolean isToPdf();
+	/**
+	 * @return The component to be rendered on the page.
+	 */
+	public Component getComponent();
 	
-	public boolean isOnePage();
-
-	public boolean isExtendedMetadata();
+	public boolean validate(UserRequest ureq, List<ValidationMessage> messages);
 
 }

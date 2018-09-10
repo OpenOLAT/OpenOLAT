@@ -27,7 +27,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
-import org.olat.modules.portfolio.ui.editor.PageElementEditorController;
+import org.olat.modules.ceditor.PageElementEditorController;
 
 /**
  * 

@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio.ui.editor.handler;
+package org.olat.modules.ceditor.ui.handler;
 
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -26,15 +26,15 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.text.TextComponent;
 import org.olat.core.gui.components.text.TextFactory;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.modules.ceditor.PageElement;
+import org.olat.modules.ceditor.PageElementEditorController;
+import org.olat.modules.ceditor.PageElementHandler;
+import org.olat.modules.ceditor.PageElementRenderingHints;
+import org.olat.modules.ceditor.PageRunElement;
+import org.olat.modules.ceditor.SimpleAddPageElementHandler;
+import org.olat.modules.ceditor.ui.PageRunComponent;
+import org.olat.modules.ceditor.ui.TitleEditorController;
 import org.olat.modules.portfolio.model.TitlePart;
-import org.olat.modules.portfolio.ui.editor.PageElement;
-import org.olat.modules.portfolio.ui.editor.PageElementEditorController;
-import org.olat.modules.portfolio.ui.editor.PageElementHandler;
-import org.olat.modules.portfolio.ui.editor.PageElementRenderingHints;
-import org.olat.modules.portfolio.ui.editor.PageRunComponent;
-import org.olat.modules.portfolio.ui.editor.PageRunElement;
-import org.olat.modules.portfolio.ui.editor.SimpleAddPageElementHandler;
-import org.olat.modules.portfolio.ui.editor.TitleEditorController;
 
 /**
  * 

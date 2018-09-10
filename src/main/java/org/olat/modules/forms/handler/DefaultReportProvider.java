@@ -22,6 +22,7 @@ package org.olat.modules.forms.handler;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.forms.model.xml.FileUpload;
 import org.olat.modules.forms.model.xml.HTMLRaw;
 import org.olat.modules.forms.model.xml.MultipleChoice;
@@ -31,7 +32,6 @@ import org.olat.modules.forms.model.xml.SingleChoice;
 import org.olat.modules.forms.model.xml.Spacer;
 import org.olat.modules.forms.model.xml.TextInput;
 import org.olat.modules.forms.model.xml.Title;
-import org.olat.modules.portfolio.ui.editor.PageElement;
 
 /**
  * 

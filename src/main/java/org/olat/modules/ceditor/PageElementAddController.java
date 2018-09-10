@@ -17,20 +17,23 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio.ui.editor;
+package org.olat.modules.ceditor;
 
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.Controller;
+import org.olat.modules.ceditor.ui.AddElementInfos;
 
 /**
- * Need a controller to create a page element.
  * 
- * Initial date: 04.07.2016<br>
+ * Initial date: 01.07.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface InteractiveAddPageElementHandler {
+public interface PageElementAddController extends Controller {
 	
-	public PageElementAddController getAddPageElementController(UserRequest ureq, WindowControl wControl);
+	public PageElement getPageElement();
+	
+	public void setUserObject(AddElementInfos uobject);
+	
+	public AddElementInfos getUserObject();
 
 }

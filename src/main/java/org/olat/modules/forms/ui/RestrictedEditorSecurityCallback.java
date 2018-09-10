@@ -19,7 +19,7 @@
  */
 package org.olat.modules.forms.ui;
 
-import org.olat.modules.portfolio.ui.editor.PageEditorSecurityCallback;
+import org.olat.modules.ceditor.PageEditorSecurityCallback;
 
 /**
  * 

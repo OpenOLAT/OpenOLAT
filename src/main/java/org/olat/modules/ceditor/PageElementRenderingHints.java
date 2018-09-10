@@ -17,17 +17,20 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio.ui.media;
+package org.olat.modules.ceditor;
 
 /**
  * 
- * Initial date: 5 sept. 2018<br>
+ * Initial date: 24 août 2017<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public enum ImageSize {
-	none,
-	small,
-	medium,
-	fill
+public interface PageElementRenderingHints {
+	
+	public boolean isToPdf();
+	
+	public boolean isOnePage();
+
+	public boolean isExtendedMetadata();
+
 }

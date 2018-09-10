@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio.ui.editor;
+package org.olat.modules.ceditor.ui;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,9 +41,11 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.modules.ceditor.ContentEditorXStream;
+import org.olat.modules.ceditor.PageElementEditorController;
+import org.olat.modules.ceditor.model.TextSettings;
+import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.model.HTMLPart;
-import org.olat.modules.portfolio.ui.editor.event.ChangePartEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**

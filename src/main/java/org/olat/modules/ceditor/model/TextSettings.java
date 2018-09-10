@@ -1,5 +1,4 @@
 /**
-
  * <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
@@ -18,26 +17,23 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio.ui.editor;
-
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.WindowControl;
+package org.olat.modules.ceditor.model;
 
 /**
  * 
- * Initial date: 04.07.2016<br>
+ * Initial date: 7 sept. 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface PageElementHandler {
+public class TextSettings {
 	
-	public String getType();
-	
-	public String getIconCssClass();
-	
-	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, PageElementRenderingHints options);
-	
-	public Controller getEditor(UserRequest ureq, WindowControl wControl, PageElement element);
-	
+	private int numOfColumns;
+
+	public int getNumOfColumns() {
+		return numOfColumns;
+	}
+
+	public void setNumOfColumns(int numOfColumns) {
+		this.numOfColumns = numOfColumns;
+	}
 }

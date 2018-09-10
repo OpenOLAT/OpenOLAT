@@ -34,10 +34,10 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
+import org.olat.modules.ceditor.PageElementEditorController;
+import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.forms.model.xml.SessionInformations;
 import org.olat.modules.forms.model.xml.SessionInformations.InformationType;
-import org.olat.modules.portfolio.ui.editor.PageElementEditorController;
-import org.olat.modules.portfolio.ui.editor.event.ChangePartEvent;
 
 /**
  * 

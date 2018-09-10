@@ -22,9 +22,9 @@ package org.olat.modules.forms.handler;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.modules.ceditor.PageElement;
+import org.olat.modules.ceditor.PageProvider;
 import org.olat.modules.forms.model.xml.Form;
-import org.olat.modules.portfolio.ui.editor.PageElement;
-import org.olat.modules.portfolio.ui.editor.PageProvider;
 
 /**
  * 

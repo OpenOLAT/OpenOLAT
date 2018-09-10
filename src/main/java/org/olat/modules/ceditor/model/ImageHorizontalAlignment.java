@@ -17,23 +17,16 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio.ui.editor;
+package org.olat.modules.ceditor.model;
 
 /**
  * 
- * Initial date: 7 sept. 2018<br>
+ * Initial date: 5 sept. 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class TextSettings {
-	
-	private int numOfColumns;
-
-	public int getNumOfColumns() {
-		return numOfColumns;
-	}
-
-	public void setNumOfColumns(int numOfColumns) {
-		this.numOfColumns = numOfColumns;
-	}
+public enum ImageHorizontalAlignment {
+	left,
+	middle,
+	right
 }

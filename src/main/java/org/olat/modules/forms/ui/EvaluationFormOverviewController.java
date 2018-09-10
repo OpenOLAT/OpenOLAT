@@ -30,6 +30,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormSessionRef;
 import org.olat.modules.forms.EvaluationFormStatistic;
@@ -40,7 +41,6 @@ import org.olat.modules.forms.model.xml.AbstractElement;
 import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.forms.ui.component.ResponsiveBarChartComponent;
-import org.olat.modules.portfolio.ui.editor.PageElement;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**

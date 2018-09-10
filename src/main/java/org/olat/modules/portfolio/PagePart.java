@@ -19,8 +19,8 @@
  */
 package org.olat.modules.portfolio;
 
-import org.olat.modules.portfolio.ui.editor.Flow;
-import org.olat.modules.portfolio.ui.editor.PageElement;
+import org.olat.modules.ceditor.Flow;
+import org.olat.modules.ceditor.PageElement;
 
 /**
  * 

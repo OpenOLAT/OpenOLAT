@@ -19,8 +19,8 @@
  */
 package org.olat.modules.portfolio.model;
 
+import org.olat.modules.ceditor.PageElementRenderingHints;
 import org.olat.modules.portfolio.MediaRenderingHints;
-import org.olat.modules.portfolio.ui.editor.PageElementRenderingHints;
 
 /**
  * 

@@ -17,22 +17,18 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio.ui.editor;
+package org.olat.modules.ceditor;
 
-import java.util.List;
-
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.Controller;
+import java.util.Locale;
 
 /**
  * 
- * Initial date: 23 déc. 2016<br>
+ * Initial date: 04.07.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface ValidatingController extends Controller {
+public interface SimpleAddPageElementHandler {
 	
-	
-	public boolean validate(UserRequest ureq, List<ValidationMessage> messages);
+	public PageElement createPageElement(Locale locale);
 
 }

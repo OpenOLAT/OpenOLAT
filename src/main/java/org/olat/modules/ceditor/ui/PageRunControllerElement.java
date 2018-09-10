@@ -17,13 +17,15 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio.ui.editor;
+package org.olat.modules.ceditor.ui;
 
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.Controller;
+import org.olat.modules.ceditor.PageRunElement;
+import org.olat.modules.ceditor.ValidatingController;
 
 /**
  * 

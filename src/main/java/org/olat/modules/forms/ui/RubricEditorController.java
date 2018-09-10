@@ -41,14 +41,14 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.ceditor.PageElementEditorController;
+import org.olat.modules.ceditor.ui.event.ChangePartEvent;
+import org.olat.modules.ceditor.ui.event.ClosePartEvent;
 import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.forms.model.xml.Rubric.SliderType;
 import org.olat.modules.forms.model.xml.ScaleType;
 import org.olat.modules.forms.model.xml.Slider;
 import org.olat.modules.forms.model.xml.StepLabel;
-import org.olat.modules.portfolio.ui.editor.PageElementEditorController;
-import org.olat.modules.portfolio.ui.editor.event.ChangePartEvent;
-import org.olat.modules.portfolio.ui.editor.event.ClosePartEvent;
 
 /**
  * 

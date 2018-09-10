@@ -45,6 +45,11 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.modules.ceditor.PageElement;
+import org.olat.modules.ceditor.PageElementHandler;
+import org.olat.modules.ceditor.PageElementRenderingHints;
+import org.olat.modules.ceditor.PageRunElement;
+import org.olat.modules.ceditor.ui.PageRunControllerElement;
 import org.olat.modules.portfolio.Media;
 import org.olat.modules.portfolio.MediaHandler;
 import org.olat.modules.portfolio.MediaInformations;
@@ -54,11 +59,6 @@ import org.olat.modules.portfolio.model.MediaPart;
 import org.olat.modules.portfolio.model.StandardMediaRenderingHints;
 import org.olat.modules.portfolio.ui.MediaCenterController;
 import org.olat.modules.portfolio.ui.MediaMetadataController;
-import org.olat.modules.portfolio.ui.editor.PageElement;
-import org.olat.modules.portfolio.ui.editor.PageElementHandler;
-import org.olat.modules.portfolio.ui.editor.PageElementRenderingHints;
-import org.olat.modules.portfolio.ui.editor.PageRunControllerElement;
-import org.olat.modules.portfolio.ui.editor.PageRunElement;
 
 /**
  * 

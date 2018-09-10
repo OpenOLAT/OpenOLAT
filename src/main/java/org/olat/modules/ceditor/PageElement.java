@@ -17,16 +17,16 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio.ui.editor;
+package org.olat.modules.ceditor;
 
 /**
  * 
- * Initial date: 15.07.2016<br>
+ * Initial date: 01.07.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public enum Flow {
-	block,//like a div
-	inline//like a span
+public interface PageElement {
+	
+	public String getType();
 
 }

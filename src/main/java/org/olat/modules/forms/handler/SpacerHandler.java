@@ -29,6 +29,12 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.elements.SpacerElementComponent;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.modules.ceditor.PageElement;
+import org.olat.modules.ceditor.PageElementEditorController;
+import org.olat.modules.ceditor.PageElementRenderingHints;
+import org.olat.modules.ceditor.PageRunElement;
+import org.olat.modules.ceditor.SimpleAddPageElementHandler;
+import org.olat.modules.ceditor.ui.PageRunComponent;
 import org.olat.modules.forms.EvaluationFormSessionRef;
 import org.olat.modules.forms.model.xml.Spacer;
 import org.olat.modules.forms.ui.ReportHelper;
@@ -37,12 +43,6 @@ import org.olat.modules.forms.ui.model.EvaluationFormComponentElement;
 import org.olat.modules.forms.ui.model.EvaluationFormComponentReportElement;
 import org.olat.modules.forms.ui.model.EvaluationFormExecutionElement;
 import org.olat.modules.forms.ui.model.EvaluationFormReportElement;
-import org.olat.modules.portfolio.ui.editor.PageElement;
-import org.olat.modules.portfolio.ui.editor.PageElementEditorController;
-import org.olat.modules.portfolio.ui.editor.PageElementRenderingHints;
-import org.olat.modules.portfolio.ui.editor.PageRunComponent;
-import org.olat.modules.portfolio.ui.editor.PageRunElement;
-import org.olat.modules.portfolio.ui.editor.SimpleAddPageElementHandler;
 
 /**
  * 

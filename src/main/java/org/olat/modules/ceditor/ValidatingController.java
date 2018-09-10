@@ -17,18 +17,23 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio.ui.editor;
+package org.olat.modules.ceditor;
+
+import java.util.List;
+
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.control.Controller;
+import org.olat.modules.ceditor.ui.ValidationMessage;
 
 /**
  * 
- * Initial date: 14 déc. 2016<br>
+ * Initial date: 23 déc. 2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface PageEditorSecurityCallback {
+public interface ValidatingController extends Controller {
 	
-	public boolean canDeleteElement();
 	
-	public boolean canMoveUpAndDown();
+	public boolean validate(UserRequest ureq, List<ValidationMessage> messages);
 
 }

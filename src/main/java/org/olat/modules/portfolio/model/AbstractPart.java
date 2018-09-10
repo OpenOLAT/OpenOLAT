@@ -39,9 +39,9 @@ import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.Persistable;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.ceditor.Flow;
 import org.olat.modules.portfolio.PageBody;
 import org.olat.modules.portfolio.PagePart;
-import org.olat.modules.portfolio.ui.editor.Flow;
 
 /**
  * 

@@ -39,13 +39,17 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.ceditor.ContentEditorModule;
 import org.olat.modules.ceditor.ContentEditorXStream;
+import org.olat.modules.ceditor.PageElementEditorController;
+import org.olat.modules.ceditor.model.ImageHorizontalAlignment;
+import org.olat.modules.ceditor.model.ImageSettings;
+import org.olat.modules.ceditor.model.ImageSize;
+import org.olat.modules.ceditor.model.ImageTitlePosition;
+import org.olat.modules.ceditor.ui.PageEditorController;
+import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.portfolio.Media;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.model.MediaPart;
 import org.olat.modules.portfolio.model.StandardMediaRenderingHints;
-import org.olat.modules.portfolio.ui.editor.PageEditorController;
-import org.olat.modules.portfolio.ui.editor.PageElementEditorController;
-import org.olat.modules.portfolio.ui.editor.event.ChangePartEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**

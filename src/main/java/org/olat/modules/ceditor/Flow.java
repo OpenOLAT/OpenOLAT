@@ -17,17 +17,16 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio.ui.media;
+package org.olat.modules.ceditor;
 
 /**
  * 
- * Initial date: 6 sept. 2018<br>
+ * Initial date: 15.07.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public enum ImageTitlePosition {
-	above,
-	top,
-	centered,
-	bottom
+public enum Flow {
+	block,//like a div
+	inline//like a span
+
 }

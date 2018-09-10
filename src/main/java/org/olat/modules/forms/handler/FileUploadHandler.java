@@ -27,6 +27,12 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.modules.ceditor.PageElement;
+import org.olat.modules.ceditor.PageElementEditorController;
+import org.olat.modules.ceditor.PageElementRenderingHints;
+import org.olat.modules.ceditor.PageRunElement;
+import org.olat.modules.ceditor.SimpleAddPageElementHandler;
+import org.olat.modules.ceditor.ui.PageRunControllerElement;
 import org.olat.modules.forms.EvaluationFormsModule;
 import org.olat.modules.forms.model.xml.FileUpload;
 import org.olat.modules.forms.ui.FileUploadController;
@@ -34,12 +40,6 @@ import org.olat.modules.forms.ui.FileUploadEditorController;
 import org.olat.modules.forms.ui.model.EvaluationFormExecutionElement;
 import org.olat.modules.forms.ui.model.EvaluationFormResponseController;
 import org.olat.modules.forms.ui.model.EvaluationFormResponseControllerElement;
-import org.olat.modules.portfolio.ui.editor.PageElement;
-import org.olat.modules.portfolio.ui.editor.PageElementEditorController;
-import org.olat.modules.portfolio.ui.editor.PageElementRenderingHints;
-import org.olat.modules.portfolio.ui.editor.PageRunControllerElement;
-import org.olat.modules.portfolio.ui.editor.PageRunElement;
-import org.olat.modules.portfolio.ui.editor.SimpleAddPageElementHandler;
 
 /**
  * 

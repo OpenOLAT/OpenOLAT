@@ -44,6 +44,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.fileresource.FileResourceManager;
+import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationStatus;
@@ -76,7 +77,6 @@ import org.olat.modules.forms.ui.LegendNameGenerator;
 import org.olat.modules.forms.ui.ReportHelper;
 import org.olat.modules.forms.ui.model.Evaluator;
 import org.olat.modules.portfolio.PortfolioService;
-import org.olat.modules.portfolio.ui.editor.PageElement;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
