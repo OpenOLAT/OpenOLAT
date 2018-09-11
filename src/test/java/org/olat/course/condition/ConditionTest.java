@@ -19,8 +19,6 @@
  */
 package org.olat.course.condition;
 
-import java.util.Collection;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.id.Identity;
@@ -40,19 +38,6 @@ import org.olat.test.OlatTestCase;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class ConditionTest extends OlatTestCase {
-	
-	@Test
-	public void simpleExpresion() throws Exception {
-		UserCourseEnvironment uce = getUserDemoCourseEnvironment();
-		ConditionInterpreter interpreter = new ConditionInterpreter(uce);
-		String condition = "now >= date(\"03.07.2012 08:26\")";
-		boolean result = interpreter.evaluateCondition(condition);
-		Assert.assertTrue(result);
-		
-		Collection<Object> tokens = interpreter.getParsedTokens(condition);
-		Assert.assertNotNull(tokens);
-		Assert.assertFalse(tokens.isEmpty());
-	}
 	
 	@Test
 	public void complexExpression() throws Exception {
@@ -329,24 +314,17 @@ public class ConditionTest extends OlatTestCase {
 		result = interpreter.evaluateCondition(condition);
 		Assert.assertTrue(condition, result);
 	}
-
+	
 	@Test
-	public void syntaxProposal() throws Exception {
+	public void testArithmeticException() throws Exception {
 		UserCourseEnvironment uce = getUserDemoCourseEnvironment();
 		ConditionInterpreter interpreter = new ConditionInterpreter(uce);
 
-		String condition = "inLearningGroup(\"16872486<Rule1Group1>\")";
+		String condition = "2 / 0";
 		boolean result = interpreter.evaluateCondition(condition);
-		Assert.assertFalse(result);
-		
-		Collection<Object> tokens = interpreter.getParsedTokens(condition);
-		Assert.assertNotNull(tokens);
-		Assert.assertFalse(tokens.isEmpty());
-		
-		for(Object token:tokens) {
-			System.out.println(token.getClass().getName());
-		}
+		Assert.assertFalse(condition, result);
 	}
+
 	
 	private UserCourseEnvironment getUserDemoCourseEnvironment() {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("junit_auth");
@@ -355,7 +333,6 @@ public class ConditionTest extends OlatTestCase {
 		RepositoryEntry re = JunitTestHelper.deployDemoCourse(author);
 		ICourse course = CourseFactory.loadCourse(re);
 		IdentityEnvironment identityEnv = new IdentityEnvironment(id, roles);
-		UserCourseEnvironment uce = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment());
-		return uce;
+		return new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment());
 	}
 }
