@@ -80,6 +80,7 @@ public class ParticipationListController extends AbstractDataCollectionEditContr
 	private Link addCourseUsersLink;
 	private Link addCurriculumElementUsersLink;
 	private FormLink removeUsersLink;
+	private FormLayoutContainer buttons;
 	private ParticipationDataModel dataModel;
 	private FlexiTableElement tableEl;
 	
@@ -124,6 +125,7 @@ public class ParticipationListController extends AbstractDataCollectionEditContr
 		
 		ParticipationDataSource dataSource = new ParticipationDataSource(dataCollection);
 		dataModel = new ParticipationDataModel(dataSource, columnsModel);
+		if (tableEl != null) flc.remove(tableEl);
 		tableEl = uifactory.addTableElement(getWindowControl(), "participations", dataModel, 25, true, getTranslator(), flc);
 		tableEl.setAndLoadPersistedPreferences(ureq, "quality-participations");
 		tableEl.setEmtpyTableMessageKey("participation.empty.table");
@@ -132,9 +134,9 @@ public class ParticipationListController extends AbstractDataCollectionEditContr
 			tableEl.setSelectAllEnable(true);
 		}
 		
-		if (removeUsersLink != null) flc.remove(removeUsersLink);
+		if (buttons != null) flc.remove(buttons);
 		if (secCallback.canRevomeParticipation(dataCollection)) {
-			FormLayoutContainer buttons = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+			buttons = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 			flc.add("buttons", buttons);
 			buttons.setElementCssClass("o_button_group");
 			removeUsersLink = uifactory.addFormLink("participation.remove", buttons, Link.BUTTON);

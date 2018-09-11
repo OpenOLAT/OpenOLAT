@@ -99,7 +99,7 @@ public class AddCourseUserRolesSelectionController extends StepFormBasicControll
 		if (!roles.isEmpty()) {
 			Collection<RepositoryEntry> repositoryEntries = courseContext.getRepositoryEntries();
 			for (RepositoryEntry repositoryEntry: repositoryEntries) {
-				List<Identity> members = repositoryService.getMembers(repositoryEntry, RepositoryEntryRelationType.defaultGroup, roleNames);
+				List<Identity> members = repositoryService.getMembers(repositoryEntry, RepositoryEntryRelationType.all, roleNames);
 				identities.addAll(members);
 			}
 		}
