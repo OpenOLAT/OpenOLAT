@@ -17,33 +17,38 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.quality.analysis;
+package org.olat.modules.quality.analysis.manager;
 
-import java.util.List;
+import javax.persistence.Query;
 
-import org.olat.core.id.Organisation;
-import org.olat.modules.curriculum.Curriculum;
-import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.modules.forms.SessionFilter;
+import org.olat.modules.quality.analysis.AnalysisSearchParameter;
 
 /**
  * 
- * Initial date: 03.09.2018<br>
+ * Initial date: 11.09.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface QualityAnalysisService {
-	
-	public List<EvaluationFormView> loadEvaluationForms(EvaluationFormViewSearchParams searchParams);
-	
-	public List<Organisation> loadFilterOrganisations(AnalysisSearchParameter searchParams);
+public class AnalysisSessionFilter implements SessionFilter {
 
-	public List<Curriculum> loadFilterCurriculums(AnalysisSearchParameter searchParams);
+	private final AnalysisSearchParameter searchParams;
 
-	public List<CurriculumElement> loadFilterCurriculumElements(AnalysisSearchParameter searchParams);
+	public AnalysisSessionFilter(AnalysisSearchParameter searchParams) {
+		this.searchParams = searchParams;
+	}
 
-	public Long loadFilterDataCollectionCount(AnalysisSearchParameter searchParams);
+	@Override
+	public String getSelectKeys() {
+		QueryBuilder sb = new QueryBuilder();
+		AnalysisFilterDAO.appendSelectSessionKeys(sb, searchParams);
+		return sb.toString();
+	}
 
-	public SessionFilter createSessionFilter(AnalysisSearchParameter searchParams);
+	@Override
+	public void addParameters(Query query) {
+		AnalysisFilterDAO.appendParameters(query, searchParams);
+	}
 
 }

@@ -42,9 +42,11 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Organisation;
 import org.olat.modules.quality.QualitySecurityCallback;
@@ -71,19 +73,22 @@ public class AnalysisListController extends FormBasicController implements Flexi
 	private FlexiTableElement tableEl;
 	private AnalysisDataModel dataModel;
 	
+	private AnalysisSegmentsController analysisCtrl;
+	
 	private final List<Organisation> organisations;
 	private int counter;
+	private EvaluationFormView currentFormView;
 
 	@Autowired
 	private QualityAnalysisService analysisService;
 	@Autowired
 	private OrganisationService organisationService;
-	private AnalysisSegmentsController analysisCtrl;
 	
 	public AnalysisListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			QualitySecurityCallback secCallback) {
 		super(ureq, wControl, "analysis_list");
 		this.stackPanel = stackPanel;
+		stackPanel.addListener(this);
 		this.secCallback = secCallback;
 		this.organisations = organisationService.getOrganisations(getIdentity(), ureq.getUserSession().getRoles(),
 				OrganisationRoles.administrator, OrganisationRoles.qualitymanager);
@@ -161,29 +166,42 @@ public class AnalysisListController extends FormBasicController implements Flexi
 	}
 	
 	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if (stackPanel == source && stackPanel.getLastController() == analysisCtrl && event instanceof PopEvent) {
+			PopEvent popEvent = (PopEvent) event;
+			if (!popEvent.isClose()) {
+				stackPanel.popController(analysisCtrl);
+				doOpenAnalysis(ureq);
+			}
+		}
+		super.event(ureq, source, event);
+	}
+	
+	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == tableEl && event instanceof SelectionEvent) {
 			SelectionEvent se = (SelectionEvent)event;
 			String cmd = se.getCommand();
-			AnalysisRow row = dataModel.getObject(se.getIndex());
+			currentFormView = dataModel.getObject(se.getIndex());
 			if (CMD_OPEN.equals(cmd)) {
-				doOpenAnalysis(ureq, row);
+				doOpenAnalysis(ureq);
 			}
 		} else if (source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			if(CMD_OPEN.equals(link.getCmd())) {
-				doOpenAnalysis(ureq, (AnalysisRow)link.getUserObject());
+				currentFormView = (AnalysisRow)link.getUserObject();
+				doOpenAnalysis(ureq);
 			}
 		}
 		
 		super.formInnerEvent(ureq, source, event);
 	}
 
-	private void doOpenAnalysis(UserRequest ureq, EvaluationFormView formView) {
-		WindowControl bwControl = addToHistory(ureq, formView, null);
-		analysisCtrl = new AnalysisSegmentsController(ureq, bwControl, secCallback, stackPanel, formView);
+	private void doOpenAnalysis(UserRequest ureq) {
+		WindowControl bwControl = addToHistory(ureq, currentFormView, null);
+		analysisCtrl = new AnalysisSegmentsController(ureq, bwControl, secCallback, stackPanel, currentFormView);
 		listenTo(analysisCtrl);
-		String title = formView.getFormTitle();
+		String title = currentFormView.getFormTitle();
 		stackPanel.pushController(title, analysisCtrl);
 		analysisCtrl.activate(ureq, null, null);
 	}

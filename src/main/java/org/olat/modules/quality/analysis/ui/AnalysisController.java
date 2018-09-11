@@ -21,16 +21,21 @@ package org.olat.modules.quality.analysis.ui;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.controller.BlankController;
+import org.olat.modules.forms.EvaluationFormManager;
+import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.quality.QualitySecurityCallback;
 import org.olat.modules.quality.analysis.AnalysisSearchParameter;
 import org.olat.modules.quality.analysis.EvaluationFormView;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryService;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -44,22 +49,32 @@ public class AnalysisController extends BasicController {
 
 	private VelocityContainer mainVC;
 	private Controller filterCtrl;
-	private Controller presentationCtrl;
+	private FilterableController presentationCtrl;
 	private final QualitySecurityCallback secCallback;
 	private final TooledStackedPanel stackPanel;
 	
 	private final EvaluationFormView formView;
+	private final Form form;
+	private AnalysisSearchParameter searchParams;
+	
+	@Autowired
+	private EvaluationFormManager evaluationFormManager;
+	@Autowired
+	private RepositoryService repositoryService;
 	
 	protected AnalysisController(UserRequest ureq, WindowControl wControl, QualitySecurityCallback secCallback,
 			TooledStackedPanel stackPanel, EvaluationFormView formView) {
 		super(ureq, wControl);
 		this.secCallback = secCallback;
 		this.stackPanel = stackPanel;
+		stackPanel.addListener(this);
 		this.formView = formView;
+		RepositoryEntry formEntry = repositoryService.loadByKey(formView.getFormEntryKey());
+		this.form = evaluationFormManager.loadForm(formEntry);
 		mainVC = createVelocityContainer("analysis");
 		putInitialPanel(mainVC);
 		
-		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
+		searchParams = new AnalysisSearchParameter();
 		searchParams.setFormEntryRef(() -> formView.getFormEntryKey());
 		filterCtrl= new FilterController(ureq, wControl, searchParams);
 		listenTo(filterCtrl);
@@ -68,7 +83,24 @@ public class AnalysisController extends BasicController {
 	
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		//TODO uh if click on breadcrumb shows blankcontroller
+		if (stackPanel == source && stackPanel.getLastController() == this && event instanceof PopEvent) {
+			PopEvent popEvent = (PopEvent) event;
+			if (popEvent.isClose()) {
+				stackPanel.popController(this);
+			} else {
+				setPresentation(ureq, Presentation.REPORT);
+			}
+		}
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (source == filterCtrl && event instanceof AnalysisFilterEvent) {
+			AnalysisFilterEvent filterEvent = (AnalysisFilterEvent) event;
+			searchParams = filterEvent.getSearchParams();
+			presentationCtrl.onFilter(ureq, searchParams);
+		}
+		super.event(ureq, source, event);
 	}
 
 	@Override
@@ -77,6 +109,9 @@ public class AnalysisController extends BasicController {
 		removeAsListenerAndDispose(filterCtrl);
 		presentationCtrl = null;
 		filterCtrl = null;
+		if (stackPanel != null) {
+			stackPanel.removeListener(this);
+		}
 	}
 
 	public void setPresentation(UserRequest ureq, Presentation presentation) {
@@ -85,16 +120,17 @@ public class AnalysisController extends BasicController {
 		
 		switch (presentation) {
 			case REPORT:
-				presentationCtrl = new AnalysisReportController(ureq, getWindowControl(), secCallback, stackPanel);
+				presentationCtrl = new AnalysisReportController(ureq, getWindowControl(), form);
 				break;
 			case HEAT_MAP:
 				presentationCtrl = new HeatMapController(ureq, getWindowControl(), secCallback, stackPanel);
 				break;
 			default:
-				presentationCtrl = new BlankController(ureq, getWindowControl());
+				presentationCtrl = new AnalysisReportController(ureq, getWindowControl(), form);
 				break;
 		}
 		listenTo(presentationCtrl);
+		presentationCtrl.onFilter(ureq, searchParams);
 		mainVC.put("presentation", presentationCtrl.getInitialComponent());
 		mainVC.setDirty(true);
 	}

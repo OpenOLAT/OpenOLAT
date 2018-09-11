@@ -17,33 +17,20 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.quality.analysis;
+package org.olat.modules.quality.analysis.ui;
 
-import java.util.List;
-
-import org.olat.core.id.Organisation;
-import org.olat.modules.curriculum.Curriculum;
-import org.olat.modules.curriculum.CurriculumElement;
-import org.olat.modules.forms.SessionFilter;
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.control.Controller;
+import org.olat.modules.quality.analysis.AnalysisSearchParameter;
 
 /**
  * 
- * Initial date: 03.09.2018<br>
+ * Initial date: 11.09.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface QualityAnalysisService {
+public interface FilterableController extends Controller {
 	
-	public List<EvaluationFormView> loadEvaluationForms(EvaluationFormViewSearchParams searchParams);
-	
-	public List<Organisation> loadFilterOrganisations(AnalysisSearchParameter searchParams);
-
-	public List<Curriculum> loadFilterCurriculums(AnalysisSearchParameter searchParams);
-
-	public List<CurriculumElement> loadFilterCurriculumElements(AnalysisSearchParameter searchParams);
-
-	public Long loadFilterDataCollectionCount(AnalysisSearchParameter searchParams);
-
-	public SessionFilter createSessionFilter(AnalysisSearchParameter searchParams);
+	public void onFilter(UserRequest ureq, AnalysisSearchParameter searchParams);
 
 }

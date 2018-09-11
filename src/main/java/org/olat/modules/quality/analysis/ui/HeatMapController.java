@@ -26,6 +26,7 @@ import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.quality.QualitySecurityCallback;
+import org.olat.modules.quality.analysis.AnalysisSearchParameter;
 
 /**
  * 
@@ -33,7 +34,7 @@ import org.olat.modules.quality.QualitySecurityCallback;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class HeatMapController extends FormBasicController {
+public class HeatMapController extends FormBasicController implements FilterableController {
 
 	private final QualitySecurityCallback secCallback;
 	private final TooledStackedPanel stackPanel;
@@ -49,6 +50,12 @@ public class HeatMapController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		uifactory.addStaticExampleText("hm", "", "HEAT MAP", formLayout);
+	}
+
+	@Override
+	public void onFilter(UserRequest ureq, AnalysisSearchParameter searchParams) {
+		// TODO uh Auto-generated method stub
+		
 	}
 
 	@Override

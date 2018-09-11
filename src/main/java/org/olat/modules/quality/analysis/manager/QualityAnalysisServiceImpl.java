@@ -26,6 +26,7 @@ import org.olat.core.id.Organisation;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.quality.analysis.AnalysisSearchParameter;
 import org.olat.modules.quality.analysis.EvaluationFormView;
 import org.olat.modules.quality.analysis.EvaluationFormViewSearchParams;
@@ -90,5 +91,10 @@ public class QualityAnalysisServiceImpl implements QualityAnalysisService {
 	@Override
 	public Long loadFilterDataCollectionCount(AnalysisSearchParameter searchParams) {
 		return filterDao.loadFilterDataCollectionCount(searchParams);
+	}
+
+	@Override
+	public SessionFilter createSessionFilter(AnalysisSearchParameter searchParams) {
+		return new AnalysisSessionFilter(searchParams);
 	}
 }

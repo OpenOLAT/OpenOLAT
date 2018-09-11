@@ -100,7 +100,24 @@ public class AnalysisFilterDAO {
 		return query.getResultList().get(0);
 	}
 
-	private void appendFrom(QueryBuilder sb) {
+	public List<Long> loadSessionKeys(AnalysisSearchParameter searchParams) {
+		QueryBuilder sb = new QueryBuilder();
+		appendSelectSessionKeys(sb, searchParams);
+		
+		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class);
+		appendParameters(query, searchParams);
+		return query.getResultList();
+	}
+
+	static void appendSelectSessionKeys(QueryBuilder sb, AnalysisSearchParameter searchParams) {
+		sb.append("select distinct context.evaluationFormSession.key");
+		appendFrom(sb);
+		appendWhere(sb, searchParams);
+		sb.and().append("context.evaluationFormSession.key is not null");
+	}
+
+	static void appendFrom(QueryBuilder sb) {
 		sb.append("  from qualitydatacollection collection");
 		sb.append("       inner join evaluationformsurvey survey");
 		sb.append("               on survey.resName = '").append(QualityDataCollectionLight.RESOURCEABLE_TYPE_NAME).append("'");
@@ -121,7 +138,7 @@ public class AnalysisFilterDAO {
 		sb.append("               on contextToOrganisation.organisation.key = organisation.key");
 	}
 	
-	private void appendWhere(QueryBuilder sb, AnalysisSearchParameter searchParams) {
+	static void appendWhere(QueryBuilder sb, AnalysisSearchParameter searchParams) {
 		sb.and().append("collection.status = '").append(QualityDataCollectionStatus.FINISHED).append("'");
 		if (searchParams.getFormEntryRef() != null) {
 			sb.and().append("survey.formEntry.key = :formEntryKey");
@@ -165,7 +182,7 @@ public class AnalysisFilterDAO {
 		}
 	}
 
-	private void appendParameters(Query query, AnalysisSearchParameter searchParams) {
+	static void appendParameters(Query query, AnalysisSearchParameter searchParams) {
 		if (searchParams.getFormEntryRef() != null) {
 			query.setParameter("formEntryKey", searchParams.getFormEntryRef().getKey());
 		}
@@ -196,4 +213,5 @@ public class AnalysisFilterDAO {
 			}
 		}
 	}
+
 }

@@ -53,7 +53,7 @@ public class EvaluationFormDAO {
 		sb.append("       form.key as formEntryKey");
 		sb.append("     , form.creationDate as formCreationDate");
 		sb.append("     , form.displayname as formTitle");
-		sb.append("     , count(collection) as numberDataCollections");
+		sb.append("     , count(distinct collection) as numberDataCollections");
 		sb.append("     , min(collection.start) as soonestDataCollectionDate");
 		sb.append("     , max(collection.deadline) as latestDataCollectionDate");
 		sb.append("     , count(session) as numberParticipants");

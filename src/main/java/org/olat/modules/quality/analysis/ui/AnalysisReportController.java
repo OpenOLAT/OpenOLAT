@@ -20,13 +20,17 @@
 package org.olat.modules.quality.analysis.ui;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.stack.TooledStackedPanel;
-import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.modules.quality.QualitySecurityCallback;
+import org.olat.core.gui.control.controller.BasicController;
+import org.olat.modules.forms.SessionFilter;
+import org.olat.modules.forms.model.xml.Form;
+import org.olat.modules.forms.ui.EvaluationFormReportsController;
+import org.olat.modules.quality.analysis.AnalysisSearchParameter;
+import org.olat.modules.quality.analysis.QualityAnalysisService;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -34,33 +38,32 @@ import org.olat.modules.quality.QualitySecurityCallback;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class AnalysisReportController extends FormBasicController {
+public class AnalysisReportController extends BasicController implements FilterableController {
+	
+	private final VelocityContainer mainVC;
+	
+	private final Form form;
 
-	private final QualitySecurityCallback secCallback;
-	private final TooledStackedPanel stackPanel;
+	@Autowired
+	private QualityAnalysisService analysisService;
 
-	public AnalysisReportController(UserRequest ureq, WindowControl wControl, QualitySecurityCallback secCallback,
-			TooledStackedPanel stackPanel) {
+	public AnalysisReportController(UserRequest ureq, WindowControl wControl, Form form) {
 		super(ureq, wControl);
-		this.secCallback = secCallback;
-		this.stackPanel = stackPanel;
-		initForm(ureq);
+		this.form = form;
+		mainVC = createVelocityContainer("reporting");
+		putInitialPanel(mainVC);
 	}
 
 	@Override
-	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		
-		uifactory.addStaticExampleText("re3", "", "Report, report, report,..", formLayout);
-
+	public void onFilter(UserRequest ureq, AnalysisSearchParameter searchParams) {
+		mainVC.clear();
+		SessionFilter filter = analysisService.createSessionFilter(searchParams);
+		EvaluationFormReportsController reportsCtrl = new EvaluationFormReportsController(ureq, getWindowControl(), form, filter);
+		mainVC.put("report", reportsCtrl.getInitialComponent());
 	}
 
 	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {
-		super.event(ureq, source, event);
-	}
-
-	@Override
-	protected void formOK(UserRequest ureq) {
+	protected void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
 
@@ -68,5 +71,6 @@ public class AnalysisReportController extends FormBasicController {
 	protected void doDispose() {
 		//
 	}
+
 
 }

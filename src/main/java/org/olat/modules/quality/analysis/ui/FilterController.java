@@ -186,23 +186,23 @@ public class FilterController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		 if (source == dateRangeFromEl) {
-			doFiltered();
+			doFiltered(ureq);
 		} else if (source == dateRangeToEl) {
-			doFiltered();
+			doFiltered(ureq);
 		} else if (source == organisationEl) {
-			doFiltered();
+			doFiltered(ureq);
 		} else if (source == curriculumEl) {
-			doFiltered();
+			doFiltered(ureq);
 		} else if (source == curriculumElementEl) {
-			doFiltered();
+			doFiltered(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
 
-	private void doFiltered() {
+	private void doFiltered(UserRequest ureq) {
 		getSearchParams();
 		setSelectionValues();
-		//TODO uh filter presentation -> fireEvent
+		fireEvent(ureq, new AnalysisFilterEvent(searchParams));
 	}
 
 	private void getSearchParams() {

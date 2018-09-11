@@ -37,7 +37,9 @@ import org.olat.core.id.Organisation;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
+import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.quality.QualityContextBuilder;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityDataCollectionStatus;
@@ -64,6 +66,8 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 	private QualityTestHelper qualityTestHelper;
 	@Autowired
 	private QualityService qualityService;
+	@Autowired
+	private EvaluationFormManager evaManager;
 	@Autowired
 	private OrganisationService organisationService;
 	@Autowired
@@ -202,6 +206,46 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		Long count = sut.loadFilterDataCollectionCount(searchParams);
 		
 		assertThat(count).isEqualTo(3);
+	}
+	
+	@Test
+	public void shouldLoadDistinctSessions() {
+		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity executor1 = JunitTestHelper.createAndPersistIdentityAsUser("");
+		Identity executor2 = JunitTestHelper.createAndPersistIdentityAsUser("");
+		Organisation dcOrganisation = qualityTestHelper.createOrganisation();
+		Curriculum curriculum1 = qualityTestHelper.createCurriculum();
+		Curriculum curriculum2 = qualityTestHelper.createCurriculum();
+		// Data collection with two participations and finished sessions
+		QualityDataCollection dc = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participations1 = qualityService.addParticipations(dc, asList(executor1, executor2));
+		// First participation
+		EvaluationFormParticipation participation1 = participations1.get(0);
+		QualityContextBuilder contextBuilder1 = qualityService.createContextBuilder(dc, participation1);
+		contextBuilder1.addCurriculum(curriculum1).addCurriculum(curriculum2).build();
+		EvaluationFormSession session1 = evaManager.createSession(participation1);
+		session1 = evaManager.finishSession(session1);
+		// Second participation
+		EvaluationFormParticipation participation2 = participations1.get(0);
+		QualityContextBuilder contextBuilder2 = qualityService.createContextBuilder(dc, participation2);
+		contextBuilder2.addCurriculum(curriculum2).addCurriculum(curriculum2).build();
+		EvaluationFormSession session2 = evaManager.createSession(participation2);
+		evaManager.finishSession(session2);
+		// Participation with two curriculums and no session
+		QualityDataCollection dcNoSession = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participationsNoSession = qualityService.addParticipations(dcNoSession, Collections.singletonList(executor1));
+		EvaluationFormParticipation participationNoSession = participationsNoSession.get(0);
+		QualityContextBuilder contextBuilderNoSession = qualityService.createContextBuilder(dcNoSession, participationNoSession);
+		contextBuilderNoSession.addCurriculum(curriculum1).addCurriculum(curriculum2).build();
+		finish(asList(dc));
+		dbInstance.commitAndCloseSession();
+		
+		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
+		List<Long> sessionKeys = sut.loadSessionKeys(searchParams);
+		
+		assertThat(sessionKeys)
+				.doesNotContainNull()
+				.containsExactlyInAnyOrder(session1.getKey(), session2.getKey());
 	}
 
 	@Test

@@ -109,6 +109,14 @@ public class EvaluationFormDAOTest extends OlatTestCase {
 		qualityTestHelper.updateStatus(dataCollection2, QualityDataCollectionStatus.FINISHED);
 		QualityDataCollection dataCollection3 = qualityService.createDataCollection(emptyList(), formEntryTwiceUsed);
 		qualityTestHelper.updateStatus(dataCollection3, QualityDataCollectionStatus.FINISHED);
+		// Two session to test distinct
+		Identity executor1 = JunitTestHelper.createAndPersistIdentityAsRndUser("a");
+		Identity executor2 = JunitTestHelper.createAndPersistIdentityAsRndUser("a");
+		List<EvaluationFormParticipation> participations = qualityService.addParticipations(dataCollection1, asList(executor1, executor2));
+		for (EvaluationFormParticipation participation : participations) {
+			EvaluationFormSession session = evaManager.createSession(participation);
+			evaManager.finishSession(session);
+		}
 		dbInstance.commitAndCloseSession();
 		
 		EvaluationFormViewSearchParams searchParams = new EvaluationFormViewSearchParams();

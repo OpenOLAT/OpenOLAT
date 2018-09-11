@@ -17,33 +17,30 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.quality.analysis;
+package org.olat.modules.quality.analysis.ui;
 
-import java.util.List;
-
-import org.olat.core.id.Organisation;
-import org.olat.modules.curriculum.Curriculum;
-import org.olat.modules.curriculum.CurriculumElement;
-import org.olat.modules.forms.SessionFilter;
+import org.olat.core.gui.control.Event;
+import org.olat.modules.quality.analysis.AnalysisSearchParameter;
 
 /**
  * 
- * Initial date: 03.09.2018<br>
+ * Initial date: 11.09.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface QualityAnalysisService {
-	
-	public List<EvaluationFormView> loadEvaluationForms(EvaluationFormViewSearchParams searchParams);
-	
-	public List<Organisation> loadFilterOrganisations(AnalysisSearchParameter searchParams);
+public class AnalysisFilterEvent extends Event {
 
-	public List<Curriculum> loadFilterCurriculums(AnalysisSearchParameter searchParams);
+	private static final long serialVersionUID = 3597342359959954703L;
 
-	public List<CurriculumElement> loadFilterCurriculumElements(AnalysisSearchParameter searchParams);
+	private final AnalysisSearchParameter searchParams;
 
-	public Long loadFilterDataCollectionCount(AnalysisSearchParameter searchParams);
+	public AnalysisFilterEvent(AnalysisSearchParameter searchParams) {
+		super("analysis-filter-event");
+		this.searchParams = searchParams;
+	}
 
-	public SessionFilter createSessionFilter(AnalysisSearchParameter searchParams);
+	public AnalysisSearchParameter getSearchParams() {
+		return searchParams;
+	}
 
 }
