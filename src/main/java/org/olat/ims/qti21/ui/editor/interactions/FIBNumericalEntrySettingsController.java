@@ -205,7 +205,7 @@ public class FIBNumericalEntrySettingsController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 
 		solutionEl.clearError();
 		if(StringHelper.containsNonWhitespace(solutionEl.getValue())) {
@@ -244,7 +244,7 @@ public class FIBNumericalEntrySettingsController extends FormBasicController {
 		} else {
 			String selectedKey = toleranceModeEl.getSelectedKey();
 			ToleranceMode mode = ToleranceMode.valueOf(selectedKey);
-			if(mode == ToleranceMode.ABSOLUTE || mode == ToleranceMode.RELATIVE) {
+			if(mode == ToleranceMode.ABSOLUTE) {
 				allOk &= validateDouble(lowerToleranceEl, false);
 				allOk &= validateDouble(upperToleranceEl, false);
 				
@@ -267,7 +267,7 @@ public class FIBNumericalEntrySettingsController extends FormBasicController {
 			}
 		}
 
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 	
 	/**
