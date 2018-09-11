@@ -123,7 +123,7 @@ public class AnalysisController extends BasicController {
 				presentationCtrl = new AnalysisReportController(ureq, getWindowControl(), form);
 				break;
 			case HEAT_MAP:
-				presentationCtrl = new HeatMapController(ureq, getWindowControl(), secCallback, stackPanel);
+				presentationCtrl = new HeatMapController(ureq, getWindowControl(), form);
 				break;
 			default:
 				presentationCtrl = new AnalysisReportController(ureq, getWindowControl(), form);

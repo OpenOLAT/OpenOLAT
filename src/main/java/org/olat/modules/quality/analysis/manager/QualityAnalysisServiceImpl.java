@@ -20,16 +20,22 @@
 package org.olat.modules.quality.analysis.manager;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.id.Organisation;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.forms.SessionFilter;
+import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.quality.analysis.AnalysisSearchParameter;
 import org.olat.modules.quality.analysis.EvaluationFormView;
 import org.olat.modules.quality.analysis.EvaluationFormViewSearchParams;
+import org.olat.modules.quality.analysis.GroupBy;
+import org.olat.modules.quality.analysis.GroupedStatistic;
+import org.olat.modules.quality.analysis.GroupedStatistics;
 import org.olat.modules.quality.analysis.QualityAnalysisService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -46,7 +52,11 @@ public class QualityAnalysisServiceImpl implements QualityAnalysisService {
 	@Autowired
 	private AnalysisFilterDAO filterDao;
 	@Autowired
+	private StatisticsCalculator statisticsCalculator;
+	@Autowired
 	private EvaluationFormDAO evaluationFromDao;
+	@Autowired
+	private OrganisationService organisationService;
 	@Autowired
 	private CurriculumService curriculumService;
 
@@ -57,7 +67,14 @@ public class QualityAnalysisServiceImpl implements QualityAnalysisService {
 
 	@Override
 	public List<Organisation> loadFilterOrganisations(AnalysisSearchParameter searchParams) {
-		return filterDao.loadOrganisations(searchParams);
+		if (searchParams == null) {
+			return new ArrayList<>(0);
+		}
+		
+		List<Organisation> organisations = organisationService.getOrganisations();
+		List<String> pathes = filterDao.loadOrganisationPathes(searchParams);
+		organisations.removeIf(e -> isUnused(e.getMaterializedPathKeys(), pathes));	
+		return organisations;
 	}
 
 	@Override
@@ -75,13 +92,22 @@ public class QualityAnalysisServiceImpl implements QualityAnalysisService {
 		List<CurriculumElement> elementsOfCurriculums = curriculumService
 				.getCurriculumElementsByCurriculums(searchParams.getCurriculumRefs());
 		List<String> pathes = filterDao.loadCurriculumElementPathes(searchParams);
-		elementsOfCurriculums.removeIf(e -> isUnusedLeaf(e, pathes));
+		elementsOfCurriculums.removeIf(e -> isUnusedChild(e.getMaterializedPathKeys(), pathes));
 		return elementsOfCurriculums;
 	}
 
-	private boolean isUnusedLeaf(CurriculumElement e, List<String> pathsOfContexts) {
+	private boolean isUnusedChild(String pathToCheck, List<String> pathsOfContexts) {
 		for (String path : pathsOfContexts) {
-			if (path.contains(e.getMaterializedPathKeys())) {
+			if (path.contains(pathToCheck)) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	private boolean isUnused(String pathToCheck, List<String> pathsOfContexts) {
+		for (String path : pathsOfContexts) {
+			if (path.equals(pathToCheck)) {
 				return false;
 			}
 		}
@@ -96,5 +122,15 @@ public class QualityAnalysisServiceImpl implements QualityAnalysisService {
 	@Override
 	public SessionFilter createSessionFilter(AnalysisSearchParameter searchParams) {
 		return new AnalysisSessionFilter(searchParams);
+	}
+
+	@Override
+	public GroupedStatistics calculateStatistics(AnalysisSearchParameter searchParams,
+			Collection<String> responseIdentifiers, Collection<Rubric> rubrics, GroupBy groupBy) {
+		List<GroupedStatistic> statisticsList = filterDao.getAvgByResponseIdentifiers(searchParams, responseIdentifiers,
+				groupBy);
+		GroupedStatistics statistics = new GroupedStatistics(statisticsList);
+		statistics = statisticsCalculator.getScaledStatistics(statistics, rubrics);
+		return statistics;
 	}
 }

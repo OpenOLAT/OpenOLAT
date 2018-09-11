@@ -21,6 +21,8 @@ package org.olat.modules.quality.analysis.manager;
 
 import static java.util.stream.Collectors.toList;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import javax.persistence.Query;
@@ -34,6 +36,8 @@ import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.quality.QualityDataCollectionLight;
 import org.olat.modules.quality.QualityDataCollectionStatus;
 import org.olat.modules.quality.analysis.AnalysisSearchParameter;
+import org.olat.modules.quality.analysis.GroupBy;
+import org.olat.modules.quality.analysis.GroupedStatistic;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -58,6 +62,20 @@ public class AnalysisFilterDAO {
 		
 		TypedQuery<Organisation> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Organisation.class);
+		appendParameters(query, searchParams);
+		return query.getResultList();
+	}
+	
+	//TODO uh test
+	List<String> loadOrganisationPathes(AnalysisSearchParameter searchParams) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select distinct organisation.materializedPathKeys");
+		appendFrom(sb);
+		appendWhere(sb, searchParams);
+		sb.and().append("organisation.key is not null");
+		
+		TypedQuery<String> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), String.class);
 		appendParameters(query, searchParams);
 		return query.getResultList();
 	}
@@ -115,6 +133,51 @@ public class AnalysisFilterDAO {
 		appendFrom(sb);
 		appendWhere(sb, searchParams);
 		sb.and().append("context.evaluationFormSession.key is not null");
+	}
+	
+	//TODO uh test this
+	public List<GroupedStatistic> getAvgByResponseIdentifiers(AnalysisSearchParameter searchParams,
+			Collection<String> responseIdentifiers, GroupBy groupBy) {
+		if (responseIdentifiers == null || responseIdentifiers.isEmpty()) return new ArrayList<>();
+		
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select new org.olat.modules.quality.analysis.GroupedStatistic(");
+		sb.append("       response.responseIdentifier");
+		appendGroupBy(sb, groupBy, true);
+		sb.append("     , count(response)");
+		sb.append("     , avg(response.numericalResponse)");
+		sb.append("       )");
+		appendFrom(sb);
+		sb.append("       inner join context.evaluationFormSession session");
+		sb.append("       inner join evaluationformresponse response");
+		sb.append("               on response.session.key = session.key");
+		sb.append("              and (response.noResponse is false or response.noResponse is null)");
+		sb.append("              and response.responseIdentifier in (:responseIdentifiers)");
+		appendWhere(sb, searchParams);
+		sb.append(" group by response.responseIdentifier");
+		appendGroupBy(sb, groupBy, false);
+		
+		TypedQuery<GroupedStatistic> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), GroupedStatistic.class)
+				.setParameter("responseIdentifiers", responseIdentifiers);
+		appendParameters(query, searchParams);
+		return query.getResultList();
+	}
+
+	private void appendGroupBy(QueryBuilder sb, GroupBy groupBy, boolean select) {
+		switch (groupBy) {
+		case ORAGANISATION:
+			sb.append(", contextToOrganisation.organisation.key");
+			break;
+		case CURRICULUM:
+			sb.append(", contextToCurriculum.curriculum.key");
+			break;
+		case CURRICULUM_ELEMENT:
+			sb.append(", contextToCurriculumElement.context.key");
+			break;
+		default: 
+			if (select) sb.append(", null");
+		}
 	}
 
 	static void appendFrom(QueryBuilder sb) {

@@ -19,12 +19,14 @@
  */
 package org.olat.modules.quality.analysis;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.olat.core.id.Organisation;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.forms.SessionFilter;
+import org.olat.modules.forms.model.xml.Rubric;
 
 /**
  * 
@@ -45,5 +47,8 @@ public interface QualityAnalysisService {
 	public Long loadFilterDataCollectionCount(AnalysisSearchParameter searchParams);
 
 	public SessionFilter createSessionFilter(AnalysisSearchParameter searchParams);
+
+	public GroupedStatistics calculateStatistics(AnalysisSearchParameter searchParams,
+			Collection<String> responseIdentifiers, Collection<Rubric> rubrics, GroupBy groupBy);
 
 }
