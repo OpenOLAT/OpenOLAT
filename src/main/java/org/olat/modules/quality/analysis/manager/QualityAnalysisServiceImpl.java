@@ -66,7 +66,8 @@ public class QualityAnalysisServiceImpl implements QualityAnalysisService {
 
 	@Override
 	public List<CurriculumElement> loadFilterCurriculumElements(AnalysisSearchParameter searchParams) {
-		if (searchParams == null || searchParams.getCurriculumRefs() == null) {
+		if (searchParams == null || searchParams.getCurriculumRefs() == null
+				|| searchParams.getCurriculumRefs().isEmpty()) {
 			return new ArrayList<>(0);
 		}
 
