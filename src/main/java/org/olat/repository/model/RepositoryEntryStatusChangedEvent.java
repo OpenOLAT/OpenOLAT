@@ -17,43 +17,30 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.assessment;
+package org.olat.repository.model;
 
-import java.util.Date;
-
-import org.olat.course.assessment.AssessmentMode.Status;
-import org.olat.repository.RepositoryEntry;
+import org.olat.core.util.event.MultiUserEvent;
 
 /**
  * 
- * Initial date: 06.01.2015<br>
+ * Initial date: 13 sept. 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface AssessmentModeCoordinationService {
+public class RepositoryEntryStatusChangedEvent extends MultiUserEvent {
 
-	/**
-	 * You can start manually if...
-	 * @param assessmentMode
-	 * @return
-	 */
-	public boolean canStart(AssessmentMode assessmentMode);
+	private static final long serialVersionUID = -8624039692057985920L;
 	
-	/**
-	 * You can stop manually if...
-	 * 
-	 * @param assessmentMode
-	 * @return
-	 */
-	public boolean canStop(AssessmentMode assessmentMode);
-	
-	
-	public void processRepositoryEntryChangedStatus(RepositoryEntry entry);
-	
-	public Status evaluateStatus(Date begin, int leadtime, Date end, int followup);
-	
-	public AssessmentMode startAssessment(AssessmentMode assessmentMode);
-	
-	public AssessmentMode stopAssessment(AssessmentMode assessmentMode);
+	public static final String STATUS_CHANGED = "repo.entry.status.changed";
 
+	private Long repositoryEntryKey;
+
+	public RepositoryEntryStatusChangedEvent(Long repositoryEntryKey) {
+		super(STATUS_CHANGED);
+		this.repositoryEntryKey = repositoryEntryKey;
+	}
+
+	public Long getRepositoryEntryKey() {
+		return repositoryEntryKey;
+	}
 }

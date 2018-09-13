@@ -50,6 +50,7 @@ import org.olat.core.logging.activity.OlatResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
@@ -59,6 +60,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.course.assessment.AssessmentModeCoordinationService;
 import org.olat.course.assessment.manager.AssessmentModeDAO;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.certificate.CertificatesManager;
@@ -83,6 +85,7 @@ import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.repository.model.RepositoryEntryStatistics;
+import org.olat.repository.model.RepositoryEntryStatusChangedEvent;
 import org.olat.repository.model.RepositoryEntryToGroupRelation;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
@@ -115,6 +118,8 @@ public class RepositoryServiceImpl implements RepositoryService {
 	@Autowired
 	private CatalogManager catalogManager;
 	@Autowired
+	private CoordinatorManager coordinatorManager;
+	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
 	private ACReservationDAO reservationDao;
@@ -144,6 +149,8 @@ public class RepositoryServiceImpl implements RepositoryService {
 	private UserCourseInformationsManager userCourseInformationsManager;
 	@Autowired
 	private AssessmentModeDAO assessmentModeDao;
+	@Autowired
+	private AssessmentModeCoordinationService assessmentModeCoordinationService;
 	@Autowired
 	private AssessmentTestSessionDAO assessmentTestSessionDao;
 	@Autowired
@@ -354,6 +361,7 @@ public class RepositoryServiceImpl implements RepositoryService {
 
 	@Override
 	public RepositoryEntry deleteSoftly(RepositoryEntry re, Identity deletedBy, boolean owners, boolean sendNotifications) {
+		// start delete
 		RepositoryEntry reloadedRe = repositoryEntryDAO.loadForUpdate(re);
 		reloadedRe.setAccess(RepositoryEntry.DELETED);
 		if(reloadedRe.getDeletionDate() == null) {
@@ -363,7 +371,10 @@ public class RepositoryServiceImpl implements RepositoryService {
 		}
 		reloadedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
 		List<Identity> ownerList = reToGroupDao.getMembers(reloadedRe, RepositoryEntryRelationType.defaultGroup, GroupRoles.owner.name());
+		
 		dbInstance.commit();
+		// first stop assessment mode if needed
+		assessmentModeCoordinationService.processRepositoryEntryChangedStatus(reloadedRe);
 		//remove from catalog
 		catalogManager.resourceableDeleted(reloadedRe);
 		//remove participant and coach
@@ -384,6 +395,9 @@ public class RepositoryServiceImpl implements RepositoryService {
 		if(sendNotifications && deletedBy != null) {
 			sendStatusChangedNotifications(ownerList, deletedBy, reloadedRe, RepositoryMailing.Type.deleteSoftEntry);
 		}
+		
+		RepositoryEntryStatusChangedEvent statusChangedEvent = new RepositoryEntryStatusChangedEvent(reloadedRe.getKey());
+		coordinatorManager.getCoordinator().getEventBus().fireEventToListenersOf(statusChangedEvent, OresHelper.clone(reloadedRe));
 		return reloadedRe;
 	}
 	
@@ -516,6 +530,9 @@ public class RepositoryServiceImpl implements RepositoryService {
 		if(sendNotifications && closedBy != null) {
 			sendStatusChangedNotifications(ownerList, closedBy, reloadedEntry, RepositoryMailing.Type.closeEntry);
 		}
+		
+		RepositoryEntryStatusChangedEvent statusChangedEvent = new RepositoryEntryStatusChangedEvent(reloadedEntry.getKey());
+		coordinatorManager.getCoordinator().getEventBus().fireEventToListenersOf(statusChangedEvent, OresHelper.clone(entry));
 		return reloadedEntry;
 	}
 
