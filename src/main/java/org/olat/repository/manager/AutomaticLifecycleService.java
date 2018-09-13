@@ -72,7 +72,7 @@ public class AutomaticLifecycleService {
 					boolean closeManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.close);
 					if(!closeManaged) {
 						log.audit("Automatic closing course: " + entry.getDisplayname() + " [" + entry.getKey() + "]");
-						repositoryService.closeRepositoryEntry(entry);
+						repositoryService.closeRepositoryEntry(entry, null, false);
 						dbInstance.commit();
 					}
 				} catch (Exception e) {
@@ -156,7 +156,7 @@ public class AutomaticLifecycleService {
 					boolean deleteManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.delete);
 					if(!deleteManaged) {
 						log.audit("Automatic deleting (soft) course: " + entry.getDisplayname() + " [" + entry.getKey() + "]");
-						repositoryService.deleteSoftly(entry, null, true);
+						repositoryService.deleteSoftly(entry, null, true, false);
 						dbInstance.commit();
 					}
 				} catch (Exception e) {

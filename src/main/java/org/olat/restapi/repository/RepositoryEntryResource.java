@@ -845,7 +845,7 @@ public class RepositoryEntryResource {
 		
 		RepositoryService rs = CoreSpringFactory.getImpl(RepositoryService.class);
 		if("closed".equals(newStatus)) {
-			rs.closeRepositoryEntry(re);
+			rs.closeRepositoryEntry(re, null, false);
 			log.audit("REST closing course: " + re.getDisplayname() + " [" + re.getKey() + "]");
 			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_CLOSE, getClass(),
 					LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry));
@@ -861,7 +861,7 @@ public class RepositoryEntryResource {
 					LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry));
 		} else if("deleted".equals(newStatus)) {
 			Identity identity = getIdentity(request);
-			rs.deleteSoftly(re, identity, true);
+			rs.deleteSoftly(re, identity, true, false);
 			log.audit("REST deleting (soft) course: " + re.getDisplayname() + " [" + re.getKey() + "]");
 			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_TRASH, getClass(),
 					LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry));

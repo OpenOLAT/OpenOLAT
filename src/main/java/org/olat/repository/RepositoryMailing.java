@@ -19,6 +19,7 @@
  */
 package org.olat.repository;
 
+import java.util.Date;
 import java.util.Locale;
 
 import org.apache.velocity.VelocityContext;
@@ -30,6 +31,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.filter.FilterFactory;
@@ -126,6 +128,18 @@ public class RepositoryMailing {
 		return createMailTemplate(re, actor, subjectKey, bodyKey);
 	}
 	
+	private static MailTemplate createCloseMailTemplate(RepositoryEntry re, Identity actor) {
+		String subjectKey = "notification.mail.close.subject";
+		String bodyKey = "notification.mail.close.body";
+		return createMailTemplate(re, actor, subjectKey, bodyKey);
+	}
+	
+	private static MailTemplate createDeleteMailTemplate(RepositoryEntry re, Identity actor) {
+		String subjectKey = "notification.mail.delete.subject";
+		String bodyKey = "notification.mail.delete.body";
+		return createMailTemplate(re, actor, subjectKey, bodyKey);
+	}
+	
 	public static MailTemplate getDefaultTemplate(Type type, RepositoryEntry re, Identity ureqIdentity) {
 		if(type == null) return null;
 		
@@ -142,6 +156,10 @@ public class RepositoryMailing {
 			case removeTutor:
 			case removeOwner:
 				return createRemoveMailTemplate(re, ureqIdentity);
+			case closeEntry:
+				return createCloseMailTemplate(re, ureqIdentity);
+			case deleteSoftEntry:
+				return createDeleteMailTemplate(re, ureqIdentity);
 		}
 		return null;
 	}
@@ -197,7 +215,9 @@ public class RepositoryMailing {
 		removeTutor,
 		addOwner,
 		removeOwner,
-		addParticipantItself
+		addParticipantItself,
+		closeEntry,
+		deleteSoftEntry
 	}
 	
 	private static MailTemplate createMailTemplate(RepositoryEntry re, Identity actor, String subjectKey, String bodyKey) {
@@ -208,10 +228,11 @@ public class RepositoryMailing {
 		// get some data about the actor and fetch the translated subject / body via i18n module
 		Locale locale = I18nManager.getInstance().getLocaleOrDefault(actor.getUser().getPreferences().getLanguage());
 		String[] bodyArgs = new String[] {
-				actor.getUser().getProperty(UserConstants.FIRSTNAME, null),
-				actor.getUser().getProperty(UserConstants.LASTNAME, null),
-				UserManager.getInstance().getUserDisplayEmail(actor, locale),
-				UserManager.getInstance().getUserDisplayEmail(actor, locale)// 2x for compatibility with old i18m properties
+				actor.getUser().getProperty(UserConstants.FIRSTNAME, null),		// 0
+				actor.getUser().getProperty(UserConstants.LASTNAME, null),		// 1
+				UserManager.getInstance().getUserDisplayEmail(actor, locale),	// 2
+				UserManager.getInstance().getUserDisplayEmail(actor, locale),	// 3 (2x for compatibility with old i18m properties)
+				Formatter.getInstance(locale).formatDate(new Date())			// 4
 			};
 		
 		Translator trans = Util.createPackageTranslator(RepositoryManager.class, locale);
@@ -219,7 +240,7 @@ public class RepositoryMailing {
 		String body = trans.translate(bodyKey, bodyArgs);
 		
 		// create a mail template which all these data
-		MailTemplate mailTempl = new MailTemplate(subject, body, null) {
+		return new MailTemplate(subject, body, null) {
 			@Override
 			public void putVariablesInMailContext(VelocityContext context, Identity identity) {
 				// Put user variables into velocity context
@@ -231,8 +252,9 @@ public class RepositoryMailing {
 				context.put("coursename", reName);
 				context.put("coursedescription", redescription);
 				context.put("courseurl", reUrl);
+				String courseRef = re.getExternalRef() == null ? "" : re.getExternalRef();
+				context.put("courseref", courseRef);
 			}
 		};
-		return mailTempl;
 	}
 }

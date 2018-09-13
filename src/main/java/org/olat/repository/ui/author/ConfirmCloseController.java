@@ -39,6 +39,7 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.EntryChangedEvent.Change;
@@ -55,10 +56,13 @@ public class ConfirmCloseController extends FormBasicController {
 	
 	private FormLink readOnlyButton;
 	private MultipleSelectionElement acknowledgeEl;
+	private MultipleSelectionElement notificationEl;
 	
 	private final int numOfMembers;
 	private final List<RepositoryEntry> rows;
 	
+	@Autowired
+	private RepositoryModule repositoryModule;
 	@Autowired
 	private RepositoryService repositoryService;
 	
@@ -89,6 +93,13 @@ public class ConfirmCloseController extends FormBasicController {
 			String[] acknowledge = new String[] { translate("details.read.only.acknowledge.msg") };
 			acknowledgeEl = uifactory.addCheckboxesHorizontal("confirm", "details.read.only.acknowledge", layoutCont, new String[]{ "" },  acknowledge);
 
+			String[] notifications = new String[] { translate("details.notifications.acknowledge.value") };
+			notificationEl = uifactory.addCheckboxesHorizontal("notifications", "details.notifications.acknowledge", layoutCont, new String[]{ "" },  notifications);
+			if(repositoryModule.isLifecycleNotificationByCloseDeleteEnabled()) {
+				notificationEl.select("", true);
+				notificationEl.setEnabled(ureq.getUserSession().getRoles().isOLATAdmin());
+			}
+			
 			FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 			layoutCont.add(buttonsCont);
 			uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
@@ -104,7 +115,7 @@ public class ConfirmCloseController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		acknowledgeEl.clearError();
 		if(!acknowledgeEl.isAtLeastSelected(1)) {
@@ -112,7 +123,7 @@ public class ConfirmCloseController extends FormBasicController {
 			allOk &= false;
 		}
 
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override
@@ -145,7 +156,8 @@ public class ConfirmCloseController extends FormBasicController {
 		for(RepositoryEntry entry:entries) {
 			RepositoryEntry reloadedEntry = repositoryService.loadByKey(entry.getKey());
 			if(reloadedEntry != null) {
-				repositoryService.closeRepositoryEntry(reloadedEntry);
+				boolean sendNotifications = notificationEl.isAtLeastSelected(1);
+				repositoryService.closeRepositoryEntry(reloadedEntry, getIdentity(), sendNotifications);
 				ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_DEACTIVATE, getClass(),
 						LoggingResourceable.wrap(reloadedEntry, OlatResourceableType.genRepoEntry));
 				fireEvent(ureq, new EntryChangedEvent(reloadedEntry, getIdentity(), Change.closed, "closed"));

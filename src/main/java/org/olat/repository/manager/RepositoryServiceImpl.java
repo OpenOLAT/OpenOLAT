@@ -50,6 +50,9 @@ import org.olat.core.logging.activity.OlatResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.mail.MailPackage;
+import org.olat.core.util.mail.MailTemplate;
+import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
@@ -72,6 +75,7 @@ import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryEntryStatus;
+import org.olat.repository.RepositoryMailing;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
@@ -349,7 +353,7 @@ public class RepositoryServiceImpl implements RepositoryService {
 	}
 
 	@Override
-	public RepositoryEntry deleteSoftly(RepositoryEntry re, Identity deletedBy, boolean owners) {
+	public RepositoryEntry deleteSoftly(RepositoryEntry re, Identity deletedBy, boolean owners, boolean sendNotifications) {
 		RepositoryEntry reloadedRe = repositoryEntryDAO.loadForUpdate(re);
 		reloadedRe.setAccess(RepositoryEntry.DELETED);
 		if(reloadedRe.getDeletionDate() == null) {
@@ -358,6 +362,7 @@ public class RepositoryServiceImpl implements RepositoryService {
 			reloadedRe.setDeletionDate(new Date());
 		}
 		reloadedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
+		List<Identity> ownerList = reToGroupDao.getMembers(reloadedRe, RepositoryEntryRelationType.defaultGroup, GroupRoles.owner.name());
 		dbInstance.commit();
 		//remove from catalog
 		catalogManager.resourceableDeleted(reloadedRe);
@@ -375,7 +380,20 @@ public class RepositoryServiceImpl implements RepositoryService {
 			}
 		}
 		dbInstance.commit();
+		
+		if(sendNotifications && deletedBy != null) {
+			sendStatusChangedNotifications(ownerList, deletedBy, reloadedRe, RepositoryMailing.Type.deleteSoftEntry);
+		}
 		return reloadedRe;
+	}
+	
+	private void sendStatusChangedNotifications(List<Identity> owners, Identity doer, RepositoryEntry entry, RepositoryMailing.Type mailingType) {
+		MailerResult result = new MailerResult();
+		MailTemplate template = RepositoryMailing.getDefaultTemplate(mailingType, entry, doer);
+		for(Identity owner:owners) {
+			MailPackage reMailing = new MailPackage(template, result, "[RepositoryEntry:" + entry.getKey() + "]", true);
+			RepositoryMailing.sendEmail(doer, owner, entry, mailingType, reMailing);
+		}
 	}
 
 	@Override
@@ -489,11 +507,15 @@ public class RepositoryServiceImpl implements RepositoryService {
 	}
 
 	@Override
-	public RepositoryEntry closeRepositoryEntry(RepositoryEntry entry) {
+	public RepositoryEntry closeRepositoryEntry(RepositoryEntry entry, Identity closedBy, boolean sendNotifications) {
 		RepositoryEntry reloadedEntry = repositoryEntryDAO.loadForUpdate(entry);
 		reloadedEntry.setStatusCode(RepositoryEntryStatus.REPOSITORY_STATUS_CLOSED);
 		reloadedEntry = dbInstance.getCurrentEntityManager().merge(reloadedEntry);
+		List<Identity> ownerList = reToGroupDao.getMembers(reloadedEntry, RepositoryEntryRelationType.defaultGroup, GroupRoles.owner.name());
 		dbInstance.commit();
+		if(sendNotifications && closedBy != null) {
+			sendStatusChangedNotifications(ownerList, closedBy, reloadedEntry, RepositoryMailing.Type.closeEntry);
+		}
 		return reloadedEntry;
 	}
 
