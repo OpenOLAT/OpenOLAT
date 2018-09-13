@@ -377,6 +377,9 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 		mode = assessmentModeManager.getAssessmentModeById(mode.getKey());
 		Set<Long> assessedIdentityKeys = assessmentModeManager.getAssessedIdentityKeys(mode);
 		mode = ensureStatusOfMode(mode, Status.end);
+		Date now = new Date();
+		((AssessmentModeImpl)mode).setEnd(now);
+		((AssessmentModeImpl)mode).setEndWithFollowupTime(now);
 		sendEvent(AssessmentModeNotificationEvent.END, mode, assessedIdentityKeys);
 		return mode;
 	}
