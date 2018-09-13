@@ -769,7 +769,7 @@ public class RepositoryEntryWebService {
 		}
 		
 		if("closed".equals(newStatus)) {
-			repositoryService.closeRepositoryEntry(entry);
+			repositoryService.closeRepositoryEntry(entry, null, false);
 			log.audit("REST closing course: " + entry.getDisplayname() + " [" + entry.getKey() + "]");
 			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_CLOSE, getClass(),
 					LoggingResourceable.wrap(entry, OlatResourceableType.genRepoEntry));
@@ -780,7 +780,7 @@ public class RepositoryEntryWebService {
 					LoggingResourceable.wrap(entry, OlatResourceableType.genRepoEntry));
 		} else if("deleted".equals(newStatus)) {
 			Identity identity = getIdentity(request);
-			repositoryService.deleteSoftly(entry, identity, true);
+			repositoryService.deleteSoftly(entry, identity, true, false);
 			log.audit("REST deleting (soft) course: " + entry.getDisplayname() + " [" + entry.getKey() + "]");
 			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_TRASH, getClass(),
 					LoggingResourceable.wrap(entry, OlatResourceableType.genRepoEntry));

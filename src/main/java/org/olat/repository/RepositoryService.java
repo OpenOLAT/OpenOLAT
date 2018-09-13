@@ -99,7 +99,7 @@ public interface RepositoryService {
 	 * @param entry
 	 * @param owners If the owners need to be removed
 	 */
-	public RepositoryEntry deleteSoftly(RepositoryEntry entry, Identity deletedBy, boolean owners);
+	public RepositoryEntry deleteSoftly(RepositoryEntry entry, Identity deletedBy, boolean owners, boolean sendNotifications);
 
 	/**
 	 * The access is set to B.
@@ -134,7 +134,7 @@ public interface RepositoryService {
 	 * @param locale
 	 * @return The closed repository entry
 	 */
-	public RepositoryEntry closeRepositoryEntry(RepositoryEntry entry);
+	public RepositoryEntry closeRepositoryEntry(RepositoryEntry entry, Identity closedBy, boolean sendNotifications);
 
 
 	public RepositoryEntry uncloseRepositoryEntry(RepositoryEntry entry);

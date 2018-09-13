@@ -42,6 +42,7 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.EntryChangedEvent.Change;
@@ -60,12 +61,15 @@ public class ConfirmDeleteSoftlyController extends FormBasicController {
 	
 	private FormLink deleteButton;
 	private MultipleSelectionElement acknowledgeEl;
+	private MultipleSelectionElement notificationEl;
 	
 	private final int numOfMembers;
 	private final boolean notAllDeleteable;
 	private final List<RepositoryEntry> rows;
 	private final List<ReferenceInfos> references;
 	
+	@Autowired
+	private RepositoryModule repositoryModule;
 	@Autowired
 	private ReferenceManager referenceManager;
 	@Autowired
@@ -90,7 +94,7 @@ public class ConfirmDeleteSoftlyController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layout = (FormLayoutContainer)formLayout;
-			layout.contextPut("notAllDeleteable", new Boolean(notAllDeleteable));
+			layout.contextPut("notAllDeleteable", Boolean.valueOf(notAllDeleteable));
 			layout.contextPut("numOfMembers", Integer.toString(numOfMembers));
 
 			FormLayoutContainer layoutCont = FormLayoutContainer.createDefaultFormLayout("confirm", getTranslator());
@@ -107,6 +111,13 @@ public class ConfirmDeleteSoftlyController extends FormBasicController {
 			String[] acknowledge = new String[] { translate("details.delete.soft.acknowledge.msg") };
 			acknowledgeEl = uifactory.addCheckboxesHorizontal("confirm", "details.delete.acknowledge", layoutCont, new String[]{ "" },  acknowledge);
 			
+			String[] notifications = new String[] { translate("details.notifications.acknowledge.value") };
+			notificationEl = uifactory.addCheckboxesHorizontal("notifications", "details.notifications.acknowledge", layoutCont, new String[]{ "" },  notifications);
+			if(repositoryModule.isLifecycleNotificationByCloseDeleteEnabled()) {
+				notificationEl.select("", true);
+				notificationEl.setEnabled(ureq.getUserSession().getRoles().isSystemAdmin());
+			}
+			
 			FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 			layoutCont.add(buttonsCont);
 			deleteButton = uifactory.addFormLink("details.delete", buttonsCont, Link.BUTTON);
@@ -121,7 +132,7 @@ public class ConfirmDeleteSoftlyController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		acknowledgeEl.clearError();
 		if(!acknowledgeEl.isAtLeastSelected(1)) {
@@ -129,7 +140,7 @@ public class ConfirmDeleteSoftlyController extends FormBasicController {
 			allOk &= false;
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override
@@ -166,7 +177,8 @@ public class ConfirmDeleteSoftlyController extends FormBasicController {
 		for(RepositoryEntry entry:entries) {
 			RepositoryEntry reloadedEntry = repositoryService.loadByKey(entry.getKey());
 			if(reloadedEntry != null) {
-				reloadedEntry = repositoryService.deleteSoftly(reloadedEntry, getIdentity(), false);
+				boolean sendNotifications = notificationEl.isAtLeastSelected(1);
+				reloadedEntry = repositoryService.deleteSoftly(reloadedEntry, getIdentity(), false, sendNotifications);
 				ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_TRASH, getClass(),
 						LoggingResourceable.wrap(reloadedEntry, OlatResourceableType.genRepoEntry));
 				

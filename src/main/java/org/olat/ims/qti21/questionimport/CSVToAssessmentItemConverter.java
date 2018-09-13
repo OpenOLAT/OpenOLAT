@@ -127,6 +127,12 @@ public class CSVToAssessmentItemConverter {
 			case "question": processQuestion(parts); break;
 			case "punkte":
 			case "points": processPoints(parts); break;
+			case "max. number of possible answers":
+			case "max. answers":
+			case "max answers": processMaxAnswers(parts); break;
+			case "min. number of possible answers":
+			case "min. answers":
+			case "min answers": processMinAnswers(parts); break;
 			case "fachbereich":
 			case "subject": processTaxonomyPath(parts); break;
 			case "feedback correct answer": processFeedbackCorrectAnswer(parts); break;
@@ -540,18 +546,32 @@ public class CSVToAssessmentItemConverter {
 		
 		double points = parseFloat(parts[1], 1.0f);
 		AssessmentItemBuilder itemBuilder = currentItem.getItemBuilder();
-		if (itemBuilder instanceof SimpleChoiceAssessmentItemBuilder) {
+		if (itemBuilder instanceof SimpleChoiceAssessmentItemBuilder
+				|| itemBuilder instanceof FIBAssessmentItemBuilder
+				|| itemBuilder instanceof KPrimAssessmentItemBuilder
+				|| itemBuilder instanceof MatchAssessmentItemBuilder) {
 			itemBuilder.setMinScore(0.0d);
 			itemBuilder.setMaxScore(points);
-		} else if(itemBuilder instanceof FIBAssessmentItemBuilder) {
-			itemBuilder.setMinScore(0.0d);
-			itemBuilder.setMaxScore(points);
-		} else if(itemBuilder instanceof KPrimAssessmentItemBuilder) {
-			itemBuilder.setMinScore(0.0d);
-			itemBuilder.setMaxScore(points);
-		} else if(itemBuilder instanceof MatchAssessmentItemBuilder) {
-			itemBuilder.setMinScore(0.0d);
-			itemBuilder.setMaxScore(points);
+		}
+	}
+	
+	private void processMaxAnswers(String[] parts) {
+		if(currentItem == null) return;
+		
+		int maxChoices = parseInteger(parts[1], 0);
+		AssessmentItemBuilder itemBuilder = currentItem.getItemBuilder();
+		if (itemBuilder instanceof MultipleChoiceAssessmentItemBuilder) {
+			((MultipleChoiceAssessmentItemBuilder) itemBuilder).setMaxChoices(maxChoices);
+		}
+	}
+	
+	private void processMinAnswers(String[] parts) {
+		if(currentItem == null) return;
+		
+		int minChoices = parseInteger(parts[1], 0);
+		AssessmentItemBuilder itemBuilder = currentItem.getItemBuilder();
+		if (itemBuilder instanceof MultipleChoiceAssessmentItemBuilder) {
+			((MultipleChoiceAssessmentItemBuilder) itemBuilder).setMinChoices(minChoices);
 		}
 	}
 	
@@ -692,11 +712,23 @@ public class CSVToAssessmentItemConverter {
 		float floatValue = defaultValue;
 		
 		if(value != null) {
-			if(value.indexOf(",") >= 0) {
+			if(value.indexOf(',') >= 0) {
 				value = value.replace(",", ".");
 			}
 			floatValue = Float.parseFloat(value);
 		}
 		return floatValue;
+	}
+	
+	private int parseInteger(String value, int defaultValue) {
+		int integerValue = defaultValue;
+		if(value != null && StringHelper.isLong(value)) {
+			try {
+				integerValue = Integer.parseInt(value);
+			} catch (NumberFormatException e) {
+				log.error("Cannot parse: " + value, e);
+			}
+		}
+		return integerValue;
 	}
 }

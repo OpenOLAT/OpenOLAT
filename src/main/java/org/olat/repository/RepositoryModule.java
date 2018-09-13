@@ -65,6 +65,7 @@ public class RepositoryModule extends AbstractSpringModule {
 	
 	private static final String LIFECYCLE_AUTO_CLOSE = "repo.lifecycle.auto.close";
 	private static final String LIFECYCLE_AUTO_DELETE = "repo.lifecycle.auto.delete";
+	private static final String LIFECYCLE_NOTIFICATION_CLOSE_DELETE = "rrepo.lifecylce.notification.close.delete";
 	
 	@Value("${site.catalog.enable:true}")
 	private boolean catalogSiteEnabled;
@@ -88,6 +89,8 @@ public class RepositoryModule extends AbstractSpringModule {
 	private String lifecycleAutoClose;
 	@Value("${repo.lifecycle.auto.delete:}")
 	private String lifecycleAutoDelete;
+	@Value("${repo.lifecylce.notification.close.delete:}")
+	private String lifecycleNotificationByCloseDelete;
 	
 	@Value("${repo.allow.to.leave:atAnyTime}")
 	private String defaultAllowToLeaveOption;
@@ -190,6 +193,11 @@ public class RepositoryModule extends AbstractSpringModule {
 		String autoDelete = getStringPropertyValue(LIFECYCLE_AUTO_DELETE, true);
 		if(StringHelper.containsNonWhitespace(autoDelete)) {
 			lifecycleAutoDelete = autoDelete;
+		}
+		
+		String notificationCloseDelete = getStringPropertyValue(LIFECYCLE_NOTIFICATION_CLOSE_DELETE, true);
+		if(StringHelper.containsNonWhitespace(notificationCloseDelete)) {
+			lifecycleNotificationByCloseDelete = notificationCloseDelete;
 		}
 	}
 
@@ -329,6 +337,12 @@ public class RepositoryModule extends AbstractSpringModule {
 		setStringProperty(LIFECYCLE_AUTO_DELETE, lifecycleAutoDelete, true);
 	}
 	
-
+	public boolean isLifecycleNotificationByCloseDeleteEnabled() {
+		return "enabled".equals(lifecycleNotificationByCloseDelete);
+	}
 	
+	public void setLifecycleNotificationByCloseDeleteEnabled(boolean enable) {
+		lifecycleNotificationByCloseDelete = enable ? "enabled" : "disabled";
+		setStringProperty(LIFECYCLE_NOTIFICATION_CLOSE_DELETE, lifecycleNotificationByCloseDelete, true);
+	}
 }

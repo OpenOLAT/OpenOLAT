@@ -168,7 +168,7 @@ public class ReminderDAOTest extends OlatTestCase {
 		Assert.assertTrue(loadedReminders.contains(savedReminder));
 		
 		// delete the resource
-		repositoryService.deleteSoftly(entry, creator, false);
+		repositoryService.deleteSoftly(entry, creator, false, false);
 		dbInstance.commitAndCloseSession();
 		
 		// check we don't found the reminder
