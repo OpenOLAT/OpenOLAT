@@ -1282,7 +1282,7 @@
 				<configuration>
 					<encoding>UTF-8</encoding>
 					<skipTests>${skipTests}</skipTests>
-					<argLine>-Xmx512m -Xms256m -Djava.awt.headless=true</argLine>
+					<argLine>-Xmx1024m -Xms512m -Djava.awt.headless=true</argLine>
 					<systemPropertyVariables>
 						<java.io.tmpdir>${project.build.directory}/olatdata</java.io.tmpdir>
 					</systemPropertyVariables>

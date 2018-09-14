@@ -1,0 +1,58 @@
+# Java Maven CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-java/ for more details
+#
+version: 2
+jobs:
+  build:
+    docker:
+      # specify the version you desire here
+      - image: adoptopenjdk/maven-openjdk8:latest
+        environment:
+          TZ: "Europe/Zurich"
+
+      # Specify service dependencies here if necessary
+      # CircleCI maintains a library of pre-built images
+      # documented at https://circleci.com/docs/2.0/circleci-images/
+      - image: circleci/postgres:9.6
+        environment:
+          POSTGRES_USER: olat
+          POSTGRES_PASSWORD: olat
+          POSTGRES_DB: olattest
+          TZ: "Europe/Zurich"
+
+    working_directory: ~/repo
+
+    environment:
+      # Customize the JVM maximum heap limit
+      MAVEN_OPTS: -Xmx3200m -Xms1024m
+      TZ: "Europe/Zurich"
+      LANG: "en_US.UTF-8"
+      LC_ALL: "en_US.UTF-8"
+
+    steps:
+      - run: apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y install sudo git locales
+      - run: sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen &&  dpkg-reconfigure --frontend=noninteractive locales && update-locale en_US.UTF-8
+      - checkout
+
+      # Set timezone
+      - run: sudo ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ | sudo tee /etc/timezone
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "pom.xml" }}
+          # fallback to using the latest cache if no exact match is found
+          - v1-dependencies-
+
+      - run: mvn dependency:go-offline
+
+      # run tests!
+      - run: mvn test -Dwith-postgresql -Dtest.env.db.postgresql.user=olat -Dtest.env.db.postgresql.pass=olat -Dtest=org.olat.test.AllTestsJunit4 -Ptomcat
+
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: v1-dependencies-{{ checksum "pom.xml" }}
+
+
