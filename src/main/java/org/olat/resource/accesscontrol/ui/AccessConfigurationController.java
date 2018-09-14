@@ -136,7 +136,7 @@ public class AccessConfigurationController extends FormBasicController {
 			List<AccessMethod> methods = acService.getAvailableMethods(getIdentity(), ureq.getUserSession().getRoles());
 			for(AccessMethod method:methods) {
 				AccessMethodHandler handler = acModule.getAccessMethodHandler(method.getType());
-				if(handler.isPaymentMethod() && !allowPaymentMethod) {
+				if((handler.isPaymentMethod() && !allowPaymentMethod) || !method.isVisibleInGui()) {
 					continue;
 				}
 
