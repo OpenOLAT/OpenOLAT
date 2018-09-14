@@ -19,16 +19,31 @@
  */
 package org.olat.modules.quality.analysis.ui;
 
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
+import static org.olat.modules.quality.analysis.GroupBy.CONETXT_CURRICULUM_ELEMENT;
+import static org.olat.modules.quality.analysis.GroupBy.CONTEXT_CURRICULUM;
+import static org.olat.modules.quality.analysis.GroupBy.CONTEXT_ORAGANISATION;
+import static org.olat.modules.quality.analysis.GroupBy.TOPIC_CURRICULUM;
+import static org.olat.modules.quality.analysis.GroupBy.TOPIC_CURRICULUM_ELEMENT;
+import static org.olat.modules.quality.analysis.GroupBy.TOPIC_ORGANISATION;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.olat.basesecurity.IdentityShort;
+import org.olat.basesecurity.OrganisationModule;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
@@ -36,6 +51,9 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Organisation;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.forms.model.xml.AbstractElement;
 import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.model.xml.Rubric;
@@ -55,14 +73,22 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class HeatMapController extends FormBasicController implements FilterableController {
 
+	private SingleSelection groupEl;
 	private HeatMapDataModel dataModel;
 	private FlexiTableElement tableEl;
 	
 	// This list is the master for the sort order
 	private final List<SliderWrapper> sliders;
 	
+	private AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
+	private GroupBy groupBy;
+	
 	@Autowired
 	private QualityAnalysisService analysisService;
+	@Autowired
+	private OrganisationModule organisationModule;
+	@Autowired
+	private CurriculumModule curriculumModule;
 
 	public HeatMapController(UserRequest ureq, WindowControl wControl, Form evaluationForm) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
@@ -79,15 +105,48 @@ public class HeatMapController extends FormBasicController implements Filterable
 					String label = getLabel(slider);
 					SliderWrapper sliderWrapper = new SliderWrapper(rubric, slider, label);
 					sliderWrappers.add(sliderWrapper);
-					
 				}
 			}
 		}
 		return sliderWrappers;
 	}
+	
+	private String getLabel(Slider slider) {
+		boolean hasStartLabel = StringHelper.containsNonWhitespace(slider.getStartLabel());
+		boolean hasEndLabel = StringHelper.containsNonWhitespace(slider.getEndLabel());
+		if (hasStartLabel && hasEndLabel) {
+			return slider.getStartLabel() + " ... " + slider.getEndLabel();
+		} else if (hasStartLabel) {
+			return slider.getStartLabel();
+		} else if (hasEndLabel) {
+			return slider.getEndLabel();
+		}
+		return null;
+	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		FormLayoutContainer groupByLayout = FormLayoutContainer.createDefaultFormLayout("groupByLayout", getTranslator());
+		flc.add("groupByLayout", groupByLayout);
+		List<GroupBy> values = new ArrayList<>(asList(GroupBy.values()));
+		if (!organisationModule.isEnabled()) {
+			values.removeIf(value -> asList(TOPIC_ORGANISATION, CONTEXT_ORAGANISATION).contains(value));
+		}
+		if (!curriculumModule.isEnabled()) {
+			values.removeIf(value -> asList(TOPIC_CURRICULUM, TOPIC_CURRICULUM_ELEMENT, CONTEXT_CURRICULUM,
+					CONETXT_CURRICULUM_ELEMENT).contains(value));
+		}
+		String[] groupKeys = new String[values.size()];
+		String[] groupValues = new String[values.size()];
+		for (int i = 0; i < values.size(); i++) {
+			GroupBy groupBy = values.get(i);
+			groupKeys[i] = groupBy.name();
+			groupValues[i] = translate(groupBy.i18nKey());
+		}
+		groupEl = uifactory.addDropdownSingleselect("heatmap.group", groupByLayout, groupKeys, groupValues);
+		groupEl.addActionListener(FormEvent.ONCHANGE);
+		setGroupBy();
+		
 		initTable(Collections.emptyList());
 	}
 
@@ -104,7 +163,7 @@ public class HeatMapController extends FormBasicController implements Filterable
 				columnsModel.addFlexiColumnModel(columnModel);
 			}
 		}
-		addFormColumns(columnsModel, columnIndex);
+		addSliderColumns(columnsModel, columnIndex);
 		
 		dataModel = new HeatMapDataModel(columnsModel, getLocale());
 		if (tableEl != null) flc.remove(tableEl);
@@ -114,37 +173,56 @@ public class HeatMapController extends FormBasicController implements Filterable
 		tableEl.setCustomizeColumns(false);
 	}
 
-	private void addFormColumns(FlexiTableColumnModel columnsModel, int columnIndex) {
-		for (int index = 1; index <= sliders.size(); index++) {
-			String header = translate("heatmap.table.slider.header", new String[] { Integer.toString(index++) });
+	private void addSliderColumns(FlexiTableColumnModel columnsModel, int columnIndex) {
+		for (int sliderIndex = 1; sliderIndex <= sliders.size(); sliderIndex++) {
+			String header = translate("heatmap.table.slider.header", new String[] { Integer.toString(sliderIndex) });
 			DefaultFlexiColumnModel columnModel = new DefaultFlexiColumnModel("", columnIndex++);
 			columnModel.setHeaderLabel(header);
 			columnsModel.addFlexiColumnModel(columnModel);
 		}
 	}
 
-	private String getLabel(Slider slider) {
-		boolean hasStartLabel = StringHelper.containsNonWhitespace(slider.getStartLabel());
-		boolean hasEndLabel = StringHelper.containsNonWhitespace(slider.getEndLabel());
-		if (hasStartLabel && hasEndLabel) {
-			return slider.getStartLabel() + " ... " + slider.getEndLabel();
-		} else if (hasStartLabel) {
-			return slider.getStartLabel();
-		} else if (hasEndLabel) {
-			return slider.getEndLabel();
-		}
-		return null;
+	@Override
+	public void onFilter(UserRequest ureq, AnalysisSearchParameter searchParams) {
+		this.searchParams = searchParams;
+		loadHeatMap();
 	}
 
 	@Override
-	public void onFilter(UserRequest ureq, AnalysisSearchParameter searchParams) {
-		List<HeatMapRow> rows = createRows(searchParams);
-		
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source == groupEl) {
+			setGroupBy();
+			loadHeatMap();
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
+	private void setGroupBy() {
+		if (groupEl.isOneSelected()) {
+			String selectedKey = groupEl.getSelectedKey();
+			groupBy = GroupBy.valueOf(selectedKey);
+		} else {
+			groupBy = GroupBy.valueOf(groupEl.getKey(0));
+		}
+	}
+	
+	private void loadHeatMap() {
+		HeatMapData heatMapData = createHeatMapData();
+		List<HeatMapRow> rows = heatMapData.getRows();
+		if (!rows.isEmpty()) {
+			addHeatMapStatistics(rows);
+		}
+		initTable(heatMapData.getHeaders());
+		dataModel.setObjects(rows);
+		tableEl.reset(true, true, true);
+	}
+
+	public void addHeatMapStatistics(List<HeatMapRow> rows) {
 		List<String> identifiers = sliders.stream().map(SliderWrapper::getIdentifier).collect(toList());
 		List<Rubric> rubrics = sliders.stream().map(SliderWrapper::getRubric).distinct().collect(toList());
-		GroupedStatistics statistics = analysisService.calculateStatistics(searchParams, identifiers, rubrics,
-				GroupBy.ORAGANISATION);
+		GroupedStatistics statistics = analysisService.calculateStatistics(searchParams, identifiers, rubrics, groupBy);
 		
+
 		for (HeatMapRow row : rows) {
 			List<GroupedStatistic> rowStatistics = new ArrayList<>();
 			// Iterate over the identifiers to sort the statistics according to the headers.
@@ -154,58 +232,174 @@ public class HeatMapController extends FormBasicController implements Filterable
 			}
 			row.setStatistics(rowStatistics);
 		}
-		
-		List<String> headers = Collections.emptyList();
-		if (!rows.isEmpty()) {
-			int groupNamesSize = rows.get(0).getGroupNamesSize();
-			headers = new ArrayList<>(groupNamesSize);
-			headers.add(translate("heatmap.table.title.organisation"));
-			for (int i = 1; i < groupNamesSize; i++) {
-				headers.add(null);
-			}
+		rows.sort(new GroupNameAlphabeticalComparator());
+	}
+	
+	private HeatMapData createHeatMapData() {
+		switch (groupBy) {
+		case TOPIC_ORGANISATION:
+			return createTopicOrganisationData();
+		case TOPIC_CURRICULUM:
+			return createTopicCurriculumData();
+		case TOPIC_CURRICULUM_ELEMENT:
+			return createTopicCurriculumElementData();
+		case TOPIC_IDENTITY:
+			return createTopicIdentityData();
+		case CONTEXT_ORAGANISATION:
+			return createContextOraganisationData();
+		case CONTEXT_CURRICULUM:
+			return createContextCurriculumData();
+		case CONETXT_CURRICULUM_ELEMENT:
+			return createContextCurriculumElementData();
+		default:
+			return new HeatMapData(emptyList(), emptyList());
 		}
-		initTable(headers);
-		
-		dataModel.setObjects(rows);
-		tableEl.reset(true, true, true);
 	}
 
-	private List<HeatMapRow> createRows(AnalysisSearchParameter searchParams) {
-		List<Organisation> organisations = analysisService.loadFilterOrganisations(searchParams);
+	private HeatMapData createTopicOrganisationData() {
+		List<Organisation> organisations = analysisService.loadTopicOrganisations(searchParams);
+		return createOrganisationData(organisations);
+	}
+
+	private HeatMapData createContextOraganisationData() {
+		List<Organisation> organisations = analysisService.loadContextOrganisations(searchParams);
+		return createOrganisationData(organisations);
+	}
+
+	public HeatMapData createOrganisationData(List<Organisation> organisations) {
 		List<HeatMapRow> rows = new ArrayList<>(organisations.size());
 		for (Organisation organisation : organisations) {
 			Long groupKey = organisation.getKey();
 			List<String> groupNames = new ArrayList<>();
-			addParentNames(groupNames, organisation);
+			addParentOrganisationNames(groupNames, organisation);
 			Collections.reverse(groupNames);
 			HeatMapRow row = new HeatMapRow(groupKey, groupNames);
 			rows.add(row);
 		}
 		
-		// All group name list have to have the same size
+		int maxSize = getMaxGroupNamesSize(rows);
+		fillGroupNamesToSameSize(rows, maxSize);
+		
+		List<String> headers = new ArrayList<>(maxSize);
+		headers.add(translate("heatmap.table.title.organisation"));
+		addNulls(headers, maxSize - 1);
+		return new HeatMapData(rows, headers);
+	}
+
+	private void addParentOrganisationNames(List<String> names, Organisation organisation) {
+		names.add(organisation.getDisplayName());
+		Organisation parent = organisation.getParent();
+		if (parent != null) {
+			addParentOrganisationNames(names, parent);
+		}
+	}
+
+	private HeatMapData createTopicCurriculumData() {
+		List<Curriculum> curriculums = analysisService.loadTopicCurriculums(searchParams);
+		return createCurriculumData(curriculums);
+	}
+	
+	private HeatMapData createContextCurriculumData() {
+		List<Curriculum> curriculums = analysisService.loadContextCurriculums(searchParams);
+		return createCurriculumData(curriculums);
+	}
+
+	public HeatMapData createCurriculumData(List<Curriculum> curriculums) {
+		List<HeatMapRow> rows = new ArrayList<>(curriculums.size());
+		for (Curriculum curriculum : curriculums) {
+			Long groupKey = curriculum.getKey();
+			List<String> groupNames = singletonList(curriculum.getDisplayName());
+			HeatMapRow row = new HeatMapRow(groupKey, groupNames);
+			rows.add(row);
+		}
+		
+		List<String> headers = singletonList(translate("heatmap.table.title.curriculum"));
+		return new HeatMapData(rows, headers);
+	}
+
+	private HeatMapData createTopicCurriculumElementData() {
+		List<CurriculumElement> curriculumElements = analysisService.loadTopicCurriculumElements(searchParams);
+		return createCurriculumElements(curriculumElements);
+	}
+
+	private HeatMapData createContextCurriculumElementData() {
+		AnalysisSearchParameter curriculumElementSearchParams = searchParams.clone();
+		if (curriculumElementSearchParams.getCurriculumRefs() == null || searchParams.getCurriculumRefs().isEmpty()) {
+			List<Curriculum> curriculums = analysisService.loadContextCurriculums(curriculumElementSearchParams);
+			curriculumElementSearchParams.setCurriculumRefs(curriculums);
+		}
+		
+		List<CurriculumElement> curriculumElements = analysisService.loadContextCurriculumElements(curriculumElementSearchParams, false);
+		return createCurriculumElements(curriculumElements);
+	}
+
+	public HeatMapData createCurriculumElements(List<CurriculumElement> curriculumElements) {
+		List<HeatMapRow> rows = new ArrayList<>(curriculumElements.size());
+		for (CurriculumElement curriculumElement : curriculumElements) {
+			Long groupKey = curriculumElement.getKey();
+			List<String> groupNames = new ArrayList<>();
+			addParentCurriculumElementNames(groupNames, curriculumElement);
+			Collections.reverse(groupNames);
+			HeatMapRow row = new HeatMapRow(groupKey, groupNames);
+			rows.add(row);
+		}
+		
+		int maxSize = getMaxGroupNamesSize(rows);
+		fillGroupNamesToSameSize(rows, maxSize);
+		List<String> headers = new ArrayList<>(maxSize);
+		headers.add(translate("heatmap.table.title.curriculum.element"));
+		addNulls(headers, maxSize - 1);
+		return new HeatMapData(rows, headers);
+	}
+	
+	private void addParentCurriculumElementNames(List<String> names, CurriculumElement curriculumElement) {
+		names.add(curriculumElement.getDisplayName());
+		CurriculumElement parent = curriculumElement.getParent();
+		if (parent != null) {
+			addParentCurriculumElementNames(names, parent);
+		}
+	}
+
+	private HeatMapData createTopicIdentityData() {
+		List<IdentityShort> identities = analysisService.loadTopicIdentity(searchParams);
+		List<HeatMapRow> rows = new ArrayList<>(identities.size());
+		for (IdentityShort itentity : identities) {
+			Long groupKey = itentity.getKey();
+			List<String> groupNames = new ArrayList<>(2);
+			groupNames.add(itentity.getLastName());
+			groupNames.add(itentity.getFirstName());
+			HeatMapRow row = new HeatMapRow(groupKey, groupNames);
+			rows.add(row);
+		}
+		
+		List<String> headers = new ArrayList<>(2);
+		headers.add(translate("heatmap.table.title.topic.identity"));
+		addNulls(headers, 1);
+		return new HeatMapData(rows, headers);
+	}
+
+	public int getMaxGroupNamesSize(List<HeatMapRow> rows) {
 		int maxSize = 0;
 		for (HeatMapRow row : rows) {
 			if (maxSize < row.getGroupNamesSize()) {
 				maxSize = row.getGroupNamesSize();
 			}
 		}
+		return maxSize;
+	}
+
+	public void fillGroupNamesToSameSize(List<HeatMapRow> rows, int maxSize) {
 		for (HeatMapRow row : rows) {
 			if (maxSize > row.getGroupNamesSize()) {
 				List<String> groupNames = row.getGroupNames();
-				for (int index = row.getGroupNamesSize(); index < maxSize; index++) {
-					groupNames.add(null);
-				}
+				addNulls(groupNames, maxSize - row.getGroupNamesSize());
 			}
 		}
-		
-		return rows;
 	}
 
-	private void addParentNames(List<String> names, Organisation organisation) {
-		names.add(organisation.getDisplayName());
-		Organisation parent = organisation.getParent();
-		if (parent != null) {
-			addParentNames(names, parent);
+	public void addNulls(List<String> list, int howMany) {
+		for (int index = 0; index < howMany; index++) {
+			list.add(null);
 		}
 	}
 
@@ -245,6 +439,25 @@ public class HeatMapController extends FormBasicController implements Filterable
 
 		public String getLabel() {
 			return label;
+		}
+	}
+	
+	private final static class HeatMapData {
+		
+		private final List<HeatMapRow> rows;
+		private final List<String> headers;
+		
+		public HeatMapData(List<HeatMapRow> rows, List<String> headers) {
+			this.rows = rows;
+			this.headers = headers;
+		}
+
+		public List<HeatMapRow> getRows() {
+			return rows;
+		}
+
+		public List<String> getHeaders() {
+			return headers;
 		}
 	}
 

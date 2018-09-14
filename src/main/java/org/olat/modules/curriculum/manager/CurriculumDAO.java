@@ -20,6 +20,7 @@
 package org.olat.modules.curriculum.manager;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -86,6 +87,22 @@ public class CurriculumDAO {
 			.setParameter("key", key)
 			.getResultList();
 		return curriculums == null || curriculums.isEmpty() ? null : curriculums.get(0);
+	}
+
+	public List<Curriculum> loadByKeys(Collection<? extends CurriculumRef> refs) {
+		if (refs == null || refs.isEmpty()) return new ArrayList<>(0);
+		
+		StringBuilder sb = new StringBuilder(128);
+		sb.append("select cur from curriculum cur")
+		  .append(" left join fetch cur.organisation org")
+		  .append(" inner join fetch cur.group baseGroup")
+		  .append(" where cur.key in :keys");
+		
+		List<Long> keys = refs.stream().map(CurriculumRef::getKey).collect(Collectors.toList());
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Curriculum.class)
+			.setParameter("keys", keys)
+			.getResultList();
 	}
 	
 	public List<Curriculum> getMyCurriculums(IdentityRef identity) {

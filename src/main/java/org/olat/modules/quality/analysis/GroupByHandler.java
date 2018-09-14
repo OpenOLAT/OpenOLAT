@@ -21,28 +21,10 @@ package org.olat.modules.quality.analysis;
 
 /**
  * 
- * Initial date: 11.09.2018<br>
+ * Initial date: 13.09.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public enum GroupBy {
-
-	TOPIC_ORGANISATION("heatmap.group.topic.organisation"),
-	TOPIC_CURRICULUM("heatmap.group.topic.curriculum"),
-	TOPIC_CURRICULUM_ELEMENT("heatmap.group.topic.curriculum.element"),
-	TOPIC_IDENTITY("heatmap.group.topic.identity"),
-	CONTEXT_ORAGANISATION("heatmap.group.context.organisation"),
-	CONTEXT_CURRICULUM("heatmap.group.context.curriculum"),
-	CONETXT_CURRICULUM_ELEMENT("heatmap.group.context.curriculum.element");
-
-	private String i18nKey;
-
-	private GroupBy(String i18nKey) {
-		this.i18nKey = i18nKey;
-	}
-
-	public String i18nKey() {
-		return i18nKey;
-	}
+public interface GroupByHandler {
 
 }

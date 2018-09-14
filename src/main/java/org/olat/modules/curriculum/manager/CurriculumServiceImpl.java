@@ -126,6 +126,11 @@ public class CurriculumServiceImpl implements CurriculumService {
 	}
 	
 	@Override
+	public List<Curriculum> getCurriculums(Collection<? extends CurriculumRef> refs) {
+		return curriculumDao.loadByKeys(refs);
+	}
+	
+	@Override
 	public List<CurriculumMember> getMembers(CurriculumRef curriculum, SearchMemberParameters params) {
 		return memberQueries.getMembers(curriculum, params);
 	}

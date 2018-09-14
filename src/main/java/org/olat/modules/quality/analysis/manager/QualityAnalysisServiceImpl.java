@@ -22,12 +22,19 @@ package org.olat.modules.quality.analysis.manager;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.IdentityShort;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.id.Organisation;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementRef;
+import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
+import org.olat.modules.curriculum.model.CurriculumRefImpl;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.quality.analysis.AnalysisSearchParameter;
@@ -59,6 +66,8 @@ public class QualityAnalysisServiceImpl implements QualityAnalysisService {
 	private OrganisationService organisationService;
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private BaseSecurity securityManager;
 
 	@Override
 	public List<EvaluationFormView> loadEvaluationForms(EvaluationFormViewSearchParams searchParams) {
@@ -66,24 +75,57 @@ public class QualityAnalysisServiceImpl implements QualityAnalysisService {
 	}
 
 	@Override
-	public List<Organisation> loadFilterOrganisations(AnalysisSearchParameter searchParams) {
+	public Long loadFilterDataCollectionCount(AnalysisSearchParameter searchParams) {
+		return filterDao.loadDataCollectionCount(searchParams);
+	}
+
+	@Override
+	public List<Organisation> loadTopicOrganisations(AnalysisSearchParameter searchParams) {
+		List<Organisation> organisations = organisationService.getOrganisations();
+		List<Long> keys = filterDao.loadTopicOrganisationKeys(searchParams);
+		organisations.removeIf(org -> !keys.contains(org.getKey()));
+		return organisations;
+	}
+
+	@Override
+	public List<Curriculum> loadTopicCurriculums(AnalysisSearchParameter searchParams) {
+		List<Long> keys = filterDao.loadTopicCurriculumKeys(searchParams);
+		List<CurriculumRef> refs = keys.stream().map(CurriculumRefImpl::new).collect(Collectors.toList());
+		return curriculumService.getCurriculums(refs);
+	}
+
+	@Override
+	public List<CurriculumElement> loadTopicCurriculumElements(AnalysisSearchParameter searchParams) {
+		List<Long> keys = filterDao.loadTopicCurriculumElementKeys(searchParams);
+		List<CurriculumElementRef> refs = keys.stream().map(CurriculumElementRefImpl::new).collect(Collectors.toList());
+		return curriculumService.getCurriculumElements(refs);
+	}
+
+	@Override
+	public List<IdentityShort> loadTopicIdentity(AnalysisSearchParameter searchParams) {
+		List<Long> keys = filterDao.loadTopicIdentityKeys(searchParams);
+		return securityManager.loadIdentityShortByKeys(keys);
+	}
+
+	@Override
+	public List<Organisation> loadContextOrganisations(AnalysisSearchParameter searchParams) {
 		if (searchParams == null) {
 			return new ArrayList<>(0);
 		}
 		
 		List<Organisation> organisations = organisationService.getOrganisations();
-		List<String> pathes = filterDao.loadOrganisationPathes(searchParams);
+		List<String> pathes = filterDao.loadContextOrganisationPathes(searchParams);
 		organisations.removeIf(e -> isUnused(e.getMaterializedPathKeys(), pathes));	
 		return organisations;
 	}
 
 	@Override
-	public List<Curriculum> loadFilterCurriculums(AnalysisSearchParameter searchParams) {
-		return filterDao.loadCurriculums(searchParams);
+	public List<Curriculum> loadContextCurriculums(AnalysisSearchParameter searchParams) {
+		return filterDao.loadContextCurriculums(searchParams);
 	}
 
 	@Override
-	public List<CurriculumElement> loadFilterCurriculumElements(AnalysisSearchParameter searchParams) {
+	public List<CurriculumElement> loadContextCurriculumElements(AnalysisSearchParameter searchParams, boolean withParents) {
 		if (searchParams == null || searchParams.getCurriculumRefs() == null
 				|| searchParams.getCurriculumRefs().isEmpty()) {
 			return new ArrayList<>(0);
@@ -91,8 +133,12 @@ public class QualityAnalysisServiceImpl implements QualityAnalysisService {
 
 		List<CurriculumElement> elementsOfCurriculums = curriculumService
 				.getCurriculumElementsByCurriculums(searchParams.getCurriculumRefs());
-		List<String> pathes = filterDao.loadCurriculumElementPathes(searchParams);
-		elementsOfCurriculums.removeIf(e -> isUnusedChild(e.getMaterializedPathKeys(), pathes));
+		List<String> pathes = filterDao.loadContextCurriculumElementPathes(searchParams);
+		if (withParents ) {
+			elementsOfCurriculums.removeIf(e -> isUnusedChild(e.getMaterializedPathKeys(), pathes));
+		} else {
+			elementsOfCurriculums.removeIf(e -> isUnused(e.getMaterializedPathKeys(), pathes));
+		}
 		return elementsOfCurriculums;
 	}
 
@@ -115,11 +161,6 @@ public class QualityAnalysisServiceImpl implements QualityAnalysisService {
 	}
 
 	@Override
-	public Long loadFilterDataCollectionCount(AnalysisSearchParameter searchParams) {
-		return filterDao.loadFilterDataCollectionCount(searchParams);
-	}
-
-	@Override
 	public SessionFilter createSessionFilter(AnalysisSearchParameter searchParams) {
 		return new AnalysisSessionFilter(searchParams);
 	}
@@ -127,8 +168,8 @@ public class QualityAnalysisServiceImpl implements QualityAnalysisService {
 	@Override
 	public GroupedStatistics calculateStatistics(AnalysisSearchParameter searchParams,
 			Collection<String> responseIdentifiers, Collection<Rubric> rubrics, GroupBy groupBy) {
-		List<GroupedStatistic> statisticsList = filterDao.getAvgByResponseIdentifiers(searchParams, responseIdentifiers,
-				groupBy);
+		List<GroupedStatistic> statisticsList = filterDao.loadGroupedStatisticByResponseIdentifiers(searchParams,
+				responseIdentifiers, groupBy);
 		GroupedStatistics statistics = new GroupedStatistics(statisticsList);
 		statistics = statisticsCalculator.getScaledStatistics(statistics, rubrics);
 		return statistics;

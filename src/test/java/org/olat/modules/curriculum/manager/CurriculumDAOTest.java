@@ -19,6 +19,7 @@
  */
 package org.olat.modules.curriculum.manager;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -90,6 +91,21 @@ public class CurriculumDAOTest extends OlatTestCase {
 		Assert.assertEquals("CUR-2", reloadedCurriculum.getIdentifier());
 		Assert.assertEquals("Short desc.", reloadedCurriculum.getDescription());
 		Assert.assertEquals(organisation, reloadedCurriculum.getOrganisation());
+	}
+	
+	@Test
+	public void loadByKeys() {
+		Organisation organisation = organisationDao.createAndPersistOrganisation("Curriculum org.", "CUR-2.1", "", null, null);
+		Curriculum curriculum1 = curriculumDao.createAndPersist("CUR-2.1.1", "Curriculum 2.1.1", "Short desc.", organisation);
+		Curriculum curriculum2 = curriculumDao.createAndPersist("CUR-2.1.2", "Curriculum 2.1.2", "Short desc.", organisation);
+		Curriculum curriculum3 = curriculumDao.createAndPersist("CUR-2.1.3", "Curriculum 2.1.3", "Short desc.", organisation);
+		dbInstance.commitAndCloseSession();
+		
+		List<Curriculum> curriculums = curriculumDao.loadByKeys(Arrays.asList(curriculum1, curriculum2));
+		
+		Assert.assertTrue(curriculums.contains(curriculum1));
+		Assert.assertTrue(curriculums.contains(curriculum2));
+		Assert.assertTrue(!curriculums.contains(curriculum3));
 	}
 	
 	@Test

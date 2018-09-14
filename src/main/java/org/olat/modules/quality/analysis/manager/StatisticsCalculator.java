@@ -58,7 +58,6 @@ public class StatisticsCalculator {
 		return scaledStatistics;
 	}
 
-	// TODO uh test
 	GroupedStatistic getScaledStatistic(GroupedStatistic statistic, Rubric rubric) {
 		log.debug("Unscaled statistic: " + statistic.toString());
 		Double scaledAvg = statistic.getAvg();
@@ -77,7 +76,7 @@ public class StatisticsCalculator {
 		}
 		GroupedStatistic scaledStatistic = new GroupedStatistic(statistic.getIdentifier(), statistic.getGroupKey(), statistic.getCount(),
 				scaledAvg);
-		log.debug("Scaled statistic: " + scaledStatistic.toString());
+		log.debug("Scaled statistic:   " + scaledStatistic.toString());
 		return scaledStatistic;
 	}
 }

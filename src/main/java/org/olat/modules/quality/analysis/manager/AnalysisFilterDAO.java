@@ -53,7 +53,7 @@ public class AnalysisFilterDAO {
 	@Autowired
 	private DB dbInstance;
 
-	List<Organisation> loadOrganisations(AnalysisSearchParameter searchParams) {
+	List<Organisation> loadContextOrganisations(AnalysisSearchParameter searchParams) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select distinct organisation");
 		appendFrom(sb);
@@ -66,8 +66,7 @@ public class AnalysisFilterDAO {
 		return query.getResultList();
 	}
 	
-	//TODO uh test
-	List<String> loadOrganisationPathes(AnalysisSearchParameter searchParams) {
+	List<String> loadContextOrganisationPathes(AnalysisSearchParameter searchParams) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select distinct organisation.materializedPathKeys");
 		appendFrom(sb);
@@ -80,7 +79,7 @@ public class AnalysisFilterDAO {
 		return query.getResultList();
 	}
 
-	List<Curriculum> loadCurriculums(AnalysisSearchParameter searchParams) {
+	List<Curriculum> loadContextCurriculums(AnalysisSearchParameter searchParams) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select distinct curriculum");
 		appendFrom(sb);
@@ -93,7 +92,7 @@ public class AnalysisFilterDAO {
 		return query.getResultList();
 	}
 
-	List<String> loadCurriculumElementPathes(AnalysisSearchParameter searchParams) {
+	List<String> loadContextCurriculumElementPathes(AnalysisSearchParameter searchParams) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select distinct curriculumElement.materializedPathKeys");
 		appendFrom(sb);
@@ -106,7 +105,7 @@ public class AnalysisFilterDAO {
 		return query.getResultList();
 	}
 
-	public Long loadFilterDataCollectionCount(AnalysisSearchParameter searchParams) {
+	Long loadDataCollectionCount(AnalysisSearchParameter searchParams) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select count(distinct collection.key)");
 		appendFrom(sb);
@@ -117,8 +116,60 @@ public class AnalysisFilterDAO {
 		appendParameters(query, searchParams);
 		return query.getResultList().get(0);
 	}
+	
+	List<Long> loadTopicOrganisationKeys(AnalysisSearchParameter searchParams) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select distinct collection.topicOrganisation.key");
+		appendFrom(sb);
+		appendWhere(sb, searchParams);
+		sb.and().append("collection.topicOrganisation.key is not null");
+		
+		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class);
+		appendParameters(query, searchParams);
+		return query.getResultList();
+	}
+	
+	List<Long> loadTopicCurriculumKeys(AnalysisSearchParameter searchParams) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select distinct collection.topicCurriculum.key");
+		appendFrom(sb);
+		appendWhere(sb, searchParams);
+		sb.and().append("collection.topicCurriculum.key is not null");
+		
+		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class);
+		appendParameters(query, searchParams);
+		return query.getResultList();
+	}
+	
+	List<Long> loadTopicCurriculumElementKeys(AnalysisSearchParameter searchParams) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select distinct collection.topicCurriculumElement.key");
+		appendFrom(sb);
+		appendWhere(sb, searchParams);
+		sb.and().append("collection.topicCurriculumElement.key is not null");
+		
+		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class);
+		appendParameters(query, searchParams);
+		return query.getResultList();
+	}
+	
+	List<Long> loadTopicIdentityKeys(AnalysisSearchParameter searchParams) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select distinct collection.topicIdentity.key");
+		appendFrom(sb);
+		appendWhere(sb, searchParams);
+		sb.and().append("collection.topicIdentity.key is not null");
+		
+		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class);
+		appendParameters(query, searchParams);
+		return query.getResultList();
+	}
 
-	public List<Long> loadSessionKeys(AnalysisSearchParameter searchParams) {
+	List<Long> loadSessionKeys(AnalysisSearchParameter searchParams) {
 		QueryBuilder sb = new QueryBuilder();
 		appendSelectSessionKeys(sb, searchParams);
 		
@@ -135,8 +186,7 @@ public class AnalysisFilterDAO {
 		sb.and().append("context.evaluationFormSession.key is not null");
 	}
 	
-	//TODO uh test this
-	public List<GroupedStatistic> getAvgByResponseIdentifiers(AnalysisSearchParameter searchParams,
+	List<GroupedStatistic> loadGroupedStatisticByResponseIdentifiers(AnalysisSearchParameter searchParams,
 			Collection<String> responseIdentifiers, GroupBy groupBy) {
 		if (responseIdentifiers == null || responseIdentifiers.isEmpty()) return new ArrayList<>();
 		
@@ -166,14 +216,26 @@ public class AnalysisFilterDAO {
 
 	private void appendGroupBy(QueryBuilder sb, GroupBy groupBy, boolean select) {
 		switch (groupBy) {
-		case ORAGANISATION:
+		case CONTEXT_ORAGANISATION:
 			sb.append(", contextToOrganisation.organisation.key");
 			break;
-		case CURRICULUM:
+		case CONTEXT_CURRICULUM:
 			sb.append(", contextToCurriculum.curriculum.key");
 			break;
-		case CURRICULUM_ELEMENT:
-			sb.append(", contextToCurriculumElement.context.key");
+		case CONETXT_CURRICULUM_ELEMENT:
+			sb.append(", contextToCurriculumElement.curriculumElement.key");
+			break;
+		case TOPIC_ORGANISATION:
+			sb.append(", collection.topicOrganisation.key");
+			break;
+		case TOPIC_CURRICULUM:
+			sb.append(", collection.topicCurriculum.key");
+			break;
+		case TOPIC_CURRICULUM_ELEMENT:
+			sb.append(", collection.topicCurriculumElement.key");
+			break;
+		case TOPIC_IDENTITY:
+			sb.append(", collection.topicIdentity.key");
 			break;
 		default: 
 			if (select) sb.append(", null");

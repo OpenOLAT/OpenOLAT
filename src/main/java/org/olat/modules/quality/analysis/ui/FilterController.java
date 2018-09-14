@@ -120,7 +120,7 @@ public class FilterController extends FormBasicController {
 		
 		AnalysisSearchParameter orgSearchParams = new AnalysisSearchParameter();
 		orgSearchParams.setFormEntryRef(searchParams.getFormEntryRef());
-		List<Organisation> organisations = analysisService.loadFilterOrganisations(orgSearchParams);
+		List<Organisation> organisations = analysisService.loadContextOrganisations(orgSearchParams);
 		OrganisationTreeModel organisationModel = new OrganisationTreeModel();
 		organisationModel.loadTreeModel(organisations);
 		
@@ -142,7 +142,7 @@ public class FilterController extends FormBasicController {
 		AnalysisSearchParameter curriculumSearchParams = searchParams.clone();
 		curriculumSearchParams.setCurriculumRefs(null);
 		curriculumSearchParams.setCurriculumElementRefs(null);
-		List<Curriculum> curriculums = analysisService.loadFilterCurriculums(curriculumSearchParams);
+		List<Curriculum> curriculums = analysisService.loadContextCurriculums(curriculumSearchParams);
 		KeysValues keysValues = QualityUIFactory.getCurriculumKeysValues(curriculums, null);
 		curriculumEl.setKeysAndValues(keysValues.getKeys(), keysValues.getValues());
 		for (String key: selectedKeys) {
@@ -167,7 +167,7 @@ public class FilterController extends FormBasicController {
 				.collect(toList());
 		curriculumElementSearchParams.setCurriculumRefs(curriculumRefs);
 		curriculumElementSearchParams.setCurriculumElementRefs(null);
-		List<CurriculumElement> curriculumElements = analysisService.loadFilterCurriculumElements(curriculumElementSearchParams);
+		List<CurriculumElement> curriculumElements = analysisService.loadContextCurriculumElements(curriculumElementSearchParams, true);
 		
 		CurriculumTreeModel curriculumTreeModel = new CurriculumTreeModel();
 		curriculumTreeModel.loadTreeModel(curriculumElements);

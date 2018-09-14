@@ -22,6 +22,7 @@ package org.olat.modules.quality.analysis;
 import java.util.Collection;
 import java.util.List;
 
+import org.olat.basesecurity.IdentityShort;
 import org.olat.core.id.Organisation;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -37,14 +38,22 @@ import org.olat.modules.forms.model.xml.Rubric;
 public interface QualityAnalysisService {
 	
 	public List<EvaluationFormView> loadEvaluationForms(EvaluationFormViewSearchParams searchParams);
-	
-	public List<Organisation> loadFilterOrganisations(AnalysisSearchParameter searchParams);
-
-	public List<Curriculum> loadFilterCurriculums(AnalysisSearchParameter searchParams);
-
-	public List<CurriculumElement> loadFilterCurriculumElements(AnalysisSearchParameter searchParams);
 
 	public Long loadFilterDataCollectionCount(AnalysisSearchParameter searchParams);
+
+	public List<Organisation> loadTopicOrganisations(AnalysisSearchParameter searchParams);
+
+	public List<Curriculum> loadTopicCurriculums(AnalysisSearchParameter searchParams);
+
+	public List<CurriculumElement> loadTopicCurriculumElements(AnalysisSearchParameter searchParams);
+
+	public List<IdentityShort> loadTopicIdentity(AnalysisSearchParameter searchParams);
+	
+	public List<Organisation> loadContextOrganisations(AnalysisSearchParameter searchParams);
+
+	public List<Curriculum> loadContextCurriculums(AnalysisSearchParameter searchParams);
+
+	public List<CurriculumElement> loadContextCurriculumElements(AnalysisSearchParameter searchParams, boolean withParents);
 
 	public SessionFilter createSessionFilter(AnalysisSearchParameter searchParams);
 
