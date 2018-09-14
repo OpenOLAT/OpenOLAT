@@ -220,7 +220,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.portfolio.manager.BinderUserInformationsDAOTest.class,
 	org.olat.modules.quality.analysis.manager.AnalysisFilterDAOTest.class,
 	org.olat.modules.quality.analysis.manager.EvaluationFormDAOTest.class,
-	org.olat.modules.quality.analysis.manager.StatisticsCalculator.class,
+	org.olat.modules.quality.analysis.manager.StatisticsCalculatorTest.class,
 	org.olat.modules.quality.generator.manager.QualityGeneratorDAOTest.class,
 	org.olat.modules.quality.generator.manager.QualityGeneratorConfigDAOTest.class,
 	org.olat.modules.quality.generator.manager.titlecreator.CurriculumElementHandlerTest.class,
