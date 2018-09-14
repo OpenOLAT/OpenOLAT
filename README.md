@@ -7,6 +7,7 @@
 A sophisticated modular toolkit provides course authors with a wide range of didactic possibilities. Each OpenOLAT installation can be individually extended, adapted to organizational needs, and integrated into existing IT infrastructures. The architecture is designed for minimal resource consumption, scalability and security in order to guarantee high system reliability.
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![CircleCI](https://circleci.com/gh/OpenOLAT/OpenOLAT.svg?style=svg)](https://circleci.com/gh/OpenOLAT/OpenOLAT)
 
 ## Table of Contents
 
@@ -444,4 +445,5 @@ The following features are delegated to the application server
 | x | LDAP Connection |
 | OK | Hibernate/JPA (only JBoss AS, we depend on Hibernate) |
 | OK | Caching (for JPA second level cache for example) |
+
 
