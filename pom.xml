@@ -118,253 +118,7 @@
 				</plugins>
 			</build>
 		</profile>
-		<profile>
-			<id>compressjs</id>
-			<build>
-				<plugins>
-					<!-- Compress jquery plugins -->
-					<plugin>
-						<groupId>net.alchim31.maven</groupId>
-						<artifactId>yuicompressor-maven-plugin</artifactId>
-						<version>1.3.2</version>
-						<executions>
-							<execution>
-								<id>compressbootstrap</id>
-								<phase>process-resources</phase>
-								<goals>
-									<goal>compress</goal>
-								</goals>
-								<configuration>
-									<suffix>.min</suffix>
-									<force>true</force>
-									<encoding>UTF-8</encoding>
-									<nocompress>false</nocompress>
-									<outputDirectory>${basedir}/target/bootstrap</outputDirectory>
-									<sourceDirectory>${basedir}/src/main/webapp/static/bootstrap</sourceDirectory>
-									<excludeResources>true</excludeResources>
-									<aggregations>
-										<aggregation>
-											<output>${basedir}/target/bootstrap/bootstrap-openolat.min.js</output>
-											<removeIncluded>false</removeIncluded>
-											<includes>
-												<include>${basedir}/target/bootstrap/javascripts/bootstrap/alert.min.js</include>
-												<include>${basedir}/target/bootstrap/javascripts/bootstrap/button.min.js</include>
-												<include>${basedir}/target/bootstrap/javascripts/bootstrap/collapse.min.js</include>
-												<include>${basedir}/target/bootstrap/javascripts/bootstrap/dropdown.min.js</include>
-												<include>${basedir}/target/bootstrap/javascripts/bootstrap/tab.min.js</include>
-												<include>${basedir}/target/bootstrap/javascripts/bootstrap/transition.min.js</include>
-												<include>${basedir}/target/bootstrap/javascripts/bootstrap/modal.min.js</include>
-												<include>${basedir}/target/bootstrap/javascripts/bootstrap/tooltip.min.js</include>
-												<include>${basedir}/target/bootstrap/javascripts/bootstrap/popover.min.js</include>
-											</includes>
-										</aggregation>
-									</aggregations>
-									<excludes>
-										<exclude>**/jw/*</exclude>
-										<exclude>**/dragula/*</exclude>
-										<exclude>**/mediaelementjs/*</exclude>
-										<exclude>**/mediaelementjs/**/*</exclude>
-										<exclude>**/fullcalendar/*</exclude>
-										<exclude>**/sliderpips/jquery-ui-slider-pips.js</exclude>
-									</excludes>
-								</configuration>
-							</execution>
-							<execution>
-								<!-- compress movie player in place, don't append to any other file -->
-								<id>compressmovieplayer</id>
-								<phase>process-resources</phase>
-								<goals>
-									<goal>compress</goal>
-								</goals>
-								<configuration>
-									<suffix>.min</suffix>
-									<force>true</force>
-									<encoding>UTF-8</encoding>
-									<nocompress>false</nocompress>
-									<outputDirectory>${basedir}/target/jsmovie</outputDirectory>
-									<sourceDirectory>${basedir}/src/main/webapp/static/movie</sourceDirectory>
-									<excludeResources>true</excludeResources>
-									<aggregations>
-										<aggregation>
-											<output>${basedir}/src/main/webapp/static/movie/player.min.js</output>
-											<removeIncluded>false</removeIncluded>
-											<includes>
-												<include>${basedir}/target/jsmovie/player.min.js</include>
-											</includes>
-										</aggregation>
-									</aggregations>
-									<excludes>
-										<exclude>**/*.min.js</exclude>
-										<exclude>**/jw/*</exclude>
-										<exclude>**/dragula/*</exclude>
-										<exclude>**/fullcalendar/*</exclude>
-										<exclude>**/mediaelementjs/*</exclude>
-										<exclude>**/mediaelementjs/**/*</exclude>
-										<exclude>**/sliderpips/jquery-ui-slider-pips.js</exclude>
-									</excludes>
-								</configuration>
-							</execution>
-							<execution>
-								<id>compressjs</id>
-								<phase>process-resources</phase>
-								<goals>
-									<goal>compress</goal>
-								</goals>
-								<configuration>
-									<suffix>.min</suffix>
-									<force>true</force>
-									<encoding>UTF-8</encoding>
-									<nocompress>false</nocompress>
-									<outputDirectory>${basedir}/target/jquery</outputDirectory>
-									<sourceDirectory>${basedir}/src/main/webapp/static/js</sourceDirectory>
-									<excludeResources>true</excludeResources>
-									<aggregations>
-										<aggregation>
-											<output>${basedir}/src/main/webapp/static/js/js.plugins.min.js</output>
-											<removeIncluded>false</removeIncluded>
-											<includes>
-												<include>${basedir}/target/jquery/jquery/periodic/jquery.periodic.min.js</include>
-												<include>${basedir}/target/jquery/jshashtable-2.1_src.min.js</include>
-												<include>${basedir}/target/jquery/jquery/openolat/jquery.translator.min.js</include>
-												<include>${basedir}/target/jquery/jquery/openolat/jquery.navbar.min.js</include>
-												<include>${basedir}/target/jquery/jquery/openolat/jquery.bgcarrousel.min.js</include>
-												<include>${basedir}/src/main/webapp/static/js/tinymce4/tinymce/jquery.tinymce.min.js</include>
-												<include>${basedir}/target/jquery/functions.min.js</include>
-												<include>${basedir}/target/jquery/jquery/transit/jquery.transit.min.js</include>
-												<include>${basedir}/target/bootstrap/bootstrap-openolat.min.js</include>
-											</includes>
-										</aggregation>
-										<aggregation>
-											<output>${basedir}/src/main/webapp/static/js/jquery/qti/jquery.qti.min.js</output>
-											<removeIncluded>false</removeIncluded>
-											<includes><!-- qtiAutosave, qtiTimer are loaded separately -->
-												<include>${basedir}/target/jquery/jquery/qti/jquery.associate.min.js</include>
-												<include>${basedir}/target/jquery/jquery/qti/jquery.choice.min.js</include>
-												<include>${basedir}/target/jquery/jquery/qti/jquery.gapMatch.min.js</include>
-												<include>${basedir}/target/jquery/jquery/qti/jquery.graphicAssociate.min.js</include>
-												<include>${basedir}/target/jquery/jquery/qti/jquery.graphicGap.min.js</include>
-												<include>${basedir}/target/jquery/jquery/qti/jquery.graphicOrder.min.js</include>
-												<include>${basedir}/target/jquery/jquery/qti/jquery.hotspot.min.js</include>
-												<include>${basedir}/target/jquery/jquery/qti/jquery.hotspot.responsive.min.js</include>
-												<include>${basedir}/target/jquery/jquery/qti/jquery.match.min.js</include>
-												<include>${basedir}/target/jquery/jquery/qti/jquery.match_dnd.min.js</include>
-												<include>${basedir}/target/jquery/jquery/qti/jquery.order.min.js</include>
-												<include>${basedir}/target/jquery/jquery/qti/jquery.positionObject.min.js</include>
-												<include>${basedir}/target/jquery/jquery/qti/jquery.selectPoint.min.js</include>
-												<include>${basedir}/target/jquery/jquery/qti/jquery.slider.min.js</include>
-											</includes>
-										</aggregation>
-										<aggregation>
-											<output>${basedir}/src/main/webapp/static/js/tinymce4/tinymce/plugins/olatmatheditor/plugin.min.js</output>
-											<removeIncluded>false</removeIncluded>
-											<includes>
-												<include>${basedir}/target/jquery/tinymce4/tinymce/plugins/olatmatheditor/plugin.min.js</include>
-											</includes>
-										</aggregation>
-										<aggregation>
-											<output>${basedir}/src/main/webapp/static/js/tinymce4/tinymce/plugins/olatqti/plugin.min.js</output>
-											<removeIncluded>false</removeIncluded>
-											<includes>
-												<include>${basedir}/target/jquery/tinymce4/tinymce/plugins/olatqti/plugin.min.js</include>
-											</includes>
-										</aggregation>
-										<aggregation>
-											<output>${basedir}/src/main/webapp/static/js/tinymce4/tinymce/plugins/olatmovieviewer/plugin.min.js</output>
-											<removeIncluded>false</removeIncluded>
-											<includes>
-												<include>${basedir}/target/jquery/tinymce4/tinymce/plugins/olatmovieviewer/plugin.min.js</include>
-											</includes>
-										</aggregation>
-										<aggregation>
-											<output>${basedir}/src/main/webapp/static/js/tinymce4/tinymce/plugins/olatcharcount/plugin.min.js</output>
-											<removeIncluded>false</removeIncluded>
-											<includes>
-												<include>${basedir}/target/jquery/tinymce4/tinymce/plugins/olatcharcount/plugin.min.js</include>
-											</includes>
-										</aggregation>
-										<aggregation>
-											<output>${basedir}/src/main/webapp/static/js/tinymce4/tinymce/plugins/olatsmileys/plugin.min.js</output>
-											<removeIncluded>false</removeIncluded>
-											<includes>
-												<include>${basedir}/target/jquery/tinymce4/tinymce/plugins/olatsmileys/plugin.min.js</include>
-											</includes>
-										</aggregation>
-										<aggregation>
-											<output>${basedir}/src/main/webapp/static/js/tinymce4/tinymce/plugins/quotespliter/plugin.min.js</output>
-											<removeIncluded>false</removeIncluded>
-											<includes>
-												<include>${basedir}/target/jquery/tinymce4/tinymce/plugins/quotespliter/plugin.min.js</include>
-											</includes>
-										</aggregation>
-										<aggregation>
-											<output>${basedir}/src/main/webapp/static/js/jquery/openolat/jquery.statistics.chart.min.js</output>
-											<removeIncluded>false</removeIncluded>
-											<includes>
-												<include>${basedir}/target/jquery/jquery/openolat/jquery.statistics.chart.min.js</include>
-											</includes>
-										</aggregation>
-										<aggregation>
-											<output>${basedir}/src/main/webapp/static/js/jquery/openolat/jquery.timeline.min.js</output>
-											<removeIncluded>false</removeIncluded>
-											<includes>
-												<include>${basedir}/target/jquery/jquery/openolat/jquery.timeline.min.js</include>
-											</includes>
-										</aggregation>
-									</aggregations>
-									<excludes>
-										<exclude>**/jw/*</exclude>
-										<exclude>**/dragula/*</exclude>
-										<exclude>**/fullcalendar/*</exclude>
-										<exclude>**/mediaelementjs/*</exclude>
-										<exclude>**/mediaelementjs/**/*</exclude>
-										<exclude>**/sliderpips/jquery-ui-slider-pips.js</exclude>
-									</excludes>
-								</configuration>
-							</execution>
-							<execution>
-								<id>compresscss</id>
-								<phase>process-resources</phase>
-								<goals>
-									<goal>compress</goal>
-								</goals>
-								<configuration>
-									<suffix>.min</suffix>
-									<force>true</force>
-									<encoding>UTF-8</encoding>
-									<nocompress>false</nocompress>
-									<outputDirectory>${basedir}/target/jquery</outputDirectory>
-									<sourceDirectory>${basedir}/src/main/webapp/static/js</sourceDirectory>
-									<excludeResources>true</excludeResources>
-									<aggregations>
-										<aggregation>
-											<output>${basedir}/src/main/webapp/static/js/js.plugins.min.css</output>
-											<removeIncluded>false</removeIncluded>
-											<includes>
-												<include>${basedir}/target/jquery/jquery/tagsinput/bootstrap-tagsinput.min.css</include>
-												<include>${basedir}/target/jquery/jquery/fullcalendar/fullcalendar.min.css</include>
-												<include>${basedir}/target/jquery/jquery/cropper/cropper.min.css</include>
-												<include>${basedir}/target/jquery/jquery/sliderpips/jquery-ui-slider-pips.min.css</include>
-												<include>${basedir}/target/jquery/jquery/ui/jquery-ui-1.11.4.custom.min.css</include>
-												<include>${basedir}/src/main/webapp/static/js/dragula/dragula.min.css</include>
-											</includes>
-										</aggregation>
-									</aggregations>
-									<excludes>
-										<exclude>**/jw/*</exclude>
-										<exclude>**/dragula/*</exclude>
-										<exclude>**/fullcalendar/fullcalendar.js</exclude>
-										<exclude>**/fullcalendar/fullcalendar.min.js</exclude>
-										<exclude>**/mediaelementjs/*</exclude>
-										<exclude>**/mediaelementjs/**/*</exclude>
-										<exclude>**/sliderpips/jquery-ui-slider-pips.js</exclude>
-									</excludes>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
+
 		<!-- This is the default build which had all dependencies needed by tomcat -->
 		<profile>
 			<id>tomcat</id>
@@ -1204,6 +958,48 @@
 			</testResource>
 		</testResources>
 		<plugins>
+            <plugin>
+                <groupId>com.github.eirslett</groupId>
+                <artifactId>frontend-maven-plugin</artifactId>
+                <!-- Use the latest released version:
+                https://repo1.maven.org/maven2/com/github/eirslett/frontend-maven-plugin/ -->
+                <version>1.6</version>
+                <executions>
+                    <execution>
+                        <id>install node and yarn</id>
+                        <goals>
+                            <goal>install-node-and-yarn</goal>
+                        </goals>
+                        <phase>generate-resources</phase>
+
+                    </execution>
+
+                    <execution>
+                        <id>yarn install</id>
+                        <goals>
+                            <goal>yarn</goal>
+                        </goals>
+                        <configuration>
+                            <!-- optional: The default argument is actually
+                            "install", so unless you need to run some other yarn command,
+                            you can remove this whole <configuration> section.
+                            -->
+                            <arguments>install</arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>gulp compresscss</id>
+                        <goals>
+                            <goal>gulp</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <nodeVersion>v8.11.2</nodeVersion>
+                    <yarnVersion>v1.10.1</yarnVersion>
+                </configuration>
+            </plugin>
+
 			<!-- Set the build number from git -->
 			<plugin>
 				<groupId>pl.project13.maven</groupId>
@@ -1356,10 +1152,6 @@
 					<artifactId>maven-war-plugin</artifactId>
 					<version>3.2.1</version>
 					<configuration>
-						<!--
-						<attachClasses>true</attachClasses>
-						-->
-						<directory>src/main/java</directory>
 						<archive>
 							<manifest>
 								<addDefaultImplementationEntries>true</addDefaultImplementationEntries>

@@ -203,15 +203,11 @@ and can be overwritten with `olat.local.properties`. Changes in olat.local.prope
 reflected upon each restart of Tomcat. You can further override OpenOLAT settings with
 JVM arguments `-Dmy.option=enabled`.
 
-### Compress javascript and CSS
+### Compress JavaScript and CSS
 
-The javascript and CSS files are minified and aggregated. If you make some changes, run the following
-command to compress them (execution time ca. 1-2 minutes) and refresh your Eclipse project:
-
-```bash
-mvn clean package
-mvn compile -Pcompressjs,tomcat
-```
+In the default configuration JavaScript and CSS files are minified and bundled. If you need them
+separated for the debug mode of OpenOlat set `guidebug` variable to `true` in `gulpfile.js` before
+running maven build.
 
 ### Themes
 

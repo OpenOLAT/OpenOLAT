@@ -1,0 +1,41 @@
+{
+  "name": "openolat",
+  "version": "1.0.0",
+  "description": "OpenOLAT LMS",
+  "main": "gulpfile.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OpenOLAT/OpenOLAT.git"
+  },
+  "keywords": [
+    "Java",
+    "LMS"
+  ],
+  "author": "Tom Gross",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/OpenOLAT/OpenOLAT/issues"
+  },
+  "homepage": "https://github.com/OpenOLAT/OpenOLAT#readme",
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "gulp-clean-css": "^3.10.0",
+    "gulp-concat": "^2.6.1",
+    "gulp-rename": "^1.4.0",
+    "gulp-sass": "^4.0.1",
+    "gulp-uglify": "^3.0.1"
+  },
+  "dependencies": {
+    "bootstrap": "^3.2.0",
+    "d3": "4.13.0",
+    "dragula": "^3.7.2",
+    "font-awesome": "^4.7.0",
+    "iframe-resizer": "^3.6.2",
+    "jquery": "^3.3.1",
+    "jquery.transit": "^0.9.12",
+    "qrcodejs": "^1.0.0"
+  }
+}
