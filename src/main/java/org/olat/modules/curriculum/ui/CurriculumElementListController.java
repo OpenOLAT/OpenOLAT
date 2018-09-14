@@ -194,10 +194,13 @@ public class CurriculumElementListController extends FormBasicController impleme
 		StringBuilder sb = new StringBuilder(64);
 		CurriculumElementWithViewsRow rowWithView = tableModel.getObject(pos);
 		if(type == FlexiTableRendererType.custom) {
-			sb.append("o_table_row row ");
+			sb.append("o_table_row ");
 	
 			if(rowWithView.isCurriculumElementOnly()) {
 				sb.append("o_curriculum_element");
+				if (rowWithView.getCurriculumElementRepositoryEntryCount() > 1) {
+					sb.append(" o_with_multi_repository_entries");					
+				}
 			} else if(rowWithView.isRepositoryEntryOnly()) {
 				sb.append("o_repository_entry");
 			} else if(rowWithView.isCurriculumElementWithEntry()) {
@@ -209,10 +212,13 @@ public class CurriculumElementListController extends FormBasicController impleme
 		for(CurriculumElementWithViewsRow parent=rowWithView.getParent(); parent != null; parent=parent.getParent()) {
 			count++;
 		}
-		if(rowWithView.isRepositoryEntryOnly()) {
-			count++;
-		}
 		sb.append(" o_curriculum_element_l").append(count);
+		if (!rowWithView.isRepositoryEntryOnly() && rowWithView.getCurriculumElementTypeCssClass() != null) {
+			sb.append(" ").append(rowWithView.getCurriculumElementTypeCssClass());	
+		}
+		if (rowWithView.getEntryStatus() != null) {
+			sb.append(" repo_status_").append(rowWithView.getEntryStatus());
+		}
 		return sb.toString();
 	}
 
@@ -244,13 +250,13 @@ public class CurriculumElementListController extends FormBasicController impleme
 			CurriculumElementMembership elementMembership = elementWithViews.getCurriculumMembership();
 			
 			if(elementWithViews.getEntries() == null || elementWithViews.getEntries().isEmpty()) {
-				rows.add(new CurriculumElementWithViewsRow(element, elementMembership));
+				rows.add(new CurriculumElementWithViewsRow(element, elementMembership, 0));
 			} else if(elementWithViews.getEntries().size() == 1) {
 				CurriculumElementWithViewsRow row = new CurriculumElementWithViewsRow(element, elementMembership, elementWithViews.getEntries().get(0), true);
 				forge(row, repoKeys, resourcesWithOffer);
 				rows.add(row);
 			} else {
-				rows.add(new CurriculumElementWithViewsRow(element, elementMembership));
+				rows.add(new CurriculumElementWithViewsRow(element, elementMembership, elementWithViews.getEntries().size()));
 				for(RepositoryEntryMyView entry:elementWithViews.getEntries()) {
 					CurriculumElementWithViewsRow row = new CurriculumElementWithViewsRow(element, elementMembership, entry, false);
 					forge(row, repoKeys, resourcesWithOffer);

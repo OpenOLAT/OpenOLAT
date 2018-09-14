@@ -54,8 +54,10 @@ public class CurriculumElementWithViewsRow implements CurriculumElementRef, Flex
 	private final CurriculumElement element;
 	private final CurriculumElementMembership curriculumMembership;
 	private boolean curriculumMember;
+	private int level;
 
 	private boolean singleEntry;
+	private int elementEntryCount;
 	private OLATResource olatResource;
 	private RepositoryEntryMyView repositoryEntry;
 	
@@ -75,13 +77,19 @@ public class CurriculumElementWithViewsRow implements CurriculumElementRef, Flex
 	private FormLink markLink;
 	private FormLink selectLink;
 	
-	public CurriculumElementWithViewsRow(CurriculumElement element, CurriculumElementMembership curriculumMembership) {
+	public CurriculumElementWithViewsRow(CurriculumElement element, CurriculumElementMembership curriculumMembership, int myEntryCount) {
 		this.element = element;
 		this.curriculumMembership = curriculumMembership;
 		curriculumMember = (curriculumMembership == null ? false : curriculumMembership.hasMembership());
 		singleEntry = false;
-		parentKey = element.getParent() == null ? null : element.getParent().getKey();
+		elementEntryCount = myEntryCount;
+		parentKey = element.getParent() == null ? null : element.getParent().getKey();		
 		setShortenedDescription(element.getDescription());
+	
+		// calculate level of current curr element based on parent chain
+		for(CurriculumElement parent=element.getParent(); parent != null; parent=parent.getParent()) {
+			level++;
+		}
 	}
 	
 	public CurriculumElementWithViewsRow(CurriculumElement element, CurriculumElementMembership curriculumMembership,
@@ -90,11 +98,14 @@ public class CurriculumElementWithViewsRow implements CurriculumElementRef, Flex
 		this.curriculumMembership = curriculumMembership;
 		curriculumMember = (curriculumMembership == null ? false : curriculumMembership.hasMembership());
 		singleEntry = alone;
+		elementEntryCount = 0;
 		
 		if(alone) {
 			parentKey = element.getParent() == null ? null : element.getParent().getKey();
 		} else {
 			parentKey = element.getKey();
+			// add ourself as level
+			level++;
 		}
 		
 		guests = repositoryEntryView.isGuests();
@@ -104,6 +115,11 @@ public class CurriculumElementWithViewsRow implements CurriculumElementRef, Flex
 		olatResource = repositoryEntryView.getOlatResource();
 		marked = repositoryEntryView.isMarked();
 		setShortenedDescription(repositoryEntryView.getDescription());
+		
+		// calculate level of current curr element based on parent chain
+		for(CurriculumElement parent=element.getParent(); parent != null; parent=parent.getParent()) {
+			level++;
+		}
 	}
 	
 	@Override
@@ -159,17 +175,36 @@ public class CurriculumElementWithViewsRow implements CurriculumElementRef, Flex
 		return element == null ? null : element.getPos();
 	}
 	
+	public String getCurriculumElementTypeCssClass() {
+		return element == null ? null : (element.getType() == null ? null : element.getType().getCssClass());
+	}
+
+	public String getCurriculumElementTypeName() {
+		return element == null ? null : (element.getType() == null ? null : element.getType().getDisplayName());
+	}
+	public int getCurriculumElementRepositoryEntryCount() {
+		return elementEntryCount;
+	}
+	
+	public int getLevel() {
+		return level;
+	}
+
+	
 	public String getExternalId() {
-		if(element != null && repositoryEntry != null) {
-			return element.getExternalId() + " " + repositoryEntry.getExternalId();
+		String extId = null;
+		if (element != null && element.getExternalId() != null) {
+			extId = element.getExternalId();
 		}
-		if(element != null && repositoryEntry == null) {
-			return element.getExternalId();
+		if (repositoryEntry != null && repositoryEntry.getExternalId() != null) {
+			if (extId != null) {
+				extId += " ";
+				extId += repositoryEntry.getExternalId();
+			} else {
+				extId += repositoryEntry.getExternalId();				
+			}
 		}
-		if(element == null && repositoryEntry != null) {
-			return repositoryEntry.getExternalId();
-		}
-		return null;
+		return extId;
 	}
 	
 	public String getMaterializedPathKeys() {
@@ -404,7 +439,7 @@ public class CurriculumElementWithViewsRow implements CurriculumElementRef, Flex
 	public void setSelectLink(FormLink selectLink) {
 		this.selectLink = selectLink;
 	}
-
+	
 	@Override
 	public String getCrump() {
 		return element.getDisplayName();

@@ -1,102 +1,229 @@
-@for $i from 0 through 11 {
-	tr.o_curriculum_element_l#{$i} td {
-		padding: ($i * $o-tree-padding-steps-px);
-	}
+/* debug 
+$o-curriculum-level-steps-enabled				: true;
+$o-curriculum-entry-image-enabled				: true;
+$o-curriculum-style-program-bg					: #C2E8AE;
+$o-curriculum-style-program-border				: 1px solid darken($o-curriculum-l0-bg,30%);
+$o-curriculum-style-semester-title-bg			: #AEE8BF;
+$o-curriculum-style-module-bg					: #CCFFCC;
+$o-curriculum-entry-bg							: #CCFFCC;
+*/
+
+@mixin o-make-responsive-inline-block($cols : $o-curriculum-entry-cols, $screen-max: $screen-sm-max, $right-margin: $padding-base-vertical, $bg : $o-curriculum-entry-bg) {
+	@if $cols > 1 and not $o-curriculum-level-steps-enabled {
+		$width: floor(100% / $cols);
+		
+		display: inline-block;
+		width: $width;			
+		border-right: ($padding-base-vertical * 2) solid transparent;	
 	
-	div.o_curriculum_element_l#{$i} {
-		margin-left: ($i * $o-tree-padding-steps-px);
+		/* reset o-make-responsive-inline-block() when there are many children or on small screen*/
+		@media (max-width: $screen-max) {
+			display: block;
+			width: 100%;
+	 		border-right: 0 !important;	
+	 	}
+		&.o_with_multi_repository_entries {
+			display: block;
+			width: 100%;
+			border-right: 0 !important;	
+	 	}
+		/* add background if required and a minimum height for nicer visual appearance */
+		.o_row_inner_wrapper { 
+			background: $bg;
+			min-height: $o-coursesite-rowelem-height-sm;		
+			@media (max-width: $screen-xs-max) { 
+				min-height: $o-coursesite-rowelem-height-xs;	
+			}			
+		}			
+		.o_curriculum_entry {
+			min-height: $o-coursesite-rowelem-height-sm;		
+			@media (max-width: $screen-xs-max) { 
+				min-height: $o-coursesite-rowelem-height-xs;	
+			}			
+		}	
 	}
 }
 
-tr.o_curriculum_element_inactive, tr.o_curriculum_element_inactive td, tr.o_curriculum_element_inactive td span {
-	color: $o-curriculum-element-inactive-color;
+@mixin o-make-curriculum-row-style($rowname: ".o_curriculum_element", $margin: $o-curriculum-margin, $bg: $o-curriculum-bg, $border: $o-curriculum-border, $title-bg: $o-curriculum-title-bg,  $title-padding: $o-curriculum-title-padding, $lifecycle-bg: $o-curriculum-lifecycle-bg, $lifecycle-padding: $o-curriculum-lifecycle-padding, $desc : $o-curriculum-show-description) {
+	#{$rowname} {
+		margin: $margin;
+		.o_row_inner_wrapper {
+			background: $bg;
+			border: $border;
+		}
+		.o_curriculum_element_title {
+			background: $title-bg;
+			padding: $title-padding;			
+		}
+		.o_curriculum_lifecycle {
+			padding: $lifecycle-padding;			
+			background: $lifecycle-bg;
+		}				
+		.o_curriculum_element_desc {
+		@if $desc == false {
+			display: none;
+		}
+		}
+	}				
 }
 
-tr.o_curriculum_element_deleted, tr.o_curriculum_element_deleted td, tr.o_curriculum_element_deleted td span {
-	color: $o-curriculum-element-inactive-color;
-	text-decoration: line-through;
-}
+
 
 .o_curriculumtable {
-	&.o_rendertype_custom {	
-		.o_table_row.o_curriculum_element {
-			border-color: #999;
-			
-			.o_meta {
-				height: $o-coursesite-curriculum-rowelem-height-md;
-				margin: 0 $o-coursesite-rowelem-width-md 0 0;
-			}
+	/* Default table style rendering */
+	@for $i from 0 through 11 {
+		tr.o_curriculum_element_l#{$i} td:nth-thild(first) {
+			padding-left: ($i * $o-tree-padding-steps-px);
 		}
-	
-		.o_table_row {
+	}
+	tr.o_curriculum_element_inactive, tr.o_curriculum_element_inactive td, tr.o_curriculum_element_inactive td span {
+		color: $o-curriculum-element-inactive-color;
+	}
+	tr.o_curriculum_element_deleted, tr.o_curriculum_element_deleted td, tr.o_curriculum_element_deleted td span {
+		color: $o-curriculum-element-inactive-color;
+		text-decoration: line-through;
+	}
+
+
+	/* Custom fancy style rendering */
+	&.o_rendertype_custom {	
+		
+		/* not embedded as container, revert container styles */
+		.container-fluid {
+			padding-left: 0;
+			padding-right: 0;
+		}
+				
+		.o_table_row {			
+			@include clearfix;
 			position: relative;
-			border: 1px solid $o-coursesite-rowelem-border;
-			margin-bottom: floor($line-height-computed / 2);
-			
-			.o_visual {
-				box-sizing: content-box;
-				border-right: 1px solid $o-coursesite-rowelem-border;		
+			vertical-align: top;
+			margin: $o-curriculum-margin;
+
+			/* inner row wrapper. Use this to apply border, background etc for a level, not the outer row itself */			
+			.o_row_inner_wrapper {
+				background: $o-curriculum-bg;
+				border: $o-curriculum-border;
+				position: relative;				
 			}
 			
+			.o_ext_id {
+				display: none; // only for debuging
+			}
+			.o_hierarchy_info {
+				display: none; // only for debuging
+				position: absolute; 
+				top: 0; right: 30px; 
+				font-size: 70%; 
+				z-index: 5; 
+				background: gold;
+			}				
+						
+			/* Curriculum Element specific styling */
+			.o_curriculum_element_title {
+				margin-top: 0;
+				margin-bottom: 0;
+				background: $o-curriculum-title-bg; /* default */
+				small {
+					white-space: nowrap;
+				}
+			}
+			.o_curriculum_lifecycle {
+				padding-left: $padding-base-vertical;	
+				color: $text-muted;
+				&.o_active {
+					color: $state-success-text;
+					&:hover {
+						color: darken($state-success-text, 10%);
+					}
+				}
+			}						
+  			.o_curriculum_element_desc {
+				padding: ($padding-base-horizontal  / 2) $padding-base-vertical $padding-large-horizontal $padding-base-vertical;
+  			}
+			.o_curriculum_element_empty {
+				font-style: italic;
+				padding: $padding-base-horizontal $padding-base-vertical ;
+			}
+			
+
+			/* Repository Entry specific styling */
+  			.o_curriculum_entry {
+  				position: relative;
+				padding-left: $o-coursesite-rowelem-width-sm + ($padding-base-vertical * 2);	
+				@media (max-width: $screen-xs-max) { 
+					min-height: $o-coursesite-rowelem-height-xs;	
+					padding-left: $o-coursesite-rowelem-width-xs  + ($padding-base-vertical * 2);		
+				}	
+  			}  			
+  			@if $o-curriculum-entry-image-enabled == false {
+  				.o_curriculum_entry {
+  					padding-left: $padding-base-vertical;
+					@media (max-width: $screen-xs-max) { 
+						min-height: auto;	
+						padding-left: $padding-base-vertical;		
+					}	
+  				}
+  				.o_visual {
+	  				display: none;
+  				}
+  			} @else {
+				.o_visual {
+					left: 0;
+					border: none;		
+					background-color: #fff;
+					/* only medium and small size, never large */
+					max-height: $o-coursesite-rowelem-height-sm;	
+					max-width: $o-coursesite-rowelem-width-sm;		
+				}
+				.o_row_inner_wrapper { 
+					min-height: $o-coursesite-rowelem-height-sm;		
+					@media (max-width: $screen-xs-max) { 
+						min-height: $o-coursesite-rowelem-height-xs;	
+					}			
+				}			
+				.o_curriculum_entry {
+					min-height: $o-coursesite-rowelem-height-sm;		
+					@media (max-width: $screen-xs-max) { 
+						min-height: $o-coursesite-rowelem-height-xs;	
+					}			
+				}	
+  			}
+  			  			
+  			.o_curriculum_entry_meta {
+				.o_author, .o_location, .o_lifecycle {
+					color: $o-coursesite-meta-author-color;
+				}
+  			}
+  			.o_curriculum_entry_desc {
+  				display: none;
+  			}
+  			.o_user_state {
+  				position: absolute;
+  				right: 0;
+  				bottom: floor($o-coursesite-rowelem-height-md / 4);
+  				.o_failed {
+  					font-weight: normal;
+  				}
+  				.o_state, .o_score {
+  					display: inline-block;
+  				}
+  				.o_state+.o_score:before {
+  					content: ', ';
+  				}
+  			}
+			.o_bookmark {
+				position: absolute;
+				top: -1px;
+				right: 2px;
+			}
 			.o_access {
 				position: absolute;
-				top: 0; right: 0;
-				height: $o-coursesite-rowelem-height-md;	
-				width: $o-coursesite-rowelem-width-md;
+				bottom: 0; right: 0;
 				overflow: hidden;
-				border-left: 1px solid $o-coursesite-rowelem-border;
-				padding-top: 0.25em;
-				
-				
-				.o_state, .o_score {
-					@extend %o_small;
-					padding: 0 1em;		
-					height: floor($o-coursesite-rowelem-height-md / 6);
-					line-height: floor($o-coursesite-rowelem-height-md / 6);
-					position: relative;
-					@include text-overflow();
-				}	
-					
-				.o_score {
-					position: relative; 
-					left: 2px;
-					.o_label {
-						color: $text-muted;
-					}
-				}
-						
-				.o_social {
-					position: absolute;
-					width: 100%;
-					bottom: floor($o-coursesite-rowelem-height-md / 4) + 2px;
-					height: floor($o-coursesite-rowelem-height-md / 6);
-					padding-left: 1em;
-				
-					.o_rating {
-						.o_rating_title, o_rating_legend, .o_rating_explanation { 
-							display: none; 
-						}
-					}
-					.o_comments {
-						@extend %o_undecorated;
-					}
-				}
-				
-				.o_bookings {
-					padding: 0 0 0 1em;							
-					@include text-overflow();
-					.o_label {
-						margin-bottom: 1em;		
-						color: $text-muted;
-						@extend %o_small;
-					}
-					.o_methods {
-						color: $brand-info;
-					}				
-				}
-				
-				
-				.o_start, .o_book, .o_details {
+				width: $o-coursesite-rowelem-width-md;
+				height: floor($o-coursesite-rowelem-height-md / 4);
+				.o_start, .o_details {
 					position: absolute;
 					display: block;
 					bottom: 0;
@@ -106,129 +233,90 @@ tr.o_curriculum_element_deleted, tr.o_curriculum_element_deleted td, tr.o_curric
 					text-align: center;
 					@extend %o_undecorated;
 				}
-				.o_start, .o_book {
+				.o_start {
 					right: 0;
+					@include button-variant($o-coursesite-start-color, $o-coursesite-start-bg, $o-coursesite-start-border); 
 				}
-				.o_start { @include button-variant($o-coursesite-start-color, $o-coursesite-start-bg, $o-coursesite-start-border); }
-				.o_book  { @include button-variant($o-coursesite-book-color, $o-coursesite-book-bg, $o-coursesite-book-border); }
-
 				.o_details {
 					right: floor($o-coursesite-rowelem-width-md / 2);
 					@include button-variant($o-coursesite-details-color, $o-coursesite-details-bg, $o-coursesite-details-border);
 				}
-				
-				@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
-					height: $o-coursesite-rowelem-height-sm;	
-					width: $o-coursesite-rowelem-width-sm;		
-					.o_score, .o_comments, .o_label {
-						display: none;
-					}					
-					
-					.o_start, .o_book, .o_details {
-						width: floor($o-coursesite-rowelem-width-sm / 2);
-					}
-					.o_details {
-						right: floor($o-coursesite-rowelem-width-sm / 2);
-					}
-				}
-				@media (max-width: $screen-xs-max) { 
+			}
+			
+			/* hide things on mobile */			
+			@media (max-width: $screen-xs-max) { 
+				.o_author, .o_bookmark, .o_lifecycle, .o_curriculum_entry_desc, .o_curriculum_element_desc, .o_user_state, .o_details {
 					display: none;
 				}	
-				
 			}
-			.o_meta {
-				height: $o-coursesite-rowelem-height-md;
-				margin: 0 $o-coursesite-rowelem-width-md 0 $o-coursesite-rowelem-width-md;
-				position: relative;
-				padding: 1em 0.5em 0.25em 1em;
+		
+			/* Overrides: */
+		
+			/* 1) Level based overrides */
+			@include o-make-curriculum-row-style('&.o_curriculum_element_l0', $o-curriculum-l0-margin, $o-curriculum-l0-bg, $o-curriculum-l0-border, $o-curriculum-l0-title-bg, $o-curriculum-l0-title-padding, $o-curriculum-l0-lifecycle-bg, $o-curriculum-l0-lifecycle-padding, $o-curriculum-l0-show-description);
+			@include o-make-curriculum-row-style('&.o_curriculum_element_l1', $o-curriculum-l1-margin, $o-curriculum-l1-bg, $o-curriculum-l1-border, $o-curriculum-l1-title-bg, $o-curriculum-l1-title-padding, $o-curriculum-l1-lifecycle-bg, $o-curriculum-l1-lifecycle-padding, $o-curriculum-l1-show-description);
+			@include o-make-curriculum-row-style('&.o_curriculum_element_l2', $o-curriculum-l2-margin, $o-curriculum-l2-bg, $o-curriculum-l2-border, $o-curriculum-l2-title-bg, $o-curriculum-l2-title-padding, $o-curriculum-l2-lifecycle-bg, $o-curriculum-l2-lifecycle-padding, $o-curriculum-l2-show-description);
+			@include o-make-curriculum-row-style('&.o_curriculum_element_l3', $o-curriculum-l3-margin, $o-curriculum-l3-bg, $o-curriculum-l3-border, $o-curriculum-l3-title-bg, $o-curriculum-l3-title-padding, $o-curriculum-l3-lifecycle-bg, $o-curriculum-l3-lifecycle-padding, $o-curriculum-l3-show-description);
+			
+			/* Render Levels in tree / hierarchy style when enabled */		
+			@if $o-curriculum-level-steps-enabled == true {	
+				@for $i from 0 through 11 {
+					&.o_curriculum_element_l#{$i} {
+						margin-left: ($i * $o-tree-padding-steps-px);
+					}
+				}
+			}
 
-				overflow: hidden;
-	
-				.o_title {
-					margin: 0; /* box moves down otherwhise, replaced with padding */
-					position: relative;
-					@include text-overflow();
-					a {
-						@extend %o_undecorated;
-						display: block;
-						color: $o-coursesite-meta-title-color;
-						&:hover {
-						    color: darken($o-coursesite-meta-title-color, 10%);
-						}				
-					}
-				}
-				h5.o_title {
-					margin-bottom: 0.2em;
-				}
-				.o_author{
-					margin-top: 0.5em;
-					line-height: normal;
-					font-size: 90%;
-					@include text-overflow();
-					color: $o-coursesite-meta-author-color;
-				}
-				.o_lifecycle {
-					position: absolute; 
-					top: 5px; right: 40px;
-					z-index: 2px;
-					background: white;
-					padding: 0 3px 3px 3px;
-					border-radius: 0px 0px $border-radius-small $border-radius-small;
-					font-size: 90%;
-					line-height: normal;
-					@include text-overflow();
-					color: $text-muted;
-					&.o_active {
-						color: $state-success-text;
-						&:hover {
-							color: darken($state-success-text, 10%);
-						}
-					}
-				}
-				.o_desc {
-					margin-top: 0.5em;					
-				}
-				.o_bookmark {
-					position: absolute;
-					top: -1px;
-					right: 15px;
-				}
-				@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
-					height: $o-coursesite-rowelem-height-sm;	
-					margin: 0 $o-coursesite-rowelem-width-sm;
-				}
-				@media (max-width: $screen-xs-max) { 
-					height: $o-coursesite-rowelem-height-xs;	
-					margin: 0 0 0 $o-coursesite-rowelem-width-xs;
-					padding: 0 0 0 1em;
-					.o_title {
-						line-height: $o-coursesite-rowelem-height-xs;
-						a {
-							border-right:floor($o-coursesite-rowelem-height-xs * .75) solid transparent;
-							@include text-overflow();
-							span {
-							}
-						}
-					}
-					.o_author, .o_bookmark, .o_lifecycle, .o_desc {
-						display: none;
-					}	
-				}
-				.o_go_xs {
-					position: absolute;
-					top: 0;
-					right: 0;
-					padding: 0 1em;
-					height: $o-coursesite-rowelem-height-xs;
-					width: floor($o-coursesite-rowelem-height-xs * .75);
-					line-height: $o-coursesite-rowelem-height-xs;
-					color: $o-coursesite-go-xs-color;
-					background-color: $o-coursesite-go-xs-bg;
-				}
-				
+			/* 2) Row type specific overrides
+			/* special rendering: row is a curriculum element (with 0 or >= 2 repository entries) */
+			&.o_curriculum_element {}
+			&.o_with_multi_repository_entries {}
+			/* special rendering: row is a repository entry of a curriculum that has => repository entires linked */
+			&.o_repository_entry {
+				@include o-make-responsive-inline-block($o-curriculum-entry-cols, $screen-sm-max, $padding-large-vertical, $o-curriculum-entry-bg);
+				margin-top: 0 !important;
 			}
+			/* special rendering: row is a curriculum element with exactly 1 linked repository entry */
+			&.o_mixed_element {
+				@include o-make-responsive-inline-block($o-curriculum-entry-cols, $screen-sm-max, $padding-large-vertical, $o-curriculum-entry-bg);
+				.o_curriculum_entry_title {
+					display: none;
+				}			
+			}
+
+			/* 3) Special rendering based on Curriculum Level Types CSS classes. Here are some styles for some presets, implement your own custom types */ 
+			@include o-make-curriculum-row-style('&.o_curriculum_program', $o-curriculum-style-program-margin, $o-curriculum-style-program-bg, $o-curriculum-style-program-border, $o-curriculum-style-program-title-bg, $o-curriculum-style-program-title-padding, $o-curriculum-style-program-lifecycle-bg, $o-curriculum-style-program-lifecycle-padding, $o-curriculum-style-program-show-description);
+			&.o_curriculum_program { 			
+				@include o-make-responsive-inline-block($o-curriculum-style-program-cols, $screen-sm-max, $padding-large-vertical, $o-curriculum-style-program-bg);			
+			}
+			@include o-make-curriculum-row-style('&.o_curriculum_semester', $o-curriculum-style-semester-margin, $o-curriculum-style-semester-bg, $o-curriculum-style-semester-border, $o-curriculum-style-semester-title-bg, $o-curriculum-style-semester-title-padding, $o-curriculum-style-semester-lifecycle-bg, $o-curriculum-style-semester-lifecycle-padding, $o-curriculum-style-semester-show-description);			
+			&.o_curriculum_semester { 
+				@include o-make-responsive-inline-block($o-curriculum-style-semester-cols, $screen-sm-max, $padding-large-vertical, $o-curriculum-style-semester-bg);			
+			}
+			@include o-make-curriculum-row-style('&.o_curriculum_module', $o-curriculum-style-module-margin, $o-curriculum-style-module-bg, $o-curriculum-style-module-border, $o-curriculum-style-module-title-bg, $o-curriculum-style-module-title-padding, $o-curriculum-style-module-lifecycle-bg, $o-curriculum-style-module-lifecycle-padding, $o-curriculum-style-module-show-description);			
+			&.o_curriculum_module { 
+				@include o-make-responsive-inline-block($o-curriculum-style-module-cols, $screen-sm-max, $padding-large-vertical, $o-curriculum-style-module-bg);			
+	
+			}
+			@include o-make-curriculum-row-style('&.o_curriculum_course', $o-curriculum-style-course-margin, $o-curriculum-style-course-bg, $o-curriculum-style-course-border, $o-curriculum-style-course-title-bg, $o-curriculum-style-course-title-padding, $o-curriculum-style-course-lifecycle-bg, $o-curriculum-style-course-lifecycle-padding, $o-curriculum-style-course-show-description);			
+			&.o_curriculum_course { 
+				@include o-make-responsive-inline-block($o-curriculum-style-module-cols, $screen-sm-max, $padding-large-vertical, $o-curriculum-style-course-bg);			
+			}	
+			
+		}		
+	}
+}
+
+
+@media print {
+	.o_curriculumtable.o_rendertype_custom .o_table_row {
+		.o_user_state {
+			position: relative;
+			bottom: 0;
+		}
+		.o_access {
+			display: none;
 		}
 	}
-
-
+	
 }

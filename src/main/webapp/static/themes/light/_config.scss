@@ -343,7 +343,102 @@ $o-course-node-error			: $state-danger-text !default;
 $o-course-node-deleted			: $badge-bg !default;
 
 /* Curriculum */
-$o-curriculum-element-inactive-color				: #777;
+/* Basic rendering configuration */
+$o-curriculum-level-steps-enabled		: false !default;
+$o-curriculum-entry-image-enabled		: true !default;
+$o-curriculum-show-description			: false !default;
+$o-curriculum-element-inactive-color	: #777;
+/* Default styles for each level */
+$o-curriculum-border				: none !default;
+$o-curriculum-bg					: none !default;
+$o-curriculum-cols					: 1 !default;
+$o-curriculum-margin				: ($line-height-computed / 2) 0 ($line-height-computed / 4) 0;
+$o-curriculum-title-bg				: transparent !default;
+$o-curriculum-title-padding			: $padding-base-horizontal $padding-base-vertical ($padding-base-horizontal / 2) $padding-base-vertical!default;
+$o-curriculum-lifecycle-bg			: transparent !default;
+$o-curriculum-lifecycle-padding		: ($padding-base-horizontal / 2) $padding-base-vertical $padding-base-horizontal $padding-base-vertical!default;
+/* Level 0 specific styling */
+$o-curriculum-l0-show-description	: true !default;
+$o-curriculum-l0-border				: 1px solid #eee !default;
+$o-curriculum-l0-bg					: #f6f6f6 !default;
+$o-curriculum-l0-margin				: ($line-height-computed / 2) 0 ($line-height-computed / 4) 0 !default;
+$o-curriculum-l0-title-bg			: $o-curriculum-title-bg !default;
+$o-curriculum-l0-title-padding		: $padding-base-horizontal $padding-base-vertical !default;
+$o-curriculum-l0-lifecycle-padding	: $o-curriculum-lifecycle-padding !default;
+$o-curriculum-l0-lifecycle-bg		: $o-curriculum-lifecycle-bg !default;
+$o-curriculum-l0-lifecycle-padding	: $o-curriculum-lifecycle-padding !default;
+/* Level 1 specific rendering */
+$o-curriculum-l1-show-description	: $o-curriculum-show-description !default;
+$o-curriculum-l1-border				: $o-curriculum-border !default;
+$o-curriculum-l1-bg					: $o-curriculum-bg !default;
+$o-curriculum-l1-margin				: $o-curriculum-margin !default;
+$o-curriculum-l1-title-bg			: #ebebeb !default;
+$o-curriculum-l1-title-padding		: $o-curriculum-title-padding !default;
+$o-curriculum-l1-lifecycle-bg		: $o-curriculum-l1-title-bg !default;
+$o-curriculum-l1-lifecycle-padding	: $o-curriculum-lifecycle-padding !default;
+/* Level 2 specific rendering */
+$o-curriculum-l2-show-description	: $o-curriculum-show-description !default;
+$o-curriculum-l2-border				: $o-curriculum-border !default;
+$o-curriculum-l2-bg					: $o-curriculum-bg !default;
+$o-curriculum-l2-margin				: $o-curriculum-margin !default;
+$o-curriculum-l2-title-bg			: $o-curriculum-title-bg !default;
+$o-curriculum-l2-title-padding		: $o-curriculum-title-padding !default;
+$o-curriculum-l2-lifecycle-bg		: $o-curriculum-lifecycle-bg !default;
+$o-curriculum-l2-lifecycle-padding	: $o-curriculum-lifecycle-padding !default;
+/* Level 3 specific rendering */
+$o-curriculum-l3-show-description	: $o-curriculum-show-description !default;
+$o-curriculum-l3-border				: $o-curriculum-border !default;
+$o-curriculum-l3-bg					: $o-curriculum-bg !default;
+$o-curriculum-l3-margin				: $o-curriculum-margin !default;
+$o-curriculum-l3-title-bg			: $o-curriculum-title-bg !default;
+$o-curriculum-l3-title-padding		: $o-curriculum-title-padding !default;
+$o-curriculum-l3-lifecycle-bg		: $o-curriculum-lifecycle-bg !default;
+$o-curriculum-l3-lifecycle-padding	: $o-curriculum-lifecycle-padding !default;
+/* Render all curriculum elements with courses in multi columnn layout? If no set to 1 */
+$o-curriculum-entry-cols			: 2 !default;
+$o-curriculum-entry-bg				: #f6f6f6 !default;
+/* Element type specific styles */
+/* Type course program */
+$o-curriculum-style-program-show-description	: $o-curriculum-l0-show-description !default;
+$o-curriculum-style-program-cols				: 1 !default;
+$o-curriculum-style-program-border				: $o-curriculum-l0-border !default;
+$o-curriculum-style-program-bg					: $o-curriculum-l0-bg !default;
+$o-curriculum-style-program-margin				: $o-curriculum-l0-margin !default;
+$o-curriculum-style-program-title-bg			: $o-curriculum-l0-title-bg !default;
+$o-curriculum-style-program-title-padding		: $o-curriculum-l0-title-padding !default;
+$o-curriculum-style-program-lifecycle-bg		: $o-curriculum-l0-lifecycle-bg !default;
+$o-curriculum-style-program-lifecycle-padding	: $o-curriculum-l0-lifecycle-padding !default;
+/* Type semester as part of a course program */
+$o-curriculum-style-semester-show-description	: $o-curriculum-l1-show-description !default;
+$o-curriculum-style-semester-cols				: 1 !default;
+$o-curriculum-style-semester-border				: $o-curriculum-l1-border !default;
+$o-curriculum-style-semester-bg					: $o-curriculum-l1-bg !default;
+$o-curriculum-style-semester-margin				: $o-curriculum-l1-margin !default;
+$o-curriculum-style-semester-title-bg			: $o-curriculum-l1-title-bg !default;
+$o-curriculum-style-semester-title-padding		: $o-curriculum-l1-title-padding !default;
+$o-curriculum-style-semester-lifecycle-bg		: $o-curriculum-l1-lifecycle-bg !default;
+$o-curriculum-style-semester-lifecycle-padding	: $o-curriculum-l1-lifecycle-padding !default;
+/* Type module within a semester */
+$o-curriculum-style-module-show-description		: $o-curriculum-l2-show-description !default;
+$o-curriculum-style-module-cols					: $o-curriculum-entry-cols !default;
+$o-curriculum-style-module-border				: $o-curriculum-l2-border !default;
+$o-curriculum-style-module-bg					: $o-curriculum-entry-bg !default;
+$o-curriculum-style-module-margin				: $o-curriculum-l2-margin !default;
+$o-curriculum-style-module-title-bg				: $o-curriculum-l2-title-bg !default;
+$o-curriculum-style-module-title-padding		: $o-curriculum-l2-title-padding !default;
+$o-curriculum-style-module-lifecycle-bg			: $o-curriculum-l2-lifecycle-bg !default;
+$o-curriculum-style-module-lifecycle-padding	: $o-curriculum-l2-lifecycle-padding !default;
+/* Type single course */
+$o-curriculum-style-course-show-description		: $o-curriculum-l2-show-description !default;
+$o-curriculum-style-course-cols					: 1 !default;
+$o-curriculum-style-course-border				: $o-curriculum-l2-border !default;
+$o-curriculum-style-course-bg					: $o-curriculum-l2-bg !default;
+$o-curriculum-style-course-margin				: $o-curriculum-l2-margin !default;
+$o-curriculum-style-course-title-bg				: $o-curriculum-l2-title-bg !default;
+$o-curriculum-style-course-title-padding		: $o-curriculum-l2-title-padding !default;
+$o-curriculum-style-course-lifecycle-bg			: $o-curriculum-l2-lifecycle-bg !default;
+$o-curriculum-style-course-lifecycle-padding	: $o-curriculum-l2-lifecycle-padding !default;
+
 
 
 /* Portfolio v2 */
