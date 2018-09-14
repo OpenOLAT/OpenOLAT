@@ -20,6 +20,7 @@
  */
 package org.olat.modules.lecture;
 
+import java.util.Date;
 import java.util.List;
 
 import org.olat.basesecurity.Group;
@@ -31,6 +32,7 @@ import org.olat.modules.lecture.model.LectureBlockIdentityStatistics;
 import org.olat.modules.lecture.model.LectureBlockRollCallAndCoach;
 import org.olat.modules.lecture.model.LectureBlockStatistics;
 import org.olat.modules.lecture.model.LectureBlockWithTeachers;
+import org.olat.modules.lecture.model.LectureReportRow;
 import org.olat.modules.lecture.model.LectureStatisticsSearchParameters;
 import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
 import org.olat.modules.taxonomy.TaxonomyLevel;
@@ -482,6 +484,17 @@ public interface LectureService {
 	 * @return A list of lecture blocks with this level
 	 */
 	public List<LectureBlock> getLectureBlocks(TaxonomyLevelRef level);
+	
+	/**
+	 * This is an administrative tool which look at all lecture blocks
+	 * regardless of the permissions.
+	 * 
+	 * @param from
+	 * @param to
+	 * @param status
+	 * @return A list of lectures with some additional informations
+	 */
+	public List<LectureReportRow> getLectureBlocksReport(Date from, Date to, List<LectureRollCallStatus> status);
 	
 	/**
 	 * The method will not set the date of admission.

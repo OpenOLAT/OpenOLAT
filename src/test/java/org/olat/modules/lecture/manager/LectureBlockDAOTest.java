@@ -43,6 +43,7 @@ import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
 import org.olat.modules.lecture.model.LectureBlockImpl;
 import org.olat.modules.lecture.model.LectureBlockToGroupImpl;
+import org.olat.modules.lecture.model.LectureReportRow;
 import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
@@ -577,7 +578,61 @@ public class LectureBlockDAOTest extends OlatTestCase {
 		Assert.assertEquals(1, rollcalls.size());
 		Assert.assertEquals(lectureBlock, rollcalls.get(0));
 	}
-
+	
+	@Test
+	public void getLecturesBlocksReport() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		LectureBlock lectureBlock = createMinimalLectureBlock(entry);
+		dbInstance.commitAndCloseSession();
+		
+		List<LectureReportRow> allRows = lectureBlockDao.getLecturesBlocksReport(null, null, null);
+		Assert.assertNotNull(allRows);
+		Assert.assertFalse(allRows.isEmpty());
+		
+		boolean found = false;
+		for(LectureReportRow row:allRows) {
+			if(row.getKey().equals(lectureBlock.getKey())) {
+				found = true;
+			}
+		}
+		Assert.assertTrue(found);
+	}
+	
+	@Test
+	public void getLecturesBlocksReport_withParams() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		LectureBlock lectureBlock = createMinimalLectureBlock(entry);
+		dbInstance.commitAndCloseSession();
+		
+		Calendar calendar = Calendar.getInstance();
+		calendar.add(Calendar.DATE, -2);
+		Date start = calendar.getTime();
+		calendar.add(Calendar.DATE, 4);
+		Date end = calendar.getTime();
+		
+		List<LectureRollCallStatus> openStatus = Collections.singletonList(LectureRollCallStatus.open);
+		List<LectureReportRow> openRows = lectureBlockDao.getLecturesBlocksReport(start, end, openStatus);
+		Assert.assertNotNull(openRows);
+		Assert.assertFalse(openRows.isEmpty());
+		boolean foundOpen = false;
+		for(LectureReportRow row:openRows) {
+			if(row.getKey().equals(lectureBlock.getKey())) {
+				foundOpen = true;
+			}
+		}
+		Assert.assertTrue(foundOpen);
+		
+		List<LectureRollCallStatus> closedStatus = Collections.singletonList(LectureRollCallStatus.closed);
+		List<LectureReportRow> closedRows = lectureBlockDao.getLecturesBlocksReport(start, end, closedStatus);
+		Assert.assertNotNull(closedRows);
+		boolean foundClosed = false;
+		for(LectureReportRow row:closedRows) {
+			if(row.getKey().equals(lectureBlock.getKey())) {
+				foundClosed = true;
+			}
+		}
+		Assert.assertFalse(foundClosed);
+	}
 	
 	@Test
 	public void deleteLectureBlock() {

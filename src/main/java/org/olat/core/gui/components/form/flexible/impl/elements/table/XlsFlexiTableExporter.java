@@ -126,7 +126,7 @@ public class XlsFlexiTableExporter implements FlexiTableExporter {
 					if(StringHelper.containsNonWhitespace(cellValue)) {
 						cellValue = StringEscapeUtils.unescapeHtml(cellValue);
 					}
-					dataRow.addCell(col, cellValue, workbook.getStyles().getTopAlignStyle());
+					dataRow.addCell(col, cellValue, null);
 				}
 			}
 		} catch (Exception e) {

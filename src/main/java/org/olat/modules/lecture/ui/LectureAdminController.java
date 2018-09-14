@@ -19,6 +19,8 @@
  */
 package org.olat.modules.lecture.ui;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -30,6 +32,11 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.lecture.ui.coach.LecturesReportController;
 
 /**
  * 
@@ -37,14 +44,17 @@ import org.olat.core.gui.control.controller.BasicController;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class LectureAdminController extends BasicController {
+public class LectureAdminController extends BasicController implements Activateable2 {
 	
 	private final VelocityContainer mainVC;
-	private final Link settingsLink, reasonsLink;
+	private final Link reportLink;
+	private final Link reasonsLink;
+	private final Link settingsLink;
 	private final SegmentViewComponent segmentView;
 	
 	private ReasonAdminController reasonsCtrl;
 	private LectureSettingsAdminController settingsCtrl;
+	private LecturesReportController lecturesReportCtrl;
 	
 	public LectureAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -56,6 +66,8 @@ public class LectureAdminController extends BasicController {
 		segmentView.addSegment(settingsLink, true);
 		reasonsLink = LinkFactory.createLink("lectures.admin.reasons", mainVC, this);
 		segmentView.addSegment(reasonsLink, false);
+		reportLink = LinkFactory.createLink("lectures.admin.report", mainVC, this);
+		segmentView.addSegment(reportLink, false);
 
 		doOpenSettings(ureq);
 		putInitialPanel(mainVC);
@@ -67,6 +79,23 @@ public class LectureAdminController extends BasicController {
 	}
 
 	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if("Settings".equalsIgnoreCase(type)) {
+			doOpenSettings(ureq);
+			segmentView.select(settingsLink);
+		} else if("Reasons".equalsIgnoreCase(type)) {
+			doOpenReasons(ureq);
+			segmentView.select(reasonsLink);
+		} else if("Report".equalsIgnoreCase(type)) {
+			doOpenLectureReports(ureq);
+			segmentView.select(reportLink);
+		}
+	}
+
+	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(source == segmentView) {
 			if(event instanceof SegmentViewEvent) {
@@ -75,8 +104,10 @@ public class LectureAdminController extends BasicController {
 				Component clickedLink = mainVC.getComponent(segmentCName);
 				if (clickedLink == settingsLink) {
 					doOpenSettings(ureq);
-				} else if (clickedLink == reasonsLink){
+				} else if (clickedLink == reasonsLink) {
 					doOpenReasons(ureq);
+				} else if (clickedLink == reportLink) {
+					doOpenLectureReports(ureq);
 				}
 			}
 		}
@@ -84,17 +115,34 @@ public class LectureAdminController extends BasicController {
 	
 	private void doOpenSettings(UserRequest ureq) {
 		if(settingsCtrl == null) {
-			settingsCtrl = new LectureSettingsAdminController(ureq, getWindowControl());
+			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Settings"), null);
+			settingsCtrl = new LectureSettingsAdminController(ureq, swControl);
 			listenTo(settingsCtrl);
+		} else {
+			addToHistory(ureq, settingsCtrl);
 		}
 		mainVC.put("segmentCmp", settingsCtrl.getInitialComponent());
 	}
 	
 	private void doOpenReasons(UserRequest ureq) {
 		if(reasonsCtrl == null) {
-			reasonsCtrl = new ReasonAdminController(ureq, getWindowControl());
+			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Reasons"), null);
+			reasonsCtrl = new ReasonAdminController(ureq, swControl);
 			listenTo(reasonsCtrl);
+		} else {
+			addToHistory(ureq, reasonsCtrl);
 		}
 		mainVC.put("segmentCmp", reasonsCtrl.getInitialComponent());
+	}
+	
+	private void doOpenLectureReports(UserRequest ureq) {
+		if(lecturesReportCtrl == null) {
+			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Report"), null);
+			lecturesReportCtrl = new LecturesReportController(ureq, swControl);
+			listenTo(lecturesReportCtrl);
+		} else {
+			addToHistory(ureq, lecturesReportCtrl);
+		}
+		mainVC.put("segmentCmp", lecturesReportCtrl.getInitialComponent());
 	}
 }

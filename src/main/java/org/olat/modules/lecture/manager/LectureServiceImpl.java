@@ -85,6 +85,7 @@ import org.olat.modules.lecture.model.LectureBlockRollCallAndCoach;
 import org.olat.modules.lecture.model.LectureBlockStatistics;
 import org.olat.modules.lecture.model.LectureBlockToTeacher;
 import org.olat.modules.lecture.model.LectureBlockWithTeachers;
+import org.olat.modules.lecture.model.LectureReportRow;
 import org.olat.modules.lecture.model.LectureStatisticsSearchParameters;
 import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
 import org.olat.modules.lecture.model.ParticipantAndLectureSummary;
@@ -893,6 +894,10 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	@Override
 	public List<LectureBlockWithTeachers> getLectureBlocksWithTeachers(RepositoryEntryRef entry) {
 		return lectureBlockDao.getLecturesBlockWithTeachers(entry);
+	}
+	@Override
+	public List<LectureReportRow> getLectureBlocksReport(Date from, Date to, List<LectureRollCallStatus> status) {
+		return lectureBlockDao.getLecturesBlocksReport(from, to, status);
 	}
 
 	/**

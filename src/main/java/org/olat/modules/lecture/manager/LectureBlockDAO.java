@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.persistence.TemporalType;
 import javax.persistence.TypedQuery;
@@ -35,6 +36,7 @@ import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.lecture.LectureBlock;
@@ -44,6 +46,7 @@ import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.model.LectureBlockImpl;
 import org.olat.modules.lecture.model.LectureBlockToGroupImpl;
 import org.olat.modules.lecture.model.LectureBlockWithTeachers;
+import org.olat.modules.lecture.model.LectureReportRow;
 import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
@@ -197,6 +200,107 @@ public class LectureBlockDAO {
 				.setParameter("teacherKey", identityRef.getKey());
 		addSearchParametersToQuery(query, searchParams);
 		return query.getResultList();
+	}
+	
+	public List<LectureReportRow> getLecturesBlocksReport(Date from, Date to, List<LectureRollCallStatus> status) {
+		// search blocks and coaches
+		QueryBuilder sb = new QueryBuilder(512);
+		sb.append("select block, teacher")
+		  .append(" from lectureblock block")
+		  .append(" inner join block.teacherGroup tGroup")
+		  .append(" left join tGroup.members membership on (membership.role='").append("teacher").append("')")
+		  .append(" left join membership.identity teacher")
+		  .append(" left join fetch teacher.user userteacher");
+		if(from != null) {
+			sb.and().append(" block.startDate>=:startDate");
+		}
+		if(to != null) {
+			sb.and().append(" block.endDate<=:endDate");
+		}
+		if(status != null && !status.isEmpty()) {
+			sb.and().append(" block.rollCallStatusString in (:status)");
+		}
+
+		//get all, it's quick
+		TypedQuery<Object[]> rawCoachQuery = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class);
+		if(from != null) {
+			rawCoachQuery.setParameter("startDate", from, TemporalType.TIMESTAMP);
+		}
+		if(to != null) {
+			rawCoachQuery.setParameter("endDate", to, TemporalType.TIMESTAMP);
+		}
+		if(status != null && !status.isEmpty()) {
+			List<String> statusStrings = status.stream()
+					.map(LectureRollCallStatus::name).collect(Collectors.toList());
+			rawCoachQuery.setParameter("status", statusStrings);
+		}
+
+		List<Object[]> rawCoachs = rawCoachQuery.getResultList();
+		Map<Long,LectureReportRow> blockMap = new HashMap<>();
+		for(Object[] rawCoach:rawCoachs) {
+			LectureBlock block = (LectureBlock)rawCoach[0];
+			Identity teacher = (Identity)rawCoach[1];
+			LectureReportRow row = blockMap
+					.computeIfAbsent(block.getKey(), b -> new LectureReportRow(block));
+			if(teacher != null && !row.getTeachers().contains(teacher)) {
+				row.getTeachers().add(teacher);
+			}
+		}
+		
+		enrichLecturesBlocksReport(from, to, status, blockMap);
+		return new ArrayList<>(blockMap.values());
+	}
+	
+	private void enrichLecturesBlocksReport(Date from, Date to, List<LectureRollCallStatus> status, Map<Long,LectureReportRow> blockMap) {
+		// search blocks and coaches
+		QueryBuilder sb = new QueryBuilder(512);
+		sb.append("select block.key, entry.externalRef, owner")
+		  .append(" from lectureblock block")
+		  .append(" inner join block.entry as entry")
+		  .append(" inner join entry.groups as relGroup")
+		  .append(" inner join relGroup.group as baseGroup")
+		  .append(" left join baseGroup.members as membership on (membership.role='").append(GroupRoles.owner).append("')")
+		  .append(" left join membership.identity owner")
+		  .append(" left join fetch owner.user userowner");
+		if(from != null) {
+			sb.and().append(" block.startDate>=:startDate");
+		}
+		if(to != null) {
+			sb.and().append(" block.endDate<=:endDate");
+		}
+		if(status != null && !status.isEmpty()) {
+			sb.and().append(" block.rollCallStatusString in (:status)");
+		}
+
+		//get all, it's quick
+		TypedQuery<Object[]> rawCoachQuery = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class);
+		if(from != null) {
+			rawCoachQuery.setParameter("startDate", from, TemporalType.TIMESTAMP);
+		}
+		if(to != null) {
+			rawCoachQuery.setParameter("endDate", to, TemporalType.TIMESTAMP);
+		}
+		if(status != null && !status.isEmpty()) {
+			List<String> statusStrings = status.stream()
+					.map(LectureRollCallStatus::name).collect(Collectors.toList());
+			rawCoachQuery.setParameter("status", statusStrings);
+		}
+
+		List<Object[]> rawRepos = rawCoachQuery.getResultList();
+		for(Object[] rawRepo:rawRepos) {
+			Long blockKey = (Long)rawRepo[0];
+			String externalRef = (String)rawRepo[1];
+			Identity owner = (Identity)rawRepo[2];
+			LectureReportRow row = blockMap.get(blockKey);
+			if(row != null) {
+				row.setExternalRef(externalRef);
+				if(owner != null && !row.getOwners().contains(owner)) {
+					row.getOwners().add(owner);
+				}
+			}
+		}
 	}
 	
 	/**
