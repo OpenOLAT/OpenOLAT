@@ -57,20 +57,25 @@ public class RubricAvgRenderer implements FlexiCellRenderer {
 	}
 
 	private void render(StringOutput target, Double value) {
-		Range insufficientRange = new Range(rubric.getLowerBoundInsufficient(), rubric.getUpperBoundInsufficient());
-		Range neutralRange = new Range(rubric.getLowerBoundNeutral(), rubric.getUpperBoundNeutral());
-		Range sufficientRange = new Range(rubric.getLowerBoundSufficient(), rubric.getUpperBoundSufficient());
 		target.append("<div class='o_rubric_avg ");
-		if (insufficientRange.getLower() <= value && value <= insufficientRange.getUpper()) {
-			target.append("o_rubric_insufficient");
-		} else if (neutralRange.getLower() <= value && value <= neutralRange.getUpper()) {
-			target.append("o_rubric_neutral");
-		} else if (sufficientRange.getLower() <= value && value <= sufficientRange.getUpper()) {
-			target.append("o_rubric_sufficient");
-		}
+		target.append(getColorCss(rubric, value));
 		target.append("'>");
 		target.append(EvaluationFormFormatter.formatDouble(value));
 		target.append("</div>");
+	}
+
+	public static String getColorCss(Rubric rubric, Double value) {
+		Range insufficientRange = new Range(rubric.getLowerBoundInsufficient(), rubric.getUpperBoundInsufficient());
+		Range neutralRange = new Range(rubric.getLowerBoundNeutral(), rubric.getUpperBoundNeutral());
+		Range sufficientRange = new Range(rubric.getLowerBoundSufficient(), rubric.getUpperBoundSufficient());
+		if (insufficientRange.getLower() <= value && value <= insufficientRange.getUpper()) {
+			return "o_rubric_insufficient";
+		} else if (neutralRange.getLower() <= value && value <= neutralRange.getUpper()) {
+			return "o_rubric_neutral";
+		} else if (sufficientRange.getLower() <= value && value <= sufficientRange.getUpper()) {
+			return "o_rubric_sufficient";
+		}
+		return null;
 	}
 	
 	private static final class Range {

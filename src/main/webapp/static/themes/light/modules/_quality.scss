@@ -130,3 +130,23 @@
 		padding: 0;
 	}
 }
+
+.o_qual_hm_basecolor { background-color: $o-qual-hm-base-background-color;}
+.o_qual_hm {
+	.o_circle_container {
+		display: flex;
+	}
+	.o_circle_box {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+	.o_circle {
+		border-radius: 50%;
+	}
+	.o_avg {
+		display: flex;
+		align-items: center;
+		margin-left: 5px;
+	}
+}

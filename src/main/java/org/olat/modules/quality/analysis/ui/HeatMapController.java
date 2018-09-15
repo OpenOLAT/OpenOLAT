@@ -147,10 +147,10 @@ public class HeatMapController extends FormBasicController implements Filterable
 		groupEl.addActionListener(FormEvent.ONCHANGE);
 		setGroupBy();
 		
-		initTable(Collections.emptyList());
+		initTable(Collections.emptyList(), 0);
 	}
 
-	public void initTable(List<String> groupHeaders) {
+	public void initTable(List<String> groupHeaders, int maxCount) {
 		int columnIndex = 0;
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		if (groupHeaders.isEmpty()) {
@@ -163,20 +163,23 @@ public class HeatMapController extends FormBasicController implements Filterable
 				columnsModel.addFlexiColumnModel(columnModel);
 			}
 		}
-		addSliderColumns(columnsModel, columnIndex);
+		addSliderColumns(columnsModel, columnIndex, maxCount);
 		
 		dataModel = new HeatMapDataModel(columnsModel, getLocale());
 		if (tableEl != null) flc.remove(tableEl);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, getTranslator(), flc);
+		tableEl.setElementCssClass("o_qual_hm");
 		tableEl.setEmtpyTableMessageKey("heatmap.empty");
 		tableEl.setNumOfRowsEnabled(false);
 		tableEl.setCustomizeColumns(false);
 	}
 
-	private void addSliderColumns(FlexiTableColumnModel columnsModel, int columnIndex) {
-		for (int sliderIndex = 1; sliderIndex <= sliders.size(); sliderIndex++) {
-			String header = translate("heatmap.table.slider.header", new String[] { Integer.toString(sliderIndex) });
-			DefaultFlexiColumnModel columnModel = new DefaultFlexiColumnModel("", columnIndex++);
+	private void addSliderColumns(FlexiTableColumnModel columnsModel, int columnIndex, int maxCount) {
+		for (int sliderIndex = 0; sliderIndex < sliders.size(); sliderIndex++) {
+			String header = translate("heatmap.table.slider.header", new String[] { Integer.toString(sliderIndex + 1) });
+			Rubric rubric = sliders.get(sliderIndex).getRubric();
+			DefaultFlexiColumnModel columnModel = new DefaultFlexiColumnModel("", columnIndex++,
+					new HeatMapRenderer(rubric, maxCount));
 			columnModel.setHeaderLabel(header);
 			columnsModel.addFlexiColumnModel(columnModel);
 		}
@@ -212,7 +215,8 @@ public class HeatMapController extends FormBasicController implements Filterable
 		if (!rows.isEmpty()) {
 			addHeatMapStatistics(rows);
 		}
-		initTable(heatMapData.getHeaders());
+		int maxCount = getMaxCount(rows);
+		initTable(heatMapData.getHeaders(), maxCount);
 		dataModel.setObjects(rows);
 		tableEl.reset(true, true, true);
 	}
@@ -233,6 +237,22 @@ public class HeatMapController extends FormBasicController implements Filterable
 			row.setStatistics(rowStatistics);
 		}
 		rows.sort(new GroupNameAlphabeticalComparator());
+	}
+
+	private int getMaxCount(List<HeatMapRow> rows) {
+		long maxCount = 0;
+		for (HeatMapRow row : rows) {
+			for (int i = 0; i < row.getStatisticsSize(); i++) {
+				GroupedStatistic statistic = row.getStatistic(i);
+				if (statistic != null) {
+					Long count = statistic.getCount();
+					if (count > maxCount) {
+						maxCount = count;
+					}
+				}
+			}
+		}
+		return Long.valueOf(maxCount).intValue();
 	}
 	
 	private HeatMapData createHeatMapData() {
