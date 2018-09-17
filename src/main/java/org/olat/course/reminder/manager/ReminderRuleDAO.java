@@ -51,7 +51,7 @@ public class ReminderRuleDAO {
 
 	public Map<Long,Float> getScores(RepositoryEntryRef entry, CourseNode node, List<Identity> identities) {
 		if(identities == null || identities.isEmpty()) {
-			return new HashMap<Long,Float>();
+			return new HashMap<>();
 		}
 
 		Set<Long> identityKeySet = null;
@@ -88,7 +88,7 @@ public class ReminderRuleDAO {
 	
 	public Map<Long,Integer> getAttempts(RepositoryEntryRef entry, CourseNode node, List<Identity> identities) {
 		if(identities == null || identities.isEmpty()) {
-			return new HashMap<Long,Integer>();
+			return new HashMap<>();
 		}
 
 		Set<Long> identityKeySet = null;
@@ -115,7 +115,11 @@ public class ReminderRuleDAO {
 			Long identityKey = (Long)infos[0];
 			if(identityKeySet == null || identityKeySet.contains(identityKey)) {
 				Number attempts = (Number)infos[1];
-				dateMap.put(identityKey, new Integer(attempts.intValue()));
+				if(attempts != null) {
+					dateMap.put(identityKey, Integer.valueOf(attempts.intValue()));
+				} else {
+					dateMap.put(identityKey, Integer.valueOf(0));
+				}
 			}
 		}
 		return dateMap;
@@ -123,7 +127,7 @@ public class ReminderRuleDAO {
 	
 	public Map<Long,Date> getInitialAttemptDates(RepositoryEntryRef entry, CourseNode node, List<Identity> identities) {
 		if(identities == null || identities.isEmpty()) {
-			return new HashMap<Long,Date>();
+			return new HashMap<>();
 		}
 
 		Set<Long> identityKeySet = null;
@@ -158,7 +162,7 @@ public class ReminderRuleDAO {
 	
 	public Map<Long,Boolean> getPassed(RepositoryEntryRef entry, CourseNode node, List<Identity> identities) {
 		if(identities == null || identities.isEmpty()) {
-			return new HashMap<Long,Boolean>();
+			return new HashMap<>();
 		}
 
 		Set<Long> identityKeySet = null;
