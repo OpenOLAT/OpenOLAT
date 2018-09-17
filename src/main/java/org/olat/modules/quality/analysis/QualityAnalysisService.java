@@ -28,6 +28,7 @@ import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.model.xml.Rubric;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -41,7 +42,7 @@ public interface QualityAnalysisService {
 
 	public Long loadFilterDataCollectionCount(AnalysisSearchParameter searchParams);
 
-	public List<Organisation> loadTopicOrganisations(AnalysisSearchParameter searchParams);
+	public List<Organisation> loadTopicOrganisations(AnalysisSearchParameter searchParams, boolean withParents);
 
 	public List<Curriculum> loadTopicCurriculums(AnalysisSearchParameter searchParams);
 
@@ -49,7 +50,9 @@ public interface QualityAnalysisService {
 
 	public List<IdentityShort> loadTopicIdentity(AnalysisSearchParameter searchParams);
 	
-	public List<Organisation> loadContextOrganisations(AnalysisSearchParameter searchParams);
+	public List<RepositoryEntry> loadTopicRepositoryEntries(AnalysisSearchParameter searchParams);
+
+	public List<Organisation> loadContextOrganisations(AnalysisSearchParameter searchParams, boolean withParentsb);
 
 	public List<Curriculum> loadContextCurriculums(AnalysisSearchParameter searchParams);
 

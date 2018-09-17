@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.OrganisationRef;
 import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumRef;
@@ -40,9 +41,15 @@ public class AnalysisSearchParameter {
 	private RepositoryEntryRef formEntryRef;
 	private Date dateRangeFrom;
 	private Date dateRangeTo;
-	private List<? extends OrganisationRef> organisationRefs;
-	private Collection<? extends CurriculumRef> curriculumRefs;
-	private List<? extends CurriculumElementRef> curriculumElementRefs;
+	private Collection<? extends IdentityRef> topicIdentityRefs;
+	private List<? extends OrganisationRef> topicOrganisationRefs;
+	private Collection<? extends CurriculumRef> topicCurriculumRefs;
+	private List<? extends CurriculumElementRef> topicCurriculumElementRefs;
+	private List<? extends RepositoryEntryRef> topicRepositoryRefs;
+	private List<? extends OrganisationRef> contextOrganisationRefs;
+	private Collection<? extends CurriculumRef> contextCurriculumRefs;
+	private List<? extends CurriculumElementRef> contextCurriculumElementRefs;
+	private boolean withUserInfosOnly;
 
 	public RepositoryEntryRef getFormEntryRef() {
 		return formEntryRef;
@@ -68,28 +75,76 @@ public class AnalysisSearchParameter {
 		this.dateRangeTo = dateRangeTo;
 	}
 
-	public List<? extends OrganisationRef> getOrganisationRefs() {
-		return organisationRefs;
+	public Collection<? extends IdentityRef> getTopicIdentityRefs() {
+		return topicIdentityRefs;
 	}
 
-	public void setOrganisationRefs(List<? extends OrganisationRef> organisationRefs) {
-		this.organisationRefs = organisationRefs;
+	public void setTopicIdentityRefs(Collection<? extends IdentityRef> topicIdentityRefs) {
+		this.topicIdentityRefs = topicIdentityRefs;
 	}
 
-	public Collection<? extends CurriculumRef> getCurriculumRefs() {
-		return curriculumRefs;
+	public List<? extends OrganisationRef> getTopicOrganisationRefs() {
+		return topicOrganisationRefs;
 	}
 
-	public void setCurriculumRefs(Collection<? extends CurriculumRef> curriculumRefs) {
-		this.curriculumRefs = curriculumRefs;
+	public void setTopicOrganisationRefs(List<? extends OrganisationRef> topicOrganisationRefs) {
+		this.topicOrganisationRefs = topicOrganisationRefs;
+	}
+
+	public Collection<? extends CurriculumRef> getTopicCurriculumRefs() {
+		return topicCurriculumRefs;
+	}
+
+	public void setTopicCurriculumRefs(Collection<? extends CurriculumRef> topicCurriculumRefs) {
+		this.topicCurriculumRefs = topicCurriculumRefs;
+	}
+
+	public List<? extends CurriculumElementRef> getTopicCurriculumElementRefs() {
+		return topicCurriculumElementRefs;
+	}
+
+	public void setTopicCurriculumElementRefs(List<? extends CurriculumElementRef> topicCurriculumElementRefs) {
+		this.topicCurriculumElementRefs = topicCurriculumElementRefs;
+	}
+
+	public List<? extends RepositoryEntryRef> getTopicRepositoryRefs() {
+		return topicRepositoryRefs;
+	}
+
+	public void setTopicRepositoryRefs(List<? extends RepositoryEntryRef> topicRepositoryRefs) {
+		this.topicRepositoryRefs = topicRepositoryRefs;
+	}
+
+	public List<? extends OrganisationRef> getContextOrganisationRefs() {
+		return contextOrganisationRefs;
+	}
+
+	public void setContextOrganisationRefs(List<? extends OrganisationRef> contextOrganisationRefs) {
+		this.contextOrganisationRefs = contextOrganisationRefs;
+	}
+
+	public Collection<? extends CurriculumRef> getContextCurriculumRefs() {
+		return contextCurriculumRefs;
+	}
+
+	public void setContextCurriculumRefs(Collection<? extends CurriculumRef> contextCurriculumRefs) {
+		this.contextCurriculumRefs = contextCurriculumRefs;
 	}
 	
-	public List<? extends CurriculumElementRef> getCurriculumElementRefs() {
-		return curriculumElementRefs;
+	public List<? extends CurriculumElementRef> getContextCurriculumElementRefs() {
+		return contextCurriculumElementRefs;
 	}
 
-	public void setCurriculumElementRefs(List<? extends CurriculumElementRef> curriculumElementRefs) {
-		this.curriculumElementRefs = curriculumElementRefs;
+	public void setContextCurriculumElementRefs(List<? extends CurriculumElementRef> contextCurriculumElementRefs) {
+		this.contextCurriculumElementRefs = contextCurriculumElementRefs;
+	}
+
+	public boolean isWithUserInfosOnly() {
+		return withUserInfosOnly;
+	}
+
+	public void setWithUserInfosOnly(boolean withUserInfosOnly) {
+		this.withUserInfosOnly = withUserInfosOnly;
 	}
 
 	@Override
@@ -97,9 +152,31 @@ public class AnalysisSearchParameter {
 		AnalysisSearchParameter clone = new AnalysisSearchParameter();
 		clone.formEntryRef = this.formEntryRef;
 		clone.dateRangeFrom = this.dateRangeFrom;
-		clone.organisationRefs = this.organisationRefs != null? new ArrayList<>(this.organisationRefs): null;
-		clone.curriculumRefs = this.curriculumRefs != null? new ArrayList<>(this.curriculumRefs): null;
-		clone.curriculumElementRefs = this.curriculumElementRefs != null? new ArrayList<>(this.curriculumElementRefs): null;
+		clone.topicIdentityRefs = this.topicIdentityRefs != null
+				? new ArrayList<>(this.topicIdentityRefs)
+				: null;
+		clone.topicOrganisationRefs = this.topicOrganisationRefs != null
+				? new ArrayList<>(this.topicOrganisationRefs)
+				: null;
+		clone.topicCurriculumRefs = this.topicCurriculumRefs != null
+				? new ArrayList<>(this.topicCurriculumRefs)
+				: null;
+		clone.topicCurriculumElementRefs = this.topicCurriculumElementRefs != null
+				? new ArrayList<>(this.topicCurriculumElementRefs)
+				: null;
+		clone.topicRepositoryRefs = this.topicRepositoryRefs != null
+				? new ArrayList<>(this.topicRepositoryRefs)
+				: null;
+		clone.contextOrganisationRefs = this.contextOrganisationRefs != null
+				? new ArrayList<>(this.contextOrganisationRefs)
+				: null;
+		clone.contextCurriculumRefs = this.contextCurriculumRefs != null
+				? new ArrayList<>(this.contextCurriculumRefs)
+				: null;
+		clone.contextCurriculumElementRefs = this.contextCurriculumElementRefs != null
+				? new ArrayList<>(this.contextCurriculumElementRefs)
+				: null;
+		clone.withUserInfosOnly = this.withUserInfosOnly;
 		return clone;
 	}
 

@@ -65,6 +65,8 @@ import org.olat.modules.quality.analysis.GroupBy;
 import org.olat.modules.quality.analysis.GroupedStatistic;
 import org.olat.modules.quality.analysis.GroupedStatistics;
 import org.olat.modules.quality.analysis.QualityAnalysisService;
+import org.olat.modules.quality.ui.QualityUIFactory;
+import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -319,14 +321,16 @@ public class HeatMapController extends FormBasicController implements Filterable
 	
 	private HeatMapData createHeatMapData() {
 		switch (groupBy) {
+		case TOPIC_IDENTITY:
+			return createTopicIdentityData();
 		case TOPIC_ORGANISATION:
 			return createTopicOrganisationData();
 		case TOPIC_CURRICULUM:
 			return createTopicCurriculumData();
 		case TOPIC_CURRICULUM_ELEMENT:
 			return createTopicCurriculumElementData();
-		case TOPIC_IDENTITY:
-			return createTopicIdentityData();
+		case TOPIC_REPOSITORY:
+			return createTopicRepositoryData();
 		case CONTEXT_ORAGANISATION:
 			return createContextOraganisationData();
 		case CONTEXT_CURRICULUM:
@@ -337,23 +341,41 @@ public class HeatMapController extends FormBasicController implements Filterable
 			return new HeatMapData(emptyList(), emptyList());
 		}
 	}
+	
+	private HeatMapData createTopicIdentityData() {
+		List<IdentityShort> identities = analysisService.loadTopicIdentity(searchParams);
+		List<HeatMapRow> rows = new ArrayList<>(identities.size());
+		for (IdentityShort itentity : identities) {
+			Long groupKey = itentity.getKey();
+			List<String> groupNames = new ArrayList<>(2);
+			groupNames.add(itentity.getLastName());
+			groupNames.add(itentity.getFirstName());
+			HeatMapRow row = new HeatMapRow(groupKey, groupNames);
+			rows.add(row);
+		}
+		
+		List<String> headers = new ArrayList<>(2);
+		headers.add(translate("heatmap.table.title.identity"));
+		addNulls(headers, 1);
+		return new HeatMapData(rows, headers);
+	}
 
 	private HeatMapData createTopicOrganisationData() {
-		List<Organisation> organisations = analysisService.loadTopicOrganisations(searchParams);
+		List<Organisation> organisations = analysisService.loadTopicOrganisations(searchParams, false);
 		return createOrganisationData(organisations);
 	}
 
 	private HeatMapData createContextOraganisationData() {
-		List<Organisation> organisations = analysisService.loadContextOrganisations(searchParams);
+		List<Organisation> organisations = analysisService.loadContextOrganisations(searchParams, false);
 		return createOrganisationData(organisations);
 	}
 
-	public HeatMapData createOrganisationData(List<Organisation> organisations) {
+	private HeatMapData createOrganisationData(List<Organisation> organisations) {
 		List<HeatMapRow> rows = new ArrayList<>(organisations.size());
 		for (Organisation organisation : organisations) {
 			Long groupKey = organisation.getKey();
 			List<String> groupNames = new ArrayList<>();
-			addParentOrganisationNames(groupNames, organisation);
+			QualityUIFactory.addParentOrganisationNames(groupNames, organisation);
 			Collections.reverse(groupNames);
 			HeatMapRow row = new HeatMapRow(groupKey, groupNames);
 			rows.add(row);
@@ -368,14 +390,6 @@ public class HeatMapController extends FormBasicController implements Filterable
 		return new HeatMapData(rows, headers);
 	}
 
-	private void addParentOrganisationNames(List<String> names, Organisation organisation) {
-		names.add(organisation.getDisplayName());
-		Organisation parent = organisation.getParent();
-		if (parent != null) {
-			addParentOrganisationNames(names, parent);
-		}
-	}
-
 	private HeatMapData createTopicCurriculumData() {
 		List<Curriculum> curriculums = analysisService.loadTopicCurriculums(searchParams);
 		return createCurriculumData(curriculums);
@@ -386,7 +400,7 @@ public class HeatMapController extends FormBasicController implements Filterable
 		return createCurriculumData(curriculums);
 	}
 
-	public HeatMapData createCurriculumData(List<Curriculum> curriculums) {
+	private HeatMapData createCurriculumData(List<Curriculum> curriculums) {
 		List<HeatMapRow> rows = new ArrayList<>(curriculums.size());
 		for (Curriculum curriculum : curriculums) {
 			Long groupKey = curriculum.getKey();
@@ -405,22 +419,16 @@ public class HeatMapController extends FormBasicController implements Filterable
 	}
 
 	private HeatMapData createContextCurriculumElementData() {
-		AnalysisSearchParameter curriculumElementSearchParams = searchParams.clone();
-		if (curriculumElementSearchParams.getCurriculumRefs() == null || searchParams.getCurriculumRefs().isEmpty()) {
-			List<Curriculum> curriculums = analysisService.loadContextCurriculums(curriculumElementSearchParams);
-			curriculumElementSearchParams.setCurriculumRefs(curriculums);
-		}
-		
-		List<CurriculumElement> curriculumElements = analysisService.loadContextCurriculumElements(curriculumElementSearchParams, false);
+		List<CurriculumElement> curriculumElements = analysisService.loadContextCurriculumElements(searchParams, false);
 		return createCurriculumElements(curriculumElements);
 	}
 
-	public HeatMapData createCurriculumElements(List<CurriculumElement> curriculumElements) {
+	private HeatMapData createCurriculumElements(List<CurriculumElement> curriculumElements) {
 		List<HeatMapRow> rows = new ArrayList<>(curriculumElements.size());
 		for (CurriculumElement curriculumElement : curriculumElements) {
 			Long groupKey = curriculumElement.getKey();
 			List<String> groupNames = new ArrayList<>();
-			addParentCurriculumElementNames(groupNames, curriculumElement);
+			QualityUIFactory.addParentCurriculumElementNames(groupNames, curriculumElement);
 			Collections.reverse(groupNames);
 			HeatMapRow row = new HeatMapRow(groupKey, groupNames);
 			rows.add(row);
@@ -434,33 +442,22 @@ public class HeatMapController extends FormBasicController implements Filterable
 		return new HeatMapData(rows, headers);
 	}
 	
-	private void addParentCurriculumElementNames(List<String> names, CurriculumElement curriculumElement) {
-		names.add(curriculumElement.getDisplayName());
-		CurriculumElement parent = curriculumElement.getParent();
-		if (parent != null) {
-			addParentCurriculumElementNames(names, parent);
-		}
-	}
-
-	private HeatMapData createTopicIdentityData() {
-		List<IdentityShort> identities = analysisService.loadTopicIdentity(searchParams);
-		List<HeatMapRow> rows = new ArrayList<>(identities.size());
-		for (IdentityShort itentity : identities) {
-			Long groupKey = itentity.getKey();
+	private HeatMapData createTopicRepositoryData() {
+		List<RepositoryEntry> entries = analysisService.loadTopicRepositoryEntries(searchParams);
+		List<HeatMapRow> rows = new ArrayList<>(entries.size());
+		for (RepositoryEntry entry : entries) {
+			Long groupKey = entry.getKey();
 			List<String> groupNames = new ArrayList<>(2);
-			groupNames.add(itentity.getLastName());
-			groupNames.add(itentity.getFirstName());
+			groupNames.add(entry.getDisplayname());
 			HeatMapRow row = new HeatMapRow(groupKey, groupNames);
 			rows.add(row);
 		}
 		
-		List<String> headers = new ArrayList<>(2);
-		headers.add(translate("heatmap.table.title.topic.identity"));
-		addNulls(headers, 1);
+		List<String> headers = singletonList(translate("heatmap.table.title.repository"));
 		return new HeatMapData(rows, headers);
 	}
 
-	public int getMaxGroupNamesSize(List<HeatMapRow> rows) {
+	private int getMaxGroupNamesSize(List<HeatMapRow> rows) {
 		int maxSize = 0;
 		for (HeatMapRow row : rows) {
 			if (maxSize < row.getGroupNamesSize()) {
@@ -470,7 +467,7 @@ public class HeatMapController extends FormBasicController implements Filterable
 		return maxSize;
 	}
 
-	public void fillGroupNamesToSameSize(List<HeatMapRow> rows, int maxSize) {
+	private void fillGroupNamesToSameSize(List<HeatMapRow> rows, int maxSize) {
 		for (HeatMapRow row : rows) {
 			if (maxSize > row.getGroupNamesSize()) {
 				List<String> groupNames = row.getGroupNames();
@@ -479,7 +476,7 @@ public class HeatMapController extends FormBasicController implements Filterable
 		}
 	}
 
-	public void addNulls(List<String> list, int howMany) {
+	private void addNulls(List<String> list, int howMany) {
 		for (int index = 0; index < howMany; index++) {
 			list.add(null);
 		}

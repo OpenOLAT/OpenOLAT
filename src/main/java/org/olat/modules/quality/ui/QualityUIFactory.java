@@ -30,6 +30,8 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.IdentityShort;
 import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
@@ -56,6 +58,8 @@ import org.olat.modules.curriculum.ui.CurriculumTreeModel;
 import org.olat.modules.quality.QualityDataCollectionTopicType;
 import org.olat.modules.quality.QualityDataCollectionView;
 import org.olat.modules.quality.QualityExecutorParticipation;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.user.ui.organisation.OrganisationTreeModel;
 
 /**
@@ -66,8 +70,12 @@ import org.olat.user.ui.organisation.OrganisationTreeModel;
  */
 public class QualityUIFactory {
 
+	private static final String FLAT_DELIMITER = " > ";
 	private static final String INTENDING = "\u00a0"; // &nbsp; non-breaking space
-	private static final Comparator<? super Curriculum> DISPLAY_NAME_COMPARATOR = (c1, c2) -> c1.getDisplayName().compareTo(c2.getDisplayName());
+	private static final Comparator<? super Curriculum> DISPLAY_NAME_COMPARATOR = 
+			(c1, c2) -> c1.getDisplayName().compareTo(c2.getDisplayName());
+	private static final Comparator<IdentityShort> IDENTITY_LAST_FIRST_COMPARATOR = 
+			Comparator.comparing(IdentityShort::getFirstName).thenComparing(IdentityShort::getLastName);
 	
 	public static String formatTopic(QualityDataCollectionView dataCollectionView) {
 		return formatTopic(dataCollectionView.getTopicType(), dataCollectionView.getTranslatedTopicType(),
@@ -160,6 +168,31 @@ public class QualityUIFactory {
 		}
 		return null;
 	}
+	
+	public static KeysValues getCurriculumElementFlatKeysValues(List<CurriculumElement> curriculumElements, CurriculumElement current) {
+		List<CurriculumElement> elements = new ArrayList<>(curriculumElements);
+		if (current != null && !elements.contains(current)) {
+			elements.add(0, current);
+		}
+		String[] keys = new String[elements.size()];
+		String[] values = new String[elements.size()];
+		for (int i = elements.size(); i-->0; ) {
+			CurriculumElement element = elements.get(i);
+			keys[i] = Long.toString(element.getKey());
+			ArrayList<String> names = new ArrayList<>();
+			addParentCurriculumElementNames(names, element);
+			values[i] = String.join(FLAT_DELIMITER, names);
+		}
+		return new KeysValues(keys, values);
+	}
+	
+	public static void addParentCurriculumElementNames(List<String> names, CurriculumElement curriculumElement) {
+		names.add(curriculumElement.getDisplayName());
+		CurriculumElement parent = curriculumElement.getParent();
+		if (parent != null) {
+			addParentCurriculumElementNames(names, parent);
+		}
+	}
 
 	public static KeysValues getCurriculumElementKeysValues(CurriculumTreeModel curriculumTreeModel, CurriculumElement current) {
 		List<CurriculumElement> elements = new ArrayList<>();
@@ -215,8 +248,33 @@ public class QualityUIFactory {
 		}
 		return null;
 	}
+	
+	public static KeysValues getOrganisationFlatKeysValues(List<Organisation> organisations, Organisation current) {
+		List<Organisation> orgs = new ArrayList<>(organisations);
+		if (current != null && !orgs.contains(current)) {
+			orgs.add(0, current);
+		}
+		String[] keys = new String[orgs.size()];
+		String[] values = new String[orgs.size()];
+		for (int i = orgs.size(); i-->0; ) {
+			Organisation organisation = orgs.get(i);
+			keys[i] = Long.toString(organisation.getKey());
+			ArrayList<String> names = new ArrayList<>();
+			addParentOrganisationNames(names, organisation);
+			values[i] = String.join(FLAT_DELIMITER, names);
+		}
+		return new KeysValues(keys, values);
+	}
 
-	public static KeysValues getTopicOrganisationKeysValues(OrganisationTreeModel organisationModel, Organisation current) {
+	public static void addParentOrganisationNames(List<String> names, Organisation organisation) {
+		names.add(organisation.getDisplayName());
+		Organisation parent = organisation.getParent();
+		if (parent != null) {
+			addParentOrganisationNames(names, parent);
+		}
+	}
+
+	public static KeysValues getOrganisationKeysValues(OrganisationTreeModel organisationModel, Organisation current) {
 		List<Organisation> organisations = new ArrayList<>();
 		organsiationTreeToList(organisations, organisationModel.getRootNode());
 		if (current != null && !organisations.contains(current)) {
@@ -255,7 +313,7 @@ public class QualityUIFactory {
 		return intendation;
 	}
 	
-	static String getTopicOrganisationKey(Organisation organisation) {
+	static String getOrganisationKey(Organisation organisation) {
 		return String.valueOf(organisation.getKey());
 	}
 
@@ -339,6 +397,56 @@ public class QualityUIFactory {
 			}
 		}
 		return organisations;
+	}
+	
+	public static KeysValues getIdentityKeysValues(List<IdentityShort> identities) {
+		List<IdentityShort> idents = new ArrayList<>(identities);
+		idents.sort(IDENTITY_LAST_FIRST_COMPARATOR);
+		String[] keys = new String[idents.size()];
+		String[] values = new String[idents.size()];
+		for (int i = idents.size(); i-->0; ) {
+			IdentityShort identity = idents.get(i);
+			keys[i] = Long.toString(identity.getKey());
+			values[i] = new StringBuilder().append(identity.getLastName()).append(" ").append(identity.getFirstName()).toString();
+		}
+		return new KeysValues(keys, values);
+	}
+
+	public static IdentityRef getIdentityRef(String identityKey) {
+		if (StringHelper.containsNonWhitespace(identityKey)) {
+			try {
+				Long key = Long.valueOf(identityKey);
+				return () -> key;
+			} catch (Exception e) {
+				//
+			}
+		}
+		return null;
+	}
+
+	public static KeysValues getRepositoryEntriesFlatKeysValues(List<RepositoryEntry> entries) {
+		List<RepositoryEntry> repoEntries = new ArrayList<>(entries);
+		repoEntries.sort(Comparator.comparing(RepositoryEntry::getDisplayname));
+		String[] keys = new String[repoEntries.size()];
+		String[] values = new String[repoEntries.size()];
+		for (int i = repoEntries.size(); i-->0; ) {
+			RepositoryEntry entry = repoEntries.get(i);
+			keys[i] = Long.toString(entry.getKey());
+			values[i] = entry.getDisplayname();
+		}
+		return new KeysValues(keys, values);
+	}
+
+	public static RepositoryEntryRef getRepositoryEntryRef(String entryKey) {
+		if (StringHelper.containsNonWhitespace(entryKey)) {
+			try {
+				Long key = Long.valueOf(entryKey);
+				return () -> key;
+			} catch (Exception e) {
+				//
+			}
+		}
+		return null;
 	}
 	
 	public static boolean validateInteger(TextElement el, int min, int max) {

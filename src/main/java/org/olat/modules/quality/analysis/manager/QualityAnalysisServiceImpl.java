@@ -19,7 +19,8 @@
  */
 package org.olat.modules.quality.analysis.manager;
 
-import java.util.ArrayList;
+import static java.util.stream.Collectors.toList;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -46,6 +47,8 @@ import org.olat.modules.quality.analysis.GroupBy;
 import org.olat.modules.quality.analysis.GroupedStatistic;
 import org.olat.modules.quality.analysis.GroupedStatistics;
 import org.olat.modules.quality.analysis.QualityAnalysisService;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -71,6 +74,8 @@ public class QualityAnalysisServiceImpl implements QualityAnalysisService {
 	@Autowired
 	private CurriculumService curriculumService;
 	@Autowired
+	private RepositoryManager repositoryManager;
+	@Autowired
 	private BaseSecurity securityManager;
 
 	@Override
@@ -84,10 +89,14 @@ public class QualityAnalysisServiceImpl implements QualityAnalysisService {
 	}
 
 	@Override
-	public List<Organisation> loadTopicOrganisations(AnalysisSearchParameter searchParams) {
+	public List<Organisation> loadTopicOrganisations(AnalysisSearchParameter searchParams, boolean withParents) {
 		List<Organisation> organisations = organisationService.getOrganisations();
-		List<Long> keys = filterDao.loadTopicOrganisationKeys(searchParams);
-		organisations.removeIf(org -> !keys.contains(org.getKey()));
+		List<String> pathes = filterDao.loadTopicOrganisationPaths(searchParams);
+		if (withParents) {
+			organisations.removeIf(e -> isUnusedChild(e.getMaterializedPathKeys(), pathes));
+		} else {
+			organisations.removeIf(e -> isUnused(e.getMaterializedPathKeys(), pathes));
+		}
 		return organisations;
 	}
 
@@ -112,14 +121,20 @@ public class QualityAnalysisServiceImpl implements QualityAnalysisService {
 	}
 
 	@Override
-	public List<Organisation> loadContextOrganisations(AnalysisSearchParameter searchParams) {
-		if (searchParams == null) {
-			return new ArrayList<>(0);
-		}
-		
+	public List<RepositoryEntry> loadTopicRepositoryEntries(AnalysisSearchParameter searchParams) {
+		List<Long> keys = filterDao.loadTopicRepositoryKeys(searchParams);
+		return repositoryManager.lookupRepositoryEntries(keys);
+	}
+
+	@Override
+	public List<Organisation> loadContextOrganisations(AnalysisSearchParameter searchParams, boolean withParents) {
 		List<Organisation> organisations = organisationService.getOrganisations();
 		List<String> pathes = filterDao.loadContextOrganisationPathes(searchParams);
-		organisations.removeIf(e -> isUnused(e.getMaterializedPathKeys(), pathes));	
+		if (withParents) {
+			organisations.removeIf(e -> isUnusedChild(e.getMaterializedPathKeys(), pathes));
+		} else {
+			organisations.removeIf(e -> isUnused(e.getMaterializedPathKeys(), pathes));
+		}	
 		return organisations;
 	}
 
@@ -130,15 +145,14 @@ public class QualityAnalysisServiceImpl implements QualityAnalysisService {
 
 	@Override
 	public List<CurriculumElement> loadContextCurriculumElements(AnalysisSearchParameter searchParams, boolean withParents) {
-		if (searchParams == null || searchParams.getCurriculumRefs() == null
-				|| searchParams.getCurriculumRefs().isEmpty()) {
-			return new ArrayList<>(0);
-		}
-
+		List<CurriculumRefImpl> curriculumRefs = filterDao.loadContextCurriculumElementsCurriculumKey(searchParams)
+				.stream().map(CurriculumRefImpl::new).collect(toList());
+		// Reload the curriculum elements to fetch the parents
 		List<CurriculumElement> elementsOfCurriculums = curriculumService
-				.getCurriculumElementsByCurriculums(searchParams.getCurriculumRefs());
+				.getCurriculumElementsByCurriculums(curriculumRefs);
 		List<String> pathes = filterDao.loadContextCurriculumElementPathes(searchParams);
-		if (withParents ) {
+
+		if (withParents) {
 			elementsOfCurriculums.removeIf(e -> isUnusedChild(e.getMaterializedPathKeys(), pathes));
 		} else {
 			elementsOfCurriculums.removeIf(e -> isUnused(e.getMaterializedPathKeys(), pathes));
@@ -146,8 +160,8 @@ public class QualityAnalysisServiceImpl implements QualityAnalysisService {
 		return elementsOfCurriculums;
 	}
 
-	private boolean isUnusedChild(String pathToCheck, List<String> pathsOfContexts) {
-		for (String path : pathsOfContexts) {
+	private boolean isUnusedChild(String pathToCheck, List<String> pathes) {
+		for (String path : pathes) {
 			if (path.contains(pathToCheck)) {
 				return false;
 			}
@@ -155,8 +169,8 @@ public class QualityAnalysisServiceImpl implements QualityAnalysisService {
 		return true;
 	}
 	
-	private boolean isUnused(String pathToCheck, List<String> pathsOfContexts) {
-		for (String path : pathsOfContexts) {
+	private boolean isUnused(String pathToCheck, List<String> pathes) {
+		for (String path : pathes) {
 			if (path.equals(pathToCheck)) {
 				return false;
 			}

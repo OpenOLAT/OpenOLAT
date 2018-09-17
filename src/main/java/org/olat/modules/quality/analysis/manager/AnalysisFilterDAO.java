@@ -28,16 +28,20 @@ import java.util.List;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
-import org.olat.core.id.Organisation;
+import org.olat.core.id.OrganisationRef;
 import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.quality.QualityDataCollectionLight;
 import org.olat.modules.quality.QualityDataCollectionStatus;
 import org.olat.modules.quality.analysis.AnalysisSearchParameter;
 import org.olat.modules.quality.analysis.GroupBy;
 import org.olat.modules.quality.analysis.GroupedStatistic;
+import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -53,25 +57,12 @@ public class AnalysisFilterDAO {
 	@Autowired
 	private DB dbInstance;
 
-	List<Organisation> loadContextOrganisations(AnalysisSearchParameter searchParams) {
-		QueryBuilder sb = new QueryBuilder();
-		sb.append("select distinct organisation");
-		appendFrom(sb);
-		appendWhere(sb, searchParams);
-		sb.and().append("organisation.key is not null");
-		
-		TypedQuery<Organisation> query = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Organisation.class);
-		appendParameters(query, searchParams);
-		return query.getResultList();
-	}
-	
 	List<String> loadContextOrganisationPathes(AnalysisSearchParameter searchParams) {
 		QueryBuilder sb = new QueryBuilder();
-		sb.append("select distinct organisation.materializedPathKeys");
-		appendFrom(sb);
+		sb.append("select distinct contextOrganisation.materializedPathKeys");
+		appendFrom(sb, searchParams);
 		appendWhere(sb, searchParams);
-		sb.and().append("organisation.key is not null");
+		sb.and().append("contextOrganisation.key is not null");
 		
 		TypedQuery<String> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), String.class);
@@ -82,7 +73,7 @@ public class AnalysisFilterDAO {
 	List<Curriculum> loadContextCurriculums(AnalysisSearchParameter searchParams) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select distinct curriculum");
-		appendFrom(sb);
+		appendFrom(sb, searchParams);
 		appendWhere(sb, searchParams);
 		sb.and().append("curriculum.key is not null");
 		
@@ -92,10 +83,23 @@ public class AnalysisFilterDAO {
 		return query.getResultList();
 	}
 
+	List<CurriculumElement> loadContextCurriculumElements(AnalysisSearchParameter searchParams) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select distinct curriculumElement");
+		appendFrom(sb, searchParams);
+		appendWhere(sb, searchParams);
+		sb.and().append("curriculumElement.key is not null");
+		
+		TypedQuery<CurriculumElement> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), CurriculumElement.class);
+		appendParameters(query, searchParams);
+		return query.getResultList();
+	}
+
 	List<String> loadContextCurriculumElementPathes(AnalysisSearchParameter searchParams) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select distinct curriculumElement.materializedPathKeys");
-		appendFrom(sb);
+		appendFrom(sb, searchParams);
 		appendWhere(sb, searchParams);
 		sb.and().append("curriculumElement.key is not null");
 		
@@ -105,10 +109,23 @@ public class AnalysisFilterDAO {
 		return query.getResultList();
 	}
 
+	List<Long> loadContextCurriculumElementsCurriculumKey(AnalysisSearchParameter searchParams) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select distinct curriculumElement.curriculum.key");
+		appendFrom(sb, searchParams);
+		appendWhere(sb, searchParams);
+		sb.and().append("curriculumElement.key is not null");
+		
+		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class);
+		appendParameters(query, searchParams);
+		return query.getResultList();
+	}
+
 	Long loadDataCollectionCount(AnalysisSearchParameter searchParams) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select count(distinct collection.key)");
-		appendFrom(sb);
+		appendFrom(sb, searchParams);
 		appendWhere(sb, searchParams);
 		
 		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
@@ -117,15 +134,15 @@ public class AnalysisFilterDAO {
 		return query.getResultList().get(0);
 	}
 	
-	List<Long> loadTopicOrganisationKeys(AnalysisSearchParameter searchParams) {
+	List<String> loadTopicOrganisationPaths(AnalysisSearchParameter searchParams) {
 		QueryBuilder sb = new QueryBuilder();
-		sb.append("select distinct collection.topicOrganisation.key");
-		appendFrom(sb);
+		sb.append("select distinct topicOrganisation.materializedPathKeys");
+		appendFrom(sb, searchParams);
 		appendWhere(sb, searchParams);
 		sb.and().append("collection.topicOrganisation.key is not null");
 		
-		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Long.class);
+		TypedQuery<String> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), String.class);
 		appendParameters(query, searchParams);
 		return query.getResultList();
 	}
@@ -133,7 +150,7 @@ public class AnalysisFilterDAO {
 	List<Long> loadTopicCurriculumKeys(AnalysisSearchParameter searchParams) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select distinct collection.topicCurriculum.key");
-		appendFrom(sb);
+		appendFrom(sb, searchParams);
 		appendWhere(sb, searchParams);
 		sb.and().append("collection.topicCurriculum.key is not null");
 		
@@ -146,7 +163,7 @@ public class AnalysisFilterDAO {
 	List<Long> loadTopicCurriculumElementKeys(AnalysisSearchParameter searchParams) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select distinct collection.topicCurriculumElement.key");
-		appendFrom(sb);
+		appendFrom(sb, searchParams);
 		appendWhere(sb, searchParams);
 		sb.and().append("collection.topicCurriculumElement.key is not null");
 		
@@ -159,9 +176,22 @@ public class AnalysisFilterDAO {
 	List<Long> loadTopicIdentityKeys(AnalysisSearchParameter searchParams) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select distinct collection.topicIdentity.key");
-		appendFrom(sb);
+		appendFrom(sb, searchParams);
 		appendWhere(sb, searchParams);
 		sb.and().append("collection.topicIdentity.key is not null");
+		
+		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class);
+		appendParameters(query, searchParams);
+		return query.getResultList();
+	}
+
+	public List<Long> loadTopicRepositoryKeys(AnalysisSearchParameter searchParams) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select distinct collection.topicRepositoryEntry.key");
+		appendFrom(sb, searchParams);
+		appendWhere(sb, searchParams);
+		sb.and().append("collection.topicRepositoryEntry.key is not null");
 		
 		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Long.class);
@@ -181,7 +211,7 @@ public class AnalysisFilterDAO {
 
 	static void appendSelectSessionKeys(QueryBuilder sb, AnalysisSearchParameter searchParams) {
 		sb.append("select distinct context.evaluationFormSession.key");
-		appendFrom(sb);
+		appendFrom(sb, searchParams);
 		appendWhere(sb, searchParams);
 		sb.and().append("context.evaluationFormSession.key is not null");
 	}
@@ -197,7 +227,7 @@ public class AnalysisFilterDAO {
 		sb.append("     , count(response)");
 		sb.append("     , avg(response.numericalResponse)");
 		sb.append("       )");
-		appendFrom(sb);
+		appendFrom(sb, searchParams);
 		sb.append("       inner join context.evaluationFormSession session");
 		sb.append("       inner join evaluationformresponse response");
 		sb.append("               on response.session.key = session.key");
@@ -216,14 +246,8 @@ public class AnalysisFilterDAO {
 
 	private void appendGroupBy(QueryBuilder sb, GroupBy groupBy, boolean select) {
 		switch (groupBy) {
-		case CONTEXT_ORAGANISATION:
-			sb.append(", contextToOrganisation.organisation.key");
-			break;
-		case CONTEXT_CURRICULUM:
-			sb.append(", contextToCurriculum.curriculum.key");
-			break;
-		case CONETXT_CURRICULUM_ELEMENT:
-			sb.append(", contextToCurriculumElement.curriculumElement.key");
+		case TOPIC_IDENTITY:
+			sb.append(", collection.topicIdentity.key");
 			break;
 		case TOPIC_ORGANISATION:
 			sb.append(", collection.topicOrganisation.key");
@@ -234,33 +258,46 @@ public class AnalysisFilterDAO {
 		case TOPIC_CURRICULUM_ELEMENT:
 			sb.append(", collection.topicCurriculumElement.key");
 			break;
-		case TOPIC_IDENTITY:
-			sb.append(", collection.topicIdentity.key");
+		case TOPIC_REPOSITORY:
+			sb.append(", collection.topicRepositoryEntry.key");
+			break;
+		case CONTEXT_ORAGANISATION:
+			sb.append(", contextToOrganisation.organisation.key");
+			break;
+		case CONTEXT_CURRICULUM:
+			sb.append(", contextToCurriculum.curriculum.key");
+			break;
+		case CONETXT_CURRICULUM_ELEMENT:
+			sb.append(", contextToCurriculumElement.curriculumElement.key");
 			break;
 		default: 
 			if (select) sb.append(", null");
 		}
 	}
 
-	static void appendFrom(QueryBuilder sb) {
+	private static void appendFrom(QueryBuilder sb, AnalysisSearchParameter searchParams) {
 		sb.append("  from qualitydatacollection collection");
 		sb.append("       inner join evaluationformsurvey survey");
 		sb.append("               on survey.resName = '").append(QualityDataCollectionLight.RESOURCEABLE_TYPE_NAME).append("'");
 		sb.append("              and survey.resId = collection.key");
+		sb.append("       left join collection.topicOrganisation topicOrganisation");
 		sb.append("       left join qualitycontext context");
-		sb.append("               on context.dataCollection.key = collection.key");
+		sb.append("              on context.dataCollection.key = collection.key");
 		sb.append("       left join contexttocurriculum contextToCurriculum");
-		sb.append("               on contextToCurriculum.context.key = context.key");
+		sb.append("              on contextToCurriculum.context.key = context.key");
 		sb.append("       left join curriculum curriculum");
-		sb.append("               on contextToCurriculum.curriculum.key = curriculum.key");
+		sb.append("              on contextToCurriculum.curriculum.key = curriculum.key");
 		sb.append("       left join contexttocurriculumelement contextToCurriculumElement");
-		sb.append("               on contextToCurriculumElement.context.key = context.key");
+		sb.append("              on contextToCurriculumElement.context.key = context.key");
 		sb.append("       left join curriculumelement curriculumElement");
-		sb.append("               on contextToCurriculumElement.curriculumElement.key = curriculumElement.key");
+		sb.append("              on contextToCurriculumElement.curriculumElement.key = curriculumElement.key");
 		sb.append("       left join contexttoorganisation contextToOrganisation");
-		sb.append("               on contextToOrganisation.context.key = context.key");
-		sb.append("       left join organisation organisation");
-		sb.append("               on contextToOrganisation.organisation.key = organisation.key");
+		sb.append("              on contextToOrganisation.context.key = context.key");
+		sb.append("       left join organisation contextOrganisation");
+		sb.append("              on contextToOrganisation.organisation.key = contextOrganisation.key");
+		if (searchParams.isWithUserInfosOnly()) {
+			sb.append("   left join context.evaluationFormSession sessionInfo");
+		}
 	}
 	
 	static void appendWhere(QueryBuilder sb, AnalysisSearchParameter searchParams) {
@@ -274,36 +311,65 @@ public class AnalysisFilterDAO {
 		if (searchParams.getDateRangeTo() != null) {
 			sb.and().append("collection.deadline <= :dateRangeTo");
 		}
-		if (searchParams.getOrganisationRefs() != null) {
+		if (searchParams.getTopicIdentityRefs() != null) {
+			sb.and().append("collection.topicIdentity.key in :topicIdentityKeys");
+		}
+		if (searchParams.getTopicOrganisationRefs() != null) {
+			sb.and().append("topicOrganisation.key in :topicOrganisationKeys");
+		}
+		if (searchParams.getTopicCurriculumRefs() != null) {
+			sb.and().append("collection.topicCurriculum.key in :topicCurriculumKeys");
+		}
+		if (searchParams.getTopicCurriculumElementRefs() != null) {
+			sb.and().append("collection.topicCurriculumElement.key in :topicCurriculumElementKeys");
+		}
+		if (searchParams.getTopicRepositoryRefs() != null) {
+			sb.and().append("collection.topicRepositoryEntry.key in :topicRepositoryEntryKeys");
+		}
+		if (searchParams.getContextOrganisationRefs() != null) {
+			// load the organisations and all children
 			sb.and();
-			for (int i = 0; i < searchParams.getOrganisationRefs().size(); i++) {
+			for (int i = 0; i < searchParams.getContextOrganisationRefs().size(); i++) {
 				if (i == 0) {
 					sb.append("(");
 				} else {
 					sb.append(" or ");
 				}
-				sb.append("organisation.materializedPathKeys like :orgPath").append(i);
-				if (i == searchParams.getOrganisationRefs().size() - 1) {
+				sb.append("contextOrganisation.materializedPathKeys like :orgPath").append(i);
+				if (i == searchParams.getContextOrganisationRefs().size() - 1) {
 					sb.append(")");
 				}
 			}
 		}
-		if (searchParams.getCurriculumRefs() != null) {
+		if (searchParams.getContextCurriculumRefs() != null) {
 			sb.and().append("curriculum.key in :curriculumKeys");
 		}
-		if (searchParams.getCurriculumElementRefs() != null) {
+		if (searchParams.getContextCurriculumElementRefs() != null) {
+			// load the curriculum elements and all children
 			sb.and();
-			for (int i = 0; i < searchParams.getCurriculumElementRefs().size(); i++) {
+			for (int i = 0; i < searchParams.getContextCurriculumElementRefs().size(); i++) {
 				if (i == 0) {
 					sb.append("(");
 				} else {
 					sb.append(" or ");
 				}
 				sb.append("curriculumElement.materializedPathKeys like :elePath").append(i);
-				if (i == searchParams.getCurriculumElementRefs().size() - 1) {
+				if (i == searchParams.getContextCurriculumElementRefs().size() - 1) {
 					sb.append(")");
 				}
 			}
+		}
+		if (searchParams.isWithUserInfosOnly()) {
+			sb.and();
+			sb.append("(");
+			sb.append("    sessionInfo.email is not null");
+			sb.append(" or sessionInfo.firstname is not null");
+			sb.append(" or sessionInfo.lastname is not null");
+			sb.append(" or sessionInfo.age is not null");
+			sb.append(" or sessionInfo.gender is not null");
+			sb.append(" or sessionInfo.orgUnit is not null");
+			sb.append(" or sessionInfo.studySubject is not null");
+			sb.append(")");
 		}
 	}
 
@@ -317,22 +383,42 @@ public class AnalysisFilterDAO {
 		if (searchParams.getDateRangeTo() != null) {
 			query.setParameter("dateRangeTo", searchParams.getDateRangeTo());
 		}
-		if (searchParams.getOrganisationRefs() != null) {
-			for (int i = 0; i < searchParams.getOrganisationRefs().size(); i++) {
+		if (searchParams.getTopicIdentityRefs() != null) {
+			List<Long> keys = searchParams.getTopicIdentityRefs().stream().map(IdentityRef::getKey).collect(toList());
+			query.setParameter("topicIdentityKeys", keys);
+		}
+		if (searchParams.getTopicOrganisationRefs() != null) {
+			List<Long> keys = searchParams.getTopicOrganisationRefs().stream().map(OrganisationRef::getKey).collect(toList());
+			query.setParameter("topicOrganisationKeys", keys);
+		}
+		if (searchParams.getTopicCurriculumRefs() != null) {
+			List<Long> keys = searchParams.getTopicCurriculumRefs().stream().map(CurriculumRef::getKey).collect(toList());
+			query.setParameter("topicCurriculumKeys", keys);
+		}
+		if (searchParams.getTopicCurriculumElementRefs() != null) {
+			List<Long> keys = searchParams.getTopicCurriculumElementRefs().stream().map(CurriculumElementRef::getKey).collect(toList());
+			query.setParameter("topicCurriculumElementKeys", keys);
+		}
+		if (searchParams.getTopicRepositoryRefs() != null) {
+			List<Long> keys = searchParams.getTopicRepositoryRefs().stream().map(RepositoryEntryRef::getKey).collect(toList());
+			query.setParameter("topicRepositoryEntryKeys", keys);
+		}
+		if (searchParams.getContextOrganisationRefs() != null) {
+			for (int i = 0; i < searchParams.getContextOrganisationRefs().size(); i++) {
 				String parameter = new StringBuilder(12).append("orgPath").append(i).toString();
-				Long key = searchParams.getOrganisationRefs().get(i).getKey();
+				Long key = searchParams.getContextOrganisationRefs().get(i).getKey();
 				String value = new StringBuilder(32).append("%/").append(key).append("/%").toString();
 				query.setParameter(parameter, value);
 			}
 		}
-		if (searchParams.getCurriculumRefs() != null) {
-			List<Long> curriculumKeys = searchParams.getCurriculumRefs().stream().map(CurriculumRef::getKey).collect(toList());
-			query.setParameter("curriculumKeys", curriculumKeys);
+		if (searchParams.getContextCurriculumRefs() != null) {
+			List<Long> keys = searchParams.getContextCurriculumRefs().stream().map(CurriculumRef::getKey).collect(toList());
+			query.setParameter("curriculumKeys", keys);
 		}
-		if (searchParams.getCurriculumElementRefs() != null) {
-			for (int i = 0; i < searchParams.getCurriculumElementRefs().size(); i++) {
+		if (searchParams.getContextCurriculumElementRefs() != null) {
+			for (int i = 0; i < searchParams.getContextCurriculumElementRefs().size(); i++) {
 				String parameter = new StringBuilder(12).append("elePath").append(i).toString();
-				Long key = searchParams.getCurriculumElementRefs().get(i).getKey();
+				Long key = searchParams.getContextCurriculumElementRefs().get(i).getKey();
 				String value = new StringBuilder(32).append("%/").append(key).append("/%").toString();
 				query.setParameter(parameter, value);
 			}

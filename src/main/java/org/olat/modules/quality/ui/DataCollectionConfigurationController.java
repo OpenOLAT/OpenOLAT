@@ -277,10 +277,10 @@ public class DataCollectionConfigurationController extends AbstractDataCollectio
 						OrganisationRoles.administrator, OrganisationRoles.qualitymanager);
 				OrganisationTreeModel organisationModel = new OrganisationTreeModel();
 				organisationModel.loadTreeModel(organisations);
-				KeysValues organistionKeysValues = QualityUIFactory.getTopicOrganisationKeysValues(organisationModel, topicOrganisation);
+				KeysValues organistionKeysValues = QualityUIFactory.getOrganisationKeysValues(organisationModel, topicOrganisation);
 				topicOrganisationEl.setKeysAndValues(organistionKeysValues.getKeys(), organistionKeysValues.getValues(), null);
 				if (topicOrganisation != null) {
-					topicOrganisationEl.select(QualityUIFactory.getTopicOrganisationKey(topicOrganisation), true);
+					topicOrganisationEl.select(QualityUIFactory.getOrganisationKey(topicOrganisation), true);
 				}
 				topicOrganisationEl.setVisible(true);
 				break;

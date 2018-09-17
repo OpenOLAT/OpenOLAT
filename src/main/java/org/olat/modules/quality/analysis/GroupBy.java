@@ -27,10 +27,11 @@ package org.olat.modules.quality.analysis;
  */
 public enum GroupBy {
 
+	TOPIC_IDENTITY("heatmap.group.topic.identity"),
 	TOPIC_ORGANISATION("heatmap.group.topic.organisation"),
 	TOPIC_CURRICULUM("heatmap.group.topic.curriculum"),
 	TOPIC_CURRICULUM_ELEMENT("heatmap.group.topic.curriculum.element"),
-	TOPIC_IDENTITY("heatmap.group.topic.identity"),
+	TOPIC_REPOSITORY("heatmap.group.topic.repository"),
 	CONTEXT_ORAGANISATION("heatmap.group.context.organisation"),
 	CONTEXT_CURRICULUM("heatmap.group.context.curriculum"),
 	CONETXT_CURRICULUM_ELEMENT("heatmap.group.context.curriculum.element");
