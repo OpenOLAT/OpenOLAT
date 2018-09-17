@@ -84,6 +84,7 @@ import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
 import org.olat.group.manager.BusinessGroupMailing.MailType;
 import org.olat.group.model.BGRepositoryEntryRelation;
+import org.olat.group.model.BusinessGroupDeletedEvent;
 import org.olat.group.model.BusinessGroupEnvironment;
 import org.olat.group.model.BusinessGroupMembershipChange;
 import org.olat.group.model.BusinessGroupMembershipImpl;
@@ -720,6 +721,10 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 	
 			// refresh object to avoid stale object exceptions
 			group = loadBusinessGroup(group);
+			
+			List<Long> memberKeys = businessGroupRelationDAO
+					.getMemberKeys(Collections.singletonList(group), GroupRoles.coach.name(), GroupRoles.participant.name());
+			List<Long> entryKeys = businessGroupRelationDAO.getRepositoryEntryKeys(group);
 			// 0) Loop over all deletableGroupData
 			Map<String,DeletableGroupData> deleteListeners = CoreSpringFactory.getBeansOfType(DeletableGroupData.class);
 			for (DeletableGroupData deleteListener : deleteListeners.values()) {
@@ -751,6 +756,10 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 			dbInstance.commit();
 	
 			log.audit("Deleted Business Group", group.toString());
+			//notify
+			BusinessGroupDeletedEvent event = new BusinessGroupDeletedEvent(BusinessGroupDeletedEvent.RESOURCE_DELETED_EVENT, memberKeys, entryKeys);
+			CoordinatorManager.getInstance().getCoordinator().getEventBus()
+				.fireEventToListenersOf(event, OresHelper.lookupType(BusinessGroup.class));
 		} catch(DBRuntimeException dbre) {
 			Throwable th = dbre.getCause();
 			if ((th instanceof ObjectNotFoundException) && th.getMessage().contains("org.olat.group.BusinessGroupImpl")) {

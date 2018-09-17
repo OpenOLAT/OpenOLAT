@@ -658,6 +658,25 @@ public class BusinessGroupRelationDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void getRepositoryEntryKeys() {
+		//create 2 entries and 1 group
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "rel-repo", "rel-repo-desc", 0, 10, true, false, false, false, false);
+		RepositoryEntry re1 = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry re2 = JunitTestHelper.createAndPersistRepositoryEntry();
+		dbInstance.commitAndCloseSession();
+		
+		businessGroupRelationDao.addRelationToResource(group, re1);
+		businessGroupRelationDao.addRelationToResource(group, re2);
+		dbInstance.commitAndCloseSession();
+		
+		List<Long> repositoryEntryKeys = businessGroupRelationDao.getRepositoryEntryKeys(group);
+		Assert.assertNotNull(repositoryEntryKeys);
+		Assert.assertEquals(2, repositoryEntryKeys.size());
+		Assert.assertTrue(repositoryEntryKeys.contains(re1.getKey()));
+		Assert.assertTrue(repositoryEntryKeys.contains(re2.getKey()));
+	}
+	
+	@Test
 	public void findRepositoryEntries() {
 		//create 3 entries and 1 group
 		RepositoryEntry re1 = JunitTestHelper.createAndPersistRepositoryEntry();

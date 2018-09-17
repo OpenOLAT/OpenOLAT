@@ -46,6 +46,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
+import java.util.TimeZone;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -53,6 +54,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.io.FileUtils;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Test;
 import org.olat.commons.calendar.CalendarImportTest;
 import org.olat.commons.calendar.CalendarManager;
@@ -648,6 +650,10 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 	
 	@Test
 	public void testImportICal_outlookFullDay() throws URISyntaxException, IOException {
+		TimeZone vmTimeZone = TimeZone.getDefault();
+		TimeZone ooTimeZone = TimeZone.getTimeZone("Europe/Zurich");
+		Assume.assumeTrue(vmTimeZone.getRawOffset() == ooTimeZone.getRawOffset());
+
 		Identity test = JunitTestHelper.createAndPersistIdentityAsRndUser("ur2-");
 		URL calendarUrl = ICalFileCalendarManagerTest.class.getResource("Fullday_outlook.ics");
 		File calendarFile = new File(calendarUrl.toURI());

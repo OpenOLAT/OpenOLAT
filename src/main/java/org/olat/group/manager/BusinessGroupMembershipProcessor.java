@@ -34,6 +34,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupRef;
 import org.olat.group.model.BGRepositoryEntryRelation;
+import org.olat.group.model.BusinessGroupDeletedEvent;
 import org.olat.group.model.BusinessGroupRefImpl;
 import org.olat.group.model.BusinessGroupRelationModified;
 import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
@@ -72,7 +73,8 @@ public class BusinessGroupMembershipProcessor implements InitializingBean, Gener
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		coordinator.getCoordinator().getEventBus().registerFor(this, null, OresHelper.lookupType(BusinessGroup.class));
+		coordinator.getCoordinator().getEventBus()
+			.registerFor(this, null, OresHelper.lookupType(BusinessGroup.class));
 	}
 
 	@Override
@@ -86,6 +88,25 @@ public class BusinessGroupMembershipProcessor implements InitializingBean, Gener
 			BusinessGroupRelationModified e = (BusinessGroupRelationModified)event;
 			if(BusinessGroupRelationModified.RESOURCE_REMOVED_EVENT.equals(e.getCommand())) {
 				processResourceRemoved(e.getGroupKey(), e.getRepositoryEntryKey());
+			}
+		} else if(event instanceof BusinessGroupDeletedEvent) {
+			BusinessGroupDeletedEvent e = (BusinessGroupDeletedEvent)event;
+			if(BusinessGroupDeletedEvent.RESOURCE_DELETED_EVENT.equals(e.getCommand())) {
+				processBusinessGroupDeleted(e.getMemberKeys(), e.getRepositoryEntryKeys());
+			}
+		}
+	}
+	
+	private void processBusinessGroupDeleted(List<Long> memberKeys, List<Long> repoKeys) {
+		for(Long repoKey:repoKeys) {
+			RepositoryEntryRef entryRef = new RepositoryEntryRefImpl(repoKey);
+			OLATResource resource = repositoryManager.lookupRepositoryEntryResource(entryRef.getKey());
+			for(Long memberKey:memberKeys) {
+				IdentityRef member = new IdentityRefImpl(memberKey);
+				List<String> remaingRoles = repositoryEntryRelationDao.getRoles(member, entryRef);
+				if(remaingRoles.isEmpty()) {
+					notificationsManager.unsubscribeAllForIdentityAndResId(member, resource.getResourceableId());
+				}
 			}
 		}
 	}
