@@ -19,7 +19,9 @@
  */
 package org.olat.modules.forms.manager;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -35,6 +37,8 @@ import org.olat.modules.forms.EvaluationFormParticipationStatus;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.modules.forms.EvaluationFormSurvey;
+import org.olat.modules.forms.RubricRating;
+import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -45,12 +49,21 @@ import org.olat.repository.RepositoryEntry;
  */
 public class EvaluationFormMangerImplTest {
 	
+	private static final double LOWER_BOUND_INSUFFICIENT = 1.0;
+	private static final double UPPER_BOUND_INSUFFICIENT = 4.0;
+	private static final double LOWER_BOUND_SUFFICIENT = 4.5;
+	private static final double UPPER_BOUND_SUFFICIENT = 6.0;
+	private static final double LOWER_BOUND_NEUTRAL = UPPER_BOUND_INSUFFICIENT;
+	private static final double UPPER_BOUND_NEUTRAL = LOWER_BOUND_SUFFICIENT;
+	
 	@Mock
 	private EvaluationFormSurveyDAO surveyDaoMock;
 	@Mock
 	private EvaluationFormParticipationDAO participationDaoMock;
 	@Mock
 	private EvaluationFormSessionDAO sessionDaoMock;
+	@Mock
+	private SessionStatusPublisher sessionStatusPublisherMock;
 
 	
 	@InjectMocks
@@ -135,6 +148,16 @@ public class EvaluationFormMangerImplTest {
 	}
 	
 	@Test
+	public void shouldPublishStatusWhenFinishingSession() {
+		EvaluationFormSession sessionMock = mock(EvaluationFormSession.class);
+		when(sessionDaoMock.loadSessionByKey(sessionMock)).thenReturn(sessionMock);
+		
+		sut.finishSession(sessionMock);
+
+		verify(sessionStatusPublisherMock).onFinish(any());
+	}
+	
+	@Test
 	public void shouldMakeSessionInProgressWhenReopeningSession() {
 		EvaluationFormSession sessionMock = mock(EvaluationFormSession.class);
 		EvaluationFormParticipation participationMock = mock(EvaluationFormParticipation.class);
@@ -168,5 +191,85 @@ public class EvaluationFormMangerImplTest {
 		verify(sessionDaoMock, never()).changeStatus(sessionMock, EvaluationFormSessionStatus.inProgress);
 		verify(participationDaoMock, never()).changeStatus(participationMock, EvaluationFormParticipationStatus.prepared);
 	}
+	
+	@Test
+	public void shouldPublishStatusWhenReopenSession() {
+		EvaluationFormSession sessionMock = mock(EvaluationFormSession.class);
+		EvaluationFormParticipation participationMock = mock(EvaluationFormParticipation.class);
+		when(sessionMock.getParticipation()).thenReturn(participationMock);
+		
+		sut.reopenSession(sessionMock);
+
+		verify(sessionStatusPublisherMock).onReopen(any());
+	}
+
+	@Test
+	public void shouldRateHigherThanUpperSufficient() {
+		assertRubricRating(UPPER_BOUND_SUFFICIENT + 1, RubricRating.NOT_RATED);
+	}
+
+	@Test
+	public void shouldRateUpperAsSufficient() {
+		assertRubricRating(UPPER_BOUND_SUFFICIENT, RubricRating.SUFFICIENT);
+	}
+
+	@Test
+	public void shouldRateInsideSufficient() {
+		assertRubricRating(LOWER_BOUND_SUFFICIENT + 0.1, RubricRating.SUFFICIENT);
+	}
+
+	@Test
+	public void shouldRateLowerAsSufficient() {
+		assertRubricRating(LOWER_BOUND_SUFFICIENT, RubricRating.SUFFICIENT);
+	}
+	
+	@Test
+	public void shouldRateUpperNeutralAsSufficient() {
+		assertRubricRating(UPPER_BOUND_NEUTRAL, RubricRating.SUFFICIENT);
+	}
+
+	@Test
+	public void shouldRateInsideNeutral() {
+		assertRubricRating(LOWER_BOUND_NEUTRAL + 0.1, RubricRating.NEUTRAL);
+	}
+	
+	@Test
+	public void shouldLowerAsInside() {
+		assertRubricRating(LOWER_BOUND_NEUTRAL, RubricRating.NEUTRAL);
+	}
+	@Test
+	public void shouldRateUpperInsufficientAsNeutral() {
+		assertRubricRating(UPPER_BOUND_INSUFFICIENT, RubricRating.NEUTRAL);
+	}
+
+	@Test
+	public void shouldRateInsideInsufficient() {
+		assertRubricRating(LOWER_BOUND_INSUFFICIENT + 0.5, RubricRating.INSUFFICIENT);
+	}
+
+	@Test
+	public void shouldRateLowerAsInsufficient() {
+		assertRubricRating(LOWER_BOUND_INSUFFICIENT, RubricRating.INSUFFICIENT);
+	}
+
+	@Test
+	public void shouldRateLoweThanInsufficient() {
+		assertRubricRating(LOWER_BOUND_INSUFFICIENT - 1, RubricRating.NOT_RATED);
+	}
+
+	public void assertRubricRating(Double value, RubricRating expectedRating) {
+		Rubric rubric = new Rubric();
+		rubric.setLowerBoundInsufficient(LOWER_BOUND_INSUFFICIENT);
+		rubric.setUpperBoundInsufficient(UPPER_BOUND_INSUFFICIENT);
+		rubric.setLowerBoundNeutral(LOWER_BOUND_NEUTRAL);
+		rubric.setUpperBoundNeutral(UPPER_BOUND_NEUTRAL);
+		rubric.setLowerBoundSufficient(LOWER_BOUND_SUFFICIENT);
+		rubric.setUpperBoundSufficient(UPPER_BOUND_SUFFICIENT);
+		
+		RubricRating rating = sut.getRubricRating(rubric, value);
+			
+		assertThat(rating).isEqualTo(expectedRating);
+	}
+
 
 }

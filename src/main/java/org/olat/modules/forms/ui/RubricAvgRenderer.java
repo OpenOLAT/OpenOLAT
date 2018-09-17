@@ -19,12 +19,15 @@
  */
 package org.olat.modules.forms.ui;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.modules.forms.EvaluationFormManager;
+import org.olat.modules.forms.RubricRating;
 import org.olat.modules.forms.model.xml.Rubric;
 
 /**
@@ -65,45 +68,14 @@ public class RubricAvgRenderer implements FlexiCellRenderer {
 	}
 
 	public static String getColorCss(Rubric rubric, Double value) {
-		Range insufficientRange = new Range(rubric.getLowerBoundInsufficient(), rubric.getUpperBoundInsufficient());
-		Range neutralRange = new Range(rubric.getLowerBoundNeutral(), rubric.getUpperBoundNeutral());
-		Range sufficientRange = new Range(rubric.getLowerBoundSufficient(), rubric.getUpperBoundSufficient());
-		if (insufficientRange.getLower() <= value && value <= insufficientRange.getUpper()) {
-			return "o_rubric_insufficient";
-		} else if (neutralRange.getLower() <= value && value <= neutralRange.getUpper()) {
-			return "o_rubric_neutral";
-		} else if (sufficientRange.getLower() <= value && value <= sufficientRange.getUpper()) {
-			return "o_rubric_sufficient";
+		EvaluationFormManager evaluationFormManager = CoreSpringFactory.getImpl(EvaluationFormManager.class);
+		RubricRating rating = evaluationFormManager.getRubricRating(rubric, value);
+		switch (rating) {
+			case SUFFICIENT: return "o_rubric_sufficient";
+			case NEUTRAL: return "o_rubric_neutral";
+			case INSUFFICIENT: return "o_rubric_insufficient";
+			default: return null;
 		}
-		return null;
 	}
 	
-	private static final class Range {
-		private final Double lower;
-		private final Double upper;
-		
-		Range(Double value1, Double value2) {
-			if (value1 != null && value2 != null) {
-				if (value1 < value2) {
-					lower = value1;
-					upper = value2;
-				} else {
-					lower = value2;
-					upper = value1;
-				}
-			} else {
-				lower = -99999d;
-				upper= -99999d;
-			}
-		}
-
-		public Double getLower() {
-			return lower;
-		}
-
-		public Double getUpper() {
-			return upper;
-		}
-		
-	}
 }

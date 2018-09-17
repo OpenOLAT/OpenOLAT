@@ -29,10 +29,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 import org.olat.basesecurity.IdentityRef;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -50,9 +48,9 @@ import org.olat.modules.forms.EvaluationFormSessionRef;
 import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.modules.forms.EvaluationFormStatistic;
 import org.olat.modules.forms.EvaluationFormSurvey;
+import org.olat.modules.forms.RubricRating;
 import org.olat.modules.forms.RubricStatistic;
 import org.olat.modules.forms.SessionFilter;
-import org.olat.modules.forms.SessionStatusHandler;
 import org.olat.modules.forms.SessionStatusInformation;
 import org.olat.modules.forms.model.jpa.EvaluationFormResponses;
 import org.olat.modules.forms.model.jpa.RubricStatisticImpl;
@@ -83,6 +81,8 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 	private EvaluationFormResponseDAO evaluationFormResponseDao;
 	@Autowired
 	private EvaluationFormStorage evaluationFormStorage;
+	@Autowired
+	private SessionStatusPublisher sessionStatusPublisher;
 
 	@Override
 	public Form loadForm(RepositoryEntry formEntry) {
@@ -248,10 +248,7 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 		SessionStatusInformation infos = new SessionStatusInformation();
 		infos.setParticipation(participation);
 		infos.setSession(session);
-		Map<String, SessionStatusHandler> statusHandler = CoreSpringFactory.getBeansOfType(SessionStatusHandler.class);
-		for (SessionStatusHandler handler: statusHandler.values()) {
-			handler.onFinish(infos);
-		}
+		sessionStatusPublisher.onFinish(infos);
 		return session;
 	}
 	
@@ -267,10 +264,7 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 			SessionStatusInformation infos = new SessionStatusInformation();
 			infos.setParticipation(participation);
 			infos.setSession(session);
-			Map<String, SessionStatusHandler> statusHandler = CoreSpringFactory.getBeansOfType(SessionStatusHandler.class);
-			for (SessionStatusHandler handler: statusHandler.values()) {
-				handler.onReopen(infos);
-			}
+			sessionStatusPublisher.onReopen(infos);
 		}
 		return finishedSesssion;
 	}
@@ -424,6 +418,52 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 	@Override
 	public RubricStatistic getRubricStatistic(Rubric rubric, SessionFilter filter) {
 		return new RubricStatisticImpl(rubric, filter);
+	}
+
+	@Override
+	public RubricRating getRubricRating(Rubric rubric, Double value) {
+		Range sufficientRange = new Range(rubric.getLowerBoundSufficient(), rubric.getUpperBoundSufficient());
+		Range neutralRange = new Range(rubric.getLowerBoundNeutral(), rubric.getUpperBoundNeutral());
+		Range insufficientRange = new Range(rubric.getLowerBoundInsufficient(), rubric.getUpperBoundInsufficient());
+		
+		RubricRating rating = RubricRating.NOT_RATED;
+		if (sufficientRange.getLower() <= value && value <= sufficientRange.getUpper()) {
+			rating = RubricRating.SUFFICIENT;
+		} else if (neutralRange.getLower() <= value && value <= neutralRange.getUpper()) {
+			rating = RubricRating.NEUTRAL;
+		} else if (insufficientRange.getLower() <= value && value <= insufficientRange.getUpper()) {
+			rating = RubricRating.INSUFFICIENT;
+		}
+		return rating;
+	}
+	
+	private static final class Range {
+		private final Double lower;
+		private final Double upper;
+		
+		Range(Double value1, Double value2) {
+			if (value1 != null && value2 != null) {
+				if (value1 < value2) {
+					lower = value1;
+					upper = value2;
+				} else {
+					lower = value2;
+					upper = value1;
+				}
+			} else {
+				lower = -99999d;
+				upper= -99999d;
+			}
+		}
+
+		public Double getLower() {
+			return lower;
+		}
+
+		public Double getUpper() {
+			return upper;
+		}
+		
 	}
 
 }

@@ -23,6 +23,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
+import static org.olat.core.gui.translator.TranslatorHelper.translateAll;
 import static org.olat.modules.quality.analysis.GroupBy.CONETXT_CURRICULUM_ELEMENT;
 import static org.olat.modules.quality.analysis.GroupBy.CONTEXT_CURRICULUM;
 import static org.olat.modules.quality.analysis.GroupBy.CONTEXT_ORAGANISATION;
@@ -40,6 +41,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -73,7 +75,10 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class HeatMapController extends FormBasicController implements FilterableController {
 
+	private static final String[] INSUFFICIENT_KEYS = new String[] {"heatmap.insufficient.select"};
+	
 	private SingleSelection groupEl;
+	private MultipleSelectionElement insufficientEl;
 	private HeatMapDataModel dataModel;
 	private FlexiTableElement tableEl;
 	
@@ -82,6 +87,7 @@ public class HeatMapController extends FormBasicController implements Filterable
 	
 	private AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
 	private GroupBy groupBy;
+	private boolean insufficientOnly;
 	
 	@Autowired
 	private QualityAnalysisService analysisService;
@@ -127,6 +133,7 @@ public class HeatMapController extends FormBasicController implements Filterable
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FormLayoutContainer groupByLayout = FormLayoutContainer.createDefaultFormLayout("groupByLayout", getTranslator());
+		// Group by selection
 		flc.add("groupByLayout", groupByLayout);
 		List<GroupBy> values = new ArrayList<>(asList(GroupBy.values()));
 		if (!organisationModule.isEnabled()) {
@@ -147,6 +154,12 @@ public class HeatMapController extends FormBasicController implements Filterable
 		groupEl.addActionListener(FormEvent.ONCHANGE);
 		setGroupBy();
 		
+		// Insufficient filter
+		insufficientEl = uifactory.addCheckboxesVertical("heatmap.insufficient", groupByLayout, INSUFFICIENT_KEYS,
+				translateAll(getTranslator(), INSUFFICIENT_KEYS), 1);
+		insufficientEl.addActionListener(FormEvent.ONCHANGE);
+		
+		// Heat map
 		initTable(Collections.emptyList(), 0);
 	}
 
@@ -196,6 +209,9 @@ public class HeatMapController extends FormBasicController implements Filterable
 		if (source == groupEl) {
 			setGroupBy();
 			loadHeatMap();
+		} else if (source == insufficientEl) {
+			setInsufficientOnly();
+			loadHeatMap();
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -208,12 +224,24 @@ public class HeatMapController extends FormBasicController implements Filterable
 			groupBy = GroupBy.valueOf(groupEl.getKey(0));
 		}
 	}
+
+	private void setInsufficientOnly() {
+		if (insufficientEl.isAtLeastSelected(1)) {
+			insufficientOnly = true;
+		} else {
+			insufficientOnly = false;
+		}
+	}
+
 	
 	private void loadHeatMap() {
 		HeatMapData heatMapData = createHeatMapData();
 		List<HeatMapRow> rows = heatMapData.getRows();
 		if (!rows.isEmpty()) {
 			addHeatMapStatistics(rows);
+		}
+		if (insufficientOnly) {
+			rows.removeIf(this::hasNoInsufficientAvgs);
 		}
 		int maxCount = getMaxCount(rows);
 		initTable(heatMapData.getHeaders(), maxCount);
@@ -237,6 +265,31 @@ public class HeatMapController extends FormBasicController implements Filterable
 			row.setStatistics(rowStatistics);
 		}
 		rows.sort(new GroupNameAlphabeticalComparator());
+	}
+
+	private boolean hasNoInsufficientAvgs(HeatMapRow row) {
+		for (int i = 0; i < row.getStatisticsSize(); i++) {
+			GroupedStatistic statistic = row.getStatistic(i);
+			if (statistic != null) {
+				Double avg = statistic.getAvg();
+				String identifier = statistic.getIdentifier();
+				Rubric rubric = getRubric(identifier);
+				boolean isInsufficient = analysisService.isInsufficient(rubric, avg);
+				if (isInsufficient) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
+	private Rubric getRubric(String identifier) {
+		for (SliderWrapper sliderWrapper : sliders) {
+			if (identifier.equals(sliderWrapper.getIdentifier())) {
+				return sliderWrapper.getRubric();
+			}
+		}
+		return null;
 	}
 
 	private int getMaxCount(List<HeatMapRow> rows) {

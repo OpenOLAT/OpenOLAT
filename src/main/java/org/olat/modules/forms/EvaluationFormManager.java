@@ -195,5 +195,7 @@ public interface EvaluationFormManager {
 	public EvaluationFormStatistic getSessionsStatistic(SessionFilter filter);
 	
 	public RubricStatistic getRubricStatistic(Rubric rubric, SessionFilter filter);
+	
+	public RubricRating getRubricRating(Rubric rubric, Double value);
 
 }

@@ -35,6 +35,8 @@ import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.modules.curriculum.model.CurriculumRefImpl;
+import org.olat.modules.forms.EvaluationFormManager;
+import org.olat.modules.forms.RubricRating;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.quality.analysis.AnalysisSearchParameter;
@@ -62,6 +64,8 @@ public class QualityAnalysisServiceImpl implements QualityAnalysisService {
 	private StatisticsCalculator statisticsCalculator;
 	@Autowired
 	private EvaluationFormDAO evaluationFromDao;
+	@Autowired
+	private EvaluationFormManager evaluationFormManager;
 	@Autowired
 	private OrganisationService organisationService;
 	@Autowired
@@ -173,5 +177,14 @@ public class QualityAnalysisServiceImpl implements QualityAnalysisService {
 		GroupedStatistics statistics = new GroupedStatistics(statisticsList);
 		statistics = statisticsCalculator.getScaledStatistics(statistics, rubrics);
 		return statistics;
+	}
+
+	@Override
+	public boolean isInsufficient(Rubric rubric, Double avg) {
+		RubricRating rating = evaluationFormManager.getRubricRating(rubric, avg);
+		if (RubricRating.INSUFFICIENT.equals(rating)) {
+			return true;
+		}
+		return false;
 	}
 }

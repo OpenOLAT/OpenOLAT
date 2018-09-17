@@ -60,4 +60,6 @@ public interface QualityAnalysisService {
 	public GroupedStatistics calculateStatistics(AnalysisSearchParameter searchParams,
 			Collection<String> responseIdentifiers, Collection<Rubric> rubrics, GroupBy groupBy);
 
+	public boolean isInsufficient(Rubric rubric, Double avg);
+
 }
