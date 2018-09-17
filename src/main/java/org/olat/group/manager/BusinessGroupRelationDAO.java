@@ -506,6 +506,18 @@ public class BusinessGroupRelationDAO {
 		return count == null ? false : count.intValue() > 0;
 	}
 	
+	public List<Long> getRepositoryEntryKeys(BusinessGroup group) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select distinct v.key from repositoryentry as v ")
+			.append(" inner join v.groups as relGroup")
+			.append(" inner join businessgroup as bgi on (bgi.baseGroup.key=relGroup.group.key)")
+			.append(" where  bgi.key=:groupKey");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("groupKey", group.getKey())
+				.getResultList();
+	}
+	
 	public List<RepositoryEntry> findRepositoryEntries(Collection<BusinessGroup> groups, int firstResult, int maxResults) {
 		if(groups == null || groups.isEmpty()) {
 			return Collections.emptyList();
