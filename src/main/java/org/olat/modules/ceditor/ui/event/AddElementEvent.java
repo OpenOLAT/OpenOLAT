@@ -20,9 +20,9 @@
 package org.olat.modules.ceditor.ui.event;
 
 import org.olat.core.gui.control.Event;
-import org.olat.modules.ceditor.ui.PageEditorController.EditorFragment;
 import org.olat.modules.ceditor.PageElementHandler;
 import org.olat.modules.ceditor.ui.PageElementTarget;
+import org.olat.modules.ceditor.ui.model.EditorFragment;
 
 /**
  * 

@@ -16,6 +16,9 @@
 				<div class="$fragment.cssClass">$r.render($fragment.componentName)</div>
 			</div>
 		#end
+		
+		$r.render("fragments")
+		
 		<div class="o_button_group">
 			#if($r.available("save.intermediate") && $r.visible("save.intermediate"))
 				$r.render("save.intermediate")

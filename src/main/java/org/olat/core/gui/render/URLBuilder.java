@@ -113,6 +113,15 @@ public class URLBuilder {
 		}
 		buf.append(encodeUrl(result.toString()));
 	}
+	
+	public String getJavascriptURI() {
+		StringOutput result = new StringOutput(100);
+		result.append(uriPrefix);
+		encodeParams(result, AJAXFlags.MODE_TOBGIFRAME);
+		result.append("/");
+		return result.toString();
+	}
+	
 
 	/**
 	 * @param buf

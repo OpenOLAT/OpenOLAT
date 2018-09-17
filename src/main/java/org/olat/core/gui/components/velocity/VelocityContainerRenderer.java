@@ -26,7 +26,6 @@
 
 package org.olat.core.gui.components.velocity;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.velocity.context.Context;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentRenderer;
@@ -38,6 +37,8 @@ import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.render.velocity.VelocityHelper;
 import org.olat.core.gui.render.velocity.VelocityRenderDecorator;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 
 /**
  * Renderer for the VelocityContainer <br>
@@ -45,13 +46,9 @@ import org.olat.core.gui.translator.Translator;
  * @author Felix Jost
  */
 public class VelocityContainerRenderer implements ComponentRenderer {
+	
+	private static final OLog log = Tracing.createLoggerFor(VelocityContainerRenderer.class);
 
-	/**
-	 * @see org.olat.core.gui.render.ui.ComponentRenderer#render(org.olat.core.gui.render.Renderer,
-	 *      org.olat.core.gui.render.StringOutput, org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.render.URLBuilder, org.olat.core.gui.translator.Translator,
-	 *      org.olat.core.gui.render.RenderResult, java.lang.String[])
-	 */
 	@Override
 	public void render(Renderer renderer, StringOutput target, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
@@ -62,27 +59,24 @@ public class VelocityContainerRenderer implements ComponentRenderer {
 		// the component id of the urlbuilder  will be overwritten by the recursive render call for
 		// subcomponents (see Renderer)
 		Renderer fr = Renderer.getInstance(vc, translator, ubu, renderResult, renderer.getGlobalSettings());
-		VelocityRenderDecorator vrdec = new VelocityRenderDecorator(fr, vc, target);			
-		ctx.put("r", vrdec);
-		VelocityHelper vh = VelocityHelper.getInstance();
-		vh.mergeContent(pagePath, ctx, target, null);
-		//free the decorator
-		ctx.remove("r");
-		IOUtils.closeQuietly(vrdec);
-		
-		//set all not rendered component as not dirty
-		for(Component cmp: vc.getComponents()) {
-			if(cmp.isDirty()) {
-				cmp.setDirty(false);
+		try(VelocityRenderDecorator vrdec = new VelocityRenderDecorator(fr, vc, target)) {
+			ctx.put("r", vrdec);
+			VelocityHelper vh = VelocityHelper.getInstance();
+			vh.mergeContent(pagePath, ctx, target, null);
+			//free the decorator
+			ctx.remove("r");
+			
+			//set all not rendered component as not dirty
+			for(Component cmp: vc.getComponents()) {
+				if(cmp.isDirty()) {
+					cmp.setDirty(false);
+				}
 			}
+		} catch(Exception e) {
+			log.error("", e);
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.render.ui.ComponentRenderer#renderHeaderIncludes(org.olat.core.gui.render.Renderer,
-	 *      org.olat.core.gui.render.StringOutput, org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.render.URLBuilder, org.olat.core.gui.translator.Translator)
-	 */
 	@Override
 	public void renderHeaderIncludes(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator, RenderingState rstate) {
 		VelocityContainer vc = (VelocityContainer) source;
@@ -93,10 +87,6 @@ public class VelocityContainerRenderer implements ComponentRenderer {
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.render.ui.ComponentRenderer#renderBodyOnLoadJSFunctionCall(org.olat.core.gui.render.Renderer,
-	 *      org.olat.core.gui.render.StringOutput, org.olat.core.gui.components.Component)
-	 */
 	@Override
 	public void renderBodyOnLoadJSFunctionCall(Renderer renderer, StringOutput sb, Component source, RenderingState rstate) {
 		VelocityContainer vc = (VelocityContainer) source;

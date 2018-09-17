@@ -37,6 +37,7 @@ import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementHandler;
 import org.olat.modules.ceditor.ui.FullEditorSecurityCallback;
 import org.olat.modules.ceditor.ui.PageEditorController;
+import org.olat.modules.forms.handler.ContainerHandler;
 import org.olat.modules.forms.handler.DisclaimerHandler;
 import org.olat.modules.forms.handler.FileUploadHandler;
 import org.olat.modules.forms.handler.HTMLRawHandler;
@@ -149,7 +150,9 @@ public class EvaluationFormEditorController extends BasicController {
 			handlers.add(disclaimerHandler);
 			SessionInformationsHandler sessionInformationsHandler = new SessionInformationsHandler(restrictedEdit);
 			handlers.add(sessionInformationsHandler);
-			
+			ContainerHandler containerHandler = new ContainerHandler();
+			handlers.add(containerHandler);
+
 			if(!restrictedEdit) {
 				creationHandlers.add(titleRawHandler);
 				creationHandlers.add(hrHandler);
@@ -161,6 +164,7 @@ public class EvaluationFormEditorController extends BasicController {
 				creationHandlers.add(multipleChoiceHandler);
 				creationHandlers.add(disclaimerHandler);
 				creationHandlers.add(sessionInformationsHandler);
+				creationHandlers.add(containerHandler);
 			}
 		}
 

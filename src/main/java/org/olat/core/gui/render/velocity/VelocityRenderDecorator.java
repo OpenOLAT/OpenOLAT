@@ -70,7 +70,7 @@ public class VelocityRenderDecorator implements Closeable {
 	private Renderer renderer;
 	private final boolean isIframePostEnabled;
 	private StringOutput target;
-	private HelpModule helpModule;
+	private HelpModule cachedHelpModule;
 
 	/**
 	 * @param renderer
@@ -80,8 +80,14 @@ public class VelocityRenderDecorator implements Closeable {
 		this.renderer = renderer;
 		this.vc = vc;
 		this.target = target;
-		this.isIframePostEnabled = renderer.getGlobalSettings().getAjaxFlags().isIframePostEnabled();
-		this.helpModule = CoreSpringFactory.getImpl(HelpModule.class);
+		isIframePostEnabled = renderer.getGlobalSettings().getAjaxFlags().isIframePostEnabled();
+	}
+	
+	public HelpModule getHelpModule() {
+		if(cachedHelpModule == null) {
+			cachedHelpModule = CoreSpringFactory.getImpl(HelpModule.class);
+		}
+		return cachedHelpModule;
 	}
 
 	@Override
@@ -331,9 +337,9 @@ public class VelocityRenderDecorator implements Closeable {
 	 * For static references (e.g. images which cannot be delivered using css):
 	 * use renderStaticURI instead!
 	 */
-	public StringOutput relLink(String URI) {
+	public StringOutput relLink(String uri) {
 		StringOutput sb = new StringOutput(100);
-		Renderer.renderNormalURI(sb, URI);
+		Renderer.renderNormalURI(sb, uri);
 		return sb;
 	}
 
@@ -342,12 +348,12 @@ public class VelocityRenderDecorator implements Closeable {
 	 * e.g. "images/somethingicannotdowithcss.jpg" -> /olat/raw/61x/images/somethingicannotdowithcss.jpg"
 	 * with /olat/raw/61x/ mounted to webapp/static directory of your webapp
 	 * 
-	 * @param URI
+	 * @param uri
 	 * @return
 	 */
-	public StringOutput staticLink(String URI) {
+	public StringOutput staticLink(String uri) {
 		StringOutput sb = new StringOutput(100);
-		Renderer.renderStaticURI(sb, URI);
+		Renderer.renderStaticURI(sb, uri);
 		return sb;
 	}
 	
@@ -435,9 +441,9 @@ public class VelocityRenderDecorator implements Closeable {
 	 */
 	public StringOutput contextHelpWithWrapper(String page) {
 		StringOutput sb = new StringOutput(192);
-		if (helpModule.isHelpEnabled()) {
+		if (getHelpModule().isHelpEnabled()) {
 			Locale locale = renderer.getTranslator().getLocale();
-			String url = helpModule.getHelpProvider().getURL(locale, page);
+			String url = getHelpModule().getHelpProvider().getURL(locale, page);
 			if(url != null) {
 				String title = StringEscapeUtils.escapeHtml(renderer.getTranslator().translate("help.button"));
 				sb.append("<span class=\"o_chelp_wrapper\">")
@@ -458,9 +464,9 @@ public class VelocityRenderDecorator implements Closeable {
 	 */
 	public StringOutput contextHelpJSCommand(String page) {
 		StringOutput sb = new StringOutput(100);
-		if (helpModule.isHelpEnabled()) {
+		if (getHelpModule().isHelpEnabled()) {
 			Locale locale = renderer.getTranslator().getLocale();
-			String url = helpModule.getHelpProvider().getURL(locale, page);
+			String url = getHelpModule().getHelpProvider().getURL(locale, page);
 			sb.append("contextHelpWindow('").append(url).append("')");
 		}
 		return sb;
@@ -476,8 +482,8 @@ public class VelocityRenderDecorator implements Closeable {
 	
 	public StringOutput contextHelpLink(String page) {
 		StringOutput sb = new StringOutput(100);
-		if (helpModule.isHelpEnabled()) {
-			String url = helpModule.getHelpProvider().getURL(renderer.getTranslator().getLocale(), page);
+		if (getHelpModule().isHelpEnabled()) {
+			String url = getHelpModule().getHelpProvider().getURL(renderer.getTranslator().getLocale(), page);
 			sb.append(url);
 		}
 		return sb;
@@ -859,8 +865,7 @@ public class VelocityRenderDecorator implements Closeable {
 	 * @return
 	 */
 	public Component getComponent(String componentName) {
-		Component source = renderer.findComponent(componentName);
-		return source;
+		return renderer.findComponent(componentName);
 	}
 
 	/**
@@ -1018,8 +1023,8 @@ public class VelocityRenderDecorator implements Closeable {
 		I18nModule i18nModule = CoreSpringFactory.getImpl(I18nModule.class);
 		
 		Collection<String> enabledKeysSet = i18nModule.getEnabledLanguageKeys();
-		Map<String, String> langNames = new HashMap<String, String>();
-		Map<String, String> langTranslators = new HashMap<String, String>();
+		Map<String, String> langNames = new HashMap<>();
+		Map<String, String> langTranslators = new HashMap<>();
 		String[] enabledKeys = ArrayHelper.toArray(enabledKeysSet);
 		String[] names = new String[enabledKeys.length];
 		for (int i = 0; i < enabledKeys.length; i++) {

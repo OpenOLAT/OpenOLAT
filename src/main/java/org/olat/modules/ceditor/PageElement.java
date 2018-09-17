@@ -27,6 +27,8 @@ package org.olat.modules.ceditor;
  */
 public interface PageElement {
 	
+	public String getId();
+	
 	public String getType();
 
 }

@@ -27,7 +27,6 @@ import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -36,6 +35,8 @@ import org.olat.modules.ceditor.PageElementHandler;
 import org.olat.modules.ceditor.PageElementRenderingHints;
 import org.olat.modules.ceditor.PageProvider;
 import org.olat.modules.ceditor.PageRunElement;
+import org.olat.modules.ceditor.ui.component.PageFragmentsComponent;
+import org.olat.modules.ceditor.ui.model.PageFragment;
 
 /**
  * 
@@ -45,14 +46,12 @@ import org.olat.modules.ceditor.PageRunElement;
  */
 public class PageController extends BasicController {
 	
-	private List<PageFragment> fragments = new ArrayList<>();
-	
 	private int counter;
 	private final PageProvider provider;
-	private final VelocityContainer mainVC;
+	private final PageFragmentsComponent fragmentsCmp;
 	private final PageElementRenderingHints renderingHints;
-	
-	private Map<String,PageElementHandler> handlerMap = new HashMap<>();
+
+	private final Map<String,PageElementHandler> handlerMap = new HashMap<>();
 	
 	public PageController(UserRequest ureq, WindowControl wControl, PageProvider provider, PageElementRenderingHints renderingHints) {
 		super(ureq, wControl);
@@ -62,8 +61,8 @@ public class PageController extends BasicController {
 		for(PageElementHandler handler:provider.getAvailableHandlers()) {
 			handlerMap.put(handler.getType(), handler);
 		}
-		mainVC = createVelocityContainer("page_run");
-		putInitialPanel(mainVC);
+		fragmentsCmp = new PageFragmentsComponent("page_fragments");
+		putInitialPanel(fragmentsCmp);
 	}
 
 	@Override
@@ -77,61 +76,20 @@ public class PageController extends BasicController {
 	}
 	
 	public boolean validateElements(UserRequest ureq, List<ValidationMessage> messages) {
-		boolean allOk = true;
-		for(PageFragment fragment:fragments) {
-			if(!fragment.validate(ureq, messages)) {
-				allOk &= false;
-			}
-		}
-		return allOk;
+		return fragmentsCmp.validateElements(ureq, messages);
 	}
 	
 	public void loadElements(UserRequest ureq) {
 		List<? extends PageElement> elements = provider.getElements();
-		List<PageFragment> newFragments = new ArrayList<>(elements.size());
+		List<PageFragment> fragments = new ArrayList<>(elements.size());
 		for(PageElement element:elements) {
 			PageElementHandler handler = handlerMap.get(element.getType());
 			if(handler != null) {
 				PageRunElement runElement = handler.getContent(ureq, getWindowControl(), element, renderingHints);
 				String cmpId = "cpt-" + (++counter);
-				newFragments.add(new PageFragment(handler.getType(), cmpId, runElement));
-				mainVC.put(cmpId, runElement.getComponent());
+				fragments.add(new PageFragment(handler.getType(), cmpId, runElement, element));
 			}
 		}
-		fragments = newFragments;
-		mainVC.contextPut("fragments", fragments);
-	}
-	
-	public static final class PageFragment {
-
-		private final String type;
-		private final String componentName;
-		private final PageRunElement runElement;
-		
-		public PageFragment(String type, String componentName, PageRunElement runElement) {
-			this.type = type;
-			this.componentName = componentName;
-			this.runElement = runElement;
-		}
-		
-		public String getCssClass() {
-			return "o_ed_".concat(type);
-		}
-		
-		public String getComponentName() {
-			return componentName;
-		}
-		
-		public Component getComponent() {
-			return runElement.getComponent();
-		}
-		
-		public PageRunElement getPageRunElement() {
-			return runElement;
-		}
-		
-		public boolean validate(UserRequest ureq, List<ValidationMessage> messages) {
-			return runElement.validate(ureq, messages);
-		}
+		fragmentsCmp.setFragments(fragments);
 	}
 }

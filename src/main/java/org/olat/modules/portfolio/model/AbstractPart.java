@@ -92,6 +92,11 @@ public class AbstractPart implements Persistable, ModifiedInfo, CreateInfo, Page
 	public void setKey(Long key) {
 		this.key = key;
 	}
+
+	@Override
+	public String getId() {
+		return key.toString();
+	}
 	
 	@Override
 	@Transient

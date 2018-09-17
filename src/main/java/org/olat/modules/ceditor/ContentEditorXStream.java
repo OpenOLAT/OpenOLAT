@@ -20,6 +20,8 @@
 package org.olat.modules.ceditor;
 
 import org.olat.core.util.xml.XStreamHelper;
+import org.olat.modules.ceditor.model.ContainerColumn;
+import org.olat.modules.ceditor.model.ContainerSettings;
 import org.olat.modules.ceditor.model.ImageHorizontalAlignment;
 import org.olat.modules.ceditor.model.ImageSettings;
 import org.olat.modules.ceditor.model.ImageSize;
@@ -43,7 +45,7 @@ public class ContentEditorXStream {
 		XStream.setupDefaultSecurity(xstream);
 		Class<?>[] types = new Class[] {
 				ImageSettings.class, ImageHorizontalAlignment.class, ImageTitlePosition.class, ImageSize.class,
-				TextSettings.class
+				TextSettings.class, ContainerSettings.class, ContainerColumn.class
 		};
 		xstream.addPermission(new ExplicitTypePermission(types));
 
@@ -53,6 +55,8 @@ public class ContentEditorXStream {
 		xstream.alias("imagesize", ImageSize.class);
 
 		xstream.alias("textsettings", TextSettings.class);
+		
+		xstream.alias("containersettings", ContainerSettings.class);
 	}
 	
 	public static String toXml(Object obj) {

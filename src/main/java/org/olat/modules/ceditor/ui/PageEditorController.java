@@ -20,14 +20,12 @@
 package org.olat.modules.ceditor.ui;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -46,12 +44,19 @@ import org.olat.modules.ceditor.PageEditorProvider;
 import org.olat.modules.ceditor.PageEditorSecurityCallback;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementAddController;
-import org.olat.modules.ceditor.PageElementEditorController;
 import org.olat.modules.ceditor.PageElementHandler;
 import org.olat.modules.ceditor.SimpleAddPageElementHandler;
+import org.olat.modules.ceditor.model.ContainerElement;
+import org.olat.modules.ceditor.ui.component.PageEditorComponent;
+import org.olat.modules.ceditor.ui.component.PageEditorModel;
 import org.olat.modules.ceditor.ui.event.AddElementEvent;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.ceditor.ui.event.ClosePartEvent;
+import org.olat.modules.ceditor.ui.event.ContainerColumnEvent;
+import org.olat.modules.ceditor.ui.event.DropFragmentEvent;
+import org.olat.modules.ceditor.ui.event.EditFragmentEvent;
+import org.olat.modules.ceditor.ui.event.EditionEvent;
+import org.olat.modules.ceditor.ui.model.EditorFragment;
 
 /**
  * 
@@ -61,7 +66,9 @@ import org.olat.modules.ceditor.ui.event.ClosePartEvent;
  */
 public class PageEditorController extends BasicController {
 
+	private PageEditorModel editorModel;
 	private final VelocityContainer mainVC;
+	private final PageEditorComponent editorCmp;
 	
 	private CloseableModalController cmc;
 	private PageElementAddController addCtrl;
@@ -71,8 +78,6 @@ public class PageEditorController extends BasicController {
 	private int counter;
 	private final PageEditorProvider provider;
 	private final PageEditorSecurityCallback secCallback;
-	
-	private List<EditorFragment> fragments = new ArrayList<>();
 	private Map<String,PageElementHandler> handlerMap = new HashMap<>();
 
 	public PageEditorController(UserRequest ureq, WindowControl wControl, PageEditorProvider provider,
@@ -99,12 +104,9 @@ public class PageEditorController extends BasicController {
 		}
 		
 		mainVC.contextPut("addElementLinks", addElements);
-		
-		String[] jss = new String[] {
-				"js/dragula/dragula.js"
-		};
-		JSAndCSSComponent js = new JSAndCSSComponent("js", jss, null);
-		mainVC.put("js", js);
+		editorCmp = new PageEditorComponent("page_editor");
+		editorCmp.addListener(this);
+		mainVC.put("page_editor", editorCmp);
 		
 		loadModel(ureq);
 		putInitialPanel(mainVC);
@@ -119,8 +121,8 @@ public class PageEditorController extends BasicController {
 				newFragments.add(fragment);
 			}
 		}
-		fragments = newFragments;
-		mainVC.contextPut("fragments", newFragments);
+		editorModel = new PageEditorModel(newFragments);
+		editorCmp.setModel(editorModel);
 	}
 	
 	@Override
@@ -151,8 +153,8 @@ public class PageEditorController extends BasicController {
 			cleanUp();
 		} else if(cmc == source) {
 			cleanUp();
-		} else if(isEditorPartController(source)) {
-			EditorFragment fragment = getEditorFragment(source);
+		} else if(editorCmp.getModel().isEditorPartController(source)) {
+			EditorFragment fragment = editorModel.getEditorFragment(source);
 			if(event instanceof ChangePartEvent) {
 				ChangePartEvent changeEvent = (ChangePartEvent)event;
 				PageElement element = changeEvent.getElement();
@@ -165,23 +167,7 @@ public class PageEditorController extends BasicController {
 		super.event(ureq, source, event);
 	}
 	
-	private boolean isEditorPartController(Controller source) {
-		for(EditorFragment fragment:fragments) {
-			if(fragment.getEditorPart() == source) {
-				return true;
-			}
-		}
-		return false;
-	}
-	
-	private EditorFragment getEditorFragment(Controller source) {
-		for(EditorFragment fragment:fragments) {
-			if(fragment.getEditorPart() == source) {
-				return fragment;
-			}
-		}
-		return null;
-	}
+
 	
 	private void cleanUp() {
 		removeAsListenerAndDispose(addElementsCtrl);
@@ -198,48 +184,48 @@ public class PageEditorController extends BasicController {
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(source instanceof Link) {
 			Link link = (Link)source;
-			String cmd = link.getCommand();
-			if("add".equals(cmd)) {
+			if("add".equals(link.getCommand())) {
 				PageElementHandler handler = (PageElementHandler)link.getUserObject();
 				doAddElement(ureq, null, handler, PageElementTarget.atTheEnd);
-			} else if("add.element.above".equals(cmd)) {
-				EditorFragment refEl = (EditorFragment)link.getUserObject();
-				openAddElementCallout(ureq, link, refEl, PageElementTarget.above);
-			} else if("add.element.below".equals(cmd)) {
-				EditorFragment refEl = (EditorFragment)link.getUserObject();
-				openAddElementCallout(ureq, link, refEl, PageElementTarget.below);
-			} else if("save.element".equals(cmd)) {
-				EditorFragment fragment = (EditorFragment)link.getUserObject();
-				doSaveElement(ureq, fragment);
-			} else if("delete.element".equals(cmd)) {
-				EditorFragment fragment = (EditorFragment)link.getUserObject();
-				doDeleteElement(ureq, fragment);
-			} else if("move.up.element".equals(cmd)) {
-				EditorFragment fragment = (EditorFragment)link.getUserObject();
-				doMoveUpElement(ureq, fragment);
-			} else if("move.down.element".equals(cmd)) {
-				EditorFragment fragment = (EditorFragment)link.getUserObject();
-				doMoveDownElement(ureq, fragment);
 			}
-		} else if(mainVC == source) {
-			if("edit_fragment".equals(event.getCommand())) {
-				String fragmentId = ureq.getParameter("fragment");
-				EditorFragment selectedFragment = null;
-				for(EditorFragment f:fragments) {
-					if(f.getComponentName().equals(fragmentId)) {
-						selectedFragment = f;
-					}
+		} else if(editorCmp == source) {
+			if(event instanceof EditFragmentEvent) {
+				EditFragmentEvent efe = (EditFragmentEvent)event;
+				doEditElement(efe.getFragment());
+			} else if (event instanceof EditionEvent) {
+				EditionEvent editionEvent = (EditionEvent)event;
+				if(editionEvent.getLink() != null) {
+					doProcessEditionEvent(ureq, editionEvent.getLink(), editionEvent.getFragment());
 				}
-				doEditElement(selectedFragment);
-			} else if("drop_fragment".equals(event.getCommand())) {
-				String fragmentCmpId = ureq.getParameter("dragged");
-				String siblingCmpId = ureq.getParameter("sibling");
-				doMove(ureq, fragmentCmpId, siblingCmpId);
+			} else if(event instanceof DropFragmentEvent) {
+				DropFragmentEvent dropEvent = (DropFragmentEvent)event;
+				doDrop(ureq, dropEvent);
+			} else if(event instanceof ContainerColumnEvent) {
+				ContainerColumnEvent cce = (ContainerColumnEvent)event;
+				doChangeContainerColumns(ureq, cce.getFragment(), cce.getNumOfColumns());
 			}
 		}
 	}
 	
+	private void doProcessEditionEvent(UserRequest ureq, Link link, EditorFragment fragment) {
+		String cmd = link.getCommand();
+		 if("add.element.above".equals(cmd)) {
+			openAddElementCallout(ureq, link, fragment, PageElementTarget.above);
+		} else if("add.element.below".equals(cmd)) {
+			openAddElementCallout(ureq, link, fragment, PageElementTarget.below);
+		} else if("save.element".equals(cmd)) {
+			doSaveElement(ureq, fragment);
+		} else if("delete.element".equals(cmd)) {
+			doDeleteElement(ureq, fragment);
+		} else if("move.up.element".equals(cmd)) {
+			doMoveUpElement(ureq, fragment);
+		} else if("move.down.element".equals(cmd)) {
+			doMoveDownElement(ureq, fragment);
+		}
+	}
+	
 	private void doEditElement(EditorFragment fragment) {
+		List<EditorFragment> fragments = editorModel.getFragments();
 		for(EditorFragment eFragment:fragments) {
 			eFragment.setEditMode(eFragment.equals(fragment));
 			
@@ -345,37 +331,61 @@ public class PageEditorController extends BasicController {
 	private EditorFragment doAddPageElement(UserRequest ureq, PageElement element, EditorFragment referenceFragment, PageElementTarget target) {
 		EditorFragment newFragment = null;
 		if(target == PageElementTarget.atTheEnd) {
-			newFragment = doAddPageElementAtTheEnd(ureq, element);
+			newFragment = doAddPageElementAtTheEnd(ureq, referenceFragment, element);
 		} else if(target == PageElementTarget.above || target == PageElementTarget.below) {
-			int index = fragments.indexOf(referenceFragment);
-			if(target == PageElementTarget.below) {
-				index = index + 1;
-			}
-			
-			if(index >= fragments.size()) {
-				newFragment = doAddPageElementAtTheEnd(ureq, element);
-			} else {
-				if(index < 0) {
-					index = 0;
-				}
 
-				PageElement pageElement = provider.appendPageElementAt(element, index);
+			String containerCmpId = editorModel.getContainerOfFragmentCmpId(referenceFragment.getComponentName());
+			if(containerCmpId != null) {
+				PageElement pageElement = provider.appendPageElement(element);
 				newFragment = createFragment(ureq, pageElement);
-				fragments.add(index, newFragment);
+				editorModel.add(newFragment);
+				
+				EditorFragment container = editorModel.getFragmentByCmpId(containerCmpId);
+				PageElement updatedElement = ((ContainerEditorController)container.getEditorPart())
+						.addElement(pageElement.getId(), referenceFragment.getPageElement().getId(), target);
+				container.setPageElement(updatedElement);
+			} else {
+				int index = editorModel.indexOf(referenceFragment);
+				if(target == PageElementTarget.below) {
+					index = index + 1;
+				}
+				
+				if(index >= editorModel.size()) {
+					newFragment = doAddPageElementAtTheEnd(ureq, referenceFragment, element);
+				} else {
+					if(index < 0) {
+						index = 0;
+					}
+	
+					PageElement pageElement = provider.appendPageElementAt(element, index);
+					newFragment = createFragment(ureq, pageElement);
+					editorModel.add(index, newFragment);
+				}
 			}
 		}
 
-		mainVC.setDirty(true);
-		
 		doEditElement(newFragment);
+		editorCmp.setDirty(true);
 		fireEvent(ureq, Event.CHANGED_EVENT);
 		return newFragment;
 	}
+	
 
-	private EditorFragment doAddPageElementAtTheEnd(UserRequest ureq, PageElement element) {
+	private EditorFragment doAddPageElementAtTheEnd(UserRequest ureq, EditorFragment referenceFragment, PageElement element) {
 		PageElement pageElement = provider.appendPageElement(element);
 		EditorFragment fragment = createFragment(ureq, pageElement);
-		fragments.add(fragment);
+		editorModel.add(fragment);
+		
+		if(referenceFragment != null) {
+			String containerCmpId = editorModel.getContainerOfFragmentCmpId(referenceFragment.getComponentName());
+			if(containerCmpId != null) {
+				EditorFragment container = editorModel.getFragmentByCmpId(containerCmpId);
+				PageElement updatedElement = ((ContainerEditorController)container.getEditorPart())
+						.setElementIn(fragment.getPageElement().getId(), referenceFragment.getPageElement().getId());
+				container.setPageElement(updatedElement);
+			}
+		}
+		
 		return fragment;
 	}
 	
@@ -387,68 +397,163 @@ public class PageEditorController extends BasicController {
 	
 	private void doDeleteElement(UserRequest ureq, EditorFragment fragment) {
 		provider.removePageElement(fragment.getPageElement());
-		fragments.remove(fragment);
+		editorModel.remove(fragment);
 		mainVC.setDirty(true);
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
 	private void doMoveUpElement(UserRequest ureq, EditorFragment fragment) {
-		int index = fragments.indexOf(fragment) - 1;
-		if(index >= 0) {
-			provider.moveUpPageElement(fragment.getPageElement());
-			fragments.remove(fragment);
-			fragments.add(index, fragment);
-			mainVC.setDirty(true);
-			doEditElement(fragment);
-			fireEvent(ureq, Event.CHANGED_EVENT);
-		}
-	}
-	
-	private void doMoveDownElement(UserRequest ureq, EditorFragment fragment) {
-		int index = fragments.indexOf(fragment) + 1;
-		if(index < fragments.size()) {
-			provider.moveDownPageElement(fragment.getPageElement());
-			fragments.remove(fragment);
-			fragments.add(index, fragment);
-			mainVC.setDirty(true);
-			doEditElement(fragment);
-			fireEvent(ureq, Event.CHANGED_EVENT);
-		}
-	}
-	
-	private void doMove(UserRequest ureq, String fragmentCmpId, String siblingCmpId) {
-		if(!StringHelper.containsNonWhitespace(fragmentCmpId)) return;
-		
-		EditorFragment fragment = getFragmentByCmpId(fragmentCmpId);
-		if(fragment == null) return;
-		
-		EditorFragment sibling = getFragmentByCmpId(siblingCmpId);
-
-		if(fragments.remove(fragment)) {
-			int index = fragments.size();
-			PageElement siblingElement = null;
-			if(sibling != null && fragments.contains(sibling)) {
-				index = fragments.indexOf(sibling);
-				siblingElement = sibling.getPageElement();
+		String containerCmpId = editorModel.getContainerOfFragmentCmpId(fragment.getComponentName());
+		if(containerCmpId != null) {
+			EditorFragment container = editorModel.getFragmentByCmpId(containerCmpId);
+			PageElement updatedElement = ((ContainerEditorController)container.getEditorPart())
+					.moveUp(fragment.getPageElement().getId());
+			container.setPageElement(updatedElement);
+		} else {
+			int index = editorModel.indexOf(fragment) - 1;
+			if(index >= 0) {
+				provider.moveUpPageElement(fragment.getPageElement());
+				editorModel.remove(fragment);
+				editorModel.add(index, fragment);
 			}
-			fragments.add(index, fragment);
-			provider.movePageElement(fragment.getPageElement(), siblingElement);
 		}
-		mainVC.setDirty(true);
+		
+		doEditElement(fragment);
+		editorCmp.setDirty(true);
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
-	private EditorFragment getFragmentByCmpId(String cmpId) {
-		if(!StringHelper.containsNonWhitespace(cmpId)) return null;
-		
-		for(EditorFragment fragment:fragments) {
-			if(fragment.getCmpId().equals(cmpId)) {
-				return fragment;
+	private void doMoveDownElement(UserRequest ureq, EditorFragment fragment) {
+		String containerCmpId = editorModel.getContainerOfFragmentCmpId(fragment.getComponentName());
+		if(containerCmpId != null) {
+			EditorFragment container = editorModel.getFragmentByCmpId(containerCmpId);
+			PageElement updatedElement = ((ContainerEditorController)container.getEditorPart())
+					.moveDown(fragment.getPageElement().getId());
+			container.setPageElement(updatedElement);
+		} else {
+			int index = editorModel.indexOf(fragment) + 1;
+			if(index < editorModel.size()) {
+				provider.moveDownPageElement(fragment.getPageElement());
+				editorModel.remove(fragment);
+				editorModel.add(index, fragment);
+				
 			}
 		}
-		return null;
+		
+		doEditElement(fragment);
+		editorCmp.setDirty(true);
+		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
+	private void doChangeContainerColumns(UserRequest ureq, EditorFragment fragment, int numOfColumns) {
+		if(!(fragment.getPageElement() instanceof ContainerElement)) {
+			return;
+		}
+		
+		PageElement updatedElement = ((ContainerEditorController)fragment.getEditorPart())
+				.setNumOfColumns(numOfColumns);
+		fragment.setPageElement(updatedElement);
+		fragment.setEditMode(false);
+
+		editorCmp.setDirty(true);
+		fireEvent(ureq, Event.CHANGED_EVENT);
+	}
+	
+	private void doDrop(UserRequest ureq, DropFragmentEvent dropEvent) {
+		String fragmentCmpId = dropEvent.getDragged();
+		if(StringHelper.containsNonWhitespace(fragmentCmpId)) {
+			String targetCmpId = dropEvent.getTargetCmpId();
+			String sourceCmpId = dropEvent.getSource();
+			String siblingCmpId = dropEvent.getSiblingCmpId();
+			String containerCmpId = dropEvent.getContainerCmpId();
+			if(containerCmpId == null) {
+				if(targetCmpId != null) {
+					containerCmpId = editorModel.getContainerOfFragmentCmpId(targetCmpId);
+				} else if (siblingCmpId != null) {
+					containerCmpId = editorModel.getContainerOfFragmentCmpId(siblingCmpId);
+				}
+			}
+
+			if(StringHelper.containsNonWhitespace(containerCmpId)) {
+				String slotId = dropEvent.getSlotId();
+				doMoveInContainer(fragmentCmpId, sourceCmpId, containerCmpId, slotId, siblingCmpId);
+			} else if(StringHelper.containsNonWhitespace(targetCmpId) || StringHelper.containsNonWhitespace(siblingCmpId)) {
+				doMoveTo(fragmentCmpId, sourceCmpId, targetCmpId, siblingCmpId);
+			}
+
+			editorCmp.setDirty(true);
+			fireEvent(ureq, Event.CHANGED_EVENT);
+		}
+	}
+	
+	private void doMoveInContainer(String fragmentCmpId, String sourceCmpId, String containerId, String slot, String siblingCmpId) {
+		if(!StringHelper.containsNonWhitespace(fragmentCmpId)) return;
+		
+		EditorFragment fragment = editorModel.getFragmentByCmpId(fragmentCmpId);
+		if(fragment == null) return;
+		
+		EditorFragment container = editorModel.getFragmentByCmpId(containerId);
+		if(container == null) return;
+
+		EditorFragment source = editorModel.getFragmentByCmpId(sourceCmpId);
+		removeFromContainer(fragment, source);
+		removeFromContainers(fragment);
+		
+		EditorFragment sibling = editorModel.getFragmentByCmpId(siblingCmpId);
+		String siblingElementId = sibling == null ? null : sibling.getElementId();
+
+		PageElement updatedElement = ((ContainerEditorController)container.getEditorPart())
+			.setElementAt(fragment.getPageElement().getId(), Integer.parseInt(slot), siblingElementId);
+		container.setPageElement(updatedElement);
+		fragment.setEditMode(false);
+	}
+	
+	private void doMoveTo(String fragmentCmpId, String sourceCmpId, String targetCmpId, String siblingCmpId) {
+		if(!StringHelper.containsNonWhitespace(fragmentCmpId)) return;
+		
+		EditorFragment fragment = editorModel.getFragmentByCmpId(fragmentCmpId);
+		if(fragment == null) return;
+		
+		EditorFragment sibling = editorModel.getFragmentByCmpId(siblingCmpId);
+		EditorFragment target = editorModel.getFragmentByCmpId(targetCmpId);
+		EditorFragment source = editorModel.getFragmentByCmpId(sourceCmpId);
+
+		if(editorModel.remove(fragment)) {
+			removeFromContainer(fragment, source);
+			removeFromContainers(fragment);
+			
+			int index = editorModel.size();
+			PageElement nextElement = null;
+			if(sibling != null && editorModel.contains(sibling)) {
+				index = editorModel.indexOf(sibling);
+				nextElement = sibling.getPageElement();
+			} else if(target != null && editorModel.contains(target)) {
+				index = editorModel.indexOf(target);
+				nextElement = target.getPageElement();
+			}
+			editorModel.add(index, fragment);
+			provider.movePageElement(fragment.getPageElement(), nextElement);
+			fragment.setEditMode(false);
+		}
+	}
+	
+	private void removeFromContainer(EditorFragment fragment, EditorFragment source) {
+		if(source == null || !(source.getEditorPart() instanceof ContainerEditorController)) return;
+
+		PageElement updatedElement = ((ContainerEditorController)source.getEditorPart())
+				.removeElement(fragment.getPageElement().getId());
+		source.setPageElement(updatedElement);
+	}
+	
+	private void removeFromContainers(EditorFragment fragment) {
+		for(EditorFragment f:editorModel.getFragments()) {
+			if(f.getEditorPart() instanceof ContainerEditorController) {
+				PageElement updatedElement = ((ContainerEditorController)f.getEditorPart())
+						.removeElement(fragment.getPageElement().getId());
+				f.setPageElement(updatedElement);
+			}
+		}	
+	}
 	
 	private EditorFragment createFragment(UserRequest ureq, PageElement element) {
 		PageElementHandler handler = handlerMap.get(element.getType());
@@ -462,138 +567,5 @@ public class PageEditorController extends BasicController {
 		EditorFragment fragment = new EditorFragment(element, handler, cmpId, editorPart);
 		mainVC.put(cmpId, editorPart.getInitialComponent());
 		return fragment;
-	}
-	
-	public static class EditorFragment  {
-		
-		private boolean editMode;
-		private PageElement element;
-		private final PageElementHandler handler;
-
-		private final String cmpId;
-		private Controller editorPart;
-		private Link addElementAboveLink, addElementBelowLink, saveLink, deleteLink, moveUpLink, moveDownLink;
-		
-		public EditorFragment(PageElement element, PageElementHandler handler, String cmpId, Controller editorPart) {
-			this.element = element;
-			this.handler = handler;
-			this.cmpId = cmpId;
-			this.editorPart = editorPart;
-		}
-
-		public boolean isEditMode() {
-			return editMode;
-		}
-
-		public void setEditMode(boolean editMode) {
-			this.editMode = editMode;
-			if(editorPart instanceof PageElementEditorController) {
-				((PageElementEditorController)editorPart).setEditMode(editMode);
-			}
-		}
-		
-		public String getCmpId() {
-			return cmpId;
-		}
-
-		public PageElement getPageElement() {
-			return element;
-		}
-		
-		public void setPageElement(PageElement element) {
-			this.element = element;
-		}
-
-		public String getComponentName() {
-			return getCmpId();
-		}
-		
-		public Controller getEditorPart() {
-			return editorPart;
-		}
-		
-		public Link getAddElementAboveLink() {
-			return addElementAboveLink;
-		}
-
-		public void setAddElementAboveLink(Link addElementAboveLink) {
-			this.addElementAboveLink = addElementAboveLink;
-		}
-
-		public Link getAddElementBelowLink() {
-			return addElementBelowLink;
-		}
-
-		public void setAddElementBelowLink(Link addElementBelowLink) {
-			this.addElementBelowLink = addElementBelowLink;
-		}
-
-		public Link getSaveLink() {
-			return saveLink;
-		}
-
-		public void setSaveLink(Link saveLink) {
-			this.saveLink = saveLink;
-		}
-
-		public Link getDeleteLink() {
-			return deleteLink;
-		}
-
-		public void setDeleteLink(Link deleteLink) {
-			this.deleteLink = deleteLink;
-		}
-
-		public Link getMoveUpLink() {
-			return moveUpLink;
-		}
-
-		public void setMoveUpLink(Link moveUpLink) {
-			this.moveUpLink = moveUpLink;
-		}
-
-		public Link getMoveDownLink() {
-			return moveDownLink;
-		}
-
-		public void setMoveDownLink(Link moveDownLink) {
-			this.moveDownLink = moveDownLink;
-		}
-		
-		public List<Link> getAdditionalTools() {
-			if(editorPart instanceof PageElementEditorController) {
-				return ((PageElementEditorController)editorPart).getOptionLinks();
-			}
-			return Collections.emptyList();
-		}
-		
-		public String getType() {
-			return handler.getType();
-		}
-		
-		public String getTypeCssClass() {
-			return handler.getIconCssClass();
-		}
-
-		public PageElementHandler getHandler() {
-			return handler;
-		}
-
-		@Override
-		public int hashCode() {
-			return element.hashCode();
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if(this == obj) {
-				return true;
-			}
-			if(obj instanceof EditorFragment) {
-				EditorFragment eFragment = (EditorFragment)obj;
-				return element != null && element.equals(eFragment.getPageElement());
-			}
-			return false;
-		}
 	}
 }

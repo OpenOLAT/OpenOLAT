@@ -50,6 +50,7 @@ import org.olat.fileresource.FileResourceManager;
 import org.olat.modules.ceditor.ValidatingController;
 import org.olat.modules.ceditor.ui.ValidationMessage;
 import org.olat.modules.ceditor.ui.ValidationMessage.Level;
+import org.olat.modules.ceditor.ui.component.PageFragmentsElementImpl;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSessionStatus;
@@ -62,6 +63,7 @@ import org.olat.modules.forms.model.xml.AbstractElement;
 import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.model.xml.FormXStream;
 import org.olat.modules.forms.ui.model.EvaluationFormExecutionElement;
+import org.olat.modules.forms.ui.model.ExecutionFragment;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -80,6 +82,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 	private FormLink saveLink;
 	private FormLink doneLink;
 	private DialogBoxController confirmDoneCtrl;
+	private PageFragmentsElementImpl fragmentsEl;
 	
 	private final Form form;
 	private final Component header;
@@ -167,6 +170,9 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 			handlerMap.put(handler.getType(), handler);
 		}
 		
+		fragmentsEl = new PageFragmentsElementImpl("fragments");
+		formLayout.add("fragments", fragmentsEl);
+		
 		ajustFromSession();
 		loadElements(ureq);
 		loadResponses();
@@ -214,9 +220,9 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 		for(AbstractElement element: elements) {
 			EvaluationFormElementHandler handler = handlerMap.get(element.getType());
 			if(handler != null) {
-				EvaluationFormExecutionElement executionElement = handler.getExecutionElement(ureq, getWindowControl(), this.mainForm, element);
+				EvaluationFormExecutionElement executionElement = handler.getExecutionElement(ureq, getWindowControl(), mainForm, element);
 				String cmpId = "cpt-" + CodeHelper.getRAMUniqueID();
-				fragments.add(new ExecutionFragment(handler.getType(), cmpId, executionElement));
+				fragments.add(new ExecutionFragment(handler.getType(), cmpId, executionElement, element));
 				if (executionElement.hasFormItem()) {
 					flc.add(cmpId, executionElement.getFormItem());
 				} else {
@@ -224,7 +230,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 				}
 			}
 		}
-		flc.contextPut("fragments", fragments);
+		fragmentsEl.setFragments(fragments);
 	}
 	
 	private void loadResponses() {
@@ -289,7 +295,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 		for (ExecutionFragment fragment: fragments) {
 			fragment.validate(ureq, messages);
 		}
-		return messages.size() == 0;
+		return messages.isEmpty();
 	}
 
 	private void areAllResponded(List<ValidationMessage> messages) {
@@ -345,51 +351,5 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 		showHideButtons();
 		flc.setDirty(true);
 		fireEvent(ureq, Event.DONE_EVENT);
-	}
-
-	public static final class ExecutionFragment {
-
-		private final String type;
-		private final String componentName;
-		private final EvaluationFormExecutionElement executionElement;
-		
-		public ExecutionFragment(String type, String componentName, EvaluationFormExecutionElement executionElement) {
-			this.type = type;
-			this.componentName = componentName;
-			this.executionElement = executionElement;
-		}
-		
-		public String getCssClass() {
-			return "o_ed_".concat(type);
-		}
-		
-		public String getComponentName() {
-			return componentName;
-		}
-		
-		public boolean validate(UserRequest ureq, List<ValidationMessage> messages) {
-			return executionElement.validate(ureq, messages);
-		}
-		
-		public void setReadOnly(boolean readOnly) {
-			executionElement.setReadOnly(readOnly);
-		}
-		
-		public boolean hasResponse() {
-			return executionElement.hasResponse();
-		}
-		
-		public void initResponse(EvaluationFormSession session, EvaluationFormResponses responses){
-			executionElement.initResponse(session, responses);;
-		}
-		
-		public void save(EvaluationFormSession session) {
-			executionElement.saveResponse(session);
-		}
-		
-		public void dispose() {
-			executionElement.dispose();
-		}
-		
 	}
 }

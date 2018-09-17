@@ -20,7 +20,7 @@
 package org.olat.modules.ceditor.ui;
 
 import org.olat.modules.ceditor.PageElementHandler;
-import org.olat.modules.ceditor.ui.PageEditorController.EditorFragment;
+import org.olat.modules.ceditor.ui.model.EditorFragment;
 
 /**
  * 

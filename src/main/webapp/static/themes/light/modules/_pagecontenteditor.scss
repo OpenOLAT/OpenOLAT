@@ -1,3 +1,5 @@
+
+
 .o_page_content_editor {
 	.o_toolbar  	{
 		border:none;
@@ -192,9 +194,38 @@
 	}
 }
 
+.o_page_container {
+	box-sizing: border-box;
+	padding: 10px;
+}
+
+.o_page_container {
+	background-color: $o-editor-container-level-1-bg-color;
+}
+
+.o_page_container .o_page_container  {
+	background-color: $o-editor-container-level-2-bg-color;
+}
+
+.o_page_container .o_page_container .o_page_container  {
+	background-color: $o-editor-container-level-3-bg-color;
+}
+
+.o_page_container_slot {
+	box-sizing: border-box;
+	border: 1px solid $o-editor-hover-border-color;
+	margin: 0 -1px -1px 0;
+	padding: 10px;
+}
+
+.o_page_container_slot.oo-accepted, .o_page_part.oo-accepted {
+	background-color: $o-editor-drag-accepted-color;
+}
+
 .o_page_add_contents {
 	margin-top: 30px;
 }
+
 
 
 .o_ce_html_raw {

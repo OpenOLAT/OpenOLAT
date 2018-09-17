@@ -34,8 +34,8 @@ import org.olat.modules.ceditor.InteractiveAddPageElementHandler;
 import org.olat.modules.ceditor.PageEditorProvider;
 import org.olat.modules.ceditor.PageElementHandler;
 import org.olat.modules.ceditor.SimpleAddPageElementHandler;
-import org.olat.modules.ceditor.ui.PageEditorController.EditorFragment;
 import org.olat.modules.ceditor.ui.event.AddElementEvent;
+import org.olat.modules.ceditor.ui.model.EditorFragment;
 
 /**
  * 

@@ -200,7 +200,8 @@ public class BinderController extends BasicController implements TooledControlle
 		} else if("History".equalsIgnoreCase(resName)) {
 			doOpenHistory(ureq);
 		} else if("Toc".equalsIgnoreCase(resName)) {
-			doOpenOverview(ureq);
+			List<ContextEntry> subEntries = entries.subList(1, entries.size());
+			doOpenOverview(ureq).activate(ureq, subEntries, entries.get(0).getTransientState());
 		}
 	}
 	

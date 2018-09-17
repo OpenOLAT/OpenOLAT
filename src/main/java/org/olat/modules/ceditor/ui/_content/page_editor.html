@@ -1,103 +1,19 @@
-<div class="o_page_content_editor">
-	#foreach($fragment in $fragments)
-		#if($fragment.editMode)
-			<div class="o_page_fragment_edit" data-oo-page-fragment="$fragment.componentName">
-				<div class="o_page_tools_above clearfix">
-					#if($r.visible($fragment.addElementAboveLink))
-					<div class="o_page_add_above">
-						$r.render($fragment.addElementAboveLink)
-					</div>
-					#end
-					
-					<div class="o_page_others_above">
-						<span class="o_page_type"><i class="o_icon $fragment.typeCssClass"> </i> $r.translate($fragment.type)</span>
-						
-						$r.render($fragment.saveLink)
-						#if($r.visible($fragment.deleteLink))
-							$r.render($fragment.deleteLink)
-						#end
-						#foreach($additionalTool in $fragment.additionalTools)
-							$r.render($additionalTool)
-						#end
-					</div>
-				</div>
-				<div class="o_page_tools_dd">
-					#if($r.visible($fragment.moveUpLink))
-						$r.render($fragment.moveUpLink)
-					#end
-					#if($r.visible($fragment.moveDownLink))
-						$r.render($fragment.moveDownLink)
-					#end
-				</div>
-				<div class="o_page_part o_page_edit" data-oo-page-fragment="$fragment.componentName">
-				$r.render($fragment.componentName)
-				</div>
-				
-				#if($r.visible($fragment.addElementBelowLink))
-				<div class="o_page_add_below">
-				$r.render($fragment.addElementBelowLink)
-				</div>
-				#end
-			</div>
-		#else
-			<div class="o_page_part" data-oo-page-fragment="$fragment.componentName">
-				$r.render($fragment.componentName)
-			</div>
-		#end
-	#end
-	
-	#if($r.isNotEmpty($addElementLinks))
-	<div class="o_page_add_contents panel panel-placeholder">
-		<div class="panel-heading">
-			<h4 class="panel-title">$r.translate("add.content.title")</h4>
-		</div>
-		<div class="panel-body">
-			<p>$r.translate("add.content.descr")</p>
-			<div class="o_button_group o_toolbar">
-				<ul class="o_tools o_tools_left list-inline">
-				#foreach($addElementLink in $addElementLinks)
-					<li class="o_tool">$r.render($addElementLink)</li>
-				#end
-				</ul>
-			</div>
+$r.render("page_editor")
+#if($r.isNotEmpty($addElementLinks))
+<div class="o_page_add_contents panel panel-placeholder">
+	<div class="panel-heading">
+		<h4 class="panel-title">$r.translate("add.content.title")</h4>
+	</div>
+	<div class="panel-body">
+		<p>$r.translate("add.content.descr")</p>
+		<div class="o_button_group o_toolbar">
+			<ul class="o_tools o_tools_left list-inline">
+			#foreach($addElementLink in $addElementLinks)
+				<li class="o_tool">$r.render($addElementLink)</li>
+			#end
+			</ul>
 		</div>
 	</div>
-	#end
 </div>
-<script>
-/* <![CDATA[ */
-jQuery(function() {
-	jQuery(".o_page_part").each(function(index, el) {
-		jQuery(el).on('click', function(e) {
-			var element = jQuery(el);
-			if(element.parents('.o_page_fragment_edit').length == 0) {
-				$r.openJavaScriptCommand("edit_fragment"),'fragment', element.data('oo-page-fragment'));
-			}
-		});
-	});
-});
-/* ]]> */
-</script>
-<script>
-/* <![CDATA[ */ 
-jQuery(function() {
-	var container = jQuery('.o_page_content_editor').get(0);
-	dragula([container], {
-		copy: function (el, source) {
-		    return false;
-		},
-		accepts: function (el, target) {
-			return true;
-		},
-		moves: function (el, container, handle) {
-			return handle.classList.contains('o_page_tools_dd') ;
-		}
-	}).on('drop', function(el, target, source, sibling) {
-		var draggedId = jQuery(el).data('oo-page-fragment');
-		var siblingId = jQuery(sibling).data('oo-page-fragment');
-		$r.openJavaScriptCommand("drop_fragment"), "dragged", draggedId, "sibling", siblingId);
-	});
-});
-/* ]]> */
-</script>
+#end
 
