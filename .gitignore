@@ -34,4 +34,5 @@ src/test/java/org/olat/selenium/SeleniumTest.java
 */.classpath
 
 */.project
+.idea
 
