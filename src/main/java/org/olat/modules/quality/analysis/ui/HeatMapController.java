@@ -81,6 +81,7 @@ public class HeatMapController extends FormBasicController implements Filterable
 	private MultipleSelectionElement insufficientEl;
 	private HeatMapDataModel dataModel;
 	private FlexiTableElement tableEl;
+	private FormLayoutContainer legendLayout;
 	
 	// This list is the master for the sort order
 	private final List<SliderWrapper> sliders;
@@ -103,13 +104,15 @@ public class HeatMapController extends FormBasicController implements Filterable
 	}
 
 	private List<SliderWrapper> initSliders(Form evaluationForm) {
+		int counter = 1;
 		List<SliderWrapper> sliderWrappers = new ArrayList<>();
 		for (AbstractElement element : evaluationForm.getElements()) {
 			if (element instanceof Rubric) {
 				Rubric rubric = (Rubric) element;
 				for (Slider slider : rubric.getSliders()) {
+					String labelCode = translate("heatmap.table.slider.header", new String[] { Integer.toString(counter++) });
 					String label = getLabel(slider);
-					SliderWrapper sliderWrapper = new SliderWrapper(rubric, slider, label);
+					SliderWrapper sliderWrapper = new SliderWrapper(rubric, slider, labelCode, label);
 					sliderWrappers.add(sliderWrapper);
 				}
 			}
@@ -133,8 +136,8 @@ public class HeatMapController extends FormBasicController implements Filterable
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FormLayoutContainer groupByLayout = FormLayoutContainer.createDefaultFormLayout("groupByLayout", getTranslator());
-		// Group by selection
 		flc.add("groupByLayout", groupByLayout);
+		// Group by selection
 		List<GroupBy> values = new ArrayList<>(asList(GroupBy.values()));
 		if (!organisationModule.isEnabled()) {
 			values.removeIf(value -> asList(TOPIC_ORGANISATION, CONTEXT_ORAGANISATION).contains(value));
@@ -161,6 +164,7 @@ public class HeatMapController extends FormBasicController implements Filterable
 		
 		// Heat map
 		initTable(Collections.emptyList(), 0);
+		
 	}
 
 	public void initTable(List<String> groupHeaders, int maxCount) {
@@ -185,15 +189,21 @@ public class HeatMapController extends FormBasicController implements Filterable
 		tableEl.setEmtpyTableMessageKey("heatmap.empty");
 		tableEl.setNumOfRowsEnabled(false);
 		tableEl.setCustomizeColumns(false);
+		
+		// legend
+		if (legendLayout != null) flc.remove(legendLayout);
+		String legendPage = velocity_root + "/heatmap_legend.html";
+		legendLayout = FormLayoutContainer.createCustomFormLayout("legend", getTranslator(), legendPage);
+		flc.add("legend", legendLayout);
+		legendLayout.contextPut("sliders", sliders);
 	}
 
 	private void addSliderColumns(FlexiTableColumnModel columnsModel, int columnIndex, int maxCount) {
-		for (int sliderIndex = 0; sliderIndex < sliders.size(); sliderIndex++) {
-			String header = translate("heatmap.table.slider.header", new String[] { Integer.toString(sliderIndex + 1) });
-			Rubric rubric = sliders.get(sliderIndex).getRubric();
+		for (SliderWrapper sliderWrapper : sliders) {
+			Rubric rubric = sliderWrapper.getRubric();
 			DefaultFlexiColumnModel columnModel = new DefaultFlexiColumnModel("", columnIndex++,
 					new HeatMapRenderer(rubric, maxCount));
-			columnModel.setHeaderLabel(header);
+			columnModel.setHeaderLabel(sliderWrapper.getLabelCode());
 			columnsModel.addFlexiColumnModel(columnModel);
 		}
 	}
@@ -232,7 +242,6 @@ public class HeatMapController extends FormBasicController implements Filterable
 			insufficientOnly = false;
 		}
 	}
-
 	
 	private void loadHeatMap() {
 		HeatMapData heatMapData = createHeatMapData();
@@ -486,15 +495,17 @@ public class HeatMapController extends FormBasicController implements Filterable
 		//
 	}
 	
-	private final static class SliderWrapper {
+	public final static class SliderWrapper {
 		
 		private final Rubric rubric;
 		private final Slider slider;
+		private final String labelCode;
 		private final String label;
 		
-		public SliderWrapper(Rubric rubric, Slider slider, String label) {
+		public SliderWrapper(Rubric rubric, Slider slider, String labelCode, String label) {
 			this.rubric = rubric;
 			this.slider = slider;
+			this.labelCode = labelCode;
 			this.label = label;
 		}
 
@@ -506,8 +517,8 @@ public class HeatMapController extends FormBasicController implements Filterable
 			return slider.getId();
 		}
 
-		public Slider getSlider() {
-			return slider;
+		public String getLabelCode() {
+			return labelCode;
 		}
 
 		public String getLabel() {
