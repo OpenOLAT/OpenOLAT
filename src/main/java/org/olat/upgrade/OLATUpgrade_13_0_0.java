@@ -333,14 +333,24 @@ public class OLATUpgrade_13_0_0 extends OLATUpgrade {
 	}
 	
 	private void migrateRepositoryEntryToDefaultOrganisation(Long repositoryEntryKey) {
-		RepositoryEntry entry = repositoryService.loadByKey(repositoryEntryKey);
-		List<Organisation> currentOrganisations = repositoryEntryRelationDao.getOrganisations(entry);
-		if(currentOrganisations.isEmpty()) {
-			Organisation defOrganisation = organisationService.getDefaultOrganisation();
-			repositoryEntryToOrganisationDao.createRelation(defOrganisation, entry, false);
-			repositoryEntryRelationDao.createRelation(defOrganisation.getGroup(), entry);
-			dbInstance.commitAndCloseSession();
+		List<RepositoryEntry> entries = loadRepositoryEntry(repositoryEntryKey);
+		for(RepositoryEntry entry:entries) {
+			List<Organisation> currentOrganisations = repositoryEntryRelationDao.getOrganisations(entry);
+			if(currentOrganisations.isEmpty()) {
+				Organisation defOrganisation = organisationService.getDefaultOrganisation();
+				repositoryEntryToOrganisationDao.createRelation(defOrganisation, entry, false);
+				repositoryEntryRelationDao.createRelation(defOrganisation.getGroup(), entry);
+				dbInstance.commitAndCloseSession();
+			}
 		}
+	}
+	
+	private List<RepositoryEntry> loadRepositoryEntry(Long repositoryEntryKey) {
+		String query = "select v from repositoryentry as v where v.key=:repoKey";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, RepositoryEntry.class)
+				.setParameter("repoKey", repositoryEntryKey)
+				.getResultList();
 	}
 	
 	private boolean migrateInvitee(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
