@@ -268,10 +268,8 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 			component.setTitle(linkTitle);
 		}
 	}
-	
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.elements.FormLink#setCustomEnabledLinkCSS(java.lang.String)
-	 */
+
+	@Override
 	public void setCustomEnabledLinkCSS(String customEnabledLinkCSS) {
 		hasCustomEnabledCss=true;
 		this.customEnabledLinkCSS = customEnabledLinkCSS;
@@ -280,9 +278,7 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.elements.FormLink#setCustomDisabledLinkCSS(java.lang.String)
-	 */
+	@Override
 	public void setCustomDisabledLinkCSS(String customDisabledLinkCSS) {
 		hasCustomDisabledCss = true;
 		this.customDisabledLinkCSS  = customDisabledLinkCSS;
@@ -290,14 +286,13 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 			component.setCustomDisabledLinkCSS(customDisabledLinkCSS);
 		}
 	}
-	
+
+	@Override
 	public String getI18nKey() {
 		return i18n;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.elements.FormLink#setI18nKey(java.lang.String)
-	 */
+	@Override
 	public void setI18nKey(String i18n) {
 		this.i18n = i18n;
 		if (component != null) {
@@ -347,16 +342,16 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 
 	@Override
 	public String getLinkTitleText() {
-		String title = null;
+		String linkTitle = null;
 		if (component != null) {
-			title = component.getCustomDisplayText();
-			if (title == null && getTranslator() != null) {
+			linkTitle = component.getCustomDisplayText();
+			if (linkTitle == null && getTranslator() != null) {
 				if (StringHelper.containsNonWhitespace(component.getI18n())) {
-					title = getTranslator().translate(component.getI18n());
+					linkTitle = getTranslator().translate(component.getI18n());
 				}
 			}
 		}
-		return title;
+		return linkTitle;
 	}
 
 	@Override

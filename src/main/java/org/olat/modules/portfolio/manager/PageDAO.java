@@ -176,6 +176,23 @@ public class PageDAO {
 			.getResultList();
 	}
 	
+	public int countOwnedPages(IdentityRef owner) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select count(distinct page.key) from pfpage as page")
+		  .append(" left join page.section as section")
+		  .append(" left join section.binder as binder")
+		  .append(" where exists (select pageMember from bgroupmember as pageMember")
+		  .append("     inner join pageMember.identity as ident on (ident.key=:ownerKey and pageMember.role='").append(PortfolioRoles.owner.name()).append("')")
+		  .append("  	where pageMember.group.key=page.baseGroup.key or pageMember.group.key=binder.baseGroup.key")
+		  .append(" )");
+
+		List<Long> count = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Long.class)
+			.setParameter("ownerKey", owner.getKey())
+			.getResultList();
+		return count != null && !count.isEmpty() && count.get(0) != null ? count.get(0).intValue() : 0;
+	}
+	
 	public List<Page> getOwnedPages(IdentityRef owner, String searchString) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select page from pfpage as page")
@@ -307,12 +324,12 @@ public class PageDAO {
 		return bodies == null || bodies.isEmpty() ? null : bodies.get(0);
 	}
 	
-	public Page getLastPage(Identity owner, boolean mandatoryBinder) {
+	public List<Page> getLastPages(IdentityRef owner, int maxResults) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select page from pfpage as page")
 		  .append(" inner join fetch page.baseGroup as baseGroup")
-		  .append(" ").append(mandatoryBinder ? "inner" : "left").append(" join fetch page.section as section")
-		  .append(" ").append(mandatoryBinder ? "inner" : "left").append(" join fetch section.binder as binder")
+		  .append(" left join fetch page.section as section")
+		  .append(" left join fetch section.binder as binder")
 		  .append(" left join fetch page.body as body")
 		  .append(" where exists (select pageMember from bgroupmember as pageMember")
 		  .append("     inner join pageMember.identity as ident on (ident.key=:ownerKey and pageMember.role='").append(PortfolioRoles.owner.name()).append("')")
@@ -320,13 +337,12 @@ public class PageDAO {
 		  .append(" )")
 		  .append(" order by page.lastModified desc");
 		
-		List<Page> pages = dbInstance.getCurrentEntityManager()
+		return dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), Page.class)
 			.setParameter("ownerKey", owner.getKey())
 			.setFirstResult(0)
-			.setMaxResults(1)
+			.setMaxResults(maxResults)
 			.getResultList();
-		return pages == null || pages.isEmpty() ? null : pages.get(0);
 	}
 	
 	public Page removePage(Page page) {

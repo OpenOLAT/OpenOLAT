@@ -245,7 +245,7 @@ public class PageDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void getLastPage() {
+	public void getLastPages() {
 		//an owned binder
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-1");
 		Binder binder = portfolioService.createNewBinder("Binder p2", "A binder with 2 page", null, author);
@@ -262,14 +262,17 @@ public class PageDAOTest extends OlatTestCase {
 		Assert.assertNotNull(page1);
 		
 		//reload
-		Page lastBinderPage = pageDao.getLastPage(author, true);
-		Assert.assertNotNull(lastBinderPage);
-		Assert.assertEquals(page2, lastBinderPage);
+		List<Page> lastPage = pageDao.getLastPages(author, 1);
+		Assert.assertNotNull(lastPage);
+		Assert.assertEquals(1, lastPage.size());
+		Assert.assertEquals(page3, lastPage.get(0));
 		
 		//reload
-		Page lastFloatingPage = pageDao.getLastPage(author, false);
-		Assert.assertNotNull(lastFloatingPage);
-		Assert.assertEquals(page3, lastFloatingPage);
+		List<Page> lastPages = pageDao.getLastPages(author, 2);
+		Assert.assertNotNull(lastPages);
+		Assert.assertEquals(2, lastPages.size());
+		Assert.assertTrue(lastPages.contains(page3));
+		Assert.assertTrue(lastPages.contains(page2));
 	}
 	
 	@Test

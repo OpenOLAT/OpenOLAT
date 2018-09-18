@@ -1,117 +1,31 @@
-<div class="row">
-	<div class="col-sm-6">
-		<div class="panel panel-default">
-			<div class="panel-heading">
-				<h4 class="panel-title">
-					<i class="o_icon o_icon_mediacenter o_icon-fw"> </i>
-					$r.translate("media.center")
-				</h4>
-			</div>
-			<div class="panel-body">
-				$r.translate("media.center.text")
-				<div class="o_button_group o_button_group_right">
-					$r.render("goto.media.center")
-				</div>
-			</div>
-		</div>
-	</div>
+<div class="o_portfolio_home">
+	<h2>$r.translate("my.portfolio")</h2>
+	<ul class="o_portfolio_my list-unstyled">
+		<li>$r.render("goto.my.binders")</li>
+		<li>$r.render("goto.my.pages")</li>
+		<li>$r.render("goto.media.center")</li>
+		<li>$r.render("go.to.trash")</li>
+		<li class="o_pf_new_entry">$r.render("new.entry")</li>
+		<li><a href="$r.contextHelpLink('Portfolio 2.0')" target="_blank"><i class="o_icon o_icon-fw o_icon_help"> </i><span>$r.translate("show.help.binder")</span></a></li>
+	</ul>
 	
-	<div class="col-sm-6">
-		<div class="panel panel-default">
-			<div class="panel-heading">
-				<h4 class="panel-title">
-					<i class="o_icon o_icon_pf_quick_links o_icon-fw"> </i>
-					$r.translate("quick.links")
-				</h4>
-			</div>
-			<div class="panel-body">
-				<div class="o_button_group o_button_group_right">
-					<ul class="list-unstyled">
-						<li>$r.render("edit.last.entry")</li>
-						<li>$r.render("new.entry")</li>
-						<li>$r.render("go.to.trash")</li>
-						<li>
-							<a href="$r.contextHelpLink('Portfolio 2.0')" target="_blank">
-								$r.translate("show.help.binder") <i class="o_icon o_icon_start"> </i>
-							</a>
-						</li>
-					</ul>
-				</div>
-			</div>
+	#if($r.isTrue($hasLastBinders) && $r.isTrue($hasLastPages))
+	<div class="o_portfolio_last_used">
+		<h3>$r.translate("last.used")</h3>
+		<div class="row">
+			#if($r.isTrue($hasLastBinders))
+			<div class="col-md-6">$r.render("lastBinders")</div>
+			#end
+			#if($r.isTrue($hasLastPages))
+			<div class="col-md-6">$r.render("lastPages")</div>
+			#end
 		</div>
 	</div>
+	#end
+
+	<h2>$r.translate("open.part")</h2>
+	<ul class="o_portfolio_shared list-unstyled">
+		<li>$r.render("goto.my.shared.items")</li>
+		<li>$r.render("goto.shared.with.me")</li>
+	</ul>
 </div>
-
-<div class="row">
-	<div class="col-sm-6">
-		<div class="panel panel-default">
-			<div class="panel-heading">
-				<h4 class="panel-title">
-					<i class="o_icon o_icon_pf_binder o_icon-fw"> </i>
-					$r.translate("my.portfolio.binders")
-				</h4>
-			</div>
-			<div class="panel-body">
-				$r.translate("my.portfolio.binders.text")
-				<div class="o_button_group o_button_group_right">
-					$r.render("goto.my.binders")
-				</div>
-			</div>
-		</div>
-	</div>
-	
-	<div class="col-sm-6">
-		<div class="panel panel-default">
-			<div class="panel-heading">
-				<h4 class="panel-title">
-					<i class="o_icon o_icon_pf_entry o_icon-fw"> </i>
-					$r.translate("my.entries")
-				</h4>
-			</div>
-			<div class="panel-body">
-				$r.translate("my.entries.text")
-				<div class="o_button_group o_button_group_right">
-					$r.render("goto.my.pages")
-				</div>
-			</div>
-		</div>
-	</div>
-</div>
-
-<div class="row">
-	<div class="col-sm-6">
-		<div class="panel panel-default">
-			<div class="panel-heading">
-				<h4 class="panel-title">
-					<i class="o_icon o_icon_pf_my_shares o_icon-fw"> </i>
-					$r.translate("my.shared.items")
-				</h4>
-			</div>
-			<div class="panel-body">
-				$r.translate("my.shared.items.text")
-				<div class="o_button_group o_button_group_right">
-					$r.render("goto.my.shared.items")
-				</div>
-			</div>
-		</div>
-	</div>
-	
-	<div class="col-sm-6">
-		<div class="panel panel-default">
-			<div class="panel-heading">
-				<h4 class="panel-title">
-					<i class="o_icon o_icon_pf_shared_with_me o_icon-fw"> </i>
-					$r.translate("shared.with.me")
-				</h4>
-			</div>
-			<div class="panel-body">
-				$r.translate("shared.with.me.text")
-				<div class="o_button_group o_button_group_right">
-					$r.render("goto.shared.with.me")
-				</div>
-			</div>
-		</div>
-	</div>
-</div>
-
-

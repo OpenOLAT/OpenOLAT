@@ -648,7 +648,7 @@ public class BinderListController extends FormBasicController
 			int index = rows.indexOf(sibling);
 			rows.add(index, binder);
 			
-			doSaveBiderLiserOrder(ureq, rows);
+			doSaveBinderListOrder(ureq, rows);
 			model.setObjects(rows);
 			tableEl.reset(false, false, true);
 		}
@@ -660,7 +660,7 @@ public class BinderListController extends FormBasicController
 		if(index > 0 && index < rows.size()) {
 			rows.remove(index);
 			rows.add(index-1, row);
-			doSaveBiderLiserOrder(ureq, rows);
+			doSaveBinderListOrder(ureq, rows);
 			model.setObjects(rows);
 			tableEl.reset(false, false, true);
 		}
@@ -672,7 +672,7 @@ public class BinderListController extends FormBasicController
 		if(index >= 0 && index + 1 < rows.size()) {
 			rows.remove(index);
 			rows.add(index+1, row);
-			doSaveBiderLiserOrder(ureq, rows);
+			doSaveBinderListOrder(ureq, rows);
 			model.setObjects(rows);
 			tableEl.reset(false, false, true);
 		}
@@ -683,7 +683,7 @@ public class BinderListController extends FormBasicController
 		BinderListSettings settings  = (BinderListSettings)guiPrefs.get(BinderListController.class, "binder-list-settings");
 		if(settings == null) {
 			List<BinderRow> rows = model.getObjects();
-			doSaveBiderLiserOrder(ureq, rows);
+			doSaveBinderListOrder(ureq, rows);
 		}
 	}
 	
@@ -696,7 +696,7 @@ public class BinderListController extends FormBasicController
 		return settings;
 	}
 
-	private void doSaveBiderLiserOrder(UserRequest ureq, List<BinderRow> orderRows) {
+	private void doSaveBinderListOrder(UserRequest ureq, List<BinderRow> orderRows) {
 		BinderListSettings settings = getSettings(ureq);
 		List<Long> keys = orderRows.stream().map(BinderRow::getKey).collect(Collectors.toList());
 		settings.setOrderedBinderKeys(keys);

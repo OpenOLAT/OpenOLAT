@@ -540,6 +540,32 @@ public class BinderDAO {
 	 * @param owner
 	 * @return
 	 */
+	public int countOwnedBinders(IdentityRef owner, boolean deleted) {
+		StringBuilder sb = new StringBuilder(1024);
+		sb.append("select count(distinct binder.key)")
+		  .append(" from pfbinder as binder")
+		  .append(" left join binder.baseGroup as baseGroup")
+		  .append(" left join baseGroup.members as membership")
+		  .append(" where binder.olatResource is null and membership.identity.key=:identityKey and membership.role=:role");
+		if(deleted) {
+			sb.append(" and binder.status='").append(BinderStatus.deleted.name()).append("'");
+		} else {
+			sb.append(" and (binder.status is null or binder.status='").append(BinderStatus.open.name()).append("')");
+		}
+		
+		List<Long> objects = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Long.class)
+			.setParameter("identityKey", owner.getKey())
+			.setParameter("role", PortfolioRoles.owner.name())
+			.getResultList();
+		return objects != null && !objects.isEmpty() && objects.get(0) != null ? objects.get(0).intValue() : 0;
+	}
+	
+	/**
+	 * The same type of query is user for the categories
+	 * @param owner
+	 * @return
+	 */
 	public List<BinderStatistics> searchOwnedBinders(IdentityRef owner, boolean deleted) {
 		StringBuilder sb = new StringBuilder(1024);
 		sb.append("select binder.key, binder.title, binder.imagePath, binder.lastModified, binder.status,")
@@ -569,7 +595,53 @@ public class BinderDAO {
 			.setParameter("identityKey", owner.getKey())
 			.setParameter("role", PortfolioRoles.owner.name())
 			.getResultList();
-		
+		List<BinderStatistics> rows = new ArrayList<>(objects.size());
+		for(Object[] object:objects) {
+			int pos = 0;
+			Long key = (Long)object[pos++];
+			String title = (String)object[pos++];
+			String imagePath = (String)object[pos++];
+			Date lastModified = (Date)object[pos++];
+			String status = (String)object[pos++];
+			String repoEntryName = (String)object[pos++];
+
+			int numOfSections = ((Number)object[pos++]).intValue();
+			int numOfPages = ((Number)object[pos++]).intValue();
+			int numOfComments = ((Number)object[pos++]).intValue();
+			
+			rows.add(new BinderStatistics(key, title, imagePath, lastModified, numOfSections, numOfPages, status, repoEntryName, numOfComments));
+		}
+		return rows;
+	}
+	
+	public List<BinderStatistics> searchOwnedLastBinders(IdentityRef owner, int maxResults) {
+		StringBuilder sb = new StringBuilder(1024);
+		sb.append("select binder.key, binder.title, binder.imagePath, binder.lastModified, binder.status,")
+		  .append(" binderEntry.displayname,")
+		  .append(" (select count(section.key) from pfsection as section")
+		  .append("   where section.binder.key=binder.key")
+		  .append(" ) as numOfSections,")
+		  .append(" (select count(page.key) from pfpage as page, pfsection as pageSection")
+		  .append("   where pageSection.binder.key=binder.key and page.section.key=pageSection.key")
+		  .append(" ) as numOfPages,")
+		  .append(" (select count(comment.key) from usercomment as comment, pfpage as page, pfsection as pageSection")
+		  .append("   where pageSection.binder.key=binder.key and page.section.key=pageSection.key and comment.resId=page.key and comment.resName='Page'")
+		  .append(" ) as numOfComments")
+		  .append(" from pfbinder as binder")
+		  .append(" inner join binder.baseGroup as baseGroup")
+		  .append(" inner join baseGroup.members as membership")
+		  .append(" inner join pfbinderuserinfos as uinfos on (uinfos.binder.key=binder.key and uinfos.identity.key=membership.identity.key)")
+		  .append(" left join binder.entry binderEntry")
+		  .append(" where binder.olatResource is null and membership.identity.key=:identityKey and membership.role=:role")
+		  .append(" and (binder.status is null or binder.status='").append(BinderStatus.open.name()).append("')");
+
+		List<Object[]> objects = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Object[].class)
+			.setParameter("identityKey", owner.getKey())
+			.setParameter("role", PortfolioRoles.owner.name())
+			.setFirstResult(0)
+			.setMaxResults(maxResults)
+			.getResultList();
 		List<BinderStatistics> rows = new ArrayList<>(objects.size());
 		for(Object[] object:objects) {
 			int pos = 0;

@@ -31,6 +31,7 @@ public interface FormLink extends FormItem {
 	
 	public String getCmd();
 	
+	@Override
 	public Link getComponent();
 
 	/**

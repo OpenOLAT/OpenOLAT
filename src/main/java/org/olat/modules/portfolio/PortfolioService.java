@@ -205,7 +205,11 @@ public interface PortfolioService {
 	 */
 	public List<BinderStatistics> searchOwnedBinders(IdentityRef owner);
 	
+	public int countOwnedBinders(IdentityRef owner);
+	
 	public List<BinderStatistics> searchOwnedDeletedBinders(IdentityRef owner);
+	
+	public List<BinderStatistics> searchOwnedLastBinders(IdentityRef owner, int maxResults);
 	
 	/**
 	 * Return the list of binder owned by the specified user
@@ -456,7 +460,11 @@ public interface PortfolioService {
 	 */
 	public List<Page> getPages(SectionRef section);
 	
+	public int countOwnedPages(IdentityRef owner);
+	
 	public List<Page> searchOwnedPages(IdentityRef owner, String searchString);
+	
+	public List<Page> searchOwnedLastPages(IdentityRef owner, int maxResults);
 	
 	/**
 	 * List the pages of the specified user in deleted mode.
@@ -492,7 +500,7 @@ public interface PortfolioService {
 	 */
 	public Page getPageByBody(PageBody body);
 	
-	public Page getLastPage(Identity owner, boolean binderMandatory);
+	public List<Page> getLastPages(Identity owner, int maxResults);
 	
 	/**
 	 * Update the metadata of a page.

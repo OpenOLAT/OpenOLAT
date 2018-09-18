@@ -506,10 +506,20 @@ public class PortfolioServiceImpl implements PortfolioService {
 	public List<BinderStatistics> searchOwnedBinders(IdentityRef owner) {
 		return binderDao.searchOwnedBinders(owner, false);
 	}
-	
+
+	@Override
+	public int countOwnedBinders(IdentityRef owner) {
+		return binderDao.countOwnedBinders(owner, false);
+	}
+
 	@Override
 	public List<BinderStatistics> searchOwnedDeletedBinders(IdentityRef owner) {
 		return binderDao.searchOwnedBinders(owner, true);
+	}
+
+	@Override
+	public List<BinderStatistics> searchOwnedLastBinders(IdentityRef owner, int maxResults) {
+		return binderDao.searchOwnedLastBinders(owner, maxResults);
 	}
 
 	@Override
@@ -845,8 +855,18 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 
 	@Override
+	public int countOwnedPages(IdentityRef owner) {
+		return pageDao.countOwnedPages(owner);
+	}
+
+	@Override
 	public List<Page> searchOwnedPages(IdentityRef owner, String searchString) {
 		return pageDao.getOwnedPages(owner, searchString);
+	}
+
+	@Override
+	public List<Page> searchOwnedLastPages(IdentityRef owner, int maxResults) {
+		return pageDao.getLastPages(owner, maxResults);
 	}
 
 	@Override
@@ -880,8 +900,8 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 
 	@Override
-	public Page getLastPage(Identity owner, boolean mandatoryBinder) {
-		return pageDao.getLastPage(owner, mandatoryBinder);
+	public List<Page> getLastPages(Identity owner, int maxResults) {
+		return pageDao.getLastPages(owner, maxResults);
 	}
 
 	@Override

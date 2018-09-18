@@ -91,7 +91,7 @@ public class PortfolioV2HomePage {
 	}
 	
 	public EntriesPage openDeletedEntries() {
-		By goToTrashBy = By.xpath("//div[contains(@class,'o_button_group')]//a[contains(@onclick,'go.to.trash')]");
+		By goToTrashBy = By.cssSelector("a.o_sel_pf_trash");
 		OOGraphene.waitElement(goToTrashBy, 5, browser);
 		browser.findElement(goToTrashBy).click();
 		OOGraphene.waitBusy(browser);
