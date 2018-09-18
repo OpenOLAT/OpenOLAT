@@ -26,6 +26,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemCollection;
+import org.olat.core.gui.components.form.flexible.FormMultipartItem;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.ui.model.PageFragment;
@@ -48,6 +49,13 @@ public class PageFragmentsElementImpl extends FormItemImpl implements FormItemCo
 	
 	public void setFragments(List<? extends PageFragment> fragments) {
 		component.setFragments(fragments);
+		rootFormAvailable();
+		
+		for(FormItem formComp:getFormItems()) {
+			if (formComp instanceof FormMultipartItem) {
+				getRootForm().setMultipartEnabled(true);
+			}
+		}
 	}
 
 	@Override
@@ -98,6 +106,21 @@ public class PageFragmentsElementImpl extends FormItemImpl implements FormItemCo
 
 	@Override
 	protected void rootFormAvailable() {
-		//
+		List<? extends PageFragment> fragments = component.getFragments();
+		if(fragments != null) {
+			for(PageFragment fragment:fragments) {
+				if(fragment.getPageRunElement() instanceof EvaluationFormExecutionElement) {
+					EvaluationFormExecutionElement execEl = (EvaluationFormExecutionElement)fragment.getPageRunElement();
+					if(execEl.hasFormItem()) {
+						rootFormAvailable(execEl.getFormItem());
+					}
+				}
+			}
+		}
+	}
+	
+	private final void rootFormAvailable(FormItem item) {
+		if(item != null && getRootForm() != null && item.getRootForm() != getRootForm())
+			item.setRootForm(getRootForm());
 	}
 }

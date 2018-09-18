@@ -84,7 +84,7 @@ class SingleSelectionRenderer extends DefaultComponentRenderer {
 		String formDispatchId = ssec.getFormDispatchId();
 		
 		// read write view
-		sb.append("<div class='radio'", !inline); // normal radios need a wrapper (bootstrap) ...
+		sb.append("<div class='radio' ", !inline); // normal radios need a wrapper (bootstrap) ...
 		if(!inline && source.getWidthInPercent() > 0) {
 			sb.append("style='width:").append(source.getWidthInPercent()).append("%;'");
 		}
