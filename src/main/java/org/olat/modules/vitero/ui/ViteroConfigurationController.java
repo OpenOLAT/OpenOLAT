@@ -119,6 +119,7 @@ public class ViteroConfigurationController extends FormBasicController {
 			//account configuration
 			String vmsUri = viteroModule.getVmsURI().toString();
 			urlEl = uifactory.addTextElement("vitero-url", "option.baseurl", 255, vmsUri, moduleFlc);
+			urlEl.setExampleKey("option.baseurl.example", null);
 			urlEl.setDisplaySize(60);
 			String login = viteroModule.getAdminLogin();
 			loginEl = uifactory.addTextElement("vitero-login", "option.adminlogin", 32, login, moduleFlc);

@@ -1903,7 +1903,7 @@
 		<dependency>
 			<groupId>org.openolat</groupId>
 			<artifactId>viterows</artifactId>
-			<version>6.0</version>
+			<version>9.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.poi</groupId>
