@@ -21,6 +21,7 @@ package org.olat.modules.ceditor.ui.component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -31,6 +32,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.ui.model.PageFragment;
 import org.olat.modules.forms.ui.model.EvaluationFormExecutionElement;
+
 
 /**
  * 
@@ -51,26 +53,22 @@ public class PageFragmentsElementImpl extends FormItemImpl implements FormItemCo
 		component.setFragments(fragments);
 		rootFormAvailable();
 		
-		for(FormItem formComp:getFormItems()) {
-			if (formComp instanceof FormMultipartItem) {
+		forEachEvaluationFormExecutionElement(execElement -> {
+			if(execElement.hasFormItem() && execElement.getFormItem() instanceof FormMultipartItem) {
 				getRootForm().setMultipartEnabled(true);
 			}
-		}
+		});
 	}
 
 	@Override
 	public Iterable<FormItem> getFormItems() {
 		List<? extends PageFragment> fragments = component.getFragments();
 		List<FormItem> items = new ArrayList<>(fragments.size());
-		for(PageFragment fragment:fragments) {
-			PageRunElement runEl = fragment.getPageRunElement();
-			if(runEl instanceof EvaluationFormExecutionElement) {
-				EvaluationFormExecutionElement execEl = (EvaluationFormExecutionElement)runEl;
-				if(execEl.hasFormItem()) {
-					items.add(execEl.getFormItem());
-				}
+		forEachEvaluationFormExecutionElement(execElement -> {
+			if(execElement.hasFormItem()) {
+				items.add(execElement.getFormItem());
 			}
-		}
+		});
 		return items;
 	}
 
@@ -80,7 +78,7 @@ public class PageFragmentsElementImpl extends FormItemImpl implements FormItemCo
 		for(PageFragment fragment:fragments) {
 			PageRunElement runEl = fragment.getPageRunElement();
 			if(fragment.getComponentName().equals(name) && runEl instanceof EvaluationFormExecutionElement) {
-				EvaluationFormExecutionElement execEl = (EvaluationFormExecutionElement)fragment;
+				EvaluationFormExecutionElement execEl = (EvaluationFormExecutionElement)runEl;
 				if(execEl.hasFormItem()) {
 					return execEl.getFormItem();
 				}
@@ -106,21 +104,28 @@ public class PageFragmentsElementImpl extends FormItemImpl implements FormItemCo
 
 	@Override
 	protected void rootFormAvailable() {
+		forEachEvaluationFormExecutionElement(execElement -> {
+			if(execElement.hasFormItem()) {
+				rootFormAvailable(execElement.getFormItem());
+			}
+		});
+	}
+	
+	private final void rootFormAvailable(FormItem item) {
+		if(item != null && getRootForm() != null && item.getRootForm() != getRootForm()) {
+			item.setRootForm(getRootForm());
+		}
+	}
+	
+	private void forEachEvaluationFormExecutionElement(Consumer<EvaluationFormExecutionElement> consumer) {
 		List<? extends PageFragment> fragments = component.getFragments();
 		if(fragments != null) {
 			for(PageFragment fragment:fragments) {
 				if(fragment.getPageRunElement() instanceof EvaluationFormExecutionElement) {
 					EvaluationFormExecutionElement execEl = (EvaluationFormExecutionElement)fragment.getPageRunElement();
-					if(execEl.hasFormItem()) {
-						rootFormAvailable(execEl.getFormItem());
-					}
+					consumer.accept(execEl);
 				}
 			}
 		}
-	}
-	
-	private final void rootFormAvailable(FormItem item) {
-		if(item != null && getRootForm() != null && item.getRootForm() != getRootForm())
-			item.setRootForm(getRootForm());
 	}
 }
