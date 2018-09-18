@@ -262,6 +262,78 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void shouldCheckIfHasARelationToOrganisation() {
+		Organisation organisation = qualityTestHelper.createOrganisation();
+		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
+		dataCollection.setTopicOrganisation(organisation);
+		qualityService.updateDataCollection(dataCollection);
+		dbInstance.commitAndCloseSession();
+		
+		boolean hasDataCollection = sut.hasDataCollection(organisation);
+		
+		assertThat(hasDataCollection).isTrue();
+	}
+	
+	@Test
+	public void shouldCheckIfHasNoRelationToOrganisation() {
+		Organisation organisation = qualityTestHelper.createOrganisation();
+		qualityTestHelper.createDataCollection();
+		dbInstance.commitAndCloseSession();
+		
+		boolean hasDataCollection = sut.hasDataCollection(organisation);
+		
+		assertThat(hasDataCollection).isFalse();
+	}
+	
+	@Test
+	public void shouldCheckIfHasARelationToCurriculum() {
+		Curriculum curriculum = qualityTestHelper.createCurriculum();
+		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
+		dataCollection.setTopicCurriculum(curriculum);
+		qualityService.updateDataCollection(dataCollection);
+		dbInstance.commitAndCloseSession();
+		
+		boolean hasDataCollection = sut.hasDataCollection(curriculum);
+		
+		assertThat(hasDataCollection).isTrue();
+	}
+	
+	@Test
+	public void shouldCheckIfHasNoRelationToCurriculum() {
+		Curriculum curriculum = qualityTestHelper.createCurriculum();
+		qualityTestHelper.createDataCollection();
+		dbInstance.commitAndCloseSession();
+		
+		boolean hasDataCollection = sut.hasDataCollection(curriculum);
+		
+		assertThat(hasDataCollection).isFalse();
+	}
+	
+	@Test
+	public void shouldCheckIfHasARelationToCurriculumElement() {
+		CurriculumElement curriculumElement = qualityTestHelper.createCurriculumElement();
+		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
+		dataCollection.setTopicCurriculumElement(curriculumElement);
+		qualityService.updateDataCollection(dataCollection);
+		dbInstance.commitAndCloseSession();
+		
+		boolean hasDataCollection = sut.hasDataCollection(curriculumElement);
+		
+		assertThat(hasDataCollection).isTrue();
+	}
+	
+	@Test
+	public void shouldCheckIfHasNoRelationToCurriculumElement() {
+		CurriculumElement curriculumElement = qualityTestHelper.createCurriculumElement();
+		qualityTestHelper.createDataCollection();
+		dbInstance.commitAndCloseSession();
+		
+		boolean hasDataCollection = sut.hasDataCollection(curriculumElement);
+		
+		assertThat(hasDataCollection).isFalse();
+	}
+	
+	@Test
 	public void shouldFilterDataCollectionsByTopicIdentity() {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("");
 		QualityDataCollection dataCollection1 = qualityTestHelper.createDataCollection();

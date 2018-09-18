@@ -106,5 +106,30 @@ public class QualityContextToCurriculumDAOTest extends OlatTestCase {
 		List<QualityContextToCurriculum> otherRelations = sut.loadByContextKey(otherContext);
 		assertThat(otherRelations).hasSize(1).contains(otherRelation);
 	}
+	
+	@Test
+	public void shouldCheckIfHasARelationToCurriculumElement() {
+		QualityContext context = qualityTestHelper.createContext();
+		Curriculum curriculum = qualityTestHelper.createCurriculum();
+		sut.createRelation(context, curriculum);
+		dbInstance.commitAndCloseSession();
+		
+		boolean hasRelations = sut.hasRelations(curriculum);
+		
+		assertThat(hasRelations).isTrue();
+	}
+
+	@Test
+	public void shouldCheckIfHasNoRelationToCurriculum() {
+		QualityContext context = qualityTestHelper.createContext();
+		Curriculum element = qualityTestHelper.createCurriculum();
+		Curriculum other = qualityTestHelper.createCurriculum();
+		sut.createRelation(context, other);
+		dbInstance.commitAndCloseSession();
+		
+		boolean hasRelations = sut.hasRelations(element);
+		
+		assertThat(hasRelations).isFalse();
+	}
 
 }

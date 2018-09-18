@@ -445,20 +445,22 @@ public class QualityServiceImpl
 	 */
 	@Override
 	public boolean deleteOrganisationData(Organisation organisation) {
-		return !contextToOrganisationDao.hasRelations(organisation)
-				&& !dataCollectionDao.hasDataCollection(organisation);
+		return !dataCollectionDao.hasDataCollection(organisation)
+				&& !contextToOrganisationDao.hasRelations(organisation)
+				&& !dataCollectionToOrganisationDao.hasRelations(organisation);
 	}
 
 	@Override
 	public boolean deleteCurriculumData(Curriculum curriculum) {
-		return true;
+		return !dataCollectionDao.hasDataCollection(curriculum)
+				&& !contextToCurriculumDao.hasRelations(curriculum);
 	}
 
 	@Override
 	public boolean deleteCurriculumElementData(CurriculumElement curriculumElement) {
-		return !contextDao.hasContexts(curriculumElement)
+		return !dataCollectionDao.hasDataCollection(curriculumElement)
 				&& !contextToCurriculumElementDao.hasRelations(curriculumElement)
-				&& !dataCollectionDao.hasDataCollection(curriculumElement);
+				&& !contextDao.hasContexts(curriculumElement);
 	}
 
 	@Override

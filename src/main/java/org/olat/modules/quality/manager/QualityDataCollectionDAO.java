@@ -38,6 +38,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OrganisationRef;
 import org.olat.modules.curriculum.CurriculumElementRef;
+import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityDataCollectionLight;
 import org.olat.modules.quality.QualityDataCollectionRef;
@@ -286,6 +287,20 @@ public class QualityDataCollectionDAO {
 		return keys != null && !keys.isEmpty() && keys.get(0) != null;
 	}
 	
+	boolean hasDataCollection(CurriculumRef curriculum) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select collection.key from qualitydatacollection as collection")
+		  .append(" where collection.topicCurriculum.key=:curriculumKey");
+		
+		List<Long> keys = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("curriculumKey", curriculum.getKey())
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return keys != null && !keys.isEmpty() && keys.get(0) != null;
+	}
+	
 	boolean hasDataCollection(CurriculumElementRef curriculumElement) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select collection.key from qualitydatacollection as collection")
@@ -435,5 +450,4 @@ public class QualityDataCollectionDAO {
 		}
 		return sb;
 	}
-
 }
