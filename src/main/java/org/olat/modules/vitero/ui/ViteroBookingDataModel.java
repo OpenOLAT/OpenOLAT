@@ -73,10 +73,7 @@ public class ViteroBookingDataModel implements TableDataModel<ViteroBooking> {
 	public Object getValueAt(int row, int col) {
 		ViteroBooking booking = getObject(row);
 		switch(Column.values()[col]) {
-			case name: {
-				String name = booking.getGroupName();
-				return name;
-			}
+			case name: return booking.getGroupName();
 			case begin: return booking.getStart();
 			case end: return booking.getEnd();
 			case roomSize: {
