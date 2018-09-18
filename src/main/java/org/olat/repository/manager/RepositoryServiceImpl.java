@@ -271,6 +271,15 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		copyEntry.setMainLanguage(sourceEntry.getMainLanguage());
 		copyEntry.setObjectives(sourceEntry.getObjectives());
 		copyEntry.setRequirements(sourceEntry.getRequirements());
+
+		List<Organisation> sourceOrganisations = reToGroupDao.getOrganisations(sourceEntry);
+		for(Organisation sourceOrganisation:sourceOrganisations) {
+			RepositoryEntryToOrganisation orgRelation = repositoryEntryToOrganisationDao.createRelation(sourceOrganisation, copyEntry, false);
+			copyEntry.getOrganisations().add(orgRelation);
+			RepositoryEntryToGroupRelation grpRelation = reToGroupDao.createRelation(sourceOrganisation.getGroup(), copyEntry);
+			copyEntry.getGroups().add(grpRelation);
+		}
+
 		copyEntry = dbInstance.getCurrentEntityManager().merge(copyEntry);
 
 		RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(sourceEntry);
