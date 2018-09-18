@@ -22,6 +22,7 @@ package org.olat.group.ui.main;
 import java.util.Collections;
 import java.util.List;
 
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -210,6 +211,18 @@ public class BusinessGroupSearchController extends FormBasicController implement
 		publicEl.setVisible(enable);
 	}
 	
+	public void setPreselectedRoles(GroupRoles role) {
+		if(rolesEl != null) {
+			if(role == GroupRoles.coach) {
+				rolesEl.select("owner", true);
+			} else if(role == GroupRoles.participant) {
+				rolesEl.select("attendee", true);
+			} else if(role == GroupRoles.waiting) {
+				rolesEl.select("waiting", true);
+			}
+		}
+	}
+	
 	/**
 	 * @return True if the text search fields are empty
 	 */
@@ -227,9 +240,7 @@ public class BusinessGroupSearchController extends FormBasicController implement
 	protected boolean validateFormLogic(UserRequest ureq) {
 		if(!enabled) return true;
 		
-		boolean allOk = true;
-
-		return allOk & super.validateFormLogic(ureq);
+		return super.validateFormLogic(ureq);
 	}
 
 	@Override

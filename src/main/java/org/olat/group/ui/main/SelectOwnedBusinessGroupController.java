@@ -19,6 +19,7 @@
  */
 package org.olat.group.ui.main;
 
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.control.WindowControl;
@@ -32,6 +33,8 @@ public class SelectOwnedBusinessGroupController extends AbstractSelectBusinessGr
 	
 	public SelectOwnedBusinessGroupController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "group_list", "sel-owned");
+		
+		searchCtrl.setPreselectedRoles(GroupRoles.coach);
 	}
 
 	@Override
@@ -47,7 +50,9 @@ public class SelectOwnedBusinessGroupController extends AbstractSelectBusinessGr
 
 	@Override
 	protected BusinessGroupQueryParams getSearchParams(SearchEvent event) {
-		BusinessGroupQueryParams params = new BusinessGroupQueryParams(true, false);
+		BusinessGroupQueryParams params = event.convertToBusinessGroupQueriesParams();
+		params.setOwner(true);
+		params.setAttendee(false);
 		params.setWaiting(false);
 		return params;
 	}
@@ -55,6 +60,8 @@ public class SelectOwnedBusinessGroupController extends AbstractSelectBusinessGr
 	@Override
 	protected BusinessGroupQueryParams getDefaultSearchParams() {
 		BusinessGroupQueryParams params = new BusinessGroupQueryParams(true, false);
+		params.setOwner(true);
+		params.setAttendee(false);
 		params.setWaiting(false);
 		return params;
 	}
