@@ -588,8 +588,7 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
-		searchParams.setDateRangeTo(addDays(now, 2));
-//		searchParams.setDateRangeTo(now);
+		searchParams.setDateRangeTo(now);
 		Long count = sut.loadDataCollectionCount(searchParams);
 		
 		assertThat(count).isEqualTo(2);
