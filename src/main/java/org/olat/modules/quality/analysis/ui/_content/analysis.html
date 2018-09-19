@@ -1,4 +1,22 @@
-$r.render("filter")
-#if($r.available("presentation"))
-	$r.render("presentation")
-#end
+<div class="row">
+	#if($filterSwitch)
+		<div class="col-md-8">
+			$r.render("presentation")
+		</div>
+		<div class="col-md-4">
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					<h4 class="panel-title">
+						$r.translate("filter.panel.header")
+					</h4>
+			</div>
+			<div class="panel-body">
+				$r.render("filter")
+			</div>
+		</div>
+	#else
+	<div class="col-md-12">
+		$r.render("presentation")
+	</div>
+	#end
+</div>

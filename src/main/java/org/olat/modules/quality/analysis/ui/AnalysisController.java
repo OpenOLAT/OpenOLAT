@@ -21,15 +21,21 @@ package org.olat.modules.quality.analysis.ui;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.PopEvent;
+import org.olat.core.gui.components.stack.TooledController;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.prefs.Preferences;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.model.xml.Form;
+import org.olat.modules.qpool.ui.QuestionItemDetailsController;
 import org.olat.modules.quality.QualitySecurityCallback;
 import org.olat.modules.quality.analysis.AnalysisSearchParameter;
 import org.olat.modules.quality.analysis.EvaluationFormView;
@@ -43,9 +49,14 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class AnalysisController extends BasicController {
+public class AnalysisController extends BasicController implements TooledController {
 	
 	enum Presentation {REPORT, HEAT_MAP};
+	
+	private static final String GUIPREF_KEY_SHOW_FILTERS = "show.filters";
+
+	private Link showFilterLink;
+	private Link hideFilterLink;
 
 	private VelocityContainer mainVC;
 	private Controller filterCtrl;
@@ -56,6 +67,7 @@ public class AnalysisController extends BasicController {
 	private final EvaluationFormView formView;
 	private final Form form;
 	private AnalysisSearchParameter searchParams;
+	private Boolean showFilters;
 	
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
@@ -74,16 +86,36 @@ public class AnalysisController extends BasicController {
 		mainVC = createVelocityContainer("analysis");
 		putInitialPanel(mainVC);
 		
+		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
+		showFilters = (Boolean) guiPrefs.get(QuestionItemDetailsController.class, GUIPREF_KEY_SHOW_FILTERS);
+		
 		searchParams = new AnalysisSearchParameter();
 		searchParams.setFormEntryRef(() -> formView.getFormEntryKey());
 		filterCtrl= new FilterController(ureq, wControl, searchParams);
 		listenTo(filterCtrl);
 		mainVC.put("filter", filterCtrl.getInitialComponent());
 	}
+
+	@Override
+	public void initTools() {
+		showFilterLink = LinkFactory.createToolLink("filter.show", translate("filter.show"), this);
+		showFilterLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_ana_show_filter");
+		hideFilterLink = LinkFactory.createToolLink("filter.hide", translate("filter.hide"), this);
+		hideFilterLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_ana_hide_filter");
+		if (showFilters == null || showFilters) {
+			doShowFilter();
+		} else {
+			doHideFilter();
+		}
+	}
 	
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if (stackPanel == source && stackPanel.getLastController() == this && event instanceof PopEvent) {
+		if (source == showFilterLink) {
+			doShowFilter(ureq);
+		} else if (source == hideFilterLink) {
+			doHideFilter(ureq);
+		} else if (stackPanel == source && stackPanel.getLastController() == this && event instanceof PopEvent) {
 			PopEvent popEvent = (PopEvent) event;
 			if (popEvent.isClose()) {
 				stackPanel.popController(this);
@@ -133,6 +165,33 @@ public class AnalysisController extends BasicController {
 		presentationCtrl.onFilter(ureq, searchParams);
 		mainVC.put("presentation", presentationCtrl.getInitialComponent());
 		mainVC.setDirty(true);
+	}	private void doShowFilter(UserRequest ureq) {
+		doShowFilter();
+		doPutFiltersSwitch(ureq, Boolean.TRUE);
+	}
+
+	private void doShowFilter() {
+		stackPanel.addTool(hideFilterLink, Align.right);
+		stackPanel.removeTool(showFilterLink);
+		mainVC.contextPut("filterSwitch", Boolean.TRUE);
+	}
+	
+	private void doHideFilter(UserRequest ureq) {
+		doHideFilter();
+		doPutFiltersSwitch(ureq, Boolean.FALSE);
+	}
+
+	private void doHideFilter() {
+		stackPanel.addTool(showFilterLink, Align.right);
+		stackPanel.removeTool(hideFilterLink);
+		mainVC.contextPut("filterSwitch", Boolean.FALSE);
+	}
+	
+	private void doPutFiltersSwitch(UserRequest ureq, Boolean show) {
+		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
+		if (guiPrefs != null) {
+			guiPrefs.putAndSave(QuestionItemDetailsController.class, GUIPREF_KEY_SHOW_FILTERS, show);
+		}
 	}
 
 }

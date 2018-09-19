@@ -137,8 +137,9 @@ public class HeatMapController extends FormBasicController implements Filterable
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		FormLayoutContainer groupByLayout = FormLayoutContainer.createDefaultFormLayout("groupByLayout", getTranslator());
-		flc.add("groupByLayout", groupByLayout);
+		String groupPage = velocity_root + "/heatmap_grouping.html";
+		FormLayoutContainer grouping = FormLayoutContainer.createCustomFormLayout("grouping", getTranslator(), groupPage);
+		flc.add("grouping", grouping);
 		// Group by selection
 		List<GroupBy> values = new ArrayList<>(asList(GroupBy.values()));
 		if (!organisationModule.isEnabled()) {
@@ -155,12 +156,12 @@ public class HeatMapController extends FormBasicController implements Filterable
 			groupKeys[i] = groupBy.name();
 			groupValues[i] = translate(groupBy.i18nKey());
 		}
-		groupEl = uifactory.addDropdownSingleselect("heatmap.group", groupByLayout, groupKeys, groupValues);
+		groupEl = uifactory.addDropdownSingleselect("heatmap.group", grouping, groupKeys, groupValues);
 		groupEl.addActionListener(FormEvent.ONCHANGE);
 		setGroupBy();
 		
 		// Insufficient filter
-		insufficientEl = uifactory.addCheckboxesVertical("heatmap.insufficient", groupByLayout, INSUFFICIENT_KEYS,
+		insufficientEl = uifactory.addCheckboxesVertical("heatmap.insufficient", grouping, INSUFFICIENT_KEYS,
 				translateAll(getTranslator(), INSUFFICIENT_KEYS), 1);
 		insufficientEl.addActionListener(FormEvent.ONCHANGE);
 		

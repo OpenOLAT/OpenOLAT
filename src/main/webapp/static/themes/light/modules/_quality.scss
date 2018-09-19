@@ -131,6 +131,26 @@
 	}
 }
 
+.o_qual_ana_filter {
+	.o_date_range {
+		margin-bottom: 0px;
+		
+		.control-label {
+			margin-bottom: 5px;
+		}
+		.o_date {
+			margin-bottom: 15px;
+			padding-right: 12px;
+		}
+		.o_date_range_from {
+			padding-right: 12px;
+		}
+		.o_date_range_to {
+			padding-right: 0px;
+		}
+	}
+}
+
 .o_qual_hm_basecolor { background-color: $o-qual-hm-base-background-color;}
 .o_qual_hm {
 	.o_circle_container {

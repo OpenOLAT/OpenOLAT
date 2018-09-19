@@ -9,7 +9,7 @@ a.o_chelp {
 	font-weight: $o-chelp-font-weight;
 	line-height: floor($o-chelp-font-size *1.5);
 	color: $o-chelp-color;
-  	background-color: $o-chelp-bg;
+	background-color: $o-chelp-bg;
 	border: 1px solid $o-chelp-border;
 	border-radius: $o-chelp-border-radius;
 	cursor: help;
@@ -18,12 +18,12 @@ a.o_chelp {
 	&:active,
 	&:hover,
 	&:focus {
-    	text-decoration: none;
-	    color: $o-chelp-color;
-    	background-color: darken($o-chelp-bg, 8%);
-        border-color: darken($o-chelp-border, 12%);
-  	}
-  	
+		text-decoration: none;
+		color: $o-chelp-color;
+		background-color: darken($o-chelp-bg, 8%);
+		border-color: darken($o-chelp-border, 12%);
+	}
+	
 	i {
 		font-size: $o-chelp-font-size !important;
 	}
@@ -98,11 +98,11 @@ ul.o_dropdown {
 	/* revert padding from popover */
 	margin: -5px -14px;
 	.divider {
-    	@include nav-divider($dropdown-divider-bg);
-  	}
-  	
-  	> li > a {
-    	display: block;
+		@include nav-divider($dropdown-divider-bg);
+	}
+	
+	> li > a {
+		display: block;
 		padding: 5px 14px;
 		clear: both;
 		font-weight: normal;
@@ -113,8 +113,8 @@ ul.o_dropdown {
 		&:hover,
 		&:focus {
 			text-decoration: none;
-		    color: $dropdown-link-hover-color;
-		    background-color: $dropdown-link-hover-bg;
+			color: $dropdown-link-hover-color;
+			background-color: $dropdown-link-hover-bg;
 		}
 	}
 }
@@ -254,23 +254,23 @@ ul.o_dropdown {
 	}
 }
 
-/* Dummy user portrait (avatar) display - portrait sizes must match with DisplayPortraitManager.WIDTH_PORTRAIT_SMALL  DisplayPortraitManager.WIDTH_PORTRAIT_BIG
+/* Dummy user portrait (avatar) display - portrait sizes must match with DisplayPortraitManager.WIDTH_PORTRAIT_SMALLDisplayPortraitManager.WIDTH_PORTRAIT_BIG
 
-   Dummy is used for registered users which have no personal avatar image. 
-   - dummy is used if gender is not known
-   - dummy_female is used for femal users
-   - dummy_male is used for male users
-   
-   Anonymous is used for guest users and in anonymous chat / forum postings
+Dummy is used for registered users which have no personal avatar image. 
+- dummy is used if gender is not known
+- dummy_female is used for femal users
+- dummy_male is used for male users
+
+Anonymous is used for guest users and in anonymous chat / forum postings
 */
 .o_portrait_avatar,
 .o_portrait_dummy,
 .o_portrait_dummy_female_big,
 .o_portrait_dummy_male_big,
 .o_portrait_anonymous 			 {width: 100px; height: 100px;}
-.o_portrait_dummy                {background-image: url('#{$o-images-path}portrait/dummy.png');}
-.o_portrait_dummy_female_big     {background-image: url('#{$o-images-path}portrait/dummy_female_big.png');}
-.o_portrait_dummy_male_big       {background-image: url('#{$o-images-path}portrait/dummy_male_big.png');}
+.o_portrait_dummy				{background-image: url('#{$o-images-path}portrait/dummy.png');}
+.o_portrait_dummy_female_big	 {background-image: url('#{$o-images-path}portrait/dummy_female_big.png');}
+.o_portrait_dummy_male_big	{background-image: url('#{$o-images-path}portrait/dummy_male_big.png');}
 .o_portrait_anonymous 			 {background-image: url('#{$o-images-path}portrait/anonymous.png'); }
 
 .o_portrait_avatar_small,
@@ -278,9 +278,9 @@ ul.o_dropdown {
 .o_portrait_dummy_female_small,
 .o_portrait_dummy_male_small,
 .o_portrait_anonymous_small 	 {width: 30px; height: 30px;}
-.o_portrait_dummy_small          {background-image: url('#{$o-images-path}portrait/dummy_small.png');}
-.o_portrait_dummy_female_small   {background-image: url('#{$o-images-path}portrait/dummy_female_small.png');}
-.o_portrait_dummy_male_small     {background-image: url('#{$o-images-path}portrait/dummy_male_small.png');}
+.o_portrait_dummy_small		{background-image: url('#{$o-images-path}portrait/dummy_small.png');}
+.o_portrait_dummy_female_small{background-image: url('#{$o-images-path}portrait/dummy_female_small.png');}
+.o_portrait_dummy_male_small	 {background-image: url('#{$o-images-path}portrait/dummy_male_small.png');}
 .o_portrait_anonymous_small 	 {background-image: url('#{$o-images-path}portrait/anonymous_small.png'); } 
 
 /* Date component, used in info course element, blog etc */
@@ -313,7 +313,7 @@ ul.o_dropdown {
 		height: floor($line-height-computed * 1.5);
 		line-height: floor($line-height-computed * 1.5);
 		font-size: $font-size-large;
-		border-top: 1px solid $o-datecomp-border;  
+		border-top: 1px solid $o-datecomp-border;
 		background-color: $o-datecomp-day-bg;
 		color: $o-datecomp-day-color;
 	}
@@ -432,8 +432,8 @@ ul.o_certificates li {
 	dl {
 		dt {
 			&:first-letter { 
-    			font-size: ceil(($font-size-base * 1.5));;
-    		}
+				font-size: ceil(($font-size-base * 1.5));;
+			}
 			small {
 				color: $text-muted;
 			}
@@ -486,8 +486,8 @@ div.o_assessment_user_type_filter {
 /* Segmented view wrapper */
 .o_segments.btn-group a span {
 	overflow: hidden;
-    display: block;
-    text-overflow: ellipsis;
+	display: block;
+	text-overflow: ellipsis;
 }
 .o_segments_content {
 	margin-top: $line-height-computed;
@@ -679,7 +679,7 @@ ul.o_assessment_docs>li:last-child {
 /* label */
 %o_labeled,
 .o_labeled {
-    text-transform: uppercase;
+	text-transform: uppercase;
 	text-align: center;
 	text-decoration: none;
 	vertical-align: text-bottom;
@@ -687,15 +687,15 @@ ul.o_assessment_docs>li:last-child {
 	font-weight: bold !important;
 	line-height: 1;
 	white-space: nowrap;
-   	border: 1px solid;
+	border: 1px solid;
 	border-radius: 3px;
 	padding: 2px 5px;
-    background-color: $o-labeled_bg-color;
-    color: $o-labeled_color;
+	background-color: $o-labeled_bg-color;
+	color: $o-labeled_color;
 }
 .o_labeled_light {
 	@extend %o_labeled;
-    background-color: 	$o-labeled-light-bg-color;
+	background-color: 	$o-labeled-light-bg-color;
  }
  .dropdown-menu.o_labeled {
  	background-color: inherit;
@@ -708,8 +708,8 @@ ul.o_assessment_docs>li:last-child {
  	display: flex;
 	span:not(.o_ms_carret) {
  		text-overflow: ellipsis;
-   		overflow: hidden;
-   		white-space: nowrap; 
+		overflow: hidden;
+		white-space: nowrap; 
 	}
 	.o_ms_carret {
 		margin: auto 0 auto auto;
@@ -718,8 +718,9 @@ ul.o_assessment_docs>li:last-child {
 .o_ms_list {
 	width: 100%;
 	height: auto;
-    max-height: 300px;
-    overflow-x: hidden;
+	max-height: 300px;
+	overflow-x: hidden;
+	top: unset;
 }
 
 

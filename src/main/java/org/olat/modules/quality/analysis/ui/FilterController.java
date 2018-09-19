@@ -34,9 +34,9 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
-import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Organisation;
@@ -77,7 +77,6 @@ public class FilterController extends FormBasicController {
 	private MultipleSelectionElement contextCurriculumEl;
 	private MultipleSelectionElement contextCurriculumElementEl;
 	private MultipleSelectionElement withUserInformationsEl;
-	private StaticTextElement countFilteredEl;
 	
 	private final AnalysisSearchParameter searchParams;
 	
@@ -89,17 +88,24 @@ public class FilterController extends FormBasicController {
 	private CurriculumModule curriculumModule;
 
 	public FilterController(UserRequest ureq, WindowControl wControl, AnalysisSearchParameter searchParams) {
-		super(ureq, wControl);
+		super(ureq, wControl, LAYOUT_VERTICAL);
 		this.searchParams = searchParams;
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		dateRangeFromEl = uifactory.addDateChooser("filter.date.range.from", null, formLayout);
+		formLayout.setElementCssClass("o_qual_ana_filter");
+		
+		FormLayoutContainer dateRange = FormLayoutContainer.createHorizontalFormLayout("dateRange", getTranslator());
+		flc.add("dateRange", dateRange);
+		dateRange.setElementCssClass("o_date_range");
+		dateRangeFromEl = uifactory.addDateChooser("filter.date.range.from", null, dateRange);
+		dateRangeFromEl.setElementCssClass("o_date_range_from");
 		dateRangeFromEl.addActionListener(FormEvent.ONCHANGE);
 		
-		dateRangeToEl = uifactory.addDateChooser("filter.date.range.to", null, formLayout);
+		dateRangeToEl = uifactory.addDateChooser("filter.date.range.to", null, dateRange);
+		dateRangeToEl.setElementCssClass("o_date_range_to");
 		dateRangeToEl.addActionListener(FormEvent.ONCHANGE);
 
 		topicIdentityEl = uifactory.addCheckboxesDropdown("filter.topic.identities", formLayout);
@@ -130,8 +136,6 @@ public class FilterController extends FormBasicController {
 				WITH_USER_INFOS_KEYS, translateAll(getTranslator(), WITH_USER_INFOS_KEYS), 1);
 		withUserInformationsEl.addActionListener(FormEvent.ONCLICK);
 		
-		countFilteredEl = uifactory.addStaticTextElement("filter.count", "", formLayout);
-		
 		setSelectionValues();
 	}
 	
@@ -144,7 +148,6 @@ public class FilterController extends FormBasicController {
 		setContextOrganisationValues();
 		setContextCurriculumValues();
 		setContextCurriculumElementValues();
-		setCountFiltered();
 	}
 	
 	private void setTopicIdentityValues() {
@@ -301,11 +304,6 @@ public class FilterController extends FormBasicController {
 		}
 	}
 	
-	private void setCountFiltered() {
-		Long count = analysisService.loadFilterDataCollectionCount(searchParams);
-		countFilteredEl.setValue(count.toString());
-	}
-
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		 if (source == dateRangeFromEl) {
