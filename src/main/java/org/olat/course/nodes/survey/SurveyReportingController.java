@@ -51,7 +51,7 @@ public class SurveyReportingController extends BasicController {
 		mainVC = createVelocityContainer("reporting");
 
 		Form form = evaluationFormManager.loadForm(survey.getFormEntry());
-		SessionFilter filter = SessionFilterFactory.create(survey);
+		SessionFilter filter = SessionFilterFactory.createSelectDone(survey);
 		EvaluationFormReportsController reportsCtrl = new EvaluationFormReportsController(ureq, wControl, form, filter);
 		mainVC.put("report", reportsCtrl.getInitialComponent());
 

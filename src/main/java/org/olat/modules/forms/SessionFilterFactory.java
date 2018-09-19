@@ -42,7 +42,7 @@ public class SessionFilterFactory {
 		return new SessionRefFilter(sessionRefs);
 	}
 
-	public static SessionFilter create(EvaluationFormSurvey survey) {
+	public static SessionFilter createSelectDone(EvaluationFormSurvey survey) {
 		return new SurveyFilter(survey);
 	}
 

@@ -210,6 +210,7 @@ public class AnalysisFilterDAO {
 	}
 
 	static void appendSelectSessionKeys(QueryBuilder sb, AnalysisSearchParameter searchParams) {
+		// Only done sessions have an entry in context.evaluationFormSession
 		sb.append("select distinct context.evaluationFormSession.key");
 		appendFrom(sb, searchParams);
 		appendWhere(sb, searchParams);

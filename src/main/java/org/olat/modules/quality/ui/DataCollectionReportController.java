@@ -86,7 +86,7 @@ public class DataCollectionReportController extends AbstractDataCollectionEditCo
 		
 		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(dataCollection, null);
 		Form form = evaluationFormManager.loadForm(survey.getFormEntry());
-		SessionFilter filter = SessionFilterFactory.create(survey);
+		SessionFilter filter = SessionFilterFactory.createSelectDone(survey);
 		
 		reportsCtrl = new EvaluationFormReportsController(ureq, getWindowControl(), form,
 				filter, ReportSegment.OVERVIEW, reportHeaderCtrl.getInitialComponent(), figures);

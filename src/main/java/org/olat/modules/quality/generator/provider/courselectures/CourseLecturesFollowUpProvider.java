@@ -331,7 +331,7 @@ public class CourseLecturesFollowUpProvider implements QualityGeneratorProvider 
 		// Load evaluation form and sessions
 		EvaluationFormSurvey survey = qualityService.loadSurvey(dataCollection);
 		org.olat.modules.forms.model.xml.Form evaluationForm = evaluationFormManager.loadForm(survey.getFormEntry());
-		SessionFilter filter = SessionFilterFactory.create(survey);
+		SessionFilter filter = SessionFilterFactory.createSelectDone(survey);
 
 		// Load results and calculate if grade is sufficient
 		long numberResponses = 0;

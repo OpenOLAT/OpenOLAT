@@ -310,7 +310,7 @@ public class MultiEvaluationFormController extends BasicController {
 	private EvaluationFormReportController createReportController(UserRequest ureq) {
 		Form form = evaluationFormManager.loadForm(survey.getFormEntry());
 				
-		SessionFilter surveyFilter = SessionFilterFactory.create(survey);
+		SessionFilter surveyFilter = SessionFilterFactory.createSelectDone(survey);
 		List<EvaluationFormSession> sessions = evaluationFormManager.loadSessionsFiltered(surveyFilter, 0, -1);
 		sessions.removeIf(session -> notEvaluator(session));
 		SessionFilter filter = SessionFilterFactory.create(sessions);

@@ -259,7 +259,7 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 		
 		RepositoryEntry ores = RepositoryManager.getInstance().lookupRepositoryEntry(course, true);
 		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(ores, getIdent());
-		SessionFilter filter = SessionFilterFactory.create(survey);
+		SessionFilter filter = SessionFilterFactory.createSelectDone(survey);
 		Form form = evaluationFormManager.loadForm(survey.getFormEntry());
 		
 		LegendNameGenerator legendNameGenerator = new SessionInformationLegendNameGenerator(filter);
