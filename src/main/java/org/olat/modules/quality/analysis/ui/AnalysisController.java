@@ -35,6 +35,8 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.model.xml.Form;
+import org.olat.modules.forms.ui.ReportSegment;
+import org.olat.modules.forms.ui.ReportSegmentEvent;
 import org.olat.modules.qpool.ui.QuestionItemDetailsController;
 import org.olat.modules.quality.QualitySecurityCallback;
 import org.olat.modules.quality.analysis.AnalysisSearchParameter;
@@ -68,12 +70,13 @@ public class AnalysisController extends BasicController implements TooledControl
 	private final Form form;
 	private AnalysisSearchParameter searchParams;
 	private Boolean showFilters;
+	private ReportSegment currentSegment;
 	
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
 	@Autowired
 	private RepositoryService repositoryService;
-	
+
 	protected AnalysisController(UserRequest ureq, WindowControl wControl, QualitySecurityCallback secCallback,
 			TooledStackedPanel stackPanel, EvaluationFormView formView) {
 		super(ureq, wControl);
@@ -131,6 +134,10 @@ public class AnalysisController extends BasicController implements TooledControl
 			AnalysisFilterEvent filterEvent = (AnalysisFilterEvent) event;
 			searchParams = filterEvent.getSearchParams();
 			presentationCtrl.onFilter(ureq, searchParams);
+		} else if (source == presentationCtrl && event instanceof ReportSegmentEvent) {
+			// Save current segment between analysis segment changes
+			ReportSegmentEvent rsEvent = (ReportSegmentEvent) event;
+			currentSegment = rsEvent.getSegment();
 		}
 		super.event(ureq, source, event);
 	}
@@ -152,20 +159,22 @@ public class AnalysisController extends BasicController implements TooledControl
 		
 		switch (presentation) {
 			case REPORT:
-				presentationCtrl = new AnalysisReportController(ureq, getWindowControl(), form);
+				presentationCtrl = new AnalysisReportController(ureq, getWindowControl(), form, currentSegment);
 				break;
 			case HEAT_MAP:
 				presentationCtrl = new HeatMapController(ureq, getWindowControl(), form);
 				break;
 			default:
-				presentationCtrl = new AnalysisReportController(ureq, getWindowControl(), form);
+				presentationCtrl = new AnalysisReportController(ureq, getWindowControl(), form, currentSegment);
 				break;
 		}
 		listenTo(presentationCtrl);
 		presentationCtrl.onFilter(ureq, searchParams);
 		mainVC.put("presentation", presentationCtrl.getInitialComponent());
 		mainVC.setDirty(true);
-	}	private void doShowFilter(UserRequest ureq) {
+	}
+	
+	private void doShowFilter(UserRequest ureq) {
 		doShowFilter();
 		doPutFiltersSwitch(ureq, Boolean.TRUE);
 	}

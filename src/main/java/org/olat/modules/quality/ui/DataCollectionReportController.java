@@ -38,6 +38,7 @@ import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.ui.EvaluationFormFigure;
 import org.olat.modules.forms.ui.EvaluationFormFormatter;
 import org.olat.modules.forms.ui.EvaluationFormReportsController;
+import org.olat.modules.forms.ui.ReportSegment;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityDataCollectionView;
 import org.olat.modules.quality.QualityDataCollectionViewSearchParams;
@@ -88,7 +89,7 @@ public class DataCollectionReportController extends AbstractDataCollectionEditCo
 		SessionFilter filter = SessionFilterFactory.create(survey);
 		
 		reportsCtrl = new EvaluationFormReportsController(ureq, getWindowControl(), form,
-				filter, reportHeaderCtrl.getInitialComponent(), figures);
+				filter, ReportSegment.OVERVIEW, reportHeaderCtrl.getInitialComponent(), figures);
 		flc.put("report", reportsCtrl.getInitialComponent());
 	}
 	

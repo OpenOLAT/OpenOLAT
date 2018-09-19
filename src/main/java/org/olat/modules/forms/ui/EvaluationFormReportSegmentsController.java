@@ -74,7 +74,8 @@ public class EvaluationFormReportSegmentsController extends BasicController {
 	private final ReportHelper reportHelper;
 
 	public EvaluationFormReportSegmentsController(UserRequest ureq, WindowControl wControl, Form form,
-			SessionFilter filter, Component formHeader, List<EvaluationFormFigure> figures, ReportHelper reportHelper) {
+			SessionFilter filter, ReportSegment show, Component formHeader, List<EvaluationFormFigure> figures,
+			ReportHelper reportHelper) {
 		super(ureq, wControl);
 		this.form = form;
 		this.filter = filter;
@@ -94,7 +95,23 @@ public class EvaluationFormReportSegmentsController extends BasicController {
 		sessionSelectionLink = LinkFactory.createLink("reports.session.selection", mainVC, this);
 		segmentView.addSegment(sessionSelectionLink, false);
 		
-		doOpenOverviewReport(ureq);
+		ReportSegment segment = show != null ? show : ReportSegment.OVERVIEW;
+		switch (segment) {
+		case OVERVIEW:
+			doOpenOverviewReport(ureq);
+			break;
+		case TABLE:
+			doOpenTableReport(ureq);
+			break;
+		case DIAGRAMM:
+			doOpenDiagramReport(ureq);
+			break;
+		case QUESTIONNAIRES:
+			doOpenSessionSelection(ureq);
+			break;
+		default:
+			doOpenOverviewReport(ureq);
+		}
 		
 		putInitialPanel(mainVC);
 	}
@@ -122,6 +139,8 @@ public class EvaluationFormReportSegmentsController extends BasicController {
 			overviewCtrl = new EvaluationFormOverviewController(ureq, getWindowControl(), form, filter, figures);
 		}
 		mainVC.put(SEGMENTS_CMP, overviewCtrl.getInitialComponent());
+		segmentView.select(overviewReportLink);
+		fireEvent(ureq, new ReportSegmentEvent(ReportSegment.OVERVIEW));
 	}
 
 	private void doOpenTableReport(UserRequest ureq) {
@@ -134,6 +153,8 @@ public class EvaluationFormReportSegmentsController extends BasicController {
 			listenTo(tableReportCtrl);
 		}
 		mainVC.put(SEGMENTS_CMP, tableReportCtrl.getInitialComponent());
+		segmentView.select(tableReportLink);
+		fireEvent(ureq, new ReportSegmentEvent(ReportSegment.TABLE));
 	}
 	
 	private void doOpenDiagramReport(UserRequest ureq) {
@@ -143,6 +164,8 @@ public class EvaluationFormReportSegmentsController extends BasicController {
 			listenTo(diagramReportCtrl);
 		}
 		mainVC.put(SEGMENTS_CMP, diagramReportCtrl.getInitialComponent());
+		segmentView.select(diagramReportLink);
+		fireEvent(ureq, new ReportSegmentEvent(ReportSegment.DIAGRAMM));
 	}
 
 	private void doOpenSessionSelection(UserRequest ureq) {
@@ -152,7 +175,9 @@ public class EvaluationFormReportSegmentsController extends BasicController {
 			stackedSessionPanel.pushController(translate("reports.session.forms"), sessionSelectionCtrl);
 			sessionSelectionCtrl.setBreadcrumbPanel(stackedSessionPanel);
 		}
-		mainVC.put(SEGMENTS_CMP, stackedSessionPanel);	
+		mainVC.put(SEGMENTS_CMP, stackedSessionPanel);
+		segmentView.select(sessionSelectionLink);
+		fireEvent(ureq, new ReportSegmentEvent(ReportSegment.QUESTIONNAIRES));
 	}
 
 	@Override

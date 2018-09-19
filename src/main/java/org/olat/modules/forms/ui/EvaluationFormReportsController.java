@@ -60,11 +60,16 @@ public class EvaluationFormReportsController extends BasicController {
 	private final ReportHelper reportHelper;
 	
 	public EvaluationFormReportsController(UserRequest ureq, WindowControl wControl, Form form, SessionFilter filter) {
-		this(ureq, wControl, form, filter, null, null);
+		this(ureq, wControl, form, filter, null);
+	}
+	
+	public EvaluationFormReportsController(UserRequest ureq, WindowControl wControl, Form form, SessionFilter filter,
+			ReportSegment show) {
+		this(ureq, wControl, form, filter, show, null, null);
 	}
 
 	public EvaluationFormReportsController(UserRequest ureq, WindowControl wControl, Form form, SessionFilter filter,
-			Component formHeader, List<EvaluationFormFigure> figures) {
+			ReportSegment show, Component formHeader, List<EvaluationFormFigure> figures) {
 		super(ureq, wControl);
 		this.form = form;
 		this.filter = filter;
@@ -87,7 +92,8 @@ public class EvaluationFormReportsController extends BasicController {
 		exportLink.setIconLeftCSS("o_icon o_icon-fw o_icon_eva_export");
 
 		segmentsController = new EvaluationFormReportSegmentsController(ureq,
-				getWindowControl(), form, filter, formHeader, figures, reportHelper);
+				getWindowControl(), form, filter, show, formHeader, figures, reportHelper);
+		listenTo(segmentsController);
 		mainVC.put("segments", segmentsController.getInitialComponent());
 
 		putInitialPanel(mainVC);
@@ -108,7 +114,9 @@ public class EvaluationFormReportsController extends BasicController {
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == printSelectionCtrl) {
+		if (source == segmentsController) {
+			fireEvent(ureq, event);
+		} else if (source == printSelectionCtrl) {
 			calloutCtrl.deactivate();
 			cleanUp();
 		}
