@@ -26,7 +26,6 @@
 						</bean>
 					</entry>
 					<entry key="forceUser"><value>false</value></entry>
-					<entry key="redoTimeout"><value>0</value></entry>
 					<entry key="i18nIntro"><value>org.olat.core.commons.services.sms.ui:confirm.sms.phone</value></entry>
 					<entry key="order"><value>0</value></entry>
 					<!-- 2592000 = 60 * 60 * 24 * 30 (or a month in seconds) -->
