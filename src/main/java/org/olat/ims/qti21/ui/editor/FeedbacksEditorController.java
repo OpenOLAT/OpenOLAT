@@ -190,7 +190,7 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 		}
 
 		// Submit Button
-		if(!restrictedEdit && !readOnly) {
+		if(!readOnly) {
 			uifactory.addFormSubmitButton("submit", formLayout);
 		}
 		updateAddButtons();
@@ -255,7 +255,7 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		if(restrictedEdit || readOnly) return;
+		if(readOnly) return;
 		
 		hintForm.commit();
 		hintForm.setVisible(!hintForm.isEmpty());
@@ -290,6 +290,15 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
+		
+		if(restrictedEdit) {
+			allOk &= hintForm.validateFormLogic();
+			allOk &= correctSolutionForm.validateFormLogic();
+			allOk &= correctForm.validateFormLogic();
+			allOk &= incorrectForm.validateFormLogic();
+			allOk &= answeredForm.validateFormLogic();
+			allOk &= emptyForm.validateFormLogic();
+		}
 		
 		for(RuledFeedbackForm additionalForm:additionalForms) {
 			allOk &= additionalForm.validateFormLogic();
@@ -334,15 +343,15 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 			String title = feedbackBuilder == null ? "" : feedbackBuilder.getTitle();
 			titleEl = uifactory.addTextElement("title_".concat(id), "form.imd.feedback.title", -1, title, formLayout);
 			titleEl.setUserObject(feedbackBuilder);
-			titleEl.setEnabled(!restrictedEdit && !readOnly);
+			titleEl.setEnabled(!readOnly);
 			titleEl.setElementCssClass("o_sel_assessment_item_" + feedbackType.name() + "_title");
 			
 			String text = feedbackBuilder == null ? "" : feedbackBuilder.getText();
 			textEl = uifactory.addRichTextElementForQTI21("text_".concat(id), "form.imd.feedback.text", text, 8, -1,
 					itemContainer, formLayout, ureq.getUserSession(), getWindowControl());
 			textEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.oneLine);
-			textEl.setEnabled(!restrictedEdit && !readOnly);
-			textEl.setVisible(!restrictedEdit && !readOnly);
+			textEl.setEnabled(!readOnly);
+			textEl.setVisible(!readOnly);
 			
 			String helpText = "feedback." + feedbackType.name();
 			if(feedbackType == ModalFeedbackType.correct && itemBuilder instanceof SingleChoiceAssessmentItemBuilder) {
@@ -354,7 +363,7 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 			RichTextConfiguration richTextConfig2 = textEl.getEditorConfiguration();
 			richTextConfig2.setFileBrowserUploadRelPath("media");// set upload dir to the media dir
 			
-			if(restrictedEdit || readOnly) {
+			if(readOnly) {
 				List<FlowStatic> textFlow = feedbackBuilder == null ? Collections.emptyList() : feedbackBuilder.getTextFlowStatic();
 				FlowFormItem textReadOnlyEl = new FlowFormItem("textro_".concat(id), itemFile);
 				textReadOnlyEl.setLabel("form.imd.feedback.text", null);
@@ -376,10 +385,27 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 			formLayout.setVisible(visible);
 		}
 		
+		public boolean validateFormLogic() {
+			boolean allOk = true;
+			
+			if(restrictedEdit && isVisible()) {
+				textEl.clearError();
+				String text = textEl.getRawValue();
+				if(restrictedEdit && TestFeedbackBuilder.isEmpty(text)) {
+					textEl.setErrorKey("error.cannot.remove.feedback", null);
+					allOk = false;
+				}
+			}
+			
+			return allOk;
+		}
+		
 		public void commit() {
 			String title = titleEl.getValue();
 			String text = textEl.getRawValue();
-			if(!TestFeedbackBuilder.isEmpty(text) ) {
+			if(restrictedEdit && TestFeedbackBuilder.isEmpty(text)) {
+				//not allowed to remove a feedback
+			} else if(!TestFeedbackBuilder.isEmpty(text)) {
 				feedbackBuilder = itemBuilder.getFeedbackBuilder(feedbackType);
 				if(feedbackBuilder == null) {
 					feedbackBuilder = itemBuilder.createFeedbackBuilder(feedbackType);
@@ -421,7 +447,7 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 			String title = feedbackBuilder == null ? "" : feedbackBuilder.getTitle();
 			titleEl = uifactory.addTextElement("title_".concat(id), "form.imd.feedback.title", -1, title, formLayout);
 			titleEl.setUserObject(feedbackBuilder);
-			titleEl.setEnabled(!restrictedEdit && !readOnly);
+			titleEl.setEnabled(!readOnly);
 			titleEl.setElementCssClass("o_sel_assessment_item_" + feedbackType.name() + "_feedback_title");
 			
 			String conditionListPage = velocity_root + "/feedback_condition_list.html";
@@ -433,7 +459,7 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 			conditionListContainer.setLabel("form.imd.condition", null);
 			
 			// rules
-			if(feedbackBuilder.getFeedbackConditons() != null && feedbackBuilder.getFeedbackConditons().size() > 0) {
+			if(feedbackBuilder.getFeedbackConditons() != null && !feedbackBuilder.getFeedbackConditons().isEmpty()) {
 				for(ModalFeedbackCondition condition:feedbackBuilder.getFeedbackConditons()) {
 					ConditionForm conditionForm = new ConditionForm(condition);
 					conditionForm.initForm(conditionListContainer);
@@ -449,15 +475,15 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 			textEl = uifactory.addRichTextElementForQTI21("text_".concat(id), "form.imd.feedback.text", text, 8, -1,
 					itemContainer, formLayout, ureq.getUserSession(), getWindowControl());
 			textEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.oneLine);
-			textEl.setEnabled(!restrictedEdit && !readOnly);
-			textEl.setVisible(!restrictedEdit && !readOnly);
+			textEl.setEnabled(!readOnly);
+			textEl.setVisible(!readOnly);
 			textEl.setHelpTextKey("feedback." + feedbackType.name() + ".help", null);
 			textEl.setHelpUrlForManualPage("Test editor QTI 2.1 in detail#details_testeditor_feedback");
 			textEl.setElementCssClass("o_sel_assessment_item_" + feedbackType.name() + "_feedback");
 			RichTextConfiguration richTextConfig2 = textEl.getEditorConfiguration();
 			richTextConfig2.setFileBrowserUploadRelPath("media");// set upload dir to the media dir
 			
-			if(restrictedEdit || readOnly) {
+			if(readOnly) {
 				List<FlowStatic> textFlow = feedbackBuilder == null ? Collections.emptyList() : feedbackBuilder.getTextFlowStatic();
 				FlowFormItem textReadOnlyEl = new FlowFormItem("textro_".concat(id), itemFile);
 				textReadOnlyEl.setLabel("form.imd.feedback.text", null);
@@ -485,12 +511,19 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 			for(ConditionForm condition:conditions) {
 				allOk &= condition.validateFormLogic();
 			}
+
+			textEl.clearError();
+			String text = textEl.getRawValue();
+			if(restrictedEdit && TestFeedbackBuilder.isEmpty(text)) {
+				textEl.setErrorKey("error.cannot.remove.feedback", null);
+				allOk = false;
+			}
 			
 			return allOk;
 		}
 		
 		protected void formInnerEvent(FormItem source) {
-			if(conditions != null && conditions.size() > 0) {
+			if(conditions != null && !conditions.isEmpty()) {
 				ConditionForm[] conditionArray = conditions.toArray(new ConditionForm[conditions.size()]);
 				for(ConditionForm condition:conditionArray) {
 					condition.formInnerEvent(source);
@@ -506,8 +539,9 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 			for(ConditionForm condition:conditions) {
 				feedbackConditions.add(condition.commit());
 			}
-			
-			if(!TestFeedbackBuilder.isEmpty(text) && !feedbackConditions.isEmpty()) {
+			if(restrictedEdit && TestFeedbackBuilder.isEmpty(text)) {
+				//not allowed to remove a feedback already in use
+			} else if(!TestFeedbackBuilder.isEmpty(text) && !feedbackConditions.isEmpty()) {
 				if(feedbackBuilder == null) {
 					feedbackBuilder = itemBuilder.createFeedbackBuilder(feedbackType);
 				}
