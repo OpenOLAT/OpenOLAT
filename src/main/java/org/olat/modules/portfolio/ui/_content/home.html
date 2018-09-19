@@ -1,18 +1,24 @@
 <div class="o_portfolio_home">
 	<h2>$r.translate("my.portfolio")</h2>
-	<ul class="o_portfolio_my list-unstyled">
+	<ul class="o_portfolio_my list-inline">
 		<li>$r.render("goto.my.binders")</li>
 		<li>$r.render("goto.my.pages")</li>
 		<li>$r.render("goto.media.center")</li>
-		<li>$r.render("go.to.trash")</li>
-		<li class="o_pf_new_entry">$r.render("new.entry")</li>
+		<li class="o_pf_trash_entry">$r.render("go.to.trash")</li>
+		<li>$r.render("new.entry")</li>
 		<li><a href="$r.contextHelpLink('Portfolio 2.0')" target="_blank"><i class="o_icon o_icon-fw o_icon_help"> </i><span>$r.translate("show.help.binder")</span></a></li>
 	</ul>
 	
+	<h2>$r.translate("open.part")</h2>
+	<ul class="o_portfolio_shared list-inline">
+		<li>$r.render("goto.my.shared.items")</li>
+		<li>$r.render("goto.shared.with.me")</li>
+	</ul>
+
 	#if($r.isTrue($hasLastBinders) && $r.isTrue($hasLastPages))
-	<div class="o_portfolio_last_used">
-		<h3>$r.translate("last.used")</h3>
-		<div class="row">
+	<div class="o_portfolio_last_used o_block_large">
+		<h2>$r.translate("last.used")</h2>
+		<div class="row o_block">
 			#if($r.isTrue($hasLastBinders))
 			<div class="col-md-6">$r.render("lastBinders")</div>
 			#end
@@ -23,9 +29,4 @@
 	</div>
 	#end
 
-	<h2>$r.translate("open.part")</h2>
-	<ul class="o_portfolio_shared list-unstyled">
-		<li>$r.render("goto.my.shared.items")</li>
-		<li>$r.render("goto.shared.with.me")</li>
-	</ul>
 </div>
