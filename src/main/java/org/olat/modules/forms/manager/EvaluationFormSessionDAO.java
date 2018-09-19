@@ -77,6 +77,19 @@ class EvaluationFormSessionDAO {
 		return sessions.isEmpty()? null: sessions.get(0);
 	}
 	
+	Long loadSessionsCount(SessionFilter filter) {
+
+		StringBuilder sb = new StringBuilder();
+		sb.append("select count(session) from evaluationformsession as session");
+		sb.append(" where session.key in (").append(filter.getSelectKeys()).append(")");
+		
+		TypedQuery<Long> query = dbInstance.getCurrentEntityManager().
+				createQuery(sb.toString(), Long.class);
+		filter.addParameters(query);
+		
+		return query.getResultList().get(0);
+	}
+	
 	List<EvaluationFormSession> loadSessionsFiltered(SessionFilter filter, int firstResult, int maxResults,
 			SortKey... orderBy) {
 

@@ -54,6 +54,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class EvaluationFormPrintController extends BasicController {
 	
+	private static final long MAX_SESSIONS_TO_PRINT = 100;
+	
 	private VelocityContainer mainVC;
 	
 	private final Form form;
@@ -94,7 +96,12 @@ public class EvaluationFormPrintController extends BasicController {
 		}
 		
 		if (printSelection.isSessions()) {
-			mainVC.contextPut("sessionWrappers", createSessionWrappers(ureq));
+			Long sessionsCount = evaluationFormManager.loadSessionsCount(filter);
+			if (sessionsCount <= MAX_SESSIONS_TO_PRINT) {
+				mainVC.contextPut("sessionWrappers", createSessionWrappers(ureq));
+			} else {
+				showWarning("report.max.session.exceeded", String.valueOf(MAX_SESSIONS_TO_PRINT));
+			}
 		}
 
 		putInitialPanel(mainVC);

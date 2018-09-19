@@ -221,6 +221,11 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 	}
 
 	@Override
+	public Long loadSessionsCount(SessionFilter filter) {
+		return evaluationFormSessionDao.loadSessionsCount(filter);
+	}
+
+	@Override
 	public List<EvaluationFormSession> loadSessionsFiltered(SessionFilter filter, int firstResult, int maxResults,
 			SortKey... orderBy) {
 		return evaluationFormSessionDao.loadSessionsFiltered(filter, firstResult, maxResults, orderBy);

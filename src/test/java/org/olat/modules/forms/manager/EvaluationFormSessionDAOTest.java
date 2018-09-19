@@ -119,6 +119,21 @@ public class EvaluationFormSessionDAOTest extends OlatTestCase {
 	}
 
 	@Test
+	public void shouldLoadFilteredCount() {
+		EvaluationFormSession session1 = evaTestHelper.createSession();
+		EvaluationFormSession session2 = evaTestHelper.createSession();
+		evaTestHelper.createSession();
+		dbInstance.commit();
+		
+		List<EvaluationFormSession> sessions = Arrays.asList(session1, session2);
+		SessionFilter filter = SessionFilterFactory.create(sessions);
+		Long count = sut.loadSessionsCount(filter);
+		
+		long expected = sessions.size();
+		assertThat(count).isEqualTo(expected);
+	}
+	
+	@Test
 	public void shouldLoadFiltered() {
 		EvaluationFormSession session1 = evaTestHelper.createSession();
 		EvaluationFormSession session2 = evaTestHelper.createSession();

@@ -129,6 +129,8 @@ public interface EvaluationFormManager {
 
 	public EvaluationFormSession loadSessionByParticipation(EvaluationFormParticipationRef participation);
 	
+	public Long loadSessionsCount(SessionFilter filter);
+	
 	public List<EvaluationFormSession> loadSessionsFiltered(SessionFilter filter, int firstResult, int maxResults,
 			SortKey... orderBy);
 
