@@ -84,13 +84,15 @@ public class CertificationTest extends OlatJerseyTestCase {
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, entry, null, false);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(certificate);
+		sleep(1000);
 		
 		//wait until the certificate is created
 		waitForCondition(new Callable<Boolean>() {
 			@Override
 			public Boolean call() throws Exception {
 				Certificate reloadedCertificate = certificatesManager.getCertificateById(certificate.getKey());
-				return CertificateStatus.ok.equals(reloadedCertificate.getStatus());
+				VFSLeaf certificateFile = certificatesManager.getCertificateLeaf(reloadedCertificate);
+				return CertificateStatus.ok.equals(reloadedCertificate.getStatus()) && certificateFile != null;
 			}
 		}, 30000);
 		
@@ -276,13 +278,15 @@ public class CertificationTest extends OlatJerseyTestCase {
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, entry, null, false);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(certificate);
+		sleep(1000);
 		
 		//wait until certificate is generated
 		waitForCondition(new Callable<Boolean>() {
 			@Override
 			public Boolean call() throws Exception {
 				Certificate reloadedCertificate = certificatesManager.getCertificateById(certificate.getKey());
-				return CertificateStatus.ok.equals(reloadedCertificate.getStatus());
+				VFSLeaf certificateFile = certificatesManager.getCertificateLeaf(reloadedCertificate);
+				return CertificateStatus.ok.equals(reloadedCertificate.getStatus()) && certificateFile != null;
 			}
 		}, 30000);
 		
