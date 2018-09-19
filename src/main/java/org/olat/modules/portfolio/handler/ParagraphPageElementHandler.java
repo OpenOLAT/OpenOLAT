@@ -33,56 +33,56 @@ import org.olat.modules.ceditor.PageElementStore;
 import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.SimpleAddPageElementHandler;
 import org.olat.modules.ceditor.model.HTMLElement;
-import org.olat.modules.ceditor.model.HTMLRawElement;
+import org.olat.modules.ceditor.model.ParagraphElement;
 import org.olat.modules.ceditor.ui.ComponentsFactory;
 import org.olat.modules.ceditor.ui.HTMLRawEditorController;
 import org.olat.modules.ceditor.ui.PageRunComponent;
 import org.olat.modules.portfolio.PortfolioService;
-import org.olat.modules.portfolio.model.HTMLPart;
+import org.olat.modules.portfolio.model.ParagraphPart;
 
 /**
  * 
- * Initial date: 01.07.2016<br>
+ * Initial date: 19 sept. 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class HTMLRawPageElementHandler implements PageElementHandler, PageElementStore<HTMLElement>, SimpleAddPageElementHandler {
+public class ParagraphPageElementHandler implements PageElementHandler, PageElementStore<HTMLElement>, SimpleAddPageElementHandler {
 
 	@Override
 	public String getType() {
-		return "htmlraw";
+		return "htmlparagraph";
 	}
 
 	@Override
 	public String getIconCssClass() {
 		// For now we use the paragraph icon until we have a minimized paragraph element o_icon_code
-		return "o_icon_code";
+		return "o_icon_paragraph";
 	}
 
 	@Override
 	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, PageElementRenderingHints options) {
 		TextComponent cmp = null;
-		if(element instanceof HTMLPart) {
-			cmp = ComponentsFactory.getContent((HTMLPart)element);
+		if(element instanceof ParagraphPart) {
+			cmp = ComponentsFactory.getContent((ParagraphPart)element);
 		}
 		return new PageRunComponent(cmp);
 	}
 
 	@Override
 	public PageElementEditorController getEditor(UserRequest ureq, WindowControl wControl, PageElement element) {
-		if(element instanceof HTMLPart) {
-			return new HTMLRawEditorController(ureq, wControl, (HTMLPart)element, this, false);
+		if(element instanceof ParagraphElement) {
+			return new HTMLRawEditorController(ureq, wControl, (ParagraphElement)element, this, true);
 		}
 		return null;
 	}
 
 	@Override
 	public PageElement createPageElement(Locale locale) {
-		return new HTMLPart();
+		return new ParagraphPart();
 	}
 
 	@Override
-	public HTMLRawElement savePageElement(HTMLElement element) {
-		return CoreSpringFactory.getImpl(PortfolioService.class).updatePart((HTMLPart)element);
+	public ParagraphElement savePageElement(HTMLElement element) {
+		return CoreSpringFactory.getImpl(PortfolioService.class).updatePart((ParagraphPart)element);
 	}
 }

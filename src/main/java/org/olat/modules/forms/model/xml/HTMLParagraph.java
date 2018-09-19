@@ -17,18 +17,48 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.ceditor.model;
+package org.olat.modules.forms.model.xml;
+
+import org.olat.modules.ceditor.model.ParagraphElement;
 
 /**
- * This is the interface of a raw HTML piece of
- * content which can be edited by the generic html
- * editor.
  * 
- * 
- * Initial date: 10 sept. 2018<br>
+ * Initial date: 19 sept. 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface HTMLRawElement extends HTMLElement {
+public class HTMLParagraph extends AbstractHTMLElement implements ParagraphElement {
+
+	private static final long serialVersionUID = 1567753376804106600L;
+
+	public static final String TYPE = "formhtmlparagraph";
 	
+	private String layoutOptions;
+
+	@Override
+	public String getType() {
+		return TYPE;
+	}
+
+	@Override
+	public String getLayoutOptions() {
+		return layoutOptions;
+	}
+
+	@Override
+	public void setLayoutOptions(String layoutOptions) {
+		this.layoutOptions = layoutOptions;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj) {
+			return true;
+		}
+		if(obj instanceof HTMLParagraph) {
+			HTMLParagraph title = (HTMLParagraph)obj;
+			return getId() != null && getId().equals(title.getId());
+		}
+		return super.equals(obj);
+	}
 }

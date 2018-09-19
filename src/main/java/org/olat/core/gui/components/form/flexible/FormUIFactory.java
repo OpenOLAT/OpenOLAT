@@ -816,6 +816,19 @@ public class FormUIFactory {
 		return rte;
 	}
 	
+	public RichTextElement addRichTextElementForParagraphEditor(String name, String i18nLabel, String initialHTMLValue, int rows,
+			int cols, FormItemContainer formLayout, WindowControl wControl) {
+		// Create rich text element with bare bone configuration
+		RichTextElement rte = new RichTextElementImpl(name, initialHTMLValue, rows, cols, formLayout.getRootForm(), formLayout.getTranslator().getLocale());
+		setLabelIfNotNull(i18nLabel, rte);
+		// Now configure editor
+		rte.getEditorConfiguration().setConfigProfileFormParagraphEditor(wControl.getWindowBackOffice().getWindow().getGuiTheme());		
+		rte.getEditorConfiguration().setPathInStatusBar(false);
+		// Add to form and finish
+		formLayout.add(rte);
+		return rte;
+	}
+	
 	/**
 	 * 
 	 * This is a version with olat media only. The tiny media is disabled because we need to catch the object

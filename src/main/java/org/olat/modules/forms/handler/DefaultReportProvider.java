@@ -24,6 +24,7 @@ import java.util.Map;
 
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.forms.model.xml.FileUpload;
+import org.olat.modules.forms.model.xml.HTMLParagraph;
 import org.olat.modules.forms.model.xml.HTMLRaw;
 import org.olat.modules.forms.model.xml.MultipleChoice;
 import org.olat.modules.forms.model.xml.Rubric;
@@ -47,6 +48,7 @@ public class DefaultReportProvider implements EvaluationFormReportProvider {
 		handlers.put(Title.TYPE, new TitleHandler());
 		handlers.put(Spacer.TYPE, new SpacerHandler());
 		handlers.put(HTMLRaw.TYPE, new HTMLRawHandler());
+		handlers.put(HTMLParagraph.TYPE, new HTMLParagraphHandler());
 		handlers.put(Rubric.TYPE, new RubricBarChartsHandler(false));
 		handlers.put(TextInput.TYPE, new TextInputLegendTextHandler());
 		handlers.put(FileUpload.TYPE, new FileUploadListingHandler());

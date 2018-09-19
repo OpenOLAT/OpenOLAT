@@ -24,7 +24,7 @@ import org.olat.core.gui.components.text.TextFactory;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
 import org.olat.modules.ceditor.model.HTMLRawElement;
-import org.olat.modules.ceditor.model.TextSettings;
+import org.olat.modules.ceditor.model.ParagraphElement;
 
 /**
  * 
@@ -33,18 +33,22 @@ import org.olat.modules.ceditor.model.TextSettings;
  *
  */
 public class ComponentsFactory {
-	
-	
+
 	public static final TextComponent getContent(HTMLRawElement element) {
-		int numOfColumns = 1;
-		String content = element.getContent();
-		content = Formatter.formatLatexFormulas(content);
-		TextSettings settings = element.getTextSettings();
-		numOfColumns = settings.getNumOfColumns();
+		String content = Formatter.formatLatexFormulas(element.getContent());
+		int numOfColumns = element.getTextSettings().getNumOfColumns();
 
 		TextComponent cmp = TextFactory.createTextComponentFromString("htmlRawCmp" + CodeHelper.getRAMUniqueID(), content, null, false, null);
 		cmp.setElementCssClass("o_ce_html_raw o_html_col" + numOfColumns);
 		return cmp;
 	}
+	
+	public static final TextComponent getContent(ParagraphElement element) {
+		String content = Formatter.formatLatexFormulas(element.getContent());
+		int numOfColumns = element.getTextSettings().getNumOfColumns();
 
+		TextComponent cmp = TextFactory.createTextComponentFromString("htmlParagraphCmp" + CodeHelper.getRAMUniqueID(), content, null, false, null);
+		cmp.setElementCssClass("o_ce_html_paragraph o_html_col" + numOfColumns);
+		return cmp;
+	}
 }

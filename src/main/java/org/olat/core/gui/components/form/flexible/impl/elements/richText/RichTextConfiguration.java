@@ -222,6 +222,20 @@ public class RichTextConfiguration implements Disposable {
 		tinyConfig = TinyConfig.minimalisticConfig;
 	}
 	
+	public void setConfigProfileFormParagraphEditor(Theme guiTheme) {
+		setConfigBasics(guiTheme);
+		// Add additional plugins
+		TinyMCECustomPluginFactory customPluginFactory = CoreSpringFactory.getImpl(TinyMCECustomPluginFactory.class);
+		List<TinyMCECustomPlugin> enabledCustomPlugins = customPluginFactory.getCustomPlugionsForProfile();
+		for (TinyMCECustomPlugin tinyMCECustomPlugin : enabledCustomPlugins) {
+			setCustomPluginEnabled(tinyMCECustomPlugin);
+		}
+		// Don't allow javascript or iframes
+		setQuotedConfigValue(INVALID_ELEMENTS, INVALID_ELEMENTS_FORM_MINIMALISTIC_VALUE_UNSAVE);
+		
+		tinyConfig = TinyConfig.paragraphEditorConfig;
+	}
+	
 	public void setConfigProfileFormCompactEditor(UserSession usess, Theme guiTheme, VFSContainer baseContainer) {
 		setConfigBasics(guiTheme);
 		// Add additional plugins

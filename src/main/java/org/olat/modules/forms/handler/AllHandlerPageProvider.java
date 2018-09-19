@@ -43,6 +43,7 @@ public class AllHandlerPageProvider implements PageProvider {
 		handlers.add(new TitleHandler());
 		handlers.add(new SpacerHandler());
 		handlers.add(new HTMLRawHandler());
+		handlers.add(new HTMLParagraphHandler());
 		handlers.add(new RubricHandler(false));
 		handlers.add(new TextInputHandler(false));
 		handlers.add(new FileUploadHandler(false));

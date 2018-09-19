@@ -19,16 +19,34 @@
  */
 package org.olat.modules.ceditor.model;
 
+import javax.persistence.Transient;
+
+import org.olat.core.util.StringHelper;
+import org.olat.modules.ceditor.ContentEditorXStream;
+import org.olat.modules.ceditor.PageElement;
+
 /**
- * This is the interface of a raw HTML piece of
- * content which can be edited by the generic html
- * editor.
  * 
- * 
- * Initial date: 10 sept. 2018<br>
+ * Initial date: 19 sept. 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface HTMLRawElement extends HTMLElement {
+public interface HTMLElement extends PageElement {
 	
+	public String getLayoutOptions();
+	
+	public void setLayoutOptions(String options);
+	
+	public String getContent();
+	
+	public void setContent(String content);
+	
+	@Transient
+	public default TextSettings getTextSettings() {
+		if(StringHelper.containsNonWhitespace(getLayoutOptions())) {
+			return ContentEditorXStream.fromXml(getLayoutOptions(), TextSettings.class);
+		}
+		return new TextSettings();	
+	}
+
 }

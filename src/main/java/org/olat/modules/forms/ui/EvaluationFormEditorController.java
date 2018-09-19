@@ -40,6 +40,7 @@ import org.olat.modules.ceditor.ui.PageEditorController;
 import org.olat.modules.forms.handler.ContainerHandler;
 import org.olat.modules.forms.handler.DisclaimerHandler;
 import org.olat.modules.forms.handler.FileUploadHandler;
+import org.olat.modules.forms.handler.HTMLParagraphHandler;
 import org.olat.modules.forms.handler.HTMLRawHandler;
 import org.olat.modules.forms.handler.MultipleChoiceHandler;
 import org.olat.modules.forms.handler.RubricHandler;
@@ -129,6 +130,9 @@ public class EvaluationFormEditorController extends BasicController {
 			SpacerHandler hrHandler = new SpacerHandler();
 			handlers.add(hrHandler);
 			// handler for HTML code
+			HTMLParagraphHandler htmlParagraphHandler = new HTMLParagraphHandler();
+			handlers.add(htmlParagraphHandler);
+			// handler for HTML code
 			HTMLRawHandler htmlHandler = new HTMLRawHandler();
 			handlers.add(htmlHandler);
 			// handler for rubric
@@ -156,7 +160,7 @@ public class EvaluationFormEditorController extends BasicController {
 			if(!restrictedEdit) {
 				creationHandlers.add(titleRawHandler);
 				creationHandlers.add(hrHandler);
-				creationHandlers.add(htmlHandler);
+				creationHandlers.add(htmlParagraphHandler);
 				creationHandlers.add(rubricHandler);
 				creationHandlers.add(textInputHandler);
 				creationHandlers.add(fileUploadhandler);
@@ -165,6 +169,7 @@ public class EvaluationFormEditorController extends BasicController {
 				creationHandlers.add(disclaimerHandler);
 				creationHandlers.add(sessionInformationsHandler);
 				creationHandlers.add(containerHandler);
+				creationHandlers.add(htmlHandler);
 			}
 		}
 

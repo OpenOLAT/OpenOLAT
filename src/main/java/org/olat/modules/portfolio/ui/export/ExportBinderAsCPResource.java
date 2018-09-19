@@ -96,6 +96,7 @@ import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.handler.ContainerHandler;
 import org.olat.modules.portfolio.handler.EvaluationFormHandler;
 import org.olat.modules.portfolio.handler.HTMLRawPageElementHandler;
+import org.olat.modules.portfolio.handler.ParagraphPageElementHandler;
 import org.olat.modules.portfolio.handler.SpacerElementHandler;
 import org.olat.modules.portfolio.handler.TitlePageElementHandler;
 import org.olat.modules.portfolio.model.ExtendedMediaRenderingHints;
@@ -547,10 +548,10 @@ public class ExportBinderAsCPResource implements MediaResource {
 			//handler for title
 			TitlePageElementHandler titleRawHandler = new TitlePageElementHandler();
 			handlers.add(titleRawHandler);
-			//handler for HTML code
-			HTMLRawPageElementHandler htlmRawHandler = new HTMLRawPageElementHandler();
-			handlers.add(htlmRawHandler);
-			//handler for HTML code
+			//handler simple HTML
+			ParagraphPageElementHandler paragraphHandler = new ParagraphPageElementHandler();
+			handlers.add(paragraphHandler);
+			//handler for spacer
 			SpacerElementHandler hrHandler = new SpacerElementHandler();
 			handlers.add(hrHandler);
 			//handler for container
@@ -559,6 +560,9 @@ public class ExportBinderAsCPResource implements MediaResource {
 			//handler for form
 			EvaluationFormHandler formHandler = new EvaluationFormHandler();
 			handlers.add(formHandler);
+			//handler for HTML code
+			HTMLRawPageElementHandler htlmRawHandler = new HTMLRawPageElementHandler();
+			handlers.add(htlmRawHandler);
 			
 			List<MediaHandler> mediaHandlers = portfolioService.getMediaHandlers();
 			for(MediaHandler mediaHandler:mediaHandlers) {

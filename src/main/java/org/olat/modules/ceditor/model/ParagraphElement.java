@@ -20,15 +20,15 @@
 package org.olat.modules.ceditor.model;
 
 /**
- * This is the interface of a raw HTML piece of
- * content which can be edited by the generic html
- * editor.
+ * This is the interface of a piece of text which can be edited
+ * by a simplified html editor.
  * 
  * 
- * Initial date: 10 sept. 2018<br>
+ * Initial date: 19 sept. 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface HTMLRawElement extends HTMLElement {
+public interface ParagraphElement extends HTMLElement {
 	
+
 }

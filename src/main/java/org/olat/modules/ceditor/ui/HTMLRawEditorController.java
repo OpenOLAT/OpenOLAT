@@ -43,7 +43,7 @@ import org.olat.core.util.filter.FilterFactory;
 import org.olat.modules.ceditor.ContentEditorXStream;
 import org.olat.modules.ceditor.PageElementEditorController;
 import org.olat.modules.ceditor.PageElementStore;
-import org.olat.modules.ceditor.model.HTMLRawElement;
+import org.olat.modules.ceditor.model.HTMLElement;
 import org.olat.modules.ceditor.model.TextSettings;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 
@@ -63,14 +63,17 @@ public class HTMLRawEditorController extends FormBasicController implements Page
 	private RichTextElement htmlItem;
 	private StaticTextElement staticItem;
 	
-	private HTMLRawElement htmlPart;
+	private HTMLElement htmlPart;
 	private boolean editMode = false;
-	private final PageElementStore<HTMLRawElement> store;
+	private final boolean minimalEditor;
+	private final PageElementStore<HTMLElement> store;
 	
-	public HTMLRawEditorController(UserRequest ureq, WindowControl wControl, HTMLRawElement htmlPart, PageElementStore<HTMLRawElement> store) {
+	public HTMLRawEditorController(UserRequest ureq, WindowControl wControl, HTMLElement htmlPart, PageElementStore<HTMLElement> store,
+			boolean minimalEditor) {
 		super(ureq, wControl, "html_raw_editor");
 		this.htmlPart = htmlPart;
 		this.store = store;
+		this.minimalEditor = minimalEditor;
 		
 		initForm(ureq);
 		setEditMode(editMode);
@@ -115,7 +118,13 @@ public class HTMLRawEditorController extends FormBasicController implements Page
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		String cmpId = "html-" + CodeHelper.getRAMUniqueID() + "h";
 		String content = htmlPart.getContent();
-		htmlItem = uifactory.addRichTextElementForStringDataCompact(cmpId, null, content, 8, 80, null, formLayout, ureq.getUserSession(), getWindowControl());
+		
+		if(minimalEditor) {
+			htmlItem = uifactory.addRichTextElementForParagraphEditor(cmpId, null, content, 8, 80, formLayout, getWindowControl());
+		} else {
+			htmlItem = uifactory.addRichTextElementForStringDataCompact(cmpId, null, content, 8, 80, null, formLayout, ureq.getUserSession(), getWindowControl());
+		}
+
 		htmlItem.getEditorConfiguration().setSendOnBlur(true);
 		htmlItem.getEditorConfiguration().disableImageAndMovie();
 		htmlItem.getEditorConfiguration().setAutoResizeEnabled(true, -1, 40, 0);

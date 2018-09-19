@@ -33,6 +33,7 @@ public class TinyConfig {
 	protected static final TinyConfig fileEditorConfig;
 	protected static final TinyConfig minimalisticConfig;
 	protected static final TinyConfig veryMinimalisticConfig;
+	protected static final TinyConfig paragraphEditorConfig;
 
 	//min profile
 	static {
@@ -71,7 +72,12 @@ public class TinyConfig {
 		String tools1 = "bold italic underline | image olatmatheditor";
 		veryMinimalisticConfig = new TinyConfig(plugins, null, tools1);
 	}
-	
+	//paragraph editor for content editor
+	static {
+		String plugins = "contextmenu,textcolor,hr,noneditable,paste,link,olatmatheditor,tabfocus,noneditable";
+		String tools1 = "bold italic underline strikethrough | alignjustify alignright aligncenter alignleft | bullist | link | olatmatheditor";
+		paragraphEditorConfig = new TinyConfig(plugins, null, tools1);
+	}
 	//full profile
 	static {
 		String plugins = "advlist,lists,contextmenu,colorpicker,textcolor,hr,olatsmileys,paste,link,charmap,quotespliter,olatmatheditor,tabfocus,visualchars,visualblocks,noneditable,table";

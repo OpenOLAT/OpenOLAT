@@ -41,7 +41,7 @@ import org.olat.modules.ceditor.ui.ComponentsFactory;
 import org.olat.modules.ceditor.ui.HTMLRawEditorController;
 import org.olat.modules.ceditor.ui.PageRunComponent;
 import org.olat.modules.forms.SessionFilter;
-import org.olat.modules.forms.model.xml.HTMLRaw;
+import org.olat.modules.forms.model.xml.HTMLParagraph;
 import org.olat.modules.forms.ui.ReportHelper;
 import org.olat.modules.forms.ui.model.EvaluationFormComponentElement;
 import org.olat.modules.forms.ui.model.EvaluationFormComponentReportElement;
@@ -50,20 +50,20 @@ import org.olat.modules.forms.ui.model.EvaluationFormReportElement;
 
 /**
  * 
- * Initial date: 12 déc. 2016<br>
+ * Initial date: 19 sept. 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class HTMLRawHandler implements EvaluationFormElementHandler, PageElementStore<HTMLElement>, SimpleAddPageElementHandler, EvaluationFormReportHandler {
+public class HTMLParagraphHandler implements EvaluationFormElementHandler, PageElementStore<HTMLElement>, SimpleAddPageElementHandler, EvaluationFormReportHandler {
 
 	@Override
 	public String getType() {
-		return "formhtmlraw";
+		return "formhtmlparagraph";
 	}
 
 	@Override
 	public String getIconCssClass() {
-		return "o_icon_code";
+		return "o_icon_paragraph";
 	}
 
 	@Override
@@ -74,8 +74,8 @@ public class HTMLRawHandler implements EvaluationFormElementHandler, PageElement
 
 	@Override
 	public PageElementEditorController getEditor(UserRequest ureq, WindowControl wControl, PageElement element) {
-		if(element instanceof HTMLRaw) {
-			return new HTMLRawEditorController(ureq, wControl, (HTMLRaw)element, this, false);
+		if(element instanceof HTMLParagraph) {
+			return new HTMLRawEditorController(ureq, wControl, (HTMLParagraph)element, this, true);
 		}
 		return null;
 	}
@@ -84,7 +84,7 @@ public class HTMLRawHandler implements EvaluationFormElementHandler, PageElement
 	public PageElement createPageElement(Locale locale) {
 		Translator translator = Util.createPackageTranslator(HTMLRawEditorController.class, locale);
 		String content = translator.translate("raw.example");
-		HTMLRaw part = new HTMLRaw();
+		HTMLParagraph part = new HTMLParagraph();
 		part.setId(UUID.randomUUID().toString());
 		part.setContent(content);
 		return part;
@@ -106,10 +106,10 @@ public class HTMLRawHandler implements EvaluationFormElementHandler, PageElement
 	}
 
 	private Component getComponent(PageElement element) {
-		if(element instanceof HTMLRaw) {
-			return ComponentsFactory.getContent((HTMLRaw)element);
+		if(element instanceof HTMLParagraph) {
+			return ComponentsFactory.getContent((HTMLParagraph)element);
 		}
-		return TextFactory.createTextComponentFromString("htmlraw_" + CodeHelper.getRAMUniqueID(), "", null, false, null);
+		return TextFactory.createTextComponentFromString("htmlparagraph_" + CodeHelper.getRAMUniqueID(), "", null, false, null);
 	}
 
 	@Override
