@@ -19,6 +19,9 @@
  */
 package org.olat.modules.quality.analysis.ui;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -28,6 +31,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.model.xml.Form;
+import org.olat.modules.forms.ui.EvaluationFormFigure;
 import org.olat.modules.forms.ui.EvaluationFormReportsController;
 import org.olat.modules.forms.ui.ReportSegment;
 import org.olat.modules.forms.ui.ReportSegmentEvent;
@@ -48,14 +52,17 @@ public class AnalysisReportController extends BasicController implements Filtera
 	private EvaluationFormReportsController reportsCtrl;
 
 	private final Form form;
+	private final String formName;
 	private ReportSegment currentSegment;
 
 	@Autowired
 	private QualityAnalysisService analysisService;
 
-	public AnalysisReportController(UserRequest ureq, WindowControl wControl, Form form, ReportSegment currentSegment) {
+	public AnalysisReportController(UserRequest ureq, WindowControl wControl, Form form, String formName,
+			ReportSegment currentSegment) {
 		super(ureq, wControl);
 		this.form = form;
+		this.formName = formName;
 		this.currentSegment = currentSegment;
 		mainVC = createVelocityContainer("reporting");
 		putInitialPanel(mainVC);
@@ -65,7 +72,13 @@ public class AnalysisReportController extends BasicController implements Filtera
 	public void onFilter(UserRequest ureq, AnalysisSearchParameter searchParams) {
 		mainVC.clear();
 		SessionFilter filter = analysisService.createSessionFilter(searchParams);
-		reportsCtrl = new EvaluationFormReportsController(ureq, getWindowControl(), form, filter, currentSegment);
+		
+		List<EvaluationFormFigure> figures = new ArrayList<>();
+		figures.add(new EvaluationFormFigure(translate("report.figure.form.name"), formName));
+		Long count = analysisService.loadFilterDataCollectionCount(searchParams);
+		figures.add(new EvaluationFormFigure(translate("report.figure.number.data.collections"), count.toString()));
+		
+		reportsCtrl = new EvaluationFormReportsController(ureq, getWindowControl(), form, filter, currentSegment, null, figures);
 		listenTo(reportsCtrl);
 		mainVC.put("report", reportsCtrl.getInitialComponent());
 	}

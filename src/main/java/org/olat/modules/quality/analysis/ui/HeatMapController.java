@@ -90,7 +90,8 @@ public class HeatMapController extends FormBasicController implements Filterable
 	
 	private AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
 	private GroupBy groupBy;
-	private boolean insufficientOnly;
+	private final boolean insufficientConfigured;
+	private boolean insufficientOnly = false;
 	
 	@Autowired
 	private QualityAnalysisService analysisService;
@@ -102,6 +103,7 @@ public class HeatMapController extends FormBasicController implements Filterable
 	public HeatMapController(UserRequest ureq, WindowControl wControl, Form evaluationForm) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		this.sliders = initSliders(evaluationForm);
+		this.insufficientConfigured = initInsufficientConfigured(evaluationForm);
 		initForm(ureq);
 	}
 
@@ -135,6 +137,18 @@ public class HeatMapController extends FormBasicController implements Filterable
 		return null;
 	}
 
+	private boolean initInsufficientConfigured(Form evaluationForm) {
+		for (AbstractElement element : evaluationForm.getElements()) {
+			if (element instanceof Rubric) {
+				Rubric rubric = (Rubric) element;
+				if (rubric.getLowerBoundInsufficient() != null && rubric.getUpperBoundInsufficient() != null) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		String groupPage = velocity_root + "/heatmap_grouping.html";
@@ -164,6 +178,7 @@ public class HeatMapController extends FormBasicController implements Filterable
 		insufficientEl = uifactory.addCheckboxesVertical("heatmap.insufficient", grouping, INSUFFICIENT_KEYS,
 				translateAll(getTranslator(), INSUFFICIENT_KEYS), 1);
 		insufficientEl.addActionListener(FormEvent.ONCHANGE);
+		insufficientEl.setVisible(insufficientConfigured);
 		
 		// Heat map
 		initTable(Collections.emptyList(), 0);
@@ -239,7 +254,7 @@ public class HeatMapController extends FormBasicController implements Filterable
 	}
 
 	private void setInsufficientOnly() {
-		if (insufficientEl.isAtLeastSelected(1)) {
+		if (insufficientEl.isVisible() && insufficientEl.isAtLeastSelected(1)) {
 			insufficientOnly = true;
 		} else {
 			insufficientOnly = false;
@@ -266,7 +281,6 @@ public class HeatMapController extends FormBasicController implements Filterable
 		List<Rubric> rubrics = sliders.stream().map(SliderWrapper::getRubric).distinct().collect(toList());
 		GroupedStatistics statistics = analysisService.calculateStatistics(searchParams, identifiers, rubrics, groupBy);
 		
-
 		for (HeatMapRow row : rows) {
 			List<GroupedStatistic> rowStatistics = new ArrayList<>();
 			// Iterate over the identifiers to sort the statistics according to the headers.

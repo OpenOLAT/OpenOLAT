@@ -144,10 +144,6 @@ public class AnalysisController extends BasicController implements TooledControl
 
 	@Override
 	protected void doDispose() {
-		removeAsListenerAndDispose(presentationCtrl);
-		removeAsListenerAndDispose(filterCtrl);
-		presentationCtrl = null;
-		filterCtrl = null;
 		if (stackPanel != null) {
 			stackPanel.removeListener(this);
 		}
@@ -158,15 +154,17 @@ public class AnalysisController extends BasicController implements TooledControl
 		presentationCtrl = null;
 		
 		switch (presentation) {
-			case REPORT:
-				presentationCtrl = new AnalysisReportController(ureq, getWindowControl(), form, currentSegment);
-				break;
-			case HEAT_MAP:
-				presentationCtrl = new HeatMapController(ureq, getWindowControl(), form);
-				break;
-			default:
-				presentationCtrl = new AnalysisReportController(ureq, getWindowControl(), form, currentSegment);
-				break;
+		case REPORT:
+			presentationCtrl = new AnalysisReportController(ureq, getWindowControl(), form, formView.getFormTitle(),
+					currentSegment);
+			break;
+		case HEAT_MAP:
+			presentationCtrl = new HeatMapController(ureq, getWindowControl(), form);
+			break;
+		default:
+			presentationCtrl = new AnalysisReportController(ureq, getWindowControl(), form, formView.getFormTitle(),
+					currentSegment);
+			break;
 		}
 		listenTo(presentationCtrl);
 		presentationCtrl.onFilter(ureq, searchParams);

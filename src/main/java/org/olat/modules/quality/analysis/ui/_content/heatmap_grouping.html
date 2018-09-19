@@ -8,7 +8,9 @@
 				$r.render("heatmap.group")
 			</div>
 			<div class="col-sm-6">
-				$r.render("heatmap.insufficient")
+				#if($r.available("heatmap.insufficient"))
+					$r.render("heatmap.insufficient")
+				#end
 			</div>
 		</div>
 	</div>

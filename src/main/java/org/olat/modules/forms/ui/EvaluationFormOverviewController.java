@@ -82,6 +82,7 @@ public class EvaluationFormOverviewController extends BasicController {
 
 		if (hasRubrics(form)) {
 			Controller reportCtrl = new EvaluationFormReportController(ureq, wControl, form, filter, PROVIDER);
+			listenTo(reportCtrl);
 			mainVC.put("report", reportCtrl.getInitialComponent());
 		}
 
