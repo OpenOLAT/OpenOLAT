@@ -312,22 +312,22 @@ public class AnalysisFilterDAO {
 		if (searchParams.getDateRangeTo() != null) {
 			sb.and().append("collection.deadline <= :dateRangeTo");
 		}
-		if (searchParams.getTopicIdentityRefs() != null) {
+		if (searchParams.getTopicIdentityRefs() != null && !searchParams.getTopicIdentityRefs().isEmpty()) {
 			sb.and().append("collection.topicIdentity.key in :topicIdentityKeys");
 		}
-		if (searchParams.getTopicOrganisationRefs() != null) {
+		if (searchParams.getTopicOrganisationRefs() != null && !searchParams.getTopicOrganisationRefs().isEmpty()) {
 			sb.and().append("topicOrganisation.key in :topicOrganisationKeys");
 		}
-		if (searchParams.getTopicCurriculumRefs() != null) {
+		if (searchParams.getTopicCurriculumRefs() != null && !searchParams.getTopicCurriculumRefs().isEmpty()) {
 			sb.and().append("collection.topicCurriculum.key in :topicCurriculumKeys");
 		}
-		if (searchParams.getTopicCurriculumElementRefs() != null) {
+		if (searchParams.getTopicCurriculumElementRefs() != null && !searchParams.getTopicCurriculumElementRefs().isEmpty()) {
 			sb.and().append("collection.topicCurriculumElement.key in :topicCurriculumElementKeys");
 		}
-		if (searchParams.getTopicRepositoryRefs() != null) {
+		if (searchParams.getTopicRepositoryRefs() != null && !searchParams.getTopicRepositoryRefs().isEmpty()) {
 			sb.and().append("collection.topicRepositoryEntry.key in :topicRepositoryEntryKeys");
 		}
-		if (searchParams.getContextOrganisationRefs() != null) {
+		if (searchParams.getContextOrganisationRefs() != null && !searchParams.getContextOrganisationRefs().isEmpty()) {
 			// load the organisations and all children
 			sb.and();
 			for (int i = 0; i < searchParams.getContextOrganisationRefs().size(); i++) {
@@ -342,10 +342,10 @@ public class AnalysisFilterDAO {
 				}
 			}
 		}
-		if (searchParams.getContextCurriculumRefs() != null) {
+		if (searchParams.getContextCurriculumRefs() != null && !searchParams.getContextCurriculumRefs().isEmpty()) {
 			sb.and().append("curriculum.key in :curriculumKeys");
 		}
-		if (searchParams.getContextCurriculumElementRefs() != null) {
+		if (searchParams.getContextCurriculumElementRefs() != null && !searchParams.getContextCurriculumElementRefs().isEmpty()) {
 			// load the curriculum elements and all children
 			sb.and();
 			for (int i = 0; i < searchParams.getContextCurriculumElementRefs().size(); i++) {
@@ -384,27 +384,27 @@ public class AnalysisFilterDAO {
 		if (searchParams.getDateRangeTo() != null) {
 			query.setParameter("dateRangeTo", searchParams.getDateRangeTo());
 		}
-		if (searchParams.getTopicIdentityRefs() != null) {
+		if (searchParams.getTopicIdentityRefs() != null && !searchParams.getTopicIdentityRefs().isEmpty()) {
 			List<Long> keys = searchParams.getTopicIdentityRefs().stream().map(IdentityRef::getKey).collect(toList());
 			query.setParameter("topicIdentityKeys", keys);
 		}
-		if (searchParams.getTopicOrganisationRefs() != null) {
+		if (searchParams.getTopicOrganisationRefs() != null && !searchParams.getTopicOrganisationRefs().isEmpty()) {
 			List<Long> keys = searchParams.getTopicOrganisationRefs().stream().map(OrganisationRef::getKey).collect(toList());
 			query.setParameter("topicOrganisationKeys", keys);
 		}
-		if (searchParams.getTopicCurriculumRefs() != null) {
+		if (searchParams.getTopicCurriculumRefs() != null && !searchParams.getTopicCurriculumRefs().isEmpty()) {
 			List<Long> keys = searchParams.getTopicCurriculumRefs().stream().map(CurriculumRef::getKey).collect(toList());
 			query.setParameter("topicCurriculumKeys", keys);
 		}
-		if (searchParams.getTopicCurriculumElementRefs() != null) {
+		if (searchParams.getTopicCurriculumElementRefs() != null && !searchParams.getTopicCurriculumElementRefs().isEmpty()) {
 			List<Long> keys = searchParams.getTopicCurriculumElementRefs().stream().map(CurriculumElementRef::getKey).collect(toList());
 			query.setParameter("topicCurriculumElementKeys", keys);
 		}
-		if (searchParams.getTopicRepositoryRefs() != null) {
+		if (searchParams.getTopicRepositoryRefs() != null && !searchParams.getTopicRepositoryRefs().isEmpty()) {
 			List<Long> keys = searchParams.getTopicRepositoryRefs().stream().map(RepositoryEntryRef::getKey).collect(toList());
 			query.setParameter("topicRepositoryEntryKeys", keys);
 		}
-		if (searchParams.getContextOrganisationRefs() != null) {
+		if (searchParams.getContextOrganisationRefs() != null && !searchParams.getContextOrganisationRefs().isEmpty()) {
 			for (int i = 0; i < searchParams.getContextOrganisationRefs().size(); i++) {
 				String parameter = new StringBuilder(12).append("orgPath").append(i).toString();
 				Long key = searchParams.getContextOrganisationRefs().get(i).getKey();
@@ -412,11 +412,11 @@ public class AnalysisFilterDAO {
 				query.setParameter(parameter, value);
 			}
 		}
-		if (searchParams.getContextCurriculumRefs() != null) {
+		if (searchParams.getContextCurriculumRefs() != null && !searchParams.getContextCurriculumRefs().isEmpty()) {
 			List<Long> keys = searchParams.getContextCurriculumRefs().stream().map(CurriculumRef::getKey).collect(toList());
 			query.setParameter("curriculumKeys", keys);
 		}
-		if (searchParams.getContextCurriculumElementRefs() != null) {
+		if (searchParams.getContextCurriculumElementRefs() != null && !searchParams.getContextCurriculumElementRefs().isEmpty()) {
 			for (int i = 0; i < searchParams.getContextCurriculumElementRefs().size(); i++) {
 				String parameter = new StringBuilder(12).append("elePath").append(i).toString();
 				Long key = searchParams.getContextCurriculumElementRefs().get(i).getKey();

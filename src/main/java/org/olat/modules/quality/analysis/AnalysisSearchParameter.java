@@ -152,6 +152,7 @@ public class AnalysisSearchParameter {
 		AnalysisSearchParameter clone = new AnalysisSearchParameter();
 		clone.formEntryRef = this.formEntryRef;
 		clone.dateRangeFrom = this.dateRangeFrom;
+		clone.dateRangeTo = this.dateRangeTo;
 		clone.topicIdentityRefs = this.topicIdentityRefs != null
 				? new ArrayList<>(this.topicIdentityRefs)
 				: null;

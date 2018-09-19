@@ -255,6 +255,8 @@ public class CurriculumElementDAO {
 	}
 
 	public List<CurriculumElement> loadElementsByCurriculums(Collection<? extends CurriculumRef> curriculumRefs) {
+		if (curriculumRefs == null || curriculumRefs.isEmpty()) return new ArrayList<>(0);
+		
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select el");
 		sb.append("  from curriculumelement el");

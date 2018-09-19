@@ -581,14 +581,15 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		QualityDataCollection dc2 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
 		dc2.setDeadline(addDays(now, -20));
 		qualityService.updateDataCollection(dc2);
-		QualityDataCollection dcToEarly = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
-		dcToEarly.setDeadline(addDays(now, 2));
-		qualityService.updateDataCollection(dcToEarly);
-		finish(asList(dc1, dc2, dcToEarly));
+		QualityDataCollection dcToLate = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		dcToLate.setDeadline(addDays(now, 2));
+		qualityService.updateDataCollection(dcToLate);
+		finish(asList(dc1, dc2, dcToLate));
 		dbInstance.commitAndCloseSession();
 		
 		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
-		searchParams.setDateRangeTo(now);
+		searchParams.setDateRangeTo(addDays(now, 2));
+//		searchParams.setDateRangeTo(now);
 		Long count = sut.loadDataCollectionCount(searchParams);
 		
 		assertThat(count).isEqualTo(2);
