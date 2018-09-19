@@ -126,7 +126,7 @@
 	}
 
 	.o_page_part.o_page_edit {
-		padding-right: $o-portfolio-editor-border-width; /* space for d&d handel */
+		padding-right: $o-portfolio-editor-border-width - $o-panel-placeholder-border-width; /* space for d&d handel */
 		border: $o-panel-placeholder-border-width solid $o-portfolio-editor-border-color;
 		box-shadow: 5px 5px 10px 0px rgba(0, 0, 0, 0.2);
 		&:hover {

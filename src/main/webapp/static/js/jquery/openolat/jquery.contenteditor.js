@@ -28,6 +28,8 @@
     	if(typeof editor === "undefined") {
     		editor = new ContentEditor(this.get(0), options);
     		this.data("data-oo-ceditor", editor);
+    	} else {
+    		editor.initWindowListener();
     	}
     	return editor;
 	};
@@ -37,20 +39,41 @@
 			componentUrl: ''
 		}, params);
 		
-		initEdit(this.settings);
-		initDragAndDrop(container, this.settings)
+		initEdit();
+		initWindowListener();
+		initDragAndDrop(container, this.settings);
 	};
 	
-	function initEdit(settings) {
+	function initEdit() {
 		jQuery(".o_page_part").each(function(index, el) {
 			jQuery(el).on('click', function(e) {
 				var element = jQuery(el);
 				if(element.parents('.o_page_fragment_edit').length == 0
 						&& jQuery(".o_page_fragment_edit", element).length == 0) {
-					o_XHREvent(settings.componentUrl, false, false, 'cid', 'edit_fragment', 'fragment', element.data('oo-page-fragment'));
+					var componentUrl = jQuery(".o_page_content_editor").data("oo-content-editor-url");
+					o_XHREvent(componentUrl, false, false, 'cid', 'edit_fragment', 'fragment', element.data('oo-page-fragment'));
 				}
 			});
 		});
+	}
+	
+	function initWindowListener() {
+		if(o_info.contentEditorWindowListener === undefined || o_info.contentEditorWindowListener == null) {
+			o_info.contentEditorWindowListener = function(e) {
+				var componentUrl = jQuery(".o_page_content_editor").data("oo-content-editor-url");
+				if(componentUrl === undefined || componentUrl == null) {
+					console.log('remove');
+					jQuery(window).off('click', o_info.contentEditorWindowListener);
+					o_info.contentEditorWindowListener = null;
+				} else {
+					var edited = jQuery(e.target).closest(".o_page_fragment_edit").length > 0;
+					if(!edited) {
+						o_XHREvent(componentUrl, false, false, 'cid', 'close_edit_fragment');
+					}
+				}
+			};
+			jQuery(window).on('click', o_info.contentEditorWindowListener);
+		}
 	}
 	
 	function initDragAndDrop(container, settings) {

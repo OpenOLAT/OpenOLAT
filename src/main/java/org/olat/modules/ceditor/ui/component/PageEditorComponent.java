@@ -109,6 +109,8 @@ public class PageEditorComponent extends FormBaseComponentImpl implements Compon
 		String fragment = ureq.getParameter("fragment");
 		if("edit_fragment".equals(cmd)) {
 			doEditFragment(ureq, fragment);
+		} else if("close_edit_fragment".equals(cmd)) {
+			doCloseEditFragment();
 		} else if("drop_fragment".equals(cmd)) {
 			processDropFragment(ureq);
 		} else {
@@ -159,6 +161,13 @@ public class PageEditorComponent extends FormBaseComponentImpl implements Compon
 		}
 		setDirty(true);
 		fireEvent(ureq, new EditFragmentEvent(editedFragment));
+	}
+	
+	private void doCloseEditFragment() {
+		for(EditorFragment fragment:editorModel.getFragments()) {
+			fragment.setEditMode(false);
+		}
+		setDirty(true);
 	}
 
 	@Override
