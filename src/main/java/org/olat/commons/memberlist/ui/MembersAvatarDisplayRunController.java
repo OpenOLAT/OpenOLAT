@@ -96,7 +96,6 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private final List<UserPropertyHandler> userPropertyAvatarHandlers;
 
-	private final UserCourseEnvironment userCourseEnv;
 	private final String avatarBaseURL;
 	
 	private Link printLink;
@@ -123,8 +122,9 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 	private final boolean chatEnabled;
 	private final boolean editable;
 
-	private RepositoryEntry repoEntry;
-	private BusinessGroup businessGroup;
+	private final RepositoryEntry repoEntry;
+	private final BusinessGroup businessGroup;
+	private final UserCourseEnvironment userCourseEnv;
 	
 	private FormBasicController mailCtrl;
 	private ContactFormController emailController;
@@ -438,7 +438,9 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 		if(mailCtrl != null || cmc != null) return;
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(mailCtrl);
-		mailCtrl = new MembersMailController(ureq, getWindowControl(), getTranslator(), userCourseEnv.getCourseEnvironment(),
+		
+		CourseEnvironment courseEnv = (userCourseEnv == null ? null : userCourseEnv.getCourseEnvironment());
+		mailCtrl = new MembersMailController(ureq, getWindowControl(), getTranslator(), courseEnv,
 				ownerList, coachList, participantList, waitingtList, createBodyTemplate());
 		listenTo(mailCtrl);
 		
