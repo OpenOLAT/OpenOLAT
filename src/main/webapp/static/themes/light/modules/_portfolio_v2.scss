@@ -550,25 +550,6 @@
 	}
 }
 
-.o_portfolio_add_callout {
-	a span {
-		display: none;
-	}
-	ul.list-inline {
-		margin-bottom: 0;
-	}
-}
-
-.o_portfolio_image_options {
-	clear:both;
-	width: 300px;
-	padding: 5px;
-	position: absolute;
-	top: 2px;
-	right: 25px;
-	background-color: $o-editor-settings-bg;
-}
-
 .o_binder_page_listing {
 	.o_portfolio_page_links {
 		background-color: #f8f8f8;

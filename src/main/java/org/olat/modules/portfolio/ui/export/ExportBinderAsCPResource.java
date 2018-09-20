@@ -98,6 +98,7 @@ import org.olat.modules.portfolio.handler.EvaluationFormHandler;
 import org.olat.modules.portfolio.handler.HTMLRawPageElementHandler;
 import org.olat.modules.portfolio.handler.ParagraphPageElementHandler;
 import org.olat.modules.portfolio.handler.SpacerElementHandler;
+import org.olat.modules.portfolio.handler.TablePageElementHandler;
 import org.olat.modules.portfolio.handler.TitlePageElementHandler;
 import org.olat.modules.portfolio.model.ExtendedMediaRenderingHints;
 import org.olat.modules.portfolio.ui.AbstractPageListController;
@@ -563,6 +564,9 @@ public class ExportBinderAsCPResource implements MediaResource {
 			//handler for HTML code
 			HTMLRawPageElementHandler htlmRawHandler = new HTMLRawPageElementHandler();
 			handlers.add(htlmRawHandler);
+			//handler for table
+			TablePageElementHandler tableHandler = new TablePageElementHandler();
+			handlers.add(tableHandler);
 			
 			List<MediaHandler> mediaHandlers = portfolioService.getMediaHandlers();
 			for(MediaHandler mediaHandler:mediaHandlers) {

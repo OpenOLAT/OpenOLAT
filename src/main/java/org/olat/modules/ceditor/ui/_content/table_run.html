@@ -1,0 +1,34 @@
+#if($r.isNotEmpty($tableTitle))
+	<h4>$tableTitle</h4>
+#end
+<table class="o_ce_table table table-hover #if($r.isNotEmpty($settings.tableStyle)) $r.escapeHtml($settings.tableStyle) #end  #if($r.isTrue($settings.striped)) table-striped #end #if($r.isTrue($settings.bordered)) table-bordered #end">
+	#if($r.isNotEmpty($tableCaption))
+	<caption>$tableCaption</caption>
+	#end
+	
+	#if($r.isNotEmpty($headerRows))
+		<theader>
+		#foreach($headerRow in $headerRows)
+			<tr>
+			#foreach($headerColumn in $headerRow.columns)
+				<th>$r.xssScan($headerColumn.text)</th>
+			#end	
+			</tr>
+		#end
+		</theader>
+	#end
+
+	<tbody>
+	#foreach($tableRow in $tableRows)
+		<tr>
+		#foreach($tableColumn in $tableRow.columns)
+			#if($r.isTrue($tableColumn.header))
+				<th>$r.xssScan($tableColumn.text)</th>
+			#else
+				<td>$r.xssScan($tableColumn.text)</td>
+			#end
+		#end	
+		</tr>
+	#end
+	</tbody>
+</table>

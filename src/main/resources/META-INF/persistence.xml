@@ -196,6 +196,7 @@
 		<class>org.olat.modules.portfolio.model.TitlePart</class>
 		<class>org.olat.modules.portfolio.model.MediaPart</class>
 		<class>org.olat.modules.portfolio.model.SpacerPart</class>
+		<class>org.olat.modules.portfolio.model.TablePart</class>
 		<class>org.olat.modules.portfolio.model.EvaluationFormPart</class>
 		<class>org.olat.modules.portfolio.model.CategoryImpl</class>
 		<class>org.olat.modules.portfolio.model.CategoryToElementImpl</class>

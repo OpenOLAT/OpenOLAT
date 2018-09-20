@@ -1,5 +1,4 @@
 
-
 .o_page_content_editor {
 	.o_toolbar  	{
 		border:none;
@@ -222,24 +221,59 @@
 	background-color: $o-editor-drag-accepted-color;
 }
 
+.o_page_add_callout {
+	a span {
+		display: none;
+	}
+	ul.list-inline {
+		margin-bottom: 0;
+	}
+}
+
+.o_page_table_edition {
+	padding-right: 300px;
+	
+	
+	.o_table_title, .o_table_caption {
+		padding: 5px 5em;
+		background-color: #efefef;
+	}
+}
+
+.o_page_side_options {
+	clear:both;
+	width: 300px;
+	padding: 5px;
+	position: absolute;
+	top: 2px;
+	right: 25px;
+	background-color: $o-editor-settings-bg;
+	z-index: 2;
+}
+
+
 .o_page_add_contents {
 	margin-top: 30px;
 }
 
-
-
 .o_ce_html_raw, .o_ce_html_paragraph {
-		
-		&.o_html_col2 {
-			column-count: 2;
-			column-gap: 1em;
-		}
-		&.o_html_col3 {
-			column-count: 3;
-			column-gap: 1em;
-		}
-		&.o_html_col4 {
-			column-count: 4;
-			column-gap: 1em;
-		}
+	&.o_html_col2 {
+		column-count: 2;
+		column-gap: 1em;
 	}
+	&.o_html_col3 {
+		column-count: 3;
+		column-gap: 1em;
+	}
+	&.o_html_col4 {
+		column-count: 4;
+		column-gap: 1em;
+	}
+}
+
+table.o_ce_table {
+	caption {
+		caption-side: bottom;
+	}
+
+}

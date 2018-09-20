@@ -25,6 +25,9 @@ import org.olat.modules.ceditor.model.ImageHorizontalAlignment;
 import org.olat.modules.ceditor.model.ImageSettings;
 import org.olat.modules.ceditor.model.ImageSize;
 import org.olat.modules.ceditor.model.ImageTitlePosition;
+import org.olat.modules.ceditor.model.TableColumn;
+import org.olat.modules.ceditor.model.TableContent;
+import org.olat.modules.ceditor.model.TableRow;
 import org.olat.modules.ceditor.model.TextSettings;
 
 /**
@@ -77,6 +80,38 @@ public class ContentEditorXStreamTest {
 		//check
 		Assert.assertNotNull(deserializedSettings);
 		Assert.assertEquals(3, deserializedSettings.getNumOfColumns());
+	}
+	
+	@Test
+	public void textTableContentToXmlAndFrom() {
+		TableContent table = new TableContent();
+		table.getRows().add(new TableRow());
+		table.getRows().get(0).getColumns().add(new TableColumn());
+		table.getRows().get(0).getColumns().get(0).setContent("Hello world");
+
+		// serialize
+		String xml = ContentEditorXStream.toXml(table);
+		// read
+		TableContent deserializedTable = ContentEditorXStream.fromXml(xml, TableContent.class);
+		//check
+		Assert.assertNotNull(deserializedTable);
+		Assert.assertEquals("Hello world", deserializedTable.getRows().get(0).getColumns().get(0).getContent());
+	}
+	
+	@Test
+	public void textTableContentWithHtmlToXmlAndFrom() {
+		TableContent table = new TableContent();
+		table.getRows().add(new TableRow());
+		table.getRows().get(0).getColumns().add(new TableColumn());
+		table.getRows().get(0).getColumns().get(0).setContent("<p><strong>Hello</strong> world</p>");
+
+		// serialize
+		String xml = ContentEditorXStream.toXml(table);
+		// read
+		TableContent deserializedTable = ContentEditorXStream.fromXml(xml, TableContent.class);
+		//check
+		Assert.assertNotNull(deserializedTable);
+		Assert.assertEquals("<p><strong>Hello</strong> world</p>", deserializedTable.getRows().get(0).getColumns().get(0).getContent());
 	}
 
 }

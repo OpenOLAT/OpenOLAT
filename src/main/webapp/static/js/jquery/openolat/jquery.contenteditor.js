@@ -66,7 +66,8 @@
 					jQuery(window).off('click', o_info.contentEditorWindowListener);
 					o_info.contentEditorWindowListener = null;
 				} else {
-					var edited = jQuery(e.target).closest(".o_page_fragment_edit").length > 0;
+					var edited = jQuery(e.target).closest(".o_page_fragment_edit").length > 0
+						|| jQuery(e.target).closest(".o_page_side_options").length > 0;
 					if(!edited) {
 						o_XHREvent(componentUrl, false, false, 'cid', 'close_edit_fragment');
 					}

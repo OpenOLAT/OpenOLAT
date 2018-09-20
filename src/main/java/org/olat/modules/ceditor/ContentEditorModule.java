@@ -42,6 +42,8 @@ public class ContentEditorModule extends AbstractSpringModule {
 	private String imageStyles;
 	@Value("${ceditor.image.title.styles}")
 	private String imageTitleStyles;
+	@Value("${ceditor.table.styles}")
+	private String tableStyles;
 	
 	@Autowired
 	private ContentEditorModule(CoordinatorManager coordinateManager) {
@@ -72,6 +74,14 @@ public class ContentEditorModule extends AbstractSpringModule {
 	
 	public List<String> getImageTitleStyleList() {
 		return stylesToList(imageTitleStyles);
+	}
+	
+	public String getTableStyles() {
+		return tableStyles;
+	}
+	
+	public List<String> getTableStyleList() {
+		return stylesToList(tableStyles);
 	}
 	
 	private List<String> stylesToList(String styles) {

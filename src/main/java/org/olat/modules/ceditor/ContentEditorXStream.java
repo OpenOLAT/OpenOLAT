@@ -19,6 +19,7 @@
  */
 package org.olat.modules.ceditor;
 
+
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.modules.ceditor.model.ContainerColumn;
 import org.olat.modules.ceditor.model.ContainerSettings;
@@ -26,6 +27,10 @@ import org.olat.modules.ceditor.model.ImageHorizontalAlignment;
 import org.olat.modules.ceditor.model.ImageSettings;
 import org.olat.modules.ceditor.model.ImageSize;
 import org.olat.modules.ceditor.model.ImageTitlePosition;
+import org.olat.modules.ceditor.model.TableColumn;
+import org.olat.modules.ceditor.model.TableContent;
+import org.olat.modules.ceditor.model.TableRow;
+import org.olat.modules.ceditor.model.TableSettings;
 import org.olat.modules.ceditor.model.TextSettings;
 
 import com.thoughtworks.xstream.XStream;
@@ -45,7 +50,8 @@ public class ContentEditorXStream {
 		XStream.setupDefaultSecurity(xstream);
 		Class<?>[] types = new Class[] {
 				ImageSettings.class, ImageHorizontalAlignment.class, ImageTitlePosition.class, ImageSize.class,
-				TextSettings.class, ContainerSettings.class, ContainerColumn.class
+				TextSettings.class, ContainerSettings.class, ContainerColumn.class,
+				TableContent.class, TableRow.class, TableColumn.class, TableSettings.class
 		};
 		xstream.addPermission(new ExplicitTypePermission(types));
 
@@ -57,6 +63,12 @@ public class ContentEditorXStream {
 		xstream.alias("textsettings", TextSettings.class);
 		
 		xstream.alias("containersettings", ContainerSettings.class);
+		
+		xstream.alias("tablecontent", TableContent.class);
+		xstream.alias("tablerow", TableRow.class);
+		xstream.alias("tablecolumn", TableColumn.class);
+		xstream.alias("tablesettings", TableSettings.class);
+		
 	}
 	
 	public static String toXml(Object obj) {

@@ -53,6 +53,7 @@ import org.olat.modules.portfolio.handler.EvaluationFormHandler;
 import org.olat.modules.portfolio.handler.HTMLRawPageElementHandler;
 import org.olat.modules.portfolio.handler.ParagraphPageElementHandler;
 import org.olat.modules.portfolio.handler.SpacerElementHandler;
+import org.olat.modules.portfolio.handler.TablePageElementHandler;
 import org.olat.modules.portfolio.handler.TitlePageElementHandler;
 import org.olat.modules.portfolio.ui.model.PortfolioElementRow;
 import org.olat.modules.portfolio.ui.model.ReadOnlyCommentsSecurityCallback;
@@ -210,6 +211,9 @@ public class BinderOnePageController extends BasicController {
 			//handler for HTML code
 			HTMLRawPageElementHandler htlmRawHandler = new HTMLRawPageElementHandler();
 			handlers.add(htlmRawHandler);
+			// handler for table
+			TablePageElementHandler tableHandler = new TablePageElementHandler();
+			handlers.add(tableHandler);
 			
 			
 			List<MediaHandler> mediaHandlers = portfolioService.getMediaHandlers();
