@@ -101,7 +101,7 @@ public abstract class AbstractEventBus implements EventBus {
 				if (ea != null) {
 					ea.removeListener(gel);
 					if(ea.getListenerCount() == 0) {
-						typeInfocenter.remove(typeName);
+						infocenter.remove(typeName);
 					}
 				}
 			}
