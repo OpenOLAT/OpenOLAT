@@ -633,7 +633,8 @@ public class BinderDAO {
 		  .append(" inner join pfbinderuserinfos as uinfos on (uinfos.binder.key=binder.key and uinfos.identity.key=membership.identity.key)")
 		  .append(" left join binder.entry binderEntry")
 		  .append(" where binder.olatResource is null and membership.identity.key=:identityKey and membership.role=:role")
-		  .append(" and (binder.status is null or binder.status='").append(BinderStatus.open.name()).append("')");
+		  .append(" and (binder.status is null or binder.status='").append(BinderStatus.open.name()).append("')")
+		  .append(" order by uinfos.recentLaunch desc nulls last");
 
 		List<Object[]> objects = dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), Object[].class)

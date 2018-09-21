@@ -30,6 +30,7 @@ import org.olat.modules.portfolio.BinderStatus;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.model.BinderImpl;
+import org.olat.modules.portfolio.model.BinderStatistics;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -160,4 +161,60 @@ public class BinderDAOTest extends OlatTestCase {
 		Assert.assertTrue(ownedBinders.contains(binder));
 		Assert.assertFalse(ownedBinders.contains(deletedBinder));
 	}
+	
+	@Test
+	public void searchOwnedLastBinders() {
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("binder-owner");
+		Binder binder = portfolioService.createNewBinder("My own binder", "", "", owner);
+		dbInstance.commit();
+		portfolioService.updateBinderUserInformations(binder, owner);
+		dbInstance.commitAndCloseSession();
+		
+		List<BinderStatistics> lastBinders = binderDao.searchOwnedLastBinders(owner, 2);
+		Assert.assertNotNull(lastBinders);
+		Assert.assertEquals(1, lastBinders.size());
+		Assert.assertEquals(binder.getKey(), lastBinders.get(0).getKey());
+	}
+	
+	@Test
+	public void searchOwnedBinders() {
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("binder-owner");
+		Binder binder = portfolioService.createNewBinder("My own binder", "", "", owner);
+		dbInstance.commit();
+		
+		List<BinderStatistics> lastBinders = binderDao.searchOwnedBinders(owner, false);
+		Assert.assertNotNull(lastBinders);
+		Assert.assertEquals(1, lastBinders.size());
+		Assert.assertEquals(binder.getKey(), lastBinders.get(0).getKey());
+	}
+	
+	@Test
+	public void countOwnedBinders() {
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("binder-owner");
+		Binder binder = portfolioService.createNewBinder("My own binder", "", "", owner);
+		dbInstance.commit();
+		Assert.assertNotNull(binder);
+		
+		int ownedBinders = binderDao.countOwnedBinders(owner, false);
+		Assert.assertEquals(1, ownedBinders);
+	}
+	
+	/**
+	 * Only check that the query doesn't make an error
+	 */
+	@Test
+	public void getBinderStatistics() {
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("binder-owner");
+		Binder binder = portfolioService.createNewBinder("My statistical binder", "", "", owner);
+		dbInstance.commit();
+		Assert.assertNotNull(binder);
+		
+		BinderStatistics stats = binderDao.getBinderStatistics(binder);
+		Assert.assertNotNull(stats);
+		Assert.assertEquals(binder.getKey(), stats.getKey());
+		Assert.assertEquals("open", stats.getStatus());
+		Assert.assertEquals("My statistical binder", stats.getTitle());
+		
+	}
+	
 }
