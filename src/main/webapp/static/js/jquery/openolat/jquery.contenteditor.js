@@ -41,9 +41,10 @@
 		
 		initEdit();
 		initWindowListener();
-		initDragAndDrop(container);
+		this.container = container;
+		this.drake = initDragAndDrop(container);
 	};
-	
+
 	function initEdit() {
 		jQuery(".o_page_part").each(function(index, el) {
 			jQuery(el).on('click', function(e) {
@@ -62,7 +63,6 @@
 			o_info.contentEditorWindowListener = function(e) {
 				var componentUrl = jQuery(".o_page_content_editor").data("oo-content-editor-url");
 				if(componentUrl === undefined || componentUrl == null) {
-					console.log('remove');
 					jQuery(window).off('click', o_info.contentEditorWindowListener);
 					o_info.contentEditorWindowListener = null;
 				} else {
@@ -78,7 +78,7 @@
 	}
 	
 	function initDragAndDrop(container) {
-		dragula([container], {
+		var drake = dragula([container], {
 			isContainer: function(el) {
 				return jQuery(el).hasClass('o_page_drop');
 			},
@@ -91,7 +91,9 @@
 			moves: function (el, targetContainer, handle) {
 				return jQuery(handle).hasClass('o_page_tools_dd') ;
 			}
-		}).on('dragend', function(el) {
+		});
+
+		drake.on('dragend', function(el) {
 			cleanAcceptMarker(container);
 		}).on('cancel', function() {
 			cleanAcceptMarker(container);
@@ -100,8 +102,11 @@
 		}).on('out', function(el, target, source) {
 			jQuery(target).removeClass('oo-accepted');
 		}).on('drop', function(el, target, source, sibling) {
+			drake.destroy();// drop trigger a reload -> clean up all and more
 			drop(el, target, source, sibling);
 		});
+		
+		return drake;
 	}
 	
 	function drop(el, target, source, sibling) {
