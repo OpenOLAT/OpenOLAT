@@ -72,8 +72,8 @@ public class ContainerSettings {
 	public ContainerColumn getColumn(int index) {
 		if(index < numOfColumns) {
 			List<ContainerColumn> columnList = getColumns();
-			if(columnList.size() < index) {
-				for(int i=columnList.size(); i<index; i++) {
+			if(columnList.size() <= index) {
+				for(int i=columnList.size(); i<=index; i++) {
 					columnList.add(new ContainerColumn());
 				}
 			}

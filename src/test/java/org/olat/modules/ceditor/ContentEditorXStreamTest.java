@@ -25,9 +25,8 @@ import org.olat.modules.ceditor.model.ImageHorizontalAlignment;
 import org.olat.modules.ceditor.model.ImageSettings;
 import org.olat.modules.ceditor.model.ImageSize;
 import org.olat.modules.ceditor.model.ImageTitlePosition;
-import org.olat.modules.ceditor.model.TableColumn;
 import org.olat.modules.ceditor.model.TableContent;
-import org.olat.modules.ceditor.model.TableRow;
+import org.olat.modules.ceditor.model.TableSettings;
 import org.olat.modules.ceditor.model.TextSettings;
 
 /**
@@ -83,11 +82,9 @@ public class ContentEditorXStreamTest {
 	}
 	
 	@Test
-	public void textTableContentToXmlAndFrom() {
+	public void tableContentToXmlAndFrom() {
 		TableContent table = new TableContent();
-		table.getRows().add(new TableRow());
-		table.getRows().get(0).getColumns().add(new TableColumn());
-		table.getRows().get(0).getColumns().get(0).setContent("Hello world");
+		table.addContent(0, 0,"Hello world");
 
 		// serialize
 		String xml = ContentEditorXStream.toXml(table);
@@ -99,11 +96,9 @@ public class ContentEditorXStreamTest {
 	}
 	
 	@Test
-	public void textTableContentWithHtmlToXmlAndFrom() {
+	public void tableContentWithHtmlToXmlAndFrom() {
 		TableContent table = new TableContent();
-		table.getRows().add(new TableRow());
-		table.getRows().get(0).getColumns().add(new TableColumn());
-		table.getRows().get(0).getColumns().get(0).setContent("<p><strong>Hello</strong> world</p>");
+		table.addContent(0, 0, "<p><strong>Hello</strong> world</p>");
 
 		// serialize
 		String xml = ContentEditorXStream.toXml(table);
@@ -112,6 +107,28 @@ public class ContentEditorXStreamTest {
 		//check
 		Assert.assertNotNull(deserializedTable);
 		Assert.assertEquals("<p><strong>Hello</strong> world</p>", deserializedTable.getRows().get(0).getColumns().get(0).getContent());
+	}
+	
+	@Test
+	public void tableSettingsToXmlAndFrom() {
+		TableSettings settings = new TableSettings();
+		settings.setBordered(true);
+		settings.setColumnHeaders(true);
+		settings.setRowHeaders(true);
+		settings.setStriped(true);
+		settings.setTableStyle("o_oo_my_style");
+		
+		// serialize
+		String xml = ContentEditorXStream.toXml(settings);
+		// read
+		TableSettings deserializedSettings = ContentEditorXStream.fromXml(xml, TableSettings.class);
+		//check
+		Assert.assertNotNull(deserializedSettings);
+		Assert.assertTrue(deserializedSettings.isBordered());
+		Assert.assertTrue(deserializedSettings.isColumnHeaders());
+		Assert.assertTrue(deserializedSettings.isRowHeaders());
+		Assert.assertTrue(deserializedSettings.isStriped());
+		Assert.assertEquals("o_oo_my_style", deserializedSettings.getTableStyle());
 	}
 
 }

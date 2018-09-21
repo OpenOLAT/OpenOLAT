@@ -180,11 +180,13 @@ public class TableEditorController extends FormBasicController implements PageEl
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(rowsEl == source || columnsEl == source || styleEl == source
-				|| rowHeaderEl == source || columnHeaderEl == source
-				|| stripedEl == source || borderedEl == source
-				|| source instanceof TextElement) {
-			doSaveSettings(ureq);
+		if(rowHeaderEl == source || columnHeaderEl == source || rowsEl == source || columnsEl == source) {
+			doSaveSettings(ureq, true);
+			flc.getComponent().setDirty(true);
+		} else if(styleEl == source || stripedEl == source || borderedEl == source) {
+			doSaveSettings(ureq, true);
+		} else if(source instanceof TextElement) {
+			doSaveSettings(ureq, false);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -200,6 +202,7 @@ public class TableEditorController extends FormBasicController implements PageEl
 	}
 
 	private void loadModel(int numOfRows, int numOfColumns) {
+		TableSettings settings = table.getTableSettings();
 		TableContent content = table.getTableContent();
 		for(int i=0; i<numOfRows; i++) {
 			final EditorRow row;
@@ -217,7 +220,10 @@ public class TableEditorController extends FormBasicController implements PageEl
 					String textElId = new StringBuilder().append("text_").append(i).append("_").append(j).toString();
 					TextElement textEl = uifactory.addTextElement(textElId, null, 32000, text, flc);
 					textEl.addActionListener(FormEvent.ONCHANGE);
-					EditorColumn column = new EditorColumn(j, textEl);
+					
+					boolean header = (settings.isRowHeaders() && i == 0)
+							|| (settings.isColumnHeaders() && j == 0);
+					EditorColumn column = new EditorColumn(j, textEl, header);
 					columnList.add(column);	
 				}
 			}
@@ -238,7 +244,7 @@ public class TableEditorController extends FormBasicController implements PageEl
 		flc.contextPut("tableRows", rowList);
 	}
 	
-	private void doSaveSettings(UserRequest ureq) {
+	private void doSaveSettings(UserRequest ureq, boolean dirty) {
 		TableSettings settings = table.getTableSettings();
 		settings.setRowHeaders(rowHeaderEl.isAtLeastSelected(1));
 		settings.setColumnHeaders(columnHeaderEl.isAtLeastSelected(1));
@@ -275,13 +281,25 @@ public class TableEditorController extends FormBasicController implements PageEl
 		}
 		
 		for(EditorRow row:rowList) {
+			int i = row.getRow();
 			for(EditorColumn col:row.getColumns()) {
 				String text = col.getText().getValue();
 				content.addContent(row.getRow(), col.getColumn(), text);
+				if(!dirty) {
+					col.getText().getComponent().setDirty(false);
+				}
+				boolean header = (settings.isRowHeaders() && i == 0)
+						|| (settings.isColumnHeaders() && col.getColumn() == 0);
+				col.setHeader(header);
 			}
 		}
 		content.setCaption(captionEl.getValue());
 		content.setTitle(titleEl.getValue());
+		if(!dirty) {
+			captionEl.getComponent().setDirty(false);
+			titleEl.getComponent().setDirty(false);
+		}
+		
 		String contentXml = ContentEditorXStream.toXml(content);
 		table.setContent(contentXml);
 		table = store.savePageElement(table);
@@ -310,11 +328,21 @@ public class TableEditorController extends FormBasicController implements PageEl
 	
 	public class EditorColumn {
 		private final int column;
+		private boolean header;
 		private TextElement textEl;
 		
-		public EditorColumn(int column, TextElement textEl) {
+		public EditorColumn(int column, TextElement textEl, boolean header) {
 			this.column = column;
 			this.textEl = textEl;
+			this.header = header;
+		}
+		
+		public boolean isHeader() {
+			return header;
+		}
+		
+		public void setHeader(boolean header) {
+			this.header = header;
 		}
 		
 		public int getColumn() {

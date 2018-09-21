@@ -26,6 +26,7 @@ import javax.persistence.Transient;
 
 /**
  * 
+ * 
  * Initial date: 19 sept. 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
@@ -38,6 +39,20 @@ public class TableContent {
 	
 	private String title;
 	private String caption;
+	
+	/**
+	 * Create a table with default size 3 x 4
+	 * 
+	 */
+	public TableContent() {
+		numOfRows = 3;
+		numOfColumns = 4;
+	}
+	
+	public TableContent(int numOfRows, int numOfColumns) {
+		this.numOfRows = numOfRows;
+		this.numOfColumns = numOfColumns;
+	}
 	
 	public String getTitle() {
 		return title;
@@ -59,22 +74,27 @@ public class TableContent {
 	 * @return A copy of the list
 	 */
 	public List<TableRow> getRows() {
-		if(rows == null) {
-			rows = new ArrayList<>();
-		}
+		ensureRows();
 		
 		List<TableRow> rowList;
-		if(rows.size() < numOfRows) {
-			for(int i=rows.size(); i<numOfRows; i++) {
-				rows.add(new TableRow());
-			}
-			rowList = new ArrayList<>(rows);
-		} else if(rows.size() > numOfRows) {
+		if(rows.size() > numOfRows) {
 			rowList = rows.subList(0, numOfRows);// don't delete possible data
 		} else {
 			rowList = new ArrayList<>(rows);
 		}
 		return rowList;
+	}
+	
+	private void ensureRows() {
+		if(rows == null) {
+			rows = new ArrayList<>();
+		}
+
+		if(rows.size() < numOfRows) {
+			for(int i=rows.size(); i<numOfRows; i++) {
+				rows.add(new TableRow());
+			}
+		}
 	}
 
 	public void setRows(List<TableRow> rows) {
@@ -84,12 +104,7 @@ public class TableContent {
 	public TableColumn getColumn(int row, int col) {
 		if(row >= numOfRows) return null;
 		
-		if(rows == null) {
-			getRows();
-		}
-		if(row >= rows.size()) {
-			getRows();	
-		}
+		ensureRows();
 		TableRow tableRow = rows.get(row);
 		tableRow.ensureColumns(numOfColumns);
 		return tableRow.getColumn(col);

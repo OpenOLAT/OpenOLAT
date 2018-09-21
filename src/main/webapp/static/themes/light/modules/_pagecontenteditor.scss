@@ -190,6 +190,8 @@
 		.o_page_add_above {
 			display: none;
 		}
+		
+		box-shadow: none;
 	}
 }
 
@@ -236,6 +238,19 @@
 	
 	.o_table_title, .o_table_caption {
 		padding: 5px 5em;
+		background-color: #efefef;
+	}
+	
+	table {
+		border-collapse: collapse;
+	}
+	
+	td {
+		border: 3px solid white;
+	}
+	
+	table th {
+		border: 3px solid #efefef;
 		background-color: #efefef;
 	}
 }

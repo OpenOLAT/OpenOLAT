@@ -36,23 +36,12 @@ import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 
 /**
- * Description:<br>
- * TODO: patrickb Class Description for TextElementRenderer
- * <P>
  * Initial Date: 08.12.2006 <br>
  * 
  * @author patrickb
  */
 class TextElementRenderer extends DefaultComponentRenderer {
 
-	/**
-	 * @see org.olat.core.gui.components.ComponentRenderer#render(org.olat.core.gui.render.Renderer,
-	 *      org.olat.core.gui.render.StringOutput,
-	 *      org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.render.URLBuilder,
-	 *      org.olat.core.gui.translator.Translator,
-	 *      org.olat.core.gui.render.RenderResult, java.lang.String[])
-	 */
 	@Override
 	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {

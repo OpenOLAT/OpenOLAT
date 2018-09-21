@@ -41,7 +41,7 @@
 		
 		initEdit();
 		initWindowListener();
-		initDragAndDrop(container, this.settings);
+		initDragAndDrop(container);
 	};
 	
 	function initEdit() {
@@ -77,12 +77,10 @@
 		}
 	}
 	
-	function initDragAndDrop(container, settings) {
+	function initDragAndDrop(container) {
 		dragula([container], {
 			isContainer: function(el) {
-				var jEl = jQuery(el);
-				var allowed = jEl.hasClass('o_page_drop');
-				return allowed;
+				return jQuery(el).hasClass('o_page_drop');
 			},
 			copy: function (el, source) {
 			    return false;
@@ -102,11 +100,11 @@
 		}).on('out', function(el, target, source) {
 			jQuery(target).removeClass('oo-accepted');
 		}).on('drop', function(el, target, source, sibling) {
-			drop(el, target, source, sibling, settings);
+			drop(el, target, source, sibling);
 		});
 	}
 	
-	function drop(el, target, source, sibling, settings) {
+	function drop(el, target, source, sibling) {
 		var draggedId = jQuery(el).data('oo-page-fragment');
 		var sourceId = jQuery(source).data('oo-page-fragment');
 		
