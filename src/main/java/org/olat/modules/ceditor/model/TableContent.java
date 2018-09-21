@@ -78,7 +78,7 @@ public class TableContent {
 		
 		List<TableRow> rowList;
 		if(rows.size() > numOfRows) {
-			rowList = rows.subList(0, numOfRows);// don't delete possible data
+			rowList = new ArrayList<>(rows.subList(0, numOfRows));// don't delete possible data
 		} else {
 			rowList = new ArrayList<>(rows);
 		}

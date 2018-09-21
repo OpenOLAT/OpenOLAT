@@ -43,10 +43,6 @@ public class ContainerColumn {
 		this.elementIds = elementIds;
 	}
 	
-	public void addElementId() {
-		
-	}
-	
 	public boolean contains(String elementId) {
 		return elementIds != null && elementIds.contains(elementId);
 	}

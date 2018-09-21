@@ -44,7 +44,7 @@ public class ContainerSettings {
 	public void setNumOfColumns(int numOfColumns) {
 		this.numOfColumns = numOfColumns;
 		if(columns != null && columns.size() > numOfColumns) {
-			columns = columns.subList(0, numOfColumns);
+			columns = new ArrayList<>(columns.subList(0, numOfColumns));
 		}
 	}
 	
@@ -69,6 +69,10 @@ public class ContainerSettings {
 		return columns;
 	}
 	
+	public void setColumns(List<ContainerColumn> columns) {
+		this.columns = columns;
+	}
+	
 	public ContainerColumn getColumn(int index) {
 		if(index < numOfColumns) {
 			List<ContainerColumn> columnList = getColumns();
@@ -90,10 +94,6 @@ public class ContainerSettings {
 			}
 		}
 		return null;
-	}
-
-	public void setElementIds(List<ContainerColumn> columns) {
-		this.columns = columns;
 	}
 	
 	public void setElementAt(String elementId, int column, String sibling) {

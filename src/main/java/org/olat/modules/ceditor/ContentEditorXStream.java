@@ -63,6 +63,7 @@ public class ContentEditorXStream {
 		xstream.alias("textsettings", TextSettings.class);
 		
 		xstream.alias("containersettings", ContainerSettings.class);
+		xstream.alias("containercolumn", ContainerColumn.class);
 		
 		xstream.alias("tablecontent", TableContent.class);
 		xstream.alias("tablerow", TableRow.class);
