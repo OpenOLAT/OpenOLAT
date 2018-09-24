@@ -20,9 +20,13 @@
 package org.olat.modules.quality.analysis.ui;
 
 import static java.util.stream.Collectors.toList;
+import static org.olat.core.gui.components.util.KeyValues.VALUE_ASC;
+import static org.olat.core.gui.components.util.KeyValues.entry;
 import static org.olat.core.gui.translator.TranslatorHelper.translateAll;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -37,6 +41,7 @@ import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElem
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Organisation;
@@ -51,6 +56,9 @@ import org.olat.modules.quality.analysis.AnalysisSearchParameter;
 import org.olat.modules.quality.analysis.QualityAnalysisService;
 import org.olat.modules.quality.ui.QualityUIFactory;
 import org.olat.modules.quality.ui.QualityUIFactory.KeysValues;
+import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyLevelRef;
+import org.olat.modules.taxonomy.model.TaxonomyLevelRefImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.user.ui.organisation.OrganisationTreeModel;
@@ -76,6 +84,7 @@ public class FilterController extends FormBasicController {
 	private MultipleSelectionElement contextOrganisationEl;
 	private MultipleSelectionElement contextCurriculumEl;
 	private MultipleSelectionElement contextCurriculumElementEl;
+	private MultipleSelectionElement contextTaxonomyLevelEl;
 	private MultipleSelectionElement withUserInformationsEl;
 	
 	private final AnalysisSearchParameter searchParams;
@@ -131,6 +140,9 @@ public class FilterController extends FormBasicController {
 
 		contextCurriculumElementEl = uifactory.addCheckboxesDropdown("filter.context.curriculum.elements", formLayout);
 		contextCurriculumElementEl.addActionListener(FormEvent.ONCLICK);
+
+		contextTaxonomyLevelEl = uifactory.addCheckboxesDropdown("filter.context.taxonomy.level", formLayout);
+		contextTaxonomyLevelEl.addActionListener(FormEvent.ONCLICK);
 		
 		withUserInformationsEl = uifactory.addCheckboxesVertical("filter.with.user.informations.label", formLayout,
 				WITH_USER_INFOS_KEYS, translateAll(getTranslator(), WITH_USER_INFOS_KEYS), 1);
@@ -148,6 +160,7 @@ public class FilterController extends FormBasicController {
 		setContextOrganisationValues();
 		setContextCurriculumValues();
 		setContextCurriculumElementValues();
+		setContextTaxonomyLevelValues();
 	}
 	
 	private void setTopicIdentityValues() {
@@ -304,6 +317,38 @@ public class FilterController extends FormBasicController {
 		}
 	}
 	
+	private void setContextTaxonomyLevelValues() {
+		Collection<String> selectedKeys = contextOrganisationEl.getSelectedKeys();
+		
+		AnalysisSearchParameter searchParamsClone = searchParams.clone();
+		searchParamsClone.setContextTaxonomyLevelRefs(null);
+		List<TaxonomyLevel> levels = analysisService.loadContextTaxonomyLevels(searchParamsClone, true);
+		
+		KeyValues keyValues = new KeyValues();
+		// Create the key / value pairs and sort them according to the hierarchical structure.
+		for (TaxonomyLevel level:levels) {
+			String key = Long.toString(level.getKey());
+			ArrayList<String> names = new ArrayList<>();
+			QualityUIFactory.addParentTaxonomyLevelNames(names, level);
+			Collections.reverse(names);
+			String value = String.join(" / ", names);
+			keyValues.add(entry(key, value));
+		}
+		keyValues.sort(VALUE_ASC);
+		
+		// Replace with the intended value (but keep the sort order).
+		for (TaxonomyLevel level:levels) {
+			String key = Long.toString(level.getKey());
+			String intendedLevel = QualityUIFactory.getIntendedTaxonomyLevel(level);
+			keyValues.replaceOrPut(entry(key, intendedLevel));
+		}
+		
+		contextTaxonomyLevelEl.setKeysAndValues(keyValues.keys(), keyValues.values());
+		for (String key: selectedKeys) {
+			contextTaxonomyLevelEl.select(key, true);
+		}
+	}
+	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		 if (source == dateRangeFromEl) {
@@ -325,6 +370,8 @@ public class FilterController extends FormBasicController {
 		} else if (source == contextCurriculumEl) {
 			doFiltered(ureq);
 		} else if (source == contextCurriculumElementEl) {
+			doFiltered(ureq);
+		} else if (source == contextTaxonomyLevelEl) {
 			doFiltered(ureq);
 		} else if (source == withUserInformationsEl) {
 			doFiltered(ureq);
@@ -349,6 +396,7 @@ public class FilterController extends FormBasicController {
 		getSearchParamContextOrganisations();
 		getSearchParamContextCurriculums();
 		getSearchParamContextCurriculumElements();
+		getSearchParamContextTaxonomyLevels();
 		getSearchParamWithUserInfosOnly();
 	}
 
@@ -450,6 +498,18 @@ public class FilterController extends FormBasicController {
 		}
 	}
 	
+	private void getSearchParamContextTaxonomyLevels() {
+		if (contextTaxonomyLevelEl.isAtLeastSelected(1)) {
+			List<TaxonomyLevelRef> curriculumElementRefs = contextTaxonomyLevelEl.getSelectedKeys().stream()
+					.map(Long::parseLong)
+					.map(TaxonomyLevelRefImpl::new)
+					.collect(toList());
+			searchParams.setContextTaxonomyLevelRefs(curriculumElementRefs);
+		} else {
+			searchParams.setContextTaxonomyLevelRefs(null);
+		}
+	}
+
 	private void getSearchParamWithUserInfosOnly() {
 		boolean withUserInfosOnly = withUserInformationsEl.isAtLeastSelected(1);
 		searchParams.setWithUserInfosOnly(withUserInfosOnly);

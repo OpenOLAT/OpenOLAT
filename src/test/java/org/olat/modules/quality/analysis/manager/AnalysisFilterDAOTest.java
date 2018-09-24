@@ -53,6 +53,8 @@ import org.olat.modules.quality.analysis.GroupBy;
 import org.olat.modules.quality.analysis.GroupedStatistic;
 import org.olat.modules.quality.analysis.GroupedStatistics;
 import org.olat.modules.quality.manager.QualityTestHelper;
+import org.olat.modules.taxonomy.Taxonomy;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -424,6 +426,37 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		assertThat(filtered)
 			.containsExactlyInAnyOrder(element1.getCurriculum().getKey(), element2.getCurriculum().getKey())
 			.doesNotContainNull();
+	}
+	
+	@Test
+	public void shouldLoadDistinctContextTaxonomyLevelPathes() {
+		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity executor = JunitTestHelper.createAndPersistIdentityAsUser("");
+		Organisation dcOrganisation = qualityTestHelper.createOrganisation();
+		TaxonomyLevel taxonomyLevel1 = qualityTestHelper.createTaxonomyLevel();
+		TaxonomyLevel taxonomyLevel2 = qualityTestHelper.createTaxonomyLevel();
+		// Participation with two organisations
+		QualityDataCollection dc1 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participations1 = qualityService.addParticipations(dc1, Collections.singletonList(executor));
+		QualityContextBuilder contextBuilder1 = qualityService.createContextBuilder(dc1, participations1.get(0));
+		contextBuilder1.addTaxonomyLevel(taxonomyLevel1).addTaxonomyLevel(taxonomyLevel2).build();
+		// Participation with the same organisation
+		QualityDataCollection dc2 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participations2 = qualityService.addParticipations(dc2, Collections.singletonList(executor));
+		QualityContextBuilder contextBuilder2 = qualityService.createContextBuilder(dc2, participations2.get(0));
+		contextBuilder2.addTaxonomyLevel(taxonomyLevel2).build();
+		// Participation without organisation
+		QualityDataCollection dcNull = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		qualityService.addParticipations(dcNull, Collections.singletonList(executor));
+		finish(asList(dc1, dc2, dcNull));
+		dbInstance.commitAndCloseSession();
+		
+		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
+		List<String> filtered = sut.loadContextTaxonomyLevelPathes(searchParams);
+		
+		assertThat(filtered)
+				.containsExactlyInAnyOrder(taxonomyLevel1.getMaterializedPathKeys(), taxonomyLevel2.getMaterializedPathKeys())
+				.doesNotContainNull();
 	}
 	
 	@Test
@@ -843,7 +876,6 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 				.containsExactlyInAnyOrder(organisation1.getMaterializedPathKeys(), organisation2.getMaterializedPathKeys())
 				.doesNotContain(otherOrganisation.getMaterializedPathKeys(), childOrganisation.getMaterializedPathKeys());
 	}
-
 	
 	@Test
 	public void shouldFilterByContextOrganisations() {
@@ -885,6 +917,50 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		Long count = sut.loadDataCollectionCount(searchParams);
 		
 		long expected = asList(organisation1, organisation2, subOrganisation).size();
+		assertThat(count).isEqualTo(expected);
+	}
+	
+	@Test
+	public void shouldFilterByContextTaxonomyLevels() {
+		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity executor = JunitTestHelper.createAndPersistIdentityAsUser("");
+		Organisation dcOrganisation = qualityTestHelper.createOrganisation();
+		Taxonomy taxonomy = qualityTestHelper.createTaxonomy();
+		TaxonomyLevel taxonomyLevel1 = qualityTestHelper.createTaxonomyLevel(taxonomy);
+		TaxonomyLevel taxonomyLevel2 = qualityTestHelper.createTaxonomyLevel();
+		TaxonomyLevel subTaxonomyLevel = qualityTestHelper.createTaxonomyLevel(taxonomyLevel1);
+		TaxonomyLevel otherTaxonomyLevel = qualityTestHelper.createTaxonomyLevel();
+		// Participation with two taxonomyLevels
+		QualityDataCollection dc1 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participations1 = qualityService.addParticipations(dc1, Collections.singletonList(executor));
+		QualityContextBuilder contextBuilder1 = qualityService.createContextBuilder(dc1, participations1.get(0));
+		contextBuilder1.addTaxonomyLevel(taxonomyLevel1).addTaxonomyLevel(taxonomyLevel2).build();
+		// Participation with the same taxonomyLevel
+		QualityDataCollection dc2 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participations2 = qualityService.addParticipations(dc2, Collections.singletonList(executor));
+		QualityContextBuilder contextBuilder2 = qualityService.createContextBuilder(dc2, participations2.get(0));
+		contextBuilder2.addTaxonomyLevel(taxonomyLevel2).build();
+		// Participation in a child taxonomyLevel (include them)
+		QualityDataCollection dcChild = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participationscild = qualityService.addParticipations(dcChild, Collections.singletonList(executor));
+		QualityContextBuilder contextBuilderChild = qualityService.createContextBuilder(dcChild, participationscild.get(0));
+		contextBuilderChild.addTaxonomyLevel(subTaxonomyLevel).build();
+		// Participation with an other taxonomyLevel
+		QualityDataCollection dcOther = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participationsOther = qualityService.addParticipations(dcOther, Collections.singletonList(executor));
+		QualityContextBuilder contextBuilderOther = qualityService.createContextBuilder(dcOther, participationsOther.get(0));
+		contextBuilderOther.addTaxonomyLevel(otherTaxonomyLevel).build();
+		// Participation without organisation
+		QualityDataCollection dcNull = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		qualityService.addParticipations(dcNull, Collections.singletonList(executor));
+		finish(asList(dc1, dc2, dcOther, dcChild, dcNull));
+		dbInstance.commitAndCloseSession();
+		
+		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
+		searchParams.setContextTaxonomyLevelRefs(asList(taxonomyLevel1, taxonomyLevel2));
+		Long count = sut.loadDataCollectionCount(searchParams);
+		
+		long expected = asList(taxonomyLevel1, taxonomyLevel2, subTaxonomyLevel).size();
 		assertThat(count).isEqualTo(expected);
 	}
 	

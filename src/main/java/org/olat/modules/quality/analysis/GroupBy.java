@@ -34,7 +34,8 @@ public enum GroupBy {
 	TOPIC_REPOSITORY("heatmap.group.topic.repository"),
 	CONTEXT_ORAGANISATION("heatmap.group.context.organisation"),
 	CONTEXT_CURRICULUM("heatmap.group.context.curriculum"),
-	CONETXT_CURRICULUM_ELEMENT("heatmap.group.context.curriculum.element");
+	CONETXT_CURRICULUM_ELEMENT("heatmap.group.context.curriculum.element"),
+	CONETXT_TAXONOMY_LEVEL("heatmap.group.context.taxonomy.level");
 
 	private String i18nKey;
 

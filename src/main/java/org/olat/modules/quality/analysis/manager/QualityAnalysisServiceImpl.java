@@ -47,6 +47,8 @@ import org.olat.modules.quality.analysis.GroupBy;
 import org.olat.modules.quality.analysis.GroupedStatistic;
 import org.olat.modules.quality.analysis.GroupedStatistics;
 import org.olat.modules.quality.analysis.QualityAnalysisService;
+import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,6 +77,8 @@ public class QualityAnalysisServiceImpl implements QualityAnalysisService {
 	private CurriculumService curriculumService;
 	@Autowired
 	private RepositoryManager repositoryManager;
+	@Autowired
+	private TaxonomyService taxonomyService;
 	@Autowired
 	private BaseSecurity securityManager;
 
@@ -158,6 +162,18 @@ public class QualityAnalysisServiceImpl implements QualityAnalysisService {
 			elementsOfCurriculums.removeIf(e -> isUnused(e.getMaterializedPathKeys(), pathes));
 		}
 		return elementsOfCurriculums;
+	}
+
+	@Override
+	public List<TaxonomyLevel> loadContextTaxonomyLevels(AnalysisSearchParameter searchParams, boolean withParents) {
+		List<TaxonomyLevel> levels = taxonomyService.getTaxonomyLevels(null);
+		List<String> pathes = filterDao.loadContextTaxonomyLevelPathes(searchParams);
+		if (withParents) {
+			levels.removeIf(e -> isUnusedChild(e.getMaterializedPathKeys(), pathes));
+		} else {
+			levels.removeIf(e -> isUnused(e.getMaterializedPathKeys(), pathes));
+		}	
+		return levels;
 	}
 
 	private boolean isUnusedChild(String pathToCheck, List<String> pathes) {

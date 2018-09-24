@@ -106,7 +106,7 @@ public interface TaxonomyService {
 	 * @return The freshly loaded taxonomy level
 	 */
 	public TaxonomyLevel getTaxonomyLevel(TaxonomyLevelRef ref);
-	
+
 	/**
 	 * 
 	 * @param taxonomyLevel The taxonomy level

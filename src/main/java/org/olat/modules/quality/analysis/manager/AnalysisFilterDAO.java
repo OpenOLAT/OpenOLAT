@@ -122,6 +122,19 @@ public class AnalysisFilterDAO {
 		return query.getResultList();
 	}
 
+	public List<String> loadContextTaxonomyLevelPathes(AnalysisSearchParameter searchParams) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select distinct taxonomyLevel.materializedPathKeys");
+		appendFrom(sb, searchParams);
+		appendWhere(sb, searchParams);
+		sb.and().append("taxonomyLevel.key is not null");
+		
+		TypedQuery<String> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), String.class);
+		appendParameters(query, searchParams);
+		return query.getResultList();
+	}
+
 	Long loadDataCollectionCount(AnalysisSearchParameter searchParams) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select count(distinct collection.key)");
@@ -271,6 +284,9 @@ public class AnalysisFilterDAO {
 		case CONETXT_CURRICULUM_ELEMENT:
 			sb.append(", contextToCurriculumElement.curriculumElement.key");
 			break;
+		case CONETXT_TAXONOMY_LEVEL:
+			sb.append(", contextToTaxonomyLevel.taxonomyLevel.key");
+			break;
 		default: 
 			if (select) sb.append(", null");
 		}
@@ -296,6 +312,10 @@ public class AnalysisFilterDAO {
 		sb.append("              on contextToOrganisation.context.key = context.key");
 		sb.append("       left join organisation contextOrganisation");
 		sb.append("              on contextToOrganisation.organisation.key = contextOrganisation.key");
+		sb.append("       left join contexttotaxonomylevel contextToTaxonomyLevel");
+		sb.append("              on contextToTaxonomyLevel.context.key = context.key");
+		sb.append("       left join ctaxonomylevel taxonomyLevel");
+		sb.append("              on contextToTaxonomyLevel.taxonomyLevel.key = taxonomyLevel.key");
 		if (searchParams.isWithUserInfosOnly()) {
 			sb.append("   left join context.evaluationFormSession sessionInfo");
 		}
@@ -360,6 +380,21 @@ public class AnalysisFilterDAO {
 				}
 			}
 		}
+		if (searchParams.getContextTaxonomyLevelRefs() != null && !searchParams.getContextTaxonomyLevelRefs().isEmpty()) {
+			// load the taxonomy level and all children
+			sb.and();
+			for (int i = 0; i < searchParams.getContextTaxonomyLevelRefs().size(); i++) {
+				if (i == 0) {
+					sb.append("(");
+				} else {
+					sb.append(" or ");
+				}
+				sb.append("taxonomyLevel.materializedPathKeys like :taxonomyLevelPath").append(i);
+				if (i == searchParams.getContextTaxonomyLevelRefs().size() - 1) {
+					sb.append(")");
+				}
+			}
+		}
 		if (searchParams.isWithUserInfosOnly()) {
 			sb.and();
 			sb.append("(");
@@ -420,6 +455,14 @@ public class AnalysisFilterDAO {
 			for (int i = 0; i < searchParams.getContextCurriculumElementRefs().size(); i++) {
 				String parameter = new StringBuilder(12).append("elePath").append(i).toString();
 				Long key = searchParams.getContextCurriculumElementRefs().get(i).getKey();
+				String value = new StringBuilder(32).append("%/").append(key).append("/%").toString();
+				query.setParameter(parameter, value);
+			}
+		}
+		if (searchParams.getContextTaxonomyLevelRefs() != null && !searchParams.getContextTaxonomyLevelRefs().isEmpty()) {
+			for (int i = 0; i < searchParams.getContextTaxonomyLevelRefs().size(); i++) {
+				String parameter = new StringBuilder(12).append("taxonomyLevelPath").append(i).toString();
+				Long key = searchParams.getContextTaxonomyLevelRefs().get(i).getKey();
 				String value = new StringBuilder(32).append("%/").append(key).append("/%").toString();
 				query.setParameter(parameter, value);
 			}

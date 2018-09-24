@@ -232,9 +232,21 @@ public class QualityTestHelper {
 		return JunitTestHelper.createAndPersistRepositoryEntry();
 	}
 
-	TaxonomyLevel createTaxonomyLevel() {
-		Taxonomy taxonomy = taxonomyService.createTaxonomy(UUID.randomUUID().toString(), "d", "d", null);
+	public Taxonomy createTaxonomy() {
+		return taxonomyService.createTaxonomy(UUID.randomUUID().toString(), "d", "d", null);
+	}
+
+	public TaxonomyLevel createTaxonomyLevel() {
+		Taxonomy taxonomy = createTaxonomy();
+		return createTaxonomyLevel(taxonomy);
+	}
+	
+	public TaxonomyLevel createTaxonomyLevel(Taxonomy taxonomy) {
 		return taxonomyService.createTaxonomyLevel(UUID.randomUUID().toString(), "d", "d", null, null, null, taxonomy);
+	}
+	
+	public TaxonomyLevel createTaxonomyLevel(TaxonomyLevel parent) {
+		return taxonomyService.createTaxonomyLevel(UUID.randomUUID().toString(), "d", "d", null, null, parent, parent.getTaxonomy());
 	}
 
 	QualityReminder createReminder() {

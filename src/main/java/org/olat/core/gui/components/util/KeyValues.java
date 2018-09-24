@@ -37,12 +37,38 @@ public class KeyValues {
 	
 	private List<KeyValue> keyValues = new ArrayList<>();
 	
-	public void add(String key, String value) {
-		add(new KeyValue(key, value));
+	public static KeyValue entry(String key, String value) {
+		return new KeyValue(key, value);
 	}
 	
+	/**
+	 * Adds the key / value pair at the end of the pairs. Since the key has to be
+	 * unique, an existing pair with the same key is removed.
+	 *
+	 * @param keyValue
+	 */
 	public void add(KeyValue keyValue) {
+		keyValues.removeIf(kv -> kv.getKey().equals(keyValue.getKey()));
 		keyValues.add(keyValue);
+	}
+	
+	/**
+	 * If a key / value pair with the key exists, the existing pair is replaced. If
+	 * no pair exists, the new pair is put at the end.
+	 * 
+	 * @param keyValue
+	 */
+	public void replaceOrPut(KeyValue keyValue) {
+		if (containsKey(keyValue.getKey())) {
+			replace(keyValue);
+		} else {
+			keyValues.add(keyValue);
+		}
+	}
+	
+	private void replace(KeyValue keyValue) {
+		int index = keyValues.indexOf(keyValue);
+		keyValues.set(index, keyValue);
 	}
 	
 	public String[] keys() {
@@ -77,6 +103,31 @@ public class KeyValues {
 
 		public String getValue() {
 			return value;
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + ((key == null) ? 0 : key.hashCode());
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			KeyValue other = (KeyValue) obj;
+			if (key == null) {
+				if (other.key != null)
+					return false;
+			} else if (!key.equals(other.key))
+				return false;
+			return true;
 		}
 	}
 

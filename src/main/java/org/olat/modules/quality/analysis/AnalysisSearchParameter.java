@@ -28,6 +28,7 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.OrganisationRef;
 import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumRef;
+import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.repository.RepositoryEntryRef;
 
 /**
@@ -49,6 +50,7 @@ public class AnalysisSearchParameter {
 	private List<? extends OrganisationRef> contextOrganisationRefs;
 	private Collection<? extends CurriculumRef> contextCurriculumRefs;
 	private List<? extends CurriculumElementRef> contextCurriculumElementRefs;
+	private List<? extends TaxonomyLevelRef> contextTaxonomyLevelRefs;
 	private boolean withUserInfosOnly;
 
 	public RepositoryEntryRef getFormEntryRef() {
@@ -139,6 +141,14 @@ public class AnalysisSearchParameter {
 		this.contextCurriculumElementRefs = contextCurriculumElementRefs;
 	}
 
+	public List<? extends TaxonomyLevelRef> getContextTaxonomyLevelRefs() {
+		return contextTaxonomyLevelRefs;
+	}
+
+	public void setContextTaxonomyLevelRefs(List<? extends TaxonomyLevelRef> contextTaxonomyLevelRefs) {
+		this.contextTaxonomyLevelRefs = contextTaxonomyLevelRefs;
+	}
+
 	public boolean isWithUserInfosOnly() {
 		return withUserInfosOnly;
 	}
@@ -176,6 +186,9 @@ public class AnalysisSearchParameter {
 				: null;
 		clone.contextCurriculumElementRefs = this.contextCurriculumElementRefs != null
 				? new ArrayList<>(this.contextCurriculumElementRefs)
+				: null;
+		clone.contextTaxonomyLevelRefs = this.contextTaxonomyLevelRefs != null
+				? new ArrayList<>(this.contextTaxonomyLevelRefs)
 				: null;
 		clone.withUserInfosOnly = this.withUserInfosOnly;
 		return clone;

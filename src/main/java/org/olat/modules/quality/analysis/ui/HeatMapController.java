@@ -66,6 +66,7 @@ import org.olat.modules.quality.analysis.GroupedStatistic;
 import org.olat.modules.quality.analysis.GroupedStatistics;
 import org.olat.modules.quality.analysis.QualityAnalysisService;
 import org.olat.modules.quality.ui.QualityUIFactory;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -352,6 +353,8 @@ public class HeatMapController extends FormBasicController implements Filterable
 			return createContextCurriculumData();
 		case CONETXT_CURRICULUM_ELEMENT:
 			return createContextCurriculumElementData();
+		case CONETXT_TAXONOMY_LEVEL:
+			return createContextTaxonomyLevelData();
 		default:
 			return new HeatMapData(emptyList(), emptyList());
 		}
@@ -469,6 +472,26 @@ public class HeatMapController extends FormBasicController implements Filterable
 		}
 		
 		List<String> headers = singletonList(translate("heatmap.table.title.repository"));
+		return new HeatMapData(rows, headers);
+	}
+
+	private HeatMapData createContextTaxonomyLevelData() {
+		List<TaxonomyLevel> levels = analysisService.loadContextTaxonomyLevels(searchParams, false);
+		List<HeatMapRow> rows = new ArrayList<>(levels.size());
+		for (TaxonomyLevel level : levels) {
+			Long groupKey = level.getKey();
+			List<String> groupNames = new ArrayList<>();
+			QualityUIFactory.addParentTaxonomyLevelNames(groupNames, level);
+			Collections.reverse(groupNames);
+			HeatMapRow row = new HeatMapRow(groupKey, groupNames);
+			rows.add(row);
+		}
+		
+		int maxSize = getMaxGroupNamesSize(rows);
+		fillGroupNamesToSameSize(rows, maxSize);
+		List<String> headers = new ArrayList<>(maxSize);
+		headers.add(translate("heatmap.table.title.taxonomy.level"));
+		addNulls(headers, maxSize - 1);
 		return new HeatMapData(rows, headers);
 	}
 

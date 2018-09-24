@@ -26,6 +26,7 @@
 package org.olat.repository.ui.author;
 
 import static org.olat.core.gui.components.util.KeyValues.VALUE_ASC;
+import static org.olat.core.gui.components.util.KeyValues.entry;
 
 import java.io.File;
 import java.time.LocalDateTime;
@@ -457,7 +458,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 			addParentNames(names, level);
 			Collections.reverse(names);
 			String value = String.join(" / ", names);
-			keyValues.add(key, value);
+			keyValues.add(entry(key, value));
 		}
 		keyValues.sort(VALUE_ASC);
 	

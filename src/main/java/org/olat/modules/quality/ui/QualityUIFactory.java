@@ -58,6 +58,7 @@ import org.olat.modules.curriculum.ui.CurriculumTreeModel;
 import org.olat.modules.quality.QualityDataCollectionTopicType;
 import org.olat.modules.quality.QualityDataCollectionView;
 import org.olat.modules.quality.QualityExecutorParticipation;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.user.ui.organisation.OrganisationTreeModel;
@@ -447,6 +448,29 @@ public class QualityUIFactory {
 			}
 		}
 		return null;
+	}
+	
+	public static void addParentTaxonomyLevelNames(List<String> names, TaxonomyLevel level) {
+		names.add(level.getDisplayName());
+		TaxonomyLevel parent = level.getParent();
+		if (parent != null) {
+			addParentTaxonomyLevelNames(names, parent);
+		}
+	}
+	
+	public static String getIntendedTaxonomyLevel(TaxonomyLevel level) {
+		StringBuilder sb = new StringBuilder();
+		computeIntendentionForTaxonomyLevel(sb, level);
+		return sb.append(level.getDisplayName()).toString();
+	}
+	
+	private static StringBuilder computeIntendentionForTaxonomyLevel(StringBuilder intendation, TaxonomyLevel level) {
+		TaxonomyLevel parent = level.getParent();
+		if (parent != null) {
+			intendation = intendation.append(INTENDING).append(INTENDING).append(INTENDING).append(INTENDING);
+			computeIntendentionForTaxonomyLevel(intendation, parent);
+		}
+		return intendation;
 	}
 	
 	public static boolean validateInteger(TextElement el, int min, int max) {
