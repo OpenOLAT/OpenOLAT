@@ -22,7 +22,11 @@ package org.olat.modules.quality.analysis.manager;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.olat.modules.quality.analysis.GroupBy.CONETXT_TAXONOMY_LEVEL;
+import static org.olat.modules.quality.analysis.GroupBy.CONTEXT_CURRICULUM;
+import static org.olat.modules.quality.analysis.GroupBy.CONTEXT_ORAGANISATION;
 import static org.olat.modules.quality.analysis.GroupBy.TOPIC_ORGANISATION;
+import static org.olat.modules.quality.analysis.MultiKey.of;
 
 import java.math.BigDecimal;
 import java.util.Calendar;
@@ -50,8 +54,10 @@ import org.olat.modules.quality.QualityDataCollectionStatus;
 import org.olat.modules.quality.QualityService;
 import org.olat.modules.quality.analysis.AnalysisSearchParameter;
 import org.olat.modules.quality.analysis.GroupBy;
+import org.olat.modules.quality.analysis.MultiGroupBy;
 import org.olat.modules.quality.analysis.GroupedStatistic;
 import org.olat.modules.quality.analysis.GroupedStatistics;
+import org.olat.modules.quality.analysis.MultiKey;
 import org.olat.modules.quality.manager.QualityTestHelper;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
@@ -503,22 +509,67 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
+		MultiGroupBy multiGroupBy = new MultiGroupBy(TOPIC_ORGANISATION, null, null);
 		List<GroupedStatistic> statisticList = sut.loadGroupedStatisticByResponseIdentifiers(searchParams,
-				asList(identifier1, identifier2), TOPIC_ORGANISATION);
+				asList(identifier1, identifier2), multiGroupBy);
 		GroupedStatistics statistics = new GroupedStatistics(statisticList);
 		
-		GroupedStatistic statistic11 = statistics.getStatistic(identifier1, organisation1.getKey());
+		GroupedStatistic statistic11 = statistics.getStatistic(identifier1, of(organisation1.getKey()));
 		assertThat(statistic11.getCount()).isEqualTo(2);
 		assertThat(statistic11.getAvg()).isEqualTo(10);
-		GroupedStatistic statistic12 = statistics.getStatistic(identifier1, organisation2.getKey());
+		GroupedStatistic statistic12 = statistics.getStatistic(identifier1, of(organisation2.getKey()));
 		assertThat(statistic12.getCount()).isEqualTo(2);
 		assertThat(statistic12.getAvg()).isEqualTo(5);
-		GroupedStatistic statistic21 = statistics.getStatistic(identifier2, organisation1.getKey());
+		GroupedStatistic statistic21 = statistics.getStatistic(identifier2, of(organisation1.getKey()));
 		assertThat(statistic21.getCount()).isEqualTo(1);
 		assertThat(statistic21.getAvg()).isEqualTo(1);
-		GroupedStatistic statistic22 = statistics.getStatistic(identifier2, organisation2.getKey());
+		GroupedStatistic statistic22 = statistics.getStatistic(identifier2, of(organisation2.getKey()));
 		assertThat(statistic22).isNull();
 	}
+	
+	@Test
+	public void shouldLoadStatisticsGroupedByAllKeys() {
+		BigDecimal expected = BigDecimal.TEN;
+		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity executor = JunitTestHelper.createAndPersistIdentityAsUser("");
+		String identifier = UUID.randomUUID().toString();
+		Organisation dcOrganisation = qualityTestHelper.createOrganisation();
+		Organisation organisation1 = qualityTestHelper.createOrganisation();
+		Organisation organisation2 = qualityTestHelper.createOrganisation();
+		Collection<Organisation> organisations = asList(organisation1, organisation2);
+		Curriculum curriculum1 = qualityTestHelper.createCurriculum();
+		Curriculum curriculum2 = qualityTestHelper.createCurriculum();
+		Collection<Curriculum> curriculums = asList(curriculum1, curriculum2);
+		TaxonomyLevel level1 = qualityTestHelper.createTaxonomyLevel();
+		TaxonomyLevel level2 = qualityTestHelper.createTaxonomyLevel();
+		Collection<TaxonomyLevel> levels = asList(level1, level2);
+		QualityDataCollection dc = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participations = qualityService.addParticipations(dc, asList(executor));
+		EvaluationFormParticipation participation = participations.get(0);
+		QualityContextBuilder contextBuilder = qualityService.createContextBuilder(dc, participation);
+		contextBuilder.addOrganisation(organisation1).addOrganisation(organisation2).addCurriculum(curriculum1)
+				.addCurriculum(curriculum2).addTaxonomyLevel(level1).addTaxonomyLevel(level2).build();
+		EvaluationFormSession session = evaManager.createSession(participation);
+		evaManager.createNumericalResponse(identifier , session, expected);
+		evaManager.finishSession(session);
+		finish(asList(dc));
+		
+		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
+		MultiGroupBy multiGroupBy = new MultiGroupBy(CONTEXT_ORAGANISATION, CONTEXT_CURRICULUM, CONETXT_TAXONOMY_LEVEL);
+		List<GroupedStatistic> statisticList = sut.loadGroupedStatisticByResponseIdentifiers(searchParams,
+				asList(identifier), multiGroupBy);
+		GroupedStatistics statistics = new GroupedStatistics(statisticList);
+		
+		for (Organisation organisation: organisations) {
+			for (Curriculum curriculum: curriculums) {
+				for (TaxonomyLevel level: levels) {
+					MultiKey multiKey = of(organisation.getKey(), curriculum.getKey(), level.getKey());
+					assertThat(statistics.getStatistic(identifier, multiKey).getAvg()).isEqualTo(expected.doubleValue());
+				}
+			}
+		}
+	}
+
 	
 	@Test
 	public void shouldLoadGroupedStatisticForEveryGroupBy() {
@@ -537,7 +588,8 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		
 		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
 		for (GroupBy groupBy : GroupBy.values()) {
-			sut.loadGroupedStatisticByResponseIdentifiers(searchParams, singletonList(identifier), groupBy);
+			MultiGroupBy multiGroupBy = new MultiGroupBy(groupBy, null, null);
+			sut.loadGroupedStatisticByResponseIdentifiers(searchParams, singletonList(identifier), multiGroupBy);
 		}
 		
 		// Assert that no exception is thrown.

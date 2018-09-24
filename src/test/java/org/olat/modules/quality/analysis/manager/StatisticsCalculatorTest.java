@@ -41,7 +41,7 @@ public class StatisticsCalculatorTest extends OlatTestCase {
 	
 	@Test
 	public void shouldScaleOneToMax() {
-		GroupedStatistic statistic = new GroupedStatistic(null, null, null, 9.0);
+		GroupedStatistic statistic = new GroupedStatistic(null, null, null, null, null, 9.0);
 		Rubric rubric = new Rubric();
 		rubric.setScaleType(ScaleType.oneToMax);
 		rubric.setSteps(10);
@@ -53,7 +53,7 @@ public class StatisticsCalculatorTest extends OlatTestCase {
 
 	@Test
 	public void shouldScaleMaxToOne() {
-		GroupedStatistic statistic = new GroupedStatistic(null, null, null, 9.0);
+		GroupedStatistic statistic = new GroupedStatistic(null, null, null, null, null, 9.0);
 		Rubric rubric = new Rubric();
 		rubric.setScaleType(ScaleType.maxToOne);
 		rubric.setSteps(10);
@@ -65,7 +65,7 @@ public class StatisticsCalculatorTest extends OlatTestCase {
 
 	@Test
 	public void shouldScaleZeroBalanced() {
-		GroupedStatistic statistic = new GroupedStatistic(null, null, null, 9.0);
+		GroupedStatistic statistic = new GroupedStatistic(null, null, null, null, null, 9.0);
 		Rubric rubric = new Rubric();
 		rubric.setScaleType(ScaleType.zeroBallanced);
 		rubric.setSteps(10);

@@ -28,13 +28,17 @@ package org.olat.modules.quality.analysis;
 public class GroupedStatistic {
 	
 	private final String identitfier;
-	private final Long groupKey;
+	private final MultiKey multiKey;
 	private final Long count;
 	private final Double avg;
 	
-	public GroupedStatistic(String identitfier, Long groupedKey, Long count, Double avg) {
+	public GroupedStatistic(String identitfier, Long groupedKey1, Long groupedKey2, Long groupedKey3, Long count, Double avg) {
+		this(identitfier, MultiKey.of(groupedKey1, groupedKey2, groupedKey3), count, avg);
+	}
+
+	public GroupedStatistic(String identitfier, MultiKey multiKey, Long count, Double avg) {
 		this.identitfier = identitfier;
-		this.groupKey = groupedKey;
+		this.multiKey = multiKey;
 		this.count = count;
 		this.avg = avg;
 	}
@@ -43,8 +47,8 @@ public class GroupedStatistic {
 		return identitfier;
 	}
 
-	public Long getGroupKey() {
-		return groupKey;
+	public MultiKey getMultiKey() {
+		return multiKey;
 	}
 
 	public Long getCount() {
@@ -60,8 +64,8 @@ public class GroupedStatistic {
 		StringBuilder builder = new StringBuilder();
 		builder.append("GroupedStatistic [identitfier=");
 		builder.append(identitfier);
-		builder.append(", groupKey=");
-		builder.append(groupKey);
+		builder.append(", multiKey=");
+		builder.append(multiKey);
 		builder.append(", count=");
 		builder.append(count);
 		builder.append(", avg=");

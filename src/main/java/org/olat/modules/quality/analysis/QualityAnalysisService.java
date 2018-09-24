@@ -64,7 +64,7 @@ public interface QualityAnalysisService {
 	public SessionFilter createSessionFilter(AnalysisSearchParameter searchParams);
 
 	public GroupedStatistics calculateStatistics(AnalysisSearchParameter searchParams,
-			Collection<String> responseIdentifiers, Collection<Rubric> rubrics, GroupBy groupBy);
+			Collection<String> responseIdentifiers, Collection<Rubric> rubrics, MultiGroupBy multiGroupBy);
 
 	public boolean isInsufficient(Rubric rubric, Double avg);
 

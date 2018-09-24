@@ -40,6 +40,7 @@ import org.olat.modules.quality.QualityDataCollectionLight;
 import org.olat.modules.quality.QualityDataCollectionStatus;
 import org.olat.modules.quality.analysis.AnalysisSearchParameter;
 import org.olat.modules.quality.analysis.GroupBy;
+import org.olat.modules.quality.analysis.MultiGroupBy;
 import org.olat.modules.quality.analysis.GroupedStatistic;
 import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -231,13 +232,13 @@ public class AnalysisFilterDAO {
 	}
 	
 	List<GroupedStatistic> loadGroupedStatisticByResponseIdentifiers(AnalysisSearchParameter searchParams,
-			Collection<String> responseIdentifiers, GroupBy groupBy) {
+			Collection<String> responseIdentifiers, MultiGroupBy multiGroupBy) {
 		if (responseIdentifiers == null || responseIdentifiers.isEmpty()) return new ArrayList<>();
 		
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select new org.olat.modules.quality.analysis.GroupedStatistic(");
 		sb.append("       response.responseIdentifier");
-		appendGroupBy(sb, groupBy, true);
+		appendGroupBys(sb, multiGroupBy, true);
 		sb.append("     , count(response)");
 		sb.append("     , avg(response.numericalResponse)");
 		sb.append("       )");
@@ -249,7 +250,7 @@ public class AnalysisFilterDAO {
 		sb.append("              and response.responseIdentifier in (:responseIdentifiers)");
 		appendWhere(sb, searchParams);
 		sb.append(" group by response.responseIdentifier");
-		appendGroupBy(sb, groupBy, false);
+		appendGroupBys(sb, multiGroupBy, false);
 		
 		TypedQuery<GroupedStatistic> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), GroupedStatistic.class)
@@ -257,8 +258,19 @@ public class AnalysisFilterDAO {
 		appendParameters(query, searchParams);
 		return query.getResultList();
 	}
+	
+	private void appendGroupBys(QueryBuilder sb, MultiGroupBy multiGroupBy, boolean select) {
+		appendGroupBy(sb, multiGroupBy.getGroupBy1(), select);
+		appendGroupBy(sb, multiGroupBy.getGroupBy2(), select);
+		appendGroupBy(sb, multiGroupBy.getGroupBy3(), select);
+	}
 
 	private void appendGroupBy(QueryBuilder sb, GroupBy groupBy, boolean select) {
+		if (groupBy == null) {
+			if (select) sb.append(", CAST(NULL as long)");
+			return;
+		}
+		
 		switch (groupBy) {
 		case TOPIC_IDENTITY:
 			sb.append(", collection.topicIdentity.key");
@@ -288,7 +300,6 @@ public class AnalysisFilterDAO {
 			sb.append(", contextToTaxonomyLevel.taxonomyLevel.key");
 			break;
 		default: 
-			if (select) sb.append(", null");
 		}
 	}
 

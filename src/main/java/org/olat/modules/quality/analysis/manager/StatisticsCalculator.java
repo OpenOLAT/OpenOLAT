@@ -28,6 +28,7 @@ import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.forms.model.xml.Slider;
 import org.olat.modules.quality.analysis.GroupedStatistic;
 import org.olat.modules.quality.analysis.GroupedStatistics;
+import org.olat.modules.quality.analysis.MultiKey;
 import org.springframework.stereotype.Service;
 
 /**
@@ -46,7 +47,7 @@ public class StatisticsCalculator {
 		for (Rubric rubric : rubrics) {
 			for (Slider slider : rubric.getSliders()) {
 				String identifier = slider.getId();
-				Map<Long, GroupedStatistic> sliderStatistics = statistics.getStatistics(identifier);
+				Map<MultiKey, GroupedStatistic> sliderStatistics = statistics.getStatistics(identifier);
 				if (sliderStatistics != null) {
 					for (GroupedStatistic statistic : sliderStatistics.values()) {
 						GroupedStatistic scaledStatistic = getScaledStatistic(statistic, rubric);
@@ -74,8 +75,8 @@ public class StatisticsCalculator {
 		default:
 			break;
 		}
-		GroupedStatistic scaledStatistic = new GroupedStatistic(statistic.getIdentifier(), statistic.getGroupKey(), statistic.getCount(),
-				scaledAvg);
+		GroupedStatistic scaledStatistic = new GroupedStatistic(statistic.getIdentifier(), statistic.getMultiKey(),
+				statistic.getCount(), scaledAvg);
 		log.debug("Scaled statistic:   " + scaledStatistic.toString());
 		return scaledStatistic;
 	}

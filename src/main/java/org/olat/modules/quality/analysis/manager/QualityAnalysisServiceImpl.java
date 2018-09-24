@@ -43,7 +43,7 @@ import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.quality.analysis.AnalysisSearchParameter;
 import org.olat.modules.quality.analysis.EvaluationFormView;
 import org.olat.modules.quality.analysis.EvaluationFormViewSearchParams;
-import org.olat.modules.quality.analysis.GroupBy;
+import org.olat.modules.quality.analysis.MultiGroupBy;
 import org.olat.modules.quality.analysis.GroupedStatistic;
 import org.olat.modules.quality.analysis.GroupedStatistics;
 import org.olat.modules.quality.analysis.QualityAnalysisService;
@@ -201,9 +201,9 @@ public class QualityAnalysisServiceImpl implements QualityAnalysisService {
 
 	@Override
 	public GroupedStatistics calculateStatistics(AnalysisSearchParameter searchParams,
-			Collection<String> responseIdentifiers, Collection<Rubric> rubrics, GroupBy groupBy) {
+			Collection<String> responseIdentifiers, Collection<Rubric> rubrics, MultiGroupBy multiGroupBy) {
 		List<GroupedStatistic> statisticsList = filterDao.loadGroupedStatisticByResponseIdentifiers(searchParams,
-				responseIdentifiers, groupBy);
+				responseIdentifiers, multiGroupBy);
 		GroupedStatistics statistics = new GroupedStatistics(statisticsList);
 		statistics = statisticsCalculator.getScaledStatistics(statistics, rubrics);
 		return statistics;

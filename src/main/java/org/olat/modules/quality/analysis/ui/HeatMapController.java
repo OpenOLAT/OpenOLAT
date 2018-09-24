@@ -62,8 +62,10 @@ import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.forms.model.xml.Slider;
 import org.olat.modules.quality.analysis.AnalysisSearchParameter;
 import org.olat.modules.quality.analysis.GroupBy;
+import org.olat.modules.quality.analysis.MultiGroupBy;
 import org.olat.modules.quality.analysis.GroupedStatistic;
 import org.olat.modules.quality.analysis.GroupedStatistics;
+import org.olat.modules.quality.analysis.MultiKey;
 import org.olat.modules.quality.analysis.QualityAnalysisService;
 import org.olat.modules.quality.ui.QualityUIFactory;
 import org.olat.modules.taxonomy.TaxonomyLevel;
@@ -280,13 +282,14 @@ public class HeatMapController extends FormBasicController implements Filterable
 	public void addHeatMapStatistics(List<HeatMapRow> rows) {
 		List<String> identifiers = sliders.stream().map(SliderWrapper::getIdentifier).collect(toList());
 		List<Rubric> rubrics = sliders.stream().map(SliderWrapper::getRubric).distinct().collect(toList());
-		GroupedStatistics statistics = analysisService.calculateStatistics(searchParams, identifiers, rubrics, groupBy);
+		MultiGroupBy multiGroupBy = new MultiGroupBy(groupBy, null, null);
+		GroupedStatistics statistics = analysisService.calculateStatistics(searchParams, identifiers, rubrics, multiGroupBy);
 		
 		for (HeatMapRow row : rows) {
 			List<GroupedStatistic> rowStatistics = new ArrayList<>();
 			// Iterate over the identifiers to sort the statistics according to the headers.
 			for (String identifier : identifiers) {
-				GroupedStatistic rowStatistic = statistics.getStatistic(identifier, row.getGroupKey());
+				GroupedStatistic rowStatistic = statistics.getStatistic(identifier, MultiKey.of(row.getGroupKey()));
 				rowStatistics.add(rowStatistic);
 			}
 			row.setStatistics(rowStatistics);
