@@ -25,6 +25,8 @@
 
 package org.olat.repository.ui.author;
 
+import static org.olat.core.gui.components.util.KeyValues.VALUE_ASC;
+
 import java.io.File;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -37,6 +39,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.OrganisationModule;
@@ -64,6 +67,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.FileElementEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
+import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -81,9 +85,14 @@ import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.CourseModule;
+import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyRef;
+import org.olat.modules.taxonomy.TaxonomyService;
+import org.olat.modules.taxonomy.model.TaxonomyRefImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.EntryChangedEvent.Change;
@@ -130,6 +139,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 	private DateChooser startDateEl, endDateEl;
 	private FormSubmit submit;
 	private MultipleSelectionElement organisationsEl;
+	private MultipleSelectionElement taxonomyLevelEl;
 	private FormLayoutContainer privateDatesCont;
 	
 	private static final String[] dateKeys = new String[]{ "none", "private", "public"};
@@ -140,6 +150,8 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 	private RepositoryService repositoryService;
 	@Autowired
 	private RepositoryManager repositoryManager;
+	@Autowired
+	private RepositoryModule repositoryModule;
 	@Autowired
 	private RepositoryEntryLifecycleDAO lifecycleDao;
 	@Autowired
@@ -154,6 +166,8 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 	private OrganisationModule organisationModule;
 	@Autowired
 	private OrganisationService organisationService;
+	@Autowired
+	private TaxonomyService taxonomyService;
 
 	/**
 	 * Create a repository add controller that adds the given resourceable.
@@ -255,6 +269,12 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 			String freetext = licenseService.isFreetext(license.getLicenseType()) ? license.getFreetext() : "";
 			licenseFreetextEl = uifactory.addTextAreaElement("cif.freetext", 4, 72, freetext, formLayout);
 			LicenseUIFactory.updateVisibility(licenseEl, licensorEl, licenseFreetextEl);
+		}
+		
+		String taxonomyTreeKey = repositoryModule.getTaxonomyTreeKey();
+		if(StringHelper.isLong(taxonomyTreeKey)) {
+			TaxonomyRef taxonomyRef = new TaxonomyRefImpl(Long.valueOf(taxonomyTreeKey));
+			initFormTaxonomy(formLayout, taxonomyRef);
 		}
 		
 		if(organisationModule.isEnabled()) {
@@ -425,6 +445,39 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 		credits.setMaxLength(2000);
 		
 		uifactory.addSpacerElement("spacer4", formLayout, false);
+	}
+
+	private void initFormTaxonomy(FormItemContainer formLayout, TaxonomyRef taxonomyRef) {
+		List<TaxonomyLevel> levels = taxonomyService.getTaxonomyLevels(taxonomyRef);
+
+		KeyValues keyValues = new KeyValues();
+		for (TaxonomyLevel level:levels) {
+			String key = Long.toString(level.getKey());
+			ArrayList<String> names = new ArrayList<>();
+			addParentNames(names, level);
+			Collections.reverse(names);
+			String value = String.join(" / ", names);
+			keyValues.add(key, value);
+		}
+		keyValues.sort(VALUE_ASC);
+	
+		taxonomyLevelEl = uifactory.addCheckboxesDropdown("taxonomyLevels", "cif.taxonomy.levels", formLayout,
+				keyValues.keys(), keyValues.values(), null, null);
+		List<TaxonomyLevel> reLevels = repositoryService.getTaxonomy(repositoryEntry);
+		for (TaxonomyLevel reLevel : reLevels) {
+			String key = reLevel.getKey().toString();
+			if (keyValues.containsKey(key)) {
+				taxonomyLevelEl.select(key, true);
+			}
+		}
+	}
+	
+	private void addParentNames(List<String> names, TaxonomyLevel level) {
+		names.add(level.getDisplayName());
+		TaxonomyLevel parent = level.getParent();
+		if (parent != null) {
+			addParentNames(names, parent);
+		}
 	}
 
 	private void initFormOrganisations(FormItemContainer formLayout, UserSession usess) {
@@ -716,6 +769,27 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 			repositoryEntry.setLocation(loc);
 		}
 		
+		// Taxonomy levels
+		Collection<String> selectedLevelKeys = taxonomyLevelEl.getSelectedKeys();
+		List<String> currentKeys = repositoryService.getTaxonomy(repositoryEntry).stream()
+				.map(l -> l.getKey().toString())
+				.collect(Collectors.toList());
+		// add newly selected keys
+		Collection<String> addKeys = new HashSet<>(selectedLevelKeys);
+		addKeys.removeAll(currentKeys);
+		for (String addKey : addKeys) {
+			TaxonomyLevel level = taxonomyService.getTaxonomyLevel(() -> Long.valueOf(addKey));
+			repositoryService.addTaxonomyLevel(repositoryEntry, level);
+		}
+		// remove newly unselected keys
+		Collection<String> removeKeys = new HashSet<>(currentKeys);
+		removeKeys.removeAll(selectedLevelKeys);
+		for (String removeKey: removeKeys) {
+			TaxonomyLevel level = taxonomyService.getTaxonomyLevel(() -> Long.valueOf(removeKey));
+			repositoryService.removeTaxonomyLevel(repositoryEntry, level);
+		}
+		
+		// Organisations
 		List<Organisation> organisations = null;
 		if(organisationsEl != null) {
 			organisations = new ArrayList<>(repositoryEntryOrganisations);

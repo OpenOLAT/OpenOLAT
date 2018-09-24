@@ -10,6 +10,7 @@
 		#end
 		<ul class="list-unstyled">
 			<li><span>$r.translate("taxonomy.infos.number.of.levels"): $row.numberOfLevels</span></li>
+			<li><span>$r.translate("taxonomy.infos.repository.enabled"): $r.render(${row.getRepoLink()})</span></li>
 			<li><span>$r.translate("taxonomy.infos.question.pool.enabled"): $r.render(${row.getQPoolLink()})</span></li>
 			<li><span>$r.translate("taxonomy.infos.doc.pool.enabled"): $r.render(${row.getDocPoolLink()})</span></li>
 		</ul>

@@ -56,6 +56,7 @@ import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.model.TaxonomyInfos;
 import org.olat.modules.taxonomy.ui.TaxonomyListDataModel.TaxonomyCols;
+import org.olat.repository.RepositoryModule;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -81,6 +82,8 @@ public class TaxonomyListAdminController extends FormBasicController implements 
 	private DocumentPoolModule docPoolModule;
 	@Autowired
 	private QuestionPoolModule questionPoolModule;
+	@Autowired
+	private RepositoryModule repositoryModule;
 	@Autowired
 	private TaxonomyService taxonomyService;
 	
@@ -129,6 +132,9 @@ public class TaxonomyListAdminController extends FormBasicController implements 
 		if(elRow.getOpenLink() != null) {
 			components.add(elRow.getOpenLink().getComponent());
 		}
+		if(elRow.getRepoLink() != null) {
+			components.add(elRow.getRepoLink().getComponent());
+		}
 		if(elRow.getQPoolLink() != null) {
 			components.add(elRow.getQPoolLink().getComponent());
 		}
@@ -153,8 +159,13 @@ public class TaxonomyListAdminController extends FormBasicController implements 
 		FormLink openLink = uifactory.addFormLink(openLinkId, "open.taxonomy", "open.taxonomy", null, flc, Link.LINK);
 		openLink.setIconRightCSS("o_icon o_icon_start");
 
+		boolean repoEnabled = taxonomy.getKey().toString().equals(repositoryModule.getTaxonomyTreeKey());
 		boolean docPoolEnabled = taxonomy.getKey().toString().equals(docPoolModule.getTaxonomyTreeKey());
 		boolean qPoolEnabled = taxonomy.getKey().toString().equals(questionPoolModule.getTaxonomyQPoolKey());
+		
+		String repoLinkId = "dpool_" + (++counter);
+		String repoString =  repoEnabled ? translate("taxonomy.infos.enabled") : translate("taxonomy.infos.not.enabled");
+		FormLink repoLink = uifactory.addFormLink(repoLinkId, "open.repo", repoString, null, flc, Link.LINK | Link.NONTRANSLATED);
 		
 		String docPoolLinkId = "dpool_" + (++counter);
 		String docPoolString =  docPoolEnabled ? translate("taxonomy.infos.enabled") : translate("taxonomy.infos.not.enabled");
@@ -164,8 +175,9 @@ public class TaxonomyListAdminController extends FormBasicController implements 
 		String qPoolString =  qPoolEnabled ? translate("taxonomy.infos.enabled") : translate("taxonomy.infos.not.enabled");
 		FormLink qPoolLink = uifactory.addFormLink(qPoolLinkId, "open.qpool", qPoolString, null, flc, Link.LINK | Link.NONTRANSLATED);
 		
-		TaxonomyRow row = new TaxonomyRow(taxonomy, docPoolEnabled, qPoolEnabled, openLink, docPoolLink, qPoolLink);
+		TaxonomyRow row = new TaxonomyRow(taxonomy, docPoolEnabled, qPoolEnabled, openLink, repoLink, docPoolLink, qPoolLink);
 		openLink.setUserObject(row);
+		repoLink.setUserObject(row);
 		docPoolLink.setUserObject(row);
 		qPoolLink.setUserObject(row);
 		return row;
@@ -206,6 +218,8 @@ public class TaxonomyListAdminController extends FormBasicController implements 
 			FormLink link = (FormLink)source;
 			if("open.taxonomy".equals(link.getCmd())) {
 				doOpenTaxonomy(ureq, (TaxonomyRow)link.getUserObject());
+			} else if("open.repo".equals(link.getCmd())) {
+				doOpenRepositoryAdmin(ureq);
 			} else if("open.docpool".equals(link.getCmd())) {
 				doOpenDocumentPoolAdmin(ureq);
 			} else if("open.qpool".equals(link.getCmd())) {
@@ -245,6 +259,11 @@ public class TaxonomyListAdminController extends FormBasicController implements 
 		removeAsListenerAndDispose(cmc);
 		editTaxonomyCtrl = null;
 		cmc = null;
+	}
+	
+	private void doOpenRepositoryAdmin(UserRequest ureq) {
+		String businessPath = "[AdminSite:0][repositoryAdmin:0]";
+		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 	
 	private void doOpenDocumentPoolAdmin(UserRequest ureq) {

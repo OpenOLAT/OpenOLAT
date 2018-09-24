@@ -67,6 +67,8 @@ public class RepositoryModule extends AbstractSpringModule {
 	private static final String LIFECYCLE_AUTO_DELETE = "repo.lifecycle.auto.delete";
 	private static final String LIFECYCLE_NOTIFICATION_CLOSE_DELETE = "rrepo.lifecylce.notification.close.delete";
 	
+	private static final String TAXONOMY_TREE_KEY = "taxonomy.tree.key";
+
 	@Value("${site.catalog.enable:true}")
 	private boolean catalogSiteEnabled;
 	@Value("${catalog.enable:true}")
@@ -94,6 +96,8 @@ public class RepositoryModule extends AbstractSpringModule {
 	
 	@Value("${repo.allow.to.leave:atAnyTime}")
 	private String defaultAllowToLeaveOption;
+	
+	private String taxonomyTreeKey;
 	
 	@Autowired
 	private BusinessGroupModule groupModule;
@@ -198,6 +202,11 @@ public class RepositoryModule extends AbstractSpringModule {
 		String notificationCloseDelete = getStringPropertyValue(LIFECYCLE_NOTIFICATION_CLOSE_DELETE, true);
 		if(StringHelper.containsNonWhitespace(notificationCloseDelete)) {
 			lifecycleNotificationByCloseDelete = notificationCloseDelete;
+		}
+		
+		String taxonomyTreeKeyObj = getStringPropertyValue(TAXONOMY_TREE_KEY, true);
+		if(StringHelper.containsNonWhitespace(taxonomyTreeKeyObj)) {
+			taxonomyTreeKey = taxonomyTreeKeyObj;
 		}
 	}
 
@@ -344,5 +353,14 @@ public class RepositoryModule extends AbstractSpringModule {
 	public void setLifecycleNotificationByCloseDeleteEnabled(boolean enable) {
 		lifecycleNotificationByCloseDelete = enable ? "enabled" : "disabled";
 		setStringProperty(LIFECYCLE_NOTIFICATION_CLOSE_DELETE, lifecycleNotificationByCloseDelete, true);
+	}
+
+	public String getTaxonomyTreeKey() {
+		return taxonomyTreeKey;
+	}
+
+	public void setTaxonomyTreeKey(String taxonomyTreeKey) {
+		this.taxonomyTreeKey = taxonomyTreeKey;
+		setStringProperty(TAXONOMY_TREE_KEY, taxonomyTreeKey, true);
 	}
 }

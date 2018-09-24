@@ -19,6 +19,8 @@
  */
 package org.olat.repository.ui;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -29,7 +31,10 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.modules.taxonomy.Taxonomy;
+import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.repository.RepositoryEntryAllowToLeaveOptions;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
@@ -52,11 +57,14 @@ public class RepositoryAdminController extends FormBasicController {
 	
 	private SingleSelection leaveEl;
 	private MultipleSelectionElement myCourseSearchEl, commentEl, ratingEl;
+	private SingleSelection taxonomyTreeEl;
 	
 	private RepositoryLifecycleAdminController lifecycleAdminCtrl;
 	
 	@Autowired
 	private RepositoryModule repositoryModule;
+	@Autowired
+	private TaxonomyService taxonomyService;
 	
 	public RepositoryAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
@@ -88,6 +96,34 @@ public class RepositoryAdminController extends FormBasicController {
 		ratingEl.addActionListener(FormEvent.ONCHANGE);
 		ratingEl.select(keys[0], ratingEnabled);
 		
+		// Taxonomy
+		String selectedTaxonomyTreeKey = repositoryModule.getTaxonomyTreeKey();
+		List<Taxonomy> taxonomyList = taxonomyService.getTaxonomyList();
+		String[] taxonomyKeys = new String[taxonomyList.size() + 1];
+		String[] taxonomyValues = new String[taxonomyList.size() + 1];
+		taxonomyKeys[0] = "";
+		taxonomyValues[0] = "-";
+		for(int i=taxonomyList.size(); i-->0; ) {
+			Taxonomy taxonomy = taxonomyList.get(i);
+			taxonomyKeys[i + 1] = taxonomy.getKey().toString();
+			taxonomyValues[i + 1] = taxonomy.getDisplayName();
+		}
+		taxonomyTreeEl = uifactory.addDropdownSingleselect("selected.taxonomy.tree", searchCont, taxonomyKeys, taxonomyValues, null);
+		taxonomyTreeEl.addActionListener(FormEvent.ONCHANGE);
+		boolean found = false;
+		if(StringHelper.containsNonWhitespace(selectedTaxonomyTreeKey)) {
+			for(String taxonomyKey:taxonomyKeys) {
+				if(taxonomyKey.equals(selectedTaxonomyTreeKey)) {
+					taxonomyTreeEl.select(taxonomyKey, true);
+					found = true;
+				}
+			}
+		}
+		if(!found && taxonomyKeys.length > 0) {
+			taxonomyTreeEl.select(taxonomyKeys[0], true);
+		}
+		
+		// Leave
 		FormLayoutContainer leaveCont = FormLayoutContainer.createDefaultFormLayout("leave", getTranslator());
 		leaveCont.setFormTitle(translate("repository.admin.leave.title"));
 		formLayout.add(leaveCont);
@@ -139,6 +175,12 @@ public class RepositoryAdminController extends FormBasicController {
 		} else if(ratingEl == source) {
 			boolean on = !ratingEl.getSelectedKeys().isEmpty();
 			repositoryModule.setRatingEnabled(on);
+			getWindowControl().setInfo("saved");
+		} else if(taxonomyTreeEl == source) {
+			String selectedTaxonomyTreeKey = taxonomyTreeEl.isOneSelected()
+					? taxonomyTreeEl.getSelectedKey()
+					: null;
+			repositoryModule.setTaxonomyTreeKey(selectedTaxonomyTreeKey);
 			getWindowControl().setInfo("saved");
 		} else if(leaveEl == source) {
 			String selectedOption = leaveEl.getSelectedKey();

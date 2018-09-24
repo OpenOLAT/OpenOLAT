@@ -787,6 +787,16 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	}
 
 	@Override
+	public void addTaxonomyLevel(RepositoryEntry entry, TaxonomyLevel level) {
+		repositoryEntryToTaxonomyLevelDao.createRelation(entry, level);
+	}
+
+	@Override
+	public void removeTaxonomyLevel(RepositoryEntry entry, TaxonomyLevel level) {
+		repositoryEntryToTaxonomyLevelDao.deleteRelation(entry, level);
+	}
+
+	@Override
 	public List<RepositoryEntry> getRepositoryEntryByTaxonomy(TaxonomyLevelRef taxonomyLevel) {
 		return repositoryEntryToTaxonomyLevelDao.getRepositoryEntries(taxonomyLevel);
 	}

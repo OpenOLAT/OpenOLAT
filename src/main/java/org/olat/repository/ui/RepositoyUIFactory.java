@@ -49,6 +49,8 @@ import org.olat.repository.RepositoryModule;
  */
 public class RepositoyUIFactory {
 	
+	private static final String HIERARCHY_DELIMITER = " / ";
+	
 	public static String getIconCssClass(String type) {
 		String iconCSSClass = "o_" + type.replace(".", "-");
 		iconCSSClass = iconCSSClass.concat("_icon");

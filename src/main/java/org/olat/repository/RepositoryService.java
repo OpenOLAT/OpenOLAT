@@ -345,6 +345,21 @@ public interface RepositoryService {
 	public List<TaxonomyLevel> getTaxonomy(RepositoryEntry entry);
 	
 	/**
+	 * Add a link between a taxonomy level and the specified repository entry.
+	 * 
+	 * @param entry The repository entry
+	 * @param level
+	 */
+	public void addTaxonomyLevel(RepositoryEntry entry, TaxonomyLevel level);
+	
+	/**
+	 * Remove the link between the taxonomy level and repository entry
+	 * @param entry The repository entry
+	 * @param level
+	 */
+	public void removeTaxonomyLevel(RepositoryEntry entry, TaxonomyLevel level);
+	
+	/**
 	 * Retrieve the list of repository entries link to a specific level
 	 * of the taxonomy.
 	 * 
