@@ -22,9 +22,9 @@ package org.olat.modules.quality.analysis.manager;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.olat.modules.quality.analysis.GroupBy.CONETXT_TAXONOMY_LEVEL;
+import static org.olat.modules.quality.analysis.GroupBy.CONTEXT_TAXONOMY_LEVEL;
 import static org.olat.modules.quality.analysis.GroupBy.CONTEXT_CURRICULUM;
-import static org.olat.modules.quality.analysis.GroupBy.CONTEXT_ORAGANISATION;
+import static org.olat.modules.quality.analysis.GroupBy.CONTEXT_ORGANISATION;
 import static org.olat.modules.quality.analysis.GroupBy.TOPIC_ORGANISATION;
 import static org.olat.modules.quality.analysis.MultiKey.of;
 
@@ -53,10 +53,11 @@ import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityDataCollectionStatus;
 import org.olat.modules.quality.QualityService;
 import org.olat.modules.quality.analysis.AnalysisSearchParameter;
+import org.olat.modules.quality.analysis.AvailableAttributes;
 import org.olat.modules.quality.analysis.GroupBy;
-import org.olat.modules.quality.analysis.MultiGroupBy;
 import org.olat.modules.quality.analysis.GroupedStatistic;
 import org.olat.modules.quality.analysis.GroupedStatistics;
+import org.olat.modules.quality.analysis.MultiGroupBy;
 import org.olat.modules.quality.analysis.MultiKey;
 import org.olat.modules.quality.manager.QualityTestHelper;
 import org.olat.modules.taxonomy.Taxonomy;
@@ -158,6 +159,172 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		assertThat(keys)
 				.doesNotContainNull()
 				.containsExactlyInAnyOrder(session1.getKey(), session2.getKey());
+	}
+	
+	@Test
+	public void shouldGetAvailableAttributes() {
+		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
+		AvailableAttributes attributes = sut.getAvailableAttributes(searchParams);
+		
+		assertThat(attributes.isTopicIdentity()).isFalse();
+		assertThat(attributes.isTopicRepository()).isFalse();
+		assertThat(attributes.isTopicOrganisation()).isFalse();
+		assertThat(attributes.isTopicCurriculum()).isFalse();
+		assertThat(attributes.isTopicCurriculumElement()).isFalse();
+		assertThat(attributes.isContextOrganisation()).isFalse();
+		assertThat(attributes.isContextCurriculum()).isFalse();
+		assertThat(attributes.isContextCurriculumElement()).isFalse();
+		assertThat(attributes.isContextTaxonomyLevel()).isFalse();
+	}
+	
+	@Test
+	public void shouldGetAvailableAttributeForTopicIdentity() {
+		QualityDataCollection dataCollection = createFinishedDataCollection();
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser("");
+		dataCollection.setTopicIdentity(identity);
+		qualityService.updateDataCollection(dataCollection);
+		dbInstance.commitAndCloseSession();
+		
+		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
+		AvailableAttributes attributes = sut.getAvailableAttributes(searchParams);
+		
+		assertThat(attributes.isTopicIdentity()).isTrue();
+	}
+
+	@Test
+	public void shouldGetAvailableAttributeForTopicRepository() {
+		QualityDataCollection dataCollection = createFinishedDataCollection();
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		dataCollection.setTopicRepositoryEntry(entry);
+		qualityService.updateDataCollection(dataCollection);
+		dbInstance.commitAndCloseSession();
+		
+		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
+		AvailableAttributes attributes = sut.getAvailableAttributes(searchParams);
+		
+		assertThat(attributes.isTopicRepository()).isTrue();
+	}
+
+	@Test
+	public void shouldGetAvailableAttributeForTopicOrganisation() {
+		QualityDataCollection dataCollection = createFinishedDataCollection();
+		Organisation organisation = qualityTestHelper.createOrganisation();
+		dataCollection.setTopicOrganisation(organisation);;
+		qualityService.updateDataCollection(dataCollection);
+		dbInstance.commitAndCloseSession();
+		
+		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
+		AvailableAttributes attributes = sut.getAvailableAttributes(searchParams);
+		
+		assertThat(attributes.isTopicOrganisation()).isTrue();
+	}
+
+	@Test
+	public void shouldGetAvailableAttributeForTopicCurriculum() {
+		QualityDataCollection dataCollection = createFinishedDataCollection();
+		Curriculum curriculum = qualityTestHelper.createCurriculum();
+		dataCollection.setTopicCurriculum(curriculum);
+		qualityService.updateDataCollection(dataCollection);
+		dbInstance.commitAndCloseSession();
+		
+		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
+		AvailableAttributes attributes = sut.getAvailableAttributes(searchParams);
+		
+		assertThat(attributes.isTopicCurriculum()).isTrue();
+	}
+
+	@Test
+	public void shouldGetAvailableAttributeForTopicCurriculumElement() {
+		QualityDataCollection dataCollection = createFinishedDataCollection();
+		CurriculumElement element = qualityTestHelper.createCurriculumElement();
+		dataCollection.setTopicCurriculumElement(element);
+		qualityService.updateDataCollection(dataCollection);
+		dbInstance.commitAndCloseSession();
+		
+		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
+		AvailableAttributes attributes = sut.getAvailableAttributes(searchParams);
+		
+		assertThat(attributes.isTopicCurriculumElement()).isTrue();
+	}
+
+	@Test
+	public void shouldGetAvailableAttributeForContextOrganisation() {
+		QualityDataCollection dataCollection = createFinishedDataCollection();
+		Identity executor = JunitTestHelper.createAndPersistIdentityAsRndUser("");
+		Organisation organisation = qualityTestHelper.createOrganisation();
+		List<EvaluationFormParticipation> participations = qualityService.addParticipations(dataCollection,
+				singletonList(executor));
+		qualityService.createContextBuilder(dataCollection, participations.get(0))
+				.addOrganisation(organisation)
+				.build();
+		dbInstance.commitAndCloseSession();
+		
+		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
+		AvailableAttributes attributes = sut.getAvailableAttributes(searchParams);
+		
+		assertThat(attributes.isContextOrganisation()).isTrue();
+	}
+
+	@Test
+	public void shouldGetAvailableAttributeForContextCurriculum() {
+		QualityDataCollection dataCollection = createFinishedDataCollection();
+		Identity executor = JunitTestHelper.createAndPersistIdentityAsRndUser("");
+		Curriculum curriculum = qualityTestHelper.createCurriculum();
+		List<EvaluationFormParticipation> participations = qualityService.addParticipations(dataCollection,
+				singletonList(executor));
+		qualityService.createContextBuilder(dataCollection, participations.get(0))
+				.addCurriculum(curriculum)
+				.build();
+		dbInstance.commitAndCloseSession();
+		
+		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
+		AvailableAttributes attributes = sut.getAvailableAttributes(searchParams);
+		
+		assertThat(attributes.isContextCurriculum()).isTrue();
+	}
+
+	@Test
+	public void shouldGetAvailableAttributeForContextCurriculumelement() {
+		QualityDataCollection dataCollection = createFinishedDataCollection();
+		Identity executor = JunitTestHelper.createAndPersistIdentityAsRndUser("");
+		CurriculumElement element = qualityTestHelper.createCurriculumElement();
+		List<EvaluationFormParticipation> participations = qualityService.addParticipations(dataCollection,
+				singletonList(executor));
+		qualityService.createContextBuilder(dataCollection, participations.get(0))
+				.addCurriculumElement(element)
+				.build();
+		dbInstance.commitAndCloseSession();
+		
+		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
+		AvailableAttributes attributes = sut.getAvailableAttributes(searchParams);
+		
+		assertThat(attributes.isContextCurriculumElement()).isTrue();
+	}
+
+	@Test
+	public void shouldGetAvailableAttributeForContextTaxonpmyLevel() {
+		QualityDataCollection dataCollection = createFinishedDataCollection();
+		Identity executor = JunitTestHelper.createAndPersistIdentityAsRndUser("");
+		TaxonomyLevel level = qualityTestHelper.createTaxonomyLevel();
+		List<EvaluationFormParticipation> participations = qualityService.addParticipations(dataCollection,
+				singletonList(executor));
+		qualityService.createContextBuilder(dataCollection, participations.get(0))
+				.addTaxonomyLevel(level)
+				.build();
+		dbInstance.commitAndCloseSession();
+		
+		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
+		AvailableAttributes attributes = sut.getAvailableAttributes(searchParams);
+		
+		assertThat(attributes.isContextTaxonomyLevel()).isTrue();
+	}
+
+	private QualityDataCollection createFinishedDataCollection() {
+		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Organisation dcOrganisation = qualityTestHelper.createOrganisation();
+		QualityDataCollection dc = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		finish(asList(dc));
+		return dc;
 	}
 	
 	@Test
@@ -555,7 +722,7 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		finish(asList(dc));
 		
 		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
-		MultiGroupBy multiGroupBy = new MultiGroupBy(CONTEXT_ORAGANISATION, CONTEXT_CURRICULUM, CONETXT_TAXONOMY_LEVEL);
+		MultiGroupBy multiGroupBy = new MultiGroupBy(CONTEXT_ORGANISATION, CONTEXT_CURRICULUM, CONTEXT_TAXONOMY_LEVEL);
 		List<GroupedStatistic> statisticList = sut.loadGroupedStatisticByResponseIdentifiers(searchParams,
 				asList(identifier), multiGroupBy);
 		GroupedStatistics statistics = new GroupedStatistics(statisticList);

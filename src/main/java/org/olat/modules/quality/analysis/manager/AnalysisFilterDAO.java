@@ -39,9 +39,10 @@ import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.quality.QualityDataCollectionLight;
 import org.olat.modules.quality.QualityDataCollectionStatus;
 import org.olat.modules.quality.analysis.AnalysisSearchParameter;
+import org.olat.modules.quality.analysis.AvailableAttributes;
 import org.olat.modules.quality.analysis.GroupBy;
-import org.olat.modules.quality.analysis.MultiGroupBy;
 import org.olat.modules.quality.analysis.GroupedStatistic;
+import org.olat.modules.quality.analysis.MultiGroupBy;
 import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -57,6 +58,28 @@ public class AnalysisFilterDAO {
 	
 	@Autowired
 	private DB dbInstance;
+
+	public AvailableAttributes getAvailableAttributes(AnalysisSearchParameter searchParams) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select new org.olat.modules.quality.analysis.AvailableAttributes(");
+		sb.append("       count(collection.topicIdentity.key) > 0");
+		sb.append("     , count(collection.topicRepositoryEntry.key) > 0");
+		sb.append("     , count(collection.topicOrganisation.key) > 0");
+		sb.append("     , count(collection.topicCurriculum.key) > 0");
+		sb.append("     , count(collection.topicCurriculumElement.key) > 0");
+		sb.append("     , count(contextToOrganisation.organisation.key) > 0");
+		sb.append("     , count(contextToCurriculum.curriculum.key) > 0");
+		sb.append("     , count(contextToCurriculumElement.curriculumElement.key) > 0");
+		sb.append("     , count(contextToTaxonomyLevel.taxonomyLevel.key) > 0");
+		sb.append("       )");
+		appendFrom(sb, searchParams);
+		appendWhere(sb, searchParams);
+		
+		TypedQuery<AvailableAttributes> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), AvailableAttributes.class);
+		appendParameters(query, searchParams);
+		return query.getResultList().get(0);
+	};
 
 	List<String> loadContextOrganisationPathes(AnalysisSearchParameter searchParams) {
 		QueryBuilder sb = new QueryBuilder();
@@ -287,16 +310,16 @@ public class AnalysisFilterDAO {
 		case TOPIC_REPOSITORY:
 			sb.append(", collection.topicRepositoryEntry.key");
 			break;
-		case CONTEXT_ORAGANISATION:
+		case CONTEXT_ORGANISATION:
 			sb.append(", contextToOrganisation.organisation.key");
 			break;
 		case CONTEXT_CURRICULUM:
 			sb.append(", contextToCurriculum.curriculum.key");
 			break;
-		case CONETXT_CURRICULUM_ELEMENT:
+		case CONTEXT_CURRICULUM_ELEMENT:
 			sb.append(", contextToCurriculumElement.curriculumElement.key");
 			break;
-		case CONETXT_TAXONOMY_LEVEL:
+		case CONTEXT_TAXONOMY_LEVEL:
 			sb.append(", contextToTaxonomyLevel.taxonomyLevel.key");
 			break;
 		default: 

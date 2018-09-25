@@ -19,17 +19,10 @@
  */
 package org.olat.modules.quality.analysis.ui;
 
-import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static org.olat.core.gui.translator.TranslatorHelper.translateAll;
-import static org.olat.modules.quality.analysis.GroupBy.CONETXT_CURRICULUM_ELEMENT;
-import static org.olat.modules.quality.analysis.GroupBy.CONTEXT_CURRICULUM;
-import static org.olat.modules.quality.analysis.GroupBy.CONTEXT_ORAGANISATION;
-import static org.olat.modules.quality.analysis.GroupBy.TOPIC_CURRICULUM;
-import static org.olat.modules.quality.analysis.GroupBy.TOPIC_CURRICULUM_ELEMENT;
-import static org.olat.modules.quality.analysis.GroupBy.TOPIC_ORGANISATION;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -49,6 +42,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Organisation;
@@ -61,10 +55,11 @@ import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.forms.model.xml.Slider;
 import org.olat.modules.quality.analysis.AnalysisSearchParameter;
+import org.olat.modules.quality.analysis.AvailableAttributes;
 import org.olat.modules.quality.analysis.GroupBy;
-import org.olat.modules.quality.analysis.MultiGroupBy;
 import org.olat.modules.quality.analysis.GroupedStatistic;
 import org.olat.modules.quality.analysis.GroupedStatistics;
+import org.olat.modules.quality.analysis.MultiGroupBy;
 import org.olat.modules.quality.analysis.MultiKey;
 import org.olat.modules.quality.analysis.QualityAnalysisService;
 import org.olat.modules.quality.ui.QualityUIFactory;
@@ -90,7 +85,7 @@ public class HeatMapController extends FormBasicController implements Filterable
 	
 	// This list is the master for the sort order
 	private final List<SliderWrapper> sliders;
-	
+	private final AvailableAttributes availableAttributes;
 	private AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
 	private GroupBy groupBy;
 	private final boolean insufficientConfigured;
@@ -103,8 +98,9 @@ public class HeatMapController extends FormBasicController implements Filterable
 	@Autowired
 	private CurriculumModule curriculumModule;
 
-	public HeatMapController(UserRequest ureq, WindowControl wControl, Form evaluationForm) {
+	public HeatMapController(UserRequest ureq, WindowControl wControl, Form evaluationForm, AvailableAttributes availableAttributes) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
+		this.availableAttributes = availableAttributes;
 		this.sliders = initSliders(evaluationForm);
 		this.insufficientConfigured = initInsufficientConfigured(evaluationForm);
 		initForm(ureq);
@@ -158,22 +154,8 @@ public class HeatMapController extends FormBasicController implements Filterable
 		FormLayoutContainer grouping = FormLayoutContainer.createCustomFormLayout("grouping", getTranslator(), groupPage);
 		flc.add("grouping", grouping);
 		// Group by selection
-		List<GroupBy> values = new ArrayList<>(asList(GroupBy.values()));
-		if (!organisationModule.isEnabled()) {
-			values.removeIf(value -> asList(TOPIC_ORGANISATION, CONTEXT_ORAGANISATION).contains(value));
-		}
-		if (!curriculumModule.isEnabled()) {
-			values.removeIf(value -> asList(TOPIC_CURRICULUM, TOPIC_CURRICULUM_ELEMENT, CONTEXT_CURRICULUM,
-					CONETXT_CURRICULUM_ELEMENT).contains(value));
-		}
-		String[] groupKeys = new String[values.size()];
-		String[] groupValues = new String[values.size()];
-		for (int i = 0; i < values.size(); i++) {
-			GroupBy groupBy = values.get(i);
-			groupKeys[i] = groupBy.name();
-			groupValues[i] = translate(groupBy.i18nKey());
-		}
-		groupEl = uifactory.addDropdownSingleselect("heatmap.group", grouping, groupKeys, groupValues);
+		KeyValues groupByKV = initGroupByKeyValues();
+		groupEl = uifactory.addDropdownSingleselect("heatmap.group", grouping, groupByKV.keys(), groupByKV.values());
 		groupEl.addActionListener(FormEvent.ONCHANGE);
 		setGroupBy();
 		
@@ -187,8 +169,44 @@ public class HeatMapController extends FormBasicController implements Filterable
 		initTable(Collections.emptyList(), 0);
 		
 	}
+	
+	private KeyValues initGroupByKeyValues() {
+		KeyValues keyValues = new KeyValues();
+		if (availableAttributes.isTopicIdentity()) {
+			addEntry(keyValues, GroupBy.TOPIC_IDENTITY);
+		}
+		if (availableAttributes.isTopicOrganisation() && organisationModule.isEnabled()) {
+			addEntry(keyValues, GroupBy.TOPIC_ORGANISATION);
+		}
+		if (availableAttributes.isTopicCurriculum() && curriculumModule.isEnabled()) {
+			addEntry(keyValues, GroupBy.TOPIC_CURRICULUM);
+		}
+		if (availableAttributes.isTopicCurriculumElement() && curriculumModule.isEnabled()) {
+			addEntry(keyValues, GroupBy.TOPIC_CURRICULUM_ELEMENT);
+		}
+		if (availableAttributes.isTopicRepository()) {
+			addEntry(keyValues, GroupBy.TOPIC_REPOSITORY);
+		}
+		if (availableAttributes.isContextOrganisation() && organisationModule.isEnabled()) {
+			addEntry(keyValues, GroupBy.CONTEXT_ORGANISATION);
+		}
+		if (availableAttributes.isContextCurriculum() && curriculumModule.isEnabled()) {
+			addEntry(keyValues, GroupBy.CONTEXT_CURRICULUM);
+		}
+		if (availableAttributes.isContextCurriculumElement() && curriculumModule.isEnabled()) {
+			addEntry(keyValues, GroupBy.CONTEXT_CURRICULUM_ELEMENT);
+		}
+		if (availableAttributes.isContextTaxonomyLevel()) {
+			addEntry(keyValues, GroupBy.CONTEXT_TAXONOMY_LEVEL);
+		}
+		return keyValues;
+	}
 
-	public void initTable(List<String> groupHeaders, int maxCount) {
+	private void addEntry(KeyValues keyValues, GroupBy groupBy) {
+		keyValues.add(KeyValues.entry(groupBy.name(), translate(groupBy.i18nKey())));
+	}
+
+	private void initTable(List<String> groupHeaders, int maxCount) {
 		int columnIndex = 0;
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		if (groupHeaders.isEmpty()) {
@@ -350,13 +368,13 @@ public class HeatMapController extends FormBasicController implements Filterable
 			return createTopicCurriculumElementData();
 		case TOPIC_REPOSITORY:
 			return createTopicRepositoryData();
-		case CONTEXT_ORAGANISATION:
+		case CONTEXT_ORGANISATION:
 			return createContextOraganisationData();
 		case CONTEXT_CURRICULUM:
 			return createContextCurriculumData();
-		case CONETXT_CURRICULUM_ELEMENT:
+		case CONTEXT_CURRICULUM_ELEMENT:
 			return createContextCurriculumElementData();
-		case CONETXT_TAXONOMY_LEVEL:
+		case CONTEXT_TAXONOMY_LEVEL:
 			return createContextTaxonomyLevelData();
 		default:
 			return new HeatMapData(emptyList(), emptyList());

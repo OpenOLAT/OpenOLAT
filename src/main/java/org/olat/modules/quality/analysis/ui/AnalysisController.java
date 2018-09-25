@@ -40,7 +40,9 @@ import org.olat.modules.forms.ui.ReportSegmentEvent;
 import org.olat.modules.qpool.ui.QuestionItemDetailsController;
 import org.olat.modules.quality.QualitySecurityCallback;
 import org.olat.modules.quality.analysis.AnalysisSearchParameter;
+import org.olat.modules.quality.analysis.AvailableAttributes;
 import org.olat.modules.quality.analysis.EvaluationFormView;
+import org.olat.modules.quality.analysis.QualityAnalysisService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,6 +70,7 @@ public class AnalysisController extends BasicController implements TooledControl
 	
 	private final EvaluationFormView formView;
 	private final Form form;
+	private final AvailableAttributes availableAttributes;
 	private AnalysisSearchParameter searchParams;
 	private Boolean showFilters;
 	private ReportSegment currentSegment;
@@ -76,6 +79,8 @@ public class AnalysisController extends BasicController implements TooledControl
 	private EvaluationFormManager evaluationFormManager;
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private QualityAnalysisService analysisService;
 
 	protected AnalysisController(UserRequest ureq, WindowControl wControl, QualitySecurityCallback secCallback,
 			TooledStackedPanel stackPanel, EvaluationFormView formView) {
@@ -94,7 +99,8 @@ public class AnalysisController extends BasicController implements TooledControl
 		
 		searchParams = new AnalysisSearchParameter();
 		searchParams.setFormEntryRef(() -> formView.getFormEntryKey());
-		filterCtrl= new FilterController(ureq, wControl, searchParams);
+		availableAttributes = analysisService.getAvailableAttributes(searchParams);
+		filterCtrl= new FilterController(ureq, wControl, form, searchParams, availableAttributes);
 		listenTo(filterCtrl);
 		mainVC.put("filter", filterCtrl.getInitialComponent());
 	}
@@ -159,7 +165,7 @@ public class AnalysisController extends BasicController implements TooledControl
 					currentSegment);
 			break;
 		case HEAT_MAP:
-			presentationCtrl = new HeatMapController(ureq, getWindowControl(), form);
+			presentationCtrl = new HeatMapController(ureq, getWindowControl(), form, availableAttributes);
 			break;
 		default:
 			presentationCtrl = new AnalysisReportController(ureq, getWindowControl(), form, formView.getFormTitle(),

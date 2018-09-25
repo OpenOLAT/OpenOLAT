@@ -40,6 +40,8 @@ import org.olat.repository.RepositoryEntry;
 public interface QualityAnalysisService {
 	
 	public List<EvaluationFormView> loadEvaluationForms(EvaluationFormViewSearchParams searchParams);
+	
+	public AvailableAttributes getAvailableAttributes(AnalysisSearchParameter searchParams);
 
 	public Long loadFilterDataCollectionCount(AnalysisSearchParameter searchParams);
 

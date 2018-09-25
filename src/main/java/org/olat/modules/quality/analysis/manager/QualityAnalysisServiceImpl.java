@@ -43,9 +43,10 @@ import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.quality.analysis.AnalysisSearchParameter;
 import org.olat.modules.quality.analysis.EvaluationFormView;
 import org.olat.modules.quality.analysis.EvaluationFormViewSearchParams;
-import org.olat.modules.quality.analysis.MultiGroupBy;
+import org.olat.modules.quality.analysis.AvailableAttributes;
 import org.olat.modules.quality.analysis.GroupedStatistic;
 import org.olat.modules.quality.analysis.GroupedStatistics;
+import org.olat.modules.quality.analysis.MultiGroupBy;
 import org.olat.modules.quality.analysis.QualityAnalysisService;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyService;
@@ -85,6 +86,11 @@ public class QualityAnalysisServiceImpl implements QualityAnalysisService {
 	@Override
 	public List<EvaluationFormView> loadEvaluationForms(EvaluationFormViewSearchParams searchParams) {
 		return evaluationFromDao.load(searchParams);
+	}
+
+	@Override
+	public AvailableAttributes getAvailableAttributes(AnalysisSearchParameter searchParams) {
+		return filterDao.getAvailableAttributes(searchParams);
 	}
 
 	@Override

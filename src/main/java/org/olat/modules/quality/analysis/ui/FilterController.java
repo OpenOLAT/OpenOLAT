@@ -52,7 +52,11 @@ import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.ui.CurriculumTreeModel;
+import org.olat.modules.forms.model.xml.AbstractElement;
+import org.olat.modules.forms.model.xml.Form;
+import org.olat.modules.forms.model.xml.SessionInformations;
 import org.olat.modules.quality.analysis.AnalysisSearchParameter;
+import org.olat.modules.quality.analysis.AvailableAttributes;
 import org.olat.modules.quality.analysis.QualityAnalysisService;
 import org.olat.modules.quality.ui.QualityUIFactory;
 import org.olat.modules.quality.ui.QualityUIFactory.KeysValues;
@@ -88,6 +92,8 @@ public class FilterController extends FormBasicController {
 	private MultipleSelectionElement withUserInformationsEl;
 	
 	private final AnalysisSearchParameter searchParams;
+	private final AvailableAttributes availableAttributes;
+	private final boolean sessionInformationsAvailable;
 	
 	@Autowired
 	private QualityAnalysisService analysisService;
@@ -96,10 +102,22 @@ public class FilterController extends FormBasicController {
 	@Autowired
 	private CurriculumModule curriculumModule;
 
-	public FilterController(UserRequest ureq, WindowControl wControl, AnalysisSearchParameter searchParams) {
+	public FilterController(UserRequest ureq, WindowControl wControl, Form form, AnalysisSearchParameter searchParams,
+			AvailableAttributes availableAttributes) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
 		this.searchParams = searchParams;
+		this.availableAttributes = availableAttributes;
+		this.sessionInformationsAvailable = getSessionInformationAvailable(form);
 		initForm(ureq);
+	}
+
+	private boolean getSessionInformationAvailable(Form evaluationForm) {
+		for (AbstractElement element : evaluationForm.getElements()) {
+			if (element instanceof SessionInformations) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Override
@@ -147,6 +165,7 @@ public class FilterController extends FormBasicController {
 		withUserInformationsEl = uifactory.addCheckboxesVertical("filter.with.user.informations.label", formLayout,
 				WITH_USER_INFOS_KEYS, translateAll(getTranslator(), WITH_USER_INFOS_KEYS), 1);
 		withUserInformationsEl.addActionListener(FormEvent.ONCLICK);
+		withUserInformationsEl.setVisible(sessionInformationsAvailable);
 		
 		setSelectionValues();
 	}
@@ -164,6 +183,10 @@ public class FilterController extends FormBasicController {
 	}
 	
 	private void setTopicIdentityValues() {
+		if (!availableAttributes.isTopicIdentity()) {
+			topicIdentityEl.setVisible(false);
+		}
+		
 		Collection<String> selectedKeys = topicIdentityEl.getSelectedKeys();
 		
 		AnalysisSearchParameter searchParamsClone = searchParams.clone();
@@ -178,7 +201,7 @@ public class FilterController extends FormBasicController {
 	}
 	
 	private void setTopicOrganisationValues() {
-		if (!organisationModule.isEnabled()) {
+		if (!availableAttributes.isTopicOrganisation() || !organisationModule.isEnabled()) {
 			topicOrganisationEl.setVisible(false);
 			return;
 		}
@@ -197,7 +220,7 @@ public class FilterController extends FormBasicController {
 	}
 
 	private void setTopicCurriculumValues() {
-		if (!curriculumModule.isEnabled()) {
+		if (!availableAttributes.isTopicCurriculum() || !curriculumModule.isEnabled()) {
 			topicCurriculumEl.setVisible(false);
 			return;
 		}
@@ -215,7 +238,7 @@ public class FilterController extends FormBasicController {
 	}
 
 	private void setTopicCurriculumElementValues() {
-		if (!curriculumModule.isEnabled()) {
+		if (!availableAttributes.isTopicCurriculumElement() || !curriculumModule.isEnabled()) {
 			contextCurriculumElementEl.setVisible(false);
 			return;
 		}
@@ -234,6 +257,10 @@ public class FilterController extends FormBasicController {
 	}
 	
 	private void setTopicRepositoryValues() {
+		if (!availableAttributes.isTopicRepository()) {
+			topicRepositoryEl.setVisible(false);
+		}
+		
 		Collection<String> selectedKeys = topicRepositoryEl.getSelectedKeys();
 		
 		AnalysisSearchParameter searchParamsClone = searchParams.clone();
@@ -248,7 +275,7 @@ public class FilterController extends FormBasicController {
 	}
 
 	private void setContextOrganisationValues() {
-		if (!organisationModule.isEnabled() || !curriculumModule.isEnabled()) {
+		if (!availableAttributes.isContextOrganisation() || !organisationModule.isEnabled() || !curriculumModule.isEnabled()) {
 			contextOrganisationEl.setVisible(false);
 			return;
 		}
@@ -271,7 +298,7 @@ public class FilterController extends FormBasicController {
 	}
 
 	private void setContextCurriculumValues() {
-		if (!curriculumModule.isEnabled()) {
+		if (!availableAttributes.isContextCurriculum() || !curriculumModule.isEnabled()) {
 			contextCurriculumEl.setVisible(false);
 			return;
 		}
@@ -290,7 +317,7 @@ public class FilterController extends FormBasicController {
 	}
 
 	private void setContextCurriculumElementValues() {
-		if (!curriculumModule.isEnabled()) {
+		if (!availableAttributes.isContextCurriculumElement() || !curriculumModule.isEnabled()) {
 			contextCurriculumElementEl.setVisible(false);
 			return;
 		}
@@ -318,6 +345,11 @@ public class FilterController extends FormBasicController {
 	}
 	
 	private void setContextTaxonomyLevelValues() {
+		if (!availableAttributes.isContextTaxonomyLevel()) {
+			contextTaxonomyLevelEl.setVisible(false);
+			return;
+		}
+		
 		Collection<String> selectedKeys = contextOrganisationEl.getSelectedKeys();
 		
 		AnalysisSearchParameter searchParamsClone = searchParams.clone();
@@ -411,7 +443,7 @@ public class FilterController extends FormBasicController {
 	}
 
 	private void getSearchParamTopicIdentitys() {
-		if (topicIdentityEl.isAtLeastSelected(1)) {
+		if (topicIdentityEl.isVisible() && topicIdentityEl.isAtLeastSelected(1)) {
 			List<IdentityRef> identityRefs = topicIdentityEl.getSelectedKeys().stream()
 					.map(key -> QualityUIFactory.getIdentityRef(key))
 					.collect(toList());
@@ -422,7 +454,7 @@ public class FilterController extends FormBasicController {
 	}
 	
 	private void getSearchParamTopicOrganisations() {
-		if (organisationModule.isEnabled() && curriculumModule.isEnabled() && topicOrganisationEl.isAtLeastSelected(1)) {
+		if (topicOrganisationEl.isVisible() && topicOrganisationEl.isAtLeastSelected(1)) {
 			List<OrganisationRef> organisationRefs = topicOrganisationEl.getSelectedKeys().stream()
 					.map(key -> QualityUIFactory.getOrganisationRef(key))
 					.collect(toList());
@@ -433,7 +465,7 @@ public class FilterController extends FormBasicController {
 	}
 
 	private void getSearchParamTopicCurriculums() {
-		if (topicCurriculumEl.isEnabled() && topicCurriculumEl.isAtLeastSelected(1)) {
+		if (topicCurriculumEl.isVisible() && topicCurriculumEl.isAtLeastSelected(1)) {
 			Collection<CurriculumRef> curriculumRefs = topicCurriculumEl.getSelectedKeys().stream()
 					.map(key -> QualityUIFactory.getCurriculumRef(key))
 					.collect(toList());
@@ -444,7 +476,7 @@ public class FilterController extends FormBasicController {
 	}
 	
 	private void getSearchParamTopicCurriculumElements() {
-		if (topicCurriculumEl.isEnabled() && topicCurriculumElementEl.isAtLeastSelected(1)) {
+		if (topicCurriculumElementEl.isVisible() && topicCurriculumElementEl.isAtLeastSelected(1)) {
 			List<CurriculumElementRef> curriculumElementRefs = topicCurriculumElementEl.getSelectedKeys().stream()
 					.map(key -> QualityUIFactory.getCurriculumElementRef(key))
 					.collect(toList());
@@ -455,7 +487,7 @@ public class FilterController extends FormBasicController {
 	}
 	
 	private void getSearchParamTopicRepositorys() {
-		if (topicRepositoryEl.isAtLeastSelected(1)) {
+		if (topicRepositoryEl.isVisible() && topicRepositoryEl.isAtLeastSelected(1)) {
 			List<RepositoryEntryRef> entryRefs = topicRepositoryEl.getSelectedKeys().stream()
 					.map(key -> QualityUIFactory.getRepositoryEntryRef(key))
 					.collect(toList());
@@ -466,7 +498,7 @@ public class FilterController extends FormBasicController {
 	}
 
 	private void getSearchParamContextOrganisations() {
-		if (organisationModule.isEnabled() && contextOrganisationEl.isAtLeastSelected(1)) {
+		if (contextOrganisationEl.isVisible() && contextOrganisationEl.isAtLeastSelected(1)) {
 			List<OrganisationRef> organisationRefs = contextOrganisationEl.getSelectedKeys().stream()
 					.map(key -> QualityUIFactory.getOrganisationRef(key))
 					.collect(toList());
@@ -477,7 +509,7 @@ public class FilterController extends FormBasicController {
 	}
 
 	private void getSearchParamContextCurriculums() {
-		if (contextCurriculumEl.isEnabled() && contextCurriculumEl.isAtLeastSelected(1)) {
+		if (contextCurriculumEl.isVisible() && contextCurriculumEl.isAtLeastSelected(1)) {
 			Collection<CurriculumRef> curriculumRefs = contextCurriculumEl.getSelectedKeys().stream()
 					.map(key -> QualityUIFactory.getCurriculumRef(key))
 					.collect(toList());
@@ -488,7 +520,7 @@ public class FilterController extends FormBasicController {
 	}
 
 	private void getSearchParamContextCurriculumElements() {
-		if (contextCurriculumEl.isEnabled() && contextCurriculumElementEl.isAtLeastSelected(1)) {
+		if (contextCurriculumElementEl.isVisible() && contextCurriculumElementEl.isAtLeastSelected(1)) {
 			List<CurriculumElementRef> curriculumElementRefs = contextCurriculumElementEl.getSelectedKeys().stream()
 					.map(key -> QualityUIFactory.getCurriculumElementRef(key))
 					.collect(toList());
@@ -499,7 +531,7 @@ public class FilterController extends FormBasicController {
 	}
 	
 	private void getSearchParamContextTaxonomyLevels() {
-		if (contextTaxonomyLevelEl.isAtLeastSelected(1)) {
+		if (contextTaxonomyLevelEl.isVisible() && contextTaxonomyLevelEl.isAtLeastSelected(1)) {
 			List<TaxonomyLevelRef> curriculumElementRefs = contextTaxonomyLevelEl.getSelectedKeys().stream()
 					.map(Long::parseLong)
 					.map(TaxonomyLevelRefImpl::new)
@@ -511,7 +543,7 @@ public class FilterController extends FormBasicController {
 	}
 
 	private void getSearchParamWithUserInfosOnly() {
-		boolean withUserInfosOnly = withUserInformationsEl.isAtLeastSelected(1);
+		boolean withUserInfosOnly = withUserInformationsEl.isVisible() && withUserInformationsEl.isAtLeastSelected(1);
 		searchParams.setWithUserInfosOnly(withUserInfosOnly);
 	}
 
