@@ -182,7 +182,7 @@ public class SharedBindersController extends FormBasicController implements Acti
 		tableEl.setSortSettings(options);
 
 		List<FlexiTableFilter> tableFilters = new ArrayList<>();
-		tableFilters.add(new FlexiTableFilter(translate("filter.sections.empty"), SharedBindersDataModel.EMPTY_SECTIONS, true));
+		tableFilters.add(new FlexiTableFilter(translate("filter.sections.empty"), SharedBindersDataModel.EMPTY_SECTIONS, "o_icon o_empty_sections"));
 		tableFilters.add(FlexiTableFilter.SPACER);
 		tableFilters.add(new FlexiTableFilter(translate("filter.show.all"), "all", true));
 		tableEl.setFilters("Filters", tableFilters, false);
