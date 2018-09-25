@@ -103,7 +103,17 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 			// Since input.Browse is layered above div.o_fakechooser, all click events to go input.Browse
 			// See http://www.quirksmode.org/dom/inputfile.html
 			if (fileElem.isButtonsEnabled()) {
-				sb.append("<input type='file' name=\"");
+				
+				  sb.append("<div class='box__input'>");
+				  sb.append("<input class='box__file' type='file' name='files[]' id='file' data-multiple-caption='{count} files selected' multiple />");
+   				  sb.append("<label for='file'><strong>Choose a file</strong><span class='box__dragndrop'> or drag it here</span>.</label>");
+   sb.append("<button class='box__button' type='submit'>Upload</button>");
+ sb.append("</div>");
+ sb.append("<div class='box__uploading'>Uploading&hellip;</div>");
+ sb.append("<div class='box__success'>Done!</div>");
+ sb.append("<div class='box__error'>Error <span></span>.</div>");
+				
+/*				sb.append("<input type='file' name=\"");
 				 sb.append(id); // name for form labeling
 				 sb.append("\" id=\"");
 				 sb.append(id); // id to make dirty button work
@@ -125,8 +135,12 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 				   .append(" onblur=\"this.form.fake_").append(id).append(".nextSibling.style.border = '0';\"");
 				 // Add select text (hover)
 				 sb.append(" title=\"").append(StringEscapeUtils.escapeHtml(trans.translate("file.element.select"))).append("\" />");
+*/
+
+
+
 			}
-			// Add the visible but fake input field and a styled faked file chooser button
+/*			// Add the visible but fake input field and a styled faked file chooser button
 			sb.append("<div class='o_fakechooser input-group'>");
 			sb.append("<input class='form-control' name='fake_").append(id).append("' value=\"").append(StringEscapeUtils.escapeHtml(fileName))
 			  .append("\" placeholder=\"").append(StringEscapeUtils.escapeHtml(trans.translate("file.element.select"))).append("\" />");  
@@ -138,6 +152,9 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 				  .append(" title=\"").append(StringEscapeUtils.escapeHtml(trans.translate("file.element.delete"))).append("\" ><i class='o_icon o_icon_delete'> </i></a>");
 			}
 			sb.append("</div></div>");
+
+			*/
+			sb.append("</div>");
 			// Add example text and  max upload size
 			if(fileElem.getExampleText() != null) {
 				sb.append("<div class='help-block'>")

@@ -88,21 +88,20 @@
 	.o_fileinput {
 		cursor: pointer;
 		position: relative;
-		/* the fake chooser is what the user sees. this is on layer 1, only for display */
-		.o_fakechooser {
-			position: relative;
-			z-index: 1; 		
-		}
-		/* real file chooser is transparent but on layer 2, click events trigger realchooser, not fakechooser */
-		.o_realchooser { 
-			position: absolute; 
-			top: 0; right: 0;
-			z-index: 2; 
-			@include opacity(0); /* this is the magic: visually don't show the input element, but nevertheless catch click events */
-		}
-		.o_realchooser.o_chooser_with_delete {
-			right: 38px;
-		}
+      outline: 2px dashed #92b0b3;
+      outline-offset: -10px;
+
+      .box__dragndrop,
+      .box__uploading,
+      .box__success,
+      .box__error {
+        display: none;
+      }
+
+      .box.is-dragover {
+        background-color: grey;
+      }
+
 	}
 	/* hide error icon for file element - clash with file element controls */
 	.o_fileElement.has-error .o_icon_error.form-control-feedback {
@@ -129,6 +128,7 @@
 		white-space: pre-wrap;
 		background: $input-bg-disabled;
 	}
+
 }
 
 /* centered form labels are still left aligned */
