@@ -208,6 +208,8 @@ public class PoolDAO {
 	
 	public void addItemToPool(QuestionItemShort item, List<Pool> pools, boolean editable) {
 		QuestionItem lockedItem = questionItemDao.loadForUpdate(item);
+		if (lockedItem == null) return;
+		
 		for(Pool pool:pools) {
 			if(!isInPool(lockedItem, pool)) {
 				PoolToItem p2i = new PoolToItem();

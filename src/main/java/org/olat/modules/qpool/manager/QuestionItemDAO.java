@@ -169,6 +169,8 @@ public class QuestionItemDAO {
 	
 	public void addAuthors(List<Identity> authors, QuestionItemShort item) {
 		QuestionItemImpl lockedItem = loadForUpdate(item);
+		if (lockedItem == null) return;
+		
 		SecurityGroup secGroup = lockedItem.getOwnerGroup();
 		for(Identity author:authors) {
 			if(!securityManager.isIdentityInSecurityGroup(author, secGroup)) {
@@ -180,6 +182,8 @@ public class QuestionItemDAO {
 	
 	public void removeAuthors(List<Identity> authors, QuestionItemShort item) {
 		QuestionItemImpl lockedItem = loadForUpdate(item);
+		if (lockedItem == null) return;
+		
 		SecurityGroup secGroup = lockedItem.getOwnerGroup();
 		for(Identity author:authors) {
 			if(securityManager.isIdentityInSecurityGroup(author, secGroup)) {
@@ -345,12 +349,12 @@ public class QuestionItemDAO {
 	public QuestionItemImpl loadForUpdate(QuestionItemShort item) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select item from questionitem item where item.key=:key");
-		QuestionItemImpl lockedItem = dbInstance.getCurrentEntityManager()
+		List<QuestionItemImpl> lockedItem = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), QuestionItemImpl.class)
 				.setParameter("key", item.getKey())
 				.setLockMode(LockModeType.PESSIMISTIC_WRITE)
-				.getSingleResult();
-		return lockedItem;
+				.getResultList();
+		return !lockedItem.isEmpty()? lockedItem.get(0): null;
 	}
 	
 	public int getNumOfQuestions() {
@@ -381,6 +385,8 @@ public class QuestionItemDAO {
 	
 	public void share(QuestionItem item, OLATResource resource) {
 		QuestionItem lockedItem = loadForUpdate(item);
+		if (lockedItem == null) return;
+		
 		if(!isShared(item, resource)) {
 			EntityManager em = dbInstance.getCurrentEntityManager();
 			ResourceShareImpl share = new ResourceShareImpl();
@@ -395,6 +401,8 @@ public class QuestionItemDAO {
 	public void share(QuestionItemShort item, List<OLATResource> resources, boolean editable) {
 		EntityManager em = dbInstance.getCurrentEntityManager();
 		QuestionItem lockedItem = loadForUpdate(item);
+		if (lockedItem == null) return;
+		
 		for(OLATResource resource:resources) {
 			if(!isShared(lockedItem, resource)) {
 				ResourceShareImpl share = new ResourceShareImpl();
