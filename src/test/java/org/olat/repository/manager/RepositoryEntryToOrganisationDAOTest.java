@@ -119,5 +119,64 @@ public class RepositoryEntryToOrganisationDAOTest extends OlatTestCase {
 		Assert.assertNotNull(relations);
 		Assert.assertTrue(relations.isEmpty());
 	}
+	
+	@Test
+	public void deleteRelationByRelation() {
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		Organisation organisation = organisationDao.createAndPersistOrganisation("Repo-org-5", null, null, defOrganisation, null);
+		RepositoryEntry re = repositoryService.create(null, "Asuka Langley", "rel5", "rel5", null, null,
+				RepositoryEntryStatusEnum.trash, null);
+		RepositoryEntryToOrganisation relation = repositoryEntryToOrganisationDao.createRelation(organisation, re, true);
+		dbInstance.commitAndCloseSession();
+		
+		// delete the relations
+		repositoryEntryToOrganisationDao.delete(relation);
+		dbInstance.commitAndCloseSession();
+		
+		// check the relations are really deleted
+		List<RepositoryEntryToOrganisation> relations = repositoryEntryToOrganisationDao.getRelations(re, organisation);
+		Assert.assertTrue(relations.isEmpty());
+	}
+	
+	@Test
+	public void deleteRelationByRepositoryEntry() {
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		Organisation organisation1 = organisationDao.createAndPersistOrganisation("Repo-org-6.1", null, null, defOrganisation, null);
+		Organisation organisation2 = organisationDao.createAndPersistOrganisation("Repo-org-6.2", null, null, defOrganisation, null);
+		RepositoryEntry re = repositoryService.create(null, "Asuka Langley", "rel3", "rel6", null, null,
+				RepositoryEntryStatusEnum.trash, null);
+		repositoryEntryToOrganisationDao.createRelation(organisation1, re, true);
+		repositoryEntryToOrganisationDao.createRelation(organisation2, re, true);
+		dbInstance.commitAndCloseSession();
+		
+		// delete the relations
+		repositoryEntryToOrganisationDao.delete(re);
+		dbInstance.commitAndCloseSession();
+		
+		// check the relations are really deleted
+		List<RepositoryEntryToOrganisation> relations1 = repositoryEntryToOrganisationDao.getRelations(re, organisation1);
+		Assert.assertTrue(relations1.isEmpty());
+		List<RepositoryEntryToOrganisation> relations2 = repositoryEntryToOrganisationDao.getRelations(re, organisation2);
+		Assert.assertTrue(relations2.isEmpty());
+	}
+
+	
+	@Test
+	public void deleteRelationByOrganisation() {
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		Organisation organisation = organisationDao.createAndPersistOrganisation("Repo-org-5", null, null, defOrganisation, null);
+		RepositoryEntry re = repositoryService.create(null, "Asuka Langley", "rel5", "rel5", null, null,
+				RepositoryEntryStatusEnum.trash, null);
+		repositoryEntryToOrganisationDao.createRelation(organisation, re, true);
+		dbInstance.commitAndCloseSession();
+		
+		// delete the relations
+		repositoryEntryToOrganisationDao.delete(organisation);
+		dbInstance.commitAndCloseSession();
+		
+		// check the relations are really deleted
+		List<RepositoryEntryToOrganisation> relations = repositoryEntryToOrganisationDao.getRelations(re, organisation);
+		Assert.assertTrue(relations.isEmpty());
+	}
 
 }

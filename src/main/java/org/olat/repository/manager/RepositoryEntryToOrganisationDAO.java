@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 
 import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.repository.RepositoryEntry;
@@ -93,7 +94,16 @@ public class RepositoryEntryToOrganisationDAO {
 	}
 	
 	public void delete(RepositoryEntryToOrganisation relation) {
-		dbInstance.getCurrentEntityManager().remove(relation);
+		QueryBuilder sb = new QueryBuilder(255);
+		sb.append("delete from repoentrytoorganisation as reToOrganisation");
+		sb.and().append("reToOrganisation.entry.key=:entryKey");
+		sb.and().append("reToOrganisation.organisation.key=:organisationKey");
+		
+		dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString())
+				.setParameter("entryKey", relation.getEntry().getKey())
+				.setParameter("organisationKey", relation.getOrganisation().getKey())
+				.executeUpdate();
 	}
 	
 	public int delete(RepositoryEntryRef entry) {

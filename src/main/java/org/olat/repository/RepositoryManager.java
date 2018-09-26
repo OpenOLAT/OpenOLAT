@@ -823,7 +823,9 @@ public class RepositoryManager {
 					currentRelations.add(newRelation);
 				}
 			}
+			reloadedRe.setOrganisations(currentRelations);
 		}
+		dbInstance.commit();
 
 		reloadedRe.setLifecycle(cycle);
 		reloadedRe.setLastModified(new Date());
