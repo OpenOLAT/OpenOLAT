@@ -14,7 +14,10 @@
 	<div class="o_portfolio_toc #if($timelineSwitch) o_portfolio_withtimeline #end clearfix">
 		<ul class="list-unstyled">
 		#foreach($section in $sections)
-			<li class="o_section o_block_large_bottom"><div class="o_header_with_buttons"><h4>$r.render($section.sectionLink) </h4> <i class="o_icon $section.cssClassStatus o_icon-fw"> </i>#if(${section.isAssessable()}) ${section.getFormattedResult()} #end</div>
+			<li class="o_section o_block_large_bottom">
+				<div class="o_header_with_buttons">
+					<h4>$r.render($section.sectionLink) </h4> <i class="o_icon $section.cssClassStatus o_icon-fw" title="$r.translateInAttribute("${section.i18nKeyStatus}")"> </i>#if(${section.isAssessable()}) ${section.getFormattedResult()} #end
+				</div>
 				#if($r.notNull($section.section.beginDate) || $r.notNull($section.section.endDate))
 					<div class="o_portfolio_section_meta">
 					#if($r.notNull($section.section.beginDate))
@@ -55,7 +58,7 @@
 				#if($r.isNotEmpty(${section.getPages()}))
 				<ul class="list-unstyled">
 					#foreach($page in $section.pages)
-						<li><i class="o_icon $page.cssClassStatus o_icon-fw"> </i> $r.render($page.openLink) #if($r.isNotNull($page.commentLink)) $r.render($page.commentLink) #end
+						<li><i class="o_icon $page.cssClassStatus o_icon-fw" title="$r.translateInAttribute("${page.i18nKeyStatus}")"> </i> $r.render($page.openLink) #if($r.isNotNull($page.commentLink)) $r.render($page.commentLink) #end
 						#if($r.isTrue($userInfos)) $userInfosRenderer.renderPageRow($page)#end</li>
 					#end
 				</ul>
@@ -76,4 +79,29 @@
 		</div>
 		#end
 	</div>
+	
+	
+	<div class="o_portfolio_status_legend text-muted">
+		<h6>$r.translate("legend")</h6>
+		<div class="o_block_inline_right o_small">
+			<span>$r.translate("pages"):</span>
+			<ul class="list-unstyled">
+				<li><i class="o_icon o_icon_pf_entry_draft o_icon-fw"> </i> $r.translate("status.draft")</li>
+				<li><i class="o_icon o_icon_pf_entry_published o_icon-fw"> </i> $r.translate("status.published")</li>
+				<li><i class="o_icon o_icon_pf_entry_revision o_icon-fw"> </i> $r.translate("status.in.revision")</li>
+				<li><i class="o_icon o_icon_pf_entry_closed o_icon-fw"> </i> $r.translate("status.closed")</li>
+				<li><i class="o_icon o_icon_pf_entry_deleted o_icon-fw"> </i> $r.translate("status.deleted")</li>
+			</ul>
+		</div>
+		<div class="o_block_inline_left o_small">
+			<span>$r.translate("page.sections"):</span>
+			<ul class="list-unstyled">
+				<li><i class="o_icon o_icon_pf_section_draft o_icon-fw"> </i> $r.translate("status.not.started")</li>
+				<li><i class="o_icon o_icon_pf_section_progress o_icon-fw"> </i> $r.translate("status.in.progress")</li>
+				<li><i class="o_icon o_icon_pf_section_submitted o_icon-fw"> </i> $r.translate("status.submitted")</li>
+				<li><i class="o_icon o_icon_pf_section_closed o_icon-fw"> </i> $r.translate("status.closed")</li>
+			</ul>
+		</div>
+	</div>
+	
 </div>

@@ -853,8 +853,8 @@ public class BinderListController extends FormBasicController
 				editBinderMetadataLink = addLink("edit.binder.metadata", "edit.metadata", "o_icon o_icon_new_portfolio", links);
 			}
 
-			moveUpLink = addLink("move.up", "move-up", "o_icon o_icon_left", links);
-			moveDownLink = addLink("move.down", "move-down", "o_icon o_icon_right", links);
+			moveUpLink = addLink("move.left", "move-up", "o_icon o_icon_left", links);
+			moveDownLink = addLink("move.right", "move-down", "o_icon o_icon_right", links);
 			
 			if(secCallback.canExportBinder()) {
 				exportBinderAsCpLink = addLink("export.binder.cp", "export-cp", "o_icon o_icon_download", links);

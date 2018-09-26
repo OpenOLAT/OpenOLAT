@@ -35,6 +35,7 @@
 }
 .o_block_inline, %o_block_inline {
 	display: inline-block;
+	vertical-align: top;
 }
 .o_block_inline_left, %o_block_inline_left {
 	@extend %o_block_inline;

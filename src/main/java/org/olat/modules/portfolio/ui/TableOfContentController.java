@@ -388,7 +388,6 @@ public class TableOfContentController extends BasicController implements TooledC
 		
 		Dropdown editDropdown = new Dropdown(sectionId.concat("_dropdown"), null, false, getTranslator());
 		editDropdown.setElementCssClass("o_sel_pf_section_tools");
-		editDropdown.setTranslatedLabel("");
 		editDropdown.setOrientation(DropdownOrientation.right);
 		editDropdown.setIconCSS("o_icon o_icon_actions");
 		
@@ -426,12 +425,14 @@ public class TableOfContentController extends BasicController implements TooledC
 			upSectionLink.setIconLeftCSS("o_icon o_icon o_icon-lg o_icon_move_up");
 			upSectionLink.setUserObject(sectionRow);
 			upSectionLink.setEnabled(!first);
+			upSectionLink.setTitle(translate("move.up"));
 			sectionRow.setUpSectionLink(upSectionLink);
 			
 			Link downSectionLink = LinkFactory.createCustomLink(sectionId.concat("_down"), "down_section", "", Link.LINK | Link.NONTRANSLATED, mainVC, this);
 			downSectionLink.setIconLeftCSS("o_icon o_icon o_icon-lg o_icon_move_down");
 			downSectionLink.setUserObject(sectionRow);
 			downSectionLink.setEnabled(!last);
+			downSectionLink.setTitle(translate("move.down"));
 			sectionRow.setDownSectionLink(downSectionLink);
 		}
 		
@@ -991,6 +992,11 @@ public class TableOfContentController extends BasicController implements TooledC
 					? PageStatus.draft.cssClass() : page.getPageStatus().cssClass();
 		}
 
+		public String getI18nKeyStatus() {
+			return page.getPageStatus() == null
+					? PageStatus.draft.i18nKey() : page.getPageStatus().i18nKey();			
+		}
+		
 		public PageUserStatus getUserInfosStatus() {
 			return userInfosStatus;
 		}
@@ -1041,6 +1047,11 @@ public class TableOfContentController extends BasicController implements TooledC
 		public String getCssClassStatus() {
 			return section.getSectionStatus() == null
 					? SectionStatus.notStarted.cssClass() : section.getSectionStatus().cssClass();
+		}
+		
+		public String getI18nKeyStatus() {
+			return section.getSectionStatus() == null
+					? SectionStatus.notStarted.cssClass() : section.getSectionStatus().i18nKey();			
 		}
 		
 		public boolean isAssessable() {
