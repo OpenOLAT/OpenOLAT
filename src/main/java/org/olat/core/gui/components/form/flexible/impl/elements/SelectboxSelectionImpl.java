@@ -81,7 +81,8 @@ public class SelectboxSelectionImpl extends FormItemImpl implements SingleSelect
 		return values;
 	}
 
-	String[] getKeys() {
+	@Override
+	public String[] getKeys() {
 		return keys;
 	}
 

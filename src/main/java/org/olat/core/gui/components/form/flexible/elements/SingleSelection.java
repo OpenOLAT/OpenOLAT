@@ -35,21 +35,14 @@ public interface SingleSelection extends SelectionElement {
 	
 	public String NO_SELECTION_KEY = "noSelectionKey";
 
-	/**
-	 * @return
-	 */
+	public String[] getKeys();
+
 	public String getSelectedKey();
 	
 	public String getSelectedValue();
 
-	/**
-	 * @return
-	 */
 	public boolean isOneSelected();
 
-	/**
-	 * @return
-	 */
 	public int getSelected();
 	
 	/**

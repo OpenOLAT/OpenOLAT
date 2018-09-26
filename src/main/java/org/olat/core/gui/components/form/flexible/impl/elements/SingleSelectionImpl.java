@@ -125,6 +125,11 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 	}
 	
 	@Override
+	public String[] getKeys() {
+		return keys;
+	}
+	
+	@Override
 	public String getKey(int which) {
 		return keys[which];
 	}

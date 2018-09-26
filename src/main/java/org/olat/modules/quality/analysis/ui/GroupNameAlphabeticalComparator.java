@@ -48,7 +48,7 @@ public class GroupNameAlphabeticalComparator implements Comparator<HeatMapRow> {
 			if (!StringHelper.containsNonWhitespace(groupName2)) {
 				return 1;
 			}
-			int compareTo = groupName1.compareTo(groupName2);
+			int compareTo = groupName1.compareToIgnoreCase(groupName2);
 			if (compareTo != 0) {
 				return compareTo;
 			}

@@ -1,17 +1,28 @@
+#if($r.visible("heatmap.insufficient"))
+	#set($col = "col-sm-3")
+#else
+	#set($col = "col-sm-4")
+#end
 <div class="panel panel-default">
 	<div class="panel-heading">
 		<h4 class="panel-title">$r.translate("heatmap.group.panel.header")</h4>
 	</div>
 	<div class="panel-body">
 		<div class='row'>
-			<div class="col-sm-6">
-				$r.render("heatmap.group")
+			<div class="$col o_hm_group_select">
+				$r.render("heatmap.group1")
 			</div>
-			<div class="col-sm-6">
-				#if($r.available("heatmap.insufficient"))
+			<div class="$col o_hm_group_select">
+				$r.render("heatmap.group2")
+			</div>
+			<div class="$col">
+				$r.render("heatmap.group3")
+			</div>
+			#if($r.visible("heatmap.insufficient"))
+				<div class="$col">
 					$r.render("heatmap.insufficient")
-				#end
-			</div>
+				</div>
+			#end
 		</div>
 	</div>
 </div>

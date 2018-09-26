@@ -181,3 +181,10 @@
 		font-weight: bold;
 	}
 }
+
+@media (max-width: $screen-sm-min) {
+	.o_hm_group_select {
+		padding-bottom: 12px;
+	}
+}
+

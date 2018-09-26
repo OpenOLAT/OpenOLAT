@@ -19,51 +19,28 @@
  */
 package org.olat.modules.quality.analysis.ui;
 
-import java.util.List;
-
-import org.olat.modules.quality.analysis.GroupedStatistic;
-import org.olat.modules.quality.analysis.MultiKey;
+import org.olat.core.gui.control.Event;
+import org.olat.modules.quality.analysis.MultiGroupBy;
 
 /**
  * 
- * Initial date: 11.09.2018<br>
+ * Initial date: 28.09.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class HeatMapRow {
+public class AnalysisGroupingEvent extends Event {
+
+	private static final long serialVersionUID = -9183455315458508236L;
 	
-	private final MultiKey multiKey;
-	private final List<String> groupNames;
-	private final List<GroupedStatistic> statistics;
-	
-	public HeatMapRow(MultiKey multiKey, List<String> groupNames, List<GroupedStatistic> statistics) {
-		this.multiKey = multiKey;
-		this.groupNames = groupNames;
-		this.statistics = statistics;
-	}
-	
-	public MultiKey getMultiKey() {
-		return multiKey;
+	private final MultiGroupBy multiGroupBy;
+
+	public AnalysisGroupingEvent(MultiGroupBy multiGroupBy) {
+		super("analysis-grouping-event");
+		this.multiGroupBy = multiGroupBy;
 	}
 
-	public int getGroupNamesSize() {
-		return groupNames.size();
-	}
-
-	public String getGroupName(int index) {
-		return groupNames.get(index);
-	}
-	
-	public List<String> getGroupNames() {
-		return groupNames;
-	}
-
-	public int getStatisticsSize() {
-		return statistics.size();
-	}
-
-	public GroupedStatistic getStatistic(int index) {
-		return statistics.get(index);
+	public MultiGroupBy getMultiGroupBy() {
+		return multiGroupBy;
 	}
 
 }

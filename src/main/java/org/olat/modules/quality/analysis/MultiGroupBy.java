@@ -31,7 +31,23 @@ public class MultiGroupBy {
 	private final GroupBy groupBy2;
 	private final GroupBy groupBy3;
 	
-	public MultiGroupBy(GroupBy groupBy1, GroupBy groupBy2, GroupBy groupBy3) {
+	public static MultiGroupBy noGroupBy() {
+		return of(null);
+	}
+	
+	public static MultiGroupBy of(GroupBy groupBy1) {
+		return of(groupBy1, null);
+	}
+	
+	public static MultiGroupBy of(GroupBy groupBy1, GroupBy groupBy2) {
+		return of(groupBy1, groupBy2, null);
+	}
+	
+	public static MultiGroupBy of(GroupBy groupBy1, GroupBy groupBy2, GroupBy groupBy3) {
+		return new MultiGroupBy(groupBy1, groupBy2, groupBy3);
+	}
+	
+	private MultiGroupBy(GroupBy groupBy1, GroupBy groupBy2, GroupBy groupBy3) {
 		this.groupBy1 = groupBy1;
 		this.groupBy2 = groupBy2;
 		this.groupBy3 = groupBy3;
@@ -47,6 +63,10 @@ public class MultiGroupBy {
 
 	public GroupBy getGroupBy3() {
 		return groupBy3;
+	}
+	
+	public boolean isNoGroupBy() {
+		return groupBy1 == null && groupBy2 == null && groupBy3 == null;
 	}
 
 }

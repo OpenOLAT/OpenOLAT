@@ -42,6 +42,7 @@ import org.olat.modules.quality.QualitySecurityCallback;
 import org.olat.modules.quality.analysis.AnalysisSearchParameter;
 import org.olat.modules.quality.analysis.AvailableAttributes;
 import org.olat.modules.quality.analysis.EvaluationFormView;
+import org.olat.modules.quality.analysis.MultiGroupBy;
 import org.olat.modules.quality.analysis.QualityAnalysisService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
@@ -72,6 +73,7 @@ public class AnalysisController extends BasicController implements TooledControl
 	private final Form form;
 	private final AvailableAttributes availableAttributes;
 	private AnalysisSearchParameter searchParams;
+	private MultiGroupBy multiGroupBy = MultiGroupBy.noGroupBy();
 	private Boolean showFilters;
 	private ReportSegment currentSegment;
 	
@@ -138,12 +140,17 @@ public class AnalysisController extends BasicController implements TooledControl
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == filterCtrl && event instanceof AnalysisFilterEvent) {
 			AnalysisFilterEvent filterEvent = (AnalysisFilterEvent) event;
-			searchParams = filterEvent.getSearchParams();
-			presentationCtrl.onFilter(ureq, searchParams);
-		} else if (source == presentationCtrl && event instanceof ReportSegmentEvent) {
-			// Save current segment between analysis segment changes
-			ReportSegmentEvent rsEvent = (ReportSegmentEvent) event;
-			currentSegment = rsEvent.getSegment();
+				searchParams = filterEvent.getSearchParams();
+				presentationCtrl.onFilter(ureq, searchParams);
+		} else if (source == presentationCtrl) {
+			if (event instanceof ReportSegmentEvent) {
+				// Save current segment between analysis segment changes
+				ReportSegmentEvent rsEvent = (ReportSegmentEvent) event;
+				currentSegment = rsEvent.getSegment();
+			}  else if (event instanceof AnalysisGroupingEvent) {
+				AnalysisGroupingEvent groupingEvent = (AnalysisGroupingEvent) event;
+				multiGroupBy = groupingEvent.getMultiGroupBy();
+			}
 		}
 		super.event(ureq, source, event);
 	}
@@ -165,7 +172,7 @@ public class AnalysisController extends BasicController implements TooledControl
 					currentSegment);
 			break;
 		case HEAT_MAP:
-			presentationCtrl = new HeatMapController(ureq, getWindowControl(), form, availableAttributes);
+			presentationCtrl = new HeatMapController(ureq, getWindowControl(), form, availableAttributes, multiGroupBy);
 			break;
 		default:
 			presentationCtrl = new AnalysisReportController(ureq, getWindowControl(), form, formView.getFormTitle(),

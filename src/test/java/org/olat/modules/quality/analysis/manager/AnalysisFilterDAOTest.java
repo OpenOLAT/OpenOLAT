@@ -22,9 +22,9 @@ package org.olat.modules.quality.analysis.manager;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.olat.modules.quality.analysis.GroupBy.CONTEXT_TAXONOMY_LEVEL;
 import static org.olat.modules.quality.analysis.GroupBy.CONTEXT_CURRICULUM;
 import static org.olat.modules.quality.analysis.GroupBy.CONTEXT_ORGANISATION;
+import static org.olat.modules.quality.analysis.GroupBy.CONTEXT_TAXONOMY_LEVEL;
 import static org.olat.modules.quality.analysis.GroupBy.TOPIC_ORGANISATION;
 import static org.olat.modules.quality.analysis.MultiKey.of;
 
@@ -676,7 +676,7 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
-		MultiGroupBy multiGroupBy = new MultiGroupBy(TOPIC_ORGANISATION, null, null);
+		MultiGroupBy multiGroupBy = MultiGroupBy.of(TOPIC_ORGANISATION);
 		List<GroupedStatistic> statisticList = sut.loadGroupedStatisticByResponseIdentifiers(searchParams,
 				asList(identifier1, identifier2), multiGroupBy);
 		GroupedStatistics statistics = new GroupedStatistics(statisticList);
@@ -722,7 +722,7 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		finish(asList(dc));
 		
 		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
-		MultiGroupBy multiGroupBy = new MultiGroupBy(CONTEXT_ORGANISATION, CONTEXT_CURRICULUM, CONTEXT_TAXONOMY_LEVEL);
+		MultiGroupBy multiGroupBy = MultiGroupBy.of(CONTEXT_ORGANISATION, CONTEXT_CURRICULUM, CONTEXT_TAXONOMY_LEVEL);
 		List<GroupedStatistic> statisticList = sut.loadGroupedStatisticByResponseIdentifiers(searchParams,
 				asList(identifier), multiGroupBy);
 		GroupedStatistics statistics = new GroupedStatistics(statisticList);
@@ -755,7 +755,7 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		
 		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
 		for (GroupBy groupBy : GroupBy.values()) {
-			MultiGroupBy multiGroupBy = new MultiGroupBy(groupBy, null, null);
+			MultiGroupBy multiGroupBy = MultiGroupBy.of(groupBy);
 			sut.loadGroupedStatisticByResponseIdentifiers(searchParams, singletonList(identifier), multiGroupBy);
 		}
 		

@@ -19,14 +19,16 @@
  */
 package org.olat.modules.quality.analysis.ui;
 
-import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static org.olat.core.gui.translator.TranslatorHelper.translateAll;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.olat.basesecurity.IdentityShort;
 import org.olat.basesecurity.OrganisationModule;
@@ -62,7 +64,6 @@ import org.olat.modules.quality.analysis.GroupedStatistics;
 import org.olat.modules.quality.analysis.MultiGroupBy;
 import org.olat.modules.quality.analysis.MultiKey;
 import org.olat.modules.quality.analysis.QualityAnalysisService;
-import org.olat.modules.quality.ui.QualityUIFactory;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,7 +78,9 @@ public class HeatMapController extends FormBasicController implements Filterable
 
 	private static final String[] INSUFFICIENT_KEYS = new String[] {"heatmap.insufficient.select"};
 	
-	private SingleSelection groupEl;
+	private SingleSelection groupEl1;
+	private SingleSelection groupEl2;
+	private SingleSelection groupEl3;
 	private MultipleSelectionElement insufficientEl;
 	private HeatMapDataModel dataModel;
 	private FlexiTableElement tableEl;
@@ -87,9 +90,19 @@ public class HeatMapController extends FormBasicController implements Filterable
 	private final List<SliderWrapper> sliders;
 	private final AvailableAttributes availableAttributes;
 	private AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
-	private GroupBy groupBy;
+	private MultiGroupBy multiGroupBy;
 	private final boolean insufficientConfigured;
 	private boolean insufficientOnly = false;
+	
+	private Map<Long, String> groupNamesTopicIdentity;
+	private Map<Long, String> groupNamesTopicOrganisation;
+	private Map<Long, String> groupNamesTopicCurriculum;
+	private Map<Long, String> groupNamesTopicCurriculumElement;
+	private Map<Long, String> groupNamesTopicRepositoryEntry;
+	private Map<Long, String> groupNamesContextOrganisation;
+	private Map<Long, String> groupNamesContextCurriculum;
+	private Map<Long, String> groupNamesContextCurriculumElement;
+	private Map<Long, String> groupNamesContextTaxonomyLevel;
 	
 	@Autowired
 	private QualityAnalysisService analysisService;
@@ -98,9 +111,11 @@ public class HeatMapController extends FormBasicController implements Filterable
 	@Autowired
 	private CurriculumModule curriculumModule;
 
-	public HeatMapController(UserRequest ureq, WindowControl wControl, Form evaluationForm, AvailableAttributes availableAttributes) {
+	public HeatMapController(UserRequest ureq, WindowControl wControl, Form evaluationForm,
+			AvailableAttributes availableAttributes, MultiGroupBy multiGroupBy) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		this.availableAttributes = availableAttributes;
+		this.multiGroupBy = multiGroupBy;
 		this.sliders = initSliders(evaluationForm);
 		this.insufficientConfigured = initInsufficientConfigured(evaluationForm);
 		initForm(ureq);
@@ -153,11 +168,25 @@ public class HeatMapController extends FormBasicController implements Filterable
 		String groupPage = velocity_root + "/heatmap_grouping.html";
 		FormLayoutContainer grouping = FormLayoutContainer.createCustomFormLayout("grouping", getTranslator(), groupPage);
 		flc.add("grouping", grouping);
-		// Group by selection
+		// Group by
 		KeyValues groupByKV = initGroupByKeyValues();
-		groupEl = uifactory.addDropdownSingleselect("heatmap.group", grouping, groupByKV.keys(), groupByKV.values());
-		groupEl.addActionListener(FormEvent.ONCHANGE);
-		setGroupBy();
+		String[] groupKeys = groupByKV.keys();
+		String[] groupValues = groupByKV.values();
+		if (multiGroupBy.isNoGroupBy()) {
+			GroupBy groupBy1 = GroupBy.valueOf(groupKeys[0]);
+			multiGroupBy = MultiGroupBy.of(groupBy1);
+		}
+		groupEl1 = uifactory.addDropdownSingleselect("heatmap.group1", grouping, groupKeys, groupValues);
+		groupEl1.addActionListener(FormEvent.ONCHANGE);
+		selectGroupBy(groupEl1, multiGroupBy.getGroupBy1());
+		groupEl2 = uifactory.addDropdownSingleselect("heatmap.group2", grouping, groupKeys, groupValues);
+		groupEl2.setAllowNoSelection(true);
+		groupEl2.addActionListener(FormEvent.ONCHANGE);
+		selectGroupBy(groupEl2, multiGroupBy.getGroupBy2());
+		groupEl3 = uifactory.addDropdownSingleselect("heatmap.group3", grouping, groupKeys, groupValues);
+		groupEl3.setAllowNoSelection(true);
+		groupEl3.addActionListener(FormEvent.ONCHANGE);
+		selectGroupBy(groupEl3, multiGroupBy.getGroupBy3());
 		
 		// Insufficient filter
 		insufficientEl = uifactory.addCheckboxesVertical("heatmap.insufficient", grouping, INSUFFICIENT_KEYS,
@@ -168,6 +197,15 @@ public class HeatMapController extends FormBasicController implements Filterable
 		// Heat map
 		initTable(Collections.emptyList(), 0);
 		
+	}
+
+	private void selectGroupBy(SingleSelection groupEl, GroupBy groupBy) {
+		if (groupBy != null) {
+			String groupByKey = groupBy.name();
+			if (Arrays.asList(groupEl.getKeys()).contains(groupByKey)) {
+				groupEl.select(groupByKey, true);
+			}
+		}
 	}
 	
 	private KeyValues initGroupByKeyValues() {
@@ -255,8 +293,8 @@ public class HeatMapController extends FormBasicController implements Filterable
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == groupEl) {
-			setGroupBy();
+		if (source == groupEl1 || source == groupEl2 || source == groupEl3) {
+			setGroupBy(ureq);
 			loadHeatMap();
 		} else if (source == insufficientEl) {
 			setInsufficientOnly();
@@ -265,13 +303,12 @@ public class HeatMapController extends FormBasicController implements Filterable
 		super.formInnerEvent(ureq, source, event);
 	}
 
-	private void setGroupBy() {
-		if (groupEl.isOneSelected()) {
-			String selectedKey = groupEl.getSelectedKey();
-			groupBy = GroupBy.valueOf(selectedKey);
-		} else {
-			groupBy = GroupBy.valueOf(groupEl.getKey(0));
-		}
+	private void setGroupBy(UserRequest ureq) {
+		GroupBy groupBy1 = groupEl1.isOneSelected()? GroupBy.valueOf(groupEl1.getSelectedKey()): null;
+		GroupBy groupBy2 = groupEl2.isOneSelected()? GroupBy.valueOf(groupEl2.getSelectedKey()): null;
+		GroupBy groupBy3 = groupEl3.isOneSelected()? GroupBy.valueOf(groupEl3.getSelectedKey()): null;
+		multiGroupBy = MultiGroupBy.of(groupBy1, groupBy2, groupBy3);
+		fireEvent(ureq, new AnalysisGroupingEvent(multiGroupBy));
 	}
 
 	private void setInsufficientOnly() {
@@ -283,36 +320,308 @@ public class HeatMapController extends FormBasicController implements Filterable
 	}
 	
 	private void loadHeatMap() {
-		HeatMapData heatMapData = createHeatMapData();
-		List<HeatMapRow> rows = heatMapData.getRows();
-		if (!rows.isEmpty()) {
-			addHeatMapStatistics(rows);
+		List<String> identifiers = sliders.stream().map(SliderWrapper::getIdentifier).collect(toList());
+		GroupedStatistics statistics = loadHeatMapStatistics();
+		Set<MultiKey> keys = statistics.getKeys();
+		List<HeatMapRow> rows = new ArrayList<>(keys.size());
+		for (MultiKey multiKey : keys) {
+			List<String> groupNames = new ArrayList<>(6);
+			boolean found = true;
+			
+			if (multiGroupBy.getGroupBy1() != null) {
+				String groupName1 = translate("heatmap.not.specified");
+				if (multiKey.getKey1() != null) {
+					groupName1 = getGroupName(multiGroupBy.getGroupBy1(), multiKey.getKey1());
+					if (groupName1 == null) {
+						found = false;
+					}
+				}
+				groupNames.add(groupName1);
+			}
+			if (multiGroupBy.getGroupBy2() != null) {
+				String groupName2 = translate("heatmap.not.specified");
+				if (multiKey.getKey2() != null) {
+					groupName2 = getGroupName(multiGroupBy.getGroupBy2(), multiKey.getKey2());
+					if (groupName2 == null) {
+						found = false;
+					}
+				}
+				groupNames.add(groupName2);
+			}
+			if (multiGroupBy.getGroupBy3() != null) {
+				String groupName3 = translate("heatmap.not.specified");
+				if (multiKey.getKey3() != null) {
+					groupName3 = getGroupName(multiGroupBy.getGroupBy3(), multiKey.getKey3());
+					if (groupName3 == null) {
+						found = false;
+					}
+				}
+				groupNames.add(groupName3);
+			}
+			
+			if (found) {
+				// Iterate over the identifiers to sort the statistics according to the headers.
+				List<GroupedStatistic> rowStatistics = new ArrayList<>();
+				for (String identifier : identifiers) {
+					GroupedStatistic rowStatistic = statistics.getStatistic(identifier, multiKey);
+					rowStatistics.add(rowStatistic);
+				}
+				HeatMapRow row = new HeatMapRow(multiKey, groupNames, rowStatistics);
+				rows.add(row);
+			}
 		}
+		
 		if (insufficientOnly) {
 			rows.removeIf(this::hasNoInsufficientAvgs);
 		}
+		
+		List<String> headers = getHeaders();
 		int maxCount = getMaxCount(rows);
-		initTable(heatMapData.getHeaders(), maxCount);
+		initTable(headers, maxCount);
+		
+		rows.sort(new GroupNameAlphabeticalComparator());
 		dataModel.setObjects(rows);
 		tableEl.reset(true, true, true);
 	}
 
-	public void addHeatMapStatistics(List<HeatMapRow> rows) {
+	public List<String> getHeaders() {
+		List<String> headers = new ArrayList<>();
+		if (multiGroupBy.getGroupBy1() != null) {
+			String header1 = getHeader(multiGroupBy.getGroupBy1());
+			headers.add(header1);
+		}
+		if (multiGroupBy.getGroupBy2() != null) {
+			String header2 = getHeader(multiGroupBy.getGroupBy2());
+			headers.add(header2);
+		}
+		if (multiGroupBy.getGroupBy3() != null) {
+			String header3 = getHeader(multiGroupBy.getGroupBy3());
+			headers.add(header3);
+		}
+		return headers;
+	}
+	
+	private String getHeader(GroupBy groupBy) {
+		switch (groupBy) {
+		case TOPIC_IDENTITY:
+			return translate("heatmap.table.title.identity");
+		case TOPIC_ORGANISATION:
+			return translate("heatmap.table.title.organisation");
+		case TOPIC_CURRICULUM:
+			return translate("heatmap.table.title.curriculum");
+		case TOPIC_CURRICULUM_ELEMENT:
+			return translate("heatmap.table.title.curriculum.element");
+		case TOPIC_REPOSITORY:
+			return translate("heatmap.table.title.repository");
+		case CONTEXT_ORGANISATION:
+			return translate("heatmap.table.title.organisation");
+		case CONTEXT_CURRICULUM:
+			return translate("heatmap.table.title.curriculum");
+		case CONTEXT_CURRICULUM_ELEMENT:
+			return translate("heatmap.table.title.curriculum.element");
+		case CONTEXT_TAXONOMY_LEVEL:
+			return translate("heatmap.table.title.taxonomy.level");
+		default:
+			return null;
+		}
+	}
+	
+	private String getGroupName(GroupBy groupBy, Long key) {
+		switch (groupBy) {
+		case TOPIC_IDENTITY:
+			return getTopicIdentityGroupName(key);
+		case TOPIC_ORGANISATION:
+			return getTopicOrganisationGroupName(key);
+		case TOPIC_CURRICULUM:
+			return getTopicCurriculumGroupName(key);
+		case TOPIC_CURRICULUM_ELEMENT:
+			return getTopicCurriculumElementGroupName(key);
+		case TOPIC_REPOSITORY:
+			return getTopicRepositoryEntryGroupName(key);
+		case CONTEXT_ORGANISATION:
+			return getContextOrganisationGroupName(key);
+		case CONTEXT_CURRICULUM:
+			return getContextCurriculumGroupName(key);
+		case CONTEXT_CURRICULUM_ELEMENT:
+			return getContextCurriculumElementGroupName(key);
+		case CONTEXT_TAXONOMY_LEVEL:
+			return getContextTaxonomyLevelGroupName(key);
+		default:
+			return null;
+		}
+	}
+
+	private String getTopicIdentityGroupName(Long key) {
+		return getGroupNamesTopicIdentity().get(key);
+	}
+
+	private Map<Long, String> getGroupNamesTopicIdentity() {
+		if (groupNamesTopicIdentity == null) {
+			groupNamesTopicIdentity = new HashMap<>();
+			getGroupNamesSearchParams();
+			List<IdentityShort> identities = analysisService.loadTopicIdentity(searchParams);
+			for (IdentityShort identity : identities) {
+				Long key = identity.getKey();
+				String value = identity.getLastName() + " " + identity.getFirstName();
+				groupNamesTopicIdentity.put(key, value);
+			}
+		}
+		return groupNamesTopicIdentity;
+	}
+
+	private String getTopicOrganisationGroupName(Long key) {
+		return getGroupNamesTopicOrganisation().get(key);
+	}
+
+	private Map<Long, String> getGroupNamesTopicOrganisation() {
+		if (groupNamesTopicOrganisation == null) {
+			groupNamesTopicOrganisation = new HashMap<>();
+			getGroupNamesSearchParams();
+			List<Organisation> organisations = analysisService.loadTopicOrganisations(searchParams, false);
+			for (Organisation organisation : organisations) {
+				Long key = organisation.getKey();
+				String value = organisation.getDisplayName();
+				groupNamesTopicOrganisation.put(key, value);
+			}
+		}
+		return groupNamesTopicOrganisation;
+	}
+
+	private String getTopicCurriculumGroupName(Long key) {
+		return getGroupNamesTopicCurriculum().get(key);
+	}
+
+	private Map<Long, String> getGroupNamesTopicCurriculum() {
+		if (groupNamesTopicCurriculum == null) {
+			groupNamesTopicCurriculum = new HashMap<>();
+			getGroupNamesSearchParams();
+			List<Curriculum> curriculums = analysisService.loadTopicCurriculums(searchParams);
+			for (Curriculum curriculum : curriculums) {
+				Long key = curriculum.getKey();
+				String value = curriculum.getDisplayName();
+				groupNamesTopicCurriculum.put(key, value);
+			}
+		}
+		return groupNamesTopicCurriculum;
+	}
+
+	private String getTopicCurriculumElementGroupName(Long key) {
+		return getGroupNamesTopicCurriculumElement().get(key);
+	}
+
+	private Map<Long, String> getGroupNamesTopicCurriculumElement() {
+		if (groupNamesTopicCurriculumElement == null) {
+			groupNamesTopicCurriculumElement = new HashMap<>();
+			getGroupNamesSearchParams();
+			List<CurriculumElement> curriculumElements = analysisService.loadTopicCurriculumElements(searchParams);
+			for (CurriculumElement curriculumElement : curriculumElements) {
+				Long key = curriculumElement.getKey();
+				String value = curriculumElement.getDisplayName();
+				groupNamesTopicCurriculumElement.put(key, value);
+			}
+		}
+		return groupNamesTopicCurriculumElement;
+	}
+
+	private String getTopicRepositoryEntryGroupName(Long key) {
+		return getGroupNamesTopicRepositoryEntry().get(key);
+	}
+
+	private Map<Long, String> getGroupNamesTopicRepositoryEntry() {
+		if (groupNamesTopicRepositoryEntry == null) {
+			groupNamesTopicRepositoryEntry = new HashMap<>();
+			getGroupNamesSearchParams();
+			List<RepositoryEntry> entries = analysisService.loadTopicRepositoryEntries(searchParams);
+			for (RepositoryEntry entry : entries) {
+				Long key = entry.getKey();
+				String value = entry.getDisplayname();
+				groupNamesTopicRepositoryEntry.put(key, value);
+			}
+		}
+		return groupNamesTopicRepositoryEntry;
+	}
+
+	private String getContextOrganisationGroupName(Long key) {
+		return getContextOrganisationGroupNames().get(key);
+	}
+
+	private Map<Long, String> getContextOrganisationGroupNames() {
+		if (groupNamesContextOrganisation == null) {
+			groupNamesContextOrganisation = new HashMap<>();
+			getGroupNamesSearchParams();
+			List<Organisation> elements = analysisService.loadContextOrganisations(searchParams, false);
+			for (Organisation element : elements) {
+				Long key = element.getKey();
+				String value = element.getDisplayName();
+				groupNamesContextOrganisation.put(key, value);
+			}
+		}
+		return groupNamesContextOrganisation;
+	}
+
+	private String getContextCurriculumGroupName(Long key) {
+		return getContextCurriculumGroupNames().get(key);
+	}
+
+	private Map<Long, String> getContextCurriculumGroupNames() {
+		if (groupNamesContextCurriculum == null) {
+			groupNamesContextCurriculum = new HashMap<>();
+			getGroupNamesSearchParams();
+			List<Curriculum> elements = analysisService.loadContextCurriculums(searchParams);
+			for (Curriculum element : elements) {
+				Long key = element.getKey();
+				String value = element.getDisplayName();
+				groupNamesContextCurriculum.put(key, value);
+			}
+		}
+		return groupNamesContextCurriculum;
+	}
+
+	private String getContextCurriculumElementGroupName(Long key) {
+		return getContextCurriculumElementGroupNames().get(key);
+	}
+
+	private Map<Long, String> getContextCurriculumElementGroupNames() {
+		if (groupNamesContextCurriculumElement == null) {
+			groupNamesContextCurriculumElement = new HashMap<>();
+			getGroupNamesSearchParams();
+			List<CurriculumElement> elements = analysisService.loadContextCurriculumElements(searchParams, false);
+			for (CurriculumElement element : elements) {
+				Long key = element.getKey();
+				String value = element.getDisplayName();
+				groupNamesContextCurriculumElement.put(key, value);
+			}
+		}
+		return groupNamesContextCurriculumElement;
+	}
+
+	private String getContextTaxonomyLevelGroupName(Long key) {
+		return getContextTaxonomyLevelGroupNames().get(key);
+	}
+
+	private Map<Long, String> getContextTaxonomyLevelGroupNames() {
+		if (groupNamesContextTaxonomyLevel == null) {
+			groupNamesContextTaxonomyLevel = new HashMap<>();
+			getGroupNamesSearchParams();
+			List<TaxonomyLevel> elements = analysisService.loadContextTaxonomyLevels(searchParams, false);
+			for (TaxonomyLevel element : elements) {
+				Long key = element.getKey();
+				String value = element.getDisplayName();
+				groupNamesContextTaxonomyLevel.put(key, value);
+			}
+		}
+		return groupNamesContextTaxonomyLevel;
+	}
+
+	private void getGroupNamesSearchParams() {
+		AnalysisSearchParameter groupNameParams = new AnalysisSearchParameter();
+		groupNameParams.setFormEntryRef(searchParams.getFormEntryRef());
+	}
+	
+	public GroupedStatistics loadHeatMapStatistics() {
 		List<String> identifiers = sliders.stream().map(SliderWrapper::getIdentifier).collect(toList());
 		List<Rubric> rubrics = sliders.stream().map(SliderWrapper::getRubric).distinct().collect(toList());
-		MultiGroupBy multiGroupBy = new MultiGroupBy(groupBy, null, null);
-		GroupedStatistics statistics = analysisService.calculateStatistics(searchParams, identifiers, rubrics, multiGroupBy);
-		
-		for (HeatMapRow row : rows) {
-			List<GroupedStatistic> rowStatistics = new ArrayList<>();
-			// Iterate over the identifiers to sort the statistics according to the headers.
-			for (String identifier : identifiers) {
-				GroupedStatistic rowStatistic = statistics.getStatistic(identifier, MultiKey.of(row.getGroupKey()));
-				rowStatistics.add(rowStatistic);
-			}
-			row.setStatistics(rowStatistics);
-		}
-		rows.sort(new GroupNameAlphabeticalComparator());
+		return analysisService.calculateStatistics(searchParams, identifiers, rubrics, multiGroupBy);
 	}
 
 	private boolean hasNoInsufficientAvgs(HeatMapRow row) {
@@ -355,191 +664,6 @@ public class HeatMapController extends FormBasicController implements Filterable
 		}
 		return Long.valueOf(maxCount).intValue();
 	}
-	
-	private HeatMapData createHeatMapData() {
-		switch (groupBy) {
-		case TOPIC_IDENTITY:
-			return createTopicIdentityData();
-		case TOPIC_ORGANISATION:
-			return createTopicOrganisationData();
-		case TOPIC_CURRICULUM:
-			return createTopicCurriculumData();
-		case TOPIC_CURRICULUM_ELEMENT:
-			return createTopicCurriculumElementData();
-		case TOPIC_REPOSITORY:
-			return createTopicRepositoryData();
-		case CONTEXT_ORGANISATION:
-			return createContextOraganisationData();
-		case CONTEXT_CURRICULUM:
-			return createContextCurriculumData();
-		case CONTEXT_CURRICULUM_ELEMENT:
-			return createContextCurriculumElementData();
-		case CONTEXT_TAXONOMY_LEVEL:
-			return createContextTaxonomyLevelData();
-		default:
-			return new HeatMapData(emptyList(), emptyList());
-		}
-	}
-	
-	private HeatMapData createTopicIdentityData() {
-		List<IdentityShort> identities = analysisService.loadTopicIdentity(searchParams);
-		List<HeatMapRow> rows = new ArrayList<>(identities.size());
-		for (IdentityShort itentity : identities) {
-			Long groupKey = itentity.getKey();
-			List<String> groupNames = new ArrayList<>(2);
-			groupNames.add(itentity.getLastName());
-			groupNames.add(itentity.getFirstName());
-			HeatMapRow row = new HeatMapRow(groupKey, groupNames);
-			rows.add(row);
-		}
-		
-		List<String> headers = new ArrayList<>(2);
-		headers.add(translate("heatmap.table.title.identity"));
-		addNulls(headers, 1);
-		return new HeatMapData(rows, headers);
-	}
-
-	private HeatMapData createTopicOrganisationData() {
-		List<Organisation> organisations = analysisService.loadTopicOrganisations(searchParams, false);
-		return createOrganisationData(organisations);
-	}
-
-	private HeatMapData createContextOraganisationData() {
-		List<Organisation> organisations = analysisService.loadContextOrganisations(searchParams, false);
-		return createOrganisationData(organisations);
-	}
-
-	private HeatMapData createOrganisationData(List<Organisation> organisations) {
-		List<HeatMapRow> rows = new ArrayList<>(organisations.size());
-		for (Organisation organisation : organisations) {
-			Long groupKey = organisation.getKey();
-			List<String> groupNames = new ArrayList<>();
-			QualityUIFactory.addParentOrganisationNames(groupNames, organisation);
-			Collections.reverse(groupNames);
-			HeatMapRow row = new HeatMapRow(groupKey, groupNames);
-			rows.add(row);
-		}
-		
-		int maxSize = getMaxGroupNamesSize(rows);
-		fillGroupNamesToSameSize(rows, maxSize);
-		
-		List<String> headers = new ArrayList<>(maxSize);
-		headers.add(translate("heatmap.table.title.organisation"));
-		addNulls(headers, maxSize - 1);
-		return new HeatMapData(rows, headers);
-	}
-
-	private HeatMapData createTopicCurriculumData() {
-		List<Curriculum> curriculums = analysisService.loadTopicCurriculums(searchParams);
-		return createCurriculumData(curriculums);
-	}
-	
-	private HeatMapData createContextCurriculumData() {
-		List<Curriculum> curriculums = analysisService.loadContextCurriculums(searchParams);
-		return createCurriculumData(curriculums);
-	}
-
-	private HeatMapData createCurriculumData(List<Curriculum> curriculums) {
-		List<HeatMapRow> rows = new ArrayList<>(curriculums.size());
-		for (Curriculum curriculum : curriculums) {
-			Long groupKey = curriculum.getKey();
-			List<String> groupNames = singletonList(curriculum.getDisplayName());
-			HeatMapRow row = new HeatMapRow(groupKey, groupNames);
-			rows.add(row);
-		}
-		
-		List<String> headers = singletonList(translate("heatmap.table.title.curriculum"));
-		return new HeatMapData(rows, headers);
-	}
-
-	private HeatMapData createTopicCurriculumElementData() {
-		List<CurriculumElement> curriculumElements = analysisService.loadTopicCurriculumElements(searchParams);
-		return createCurriculumElements(curriculumElements);
-	}
-
-	private HeatMapData createContextCurriculumElementData() {
-		List<CurriculumElement> curriculumElements = analysisService.loadContextCurriculumElements(searchParams, false);
-		return createCurriculumElements(curriculumElements);
-	}
-
-	private HeatMapData createCurriculumElements(List<CurriculumElement> curriculumElements) {
-		List<HeatMapRow> rows = new ArrayList<>(curriculumElements.size());
-		for (CurriculumElement curriculumElement : curriculumElements) {
-			Long groupKey = curriculumElement.getKey();
-			List<String> groupNames = new ArrayList<>();
-			QualityUIFactory.addParentCurriculumElementNames(groupNames, curriculumElement);
-			Collections.reverse(groupNames);
-			HeatMapRow row = new HeatMapRow(groupKey, groupNames);
-			rows.add(row);
-		}
-		
-		int maxSize = getMaxGroupNamesSize(rows);
-		fillGroupNamesToSameSize(rows, maxSize);
-		List<String> headers = new ArrayList<>(maxSize);
-		headers.add(translate("heatmap.table.title.curriculum.element"));
-		addNulls(headers, maxSize - 1);
-		return new HeatMapData(rows, headers);
-	}
-	
-	private HeatMapData createTopicRepositoryData() {
-		List<RepositoryEntry> entries = analysisService.loadTopicRepositoryEntries(searchParams);
-		List<HeatMapRow> rows = new ArrayList<>(entries.size());
-		for (RepositoryEntry entry : entries) {
-			Long groupKey = entry.getKey();
-			List<String> groupNames = new ArrayList<>(2);
-			groupNames.add(entry.getDisplayname());
-			HeatMapRow row = new HeatMapRow(groupKey, groupNames);
-			rows.add(row);
-		}
-		
-		List<String> headers = singletonList(translate("heatmap.table.title.repository"));
-		return new HeatMapData(rows, headers);
-	}
-
-	private HeatMapData createContextTaxonomyLevelData() {
-		List<TaxonomyLevel> levels = analysisService.loadContextTaxonomyLevels(searchParams, false);
-		List<HeatMapRow> rows = new ArrayList<>(levels.size());
-		for (TaxonomyLevel level : levels) {
-			Long groupKey = level.getKey();
-			List<String> groupNames = new ArrayList<>();
-			QualityUIFactory.addParentTaxonomyLevelNames(groupNames, level);
-			Collections.reverse(groupNames);
-			HeatMapRow row = new HeatMapRow(groupKey, groupNames);
-			rows.add(row);
-		}
-		
-		int maxSize = getMaxGroupNamesSize(rows);
-		fillGroupNamesToSameSize(rows, maxSize);
-		List<String> headers = new ArrayList<>(maxSize);
-		headers.add(translate("heatmap.table.title.taxonomy.level"));
-		addNulls(headers, maxSize - 1);
-		return new HeatMapData(rows, headers);
-	}
-
-	private int getMaxGroupNamesSize(List<HeatMapRow> rows) {
-		int maxSize = 0;
-		for (HeatMapRow row : rows) {
-			if (maxSize < row.getGroupNamesSize()) {
-				maxSize = row.getGroupNamesSize();
-			}
-		}
-		return maxSize;
-	}
-
-	private void fillGroupNamesToSameSize(List<HeatMapRow> rows, int maxSize) {
-		for (HeatMapRow row : rows) {
-			if (maxSize > row.getGroupNamesSize()) {
-				List<String> groupNames = row.getGroupNames();
-				addNulls(groupNames, maxSize - row.getGroupNamesSize());
-			}
-		}
-	}
-
-	private void addNulls(List<String> list, int howMany) {
-		for (int index = 0; index < howMany; index++) {
-			list.add(null);
-		}
-	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
@@ -579,25 +703,6 @@ public class HeatMapController extends FormBasicController implements Filterable
 
 		public String getLabel() {
 			return label;
-		}
-	}
-	
-	private final static class HeatMapData {
-		
-		private final List<HeatMapRow> rows;
-		private final List<String> headers;
-		
-		public HeatMapData(List<HeatMapRow> rows, List<String> headers) {
-			this.rows = rows;
-			this.headers = headers;
-		}
-
-		public List<HeatMapRow> getRows() {
-			return rows;
-		}
-
-		public List<String> getHeaders() {
-			return headers;
 		}
 	}
 

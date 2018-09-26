@@ -22,7 +22,9 @@ package org.olat.modules.quality.analysis;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * 
@@ -74,5 +76,13 @@ public class GroupedStatistics {
 			all.addAll(grouped.values());
 		}
 		return all;
+	}
+	
+	public Set<MultiKey> getKeys() {
+		Set<MultiKey> keys = new HashSet<>();
+		for (GroupedStatistic statistic : getStatistics()) {
+			keys.add(statistic.getMultiKey());
+		}
+		return keys;
 	}
 }
