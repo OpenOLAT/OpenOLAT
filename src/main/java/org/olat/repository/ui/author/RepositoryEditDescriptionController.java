@@ -92,6 +92,7 @@ import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.model.TaxonomyRefImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
+import org.olat.repository.RepositoryEntryToTaxonomyLevel;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
@@ -128,6 +129,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 	private final String repoEntryType;
 	private ResourceLicense license;
 	private List<Organisation> repositoryEntryOrganisations;
+	private Set<TaxonomyLevel> taxonomyLevels;
 
 	private static final int picUploadlimitKB = 5120;
 	private static final int movieUploadlimitKB = 102400;
@@ -449,10 +451,13 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 	}
 
 	private void initFormTaxonomy(FormItemContainer formLayout, TaxonomyRef taxonomyRef) {
-		List<TaxonomyLevel> levels = taxonomyService.getTaxonomyLevels(taxonomyRef);
+		taxonomyLevels = repositoryEntry.getTaxonomyLevels().stream()
+				.map(RepositoryEntryToTaxonomyLevel::getTaxonomyLevel)
+				.collect(Collectors.toSet());
+		List<TaxonomyLevel> allTaxonomyLevels = taxonomyService.getTaxonomyLevels(taxonomyRef);
 
 		KeyValues keyValues = new KeyValues();
-		for (TaxonomyLevel level:levels) {
+		for (TaxonomyLevel level:allTaxonomyLevels) {
 			String key = Long.toString(level.getKey());
 			ArrayList<String> names = new ArrayList<>();
 			addParentNames(names, level);
@@ -773,7 +778,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 		// Taxonomy levels
 		if (taxonomyLevelEl != null) {
 			Collection<String> selectedLevelKeys = taxonomyLevelEl.getSelectedKeys();
-			List<String> currentKeys = repositoryService.getTaxonomy(repositoryEntry).stream()
+			List<String> currentKeys = taxonomyLevels.stream()
 					.map(l -> l.getKey().toString())
 					.collect(Collectors.toList());
 			// add newly selected keys
@@ -781,14 +786,13 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 			addKeys.removeAll(currentKeys);
 			for (String addKey : addKeys) {
 				TaxonomyLevel level = taxonomyService.getTaxonomyLevel(() -> Long.valueOf(addKey));
-				repositoryService.addTaxonomyLevel(repositoryEntry, level);
+				taxonomyLevels.add(level);
 			}
 			// remove newly unselected keys
 			Collection<String> removeKeys = new HashSet<>(currentKeys);
 			removeKeys.removeAll(selectedLevelKeys);
 			for (String removeKey: removeKeys) {
-				TaxonomyLevel level = taxonomyService.getTaxonomyLevel(() -> Long.valueOf(removeKey));
-				repositoryService.removeTaxonomyLevel(repositoryEntry, level);
+				taxonomyLevels.removeIf(level -> removeKey.equals(level.getKey().toString()));
 			}
 		}
 		
@@ -823,7 +827,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 				repositoryEntry.getDisplayname(), repositoryEntry.getExternalRef(), repositoryEntry.getAuthors(),
 				repositoryEntry.getDescription(), repositoryEntry.getObjectives(), repositoryEntry.getRequirements(),
 				repositoryEntry.getCredits(), repositoryEntry.getMainLanguage(), repositoryEntry.getLocation(),
-				repositoryEntry.getExpenditureOfWork(), repositoryEntry.getLifecycle(), organisations);
+				repositoryEntry.getExpenditureOfWork(), repositoryEntry.getLifecycle(), organisations, taxonomyLevels);
 		if(repositoryEntry == null) {
 			showWarning("repositoryentry.not.existing");
 			fireEvent(ureq, Event.CLOSE_EVENT);

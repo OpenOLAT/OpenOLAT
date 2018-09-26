@@ -84,6 +84,7 @@ import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryEntryToOrganisation;
+import org.olat.repository.RepositoryEntryToTaxonomyLevel;
 import org.olat.repository.RepositoryMailing;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;
@@ -271,6 +272,12 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		copyEntry.setMainLanguage(sourceEntry.getMainLanguage());
 		copyEntry.setObjectives(sourceEntry.getObjectives());
 		copyEntry.setRequirements(sourceEntry.getRequirements());
+		
+		List<TaxonomyLevel> taxonomyLevels = repositoryEntryToTaxonomyLevelDao.getTaxonomyLevels(sourceEntry);
+		for (TaxonomyLevel taxonomyLevel : taxonomyLevels) {
+			RepositoryEntryToTaxonomyLevel relation = repositoryEntryToTaxonomyLevelDao.createRelation(copyEntry, taxonomyLevel);
+			copyEntry.getTaxonomyLevels().add(relation);
+		}
 
 		List<Organisation> sourceOrganisations = reToGroupDao.getOrganisations(sourceEntry);
 		for(Organisation sourceOrganisation:sourceOrganisations) {

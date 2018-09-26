@@ -32,6 +32,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -76,10 +77,12 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.group.GroupLoggingAction;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.repository.manager.RepositoryEntryDAO;
 import org.olat.repository.manager.RepositoryEntryQueries;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.repository.manager.RepositoryEntryToOrganisationDAO;
+import org.olat.repository.manager.RepositoryEntryToTaxonomyLevelDAO;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.repository.model.RepositoryEntryMembership;
 import org.olat.repository.model.RepositoryEntryMembershipModifiedEvent;
@@ -127,6 +130,8 @@ public class RepositoryManager {
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 	@Autowired
 	private RepositoryEntryToOrganisationDAO repositoryEntryToOrganisationDao;
+	@Autowired
+	private RepositoryEntryToTaxonomyLevelDAO repositoryEntryToTaxonomyLevelDAO;
 	@Autowired
 	private ACReservationDAO reservationDao;
 	@Autowired
@@ -755,13 +760,14 @@ public class RepositoryManager {
 	 * @param mainLanguage
 	 * @param expenditureOfWork
 	 * @param cycle
+	 * @param taxonomyLevels 
 	 * @return
 	 */
 	public RepositoryEntry setDescriptionAndName(final RepositoryEntry re,
 			String displayName, String externalRef, String authors, String description,
 			String objectives, String requirements, String credits, String mainLanguage,
 			String location, String expenditureOfWork, RepositoryEntryLifecycle cycle,
-			List<Organisation> organisations) {
+			List<Organisation> organisations, Set<TaxonomyLevel> taxonomyLevels) {
 		RepositoryEntry reloadedRe = repositoryEntryDao.loadForUpdate(re);
 		if(reloadedRe == null) {
 			return null;
@@ -786,6 +792,21 @@ public class RepositoryManager {
 				if(cycle == null || !cycle.isPrivateCycle()) {
 					cycleToDelete = currentCycle;
 				}
+			}
+		}
+		
+		if (taxonomyLevels != null) {
+			List<TaxonomyLevel> currentTaxonomyLevels = repositoryEntryToTaxonomyLevelDAO.getTaxonomyLevels(reloadedRe);
+			
+			Collection<TaxonomyLevel> addLevels = new HashSet<>(taxonomyLevels);
+			addLevels.removeAll(currentTaxonomyLevels);
+			for (TaxonomyLevel addLevel : addLevels) {
+				repositoryEntryToTaxonomyLevelDAO.createRelation(reloadedRe, addLevel);
+			}
+			Collection<TaxonomyLevel> removeLevels = new HashSet<>(currentTaxonomyLevels);
+			removeLevels.removeAll(taxonomyLevels);
+			for (TaxonomyLevel removeLevel: removeLevels) {
+				repositoryEntryToTaxonomyLevelDAO.deleteRelation(reloadedRe, removeLevel);
 			}
 		}
 
