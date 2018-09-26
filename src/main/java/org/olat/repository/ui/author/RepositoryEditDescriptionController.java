@@ -771,23 +771,25 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 		}
 		
 		// Taxonomy levels
-		Collection<String> selectedLevelKeys = taxonomyLevelEl.getSelectedKeys();
-		List<String> currentKeys = repositoryService.getTaxonomy(repositoryEntry).stream()
-				.map(l -> l.getKey().toString())
-				.collect(Collectors.toList());
-		// add newly selected keys
-		Collection<String> addKeys = new HashSet<>(selectedLevelKeys);
-		addKeys.removeAll(currentKeys);
-		for (String addKey : addKeys) {
-			TaxonomyLevel level = taxonomyService.getTaxonomyLevel(() -> Long.valueOf(addKey));
-			repositoryService.addTaxonomyLevel(repositoryEntry, level);
-		}
-		// remove newly unselected keys
-		Collection<String> removeKeys = new HashSet<>(currentKeys);
-		removeKeys.removeAll(selectedLevelKeys);
-		for (String removeKey: removeKeys) {
-			TaxonomyLevel level = taxonomyService.getTaxonomyLevel(() -> Long.valueOf(removeKey));
-			repositoryService.removeTaxonomyLevel(repositoryEntry, level);
+		if (taxonomyLevelEl != null) {
+			Collection<String> selectedLevelKeys = taxonomyLevelEl.getSelectedKeys();
+			List<String> currentKeys = repositoryService.getTaxonomy(repositoryEntry).stream()
+					.map(l -> l.getKey().toString())
+					.collect(Collectors.toList());
+			// add newly selected keys
+			Collection<String> addKeys = new HashSet<>(selectedLevelKeys);
+			addKeys.removeAll(currentKeys);
+			for (String addKey : addKeys) {
+				TaxonomyLevel level = taxonomyService.getTaxonomyLevel(() -> Long.valueOf(addKey));
+				repositoryService.addTaxonomyLevel(repositoryEntry, level);
+			}
+			// remove newly unselected keys
+			Collection<String> removeKeys = new HashSet<>(currentKeys);
+			removeKeys.removeAll(selectedLevelKeys);
+			for (String removeKey: removeKeys) {
+				TaxonomyLevel level = taxonomyService.getTaxonomyLevel(() -> Long.valueOf(removeKey));
+				repositoryService.removeTaxonomyLevel(repositoryEntry, level);
+			}
 		}
 		
 		// Organisations
