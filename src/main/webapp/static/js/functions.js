@@ -934,7 +934,7 @@ OPOL.setContainerFullWidth = function(full) {
 		jQuery('body').removeClass('o_width_full');		
 	}
 	// Update navbar calculations of sites and tabs
-	jQuery.proxy(OPOL.navbar.onResizeCallback,OPOL.navbar)();
+	jQuery.proxy(OPOL.navbar.onPageWidthChangeCallback,OPOL.navbar)();
 }
 
 /* Register to resize event and fire an event when the resize is finished */

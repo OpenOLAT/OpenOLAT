@@ -71,15 +71,15 @@
 		// Mark nav components dirty when updated in DOM
 		$(document).on("oo.nav.sites.modified", $.proxy(function() {
 			this.state.sitesDirty = true;
-			//console.log('sites dirty');
+//			console.log('sites dirty');
 		},this));
 		$(document).on("oo.nav.tabs.modified", $.proxy(function() {
 			this.state.tabsDirty = true;
-			//console.log('tabs dirty');
+//			console.log('tabs dirty');
 		},this));
 		$(document).on("oo.nav.tools.modified", $.proxy(function() {
 			this.state.toolsDirty = true;
-			//console.log('tools dirty');
+//			console.log('tools dirty');
 		},this));
 
 		// Optimize when DOM replacement is finished (and marked dirty previously)
@@ -98,6 +98,7 @@
 	}
 	
 	Navbar.prototype.onResizeCallback = function() {
+//		console.log('onResizeCallback with busy::' + this.state.busy);
 		if (!this.state.busy) {			
 			this.state.busy = true;
 			this.calculateWidth();
@@ -105,7 +106,21 @@
 			this.state.busy = false;
 		}
 	}
+	Navbar.prototype.onPageWidthChangeCallback = function() {
+//		console.log('onPageWidthChangeCallback with busy::' + this.state.busy);
+		if (!this.state.busy) {			
+			this.state.busy = true;
+			this.cleanupMoreDropdown();
+			this.calculateWidth();
+			this.optimize();		
+			this.state.sitesDirty = false;
+			this.state.tabsDirty = false;
+			this.state.toolsDirty = false;	
+			this.state.busy = false;
+		}
+	}
 	Navbar.prototype.onDOMreplacementCallback = function() {
+//		console.log('onDOMreplacementCallback with busy::' + this.state.busy);
 		if (!this.state.busy && (this.state.sitesDirty || this.state.tabsDirty || this.state.toolsDirty)) {			
 			this.state.busy = true;
 			this.cleanupMoreDropdown();
@@ -143,10 +158,11 @@
 	    this.state.sitesW = this.getSites().outerWidth(true);
     	this.state.tabsW = this.getTabs().outerWidth(true);	    	
 	    //don't include margin, because left and right margins on this element are negative
-    	this.state.toolsW = this.getTools().outerWidth(false);	    	
-	    this.state.moreW = $('#o_navbar_more:visible').outerWidth(true);
+    	this.state.toolsW = this.getTools().outerWidth(false);	  
+    	var moreEl = $('#o_navbar_more:visible');
+    	this.state.moreW = (moreEl.length > 0 ? moreEl.outerWidth(true) : 0);    		
 	    
-//	    console.log('calculateWidth w:' + this.state.navbarW + ' s:'+this.state.sitesW + ' d:'+this.state.tabsW + ' t:'+this.state.toolsW + ' o:'+this.getOverflow() );
+//	    console.log('calculateWidth w:' + this.state.navbarW + ' s:'+this.state.sitesW + ' d:'+this.state.tabsW + ' t:'+this.state.toolsW + ' m:' + this.state.moreW + ' o:'+this.getOverflow() );
 	}
 
 	Navbar.prototype.getOverflow = function(e) {
@@ -245,7 +261,7 @@
 			}
 		}
 
-		this.updateDropdownToggle(source);
+		this.updateDropdownToggle(dest);
 	}
 
 	Navbar.prototype.extend = function(source, dest, selector, removeClass, before) {
@@ -285,13 +301,16 @@
 	Navbar.prototype.updateDropdownToggle = function(element) {
 		var dropdownToggle = element.parents('.o_dropdown_toggle');
 		if(!dropdownToggle.length) {
+//			console.log('updateDropdownToggle not found')
 			return;
 		}
 		
 		if(element.children().length){
 			dropdownToggle.css('display', 'block');
+//			console.log('updateDropdownToggle to block')
 		} else {
 			dropdownToggle.css('display', 'none');
+//			console.log('updateDropdownToggle to invisible')
 		}
 	}
 
