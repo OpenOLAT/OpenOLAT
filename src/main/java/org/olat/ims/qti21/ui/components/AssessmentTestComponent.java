@@ -36,6 +36,7 @@ import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
 import uk.ac.ed.ph.jqtiplus.node.result.SessionStatus;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentSection;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
+import uk.ac.ed.ph.jqtiplus.node.test.SectionPart;
 import uk.ac.ed.ph.jqtiplus.node.test.TestPart;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
@@ -273,6 +274,14 @@ public class AssessmentTestComponent extends AssessmentObjectComponent  {
 				if(section.getIdentifier().equals(identifier)) {
 					return section;
 				}
+//////
+				for(SectionPart childSection:section.getChildAbstractParts()) {
+					if(childSection.getIdentifier().equals(identifier) && childSection instanceof AssessmentSection) {
+						return (AssessmentSection) childSection;
+					}
+					
+				}					
+///////
 			}	
 		}
 		return null;

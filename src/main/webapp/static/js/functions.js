@@ -925,6 +925,18 @@ OPOL.adjustHeight = function() {
 		if(window.console)	console.log(e);			
 	}
 };
+
+/* Set the container page width to full width of the window or use standard page width */
+OPOL.setContainerFullWidth = function(full) {
+	if (full) {
+		jQuery('body').addClass('o_width_full');				
+	} else {
+		jQuery('body').removeClass('o_width_full');		
+	}
+	// Update navbar calculations of sites and tabs
+	jQuery.proxy(OPOL.navbar.onResizeCallback,OPOL.navbar)();
+}
+
 /* Register to resize event and fire an event when the resize is finished */
 jQuery(window).resize(function() {
 	clearTimeout(o_info.resizeId);

@@ -7,13 +7,46 @@ body {
 .o_container_offcanvas {
 	position: relative;
 	max-width: $o-page-width-max;
+}
 
-	/* transition for media queries changes */
-	-webkit-transition: all .25s ease-in-out;
-	-moz-transition: all .25s ease-in-out;
-	-o-transition: all .25s ease-in-out;
-	-m-transition: all .25s ease-in-out;
-	transition: all .25s ease-in-out;
+/* Button to enable / disable the max-width of the page */
+#o_container_page_width_toggler {
+	position: absolute;
+	/* position in middle of top nav: half of top nav height down and half of button height up again */
+	top: 25px;
+	margin-top: ($line-height-small * -0.5em); 
+	right: 10px;
+	z-index: 5;
+	display: none;
+}
+@media (min-width: $o-page-width-max + 40px ) { 
+	#o_container_page_width_toggler {
+		display: block;		
+		#o_go_standard_width {
+			display: none;
+		}
+		#o_go_full_width {
+			display: block;
+		}
+	}
+	body.o_width_full {		
+		.o_container_offcanvas {
+			max-width: 100%;
+			margin-left: 20px;
+			margin-right: 20px;
+		}
+		#o_container_page_width_toggler {
+			#o_go_standard_width {
+				display: block;
+			}
+			#o_go_full_width {
+				display: none;
+			}
+		}
+	}
+}
+body.o_dmz #o_container_page_width_toggler {
+	display: none !important;
 }
 
 /* 	

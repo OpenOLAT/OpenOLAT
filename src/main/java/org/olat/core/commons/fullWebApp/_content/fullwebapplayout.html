@@ -205,7 +205,7 @@ $r.renderHeaderIncludes()
 <title>$r.translate("page.appname") - $r.translate("page.title")</title>
 </head>
 
-<body onload="o_start();" id="o_body" class="#foreach($cssClass in $bodyCssClasses)$cssClass #end o_lang_$r.getLanguageCode()">
+<body onload="o_start();" id="o_body" class="#foreach($cssClass in $bodyCssClasses)$cssClass #end o_lang_$r.getLanguageCode() $pageSizeCss">
 <div id="o_bg"></div>
 ## if in debug mode, it is a invisible component which is only visible by wrapping debug information around all other
 ## components.
@@ -278,8 +278,21 @@ $r.renderForce("development")
 				$r.render("topnavComponent")
 			#end	
 		</div>
+		
 	</div>
 </div>
+<div id="o_container_page_width_toggler">
+	<div id="o_go_standard_width" title="$r.translateInAttribute("content.width.standard")" class="btn btn-primary btn-xs"><i class="o_icon o_icon_width_collapse o_icon-fw"> </i></div>
+	<div id="o_go_full_width" title="$r.translateInAttribute("content.width.standard")" class="btn btn-default btn-xs"><i class="o_icon o_icon_width_expand o_icon-fw"> </i></div>
+</div>
+<div><script type="text/javascript">
+/* <![CDATA[ */ 
+	jQuery(document).ready(function() {
+		jQuery("#o_go_standard_width").click(function() { OPOL.setContainerFullWidth(0); $r.openNoResponseJavaScriptCommand("width.standard")); });
+		jQuery("#o_go_full_width").click(function() { OPOL.setContainerFullWidth(1); $r.openNoResponseJavaScriptCommand("width.full")); });
+	});
+/* ]]> */
+</script></div>
 #end
 ## ---- END #o_navbar ---
 $r.render("stickymsg")

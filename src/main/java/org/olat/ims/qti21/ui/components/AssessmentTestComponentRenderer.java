@@ -339,24 +339,14 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 			sb.append("'>");
 			
 			//write the titles first
-			if(writeTitles) {
-				sb.append("<h4>");
-				for(int i=0; i<sectionParentLine.size(); i++) {
-					if(i == 1) {
-						sb.append("<small>");
-					} else if(i > 1) {
-						sb.append(" / ");
-					}
-					sb.append(sectionParentLine.get(i).getTitle());
-				}
-				
-				if(sectionParentLine.size() > 1) {
-					sb.append("</small>");
-				}
-				sb.append("</h4>");
-			}
 			
 			for(int i=sectionParentLine.size(); i-->0; ) {
+				if(writeTitles) {
+					String hTag = "h" + (4 + sectionParentLine.size() - i -1);
+					sb.append("<").append(hTag).append(">");
+					sb.append(sectionParentLine.get(i).getTitle());
+					sb.append("</").append(hTag).append(">");
+				}
 				AssessmentSection selectedSection = sectionParentLine.get(i);
 				for(RubricBlock rubricBlock:selectedSection.getRubricBlocks()) {
 					sb.append("<div class='rubric'>");//@view (candidate)

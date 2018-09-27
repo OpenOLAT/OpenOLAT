@@ -323,6 +323,9 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 
 		// add optional css classes
 		mainVc.contextPut("bodyCssClasses", bodyCssClasses);
+		
+		// add page width css. Init empty on login (full page state not persisted)
+		mainVc.contextPut("pageSizeCss", "");
 
 		Window w = wbo.getWindow();
 
@@ -650,6 +653,16 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 				if(point != null) {
 					back(ureq, point);
 				}
+			}
+		} else if (source == mainVc) {
+			// Set CSS on body to maintain user selected page width. 
+			// Add it to velocity just in case of a full page reload. The CSS class has already been added via JS in the user browser!
+			if ("width.full".equals(event.getCommand())) {
+				mainVc.contextPut("pageSizeCss", "o_width_full");
+				mainVc.setDirty(false);
+			} else if ("width.standard".equals(event.getCommand())) {
+				mainVc.contextPut("pageSizeCss", "");			
+				mainVc.setDirty(false);
 			}
 		}
 	}

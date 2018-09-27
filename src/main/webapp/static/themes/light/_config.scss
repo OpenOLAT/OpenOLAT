@@ -73,6 +73,12 @@ $o-table-edit-bg				: #fefbf6;
 
 /* The max width the header/navbar/main/footer can possibly have. */
 $o-page-width-max : 1324px !default;
+$o-page-width-toggler-border-color			: #eee !default;
+$o-page-width-toggler-border-radius			: 4px !default;
+$o-page-width-toggler-background			: #efefef !default;
+$o-page-width-toggler-border-hover-color	: #ccc !default;
+$o-page-width-toggler-hover-background		: #eee !default;
+
 
 /* Main content area. The outer area is left and right outside the content area (only visible in large screen).  */
 $o-main-outer-bg 	: #fff !default;
