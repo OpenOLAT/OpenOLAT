@@ -32,12 +32,10 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.util.prefs.Preferences;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.ui.ReportSegment;
 import org.olat.modules.forms.ui.ReportSegmentEvent;
-import org.olat.modules.qpool.ui.QuestionItemDetailsController;
 import org.olat.modules.quality.QualitySecurityCallback;
 import org.olat.modules.quality.analysis.AnalysisSearchParameter;
 import org.olat.modules.quality.analysis.AvailableAttributes;
@@ -58,8 +56,6 @@ public class AnalysisController extends BasicController implements TooledControl
 	
 	enum Presentation {REPORT, HEAT_MAP};
 	
-	private static final String GUIPREF_KEY_SHOW_FILTERS = "show.filters";
-
 	private Link showFilterLink;
 	private Link hideFilterLink;
 
@@ -74,7 +70,6 @@ public class AnalysisController extends BasicController implements TooledControl
 	private final AvailableAttributes availableAttributes;
 	private AnalysisSearchParameter searchParams;
 	private MultiGroupBy multiGroupBy = MultiGroupBy.noGroupBy();
-	private Boolean showFilters;
 	private ReportSegment currentSegment;
 	
 	@Autowired
@@ -96,9 +91,6 @@ public class AnalysisController extends BasicController implements TooledControl
 		mainVC = createVelocityContainer("analysis");
 		putInitialPanel(mainVC);
 		
-		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
-		showFilters = (Boolean) guiPrefs.get(QuestionItemDetailsController.class, GUIPREF_KEY_SHOW_FILTERS);
-		
 		searchParams = new AnalysisSearchParameter();
 		searchParams.setFormEntryRef(() -> formView.getFormEntryKey());
 		availableAttributes = analysisService.getAvailableAttributes(searchParams);
@@ -113,19 +105,15 @@ public class AnalysisController extends BasicController implements TooledControl
 		showFilterLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_ana_show_filter");
 		hideFilterLink = LinkFactory.createToolLink("filter.hide", translate("filter.hide"), this);
 		hideFilterLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_ana_hide_filter");
-		if (showFilters == null || showFilters) {
-			doShowFilter();
-		} else {
-			doHideFilter();
-		}
+		doHideFilter();
 	}
 	
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == showFilterLink) {
-			doShowFilter(ureq);
+			doShowFilter();
 		} else if (source == hideFilterLink) {
-			doHideFilter(ureq);
+			doHideFilter();
 		} else if (stackPanel == source && stackPanel.getLastController() == this && event instanceof PopEvent) {
 			PopEvent popEvent = (PopEvent) event;
 			if (popEvent.isClose()) {
@@ -185,33 +173,16 @@ public class AnalysisController extends BasicController implements TooledControl
 		mainVC.setDirty(true);
 	}
 	
-	private void doShowFilter(UserRequest ureq) {
-		doShowFilter();
-		doPutFiltersSwitch(ureq, Boolean.TRUE);
-	}
-
 	private void doShowFilter() {
 		stackPanel.addTool(hideFilterLink, Align.right);
 		stackPanel.removeTool(showFilterLink);
 		mainVC.contextPut("filterSwitch", Boolean.TRUE);
 	}
 	
-	private void doHideFilter(UserRequest ureq) {
-		doHideFilter();
-		doPutFiltersSwitch(ureq, Boolean.FALSE);
-	}
-
 	private void doHideFilter() {
 		stackPanel.addTool(showFilterLink, Align.right);
 		stackPanel.removeTool(hideFilterLink);
 		mainVC.contextPut("filterSwitch", Boolean.FALSE);
 	}
 	
-	private void doPutFiltersSwitch(UserRequest ureq, Boolean show) {
-		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
-		if (guiPrefs != null) {
-			guiPrefs.putAndSave(QuestionItemDetailsController.class, GUIPREF_KEY_SHOW_FILTERS, show);
-		}
-	}
-
 }
