@@ -67,6 +67,7 @@ public class AnalysisFilterDAO {
 		sb.append("     , count(collection.topicOrganisation.key) > 0");
 		sb.append("     , count(collection.topicCurriculum.key) > 0");
 		sb.append("     , count(collection.topicCurriculumElement.key) > 0");
+		sb.append("     , sum(CASE WHEN context.location is not null THEN 1 ELSE 0 END) > 0");
 		sb.append("     , count(contextToOrganisation.organisation.key) > 0");
 		sb.append("     , count(contextToCurriculum.curriculum.key) > 0");
 		sb.append("     , count(contextToCurriculumElement.curriculumElement.key) > 0");
@@ -80,6 +81,20 @@ public class AnalysisFilterDAO {
 		appendParameters(query, searchParams);
 		return query.getResultList().get(0);
 	};
+
+	List<String> loadContextLocations(AnalysisSearchParameter searchParams) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select distinct context.location");
+		appendFrom(sb, searchParams);
+		appendWhere(sb, searchParams);
+		sb.and().append("context.location is not null");
+		
+		TypedQuery<String> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), String.class);
+		appendParameters(query, searchParams);
+		return query.getResultList();
+	}
+
 
 	List<String> loadContextOrganisationPathes(AnalysisSearchParameter searchParams) {
 		QueryBuilder sb = new QueryBuilder();
@@ -290,40 +305,48 @@ public class AnalysisFilterDAO {
 
 	private void appendGroupBy(QueryBuilder sb, GroupBy groupBy, boolean select) {
 		if (groupBy == null) {
-			if (select) sb.append(", CAST(NULL as long)");
+			if (select) sb.append(", cast(null as string)");
 			return;
 		}
 		
+		sb.append(", ");
 		switch (groupBy) {
 		case TOPIC_IDENTITY:
-			sb.append(", collection.topicIdentity.key");
+			castAsString(sb, "collection.topicIdentity.key", select);
 			break;
 		case TOPIC_ORGANISATION:
-			sb.append(", collection.topicOrganisation.key");
+			castAsString(sb, "collection.topicOrganisation.key", select);
 			break;
 		case TOPIC_CURRICULUM:
-			sb.append(", collection.topicCurriculum.key");
+			castAsString(sb, "collection.topicCurriculum.key", select);
 			break;
 		case TOPIC_CURRICULUM_ELEMENT:
-			sb.append(", collection.topicCurriculumElement.key");
+			castAsString(sb, "collection.topicCurriculumElement.key", select);
 			break;
 		case TOPIC_REPOSITORY:
-			sb.append(", collection.topicRepositoryEntry.key");
+			castAsString(sb, "collection.topicRepositoryEntry.key", select);
+			break;
+		case CONTEXT_LOCATION:
+			sb.append("context.location");
 			break;
 		case CONTEXT_ORGANISATION:
-			sb.append(", contextToOrganisation.organisation.key");
+			castAsString(sb, "contextToOrganisation.organisation.key", select);
 			break;
 		case CONTEXT_CURRICULUM:
-			sb.append(", contextToCurriculum.curriculum.key");
+			castAsString(sb, "contextToCurriculum.curriculum.key", select);
 			break;
 		case CONTEXT_CURRICULUM_ELEMENT:
-			sb.append(", contextToCurriculumElement.curriculumElement.key");
+			castAsString(sb, "contextToCurriculumElement.curriculumElement.key", select);
 			break;
 		case CONTEXT_TAXONOMY_LEVEL:
-			sb.append(", contextToTaxonomyLevel.taxonomyLevel.key");
+			castAsString(sb, "contextToTaxonomyLevel.taxonomyLevel.key", select);
 			break;
 		default: 
 		}
+	}
+	
+	private void castAsString(QueryBuilder sb, String attribute, boolean select) {
+		sb.append("cast(", select).append(attribute).append(" as string)", select);
 	}
 
 	private static void appendFrom(QueryBuilder sb, AnalysisSearchParameter searchParams) {
@@ -380,6 +403,9 @@ public class AnalysisFilterDAO {
 		}
 		if (searchParams.getTopicRepositoryRefs() != null && !searchParams.getTopicRepositoryRefs().isEmpty()) {
 			sb.and().append("collection.topicRepositoryEntry.key in :topicRepositoryEntryKeys");
+		}
+		if (searchParams.getContextLocations() != null && !searchParams.getContextLocations().isEmpty()) {
+			sb.and().append("context.location in :contextLocations");
 		}
 		if (searchParams.getContextOrganisationRefs() != null && !searchParams.getContextOrganisationRefs().isEmpty()) {
 			// load the organisations and all children
@@ -472,6 +498,9 @@ public class AnalysisFilterDAO {
 		if (searchParams.getTopicRepositoryRefs() != null && !searchParams.getTopicRepositoryRefs().isEmpty()) {
 			List<Long> keys = searchParams.getTopicRepositoryRefs().stream().map(RepositoryEntryRef::getKey).collect(toList());
 			query.setParameter("topicRepositoryEntryKeys", keys);
+		}
+		if (searchParams.getContextLocations() != null && !searchParams.getContextLocations().isEmpty()) {
+			query.setParameter("contextLocations", searchParams.getContextLocations());
 		}
 		if (searchParams.getContextOrganisationRefs() != null && !searchParams.getContextOrganisationRefs().isEmpty()) {
 			for (int i = 0; i < searchParams.getContextOrganisationRefs().size(); i++) {

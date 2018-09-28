@@ -171,6 +171,7 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		assertThat(attributes.isTopicOrganisation()).isFalse();
 		assertThat(attributes.isTopicCurriculum()).isFalse();
 		assertThat(attributes.isTopicCurriculumElement()).isFalse();
+		assertThat(attributes.isContextLocation()).isFalse();
 		assertThat(attributes.isContextOrganisation()).isFalse();
 		assertThat(attributes.isContextCurriculum()).isFalse();
 		assertThat(attributes.isContextCurriculumElement()).isFalse();
@@ -245,6 +246,24 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		AvailableAttributes attributes = sut.getAvailableAttributes(searchParams);
 		
 		assertThat(attributes.isTopicCurriculumElement()).isTrue();
+	}
+
+	@Test
+	public void shouldGetAvailableAttributeForContextLocation() {
+		String location = "loc";
+		QualityDataCollection dataCollection = createFinishedDataCollection();
+		Identity executor = JunitTestHelper.createAndPersistIdentityAsRndUser("");
+		List<EvaluationFormParticipation> participations = qualityService.addParticipations(dataCollection,
+				singletonList(executor));
+		qualityService.createContextBuilder(dataCollection, participations.get(0))
+				.withLocation(location)
+				.build();
+		dbInstance.commitAndCloseSession();
+		
+		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
+		AvailableAttributes attributes = sut.getAvailableAttributes(searchParams);
+		
+		assertThat(attributes.isContextLocation()).isTrue();
 	}
 
 	@Test
@@ -463,6 +482,38 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void shouldLoadDistinctContextLocation() {
+		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity executor = JunitTestHelper.createAndPersistIdentityAsUser("");
+		Organisation dcOrganisation = qualityTestHelper.createOrganisation();
+		String location1 = "loc1";
+		String location2 = "loc2";
+		// Participation with two locations
+		QualityDataCollection dc1 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participations1 = qualityService.addParticipations(dc1, Collections.singletonList(executor));
+		QualityContextBuilder contextBuilder1 = qualityService.createContextBuilder(dc1, participations1.get(0));
+		contextBuilder1.withLocation(location1).build();
+		// Participation with the same location
+		QualityDataCollection dc2 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participations2 = qualityService.addParticipations(dc2, Collections.singletonList(executor));
+		QualityContextBuilder contextBuilder2 = qualityService.createContextBuilder(dc2, participations2.get(0));
+		contextBuilder2.withLocation(location2).build();
+		// Participation without location
+		QualityDataCollection dcNull = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		qualityService.addParticipations(dcNull, Collections.singletonList(executor));
+		finish(asList(dc1, dc2, dcNull));
+		dbInstance.commitAndCloseSession();
+		
+		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
+		List<String> filtered = sut.loadContextLocations(searchParams);
+		
+		assertThat(filtered)
+				.containsExactlyInAnyOrder(location1, location2)
+				.doesNotContainNull();
+	}
+
+	
+	@Test
 	public void shouldLoadDistinctContextOrganisationPathes() {
 		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Identity executor = JunitTestHelper.createAndPersistIdentityAsUser("");
@@ -678,19 +729,19 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
 		MultiGroupBy multiGroupBy = MultiGroupBy.of(TOPIC_ORGANISATION);
 		List<GroupedStatistic> statisticList = sut.loadGroupedStatisticByResponseIdentifiers(searchParams,
-				asList(identifier1, identifier2), multiGroupBy);
+				asList(identifier1.toString(), identifier2.toString()), multiGroupBy);
 		GroupedStatistics statistics = new GroupedStatistics(statisticList);
 		
-		GroupedStatistic statistic11 = statistics.getStatistic(identifier1, of(organisation1.getKey()));
+		GroupedStatistic statistic11 = statistics.getStatistic(identifier1, of(organisation1.getKey().toString()));
 		assertThat(statistic11.getCount()).isEqualTo(2);
 		assertThat(statistic11.getAvg()).isEqualTo(10);
-		GroupedStatistic statistic12 = statistics.getStatistic(identifier1, of(organisation2.getKey()));
+		GroupedStatistic statistic12 = statistics.getStatistic(identifier1, of(organisation2.getKey().toString()));
 		assertThat(statistic12.getCount()).isEqualTo(2);
 		assertThat(statistic12.getAvg()).isEqualTo(5);
-		GroupedStatistic statistic21 = statistics.getStatistic(identifier2, of(organisation1.getKey()));
+		GroupedStatistic statistic21 = statistics.getStatistic(identifier2, of(organisation1.getKey().toString()));
 		assertThat(statistic21.getCount()).isEqualTo(1);
 		assertThat(statistic21.getAvg()).isEqualTo(1);
-		GroupedStatistic statistic22 = statistics.getStatistic(identifier2, of(organisation2.getKey()));
+		GroupedStatistic statistic22 = statistics.getStatistic(identifier2, of(organisation2.getKey().toString()));
 		assertThat(statistic22).isNull();
 	}
 	
@@ -730,7 +781,7 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		for (Organisation organisation: organisations) {
 			for (Curriculum curriculum: curriculums) {
 				for (TaxonomyLevel level: levels) {
-					MultiKey multiKey = of(organisation.getKey(), curriculum.getKey(), level.getKey());
+					MultiKey multiKey = of(organisation.getKey().toString(), curriculum.getKey().toString(), level.getKey().toString());
 					assertThat(statistics.getStatistic(identifier, multiKey).getAvg()).isEqualTo(expected.doubleValue());
 				}
 			}
@@ -976,6 +1027,42 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 				.doesNotContainNull()
 				.containsExactlyInAnyOrder(curriculumElement1.getKey(), curriculumElement2.getKey())
 				.doesNotContain(otherCurriculumElement.getKey());
+	}
+	
+	@Test
+	public void shouldFilterByContextLocation() {
+		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity executor = JunitTestHelper.createAndPersistIdentityAsUser("");
+		Organisation dcOrganisation = qualityTestHelper.createOrganisation();
+		String location1 = "loc1";
+		String location2 = "loc2";
+		// Participation with a location
+		QualityDataCollection dc1 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participations1 = qualityService.addParticipations(dc1, Collections.singletonList(executor));
+		QualityContextBuilder contextBuilder1 = qualityService.createContextBuilder(dc1, participations1.get(0));
+		contextBuilder1.withLocation(location1).build();
+		// Participation with the same location
+		QualityDataCollection dc2 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participations2 = qualityService.addParticipations(dc2, Collections.singletonList(executor));
+		QualityContextBuilder contextBuilder2 = qualityService.createContextBuilder(dc2, participations2.get(0));
+		contextBuilder2.withLocation(location1).build();
+		// Participation with an other location
+		QualityDataCollection dcOther = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participationsOther = qualityService.addParticipations(dcOther, Collections.singletonList(executor));
+		QualityContextBuilder contextBuilderOther = qualityService.createContextBuilder(dcOther, participationsOther.get(0));
+		contextBuilderOther.withLocation(location2).build();
+		// Participation without location
+		QualityDataCollection dcNull = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		qualityService.addParticipations(dcNull, Collections.singletonList(executor));
+		finish(asList(dc1, dc2, dcOther, dcNull));
+		dbInstance.commitAndCloseSession();
+		
+		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
+		searchParams.setContextLocations(asList(location1, location2));
+		Long count = sut.loadDataCollectionCount(searchParams);
+		
+		long expected = asList(dc1, dc2, dcOther).size();
+		assertThat(count).isEqualTo(expected);
 	}
 	
 	@Test

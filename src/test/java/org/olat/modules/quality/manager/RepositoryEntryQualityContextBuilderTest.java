@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.assertj.core.api.SoftAssertions;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.GroupRoles;
@@ -51,6 +52,7 @@ import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.manager.RepositoryEntryToTaxonomyLevelDAO;
 import org.olat.test.JunitTestHelper;
@@ -85,6 +87,8 @@ public class RepositoryEntryQualityContextBuilderTest extends OlatTestCase {
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
+	private RepositoryManager repositoryManager;
+	@Autowired
 	private RepositoryEntryToTaxonomyLevelDAO repositoryTaxonomyDao;
 
 	@Before
@@ -95,6 +99,8 @@ public class RepositoryEntryQualityContextBuilderTest extends OlatTestCase {
 	@Test
 	public void shouldInitWithAllRelations() {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		String location = "Kaiserslautern";
+		repositoryManager.setDescriptionAndName(entry, "", null, location, null, null, null, null, null);
 		Identity executor = JunitTestHelper.createAndPersistIdentityAsRndAuthor("");
 		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
 		List<EvaluationFormParticipation> participations = qualityService.addParticipations(dataCollection,
@@ -149,24 +155,41 @@ public class RepositoryEntryQualityContextBuilderTest extends OlatTestCase {
 		QualityContext context = RepositoryEntryQualityContextBuilder
 				.builder(dataCollection, evaluationFormParticipation, entry, GroupRoles.participant).build();
 
-		assertThat(context.getDataCollection()).isEqualTo(dataCollection);
-		assertThat(context.getEvaluationFormParticipation()).isEqualTo(evaluationFormParticipation);
-		assertThat(context.getRole()).isEqualTo(QualityContextRole.participant);
-		assertThat(context.getAudienceRepositoryEntry()).isEqualTo(entry);
-		List<Curriculum> curriculms = context.getContextToCurriculum().stream()
-				.map(QualityContextToCurriculum::getCurriculum).collect(Collectors.toList());
-		assertThat(curriculms).containsExactlyInAnyOrder(curriculum1, curriculum2).doesNotContain(curriculum3);
-		List<CurriculumElement> curriculumElements = context.getContextToCurriculumElement().stream()
-				.map(QualityContextToCurriculumElement::getCurriculumElement).collect(Collectors.toList());
-		assertThat(curriculumElements).containsExactlyInAnyOrder(curriculumElement1, curriculumElement2)
+		SoftAssertions softly = new SoftAssertions();
+		softly.assertThat(context.getDataCollection()).isEqualTo(dataCollection);
+		softly.assertThat(context.getEvaluationFormParticipation()).isEqualTo(evaluationFormParticipation);
+		softly.assertThat(context.getRole()).isEqualTo(QualityContextRole.participant);
+		softly.assertThat(context.getLocation()).isEqualTo(location);
+		softly.assertThat(context.getAudienceRepositoryEntry()).isEqualTo(entry);
+		List<Curriculum> curriculms = context
+				.getContextToCurriculum().stream()
+				.map(QualityContextToCurriculum::getCurriculum)
+				.collect(Collectors.toList());
+		softly.assertThat(curriculms)
+				.containsExactlyInAnyOrder(curriculum1, curriculum2)
+				.doesNotContain(curriculum3);
+		List<CurriculumElement> curriculumElements = context
+				.getContextToCurriculumElement().stream()
+				.map(QualityContextToCurriculumElement::getCurriculumElement)
+				.collect(Collectors.toList());
+		softly.assertThat(curriculumElements)
+				.containsExactlyInAnyOrder(curriculumElement1, curriculumElement2)
 				.doesNotContain(curriculumElement3);
-		List<Organisation> organisations = context.getContextToOrganisation().stream()
-				.map(QualityContextToOrganisation::getOrganisation).collect(Collectors.toList());
-		assertThat(organisations).containsExactlyInAnyOrder(organisation1, organisation2).doesNotContain(organisation3);
-		List<TaxonomyLevel> taxonomyLevels = context.getContextToTaxonomyLevel().stream()
-				.map(QualityContextToTaxonomyLevel::getTaxonomyLevel).collect(Collectors.toList());
-		assertThat(taxonomyLevels).containsExactlyInAnyOrder(taxonomyLevel1, taxonomyLevel2)
+		List<Organisation> organisations = context
+				.getContextToOrganisation().stream()
+				.map(QualityContextToOrganisation::getOrganisation)
+				.collect(Collectors.toList());
+		softly.assertThat(organisations)
+				.containsExactlyInAnyOrder(organisation1, organisation2)
+				.doesNotContain(organisation3);
+		List<TaxonomyLevel> taxonomyLevels = context
+				.getContextToTaxonomyLevel().stream()
+				.map(QualityContextToTaxonomyLevel::getTaxonomyLevel)
+				.collect(Collectors.toList());
+		softly.assertThat(taxonomyLevels)
+				.containsExactlyInAnyOrder(taxonomyLevel1, taxonomyLevel2)
 				.doesNotContain(taxonomyLevel3, taxonomyLevelOfCurriculumElement);
+		softly.assertAll();
 	}
 	
 	@Test

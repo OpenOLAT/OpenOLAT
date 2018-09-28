@@ -27,37 +27,37 @@ package org.olat.modules.quality.analysis;
  */
 public class MultiKey {
 	
-	private final Long key1;
-	private final Long key2;
-	private final Long key3;
+	private final String key1;
+	private final String key2;
+	private final String key3;
 	
-	public static final MultiKey of(Long key1) {
+	public static final MultiKey of(String key1) {
 		return of(key1, null);
 	}
 	
-	public static final MultiKey of(Long key1, Long key2) {
+	public static final MultiKey of(String key1, String key2) {
 		return of(key1, key2, null);
 	}
 	
-	public static final MultiKey of(Long key1, Long key2, Long key3) {
+	public static final MultiKey of(String key1, String key2, String key3) {
 		return new MultiKey(key1, key2, key3);
 	}
 	
-	private MultiKey(Long key1, Long key2, Long key3) {
+	private MultiKey(String key1, String key2, String key3) {
 		this.key1 = key1;
 		this.key2 = key2;
 		this.key3 = key3;
 	}
 
-	public Long getKey1() {
+	public String getKey1() {
 		return key1;
 	}
 
-	public Long getKey2() {
+	public String getKey2() {
 		return key2;
 	}
 
-	public Long getKey3() {
+	public String getKey3() {
 		return key3;
 	}
 

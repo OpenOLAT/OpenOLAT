@@ -52,6 +52,12 @@ class ForwardingQualityContextBuilder implements QualityContextBuilder {
 	}
 
 	@Override
+	public QualityContextBuilder withLocation(String location) {
+		builder.withLocation(location);
+		return this;
+	}
+
+	@Override
 	public QualityContextBuilder addToDelete(QualityContext context) {
 		builder.addToDelete(context);
 		return this;

@@ -81,6 +81,8 @@ public class QualityContextImpl implements QualityContext, Persistable {
 	@Enumerated(EnumType.STRING)
 	@Column(name="q_role", nullable=true, insertable=true, updatable=true)
 	private QualityContextRole role;
+	@Column(name="q_location", nullable=true, insertable=true, updatable=true)
+	private String location;
 	
 	@ManyToOne(targetEntity=QualityDataCollectionImpl.class)
 	@JoinColumn(name="fk_data_collection", nullable=false, insertable=true, updatable=false)
@@ -143,6 +145,15 @@ public class QualityContextImpl implements QualityContext, Persistable {
 
 	public void setRole(QualityContextRole role) {
 		this.role = role;
+	}
+
+	@Override
+	public String getLocation() {
+		return location;
+	}
+
+	public void setLocation(String location) {
+		this.location = location;
 	}
 
 	@Override

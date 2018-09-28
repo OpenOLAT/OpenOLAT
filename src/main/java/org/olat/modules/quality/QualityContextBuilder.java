@@ -33,6 +33,8 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
 public interface QualityContextBuilder {
 	
 	QualityContextBuilder withRole(QualityContextRole role);
+
+	QualityContextBuilder withLocation(String location);
 	
 	QualityContextBuilder addToDelete(QualityContext context);
 

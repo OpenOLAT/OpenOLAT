@@ -55,6 +55,8 @@ public interface QualityAnalysisService {
 	
 	public List<RepositoryEntry> loadTopicRepositoryEntries(AnalysisSearchParameter searchParams);
 
+	public List<String> loadContextLocations(AnalysisSearchParameter searchParams);
+
 	public List<Organisation> loadContextOrganisations(AnalysisSearchParameter searchParams, boolean withParentsb);
 
 	public List<Curriculum> loadContextCurriculums(AnalysisSearchParameter searchParams);

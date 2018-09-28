@@ -94,15 +94,15 @@ public class HeatMapController extends FormBasicController implements Filterable
 	private final boolean insufficientConfigured;
 	private boolean insufficientOnly = false;
 	
-	private Map<Long, String> groupNamesTopicIdentity;
-	private Map<Long, String> groupNamesTopicOrganisation;
-	private Map<Long, String> groupNamesTopicCurriculum;
-	private Map<Long, String> groupNamesTopicCurriculumElement;
-	private Map<Long, String> groupNamesTopicRepositoryEntry;
-	private Map<Long, String> groupNamesContextOrganisation;
-	private Map<Long, String> groupNamesContextCurriculum;
-	private Map<Long, String> groupNamesContextCurriculumElement;
-	private Map<Long, String> groupNamesContextTaxonomyLevel;
+	private Map<String, String> groupNamesTopicIdentity;
+	private Map<String, String> groupNamesTopicOrganisation;
+	private Map<String, String> groupNamesTopicCurriculum;
+	private Map<String, String> groupNamesTopicCurriculumElement;
+	private Map<String, String> groupNamesTopicRepositoryEntry;
+	private Map<String, String> groupNamesContextOrganisation;
+	private Map<String, String> groupNamesContextCurriculum;
+	private Map<String, String> groupNamesContextCurriculumElement;
+	private Map<String, String> groupNamesContextTaxonomyLevel;
 	
 	@Autowired
 	private QualityAnalysisService analysisService;
@@ -236,6 +236,9 @@ public class HeatMapController extends FormBasicController implements Filterable
 		}
 		if (availableAttributes.isContextTaxonomyLevel()) {
 			addEntry(keyValues, GroupBy.CONTEXT_TAXONOMY_LEVEL);
+		}
+		if (availableAttributes.isContextLocation()) {
+			addEntry(keyValues, GroupBy.CONTEXT_LOCATION);
 		}
 		return keyValues;
 	}
@@ -421,12 +424,14 @@ public class HeatMapController extends FormBasicController implements Filterable
 			return translate("heatmap.table.title.curriculum.element");
 		case CONTEXT_TAXONOMY_LEVEL:
 			return translate("heatmap.table.title.taxonomy.level");
+		case CONTEXT_LOCATION:
+			return translate("heatmap.table.title.location");
 		default:
 			return null;
 		}
 	}
 	
-	private String getGroupName(GroupBy groupBy, Long key) {
+	private String getGroupName(GroupBy groupBy, String key) {
 		switch (groupBy) {
 		case TOPIC_IDENTITY:
 			return getTopicIdentityGroupName(key);
@@ -446,22 +451,23 @@ public class HeatMapController extends FormBasicController implements Filterable
 			return getContextCurriculumElementGroupName(key);
 		case CONTEXT_TAXONOMY_LEVEL:
 			return getContextTaxonomyLevelGroupName(key);
+		case CONTEXT_LOCATION:
+			return key;
 		default:
 			return null;
 		}
 	}
 
-	private String getTopicIdentityGroupName(Long key) {
+	private String getTopicIdentityGroupName(String key) {
 		return getGroupNamesTopicIdentity().get(key);
 	}
 
-	private Map<Long, String> getGroupNamesTopicIdentity() {
+	private Map<String, String> getGroupNamesTopicIdentity() {
 		if (groupNamesTopicIdentity == null) {
 			groupNamesTopicIdentity = new HashMap<>();
-			getGroupNamesSearchParams();
-			List<IdentityShort> identities = analysisService.loadTopicIdentity(searchParams);
+			List<IdentityShort> identities = analysisService.loadTopicIdentity(getGroupNamesSearchParams());
 			for (IdentityShort identity : identities) {
-				Long key = identity.getKey();
+				String key = identity.getKey().toString();
 				String value = identity.getLastName() + " " + identity.getFirstName();
 				groupNamesTopicIdentity.put(key, value);
 			}
@@ -469,17 +475,16 @@ public class HeatMapController extends FormBasicController implements Filterable
 		return groupNamesTopicIdentity;
 	}
 
-	private String getTopicOrganisationGroupName(Long key) {
+	private String getTopicOrganisationGroupName(String key) {
 		return getGroupNamesTopicOrganisation().get(key);
 	}
 
-	private Map<Long, String> getGroupNamesTopicOrganisation() {
+	private Map<String, String> getGroupNamesTopicOrganisation() {
 		if (groupNamesTopicOrganisation == null) {
 			groupNamesTopicOrganisation = new HashMap<>();
-			getGroupNamesSearchParams();
-			List<Organisation> organisations = analysisService.loadTopicOrganisations(searchParams, false);
+			List<Organisation> organisations = analysisService.loadTopicOrganisations(getGroupNamesSearchParams(), false);
 			for (Organisation organisation : organisations) {
-				Long key = organisation.getKey();
+				String key = organisation.getKey().toString();
 				String value = organisation.getDisplayName();
 				groupNamesTopicOrganisation.put(key, value);
 			}
@@ -487,17 +492,16 @@ public class HeatMapController extends FormBasicController implements Filterable
 		return groupNamesTopicOrganisation;
 	}
 
-	private String getTopicCurriculumGroupName(Long key) {
+	private String getTopicCurriculumGroupName(String key) {
 		return getGroupNamesTopicCurriculum().get(key);
 	}
 
-	private Map<Long, String> getGroupNamesTopicCurriculum() {
+	private Map<String, String> getGroupNamesTopicCurriculum() {
 		if (groupNamesTopicCurriculum == null) {
 			groupNamesTopicCurriculum = new HashMap<>();
-			getGroupNamesSearchParams();
-			List<Curriculum> curriculums = analysisService.loadTopicCurriculums(searchParams);
+			List<Curriculum> curriculums = analysisService.loadTopicCurriculums(getGroupNamesSearchParams());
 			for (Curriculum curriculum : curriculums) {
-				Long key = curriculum.getKey();
+				String key = curriculum.getKey().toString();
 				String value = curriculum.getDisplayName();
 				groupNamesTopicCurriculum.put(key, value);
 			}
@@ -505,17 +509,16 @@ public class HeatMapController extends FormBasicController implements Filterable
 		return groupNamesTopicCurriculum;
 	}
 
-	private String getTopicCurriculumElementGroupName(Long key) {
+	private String getTopicCurriculumElementGroupName(String key) {
 		return getGroupNamesTopicCurriculumElement().get(key);
 	}
 
-	private Map<Long, String> getGroupNamesTopicCurriculumElement() {
+	private Map<String, String> getGroupNamesTopicCurriculumElement() {
 		if (groupNamesTopicCurriculumElement == null) {
 			groupNamesTopicCurriculumElement = new HashMap<>();
-			getGroupNamesSearchParams();
-			List<CurriculumElement> curriculumElements = analysisService.loadTopicCurriculumElements(searchParams);
+			List<CurriculumElement> curriculumElements = analysisService.loadTopicCurriculumElements(getGroupNamesSearchParams());
 			for (CurriculumElement curriculumElement : curriculumElements) {
-				Long key = curriculumElement.getKey();
+				String key = curriculumElement.getKey().toString();
 				String value = curriculumElement.getDisplayName();
 				groupNamesTopicCurriculumElement.put(key, value);
 			}
@@ -523,17 +526,16 @@ public class HeatMapController extends FormBasicController implements Filterable
 		return groupNamesTopicCurriculumElement;
 	}
 
-	private String getTopicRepositoryEntryGroupName(Long key) {
+	private String getTopicRepositoryEntryGroupName(String key) {
 		return getGroupNamesTopicRepositoryEntry().get(key);
 	}
 
-	private Map<Long, String> getGroupNamesTopicRepositoryEntry() {
+	private Map<String, String> getGroupNamesTopicRepositoryEntry() {
 		if (groupNamesTopicRepositoryEntry == null) {
 			groupNamesTopicRepositoryEntry = new HashMap<>();
-			getGroupNamesSearchParams();
-			List<RepositoryEntry> entries = analysisService.loadTopicRepositoryEntries(searchParams);
+			List<RepositoryEntry> entries = analysisService.loadTopicRepositoryEntries(getGroupNamesSearchParams());
 			for (RepositoryEntry entry : entries) {
-				Long key = entry.getKey();
+				String key = entry.getKey().toString();
 				String value = entry.getDisplayname();
 				groupNamesTopicRepositoryEntry.put(key, value);
 			}
@@ -541,17 +543,16 @@ public class HeatMapController extends FormBasicController implements Filterable
 		return groupNamesTopicRepositoryEntry;
 	}
 
-	private String getContextOrganisationGroupName(Long key) {
+	private String getContextOrganisationGroupName(String key) {
 		return getContextOrganisationGroupNames().get(key);
 	}
 
-	private Map<Long, String> getContextOrganisationGroupNames() {
+	private Map<String, String> getContextOrganisationGroupNames() {
 		if (groupNamesContextOrganisation == null) {
 			groupNamesContextOrganisation = new HashMap<>();
-			getGroupNamesSearchParams();
-			List<Organisation> elements = analysisService.loadContextOrganisations(searchParams, false);
+			List<Organisation> elements = analysisService.loadContextOrganisations(getGroupNamesSearchParams(), false);
 			for (Organisation element : elements) {
-				Long key = element.getKey();
+				String key = element.getKey().toString();
 				String value = element.getDisplayName();
 				groupNamesContextOrganisation.put(key, value);
 			}
@@ -559,17 +560,16 @@ public class HeatMapController extends FormBasicController implements Filterable
 		return groupNamesContextOrganisation;
 	}
 
-	private String getContextCurriculumGroupName(Long key) {
+	private String getContextCurriculumGroupName(String key) {
 		return getContextCurriculumGroupNames().get(key);
 	}
 
-	private Map<Long, String> getContextCurriculumGroupNames() {
+	private Map<String, String> getContextCurriculumGroupNames() {
 		if (groupNamesContextCurriculum == null) {
 			groupNamesContextCurriculum = new HashMap<>();
-			getGroupNamesSearchParams();
-			List<Curriculum> elements = analysisService.loadContextCurriculums(searchParams);
+			List<Curriculum> elements = analysisService.loadContextCurriculums(getGroupNamesSearchParams());
 			for (Curriculum element : elements) {
-				Long key = element.getKey();
+				String key = element.getKey().toString();
 				String value = element.getDisplayName();
 				groupNamesContextCurriculum.put(key, value);
 			}
@@ -577,17 +577,16 @@ public class HeatMapController extends FormBasicController implements Filterable
 		return groupNamesContextCurriculum;
 	}
 
-	private String getContextCurriculumElementGroupName(Long key) {
+	private String getContextCurriculumElementGroupName(String key) {
 		return getContextCurriculumElementGroupNames().get(key);
 	}
 
-	private Map<Long, String> getContextCurriculumElementGroupNames() {
+	private Map<String, String> getContextCurriculumElementGroupNames() {
 		if (groupNamesContextCurriculumElement == null) {
 			groupNamesContextCurriculumElement = new HashMap<>();
-			getGroupNamesSearchParams();
-			List<CurriculumElement> elements = analysisService.loadContextCurriculumElements(searchParams, false);
+			List<CurriculumElement> elements = analysisService.loadContextCurriculumElements(getGroupNamesSearchParams(), false);
 			for (CurriculumElement element : elements) {
-				Long key = element.getKey();
+				String key = element.getKey().toString();
 				String value = element.getDisplayName();
 				groupNamesContextCurriculumElement.put(key, value);
 			}
@@ -595,17 +594,16 @@ public class HeatMapController extends FormBasicController implements Filterable
 		return groupNamesContextCurriculumElement;
 	}
 
-	private String getContextTaxonomyLevelGroupName(Long key) {
+	private String getContextTaxonomyLevelGroupName(String key) {
 		return getContextTaxonomyLevelGroupNames().get(key);
 	}
 
-	private Map<Long, String> getContextTaxonomyLevelGroupNames() {
+	private Map<String, String> getContextTaxonomyLevelGroupNames() {
 		if (groupNamesContextTaxonomyLevel == null) {
 			groupNamesContextTaxonomyLevel = new HashMap<>();
-			getGroupNamesSearchParams();
-			List<TaxonomyLevel> elements = analysisService.loadContextTaxonomyLevels(searchParams, false);
+			List<TaxonomyLevel> elements = analysisService.loadContextTaxonomyLevels(getGroupNamesSearchParams(), false);
 			for (TaxonomyLevel element : elements) {
-				Long key = element.getKey();
+				String key = element.getKey().toString();
 				String value = element.getDisplayName();
 				groupNamesContextTaxonomyLevel.put(key, value);
 			}
@@ -613,9 +611,10 @@ public class HeatMapController extends FormBasicController implements Filterable
 		return groupNamesContextTaxonomyLevel;
 	}
 
-	private void getGroupNamesSearchParams() {
+	private AnalysisSearchParameter getGroupNamesSearchParams() {
 		AnalysisSearchParameter groupNameParams = new AnalysisSearchParameter();
 		groupNameParams.setFormEntryRef(searchParams.getFormEntryRef());
+		return groupNameParams;
 	}
 	
 	public GroupedStatistics loadHeatMapStatistics() {

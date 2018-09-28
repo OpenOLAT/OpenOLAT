@@ -73,6 +73,7 @@ public class RepositoryEntryQualityContextBuilder extends ForwardingQualityConte
 			GroupRoles role) {
 		QualityContextRole contextRole = QualityContextRole.valueOf(role.name());
 		builder.withRole(contextRole);
+		builder.withLocation(repositoryEntry.getLocation());
 		builder.withAudienceRepositoryEntry(repositoryEntry);
 
 		List<QualityContext> contextToDelete = qualityContextDao

@@ -47,6 +47,7 @@ public class AnalysisSearchParameter {
 	private Collection<? extends CurriculumRef> topicCurriculumRefs;
 	private List<? extends CurriculumElementRef> topicCurriculumElementRefs;
 	private List<? extends RepositoryEntryRef> topicRepositoryRefs;
+	private Collection<String> contextLocations;
 	private List<? extends OrganisationRef> contextOrganisationRefs;
 	private Collection<? extends CurriculumRef> contextCurriculumRefs;
 	private List<? extends CurriculumElementRef> contextCurriculumElementRefs;
@@ -117,6 +118,14 @@ public class AnalysisSearchParameter {
 		this.topicRepositoryRefs = topicRepositoryRefs;
 	}
 
+	public Collection<String> getContextLocations() {
+		return contextLocations;
+	}
+
+	public void setContextLocations(Collection<String> contextLocations) {
+		this.contextLocations = contextLocations;
+	}
+
 	public List<? extends OrganisationRef> getContextOrganisationRefs() {
 		return contextOrganisationRefs;
 	}
@@ -177,6 +186,9 @@ public class AnalysisSearchParameter {
 				: null;
 		clone.topicRepositoryRefs = this.topicRepositoryRefs != null
 				? new ArrayList<>(this.topicRepositoryRefs)
+				: null;
+		clone.contextLocations = this.contextLocations != null
+				? new ArrayList<>(this.contextLocations)
 				: null;
 		clone.contextOrganisationRefs = this.contextOrganisationRefs != null
 				? new ArrayList<>(this.contextOrganisationRefs)

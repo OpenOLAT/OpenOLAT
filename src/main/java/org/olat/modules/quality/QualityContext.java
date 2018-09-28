@@ -38,6 +38,8 @@ public interface QualityContext extends QualityContextRef, CreateInfo, ModifiedI
 
 	public QualityContextRole getRole();
 	
+	public String getLocation();
+	
 	public QualityDataCollection getDataCollection();
 	
 	public EvaluationFormSession getEvaluationFormSession();

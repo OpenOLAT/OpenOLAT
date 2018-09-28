@@ -177,11 +177,11 @@ public class QualityTestHelper {
 
 	QualityContext createContext() {
 		return qualityContextDao.createContext(createDataCollection(), createParticipation(), QualityContextRole.owner,
-				createRepositoryEntry(), createCurriculumElement());
+				null, createRepositoryEntry(), createCurriculumElement());
 	}
-	
+
 	QualityContext createContext(QualityDataCollection dataCollection, EvaluationFormParticipation participation) {
-		return qualityContextDao.createContext(dataCollection, participation, QualityContextRole.owner,
+		return qualityContextDao.createContext(dataCollection, participation, QualityContextRole.owner, null,
 				createRepositoryEntry(), createCurriculumElement());
 	}
 

@@ -48,6 +48,7 @@ class DefaultQualityContextBuilder implements QualityContextBuilder {
 	private QualityDataCollection dataCollection;
 	private EvaluationFormParticipation evaluationFormParticipation;
 	private QualityContextRole role;
+	private String location;
 	private RepositoryEntry audienceRepositoryEntry;
 	private CurriculumElement audienceCurriculumElement;
 	private final Set<QualityContext> contextsToDelete = new HashSet<>();
@@ -100,6 +101,11 @@ class DefaultQualityContextBuilder implements QualityContextBuilder {
 	}
 
 	@Override
+	public QualityContextBuilder withLocation(String location) {
+		this.location = location;
+		return this;
+	}
+	@Override
 	public QualityContextBuilder addToDelete(QualityContext context) {
 		if (context != null) {
 			contextsToDelete.add(context);
@@ -144,7 +150,7 @@ class DefaultQualityContextBuilder implements QualityContextBuilder {
 		for (QualityContext contextToDelete: contextsToDelete) {
 			qualityService.deleteContext(contextToDelete);
 		}
-		QualityContext context = contextDao.createContext(dataCollection, evaluationFormParticipation, role,
+		QualityContext context = contextDao.createContext(dataCollection, evaluationFormParticipation, role, location,
 				audienceRepositoryEntry, audienceCurriculumElement);
 		for (Curriculum curriculum: curriculums) {
 			contextToCurriculumDao.createRelation(context, curriculum);

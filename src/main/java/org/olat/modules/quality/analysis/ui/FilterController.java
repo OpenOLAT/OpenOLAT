@@ -89,6 +89,7 @@ public class FilterController extends FormBasicController {
 	private MultipleSelectionElement contextCurriculumEl;
 	private MultipleSelectionElement contextCurriculumElementEl;
 	private MultipleSelectionElement contextTaxonomyLevelEl;
+	private MultipleSelectionElement contextLocationEl;
 	private MultipleSelectionElement withUserInformationsEl;
 	
 	private final AnalysisSearchParameter searchParams;
@@ -161,6 +162,9 @@ public class FilterController extends FormBasicController {
 
 		contextTaxonomyLevelEl = uifactory.addCheckboxesDropdown("filter.context.taxonomy.level", formLayout);
 		contextTaxonomyLevelEl.addActionListener(FormEvent.ONCLICK);
+
+		contextLocationEl = uifactory.addCheckboxesDropdown("filter.context.location", formLayout);
+		contextLocationEl.addActionListener(FormEvent.ONCLICK);
 		
 		withUserInformationsEl = uifactory.addCheckboxesVertical("filter.with.user.informations.label", formLayout,
 				WITH_USER_INFOS_KEYS, translateAll(getTranslator(), WITH_USER_INFOS_KEYS), 1);
@@ -180,6 +184,7 @@ public class FilterController extends FormBasicController {
 		setContextCurriculumValues();
 		setContextCurriculumElementValues();
 		setContextTaxonomyLevelValues();
+		setContextLocationValues();
 	}
 	
 	private void setTopicIdentityValues() {
@@ -381,6 +386,25 @@ public class FilterController extends FormBasicController {
 		}
 	}
 	
+	private void setContextLocationValues() {
+		if (!availableAttributes.isContextLocation()) {
+			contextLocationEl.setVisible(false);
+			return;
+		}
+		
+		Collection<String> selectedKeys = contextLocationEl.getSelectedKeys();
+		
+		AnalysisSearchParameter locationSearchParams = searchParams.clone();
+		locationSearchParams.setContextLocations(null);
+		List<String> locations = analysisService.loadContextLocations(locationSearchParams);
+		locations.sort(String::compareToIgnoreCase);
+		String[] locs = locations.stream().toArray(String[]::new);
+		contextLocationEl.setKeysAndValues(locs, locs);
+		for (String key: selectedKeys) {
+			contextLocationEl.select(key, true);
+		}
+	}
+	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		 if (source == dateRangeFromEl) {
@@ -404,6 +428,8 @@ public class FilterController extends FormBasicController {
 		} else if (source == contextCurriculumElementEl) {
 			doFiltered(ureq);
 		} else if (source == contextTaxonomyLevelEl) {
+			doFiltered(ureq);
+		} else if (source == contextLocationEl) {
 			doFiltered(ureq);
 		} else if (source == withUserInformationsEl) {
 			doFiltered(ureq);
@@ -429,6 +455,7 @@ public class FilterController extends FormBasicController {
 		getSearchParamContextCurriculums();
 		getSearchParamContextCurriculumElements();
 		getSearchParamContextTaxonomyLevels();
+		getSearchParamContextLocations();
 		getSearchParamWithUserInfosOnly();
 	}
 
@@ -542,6 +569,15 @@ public class FilterController extends FormBasicController {
 		}
 	}
 
+	private void getSearchParamContextLocations() {
+		if (contextLocationEl.isVisible() && contextLocationEl.isAtLeastSelected(1)) {
+			Collection<String> locations = contextLocationEl.getSelectedKeys();
+			searchParams.setContextLocations(locations);
+		} else {
+			searchParams.setContextLocations(null);
+		}
+	}
+	
 	private void getSearchParamWithUserInfosOnly() {
 		boolean withUserInfosOnly = withUserInformationsEl.isVisible() && withUserInformationsEl.isAtLeastSelected(1);
 		searchParams.setWithUserInfosOnly(withUserInfosOnly);

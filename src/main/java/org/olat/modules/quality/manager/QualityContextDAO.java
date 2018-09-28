@@ -59,13 +59,14 @@ class QualityContextDAO {
 	
 	QualityContext createContext(QualityDataCollection dataCollection,
 			EvaluationFormParticipation evaluationFormParticipation, QualityContextRole role,
-			RepositoryEntry audienceRepositoryEntry, CurriculumElement audienceCurriculumElement) {
+			String location, RepositoryEntry audienceRepositoryEntry, CurriculumElement audienceCurriculumElement) {
 		QualityContextImpl context = new QualityContextImpl();
 		context.setCreationDate(new Date());
 		context.setLastModified(context.getCreationDate());
 		context.setDataCollection(dataCollection);
 		context.setEvaluationFormParticipation(evaluationFormParticipation);
 		context.setRole(role != null? role: QualityContextRole.none);
+		context.setLocation(location);
 		context.setAudienceRepositoryEntry(audienceRepositoryEntry);
 		context.setAudienceCurriculumElement(audienceCurriculumElement);
 		dbInstance.getCurrentEntityManager().persist(context);

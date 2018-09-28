@@ -41,9 +41,9 @@ import org.olat.modules.forms.RubricRating;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.quality.analysis.AnalysisSearchParameter;
+import org.olat.modules.quality.analysis.AvailableAttributes;
 import org.olat.modules.quality.analysis.EvaluationFormView;
 import org.olat.modules.quality.analysis.EvaluationFormViewSearchParams;
-import org.olat.modules.quality.analysis.AvailableAttributes;
 import org.olat.modules.quality.analysis.GroupedStatistic;
 import org.olat.modules.quality.analysis.GroupedStatistics;
 import org.olat.modules.quality.analysis.MultiGroupBy;
@@ -134,6 +134,11 @@ public class QualityAnalysisServiceImpl implements QualityAnalysisService {
 	public List<RepositoryEntry> loadTopicRepositoryEntries(AnalysisSearchParameter searchParams) {
 		List<Long> keys = filterDao.loadTopicRepositoryKeys(searchParams);
 		return repositoryManager.lookupRepositoryEntries(keys);
+	}
+
+	@Override
+	public List<String> loadContextLocations(AnalysisSearchParameter searchParams) {
+		return filterDao.loadContextLocations(searchParams);
 	}
 
 	@Override

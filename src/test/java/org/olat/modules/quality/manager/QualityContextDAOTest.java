@@ -23,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
+import org.assertj.core.api.SoftAssertions;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
@@ -60,24 +61,28 @@ public class QualityContextDAOTest extends OlatTestCase {
 	@Test
 	public void shouldCreateContext() {
 		QualityContextRole role = QualityContextRole.owner;
+		String location = "Zürich";
 		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
 		EvaluationFormParticipation evaluationFormParticipation = qualityTestHelper.createParticipation();
 		RepositoryEntry repositoryEntry = qualityTestHelper.createRepositoryEntry();
 		CurriculumElement curriculumElement = qualityTestHelper.createCurriculumElement();
 		dbInstance.commitAndCloseSession();
 
-		QualityContext context = sut.createContext(dataCollection, evaluationFormParticipation, role, repositoryEntry,
-				curriculumElement);
+		QualityContext context = sut.createContext(dataCollection, evaluationFormParticipation, role, location,
+				repositoryEntry, curriculumElement);
 
-		assertThat(context).isNotNull();
-		assertThat(context.getKey()).isNotNull();
-		assertThat(context.getCreationDate()).isNotNull();
-		assertThat(context.getLastModified()).isNotNull();
-		assertThat(context.getDataCollection()).isEqualTo(dataCollection);
-		assertThat(context.getEvaluationFormParticipation()).isEqualTo(evaluationFormParticipation);
-		assertThat(context.getRole()).isEqualTo(role);
-		assertThat(context.getAudienceRepositoryEntry()).isEqualTo(repositoryEntry);
-		assertThat(context.getAudienceCurriculumElement()).isEqualTo(curriculumElement);
+		SoftAssertions softly = new SoftAssertions();
+		softly.assertThat(context).isNotNull();
+		softly.assertThat(context.getKey()).isNotNull();
+		softly.assertThat(context.getCreationDate()).isNotNull();
+		softly.assertThat(context.getLastModified()).isNotNull();
+		softly.assertThat(context.getDataCollection()).isEqualTo(dataCollection);
+		softly.assertThat(context.getEvaluationFormParticipation()).isEqualTo(evaluationFormParticipation);
+		softly.assertThat(context.getRole()).isEqualTo(role);
+		softly.assertThat(context.getLocation()).isEqualTo(location);
+		softly.assertThat(context.getAudienceRepositoryEntry()).isEqualTo(repositoryEntry);
+		softly.assertThat(context.getAudienceCurriculumElement()).isEqualTo(curriculumElement);
+		softly.assertAll();
 	}
 	
 	@Test
@@ -94,11 +99,11 @@ public class QualityContextDAOTest extends OlatTestCase {
 	public void shouldLoadByDataCollection() {
 		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
 		EvaluationFormParticipation evaluationFormParticipation = qualityTestHelper.createParticipation();
-		QualityContext context1 = sut.createContext(dataCollection, evaluationFormParticipation, null, null, null);
-		QualityContext context2 = sut.createContext(dataCollection, evaluationFormParticipation, null, null, null);
+		QualityContext context1 = sut.createContext(dataCollection, evaluationFormParticipation, null, null, null, null);
+		QualityContext context2 = sut.createContext(dataCollection, evaluationFormParticipation, null, null, null, null);
 		QualityDataCollection otherDataCollection = qualityTestHelper.createDataCollection();
 		EvaluationFormParticipation otherParticpation = qualityTestHelper.createParticipation();
-		QualityContext otherContext = sut.createContext(otherDataCollection, otherParticpation, null, null, null);
+		QualityContext otherContext = sut.createContext(otherDataCollection, otherParticpation, null, null, null, null);
 		dbInstance.commitAndCloseSession();
 		
 		List<QualityContext> reloadedContext = sut.loadByDataCollection(dataCollection);
@@ -112,11 +117,11 @@ public class QualityContextDAOTest extends OlatTestCase {
 	public void shouldLoadByParticipation() {
 		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
 		EvaluationFormParticipation evaluationFormParticipation = qualityTestHelper.createParticipation();
-		QualityContext context1 = sut.createContext(dataCollection, evaluationFormParticipation, null, null, null);
-		QualityContext context2 = sut.createContext(dataCollection, evaluationFormParticipation, null, null, null);
+		QualityContext context1 = sut.createContext(dataCollection, evaluationFormParticipation, null, null, null, null);
+		QualityContext context2 = sut.createContext(dataCollection, evaluationFormParticipation, null, null, null, null);
 		QualityDataCollection otherDataCollection = qualityTestHelper.createDataCollection();
 		EvaluationFormParticipation otherParticpation = qualityTestHelper.createParticipation();
-		QualityContext otherContext = sut.createContext(otherDataCollection, otherParticpation, null, null, null);
+		QualityContext otherContext = sut.createContext(otherDataCollection, otherParticpation, null, null, null, null);
 		dbInstance.commitAndCloseSession();
 		
 		List<QualityContext> reloadedContext = sut.loadByParticipation(evaluationFormParticipation);
@@ -131,10 +136,10 @@ public class QualityContextDAOTest extends OlatTestCase {
 		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
 		EvaluationFormParticipation evaluationFormParticipation = qualityTestHelper.createParticipation();
 		RepositoryEntry repositoryEntry = qualityTestHelper.createRepositoryEntry();
-		sut.createContext(dataCollection, evaluationFormParticipation, null, repositoryEntry, null);
+		sut.createContext(dataCollection, evaluationFormParticipation, null, null, repositoryEntry, null);
 		CurriculumElement curriculumElement = qualityTestHelper.createCurriculumElement();
-		sut.createContext(dataCollection, evaluationFormParticipation, null, null, curriculumElement);
-		QualityContext context = sut.createContext(dataCollection, evaluationFormParticipation, null, null, null);
+		sut.createContext(dataCollection, evaluationFormParticipation, null, null, null, curriculumElement);
+		QualityContext context = sut.createContext(dataCollection, evaluationFormParticipation, null, null, null, null);
 		dbInstance.commitAndCloseSession();
 		
 		List<QualityContext> reloadedContext = sut.loadByWithoutAudience(evaluationFormParticipation);
@@ -148,8 +153,8 @@ public class QualityContextDAOTest extends OlatTestCase {
 		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
 		EvaluationFormParticipation evaluationFormParticipation = qualityTestHelper.createParticipation();
 		RepositoryEntry repositoryEntry = qualityTestHelper.createRepositoryEntry();
-		QualityContext context = sut.createContext(dataCollection, evaluationFormParticipation, role, repositoryEntry, null);
-		sut.createContext(dataCollection, evaluationFormParticipation, QualityContextRole.none, repositoryEntry, null);
+		QualityContext context = sut.createContext(dataCollection, evaluationFormParticipation, role, null, repositoryEntry, null);
+		sut.createContext(dataCollection, evaluationFormParticipation, QualityContextRole.none, null, repositoryEntry, null);
 		dbInstance.commitAndCloseSession();
 		
 		List<QualityContext> reloadedContext = sut.loadByAudienceRepositoryEntry(evaluationFormParticipation,
@@ -164,8 +169,8 @@ public class QualityContextDAOTest extends OlatTestCase {
 		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
 		EvaluationFormParticipation evaluationFormParticipation = qualityTestHelper.createParticipation();
 		CurriculumElement curriculumElement = qualityTestHelper.createCurriculumElement();
-		QualityContext context = sut.createContext(dataCollection, evaluationFormParticipation, role, null, curriculumElement);
-		sut.createContext(dataCollection, evaluationFormParticipation, QualityContextRole.none, null, curriculumElement);
+		QualityContext context = sut.createContext(dataCollection, evaluationFormParticipation, role, null, null, curriculumElement);
+		sut.createContext(dataCollection, evaluationFormParticipation, QualityContextRole.none, null, null, curriculumElement);
 		dbInstance.commitAndCloseSession();
 		
 		List<QualityContext> reloadedContext = sut.loadByAudienceCurriculumElement(evaluationFormParticipation,
@@ -178,7 +183,7 @@ public class QualityContextDAOTest extends OlatTestCase {
 	public void shouldCheckWhetherParticipationHasContexts() {
 		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
 		EvaluationFormParticipation evaluationFormParticipation = qualityTestHelper.createParticipation();
-		sut.createContext(dataCollection, evaluationFormParticipation, null, null, null);
+		sut.createContext(dataCollection, evaluationFormParticipation, null, null, null, null);
 		
 		boolean hasContexts = sut.hasContexts(evaluationFormParticipation);
 
@@ -198,29 +203,33 @@ public class QualityContextDAOTest extends OlatTestCase {
 	public void shouldAddSessionAndRemovePaticipationWhenFinishing() {
 		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
 		EvaluationFormParticipation participation = qualityTestHelper.createParticipation();
-		sut.createContext(dataCollection, participation, null, null, null);
+		sut.createContext(dataCollection, participation, null,null,  null, null);
 		dbInstance.commitAndCloseSession();
 		
 		EvaluationFormSession session = qualityTestHelper.createSession(participation);
 		QualityContext context = sut.finish(participation, session);
 		
-		assertThat(context.getEvaluationFormParticipation()).isNull();
-		assertThat(context.getEvaluationFormSession()).isEqualTo(session);
+		SoftAssertions softly = new SoftAssertions();
+		softly.assertThat(context.getEvaluationFormParticipation()).isNull();
+		softly.assertThat(context.getEvaluationFormSession()).isEqualTo(session);
+		softly.assertAll();
 	}
 
 	@Test
 	public void shouldAddParticipationAndRemoveSessionWhenReopen() {
 		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
 		EvaluationFormParticipation participation = qualityTestHelper.createParticipation();
-		sut.createContext(dataCollection, participation, null, null, null);
+		sut.createContext(dataCollection, participation, null, null, null, null);
 		EvaluationFormSession session = qualityTestHelper.createSession(participation);
 		sut.finish(participation, session);
 		dbInstance.commitAndCloseSession();
 		
 		QualityContext context = sut.reopen(session, participation);
 		
+		SoftAssertions softly = new SoftAssertions();
 		assertThat(context.getEvaluationFormSession()).isNull();
 		assertThat(context.getEvaluationFormParticipation()).isEqualTo(participation);
+		softly.assertAll();
 	}
 
 }

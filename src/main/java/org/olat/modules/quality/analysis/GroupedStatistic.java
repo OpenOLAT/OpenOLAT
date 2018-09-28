@@ -32,7 +32,7 @@ public class GroupedStatistic {
 	private final Long count;
 	private final Double avg;
 	
-	public GroupedStatistic(String identitfier, Long groupedKey1, Long groupedKey2, Long groupedKey3, Long count, Double avg) {
+	public GroupedStatistic(String identitfier, String groupedKey1, String groupedKey2, String groupedKey3, Long count, Double avg) {
 		this(identitfier, MultiKey.of(groupedKey1, groupedKey2, groupedKey3), count, avg);
 	}
 
