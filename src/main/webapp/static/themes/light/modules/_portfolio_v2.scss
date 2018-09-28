@@ -146,9 +146,6 @@
 		}
 	}	
 }
-.o_portfolio_page .o_block_imagebg {
-	border: 1px $o-portfolio-lead-border-color solid;
-}
 
 
 .o_page_lead {
@@ -562,44 +559,37 @@
 }
 
 .o_portfolio_toc {
-	padding-bottom: 6em;
+	.o_portfolio_toc_section {
+		position: relative;
+		padding-right: 80px;
+	}
 	
 	.o_portfolio_section_meta {
-		font-size: 80%;
-		color: $gray-light;
-		/* compensate for header o_header_with_buttons margin */
-		position: relative;
-		top: -15px;
+		margin-top: -0.5em;
 	}
 	
-	.o_section {
-		position: relative;
-		.o_header_with_buttons h4 {
-			padding-right: 0.5em;
-		}
-	}
-
 	.o_section_actions {
 		position: absolute;
-		top: 0;
+		top: -($line-height-computed / 2);
 		right: 0;
-	
-		.o_section_move_up_and_down {
-			display: inline-block;
-		}
 		
+		.o_section_move_up_and_down,
 		.o_section_dropdown {
+			vertical-align: middle;		
 			display: inline-block;
-			position: relative;
-			top: -0.5em;
-			padding-left: 0.5em;
 		}
+	}
+	a.o_comment {
+		color: $text-muted;
+		margin-left: 1em;
+	}
+	
+	.o_section ul {
+		padding-left:1em;
+		line-height: ($line-height-computed * 1.2);
 	}
 }
 
-.o_portfolio_toc ul>li>ul {
-	padding-left:1.5em;
-}
 
 .o_portfolio div {
 
@@ -661,7 +651,8 @@
 /* page mini view */
 .o_portfolio_page {
 	background: #fcfcfc;
-	border: 1px solid#eee;
+	border: 1px solid #eee;
+	border-radius: $border-radius-base;
 }
 
 
@@ -862,6 +853,7 @@
 }
 
 .o_portfolio_status_legend {
+	margin-top: 3em;
 	h6 {
 		margin-bottom: 5px;
 	}

@@ -242,7 +242,7 @@
 
 /* font sizes */
 .o_xsmall, %o_xsmall {
-	font-size: $font-size-small;
+	font-size: ceil($font-size-small * .9);
 }
 .o_small, %o_small {
 	font-size: $font-size-small;
@@ -251,7 +251,7 @@
 	font-size: $font-size-large;
 }
 .o_xlarge, %o_xlarge {
-	font-size: $font-size-large;
+	font-size: ceil($font-size-large * 1.1);
 }
 
 /* disabled elements */

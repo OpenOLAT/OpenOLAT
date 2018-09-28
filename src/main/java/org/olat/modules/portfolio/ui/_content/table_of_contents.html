@@ -12,14 +12,16 @@
 	#end
 		
 	<div class="o_portfolio_toc #if($timelineSwitch) o_portfolio_withtimeline #end clearfix">
-		<ul class="list-unstyled">
+		<ul class="list-unstyled o_block_large_bottom">
 		#foreach($section in $sections)
-			<li class="o_section o_block_large_bottom">
-				<div class="o_header_with_buttons">
-					<h4>$r.render($section.sectionLink) </h4> <i class="o_icon $section.cssClassStatus o_icon-fw" title="$r.translateInAttribute("${section.i18nKeyStatus}")"> </i>#if(${section.isAssessable()}) ${section.getFormattedResult()} #end
-				</div>
+			<li class="o_section o_block_large">
+				<div class="o_portfolio_toc_section">
+					<h4>
+						$r.render($section.sectionLink) 
+						<i class="o_icon $section.cssClassStatus o_icon-fw" title="$r.translateInAttribute("${section.i18nKeyStatus}")"> </i>#if(${section.isAssessable()}) ${section.getFormattedResult()} #end
+					</h4> 
 				#if($r.notNull($section.section.beginDate) || $r.notNull($section.section.endDate))
-					<div class="o_portfolio_section_meta">
+					<div class="o_portfolio_section_meta text-muted o_xsmall o_block_bottom">
 					#if($r.notNull($section.section.beginDate))
 						<span><strong>$r.translate("begin.date"): </strong> $r.formatDate($section.section.beginDate)</span>
 					#end
@@ -28,7 +30,6 @@
 					#end
 					</div>
 				#end
-					
 				#if($r.isNotNull($section.editDropdown) || $r.isNotNull($section.upSectionLink) || $r.isNotNull($section.downSectionLink))
 					<div id="sect_$foreach.count" class="o_section_actions o_noprint dropdown">
 						#if($r.isNotNull($section.upSectionLink) || $r.isNotNull($section.downSectionLink))
@@ -46,9 +47,10 @@
 						#end
 					</div>
 				#end
+				</div>
 				
 				#if($r.isNotEmpty(${section.getAssignments()}))
-				<ul class="list-unstyled">
+				<ul class="list-unstyled o_portfolio_toc_assignments">
 					#foreach($assignment in $section.assignments)
 						<li><i class="o_icon o_icon_assignment o_icon-fw"> </i> $r.escapeHtml($assignment.title)</li>
 					#end
@@ -56,9 +58,9 @@
 				#end	
 			
 				#if($r.isNotEmpty(${section.getPages()}))
-				<ul class="list-unstyled">
+				<ul class="list-unstyled o_portfolio_toc_pages">
 					#foreach($page in $section.pages)
-						<li><i class="o_icon $page.cssClassStatus o_icon-fw" title="$r.translateInAttribute("${page.i18nKeyStatus}")"> </i> $r.render($page.openLink) #if($r.isNotNull($page.commentLink)) $r.render($page.commentLink) #end
+						<li><i class="o_icon $page.cssClassStatus o_icon-fw o_pf_status" title="$r.translateInAttribute("${page.i18nKeyStatus}")"> </i> $r.render($page.openLink) #if($r.isNotNull($page.commentLink)) $r.render($page.commentLink) #end
 						#if($r.isTrue($userInfos)) $userInfosRenderer.renderPageRow($page)#end</li>
 					#end
 				</ul>

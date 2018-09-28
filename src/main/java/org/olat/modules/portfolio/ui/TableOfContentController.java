@@ -196,52 +196,52 @@ public class TableOfContentController extends BasicController implements TooledC
 	public void initTools() {
 		if(secCallback.canEditMetadataBinder()) {
 			editBinderMetadataLink = LinkFactory.createToolLink("edit.binder.metadata", translate("edit.binder.metadata"), this);
-			editBinderMetadataLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
+			editBinderMetadataLink.setIconLeftCSS("o_icon o_icon-lg o_icon-fw o_icon_new_portfolio");
 			stackPanel.addTool(editBinderMetadataLink, Align.left);
 		}
 		
 		if(secCallback.canMoveToTrashBinder(binder)) {
 			moveToTrashBinderLink = LinkFactory.createToolLink("delete.binder", translate("delete.binder"), this);
-			moveToTrashBinderLink.setIconLeftCSS("o_icon o_icon-lg o_icon_delete_item");
+			moveToTrashBinderLink.setIconLeftCSS("o_icon o_icon-lg o_icon-fw o_icon_delete_item");
 			stackPanel.addTool(moveToTrashBinderLink, Align.left);
 		}
 		
 		if(secCallback.canExportBinder()) {
 			Dropdown exportTools = new Dropdown("export.binder", "export.binder", false, getTranslator());
 			exportTools.setElementCssClass("o_sel_pf_export_tools");
-			exportTools.setIconCSS("o_icon o_icon_download");
+			exportTools.setIconCSS("o_icon o_icon_download o_icon-fw ");
 			stackPanel.addTool(exportTools, Align.left);
 
 			exportBinderAsCpLink = LinkFactory.createToolLink("export.binder.cp", translate("export.binder.cp"), this);
-			exportBinderAsCpLink.setIconLeftCSS("o_icon o_icon_download");
+			exportBinderAsCpLink.setIconLeftCSS("o_icon o_icon_download o_icon-fw ");
 			exportTools.addComponent(exportBinderAsCpLink);
 			
 			printLink = LinkFactory.createToolLink("export.binder.onepage", translate("export.binder.onepage"), this);
-			printLink.setIconLeftCSS("o_icon o_icon_print");
+			printLink.setIconLeftCSS("o_icon o_icon_print o_icon-fw ");
 			printLink.setPopup(new LinkPopupSettings(950, 750, "binder"));
 			exportTools.addComponent(printLink);
 		}
 		
 		if(secCallback.canDeleteBinder(binder)) {
 			deleteBinderLink = LinkFactory.createToolLink("delete.binder", translate("delete.binder"), this);
-			deleteBinderLink.setIconLeftCSS("o_icon o_icon-lg o_icon_delete_item");
+			deleteBinderLink.setIconLeftCSS("o_icon o_icon-lg o_icon-fw o_icon_delete_item");
 			stackPanel.addTool(deleteBinderLink, Align.left);
 			
 			restoreBinderLink = LinkFactory.createToolLink("restore.binder", translate("restore.binder"), this);
-			restoreBinderLink.setIconLeftCSS("o_icon o_icon-lg o_icon_restore");
+			restoreBinderLink.setIconLeftCSS("o_icon o_icon-lg o_icon-fw o_icon_restore");
 			stackPanel.addTool(restoreBinderLink, Align.left);
 		}
 		
 		if(secCallback.canAddSection()) {
 			newSectionTool = LinkFactory.createToolLink("new.section", translate("create.new.section"), this);
-			newSectionTool.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
+			newSectionTool.setIconLeftCSS("o_icon o_icon-lg o_icon-fw o_icon_new_portfolio");
 			newSectionTool.setElementCssClass("o_sel_pf_new_section");
 			stackPanel.addTool(newSectionTool, Align.right);
 		}
 		
 		if(secCallback.canAddPage(null)) {
 			newEntryLink = LinkFactory.createToolLink("new.page", translate("create.new.page"), this);
-			newEntryLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
+			newEntryLink.setIconLeftCSS("o_icon o_icon-lg o_icon-fw o_icon_new_portfolio");
 			newEntryLink.setElementCssClass("o_sel_pf_new_entry");
 			newEntryLink.setVisible(sectionList != null && sectionList.size() > 0);
 			stackPanel.addTool(newEntryLink, Align.right);
@@ -249,7 +249,7 @@ public class TableOfContentController extends BasicController implements TooledC
 		
 		if(secCallback.canNewAssignment()) {
 			newAssignmentLink = LinkFactory.createToolLink("new.assignment", translate("create.new.assignment"), this);
-			newAssignmentLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
+			newAssignmentLink.setIconLeftCSS("o_icon o_icon-lg o_icon-fw o_icon_new_portfolio");
 			newAssignmentLink.setElementCssClass("o_sel_pf_new_assignment");
 			newAssignmentLink.setVisible(sectionList != null && sectionList.size() > 0);
 			stackPanel.addTool(newAssignmentLink, Align.right);
@@ -389,7 +389,7 @@ public class TableOfContentController extends BasicController implements TooledC
 		Dropdown editDropdown = new Dropdown(sectionId.concat("_dropdown"), null, false, getTranslator());
 		editDropdown.setElementCssClass("o_sel_pf_section_tools");
 		editDropdown.setOrientation(DropdownOrientation.right);
-		editDropdown.setIconCSS("o_icon o_icon_actions");
+		editDropdown.setIconCSS("o_icon o_icon-fw o_icon-lg o_icon_actions");
 		
 		if(secCallback.canCloseSection(section)) {
 			if(SectionStatus.isClosed(section)) {
@@ -411,25 +411,25 @@ public class TableOfContentController extends BasicController implements TooledC
 		
 		if(secCallback.canEditSection()) {
 			Link editSectionLink = LinkFactory.createLink(sectionId.concat("_edit"), "section.edit", "edit_section", mainVC, this);
-			editSectionLink.setIconLeftCSS("o_icon o_icon_edit");
+			editSectionLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
 			editSectionLink.setUserObject(sectionRow);
 			editDropdown.addComponent(editSectionLink);
 			
 			Link deleteSectionLink = LinkFactory.createLink(sectionId.concat("_delete"), "section.delete", "delete_section", mainVC, this);
 			deleteSectionLink.setElementCssClass("o_sel_pf_delete_section");
-			deleteSectionLink.setIconLeftCSS("o_icon o_icon_delete_item");
+			deleteSectionLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
 			deleteSectionLink.setUserObject(sectionRow);
 			editDropdown.addComponent(deleteSectionLink);
 			
 			Link upSectionLink = LinkFactory.createCustomLink(sectionId.concat("_up"), "up_section", "", Link.LINK | Link.NONTRANSLATED, mainVC, this);
-			upSectionLink.setIconLeftCSS("o_icon o_icon o_icon-lg o_icon_move_up");
+			upSectionLink.setIconLeftCSS("o_icon o_icon o_icon-fw o_icon_move_up");
 			upSectionLink.setUserObject(sectionRow);
 			upSectionLink.setEnabled(!first);
 			upSectionLink.setTitle(translate("move.up"));
 			sectionRow.setUpSectionLink(upSectionLink);
 			
 			Link downSectionLink = LinkFactory.createCustomLink(sectionId.concat("_down"), "down_section", "", Link.LINK | Link.NONTRANSLATED, mainVC, this);
-			downSectionLink.setIconLeftCSS("o_icon o_icon o_icon-lg o_icon_move_down");
+			downSectionLink.setIconLeftCSS("o_icon o_icon o_icon-fw o_icon_move_down");
 			downSectionLink.setUserObject(sectionRow);
 			downSectionLink.setEnabled(!last);
 			downSectionLink.setTitle(translate("move.down"));
@@ -460,6 +460,7 @@ public class TableOfContentController extends BasicController implements TooledC
 			Link commentLink = LinkFactory.createCustomLink("com_" + (++counter), "comments", "(" + numOfComments + ")", Link.LINK | Link.NONTRANSLATED, mainVC, this);
 			commentLink.setDomReplacementWrapperRequired(false);
 			commentLink.setIconLeftCSS("o_icon o_icon-fw o_icon_comments");
+			commentLink.setElementCssClass("o_comment");
 			commentLink.setUserObject(pageRow);
 			pageRow.setCommentLink(commentLink);
 		}

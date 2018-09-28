@@ -10,6 +10,10 @@
     	@include border-top-radius($o-toolbar-border-radius);
     	@include border-bottom-radius($o-toolbar-border-radius);
     }
+    
+    &.o_toolbar_with_segments {
+    	margin-bottom: ($o-toolbar-margin-bottom + $line-height-computed / 2);
+    }
 
 	.o_breadcrumb {
 	  	@include clearfix();
@@ -306,6 +310,9 @@
 		.o_tools.o_tools_segments {
     		margin: 0 auto -1.1em auto;
 		}
+		.o_tools_segments.o_tools_segments_alone {
+			margin-top: 1.5em;
+		}
 		.o_tool span {
 			max-width: 10em;
 			@include text-overflow();	
@@ -329,6 +336,9 @@
 		.o_tools.o_tools_segments {
 			margin: 0 auto -1.1em auto;
 			text-align: center; /* override the override from o_tools_container */
+		}
+		.o_tools_segments.o_tools_segments_alone {
+			margin-top: 1.5em;
 		}
 		.o_tools_center {
 			float: left;

@@ -56,7 +56,11 @@ public class TooledStackedPanelRenderer extends DefaultComponentRenderer {
 		sb.append("<div id='o_c").append(source.getDispatchID()).append("' class='").append(mainCssClass, mainCssClass != null).append("'>");
 		
 		if((panel.isBreadcrumbEnabled() && breadCrumbs.size() > panel.getInvisibleCrumb()) || (tools.size() > 0 && panel.isToolbarEnabled())) {
-			sb.append("<div id='o_main_toolbar' class='o_toolbar'>");
+			sb.append("<div id='o_main_toolbar' class='o_toolbar");
+			if ((panel.isToolbarAutoEnabled() || panel.isToolbarEnabled() ) && getTools(tools, Align.segment).size() > 0) {
+				sb.append(" o_toolbar_with_segments");
+			}
+			sb.append("'>");
 
 			if(panel.isBreadcrumbEnabled() && breadCrumbs.size() > panel.getInvisibleCrumb()) {
 				sb.append("<div class='o_breadcrumb'><ol class='breadcrumb'>");
