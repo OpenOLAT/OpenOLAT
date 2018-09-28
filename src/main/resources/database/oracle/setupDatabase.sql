@@ -1840,6 +1840,7 @@ create table o_qual_context (
    creationdate date not null,
    lastmodified date not null,
    q_role varchar2(20),
+   q_location varchar2(1024),
    fk_data_collection number(20) not null,
    fk_eva_participation number(20),
    fk_eva_session number(20),

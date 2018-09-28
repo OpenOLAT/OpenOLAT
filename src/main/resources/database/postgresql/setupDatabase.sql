@@ -1805,6 +1805,7 @@ create table o_qual_context (
    creationdate timestamp not null,
    lastmodified timestamp not null,
    q_role varchar(20),
+   q_location varchar(1024),
    fk_data_collection bigint not null,
    fk_eva_participation bigint,
    fk_eva_session bigint,
