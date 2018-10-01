@@ -33,6 +33,15 @@
 	@extend %o_block_large_top;
 	@extend %o_block_large_bottom;
 }
+.o_block_move_up {
+	margin-top: -1em;
+}
+.o_block_move_up_small {
+	margin-top: -0.5em;
+}
+.o_block_move_up_large {
+	margin-top: -2em;
+}
 .o_block_inline, %o_block_inline {
 	display: inline-block;
 	vertical-align: top;

@@ -55,6 +55,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.control.generic.spacesaver.ToggleBoxController;
 import org.olat.core.gui.control.winmgr.ScrollTopCommand;
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
@@ -93,6 +94,7 @@ import org.olat.modules.portfolio.ui.export.ExportBinderAsPDFResource;
 import org.olat.modules.portfolio.ui.model.ReadOnlyCommentsSecurityCallback;
 import org.olat.modules.portfolio.ui.renderer.PortfolioRendererHelper;
 import org.olat.modules.portfolio.ui.renderer.SharedPageStatusCellRenderer;
+import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -164,6 +166,13 @@ public class TableOfContentController extends BasicController implements TooledC
 
 		mainVC.contextPut("isTemplate", secCallback.canNewAssignment());
 		mainVC.contextPut("isPersonalBinder", (!secCallback.canNewAssignment() && secCallback.canEditMetadataBinder()));
+
+		RepositoryEntry repoEntry = binder.getEntry();
+		if (repoEntry != null) {
+			mainVC.contextPut("referenceEntryName", repoEntry.getDisplayname());
+			String url = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + repoEntry.getKey();
+			mainVC.contextPut("referenceEntryUrl", url);
+		}
 		
 		summaryComp = TextFactory.createTextComponentFromString("summaryCmp" + CodeHelper.getRAMUniqueID(), "", null,
 				false, null);
