@@ -87,7 +87,7 @@ public class CurriculumElementWithViewsRow implements CurriculumElementRef, Flex
 		setShortenedDescription(element.getDescription());
 	
 		// calculate level of current curr element based on parent chain
-		for(CurriculumElement parent=element.getParent(); parent != null; parent=parent.getParent()) {
+		for(CurriculumElement parentEl=element.getParent(); parentEl != null; parentEl=parentEl.getParent()) {
 			level++;
 		}
 	}
@@ -117,7 +117,7 @@ public class CurriculumElementWithViewsRow implements CurriculumElementRef, Flex
 		setShortenedDescription(repositoryEntryView.getDescription());
 		
 		// calculate level of current curr element based on parent chain
-		for(CurriculumElement parent=element.getParent(); parent != null; parent=parent.getParent()) {
+		for(CurriculumElement parentEl=element.getParent(); parentEl != null; parentEl=parentEl.getParent()) {
 			level++;
 		}
 	}

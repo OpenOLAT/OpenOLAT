@@ -154,6 +154,7 @@ public class CurriculumRepositoryEntryRelationDAO {
 	public Map<CurriculumElement, List<Long>> getCurriculumElementsWithRepositoryEntryKeys(CurriculumRef curriculum) {
 		QueryBuilder sb = new QueryBuilder(256);
 		sb.append("select el, rel.entry.key from curriculumelement el")
+		  .append(" inner join fetch el.type elementType")
 		  .append(" inner join el.curriculum curriculum")
 		  .append(" left join fetch el.parent parentEl")
 		  .append(" left join repoentrytogroup as rel on (el.group.key=rel.group.key)")
