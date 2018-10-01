@@ -283,10 +283,10 @@ public class PageMetadataController extends BasicController {
 			}
 			if(edit) {
 				editLink.setCustomDisplayText(translate("edit.page.meta"));
-				editLink.setIconRightCSS("o_icon o_icon-lg o_icon_toggle_on");
+				editLink.setIconRightCSS("o_icon o_icon-lg o_icon_toggle_off");
 			} else {
 				editLink.setCustomDisplayText(translate("edit.page.close"));
-				editLink.setIconRightCSS("o_icon o_icon-lg o_icon_toggle_off");
+				editLink.setIconRightCSS("o_icon o_icon-lg o_icon_toggle_on");
 			}
 			editLink.setVisible(secCallback.canEditPage(page));
 		}

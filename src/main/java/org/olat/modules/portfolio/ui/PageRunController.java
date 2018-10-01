@@ -238,10 +238,10 @@ public class PageRunController extends BasicController implements TooledControll
 			}
 			if(edit) {
 				editLink.setCustomDisplayText(translate("edit.page"));
-				editLink.setIconLeftCSS("o_icon o_icon-lg o_icon_toggle_on");
+				editLink.setIconLeftCSS("o_icon o_icon-lg o_icon_toggle_off");
 			} else {
 				editLink.setCustomDisplayText(translate("edit.page.close"));
-				editLink.setIconLeftCSS("o_icon o_icon-lg o_icon_toggle_off");
+				editLink.setIconLeftCSS("o_icon o_icon-lg o_icon_toggle_on");
 			}
 			editLink.setVisible(secCallback.canEditPage(page));
 			editLink.setUserObject(edit);
