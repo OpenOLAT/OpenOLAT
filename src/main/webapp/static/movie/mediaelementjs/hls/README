@@ -1,5 +1,5 @@
 hls.js is a JavaScript library which implements an HTTP Live Streaming client. It relies on HTML5 video and MediaSource Extensions for playback.
 
-Version latest from 2017-05-30
+Version 0.11.0 from 2018-08-14
 https://github.com/video-dev/hls.js
 

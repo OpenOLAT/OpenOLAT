@@ -1,0 +1,2 @@
+# to recompress the language files
+for f in *.js; do uglifyjs $f -c -m toplevel --comments all -o ${f%.js}.min.js; done
