@@ -57,6 +57,7 @@ import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.spacesaver.ToggleBoxController;
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
@@ -80,6 +81,7 @@ import org.olat.modules.portfolio.ui.export.ExportBinderAsCPResource;
 import org.olat.modules.portfolio.ui.export.ExportBinderAsPDFResource;
 import org.olat.modules.portfolio.ui.model.PortfolioElementRow;
 import org.olat.modules.portfolio.ui.renderer.SharedPageStatusCellRenderer;
+import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -115,6 +117,13 @@ public class BinderPageListController extends AbstractPageListController {
 		this.binder = binder;
 		stackPanel.addListener(this);
 		owners = portfolioService.getMembers(binder, PortfolioRoles.owner.name());
+		
+		RepositoryEntry repoEntry = binder.getEntry();
+		if (repoEntry != null) {
+			flc.contextPut("referenceEntryName", repoEntry.getDisplayname());
+			String url = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + repoEntry.getKey();
+			flc.contextPut("referenceEntryUrl", url);
+		}
 		
 		summaryComp = TextFactory.createTextComponentFromString("summaryCmp" + CodeHelper.getRAMUniqueID(), "", "o_block_large_bottom", false, null);
 		summaryCtrl = new ToggleBoxController(ureq, wControl, getGuiPrefsKey(binder), translate("summary.open"),

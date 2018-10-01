@@ -6,13 +6,16 @@
 	#else 
 		$r.contextHelpWithWrapper("Portfolio task and assignment: Collecting and editing")			
 	#end
-	<h2>$r.translate("table.of.contents", $binderTitle) #if($owners && !$owners.isEmpty())<small>$r.translate("binder.by",$owners)</small>#end</h2>
+	<h2>$r.translate("table.of.contents", $binderTitle) #if($owners && !$owners.isEmpty())<small>$r.translate("binder.by",$owners)</small>#end </h2>
+	#if($r.isNotNull($referenceEntryName))
+		<div class="o_portfolio_repo_link o_block_bottom o_block_move_up_small"><a href="$referenceEntryUrl" class="small"><i class="o_icon o_CourseModule_icon"> </i> $r.translate("binder.entry.name"): $r.escapeHtml($referenceEntryName)</a></div>
+	#end
 	#if($r.available("summary"))
 		$r.render("summary")
 	#end
 		
 	<div class="o_portfolio_toc #if($timelineSwitch) o_portfolio_withtimeline #end clearfix">
-		<ul class="list-unstyled o_block_large_bottom">
+		<ul class="list-unstyled o_block_large_bottom o_block_move_up_small">
 		#foreach($section in $sections)
 			<li class="o_section o_block_large">
 				<div class="o_portfolio_toc_section">
@@ -71,8 +74,10 @@
 		
 		#if($r.available("create.new.section"))
 		<div class="panel panel-placeholder o_block_large o_noprint">
+			<div class="panel-heading">
+				<h5 class="panel-title">$r.translate("create.new.section.title")</h5>
+			</div>
 			<div class="panel-body">
-				<h5>$r.translate("create.new.section.title")</h5>
 				<p>$r.translate("create.new.section.text")</p>
 				<div class="o_button_group">
 					$r.render("create.new.section")

@@ -9,6 +9,10 @@
 			$r.contextHelpWithWrapper("Portfolio template: Administration and editing#entries")	
 		</div>
 		#end
+		#if($r.isNotNull($referenceEntryName))
+			<div class="o_portfolio_repo_link o_block_bottom o_block_move_up_small"><a href="$referenceEntryUrl" class="small"><i class="o_icon o_CourseModule_icon"> </i> $r.translate("binder.entry.name"): $r.escapeHtml($referenceEntryName)</a></div>
+		#end
+		
 	</div>
 
 	<div class="o_portfolio_entries #if($timelineSwitch) o_portfolio_withtimeline #end">
@@ -22,8 +26,10 @@
 		
 		#if($r.available("create.new.section"))
 		<div class="panel panel-placeholder o_block_large o_noprint">
+			<div class="panel-heading">
+				<h5 class="panel-title">$r.translate("create.new.section.title")</h5>
+			</div>
 			<div class="panel-body">
-				<h5>$r.translate("create.new.section.title")</h5>
 				<p>$r.translate("create.new.section.text")</p>
 				<div class="o_button_group">
 					$r.render("create.new.section")
