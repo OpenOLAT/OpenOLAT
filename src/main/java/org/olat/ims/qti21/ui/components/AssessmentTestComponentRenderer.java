@@ -129,10 +129,10 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 				/* Render event */
 				AssessmentRenderer renderHints = new AssessmentRenderer(renderer);
 				renderTestEvent(testSessionController, renderHints, sb, cmp, ubu, translator);
-				
+
 				if(renderHints.isMathJax()
-	            		|| (WebappHelper.isMathJaxMarkers() && ((sb.contains("\\(") || sb.contains("\\[") || sb.contains("&&"))))) {
-					sb.append(Formatter.elementLatexFormattingScript("itemBody"));
+	            		|| (WebappHelper.isMathJaxMarkers() && (sb.contains("\\(") || sb.contains("\\[") || sb.contains("$$")))) {
+					sb.append(Formatter.elementLatexFormattingScript("o_c".concat(cmp.getDispatchID())));
 				}
 			}
 		}

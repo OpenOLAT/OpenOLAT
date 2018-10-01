@@ -94,8 +94,8 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
             renderItemEvent(renderHints, sb, cmp, latestEvent, itemSessionState, ubu, translator);
             
             if(renderHints.isMathJax()
-            		|| (WebappHelper.isMathJaxMarkers() && ((sb.contains("\\(") || sb.contains("\\[") || sb.contains("&&"))))) {
-				sb.append(Formatter.elementLatexFormattingScript("itemBody"));
+            		|| (WebappHelper.isMathJaxMarkers() && (sb.contains("\\(") || sb.contains("\\[") || sb.contains("$$")))) {
+				sb.append(Formatter.elementLatexFormattingScript("o_c".concat(cmp.getDispatchID())));
 			}
         }
 		
