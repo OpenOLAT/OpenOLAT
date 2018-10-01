@@ -287,11 +287,12 @@ public class AssignmentDAO {
 	
 	public List<Assignment> getOwnedAssignments(IdentityRef assignee) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select assignment from pfpage as page")
+		sb.append("select assignment from pfpage page")
 		  .append(" inner join page.body as body")
 		  .append(" inner join page.section as section")
 		  .append(" inner join section.binder as binder")
 		  .append(" inner join pfassignment assignment on (section.key = assignment.section.key)")
+		  .append(" left join fetch assignment.page as assignmentPage")
 		  .append(" where assignment.assignee.key is null or assignment.assignee.key=:assigneeKey")
 		  .append(" and exists (select pageMember from bgroupmember as pageMember")
 		  .append("     inner join pageMember.identity as ident on (ident.key=:assigneeKey and pageMember.role='").append(PortfolioRoles.owner.name()).append("')")

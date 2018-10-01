@@ -26,6 +26,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -94,6 +95,7 @@ public class PortfolioHomeController extends BasicController implements Activate
 		super(ureq, wControl);
 		this.stackPanel = stackPanel;
 		stackPanel.setToolbarAutoEnabled(true);
+		stackPanel.addListener(this);
 
 		mainVC = createVelocityContainer("home");
 		myBindersLink = LinkFactory.createLink("goto.my.binders", mainVC, this);
@@ -147,7 +149,9 @@ public class PortfolioHomeController extends BasicController implements Activate
 	
 	@Override
 	protected void doDispose() {
-		//
+		if(stackPanel != null) {
+			stackPanel.removeListener(this);
+		}
 	}
 
 	@Override
@@ -174,6 +178,15 @@ public class PortfolioHomeController extends BasicController implements Activate
 
 		} else if(goToTrashLink == source) {
 			doDeletedPages(ureq);
+		} else if(stackPanel == source) {
+			if(event instanceof PopEvent) {
+				PopEvent pe = (PopEvent)event;
+				if(pe.getController() == myPortfolioListCtrl || pe.getController() == myPageListCtrl) {
+					lastPagesCtrl.loadModel(ureq, null);
+					lastBindersCtrl.loadModel();
+				}
+			}
+			
 		}
 	}
 	
