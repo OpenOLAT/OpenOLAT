@@ -34,6 +34,7 @@ import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.ModalFeedback;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
 import uk.ac.ed.ph.jqtiplus.node.result.SessionStatus;
+import uk.ac.ed.ph.jqtiplus.node.test.AbstractPart;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentSection;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
 import uk.ac.ed.ph.jqtiplus.node.test.TestPart;
@@ -268,11 +269,9 @@ public class AssessmentTestComponent extends AssessmentObjectComponent  {
 	public AssessmentSection getAssessmentSection(Identifier identifier) {
 		List<TestPart> testParts = getAssessmentTest().getTestParts();
 		for(TestPart testPart:testParts) {
-			List<AssessmentSection> sections = testPart.getAssessmentSections();
-			for(AssessmentSection section:sections) {
-				if(section.getIdentifier().equals(identifier)) {
-					return section;
-				}
+			AbstractPart section = testPart.lookupFirstDescendant(identifier);
+			if(section instanceof AssessmentSection) {
+				return (AssessmentSection)section;
 			}	
 		}
 		return null;
