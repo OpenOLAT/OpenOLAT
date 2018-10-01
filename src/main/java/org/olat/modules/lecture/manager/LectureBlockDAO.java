@@ -210,15 +210,17 @@ public class LectureBlockDAO {
 		  .append(" inner join block.teacherGroup tGroup")
 		  .append(" left join tGroup.members membership on (membership.role='").append("teacher").append("')")
 		  .append(" left join membership.identity teacher")
-		  .append(" left join fetch teacher.user userteacher");
+		  .append(" left join fetch teacher.user userteacher")
+		  .append(" inner join lectureentryconfig config on (config.entry.key=block.entry.key)");
+		
 		if(from != null) {
-			sb.and().append(" block.startDate>=:startDate");
+			sb.append(" and block.startDate>=:startDate");
 		}
 		if(to != null) {
-			sb.and().append(" block.endDate<=:endDate");
+			sb.append(" and block.endDate<=:endDate");
 		}
 		if(status != null && !status.isEmpty()) {
-			sb.and().append(" block.rollCallStatusString in (:status)");
+			sb.append(" and block.rollCallStatusString in (:status)");
 		}
 
 		//get all, it's quick

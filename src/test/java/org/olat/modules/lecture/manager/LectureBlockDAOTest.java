@@ -581,7 +581,7 @@ public class LectureBlockDAOTest extends OlatTestCase {
 	
 	@Test
 	public void getLecturesBlocksReport() {
-		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry entry = createResourceWithLecturesEnabled();
 		LectureBlock lectureBlock = createMinimalLectureBlock(entry);
 		dbInstance.commitAndCloseSession();
 		
@@ -600,7 +600,7 @@ public class LectureBlockDAOTest extends OlatTestCase {
 	
 	@Test
 	public void getLecturesBlocksReport_withParams() {
-		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry entry = createResourceWithLecturesEnabled();
 		LectureBlock lectureBlock = createMinimalLectureBlock(entry);
 		dbInstance.commitAndCloseSession();
 		
