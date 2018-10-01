@@ -46,6 +46,7 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.fileresource.DownloadeableMediaResource;
 import org.olat.fileresource.types.ImsQTI21Resource;
@@ -56,6 +57,7 @@ import org.olat.ims.qti21.QTI21AssessmentResultsOptions;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.QTI21QuestionType;
+import org.olat.ims.qti21.model.xml.AssessmentHtmlBuilder;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.ui.assessment.TerminatedStaticCandidateSessionContext;
 import org.olat.ims.qti21.ui.components.FeedbackResultFormItem;
@@ -64,6 +66,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import uk.ac.ed.ph.jqtiplus.node.content.variable.RubricBlock;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.result.AssessmentResult;
 import uk.ac.ed.ph.jqtiplus.node.result.ItemResult;
@@ -71,7 +74,9 @@ import uk.ac.ed.ph.jqtiplus.node.result.ItemVariable;
 import uk.ac.ed.ph.jqtiplus.node.result.OutcomeVariable;
 import uk.ac.ed.ph.jqtiplus.node.result.SessionStatus;
 import uk.ac.ed.ph.jqtiplus.node.result.TestResult;
+import uk.ac.ed.ph.jqtiplus.node.test.AbstractPart;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
+import uk.ac.ed.ph.jqtiplus.node.test.AssessmentSection;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
@@ -118,6 +123,7 @@ public class AssessmentResultController extends FormBasicController {
 	private final ResolvedAssessmentTest resolvedAssessmentTest;
 	private UserShortDescription assessedIdentityInfosCtrl;
 	private final Map<String,AssessmentItemSession> identifierToItemSession = new HashMap<>();
+	private final AssessmentHtmlBuilder htmlBuilder;
 	
 	private int count = 0;
 	
@@ -149,6 +155,7 @@ public class AssessmentResultController extends FormBasicController {
 		this.candidateSession = candidateSession;
 		this.fUnzippedDirRoot = fUnzippedDirRoot;
 		this.submissionMapperUri = submissionMapperUri;
+		htmlBuilder = new AssessmentHtmlBuilder();
 
 		ResourceLocator fileResourceLocator = new PathResourceLocator(fUnzippedDirRoot.toPath());
 		inputResourceLocator = 
@@ -291,7 +298,8 @@ public class AssessmentResultController extends FormBasicController {
 			TestPlanNodeKey testPlanNodeKey = node.getKey();
 			TestNodeType testNodeType = node.getTestNodeType();
 			if(testNodeType == TestNodeType.ASSESSMENT_SECTION) {
-				Results r = new Results(true, node.getSectionPartTitle(), "o_mi_qtisection", options.isSectionSummary());
+				String rubrics = getSectionRubric(node);
+				Results r = new Results(true, node.getSectionPartTitle(), rubrics, "o_mi_qtisection", options.isSectionSummary());
 				AssessmentSectionSessionState sectionState = testSessionState.getAssessmentSectionSessionStates().get(testPlanNodeKey);
 				if(sectionState != null) {
 					r.setSessionState(sectionState);
@@ -311,8 +319,33 @@ public class AssessmentResultController extends FormBasicController {
 				if(results.hasMaxScore()) {
 					testResults.addMaxScore(results);
 				}
+				
+				if(node.getParent() != null) {
+					Results parentResults = resultsMap.get(node.getParent());
+					if(parentResults != null && parentResults.isSection()) {
+						parentResults.setNumberOfQuestions(parentResults.getNumberOfQuestions() + 1);
+					}
+				}
 			}
 		}
+	}
+	
+	private String getSectionRubric(TestPlanNode node) {
+		AssessmentTest assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
+		
+		StringBuilder sb = new StringBuilder(128);
+		AbstractPart part = assessmentTest.lookupFirstDescendant(node.getIdentifier());
+		if(part instanceof AssessmentSection) {
+			AssessmentSection section = (AssessmentSection)part;
+			for(RubricBlock rubricBlock:section.getRubricBlocks()) {
+				String content = htmlBuilder.blocksString(rubricBlock.getBlocks());
+				if(StringHelper.containsNonWhitespace(content)) {
+					sb.append("<div class='rubric'>").append(content).append("</div>");
+				}
+			}
+		}
+		
+		return sb.toString();
 	}
 
 	private Results initFormItemResult(FormLayoutContainer layoutCont, TestPlanNode node,
@@ -325,7 +358,7 @@ public class AssessmentResultController extends FormBasicController {
 		QTI21QuestionType type = QTI21QuestionType.getType(assessmentItem);
 		AssessmentItemSession itemSession = identifierToItemSession.get(identifier.toString());
 
-		Results r = new Results(false, node.getSectionPartTitle(), type.getCssClass(), options.isQuestionSummary());
+		Results r = new Results(false, node.getSectionPartTitle(), null, type.getCssClass(), options.isQuestionSummary());
 		r.setSessionStatus(null);//init
 		r.setItemIdentifier(node.getIdentifier().toString());
 		
@@ -529,6 +562,7 @@ public class AssessmentResultController extends FormBasicController {
 		
 		private String itemIdentifier;
 		private final String title;
+		private final String rubrics;
 		private final String cssClass;
 		private final boolean section;
 		private final boolean metadataVisible;
@@ -549,11 +583,13 @@ public class AssessmentResultController extends FormBasicController {
 			this.cssClass = cssClass;
 			this.metadataVisible = metadataVisible;
 			this.title = null;
+			this.rubrics = null;
 		}
 
-		public Results(boolean section, String title, String cssClass, boolean metadataVisible) {
+		public Results(boolean section, String title, String rubrics, String cssClass, boolean metadataVisible) {
 			this.section = section;
 			this.title = title;
+			this.rubrics = rubrics;
 			this.cssClass = cssClass;
 			this.metadataVisible = metadataVisible;
 		}
@@ -598,8 +634,16 @@ public class AssessmentResultController extends FormBasicController {
 			return title;
 		}
 		
+		public String getRubrics() {
+			return rubrics;
+		}
+		
 		public boolean isSection() {
 			return section;
+		}
+		
+		public boolean hasSectionInformations() {
+			return numberOfQuestions > 0 || hasScore();
 		}
 
 

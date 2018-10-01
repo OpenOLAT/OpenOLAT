@@ -43,6 +43,8 @@ public class ToReviewFlexiCellRenderer implements FlexiCellRenderer {
 				target.append(toReview)
 				      .append(" <i class='o_icon o_icon_fw o_icon_warn'> </i>");
 			}
+		} else if(cellValue instanceof Boolean && ((Boolean)cellValue).booleanValue()) {
+			target.append("<i class='o_icon o_icon_fw o_icon_warn'> </i>");
 		}
 	}
 }

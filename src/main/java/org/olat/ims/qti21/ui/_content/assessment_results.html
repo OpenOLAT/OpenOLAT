@@ -247,10 +247,10 @@
 #if (($r.isNotNull($testResults.numberOfSections) && $testResults.numberOfSections > 1) || !$options.isMetadata() )
 <div class="o_qti_sectionsummary row o_block_large">
 #foreach($itemResult in $itemResults)
-	#if(${itemResult.isSection()} && ${itemResult.metadataVisible})
+	#if(${itemResult.isSection()} && ${itemResult.metadataVisible} && ${itemResult.hasSectionInformations()})
 	<div class="o_qti_section o_block_large_bottom col-xs-6 col-sm-4 col-md-3 col-lg-3">
-		<h4>$r.escapeHtml($itemResult.title)</h4>
-	
+		<h4>$r.escapeHtml($itemResult.title) ${itemResult.getNumberOfQuestions()}</h4>
+
 		#if(${itemResult.hasScore()})			
 		<div class="o_qti_section_visual">	
 			<div class="radial-progress radial-progress #if(${itemResult.hasPass()}) #if(${itemResult.getPass().booleanValue()}) radial-progress-success #elseif(!${itemResult.getPass().booleanValue()}) radial-progress-danger #end #end " id="$foreach.count" data-progress="0">
@@ -385,6 +385,9 @@
 				</small>
 				#end
 			</h3>
+			#if($r.isNotEmpty($itemResult.rubrics))
+			<div class="o_info o_assessmentsection_rubrics">$r.xssScan($itemResult.rubrics)</div>
+			#end
 		#end
 	#else
 		## this is an ITEM

@@ -192,4 +192,20 @@ public abstract class GenericNode implements INode, Serializable {
 		return latest;
 	}
 
+	@Override
+	public int hashCode() {
+		return ident == null ? -3657834 : ident.hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null || getClass() != obj.getClass()) {
+			return false;
+		}
+		GenericNode other = (GenericNode) obj;
+		return ident != null && ident.equals(other.ident);
+	}
 }

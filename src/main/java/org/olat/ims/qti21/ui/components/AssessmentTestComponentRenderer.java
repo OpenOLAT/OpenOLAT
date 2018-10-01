@@ -129,10 +129,10 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 				/* Render event */
 				AssessmentRenderer renderHints = new AssessmentRenderer(renderer);
 				renderTestEvent(testSessionController, renderHints, sb, cmp, ubu, translator);
-				
+
 				if(renderHints.isMathJax()
-	            		|| (WebappHelper.isMathJaxMarkers() && ((sb.contains("\\(") || sb.contains("\\[") || sb.contains("&&"))))) {
-					sb.append(Formatter.elementLatexFormattingScript("itemBody"));
+	            		|| (WebappHelper.isMathJaxMarkers() && (sb.contains("\\(") || sb.contains("\\[") || sb.contains("$$")))) {
+					sb.append(Formatter.elementLatexFormattingScript("o_c".concat(cmp.getDispatchID())));
 				}
 			}
 		}
@@ -285,104 +285,103 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		sb.append("</div>");// end assessmentItem
 	}
 	
-	private void renderSectionRubrics(AssessmentRenderer renderer, StringOutput sb, AssessmentTestComponent component, TestPlanNode itemRefNode, URLBuilder ubu, Translator translator) {
-		boolean writeRubrics = false;
-		boolean writeTitles = false;
+	private void renderSectionRubrics(AssessmentRenderer renderer, StringOutput sb, AssessmentTestComponent component,
+			TestPlanNode itemRefNode, URLBuilder ubu, Translator translator) {
 		List<AssessmentSection> sectionParentLine = new ArrayList<>();
 		for(TestPlanNode parentNode=itemRefNode.getParent(); parentNode.getParent() != null; parentNode = parentNode.getParent()) {
-			AssessmentSection selectedSection = component.getAssessmentSection(parentNode.getIdentifier());
-			if(selectedSection != null && selectedSection.getVisible()) {
-				sectionParentLine.add(selectedSection);
-				if(selectedSection.getRubricBlocks().size() > 0) {
-					for(RubricBlock rubric:selectedSection.getRubricBlocks()) {
-						if(rubric.getBlocks().size() > 0) {
-							writeRubrics = true;
-						}
-					}
-				}
-				if(StringHelper.containsNonWhitespace(selectedSection.getTitle())) {
-					writeTitles = true;
-				}
+			AssessmentSection section = component.getAssessmentSection(parentNode.getIdentifier());
+			if(section != null && section.getVisible()) {
+				sectionParentLine.add(section);
 			}
 		}
 		
-		if(writeRubrics) {
-			boolean show = true;
-			for(int i=sectionParentLine.size(); i-->0; ) {
-				AssessmentSection selectedSection = sectionParentLine.get(i);
-				if(component.getCandidateSessionContext().isRubricHidden(selectedSection.getIdentifier())) {
-					show = false;
+		for(int i=sectionParentLine.size(); i-->0; ) {
+			AssessmentSection section = sectionParentLine.get(i);
+			
+			boolean writeRubrics = false;
+			for(RubricBlock rubric:section.getRubricBlocks()) {
+				if(!rubric.getBlocks().isEmpty()) {
+					writeRubrics = true;
 				}
 			}
 			
-			String key = sectionParentLine.get(0).getIdentifier().toString();
-			Form form = component.getQtiItem().getRootForm();
-			String dispatchId = component.getQtiItem().getFormDispatchId();
-			
-			sb.append("<a href='javascript:;' onclick=\"")
-			  .append(FormJSHelper.getXHRNFFnCallFor(form, dispatchId, 1,
-					new NameValuePair("cid", Event.rubric.name()), new NameValuePair("section", key)))
-			  .append("; return false;\" class='o_toogle_rubrics translated'><i class='o_icon o_icon-fw ");
-			if(show) {
-				sb.append("o_icon_close_togglebox'> </i> <span>").append(translator.translate("hide.rubric"));
-			} else {
-				sb.append("o_icon_open_togglebox'> </i> <span>").append(translator.translate("show.rubric"));
+			if(writeRubrics) {
+				renderRubricSection(renderer, sb, component, section, ubu, translator);
 			}
-			sb.append("</span></a>");
-
-			sb.append("<div class='o_info o_assessmentsection_rubrics clearfix");
-			if(show) {
-				sb.append(" o_show");
-			} else {
-				sb.append(" o_hide");
-			}
-			sb.append("'>");
-			
-			//write the titles first
-			
-			for(int i=sectionParentLine.size(); i-->0; ) {
-				if(writeTitles) {
-					String hTag = "h" + (4 + sectionParentLine.size() - i -1);
-					sb.append("<").append(hTag).append(">");
-					sb.append(sectionParentLine.get(i).getTitle());
-					sb.append("</").append(hTag).append(">");
-				}
-				AssessmentSection selectedSection = sectionParentLine.get(i);
-				for(RubricBlock rubricBlock:selectedSection.getRubricBlocks()) {
-					sb.append("<div class='rubric'>");//@view (candidate)
-					rubricBlock.getBlocks().forEach(block -> renderBlock(renderer, sb, component, null, null, block, ubu, translator));
-					sb.append("</div>");
-				}
-			}
-			
-			sb.append("<a href='javascript:;' onclick=\"")
-			  .append(FormJSHelper.getXHRNFFnCallFor(form, dispatchId, 1,
-					new NameValuePair("cid", Event.rubric.name()), new NameValuePair("section", key)))
-			  .append("; return false;\" class='o_toogle_rubrics o_hide'><span>")
-			  .append(translator.translate("hide.rubric.short"))
-			  .append("</span></a>");
-			// script to show/hide the rubrics with the translated linked
-			sb.append("<script type=\"text/javascript\">\n")
-			  .append("/* <![CDATA[ */ \n")
-			  .append("jQuery(function() {\n")
-			  .append(" jQuery('.o_toogle_rubrics').on('click', function() {\n")
-			  .append("   jQuery('.o_assessmentsection_rubrics').each(function(index, el) {\n")
-			  .append("     var current = jQuery(el).attr('class');\n")
-			  .append("     if(current.indexOf('o_hide') >= 0) {\n")
-			  .append("       jQuery(el).removeClass('o_hide').addClass('o_show');\n")
-			  .append("       jQuery('a.o_toogle_rubrics.translated i').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');\n")
-			  .append("       jQuery('a.o_toogle_rubrics.translated span').html('").append(translator.translate("hide.rubric")).append("');")
-			  .append("     } else {\n")
-			  .append("   	  jQuery(el).removeClass('o_show').addClass('o_hide');\n")
-			  .append("       jQuery('a.o_toogle_rubrics.translated i').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');\n")
-			  .append("       jQuery('a.o_toogle_rubrics.translated span').html('").append(translator.translate("show.rubric")).append("');")
-			  .append("     }\n")
-			  .append("   });")
-			  .append(" });")
-			  .append("});\n /* ]]> */")
-			  .append("</script>")
-			  .append("</div>");
 		}
+	}
+	
+	private void renderRubricSection(AssessmentRenderer renderer, StringOutput sb, AssessmentTestComponent component,
+			AssessmentSection section, URLBuilder ubu, Translator translator) {
+		String key = section.getIdentifier().toString();
+		Form form = component.getQtiItem().getRootForm();
+		String dispatchId = component.getQtiItem().getFormDispatchId();
+		
+		boolean show = !component.getCandidateSessionContext().isRubricHidden(section.getIdentifier());
+		String linkKey = "o_sect_".concat(key);
+		String showLinkLabel;
+		if(StringHelper.containsNonWhitespace(section.getTitle())) {
+			showLinkLabel = translator.translate("show.rubric.with.title", new String[] { section.getTitle() });
+		} else {
+			showLinkLabel = translator.translate("show.rubric");
+		}
+		
+		sb.append("<div><a id='").append(linkKey).append("' href='javascript:;' onclick=\"")
+		  .append(FormJSHelper.getXHRNFFnCallFor(form, dispatchId, 1,
+				new NameValuePair("cid", Event.rubric.name()), new NameValuePair("section", key)))
+		  .append("; return false;\" class='o_toogle_rubrics translated'><i class='o_icon o_icon-fw ");
+		if(show) {
+			sb.append("o_icon_close_togglebox'> </i> <span>").append(translator.translate("hide.rubric"));
+		} else {
+			sb.append("o_icon_open_togglebox'> </i> <span>").append(showLinkLabel);
+		}
+		sb.append("</span></a>");
+
+		sb.append("<div id='d").append(linkKey).append("' class='o_info o_assessmentsection_rubrics clearfix");
+		if(show) {
+			sb.append(" o_show");
+		} else {
+			sb.append(" o_hide");
+		}
+		sb.append("'>");
+		
+		//write the titles first
+		if(StringHelper.containsNonWhitespace(section.getTitle())) {
+			sb.append("<h4>").append(section.getTitle()).append("</h4>");
+		}
+		
+		for(RubricBlock rubricBlock:section.getRubricBlocks()) {
+			sb.append("<div class='rubric'>");//@view (candidate)
+			rubricBlock.getBlocks().forEach(block -> renderBlock(renderer, sb, component, null, null, block, ubu, translator));
+			sb.append("</div>");
+		}
+		sb.append("<a id='h").append(linkKey).append("' href='javascript:;' onclick=\"")
+		  .append(FormJSHelper.getXHRNFFnCallFor(form, dispatchId, 1,
+				new NameValuePair("cid", Event.rubric.name()), new NameValuePair("section", key)))
+		  .append("; return false;\" class='o_toogle_rubrics o_hide'><span>")
+		  .append(translator.translate("hide.rubric.short"))
+		  .append("</span></a>")
+		  .append("</div></div>");
+		// script to show/hide the rubrics with the translated linked
+		sb.append("<script type=\"text/javascript\">\n")
+		  .append("/* <![CDATA[ */ \n")
+		  .append("jQuery(function() {\n")
+		  .append(" jQuery('#").append(linkKey).append(", #h").append(linkKey).append("').on('click', function(linkIndex, linkEl) {\n")
+		  .append("   jQuery('#d").append(linkKey).append("').each(function(index, el) {\n")
+		  .append("     var current = jQuery(el).attr('class');\n")
+		  .append("     if(current.indexOf('o_hide') >= 0) {\n")
+		  .append("       jQuery(el).removeClass('o_hide').addClass('o_show');\n")
+		  .append("       jQuery('a#").append(linkKey).append(".translated i').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');\n")
+		  .append("       jQuery('a#").append(linkKey).append(".translated span').html('").append(translator.translate("hide.rubric")).append("');")
+		  .append("     } else {\n")
+		  .append("   	  jQuery(el).removeClass('o_show').addClass('o_hide');\n")
+		  .append("       jQuery('a#").append(linkKey).append(".translated i').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');\n")
+		  .append("       jQuery('a#").append(linkKey).append(".translated span').html('").append(showLinkLabel).append("');")
+		  .append("     }\n")
+		  .append("   });")
+		  .append(" });")
+		  .append("});\n /* ]]> */")
+		  .append("</script>");
 	}
 	
 	private void renderTestItemBody(AssessmentRenderer renderer, StringOutput sb, AssessmentTestComponent component, TestPlanNode itemNode,
