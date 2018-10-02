@@ -49,8 +49,6 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import de.bps.onyx.plugin.OnyxModule;
-
 /**
  * 
  * Initial date: 23 févr. 2017<br>
@@ -147,7 +145,7 @@ public class IQLayoutConfigurationController extends BasicController {
 			mod21ConfigForm = new QTI21EditLayoutForm(ureq, getWindowControl(), moduleConfiguration, re, deliveryOptions);
 			listenTo(mod21ConfigForm);
 			myContent.put("iqeditform", mod21ConfigForm.getInitialComponent());
-		} else if(OnyxModule.isOnyxTest(re.getOlatResource())) {
+		} else if(QTIResourceTypeModule.isOnyxTest(re.getOlatResource())) {
 			myContent.remove("iqeditform");
 		} else {
 			mod12ConfigForm = new IQ12LayoutEditForm(ureq, getWindowControl(), moduleConfiguration);

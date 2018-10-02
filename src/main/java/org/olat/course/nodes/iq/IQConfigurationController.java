@@ -80,8 +80,6 @@ import org.olat.repository.controllers.ReferencableEntriesSearchController;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import de.bps.onyx.plugin.OnyxModule;
-
 /**
  * 
  * Initial date: 26.06.2015<br>
@@ -227,7 +225,7 @@ public class IQConfigurationController extends BasicController {
 			mod21ConfigForm.update(re);
 			listenTo(mod21ConfigForm);
 			myContent.put("iqeditform", mod21ConfigForm.getInitialComponent());
-		} else if(OnyxModule.isOnyxTest(re.getOlatResource())) {
+		} else if(QTIResourceTypeModule.isOnyxTest(re.getOlatResource())) {
 			myContent.remove("iqeditform");
 			showError("error.onyx");
 		} else {
@@ -249,7 +247,7 @@ public class IQConfigurationController extends BasicController {
 	 * @return
 	 */
 	private boolean isEditable(RepositoryEntry re) {
-		boolean isOnyx = OnyxModule.isOnyxTest(re.getOlatResource());
+		boolean isOnyx = QTIResourceTypeModule.isOnyxTest(re.getOlatResource());
 		if (isOnyx) {
 			return false;
 		}
@@ -389,7 +387,7 @@ public class IQConfigurationController extends BasicController {
 		RepositoryEntry re = getIQReference();
 		if(re != null) {
 			Controller previewController;
-			if(OnyxModule.isOnyxTest(re.getOlatResource())) {
+			if(QTIResourceTypeModule.isOnyxTest(re.getOlatResource())) {
 				showError("error.onyx");
 			} else if(ImsQTI21Resource.TYPE_NAME.equals(re.getOlatResource().getResourceableTypeName())) {
 				cleanUpQti21PreviewSession();//clean up last session
@@ -531,16 +529,17 @@ public class IQConfigurationController extends BasicController {
 	 * @param re Needed to check if this Test is of QTI Type 2.1
 	 */
 	private void updateQtiType(RepositoryEntry re) {
-		boolean isOnyx = OnyxModule.isOnyxTest(re.getOlatResource());
-		if (isOnyx) {
+		if (QTIResourceTypeModule.isOnyxTest(re.getOlatResource())) {
 			moduleConfiguration.set(IQEditController.CONFIG_KEY_TYPE_QTI, IQEditController.CONFIG_VALUE_QTI2);
+		} else if(QTIResourceTypeModule.isQtiWorks(re.getOlatResource())) {
+			moduleConfiguration.set(IQEditController.CONFIG_KEY_TYPE_QTI, IQEditController.CONFIG_VALUE_QTI21);
 		} else {
 			moduleConfiguration.set(IQEditController.CONFIG_KEY_TYPE_QTI, IQEditController.CONFIG_VALUE_QTI1);
 		}
 	}
 
 	private boolean checkManualCorrectionNeeded(RepositoryEntry re) {
-		if(OnyxModule.isOnyxTest(re.getOlatResource())) {
+		if(QTIResourceTypeModule.isOnyxTest(re.getOlatResource())) {
 			return false;
 		}
 		if(courseNode instanceof IQSURVCourseNode || courseNode instanceof IQSELFCourseNode) {
@@ -612,7 +611,7 @@ public class IQConfigurationController extends BasicController {
 				// If of type test, get min, max, cut - put in module config and push
 				// to velocity
 				
-				boolean isOnyx = OnyxModule.isOnyxTest(re.getOlatResource());
+				boolean isOnyx = QTIResourceTypeModule.isOnyxTest(re.getOlatResource());
 				myContent.contextPut("isOnyx", Boolean.valueOf(isOnyx));
 				if(isOnyx) {
 					myContent.contextPut("onyxDisplayName", displayName);

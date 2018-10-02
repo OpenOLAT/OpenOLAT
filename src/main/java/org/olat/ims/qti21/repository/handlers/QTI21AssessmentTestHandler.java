@@ -54,6 +54,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
+import org.olat.course.nodes.iq.QTIResourceTypeModule;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.FileResource;
 import org.olat.fileresource.types.ImsQTI21Resource;
@@ -89,7 +90,6 @@ import org.olat.resource.OLATResourceManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import de.bps.onyx.plugin.OnyxModule;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentSection;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
@@ -160,7 +160,7 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 			OLATResource onyxResource = (OLATResource)createObject;
 			RepositoryEntry onyxRe = CoreSpringFactory.getImpl(RepositoryService.class)
 					.loadByResourceKey(onyxResource.getKey());
-			if(OnyxModule.isOnyxTest((OLATResource)createObject)) {
+			if(QTIResourceTypeModule.isOnyxTest((OLATResource)createObject)) {
 				copyOnyxResources(onyxResource, repositoryDir);
 			} else {
 				QTI21DeliveryOptions options = qtiService.getDeliveryOptions(re);

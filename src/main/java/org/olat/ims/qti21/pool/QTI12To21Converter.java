@@ -55,6 +55,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.course.nodes.iq.QTIResourceTypeModule;
 import org.olat.ims.qti.QTIModule;
 import org.olat.ims.qti.editor.QTIEditHelper;
 import org.olat.ims.qti.editor.QTIEditorPackage;
@@ -108,7 +109,6 @@ import org.olat.resource.OLATResource;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import de.bps.onyx.plugin.OnyxModule;
 import uk.ac.ed.ph.jqtiplus.node.AssessmentObject;
 import uk.ac.ed.ph.jqtiplus.node.content.variable.RubricBlock;
 import uk.ac.ed.ph.jqtiplus.node.content.xhtml.text.P;
@@ -808,7 +808,7 @@ public class QTI12To21Converter {
 
 	public static boolean isConvertible(OLATResource resource) {
 		if(TestFileResource.TYPE_NAME.equals(resource.getResourceableTypeName())) {
-			if(OnyxModule.isOnyxTest(resource)) {
+			if(QTIResourceTypeModule.isOnyxTest(resource)) {
 				return true;
 			}
 			

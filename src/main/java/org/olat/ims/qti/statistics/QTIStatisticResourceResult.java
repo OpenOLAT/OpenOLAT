@@ -43,6 +43,7 @@ import org.olat.course.nodes.IQSURVCourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.nodes.QTICourseNode;
 import org.olat.course.nodes.TitledWrapperHelper;
+import org.olat.course.nodes.iq.QTIResourceTypeModule;
 import org.olat.course.statistic.StatisticResourceNode;
 import org.olat.course.statistic.StatisticResourceResult;
 import org.olat.ims.qti.editor.beecom.objects.Item;
@@ -57,8 +58,6 @@ import org.olat.ims.qti.statistics.ui.QTI12AssessmentStatisticsController;
 import org.olat.ims.qti.statistics.ui.QTI12ItemStatisticsController;
 import org.olat.ims.qti.statistics.ui.QTI21OnyxAssessmentStatisticsController;
 import org.olat.repository.RepositoryEntry;
-
-import de.bps.onyx.plugin.OnyxModule;
 
 /**
  * 
@@ -87,7 +86,7 @@ public class QTIStatisticResourceResult implements StatisticResourceResult {
 		qtiStatisticsManager = CoreSpringFactory.getImpl(QTIStatisticsManager.class);
 
 		qtiRepositoryEntry = testEntry;
-		if(OnyxModule.isOnyxTest(qtiRepositoryEntry.getOlatResource())) {
+		if(QTIResourceTypeModule.isOnyxTest(qtiRepositoryEntry.getOlatResource())) {
 			type = QTIType.onyx;
 		} else {
 			resolver = new ImsRepositoryResolver(qtiRepositoryEntry);

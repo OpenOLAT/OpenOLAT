@@ -56,6 +56,7 @@ import org.olat.course.nodes.iq.CourseIQSecurityCallback;
 import org.olat.course.nodes.iq.IQEditController;
 import org.olat.course.nodes.iq.IQRunController;
 import org.olat.course.nodes.iq.QTI21AssessmentRunController;
+import org.olat.course.nodes.iq.QTIResourceTypeModule;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.NodeEvaluation;
@@ -88,8 +89,6 @@ import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
-
-import de.bps.onyx.plugin.OnyxModule;
 
 /**
  * Initial Date: Feb 9, 2004
@@ -363,7 +362,7 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 		// read score from properties save score, passed and attempts information
 		ScoreEvaluation scoreEvaluation = null;
 		RepositoryEntry referencedRepositoryEntry = getReferencedRepositoryEntry();
-		if (referencedRepositoryEntry != null && OnyxModule.isOnyxTest(getReferencedRepositoryEntry().getOlatResource())) {
+		if (referencedRepositoryEntry != null && QTIResourceTypeModule.isOnyxTest(getReferencedRepositoryEntry().getOlatResource())) {
 			AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
 			Identity mySelf = userCourseEnv.getIdentityEnvironment().getIdentity();
 			Boolean passed = am.getNodePassed(this, mySelf);

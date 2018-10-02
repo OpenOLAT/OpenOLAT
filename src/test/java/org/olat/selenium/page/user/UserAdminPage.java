@@ -92,8 +92,8 @@ public class UserAdminPage {
 		
 		//search
 		By searchBy = By.cssSelector("fieldset.o_sel_user_search_form a.o_sel_user_search_button");
-		browser.findElement(searchBy).click();
-		OOGraphene.waitBusy(browser);	
+		OOGraphene.clickAndWait(searchBy, browser);
+		OOGraphene.scrollTop(browser);	
 		return this;
 	}
 	
