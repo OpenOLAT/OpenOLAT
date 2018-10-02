@@ -1735,7 +1735,7 @@ create table o_pf_page_part (
    dtype varchar(32),
    p_content mediumtext,
    p_flow varchar(32),
-   p_layout_options varchar(2000),
+   p_layout_options mediumtext,
    fk_media_id bigint,
    fk_page_body_id bigint,
    fk_form_entry_id bigint default null,

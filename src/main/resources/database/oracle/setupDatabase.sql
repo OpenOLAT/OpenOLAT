@@ -1662,7 +1662,7 @@ create table o_pf_page_part (
    dtype varchar2(32 char),
    p_content CLOB,
    p_flow varchar2(32 char),
-   p_layout_options varchar2(2000 char),
+   p_layout_options CLOB,
    fk_media_id number(20),
    fk_page_body_id number(20),
    fk_form_entry_id number(20) default null,
