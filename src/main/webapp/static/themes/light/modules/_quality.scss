@@ -165,13 +165,13 @@
 		border-radius: 50%;
 		
 		&.o_rubric_insufficient { 
-			background-color: $o-evaluation-insufficient-color;
+			background-color: $o-evaluation-insufficient-color !important;
 		}
 		&.o_rubric_neutral { 
-			background-color: $o-evaluation-neutral-color;
+			background-color: $o-evaluation-neutral-color !important;
 		}
 		&.o_rubric_sufficient { 
-			background-color: $o-evaluation-sufficient-color;
+			background-color: $o-evaluation-sufficient-color !important;
 		}
 	}
 	.o_avg {
