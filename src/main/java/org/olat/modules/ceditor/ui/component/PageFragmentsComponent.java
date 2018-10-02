@@ -41,27 +41,24 @@ public class PageFragmentsComponent extends AbstractComponent implements Compone
 	private static final PageFragmentsComponentRenderer RENDERER = new PageFragmentsComponentRenderer();
 	
 	private List<? extends PageFragment> fragments;
-	private List<Component> components = new ArrayList<>();
 	
 	public PageFragmentsComponent(String name) {
 		super(name);
 	}
 
-	public List<? extends PageFragment> getFragments() {
-		return fragments;
+	public List<PageFragment> getFragments() {
+		return new ArrayList<>(fragments);
 	}
 
 	public void setFragments(List<? extends PageFragment> fragments) {
 		this.fragments = fragments;
-		components.clear();
-		for(PageFragment fragment:fragments) {
-			components.add(fragment.getComponent());
-		}
+		setDirty(true);
 	}
 
 	@Override
 	public Component getComponent(String name) {
-		for(PageFragment fragment:fragments) {
+		List<PageFragment> fragmentList = getFragments();
+		for(PageFragment fragment:fragmentList) {
 			if(fragment.getComponent().getComponentName().equals(name)) {
 				return fragment.getComponent();
 			}
@@ -71,16 +68,20 @@ public class PageFragmentsComponent extends AbstractComponent implements Compone
 
 	@Override
 	public Iterable<Component> getComponents() {
+		List<PageFragment> fragmentList = getFragments();
+		List<Component> components = new ArrayList<>(fragmentList.size());
+		for(PageFragment fragment:fragmentList) {
+			components.add(fragment.getComponent());
+		}
 		return components;
 	}
 	
 	public boolean validateElements(UserRequest ureq, List<ValidationMessage> messages) {
 		boolean allOk = true;
-		
-		for(PageFragment fragment:fragments) {
+		List<PageFragment> fragmentList = getFragments();
+		for(PageFragment fragment:fragmentList) {
 			allOk &= fragment.getPageRunElement().validate(ureq, messages);
 		}
-		
 		return allOk;
 	}
 

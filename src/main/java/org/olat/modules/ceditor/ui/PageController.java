@@ -79,6 +79,10 @@ public class PageController extends BasicController {
 		return fragmentsCmp.validateElements(ureq, messages);
 	}
 	
+	/**
+	 * @param ureq the user request
+	 * @param reuse reuse the components already available
+	 */
 	public void loadElements(UserRequest ureq) {
 		List<? extends PageElement> elements = provider.getElements();
 		List<PageFragment> fragments = new ArrayList<>(elements.size());

@@ -64,11 +64,10 @@ public class DialogBoxUIFactory {
 	 */
 	public static DialogBoxController createYesNoDialog(UserRequest ureq, WindowControl wControl, String title, String text) {
 		Translator trans = Util.createPackageTranslator(DialogBoxUIFactory.class, ureq.getLocale());
-		List<String> yesNoButtons = new ArrayList<String>();
+		List<String> yesNoButtons = new ArrayList<>();
 		yesNoButtons.add(trans.translate("yes"));
 		yesNoButtons.add(trans.translate("no"));
-		DialogBoxController dialogCtr = new DialogBoxController(ureq, wControl, title, text, yesNoButtons);
-		return dialogCtr;
+		return new DialogBoxController(ureq, wControl, title, text, yesNoButtons);
 	}
 
 	/**
@@ -85,11 +84,10 @@ public class DialogBoxUIFactory {
 	 */
 	public static DialogBoxController createOkCancelDialog(UserRequest ureq, WindowControl wControl, String title, String text) {
 		Translator trans = Util.createPackageTranslator(DialogBoxUIFactory.class, ureq.getLocale());
-		List<String> okCancelButtons = new ArrayList<String>();
+		List<String> okCancelButtons = new ArrayList<>();
 		okCancelButtons.add(trans.translate("ok"));
 		okCancelButtons.add(trans.translate("cancel"));
-		DialogBoxController dialogCtr = new DialogBoxController(ureq, wControl, title, text, okCancelButtons);
-		return dialogCtr;
+		return new DialogBoxController(ureq, wControl, title, text, okCancelButtons);
 	}
 
 	/**
@@ -125,7 +123,7 @@ public class DialogBoxUIFactory {
 		String lockMsg = translator.translate(i18nLockMsgKey, i18nParams);
 		
 		Translator trans = Util.createPackageTranslator(DialogBoxUIFactory.class, ureq.getLocale());
-		List<String> okButton = new ArrayList<String>();
+		List<String> okButton = new ArrayList<>();
 		okButton.add(trans.translate("ok"));
 		
 		DialogBoxController ctrl = new DialogBoxController(ureq, wControl, null, lockMsg, okButton);

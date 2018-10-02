@@ -47,10 +47,15 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.util.SyntheticUserRequest;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.UserSession;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.coordinate.LockResult;
+import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.ceditor.InteractiveAddPageElementHandler;
 import org.olat.modules.ceditor.PageEditorProvider;
@@ -90,6 +95,7 @@ import org.olat.modules.portfolio.model.StandardMediaRenderingHints;
 import org.olat.modules.portfolio.ui.event.ClosePageEvent;
 import org.olat.modules.portfolio.ui.event.DonePageEvent;
 import org.olat.modules.portfolio.ui.event.MediaSelectionEvent;
+import org.olat.modules.portfolio.ui.event.PageChangedEvent;
 import org.olat.modules.portfolio.ui.event.PageDeletedEvent;
 import org.olat.modules.portfolio.ui.event.PageRemovedEvent;
 import org.olat.modules.portfolio.ui.event.PublishEvent;
@@ -107,7 +113,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class PageRunController extends BasicController implements TooledController, Activateable2  {
+public class PageRunController extends BasicController implements TooledController, GenericEventListener, Activateable2  {
 
 	private VelocityContainer mainVC;
 	private Link previousPageLink;
@@ -126,15 +132,21 @@ public class PageRunController extends BasicController implements TooledControll
 	private ConfirmClosePageController confirmDonePageCtrl;
 	private DialogBoxController confirmPublishCtrl, confirmRevisionCtrl, confirmCloseCtrl,
 		confirmReopenCtrl, confirmMoveToTrashCtrl, confirmDeleteCtrl;
+	private DialogBoxController alreadyLockedDialogController;
 	private PageMetadataEditController editMetadataCtrl;
 	private UserCommentsAndRatingsController commentsCtrl;
 	
 	private Page page;
+	private LockResult lockEntry;
+	private OLATResourceable lockOres;
 	private List<Assignment> assignments;
+	private final UserSession userSession;
 	private boolean dirtyMarker = false;
 	private final boolean openInEditMode;
 	private final BinderSecurityCallback secCallback;
 	
+	@Autowired
+	private CoordinatorManager coordinator;
 	@Autowired
 	private PortfolioService portfolioService;
 	
@@ -144,7 +156,14 @@ public class PageRunController extends BasicController implements TooledControll
 		this.page = page;
 		this.stackPanel = stackPanel;
 		this.secCallback = secCallback;
-		this.openInEditMode = openEditMode && page.isEditable();
+		lockOres = OresHelper.createOLATResourceableInstance("Page", page.getKey());
+		userSession = ureq.getUserSession();
+		
+		if(openEditMode && page.isEditable()) {
+			lockEntry = coordinator.getCoordinator().getLocker().acquireLock(lockOres, getIdentity(), "");
+		}
+		this.openInEditMode = openEditMode && page.isEditable() && (lockEntry != null && lockEntry.isSuccess());
+		coordinator.getCoordinator().getEventBus().registerFor(this, getIdentity(), lockOres);
 		
 		assignments = portfolioService.getAssignments(page, null);
 		
@@ -230,6 +249,10 @@ public class PageRunController extends BasicController implements TooledControll
 		}
 	}
 	
+	/**
+	 * @param edit The wanted state of the links
+	 * @return The edit link
+	 */
 	private Link editLink(boolean edit) {
 		if(page.isEditable()) {
 			if(editLink == null) {
@@ -313,9 +336,25 @@ public class PageRunController extends BasicController implements TooledControll
 	
 	@Override
 	protected void doDispose() {
-		//
+		if (lockEntry != null && lockEntry.isSuccess()) {
+			// release lock
+			coordinator.getCoordinator().getLocker().releaseLock(lockEntry);
+			lockEntry = null;
+		}
+		coordinator.getCoordinator().getEventBus().deregisterFor(this, lockOres);
 	}
-	
+
+	@Override
+	public void event(Event event) {
+		if(event instanceof PageChangedEvent) {
+			PageChangedEvent pce = (PageChangedEvent)event;
+			if(!pce.isMe(getIdentity()) && page.getKey().equals(pce.getPageKey())) {
+				dirtyMarker = false;
+				pageCtrl.loadElements(new SyntheticUserRequest(getIdentity(), getLocale(), userSession));
+			}
+		}
+	}
+
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) return;
@@ -332,6 +371,8 @@ public class PageRunController extends BasicController implements TooledControll
 		if(pageEditCtrl == source) {
 			if(event == Event.CHANGED_EVENT) {
 				dirtyMarker = true;
+				coordinator.getCoordinator().getEventBus()
+					.fireEventToListenersOf(new PageChangedEvent(getIdentity().getKey(), page.getKey()), lockOres);
 			} else if(event instanceof PublishEvent) {
 				doConfirmPublish(ureq);
 			}
@@ -578,22 +619,35 @@ public class PageRunController extends BasicController implements TooledControll
 	private void doEditPage(UserRequest ureq) {
 		removeAsListenerAndDispose(pageEditCtrl);
 		if(Boolean.FALSE.equals(editLink.getUserObject())) {
+			if(lockEntry != null && lockEntry.isSuccess()) {
+				coordinator.getCoordinator().getLocker().releaseLock(lockEntry);
+			}
+			
 			doRunPage(ureq);
+			editLink(true);
 			// Add comments controller again in run mode, maybe removed by
 			// previous edit mode entering
 			if(commentsCtrl != null) {
 				mainVC.put("comments", commentsCtrl.getInitialComponent());
 			}
 		} else {
-			pageEditCtrl = new PageEditorController(ureq, getWindowControl(), new PortfolioPageEditorProvider(),
-					new FullEditorSecurityCallback(), getTranslator());
-			listenTo(pageEditCtrl);
-			mainVC.contextPut("isPersonalBinder", (!secCallback.canNewAssignment() && secCallback.canEditMetadataBinder()));
-			mainVC.put("page", pageEditCtrl.getInitialComponent());
-			editLink(false);
-			// Remove comments controller in edit mode, save button confuses user
-			if(commentsCtrl != null && commentsCtrl.getCommentsCount() == 0) {
-				mainVC.remove(commentsCtrl.getInitialComponent());
+			lockEntry = coordinator.getCoordinator().getLocker().acquireLock(lockOres, getIdentity(), "");
+			if(lockEntry.isSuccess()) {
+				pageEditCtrl = new PageEditorController(ureq, getWindowControl(), new PortfolioPageEditorProvider(),
+						new FullEditorSecurityCallback(), getTranslator());
+				listenTo(pageEditCtrl);
+				mainVC.contextPut("isPersonalBinder", (!secCallback.canNewAssignment() && secCallback.canEditMetadataBinder()));
+				mainVC.put("page", pageEditCtrl.getInitialComponent());
+				editLink(false);
+				// Remove comments controller in edit mode, save button confuses user
+				if(commentsCtrl != null && commentsCtrl.getCommentsCount() == 0) {
+					mainVC.remove(commentsCtrl.getInitialComponent());
+				}
+			} else {
+				removeAsListenerAndDispose(alreadyLockedDialogController);
+				alreadyLockedDialogController = DialogBoxUIFactory.createResourceLockedMessage(ureq, getWindowControl(), lockEntry, "warning.page.locked", getTranslator());
+				listenTo(alreadyLockedDialogController);
+				alreadyLockedDialogController.activate();
 			}
 		}
 	}
