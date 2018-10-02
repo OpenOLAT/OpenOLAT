@@ -70,7 +70,7 @@ public class HeatMapRenderer implements FlexiCellRenderer {
 	}
 
 	public String getColorCss(GroupedStatistic statistic) {
-		String colorCss = RubricAvgRenderer.getColorCss(rubric, statistic.getAvg());
+		String colorCss = RubricAvgRenderer.getRatingCssClass(rubric, statistic.getAvg());
 		if (colorCss == null) {
 			colorCss = "o_qual_hm_basecolor";
 		}

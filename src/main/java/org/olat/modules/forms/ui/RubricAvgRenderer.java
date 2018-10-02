@@ -60,14 +60,15 @@ public class RubricAvgRenderer implements FlexiCellRenderer {
 	}
 
 	private void render(StringOutput target, Double value) {
-		target.append("<div class='o_rubric_avg ");
-		target.append(getColorCss(rubric, value));
+		target.append("<div class='o_rubric_avg o_nowrap ");
+		target.append(getRatingCssClass(rubric, value));
 		target.append("'>");
+		target.append("<i class='o_icon o_icon-fw ").append(getRatingIconCssClass(rubric, value)).append("'> </i> ");
 		target.append(EvaluationFormFormatter.formatDouble(value));
 		target.append("</div>");
 	}
 
-	public static String getColorCss(Rubric rubric, Double value) {
+	public static String getRatingCssClass(Rubric rubric, Double value) {
 		EvaluationFormManager evaluationFormManager = CoreSpringFactory.getImpl(EvaluationFormManager.class);
 		RubricRating rating = evaluationFormManager.getRubricRating(rubric, value);
 		switch (rating) {
@@ -77,5 +78,17 @@ public class RubricAvgRenderer implements FlexiCellRenderer {
 			default: return null;
 		}
 	}
+	
+	public static String getRatingIconCssClass(Rubric rubric, Double value) {
+		EvaluationFormManager evaluationFormManager = CoreSpringFactory.getImpl(EvaluationFormManager.class);
+		RubricRating rating = evaluationFormManager.getRubricRating(rubric, value);
+		switch (rating) {
+			case SUFFICIENT: return "o_icon_rubric_sufficient";
+			case NEUTRAL: return "o_icon_rubric_neutral";
+			case INSUFFICIENT: return "o_icon_rubric_insufficient";
+			default: return null;
+		}
+	}
+
 	
 }

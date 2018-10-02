@@ -633,9 +633,10 @@ $o-evaluation-step-labels-font-weight		: bold !default;
 $o-evaluation-step-background-color 		: $table-bg-accent !default;
 $o-evaluation-slider-margin-bottom			: 1em !default;
 $o-evaluation-slider-hover-background-color	: $table-bg-hover !default;
-$o-evaluation-insufficient-background-color : #fee08b !default;
-$o-evaluation-neutral-background-color		: #ffffbf !default;
-$o-evaluation-sufficient-background-color	: #d9ef8b !default;
+
+$o-evaluation-insufficient-color 			: $brand-danger !default;
+$o-evaluation-neutral-color					: $brand-warning !default;
+$o-evaluation-sufficient-color				: $brand-success !default;
 $o-evaluation-anonymous-info-display		: inherit !default;
 
 /* Quality management */

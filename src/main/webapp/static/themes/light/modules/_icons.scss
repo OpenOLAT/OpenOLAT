@@ -263,6 +263,9 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_rss:before { content: $fa-var-rss;}
 .o_icon_rss_unsubscribe:before { content: $fa-var-rss; color: #996633;}
 .o_icon_rubric:before { content: $fa-var-sliders; }
+.o_icon_rubric_insufficient:before { content: $fa-var-times-circle; color: $o-evaluation-insufficient-color}
+.o_icon_rubric_sufficient:before { content: $fa-var-check-circle; color: $o-evaluation-sufficient-color}
+.o_icon_rubric_neutral:before { content: $fa-var-exclamation-circle; color: $o-evaluation-neutral-color }
 .o_icon_save:before { content: $fa-var-save;}
 .o_icon_search:before { content: $fa-var-search;}
 .o_icon_select:before { content: $fa-var-check; }
