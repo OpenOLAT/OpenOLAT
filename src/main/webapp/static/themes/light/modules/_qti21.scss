@@ -335,18 +335,22 @@ img.o_hotspot_responsive[usemap] {
 }
 
 
+.o_assessmentsection_rubrics_wrapper {
+	background: $o-qti-item-title-bg;
+	border: 1px solid $o-qti-item-title-border-color;
+	border-radius: $o-qti-item-title-border-radius;
+	padding: $padding-small-vertical $padding-small-horizontal;
+	margin: 0 0 0.5em 0;		
+}
 
 .o_info.o_assessmentsection_rubrics {
-	margin:0 0 0.5em 0;
+	margin: $padding-small-vertical ($padding-small-horizontal * -1);
 	position: relative;
+	display: block;				
 	
 	&.o_hide {
 		display: none;
 	}
-	&.o_show {
-		display: block;
-	}
-	
 	a.o_hide {
 		position: absolute;
 		bottom: 0.5em;

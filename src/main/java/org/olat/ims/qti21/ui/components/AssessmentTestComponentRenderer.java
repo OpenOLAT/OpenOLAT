@@ -295,19 +295,23 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 			}
 		}
 		
-		for(int i=sectionParentLine.size(); i-->0; ) {
-			AssessmentSection section = sectionParentLine.get(i);
-			
-			boolean writeRubrics = false;
-			for(RubricBlock rubric:section.getRubricBlocks()) {
-				if(!rubric.getBlocks().isEmpty()) {
-					writeRubrics = true;
+		if (sectionParentLine.size() > 0) {
+			sb.append("<div class='o_assessmentsection_rubrics_wrapper'>");
+			for(int i=sectionParentLine.size(); i-->0; ) {
+				AssessmentSection section = sectionParentLine.get(i);
+				
+				boolean writeRubrics = false;
+				for(RubricBlock rubric:section.getRubricBlocks()) {
+					if(!rubric.getBlocks().isEmpty()) {
+						writeRubrics = true;
+					}
+				}
+				
+				if(writeRubrics) {
+					renderRubricSection(renderer, sb, component, section, ubu, translator);
 				}
 			}
-			
-			if(writeRubrics) {
-				renderRubricSection(renderer, sb, component, section, ubu, translator);
-			}
+			sb.append("</div>");
 		}
 	}
 	
@@ -326,7 +330,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 			showLinkLabel = translator.translate("show.rubric");
 		}
 		
-		sb.append("<div><a id='").append(linkKey).append("' href='javascript:;' onclick=\"")
+		sb.append("<div class='o_assessmentsection_rubric_wrapper'><a id='").append(linkKey).append("' href='javascript:;' onclick=\"")
 		  .append(FormJSHelper.getXHRNFFnCallFor(form, dispatchId, 1,
 				new NameValuePair("cid", Event.rubric.name()), new NameValuePair("section", key)))
 		  .append("; return false;\" class='o_toogle_rubrics translated'><i class='o_icon o_icon-fw ");
