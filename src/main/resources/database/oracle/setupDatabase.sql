@@ -1922,6 +1922,19 @@ create table o_qual_generator_to_org (
    primary key (id)
 );
 
+create table o_qual_analysis_presentation (
+   id number(20) generated always as identity,
+   creationdate date not null,
+   lastmodified date not null,
+   q_name varchar2(256),
+   q_analysis_segment varchar2(100),
+   q_search_params CLOB,
+   q_heatmap_grouping CLOB,
+   q_heatmap_insufficient_only number default 0,
+   fk_form_entry number(20) not null,
+   primary key (id)
+);
+
 -- question pool
 create table o_qp_pool (
    id number(20) not null,

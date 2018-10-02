@@ -10,7 +10,14 @@
 				<div class="panel-body">
 					$panel.helpText
 					<div class="o_button_group o_button_group_right">
-						$r.render($panel.link)
+						<ul class="list-unstyled">
+							#foreach($link in $panel.links)
+								<li>$r.render($link)</li>
+							#end
+						</ul>
+					</div>
+					<div class="o_button_group o_button_group_right">
+						$r.render($panel.goToLink)
 					</div>
 				</div>
 			</div>

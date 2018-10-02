@@ -39,7 +39,8 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.modules.quality.QualitySecurityCallback;
-import org.olat.modules.quality.analysis.EvaluationFormView;
+import org.olat.modules.quality.analysis.AnalysisPresentation;
+import org.olat.modules.quality.analysis.AnalysisSegment;
 
 /**
  * 
@@ -58,17 +59,15 @@ public class AnalysisSegmentsController extends BasicController implements Toole
 	private AnalysisController analysisCtrl;
 	
 	private final QualitySecurityCallback secCallback;
-	private final EvaluationFormView formView;
+	private final AnalysisPresentation presentation;
 	
-	//TODO uh Wo wird das StackPanel und das SecCallback benätigt
-
 	public AnalysisSegmentsController(UserRequest ureq, WindowControl wControl, QualitySecurityCallback secCallback,
-			TooledStackedPanel stackPanel, EvaluationFormView formView) {
+			TooledStackedPanel stackPanel, AnalysisPresentation presentation) {
 		super(ureq, wControl);
 		this.secCallback = secCallback;
 		this.stackPanel = stackPanel;
 		stackPanel.addListener(this);
-		this.formView = formView;
+		this.presentation = presentation;
 		
 		segmentButtonsCmp = new ButtonGroupComponent("segments");
 		reportLink = LinkFactory.createLink("segments.report.link", getTranslator(), this);
@@ -82,7 +81,17 @@ public class AnalysisSegmentsController extends BasicController implements Toole
 	
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		doOpenReport(ureq);
+		switch (presentation.getAnalysisSegment()) {
+		case HEAT_MAP:
+			doOpenHeatMap(ureq);
+			break;
+		case OVERVIEW:
+			doOpenReport(ureq);
+			break;
+		default:
+			doOpenReport(ureq);
+			break;
+		}
 	}
 
 	@Override
@@ -108,7 +117,7 @@ public class AnalysisSegmentsController extends BasicController implements Toole
 	
 	private void doOpenAnalysis(UserRequest ureq) {
 		if (analysisCtrl == null) {
-			analysisCtrl = new AnalysisController(ureq, getWindowControl(), secCallback, stackPanel, formView);
+			analysisCtrl = new AnalysisController(ureq, getWindowControl(), secCallback, stackPanel, presentation);
 			listenTo(analysisCtrl);
 			stackPanel.pushController("segments.report.breadcrumb", analysisCtrl);
 		}
@@ -116,14 +125,14 @@ public class AnalysisSegmentsController extends BasicController implements Toole
 
 	private void doOpenReport(UserRequest ureq) {
 		doOpenAnalysis(ureq);
-		analysisCtrl.setPresentation(ureq, AnalysisController.Presentation.REPORT);
+		analysisCtrl.setSegment(ureq, AnalysisSegment.OVERVIEW);
 		stackPanel.changeDisplayname(translate("segments.report.breadcrumb"));
 		segmentButtonsCmp.setSelectedButton(reportLink);
 	}
 
 	private void doOpenHeatMap(UserRequest ureq) {
 		doOpenAnalysis(ureq);
-		analysisCtrl.setPresentation(ureq, AnalysisController.Presentation.HEAT_MAP);
+		analysisCtrl.setSegment(ureq, AnalysisSegment.HEAT_MAP);
 		stackPanel.changeDisplayname(translate("segments.heatmap.breadcrumb"));
 		segmentButtonsCmp.setSelectedButton(heatMapLink);
 	}

@@ -40,6 +40,9 @@ import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.RubricRating;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.model.xml.Rubric;
+import org.olat.modules.quality.analysis.AnalysisPresentation;
+import org.olat.modules.quality.analysis.AnalysisPresentationRef;
+import org.olat.modules.quality.analysis.AnalysisPresentationSearchParameter;
 import org.olat.modules.quality.analysis.AnalysisSearchParameter;
 import org.olat.modules.quality.analysis.AvailableAttributes;
 import org.olat.modules.quality.analysis.EvaluationFormView;
@@ -65,11 +68,13 @@ import org.springframework.stereotype.Service;
 public class QualityAnalysisServiceImpl implements QualityAnalysisService {
 
 	@Autowired
+	private EvaluationFormDAO evaluationFromDao;
+	@Autowired
+	private AnalysisPresentationDAO presentationDAO;
+	@Autowired
 	private AnalysisFilterDAO filterDao;
 	@Autowired
 	private StatisticsCalculator statisticsCalculator;
-	@Autowired
-	private EvaluationFormDAO evaluationFromDao;
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
 	@Autowired
@@ -86,6 +91,42 @@ public class QualityAnalysisServiceImpl implements QualityAnalysisService {
 	@Override
 	public List<EvaluationFormView> loadEvaluationForms(EvaluationFormViewSearchParams searchParams) {
 		return evaluationFromDao.load(searchParams);
+	}
+
+	@Override
+	public AnalysisPresentation createPresentation(RepositoryEntry formEntry) {
+		return presentationDAO.create(formEntry);
+	}
+
+	@Override
+	public AnalysisPresentation clonePresentation(AnalysisPresentation presentation) {
+		AnalysisPresentation clone = presentationDAO.create(presentation.getFormEntry());
+		clone.setAnalysisSegment(presentation.getAnalysisSegment());
+		clone.setHeatMapGrouping(presentation.getHeatMapGrouping());
+		clone.setHeatMapInsufficientOnly(presentation.getHeatMapInsufficientOnly());
+		clone.setName(presentation.getName());
+		clone.setSearchParams(presentation.getSearchParams().clone());
+		return clone;
+	}
+
+	@Override
+	public AnalysisPresentation savePresentation(AnalysisPresentation presentation) {
+		return presentationDAO.save(presentation);
+	}
+
+	@Override
+	public List<AnalysisPresentation> loadPresentations(AnalysisPresentationSearchParameter searchParams) {
+		return presentationDAO.load(searchParams);
+	}
+
+	@Override
+	public AnalysisPresentation loadPresentationByKey(AnalysisPresentationRef presentationRef) {
+		return presentationDAO.loadByKey(presentationRef);
+	}
+
+	@Override
+	public void deletePresentation(AnalysisPresentationRef presentationRef) {
+		presentationDAO.delete(presentationRef);
 	}
 
 	@Override
@@ -228,4 +269,5 @@ public class QualityAnalysisServiceImpl implements QualityAnalysisService {
 		}
 		return false;
 	}
+
 }

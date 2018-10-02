@@ -17,31 +17,38 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.quality.analysis;
+package org.olat.modules.quality.analysis.ui;
 
-import java.util.Date;
-
-import org.olat.core.id.OLATResourceable;
-import org.olat.repository.RepositoryEntry;
+import org.olat.core.gui.control.Event;
+import org.olat.modules.quality.analysis.AnalysisPresentation;
 
 /**
  * 
- * Initial date: 03.09.2018<br>
+ * Initial date: 02.10.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface EvaluationFormView extends OLATResourceable {
+public class PresentationEvent extends Event {
 	
-	public String RESOURCEABLE_TYPE = "form";
+	enum Action {SAVE, CLONE};
 
-	public RepositoryEntry getFormEntry();
-	
-	public Long getNumberDataCollections();
-	
-	public Date getSoonestDataCollectionDate();
-	
-	public Date getLatestDataCollectionFinishedDate();
-	
-	public Long getNumberParticipationsDone();
+	private static final long serialVersionUID = 9140829617414677592L;
+
+	private final Action action;
+	private final AnalysisPresentation presentation;
+
+	public PresentationEvent(Action action, AnalysisPresentation presentation) {
+		super("quality-presentation-event");
+		this.action = action;
+		this.presentation = presentation;
+	}
+
+	public Action getAction() {
+		return action;
+	}
+
+	public AnalysisPresentation getPresentation() {
+		return presentation;
+	}
 
 }

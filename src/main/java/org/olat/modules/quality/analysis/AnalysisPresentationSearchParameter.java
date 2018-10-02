@@ -19,29 +19,26 @@
  */
 package org.olat.modules.quality.analysis;
 
-import java.util.Date;
+import java.util.Collection;
 
-import org.olat.core.id.OLATResourceable;
-import org.olat.repository.RepositoryEntry;
+import org.olat.core.id.OrganisationRef;
 
 /**
  * 
- * Initial date: 03.09.2018<br>
+ * Initial date: 02.10.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface EvaluationFormView extends OLATResourceable {
+public class AnalysisPresentationSearchParameter {
 	
-	public String RESOURCEABLE_TYPE = "form";
+	private Collection<? extends OrganisationRef> organisationRefs;
 
-	public RepositoryEntry getFormEntry();
-	
-	public Long getNumberDataCollections();
-	
-	public Date getSoonestDataCollectionDate();
-	
-	public Date getLatestDataCollectionFinishedDate();
-	
-	public Long getNumberParticipationsDone();
+	public Collection<? extends OrganisationRef> getOrganisationRefs() {
+		return organisationRefs;
+	}
 
+	public void setOrganisationRefs(Collection<? extends OrganisationRef> organisationRefs) {
+		this.organisationRefs = organisationRefs;
+	}
+	
 }

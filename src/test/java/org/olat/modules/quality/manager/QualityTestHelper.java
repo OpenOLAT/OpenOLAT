@@ -90,6 +90,12 @@ public class QualityTestHelper {
 	public void deleteAll() {
 		evaTestHelper.deleteAll();
 	}
+	
+	public QualityDataCollection createDataCollection(Organisation organisation, RepositoryEntry formEntry) {
+		List<Organisation> organisations = Collections.singletonList(organisation);
+		QualityDataCollection dataCollection = qualityService.createDataCollection(organisations, formEntry);
+		return dataCollection;	
+	}
 
 	QualityDataCollection createDataCollection(String title, Organisation organisation, QualityDataCollection previous) {
 		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();

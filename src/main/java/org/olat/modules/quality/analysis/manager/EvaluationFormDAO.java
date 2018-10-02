@@ -50,9 +50,7 @@ public class EvaluationFormDAO {
 	List<EvaluationFormView> load(EvaluationFormViewSearchParams searchParams) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select new org.olat.modules.quality.analysis.model.EvaluationFormViewImpl(");
-		sb.append("       form.key as formEntryKey");
-		sb.append("     , form.creationDate as formCreationDate");
-		sb.append("     , form.displayname as formTitle");
+		sb.append("       form as formEntry");
 		sb.append("     , count(distinct collection) as numberDataCollections");
 		sb.append("     , min(collection.start) as soonestDataCollectionDate");
 		sb.append("     , max(collection.deadline) as latestDataCollectionDate");

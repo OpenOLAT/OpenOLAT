@@ -1995,6 +1995,19 @@ create table o_qual_generator_to_org (
    primary key (id)
 );
 
+create table o_qual_analysis_presentation (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   q_name varchar(256),
+   q_analysis_segment varchar(100),
+   q_search_params text,
+   q_heatmap_grouping text,
+   q_heatmap_insufficient_only number boolean default false,
+   fk_form_entry bigint not null,
+   primary key (id)
+);
+
 -- lti
 create table o_lti_outcome (
    id bigint not null,
@@ -2933,6 +2946,7 @@ alter table o_qual_reminder ENGINE = InnoDB;
 alter table o_qual_generator ENGINE = InnoDB;
 alter table o_qual_generator_config ENGINE = InnoDB;
 alter table o_qual_generator_to_org ENGINE = InnoDB;
+alter table o_qual_analysis_presentation ENGINE = InnoDB;
 alter table o_sms_message_log ENGINE = InnoDB;
 alter table o_feed ENGINE = InnoDB;
 alter table o_feed_item ENGINE = InnoDB;

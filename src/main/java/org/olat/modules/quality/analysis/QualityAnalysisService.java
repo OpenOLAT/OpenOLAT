@@ -38,9 +38,21 @@ import org.olat.repository.RepositoryEntry;
  *
  */
 public interface QualityAnalysisService {
-	
+
 	public List<EvaluationFormView> loadEvaluationForms(EvaluationFormViewSearchParams searchParams);
 	
+	public AnalysisPresentation createPresentation(RepositoryEntry formEntry);
+	
+	public AnalysisPresentation clonePresentation(AnalysisPresentation presentation);
+
+	public AnalysisPresentation savePresentation(AnalysisPresentation presentation);
+
+	public List<AnalysisPresentation> loadPresentations(AnalysisPresentationSearchParameter searchParams);
+
+	public AnalysisPresentation loadPresentationByKey(AnalysisPresentationRef presentationRef);
+
+	public void deletePresentation(AnalysisPresentationRef presentationRef);
+
 	public AvailableAttributes getAvailableAttributes(AnalysisSearchParameter searchParams);
 
 	public Long loadFilterDataCollectionCount(AnalysisSearchParameter searchParams);

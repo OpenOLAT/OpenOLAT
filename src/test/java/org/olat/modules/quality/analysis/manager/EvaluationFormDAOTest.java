@@ -94,9 +94,9 @@ public class EvaluationFormDAOTest extends OlatTestCase {
 		EvaluationFormViewSearchParams searchParams = new EvaluationFormViewSearchParams();
 		List<EvaluationFormView> forms = sut.load(searchParams );
 		
-		assertThat(forms).extracting(EvaluationFormView::getFormEntryKey)
-				.containsExactlyInAnyOrder(formEntryOnceUsed.getKey(), formEntryTwiceUsed.getKey())
-				.doesNotContain(formEntryNotUsed.getKey());
+		assertThat(forms).extracting(EvaluationFormView::getFormEntry)
+				.containsExactlyInAnyOrder(formEntryOnceUsed, formEntryTwiceUsed)
+				.doesNotContain(formEntryNotUsed);
 	}
 	
 	@Test
@@ -122,10 +122,10 @@ public class EvaluationFormDAOTest extends OlatTestCase {
 		EvaluationFormViewSearchParams searchParams = new EvaluationFormViewSearchParams();
 		List<EvaluationFormView> forms = sut.load(searchParams);
 		
-		Map<Long, Long> keyToNumerDataCollections = forms.stream()
-				.collect(toMap(EvaluationFormView::getFormEntryKey, EvaluationFormView::getNumberDataCollections));
-		assertThat(keyToNumerDataCollections.get(formEntryOnceUsed.getKey())).isEqualTo(1);
-		assertThat(keyToNumerDataCollections.get(formEntryTwiceUsed.getKey())).isEqualTo(2);
+		Map<RepositoryEntry, Long> keyToNumerDataCollections = forms.stream()
+				.collect(toMap(EvaluationFormView::getFormEntry, EvaluationFormView::getNumberDataCollections));
+		assertThat(keyToNumerDataCollections.get(formEntryOnceUsed)).isEqualTo(1);
+		assertThat(keyToNumerDataCollections.get(formEntryTwiceUsed)).isEqualTo(2);
 	}
 	
 	@Test
@@ -158,7 +158,7 @@ public class EvaluationFormDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void shouldLoadLatestDataCollectionDate() {
+	public void shouldLoadLatestDataCollectionFinishedDate() {
 		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		// latest
 		Date latest = new GregorianCalendar(2014, Calendar.FEBRUARY, 11).getTime();
@@ -183,7 +183,7 @@ public class EvaluationFormDAOTest extends OlatTestCase {
 		EvaluationFormViewSearchParams searchParams = new EvaluationFormViewSearchParams();
 		List<EvaluationFormView> forms = sut.load(searchParams);
 		
-		assertThat(forms.get(0).getLatestDataCollectionDate()).isEqualToIgnoringMinutes(latest);
+		assertThat(forms.get(0).getLatestDataCollectionFinishedDate()).isEqualToIgnoringMinutes(latest);
 	}
 	
 	@Test
@@ -223,10 +223,10 @@ public class EvaluationFormDAOTest extends OlatTestCase {
 		EvaluationFormViewSearchParams searchParams = new EvaluationFormViewSearchParams();
 		List<EvaluationFormView> forms = sut.load(searchParams);
 		
-		Map<Long, Long> keyToNumerParticipations = forms.stream()
-				.collect(toMap(EvaluationFormView::getFormEntryKey, EvaluationFormView::getNumberParticipationsDone));
-		assertThat(keyToNumerParticipations.get(formEntryOneParticipation.getKey())).isEqualTo(1);
-		assertThat(keyToNumerParticipations.get(formEntryThreeParticipations.getKey())).isEqualTo(3);
+		Map<RepositoryEntry, Long> keyToNumerParticipations = forms.stream()
+				.collect(toMap(EvaluationFormView::getFormEntry, EvaluationFormView::getNumberParticipationsDone));
+		assertThat(keyToNumerParticipations.get(formEntryOneParticipation)).isEqualTo(1);
+		assertThat(keyToNumerParticipations.get(formEntryThreeParticipations)).isEqualTo(3);
 	}
 	
 	@Test

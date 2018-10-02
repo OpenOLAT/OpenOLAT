@@ -23,6 +23,7 @@ import static org.olat.modules.quality.QualityDataCollectionStatus.FINISHED;
 import static org.olat.modules.quality.QualityDataCollectionStatus.PREPARATION;
 import static org.olat.modules.quality.QualityDataCollectionStatus.READY;
 
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.id.Roles;
 import org.olat.modules.quality.QualityDataCollectionLight;
 import org.olat.modules.quality.QualityDataCollectionStatus;
@@ -30,6 +31,7 @@ import org.olat.modules.quality.QualityExecutorParticipation;
 import org.olat.modules.quality.QualityExecutorParticipationStatus;
 import org.olat.modules.quality.QualityReminder;
 import org.olat.modules.quality.QualitySecurityCallback;
+import org.olat.modules.quality.analysis.AnalysisPresentation;
 import org.olat.modules.quality.generator.QualityGenerator;
 
 /**
@@ -192,7 +194,35 @@ public class QualitySecurityCallbackImpl implements QualitySecurityCallback {
 
 	@Override
 	public boolean canViewAnalysis() {
+		return roles.isQualityManager() || roles.isAdministrator() || roles.isPrincipal();
+	}
+
+	@Override
+	public OrganisationRoles[] getAnalysisViewRoles() {
+		return new OrganisationRoles[] { 
+				OrganisationRoles.qualitymanager,
+				OrganisationRoles.administrator,
+				OrganisationRoles.principal 
+			};
+	}
+
+	@Override
+	public OrganisationRoles[] getPresentationViewRoles() {
+		return new OrganisationRoles[] { 
+				OrganisationRoles.qualitymanager,
+				OrganisationRoles.administrator,
+				OrganisationRoles.principal 
+			};
+	}
+
+	@Override
+	public boolean canEditPresentations() {
 		return roles.isQualityManager() || roles.isAdministrator();
+	}
+
+	@Override
+	public boolean canDeletePresentation(AnalysisPresentation presentation) {
+		return canEditPresentations() && presentation.getKey() != null;
 	}
 
 }

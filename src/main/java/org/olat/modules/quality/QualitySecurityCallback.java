@@ -19,6 +19,8 @@
  */
 package org.olat.modules.quality;
 
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.modules.quality.analysis.AnalysisPresentation;
 import org.olat.modules.quality.generator.QualityGenerator;
 
 /**
@@ -80,5 +82,13 @@ public interface QualitySecurityCallback {
 	public boolean canDeleteGenerator(long numberDataCollections);
 
 	public boolean canViewAnalysis();
+	
+	public OrganisationRoles[] getAnalysisViewRoles();
+	
+	public OrganisationRoles[] getPresentationViewRoles();
+	
+	public boolean canEditPresentations();
+
+	public boolean canDeletePresentation(AnalysisPresentation presentation);
 
 }

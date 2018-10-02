@@ -19,29 +19,41 @@
  */
 package org.olat.modules.quality.analysis;
 
-import java.util.Date;
-
+import org.olat.core.id.CreateInfo;
+import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.OLATResourceable;
 import org.olat.repository.RepositoryEntry;
 
 /**
  * 
- * Initial date: 03.09.2018<br>
+ * Initial date: 28.09.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface EvaluationFormView extends OLATResourceable {
+public interface AnalysisPresentation extends AnalysisPresentationRef, OLATResourceable, CreateInfo, ModifiedInfo {
 	
-	public String RESOURCEABLE_TYPE = "form";
-
+	public String RESOURCEABLE_TYPE = "presentation";
+	
+	public String getName();
+	
+	public void setName(String name);
+	
+	public AnalysisSegment getAnalysisSegment();
+	
+	public void setAnalysisSegment(AnalysisSegment segment);
+	
+	public AnalysisSearchParameter getSearchParams();
+	
+	public void setSearchParams(AnalysisSearchParameter searchParams);
+	
+	public MultiGroupBy getHeatMapGrouping();
+	
+	public void setHeatMapGrouping(MultiGroupBy groupBy);
+	
+	public Boolean getHeatMapInsufficientOnly();
+	
+	public void setHeatMapInsufficientOnly(Boolean insufficientOnly);
+	
 	public RepositoryEntry getFormEntry();
 	
-	public Long getNumberDataCollections();
-	
-	public Date getSoonestDataCollectionDate();
-	
-	public Date getLatestDataCollectionFinishedDate();
-	
-	public Long getNumberParticipationsDone();
-
 }

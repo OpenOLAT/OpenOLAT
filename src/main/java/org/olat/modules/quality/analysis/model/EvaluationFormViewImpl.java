@@ -22,6 +22,7 @@ package org.olat.modules.quality.analysis.model;
 import java.util.Date;
 
 import org.olat.modules.quality.analysis.EvaluationFormView;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -31,22 +32,18 @@ import org.olat.modules.quality.analysis.EvaluationFormView;
  */
 public class EvaluationFormViewImpl implements EvaluationFormView {
 
-	private final Long formEntryKey;
-	private final Date formCreatedDate;
-	private final String formTitle;
+	private final RepositoryEntry formEntry;
 	private final Long numberDataCollections;
 	private final Date soonestDataCollectionDate;
-	private final Date latestDataCollectionDate;
+	private final Date latestDataCollectionFinishedDate;
 	private final Long numberParticipationsDone;
-	
-	public EvaluationFormViewImpl(Long formEntryKey, Date formCreatedDate, String formTitle, Long numberDataCollections,
-			Date soonestDataCollectionDate, Date latestDataCollectionDate, Long numberParticipationsDone) {
-		this.formEntryKey = formEntryKey;
-		this.formCreatedDate = formCreatedDate;
-		this.formTitle = formTitle;
+
+	public EvaluationFormViewImpl(RepositoryEntry formEntry, Long numberDataCollections, Date soonestDataCollectionDate,
+			Date latestDataCollectionFinishedDate, Long numberParticipationsDone) {
+		this.formEntry = formEntry;
 		this.numberDataCollections = numberDataCollections;
 		this.soonestDataCollectionDate = soonestDataCollectionDate;
-		this.latestDataCollectionDate = latestDataCollectionDate;
+		this.latestDataCollectionFinishedDate = latestDataCollectionFinishedDate;
 		this.numberParticipationsDone = numberParticipationsDone;
 	}
 
@@ -57,22 +54,12 @@ public class EvaluationFormViewImpl implements EvaluationFormView {
 
 	@Override
 	public Long getResourceableId() {
-		return formEntryKey;
+		return formEntry.getKey();
 	}
 
 	@Override
-	public Long getFormEntryKey() {
-		return formEntryKey;
-	}
-
-	@Override
-	public Date getFormCreatedDate() {
-		return formCreatedDate;
-	}
-
-	@Override
-	public String getFormTitle() {
-		return formTitle;
+	public RepositoryEntry getFormEntry() {
+		return formEntry;
 	}
 
 	@Override
@@ -86,8 +73,8 @@ public class EvaluationFormViewImpl implements EvaluationFormView {
 	}
 
 	@Override
-	public Date getLatestDataCollectionDate() {
-		return latestDataCollectionDate;
+	public Date getLatestDataCollectionFinishedDate() {
+		return latestDataCollectionFinishedDate;
 	}
 
 	@Override

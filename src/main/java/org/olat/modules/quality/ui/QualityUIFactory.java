@@ -35,6 +35,7 @@ import org.olat.basesecurity.IdentityShort;
 import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
+import org.olat.basesecurity.model.IdentityRefImpl;
 import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
@@ -54,6 +55,8 @@ import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.curriculum.CurriculumRef;
+import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
+import org.olat.modules.curriculum.model.CurriculumRefImpl;
 import org.olat.modules.curriculum.ui.CurriculumTreeModel;
 import org.olat.modules.quality.QualityDataCollectionTopicType;
 import org.olat.modules.quality.QualityDataCollectionView;
@@ -61,6 +64,7 @@ import org.olat.modules.quality.QualityExecutorParticipation;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.model.RepositoryEntryRefImpl;
 import org.olat.user.ui.organisation.OrganisationTreeModel;
 
 /**
@@ -162,7 +166,7 @@ public class QualityUIFactory {
 		if (StringHelper.containsNonWhitespace(curriculumKey)) {
 			try {
 				Long key = Long.valueOf(curriculumKey);
-				return () -> key;
+				return new CurriculumRefImpl(key);
 			} catch (Exception e) {
 				//
 			}
@@ -242,7 +246,7 @@ public class QualityUIFactory {
 		if (StringHelper.containsNonWhitespace(curriculumElementKey)) {
 			try {
 				Long key = Long.valueOf(curriculumElementKey);
-				return () -> key;
+				return new CurriculumElementRefImpl(key);
 			} catch (Exception e) {
 				//
 			}
@@ -322,7 +326,7 @@ public class QualityUIFactory {
 		if (StringHelper.containsNonWhitespace(organisationKey)) {
 			try {
 				Long key = Long.valueOf(organisationKey);
-				return () -> key;
+				return new OrganisationRefImpl(key);
 			} catch (Exception e) {
 				//
 			}
@@ -417,7 +421,7 @@ public class QualityUIFactory {
 		if (StringHelper.containsNonWhitespace(identityKey)) {
 			try {
 				Long key = Long.valueOf(identityKey);
-				return () -> key;
+				return new IdentityRefImpl(key);
 			} catch (Exception e) {
 				//
 			}
@@ -442,7 +446,7 @@ public class QualityUIFactory {
 		if (StringHelper.containsNonWhitespace(entryKey)) {
 			try {
 				Long key = Long.valueOf(entryKey);
-				return () -> key;
+				return new RepositoryEntryRefImpl(key);
 			} catch (Exception e) {
 				//
 			}

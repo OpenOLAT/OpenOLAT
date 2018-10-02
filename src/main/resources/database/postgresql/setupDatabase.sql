@@ -1887,6 +1887,19 @@ create table o_qual_generator_to_org (
    primary key (id)
 );
 
+create table o_qual_analysis_presentation (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   q_name varchar(256),
+   q_analysis_segment varchar(100),
+   q_search_params text,
+   q_heatmap_grouping text,
+   q_heatmap_insufficient_only boolean default false,
+   fk_form_entry bigint not null,
+   primary key (id)
+);
+
 -- question item
 create table o_qp_pool (
    id int8 not null,

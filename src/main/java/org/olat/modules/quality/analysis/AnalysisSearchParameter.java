@@ -30,6 +30,7 @@ import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.model.RepositoryEntryRefImpl;
 
 /**
  * 
@@ -59,7 +60,8 @@ public class AnalysisSearchParameter {
 	}
 
 	public void setFormEntryRef(RepositoryEntryRef formEntryRef) {
-		this.formEntryRef = formEntryRef;
+		// Make sure to have a plain RepositoryEntryRef for XStream.
+		this.formEntryRef = new RepositoryEntryRefImpl(formEntryRef.getKey());
 	}
 
 	public Date getDateRangeFrom() {

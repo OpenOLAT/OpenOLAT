@@ -164,13 +164,13 @@
 	.o_circle {
 		border-radius: 50%;
 		
-		&.o_rubric_insufficient { 
+		&.o_rubric_insufficient {
 			background-color: $o-evaluation-insufficient-color !important;
 		}
-		&.o_rubric_neutral { 
+		&.o_rubric_neutral {
 			background-color: $o-evaluation-neutral-color !important;
 		}
-		&.o_rubric_sufficient { 
+		&.o_rubric_sufficient {
 			background-color: $o-evaluation-sufficient-color !important;
 		}
 	}
@@ -199,16 +199,16 @@
 }
 
 @media print {
-	.o_qual_hm .o_circle {		
+	.o_qual_hm .o_circle {
 		-webkit-print-color-adjust: exact;
 		color-adjust: exact;
-		&.o_rubric_insufficient { 
+		&.o_rubric_insufficient {
 			background-color: $o-evaluation-insufficient-color !important;
 		}
-		&.o_rubric_neutral { 
+		&.o_rubric_neutral {
 			background-color: $o-evaluation-neutral-color !important;
 		}
-		&.o_rubric_sufficient { 
+		&.o_rubric_sufficient {
 			background-color: $o-evaluation-sufficient-color !important;
 		}
 	}

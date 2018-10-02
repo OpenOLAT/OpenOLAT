@@ -112,10 +112,11 @@ public class HeatMapController extends FormBasicController implements Filterable
 	private CurriculumModule curriculumModule;
 
 	public HeatMapController(UserRequest ureq, WindowControl wControl, Form evaluationForm,
-			AvailableAttributes availableAttributes, MultiGroupBy multiGroupBy) {
+			AvailableAttributes availableAttributes, MultiGroupBy multiGroupBy, Boolean insufficientOnly) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		this.availableAttributes = availableAttributes;
 		this.multiGroupBy = multiGroupBy;
+		this.insufficientOnly = insufficientOnly != null? insufficientOnly.booleanValue(): false;
 		this.sliders = initSliders(evaluationForm);
 		this.insufficientConfigured = initInsufficientConfigured(evaluationForm);
 		initForm(ureq);
@@ -192,6 +193,9 @@ public class HeatMapController extends FormBasicController implements Filterable
 		insufficientEl = uifactory.addCheckboxesVertical("heatmap.insufficient", grouping, INSUFFICIENT_KEYS,
 				translateAll(getTranslator(), INSUFFICIENT_KEYS), 1);
 		insufficientEl.addActionListener(FormEvent.ONCHANGE);
+		if (insufficientOnly) {
+			insufficientEl.select(insufficientEl.getKey(0), true);
+		}
 		insufficientEl.setVisible(insufficientConfigured);
 		
 		// Heat map
@@ -300,7 +304,7 @@ public class HeatMapController extends FormBasicController implements Filterable
 			setGroupBy(ureq);
 			loadHeatMap();
 		} else if (source == insufficientEl) {
-			setInsufficientOnly();
+			setInsufficientOnly(ureq);
 			loadHeatMap();
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -314,12 +318,13 @@ public class HeatMapController extends FormBasicController implements Filterable
 		fireEvent(ureq, new AnalysisGroupingEvent(multiGroupBy));
 	}
 
-	private void setInsufficientOnly() {
+	private void setInsufficientOnly(UserRequest ureq) {
 		if (insufficientEl.isVisible() && insufficientEl.isAtLeastSelected(1)) {
 			insufficientOnly = true;
 		} else {
 			insufficientOnly = false;
 		}
+		fireEvent(ureq, new AnalysisInsufficientOnlyEvent(insufficientOnly));
 	}
 	
 	private void loadHeatMap() {

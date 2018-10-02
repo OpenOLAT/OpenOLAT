@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -48,8 +47,12 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.modules.quality.QualitySecurityCallback;
+import org.olat.modules.quality.analysis.AnalysisPresentation;
 import org.olat.modules.quality.analysis.EvaluationFormView;
 import org.olat.modules.quality.analysis.EvaluationFormViewSearchParams;
 import org.olat.modules.quality.analysis.QualityAnalysisService;
@@ -62,11 +65,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class AnalysisListController extends FormBasicController implements FlexiTableComponentDelegate {
+public class AnalysisListController extends FormBasicController implements FlexiTableComponentDelegate, Activateable2 {
 
 	private static final String CMD_OPEN = "open";
 	private static final Comparator<? super EvaluationFormView> CREATED_DESC = 
-			(f1, f2) -> f2.getFormCreatedDate().compareTo(f1.getFormCreatedDate());
+			(f1, f2) -> f2.getLatestDataCollectionFinishedDate().compareTo(f1.getLatestDataCollectionFinishedDate());
 	
 	private final TooledStackedPanel stackPanel;
 	private final QualitySecurityCallback secCallback;
@@ -76,7 +79,7 @@ public class AnalysisListController extends FormBasicController implements Flexi
 	private AnalysisSegmentsController analysisCtrl;
 	
 	private final List<Organisation> organisations;
-	private int counter;
+	private int counter = 0;
 	private EvaluationFormView currentFormView;
 
 	@Autowired
@@ -91,7 +94,7 @@ public class AnalysisListController extends FormBasicController implements Flexi
 		stackPanel.addListener(this);
 		this.secCallback = secCallback;
 		this.organisations = organisationService.getOrganisations(getIdentity(), ureq.getUserSession().getRoles(),
-				OrganisationRoles.administrator, OrganisationRoles.qualitymanager);
+				secCallback.getAnalysisViewRoles());
 		initForm(ureq);
 	}
 
@@ -166,6 +169,24 @@ public class AnalysisListController extends FormBasicController implements Flexi
 	}
 	
 	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if (EvaluationFormView.RESOURCEABLE_TYPE.equalsIgnoreCase(type)) {
+			Long formEntryKey = entries.get(0).getOLATResourceable().getResourceableId();
+			AnalysisRow row = dataModel.getObjectByFormEntryKey(formEntryKey);
+			if (row != null) {
+				currentFormView = row;
+				doOpenAnalysis(ureq);
+			}
+		} else if (AnalysisPresentation.RESOURCEABLE_TYPE.equalsIgnoreCase(type)) {
+			Long presentationKey = entries.get(0).getOLATResourceable().getResourceableId();
+			doOpenPresentation(ureq, presentationKey);
+		}
+	}
+	
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (stackPanel == source && stackPanel.getLastController() == analysisCtrl && event instanceof PopEvent) {
 			PopEvent popEvent = (PopEvent) event;
@@ -198,10 +219,21 @@ public class AnalysisListController extends FormBasicController implements Flexi
 	}
 
 	private void doOpenAnalysis(UserRequest ureq) {
+		AnalysisPresentation presentation = analysisService.createPresentation(currentFormView.getFormEntry());
 		WindowControl bwControl = addToHistory(ureq, currentFormView, null);
-		analysisCtrl = new AnalysisSegmentsController(ureq, bwControl, secCallback, stackPanel, currentFormView);
+		doOpenAnalysis(ureq, bwControl, presentation);
+	}
+
+	private void doOpenPresentation(UserRequest ureq, Long presentationKey) {
+		AnalysisPresentation presentation = analysisService.loadPresentationByKey(() -> presentationKey);
+		WindowControl bwControl = addToHistory(ureq, presentation, null);
+		doOpenAnalysis(ureq, bwControl, presentation);
+	}
+
+	private void doOpenAnalysis(UserRequest ureq, WindowControl wControl, AnalysisPresentation presentation) {
+		analysisCtrl = new AnalysisSegmentsController(ureq, wControl, secCallback, stackPanel, presentation);
 		listenTo(analysisCtrl);
-		String title = currentFormView.getFormTitle();
+		String title = presentation.getFormEntry().getDisplayname();
 		stackPanel.pushController(title, analysisCtrl);
 		analysisCtrl.activate(ureq, null, null);
 	}

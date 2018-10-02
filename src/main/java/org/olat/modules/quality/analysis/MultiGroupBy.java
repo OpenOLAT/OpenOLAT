@@ -69,4 +69,32 @@ public class MultiGroupBy {
 		return groupBy1 == null && groupBy2 == null && groupBy3 == null;
 	}
 
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((groupBy1 == null) ? 0 : groupBy1.hashCode());
+		result = prime * result + ((groupBy2 == null) ? 0 : groupBy2.hashCode());
+		result = prime * result + ((groupBy3 == null) ? 0 : groupBy3.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		MultiGroupBy other = (MultiGroupBy) obj;
+		if (groupBy1 != other.groupBy1)
+			return false;
+		if (groupBy2 != other.groupBy2)
+			return false;
+		if (groupBy3 != other.groupBy3)
+			return false;
+		return true;
+	}
+
 }

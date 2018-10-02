@@ -23,6 +23,7 @@ import java.util.Date;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.modules.quality.analysis.EvaluationFormView;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -51,18 +52,16 @@ public class AnalysisRow implements EvaluationFormView {
 	}
 	
 	@Override
-	public Long getFormEntryKey() {
-		return formView.getFormEntryKey();
+	public RepositoryEntry getFormEntry() {
+		return formView.getFormEntry();
 	}
 	
-	@Override
 	public Date getFormCreatedDate() {
-		return formView.getFormCreatedDate();
+		return formView.getFormEntry().getCreationDate();
 	}
 
-	@Override
 	public String getFormTitle() {
-		return formView.getFormTitle();
+		return formView.getFormEntry().getDisplayname();
 	}
 
 	@Override
@@ -76,8 +75,8 @@ public class AnalysisRow implements EvaluationFormView {
 	}
 
 	@Override
-	public Date getLatestDataCollectionDate() {
-		return formView.getLatestDataCollectionDate();
+	public Date getLatestDataCollectionFinishedDate() {
+		return formView.getLatestDataCollectionFinishedDate();
 	}
 
 	@Override

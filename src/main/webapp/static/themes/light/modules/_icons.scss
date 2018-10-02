@@ -697,6 +697,8 @@ $fa-css-prefix: "o_icon" !default;
 /* Quality management */
 
 .o_icon_qual_ana_hide_filter:before { content: $fa-var-toggle-on;}
+.o_icon_qual_ana_pres_edit:before { content: $fa-var-thumb-tack;}
+.o_icon_qual_ana_pres_delete:before { content: $fa-var-ban;}
 .o_icon_qual_ana_show_filter:before { content: $fa-var-toggle-off;}
 .o_icon_qual_dc_create:before { content: $fa-var-plus-circle; }
 .o_icon_qual_dc_delete:before { content: $fa-var-trash; }

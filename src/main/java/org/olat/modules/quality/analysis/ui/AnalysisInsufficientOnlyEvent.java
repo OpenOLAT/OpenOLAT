@@ -17,31 +17,29 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.quality.analysis;
+package org.olat.modules.quality.analysis.ui;
 
-import java.util.Date;
-
-import org.olat.core.id.OLATResourceable;
-import org.olat.repository.RepositoryEntry;
+import org.olat.core.gui.control.Event;
 
 /**
  * 
- * Initial date: 03.09.2018<br>
+ * Initial date: 03.10.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface EvaluationFormView extends OLATResourceable {
-	
-	public String RESOURCEABLE_TYPE = "form";
+public class AnalysisInsufficientOnlyEvent extends Event {
 
-	public RepositoryEntry getFormEntry();
+	private static final long serialVersionUID = 2527721368026609367L;
 	
-	public Long getNumberDataCollections();
-	
-	public Date getSoonestDataCollectionDate();
-	
-	public Date getLatestDataCollectionFinishedDate();
-	
-	public Long getNumberParticipationsDone();
+	private final Boolean insufficientOnly;
+
+	public AnalysisInsufficientOnlyEvent(boolean insufficientOnly) {
+		super("analysis-insufficient-only-event");
+		this.insufficientOnly = Boolean.valueOf(insufficientOnly);
+	}
+
+	public Boolean getInsufficientOnly() {
+		return insufficientOnly;
+	}
 
 }

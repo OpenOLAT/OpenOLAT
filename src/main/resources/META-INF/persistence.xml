@@ -216,6 +216,7 @@
 		<class>org.olat.modules.qpool.model.QItemType</class>
 		<class>org.olat.modules.qpool.model.QLicense</class>
 		<class>org.olat.modules.qpool.model.QuestionItemAuditLogImpl</class>
+		<class>org.olat.modules.quality.analysis.model.AnalysisPresentationImpl</class>
 		<class>org.olat.modules.quality.generator.model.QualityGeneratorConfigImpl</class>
 		<class>org.olat.modules.quality.generator.model.QualityGeneratorImpl</class>
 		<class>org.olat.modules.quality.generator.model.QualityGeneratorToOrganisationImpl</class>

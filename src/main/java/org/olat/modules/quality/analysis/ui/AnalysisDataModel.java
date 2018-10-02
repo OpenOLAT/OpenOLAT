@@ -45,6 +45,16 @@ class AnalysisDataModel extends DefaultFlexiTableDataModel<AnalysisRow>
 		this.locale = locale;
 	}
 	
+	public AnalysisRow getObjectByFormEntryKey(Long key) {
+		List<AnalysisRow> rows = getObjects();
+		for (AnalysisRow row: rows) {
+			if (row != null && row.getFormEntry().getKey().equals(key)) {
+				return row;
+			}
+		}
+		return null;
+	}
+	
 	@Override
 	public void sort(SortKey orderBy) {
 		List<AnalysisRow> rows = new SortableFlexiTableModelDelegate<>(orderBy, this, locale).sort();
@@ -64,7 +74,7 @@ class AnalysisDataModel extends DefaultFlexiTableDataModel<AnalysisRow>
 			case formCreated: return row.getFormCreatedDate();
 			case numberDataCollections: return row.getNumberDataCollections();
 			case soonest: return row.getSoonestDataCollectionDate();
-			case latest: return row.getLatestDataCollectionDate();
+			case latest: return row.getLatestDataCollectionFinishedDate();
 			case numberParticipations: return row.getNumberParticipationsDone();
 			default: return null;
 		}
