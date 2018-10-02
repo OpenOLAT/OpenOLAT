@@ -291,15 +291,6 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		for(TestPlanNode parentNode=itemRefNode.getParent(); parentNode.getParent() != null; parentNode = parentNode.getParent()) {
 			AssessmentSection section = component.getAssessmentSection(parentNode.getIdentifier());
 			if(section != null && section.getVisible()) {
-				sectionParentLine.add(section);
-			}
-		}
-		
-		if (sectionParentLine.size() > 0) {
-			sb.append("<div class='o_assessmentsection_rubrics_wrapper'>");
-			for(int i=sectionParentLine.size(); i-->0; ) {
-				AssessmentSection section = sectionParentLine.get(i);
-				
 				boolean writeRubrics = false;
 				for(RubricBlock rubric:section.getRubricBlocks()) {
 					if(!rubric.getBlocks().isEmpty()) {
@@ -308,8 +299,16 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 				}
 				
 				if(writeRubrics) {
-					renderRubricSection(renderer, sb, component, section, ubu, translator);
+					sectionParentLine.add(section);
 				}
+			}
+		}
+		
+		if (!sectionParentLine.isEmpty()) {
+			sb.append("<div class='o_assessmentsection_rubrics_wrapper'>");
+			for(int i=sectionParentLine.size(); i-->0; ) {
+				AssessmentSection section = sectionParentLine.get(i);
+				renderRubricSection(renderer, sb, component, section, ubu, translator);
 			}
 			sb.append("</div>");
 		}

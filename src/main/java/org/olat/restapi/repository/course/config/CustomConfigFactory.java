@@ -27,12 +27,11 @@ package org.olat.restapi.repository.course.config;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.iq.IQEditController;
+import org.olat.course.nodes.iq.QTIResourceTypeModule;
 import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
 import org.olat.restapi.repository.course.AbstractCourseNodeWebService.CustomConfigDelegate;
-
-import de.bps.onyx.plugin.OnyxModule;
 
 public class CustomConfigFactory {
 	
@@ -62,8 +61,10 @@ public class CustomConfigFactory {
 		@Override
 		public void configure(ICourse course, CourseNode newNode, ModuleConfiguration moduleConfig) {
 			moduleConfig.set(IQEditController.CONFIG_KEY_REPOSITORY_SOFTKEY, testRepoEntry.getSoftkey());
-			if (OnyxModule.isOnyxTest(testRepoEntry.getOlatResource())) {
+			if (QTIResourceTypeModule.isOnyxTest(testRepoEntry.getOlatResource())) {
 				moduleConfig.set(IQEditController.CONFIG_KEY_TYPE_QTI, IQEditController.CONFIG_VALUE_QTI2);
+			} else if (QTIResourceTypeModule.isQtiWorks(testRepoEntry.getOlatResource())) {
+				moduleConfig.set(IQEditController.CONFIG_KEY_TYPE_QTI, IQEditController.CONFIG_VALUE_QTI21);
 			} else {
 				moduleConfig.set(IQEditController.CONFIG_KEY_TYPE_QTI, IQEditController.CONFIG_VALUE_QTI1);
 			}
@@ -90,7 +91,7 @@ public class CustomConfigFactory {
 			moduleConfig.set(IQEditController.CONFIG_KEY_SEQUENCE, AssessmentInstance.QMD_ENTRY_SEQUENCE_ITEM);
 			moduleConfig.set(IQEditController.CONFIG_KEY_TYPE, AssessmentInstance.QMD_ENTRY_TYPE_SURVEY);
 			moduleConfig.set(IQEditController.CONFIG_KEY_SUMMARY, AssessmentInstance.QMD_ENTRY_SUMMARY_NONE);
-			if (OnyxModule.isOnyxTest(surveyRepoEntry)) {
+			if (QTIResourceTypeModule.isOnyxTest(surveyRepoEntry)) {
 				moduleConfig.set(IQEditController.CONFIG_KEY_TYPE_QTI, IQEditController.CONFIG_VALUE_QTI2);
 			} else {
 				moduleConfig.set(IQEditController.CONFIG_KEY_TYPE_QTI, IQEditController.CONFIG_VALUE_QTI1);

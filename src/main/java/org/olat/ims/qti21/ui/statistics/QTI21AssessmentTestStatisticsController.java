@@ -53,8 +53,8 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.nodes.QTICourseNode;
-import org.olat.course.nodes.iq.IQEditController;
 import org.olat.ims.qti.statistics.QTIType;
 import org.olat.ims.qti.statistics.model.StatisticAssessment;
 import org.olat.ims.qti.statistics.ui.QTI12AssessmentStatisticsController.ItemInfos;
@@ -154,19 +154,7 @@ public class QTI21AssessmentTestStatisticsController extends BasicController imp
 	private Float getMaxScoreSetting(QTICourseNode testNode) {
 		Float maxScoreSetting = null;
 		if(QTIType.qtiworks.equals(type)) {
-			Object maxScoreObj = testNode == null ? null : testNode.getModuleConfiguration().get(IQEditController.CONFIG_KEY_MAXSCORE);
-			if (maxScoreObj instanceof Float) {
-				maxScoreSetting = (Float)maxScoreObj;
-			} else {
-				// try to calculate max
-				float max = 0;
-				/*for (Item item: items) {
-					if(item.getQuestion() != null) {
-						max += item.getQuestion().getMaxValue();
-					}
-				}*/
-				maxScoreSetting = max > 0 ? max : null;
-			}
+			maxScoreSetting = testNode instanceof IQTESTCourseNode ? ((IQTESTCourseNode)testNode).getMaxScoreConfiguration() : null;
 		}
 		return maxScoreSetting;
 	}
@@ -174,10 +162,7 @@ public class QTI21AssessmentTestStatisticsController extends BasicController imp
 	private Float getCutValueSetting(QTICourseNode testNode) {
 		Float cutValueSetting = null;
 		if(QTIType.qtiworks.equals(type)) {
-			Object cutScoreObj = testNode == null ? null : testNode.getModuleConfiguration().get(IQEditController.CONFIG_KEY_CUTVALUE);
-			if (cutScoreObj instanceof Float) {
-				cutValueSetting = (Float)cutScoreObj;
-			}
+			cutValueSetting = testNode instanceof IQTESTCourseNode ? ((IQTESTCourseNode)testNode).getCutValueConfiguration() : null;
 		}
 		return cutValueSetting;
 	}

@@ -1,4 +1,3 @@
-
 /**
  * <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
@@ -15,58 +14,42 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * BPS Bildungsportal Sachsen GmbH, http://www.bps-system.de
+ * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package de.bps.onyx.plugin;
+package org.olat.course.nodes.iq;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.olat.core.configuration.AbstractSpringModule;
-import org.olat.core.configuration.ConfigOnOff;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.ims.qti.fileresource.SurveyFileResource;
 import org.olat.ims.qti.fileresource.TestFileResource;
 import org.olat.ims.qti.process.ImsRepositoryResolver;
 import org.olat.ims.qti.process.Resolver;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
- * @author Ingmar Kroll
+ * 
+ * Initial date: 2 Oct 2018<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
  */
-@Service("onyxModule")
-public class OnyxModule extends AbstractSpringModule implements ConfigOnOff {
+@Service
+public class QTIResourceTypeModule {
 	
-	private static final OLog log = Tracing.createLoggerFor(OnyxModule.class);
+	private static final OLog log = Tracing.createLoggerFor(QTIResourceTypeModule.class);
 	
-	private static Map<Long,Boolean> onyxMap = new ConcurrentHashMap<>();
+	private static final Map<Long,Boolean> onyxMap = new ConcurrentHashMap<>();
 	
-	@Autowired
-	public OnyxModule(CoordinatorManager coordinatorManager) {
-		super(coordinatorManager);
-	}
-
-	@Override
-	public boolean isEnabled() {
-		return false;
+	public static boolean isQtiWorks(final OLATResourceable res) {
+		return ImsQTI21Resource.TYPE_NAME.equals(res.getResourceableTypeName());
 	}
 	
-	@Override
-	public void init() {
-		//
-	}
-
-	@Override
-	protected void initFromChangedProperties() {
-		//
-	}
-
 	public static boolean isOnyxTest(final OLATResourceable res) {
 		if (res.getResourceableTypeName().equals(TestFileResource.TYPE_NAME) ||
 				res.getResourceableTypeName().equals(SurveyFileResource.TYPE_NAME)) {

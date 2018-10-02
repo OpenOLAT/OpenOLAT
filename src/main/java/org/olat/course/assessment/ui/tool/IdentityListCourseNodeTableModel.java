@@ -52,6 +52,9 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 	private static final OLog log = Tracing.createLoggerFor(IdentityListCourseNodeTableModel.class);
 
 	private final Locale locale;
+	
+	private Float minScore;
+	private Float maxScore;
 	private final AssessableCourseNode courseNode;
 	private List<AssessedIdentityElementRow> backups;
 	private ConcurrentMap<Long, CertificateLight> certificateMap;
@@ -60,6 +63,11 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 		super(columnModel);
 		this.locale = locale;
 		this.courseNode = courseNode;
+		
+		if(!(courseNode instanceof STCourseNode) && courseNode.hasScoreConfigured()) {
+			maxScore = courseNode.getMaxScoreConfiguration();
+			minScore = courseNode.getMinScoreConfiguration();
+		}
 	}
 	
 	public void setCertificateMap(ConcurrentMap<Long, CertificateLight> certificateMap) {
@@ -129,18 +137,8 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 				case attempts: return row.getAttempts();
 				case userVisibility: return row.getUserVisibility();
 				case score: return row.getScore();
-				case min: {
-					if(!(courseNode instanceof STCourseNode) && courseNode.hasScoreConfigured()) {
-						return courseNode.getMinScoreConfiguration();
-					}
-					return "";
-				}
-				case max: {
-					if(!(courseNode instanceof STCourseNode) && courseNode.hasScoreConfigured()) {
-						return courseNode.getMaxScoreConfiguration();
-					}
-					return "";
-				}
+				case min: return minScore;
+				case max: return maxScore;
 				case status: return "";
 				case passed: return row.getPassed();
 				case numOfAssessmentDocs: {

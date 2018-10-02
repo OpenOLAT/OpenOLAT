@@ -67,6 +67,7 @@ import org.olat.course.nodes.iq.IQIdentityListCourseNodeController;
 import org.olat.course.nodes.iq.IQPreviewController;
 import org.olat.course.nodes.iq.IQRunController;
 import org.olat.course.nodes.iq.QTI21AssessmentRunController;
+import org.olat.course.nodes.iq.QTIResourceTypeModule;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
@@ -124,7 +125,6 @@ import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.resource.OLATResource;
 
-import de.bps.onyx.plugin.OnyxModule;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 
@@ -451,12 +451,16 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 			cutValue = (Float) config.get(IQEditController.CONFIG_KEY_CUTVALUE);
 		} else {
 			RepositoryEntry testEntry = getReferencedRepositoryEntry();
-			AssessmentTest assessmentTest = loadAssessmentTest(testEntry);
-			if(assessmentTest != null) {
-				Double cut = QtiNodesExtractor.extractCutValue(assessmentTest);
-				if(cut != null) {
-					cutValue = Float.valueOf(cut.floatValue());
+			if(QTIResourceTypeModule.isQtiWorks(testEntry.getOlatResource())) {
+				AssessmentTest assessmentTest = loadAssessmentTest(testEntry);
+				if(assessmentTest != null) {
+					Double cut = QtiNodesExtractor.extractCutValue(assessmentTest);
+					if(cut != null) {
+						cutValue = Float.valueOf(cut.floatValue());
+					}
 				}
+			} else {
+				cutValue = (Float) config.get(IQEditController.CONFIG_KEY_CUTVALUE);
 			}
 		}
 		return cutValue;
@@ -473,12 +477,16 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 			maxScore = (Float) config.get(IQEditController.CONFIG_KEY_MAXSCORE);
 		} else {
 			RepositoryEntry testEntry = getReferencedRepositoryEntry();
-			AssessmentTest assessmentTest = loadAssessmentTest(testEntry);
-			if(assessmentTest != null) {
-				Double max = QtiNodesExtractor.extractMaxScore(assessmentTest);
-				if(max != null) {
-					maxScore = Float.valueOf(max.floatValue());
+			if(QTIResourceTypeModule.isQtiWorks(testEntry.getOlatResource())) {
+				AssessmentTest assessmentTest = loadAssessmentTest(testEntry);
+				if(assessmentTest != null) {
+					Double max = QtiNodesExtractor.extractMaxScore(assessmentTest);
+					if(max != null) {
+						maxScore = Float.valueOf(max.floatValue());
+					}
 				}
+			} else {
+				maxScore = (Float) config.get(IQEditController.CONFIG_KEY_MAXSCORE);
 			}
 		}
 		
@@ -495,12 +503,16 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 			minScore = (Float) config.get(IQEditController.CONFIG_KEY_MINSCORE);
 		} else {
 			RepositoryEntry testEntry = getReferencedRepositoryEntry();
-			AssessmentTest assessmentTest = loadAssessmentTest(testEntry);
-			if(assessmentTest != null) {
-				Double min = QtiNodesExtractor.extractMinScore(assessmentTest);
-				if(min != null) {
-					minScore = Float.valueOf(min.floatValue());
+			if(QTIResourceTypeModule.isQtiWorks(testEntry.getOlatResource())) {
+				AssessmentTest assessmentTest = loadAssessmentTest(testEntry);
+				if(assessmentTest != null) {
+					Double min = QtiNodesExtractor.extractMinScore(assessmentTest);
+					if(min != null) {
+						minScore = Float.valueOf(min.floatValue());
+					}
 				}
+			} else {
+				minScore = (Float) config.get(IQEditController.CONFIG_KEY_MINSCORE);
 			}
 		}
 		return minScore;
@@ -712,7 +724,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 		CourseEnvironment courseEnv = course.getCourseEnvironment();
 		try {
 			RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(repositorySoftKey, true);
-			boolean onyx = OnyxModule.isOnyxTest(re.getOlatResource());
+			boolean onyx = QTIResourceTypeModule.isOnyxTest(re.getOlatResource());
 			if (onyx) {
 				return true;
 			} else if(ImsQTI21Resource.TYPE_NAME.equals(re.getOlatResource().getResourceableTypeName())) {
@@ -893,7 +905,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 			if(ImsQTI21Resource.TYPE_NAME.equals(resource.getResourceableTypeName())) {
 				RepositoryEntry courseEntry = assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 				detailsCtrl = new QTI21AssessmentDetailsController(ureq, wControl, (TooledStackedPanel)stackPanel, courseEntry, this, coachCourseEnv, assessedUserCourseEnv);
-			} else if(OnyxModule.isOnyxTest(ref.getOlatResource())) {
+			} else if(QTIResourceTypeModule.isOnyxTest(ref.getOlatResource())) {
 				Translator trans = Util.createPackageTranslator(IQEditController.class, ureq.getLocale());
 				detailsCtrl = MessageUIFactory.createInfoMessage(ureq, wControl, "", trans.translate("error.onyx"));
 			} else {

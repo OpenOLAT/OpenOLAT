@@ -86,7 +86,6 @@ import org.olat.modules.assessment.ui.event.CompleteAssessmentTestSessionEvent;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import de.bps.onyx.plugin.OnyxModule;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
 
 /**
@@ -178,7 +177,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 			extraTimeButton.setIconLeftCSS("o_icon o_icon_extra_time");
 		}
 		boolean qti21 = isTestQTI21();
-		boolean onyx = !qti21 && OnyxModule.isOnyxTest(testEntry.getOlatResource());
+		boolean onyx = !qti21 && QTIResourceTypeModule.isOnyxTest(testEntry.getOlatResource());
 		
 		statsButton = uifactory.addFormLink("button.stats", formLayout, Link.BUTTON);
 		statsButton.setIconLeftCSS("o_icon o_icon-fw o_icon_statistics_tool");

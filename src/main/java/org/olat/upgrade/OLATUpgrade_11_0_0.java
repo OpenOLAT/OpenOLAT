@@ -80,6 +80,7 @@ import org.olat.course.nodes.ScormCourseNode;
 import org.olat.course.nodes.TACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.Task;
+import org.olat.course.nodes.iq.QTIResourceTypeModule;
 import org.olat.course.nodes.ta.DropboxController;
 import org.olat.course.nodes.ta.ReturnboxController;
 import org.olat.course.nodes.ta.StatusForm;
@@ -121,8 +122,6 @@ import org.olat.repository.model.SearchRepositoryEntryParameters;
 import org.olat.upgrade.legacy.NewCacheKey;
 import org.olat.upgrade.legacy.NewCachePersistingAssessmentManager;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import de.bps.onyx.plugin.OnyxModule;
 
 /**
  * 
@@ -887,7 +886,7 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 				Long courseResourceableId = course.getResourceableId();
 				List<QTIResultSet> resultSets = qtiResultManager.getResultSets(courseResourceableId, cNode.getIdent(), ref.getKey(), assessedIdentity);
 				if(resultSets.size() > 0) {
-					if(OnyxModule.isOnyxTest(ref.getOlatResource())) {
+					if(QTIResourceTypeModule.isOnyxTest(ref.getOlatResource())) {
 						//make it later with the flag fully assessed
 						entry.setAssessmentStatus(AssessmentEntryStatus.inProgress);
 					} else if(checkEssay(ref)) {

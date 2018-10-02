@@ -27,14 +27,13 @@ import org.olat.core.configuration.PreWarm;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
+import org.olat.course.nodes.iq.QTIResourceTypeModule;
 import org.olat.ims.qti.fileresource.SurveyFileResource;
 import org.olat.ims.qti.fileresource.TestFileResource;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import de.bps.onyx.plugin.OnyxModule;
 
 /**
  * 
@@ -65,7 +64,7 @@ public class QTIPreWarm implements PreWarm {
 		List<OLATResource> qtiResources = olatResourceManager.findResourceByTypes(types);
 		dbInstance.commitAndCloseSession();
 		for(OLATResource qtiResource:qtiResources) {
-			OnyxModule.isOnyxTest(qtiResource);
+			QTIResourceTypeModule.isOnyxTest(qtiResource);
 		}
 		log.info(qtiResources.size() + " QTI Resources scanned in (ms): " + CodeHelper.nanoToMilliTime(start));
 	}

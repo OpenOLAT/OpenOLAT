@@ -23,6 +23,7 @@ mvn*.log
 .classpath
 .project
 src/main/java/olat.local.properties
+src/test/java/org/olat/selenium/SeleniumTest.java
 
 .classpath
 /.project

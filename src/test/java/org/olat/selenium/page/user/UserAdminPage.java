@@ -92,8 +92,8 @@ public class UserAdminPage {
 		
 		//search
 		By searchBy = By.cssSelector("fieldset.o_sel_user_search_form a.o_sel_user_search_button");
-		browser.findElement(searchBy).click();
-		OOGraphene.waitBusy(browser);	
+		OOGraphene.clickAndWait(searchBy, browser);
+		OOGraphene.scrollTop(browser);	
 		return this;
 	}
 	
@@ -188,7 +188,7 @@ public class UserAdminPage {
 		
 		By saveBy = By.cssSelector(".o_sel_id_create button.btn-primary");
 		browser.findElement(saveBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitBusyAndScrollTop(browser);
 		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		return this;
 	}
@@ -214,8 +214,7 @@ public class UserAdminPage {
 		usernameEl.sendKeys(username);
 		
 		By searchBy = By.cssSelector(".o_sel_user_search_form a.btn-default");
-		browser.findElement(searchBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.clickAndWait(searchBy, browser);
 		
 		return this;
 	}

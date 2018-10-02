@@ -46,6 +46,7 @@ import org.olat.course.assessment.model.AssessmentNodeData;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.IQSELFCourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
+import org.olat.course.nodes.iq.QTIResourceTypeModule;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.ims.qti.QTIResult;
 import org.olat.ims.qti.QTIResultManager;
@@ -55,8 +56,6 @@ import org.olat.ims.qti.export.helper.QTIObjectTreeBuilder;
 import org.olat.ims.qti21.manager.archive.QTI21ArchiveFormat;
 import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
 import org.olat.repository.RepositoryEntry;
-
-import de.bps.onyx.plugin.OnyxModule;
 
 /**
  * 
@@ -189,7 +188,7 @@ public class QTIArchiver {
 	public Map<Class<?>, QTIExportItemFormatConfig> getQTIItemConfigs() {
 		if(qtiItemConfigs == null) {
 			RepositoryEntry testRe = courseNode.getReferencedRepositoryEntry();
-			if(OnyxModule.isOnyxTest(testRe.getOlatResource())) {
+			if(QTIResourceTypeModule.isOnyxTest(testRe.getOlatResource())) {
 				qtiItemConfigs = Collections.emptyMap();
 			} else if(ImsQTI21Resource.TYPE_NAME.equals(testRe.getOlatResource().getResourceableTypeName())) {
 				qtiItemConfigs = Collections.emptyMap();
