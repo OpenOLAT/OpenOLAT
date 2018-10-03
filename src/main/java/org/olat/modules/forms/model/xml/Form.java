@@ -84,8 +84,8 @@ public class Form {
 		}
 	}
 	
-	public void moveElement(AbstractElement element, AbstractElement sibling) {
-		if(elements.remove(element)) {
+	public void moveElement(AbstractElement elementToMove, AbstractElement sibling, boolean after) {
+		if(elements.remove(elementToMove)) {
 			int index;
 			if(sibling == null) {
 				index = elements.size();
@@ -93,10 +93,14 @@ public class Form {
 				index = elements.indexOf(sibling);
 			}
 			
+			if(after) {
+				index++;
+			}
+			
 			if(index >= 0 && index <= elements.size()) {
-				elements.add(index, element);
+				elements.add(index, elementToMove);
 			} else {
-				elements.add(element);
+				elements.add(elementToMove);
 			}
 		}
 	}

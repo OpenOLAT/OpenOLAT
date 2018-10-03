@@ -72,4 +72,16 @@ public class DropFragmentEvent extends Event {
 	public String getSlotId() {
 		return slotId;
 	}
+	
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("dropFragment[dragged=").append(dragged == null ? "" : dragged).append(";")
+		  .append("source=").append(source == null ? "" : source).append(";")
+		  .append("target=").append(targetCmpId == null ? "" : targetCmpId).append(";")
+		  .append("sibling=").append(siblingCmpId == null ? "" : siblingCmpId).append(";")
+		  .append("container=").append(containerCmpId == null ? "" : containerCmpId).append(";")
+		  .append("slot=").append(slotId == null ? "" : slotId).append("]");
+		return sb.toString();
+	}
 }

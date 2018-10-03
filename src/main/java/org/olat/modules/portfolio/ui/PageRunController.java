@@ -836,9 +836,9 @@ public class PageRunController extends BasicController implements TooledControll
 		}
 
 		@Override
-		public void movePageElement(PageElement element, PageElement sibling) {
-			if(element instanceof PagePart && (sibling == null || sibling instanceof PagePart)) {
-				portfolioService.movePagePart(page, (PagePart)element, (PagePart)sibling);
+		public void movePageElement(PageElement elementToMove, PageElement sibling, boolean after) {
+			if(elementToMove instanceof PagePart && (sibling == null || sibling instanceof PagePart)) {
+				portfolioService.movePagePart(page, (PagePart)elementToMove, (PagePart)sibling, after);
 			}
 		}
 	}

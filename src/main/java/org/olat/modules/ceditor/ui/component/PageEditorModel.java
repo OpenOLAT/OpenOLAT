@@ -57,8 +57,16 @@ public class PageEditorModel {
 		return fragments.size();
 	}
 	
-	public void add(int index, EditorFragment fragment) {
-		fragments.add(index, fragment);
+	public void add(int index, EditorFragment fragment, boolean after) {
+		if(after) {
+			index++;
+		}
+		
+		if(index >= 0 && index < fragments.size()) {
+			fragments.add(index, fragment);
+		} else {
+			fragments.add(fragment);
+		}
 	}
 	
 	public boolean add(EditorFragment fragment) {

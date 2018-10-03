@@ -46,6 +46,6 @@ public interface PageEditorProvider extends PageProvider {
 	 * @param element
 	 * @param sibling The reference object
 	 */
-	public void movePageElement(PageElement element, PageElement sibling);
+	public void movePageElement(PageElement elementToMove, PageElement sibling, boolean after);
 	
 }

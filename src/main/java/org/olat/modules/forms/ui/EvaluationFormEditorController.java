@@ -231,9 +231,9 @@ public class EvaluationFormEditorController extends BasicController {
 		}
 
 		@Override
-		public void movePageElement(PageElement element, PageElement sibling) {
-			if(element instanceof AbstractElement && (sibling == null || sibling instanceof AbstractElement)) {
-				form.moveElement((AbstractElement)element, (AbstractElement)sibling);
+		public void movePageElement(PageElement elementToMove, PageElement sibling, boolean after) {
+			if(elementToMove instanceof AbstractElement && (sibling == null || sibling instanceof AbstractElement)) {
+				form.moveElement((AbstractElement)elementToMove, (AbstractElement)sibling, after);
 				persistForm();
 			}
 		}

@@ -60,7 +60,10 @@ public class EditorFragment {
 	public void setEditMode(boolean editMode) {
 		this.editMode = editMode;
 		if(editorPart instanceof PageElementEditorController) {
-			((PageElementEditorController)editorPart).setEditMode(editMode);
+			PageElementEditorController editorCtrl = (PageElementEditorController)editorPart;
+			if(editorCtrl.isEditMode() != editMode) {
+				((PageElementEditorController)editorPart).setEditMode(editMode);
+			}
 		}
 	}
 	

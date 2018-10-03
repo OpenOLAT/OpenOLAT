@@ -521,7 +521,7 @@ public class PageDAO {
 		}
 	}
 	
-	public void movePart(PageBody body, PagePart part, PagePart sibling) {
+	public void movePart(PageBody body, PagePart part, PagePart sibling, boolean after) {
 		body.getParts().size();
 		body.getParts().remove(part);
 		
@@ -530,9 +530,17 @@ public class PageDAO {
 			index = body.getParts().size();
 		} else {
 			index = body.getParts().indexOf(sibling);
-		}	
-			
-		body.getParts().add(index, part);
+		}
+		if(after) {
+			index++;
+		}
+		
+		List<PagePart> parts = body.getParts();
+		if(index >= 0 && index < parts.size()) {
+			parts.add(index, part);
+		} else {
+			parts.add(part);
+		}
 		((PageBodyImpl)body).setLastModified(new Date());
 		dbInstance.getCurrentEntityManager().merge(body);
 	}

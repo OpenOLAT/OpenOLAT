@@ -117,7 +117,7 @@ public class HTMLRawEditorController extends FormBasicController implements Page
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		String cmpId = "html-" + CodeHelper.getRAMUniqueID() + "h";
-		String content = htmlPart.getContent();
+		String content = contentOrExample(htmlPart.getContent());
 		
 		if(minimalEditor) {
 			htmlItem = uifactory.addRichTextElementForParagraphEditor(cmpId, null, content, 8, 80, formLayout, getWindowControl());
@@ -128,8 +128,8 @@ public class HTMLRawEditorController extends FormBasicController implements Page
 		htmlItem.getEditorConfiguration().setSendOnBlur(true);
 		htmlItem.getEditorConfiguration().disableImageAndMovie();
 		htmlItem.getEditorConfiguration().setAutoResizeEnabled(true, -1, 40, 0);
-		
-		String formattedContent = Formatter.formatLatexFormulas(contentOrExample(content));
+
+		String formattedContent = Formatter.formatLatexFormulas(content);
 		staticItem = uifactory.addStaticTextElement(cmpId + "_static", formattedContent, formLayout);
 		
 		((FormLayoutContainer)formLayout).contextPut("htmlCmpId", cmpId);
@@ -160,7 +160,7 @@ public class HTMLRawEditorController extends FormBasicController implements Page
 			String content = htmlItem.getValue();
 			htmlPart.setContent(content);
 			htmlPart = store.savePageElement(htmlPart);
-			String formattedContent = Formatter.formatLatexFormulas(contentOrExample(content));
+			String formattedContent = Formatter.formatLatexFormulas(content);
 			staticItem.setValue(formattedContent);
 			fireEvent(ureq, new ChangePartEvent(htmlPart));
 		}
@@ -173,7 +173,7 @@ public class HTMLRawEditorController extends FormBasicController implements Page
 		htmlPart.setContent(content);
 		htmlPart = store.savePageElement(htmlPart);
 
-		String formattedContent = Formatter.formatLatexFormulas(contentOrExample(content));
+		String formattedContent = Formatter.formatLatexFormulas(content);
 		staticItem.setValue(formattedContent);
 		fireEvent(ureq, new ChangePartEvent(htmlPart));
 	}

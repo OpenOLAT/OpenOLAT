@@ -359,7 +359,7 @@ public class PageEditorController extends BasicController {
 	
 					PageElement pageElement = provider.appendPageElementAt(element, index);
 					newFragment = createFragment(ureq, pageElement);
-					editorModel.add(index, newFragment);
+					editorModel.add(index, newFragment, false);
 				}
 			}
 		}
@@ -414,7 +414,7 @@ public class PageEditorController extends BasicController {
 			if(index >= 0) {
 				provider.moveUpPageElement(fragment.getPageElement());
 				editorModel.remove(fragment);
-				editorModel.add(index, fragment);
+				editorModel.add(index, fragment, false);
 			}
 		}
 		
@@ -435,8 +435,7 @@ public class PageEditorController extends BasicController {
 			if(index < editorModel.size()) {
 				provider.moveDownPageElement(fragment.getPageElement());
 				editorModel.remove(fragment);
-				editorModel.add(index, fragment);
-				
+				editorModel.add(index, fragment, false);
 			}
 		}
 		
@@ -524,15 +523,19 @@ public class PageEditorController extends BasicController {
 			
 			int index = editorModel.size();
 			PageElement nextElement = null;
+			boolean after = false;
 			if(sibling != null && editorModel.contains(sibling)) {
+				// dropped at the top of the target element
 				index = editorModel.indexOf(sibling);
 				nextElement = sibling.getPageElement();
 			} else if(target != null && editorModel.contains(target)) {
+				// target: dropped at the bottom of the target element
 				index = editorModel.indexOf(target);
 				nextElement = target.getPageElement();
+				after = true;
 			}
-			editorModel.add(index, fragment);
-			provider.movePageElement(fragment.getPageElement(), nextElement);
+			editorModel.add(index, fragment, after);
+			provider.movePageElement(fragment.getPageElement(), nextElement, after);
 			fragment.setEditMode(false);
 		}
 	}
