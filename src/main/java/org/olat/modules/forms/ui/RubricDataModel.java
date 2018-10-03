@@ -106,12 +106,12 @@ public class RubricDataModel extends DefaultFlexiTableDataModel<RubricRow> imple
 	public enum RubricReportCols implements FlexiColumnDef {
 		startLabel("rubric.report.start.label.title"),
 		endLabel("rubric.report.end.lable.title"),
-		numberOfNoResponses("rubric.report.number.no.responses.title"),
-		numberOfResponses("rubric.report.number.responses.title"),
-		median("rubric.report.median.title"),
-		variance("rubric.report.variance.title"),
-		stdDev("rubric.report.sdtdev.title"),
-		avg("rubric.report.avg.title");
+		numberOfNoResponses("rubric.report.number.no.responses.abrev"),
+		numberOfResponses("rubric.report.number.responses.abrev"),
+		median("rubric.report.median.abrev"),
+		variance("rubric.report.variance.abrev"),
+		stdDev("rubric.report.sdtdev.abrev"),
+		avg("rubric.report.avg.abrev");
 		
 		private final String i18nKey;
 		

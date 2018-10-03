@@ -343,6 +343,14 @@
 		font-weight: bold;
 		white-sprace: nowrap;
 	}
+	
+	.o_rubric_table_legend {
+		display: block;
+		
+		.ident {
+			font-weight: bold;
+		}
+	}
 }
 
 .o_evaluation_execution {

@@ -1,0 +1,9 @@
+<div class='o_small'>
+	#if(!$r.isEmpty($legendEntries))
+		<ul class='list-inline'>
+		#foreach($entry in $legendEntries)
+			<li><span class='ident'>$entry.abrev: </span>$entry.full</li>
+		#end
+		</ul>
+	#end
+</div>
