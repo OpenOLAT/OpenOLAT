@@ -54,7 +54,7 @@ public class PageEditorComponentRenderer extends DefaultComponentRenderer {
 		PageEditorComponent cmp = (PageEditorComponent)source;
 
 		Renderer fr = Renderer.getInstance(cmp, translator, ubu, new RenderResult(), renderer.getGlobalSettings());
-		sb.append("<div id='o_c").append(cmp.getDispatchID()).append("' class='o_page_content_editor' data-oo-content-editor-url='")
+		sb.append("<div id='o_c").append(cmp.getDispatchID()).append("' class='o_page_content_editor o_drake' data-oo-content-editor-url='")
 		  .append(fr.getUrlBuilder().getJavascriptURI()).append("'>");
 		renderFlatFragments(fr, sb, cmp, ubu, translator, renderResult, args);
 		sb.append("</div>");

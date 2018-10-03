@@ -28,9 +28,12 @@
     	if(typeof editor === "undefined") {
     		editor = new ContentEditor(this.get(0), options);
     		this.data("data-oo-ceditor", editor);
-    	} else {
+    	} else {// if the same DOM element exists
     		editor.initWindowListener();
     	}
+    	// make sure drake is destroyed after an AJAX call and only one is active at the same time
+    	destroyDrakes();
+    	registerDrake(editor.drake);
     	return editor;
 	};
 	
@@ -89,7 +92,20 @@
 				return jQuery(target).hasClass('o_page_drop');
 			},
 			moves: function (el, targetContainer, handle) {
-				return jQuery(handle).hasClass('o_page_tools_dd') ;
+				var jHandler = jQuery(handle);
+				var drag = jHandler.hasClass('o_page_tools_dd');
+				if(!drag) {
+					drag = jHandler.closest('.o_page_part.o_page_drop').length;
+				}
+				if(drag) {
+					var jEl = jQuery(el);
+					var draggedId = jEl.data('oo-page-fragment');
+					if(draggedId == null) {
+						var fragmentId = jEl.closest('.o_page_part.o_page_drop').data('oo-page-fragment');
+						jEl.data('oo-page-fragment', fragmentId);
+					}
+				}
+				return drag;
 			}
 		});
 

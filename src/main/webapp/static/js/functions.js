@@ -15,6 +15,8 @@ o_info.linkbusy = false;
 o_info.scrolling = false;
 //debug flag for this file, to enable debugging to the olat.log set JavaScriptTracingController to level debug
 o_info.debug = true;
+// o_info.drake is supervised and linked to .o_drake DOM element
+o_info.drakes = new Array();
 
 /**
  * The BLoader object can be used to :
@@ -35,7 +37,7 @@ var BLoader = {
 		jQuery('head script[src]').each(function(s,t) {
 			if (jQuery(t).attr('src').indexOf(jsURL) != -1) {
 				notLoaded = false;
-			};
+			}
 		});
 		// second check for script loaded via ajax call
 		if (jQuery.inArray(jsURL, this._ajaxLoadedJS) != -1) notLoaded = false;
@@ -538,7 +540,6 @@ function o_ainvoke(r) {
 							if (o_info.debug) o_log("c2: redraw: "+c1["cname"]+ " ("+ciid+") "+c1["hfragsize"]+" bytes, listener(s): "+c1["clisteners"]);
 							//var con = jQuery(hfrag).find('script').remove(); //Strip scripts
 							var hdrco = hdr+"\n\n"+hfrag;
-							var inscripts = '';//jQuery(hfrag).find('script');//hfrag.extractScripts();
 							
 							var replaceElement = false;
 							var newcId = "o_c"+ciid;
@@ -585,13 +586,9 @@ function o_ainvoke(r) {
 									b_changedDomEl.push(newcId);
 								}
 								newc = null;
+
+								checkDrakes();
 								
-								// execute inline scripts
-								if (inscripts != "") {
-									inscripts.each( function(val){
-										BLoader.executeGlobalJS(val, 'o_ainvoker::inscripts');}
-									);
-								}
 								if (jsol != "") {
 									BLoader.executeGlobalJS(jsol, 'o_ainvoker::jsol');
 								}
@@ -1528,6 +1525,40 @@ function o_toggleMark(el) {
 		jQuery('i', el).removeClass('o_icon_bookmark_add').addClass('o_icon_bookmark');
 	} else {
 		jQuery('i', el).removeClass('o_icon_bookmark').addClass('o_icon_bookmark_add');
+	}
+}
+
+/**
+ * Register a dragula object, the object will be associated
+ * with a DOM element with the .o_drake class. If the class
+ * is absent of the DOM, all drakes will be desstroyed.
+ * 
+ * @param drake
+ * @returns drake
+ */
+function registerDrake(drake) {
+	o_info.drakes.push(drake);
+	return drake;
+}
+
+function destroyDrakes() {
+	if(o_info.drakes !== "undefined" && o_info.drakes != null && o_info.drakes.length > 0) {
+		for(var i=o_info.drakes.length; i-->0; ) {
+			try {
+				o_info.drakes[i].destroy();
+			} catch(e) {
+				if(window.console) console.log(e);
+			}
+			o_info.drakes.pop();
+		}
+	}
+}
+
+function checkDrakes() {
+	if(o_info.drakes !== "undefined" && o_info.drakes != null && o_info.drakes.length > 0) {
+		if(jQuery(".o_drake").length == 0) {
+			destroyDrakes();
+		}
 	}
 }
 

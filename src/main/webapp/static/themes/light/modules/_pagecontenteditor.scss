@@ -191,9 +191,11 @@
 		.o_page_add_above {
 			display: none;
 		}
-		
-		box-shadow: none;
 	}
+}
+
+div.o_page_content_editor .gu-mirror, .o_page_content_editor .gu-transit {
+	box-shadow: none;
 }
 
 .o_page_container {

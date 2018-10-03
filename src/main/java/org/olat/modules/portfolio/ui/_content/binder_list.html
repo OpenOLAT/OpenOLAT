@@ -1,7 +1,7 @@
 <div class="clearfix">
 	$r.contextHelpWithWrapper("My portfolio binders")		
 </div>
-<div id="o_my_binders_list">$r.render("table")</div>
+<div id="o_my_binders_list" class="o_drake">$r.render("table")</div>
 #if($r.available("delete.binder"))
 <div class="o_button_group">
 	$r.render("delete.binder")
@@ -10,15 +10,18 @@
 <script>
 /* <![CDATA[ */ 
 jQuery(function() {
+	destroyDrakes();// there can only be one
 	var container = jQuery('#o_my_binders_list .o_table_body').get(0);
-	dragula([container], {
+	var drake = dragula([container], {
 		copy: function (el, source) {
 		    return false;
 		},
 		accepts: function (el, target) {
+			console.log('accepts');
 			return true;
 		},
 		moves: function (el, container, handle) {
+			console.log('moves');
 			return handle.classList.contains('panel-heading') || handle.classList.contains('panel-title');
 		}
 	}).on('drop', function(el, target, source, sibling) {
@@ -28,6 +31,7 @@ jQuery(function() {
 		var siblingKey = siblingId.substring(9, siblingId.length);
 		$r.openNoResponseJavaScriptCommand("drop-binder"), "dragged", draggedKey, "sibling", siblingKey);
 	});
+	registerDrake(drake);
 });
 /* ]]> */
 </script>
