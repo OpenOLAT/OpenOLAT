@@ -286,11 +286,11 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		
 		
 		if (uobject.equals("usearch") || uobject.equals("useradmin")) {
-			if(contentCtr != userSearchCtrl) {
-				activatePaneInDetailView = null;
-				contentCtr = userSearchCtrl = new UsermanagerUserSearchController(ureq, bwControl);
-				listenTo(contentCtr);
-			}
+			activatePaneInDetailView = null;
+			removeAsListenerAndDispose(userSearchCtrl);
+			contentCtr = userSearchCtrl = new UsermanagerUserSearchController(ureq, bwControl);
+			listenTo(contentCtr);
+
 			addToHistory(ureq, bwControl);
 			return contentCtr.getInitialComponent();
 		}
