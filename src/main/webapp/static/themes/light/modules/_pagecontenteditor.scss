@@ -233,9 +233,8 @@
 }
 
 .o_page_table_edition {
-	padding-right: 300px;
-	
-	
+	width: 70%;
+	float:left;
 	.o_table_title, .o_table_caption {
 		padding: 5px 5em;
 		background-color: #efefef;
@@ -255,17 +254,28 @@
 	}
 }
 
+.o_page_image_edition {
+	width: 70%;
+	float:left;
+}
+
 .o_page_side_options {
-	clear:both;
-	width: 300px;
-	padding: 5px;
-	position: absolute;
-	top: 2px;
-	right: 25px;
+	width: 30%;
+	float:left;
 	background-color: $o-editor-settings-bg;
+	border-left: 1px solid darken($o-editor-settings-bg, 25%);
+	border-bottom: 1px solid darken($o-editor-settings-bg, 25%);
+	border-radius: 0 0 0 5px;
+	padding: 5px;
+	margin-bottom: 5px;
 	z-index: 2;
 }
 
+@media (max-width: $screen-xs-max) {
+	.o_page_image_edition, .o_page_table_edition, .o_page_side_options {
+		width: 50%;
+	}
+}
 
 .o_page_add_contents {
 	margin-top: 30px;

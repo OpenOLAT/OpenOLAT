@@ -1,21 +1,25 @@
 #if($editMode)
-$r.render("image")
-<div class="o_page_side_options">
-	<label class="o_page_side_option">$r.translate("image.title")</label>
-	<div class="o_page_side_option">$r.render("image.title")</div>
-	<div class="o_page_side_option">$r.render("image.title.position")</div>
-	<div class="o_page_side_option">$r.render("image.title.style")</div>
-	
-	<label class="o_page_side_option">$r.translate("image.caption")</label>
-	<div class="o_page_side_option">$r.render("image.caption")</div>
-	
-	<label class="o_page_side_option">$r.translate("image.style")</label>
-	<div class="o_page_side_option">$r.render("image.align")</div>
-	<div class="o_page_side_option">$r.render("image.size")</div>
-	<div class="o_page_side_option">$r.render("image.style")</div>
-	<div class="o_page_side_option">$r.render("image.origin")</div>
-	<div class="o_page_side_option">$r.render("image.description")</div>
-	<div class="o_page_side_option">$r.render("image.description.content")</div>
+<div class="clearfix">
+	<div class="o_page_image_edition">
+		$r.render("image")
+	</div>	
+	<div class="o_page_side_options">
+		<label class="o_page_side_option">$r.translate("image.title")</label>
+		<div class="o_page_side_option">$r.render("image.title")</div>
+		<div class="o_page_side_option">$r.render("image.title.position")</div>
+		<div class="o_page_side_option">$r.render("image.title.style")</div>
+		
+		<label class="o_page_side_option">$r.translate("image.caption")</label>
+		<div class="o_page_side_option">$r.render("image.caption")</div>
+		
+		<label class="o_page_side_option">$r.translate("image.style")</label>
+		<div class="o_page_side_option">$r.render("image.align")</div>
+		<div class="o_page_side_option">$r.render("image.size")</div>
+		<div class="o_page_side_option">$r.render("image.style")</div>
+		<div class="o_page_side_option">$r.render("image.origin")</div>
+		<div class="o_page_side_option">$r.render("image.description")</div>
+		<div class="o_page_side_option">$r.render("image.description.content")</div>
+	</div>
 </div>
 #else
 	$r.render("imagePreview")
