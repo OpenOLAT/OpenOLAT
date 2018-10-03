@@ -140,10 +140,6 @@ public class BCCourseNodeEditController extends ActivateableTabbableDefaultContr
 		vfButton = LinkFactory.createButton("folder.view", folderContent, this);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == vfButton){
@@ -183,11 +179,15 @@ public class BCCourseNodeEditController extends ActivateableTabbableDefaultContr
 			}
 		}
 		
-		folderCtrl = new FolderRunController(namedContainer, false, ureq, getWindowControl());
-		listenTo(folderCtrl);
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), folderCtrl.getInitialComponent());
-		listenTo(cmc);
-		cmc.activate();
+		if(namedContainer == null) {
+			showWarning("warning.no.linkedfolder");
+		} else {
+			folderCtrl = new FolderRunController(namedContainer, false, ureq, getWindowControl());
+			listenTo(folderCtrl);
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), folderCtrl.getInitialComponent());
+			listenTo(cmc);
+			cmc.activate();
+		}
 	}
 	
 	private VFSSecurityCallback getSecurityCallbackWithQuota(String relPath) {
