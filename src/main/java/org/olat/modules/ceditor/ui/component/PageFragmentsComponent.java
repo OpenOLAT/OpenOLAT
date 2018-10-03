@@ -47,6 +47,9 @@ public class PageFragmentsComponent extends AbstractComponent implements Compone
 	}
 
 	public List<PageFragment> getFragments() {
+		if(fragments == null) {
+			return new ArrayList<>(1);
+		}
 		return new ArrayList<>(fragments);
 	}
 

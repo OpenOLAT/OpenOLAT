@@ -102,7 +102,6 @@
 		}).on('out', function(el, target, source) {
 			jQuery(target).removeClass('oo-accepted');
 		}).on('drop', function(el, target, source, sibling) {
-			drake.destroy();// drop trigger a reload -> clean up all and more
 			drop(el, target, source, sibling);
 		});
 		
