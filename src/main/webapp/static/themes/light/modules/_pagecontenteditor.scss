@@ -17,6 +17,7 @@
 
 .o_page_fragment_edit  {
 	position: relative;
+	display: grid;
 	
 	.o_page_tools_above {
 		height: $o-portfolio-editor-border-width;
