@@ -19,6 +19,7 @@
  */
 package org.olat.modules.forms.ui;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
@@ -49,28 +50,33 @@ public class RubricAvgRenderer implements FlexiCellRenderer {
 			URLBuilder ubu, Translator translator) {
 		if (cellValue instanceof Double) {
 			Double value = (Double) cellValue;
-			render(target, value);
+			render(target, value, translator);
 		}
 	}
 
-	public String render(Double avg) {
+	public String render(Double avg, Translator translator) {
 		StringOutput target = new StringOutput();
-		render(target, avg);
+		render(target, avg, translator);
 		return target.toString();
 	}
 
-	private void render(StringOutput target, Double value) {
+	private void render(StringOutput target, Double value, Translator translator) {
+		EvaluationFormManager evaluationFormManager = CoreSpringFactory.getImpl(EvaluationFormManager.class);
+		RubricRating rating = evaluationFormManager.getRubricRating(rubric, value);
+		
 		target.append("<div class='o_rubric_avg o_nowrap ");
-		target.append(getRatingCssClass(rubric, value));
+		String ratingCss = getRatingCssClass(rating);
+		target.append(ratingCss, ratingCss != null);
 		target.append("'>");
-		target.append("<i class='o_icon o_icon-fw ").append(getRatingIconCssClass(rubric, value)).append("'> </i> ");
+		if (ratingCss != null) {
+			target.append("<i class='o_icon o_icon-fw ").append(getRatingIconCssClass(rating)).append("' title=\"");
+			target.append(StringEscapeUtils.escapeHtml(getRatingIconExplanation(rating, rubric, translator))).append("\"> </i> ");
+		}
 		target.append(EvaluationFormFormatter.formatDouble(value));
 		target.append("</div>");
 	}
 
-	public static String getRatingCssClass(Rubric rubric, Double value) {
-		EvaluationFormManager evaluationFormManager = CoreSpringFactory.getImpl(EvaluationFormManager.class);
-		RubricRating rating = evaluationFormManager.getRubricRating(rubric, value);
+	public static String getRatingCssClass(RubricRating rating) {
 		switch (rating) {
 			case SUFFICIENT: return "o_rubric_sufficient";
 			case NEUTRAL: return "o_rubric_neutral";
@@ -78,10 +84,8 @@ public class RubricAvgRenderer implements FlexiCellRenderer {
 			default: return null;
 		}
 	}
-	
-	public static String getRatingIconCssClass(Rubric rubric, Double value) {
-		EvaluationFormManager evaluationFormManager = CoreSpringFactory.getImpl(EvaluationFormManager.class);
-		RubricRating rating = evaluationFormManager.getRubricRating(rubric, value);
+
+	public static String getRatingIconCssClass(RubricRating rating) {
 		switch (rating) {
 			case SUFFICIENT: return "o_icon_rubric_sufficient";
 			case NEUTRAL: return "o_icon_rubric_neutral";
@@ -89,6 +93,17 @@ public class RubricAvgRenderer implements FlexiCellRenderer {
 			default: return null;
 		}
 	}
+
+	public static String getRatingIconExplanation(RubricRating rating, Rubric rubric, Translator translator) {
+		
+		switch (rating) {
+			case SUFFICIENT: return translator.translate("rubric.sufficient.explanation", new String[]{rubric.getLowerBoundSufficient()+ "", rubric.getUpperBoundSufficient()+""});
+			case NEUTRAL: return translator.translate("rubric.neutral.explanation", new String[]{rubric.getLowerBoundNeutral()+ "", rubric.getUpperBoundNeutral()+""});
+			case INSUFFICIENT: return translator.translate("rubric.insufficient.explanation", new String[]{rubric.getLowerBoundInsufficient()+ "", rubric.getUpperBoundInsufficient()+""});
+			default: return null;
+		}
+	}
+	
 
 	
 }
