@@ -23,6 +23,7 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -57,9 +58,11 @@ import org.olat.ims.qti21.AssessmentItemSession;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21Service;
+import org.olat.ims.qti21.model.xml.AssessmentHtmlBuilder;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.ims.qti21.ui.assessment.model.AssessmentItemCorrection;
+import org.olat.ims.qti21.ui.assessment.model.SectionRubrics;
 import org.olat.ims.qti21.ui.components.FeedbackResultFormItem;
 import org.olat.ims.qti21.ui.components.InteractionResultFormItem;
 import org.olat.ims.qti21.ui.components.ItemBodyResultFormItem;
@@ -67,6 +70,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import uk.ac.ed.ph.jqtiplus.node.content.variable.RubricBlock;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.ModalFeedback;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.DrawingInteraction;
@@ -74,6 +78,9 @@ import uk.ac.ed.ph.jqtiplus.node.item.interaction.EndAttemptInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ExtendedTextInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.UploadInteraction;
+import uk.ac.ed.ph.jqtiplus.node.test.AbstractPart;
+import uk.ac.ed.ph.jqtiplus.node.test.AssessmentSection;
+import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 import uk.ac.ed.ph.jqtiplus.state.ItemSessionState;
@@ -126,6 +133,7 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 	
 	private BigDecimal overrideAutoScore;
 	private boolean manualScore = false;
+	private final AssessmentHtmlBuilder htmlBuilder;
 	
 	private int count = 0;
 	private final long id = CodeHelper.getRAMUniqueID();
@@ -149,6 +157,7 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 		assessmentItem = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
 		interactions = assessmentItem.getItemBody().findInteractions();
 		this.submissionDirectoryMaps = submissionDirectoryMaps;
+		htmlBuilder = new AssessmentHtmlBuilder();
 		
 		FileResourceManager frm = FileResourceManager.getInstance();
 		File fUnzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
@@ -167,6 +176,8 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 		AssessmentItemSession itemSession = correction.getItemSession();
 		AssessmentTestSession testSession = correction.getTestSession();
 		TestSessionState testSessionState = correction.getTestSessionState();
+		
+		
 		
 		answerItem = initFormExtendedTextInteraction(testPlanNodeKey, testSessionState, testSession, formLayout);	
 		formLayout.add("answer", answerItem);
@@ -278,7 +289,62 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
 			layoutCont.contextPut("interactionWrapper", wrapper);
 			layoutCont.contextPut("autoSaved", Boolean.valueOf(isAutoSaved(testPlanNodeKey, testSessionState)));
+			
+			List<SectionRubrics> sectionRubrics = initSectionsRubrics();
+			layoutCont.contextPut("sectionRubrics", sectionRubrics);
 		}
+	}
+	
+	private List<SectionRubrics> initSectionsRubrics() {
+		List<SectionRubrics> sectionParentLine = new ArrayList<>();
+		
+		try {
+			AssessmentTest assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
+			for(TestPlanNode parentNode=correction.getItemNode().getParent(); parentNode.getParent() != null; parentNode = parentNode.getParent()) {
+				AbstractPart part = assessmentTest.lookupFirstDescendant(parentNode.getIdentifier());
+				if(part instanceof AssessmentSection) {
+					AssessmentSection section = (AssessmentSection)part;
+					if(section.getVisible()) {
+						boolean writeRubrics = false;
+						for(RubricBlock rubric:section.getRubricBlocks()) {
+							if(!rubric.getBlocks().isEmpty()) {
+								writeRubrics = true;
+							}
+						}
+						
+						if(writeRubrics) {
+							String rubrics = getSectionRubrics(section);
+							String openLabel;
+							if(StringHelper.containsNonWhitespace(section.getTitle())) {
+								openLabel = translate("show.rubric.with.title", new String[]{ section.getTitle() });
+							} else {
+								openLabel = translate("show.rubric");
+							}
+							sectionParentLine.add(new SectionRubrics(section.getIdentifier().toString(), section.getTitle(), rubrics, openLabel));
+						}
+					}
+				}
+			}
+			
+			if(sectionParentLine.size() > 1) {
+				Collections.reverse(sectionParentLine);
+			}
+		} catch (Exception e) {
+			logError("", e);
+		}
+		
+		return sectionParentLine;
+	}
+	
+	private String getSectionRubrics(AssessmentSection section) {
+		StringBuilder sb = new StringBuilder(1024);
+		for(RubricBlock rubricBlock:section.getRubricBlocks()) {
+			String content = htmlBuilder.blocksString(rubricBlock.getBlocks());
+			if(StringHelper.containsNonWhitespace(content)) {
+				sb.append("<div class='rubric'>").append(content).append("</div>");
+			}
+		}
+		return sb.toString();
 	}
 	
 	private ItemBodyResultFormItem initFormExtendedTextInteraction(TestPlanNodeKey testPlanNodeKey,

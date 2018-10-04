@@ -343,6 +343,13 @@ img.o_hotspot_responsive[usemap] {
 	margin: 0 0 0.5em 0;		
 }
 
+.o_assessmentsection_rubrics_correction_wrapper {
+	background: $o-qti-item-title-bg;
+	border-left: 1px solid $o-qti-item-title-border-color;
+	border-right: 1px solid $o-qti-item-title-border-color;
+	padding: $padding-small-vertical $padding-small-horizontal;
+}
+
 .o_info.o_assessmentsection_rubrics {
 	margin: $padding-small-vertical ($padding-small-horizontal * -1);
 	position: relative;
