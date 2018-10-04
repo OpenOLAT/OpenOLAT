@@ -31,6 +31,8 @@ import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.Select;
 
 /**
@@ -256,7 +258,11 @@ public class CalendarPage {
 	public CalendarPage openDetails(String subject) {
 		By titleBy = By.xpath("//div[@class='o_cal']//span[contains(text(),'" + subject + "')]");
 		OOGraphene.waitElement(titleBy, 5, browser);
-		browser.findElement(titleBy).click();
+		if(browser instanceof FirefoxDriver) {
+			new Actions(browser).click(browser.findElement(titleBy)).click().build().perform();
+		} else {
+			browser.findElement(titleBy).click();
+		}
 		OOGraphene.waitCallout(browser);
 		return this;
 	}
@@ -265,9 +271,13 @@ public class CalendarPage {
 		LocalDate date = LocalDate.now().withDayOfMonth(day);
 		String dateString = date.format(oocurenceIdFormatter);
 
-		By titleBy = By.xpath("//div[@class='o_cal']//div[contains(@id,'xOccOOccOx_" + dateString + "')]//span[contains(text(),'" + subject + "')]");
+		By titleBy = By.xpath("//div[@class='o_cal']//div[contains(@id,'xOccOOccOx_" + dateString + "')][div/span[contains(text(),'" + subject + "')]]");
 		OOGraphene.waitElement(titleBy, 5, browser);
-		browser.findElement(titleBy).click();
+		if(browser instanceof FirefoxDriver) {
+			new Actions(browser).click(browser.findElement(titleBy)).click().build().perform();
+		} else {
+			browser.findElement(titleBy).click();
+		}
 		OOGraphene.waitCallout(browser);
 		return this;
 	}

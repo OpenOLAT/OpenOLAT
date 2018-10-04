@@ -104,6 +104,7 @@ public class QTI21CorrectionPage {
 		OOGraphene.waitElement(confirmButtonBy, browser);
 		browser.findElement(confirmButtonBy).click();
 		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
 }

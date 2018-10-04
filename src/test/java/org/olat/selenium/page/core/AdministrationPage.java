@@ -180,6 +180,7 @@ public class AdministrationPage {
 		selectModules();
 		
 		By taxonomyBy = By.cssSelector(".o_sel_taxonomy span.o_tree_level_label_leaf>a");
+		OOGraphene.waitElement(taxonomyBy, browser);
 		browser.findElement(taxonomyBy).click();
 		OOGraphene.waitBusy(browser);
 		

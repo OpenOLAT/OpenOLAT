@@ -35,6 +35,7 @@ import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.firefox.FirefoxDriver;
 
 /**
  * 
@@ -352,6 +353,17 @@ public class OOGraphene {
 		timeEls.get(0).sendKeys(Integer.toString(hour));
 		timeEls.get(1).clear();
 		timeEls.get(1).sendKeys(Integer.toString(minute));
+	}
+	
+	public static final void flexiTableSelectAll(WebDriver browser) {
+		By selectAll = By.xpath("//div[contains(@class,'o_table_checkall')]/label/a[i[contains(@class,'o_icon_check_on')]]/span");
+		waitElement(selectAll, browser);
+		if(browser instanceof FirefoxDriver) {
+			OOGraphene.waitingALittleLonger();// link is obscured by the scroll bar
+		}
+		browser.findElement(selectAll).click();
+		waitBusy(browser);
+		
 	}
 	
 	public static final Locale getLocale(WebDriver browser) {

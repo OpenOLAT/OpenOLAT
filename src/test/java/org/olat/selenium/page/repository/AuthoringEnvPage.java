@@ -197,6 +197,7 @@ public class AuthoringEnvPage {
 		if(saveButton.isEnabled()) {
 			saveButton.click();
 			OOGraphene.waitBusy(browser);
+			OOGraphene.waitModalDialogDisappears(browser);
 			OOGraphene.waitElement(RepositoryEditDescriptionPage.generaltabBy, browser);
 		}
 		return this;
@@ -227,8 +228,8 @@ public class AuthoringEnvPage {
 	 * @return
 	 */
 	public CoursePageFragment clickToolbarRootCrumb() {
-		OOGraphene.closeBlueMessageWindow(browser);
-		By toolbarBackBy = By.xpath("//li[contains(@class,'o_breadcrumb_back')]/following-sibling::li/a");
+		By toolbarBackBy = By.xpath("//div[contains(@class,'o_breadcrumb')]/ol[contains(@class,'breadcrumb')]/li/a[contains(@onclick,'crumb_0')]");
+		OOGraphene.waitingALittleBit();// firefox will click the button without effect
 		browser.findElement(toolbarBackBy).click();
 		OOGraphene.waitBusy(browser);
 		return new CoursePageFragment(browser);

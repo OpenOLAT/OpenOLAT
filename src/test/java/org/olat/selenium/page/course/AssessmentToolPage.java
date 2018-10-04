@@ -212,10 +212,7 @@ public class AssessmentToolPage {
 	}
 	
 	public AssessmentToolPage makeAllVisible() {
-		By selectAll = By.xpath("//div[contains(@class,'o_table_checkall')]/label/a[i[contains(@class,'o_icon_check_on')]]");
-		OOGraphene.waitElement(selectAll, browser);
-		browser.findElement(selectAll).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.flexiTableSelectAll(browser);
 		
 		By bulkBy = By.cssSelector("a.btn.o_sel_assessment_bulk_visible");
 		browser.findElement(bulkBy).click();

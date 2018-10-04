@@ -23,6 +23,7 @@ import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.interactions.Actions;
 
 /**
@@ -45,8 +46,10 @@ public class LicensesAdminstrationPage {
 
 		WebElement resourceCheckEl = browser.findElement(resourceCheckBy);
 		WebElement resourceLabelEl = browser.findElement(resourceLabelBy);
-		new Actions(browser).moveToElement(resourceLabelEl).build().perform();
-		OOGraphene.waitingALittleBit();
+		if(browser instanceof ChromeDriver) {
+			new Actions(browser).moveToElement(resourceLabelEl).build().perform();
+			OOGraphene.waitingALittleBit();
+		}
 		
 		OOGraphene.check(resourceLabelEl, resourceCheckEl, Boolean.TRUE);
 		OOGraphene.waitBusy(browser);

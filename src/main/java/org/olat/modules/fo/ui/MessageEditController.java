@@ -175,6 +175,7 @@ public class MessageEditController extends FormBasicController {
 		titleEl.setNotEmptyCheck("error.field.not.empty");
 		bodyEl = uifactory.addRichTextElementForStringData("msgBody", "msg.body", message.getBody(), 15, -1, true, null, null,
 				formLayout, ureq.getUserSession(), getWindowControl());
+		bodyEl.setElementCssClass("o_sel_forum_message_body");
 		bodyEl.setMandatory(true);
 		bodyEl.setNotEmptyCheck("error.field.not.empty");
 		bodyEl.setMaxLength(MAX_BODY_LENGTH);

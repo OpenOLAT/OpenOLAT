@@ -87,6 +87,11 @@ public class UserRestClient {
 		return createAuthor("Selena");
 	}
 	
+	public UserVO createRandomAuthor()
+	throws IOException, URISyntaxException {
+		return createAuthor("Selena-" + UUID.randomUUID());
+	}
+	
 	public UserVO createAuthor(String name)
 	throws IOException, URISyntaxException {
 		RestConnection restConnection = new RestConnection(deploymentUrl);
