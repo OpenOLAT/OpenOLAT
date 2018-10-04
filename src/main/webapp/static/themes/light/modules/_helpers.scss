@@ -386,3 +386,25 @@
 	padding: 25px;
 }
 
+/* Drag&Drop cursor */
+.o_dragable, %o_dragable {
+	cursor: move; /* fallback: no `url()` support or images disabled */
+    cursor: -webkit-grab; /* Chrome 1-21, Safari 4+ */
+    cursor: -moz-grab; /* Firefox 1.5-26 */
+    cursor: grab; /* W3C standards syntax, should come least */
+    &:active {
+	    cursor: -webkit-grabbing;
+    	cursor: -moz-grabbing;
+    	cursor: grabbing;
+    }
+}
+.o_draging, %o_draging {
+    cursor: -webkit-grabbing;
+   	cursor: -moz-grabbing;
+   	cursor: grabbing;
+   	&:active {
+	    cursor: -webkit-grabbing;
+    	cursor: -moz-grabbing;
+    	cursor: grabbing;
+    }
+ }

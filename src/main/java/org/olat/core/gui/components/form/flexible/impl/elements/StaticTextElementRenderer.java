@@ -37,7 +37,7 @@ import org.olat.core.util.StringHelper;
 
 /**
  * Description:<br>
- * TODO: patrickb Class Description for StaticTextElementRenderer
+ * This class renders the StaticTextElementComponent in a flexi form context
  * 
  * <P>
  * Initial Date:  02.02.2007 <br>
@@ -55,12 +55,12 @@ class StaticTextElementRenderer extends DefaultComponentRenderer {
 		String id = steC.getFormDispatchId();
 		String value = steC.getValue();
 		
-		sb.append("<p id=\"").append(id).append("\" ");
+		sb.append("<").append(steC.getDomWrapperElement().name()).append(" id=\"").append(id).append("\" ");
 		sb.append(FormJSHelper.getRawJSFor(steC.getRootForm(), id, steC.getAction()));
 		sb.append(" class='form-control-static ");
 		if(StringHelper.containsNonWhitespace(steC.getElementCssClass())) {
 			sb.append(steC.getElementCssClass());
 		}
-		sb.append("'>").append(value).append("</p>");
+		sb.append("'>").append(value).append("</").append(steC.getDomWrapperElement().name()).append(">");
 	}
 }

@@ -22,11 +22,14 @@ package org.olat.modules.ceditor.model;
 /**
  * 
  * Initial date: 5 sept. 2018<br>
+ * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
 public enum ImageHorizontalAlignment {
-	left,
-	middle,
-	right
+	left, 
+	middle, 
+	right, 
+	leftfloat, 
+	rightfloat
 }

@@ -25,6 +25,7 @@
 package org.olat.core.gui.components.form.flexible.elements;
 
 import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.render.DomWrapperElement;
 
 public interface StaticTextElement extends FormItem{
 	
@@ -39,4 +40,16 @@ public interface StaticTextElement extends FormItem{
 	 * @param replacementValue
 	 */
 	public void setValue(String replacementValue);
+
+	/**
+	 * The DOM element type that is used to wrap this StaticTextElementComponent
+	 * DomWrapperElement.p is the default setting
+	 * @return
+	 */
+	public DomWrapperElement getDomWrapperElement();
+	
+	/**
+	 * @param domWrapperElement The DOM wrapper element. 
+	 */
+	public void setDomWrapperElement(DomWrapperElement domWrapperElement);
 }

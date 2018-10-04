@@ -19,10 +19,8 @@
  */
 package org.olat.modules.portfolio.ui.media;
 
-import java.io.File;
 import java.util.List;
 
-import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -32,7 +30,6 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.image.ImageFormItem;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
@@ -46,7 +43,6 @@ import org.olat.modules.ceditor.model.ImageSize;
 import org.olat.modules.ceditor.model.ImageTitlePosition;
 import org.olat.modules.ceditor.ui.PageEditorController;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
-import org.olat.modules.portfolio.Media;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.model.MediaPart;
 import org.olat.modules.portfolio.model.StandardMediaRenderingHints;
@@ -64,10 +60,10 @@ public class ImageMediaEditorController extends FormBasicController implements P
 			ImageTitlePosition.above.name(), ImageTitlePosition.top.name(), ImageTitlePosition.centered.name(), ImageTitlePosition.bottom.name()
 		};
 	private static final String[] alignmentKeys = new String[]{
-			ImageHorizontalAlignment.left.name(), ImageHorizontalAlignment.middle.name(), ImageHorizontalAlignment.right.name()
+			ImageHorizontalAlignment.left.name(), ImageHorizontalAlignment.middle.name(),ImageHorizontalAlignment.right.name(), ImageHorizontalAlignment.leftfloat.name(), ImageHorizontalAlignment.rightfloat.name()
 		};
 	private static final String[] sizeKeys = new String[] {
-			ImageSize.none.name(), ImageSize.small.name(), ImageSize.medium.name(), ImageSize.fill.name()
+			ImageSize.none.name(), ImageSize.small.name(), ImageSize.medium.name(), ImageSize.large.name(), ImageSize.fill.name()
 		};
 	private static final String[] onKeys = new String[] { "on" };
 	
@@ -113,14 +109,7 @@ public class ImageMediaEditorController extends FormBasicController implements P
 	}
 
 	@Override
-	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		Media media = mediaPart.getMedia();
-		File mediaDir = new File(FolderConfig.getCanonicalRoot(), media.getStoragePath());
-		File mediaFile = new File(mediaDir, media.getRootFilename());
-		ImageFormItem imageEl = new ImageFormItem(ureq.getUserSession(), "image");
-		imageEl.setMedia(mediaFile);
-		formLayout.add("image", imageEl);
-		
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {		
 		imagePreview = new ImageMediaController(ureq, getWindowControl(), mediaPart, new StandardMediaRenderingHints());
 		listenTo(imagePreview);
 		((FormLayoutContainer)formLayout).getFormItemComponent().put("imagePreview", imagePreview.getInitialComponent());
@@ -155,13 +144,13 @@ public class ImageMediaEditorController extends FormBasicController implements P
 		captionEl.addActionListener(FormEvent.ONCHANGE);
 
 		String[] alignmentValues = new String[] {
-				translate("image.align.left"), translate("image.align.middle"), translate("image.align.right")	
+				translate("image.align.left"), translate("image.align.middle"), translate("image.align.right"), translate("image.align.leftfloat"), translate("image.align.rightfloat")	
 		};
 		alignmentEl = uifactory.addDropdownSingleselect("image.align", "image.align", formLayout, alignmentKeys, alignmentValues, null);
 		alignmentEl.addActionListener(FormEvent.ONCHANGE);
 		
 		String[] sizeValues = new String[] {
-				translate("image.size.none"), translate("image.size.small"), translate("image.size.medium"), translate("image.size.fill")	
+				translate("image.size.none"), translate("image.size.small"), translate("image.size.medium"), translate("image.size.large"), translate("image.size.fill")	
 		};
 		sizeEl = uifactory.addDropdownSingleselect("image.size", "image.size", formLayout, sizeKeys, sizeValues, null);
 		sizeEl.addActionListener(FormEvent.ONCHANGE);

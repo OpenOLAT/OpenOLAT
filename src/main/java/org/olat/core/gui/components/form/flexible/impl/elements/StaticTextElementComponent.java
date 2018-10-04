@@ -28,6 +28,7 @@ import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
+import org.olat.core.gui.render.DomWrapperElement;
 
 class StaticTextElementComponent extends FormBaseComponentImpl {
 
@@ -54,6 +55,15 @@ class StaticTextElementComponent extends FormBaseComponentImpl {
 
 	public int getAction() {
 		return wrapper.getAction();
+	}
+	
+	/**
+	 * The DOM element type that is used to wrap this StaticTextElementComponent
+	 * DomWrapperElement.p is the default setting
+	 * @return
+	 */
+	public DomWrapperElement getDomWrapperElement() {
+		return wrapper.getDomWrapperElement();
 	}
 
 }

@@ -33,6 +33,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.render.DomWrapperElement;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
@@ -98,6 +99,8 @@ public class TitleEditorController extends FormBasicController implements PageEl
 		titleItem.getEditorConfiguration().disableMenuAndMenuBar();
 		
 		staticItem = uifactory.addStaticTextElement(cmpId + "_static", contentOrExample(content), formLayout);
+		staticItem.setDomWrapperElement(DomWrapperElement.div); // content contains multiple P elements
+
 		flc.getFormItemComponent().contextPut("cmpId", cmpId);
 	}
 

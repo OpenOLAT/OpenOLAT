@@ -3,16 +3,17 @@
 	.o_toolbar  	{
 		border:none;
 	}
-	.o_page_part {
-		border: $o-panel-placeholder-border-width solid transparent;
-		&:hover {
-			border: $o-panel-placeholder-border-width dotted $o-portfolio-editor-border-color;
-		}
-		/* visually compensate for border 
-		margin-left: -$o-panel-placeholder-border-width;
-		margin-right: -$o-panel-placeholder-border-width;
-		*/
+}
+.o_page_content_editor .o_page_part,
+.gu-mirror {
+	border: $o-panel-placeholder-border-width solid transparent;
+	&:hover {
+		border: $o-panel-placeholder-border-width dotted $o-portfolio-editor-border-color;    
 	}
+	/* visually compensate for border 
+	margin-left: -$o-panel-placeholder-border-width;
+	margin-right: -$o-panel-placeholder-border-width;
+	*/
 }
 
 .o_page_fragment_edit  {
@@ -91,6 +92,8 @@
 			-webkit-background-size: 3px 3px;
 			-moz-background-size: 3px 3px;
 			background-size: 3px 3px;
+			
+			@extend %o_dragable;
 		}
 		
 		a {				
@@ -217,13 +220,35 @@ div.o_page_content_editor .gu-mirror, .o_page_content_editor .gu-transit {
 
 .o_page_container_slot {
 	box-sizing: border-box;
-	border: 1px solid $o-editor-hover-border-color;
 	margin: 0 -1px -1px 0;
 	padding: 10px;
 }
+.o_page_container {
+	.o_page_container_slot {
+		border: $o-panel-placeholder-border-width dotted $o-editor-container-border-color;
+	}
+	&:hover .o_page_container_slot {
+		/* bug in web-kit: does not work when draging from outside */
+		border: $o-panel-placeholder-border-width dotted $o-editor-hover-border-color;    
+	}
+}
 
-.o_page_container_slot.oo-accepted, .o_page_part.oo-accepted {
-	background-color: $o-editor-drag-accepted-color;
+/* d&d styles */
+.o_page_drop {
+	@extend %o_dragable;
+}
+.gu-transit {
+	border: $o-panel-placeholder-border-width dotted $o-editor-drag-accepted-color;    	
+ 	opacity: 0.4;
+  	-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=40)";
+  	filter: alpha(opacity=40);
+}
+.gu-mirror {
+	@extend %o_draging;
+	border: $o-panel-placeholder-border-width dotted $o-portfolio-editor-border-color;    	
+  	opacity: 0.8;
+  	-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=80)";
+  	filter: alpha(opacity=80);
 }
 
 .o_page_add_callout {
@@ -281,6 +306,7 @@ div.o_page_content_editor .gu-mirror, .o_page_content_editor .gu-transit {
 }
 
 .o_page_add_contents {
+	clear: both;
 	margin-top: 30px;
 }
 

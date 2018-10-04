@@ -31,6 +31,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
+import org.olat.core.gui.render.DomWrapperElement;
 import org.olat.core.util.ValidationStatus;
 
 /**
@@ -45,7 +46,8 @@ public class StaticTextElementImpl extends FormItemImpl implements StaticTextEle
 
 	private String value;
 	private StaticTextElementComponent component;
-
+	private DomWrapperElement domWrapperElement = DomWrapperElement.p;
+	
 	public StaticTextElementImpl(String name, String value) {
 		super(name);
 		this.value = value;
@@ -95,4 +97,15 @@ public class StaticTextElementImpl extends FormItemImpl implements StaticTextEle
 		value = replacementValue;
 		getFormItemComponent().setDirty(true);
 	}
+	
+	@Override
+	public DomWrapperElement getDomWrapperElement() {
+		return domWrapperElement;
+	}
+
+	@Override
+	public void setDomWrapperElement(DomWrapperElement domWrapperElement) {
+		this.domWrapperElement = domWrapperElement;
+	}
+
 }

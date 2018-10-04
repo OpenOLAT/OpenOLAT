@@ -36,6 +36,7 @@ import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.render.DomWrapperElement;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -131,6 +132,7 @@ public class HTMLRawEditorController extends FormBasicController implements Page
 
 		String formattedContent = Formatter.formatLatexFormulas(content);
 		staticItem = uifactory.addStaticTextElement(cmpId + "_static", formattedContent, formLayout);
+		staticItem.setDomWrapperElement(DomWrapperElement.div); // content contains multiple P elements
 		
 		((FormLayoutContainer)formLayout).contextPut("htmlCmpId", cmpId);
 	}

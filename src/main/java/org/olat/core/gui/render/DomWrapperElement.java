@@ -17,18 +17,16 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.ceditor.model;
+package org.olat.core.gui.render;
 
 /**
+ * Elements used to wrap content in the GUI, used for DOM replacement. 
  * 
- * Initial date: 5 sept. 2018<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial date: 4 October 2018<br>
+ * 
+ * @author gnaegi, gnaegi@frentix.com, http://www.frentix.com
  *
  */
-public enum ImageSize {
-	none,
-	small,
-	medium,
-	large,
-	fill
+public enum DomWrapperElement {
+	div, span, p
 }
