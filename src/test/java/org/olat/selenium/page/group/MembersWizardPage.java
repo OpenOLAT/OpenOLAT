@@ -27,6 +27,7 @@ import org.olat.user.restapi.UserVO;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.firefox.FirefoxDriver;
 
 /**
  * Drive the wizard to add members
@@ -94,9 +95,15 @@ public class MembersWizardPage {
 		By searchBy = By.cssSelector(".o_sel_usersearch_searchform a.btn-default");
 		OOGraphene.clickAndWait(searchBy, browser);
 		
+		// select all
 		By selectAll = By.xpath("//div[contains(@class,'modal')]//div[contains(@class,'o_table_checkall')]/label/a[i[contains(@class,'o_icon_check_on')]]");
-		OOGraphene.waitElement(selectAll, 5, browser);
+		OOGraphene.waitElement(selectAll, browser);
+		if(browser instanceof FirefoxDriver) {
+			OOGraphene.waitingALittleLonger();// link is obscured by the scroll bar
+		}
 		browser.findElement(selectAll).click();
+		OOGraphene.waitBusy(browser);
+		
 		return this;
 	}
 	
