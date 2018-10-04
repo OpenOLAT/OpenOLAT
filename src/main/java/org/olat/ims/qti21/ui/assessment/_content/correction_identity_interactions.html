@@ -2,6 +2,44 @@
 	<div class="o_assessment_item_not_final o_warning">$r.translate("warning.not.submitted")
 	 #if($r.isTrue($autoSaved))<br>$r.translate("warning.not.submitted.autosave")#end</div>
 #end
+
+#if($r.isNotEmpty($sectionRubrics))
+	<div class='o_assessmentsection_rubrics_correction_wrapper'>
+	#foreach($sectionRubric in $sectionRubrics)
+		<div class='o_assessmentsection_rubric_wrapper'>
+			<a id='$sectionRubric.identifier' href='javascript:;' class='o_toogle_rubrics translated'><i class='o_icon o_icon-fw o_icon_open_togglebox'> </i>
+				<span>$sectionRubric.openLabel</span></a>
+		  	<div id='d${sectionRubric.identifier}' class='o_info o_assessmentsection_rubrics clearfix o_hide'>
+		  		#if($r.isNotEmpty($sectionRubric.title))
+					<h4>$sectionRubric.title</h4>
+				#end
+				<div class='rubric'>$sectionRubric.rubrics</div>
+				<a id='h${sectionRubric.identifier}' href='javascript:;' class='o_toogle_rubrics o_hide'><span>$r.translate("hide.rubric.short")</span></a>
+			</div>
+			<script>
+			/* <![CDATA[ */ 
+			jQuery(function() {
+				jQuery('#${sectionRubric.identifier}, #h${sectionRubric.identifier}').on('click', function(linkIndex, linkEl) {
+					jQuery('#d${sectionRubric.identifier}').each(function(index, el) {
+						var current = jQuery(el).attr('class');
+						if(current.indexOf('o_hide') >= 0) {
+							jQuery(el).removeClass('o_hide').addClass('o_show');
+							jQuery('a#${sectionRubric.identifier}.translated i').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+							jQuery('a#${sectionRubric.identifier}.translated span').html('$r.translate("hide.rubric")');
+						} else {
+							jQuery(el).removeClass('o_show').addClass('o_hide');
+							jQuery('a#${sectionRubric.identifier}.translated i').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+							jQuery('a#${sectionRubric.identifier}.translated span').html('${sectionRubric.openLabel}');
+						}
+					});
+				});
+			});
+			/* ]]> */
+			</script>
+		</div>
+	#end
+	</div>
+#end
 <div class="o_qti_item_body clearfix">$r.render("answer")</div>
 
 #if($r.visible("solution"))
