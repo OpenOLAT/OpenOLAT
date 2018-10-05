@@ -9,7 +9,7 @@ create table o_qual_analysis_presentation (
    q_analysis_segment varchar(100),
    q_search_params text,
    q_heatmap_grouping text,
-   q_heatmap_insufficient_only number boolean default false,
+   q_heatmap_insufficient_only boolean default false,
    fk_form_entry bigint not null,
    primary key (id)
 );
