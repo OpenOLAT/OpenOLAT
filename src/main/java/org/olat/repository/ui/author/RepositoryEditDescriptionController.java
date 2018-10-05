@@ -197,8 +197,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		UserSession usess = ureq.getUserSession();
-		
-		setFormContextHelp("Info Page: Add Meta Data");
+		setFormContextHelp("Set up info page");
 		formLayout.setElementCssClass("o_sel_edit_repositoryentry");
 
 		String id = repositoryEntry.getResourceableId() == null ? "-" : repositoryEntry.getResourceableId().toString();
