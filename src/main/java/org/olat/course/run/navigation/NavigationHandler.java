@@ -359,7 +359,7 @@ public class NavigationHandler implements Disposable {
 			// calculate the NodeClickedRef
 			// 1. get the correct (new) nodeevaluation
 			NodeEvaluation nodeEval = (NodeEvaluation) newCalledTreeNode.getUserObject();
-			if (nodeEval.getCourseNode() != courseNode) {
+			if (nodeEval.getCourseNode() != null && !nodeEval.getCourseNode().equals(courseNode)) {
 				throw new AssertException("error in structure");
 			}
 			if (!nodeEval.isVisible()) {
