@@ -71,7 +71,7 @@
 				} else {
 					var edited = jQuery(e.target).closest(".o_page_fragment_edit").length > 0
 						|| jQuery(e.target).closest(".o_page_side_options").length > 0;
-					if(!edited) {
+					if(!edited && jQuery(".o_layered_panel .modal-dialog").length == 0) {
 						o_XHREvent(componentUrl, false, false, 'cid', 'close_edit_fragment');
 					}
 				}

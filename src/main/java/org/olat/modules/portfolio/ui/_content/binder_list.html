@@ -17,11 +17,9 @@ jQuery(function() {
 		    return false;
 		},
 		accepts: function (el, target) {
-			console.log('accepts');
 			return true;
 		},
 		moves: function (el, container, handle) {
-			console.log('moves');
 			return handle.classList.contains('panel-heading') || handle.classList.contains('panel-title');
 		}
 	}).on('drop', function(el, target, source, sibling) {
