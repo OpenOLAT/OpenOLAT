@@ -54,7 +54,7 @@ public class EdubaseConfigController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("pane.tab.config");
-		setFormContextHelp("KnowledgeTransfer#_edubase");
+		setFormContextHelp("Knowledge Transfer#_edubase");
 		
 		boolean descriptionEnabled = config.getBooleanSafe(EdubaseCourseNode.CONFIG_DESCRIPTION_ENABLED);
 		String[] enableValues = new String[] { translate("on") };

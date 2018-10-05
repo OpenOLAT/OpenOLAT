@@ -88,7 +88,7 @@ public class EdubaseBookSectionListController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("pane.tab.book.section.list");
-		setFormContextHelp("KnowledgeTransfer#_edubase");
+		setFormContextHelp("Knowledge Transfer#_edubase");
 
 		String page = velocity_root + "/bookSectionList.html";
 		bookSectionsCont = FormLayoutContainer.createCustomFormLayout("bookSections", getTranslator(), page);

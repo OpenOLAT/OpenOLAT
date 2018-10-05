@@ -116,6 +116,7 @@ public class LicenseAdminConfigController extends FormBasicController {
 	private void initGeneralElements() {
 		FormLayoutContainer generalCont = FormLayoutContainer.createDefaultFormLayout("general", getTranslator());
 		generalCont.setFormTitle(translate("admin.menu.title"));
+		generalCont.setFormContextHelp("Licenses");
 		generalCont.setRootForm(mainForm);
 		generalCont.setElementCssClass("o_sel_license_general");
 		flc.add("general", generalCont);
