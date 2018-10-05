@@ -823,7 +823,7 @@ public class BinderListController extends FormBasicController
 	private static class BinderCssDelegate extends DefaultFlexiTableCssDelegate {
 		@Override
 		public String getRowCssClass(FlexiTableRendererType type, int pos) {
-			return "o_portfolio_entry";
+			return "o_portfolio_entry o_dragable";
 		}
 	}
 	

@@ -746,20 +746,6 @@ public class PageRunController extends BasicController implements TooledControll
 			ParagraphPageElementHandler paragraphHandler = new ParagraphPageElementHandler();
 			handlers.add(paragraphHandler);
 			creationHandlers.add(paragraphHandler);
-			//handler for HR code
-			SpacerElementHandler hrHandler = new SpacerElementHandler();
-			handlers.add(hrHandler);
-			creationHandlers.add(hrHandler);
-			//handler for container
-			ContainerHandler containerHandler = new ContainerHandler();
-			handlers.add(containerHandler);
-			creationHandlers.add(containerHandler);
-			//handler for form
-			EvaluationFormHandler formHandler = new EvaluationFormHandler();
-			handlers.add(formHandler);
-			//handler for HTML code
-			HTMLRawPageElementHandler htlmRawHandler = new HTMLRawPageElementHandler();
-			handlers.add(htlmRawHandler);
 			// handler for table
 			TablePageElementHandler tableHandler = new TablePageElementHandler();
 			handlers.add(tableHandler);
@@ -775,10 +761,25 @@ public class PageRunController extends BasicController implements TooledControll
 					}
 				}
 			}
+			//handler for form
+			EvaluationFormHandler formHandler = new EvaluationFormHandler();
+			handlers.add(formHandler);
 			
 			//add the hook to pick media from the media center
 			creationHandlers.add(new OtherArtefactsHandler());
-			creationHandlers.add(htlmRawHandler);// at the end
+			
+			//handler for HR code
+			SpacerElementHandler hrHandler = new SpacerElementHandler();
+			handlers.add(hrHandler);
+			creationHandlers.add(hrHandler);
+			//handler for container
+			ContainerHandler containerHandler = new ContainerHandler();
+			handlers.add(containerHandler);
+			creationHandlers.add(containerHandler);
+			//handler for HTML code
+			HTMLRawPageElementHandler htlmRawHandler = new HTMLRawPageElementHandler();
+			handlers.add(htlmRawHandler);
+			creationHandlers.add(htlmRawHandler);// at the end, legacy
 		}
 
 		@Override
