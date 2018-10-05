@@ -39,6 +39,7 @@ import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.quality.QualityDataCollectionLight;
 import org.olat.modules.quality.QualityDataCollectionStatus;
 import org.olat.modules.quality.analysis.AnalysisSearchParameter;
+import org.olat.modules.quality.analysis.AnlaysisFigures;
 import org.olat.modules.quality.analysis.AvailableAttributes;
 import org.olat.modules.quality.analysis.GroupBy;
 import org.olat.modules.quality.analysis.GroupedStatistic;
@@ -81,6 +82,21 @@ public class AnalysisFilterDAO {
 		appendParameters(query, searchParams);
 		return query.getResultList().get(0);
 	};
+
+	AnlaysisFigures loadAnalyticFigures(AnalysisSearchParameter searchParams) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select new org.olat.modules.quality.analysis.model.AnalysisFiguresImpl(");
+		sb.append("       count(distinct collection.key)");
+		sb.append("     , count(distinct context.evaluationFormParticipation.key) + count(distinct context.evaluationFormSession.key)");
+		sb.append("       )");
+		appendFrom(sb, searchParams);
+		appendWhere(sb, searchParams);
+		
+		TypedQuery<AnlaysisFigures> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), AnlaysisFigures.class);
+		appendParameters(query, searchParams);
+		return query.getResultList().get(0);
+	}
 
 	List<String> loadContextLocations(AnalysisSearchParameter searchParams) {
 		QueryBuilder sb = new QueryBuilder();
@@ -161,7 +177,7 @@ public class AnalysisFilterDAO {
 		return query.getResultList();
 	}
 
-	public List<String> loadContextTaxonomyLevelPathes(AnalysisSearchParameter searchParams) {
+	List<String> loadContextTaxonomyLevelPathes(AnalysisSearchParameter searchParams) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select distinct taxonomyLevel.materializedPathKeys");
 		appendFrom(sb, searchParams);
@@ -172,18 +188,6 @@ public class AnalysisFilterDAO {
 				.createQuery(sb.toString(), String.class);
 		appendParameters(query, searchParams);
 		return query.getResultList();
-	}
-
-	Long loadDataCollectionCount(AnalysisSearchParameter searchParams) {
-		QueryBuilder sb = new QueryBuilder();
-		sb.append("select count(distinct collection.key)");
-		appendFrom(sb, searchParams);
-		appendWhere(sb, searchParams);
-		
-		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Long.class);
-		appendParameters(query, searchParams);
-		return query.getResultList().get(0);
 	}
 	
 	List<String> loadTopicOrganisationPaths(AnalysisSearchParameter searchParams) {

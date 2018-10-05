@@ -55,8 +55,8 @@ public interface QualityAnalysisService {
 
 	public AvailableAttributes getAvailableAttributes(AnalysisSearchParameter searchParams);
 
-	public Long loadFilterDataCollectionCount(AnalysisSearchParameter searchParams);
-
+	public AnlaysisFigures loadFigures(AnalysisSearchParameter searchParams);
+	
 	public List<Organisation> loadTopicOrganisations(AnalysisSearchParameter searchParams, boolean withParents);
 
 	public List<Curriculum> loadTopicCurriculums(AnalysisSearchParameter searchParams);

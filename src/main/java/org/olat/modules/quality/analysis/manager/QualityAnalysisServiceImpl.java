@@ -44,6 +44,7 @@ import org.olat.modules.quality.analysis.AnalysisPresentation;
 import org.olat.modules.quality.analysis.AnalysisPresentationRef;
 import org.olat.modules.quality.analysis.AnalysisPresentationSearchParameter;
 import org.olat.modules.quality.analysis.AnalysisSearchParameter;
+import org.olat.modules.quality.analysis.AnlaysisFigures;
 import org.olat.modules.quality.analysis.AvailableAttributes;
 import org.olat.modules.quality.analysis.EvaluationFormView;
 import org.olat.modules.quality.analysis.EvaluationFormViewSearchParams;
@@ -135,8 +136,8 @@ public class QualityAnalysisServiceImpl implements QualityAnalysisService {
 	}
 
 	@Override
-	public Long loadFilterDataCollectionCount(AnalysisSearchParameter searchParams) {
-		return filterDao.loadDataCollectionCount(searchParams);
+	public AnlaysisFigures loadFigures(AnalysisSearchParameter searchParams) {
+		return filterDao.loadAnalyticFigures(searchParams);
 	}
 
 	@Override
