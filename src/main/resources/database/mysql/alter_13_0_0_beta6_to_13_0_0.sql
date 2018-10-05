@@ -14,3 +14,7 @@ create table o_qual_analysis_presentation (
    primary key (id)
 );
 alter table o_qual_analysis_presentation ENGINE = InnoDB;
+
+-- portfolio
+alter table o_pf_page_part modify p_layout_options mediumtext;
+
