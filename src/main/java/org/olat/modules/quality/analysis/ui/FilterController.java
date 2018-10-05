@@ -25,9 +25,11 @@ import static org.olat.core.gui.components.util.KeyValues.entry;
 import static org.olat.core.gui.translator.TranslatorHelper.translateAll;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 import org.olat.basesecurity.IdentityRef;
@@ -466,7 +468,17 @@ public class FilterController extends FormBasicController {
 
 	private void getSearchParamDateRangeTo() {
 		Date dateRangeTo = dateRangeToEl.getDate();
-		searchParams.setDateRangeTo(dateRangeTo);
+		
+		//Include the whole day
+		Calendar endOfDay = new GregorianCalendar();
+		endOfDay.setTime(dateRangeTo);
+		endOfDay.set(Calendar.HOUR_OF_DAY, 0);
+		endOfDay.set(Calendar.MINUTE, 0);
+		endOfDay.set(Calendar.SECOND, 0);
+		endOfDay.set(Calendar.MILLISECOND, 0);
+		endOfDay.add(Calendar.DAY_OF_MONTH, 1);
+		
+		searchParams.setDateRangeTo(endOfDay.getTime());
 	}
 
 	private void getSearchParamTopicIdentitys() {
