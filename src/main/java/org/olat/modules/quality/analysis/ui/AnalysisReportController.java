@@ -36,6 +36,7 @@ import org.olat.modules.forms.ui.EvaluationFormReportsController;
 import org.olat.modules.forms.ui.ReportSegment;
 import org.olat.modules.forms.ui.ReportSegmentEvent;
 import org.olat.modules.quality.analysis.AnalysisSearchParameter;
+import org.olat.modules.quality.analysis.AnlaysisFigures;
 import org.olat.modules.quality.analysis.QualityAnalysisService;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -75,8 +76,11 @@ public class AnalysisReportController extends BasicController implements Filtera
 		
 		List<EvaluationFormFigure> figures = new ArrayList<>();
 		figures.add(new EvaluationFormFigure(translate("report.figure.form.name"), formName));
-		Long count = analysisService.loadFilterDataCollectionCount(searchParams);
-		figures.add(new EvaluationFormFigure(translate("report.figure.number.data.collections"), count.toString()));
+		AnlaysisFigures analyticFigures = analysisService.loadFigures(searchParams);
+		figures.add(new EvaluationFormFigure(translate("report.figure.number.data.collections"),
+				analyticFigures.getDataCollectionCount().toString()));
+		figures.add(new EvaluationFormFigure(translate("report.figure.number.participations"),
+				analyticFigures.getParticipationCount().toString()));
 		
 		reportsCtrl = new EvaluationFormReportsController(ureq, getWindowControl(), form, filter, currentSegment, null, figures);
 		listenTo(reportsCtrl);

@@ -98,7 +98,7 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void shouldLoadDataCollectionCount() {
+	public void shouldLoadFiguresDataCollectionCount() {
 		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Identity executor1 = JunitTestHelper.createAndPersistIdentityAsUser("");
 		Identity executor2 = JunitTestHelper.createAndPersistIdentityAsUser("");
@@ -116,9 +116,41 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
-		Long count = sut.loadDataCollectionCount(searchParams);
+		Long count = sut.loadAnalyticFigures(searchParams).getDataCollectionCount();
 		
 		assertThat(count).isEqualTo(3);
+	}
+	
+	@Test
+	public void shouldLoadFiguresParticipationCount() {
+		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity executor1 = JunitTestHelper.createAndPersistIdentityAsUser("e1");
+		Identity executor2 = JunitTestHelper.createAndPersistIdentityAsUser("e2");
+		Organisation dcOrganisation = organisationService.createOrganisation("", "", null, null, null);
+		// Data collection with two participations
+		QualityDataCollection dc1 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participations1 = qualityService.addParticipations(dc1, asList(executor1, executor2));
+		qualityService.createContextBuilder(dc1, participations1.get(0)).build();
+		qualityService.createContextBuilder(dc1, participations1.get(1)).build();
+		// Another data collection with one participations
+		QualityDataCollection dc2 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participations2 = qualityService.addParticipations(dc2, asList(executor1));
+		qualityService.createContextBuilder(dc2, participations2.get(0)).build();
+		// Another data collection with a done participation. Only a session exists
+		QualityDataCollection dc3 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participations3 = qualityService.addParticipations(dc3, asList(executor1));
+		qualityService.createContextBuilder(dc3, participations3.get(0)).build();
+		EvaluationFormSession session = evaManager.createSession(participations3.get(0));
+		evaManager.finishSession(session);
+		// Data collection without participation
+		QualityDataCollection dcWithout = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		finish(asList(dc1, dc2, dc3, dcWithout));
+		dbInstance.commitAndCloseSession();
+		
+		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
+		Long count = sut.loadAnalyticFigures(searchParams).getParticipationCount();
+		
+		assertThat(count).isEqualTo(4);
 	}
 	
 	@Test
@@ -826,7 +858,7 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
-		Long count = sut.loadDataCollectionCount(searchParams);
+		Long count = sut.loadAnalyticFigures(searchParams).getDataCollectionCount();
 		
 		assertThat(count).isEqualTo(2);
 	}
@@ -844,7 +876,7 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		
 		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
 		searchParams.setFormEntryRef(formEntry);
-		Long count = sut.loadDataCollectionCount(searchParams);
+		Long count = sut.loadAnalyticFigures(searchParams).getDataCollectionCount();
 		
 		assertThat(count).isEqualTo(2);
 	}
@@ -868,7 +900,7 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		
 		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
 		searchParams.setDateRangeFrom(now);
-		Long count = sut.loadDataCollectionCount(searchParams);
+		Long count = sut.loadAnalyticFigures(searchParams).getDataCollectionCount();
 		
 		assertThat(count).isEqualTo(2);
 	}
@@ -892,7 +924,7 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		
 		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
 		searchParams.setDateRangeTo(now);
-		Long count = sut.loadDataCollectionCount(searchParams);
+		Long count = sut.loadAnalyticFigures(searchParams).getDataCollectionCount();
 		
 		assertThat(count).isEqualTo(2);
 	}
@@ -1059,7 +1091,7 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		
 		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
 		searchParams.setContextLocations(asList(location1, location2));
-		Long count = sut.loadDataCollectionCount(searchParams);
+		Long count = sut.loadAnalyticFigures(searchParams).getDataCollectionCount();
 		
 		long expected = asList(dc1, dc2, dcOther).size();
 		assertThat(count).isEqualTo(expected);
@@ -1096,7 +1128,7 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		
 		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
 		searchParams.setContextCurriculumRefs(asList(curriculum1, curriculum2));
-		Long count = sut.loadDataCollectionCount(searchParams);
+		Long count = sut.loadAnalyticFigures(searchParams).getDataCollectionCount();
 		
 		assertThat(count).isEqualTo(2);
 	}
@@ -1139,7 +1171,7 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		
 		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
 		searchParams.setContextCurriculumElementRefs(asList(element1, element2));
-		Long count = sut.loadDataCollectionCount(searchParams);
+		Long count = sut.loadAnalyticFigures(searchParams).getDataCollectionCount();
 		
 		long expected = asList(element1, element2, subElement).size();
 		assertThat(count).isEqualTo(expected);
@@ -1220,7 +1252,7 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		
 		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
 		searchParams.setContextOrganisationRefs(asList(organisation1, organisation2));
-		Long count = sut.loadDataCollectionCount(searchParams);
+		Long count = sut.loadAnalyticFigures(searchParams).getDataCollectionCount();
 		
 		long expected = asList(organisation1, organisation2, subOrganisation).size();
 		assertThat(count).isEqualTo(expected);
@@ -1264,7 +1296,7 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		
 		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
 		searchParams.setContextTaxonomyLevelRefs(asList(taxonomyLevel1, taxonomyLevel2));
-		Long count = sut.loadDataCollectionCount(searchParams);
+		Long count = sut.loadAnalyticFigures(searchParams).getDataCollectionCount();
 		
 		long expected = asList(taxonomyLevel1, taxonomyLevel2, subTaxonomyLevel).size();
 		assertThat(count).isEqualTo(expected);
@@ -1305,13 +1337,13 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		
 		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
 		searchParams.setWithUserInfosOnly(true);
-		Long count = sut.loadDataCollectionCount(searchParams);
+		Long count = sut.loadAnalyticFigures(searchParams).getDataCollectionCount();
 		
 		long expected = asList(executor1, executor2).size();
 		assertThat(count).isEqualTo(expected);
 		
 		searchParams.setWithUserInfosOnly(false);
-		Long countUnfiltered = sut.loadDataCollectionCount(searchParams);
+		Long countUnfiltered = sut.loadAnalyticFigures(searchParams).getDataCollectionCount();
 		
 		long expectedUnfiltered = asList(executor1, executor2, executorOther).size();
 		assertThat(countUnfiltered).isEqualTo(expectedUnfiltered);
