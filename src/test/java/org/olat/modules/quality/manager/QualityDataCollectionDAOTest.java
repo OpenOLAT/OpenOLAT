@@ -191,7 +191,7 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 	public void shouldLoadPreviousDataCollection() {
 		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		QualityDataCollection first = qualityService.createDataCollection(emptyList(), formEntry);
-		QualityDataCollection second = qualityService.createDataCollection(emptyList(), formEntry, null, null, first);
+		QualityDataCollection second = qualityService.createDataCollection(emptyList(), first, null, null);
 		dbInstance.commitAndCloseSession();
 		
 		QualityDataCollection previous = sut.loadPrevious(second);
@@ -203,7 +203,7 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 	public void shouldLoadFollowUpDataCollection() {
 		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		QualityDataCollection first = qualityService.createDataCollection(emptyList(), formEntry);
-		QualityDataCollection second = qualityService.createDataCollection(emptyList(), formEntry, null, null, first);
+		QualityDataCollection second = qualityService.createDataCollection(emptyList(), first, null, null);
 		dbInstance.commitAndCloseSession();
 		
 		QualityDataCollection followUp = sut.loadFollowUp(first);

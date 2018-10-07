@@ -25,9 +25,11 @@ import java.util.List;
 import javax.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.forms.EvaluationFormSurvey;
+import org.olat.modules.forms.EvaluationFormSurveyRef;
 import org.olat.modules.forms.model.jpa.EvaluationFormSurveyImpl;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,7 +47,7 @@ class EvaluationFormSurveyDAO {
 	@Autowired
 	private DB dbInstance;
 
-	public EvaluationFormSurvey createSurvey(OLATResourceable ores, String subIdent, RepositoryEntry formEntry,
+	EvaluationFormSurvey createSurvey(OLATResourceable ores, String subIdent, RepositoryEntry formEntry,
 			EvaluationFormSurvey previous) {
 		EvaluationFormSurveyImpl survey = new EvaluationFormSurveyImpl();
 		survey.setCreationDate(new Date());
@@ -54,9 +56,13 @@ class EvaluationFormSurveyDAO {
 		survey.setResId(ores.getResourceableId());
 		survey.setResSubident(subIdent);
 		survey.setFormEntry(formEntry);
-		survey.setPrevious(previous);
 		dbInstance.getCurrentEntityManager().persist(survey);
-		return survey;
+		Long seriesKey = previous != null? previous.getSeriesKey(): survey.getKey();
+		survey.setSeriesKey(seriesKey);
+		Integer seriesIndex = previous != null? previous.getSeriesIndex() + 1: 1;
+		survey.setSeriesIndex(seriesIndex);
+		survey.setSeriesPrevious(previous);
+		return dbInstance.getCurrentEntityManager().merge(survey);
 	}
 
 	EvaluationFormSurvey updateForm(EvaluationFormSurvey survey, RepositoryEntry formEntry) {
@@ -96,7 +102,7 @@ class EvaluationFormSurveyDAO {
 		return surveys.isEmpty() ? null : surveys.get(0);
 	}
 
-	void delete(EvaluationFormSurvey survey) {
+	void delete(EvaluationFormSurveyRef survey) {
 		if (survey == null) return;	
 
 		String query = "delete from evaluationformsurvey as survey where survey.key=:surveyKey";
@@ -104,6 +110,68 @@ class EvaluationFormSurveyDAO {
 		dbInstance.getCurrentEntityManager().createQuery(query)
 			.setParameter("surveyKey", survey.getKey())
 			.executeUpdate();
+	}
+
+	EvaluationFormSurvey updateSeriesPrevious(EvaluationFormSurvey survey, EvaluationFormSurvey previous) {
+		if (survey instanceof EvaluationFormSurveyImpl) {
+			EvaluationFormSurveyImpl surveyImpl = (EvaluationFormSurveyImpl) survey;
+			surveyImpl.setSeriesPrevious(previous);
+			return update(surveyImpl);
+		}
+		return survey;
+	}
+
+	boolean hasSeriesNext(EvaluationFormSurveyRef surveyRef) {
+		if (surveyRef == null) return false;
+		
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select survey.key");
+		sb.append("  from evaluationformsurvey as survey");
+		sb.append(" where survey.seriesPrevious.key = :surveyKey");
+		
+		List<Long> keys = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("surveyKey", surveyRef.getKey())
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return keys == null || keys.isEmpty() || keys.get(0) == null ? false : true;
+	}
+
+	EvaluationFormSurvey loadSeriesNext(EvaluationFormSurveyRef surveyRef) {
+		if (surveyRef == null) return null;
+		
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select survey");
+		sb.append("  from evaluationformsurvey as survey");
+		sb.append(" where survey.seriesPrevious.key = :surveyKey");
+		
+		List<EvaluationFormSurvey> next = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), EvaluationFormSurvey.class)
+				.setParameter("surveyKey", surveyRef.getKey())
+				.getResultList();
+		return !next.isEmpty() ? next.get(0) : null;
+	}
+
+	void reindexSeries(Long seriesKey) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select survey");
+		sb.append("  from evaluationformsurvey as survey");
+		sb.append(" where survey.seriesKey = :seriesKey");
+		sb.append(" order by survey.seriesIndex");
+		
+		List<EvaluationFormSurvey> surveys = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), EvaluationFormSurvey.class)
+				.setParameter("seriesKey", seriesKey)
+				.getResultList();
+		int seriesIndex = 1;
+		for (EvaluationFormSurvey survey : surveys) {
+			if (survey instanceof EvaluationFormSurveyImpl) {
+				EvaluationFormSurveyImpl surveyImpl = (EvaluationFormSurveyImpl) survey;
+				surveyImpl.setSeriesIndex(seriesIndex++);
+				update(surveyImpl);
+			}
+		}
 	}
 
 }

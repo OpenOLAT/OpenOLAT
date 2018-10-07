@@ -69,6 +69,7 @@ import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationRef;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSurvey;
+import org.olat.modules.forms.EvaluationFormSurveyRef;
 import org.olat.modules.portfolio.AssessmentSection;
 import org.olat.modules.portfolio.Assignment;
 import org.olat.modules.portfolio.AssignmentStatus;
@@ -1107,7 +1108,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 				}
 				List<Identity> owners = getOwners(page, section);
 				for (Identity owner: owners) {
-					EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(getOLATResourceableForEvaluationForm(page.getBody()), null);
+					EvaluationFormSurveyRef survey = evaluationFormManager.loadSurvey(getOLATResourceableForEvaluationForm(page.getBody()), null);
 					EvaluationFormParticipationRef participation = evaluationFormManager.loadParticipationByExecutor(survey, owner);
 					EvaluationFormSession session = evaluationFormManager.loadSessionByParticipation(participation);
 					evaluationFormManager.finishSession(session);
@@ -1125,7 +1126,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 				}
 				List<Identity> owners = getOwners(page, section);
 				for (Identity owner: owners) {
-					EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(getOLATResourceableForEvaluationForm(page.getBody()), null);
+					EvaluationFormSurveyRef survey = evaluationFormManager.loadSurvey(getOLATResourceableForEvaluationForm(page.getBody()), null);
 					EvaluationFormParticipationRef participation = evaluationFormManager.loadParticipationByExecutor(survey, owner);
 					EvaluationFormSession session = evaluationFormManager.loadSessionByParticipation(participation);
 					evaluationFormManager.reopenSession(session);

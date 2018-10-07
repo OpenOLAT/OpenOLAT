@@ -29,9 +29,7 @@ import org.olat.repository.RepositoryEntry;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface EvaluationFormSurvey extends CreateInfo, ModifiedInfo {
-	
-	public Long getKey();
+public interface EvaluationFormSurvey extends EvaluationFormSurveyRef, CreateInfo, ModifiedInfo {
 	
 	/**
 	 *
@@ -40,9 +38,23 @@ public interface EvaluationFormSurvey extends CreateInfo, ModifiedInfo {
 	public RepositoryEntry getFormEntry();
 
 	/**
+	 * Get the key of a series. All surveys with the same series key are together one series.
 	 *
-	 * @return the previous survey in a serie.
+	 * @return the key of the series
 	 */
-	public EvaluationFormSurvey getPrevious();
+	public Long getSeriesKey();
+	
+	/**
+	 * The index in a series. The first element in a series has index 1.
+	 *
+	 * @return the index 
+	 */
+	public Integer getSeriesIndex();
+
+	/**
+	 *
+	 * @return the previous survey in a series.
+	 */
+	public EvaluationFormSurvey getSeriesPrevious();
 
 }

@@ -35,6 +35,7 @@ import org.olat.modules.forms.EvaluationFormParticipationIdentifier;
 import org.olat.modules.forms.EvaluationFormParticipationRef;
 import org.olat.modules.forms.EvaluationFormParticipationStatus;
 import org.olat.modules.forms.EvaluationFormSurvey;
+import org.olat.modules.forms.EvaluationFormSurveyRef;
 import org.olat.modules.forms.model.jpa.EvaluationFormParticipationImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -105,7 +106,7 @@ class EvaluationFormParticipationDAO {
 		return participations.isEmpty() ? null : participations.get(0);
 	}
 	
-	List<EvaluationFormParticipation> loadBySurvey(EvaluationFormSurvey survey,
+	List<EvaluationFormParticipation> loadBySurvey(EvaluationFormSurveyRef survey,
 			EvaluationFormParticipationStatus status) {
 		if (survey == null) return null;
 		
@@ -126,7 +127,7 @@ class EvaluationFormParticipationDAO {
 		return typedQuery.getResultList();
 	}
 	
-	EvaluationFormParticipation loadByExecutor(EvaluationFormSurvey survey, IdentityRef executor) {
+	EvaluationFormParticipation loadByExecutor(EvaluationFormSurveyRef survey, IdentityRef executor) {
 		if (survey == null || executor == null) return null;
 		
 		StringBuilder query = new StringBuilder();
@@ -147,7 +148,7 @@ class EvaluationFormParticipationDAO {
 		return loadByIdentifier(null, identifier);
 	}
 
-	EvaluationFormParticipation loadByIdentifier(EvaluationFormSurvey survey,
+	EvaluationFormParticipation loadByIdentifier(EvaluationFormSurveyRef survey,
 			EvaluationFormParticipationIdentifier identifier) {
 		if (identifier == null) return null;
 		
@@ -184,7 +185,7 @@ class EvaluationFormParticipationDAO {
 				.executeUpdate();	
 	}
 
-	void deleteParticipations(EvaluationFormSurvey survey) {
+	void deleteParticipations(EvaluationFormSurveyRef survey) {
 		if (survey == null) return;
 		
 		StringBuilder sb = new StringBuilder();

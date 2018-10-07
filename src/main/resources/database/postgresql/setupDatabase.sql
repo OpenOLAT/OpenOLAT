@@ -1718,8 +1718,10 @@ create table o_eva_form_survey (
    e_resname varchar(50) not null,
    e_resid bigint not null,
    e_sub_ident varchar(2048),
+   e_series_key bigint,
+   e_series_index int,
    fk_form_entry bigint not null,
-   fk_previous bigint,
+   fk_series_previous bigint,
    primary key (id)
 );
 

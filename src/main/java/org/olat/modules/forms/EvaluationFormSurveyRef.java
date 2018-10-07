@@ -19,31 +19,14 @@
  */
 package org.olat.modules.forms;
 
-import static java.util.Collections.singletonList;
-
-import java.util.Collection;
-
-import org.olat.modules.forms.model.jpa.SessionRefFilter;
-import org.olat.modules.forms.model.jpa.SurveyFilter;
-
 /**
  * 
- * Initial date: 10.09.2018<br>
+ * Initial date: 07.10.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class SessionFilterFactory {
-	
-	public static SessionFilter create(EvaluationFormSessionRef sessionRef) {
-		return new SessionRefFilter(singletonList(sessionRef));
-	}
-	
-	public static SessionFilter create(Collection<? extends EvaluationFormSessionRef> sessionRefs) {
-		return new SessionRefFilter(sessionRefs);
-	}
+public interface EvaluationFormSurveyRef {
 
-	public static SessionFilter createSelectDone(EvaluationFormSurveyRef survey) {
-		return new SurveyFilter(survey);
-	}
+	public Long getKey();
 
 }

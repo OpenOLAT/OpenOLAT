@@ -23,7 +23,7 @@ import javax.persistence.Query;
 
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.modules.forms.EvaluationFormSessionStatus;
-import org.olat.modules.forms.EvaluationFormSurvey;
+import org.olat.modules.forms.EvaluationFormSurveyRef;
 import org.olat.modules.forms.SessionFilter;
 
 /**
@@ -34,9 +34,9 @@ import org.olat.modules.forms.SessionFilter;
  */
 public class SurveyFilter implements SessionFilter {
 
-	private final EvaluationFormSurvey survey;
+	private final EvaluationFormSurveyRef survey;
 
-	public SurveyFilter(EvaluationFormSurvey survey) {
+	public SurveyFilter(EvaluationFormSurveyRef survey) {
 		this.survey = survey;
 	}
 

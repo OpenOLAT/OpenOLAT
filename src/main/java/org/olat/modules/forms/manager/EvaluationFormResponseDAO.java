@@ -32,7 +32,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.modules.forms.EvaluationFormParticipationRef;
 import org.olat.modules.forms.EvaluationFormResponse;
 import org.olat.modules.forms.EvaluationFormSession;
-import org.olat.modules.forms.EvaluationFormSurvey;
+import org.olat.modules.forms.EvaluationFormSurveyRef;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.model.jpa.EvaluationFormResponseImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -132,7 +132,7 @@ public class EvaluationFormResponseDAO {
 		return query.getResultList();
 	}
 
-	List<EvaluationFormResponse> loadResponsesBySurvey(EvaluationFormSurvey survey) {
+	List<EvaluationFormResponse> loadResponsesBySurvey(EvaluationFormSurveyRef survey) {
 		if (survey == null) return new ArrayList<>(0);
 		
 		StringBuilder sb = new StringBuilder();

@@ -32,7 +32,7 @@ import org.olat.modules.forms.EvaluationFormParticipationRef;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSessionRef;
 import org.olat.modules.forms.EvaluationFormSessionStatus;
-import org.olat.modules.forms.EvaluationFormSurvey;
+import org.olat.modules.forms.EvaluationFormSurveyRef;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.model.jpa.EvaluationFormSessionImpl;
 import org.olat.repository.RepositoryEntryRef;
@@ -177,8 +177,8 @@ class EvaluationFormSessionDAO {
 		return dbInstance.getCurrentEntityManager().merge(sessionImpl);
 	}
 	
-	boolean hasSessions(EvaluationFormSurvey survey) {
-		if (survey == null) return false;
+	boolean hasSessions(EvaluationFormSurveyRef surveyRef) {
+		if (surveyRef == null) return false;
 		
 		StringBuilder sb = new StringBuilder();
 		sb.append("select session.key from evaluationformsession as session");
@@ -186,7 +186,7 @@ class EvaluationFormSessionDAO {
 		
 		List<Long> sessions = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Long.class)
-				.setParameter("surveyKey", survey.getKey())
+				.setParameter("surveyKey", surveyRef.getKey())
 				.setFirstResult(0)
 				.setMaxResults(1)
 				.getResultList();
@@ -225,8 +225,8 @@ class EvaluationFormSessionDAO {
 		return session;
 	}
 
-	long getCountOfSessions(EvaluationFormSurvey survey) {
-		if (survey == null) return 0;
+	long getCountOfSessions(EvaluationFormSurveyRef surveyRef) {
+		if (surveyRef == null) return 0;
 	
 		StringBuilder sb = new StringBuilder();
 		sb.append("select count(session.key) from evaluationformsession as session");
@@ -234,13 +234,13 @@ class EvaluationFormSessionDAO {
 		
 		List<Long> counts = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Long.class)
-				.setParameter("surveyKey", survey.getKey())
+				.setParameter("surveyKey", surveyRef.getKey())
 				.getResultList();
 		return counts.get(0);
 	}
 	
-	void deleteSessions(EvaluationFormSurvey survey) {
-		if (survey == null) return;
+	void deleteSessions(EvaluationFormSurveyRef surveyRef) {
+		if (surveyRef == null) return;
 		
 		StringBuilder sb = new StringBuilder();
 		sb.append("delete from evaluationformsession session");
@@ -248,7 +248,7 @@ class EvaluationFormSessionDAO {
 		
 		dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString())
-				.setParameter("surveyKey", survey.getKey())
+				.setParameter("surveyKey", surveyRef.getKey())
 				.executeUpdate();
 	}
 

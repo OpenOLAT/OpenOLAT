@@ -48,6 +48,7 @@ import org.olat.modules.forms.EvaluationFormSessionRef;
 import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.modules.forms.EvaluationFormStatistic;
 import org.olat.modules.forms.EvaluationFormSurvey;
+import org.olat.modules.forms.EvaluationFormSurveyRef;
 import org.olat.modules.forms.RubricRating;
 import org.olat.modules.forms.RubricStatistic;
 import org.olat.modules.forms.SessionFilter;
@@ -95,13 +96,12 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 	
 	@Override
 	public EvaluationFormSurvey createSurvey(OLATResourceable ores, String subIdent, RepositoryEntry formEntry) {
-		return createSurvey(ores, subIdent, formEntry, null);
+		return evaluationFormSurveyDao.createSurvey(ores, subIdent, formEntry, null);
 	}
 	
 	@Override
-	public EvaluationFormSurvey createSurvey(OLATResourceable ores, String subIdent, RepositoryEntry formEntry,
-			EvaluationFormSurvey previous) {
-		return evaluationFormSurveyDao.createSurvey(ores, subIdent, formEntry, previous);
+	public EvaluationFormSurvey createSurvey(OLATResourceable ores, String subIdent, EvaluationFormSurvey previous) {
+		return evaluationFormSurveyDao.createSurvey(ores, subIdent, previous.getFormEntry(), previous);
 	}
 
 	@Override
@@ -111,7 +111,7 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 
 	@Override
 	public boolean isFormUpdateable(EvaluationFormSurvey survey) {
-		return !evaluationFormSessionDao.hasSessions(survey);
+		return !isPartOfSeries(survey) && !evaluationFormSessionDao.hasSessions(survey);
 	}
 
 	@Override
@@ -131,12 +131,26 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 		evaluationFormSessionDao.deleteSessions(survey);
 		evaluationFormParticipationDao.deleteParticipations(survey);
 	}
-	
+
 	@Override
 	public void deleteSurvey(EvaluationFormSurvey survey) {
 		if (survey == null) return;
+		
+		EvaluationFormSurvey next = evaluationFormSurveyDao.loadSeriesNext(survey);
+		if (next != null) {
+			EvaluationFormSurvey previous = survey.getSeriesPrevious();
+			// Prevent constraint violation
+			evaluationFormSurveyDao.updateSeriesPrevious(survey, null);
+			evaluationFormSurveyDao.updateSeriesPrevious(next, previous);
+		}
+		
 		deleteAllData(survey);
 		evaluationFormSurveyDao.delete(survey);
+		evaluationFormSurveyDao.reindexSeries(survey.getSeriesKey());
+	}
+	
+	private boolean isPartOfSeries(EvaluationFormSurvey survey) {
+		return survey.getSeriesPrevious() != null || evaluationFormSurveyDao.hasSeriesNext(survey);
 	}
 
 	@Override
@@ -174,14 +188,14 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 	}
 
 	@Override
-	public EvaluationFormParticipation loadParticipationByExecutor(EvaluationFormSurvey survey, IdentityRef executor) {
-		return evaluationFormParticipationDao.loadByExecutor(survey, executor);
+	public EvaluationFormParticipation loadParticipationByExecutor(EvaluationFormSurveyRef surveyRef, IdentityRef executor) {
+		return evaluationFormParticipationDao.loadByExecutor(surveyRef, executor);
 	}
 	
 	@Override
-	public List<EvaluationFormParticipation> loadParticipations(EvaluationFormSurvey survey,
+	public List<EvaluationFormParticipation> loadParticipations(EvaluationFormSurveyRef surveyRef,
 			EvaluationFormParticipationStatus status) {
-		return evaluationFormParticipationDao.loadBySurvey(survey, status);
+		return evaluationFormParticipationDao.loadBySurvey(surveyRef, status);
 	}
 
 	@Override
@@ -190,9 +204,9 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 	}
 
 	@Override
-	public EvaluationFormParticipation loadParticipationByIdentifier(EvaluationFormSurvey survey,
+	public EvaluationFormParticipation loadParticipationByIdentifier(EvaluationFormSurveyRef surveyRef,
 			EvaluationFormParticipationIdentifier identifier) {
-		return evaluationFormParticipationDao.loadByIdentifier(survey, identifier);
+		return evaluationFormParticipationDao.loadByIdentifier(surveyRef, identifier);
 	}
 
 	@Override
@@ -275,8 +289,8 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 	}
 
 	@Override
-	public long getCountOfSessions(EvaluationFormSurvey survey) {
-		return evaluationFormSessionDao.getCountOfSessions(survey);
+	public long getCountOfSessions(EvaluationFormSurveyRef surveyRef) {
+		return evaluationFormSessionDao.getCountOfSessions(surveyRef);
 	}
 
 	@Override

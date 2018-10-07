@@ -43,6 +43,7 @@ import org.olat.modules.forms.EvaluationFormParticipationRef;
 import org.olat.modules.forms.EvaluationFormParticipationStatus;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSurvey;
+import org.olat.modules.forms.EvaluationFormSurveyRef;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityExecutorParticipation;
 import org.olat.modules.quality.QualityExecutorParticipationSearchParams;
@@ -327,7 +328,7 @@ public class QualityParticipationDAOTest extends OlatTestCase {
 	@Test
 	public void shouldFilterExecutorParticipationsByParticipationStatus() {
 		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
-		EvaluationFormSurvey survey = evaManager.loadSurvey(dataCollection, null);
+		EvaluationFormSurveyRef survey = evaManager.loadSurvey(dataCollection, null);
 		Identity identity1 = JunitTestHelper.createAndPersistIdentityAsRndUser("quality-");
 		Identity identity2 = JunitTestHelper.createAndPersistIdentityAsRndUser("quality-");
 		Identity identity3 = JunitTestHelper.createAndPersistIdentityAsRndUser("quality-");

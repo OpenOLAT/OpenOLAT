@@ -223,7 +223,7 @@ class QualityParticipationDAO {
 		sb.append("       left join collection.topicCurriculumElement as curriculumElement");
 		sb.append("       left join curriculumElement.type as curriculumElementType");
 		sb.append("       left join collection.topicRepositoryEntry as repository");
-		sb.append("       left join survey.previous as previousSurvey");
+		sb.append("       left join survey.seriesPrevious as previousSurvey");
 		sb.append("       left join qualitydatacollection as previousCollection on previousSurvey.resName = '").append(QualityDataCollectionLight.RESOURCEABLE_TYPE_NAME).append("'");
 		sb.append("                                                            and previousSurvey.resId = previousCollection.key");
 	}

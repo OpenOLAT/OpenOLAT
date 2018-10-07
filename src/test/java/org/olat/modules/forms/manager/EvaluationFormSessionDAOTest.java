@@ -32,6 +32,7 @@ import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSessionRef;
 import org.olat.modules.forms.EvaluationFormSurvey;
+import org.olat.modules.forms.EvaluationFormSurveyRef;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.SessionFilterFactory;
 import org.olat.modules.forms.ui.SessionSelectionModel.SessionSelectionCols;
@@ -192,7 +193,7 @@ public class EvaluationFormSessionDAOTest extends OlatTestCase {
 	@Test
 	public void shouldCheckIfSurveyHasSessions() {
 		EvaluationFormParticipation participation = evaTestHelper.createParticipation();
-		EvaluationFormSurvey survey = participation.getSurvey();
+		EvaluationFormSurveyRef survey = participation.getSurvey();
 		sut.createSession(participation);
 		dbInstance.commitAndCloseSession();
 		
@@ -203,7 +204,7 @@ public class EvaluationFormSessionDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldCheckIfSurveyHasNoSessions() {
-		EvaluationFormSurvey survey = evaTestHelper.createSurvey();
+		EvaluationFormSurveyRef survey = evaTestHelper.createSurvey();
 		dbInstance.commit();
 		
 		boolean hasSessions = sut.hasSessions(survey);

@@ -68,13 +68,17 @@ public class EvaluationFormSurveyImpl implements EvaluationFormSurvey, Persistab
 	private Long resId;
 	@Column(name="e_sub_ident", nullable=true, insertable=true, updatable=false)
 	private String resSubident;
+	@Column(name="e_series_key", nullable=true, insertable=true, updatable=true)
+	private Long seriesKey;
+	@Column(name="e_series_index", nullable=true, insertable=true, updatable=true)
+	private Integer seriesIndex;
 	
 	@ManyToOne(targetEntity=RepositoryEntry.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="fk_form_entry", nullable=false, insertable=true, updatable=true)
 	private RepositoryEntry formEntry;
 	@OneToOne(targetEntity=EvaluationFormSurveyImpl.class,fetch=FetchType.LAZY,optional=true)
-	@JoinColumn(name="fk_previous", nullable=true, insertable=true, updatable=true)
-	private EvaluationFormSurvey previous;
+	@JoinColumn(name="fk_series_previous", nullable=true, insertable=true, updatable=true)
+	private EvaluationFormSurvey seriesPrevious;
 	
 	@Override
 	public Long getKey() {
@@ -127,7 +131,6 @@ public class EvaluationFormSurveyImpl implements EvaluationFormSurvey, Persistab
 	public void setResSubident(String resSubident) {
 		this.resSubident = resSubident;
 	}
-
 	@Override
 	public RepositoryEntry getFormEntry() {
 		return formEntry;
@@ -138,12 +141,30 @@ public class EvaluationFormSurveyImpl implements EvaluationFormSurvey, Persistab
 	}
 
 	@Override
-	public EvaluationFormSurvey getPrevious() {
-		return previous;
+	public Long getSeriesKey() {
+		return seriesKey;
 	}
 
-	public void setPrevious(EvaluationFormSurvey previous) {
-		this.previous = previous;
+	public void setSeriesKey(Long seriesKey) {
+		this.seriesKey = seriesKey;
+	}
+
+	@Override
+	public Integer getSeriesIndex() {
+		return seriesIndex;
+	}
+
+	public void setSeriesIndex(Integer seriesIndex) {
+		this.seriesIndex = seriesIndex;
+	}
+
+	@Override
+	public EvaluationFormSurvey getSeriesPrevious() {
+		return seriesPrevious;
+	}
+
+	public void setSeriesPrevious(EvaluationFormSurvey previous) {
+		this.seriesPrevious = previous;
 	}
 
 	@Override

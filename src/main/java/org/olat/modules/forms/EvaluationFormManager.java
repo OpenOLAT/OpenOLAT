@@ -48,11 +48,18 @@ public interface EvaluationFormManager {
 
 	public EvaluationFormSurvey createSurvey(OLATResourceable ores, String subIdent, RepositoryEntry formEntry);
 	
-	public EvaluationFormSurvey createSurvey(OLATResourceable ores, String subIdent, RepositoryEntry formEntry,
-			EvaluationFormSurvey previous);
+	public EvaluationFormSurveyRef createSurvey(OLATResourceable ores, String subIdent, EvaluationFormSurvey previous);
 
 	public EvaluationFormSurvey loadSurvey(OLATResourceable ores, String subIdent);
 
+	/**
+	 * Checks whether a form of a survey can be updated or not. The form can not be
+	 * updated, if it is part of a series (all parts need the same form). Further it
+	 * can not be updated, if it has already sessions.
+	 *
+	 * @param survey
+	 * @return whether the form can be updated or not
+	 */
 	public boolean isFormUpdateable(EvaluationFormSurvey survey);
 
 	/**
@@ -73,12 +80,7 @@ public interface EvaluationFormManager {
 	 * @param survey
 	 */
 	public void deleteAllData(EvaluationFormSurvey survey);
-
-	/**
-	 * Delete the survey and all data but the evaluation form.
-	 *
-	 * @param survey
-	 */
+	
 	public void deleteSurvey(EvaluationFormSurvey survey);
 
 	public EvaluationFormParticipation createParticipation(EvaluationFormSurvey survey);
@@ -94,10 +96,10 @@ public interface EvaluationFormManager {
 	
 	public EvaluationFormParticipation loadParticipationByKey(EvaluationFormParticipationRef participationRef);
 
-	public List<EvaluationFormParticipation> loadParticipations(EvaluationFormSurvey survey,
+	public List<EvaluationFormParticipation> loadParticipations(EvaluationFormSurveyRef surveyRef,
 			EvaluationFormParticipationStatus status);
 
-	public EvaluationFormParticipation loadParticipationByExecutor(EvaluationFormSurvey survey, IdentityRef executor);
+	public EvaluationFormParticipation loadParticipationByExecutor(EvaluationFormSurveyRef surveyRef, IdentityRef executor);
 
 	/**
 	 * Load a participation by an identifier. If the identifier was inserted by
@@ -111,7 +113,7 @@ public interface EvaluationFormManager {
 	 */
 	public EvaluationFormParticipationRef loadParticipationByIdentifier(EvaluationFormParticipationIdentifier identifier);
 
-	public EvaluationFormParticipation loadParticipationByIdentifier(EvaluationFormSurvey survey,
+	public EvaluationFormParticipation loadParticipationByIdentifier(EvaluationFormSurveyRef surveyRef,
 			EvaluationFormParticipationIdentifier identifier);
 	
 	/**
@@ -154,7 +156,7 @@ public interface EvaluationFormManager {
 	 */
 	public EvaluationFormSession reopenSession(EvaluationFormSession session);
 	
-	public long getCountOfSessions(EvaluationFormSurvey survey);
+	public long getCountOfSessions(EvaluationFormSurveyRef surveyRef);
 
 	public EvaluationFormResponse createStringResponse(String responseIdentifier, EvaluationFormSession session,
 			String value);

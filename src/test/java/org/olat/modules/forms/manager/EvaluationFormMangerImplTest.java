@@ -27,6 +27,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Collections;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -63,6 +65,8 @@ public class EvaluationFormMangerImplTest {
 	@Mock
 	private EvaluationFormSessionDAO sessionDaoMock;
 	@Mock
+	private EvaluationFormResponseDAO responseDao;
+	@Mock
 	private SessionStatusPublisher sessionStatusPublisherMock;
 
 	
@@ -94,6 +98,39 @@ public class EvaluationFormMangerImplTest {
 		sut.updateSurveyForm(surveyMock, formEntryMock);
 		
 		verify(surveyDaoMock, never()).updateForm(surveyMock, formEntryMock);
+	}
+	
+	@Test
+	public void shouldNotUpdateFormOfSurveyIfItPartOfASeries() {
+		EvaluationFormSurvey previousMock = mock(EvaluationFormSurvey.class);
+		EvaluationFormSurvey surveyMock = mock(EvaluationFormSurvey.class);
+		RepositoryEntry formEntryMock = mock(RepositoryEntry.class);
+		when(surveyMock.getSeriesPrevious()).thenReturn(previousMock);
+		
+		sut.updateSurveyForm(surveyMock, formEntryMock);
+		
+		verify(surveyDaoMock, never()).updateForm(surveyMock, formEntryMock);
+	}
+	
+	@Test
+	public void shouldDeleteSurveyIfItHasNoNextInASeries() {
+		when(responseDao.loadResponsesBySurvey(any())).thenReturn(Collections.emptyList());
+		EvaluationFormSurvey surveyMock = mock(EvaluationFormSurvey.class);
+		when(surveyDaoMock.hasSeriesNext(surveyMock)).thenReturn(Boolean.FALSE);
+		
+		sut.deleteSurvey(surveyMock);
+		
+		verify(surveyDaoMock).delete(surveyMock);
+	}
+	
+	@Test
+	public void shouldNotDeleteSurveyIfItHasNextInASeries() {
+		EvaluationFormSurvey surveyMock = mock(EvaluationFormSurvey.class);
+		when(surveyDaoMock.hasSeriesNext(surveyMock)).thenReturn(Boolean.TRUE);
+		
+		sut.deleteSurvey(surveyMock);
+		
+		verify(surveyDaoMock, never()).delete(surveyMock);
 	}
 	
 	@Test

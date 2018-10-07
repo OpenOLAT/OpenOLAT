@@ -1753,8 +1753,10 @@ create table o_eva_form_survey (
    e_resname varchar2(50) not null,
    e_resid number(20) not null,
    e_sub_ident varchar2(2048),
+   e_series_key number(20),
+   e_series_index number(20),
    fk_form_entry number(20) not null,
-   fk_previous number(20),
+   fk_series_previous number(20),
    primary key (id)
 );
 

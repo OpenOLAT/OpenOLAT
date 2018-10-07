@@ -48,6 +48,7 @@ import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationRef;
 import org.olat.modules.forms.EvaluationFormParticipationStatus;
 import org.olat.modules.forms.EvaluationFormSurvey;
+import org.olat.modules.forms.EvaluationFormSurveyRef;
 import org.olat.modules.forms.SessionStatusHandler;
 import org.olat.modules.forms.SessionStatusInformation;
 import org.olat.modules.quality.QualityContext;
@@ -119,29 +120,39 @@ public class QualityServiceImpl
 	public QualityDataCollection createDataCollection(Collection<Organisation> organisations,
 			RepositoryEntry formEntry) {
 		QualityDataCollection dataCollection = dataCollectionDao.createDataCollection();
-		createDataCollectionReferences(organisations, formEntry, dataCollection, null);
+		evaluationFormManager.createSurvey(dataCollection, null, formEntry);
+		createDataCollectionReferences(organisations, formEntry, dataCollection);
 		return dataCollection;
 	}
 
 	@Override
 	public QualityDataCollection createDataCollection(Collection<Organisation> organisations, RepositoryEntry formEntry,
 			QualityGenerator generator, Long generatorProviderKey) {
-		return createDataCollection(organisations, formEntry, generator, generatorProviderKey, null);
+		QualityDataCollection dataCollection = createDataCollection(generator, generatorProviderKey);
+		evaluationFormManager.createSurvey(dataCollection, null, formEntry);
+		createDataCollectionReferences(organisations, formEntry, dataCollection);
+		return dataCollection;
 	}
 
 	@Override
-	public QualityDataCollection createDataCollection(Collection<Organisation> organisations, RepositoryEntry formEntry,
-			QualityGenerator generator, Long generatorProviderKey, QualityDataCollection previous) {
+	public QualityDataCollection createDataCollection(Collection<Organisation> organisations, QualityDataCollection previous,
+			QualityGenerator generator, Long generatorProviderKey) {
+		QualityDataCollection dataCollection = createDataCollection(generator, generatorProviderKey);
+		EvaluationFormSurvey previousSurvey = evaluationFormManager.loadSurvey(previous, null);
+		evaluationFormManager.createSurvey(dataCollection, null, previousSurvey);
+		createDataCollectionReferences(organisations, previousSurvey.getFormEntry(), dataCollection);
+		return dataCollection;
+	}
+	
+	private QualityDataCollection createDataCollection(QualityGenerator generator,
+			Long generatorProviderKey) {
 		QualityDataCollection dataCollection = dataCollectionDao.createDataCollection(generator, generatorProviderKey);
-		createDataCollectionReferences(organisations, formEntry, dataCollection, previous);
 		log.info("Quality data collection " + dataCollection + " created by generator " + generator);
 		return dataCollection;
 	}
 
 	private void createDataCollectionReferences(Collection<Organisation> organisations, RepositoryEntry formEntry,
-			QualityDataCollection dataCollection, QualityDataCollection previous) {
-		EvaluationFormSurvey previousSurvey = evaluationFormManager.loadSurvey(previous, null);
-		evaluationFormManager.createSurvey(dataCollection, null, formEntry, previousSurvey);
+			QualityDataCollection dataCollection) {
 		resourceManager.findOrPersistResourceable(dataCollection);
 		referenceManager.addReference(dataCollection, formEntry.getOlatResource(), null);
 		for (Organisation organisation : organisations) {
@@ -436,7 +447,7 @@ public class QualityServiceImpl
 		QualityReminderType type = reminder.getType();
 		EvaluationFormParticipationStatus status = type.getParticipationStatus();
 		OLATResourceable dataCollection = reminder.getDataCollection();
-		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(dataCollection, null);
+		EvaluationFormSurveyRef survey = evaluationFormManager.loadSurvey(dataCollection, null);
 		return evaluationFormManager.loadParticipations(survey, status);
 	}
 

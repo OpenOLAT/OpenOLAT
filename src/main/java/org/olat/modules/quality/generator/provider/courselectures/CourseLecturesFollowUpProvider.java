@@ -203,8 +203,8 @@ public class CourseLecturesFollowUpProvider implements QualityGeneratorProvider 
 		Long generatorProviderKey = CourseLecturesProvider.CONFIG_KEY_TOPIC_COACH.equals(topicKey)
 				? course.getKey()
 				: teacher.getKey();
-		QualityDataCollection dataCollection = qualityService.createDataCollection(organisations, formEntry, generator,
-				generatorProviderKey, previousDataCollection);
+		QualityDataCollection dataCollection = qualityService.createDataCollection(organisations, previousDataCollection, generator,
+				generatorProviderKey);
 
 		// fill in data collection attributes
 		Date dcStart = lectureBlockInfo.getLectureEndDate();
