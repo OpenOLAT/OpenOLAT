@@ -14,7 +14,5 @@ create table o_qual_analysis_presentation (
    primary key (id)
 );
 
-ALTER TABLE public.o_qual_analysis_presentation ADD q_heatmap_insufficient_only bool NULL;
-
 -- portfolio
 alter table o_pf_page_part alter column p_layout_options type text;
