@@ -101,12 +101,17 @@ public class QualityTestHelper {
 		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		List<Organisation> organisations = Collections.singletonList(organisation);
 		QualityDataCollection dataCollection = qualityService.createDataCollection(organisations, formEntry);
+		initDataCollection(dataCollection, title);
+		return dataCollection;
+	}
+
+	private void initDataCollection(QualityDataCollection dataCollection, String title) {
+		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		dataCollection.setTitle(title);
 		dataCollection.setStart(new Date());
 		dataCollection.setDeadline(new Date());
 		dataCollection.setTopicRepositoryEntry(formEntry);
 		dataCollection.setTopicType(QualityDataCollectionTopicType.REPOSITORY);
-		return dataCollection;
 	}
 	
 	QualityDataCollection createDataCollection() {
@@ -124,6 +129,7 @@ public class QualityTestHelper {
 	QualityDataCollection createDataCollection(QualityDataCollection previous) {
 		List<Organisation> organisations = Collections.singletonList(organisationService.getDefaultOrganisation());
 		QualityDataCollection dataCollection = qualityService.createDataCollection(organisations, previous, null, null);
+		initDataCollection(dataCollection, UUID.randomUUID().toString());
 		return dataCollection;
 	}
 	
