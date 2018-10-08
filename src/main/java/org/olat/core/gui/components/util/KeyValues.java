@@ -48,7 +48,7 @@ public class KeyValues {
 	 * @param keyValue
 	 */
 	public void add(KeyValue keyValue) {
-		keyValues.removeIf(kv -> kv.getKey().equals(keyValue.getKey()));
+		remove(keyValue.getKey());
 		keyValues.add(keyValue);
 	}
 	
@@ -71,10 +71,29 @@ public class KeyValues {
 		keyValues.set(index, keyValue);
 	}
 	
+	/**
+	 * Removes the key / value pair with the appropriate key.
+	 *
+	 * @param key
+	 */
+	public void remove(String key) {
+		keyValues.removeIf(kv -> kv.getKey().equals(key));
+	}
+	
+	/**
+	 * Returns a array of all keys. The method creates a new array every time it is invoked.
+	 *
+	 * @return
+	 */
 	public String[] keys() {
 		return keyValues.stream().map(KeyValue::getKey).toArray(String[]::new);
 	}
 	
+	/**
+	 * Returns a array of all values. The method creates a new array every time it is invoked.
+	 *
+	 * @return
+	 */
 	public String[] values() {
 		return keyValues.stream().map(KeyValue::getValue).toArray(String[]::new);
 	}
@@ -87,6 +106,23 @@ public class KeyValues {
 		return keyValues.stream().map(KeyValue::getKey).anyMatch(k -> Objects.equals(k, key));
 	}
 	
+	public int size() {
+		return keyValues.size();
+	}
+	
+	public boolean isEmpty() {
+		return keyValues.isEmpty();
+	}
+	
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		for (KeyValue keyValue : keyValues) {
+			builder.append(keyValue.toString()).append(" ");
+		}
+		return builder.toString();
+	}
+
 	public final static class KeyValue {
 		
 		private final String key;
@@ -128,6 +164,17 @@ public class KeyValues {
 			} else if (!key.equals(other.key))
 				return false;
 			return true;
+		}
+
+		@Override
+		public String toString() {
+			StringBuilder builder = new StringBuilder();
+			builder.append("[");
+			builder.append(key);
+			builder.append(" : ");
+			builder.append(value);
+			builder.append("]");
+			return builder.toString();
 		}
 	}
 

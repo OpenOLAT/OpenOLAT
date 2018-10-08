@@ -24,6 +24,7 @@ import static org.olat.core.gui.translator.TranslatorHelper.translateAll;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -76,7 +77,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class HeatMapController extends FormBasicController implements FilterableController {
 
+	private static final String[] EMPTY_ARRAY = {};
 	private static final String[] INSUFFICIENT_KEYS = new String[] {"heatmap.insufficient.select"};
+	private static final Collection<GroupBy> GROUP_BY_TOPICS = Arrays.asList(GroupBy.TOPIC_IDENTITY,
+			GroupBy.TOPIC_ORGANISATION, GroupBy.TOPIC_CURRICULUM, GroupBy.TOPIC_CURRICULUM_ELEMENT,
+			GroupBy.TOPIC_REPOSITORY);
 	
 	private SingleSelection groupEl1;
 	private SingleSelection groupEl2;
@@ -86,7 +91,7 @@ public class HeatMapController extends FormBasicController implements Filterable
 	private FlexiTableElement tableEl;
 	private FormLayoutContainer legendLayout;
 	
-	// This list is the master for the sort order
+	// This list is the master for the sort order of the questions (sliders).
 	private final List<SliderWrapper> sliders;
 	private final AvailableAttributes availableAttributes;
 	private AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
@@ -169,25 +174,16 @@ public class HeatMapController extends FormBasicController implements Filterable
 		String groupPage = velocity_root + "/heatmap_grouping.html";
 		FormLayoutContainer grouping = FormLayoutContainer.createCustomFormLayout("grouping", getTranslator(), groupPage);
 		flc.add("grouping", grouping);
-		// Group by
-		KeyValues groupByKV = initGroupByKeyValues();
-		String[] groupKeys = groupByKV.keys();
-		String[] groupValues = groupByKV.values();
-		if (multiGroupBy.isNoGroupBy()) {
-			GroupBy groupBy1 = GroupBy.valueOf(groupKeys[0]);
-			multiGroupBy = MultiGroupBy.of(groupBy1);
-		}
-		groupEl1 = uifactory.addDropdownSingleselect("heatmap.group1", grouping, groupKeys, groupValues);
+		
+		groupEl1 = uifactory.addDropdownSingleselect("heatmap.group1", grouping, EMPTY_ARRAY, EMPTY_ARRAY);
 		groupEl1.addActionListener(FormEvent.ONCHANGE);
-		selectGroupBy(groupEl1, multiGroupBy.getGroupBy1());
-		groupEl2 = uifactory.addDropdownSingleselect("heatmap.group2", grouping, groupKeys, groupValues);
+		groupEl2 = uifactory.addDropdownSingleselect("heatmap.group2", grouping, EMPTY_ARRAY, EMPTY_ARRAY);
 		groupEl2.setAllowNoSelection(true);
 		groupEl2.addActionListener(FormEvent.ONCHANGE);
-		selectGroupBy(groupEl2, multiGroupBy.getGroupBy2());
-		groupEl3 = uifactory.addDropdownSingleselect("heatmap.group3", grouping, groupKeys, groupValues);
+		groupEl3 = uifactory.addDropdownSingleselect("heatmap.group3", grouping, EMPTY_ARRAY, EMPTY_ARRAY);
 		groupEl3.setAllowNoSelection(true);
 		groupEl3.addActionListener(FormEvent.ONCHANGE);
-		selectGroupBy(groupEl3, multiGroupBy.getGroupBy3());
+		updateGroupingUI();
 		
 		// Insufficient filter
 		insufficientEl = uifactory.addCheckboxesVertical("heatmap.insufficient", grouping, INSUFFICIENT_KEYS,
@@ -199,20 +195,31 @@ public class HeatMapController extends FormBasicController implements Filterable
 		insufficientEl.setVisible(insufficientConfigured);
 		
 		// Heat map
-		initTable(Collections.emptyList(), 0);
-		
-	}
-
-	private void selectGroupBy(SingleSelection groupEl, GroupBy groupBy) {
-		if (groupBy != null) {
-			String groupByKey = groupBy.name();
-			if (Arrays.asList(groupEl.getKeys()).contains(groupByKey)) {
-				groupEl.select(groupByKey, true);
-			}
-		}
+		updateTable(Collections.emptyList(), 0);
 	}
 	
-	private KeyValues initGroupByKeyValues() {
+	private void updateGroupingUI() {
+		KeyValues groupByKV1 = initGroupByKeyValues(groupEl1);
+		String[] groupKeys1 = groupByKV1.keys();
+		if (multiGroupBy.isNoGroupBy()) {
+			GroupBy groupBy1 = GroupBy.valueOf(groupKeys1[0]);
+			multiGroupBy = MultiGroupBy.of(groupBy1);
+		}
+		groupEl1.setKeysAndValues(groupKeys1, groupByKV1.values(), null);
+		selectGroupBy(groupEl1, multiGroupBy.getGroupBy1());
+
+		KeyValues groupByKV2 = initGroupByKeyValues(groupEl2);
+		groupEl2.setKeysAndValues(groupByKV2.keys(), groupByKV2.values(), null);
+		groupEl2.setVisible(!groupByKV2.isEmpty());
+		selectGroupBy(groupEl2, multiGroupBy.getGroupBy2());
+
+		KeyValues groupByKV3 = initGroupByKeyValues(groupEl3);
+		groupEl3.setKeysAndValues(groupByKV3.keys(), groupByKV3.values(), null);
+		groupEl3.setVisible(!groupByKV3.isEmpty());
+		selectGroupBy(groupEl3, multiGroupBy.getGroupBy3());
+	}
+	
+	private KeyValues initGroupByKeyValues(SingleSelection groupEl) {
 		KeyValues keyValues = new KeyValues();
 		if (availableAttributes.isTopicIdentity()) {
 			addEntry(keyValues, GroupBy.TOPIC_IDENTITY);
@@ -244,6 +251,10 @@ public class HeatMapController extends FormBasicController implements Filterable
 		if (availableAttributes.isContextLocation()) {
 			addEntry(keyValues, GroupBy.CONTEXT_LOCATION);
 		}
+		Collection<GroupBy> elsewhereSelected = getElsewhereSelected(groupEl);
+		for (GroupBy groupBy : elsewhereSelected) {
+			keyValues.remove(groupBy.name());
+		}
 		return keyValues;
 	}
 
@@ -251,7 +262,43 @@ public class HeatMapController extends FormBasicController implements Filterable
 		keyValues.add(KeyValues.entry(groupBy.name(), translate(groupBy.i18nKey())));
 	}
 
-	private void initTable(List<String> groupHeaders, int maxCount) {
+	private Collection<GroupBy> getElsewhereSelected(SingleSelection groupEl) {
+		Collection<GroupBy> elsewhereSelected = new ArrayList<>(2);
+		if (groupEl != groupEl1 && multiGroupBy.getGroupBy1() != null) {
+			elsewhereSelected.addAll(ammendTopics(multiGroupBy.getGroupBy1()));
+		}
+		if (groupEl != groupEl2 && multiGroupBy.getGroupBy2() != null) {
+			elsewhereSelected.addAll(ammendTopics(multiGroupBy.getGroupBy2()));
+		}
+		if (groupEl != groupEl3 && multiGroupBy.getGroupBy3() != null) {
+			elsewhereSelected.addAll(ammendTopics(multiGroupBy.getGroupBy3()));
+		}
+		return elsewhereSelected;
+	}
+
+	/**
+	 * A data collection has never multiple topics. So a grouping by multiple topics makes no sense.
+	 *
+	 * @param groupBy
+	 * @return
+	 */
+	private Collection<? extends GroupBy> ammendTopics(GroupBy groupBy) {
+		if (GROUP_BY_TOPICS.contains(groupBy)) {
+			return GROUP_BY_TOPICS;
+		}
+		return Collections.singletonList(groupBy);
+	}
+
+	private void selectGroupBy(SingleSelection groupEl, GroupBy groupBy) {
+		if (groupBy != null) {
+			String groupByKey = groupBy.name();
+			if (Arrays.asList(groupEl.getKeys()).contains(groupByKey)) {
+				groupEl.select(groupByKey, true);
+			}
+		}
+	}
+
+	private void updateTable(List<String> groupHeaders, int maxCount) {
 		int columnIndex = 0;
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		if (groupHeaders.isEmpty()) {
@@ -316,6 +363,7 @@ public class HeatMapController extends FormBasicController implements Filterable
 		GroupBy groupBy3 = groupEl3.isOneSelected()? GroupBy.valueOf(groupEl3.getSelectedKey()): null;
 		multiGroupBy = MultiGroupBy.of(groupBy1, groupBy2, groupBy3);
 		fireEvent(ureq, new AnalysisGroupingEvent(multiGroupBy));
+		updateGroupingUI();
 	}
 
 	private void setInsufficientOnly(UserRequest ureq) {
@@ -385,7 +433,7 @@ public class HeatMapController extends FormBasicController implements Filterable
 		
 		List<String> headers = getHeaders();
 		int maxCount = getMaxCount(rows);
-		initTable(headers, maxCount);
+		updateTable(headers, maxCount);
 		
 		rows.sort(new GroupNameAlphabeticalComparator());
 		dataModel.setObjects(rows);
