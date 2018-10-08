@@ -208,6 +208,7 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		assertThat(attributes.isContextCurriculum()).isFalse();
 		assertThat(attributes.isContextCurriculumElement()).isFalse();
 		assertThat(attributes.isContextTaxonomyLevel()).isFalse();
+		assertThat(attributes.isSeriesIndex()).isFalse();
 	}
 	
 	@Test
@@ -368,6 +369,21 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		AvailableAttributes attributes = sut.getAvailableAttributes(searchParams);
 		
 		assertThat(attributes.isContextTaxonomyLevel()).isTrue();
+	}
+	
+	@Test
+	public void shouldGetAvailableAttributeForSeriesIndex() {
+		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Organisation dcOrganisation = qualityTestHelper.createOrganisation();
+		QualityDataCollection dc1 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		QualityDataCollection dc2 = qualityService.createDataCollection(asList(dcOrganisation), dc1, null, null);
+		finish(asList(dc1, dc2));
+		dbInstance.commitAndCloseSession();
+		
+		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
+		AvailableAttributes attributes = sut.getAvailableAttributes(searchParams);
+		
+		assertThat(attributes.isSeriesIndex()).isTrue();
 	}
 
 	private QualityDataCollection createFinishedDataCollection() {
@@ -716,6 +732,25 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void shouldLoadMaxSerieIndex() {
+		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Organisation dcOrganisation = organisationService.createOrganisation("", "", null, null, null);
+		QualityDataCollection dc1 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		QualityDataCollection dc2 = qualityService.createDataCollection(asList(dcOrganisation), dc1, null, null);
+		QualityDataCollection dc3 = qualityService.createDataCollection(asList(dcOrganisation), dc2, null, null);
+		QualityDataCollection dc4 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		QualityDataCollection dc5 = qualityService.createDataCollection(asList(dcOrganisation), dc4, null, null);
+		QualityDataCollection dc6 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		finish(asList(dc1, dc2, dc3, dc4, dc5, dc6));
+		dbInstance.commitAndCloseSession();
+		
+		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
+		Integer maxLevels = sut.loadMaxSeriesIndex(searchParams);
+		
+		assertThat(maxLevels).isEqualTo(3);
+	}
+	
+	@Test
 	public void shouldLoadGroupedStatistics() {
 		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Organisation dcOrganisation = qualityTestHelper.createOrganisation();
@@ -819,7 +854,6 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 			}
 		}
 	}
-
 	
 	@Test
 	public void shouldLoadGroupedStatisticForEveryGroupBy() {
@@ -1348,7 +1382,27 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		long expectedUnfiltered = asList(executor1, executor2, executorOther).size();
 		assertThat(countUnfiltered).isEqualTo(expectedUnfiltered);
 	}
-
+	
+	@Test
+	public void shouldFilterBySerieNumber() {
+		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Organisation dcOrganisation = organisationService.createOrganisation("", "", null, null, null);
+		QualityDataCollection dc1 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		QualityDataCollection dc2 = qualityService.createDataCollection(asList(dcOrganisation), dc1, null, null);
+		QualityDataCollection dc3 = qualityService.createDataCollection(asList(dcOrganisation), dc2, null, null);
+		QualityDataCollection dc4 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		QualityDataCollection dc5 = qualityService.createDataCollection(asList(dcOrganisation), dc4, null, null);
+		QualityDataCollection dc6 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		finish(asList(dc1, dc2, dc3, dc4, dc5, dc6));
+		dbInstance.commitAndCloseSession();
+		
+		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
+		searchParams.setSeriesIndexes(asList(1, 3));
+		Long count = sut.loadAnalyticFigures(searchParams).getDataCollectionCount();
+		
+		long expected = asList(dc1, dc3, dc4, dc6).size();
+		assertThat(count).isEqualTo(expected);
+	}
 	
 	private void finish(Collection<QualityDataCollection> dataCollections) {
 		for (QualityDataCollection dataCollection: dataCollections) {

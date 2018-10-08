@@ -229,6 +229,11 @@ public class QualityAnalysisServiceImpl implements QualityAnalysisService {
 		return levels;
 	}
 
+	@Override
+	public Integer loadMaxSeriesIndex(AnalysisSearchParameter searchParams) {
+		return filterDao.loadMaxSeriesIndex(searchParams);
+	}
+
 	private boolean isUnusedChild(String pathToCheck, List<String> pathes) {
 		for (String path : pathes) {
 			if (path.contains(pathToCheck)) {

@@ -73,6 +73,7 @@ public class AnalysisFilterDAO {
 		sb.append("     , count(contextToCurriculum.curriculum.key) > 0");
 		sb.append("     , count(contextToCurriculumElement.curriculumElement.key) > 0");
 		sb.append("     , count(contextToTaxonomyLevel.taxonomyLevel.key) > 0");
+		sb.append("     , CASE WHEN max(survey.seriesIndex) is not null THEN max(survey.seriesIndex) ELSE 0 END >= 2");
 		sb.append("       )");
 		appendFrom(sb, searchParams);
 		appendWhere(sb, searchParams);
@@ -253,6 +254,18 @@ public class AnalysisFilterDAO {
 				.createQuery(sb.toString(), Long.class);
 		appendParameters(query, searchParams);
 		return query.getResultList();
+	}
+
+	public Integer loadMaxSeriesIndex(AnalysisSearchParameter searchParams) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select max(survey.seriesIndex)");
+		appendFrom(sb, searchParams);
+		appendWhere(sb, searchParams);
+		
+		TypedQuery<Integer> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Integer.class);
+		appendParameters(query, searchParams);
+		return query.getResultList().get(0);
 	}
 
 	List<Long> loadSessionKeys(AnalysisSearchParameter searchParams) {
@@ -459,6 +472,9 @@ public class AnalysisFilterDAO {
 				}
 			}
 		}
+		if (searchParams.getSeriesIndexes() != null && !searchParams.getSeriesIndexes().isEmpty()) {
+			sb.and().append("survey.seriesIndex in :seriesIndexes");
+		}
 		if (searchParams.isWithUserInfosOnly()) {
 			sb.and();
 			sb.append("(");
@@ -533,6 +549,9 @@ public class AnalysisFilterDAO {
 				String value = new StringBuilder(32).append("%/").append(key).append("/%").toString();
 				query.setParameter(parameter, value);
 			}
+		}
+		if (searchParams.getSeriesIndexes() != null && !searchParams.getSeriesIndexes().isEmpty()) {
+			query.setParameter("seriesIndexes", searchParams.getSeriesIndexes());
 		}
 	}
 

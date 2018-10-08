@@ -53,6 +53,7 @@ public class AnalysisSearchParameter {
 	private Collection<? extends CurriculumRef> contextCurriculumRefs;
 	private List<? extends CurriculumElementRef> contextCurriculumElementRefs;
 	private List<? extends TaxonomyLevelRef> contextTaxonomyLevelRefs;
+	private Collection<Integer> seriesIndexes;
 	private boolean withUserInfosOnly;
 
 	public RepositoryEntryRef getFormEntryRef() {
@@ -164,6 +165,14 @@ public class AnalysisSearchParameter {
 		return withUserInfosOnly;
 	}
 
+	public Collection<Integer> getSeriesIndexes() {
+		return seriesIndexes;
+	}
+
+	public void setSeriesIndexes(Collection<Integer> seriesIndexes) {
+		this.seriesIndexes = seriesIndexes;
+	}
+
 	public void setWithUserInfosOnly(boolean withUserInfosOnly) {
 		this.withUserInfosOnly = withUserInfosOnly;
 	}
@@ -203,6 +212,9 @@ public class AnalysisSearchParameter {
 				: null;
 		clone.contextTaxonomyLevelRefs = this.contextTaxonomyLevelRefs != null
 				? new ArrayList<>(this.contextTaxonomyLevelRefs)
+				: null;
+		clone.seriesIndexes = this.seriesIndexes != null
+				? new ArrayList<>(this.seriesIndexes)
 				: null;
 		clone.withUserInfosOnly = this.withUserInfosOnly;
 		return clone;

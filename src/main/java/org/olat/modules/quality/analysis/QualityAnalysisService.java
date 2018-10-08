@@ -76,6 +76,8 @@ public interface QualityAnalysisService {
 	public List<CurriculumElement> loadContextCurriculumElements(AnalysisSearchParameter searchParams, boolean withParents);
 
 	public List<TaxonomyLevel> loadContextTaxonomyLevels(AnalysisSearchParameter searchParams, boolean withParents);
+	
+	public Integer loadMaxSeriesIndex(AnalysisSearchParameter searchParams);
 
 	public SessionFilter createSessionFilter(AnalysisSearchParameter searchParams);
 
