@@ -448,7 +448,7 @@ public class ImsQTI21InteractionsTest extends Deployments {
 		qtiPage
 			.clickToolbarBack()
 			.assertOnAssessmentItem()
-			.answerSelectPoint(100, 110)
+			.answerSelectPoint(100, 110, 192, 280)
 			.saveAnswer()
 			.endTest()
 			.closeTest();

@@ -935,6 +935,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		File backgroundImageFile = new File(backgroundImageUrl.toURI());
 		hotspotEditor
 			.updloadBackground(backgroundImageFile)
+			.moveToHotspotEditor()
 			.resizeCircle()
 			.moveCircle(300, 120)
 			.addRectangle()
@@ -960,6 +961,7 @@ public class ImsQTI21EditorTest extends Deployments {
 			.addHotspot();
 		hotspotEditor
 			.updloadBackground(backgroundImageFile)
+			.moveToHotspotEditor()
 			.resizeCircle()
 			.moveCircle(310, 125)
 			.addRectangle()
@@ -1015,17 +1017,17 @@ public class ImsQTI21EditorTest extends Deployments {
 		ryomouQtiPage
 			.assertOnAssessmentItem()
 			.answerHotspot("rect")
-			.saveAnswer()
+			.saveGraphicAnswer()
 			.assertFeedback("Incorrect")
 			.assertCorrectSolution("Correct solution")
 			.hint()
 			.assertFeedback("Hint")
 			.answerHotspot("circle")
-			.saveAnswer()
+			.saveGraphicAnswer()
 			.assertFeedback("Correct feedback")
 			.nextAnswer()
 			.answerHotspot("rect")
-			.saveAnswer()
+			.saveGraphicAnswer()
 			.assertCorrectSolution("Correct solution")
 			.assertFeedback("Incorrect")
 			.endTest()
@@ -1051,11 +1053,11 @@ public class ImsQTI21EditorTest extends Deployments {
 			.getQTI21Page(participantBrowser)
 			.assertOnAssessmentItem()
 			.answerHotspot("circle")
-			.saveAnswer()
+			.saveGraphicAnswer()
 			.assertFeedback("Correct feedback")
 			.nextAnswer()
 			.answerHotspot("circle")
-			.saveAnswer()
+			.saveGraphicAnswer()
 			.endTest()
 			.assertOnAssessmentResults()
 			.assertOnAssessmentTestScore(5);// 3 points from the first question, 2 from the second
@@ -1106,6 +1108,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		File backgroundImageFile = new File(backgroundImageUrl.toURI());
 		hotspotEditor
 			.updloadBackground(backgroundImageFile)
+			.moveToHotspotEditor()
 			.resizeCircle()
 			.moveCircle(300, 120)
 			.addRectangle()
@@ -1132,6 +1135,7 @@ public class ImsQTI21EditorTest extends Deployments {
 			.addHotspot();
 		hotspotEditor
 			.updloadBackground(backgroundImageFile)
+			.moveToHotspotEditor()
 			.resizeCircle()
 			.moveCircle(310, 125)
 			.addRectangle()
@@ -1188,17 +1192,17 @@ public class ImsQTI21EditorTest extends Deployments {
 		ryomouQtiPage
 			.assertOnAssessmentItem()
 			.answerHotspot("rect")
-			.saveAnswer()
+			.saveGraphicAnswer()
 			.assertFeedback("Incorrect")
 			.assertCorrectSolution("Correct solution")
 			.hint()
 			.assertFeedback("Hint")
 			.answerHotspot("circle")
-			.saveAnswer()
+			.saveGraphicAnswer()
 			.assertFeedback("Correct feedback")
 			.nextAnswer()
 			.answerHotspot("circle")
-			.saveAnswer()
+			.saveGraphicAnswer()
 			.assertCorrectSolution("Correct solution")
 			.assertFeedback("Incorrect")
 			.endTest()
@@ -1225,12 +1229,12 @@ public class ImsQTI21EditorTest extends Deployments {
 			.assertOnAssessmentItem()
 			.answerHotspot("circle")
 			.answerHotspot("rect")
-			.saveAnswer()
+			.saveGraphicAnswer()
 			.assertFeedback("Correct feedback")
 			.nextAnswer()
 			.answerHotspot("circle")
 			.answerHotspot("rect")
-			.saveAnswer()
+			.saveGraphicAnswer()
 			.endTest()
 			.assertOnAssessmentResults()
 			.assertOnAssessmentTestScore(6);// 3 points from the first question, 3 from the second
@@ -3280,6 +3284,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		File backgroundImageFile = new File(backgroundImageUrl.toURI());
 		hotspotEditor
 			.updloadBackground(backgroundImageFile)
+			.moveToHotspotEditor()
 			.resizeCircle()
 			.moveCircle(300, 120)
 			.addRectangle()
@@ -3333,7 +3338,7 @@ public class ImsQTI21EditorTest extends Deployments {
 			.answerMultipleChoice("Correct")
 			.saveAnswer()
 			.answerHotspot("circle")
-			.saveAnswer()
+			.saveGraphicAnswer()
 			.endTest()
 		//check the results
 			.assertOnAssessmentResults()
@@ -3366,7 +3371,7 @@ public class ImsQTI21EditorTest extends Deployments {
 			.answerMultipleChoice("Faux")
 			.saveAnswer()
 			.answerHotspot("rect")
-			.saveAnswer()
+			.saveGraphicAnswer()
 			.endTest()
 		//check the results
 			.assertOnAssessmentResults()
@@ -3398,7 +3403,7 @@ public class ImsQTI21EditorTest extends Deployments {
 			.answerMultipleChoice("Correct")
 			.saveAnswer()
 			.answerHotspot("circle")
-			.saveAnswer()
+			.saveGraphicAnswer()
 			.endTest()
 		//check the results
 			.assertOnAssessmentResults()
