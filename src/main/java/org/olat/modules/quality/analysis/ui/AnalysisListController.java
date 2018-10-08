@@ -48,9 +48,11 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.quality.QualitySecurityCallback;
 import org.olat.modules.quality.analysis.AnalysisPresentation;
 import org.olat.modules.quality.analysis.EvaluationFormView;
@@ -67,6 +69,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class AnalysisListController extends FormBasicController implements FlexiTableComponentDelegate, Activateable2 {
 
+	private static final String ORES_TYPE_FORM = "form";
+	private static final String ORES_TYPE_PRESENTATION = "presentation";
 	private static final String CMD_OPEN = "open";
 	private static final Comparator<? super EvaluationFormView> CREATED_DESC = 
 			(f1, f2) -> f2.getLatestDataCollectionFinishedDate().compareTo(f1.getLatestDataCollectionFinishedDate());
@@ -80,7 +84,7 @@ public class AnalysisListController extends FormBasicController implements Flexi
 	
 	private final List<Organisation> organisations;
 	private int counter = 0;
-	private EvaluationFormView currentFormView;
+	private AnalysisPresentation presentation;
 
 	@Autowired
 	private QualityAnalysisService analysisService;
@@ -96,6 +100,12 @@ public class AnalysisListController extends FormBasicController implements Flexi
 		this.organisations = organisationService.getOrganisations(getIdentity(), ureq.getUserSession().getRoles(),
 				secCallback.getAnalysisViewRoles());
 		initForm(ureq);
+	}
+	
+	public static OLATResourceable getOlatResourceable(AnalysisPresentation presentation) {
+		return presentation.getKey() != null
+				? OresHelper.createOLATResourceableInstance(ORES_TYPE_PRESENTATION, presentation.getKey())
+				: OresHelper.createOLATResourceableInstance(ORES_TYPE_FORM, presentation.getFormEntry().getKey());
 	}
 
 	@Override
@@ -173,14 +183,14 @@ public class AnalysisListController extends FormBasicController implements Flexi
 		if(entries == null || entries.isEmpty()) return;
 		
 		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
-		if (EvaluationFormView.RESOURCEABLE_TYPE.equalsIgnoreCase(type)) {
+		if (ORES_TYPE_FORM.equalsIgnoreCase(type)) {
 			Long formEntryKey = entries.get(0).getOLATResourceable().getResourceableId();
 			AnalysisRow row = dataModel.getObjectByFormEntryKey(formEntryKey);
 			if (row != null) {
-				currentFormView = row;
+				presentation = createPresentation(row);
 				doOpenAnalysis(ureq);
 			}
-		} else if (AnalysisPresentation.RESOURCEABLE_TYPE.equalsIgnoreCase(type)) {
+		} else if (ORES_TYPE_PRESENTATION.equalsIgnoreCase(type)) {
 			Long presentationKey = entries.get(0).getOLATResourceable().getResourceableId();
 			doOpenPresentation(ureq, presentationKey);
 		}
@@ -203,39 +213,48 @@ public class AnalysisListController extends FormBasicController implements Flexi
 		if (source == tableEl && event instanceof SelectionEvent) {
 			SelectionEvent se = (SelectionEvent)event;
 			String cmd = se.getCommand();
-			currentFormView = dataModel.getObject(se.getIndex());
+			AnalysisRow row = dataModel.getObject(se.getIndex());
+			presentation = createPresentation(row);
 			if (CMD_OPEN.equals(cmd)) {
 				doOpenAnalysis(ureq);
 			}
 		} else if (source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			if(CMD_OPEN.equals(link.getCmd())) {
-				currentFormView = (AnalysisRow)link.getUserObject();
+				AnalysisRow row = (AnalysisRow)link.getUserObject();
+				presentation = createPresentation(row);
 				doOpenAnalysis(ureq);
 			}
 		}
 		
 		super.formInnerEvent(ureq, source, event);
 	}
-
-	private void doOpenAnalysis(UserRequest ureq) {
-		AnalysisPresentation presentation = analysisService.createPresentation(currentFormView.getFormEntry());
-		WindowControl bwControl = addToHistory(ureq, currentFormView, null);
-		doOpenAnalysis(ureq, bwControl, presentation);
+	
+	private AnalysisPresentation createPresentation(EvaluationFormView formView) {
+		return analysisService.createPresentation(formView.getFormEntry());
 	}
 
 	private void doOpenPresentation(UserRequest ureq, Long presentationKey) {
-		AnalysisPresentation presentation = analysisService.loadPresentationByKey(() -> presentationKey);
-		WindowControl bwControl = addToHistory(ureq, presentation, null);
-		doOpenAnalysis(ureq, bwControl, presentation);
+		presentation = analysisService.loadPresentationByKey(() -> presentationKey);
+		if (presentation != null) {
+			doOpenAnalysis(ureq);
+		}
 	}
 
-	private void doOpenAnalysis(UserRequest ureq, WindowControl wControl, AnalysisPresentation presentation) {
-		analysisCtrl = new AnalysisSegmentsController(ureq, wControl, secCallback, stackPanel, presentation);
+	private void doOpenAnalysis(UserRequest ureq) {
+		OLATResourceable ores = getOlatResourceable(presentation);
+		WindowControl bwControl = addToHistory(ureq, ores, null);
+		analysisCtrl = new AnalysisSegmentsController(ureq, bwControl, secCallback, stackPanel, presentation);
 		listenTo(analysisCtrl);
-		String title = presentation.getFormEntry().getDisplayname();
+		String title = getBreadcrumbTitle(presentation);
 		stackPanel.pushController(title, analysisCtrl);
 		analysisCtrl.activate(ureq, null, null);
+	}
+	
+	private String getBreadcrumbTitle(AnalysisPresentation presentation) {
+		return presentation.getKey() != null
+				? presentation.getName()
+				: presentation.getFormEntry().getDisplayname();
 	}
 
 	@Override

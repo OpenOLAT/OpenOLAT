@@ -21,7 +21,6 @@ package org.olat.modules.quality.analysis;
 
 import java.util.Date;
 
-import org.olat.core.id.OLATResourceable;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -30,10 +29,8 @@ import org.olat.repository.RepositoryEntry;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface EvaluationFormView extends OLATResourceable {
+public interface EvaluationFormView {
 	
-	public String RESOURCEABLE_TYPE = "form";
-
 	public RepositoryEntry getFormEntry();
 	
 	public Long getNumberDataCollections();

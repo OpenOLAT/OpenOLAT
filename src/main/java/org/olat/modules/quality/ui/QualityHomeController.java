@@ -234,7 +234,8 @@ public class QualityHomeController extends BasicController implements Activateab
 	}
 	
 	private void doOpenPresentation(UserRequest ureq, AnalysisPresentation presentation) {
-		ContextEntry contextEntry = BusinessControlFactory.getInstance().createContextEntry(presentation);
+		OLATResourceable ores = AnalysisListController.getOlatResourceable(presentation);
+		ContextEntry contextEntry = BusinessControlFactory.getInstance().createContextEntry(ores);
 		List<ContextEntry> entries = Collections.singletonList(contextEntry);
 		doOpenAnalysis(ureq, entries);
 	}

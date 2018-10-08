@@ -48,16 +48,6 @@ public class EvaluationFormViewImpl implements EvaluationFormView {
 	}
 
 	@Override
-	public String getResourceableTypeName() {
-		return EvaluationFormView.RESOURCEABLE_TYPE;
-	}
-
-	@Override
-	public Long getResourceableId() {
-		return formEntry.getKey();
-	}
-
-	@Override
 	public RepositoryEntry getFormEntry() {
 		return formEntry;
 	}

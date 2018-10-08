@@ -42,16 +42,6 @@ public class AnalysisRow implements EvaluationFormView {
 	}
 
 	@Override
-	public String getResourceableTypeName() {
-		return formView.getResourceableTypeName();
-	}
-
-	@Override
-	public Long getResourceableId() {
-		return formView.getResourceableId();
-	}
-	
-	@Override
 	public RepositoryEntry getFormEntry() {
 		return formView.getFormEntry();
 	}

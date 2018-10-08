@@ -21,7 +21,6 @@ package org.olat.modules.quality.analysis;
 
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
-import org.olat.core.id.OLATResourceable;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -30,9 +29,7 @@ import org.olat.repository.RepositoryEntry;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface AnalysisPresentation extends AnalysisPresentationRef, OLATResourceable, CreateInfo, ModifiedInfo {
-	
-	public String RESOURCEABLE_TYPE = "presentation";
+public interface AnalysisPresentation extends AnalysisPresentationRef, CreateInfo, ModifiedInfo {
 	
 	public String getName();
 	

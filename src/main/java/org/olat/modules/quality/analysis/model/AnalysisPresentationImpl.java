@@ -97,16 +97,6 @@ public class AnalysisPresentationImpl implements AnalysisPresentation, Persistab
 	}
 
 	@Override
-	public String getResourceableTypeName() {
-		return AnalysisPresentation.RESOURCEABLE_TYPE;
-	}
-
-	@Override
-	public Long getResourceableId() {
-		return key;
-	}
-
-	@Override
 	public Date getCreationDate() {
 		return creationDate;
 	}
