@@ -49,6 +49,7 @@ import org.olat.core.id.Organisation;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumManagedFlag;
 import org.olat.modules.curriculum.CurriculumRoles;
@@ -312,7 +313,8 @@ public class CurriculumsWebServiceTest extends OlatJerseyTestCase {
 	throws IOException, URISyntaxException {
 		Organisation organisation = organisationService.createOrganisation("Curriculum org.", "curr-org", "", null, null);
 		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", organisation);
-		CurriculumElement element = curriculumService.createCurriculumElement("Unkown", "Element 1", null, null, null, null, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement("Unkown", "Element 1", null, null, null,
+				null, CurriculumCalendars.disabled, curriculum);
 		dbInstance.commit();
 		String externalId = UUID.randomUUID().toString();
 		element.setExternalId(externalId);
@@ -340,7 +342,8 @@ public class CurriculumsWebServiceTest extends OlatJerseyTestCase {
 		Organisation organisation = organisationService.createOrganisation("Curriculum org.", "curr-org", "", null, null);
 		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", organisation);
 		String identifier = UUID.randomUUID().toString();
-		CurriculumElement element = curriculumService.createCurriculumElement(identifier, "Element 1", null, null, null, null, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement(identifier, "Element 1", null, null, null,
+				null, CurriculumCalendars.disabled, curriculum);
 		dbInstance.commitAndCloseSession();
 
 		RestConnection conn = new RestConnection();
@@ -363,7 +366,8 @@ public class CurriculumsWebServiceTest extends OlatJerseyTestCase {
 	throws IOException, URISyntaxException {
 		Organisation organisation = organisationService.createOrganisation("Curriculum org.", "curr-org", "", null, null);
 		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", organisation);
-		CurriculumElement element = curriculumService.createCurriculumElement("by-key", "Element 1", null, null, null, null, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement("by-key", "Element 1", null, null, null,
+				null, CurriculumCalendars.disabled, curriculum);
 		dbInstance.commitAndCloseSession();
 
 		RestConnection conn = new RestConnection();

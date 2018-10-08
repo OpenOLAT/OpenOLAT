@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementMembership;
+import org.olat.modules.curriculum.CurriculumElementWithView;
 import org.olat.repository.RepositoryEntryMyView;
 
 /**
@@ -32,17 +33,27 @@ import org.olat.repository.RepositoryEntryMyView;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CurriculumElementRepositoryEntryViews {
+public class CurriculumElementRepositoryEntryViews implements CurriculumElementWithView {
 	
 	private final CurriculumElement curriculumElement;
 	private final List<RepositoryEntryMyView> entries;
 	private final CurriculumElementMembership curriculumMembership;
+
+	
+	private boolean curriculumMember;
+	private CurriculumElementRepositoryEntryViews parent;
 	
 	public CurriculumElementRepositoryEntryViews(CurriculumElement curriculumElement, List<RepositoryEntryMyView> entries,
 			CurriculumElementMembership curriculumMembership) {
 		this.curriculumElement = curriculumElement;
 		this.entries = entries;
 		this.curriculumMembership = curriculumMembership;
+		curriculumMember = curriculumMembership != null && curriculumMembership.hasMembership();
+	}
+	
+	@Override
+	public Long getKey() {
+		return curriculumElement.getKey();
 	}
 
 	public CurriculumElement getCurriculumElement() {
@@ -55,6 +66,27 @@ public class CurriculumElementRepositoryEntryViews {
 	
 	public CurriculumElementMembership getCurriculumMembership() {
 		return curriculumMembership;
+	}
+
+	@Override
+	public CurriculumElementRepositoryEntryViews getParent() {
+		return parent;
+	}
+
+	public void setParent(CurriculumElementRepositoryEntryViews parent) {
+		this.parent = parent;
+	}
+
+	/**
+	 * @return true if the user is member of this element or one of the descendant.
+	 */
+	@Override
+	public boolean isCurriculumMember() {
+		return curriculumMember;
+	}
+
+	public void setCurriculumMember(boolean curriculumMember) {
+		this.curriculumMember = curriculumMember;
 	}
 
 	@Override

@@ -19,6 +19,7 @@
  */
 package org.olat.repository.manager;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
@@ -58,7 +59,15 @@ public class RepositoryEntryDAO {
 			return null;
 		}
 		return entries.get(0);
-
+	}
+	
+	public List<RepositoryEntry> loadByKeys(Collection<Long> keys) {
+		if(keys == null || keys.isEmpty()) return new ArrayList<>(1);
+		
+		return dbInstance.getCurrentEntityManager()
+				.createNamedQuery("loadRepositoryEntriesByKeys", RepositoryEntry.class)
+				.setParameter("repoKeys", keys)
+				.getResultList();
 	}
 
 	public RepositoryEntry loadForUpdate(RepositoryEntry re) {

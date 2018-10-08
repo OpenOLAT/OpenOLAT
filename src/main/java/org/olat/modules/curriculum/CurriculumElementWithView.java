@@ -19,30 +19,36 @@
  */
 package org.olat.modules.curriculum;
 
+import java.util.List;
+
+import org.olat.repository.RepositoryEntryMyView;
+
 /**
  * 
- * Initial date: 15 févr. 2018<br>
+ * Initial date: 8 Oct 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface CurriculumSecurityCallback {
+public interface CurriculumElementWithView extends CurriculumElementRef {
 	
-	public boolean canNewCurriculum();
+	public boolean isCurriculumMember();
 	
-	public boolean canEditCurriculum();
+	public CurriculumElementWithView getParent();
 	
-	public boolean canManagerCurriculumUsers();
+	public List<RepositoryEntryMyView> getEntries();
 	
-	public boolean canNewCurriculumElement();
-	
-	public boolean canEditCurriculumElement();
-	
-	public boolean canManagerCurriculumElementUsers();
-	
-	public boolean canManagerCurriculumElementResources();
-	
-	public boolean canViewAllCalendars();
-	
-	
-
+	public default boolean isParentOrSelf(CurriculumElementRef parentRef) {
+		boolean hasParent = false;
+		
+		if(getKey().equals(parentRef.getKey())) {
+			hasParent = true;
+		} else {
+			for(CurriculumElementWithView parentRow=getParent(); parentRow != null; parentRow=parentRow.getParent()) {
+				if(parentRow.getKey().equals(parentRef.getKey())) {
+					hasParent = true;
+				}
+			}
+		}
+		return hasParent;
+	}
 }

@@ -30,7 +30,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
@@ -38,6 +37,8 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 import org.olat.core.id.Persistable;
+import org.olat.core.util.StringHelper;
+import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumElementTypeManagedFlag;
 import org.olat.modules.curriculum.CurriculumElementTypeToType;
@@ -48,10 +49,8 @@ import org.olat.modules.curriculum.CurriculumElementTypeToType;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-@NamedQueries({
-	@NamedQuery(name="loadCurriculumElementTypeByKey", query="select el from curriculumelementtype el where el.key=:key"),
-	@NamedQuery(name="loadCurriculumElementTypes", query="select elementType from curriculumelementtype elementType")	
-})
+@NamedQuery(name="loadCurriculumElementTypeByKey", query="select el from curriculumelementtype el where el.key=:key")
+@NamedQuery(name="loadCurriculumElementTypes", query="select elementType from curriculumelementtype elementType")	
 @Entity(name="curriculumelementtype")
 @Table(name="o_cur_element_type")
 public class CurriculumElementTypeImpl implements Persistable, CurriculumElementType {
@@ -82,6 +81,8 @@ public class CurriculumElementTypeImpl implements Persistable, CurriculumElement
 	private String externalId;
 	@Column(name="c_managed_flags", nullable=true, insertable=true, updatable=true)
 	private String managedFlagsString;
+	@Column(name="c_calendars", nullable=true, insertable=true, updatable=true)
+	private String calendarsEnabledString;
 	
 	@OneToMany(targetEntity=CurriculumElementTypeToTypeImpl.class, fetch=FetchType.LAZY,
 			orphanRemoval=true, cascade={CascadeType.PERSIST, CascadeType.REMOVE})
@@ -164,6 +165,29 @@ public class CurriculumElementTypeImpl implements Persistable, CurriculumElement
 	@Override
 	public void setExternalId(String externalId) {
 		this.externalId = externalId;
+	}
+
+	public String getCalendarsEnabled() {
+		return calendarsEnabledString;
+	}
+
+	public void setCalendarsEnabled(String calendarsEnabledString) {
+		this.calendarsEnabledString = calendarsEnabledString;
+	}
+
+	@Override
+	public CurriculumCalendars getCalendars() {
+		return StringHelper.containsNonWhitespace(calendarsEnabledString)
+				? CurriculumCalendars.valueOf(calendarsEnabledString): CurriculumCalendars.disabled;
+	}
+
+	@Override
+	public void setCalendars(CurriculumCalendars calendars) {
+		if(calendars == null) {
+			calendarsEnabledString = null;
+		} else {
+			calendarsEnabledString = calendars.name();
+		}
 	}
 
 	public String getManagedFlagsString() {

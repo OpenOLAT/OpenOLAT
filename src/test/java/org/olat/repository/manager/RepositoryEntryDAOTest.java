@@ -70,6 +70,25 @@ public class RepositoryEntryDAOTest extends OlatTestCase {
 		Assert.assertNotNull(loadedRe.getStatistics());
 		Assert.assertNotNull(loadedRe.getOlatResource());
 	}
+	
+	@Test
+	public void loadByKeys() {
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		RepositoryEntry re = repositoryService.create(null, "Rei Ayanami", "-", "Repository entry DAO Test 1s", "", null,
+				RepositoryEntryStatusEnum.trash, defOrganisation);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(re);
+
+		List<RepositoryEntry> loadedRes = repositoryEntryDao.loadByKeys(Collections.singletonList(re.getKey()));
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(loadedRes);
+		Assert.assertEquals(1, loadedRes.size());
+		
+		RepositoryEntry loadedRe = loadedRes.get(0);
+		Assert.assertEquals(re, loadedRe);
+		Assert.assertNotNull(loadedRe.getStatistics());
+		Assert.assertNotNull(loadedRe.getOlatResource());
+	}
 
 	@Test
 	public void loadByResourceKey() {

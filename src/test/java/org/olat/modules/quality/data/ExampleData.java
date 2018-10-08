@@ -41,6 +41,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
@@ -161,7 +162,7 @@ public class ExampleData extends OlatTestCase {
 			return curriculumElements.get(0);
 		}
 		
-		return curriculumService.createCurriculumElement(identifier, displayName, null, null, input.getParent(), null, input.getCurriculum());
+		return curriculumService.createCurriculumElement(identifier, displayName, null, null, input.getParent(), null, CurriculumCalendars.disabled, input.getCurriculum());
 	}
 	
 	private void createCurriculum(Organisation org, Parameter param) {

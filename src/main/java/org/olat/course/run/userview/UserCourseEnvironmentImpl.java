@@ -31,8 +31,10 @@ import java.util.List;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.PersistenceHelper;
+import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.IdentityEnvironment;
+import org.olat.course.ICourse;
 import org.olat.course.assessment.manager.EfficiencyStatementManager;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
@@ -45,6 +47,7 @@ import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.model.RepositoryEntryLifecycle;
+import org.olat.repository.model.RepositoryEntrySecurity;
 
 /**
  * Initial Date:  Feb 6, 2004
@@ -97,6 +100,33 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 		this.participant = participant;
 		this.windowControl = windowControl;
 		this.courseReadOnly = courseReadOnly;
+	}
+	
+	public static UserCourseEnvironmentImpl load(UserRequest ureq, ICourse course, RepositoryEntrySecurity reSecurity, WindowControl wControl) {
+		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
+		List<BusinessGroup> coachedGroups;
+		if(reSecurity.isGroupCoach()) {
+			coachedGroups = cgm.getOwnedBusinessGroups(ureq.getIdentity());
+		} else {
+			coachedGroups = Collections.emptyList();
+		}
+		List<BusinessGroup> participatedGroups;
+		if(reSecurity.isGroupParticipant()) {
+			participatedGroups = cgm.getParticipatingBusinessGroups(ureq.getIdentity());
+		} else {
+			participatedGroups = Collections.emptyList();
+		}
+		List<BusinessGroup> waitingLists;
+		if(reSecurity.isGroupWaiting()) {
+			waitingLists = cgm.getWaitingListGroups(ureq.getIdentity());
+		} else {
+			waitingLists = Collections.emptyList();
+		}
+
+		return new UserCourseEnvironmentImpl(ureq.getUserSession().getIdentityEnvironment(), course.getCourseEnvironment(), wControl,
+				coachedGroups, participatedGroups, waitingLists,
+				reSecurity.isCoach(), reSecurity.isEntryAdmin() || reSecurity.isPrincipal(), reSecurity.isParticipant(),
+				reSecurity.isReadOnly() || reSecurity.isOnlyPrincipal());
 	}
 
 	/**

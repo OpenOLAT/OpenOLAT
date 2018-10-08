@@ -35,6 +35,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.lecture.LectureBlock;
@@ -203,8 +204,8 @@ public class CourseLecturesProviderDAOTest extends OlatTestCase {
 		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("");
 		Organisation organisation = organisationService.createOrganisation("", "", null, null, null);
 		Curriculum curriculum = curriculumService.createCurriculum("", "", null, organisation);
-		CurriculumElement element = curriculumService.createCurriculumElement("", "", null, null, null, null, curriculum);
-		CurriculumElement otherElement = curriculumService.createCurriculumElement("", "", null, null, null, null, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement("", "", null, null, null, null, CurriculumCalendars.disabled, curriculum);
+		CurriculumElement otherElement = curriculumService.createCurriculumElement("", "", null, null, null, null, CurriculumCalendars.disabled, curriculum);
 		RepositoryEntry course1 = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry course2 = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry otherCourse = JunitTestHelper.createAndPersistRepositoryEntry();

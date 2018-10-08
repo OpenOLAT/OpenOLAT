@@ -307,6 +307,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_timelimit_start:before { content: $fa-var-hourglass-start; }
 .o_icon_timelimit_half:before { content: $fa-var-hourglass-half; }
 .o_icon_timelimit_end:before { content: $fa-var-hourglass-end; }
+.o_icon_timetable:before { content: $fa-var-calendar-o; }
 .o_icon_toggle:before { content: $fa-var-circle; }
 .o_icon_toggle_on:before { content: $fa-var-toggle-on; }
 .o_icon_toggle_off:before { content: $fa-var-toggle-off; }

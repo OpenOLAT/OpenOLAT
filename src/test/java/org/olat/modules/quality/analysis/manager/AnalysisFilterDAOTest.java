@@ -43,6 +43,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.forms.EvaluationFormManager;
@@ -1175,7 +1176,7 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		Curriculum curriculum = qualityTestHelper.createCurriculum();
 		CurriculumElement element1 = qualityTestHelper.createCurriculumElement();
 		CurriculumElement element2 = qualityTestHelper.createCurriculumElement();
-		CurriculumElement subElement = curriculumService.createCurriculumElement("", "", null, null, element1, null, curriculum);
+		CurriculumElement subElement = curriculumService.createCurriculumElement("", "", null, null, element1, null, CurriculumCalendars.disabled, curriculum);
 		CurriculumElement otherElement = qualityTestHelper.createCurriculumElement();
 		// Participation with curriculum element
 		QualityDataCollection dc1 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);

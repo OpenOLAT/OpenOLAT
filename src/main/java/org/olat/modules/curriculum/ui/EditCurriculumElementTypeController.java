@@ -35,6 +35,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumElementTypeManagedFlag;
 import org.olat.modules.curriculum.CurriculumElementTypeToType;
@@ -50,11 +51,14 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class EditCurriculumElementTypeController extends FormBasicController {
 	
+	private static final String[] onKeys = new String[] { "on" };
+	
 	private TextElement cssClassEl;
 	private TextElement identifierEl;
 	private TextElement displayNameEl;
 	private RichTextElement descriptionEl;
 	private MultipleSelectionElement allowedSubTypesEl;
+	private MultipleSelectionElement calendarsEnabledEl;
 	
 	private CurriculumElementType curriculumElementType;
 	
@@ -90,6 +94,12 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("type.description", "type.description", description, 10, 60,
 				formLayout,  getWindowControl());
 		descriptionEl.setEnabled(!CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.description));
+
+		String[] onValues = new String[] { translate("type.calendars.enabled.on") };
+		calendarsEnabledEl = uifactory.addCheckboxesHorizontal("type.calendars.enabled", formLayout, onKeys, onValues);
+		calendarsEnabledEl.setEnabled(!CurriculumElementTypeManagedFlag.isManaged(curriculumElementType, CurriculumElementTypeManagedFlag.calendars));
+		CurriculumCalendars calendarsEnabled =  curriculumElementType == null ? null : curriculumElementType.getCalendars();
+		calendarsEnabledEl.select(onKeys[0], calendarsEnabled == CurriculumCalendars.enabled);
 		
 		List<CurriculumElementType> types = curriculumService.getCurriculumElementTypes();
 		types.remove(curriculumElementType);
@@ -123,7 +133,7 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		displayNameEl.clearError();
 		if(!StringHelper.containsNonWhitespace(displayNameEl.getValue())) {
@@ -137,7 +147,7 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 			allOk &= false;
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override
@@ -152,6 +162,11 @@ public class EditCurriculumElementTypeController extends FormBasicController {
 			curriculumElementType.setDescription(descriptionEl.getValue());
 		}
 		curriculumElementType.setCssClass(cssClassEl.getValue());
+		if(calendarsEnabledEl.isAtLeastSelected(0)) {
+			curriculumElementType.setCalendars(CurriculumCalendars.enabled);
+		} else {
+			curriculumElementType.setCalendars(CurriculumCalendars.disabled);
+		}
 		
 		Collection<String> selectedAllowedSubTypeKeys = allowedSubTypesEl.getSelectedKeys();
 		List<CurriculumElementType> allowedSubTypes = new ArrayList<>();

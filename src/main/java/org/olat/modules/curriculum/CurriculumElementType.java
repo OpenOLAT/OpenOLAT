@@ -51,6 +51,10 @@ public interface CurriculumElementType extends CurriculumElementTypeRef, CreateI
 	public String getExternalId();
 	
 	public void setExternalId(String externalId);
+
+	public CurriculumCalendars getCalendars();
+	
+	public void setCalendars(CurriculumCalendars calendars);
 	
 	public CurriculumElementTypeManagedFlag[] getManagedFlags();
 	

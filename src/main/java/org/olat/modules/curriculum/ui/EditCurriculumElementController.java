@@ -25,18 +25,21 @@ import java.util.List;
 import java.util.Set;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementManagedFlag;
 import org.olat.modules.curriculum.CurriculumElementType;
@@ -54,6 +57,14 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class EditCurriculumElementController extends FormBasicController {
+	
+	private static final String[] calendarsKeys = new String[] {
+			CurriculumCalendars.enabled.name(), CurriculumCalendars.disabled.name()
+		};
+	
+	private static final String[] calendarsTypedKeys = new String[] {
+			CurriculumCalendars.enabled.name(), CurriculumCalendars.disabled.name(), CurriculumCalendars.inherited.name()
+		};
 
 	private DateChooser endEl;
 	private DateChooser beginEl;
@@ -61,7 +72,7 @@ public class EditCurriculumElementController extends FormBasicController {
 	private TextElement displayNameEl;
 	private RichTextElement descriptionEl;
 	
-	
+	private SingleSelection calendarsEnabledEl;
 	private SingleSelection curriculumElementTypeEl;
 	
 	private Curriculum curriculum;
@@ -139,6 +150,7 @@ public class EditCurriculumElementController extends FormBasicController {
 		}
 		curriculumElementTypeEl = uifactory.addDropdownSingleselect("type", "curriculum.element.type", formLayout, typeKeys, typeValues, null);
 		curriculumElementTypeEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.type) && secCallback.canEditCurriculumElement());
+		curriculumElementTypeEl.addActionListener(FormEvent.ONCHANGE);
 		boolean typeFound = false;
 		if(element != null && element.getType() != null) {
 			String selectedTypeKey = element.getType().getKey().toString();
@@ -153,6 +165,11 @@ public class EditCurriculumElementController extends FormBasicController {
 		if(!typeFound) {
 			curriculumElementTypeEl.select(typeKeys[0], true);
 		}
+		
+		calendarsEnabledEl = uifactory.addRadiosHorizontal("type.calendars.enabled", formLayout, new String[0], new String[0]);
+		calendarsEnabledEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.calendars));
+		CurriculumCalendars calendarsEnabled =  element == null ? CurriculumCalendars.inherited : element.getCalendars();
+		updateCalendarsEnabled(calendarsEnabled);
 		
 		List<TaxonomyLevel> levels = curriculumService.getTaxonomy(element);
 		if(!levels.isEmpty()) {
@@ -182,6 +199,28 @@ public class EditCurriculumElementController extends FormBasicController {
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 		if(secCallback.canEditCurriculumElement()) {
 			uifactory.addFormSubmitButton("save", buttonsCont);
+		}
+	}
+	
+	private void updateCalendarsEnabled(CurriculumCalendars preferedEnabled) {
+		if(curriculumElementTypeEl.getSelected() == 0) {
+			String[] onValues = new String[] {
+					translate("type.calendars.enabled.enabled"), translate("type.calendars.enabled.disabled")
+			};
+			calendarsEnabledEl.setKeysAndValues(calendarsKeys, onValues, null);
+			
+			if(preferedEnabled == CurriculumCalendars.enabled || preferedEnabled == CurriculumCalendars.disabled) {
+				calendarsEnabledEl.select(preferedEnabled.name(), true);
+			} else {
+				calendarsEnabledEl.select(CurriculumCalendars.disabled.name(), true);
+			}
+		} else {
+			String[] onValues = new String[] {
+					translate("type.calendars.enabled.enabled"), translate("type.calendars.enabled.disabled"),
+					translate("type.calendars.enabled.inherited")
+			};
+			calendarsEnabledEl.setKeysAndValues(calendarsTypedKeys, onValues, null);
+			calendarsEnabledEl.select(preferedEnabled.name(), true);
 		}
 	}
 	
@@ -243,6 +282,12 @@ public class EditCurriculumElementController extends FormBasicController {
 			allOk &= false;
 		}
 		
+		calendarsEnabledEl.clearError();
+		if(!calendarsEnabledEl.isOneSelected()) {
+			calendarsEnabledEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
+		
 		return allOk;
 	}
 
@@ -252,13 +297,13 @@ public class EditCurriculumElementController extends FormBasicController {
 		String selectedTypeKey = curriculumElementTypeEl.getSelectedKey();
 		if(StringHelper.containsNonWhitespace(selectedTypeKey)) {
 			elementType = curriculumService
-					.getCurriculumElementType(new CurriculumElementTypeRefImpl(new Long(selectedTypeKey)));
+					.getCurriculumElementType(new CurriculumElementTypeRefImpl(Long.valueOf(selectedTypeKey)));
 		}
-
+		CurriculumCalendars calendars = CurriculumCalendars.valueOf(calendarsEnabledEl.getSelectedKey());
 		if(element == null) {
 			//create a new one
 			element = curriculumService.createCurriculumElement(identifierEl.getValue(), displayNameEl.getValue(),
-					beginEl.getDate(), endEl.getDate(), parentElement, elementType, curriculum);
+					beginEl.getDate(), endEl.getDate(), parentElement, elementType, calendars, curriculum);
 		} else {
 			element = curriculumService.getCurriculumElement(element);
 			element.setIdentifier(identifierEl.getValue());
@@ -267,10 +312,22 @@ public class EditCurriculumElementController extends FormBasicController {
 			element.setBeginDate(beginEl.getDate());
 			element.setEndDate(endEl.getDate());
 			element.setType(elementType);
+			element.setCalendars(calendars);
 			element = curriculumService.updateCurriculumElement(element);
 		}
 
 		fireEvent(ureq, Event.DONE_EVENT);
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(source == curriculumElementTypeEl) {
+			if(calendarsEnabledEl.isOneSelected()) {
+				CurriculumCalendars enabled = CurriculumCalendars.valueOf(calendarsEnabledEl.getSelectedKey());
+				updateCalendarsEnabled(enabled);
+			}
+		}
+		super.formInnerEvent(ureq, source, event);
 	}
 
 	@Override

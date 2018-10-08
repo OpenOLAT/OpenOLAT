@@ -19,6 +19,7 @@
  */
 package org.olat.modules.curriculum.ui;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -28,10 +29,12 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementMembership;
-import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumElementStatus;
+import org.olat.modules.curriculum.CurriculumElementType;
+import org.olat.modules.curriculum.CurriculumElementWithView;
 import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.ui.PriceMethod;
@@ -44,7 +47,7 @@ import org.olat.resource.OLATResource;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CurriculumElementWithViewsRow implements CurriculumElementRef, FlexiTreeTableNode {
+public class CurriculumElementWithViewsRow implements CurriculumElementWithView, FlexiTreeTableNode {
 	
 	private boolean hasChildren;
 	private CurriculumElementWithViewsRow parent;
@@ -52,6 +55,7 @@ public class CurriculumElementWithViewsRow implements CurriculumElementRef, Flex
 	
 	private final Long parentKey;
 	private final CurriculumElement element;
+	private final CurriculumElementType elementType;
 	private final CurriculumElementMembership curriculumMembership;
 	private boolean curriculumMember;
 	private int level;
@@ -76,11 +80,13 @@ public class CurriculumElementWithViewsRow implements CurriculumElementRef, Flex
 	private FormLink detailsLink;
 	private FormLink markLink;
 	private FormLink selectLink;
+	private FormLink calendarsLink;
 	
 	public CurriculumElementWithViewsRow(CurriculumElement element, CurriculumElementMembership curriculumMembership, int myEntryCount) {
 		this.element = element;
+		elementType = element == null ? null : element.getType();
 		this.curriculumMembership = curriculumMembership;
-		curriculumMember = (curriculumMembership == null ? false : curriculumMembership.hasMembership());
+		curriculumMember = curriculumMembership != null && curriculumMembership.hasMembership();
 		singleEntry = false;
 		elementEntryCount = myEntryCount;
 		parentKey = element.getParent() == null ? null : element.getParent().getKey();		
@@ -95,8 +101,9 @@ public class CurriculumElementWithViewsRow implements CurriculumElementRef, Flex
 	public CurriculumElementWithViewsRow(CurriculumElement element, CurriculumElementMembership curriculumMembership,
 			RepositoryEntryMyView repositoryEntryView, boolean alone) {
 		this.element = element;
+		elementType = element == null ? null : element.getType();
 		this.curriculumMembership = curriculumMembership;
-		curriculumMember = (curriculumMembership == null ? false : curriculumMembership.hasMembership());
+		curriculumMember = curriculumMembership != null && curriculumMembership.hasMembership();
 		singleEntry = alone;
 		elementEntryCount = 0;
 		
@@ -176,12 +183,25 @@ public class CurriculumElementWithViewsRow implements CurriculumElementRef, Flex
 	}
 	
 	public String getCurriculumElementTypeCssClass() {
-		return element == null ? null : (element.getType() == null ? null : element.getType().getCssClass());
+		return elementType == null ? null : element.getType().getCssClass();
 	}
 
 	public String getCurriculumElementTypeName() {
-		return element == null ? null : (element.getType() == null ? null : element.getType().getDisplayName());
+		return elementType == null ? null : element.getType().getDisplayName();
 	}
+	
+	public boolean isCalendarsEnabled() {
+		boolean enabled = false;
+		if(element != null) {
+			if(element.getCalendars() == CurriculumCalendars.enabled) {
+				enabled = true;
+			} else if(element.getCalendars() == CurriculumCalendars.inherited && elementType != null) {
+				enabled = elementType.getCalendars() == CurriculumCalendars.enabled;
+			}
+		}
+		return enabled;
+	}
+	
 	public int getCurriculumElementRepositoryEntryCount() {
 		return elementEntryCount;
 	}
@@ -337,6 +357,14 @@ public class CurriculumElementWithViewsRow implements CurriculumElementRef, Flex
 		return olatResource;
 	}
 	
+	@Override
+	public List<RepositoryEntryMyView> getEntries() {
+		if(repositoryEntry == null) {
+			return Collections.emptyList();
+		}
+		return Collections.singletonList(repositoryEntry);
+	}
+
 	/**
 	 * Is member if the row as some type of access control
 	 * @return
@@ -440,6 +468,18 @@ public class CurriculumElementWithViewsRow implements CurriculumElementRef, Flex
 		this.selectLink = selectLink;
 	}
 	
+	public FormLink getCalendarsLink() {
+		return calendarsLink;
+	}
+
+	public void setCalendarsLink(FormLink calendarsLink) {
+		this.calendarsLink = calendarsLink;
+	}
+	
+	public String getCalendarsLinkName() {
+		return calendarsLink == null ? null : calendarsLink.getComponent().getComponentName();
+	}
+
 	@Override
 	public String getCrump() {
 		return element.getDisplayName();

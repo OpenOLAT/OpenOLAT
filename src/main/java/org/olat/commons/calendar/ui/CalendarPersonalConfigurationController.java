@@ -84,7 +84,7 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 	private int counter;
 	private final boolean allowImport;
 	private List<KalendarRenderWrapper> calendars;
-	private final KalendarRenderWrapper alwaysVisibleKalendar;
+	private final List<KalendarRenderWrapper> alwaysVisibleKalendars;
 	
 	@Autowired
 	private CalendarManager calendarManager;
@@ -92,11 +92,11 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 	private ImportCalendarManager importCalendarManager;
 
 	public CalendarPersonalConfigurationController(UserRequest ureq, WindowControl wControl,
-			List<KalendarRenderWrapper> calendars, KalendarRenderWrapper alwaysVisibleKalendar, boolean allowImport) {
+			List<KalendarRenderWrapper> calendars, List<KalendarRenderWrapper> alwaysVisibleKalendars, boolean allowImport) {
 		super(ureq, wControl, "configuration");
 		this.calendars = calendars;
 		this.allowImport = allowImport;
-		this.alwaysVisibleKalendar = alwaysVisibleKalendar;
+		this.alwaysVisibleKalendars = alwaysVisibleKalendars;
 		setTranslator(Util.createPackageTranslator(CalendarManager.class, getLocale(), getTranslator()));
 		
 		initForm(ureq);
@@ -175,9 +175,17 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 	}
 	
 	private boolean isAlwaysVisible(CalendarPersonalConfigurationRow row) {
-		if(alwaysVisibleKalendar == null) return false;
-		return alwaysVisibleKalendar.getKalendar().getCalendarID().equals(row.getCalendarId())
-				&& alwaysVisibleKalendar.getKalendar().getType().equals(row.getCalendarType());
+		if(alwaysVisibleKalendars == null || alwaysVisibleKalendars.isEmpty()) return false;
+		
+		for(KalendarRenderWrapper alwaysVisibleKalendar:alwaysVisibleKalendars) {
+			if(alwaysVisibleKalendar.getKalendar().getCalendarID().equals(row.getCalendarId())
+					&& alwaysVisibleKalendar.getKalendar().getType().equals(row.getCalendarType())) {
+				return true;
+			}
+			
+		}
+		
+		return false;
 	}
 	
 	private void enableDisableIcons(FormLink link, boolean enabled) {

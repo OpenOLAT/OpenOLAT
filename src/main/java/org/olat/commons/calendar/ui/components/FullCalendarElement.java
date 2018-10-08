@@ -105,12 +105,12 @@ public class FullCalendarElement extends FormItemImpl {
 		component.addCalendar(calendarWrapper);
 	}
 	
-	public KalendarRenderWrapper getAlwaysVisibleCalendar() {
-		return component.getAlwaysVisibleCalendar();
+	public List<KalendarRenderWrapper> getAlwaysVisibleCalendars() {
+		return component.getAlwaysVisibleCalendars();
 	}
 
-	public void setAlwaysVisibleCalendar(KalendarRenderWrapper alwaysVisibleCalendar) {
-		component.setAlwaysVisibleCalendar(alwaysVisibleCalendar);
+	public void setAlwaysVisibleCalendars(List<KalendarRenderWrapper> alwaysVisibleCalendars) {
+		component.setAlwaysVisibleCalendars(alwaysVisibleCalendars);
 	}
 	
 	/**

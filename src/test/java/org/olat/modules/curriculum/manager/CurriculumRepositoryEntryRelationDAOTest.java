@@ -20,6 +20,7 @@
 package org.olat.modules.curriculum.manager;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.Assert;
@@ -27,7 +28,9 @@ import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.repository.RepositoryEntry;
@@ -54,14 +57,15 @@ public class CurriculumRepositoryEntryRelationDAOTest extends OlatTestCase {
 	@Test
 	public void getRepositoryEntries() {
 		Curriculum curriculum = curriculumService.createCurriculum("cur-el-rel-2", "Curriculum for relation", "Curriculum", null);
-		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-rel", "Element for relation", null, null, null, null, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-rel", "Element for relation", null, null, null, null, CurriculumCalendars.disabled, curriculum);
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-re-auth");
 		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(author);
 		dbInstance.commit();
 		curriculumService.addRepositoryEntry(element, entry, false);
 		dbInstance.commitAndCloseSession();
 		
-		List<RepositoryEntry> entries = curriculumRepositoryEntryRelationDao.getRepositoryEntries(element, RepositoryEntryStatusEnum.preparationToClosed());
+		List<CurriculumElementRef> elements = Collections.singletonList(element);
+		List<RepositoryEntry> entries = curriculumRepositoryEntryRelationDao.getRepositoryEntries(elements, RepositoryEntryStatusEnum.preparationToClosed());
 		Assert.assertNotNull(entries);
 		Assert.assertEquals(1, entries.size());
 		Assert.assertEquals(entry, entries.get(0));
@@ -70,7 +74,7 @@ public class CurriculumRepositoryEntryRelationDAOTest extends OlatTestCase {
 	@Test
 	public void getCurriculumElements() {
 		Curriculum curriculum = curriculumService.createCurriculum("cur-el-rel-2", "Curriculum for relation", "Curriculum", null);
-		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-rel", "Element for relation", null, null, null, null, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-rel", "Element for relation", null, null, null, null, CurriculumCalendars.disabled, curriculum);
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-re-auth");
 		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(author);
 		dbInstance.commit();
@@ -86,7 +90,7 @@ public class CurriculumRepositoryEntryRelationDAOTest extends OlatTestCase {
 	@Test
 	public void getCurriculumElementsRepositoryEntryAnsUser() {
 		Curriculum curriculum = curriculumService.createCurriculum("cur-el-rel-2", "Curriculum for relation", "Curriculum", null);
-		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-rel", "Element for relation", null, null, null, null, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-rel", "Element for relation", null, null, null, null, CurriculumCalendars.disabled, curriculum);
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-re-auth");
 		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(author);
 		dbInstance.commit();

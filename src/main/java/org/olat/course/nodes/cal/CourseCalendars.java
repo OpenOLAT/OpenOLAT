@@ -37,11 +37,15 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
+import org.olat.core.util.nodes.INode;
+import org.olat.core.util.tree.TreeVisitor;
+import org.olat.core.util.tree.Visitor;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.CourseRights;
 import org.olat.course.nodes.CalCourseNode;
+import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.calendar.CourseCalendarSubscription;
 import org.olat.course.run.calendar.CourseLinkProviderController;
 import org.olat.course.run.userview.NodeEvaluation;
@@ -83,7 +87,8 @@ public class CourseCalendars {
 	}
 	
 	/**
-	 * Return only the course calendar without any group calendar
+	 * Return only the course calendar (for course calendar element) without any group calendar.
+	 * 
 	 * @param ureq
 	 * @param wControl
 	 * @param ores
@@ -151,7 +156,7 @@ public class CourseCalendars {
 		return new CourseCalendars(courseKalendarWrapper, calendars);
 	}
 
-	private static void addCalendars(UserRequest ureq, UserCourseEnvironment courseEnv, List<BusinessGroup> groups, boolean isOwner,
+	public static void addCalendars(UserRequest ureq, UserCourseEnvironment courseEnv, List<BusinessGroup> groups, boolean isOwner,
 			LinkProvider linkProvider, List<KalendarRenderWrapper> calendars) {
 		if(groups == null || groups.isEmpty()) return;
 		
@@ -182,6 +187,41 @@ public class CourseCalendars {
 			}
 			groupCalendarWrapper.setLinkProvider(linkProvider);
 			calendars.add(groupCalendarWrapper);
+		}
+	}
+	
+	public static boolean needToDifferentiateManagedEvents(List<KalendarRenderWrapper> calendars) {
+		boolean hasManaged = false;
+		for(KalendarRenderWrapper wrapper:calendars) {
+			Kalendar cal = wrapper.getKalendar();
+			hasManaged |= cal.hasManagedEvents();
+		}
+		return hasManaged;
+	}
+	
+	public static boolean isCourseCalendarEnabled(ICourse course) {
+		if(course.getCourseConfig().isCalendarEnabled()) {
+			return true;
+		}
+		
+		CourseNode rootNode = course.getRunStructure().getRootNode();
+		CalCourseNodeVisitor v = new CalCourseNodeVisitor();
+		new TreeVisitor(new CalCourseNodeVisitor(), rootNode, true).visitAll();
+		return v.isFound();
+	}
+	
+	private static class CalCourseNodeVisitor implements Visitor {
+		private boolean found = false;
+		
+		public boolean isFound() {
+			return found;
+		}
+		
+		@Override
+		public void visit(INode node) {
+			if(node instanceof CalCourseNode) {
+				found = true;
+			}
 		}
 	}
 }

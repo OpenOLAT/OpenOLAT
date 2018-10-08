@@ -33,6 +33,13 @@ public class CurriculumSecurityCallbackFactory {
 		//
 	}
 	
+	/**
+	 * @return A security callback without any administration permissions.
+	 */
+	public static final CurriculumSecurityCallback createDefaultCallback() {
+		return new DefaultCurriculumSecurityCallback(false);
+	}
+	
 	public static final CurriculumSecurityCallback createCallback(Roles roles) {
 		boolean admin = roles.isCurriculumManager() || roles.isAdministrator();
 		return new DefaultCurriculumSecurityCallback(admin);
@@ -78,6 +85,11 @@ public class CurriculumSecurityCallbackFactory {
 
 		@Override
 		public boolean canManagerCurriculumElementResources() {
+			return admin;
+		}
+
+		@Override
+		public boolean canViewAllCalendars() {
 			return admin;
 		}
 	}

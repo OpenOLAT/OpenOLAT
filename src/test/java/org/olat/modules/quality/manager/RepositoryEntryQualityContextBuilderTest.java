@@ -35,6 +35,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
@@ -122,13 +123,13 @@ public class RepositoryEntryQualityContextBuilderTest extends OlatTestCase {
 		Curriculum curriculum3 = curriculumService.createCurriculum(UUID.randomUUID().toString(), "", "",
 				organisation3);
 		CurriculumElement curriculumElement1 = curriculumService.createCurriculumElement(UUID.randomUUID().toString(),
-				"", null, null, null, null, curriculum1);
+				"", null, null, null, null, CurriculumCalendars.disabled, curriculum1);
 		CurriculumElement curriculumElement2Parent = curriculumService
-				.createCurriculumElement(UUID.randomUUID().toString(), "", null, null, null, null, curriculum2);
+				.createCurriculumElement(UUID.randomUUID().toString(), "", null, null, null, null, CurriculumCalendars.disabled, curriculum2);
 		CurriculumElement curriculumElement2 = curriculumService.createCurriculumElement(UUID.randomUUID().toString(),
-				"", null, null, curriculumElement2Parent, null, curriculum2);
+				"", null, null, curriculumElement2Parent, null, CurriculumCalendars.disabled, curriculum2);
 		CurriculumElement curriculumElement3 = curriculumService.createCurriculumElement(UUID.randomUUID().toString(),
-				"", null, null, null, null, curriculum3);
+				"", null, null, null, null, CurriculumCalendars.disabled, curriculum3);
 		curriculumService.addRepositoryEntry(curriculumElement1, entry, true);
 		curriculumService.addRepositoryEntry(curriculumElement2, entry, true);
 		curriculumService.addRepositoryEntry(curriculumElement3, entry, true);

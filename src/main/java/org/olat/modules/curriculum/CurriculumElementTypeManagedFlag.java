@@ -40,6 +40,7 @@ public enum CurriculumElementTypeManagedFlag {
 	 cssClass(all),
 	 description(all),
 	 externalId(all),
+	 calendars(all),
 	 subTypes(all),
 	 copy(all),
 	 delete(all);

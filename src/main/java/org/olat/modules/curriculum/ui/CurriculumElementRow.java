@@ -23,6 +23,7 @@ import java.util.Date;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
+import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumElementStatus;
@@ -45,6 +46,7 @@ public class CurriculumElementRow implements CurriculumElementRef, FlexiTreeTabl
 	
 	private final FormLink toolsLink;
 	private final FormLink resourcesLink;
+	private FormLink calendarsLink;
 	
 	public CurriculumElementRow(CurriculumElement element) {
 		this.element = element;
@@ -105,6 +107,18 @@ public class CurriculumElementRow implements CurriculumElementRef, FlexiTreeTabl
 	public CurriculumElementType getCurriculumElementType() {
 		return elementType;
 	}
+	
+	public boolean isCalendarsEnabled() {
+		boolean enabled = false;
+		if(element != null) {
+			if(element.getCalendars() == CurriculumCalendars.enabled) {
+				enabled = true;
+			} else if(element.getCalendars() == CurriculumCalendars.inherited && elementType != null) {
+				enabled = elementType.getCalendars() == CurriculumCalendars.enabled;
+			}
+		}
+		return enabled;
+	}
 
 	@Override
 	public CurriculumElementRow getParent() {
@@ -145,6 +159,14 @@ public class CurriculumElementRow implements CurriculumElementRef, FlexiTreeTabl
 	
 	public FormLink getResources() {
 		return resourcesLink;
+	}
+
+	public FormLink getCalendarsLink() {
+		return calendarsLink;
+	}
+
+	public void setCalendarsLink(FormLink calendarsLink) {
+		this.calendarsLink = calendarsLink;
 	}
 
 	@Override

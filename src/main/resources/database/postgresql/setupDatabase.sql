@@ -2567,6 +2567,7 @@ create table o_cur_element_type (
   c_description text,
   c_external_id varchar(64),
   c_managed_flags varchar(255),
+  c_calendars varchar(16),
   c_css_class varchar(64),
   primary key (id)
 );
@@ -2601,6 +2602,7 @@ create table o_cur_curriculum_element (
   c_external_id varchar(64),
   c_m_path_keys varchar(255),
   c_managed_flags varchar(255),
+  c_calendars varchar(16),
   fk_group int8 not null,
   fk_parent int8,
   fk_curriculum int8 not null,

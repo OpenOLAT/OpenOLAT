@@ -16,6 +16,11 @@
 		</div>
 	</div>
 	#end
+	#if($r.isNotNull($row.calendarsLink))
+	<div class="o_curriculum_calendars #if($row.isActive()) o_active #end">
+		$r.render($row.calendarsLinkName)
+	</div>
+	#end
 	<div class="o_curriculum_element_desc">
 		$row.shortenedDescription
 	</div>		

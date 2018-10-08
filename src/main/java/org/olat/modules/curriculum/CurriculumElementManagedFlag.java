@@ -41,6 +41,7 @@ public enum CurriculumElementManagedFlag {
 	 externalId(all),
 	 dates(all),
 	 type(all),
+	 calendars(all),
 	 members(all),
 	 resources(all),
 	 move(all),

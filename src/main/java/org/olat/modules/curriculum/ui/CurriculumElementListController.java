@@ -66,8 +66,11 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.CorruptedCourseException;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementMembership;
+import org.olat.modules.curriculum.CurriculumElementWithView;
 import org.olat.modules.curriculum.CurriculumRef;
+import org.olat.modules.curriculum.CurriculumSecurityCallbackFactory;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.modules.curriculum.model.CurriculumElementRepositoryEntryViews;
 import org.olat.modules.curriculum.ui.CurriculumElementWithViewsDataModel.ElementViewCols;
 import org.olat.modules.curriculum.ui.component.CurriculumElementCompositeRenderer;
@@ -115,6 +118,7 @@ public class CurriculumElementListController extends FormBasicController impleme
 	private final MapperKey mapperThumbnailKey;
 	
 	private RepositoryEntryDetailsController detailsCtrl;
+	private CurriculumElementCalendarController calendarsCtrl;
 	
 	@Autowired
 	private ACService acService;
@@ -161,6 +165,7 @@ public class CurriculumElementListController extends FormBasicController impleme
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementViewCols.select));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.mark));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.details));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.calendars));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.start));
 		
 		tableModel = new CurriculumElementWithViewsDataModel(columnsModel);
@@ -254,9 +259,12 @@ public class CurriculumElementListController extends FormBasicController impleme
 			} else if(elementWithViews.getEntries().size() == 1) {
 				CurriculumElementWithViewsRow row = new CurriculumElementWithViewsRow(element, elementMembership, elementWithViews.getEntries().get(0), true);
 				forge(row, repoKeys, resourcesWithOffer);
+				forgeCalendarsLink(row);
 				rows.add(row);
 			} else {
-				rows.add(new CurriculumElementWithViewsRow(element, elementMembership, elementWithViews.getEntries().size()));
+				CurriculumElementWithViewsRow elementRow = new CurriculumElementWithViewsRow(element, elementMembership, elementWithViews.getEntries().size());
+				forgeCalendarsLink(elementRow);
+				rows.add(elementRow);
 				for(RepositoryEntryMyView entry:elementWithViews.getEntries()) {
 					CurriculumElementWithViewsRow row = new CurriculumElementWithViewsRow(element, elementMembership, entry, false);
 					forge(row, repoKeys, resourcesWithOffer);
@@ -362,16 +370,8 @@ public class CurriculumElementListController extends FormBasicController impleme
 		String label;
 		boolean isStart = true;
 		if((row.isAllUsers() || row.isGuests()) && row.getAccessTypes() != null && !row.getAccessTypes().isEmpty() && !row.isMember()) {
-			/*if(guestOnly) {
-				if(row.getAccess() == RepositoryEntry.ACC_USERS_GUESTS) {
-					label = "start";
-				} else {
-					return;
-				}
-			} else {*/ //TODO repo access
-				label = "book";
-				isStart = false;
-			//}
+			label = "book";
+			isStart = false;
 		} else {
 			label = "start";
 		}
@@ -403,6 +403,15 @@ public class CurriculumElementListController extends FormBasicController impleme
 		selectLink.setUserObject(row);
 		row.setSelectLink(selectLink);
 	}
+	
+	private void forgeCalendarsLink(CurriculumElementWithViewsRow row) {
+		if(row.isCalendarsEnabled()) {
+			FormLink calendarLink = uifactory.addFormLink("cals_" + (++counter), "calendars", "calendars", null, null, Link.LINK);
+			calendarLink.setIconLeftCSS("o_icon o_icon-fw o_icon_timetable");
+			calendarLink.setUserObject(row);
+			row.setCalendarsLink(calendarLink);
+		}
+	}
 
 	@Override
 	protected void doDispose() {
@@ -413,8 +422,6 @@ public class CurriculumElementListController extends FormBasicController impleme
 	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent event) {
 		//do not update the 
 	}
-	
-	
 	
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
@@ -467,6 +474,9 @@ public class CurriculumElementListController extends FormBasicController impleme
 				link.setTitle(translate(marked ? "details.bookmark.remove" : "details.bookmark"));
 				link.getComponent().setDirty(true);
 				row.setMarked(marked);
+			} else if("calendars".equals(link.getCmd())) {
+				CurriculumElementWithViewsRow row = (CurriculumElementWithViewsRow)link.getUserObject();
+				doOpenCalendars(ureq, row);
 			}
 		} else if(source == tableEl) {
 			if(event instanceof SelectionEvent) {
@@ -522,6 +532,35 @@ public class CurriculumElementListController extends FormBasicController impleme
 				stackPanel.pushController(displayName, detailsCtrl);	
 			}
 		}
+	}
+	
+	private void doOpenCalendars(UserRequest ureq, CurriculumElementWithViewsRow row) {
+		removeAsListenerAndDispose(calendarsCtrl);
+		
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Calendars", row.getCurriculumElementKey());
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+		CurriculumElement element = curriculumService
+				.getCurriculumElement(new CurriculumElementRefImpl(row.getCurriculumElementKey()));
+		List<CurriculumElementWithViewsRow> rows = tableModel.getObjects();
+		
+		Set<Long> entryKeys = new HashSet<>();
+		for(CurriculumElementWithView elementWithView:rows) {
+			if(elementWithView.isCurriculumMember()
+					&& !elementWithView.getEntries().isEmpty()
+					&& elementWithView.isParentOrSelf(row)) {
+				for(RepositoryEntryMyView view:elementWithView.getEntries()) {
+					if("CourseModule".equals(view.getOlatResource().getResourceableTypeName())) {
+						entryKeys.add(view.getKey());
+					}
+				}
+			}
+		}
+		
+		List<RepositoryEntry> entries = repositoryService.loadByKeys(entryKeys);
+		calendarsCtrl = new CurriculumElementCalendarController(ureq, bwControl, element, entries,
+				CurriculumSecurityCallbackFactory.createDefaultCallback());
+		listenTo(calendarsCtrl);
+		stackPanel.pushController(translate("calendars"), calendarsCtrl);
 	}
 	
 	private boolean doMark(UserRequest ureq, CurriculumElementWithViewsRow row) {

@@ -42,6 +42,7 @@ import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementMembership;
 import org.olat.modules.curriculum.CurriculumElementRef;
@@ -71,7 +72,7 @@ public class CurriculumElementDAO {
 	private GroupDAO groupDao;
 	
 	public CurriculumElement createCurriculumElement(String identifier, String displayName, Date beginDate, Date endDate,
-			CurriculumElementRef parentRef, CurriculumElementType elementType, Curriculum curriculum) {
+			CurriculumElementRef parentRef, CurriculumElementType elementType, CurriculumCalendars calendars, Curriculum curriculum) {
 		CurriculumElementImpl element = new CurriculumElementImpl();
 		element.setCreationDate(new Date());
 		element.setLastModified(element.getCreationDate());
@@ -81,6 +82,7 @@ public class CurriculumElementDAO {
 		element.setEndDate(endDate);
 		element.setCurriculum(curriculum);
 		element.setType(elementType);
+		element.setCalendars(calendars);
 		element.setStatus(CurriculumElementStatus.active.name());
 		element.setGroup(groupDao.createGroup());
 		CurriculumElement parent = parentRef == null ? null : loadByKey(parentRef.getKey());

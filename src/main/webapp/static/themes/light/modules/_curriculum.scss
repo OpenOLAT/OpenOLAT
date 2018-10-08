@@ -58,7 +58,11 @@ $o-curriculum-entry-bg							: #CCFFCC;
 		.o_curriculum_lifecycle {
 			padding: $lifecycle-padding;			
 			background: $lifecycle-bg;
-		}				
+		}
+		.o_curriculum_calendars {
+			padding: $lifecycle-padding;			
+			background: $lifecycle-bg;
+		}			
 		.o_curriculum_element_desc {
 		@if $desc == false {
 			display: none;
@@ -128,7 +132,7 @@ $o-curriculum-entry-bg							: #CCFFCC;
 					white-space: nowrap;
 				}
 			}
-			.o_curriculum_lifecycle {
+			.o_curriculum_lifecycle, .o_curriculum_calendars {
 				padding-left: $padding-base-vertical;	
 				color: $text-muted;
 				&.o_active {

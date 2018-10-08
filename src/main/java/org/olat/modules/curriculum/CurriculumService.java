@@ -194,7 +194,7 @@ public interface CurriculumService {
 	
 	
 	public CurriculumElement createCurriculumElement(String identifier, String displayName, Date beginDate, Date endDate,
-			CurriculumElementRef parent, CurriculumElementType elementType, Curriculum curriculum);
+			CurriculumElementRef parent, CurriculumElementType elementType, CurriculumCalendars calendars, Curriculum curriculum);
 	
 	
 	public CurriculumElement getCurriculumElement(CurriculumElementRef element);
@@ -345,6 +345,15 @@ public interface CurriculumService {
 	 * @return A list of repository entries
 	 */
 	public List<RepositoryEntry> getRepositoryEntries(CurriculumElementRef element);
+	
+	/**
+	 * The all list of repository entries hold by the specified curriculum element and
+	 * its descendants elements.
+	 * 
+	 * @param element The curriculum element
+	 * @return A list of repository entries
+	 */
+	public List<RepositoryEntry> getRepositoryEntriesWithDescendants(CurriculumElement element);
 	
 	/**
 	 * Check if the repository entry is already in relation with the specified

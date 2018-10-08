@@ -63,6 +63,8 @@ public interface RepositoryService {
 	public RepositoryEntry copy(RepositoryEntry sourceEntry, Identity author, String displayname);
 
 	public RepositoryEntry loadByKey(Long key);
+	
+	public List<RepositoryEntry> loadByKeys(Collection<Long> keys);
 
 	public RepositoryEntry loadByResourceKey(Long key);
 

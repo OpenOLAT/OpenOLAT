@@ -32,6 +32,7 @@ import org.olat.basesecurity.OrganisationService;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.forms.EvaluationFormManager;
@@ -239,7 +240,7 @@ public class QualityTestHelper {
 	}
 
 	public CurriculumElement createCurriculumElement() {
-		return curriculumService.createCurriculumElement("i", "d", null, null, null, null, createCurriculum());
+		return curriculumService.createCurriculumElement("i", "d", null, null, null, null, CurriculumCalendars.disabled, createCurriculum());
 	}
 
 	public RepositoryEntry createRepositoryEntry() {

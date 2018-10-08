@@ -41,6 +41,7 @@ import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumDataDeletable;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementManagedFlag;
@@ -243,8 +244,8 @@ public class CurriculumServiceImpl implements CurriculumService {
 
 	@Override
 	public CurriculumElement createCurriculumElement(String identifier, String displayName, Date beginDate, Date endDate,
-			CurriculumElementRef parentRef, CurriculumElementType elementType, Curriculum curriculum) {
-		return curriculumElementDao.createCurriculumElement(identifier, displayName, beginDate, endDate, parentRef, elementType, curriculum);
+			CurriculumElementRef parentRef, CurriculumElementType elementType, CurriculumCalendars calendars, Curriculum curriculum) {
+		return curriculumElementDao.createCurriculumElement(identifier, displayName, beginDate, endDate, parentRef, elementType, calendars, curriculum);
 	}
 
 	@Override
@@ -439,7 +440,16 @@ public class CurriculumServiceImpl implements CurriculumService {
 
 	@Override
 	public List<RepositoryEntry> getRepositoryEntries(CurriculumElementRef element) {
-		return curriculumRepositoryEntryRelationDao.getRepositoryEntries(element, RepositoryEntryStatusEnum.preparationToClosed());
+		List<CurriculumElementRef> elements = Collections.singletonList(element);
+		return curriculumRepositoryEntryRelationDao.getRepositoryEntries(elements, RepositoryEntryStatusEnum.preparationToClosed());
+	}
+
+	@Override
+	public List<RepositoryEntry> getRepositoryEntriesWithDescendants(CurriculumElement element) {
+		List<CurriculumElement> descendants = curriculumElementDao.getDescendants(element);
+		descendants.add(element);
+		List<CurriculumElementRef> descendantRefs = new ArrayList<>(descendants);
+		return curriculumRepositoryEntryRelationDao.getRepositoryEntries(descendantRefs, RepositoryEntryStatusEnum.preparationToClosed());
 	}
 
 	@Override
@@ -507,6 +517,7 @@ public class CurriculumServiceImpl implements CurriculumService {
 				viewMap.put(view.getKey(), view);
 			}
 			
+			Map<Long,CurriculumElementRepositoryEntryViews> elementKeyMap = new HashMap<>();
 			for(Map.Entry<CurriculumElement, List<Long>> elementEntry:elementsMap.entrySet()) {
 				CurriculumElement element = elementEntry.getKey();
 				List<RepositoryEntryMyView> elementViews = new ArrayList<>(elementEntry.getValue().size());
@@ -518,7 +529,26 @@ public class CurriculumServiceImpl implements CurriculumService {
 					}
 				}
 				CurriculumElementMembership membership = membershipMap.get(element.getKey());
-				elements.add(new CurriculumElementRepositoryEntryViews(element, elementViews, membership));
+				CurriculumElementRepositoryEntryViews view = new CurriculumElementRepositoryEntryViews(element, elementViews, membership);
+				elements.add(view);
+				elementKeyMap.put(element.getKey(), view);
+			}
+
+			// calculate parents
+			for(CurriculumElementRepositoryEntryViews element:elements) {
+				CurriculumElement parent = element.getCurriculumElement().getParent();
+				if(parent != null) {
+					element.setParent(elementKeyMap.get(parent.getKey()));
+				}
+			}
+			
+			// propagate to the parents
+			for(CurriculumElementRepositoryEntryViews element:elements) {
+				if(element.isCurriculumMember()) {
+					for(CurriculumElementRepositoryEntryViews parentRow=element.getParent(); parentRow != null; parentRow=parentRow.getParent()) {
+						parentRow.setCurriculumMember(true);
+					}
+				}
 			}
 		}
 		return elements;

@@ -47,6 +47,7 @@ import org.olat.basesecurity.model.GroupImpl;
 import org.olat.core.id.Persistable;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementManagedFlag;
 import org.olat.modules.curriculum.CurriculumElementStatus;
@@ -88,6 +89,8 @@ public class CurriculumElementImpl implements CurriculumElement, Persistable {
 	private String displayName;
 	@Column(name="c_description", nullable=true, insertable=true, updatable=true)
 	private String description;
+	@Column(name="c_calendars", nullable=true, insertable=true, updatable=true)
+	private String calendarsEnabledString;
 	
 	@Column(name="c_status", nullable=true, insertable=true, updatable=true)
 	private String status;
@@ -187,6 +190,29 @@ public class CurriculumElementImpl implements CurriculumElement, Persistable {
 	@Override
 	public void setDescription(String description) {
 		this.description = description;
+	}
+	
+	public String getCalendarsEnabled() {
+		return calendarsEnabledString;
+	}
+
+	public void setCalendarsEnabled(String calendarsEnabledString) {
+		this.calendarsEnabledString = calendarsEnabledString;
+	}
+
+	@Override
+	public CurriculumCalendars getCalendars() {
+		return StringHelper.containsNonWhitespace(calendarsEnabledString)
+				? CurriculumCalendars.valueOf(calendarsEnabledString): CurriculumCalendars.disabled;
+	}
+
+	@Override
+	public void setCalendars(CurriculumCalendars calendars) {
+		if(calendars == null) {
+			calendarsEnabledString = null;
+		} else {
+			calendarsEnabledString = calendars.name();
+		}
 	}
 
 	@Override

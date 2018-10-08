@@ -59,7 +59,9 @@ import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.resource.OresHelper;
@@ -100,12 +102,14 @@ public class CurriculumComposerController extends FormBasicController implements
 	
 	private ToolsController toolsCtrl;
 	private CloseableModalController cmc;
-	private ReferencesController referencesCtrl; 
+	private ReferencesController referencesCtrl;
+	private StepsMainRunController importMembersWizard;
 	private EditCurriculumElementController newElementCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private EditCurriculumElementController newSubElementCtrl;
 	private MoveCurriculumElementController moveElementCtrl;
 	private ConfirmCurriculumElementDeleteController confirmDeleteCtrl;
+	private CurriculumElementCalendarController calendarsCtrl;
 	
 	private int counter;
 	private final boolean managed;
@@ -169,7 +173,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.endDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementCols.type));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.resources));
-		//columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementCols.status, new CurriculumElementStatusCellRenderer(getTranslator())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.calendars));
 
 		DefaultFlexiColumnModel selectColumn = new DefaultFlexiColumnModel("select", translate("select"), "select");
 		selectColumn.setExportable(false);
@@ -264,6 +268,13 @@ public class CurriculumComposerController extends FormBasicController implements
 		if(resourcesLink != null) {
 			resourcesLink.setUserObject(row);
 		}
+		
+		if(row.isCalendarsEnabled()) {
+			FormLink calendarsLink = uifactory.addFormLink("cals_" + (++counter), "calendars", "calendars", null, null, Link.LINK);
+			calendarsLink.setIconLeftCSS("o_icon o_icon_timetable o_icon-fw");
+			row.setCalendarsLink(calendarsLink);
+			calendarsLink.setUserObject(row);
+		}
 		return row;
 	}
 
@@ -340,6 +351,9 @@ public class CurriculumComposerController extends FormBasicController implements
 				doOpenTools(ureq, (CurriculumElementRow)link.getUserObject(), link);
 			} else if("resources".equals(cmd)) {
 				doOpenReferences(ureq, (CurriculumElementRow)link.getUserObject(), link);
+			} else if("calendars".equals(cmd)) {
+				doOpenCalendars(ureq, (CurriculumElementRow)link.getUserObject());
+				
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -419,8 +433,6 @@ public class CurriculumComposerController extends FormBasicController implements
 			cmc.activate();
 		}
 	}
-	
-	private StepsMainRunController importMembersWizard;
 	
 	private void doChooseMembers(UserRequest ureq) {
 		removeAsListenerAndDispose(importMembersWizard);
@@ -504,6 +516,17 @@ public class CurriculumComposerController extends FormBasicController implements
 			listenTo(toolsCalloutCtrl);
 			toolsCalloutCtrl.activate();
 		}
+	}
+	
+	private void doOpenCalendars(UserRequest ureq, CurriculumElementRow row) {
+		removeAsListenerAndDispose(calendarsCtrl);
+		
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Calendars", row.getKey());
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+		List<RepositoryEntry> entries = curriculumService.getRepositoryEntriesWithDescendants(row.getCurriculumElement());
+		calendarsCtrl = new CurriculumElementCalendarController(ureq, bwControl, row, entries, secCallback);
+		listenTo(calendarsCtrl);
+		toolbarPanel.pushController(translate("calendars"), calendarsCtrl);
 	}
 	
 	private void doConfirmDelete(UserRequest ureq, CurriculumElementRow row) {

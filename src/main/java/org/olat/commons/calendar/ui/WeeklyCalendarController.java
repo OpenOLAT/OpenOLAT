@@ -177,9 +177,11 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 		
 		calendarEl = new FullCalendarElement(ureq, "weeklyCalendar", calendarWrappers, getTranslator());
 		formLayout.add("calendar", calendarEl);
-		calendarEl.setConfigurationEnabled(true);
-		calendarEl.setAggregatedFeedEnabled(true);
-		calendarEl.setAlwaysVisibleCalendar(getCallerKalendarRenderWrapper());
+		// configuration for all but curriculum calendars
+		calendarEl.setConfigurationEnabled(!caller.equals(CalendarController.CALLER_CURRICULUM));
+		// aggragted for all but curriculum calendars
+		calendarEl.setAggregatedFeedEnabled(!caller.equals(CalendarController.CALLER_CURRICULUM));
+		calendarEl.setAlwaysVisibleCalendars(getAlwaysVisibleKalendarRenderWrappers());
 
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
@@ -188,7 +190,9 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 				// if sc is null, then no subscription is desired
 				if (subsContext != null) {
 					csc = getContextualSubscriptionController(ureq, calendarWrappers.get(0), subsContext);
-					layoutCont.put("calsubscription", csc.getInitialComponent());
+					if(csc != null) {
+						layoutCont.put("calsubscription", csc.getInitialComponent());
+					}
 				}
 			}
 		}
@@ -201,13 +205,13 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 
 	private ContextualSubscriptionController getContextualSubscriptionController(UserRequest ureq, KalendarRenderWrapper kalendarRenderWrapper, SubscriptionContext context) {
 		String businessPath = getWindowControl().getBusinessControl().getAsString();
-		if ((caller.equals(CalendarController.CALLER_COURSE) || caller.equals(CalendarManager.TYPE_COURSE))) {
+		if (caller.equals(CalendarController.CALLER_COURSE) || caller.equals(CalendarController.CALLER_CURRICULUM) ||caller.equals(CalendarManager.TYPE_COURSE)) {
 			Long courseId = kalendarRenderWrapper.getLinkProvider().getControler().getCourseId();
 			
 			PublisherData pdata = new PublisherData(OresHelper.calculateTypeName(CalendarManager.class), String.valueOf(courseId), businessPath);
 			return new ContextualSubscriptionController(ureq, getWindowControl(), context, pdata);
 		}
-		if ((caller.equals(CalendarController.CALLER_COLLAB) || caller.equals(CalendarManager.TYPE_GROUP))) {
+		if (caller.equals(CalendarController.CALLER_COLLAB) || caller.equals(CalendarManager.TYPE_GROUP)) {
 			BusinessGroup businessGroup = calendarNotificationsManager.getBusinessGroup(kalendarRenderWrapper);
 			if(businessGroup != null) {
 				PublisherData pdata = new PublisherData(OresHelper.calculateTypeName(CalendarManager.class), String.valueOf(businessGroup.getResourceableId()), businessPath);
@@ -493,7 +497,7 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 	
 	private void doOpenAggregatedFeedUrl(UserRequest ureq, String targetDomId) {
 		String callerUrl = getCallerCalendarUrl();
-		String aggregatedUrl = getAggregatedCalendarUrl();
+		String aggregatedUrl = getAggregatedCalendarUrl(CalendarManager.TYPE_USER_AGGREGATED, getIdentity().getKey());
 		feedUrlCtrl = new CalendarAggregatedURLController(ureq, getWindowControl(), callerUrl, aggregatedUrl);
 		listenTo(feedUrlCtrl);
 		
@@ -501,6 +505,22 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 				translate("print"), true, "o_cal_event_callout");
 		listenTo(eventCalloutCtr);
 		eventCalloutCtr.activate();
+	}
+	
+	private List<KalendarRenderWrapper> getAlwaysVisibleKalendarRenderWrappers() {
+		if(callerOres == null || calendarWrappers == null) return new ArrayList<>(1);
+		
+		List<KalendarRenderWrapper> alwaysVisible = new ArrayList<>();
+		if(WeeklyCalendarController.CALLER_CURRICULUM.equals(caller)) {
+			alwaysVisible.addAll(calendarWrappers);
+		} else {
+			KalendarRenderWrapper callerKalendar = getCallerKalendarRenderWrapper();
+			if(callerKalendar != null ) {
+				alwaysVisible.add(callerKalendar);
+			}
+		}
+		
+		return alwaysVisible;
 	}
 	
 	private KalendarRenderWrapper getCallerKalendarRenderWrapper() {
@@ -531,6 +551,8 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 			url = getCallerCalendarUrl(CalendarManager.TYPE_GROUP, callerOres.getResourceableId().toString());
 		} else if(WeeklyCalendarController.CALLER_COURSE.equals(caller)) {
 			url = getCallerCalendarUrl(CalendarManager.TYPE_COURSE, callerOres.getResourceableId().toString());
+		} else if(WeeklyCalendarController.CALLER_CURRICULUM.equals(caller)) {
+			url = getAggregatedCalendarUrl(CalendarManager.TYPE_CURRICULUM_EL_AGGREGATED, callerOres.getResourceableId());
 		}
 		return url;
 	}
@@ -558,13 +580,13 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 		return null;
 	}
 	
-	private String getAggregatedCalendarUrl() {
+	private String getAggregatedCalendarUrl(String calendarType, Long calendarId) {
 		List<CalendarUserConfiguration> configurations = calendarManager
-				.getCalendarUserConfigurationsList(getIdentity(), CalendarManager.TYPE_USER_AGGREGATED);
+				.getCalendarUserConfigurationsList(getIdentity(), calendarType, calendarId.toString());
 
 		CalendarUserConfiguration config;
 		if(configurations.isEmpty()) {
-			config = calendarManager.createAggregatedCalendarConfig(getIdentity());
+			config = calendarManager.createAggregatedCalendarConfig(calendarType, calendarId, getIdentity());
 		} else if(StringHelper.containsNonWhitespace(configurations.get(0).getToken())) {
 			config = configurations.get(0);
 		} else {
@@ -572,18 +594,17 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 			config.setToken(RandomStringUtils.randomAlphanumeric(6));
 			config = calendarManager.saveCalendarConfig(config);
 		}
-		return Settings.getServerContextPathURI() + "/ical/" + CalendarManager.TYPE_USER_AGGREGATED
-				+ "/" + config.getKey() + "/" + config.getToken() + ".ics";
+		return Settings.getServerContextPathURI() + "/ical/" + calendarType + "/" + config.getKey() + "/" + config.getToken() + ".ics";
 	}
 	
 	private void doConfigure(UserRequest ureq) {
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(configurationCtrl);
 		
-		KalendarRenderWrapper alwaysVisibleKalendar = getCallerKalendarRenderWrapper();
+		List<KalendarRenderWrapper> alwaysVisibleKalendars = this.getAlwaysVisibleKalendarRenderWrappers();
 		List<KalendarRenderWrapper> allCalendars = new ArrayList<>(calendarWrappers);
 		configurationCtrl = new CalendarPersonalConfigurationController(ureq, getWindowControl(),
-				allCalendars, alwaysVisibleKalendar, allowImport);
+				allCalendars, alwaysVisibleKalendars, allowImport);
 		listenTo(configurationCtrl);
 		
 		String title = translate("cal.configuration.list");

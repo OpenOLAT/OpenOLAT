@@ -422,9 +422,9 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 	}
 	
 	@Override
-	public CalendarUserConfiguration createAggregatedCalendarConfig(Identity identity) {
+	public CalendarUserConfiguration createAggregatedCalendarConfig(String calendarType, Long calendarId, Identity identity) {
 		String token = RandomStringUtils.randomAlphanumeric(6);
-		Kalendar calendar = new Kalendar(identity.getKey().toString(), CalendarManager.TYPE_USER_AGGREGATED);
+		Kalendar calendar = new Kalendar(calendarId.toString(), calendarType);
 		return calendarUserConfigDao.createCalendarUserConfiguration(calendar, identity,
 				token, true, true);
 	}
@@ -447,8 +447,8 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 	}
 
 	@Override
-	public List<CalendarUserConfiguration> getCalendarUserConfigurationsList(IdentityRef identity, String... types) {
-		return calendarUserConfigDao.getCalendarUserConfigurations(identity, types);
+	public List<CalendarUserConfiguration> getCalendarUserConfigurationsList(IdentityRef identity, String type, String calendarId) {
+		return calendarUserConfigDao.getCalendarUserConfigurations(identity, type, calendarId);
 	}
 	
 	@Override

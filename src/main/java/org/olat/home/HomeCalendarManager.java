@@ -51,15 +51,11 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
-import org.olat.core.util.nodes.INode;
-import org.olat.core.util.tree.TreeVisitor;
-import org.olat.core.util.tree.Visitor;
 import org.olat.course.CorruptedCourseException;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.groupsandrights.CourseRights;
-import org.olat.course.nodes.CalCourseNode;
-import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.cal.CourseCalendars;
 import org.olat.course.run.calendar.CourseLinkProviderController;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
@@ -251,7 +247,7 @@ public class HomeCalendarManager implements PersonalCalendarManager, UserDataDel
 				Long courseResourceableID = courseEntry.getOlatResource().getResourceableId();
 				try {
 					ICourse course = CourseFactory.loadCourse(courseEntry);
-					if(isCourseCalendarEnabled(course)) {
+					if(CourseCalendars.isCourseCalendarEnabled(course)) {
 						//calendar course aren't enabled per default but course node of type calendar are always possible
 						//REVIEW if (!course.getCourseEnvironment().getCourseConfig().isCalendarEnabled()) continue;
 						// add course calendar
@@ -284,17 +280,7 @@ public class HomeCalendarManager implements PersonalCalendarManager, UserDataDel
 			}
 		}
 	}
-	
-	private boolean isCourseCalendarEnabled(ICourse course) {
-		if(course.getCourseConfig().isCalendarEnabled()) {
-			return true;
-		}
-		
-		CourseNode rootNode = course.getRunStructure().getRootNode();
-		CalCourseNodeVisitor v = new CalCourseNodeVisitor();
-		new TreeVisitor(v, rootNode, true).visitAll();
-		return v.isFound();
-	}
+
 	
 	/**
 	 * 
@@ -417,21 +403,6 @@ public class HomeCalendarManager implements PersonalCalendarManager, UserDataDel
 				Files.deleteIfExists(calendarFile.toPath());
 			} catch (IOException e) {
 				log.error("Cannot delete calendar: " + calendarFile);
-			}
-		}
-	}
-
-	private static class CalCourseNodeVisitor implements Visitor {
-		private boolean found = false;
-		
-		public boolean isFound() {
-			return found;
-		}
-		
-		@Override
-		public void visit(INode node) {
-			if(node instanceof CalCourseNode) {
-				found = true;
 			}
 		}
 	}

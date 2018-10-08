@@ -295,30 +295,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	}
 	
 	private UserCourseEnvironmentImpl loadUserCourseEnvironment(UserRequest ureq, RepositoryEntrySecurity reSecurity) {
-		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
-		List<BusinessGroup> coachedGroups;
-		if(reSecurity.isGroupCoach()) {
-			coachedGroups = cgm.getOwnedBusinessGroups(ureq.getIdentity());
-		} else {
-			coachedGroups = Collections.emptyList();
-		}
-		List<BusinessGroup> participatedGroups;
-		if(reSecurity.isGroupParticipant()) {
-			participatedGroups = cgm.getParticipatingBusinessGroups(ureq.getIdentity());
-		} else {
-			participatedGroups = Collections.emptyList();
-		}
-		List<BusinessGroup> waitingLists;
-		if(reSecurity.isGroupWaiting()) {
-			waitingLists = cgm.getWaitingListGroups(ureq.getIdentity());
-		} else {
-			waitingLists = Collections.emptyList();
-		}
-
-		return new UserCourseEnvironmentImpl(ureq.getUserSession().getIdentityEnvironment(), course.getCourseEnvironment(), getWindowControl(),
-				coachedGroups, participatedGroups, waitingLists,
-				reSecurity.isCoach(), reSecurity.isEntryAdmin() || reSecurity.isPrincipal(), reSecurity.isParticipant(),
-				reSecurity.isReadOnly() || reSecurity.isOnlyPrincipal());
+		return UserCourseEnvironmentImpl.load(ureq, course, reSecurity, getWindowControl());
 	}
 	
 	/**

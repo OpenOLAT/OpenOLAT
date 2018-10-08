@@ -63,6 +63,7 @@ public class CurriculumComposerTableModel extends DefaultFlexiTreeTableDataModel
 			case resources: return element.getResources();
 			case status: return element.getStatus();
 			case tools: return element.getTools();
+			case calendars: return element.getCalendarsLink();
 			default: return "ERROR";
 		}
 	}
@@ -81,6 +82,7 @@ public class CurriculumComposerTableModel extends DefaultFlexiTreeTableDataModel
 		endDate("table.header.end.date"),
 		type("table.header.type"),
 		resources("table.header.resources"),
+		calendars("table.header.calendars"),
 		status("table.header.status"),
 		tools("table.header.tools");
 		

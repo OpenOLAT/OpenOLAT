@@ -79,6 +79,15 @@ public class CalendarUserConfigurationDAO {
 		return config;
 	}
 	
+	public List<CalendarUserConfiguration> getCalendarUserConfigurations(IdentityRef identity, String type, String calendarId) {
+		return dbInstance.getCurrentEntityManager()
+				.createNamedQuery("loadCalUserConfigByIdentityAndCalendar", CalendarUserConfiguration.class)
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("type", type)
+				.setParameter("calendarId", calendarId)
+				.getResultList();
+	}
+	
 	public List<CalendarUserConfiguration> getCalendarUserConfigurations(IdentityRef identity, String... types) {
 		StringBuilder sb = new StringBuilder(512);
 		sb.append("select conf from caluserconfig conf where conf.identity.key=:identityKey");

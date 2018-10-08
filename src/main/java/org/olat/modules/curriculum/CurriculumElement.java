@@ -56,6 +56,10 @@ public interface CurriculumElement extends CurriculumElementShort, CreateInfo, M
 	
 	public void setEndDate(Date date);
 	
+	public CurriculumCalendars getCalendars();
+
+	public void setCalendars(CurriculumCalendars calendars);
+	
 	public CurriculumElementStatus getElementStatus();
 	
 	public void setElementStatus(CurriculumElementStatus status);

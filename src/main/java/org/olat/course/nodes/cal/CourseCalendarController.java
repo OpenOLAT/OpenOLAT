@@ -23,7 +23,6 @@ package org.olat.course.nodes.cal;
 import java.util.Date;
 import java.util.List;
 
-import org.olat.commons.calendar.model.Kalendar;
 import org.olat.commons.calendar.ui.WeeklyCalendarController;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.commons.calendar.ui.events.CalendarGUIModifiedEvent;
@@ -66,18 +65,11 @@ public class CourseCalendarController extends DefaultController implements Clone
 		courseKalendarWrapper = myCal.getCourseKalendarWrapper();
 		calendarController = new WeeklyCalendarController(ureq, wControl, calendars, WeeklyCalendarController.CALLER_COURSE,
 				courseEnv.getCourseEnvironment().getCourseGroupManager().getCourseResource(), false);
-		calendarController.setDifferentiateManagedEvent(needToDifferentiateManagedEvents(calendars));
+		calendarController.setDifferentiateManagedEvent(CourseCalendars.needToDifferentiateManagedEvents(calendars));
 		setInitialComponent(calendarController.getInitialComponent());
 	}
 	
-	private boolean needToDifferentiateManagedEvents(List<KalendarRenderWrapper> calednarWrappers) {
-		boolean hasManaged = false;
-		for(KalendarRenderWrapper wrapper:calednarWrappers) {
-			Kalendar cal = wrapper.getKalendar();
-			hasManaged |= cal.hasManagedEvents();
-		}
-		return hasManaged;
-	}
+	
 
 	public CourseCalendarSubscription getCalendarSubscription() {
 		return calendarSubscription;

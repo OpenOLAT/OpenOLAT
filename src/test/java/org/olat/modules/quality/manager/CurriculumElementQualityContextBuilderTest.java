@@ -33,6 +33,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
@@ -109,11 +110,11 @@ public class CurriculumElementQualityContextBuilderTest extends OlatTestCase {
 				organisation2);
 
 		CurriculumElement curriculumElementParent = curriculumService
-				.createCurriculumElement(UUID.randomUUID().toString(), "", null, null, null, null, curriculum2);
+				.createCurriculumElement(UUID.randomUUID().toString(), "", null, null, null, null, CurriculumCalendars.disabled, curriculum2);
 		CurriculumElement curriculumElement = curriculumService.createCurriculumElement(UUID.randomUUID().toString(),
-				"", null, null, curriculumElementParent, null, curriculum1);
+				"", null, null, curriculumElementParent, null, CurriculumCalendars.disabled, curriculum1);
 		CurriculumElement otherCurriculumElement = curriculumService.createCurriculumElement(UUID.randomUUID().toString(),
-				"", null, null, null, null, curriculum2);
+				"", null, null, null, null, CurriculumCalendars.disabled, curriculum2);
 
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		curriculumService.addRepositoryEntry(curriculumElement, entry, true);
@@ -171,7 +172,7 @@ public class CurriculumElementQualityContextBuilderTest extends OlatTestCase {
 	public void shouldNotDeleteContextOfOtherRoles() {
 		Curriculum curriculum = curriculumService.createCurriculum(UUID.randomUUID().toString(), "", "", null);
 		CurriculumElement curriculumElement = curriculumService.createCurriculumElement(UUID.randomUUID().toString(),
-				"", null, null, null, null, curriculum);
+				"", null, null, null, null, CurriculumCalendars.disabled, curriculum);
 		Identity executor = JunitTestHelper.createAndPersistIdentityAsRndAuthor("");
 		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
 		List<EvaluationFormParticipation> participations = qualityService.addParticipations(dataCollection,

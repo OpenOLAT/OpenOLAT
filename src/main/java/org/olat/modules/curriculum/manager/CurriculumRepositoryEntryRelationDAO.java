@@ -69,7 +69,9 @@ public class CurriculumRepositoryEntryRelationDAO {
 			.getResultList();
 	}
 	
-	public List<RepositoryEntry> getRepositoryEntries(CurriculumElementRef element, RepositoryEntryStatusEnum[] status) {
+	public List<RepositoryEntry> getRepositoryEntries(List<CurriculumElementRef> elements, RepositoryEntryStatusEnum[] status) {
+		if(elements == null || elements.isEmpty()) return new ArrayList<>();
+		
 		QueryBuilder sb = new QueryBuilder(256);
 		sb.append("select distinct v from repositoryentry as v")
 		  .append(" inner join fetch v.olatResource as ores")
@@ -77,11 +79,13 @@ public class CurriculumRepositoryEntryRelationDAO {
 		  .append(" left join fetch v.lifecycle as lifecycle")
 		  .append(" inner join v.groups as rel")
 		  .append(" inner join curriculumelement as el on (el.group.key=rel.group.key)")
-		  .append(" where el.key=:elementKey and v.status ").in(status);
-
+		  .append(" where el.key in (:elementKeys) and v.status ").in(status);
+		
+		List<Long> elementKeys = elements
+				.stream().map(CurriculumElementRef::getKey).collect(Collectors.toList());
 		return dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), RepositoryEntry.class)
-			.setParameter("elementKey", element.getKey())
+			.setParameter("elementKeys", elementKeys)
 			.getResultList();
 	}
 	
@@ -154,7 +158,7 @@ public class CurriculumRepositoryEntryRelationDAO {
 	public Map<CurriculumElement, List<Long>> getCurriculumElementsWithRepositoryEntryKeys(CurriculumRef curriculum) {
 		QueryBuilder sb = new QueryBuilder(256);
 		sb.append("select el, rel.entry.key from curriculumelement el")
-		  .append(" inner join fetch el.type elementType")
+		  .append(" left join fetch el.type elementType")
 		  .append(" inner join el.curriculum curriculum")
 		  .append(" left join fetch el.parent parentEl")
 		  .append(" left join repoentrytogroup as rel on (el.group.key=rel.group.key)")

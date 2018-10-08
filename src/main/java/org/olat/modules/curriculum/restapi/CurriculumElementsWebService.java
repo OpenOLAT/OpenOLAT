@@ -45,6 +45,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementManagedFlag;
 import org.olat.modules.curriculum.CurriculumElementStatus;
@@ -244,7 +245,7 @@ public class CurriculumElementsWebService {
 		boolean move = false;
 		if(curriculumElement.getKey() == null) {
 			elementToSave = curriculumService.createCurriculumElement(curriculumElement.getIdentifier(), curriculumElement.getDisplayName(),
-					curriculumElement.getBeginDate(), curriculumElement.getEndDate(), parentElement, type, curriculum);
+					curriculumElement.getBeginDate(), curriculumElement.getEndDate(), parentElement, type, CurriculumCalendars.disabled, curriculum);
 		} else {
 			elementToSave = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(curriculumElement.getKey()));
 			elementToSave.setDisplayName(curriculumElement.getDisplayName());
