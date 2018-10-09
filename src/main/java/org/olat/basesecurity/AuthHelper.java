@@ -91,8 +91,8 @@ public class AuthHelper {
 	 * <code>LOGOUT_PAGE</code>
 	 */
 	public  static final int LOGIN_OK = 0;
-	private static final int LOGIN_FAILED = 1;
-	private static final int LOGIN_DENIED = 2;
+	public static final int LOGIN_FAILED = 1;
+	public static final int LOGIN_DENIED = 2;
 	public  static final int LOGIN_NOTAVAILABLE = 3;
 
 	private static final int MAX_SESSION_NO_LIMIT = 0;
@@ -228,8 +228,14 @@ public class AuthHelper {
 		if ( locale == null || ! supportedLanguages.contains(locale.toString()) ) {
 			locale = I18nModule.getDefaultLocale();
 		}
-		Identity guestIdent = BaseSecurityManager.getInstance().getAndUpdateAnonymousUserForLanguage(locale);
-		return doLogin(guestIdent, BaseSecurityModule.getDefaultAuthProviderIdentifier(), ureq);
+		BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
+		Identity guestIdent = securityManager.getAndUpdateAnonymousUserForLanguage(locale);
+		Roles guestRoles = securityManager.getRoles(guestIdent);
+		if(guestRoles.isGuestOnly()) {
+			return doLogin(guestIdent, BaseSecurityModule.getDefaultAuthProviderIdentifier(), ureq);
+		}
+		log.error("Guest account has user permissions: " + guestIdent);
+		return LOGIN_DENIED;
 	}
 
 	public static int doInvitationLogin(String invitationToken, UserRequest ureq, Locale locale) {
