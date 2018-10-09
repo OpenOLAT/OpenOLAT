@@ -487,7 +487,7 @@ public class CourseFactory {
 			int count = 0;
 			for (Reference ref: refs) {
 				referenceManager.addReference(targetCourse, ref.getTarget(), ref.getUserdata());
-				if(count % 20 == 0) {
+				if(count++ % 20 == 0) {
 					DBFactory.getInstance().intermediateCommit();
 				}
 			}

@@ -100,7 +100,7 @@ public class PublishProcess {
 	private static final OLog log = Tracing.createLoggerFor(PublishProcess.class);
 	
 	private static final String PACKAGE = Util.getPackageName(PublishProcess.class);
-	private static Translator translator;
+	private final Translator translator;
 	
 	/*
 	 * publishing means 
