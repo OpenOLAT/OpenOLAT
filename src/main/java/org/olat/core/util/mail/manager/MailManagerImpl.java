@@ -1682,13 +1682,24 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 	@Override
 	public void sendMessage(MimeMessage msg, MailerResult result) {
 		if (msg == null) return;
-			
+
 		String smtpFrom = WebappHelper.getMailConfig("smtpFrom");
 		if(StringHelper.containsNonWhitespace(smtpFrom)) {
 			try {
 				SMTPMessage smtpMsg = new SMTPMessage(msg);
 				smtpMsg.setEnvelopeFrom(smtpFrom);
 				msg = smtpMsg;
+			} catch (MessagingException e) {
+				log.error("", e);
+			}
+		} else {
+			try {
+				if (msg.getReplyTo().length > 0) {
+					Address a = msg.getReplyTo()[0];
+					SMTPMessage smtpMsg = new SMTPMessage(msg);
+					smtpMsg.setEnvelopeFrom(((InternetAddress)a).getAddress());
+					msg = smtpMsg;
+				}
 			} catch (MessagingException e) {
 				log.error("", e);
 			}
