@@ -20,8 +20,10 @@
 package org.olat.modules.quality.generator.ui;
 
 import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toList;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -44,46 +46,45 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.id.Organisation;
 import org.olat.core.util.StringHelper;
-import org.olat.modules.curriculum.CurriculumElement;
-import org.olat.modules.curriculum.CurriculumElementRef;
-import org.olat.modules.curriculum.CurriculumService;
+import org.olat.course.CourseModule;
 import org.olat.modules.quality.QualitySecurityCallback;
 import org.olat.modules.quality.generator.QualityGenerator;
 import org.olat.modules.quality.generator.QualityGeneratorConfigs;
-import org.olat.modules.quality.generator.QualityGeneratorService;
-import org.olat.modules.quality.generator.ui.CurriculumElementWhiteListDataModel.Cols;
+import org.olat.modules.quality.generator.ui.RepositoryEntryWhiteListDataModel.Cols;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryService;
+import org.olat.repository.controllers.ReferencableEntriesSearchController;
+import org.olat.repository.model.RepositoryEntryRefImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
- * Initial date: 21.08.2018<br>
+ * Initial date: 09.10.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class CurriculumElementWhiteListController extends AbstractGeneratorEditController {
+public class RepositoryEntryWhiteListController extends AbstractGeneratorEditController {
 
-	private static final String CURRICULUM_ELEMENT_WHITE_LIST = "curriculum.element.white.list";
+	private static final String COURSE_WHITE_LIST = "course.white.list";
 	private static final String KEY_DELIMITER = ",";
 	
 	private FlexiTableElement tableEl;
-	private CurriculumElementWhiteListDataModel tableModel;
+	private RepositoryEntryWhiteListDataModel tableModel;
 	private Link addLink;
 	private FormLink removeLink;
 	
 	private CloseableModalController cmc;
-	private CurriculumElementSelectionController selectCtrl;
-	private CurriculumElementRemoveConfirmationController removeConfirmationCtrl;
+	private ReferencableEntriesSearchController selectCtrl;
+	private RepositoryEntryRemoveConfirmationController removeConfirmationCtrl;
 	
 	private final QualityGeneratorConfigs configs;
 	
 	@Autowired
-	private QualityGeneratorService generatorService;
-	@Autowired
-	private CurriculumService curriculumService;
+	private RepositoryService repositoryService;
 
-	public CurriculumElementWhiteListController(UserRequest ureq, WindowControl wControl,
+	public RepositoryEntryWhiteListController(UserRequest ureq, WindowControl wControl,
 			QualitySecurityCallback secCallback, TooledStackedPanel stackPanel, QualityGenerator generator,
 			QualityGeneratorConfigs configs) {
 		super(ureq, wControl, secCallback, stackPanel, generator);
@@ -94,23 +95,23 @@ public class CurriculumElementWhiteListController extends AbstractGeneratorEditC
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.id));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.displayName));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.identifier));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.typeName));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.begin));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.end));
 
-		tableModel = new CurriculumElementWhiteListDataModel(columnsModel, getLocale());
+		tableModel = new RepositoryEntryWhiteListDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, true, getTranslator(), formLayout);
-		tableEl.setEmtpyTableMessageKey("curriculum.element.empty.table");
-		tableEl.setAndLoadPersistedPreferences(ureq, "quality-ce-white-list");
+		tableEl.setEmtpyTableMessageKey("repository.entry.empty.table");
+		tableEl.setAndLoadPersistedPreferences(ureq, "quality-re-white-list");
 		tableEl.setMultiSelect(true);
 		tableEl.setSelectAllEnable(true);
 		
 		FormLayoutContainer buttons = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add("buttons", buttons);
 		buttons.setElementCssClass("o_button_group");
-		removeLink = uifactory.addFormLink("curriculum.element.remove", buttons, Link.BUTTON);
+		removeLink = uifactory.addFormLink("repository.entry.remove", buttons, Link.BUTTON);
 		
 		loadModel();
 	}
@@ -119,30 +120,30 @@ public class CurriculumElementWhiteListController extends AbstractGeneratorEditC
 	public void initTools() {
 		super.initTools();
 		
-		addLink = LinkFactory.createToolLink("curriculum.element.add", translate("curriculum.element.add"), this);
-		addLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_gen_ce_add");
+		addLink = LinkFactory.createToolLink("repository.entry.select", translate("repository.entry.select"), this);
+		addLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_gen_re_add");
 		stackPanel.addTool(addLink, Align.right);
 	}
 
 	private void loadModel() {
-		List<CurriculumElementRef> elementRefs = getCurriculumElementRefs(configs);
-		List<CurriculumElement> curriculumElements = curriculumService.getCurriculumElements(elementRefs);
-		tableModel.setObjects(curriculumElements);
+		List<Long> entryKeys = getRepositoryEntryRefs(configs).stream().map(RepositoryEntryRef::getKey).collect(toList());
+		List<RepositoryEntry> entries = repositoryService.loadByKeys(entryKeys);
+		tableModel.setObjects(entries);
 		tableEl.reset(true, true, true);
 		
-		removeLink.setVisible(!curriculumElements.isEmpty());
+		removeLink.setVisible(!entries.isEmpty());
 		flc.setDirty(true);
 	}
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == removeLink) {
-			List<CurriculumElement> elements = getSelectedCurriculumElements();
-			doConfirmRemove(ureq, elements);
+			List<RepositoryEntry> entries = getSelectedRepositoryEntries();
+			doConfirmRemove(ureq, entries);
 		}
 	}
 
-	private List<CurriculumElement> getSelectedCurriculumElements() {
+	private List<RepositoryEntry> getSelectedRepositoryEntries() {
 		return tableEl.getMultiSelectedIndex().stream()
 				.map(index -> tableModel.getObject(index.intValue()))
 				.collect(Collectors.toList());
@@ -151,7 +152,7 @@ public class CurriculumElementWhiteListController extends AbstractGeneratorEditC
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == addLink) {
-			doSelectCurriculumElement(ureq);
+			doSelectRepositoryEntry(ureq);
 		} 
 		super.event(ureq, source, event);
 	}
@@ -159,16 +160,19 @@ public class CurriculumElementWhiteListController extends AbstractGeneratorEditC
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == selectCtrl) {
-			if (Event.DONE_EVENT.equals(event)) {
-				String elementKey = selectCtrl.getCurriculumElementKey();
-				doAddCurriculumElement(elementKey);
+			List<RepositoryEntry> selectedEntries = Collections.emptyList();
+			if (event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED) {
+				selectedEntries = Collections.singletonList(selectCtrl.getSelectedEntry());
+			} else if (event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRIES_SELECTED) {
+				selectedEntries = selectCtrl.getSelectedEntries();
 			}
+			doAddRepositoryEntries(selectedEntries);
 			cmc.deactivate();
 			cleanUp();
 		} else if (source == removeConfirmationCtrl) {
 			if (Event.DONE_EVENT.equals(event)) {
-				List<CurriculumElement> elements = removeConfirmationCtrl.getCurriculumElements();
-				doRemove(elements);
+				List<RepositoryEntry> entries = removeConfirmationCtrl.getRepositoryEntrys();
+				doRemove(entries);
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -187,71 +191,73 @@ public class CurriculumElementWhiteListController extends AbstractGeneratorEditC
 		cmc = null;
 	}
 
-	public static List<CurriculumElementRef> getCurriculumElementRefs(QualityGeneratorConfigs generatorConfigs) {
-		String whiteListConfig = generatorConfigs.getValue(CURRICULUM_ELEMENT_WHITE_LIST);
+	public static List<RepositoryEntryRef> getRepositoryEntryRefs(QualityGeneratorConfigs generatorConfigs) {
+		String whiteListConfig = generatorConfigs.getValue(COURSE_WHITE_LIST);
 		String[] keys = StringHelper.containsNonWhitespace(whiteListConfig)
 				? whiteListConfig.split(KEY_DELIMITER)
 				: new String[0];
-		List<CurriculumElementRef> elementRefs = Arrays.stream(keys)
+		List<RepositoryEntryRef> elementRefs = Arrays.stream(keys)
 				.map(Long::valueOf)
-				.map(key -> getCurriculumElementRef(key))
-				.collect(Collectors.toList());
+				.map(RepositoryEntryRefImpl::new)
+				.collect(toList());
 		return elementRefs;
 	}
 	
-	private static CurriculumElementRef getCurriculumElementRef(Long key) {
-		return () -> key;
-	}
-
-	private void doSelectCurriculumElement(UserRequest ureq) {
-		List<Organisation> organisations = generatorService.loadGeneratorOrganisations(generator);
-		
-		selectCtrl = new CurriculumElementSelectionController(ureq, getWindowControl(), organisations);
+	private void doSelectRepositoryEntry(UserRequest ureq) {
+		selectCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq,
+				new String[] { CourseModule.getCourseTypeName() }, translate("repository.entry.select.title"),
+				false, false, true, true);
 		listenTo(selectCtrl);
 
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
-				selectCtrl.getInitialComponent(), true, translate("curriculum.element.select.title"));
+				selectCtrl.getInitialComponent(), true, translate("repository.entry.select.title"));
 		cmc.activate();
 		listenTo(cmc);
 	}
 
-	private void doAddCurriculumElement(String elementKey) {
-		if (StringHelper.containsNonWhitespace(elementKey)) {
-			String whiteListConfig = configs.getValue(CURRICULUM_ELEMENT_WHITE_LIST);
+	private void doAddRepositoryEntries(List<RepositoryEntry> selectedEntries) {
+		for (RepositoryEntry repositoryEntry : selectedEntries) {
+			doAddRepositoryEntry(repositoryEntry.getKey().toString());
+		}
+		loadModel();
+	}
+
+	private void doAddRepositoryEntry(String entryKey) {
+		if (StringHelper.containsNonWhitespace(entryKey)) {
+			String whiteListConfig = configs.getValue(COURSE_WHITE_LIST);
 			if (StringHelper.containsNonWhitespace(whiteListConfig)) {
 				String[] keys = whiteListConfig.split(KEY_DELIMITER);
-				if (!Arrays.asList(keys).contains(elementKey)) {
-					whiteListConfig += KEY_DELIMITER + elementKey;
+				if (!Arrays.asList(keys).contains(entryKey)) {
+					whiteListConfig += KEY_DELIMITER + entryKey;
 				}
 			} else {
-				whiteListConfig = elementKey;
+				whiteListConfig = entryKey;
 			}
-			configs.setValue(CURRICULUM_ELEMENT_WHITE_LIST, whiteListConfig);
-			loadModel();
+			configs.setValue(COURSE_WHITE_LIST, whiteListConfig);
 		}
 	}
 
-	private void doConfirmRemove(UserRequest ureq, List<CurriculumElement> elements) {
-		if (elements.isEmpty()) {
-			showWarning("curriculum.element.none.selected");
+	private void doConfirmRemove(UserRequest ureq, List<RepositoryEntry> entries) {
+		if (entries.isEmpty()) {
+			showWarning("repository.entry.none.selected");
 		} else {
-			removeConfirmationCtrl = new CurriculumElementRemoveConfirmationController(ureq, getWindowControl(), elements);
+			removeConfirmationCtrl = new RepositoryEntryRemoveConfirmationController(ureq, getWindowControl(), entries);
 			listenTo(removeConfirmationCtrl);
 			
 			cmc = new CloseableModalController(getWindowControl(), translate("close"),
-					removeConfirmationCtrl.getInitialComponent(), true, translate("curriculum.element.remove.confirm.title"));
+					removeConfirmationCtrl.getInitialComponent(), true, translate("repository.entry.remove.confirm.title"));
 			cmc.activate();
 			listenTo(cmc);
 		}
 	}
 
-	private void doRemove(List<CurriculumElement> elements) {
-		List<String> keysToRemove = elements.stream()
-				.map(CurriculumElementRef::getKey)
+	private void doRemove(List<RepositoryEntry> entries) {
+		List<String> keysToRemove = entries.stream()
+				.map(RepositoryEntryRef::getKey)
 				.map(String::valueOf)
 				.collect(Collectors.toList());
 		
-		String whiteListConfig = configs.getValue(CURRICULUM_ELEMENT_WHITE_LIST);
+		String whiteListConfig = configs.getValue(COURSE_WHITE_LIST);
 		String[] splittedKeys = StringHelper.containsNonWhitespace(whiteListConfig)
 				? whiteListConfig.split(KEY_DELIMITER)
 				: new String[0];
@@ -259,7 +265,7 @@ public class CurriculumElementWhiteListController extends AbstractGeneratorEditC
 		currentKeys.removeAll(keysToRemove);
 		
 		String keys = currentKeys.stream().collect(joining(KEY_DELIMITER));
-		configs.setValue(CURRICULUM_ELEMENT_WHITE_LIST, keys);
+		configs.setValue(COURSE_WHITE_LIST, keys);
 		loadModel();
 	}
 

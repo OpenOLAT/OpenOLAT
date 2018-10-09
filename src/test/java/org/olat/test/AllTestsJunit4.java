@@ -228,6 +228,8 @@ import org.junit.runners.Suite;
 	org.olat.modules.quality.generator.manager.titlecreator.CurriculumElementHandlerTest.class,
 	org.olat.modules.quality.generator.manager.titlecreator.RepositoryEntryHandlerTest.class,
 	org.olat.modules.quality.generator.manager.titlecreator.UserHandlerTest.class,
+	org.olat.modules.quality.generator.provider.course.manager.CourseProviderDAOTest.class,
+	org.olat.modules.quality.generator.provider.courselectures.manager.CourseLecturesProviderDAOTest.class,
 	org.olat.modules.quality.generator.provider.curriculumelement.manager.CurriculumElementProviderDAOTest.class,
 	org.olat.modules.quality.manager.CurriculumElementQualityContextBuilderTest.class,
 	org.olat.modules.quality.manager.DefaultQualityContextBuilderTest.class,

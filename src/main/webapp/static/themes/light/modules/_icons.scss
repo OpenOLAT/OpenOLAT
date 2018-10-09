@@ -717,6 +717,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_qual_gen_delete:before { content: $fa-var-trash; }
 .o_icon_qual_gen_disabled:before { content: $fa-var-ban; }
 .o_icon_qual_gen_enabled:before { content: $fa-var-repeat; }
+.o_icon_qual_gen_re_add:before { content: $fa-var-plus-circle; }
 .o_icon_qual_part_user_add:before { content: $fa-var-user-plus; }
 .o_icon_qual_part_user_add_course:before { content: $fa-var-user-plus; }
 .o_icon_qual_part_user_add_curele:before { content: $fa-var-user-plus; }

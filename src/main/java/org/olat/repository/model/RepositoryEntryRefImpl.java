@@ -55,4 +55,13 @@ public class RepositoryEntryRefImpl implements RepositoryEntryRef {
 		}
 		return false;
 	}
+
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("RepositoryEntryRefImpl [repoKey=");
+		builder.append(repoKey);
+		builder.append("]");
+		return builder.toString();
+	}
 }
