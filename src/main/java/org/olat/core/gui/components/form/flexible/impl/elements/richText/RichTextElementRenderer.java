@@ -218,7 +218,7 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 		sb.append("  BTinyHelper.editorMediaUris.put('").append(domID).append("','");
 		ubu.buildURI(sb, null, null);
 		sb.append("');\n");
-		sb.append("  jQuery('#").append(domID).append("').tinymce({\n")
+		sb.append(" setTimeout(function() { jQuery('#").append(domID).append("').tinymce({\n")//delay for firefox + tinymce 4.5 + jQuery 3.3.1
 		  .append("    selector: '#").append(domID).append("',\n")
 		  .append("    script_url: '").append(baseUrl.toString()).append("',\n")
 		  .append("    setup: function(ed){\n")
@@ -236,6 +236,7 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 		sb.append("    },\n")
 		  .append(configurations)
 		  .append("  });\n")
+		  .append("}, 1);\n")// end timeout
 		  .append("/* ]]> */</script>\n");
 	}
 	
