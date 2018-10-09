@@ -127,17 +127,10 @@
 			<expiration max-idle="3600000" interval="15000" />
 		</local-cache>
 		
-		<local-cache name="FeedManager@feed" statistics="true">
-			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
-			<transaction mode="NONE" auto-commit="true" />
-			<eviction size="1000" strategy="LRU" />
-			<expiration max-idle="900000" interval="15000" />
-		</local-cache>
-		
 		<local-cache name="Path@feed" statistics="true">
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
-			<eviction size="1000" strategy="LRU" />
+			<eviction size="5000" strategy="LRU" />
 			<expiration max-idle="900000" interval="15000" />
 		</local-cache>
 	</cache-container>

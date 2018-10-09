@@ -240,9 +240,23 @@
 		class="org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.olatmovieviewer.TinyDispatcher" />
 
 	<!-- podcast media dispatcher -->
-	<bean id="podcastMediaBean" class="org.olat.modules.webFeed.dispatching.FeedMediaDispatcher" />
+	<bean id="podcastMediaBean" class="org.olat.modules.webFeed.dispatching.FeedMediaDispatcher">
+		<property name="feedManager" ref="feedManager"/>
+		<property name="coordinatorManager" ref="coordinatorManager"/>
+		<property name="securityManager" ref="baseSecurityManager"/>
+		<property name="repositoryManager" ref="repositoryManager"/>
+		<property name="dbInstance" ref="database"/>
+		<property name="resourceManager" ref="resourceManager"/>
+	</bean>
 
 	<!-- blog media dispatcher -->
-	<bean id="blogMediaBean" class="org.olat.modules.webFeed.dispatching.FeedMediaDispatcher" />
+	<bean id="blogMediaBean" class="org.olat.modules.webFeed.dispatching.FeedMediaDispatcher">
+		<property name="feedManager" ref="feedManager"/>
+		<property name="coordinatorManager" ref="coordinatorManager"/>
+		<property name="securityManager" ref="baseSecurityManager"/>
+		<property name="repositoryManager" ref="repositoryManager"/>
+		<property name="dbInstance" ref="database"/>
+		<property name="resourceManager" ref="resourceManager"/>
+	</bean>
 	
 </beans>

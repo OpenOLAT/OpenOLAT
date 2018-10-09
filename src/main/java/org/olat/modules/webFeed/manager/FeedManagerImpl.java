@@ -27,7 +27,9 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.commons.lang.RandomStringUtils;
 import org.olat.admin.quota.QuotaConstants;
+import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.CoreSpringFactory;
@@ -40,6 +42,7 @@ import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
@@ -594,7 +597,7 @@ public class FeedManagerImpl extends FeedManager {
 	 * @return A unique key for the item of the feed
 	 */
 	private String itemKey(String string, String string2) {
-		final StringBuffer key = new StringBuffer();
+		final StringBuilder key = new StringBuilder(128);
 		key.append("feed").append(string2);
 		key.append("_item_").append(string);
 		return key.toString();
@@ -609,8 +612,7 @@ public class FeedManagerImpl extends FeedManager {
 	 * @return A unique key for the item of the feed
 	 */
 	protected String itemKey(Item item, OLATResourceable feed) {
-		String key = itemKey(item.getGuid(), feed.getResourceableId().toString());
-		return key;
+		return itemKey(item.getGuid(), feed.getResourceableId().toString());
 	}
 
 	@Override
@@ -672,9 +674,70 @@ public class FeedManagerImpl extends FeedManager {
 		return mediaResource;
 	}
 
+	/**
+	 * Returns a podcast base URI of the type<br>
+	 * http://myolat.org/olat/[podcast|blog]/[IDKEY/TOKEN]/ORESID
+	 * 
+	 * @param feed
+	 * @param identityKey
+	 * @return The feed base uri for the given user (identity)
+	 */
 	@Override
 	public String getFeedBaseUri(Feed feed, Identity identity, Long courseId, String nodeId) {
-		return FeedMediaDispatcher.getFeedBaseUri(feed, identity, courseId, nodeId);
+		BaseSecurity manager = BaseSecurityManager.getInstance();
+		boolean isCourseNode = courseId != null && nodeId != null;
+
+		final String slash = "/";
+		StringBuilder uri = new StringBuilder(256);
+		uri.append(Settings.getServerContextPathURI());
+		uri.append(slash);
+		uri.append(FeedMediaDispatcher.getURIPrefix(feed.getResourceableTypeName()));
+		uri.append(slash);
+
+		if (isCourseNode) {
+			uri.append(org.olat.modules.webFeed.dispatching.Path.COURSE_NODE_INDICATOR);
+			uri.append(slash);
+		}
+
+		if (identity != null) {
+			// The identity can be null for guests
+			String idKey = identity.getKey().toString();
+			Authentication authentication = manager.findAuthenticationByAuthusername(idKey, FeedMediaDispatcher.TOKEN_PROVIDER);
+			if (authentication == null) {
+				// Create an authentication
+				String token = RandomStringUtils.randomAlphanumeric(6);
+				authentication = manager.createAndPersistAuthentication(identity, FeedMediaDispatcher.TOKEN_PROVIDER, idKey, token, null);
+			}
+			// If the repository entry allows guest access it is public, thus not
+			// private.
+			RepositoryEntry entry;
+			if(courseId != null) {//check the course
+				OLATResourceable courseOres = OresHelper.createOLATResourceableInstance("CourseModule", courseId);
+				entry = repositoryManager.lookupRepositoryEntry(courseOres, false);
+			} else {
+				entry = repositoryManager.lookupRepositoryEntry(feed, false);
+			}
+			if (entry == null || entry.getAccess() != RepositoryEntry.ACC_USERS_GUESTS) {
+				// identity key
+				uri.append(idKey);
+				uri.append(slash);
+				// token
+				uri.append(authentication.getCredential());
+				uri.append(slash);
+			}
+		}
+
+		if (isCourseNode) {
+			uri.append(courseId);
+			uri.append(slash);
+			uri.append(nodeId);
+			uri.append(slash);
+		}
+		// feed id
+		uri.append(feed.getResourceableId());
+		// Append base uri delimiter. (Used to identify the root path for caching)
+		uri.append("/_");
+		return uri.toString();
 	}
 
 	@Override
@@ -893,8 +956,7 @@ public class FeedManagerImpl extends FeedManager {
 
 	@Override
 	public LockResult acquireLock(OLATResourceable feed, Identity identity) {
-		LockResult lockResult = coordinator.getLocker().acquireLock(feed, identity, null);
-		return lockResult;
+		return coordinator.getLocker().acquireLock(feed, identity, null);
 	}
 
 	@Override
@@ -904,8 +966,7 @@ public class FeedManagerImpl extends FeedManager {
 			key = Encoder.md5hash(key);
 		}
 		OLATResourceable itemResource = OresHelper.createOLATResourceableType(key);
-		LockResult lockResult = coordinator.getLocker().acquireLock(itemResource, identity, key);
-		return lockResult;
+		return coordinator.getLocker().acquireLock(itemResource, identity, key);
 	}
 
 	@Override
