@@ -38,6 +38,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledController;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
@@ -48,6 +49,9 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumManagedFlag;
@@ -64,7 +68,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CurriculumListManagerController extends FormBasicController implements TooledController {
+public class CurriculumListManagerController extends FormBasicController implements Activateable2, TooledController {
 	
 	private FlexiTableElement tableEl;
 	private Link newCurriculumButton;
@@ -73,6 +77,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 	
 	private ToolsController toolsCtrl;
 	private CloseableModalController cmc;
+	private CurriculumComposerController composerCtrl;
 	private EditCurriculumController newCurriculumCtrl;
 	private EditCurriculumOverviewController editCurriculumCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
@@ -88,6 +93,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 		super(ureq, wControl, "manage_curriculum");
 		this.toolbarPanel = toolbarPanel;
 		this.secCallback = secCallback;
+		toolbarPanel.addListener(this);
 
 		initForm(ureq);
 		loadModel(null, true);
@@ -149,7 +155,32 @@ public class CurriculumListManagerController extends FormBasicController impleme
 
 	@Override
 	protected void doDispose() {
-		//
+		if(toolbarPanel != null) {
+			toolbarPanel.removeListener(this);
+		}
+	}
+
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if("Curriculum".equalsIgnoreCase(type)) {
+			Long curriculumKey = entries.get(0).getOLATResourceable().getResourceableId();
+			activateCurriculum(ureq, curriculumKey);
+		}
+	}
+	
+	private void activateCurriculum(UserRequest ureq, Long curriculumKey) {
+		if(composerCtrl != null && curriculumKey.equals(composerCtrl.getCurriculum().getKey())) return;
+		
+		List<CurriculumRow> rows = tableModel.getObjects();
+		for(CurriculumRow row:rows) {
+			if(curriculumKey.equals(row.getKey())) {
+				doSelectCurriculum(ureq, row);
+				break;
+			}
+		}
 	}
 
 	@Override
@@ -188,6 +219,14 @@ public class CurriculumListManagerController extends FormBasicController impleme
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(newCurriculumButton == source) {
 			doNewCurriculum(ureq);
+		} else if(toolbarPanel == source) {
+			if(event instanceof PopEvent) {
+				PopEvent pe = (PopEvent)event;
+				if(pe.getController() instanceof CurriculumComposerController) {
+					removeAsListenerAndDispose(composerCtrl);
+					composerCtrl = null;
+				}
+			}
 		}
 		super.event(ureq, source, event);
 	}
@@ -252,7 +291,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 			showWarning("warning.curriculum.deleted");
 		} else {
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance(Curriculum.class, row.getKey()), null);
-			CurriculumComposerController composerCtrl = new CurriculumComposerController(ureq, swControl, toolbarPanel, curriculum, secCallback);
+			composerCtrl = new CurriculumComposerController(ureq, swControl, toolbarPanel, curriculum, secCallback);
 			listenTo(composerCtrl);
 			toolbarPanel.pushController(row.getDisplayName(), composerCtrl);
 		}

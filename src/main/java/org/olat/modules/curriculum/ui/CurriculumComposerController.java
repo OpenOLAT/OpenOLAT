@@ -40,6 +40,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TreeNodeFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
@@ -131,6 +132,10 @@ public class CurriculumComposerController extends FormBasicController implements
 		initForm(ureq);
 		loadModel();
 	}
+	
+	public Curriculum getCurriculum() {
+		return curriculum;
+	}
 
 	@Override
 	public void initTools() {
@@ -165,9 +170,9 @@ public class CurriculumComposerController extends FormBasicController implements
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementCols.key, "select"));
 
-		TreeNodeFlexiCellRenderer treeNodeRenderer = new TreeNodeFlexiCellRenderer();
+		TreeNodeFlexiCellRenderer treeNodeRenderer = new TreeNodeFlexiCellRenderer("select");
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.displayName, treeNodeRenderer));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.identifier));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.identifier, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementCols.externalId));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.beginDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.endDate));
@@ -175,10 +180,10 @@ public class CurriculumComposerController extends FormBasicController implements
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.resources));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.calendars));
 
-		DefaultFlexiColumnModel selectColumn = new DefaultFlexiColumnModel("select", translate("select"), "select");
-		selectColumn.setExportable(false);
-		selectColumn.setAlwaysVisible(true);
-		columnsModel.addFlexiColumnModel(selectColumn);
+		DefaultFlexiColumnModel zoomColumn = new DefaultFlexiColumnModel("zoom", translate("zoom"), "tt-focus");
+		zoomColumn.setExportable(false);
+		zoomColumn.setAlwaysVisible(true);
+		columnsModel.addFlexiColumnModel(zoomColumn);
 		if(secCallback.canEditCurriculumElement()) {
 			DefaultFlexiColumnModel toolsColumn = new DefaultFlexiColumnModel(ElementCols.tools);
 			toolsColumn.setExportable(false);
@@ -188,6 +193,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		
 		tableModel = new CurriculumComposerTableModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
+		tableEl.setRootCrumb(new CurriculumCrumb(curriculum.getDisplayName()));
 		tableEl.setCustomizeColumns(true);
 		tableEl.setElementCssClass("o_curriculum_el_listing");
 		tableEl.setEmtpyTableMessageKey("table.curriculum.element.empty");
@@ -658,6 +664,25 @@ public class CurriculumComposerController extends FormBasicController implements
 		private void close() {
 			toolsCalloutCtrl.deactivate();
 			cleanUp();
+		}
+	}
+	
+	private static class CurriculumCrumb implements FlexiTreeTableNode {
+		
+		private final String curriculumDisplayName;
+		
+		public CurriculumCrumb(String curriculumDisplayName) {
+			this.curriculumDisplayName = curriculumDisplayName;
+		}
+
+		@Override
+		public FlexiTreeTableNode getParent() {
+			return null;
+		}
+
+		@Override
+		public String getCrump() {
+			return curriculumDisplayName;
 		}
 	}
 }

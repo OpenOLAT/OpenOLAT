@@ -390,25 +390,43 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 	
 	protected void renderFooterButtons(StringOutput sb, FlexiTableComponent ftC, Translator translator) {
 		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
-		if(ftE.isSelectAllEnable()) {
+		if(ftE.isSelectAllEnable() || ftE.getTreeTableDataModel() != null) {
 			String formName = ftE.getRootForm().getFormName();
 			String dispatchId = ftE.getFormDispatchId();
 
 			sb.append("<div class='o_table_footer'><div class='o_table_checkall input-sm'>");
 
-			sb.append("<label class='checkbox-inline'><a id='")
-			  .append(dispatchId).append("_sa' href=\"javascript:o_table_toggleCheck('").append(formName).append("', true);")
-			  .append(FormJSHelper.getXHRFnCallFor(ftE.getRootForm(), dispatchId, 1, true, true, true,
-					  new NameValuePair("select", "checkall")))
-			  .append("\"><i class='o_icon o_icon-lg o_icon_check_on'> </i> <span>").append(translator.translate("form.checkall"))
-			  .append("</span></a></label>");
+			if(ftE.isSelectAllEnable()) {
+				sb.append("<a id='")
+				  .append(dispatchId).append("_sa' href=\"javascript:o_table_toggleCheck('").append(formName).append("', true);")
+				  .append(FormJSHelper.getXHRFnCallFor(ftE.getRootForm(), dispatchId, 1, true, true, true,
+						  new NameValuePair("select", "checkall")))
+				  .append("\"><i class='o_icon o_icon-lg o_icon_check_on'> </i> <span>").append(translator.translate("form.checkall"))
+				  .append("</span></a>");
+	
+				sb.append("<a id='")
+				  .append(dispatchId).append("_dsa' href=\"javascript:o_table_toggleCheck('").append(formName).append("', false);")
+				  .append(FormJSHelper.getXHRFnCallFor(ftE.getRootForm(), dispatchId, 1, true, true, true,
+						  new NameValuePair("select", "uncheckall")))
+				  .append("\"><i class='o_icon o_icon-lg o_icon_check_off'> </i> <span>").append(translator.translate("form.uncheckall"))
+				  .append("</span></a>");
+			}
+			
+			if(ftE.getTreeTableDataModel() != null) {
+				sb.append("<a id='")
+				  .append(dispatchId).append("_toa' href=\"javascript:;\" onclick=\"")
+				  .append(FormJSHelper.getXHRFnCallFor(ftE.getRootForm(), dispatchId, 1, true, true, true,
+						  new NameValuePair("tt-openclose", "openall")))
+				  .append("\"><i class='o_icon o_icon-lg o_icon_close_tree'> </i> <span>").append(translator.translate("form.openall"))
+				  .append("</span></a>");
 
-			sb.append("<label class='checkbox-inline'><a id='")
-			  .append(dispatchId).append("_dsa' href=\"javascript:o_table_toggleCheck('").append(formName).append("', false);")
-			  .append(FormJSHelper.getXHRFnCallFor(ftE.getRootForm(), dispatchId, 1, true, true, true,
-					  new NameValuePair("select", "uncheckall")))
-			  .append("\"><i class='o_icon o_icon-lg o_icon_check_off'> </i> <span>").append(translator.translate("form.uncheckall"))
-			  .append("</span></a></label>");
+				sb.append("<a id='")
+				  .append(dispatchId).append("_tca' href=\"javascript:;\" onclick=\"")
+				  .append(FormJSHelper.getXHRFnCallFor(ftE.getRootForm(), dispatchId, 1, true, true, true,
+						  new NameValuePair("tt-openclose", "closeall")))
+				  .append("\"><i class='o_icon o_icon-lg o_icon_open_tree'> </i> <span>").append(translator.translate("form.closeall"))
+				  .append("</span></a>");
+			}
 
 			sb.append("</div></div>");
 		}

@@ -48,7 +48,11 @@ public interface FlexiTreeTableDataModel<T extends FlexiTreeTableNode> extends F
 	
 	public void open(int row);
 	
+	public void openAll();
+	
 	public void close(int row);
+	
+	public void closeAll();
 	
 	public void popBreadcrumb(FlexiTreeTableNode node);
 	

@@ -189,6 +189,17 @@ implements FlexiTreeTableDataModel<U>, FilterableFlexiTableModel {
 	}
 
 	@Override
+	public void openAll() {
+		openedRows.clear();
+		if(focusedNode == null) {
+			super.setObjects(backupRows);
+		} else {
+			// reload the focused node
+			popBreadcrumb(focusedNode);
+		}
+	}
+
+	@Override
 	public void open(int row) {
 		U objectToOpen = getObject(row);
 		openedRows.add(objectToOpen);
@@ -209,6 +220,26 @@ implements FlexiTreeTableDataModel<U>, FilterableFlexiTableModel {
 			currentRows.addAll(children);
 		}
 		super.setObjects(currentRows);
+	}
+	
+	@Override
+	public void closeAll() {
+		List<U> currentRows = getObjects();
+		List<U> rootRows = new ArrayList<>();
+		if(focusedNode == null) {
+			for(U currentRow:currentRows) {
+				if(currentRow.getParent() == null) {
+					rootRows.add(currentRow);
+				}
+			}
+		} else {
+			for(U currentRow:currentRows) {
+				if(focusedNode.equals(currentRow)) {
+					rootRows.add(currentRow);
+				}
+			}
+		}
+		super.setObjects(rootRows);
 	}
 
 	@Override

@@ -251,15 +251,16 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Bre
 		WindowControl wControl = controller.getWindowControlForDebug();
 		BusinessControlFactory.getInstance().addToHistory(ureq, wControl);
 	}
-	
+
+	@Override
 	public int size() {
-		return stack == null ? 0 : stack.size();
+		return stack.size();
 	}
 	
 	@Override
 	public Controller getRootController() {
 		Controller controller = null;
-		if(stack.size() > 0) {
+		if(!stack.isEmpty()) {
 			Link lastPath = stack.get(0);
 			BreadCrumb crumb = (BreadCrumb)lastPath.getUserObject();
 			controller = crumb.getController();
@@ -269,7 +270,7 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Bre
 	
 	public Controller getLastController() {
 		Controller controller = null;
-		if(stack.size() > 0) {
+		if(!stack.isEmpty()) {
 			Link lastPath = stack.get(stack.size() - 1);
 			BreadCrumb crumb = (BreadCrumb)lastPath.getUserObject();
 			controller = crumb.getController();
@@ -456,7 +457,7 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Bre
 	 */
 	public void pushController(String displayName, String iconLeftCss, Controller controller, Object uobject) {
 		//deduplicate last crumb
-		if(uobject != null && controller == null && stack.size() > 0) {
+		if(uobject != null && controller == null && !stack.isEmpty()) {
 			Link lastLink = stack.get(stack.size() - 1);
 			BreadCrumb lastCrumb = (BreadCrumb)lastLink.getUserObject();
 			if(lastCrumb.getController() == null && lastCrumb.getUserObject() != null && lastCrumb.getUserObject().equals(uobject)) {

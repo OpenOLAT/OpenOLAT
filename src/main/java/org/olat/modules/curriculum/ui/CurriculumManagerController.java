@@ -19,12 +19,17 @@
  */
 package org.olat.modules.curriculum.ui;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.UserSession;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumSecurityCallbackFactory;
@@ -37,7 +42,7 @@ import org.olat.modules.curriculum.CurriculumSecurityCallbackFactory;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CurriculumManagerController extends BasicController {
+public class CurriculumManagerController extends BasicController implements Activateable2 {
 	
 	private final TooledStackedPanel toolbarPanel;
 	private final CurriculumListManagerController curriculumListCtrl;
@@ -61,6 +66,12 @@ public class CurriculumManagerController extends BasicController {
 	@Override
 	protected void doDispose() {
 		//
+	}
+
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		curriculumListCtrl.activate(ureq, entries, state);
 	}
 
 	@Override

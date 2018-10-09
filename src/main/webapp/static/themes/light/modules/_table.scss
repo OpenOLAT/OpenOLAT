@@ -28,7 +28,14 @@
 	}
 
 	.o_table_footer {
-		.o_table_checkall { }	
+		.o_table_checkall>a {
+			font-weight: normal;
+			margin-right: 10px;
+		}
+		
+		.o_table_checkall.input-sm {
+			padding: 5px 6px;
+		}	
 
 		.o_table_pagination {
 			text-align: center;

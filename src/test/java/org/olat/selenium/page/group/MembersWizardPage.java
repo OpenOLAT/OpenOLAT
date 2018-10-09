@@ -96,7 +96,7 @@ public class MembersWizardPage {
 		OOGraphene.clickAndWait(searchBy, browser);
 		
 		// select all
-		By selectAll = By.xpath("//div[contains(@class,'modal')]//div[contains(@class,'o_table_checkall')]/label/a[i[contains(@class,'o_icon_check_on')]]");
+		By selectAll = By.xpath("//div[contains(@class,'modal')]//div[contains(@class,'o_table_checkall')]/a[i[contains(@class,'o_icon_check_on')]]");
 		OOGraphene.waitElement(selectAll, browser);
 		if(browser instanceof FirefoxDriver) {
 			OOGraphene.waitingALittleLonger();// link is obscured by the scroll bar

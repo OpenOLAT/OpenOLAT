@@ -356,7 +356,7 @@ public class OOGraphene {
 	}
 	
 	public static final void flexiTableSelectAll(WebDriver browser) {
-		By selectAll = By.xpath("//div[contains(@class,'o_table_checkall')]/label/a[i[contains(@class,'o_icon_check_on')]]/span");
+		By selectAll = By.xpath("//div[contains(@class,'o_table_checkall')]/a[i[contains(@class,'o_icon_check_on')]]");
 		waitElement(selectAll, browser);
 		if(browser instanceof FirefoxDriver) {
 			OOGraphene.waitingALittleLonger();// link is obscured by the scroll bar

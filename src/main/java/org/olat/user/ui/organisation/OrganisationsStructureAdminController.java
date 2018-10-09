@@ -39,6 +39,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeNodeComparator;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TreeNodeFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
@@ -106,13 +107,13 @@ public class OrganisationsStructureAdminController extends FormBasicController i
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrganisationCols.key, "select"));
-		TreeNodeFlexiCellRenderer treeNodeRenderer = new TreeNodeFlexiCellRenderer();
+		TreeNodeFlexiCellRenderer treeNodeRenderer = new TreeNodeFlexiCellRenderer("select");
 		treeNodeRenderer.setFlatBySearchAndFilter(true);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrganisationCols.displayName, treeNodeRenderer));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrganisationCols.identifier));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrganisationCols.externalId));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrganisationCols.identifier, "select"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, OrganisationCols.externalId, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrganisationCols.typeIdentifier));
-		DefaultFlexiColumnModel selectColumn = new DefaultFlexiColumnModel("select", translate("select"), "select");
+		DefaultFlexiColumnModel selectColumn = new DefaultFlexiColumnModel("zoom", translate("zoom"), "tt-focus");
 		selectColumn.setExportable(false);
 		selectColumn.setAlwaysVisible(true);
 		columnsModel.addFlexiColumnModel(selectColumn);
@@ -126,6 +127,7 @@ public class OrganisationsStructureAdminController extends FormBasicController i
 		tableEl.setCustomizeColumns(true);
 		tableEl.setElementCssClass("o_organisations_listing");
 		tableEl.setEmtpyTableMessageKey("table.organisation.empty");
+		tableEl.setRootCrumb(new RootCrumb(translate("table.tree.root")));
 		tableEl.setNumOfRowsEnabled(false);
 		tableEl.setExportEnabled(true);
 		tableEl.setPageSize(24);
@@ -393,6 +395,25 @@ public class OrganisationsStructureAdminController extends FormBasicController i
 		private void close() {
 			toolsCalloutCtrl.deactivate();
 			cleanUp();
+		}
+	}
+	
+	private static class RootCrumb implements FlexiTreeTableNode {
+		
+		private final String name;
+		
+		public RootCrumb(String name) {
+			this.name = name;
+		}
+
+		@Override
+		public FlexiTreeTableNode getParent() {
+			return null;
+		}
+
+		@Override
+		public String getCrump() {
+			return name;
 		}
 	}
 }

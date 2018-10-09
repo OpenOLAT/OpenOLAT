@@ -745,10 +745,12 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		this.selectedObj = selectedObj;
 	}
 
+	@Override
 	public FlexiTreeTableNode getRootCrumb() {
 		return rootCrumb;
 	}
 
+	@Override
 	public void setRootCrumb(FlexiTreeTableNode rootCrumb) {
 		this.rootCrumb = rootCrumb;
 	}
@@ -841,11 +843,6 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	 */
 	@Override
 	public void evalFormRequest(UserRequest ureq) {
-		String[] selectedIndexArr = getRootForm().getRequestParameterValues("tb_ms");
-		if(selectedIndexArr != null) {
-			//setMultiSelectIndex(selectedIndexArr);
-		}
-
 		Form form = getRootForm();
 		String selectedIndex = form.getRequestParameter("rSelect");
 		String dispatchuri = form.getRequestParameter("dispatchuri");
@@ -862,6 +859,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		String treeTableOpen = form.getRequestParameter("tt-open");
 		String treeTableClose = form.getRequestParameter("tt-close");
 		String crumb = form.getRequestParameter("tt-crumb");
+		String openCloseAll = form.getRequestParameter("tt-openclose");
 		if("undefined".equals(dispatchuri)) {
 			evalSearchRequest(ureq);
 		} else if(StringHelper.containsNonWhitespace(checkbox)) {
@@ -914,6 +912,12 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			doClose(Integer.parseInt(treeTableClose));
 		} else if(StringHelper.containsNonWhitespace(crumb)) {
 			doCrumb(crumb);
+		} else if(StringHelper.containsNonWhitespace(openCloseAll)) {
+			if("openall".equals(openCloseAll)) {
+				doOpenAll();
+			} else if("closeall".equals(openCloseAll)) {
+				doCloseAll();
+			}
 		} else if(exportButton != null
 				&& exportButton.getFormDispatchId().equals(dispatchuri)) {
 			doExport(ureq);
@@ -1251,6 +1255,20 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		}
 		if(dataModel instanceof FlexiTreeTableDataModel) {
 			((FlexiTreeTableDataModel<?>)dataModel).popBreadcrumb(crumb);
+			reset(true, true, true);
+		}
+	}
+	
+	private void doOpenAll() {
+		if(dataModel instanceof FlexiTreeTableDataModel) {
+			((FlexiTreeTableDataModel<?>)dataModel).openAll();
+			reset(true, true, true);
+		}
+	}
+	
+	private void doCloseAll() {
+		if(dataModel instanceof FlexiTreeTableDataModel) {
+			((FlexiTreeTableDataModel<?>)dataModel).closeAll();
 			reset(true, true, true);
 		}
 	}
