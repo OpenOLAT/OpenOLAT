@@ -28,11 +28,13 @@ import java.util.Arrays;
 import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.User;
@@ -54,6 +56,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class CourseLectureProviderConfigController extends ProviderConfigController {
 	
 	private static final String ROLES_PREFIX = "config.roles.";
+	private static final String SURVEY_START_LAST = "config.survey.last";
+	private static final String SURVEY_START_NUMBER = "config.survey.number";
+	private static final String SURVEY_START_KEYS[] = {
+			SURVEY_START_LAST,
+			SURVEY_START_NUMBER
+	};
 	private static final String ROLES_OWNER_KEY = ROLES_PREFIX + CurriculumRoles.owner.name();
 	private static final String ROLES_COACH_KEY = ROLES_PREFIX + CurriculumRoles.coach.name();
 	private static final String ROLES_SINGLE_COACH_KEY = ROLES_PREFIX + CourseLecturesProvider.TEACHING_COACH;
@@ -71,7 +79,9 @@ public class CourseLectureProviderConfigController extends ProviderConfigControl
 
 	private TextElement titleEl;
 	private SingleSelection topicEl;
-	private TextElement lecturesTotalEl;
+	private TextElement lecturesTotalMinEl;
+	private TextElement lecturesTotalMaxEl;
+	private SingleSelection surveyLectureStartEl;
 	private TextElement surveyLectureEl;
 	private TextElement minutesBeforeEndEl;
 	private TextElement invitationDaysEl;
@@ -108,11 +118,23 @@ public class CourseLectureProviderConfigController extends ProviderConfigControl
 		}
 
 		// lectures
-		String lecturesTotal = configs.getValue(CourseLecturesProvider.CONFIG_KEY_TOTAL_LECTURES);
-		lecturesTotalEl = uifactory.addTextElement("config.lectures.total", 4, lecturesTotal, formLayout);
+		String lecturesTotalMin = configs.getValue(CourseLecturesProvider.CONFIG_KEY_TOTAL_LECTURES_MIN);
+		lecturesTotalMinEl = uifactory.addTextElement("config.lectures.total.min", 4, lecturesTotalMin, formLayout);
 		
+		String lecturesTotalMax = configs.getValue(CourseLecturesProvider.CONFIG_KEY_TOTAL_LECTURES_MAX);
+		lecturesTotalMaxEl = uifactory.addTextElement("config.lectures.total.max", 4, lecturesTotalMax, formLayout);
+		
+		surveyLectureStartEl = uifactory.addDropdownSingleselect("config.survey.start", formLayout, SURVEY_START_KEYS,
+				translateAll(getTranslator(), SURVEY_START_KEYS));
+		surveyLectureStartEl.addActionListener(FormEvent.ONCHANGE);
 		String surveyLecture = configs.getValue(CourseLecturesProvider.CONFIG_KEY_SURVEY_LECTURE);
-		surveyLectureEl = uifactory.addTextElement("config.survey.lectures", 4, surveyLecture, formLayout);
+		if (CourseLecturesProvider.CONFIG_KEY_SURVEY_LECTURE_NUMBER.equals(surveyLecture)) {
+			surveyLectureStartEl.select(SURVEY_START_NUMBER, true);
+		} else {
+			surveyLectureStartEl.select(SURVEY_START_LAST, true);
+		}
+		String surveyLectureNumber = configs.getValue(CourseLecturesProvider.CONFIG_KEY_SURVEY_LECTURE_NUMBER);
+		surveyLectureEl = uifactory.addTextElement("config.survey.lectures", 4, surveyLectureNumber, formLayout);
 		
 		String minutesBeforeEnd = configs.getValue(CourseLecturesProvider.CONFIG_KEY_MINUTES_BEFORE_END);
 		minutesBeforeEndEl = uifactory.addTextElement("config.minutes.before.end", 3, minutesBeforeEnd, formLayout);
@@ -142,6 +164,14 @@ public class CourseLectureProviderConfigController extends ProviderConfigControl
 				rolesEl.select(role, true);
 			}
 		}
+		
+		updateUI();
+	}
+
+	private void updateUI() {
+		boolean surveyLectureNumber = surveyLectureStartEl.isOneSelected()
+				&& surveyLectureStartEl.getSelectedKey().equals(SURVEY_START_NUMBER);
+		surveyLectureEl.setVisible(surveyLectureNumber);
 	}
 
 	@Override
@@ -149,7 +179,9 @@ public class CourseLectureProviderConfigController extends ProviderConfigControl
 		boolean enabled = !readOnly;
 		titleEl.setEnabled(enabled);
 		topicEl.setEnabled(enabled);
-		lecturesTotalEl.setEnabled(enabled);
+		lecturesTotalMinEl.setEnabled(enabled);
+		lecturesTotalMaxEl.setEnabled(enabled);
+		surveyLectureStartEl.setEnabled(enabled);
 		surveyLectureEl.setEnabled(enabled);
 		minutesBeforeEndEl.setEnabled(enabled);
 		invitationDaysEl.setEnabled(enabled);
@@ -161,12 +193,19 @@ public class CourseLectureProviderConfigController extends ProviderConfigControl
 	}
 
 	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source == surveyLectureStartEl) {
+			updateUI();
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
+	@Override
 	public boolean validateBeforeActivation(UserRequest ureq) {
 		boolean allOk = true;
 		
 		allOk &= validateIsMandatory(titleEl);
 		allOk &= validateIsMandatory(topicEl);
-		allOk &= validateIsMandatory(lecturesTotalEl) && validateInteger(lecturesTotalEl, 1, 10000);
 		allOk &= validateIsMandatory(surveyLectureEl) && validateInteger(surveyLectureEl, 1, 10000);
 		allOk &= validateIsMandatory(minutesBeforeEndEl) && validateInteger(minutesBeforeEndEl, 0, 1000);
 		allOk &= validateIsMandatory(durationEl) && validateInteger(durationEl, 1, 10000);
@@ -175,6 +214,22 @@ public class CourseLectureProviderConfigController extends ProviderConfigControl
 		allOk &= validateInteger(reminder2DaysEl, 1, 10000);
 		allOk &= validateIsMandatory(rolesEl);
 		
+		boolean lecturesTotalOk = validateInteger(lecturesTotalMinEl, 1, 10000);
+		lecturesTotalOk &= validateInteger(lecturesTotalMaxEl, 1, 10000);
+		if (lecturesTotalOk && lecturesTotalMinEl.isEnabled() && lecturesTotalMaxEl.isEnabled()) {
+			String minString = lecturesTotalMinEl.getValue();
+			String maxString = lecturesTotalMaxEl.getValue();
+			if (StringHelper.containsNonWhitespace(minString) && StringHelper.containsNonWhitespace(maxString)) {
+				int min = Integer.parseInt(minString);
+				int max = Integer.parseInt(maxString);
+				if (min >= max) {
+					lecturesTotalMaxEl.setErrorKey("error.lectures.min.higher.max", null);
+					lecturesTotalOk = false;
+				} 
+			}
+		}
+		allOk &= lecturesTotalOk;
+		
 		return allOk;
 	}
 	
@@ -182,7 +237,8 @@ public class CourseLectureProviderConfigController extends ProviderConfigControl
 	protected boolean validateFormLogic(UserRequest ureq) {
 		titleEl.clearError();
 		topicEl.clearError();
-		lecturesTotalEl.clearError();
+		lecturesTotalMinEl.clearError();
+		lecturesTotalMaxEl.clearError();
 		surveyLectureEl.clearError();
 		minutesBeforeEndEl.clearError();
 		durationEl.clearError();
@@ -202,11 +258,27 @@ public class CourseLectureProviderConfigController extends ProviderConfigControl
 		String topicKey = topicEl.isOneSelected()? topicEl.getSelectedKey(): null;
 		configs.setValue(CourseLecturesProvider.CONFIG_KEY_TOPIC, topicKey);
 		
-		String lecturesTotal = lecturesTotalEl.getValue();
-		configs.setValue(CourseLecturesProvider.CONFIG_KEY_TOTAL_LECTURES, lecturesTotal);
+		String lecturesTotalMax = lecturesTotalMinEl.getValue();
+		configs.setValue(CourseLecturesProvider.CONFIG_KEY_TOTAL_LECTURES_MIN, lecturesTotalMax);
 		
-		String surveyLecture = surveyLectureEl.getValue();
-		configs.setValue(CourseLecturesProvider.CONFIG_KEY_SURVEY_LECTURE, surveyLecture);
+		String lecturesTotalMin = lecturesTotalMaxEl.getValue();
+		configs.setValue(CourseLecturesProvider.CONFIG_KEY_TOTAL_LECTURES_MAX, lecturesTotalMin);
+		
+		if (surveyLectureStartEl.isOneSelected()) {
+			String selectedKey = surveyLectureStartEl.getSelectedKey();
+			if (SURVEY_START_LAST.equals(selectedKey)) {
+				configs.setValue(CourseLecturesProvider.CONFIG_KEY_SURVEY_LECTURE,
+						CourseLecturesProvider.CONFIG_KEY_SURVEY_LECTURE_LAST);
+			} else {
+				configs.setValue(CourseLecturesProvider.CONFIG_KEY_SURVEY_LECTURE,
+						CourseLecturesProvider.CONFIG_KEY_SURVEY_LECTURE_NUMBER);
+			}
+		} else {
+			configs.setValue(CourseLecturesProvider.CONFIG_KEY_SURVEY_LECTURE, null);
+		}
+		
+		String surveyLecture = surveyLectureEl.isVisible()? surveyLectureEl.getValue(): null;
+		configs.setValue(CourseLecturesProvider.CONFIG_KEY_SURVEY_LECTURE_NUMBER, surveyLecture);
 		
 		String minutesBeforeEnd = minutesBeforeEndEl.getValue();
 		configs.setValue(CourseLecturesProvider.CONFIG_KEY_MINUTES_BEFORE_END, minutesBeforeEnd);

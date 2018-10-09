@@ -480,7 +480,7 @@ public class QualityUIFactory {
 	public static boolean validateInteger(TextElement el, int min, int max) {
 		boolean allOk = true;
 		el.clearError();
-		if(el.isEnabled()) {
+		if(el.isEnabled() && el.isVisible()) {
 			String val = el.getValue();
 			if(StringHelper.containsNonWhitespace(val)) {
 				
@@ -505,7 +505,7 @@ public class QualityUIFactory {
 	public static boolean validateDouble(TextElement el, int min, int max) {
 		boolean allOk = true;
 		el.clearError();
-		if(el.isEnabled()) {
+		if(el.isEnabled() && el.isVisible()) {
 			String val = el.getValue();
 			if(StringHelper.containsNonWhitespace(val)) {
 				
@@ -530,7 +530,7 @@ public class QualityUIFactory {
 	public static boolean validateIsMandatory(TextElement el) {
 		boolean allOk = true;
 		el.clearError();
-		if(el.isEnabled()) {
+		if(el.isEnabled() && el.isVisible()) {
 			String value = el.getValue();
 			if (!StringHelper.containsNonWhitespace(value)) {
 				el.setErrorKey("form.mandatory.hover", null);
@@ -543,7 +543,7 @@ public class QualityUIFactory {
 	public static boolean validateIsMandatory(SingleSelection el) {
 		boolean allOk = true;
 		el.clearError();
-		if(el.isEnabled()) {
+		if(el.isEnabled() && el.isVisible()) {
 			if (!el.isOneSelected()) {
 				el.setErrorKey("form.mandatory.hover", null);
 				allOk = false;
@@ -555,7 +555,7 @@ public class QualityUIFactory {
 	public static boolean validateIsMandatory(MultipleSelectionElement el) {
 		boolean allOk = true;
 		el.clearError();
-		if(el.isEnabled()) {
+		if(el.isEnabled() && el.isVisible()) {
 			if (!el.isAtLeastSelected(1)) {
 				el.setErrorKey("form.mandatory.hover", null);
 				allOk = false;
@@ -567,7 +567,7 @@ public class QualityUIFactory {
 	public static boolean validateIsMandatory(DateChooser el) {
 		boolean allOk = true;
 		el.clearError();
-		if(el.isEnabled()) {
+		if(el.isEnabled() && el.isVisible()) {
 			if (el.getDate() == null) {
 				el.setErrorKey("form.mandatory.hover", null);
 				allOk = false;

@@ -453,6 +453,28 @@ public class CourseLecturesProviderDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void shouldFilterLectureBlockInfosByMaxTotalLectures() {
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("");
+		RepositoryEntry course1 = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry course2 = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry otherCourse = JunitTestHelper.createAndPersistRepositoryEntry();
+		LectureBlock lectureBlock1 = createLectureBlock(course1, teacher, 5);
+		LectureBlock lectureBlock2 = createLectureBlock(course2, teacher, 1);
+		LectureBlock lectureBlock3 = createLectureBlock(course2, teacher, 1);
+		LectureBlock lectureBlock4 = createLectureBlock(otherCourse, teacher, 10);
+		dbInstance.commitAndCloseSession();
+
+		SearchParameters searchParams = new SearchParameters();
+		searchParams.setTeacherRef(teacher);
+		searchParams.setMaxTotalLectures(6);
+		List<LectureBlockInfo> infos = sut.loadLectureBlockInfo(searchParams);
+
+		assertThat(infos).extracting(LectureBlockInfo::getLectureBlockKey)
+				.containsExactlyInAnyOrder(lectureBlock1.getKey(), lectureBlock2.getKey(), lectureBlock3.getKey())
+				.doesNotContain(lectureBlock4.getKey());
+	}
+	
+	@Test
 	public void shouldFilterLectureBlockInfosBySelectingLecture() {
 		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("");
 		RepositoryEntry course = JunitTestHelper.createAndPersistRepositoryEntry();

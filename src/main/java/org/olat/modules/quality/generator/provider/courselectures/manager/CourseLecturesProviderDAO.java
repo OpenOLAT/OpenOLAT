@@ -219,6 +219,9 @@ public class CourseLecturesProviderDAO {
 		if (searchParams.getMinTotalLectures() != null) {
 			sb.and().append("total_lectures >= :minTotalLectures");
 		}
+		if (searchParams.getMaxTotalLectures() != null) {
+			sb.and().append("total_lectures <= :maxTotalLectures");
+		}
 		if (searchParams.getSelectingLecture() != null) {
 			sb.and().append("first_lecture <= :selectingLecture");
 			sb.and().append("last_lecture >= :selectingLecture");
@@ -232,6 +235,9 @@ public class CourseLecturesProviderDAO {
 		appendParameters(query, searchParams);
 		if (searchParams.getMinTotalLectures() != null) {
 			query.setParameter("minTotalLectures", searchParams.getMinTotalLectures());
+		}
+		if (searchParams.getMaxTotalLectures() != null) {
+			query.setParameter("maxTotalLectures", searchParams.getMaxTotalLectures());
 		}
 		if (searchParams.getSelectingLecture() != null) {
 			query.setParameter("selectingLecture", searchParams.getSelectingLecture());
@@ -296,6 +302,9 @@ public class CourseLecturesProviderDAO {
 		
 		if (searchParams.getMinTotalLectures() != null) {
 			infos.removeIf(lb -> lb.getLecturesTotal() < searchParams.getMinTotalLectures());
+		}
+		if (searchParams.getMaxTotalLectures() != null) {
+			infos.removeIf(lb -> lb.getLecturesTotal() > searchParams.getMaxTotalLectures());
 		}
 		if (searchParams.getSelectingLecture() != null) {
 			infos.removeIf(lb -> 
