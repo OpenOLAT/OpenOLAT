@@ -816,6 +816,14 @@ public class FeedManagerImpl extends FeedManager {
 
 		if (feed != null) {
 			List<Item> itemsFromXml = feedFileStorage.loadItemsFromXML(ores);
+			
+			// clean up for MySQL
+			if(dbInstance.isMySQL()) {
+				for (Item itemFromXml : itemsFromXml) {
+					mysqlCleanUp(itemFromXml);
+				}
+			}
+			
 			itemsFromXml = fixFeedVersionIssues(feedFromXml, itemsFromXml);
 			for (Item itemFromXml : itemsFromXml) {
 				// Check if the item already exits or create it.
