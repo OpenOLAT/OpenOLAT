@@ -42,6 +42,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.id.Identity;
@@ -87,7 +88,9 @@ public class FeedManagerImplTest {
 	private FileElement fileElementDummy;
 	@Mock
 	private Syncer syncerDummy;
-
+	
+	@Mock
+	private DB dbInstanceMock;
 	@Mock
 	private FeedDAO feedDAOMock;
 	@Mock
@@ -118,6 +121,8 @@ public class FeedManagerImplTest {
 		when(coordinaterMock.getSyncer()).thenReturn(syncerDummy);
 		sut = new FeedManagerImpl(resourceManagerMock, fileResourceManagerMock, coordinaterManagerMock);
 		feedDAOMock = mock(FeedDAO.class);
+		
+		ReflectionTestUtils.setField(sut, "dbInstance", dbInstanceMock);
 		ReflectionTestUtils.setField(sut, "feedDAO", feedDAOMock);
 		ReflectionTestUtils.setField(sut, "itemDAO", itemDAOMock);
 		ReflectionTestUtils.setField(sut, "feedFileStorage", feedFileStorageMock);
