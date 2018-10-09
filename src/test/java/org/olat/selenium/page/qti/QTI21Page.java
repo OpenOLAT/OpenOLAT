@@ -25,11 +25,13 @@ import java.util.List;
 import org.junit.Assert;
 import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.graphene.OOGraphene;
+import org.olat.selenium.page.graphene.Position;
 import org.olat.selenium.page.repository.RepositoryAccessPage;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.Select;
 
@@ -161,8 +163,21 @@ public class QTI21Page {
 		OOGraphene.waitElement(By.className("hotspotInteraction"), browser);
 		By areaBy = By.xpath("//div[contains(@class,'hotspotInteraction')]//map/area[@shape='" + shape + "']");
 		List<WebElement> elements = browser.findElements(areaBy);
-		Assert.assertEquals("Hotspot of shape " + shape, 1, elements.size()); 
-		elements.get(0).click();
+		Assert.assertEquals("Hotspot of shape " + shape, 1, elements.size());
+		WebElement areaEl = elements.get(0);
+		if(browser instanceof FirefoxDriver) {
+			String coords = areaEl.getAttribute("coords");
+			By hotspotBy = By.xpath("//div[contains(@class,'hotspotInteraction')]/div/div/img");
+			WebElement element = browser.findElement(hotspotBy);
+			Dimension dim = element.getSize();
+			Position pos = Position.valueOf(coords, dim, browser);
+			new Actions(browser)
+				.moveToElement(element, pos.getX(), pos.getY())
+				.click()
+				.perform();
+		} else {
+			elements.get(0).click();
+		}
 		return this;
 	}
 	
@@ -389,11 +404,12 @@ public class QTI21Page {
 	 * @param y The y coordinate
 	 * @return Itself
 	 */
-	public QTI21Page answerSelectPoint(int x, int y) {
+	public QTI21Page answerSelectPoint(int x, int y, int width, int height) {
+		Position pos = Position.valueOf(x, y, width, height, browser);
 		By canvasBy = By.xpath("//div[contains(@class,'selectPointInteraction')]/div/canvas");
 		WebElement canvasEl = browser.findElement(canvasBy);
 		new Actions(browser)
-			.moveToElement(canvasEl, x, y)
+			.moveToElement(canvasEl, pos.getX(), pos.getY())
 			.click()
 			.build()
 			.perform();
@@ -489,6 +505,22 @@ public class QTI21Page {
 		By saveAnswerBy = By.cssSelector("button.o_sel_assessment_item_submit");
 		browser.findElement(saveAnswerBy).click();
 		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	/**
+	 * For hotspot because Firefox cannot click the save without
+	 * special scrolling.
+	 * @return
+	 */
+	public QTI21Page saveGraphicAnswer() {
+		By saveAnswerBy = By.cssSelector("button.o_sel_assessment_item_submit");
+		browser.findElement(saveAnswerBy).click();
+		if(browser instanceof FirefoxDriver) {
+			OOGraphene.clickAndWait(saveAnswerBy, browser);
+		} else {
+			OOGraphene.waitBusy(browser);
+		}
 		return this;
 	}
 	

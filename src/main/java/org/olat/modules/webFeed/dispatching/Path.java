@@ -24,20 +24,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.RandomStringUtils;
-import org.olat.basesecurity.Authentication;
-import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.core.helpers.Settings;
-import org.olat.core.id.Identity;
-import org.olat.core.id.OLATResourceable;
-import org.olat.core.util.cache.CacheWrapper;
-import org.olat.core.util.coordinate.CoordinatorManager;
-import org.olat.core.util.coordinate.SyncerExecutor;
-import org.olat.modules.webFeed.Feed;
 import org.olat.modules.webFeed.manager.FeedManager;
-import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryManager;
 
 /**
  * The Path class.
@@ -53,9 +40,6 @@ import org.olat.repository.RepositoryManager;
  * @author gwassmann
  */
 public class Path {
-	// Not private for better performance (apperently)
-	protected static final CacheWrapper<String,Boolean> validatedUriCache = CoordinatorManager.getInstance().getCoordinator().getCacher().getCache(Path.class.getSimpleName(),
-			"feed");
 
 	// Instance variables
 	private int type;
@@ -81,16 +65,13 @@ public class Path {
 	private static final int AUTHENTICATED_COURSE_ICON = FEED_MEDIA + COURSE + AUTHENTICATED;
 	private static final int AUTHENTICATED_COURSE_ITEM = ITEM_MEDIA + COURSE + AUTHENTICATED;
 
-	// Class variables
-	private static final String TOKEN_PROVIDER = FeedMediaDispatcher.TOKEN_PROVIDER;
-
 	// Patterns
 	private static final String NUMBER = "(\\d+)";
 	private static final String WORD = "(\\w+)";
 	private static final String FILE_NAME = "([^/]+\\.\\w{3,4})";
 	private static final String SLASH = "/";
 	private static final String BASE_PATH_DELIMITER = "/_/";
-	private static final String COURSE_NODE_INDICATOR = "coursenode";
+	public static final String COURSE_NODE_INDICATOR = "coursenode";
 	public static final String MEDIA_DIR = "media";	
 
 	private static final String AUTHENTICATION = NUMBER + SLASH + WORD + SLASH;
@@ -118,7 +99,7 @@ public class Path {
 	private static final Pattern authCourseFeedMediaPattern = Pattern.compile(AUTH_COURSE_PATH + FEED_MEDIA_PATH);
 	private static final Pattern authCourseItemMediaPattern = Pattern.compile(AUTH_COURSE_PATH + ITEM_MEDIA_PATH);
 
-	private static List<Pattern> patterns = new ArrayList<Pattern>();
+	private static List<Pattern> patterns = new ArrayList<>();
 	static {
 		patterns.add(feedPattern);
 		patterns.add(feedMediaPattern);
@@ -276,52 +257,6 @@ public class Path {
 	}
 
 	/**
-	 * @return true if the path is in cache and it is accessible, meaning access
-	 *         has been verified successfully.
-	 */
-	public boolean isCachedAndAccessible() {
-		// return true if path is in the cache and the validation was successful
-		Boolean accessible = validatedUriCache.get(getKey());
-		return accessible != null ? accessible : false;
-	}
-
-	/**
-	 * A feed contains many URLs and links etc. The validation of the URL and
-	 * verification of access should only be done once for performance reasons.
-	 * That's where caching comes in. We'll store the URL as the key and give it a
-	 * boolean value whether access has been successfully granted or not.
-	 */
-	public void cache(OLATResourceable ores, final boolean accessible) {
-		final String key = getKey();
-		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(ores, new SyncerExecutor() {
-			public void execute() {
-				if (validatedUriCache.get(key) == null) {
-					validatedUriCache.put(key, accessible);
-				} else {
-					validatedUriCache.update(key, accessible);
-				}
-			}
-		});
-	}
-
-	/**
-	 * Get the key for caching.
-	 * 
-	 * @return the key for caching. I.e. the URL without any file or item
-	 *         information.
-	 */
-	private String getKey() {
-		String key = null;
-		// If the type is ITEM_MEDIA (+ something) remove the item id and the filename
-		// from the original path.
-		if (originalPath != null) {
-			int delimiterIndex = originalPath.indexOf(BASE_PATH_DELIMITER);
-			key = originalPath.substring(0, delimiterIndex);
-		}
-		return key;
-	}
-
-	/**
 	 * @param feedId The feedId to set.
 	 */
 	public void setFeedId(Long feedId) {
@@ -475,74 +410,9 @@ public class Path {
 		return type > COURSE;
 	}
 
-	/**
-	 * @see java.lang.Object#toString()
-	 */
+	@Override
 	public String toString() {
 		return originalPath;
 	}
-
-	/**
-	 * Returns a podcast base URI of the type<br>
-	 * http://myolat.org/olat/[podcast|blog]/[IDKEY/TOKEN]/ORESID
-	 * 
-	 * @param feed
-	 * @param identityKey
-	 * @return The feed base uri for the given user (identity)
-	 */
-	public static String getFeedBaseUri(Feed feed, Identity identity, Long courseId, String nodeId) {
-		BaseSecurity manager = BaseSecurityManager.getInstance();
-		boolean isCourseNode = courseId != null && nodeId != null;
-
-		final String slash = "/";
-		StringBuffer uri = new StringBuffer();
-		uri.append(Settings.getServerContextPathURI());
-		uri.append(slash);
-		uri.append(FeedMediaDispatcher.uriPrefixes.get(feed.getResourceableTypeName()));
-		uri.append(slash);
-
-		if (isCourseNode) {
-			uri.append(COURSE_NODE_INDICATOR);
-			uri.append(slash);
-		}
-
-		if (identity != null) {
-			// The identity can be null for guests
-			String idKey = identity.getKey().toString();
-			Authentication authentication = manager.findAuthenticationByAuthusername(idKey, TOKEN_PROVIDER);
-			if (authentication == null) {
-				// Create an authentication
-				String token = RandomStringUtils.randomAlphanumeric(6);
-				authentication = manager.createAndPersistAuthentication(identity, TOKEN_PROVIDER, idKey, token, null);
-			}
-			// If the repository entry allows guest access it is public, thus not
-			// private.
-			boolean isPrivate = true;
-			RepositoryEntry entry = RepositoryManager.getInstance().lookupRepositoryEntry(feed, false);
-			if (entry != null && entry.isGuests()) {
-				isPrivate = false;
-			}
-
-			if (isPrivate) {
-				// identity key
-				uri.append(idKey);
-				uri.append(slash);
-				// token
-				uri.append(authentication.getCredential());
-				uri.append(slash);
-			}
-		}
-
-		if (isCourseNode) {
-			uri.append(courseId);
-			uri.append(slash);
-			uri.append(nodeId);
-			uri.append(slash);
-		}
-		// feed id
-		uri.append(feed.getResourceableId());
-		// Append base uri delimiter. (Used to identify the root path for caching)
-		uri.append("/_");
-		return uri.toString();
-	}
+	
 }

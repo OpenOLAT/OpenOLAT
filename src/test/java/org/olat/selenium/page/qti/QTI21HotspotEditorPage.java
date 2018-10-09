@@ -22,10 +22,12 @@ package org.olat.selenium.page.qti;
 import java.io.File;
 
 import org.olat.selenium.page.graphene.OOGraphene;
+import org.olat.selenium.page.graphene.Position;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.interactions.Actions;
 
 import uk.ac.ed.ph.jqtiplus.value.Cardinality;
@@ -77,6 +79,16 @@ public class QTI21HotspotEditorPage extends QTI21AssessmentItemEditorPage {
 		return this;
 	}
 	
+	public QTI21HotspotEditorPage moveToHotspotEditor() {
+		By editorBy = By.id("o_qti_hotspots_edit");
+		OOGraphene.waitElement(editorBy, browser);
+		
+		if(browser instanceof FirefoxDriver) {
+			OOGraphene.scrollTo(editorBy, browser);
+		}
+		return this;
+	}
+	
 	/**
 	 * Resize the default circle
 	 * @return Itself
@@ -85,8 +97,10 @@ public class QTI21HotspotEditorPage extends QTI21AssessmentItemEditorPage {
 		By circleBy = By.cssSelector("div.o_draw_circle");
 		OOGraphene.waitElement(circleBy, browser);
 		WebElement circleEl = browser.findElement(circleBy);
+		Dimension dim = circleEl.getSize();
+		Position pos = Position.valueOf(10, 10, dim, browser);
 		new Actions(browser)
-			.moveToElement(circleEl, 10, 10)
+			.moveToElement(circleEl, pos.getX(), pos.getY())
 			.clickAndHold()
 			.moveByOffset(60, 60)
 			.release()

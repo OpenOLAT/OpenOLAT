@@ -67,8 +67,7 @@ import org.olat.login.auth.AuthenticationProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * Description:<br>
- * TODO: patrickb Class Description for LoginAuthprovidersController
+ * A container for all the authentications methods available to the user.
  * 
  * <P>
  * Initial Date:  02.09.2007 <br>
@@ -81,7 +80,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 
 	private VelocityContainer content;
 	private Controller authController;
-	private final List<Controller> authControllers = new ArrayList<Controller>();
+	private final List<Controller> authControllers = new ArrayList<>();
 	private Link anoLink;
 	private StackedPanel dmzPanel;
 	
@@ -227,27 +226,23 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 		
 		return contentBorn;
 	}
-	
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose()
-	 */
+
 	@Override
 	protected void doDispose() {
 		//auto-disposed
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		 if (source == anoLink) {
 			if (loginModule.isGuestLoginEnabled()) {				
 				int loginStatus = AuthHelper.doAnonymousLogin(ureq, ureq.getLocale());
 				if (loginStatus == AuthHelper.LOGIN_OK) {
-					return;
-				} else if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE){
+					//
+				} else if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE) {
 					DispatcherModule.redirectToServiceNotAvailable( ureq.getHttpResp() );
+				} else if(loginStatus == AuthHelper.LOGIN_DENIED) {
+					getWindowControl().setError(translate("error.guest.login", WebappHelper.getMailConfig("mailSupport")));
 				} else {
 					getWindowControl().setError(translate("login.error", WebappHelper.getMailConfig("mailSupport")));
 				}	
@@ -288,8 +283,8 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 		// Add translator and languages info
 		I18nManager i18nMgr = I18nManager.getInstance();
 		Collection<String> enabledKeysSet = i18nModule.getEnabledLanguageKeys();
-		Map<String, String> langNames = new HashMap<String, String>();
-		Map<String, String> langTranslators = new HashMap<String, String>();
+		Map<String, String> langNames = new HashMap<>();
+		Map<String, String> langTranslators = new HashMap<>();
 		String[] enabledKeys = ArrayHelper.toArray(enabledKeysSet);
 		String[] names = new String[enabledKeys.length];
 		for (int i = 0; i < enabledKeys.length; i++) {
@@ -318,7 +313,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 			Identity identity = authEvent.getIdentity();
 			int loginStatus = AuthHelper.doLogin(identity, BaseSecurityModule.getDefaultAuthProviderIdentifier(), ureq);
 			if (loginStatus == AuthHelper.LOGIN_OK) {
-				return;
+				// it's ok
 			} else if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE){
 				DispatcherModule.redirectToDefaultDispatcher(ureq.getHttpResp());
 			} else {
