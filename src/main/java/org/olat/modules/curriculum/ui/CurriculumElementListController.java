@@ -154,14 +154,12 @@ public class CurriculumElementListController extends FormBasicController impleme
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementViewCols.key));
-		DefaultFlexiColumnModel elementNameCol = new DefaultFlexiColumnModel(ElementViewCols.elementDisplayName, "select");
+		DefaultFlexiColumnModel elementNameCol = new DefaultFlexiColumnModel(ElementViewCols.displayName, "select");
 		elementNameCol.setCellRenderer(new CurriculumElementCompositeRenderer("select", new CurriculumElementIndentRenderer()));
 		columnsModel.addFlexiColumnModel(elementNameCol);
-		DefaultFlexiColumnModel elementIdentifierCol = new DefaultFlexiColumnModel(ElementViewCols.elementIdentifier, "select");
+		DefaultFlexiColumnModel elementIdentifierCol = new DefaultFlexiColumnModel(ElementViewCols.identifier, "select");
 		elementIdentifierCol.setCellRenderer(new CurriculumElementCompositeRenderer("select", new TextFlexiCellRenderer()));
 		columnsModel.addFlexiColumnModel(elementIdentifierCol);
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.entryDisplayName, "select"));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.entryExternalRef, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementViewCols.select));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.mark));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.details));
@@ -169,7 +167,7 @@ public class CurriculumElementListController extends FormBasicController impleme
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.start));
 		
 		tableModel = new CurriculumElementWithViewsDataModel(columnsModel);
-		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
+		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 50, false, getTranslator(), formLayout);
 		tableEl.setAvailableRendererTypes(FlexiTableRendererType.custom, FlexiTableRendererType.classic);
 		tableEl.setRendererType(FlexiTableRendererType.custom);
 		tableEl.setElementCssClass("o_curriculumtable");
@@ -181,7 +179,7 @@ public class CurriculumElementListController extends FormBasicController impleme
 		row.setDomReplacementWrapperRequired(false); // sets its own DOM id in velocity container
 		tableEl.setRowRenderer(row, this);
 		
-		tableEl.setAndLoadPersistedPreferences(ureq, "my-curriculum-elements-" + curriculum.getKey());
+		tableEl.setAndLoadPersistedPreferences(ureq, "my-curriculum-elements-v2-" + curriculum.getKey());
 	}
 
 	@Override

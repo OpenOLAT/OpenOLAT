@@ -40,10 +40,24 @@ public class CurriculumElementWithViewsDataModel extends DefaultFlexiTableDataMo
 		CurriculumElementWithViewsRow curriculum = getObject(row);
 		switch(ElementViewCols.values()[col]) {
 			case key: return curriculum.getKey();
-			case elementDisplayName: return curriculum.getCurriculumElementDisplayName();
-			case elementIdentifier: return curriculum.getCurriculumElementIdentifier();
-			case entryDisplayName: return curriculum.getRepositoryEntryDisplayName();
-			case entryExternalRef: return curriculum.getRepositoryEntryExternalRef();
+			case displayName: {
+				String displayName;
+				if(curriculum.isRepositoryEntryOnly()) {
+					displayName = curriculum.getRepositoryEntryDisplayName();
+				} else {
+					displayName = curriculum.getCurriculumElementDisplayName();
+				}
+				return displayName;
+			}
+			case identifier: {
+				String identifier;
+				if(curriculum.isRepositoryEntryOnly()) {
+					identifier = curriculum.getRepositoryEntryExternalRef();
+				} else {
+					identifier = curriculum.getCurriculumElementIdentifier();
+				}
+				return identifier;
+			}
 			case mark: return curriculum.getMarkLink();
 			case select: return curriculum.getSelectLink();
 			case details: return curriculum.getDetailsLink();
@@ -60,10 +74,8 @@ public class CurriculumElementWithViewsDataModel extends DefaultFlexiTableDataMo
 	
 	public enum ElementViewCols implements FlexiSortableColumnDef {
 		key("table.header.key"),
-		elementDisplayName("table.header.curriculum.element.displayName"),
-		elementIdentifier("table.header.curriculum.element.identifier"),
-		entryDisplayName("table.header.repository.entry.displayName"),
-		entryExternalRef("table.header.repository.entry.externalRef"),
+		displayName("table.header.curriculum.element.displayName"),
+		identifier("table.header.curriculum.element.identifier"),
 		mark("table.header.mark"),
 		select("table.header.details"),
 		details("table.header.details"),

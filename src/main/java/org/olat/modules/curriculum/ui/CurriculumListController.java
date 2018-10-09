@@ -36,8 +36,10 @@ import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.ui.CurriculumManagerDataModel.CurriculumCols;
@@ -58,7 +60,7 @@ public class CurriculumListController extends FormBasicController implements Act
 	
 	private final BreadcrumbedStackedPanel stackPanel;
 	
-	private CurriculumElementListController elementlistCtrl;
+	private CurriculumElementListController elementListCtrl;
 	
 	@Autowired
 	private CurriculumService curriculumService;
@@ -69,6 +71,10 @@ public class CurriculumListController extends FormBasicController implements Act
 		
 		initForm(ureq);
 		loadModel();
+	}
+	
+	public String getName() {
+		return "curriculum";
 	}
 
 	@Override
@@ -92,7 +98,7 @@ public class CurriculumListController extends FormBasicController implements Act
 	private void loadModel() {
 		List<Curriculum> curriculums = curriculumService.getMyCurriculums(getIdentity());
 		List<CurriculumRow> rows = curriculums.stream()
-				.map(curriculum -> new CurriculumRow(curriculum)).collect(Collectors.toList());
+				.map(CurriculumRow::new).collect(Collectors.toList());
 		tableModel.setObjects(rows);
 		tableEl.reset(false, false, true);
 	}
@@ -107,8 +113,20 @@ public class CurriculumListController extends FormBasicController implements Act
 		if(entries == null || entries.isEmpty()) {
 			if(tableModel.getRowCount() == 1) {
 				CurriculumRow row = tableModel.getObject(0);
-				if(elementlistCtrl == null || !elementlistCtrl.getCurriculum().getKey().equals(row.getKey())) {
+				if(elementListCtrl == null || !elementListCtrl.getCurriculum().getKey().equals(row.getKey())) {
 					doSelectCurriculum(ureq, row);
+				}
+			}
+		} else {
+			String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
+			if("Curriculum".equals(type)) {
+				Long curriculumKey = entries.get(0).getOLATResourceable().getResourceableId();
+				if(elementListCtrl == null || !elementListCtrl.getCurriculum().getKey().equals(curriculumKey)) {
+					for(CurriculumRow row:tableModel.getObjects()) {
+						if(curriculumKey.equals(row.getKey())) {
+							doSelectCurriculum(ureq, row);
+						}
+					}
 				}
 			}
 		}
@@ -136,9 +154,11 @@ public class CurriculumListController extends FormBasicController implements Act
 	
 	private void doSelectCurriculum(UserRequest ureq, CurriculumRow row) {
 		stackPanel.popUpToController(this);
-	
-		elementlistCtrl = new CurriculumElementListController(ureq, getWindowControl(), stackPanel, row);
-		listenTo(elementlistCtrl);
-		stackPanel.pushController(row.getDisplayName(), elementlistCtrl);
+		
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Curriculum", row.getKey());
+		WindowControl swControl = addToHistory(ureq, ores, null);
+		elementListCtrl = new CurriculumElementListController(ureq, swControl, stackPanel, row);
+		listenTo(elementListCtrl);
+		stackPanel.pushController(row.getDisplayName(), elementListCtrl);
 	}
 }
