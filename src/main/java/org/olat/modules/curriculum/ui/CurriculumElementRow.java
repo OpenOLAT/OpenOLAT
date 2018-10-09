@@ -43,6 +43,9 @@ public class CurriculumElementRow implements CurriculumElementRef, FlexiTreeTabl
 	private final CurriculumElement element;
 	private final CurriculumElementType elementType;
 	private final long numOfResources;
+	private final long numOfParticipants;
+	private final long numOfCoaches;
+	private final long numOfOwners;
 	
 	private final FormLink toolsLink;
 	private final FormLink resourcesLink;
@@ -53,14 +56,22 @@ public class CurriculumElementRow implements CurriculumElementRef, FlexiTreeTabl
 		elementType = element.getType();
 		parentKey = element.getParent() == null ? null : element.getParent().getKey();
 		numOfResources = 0l;
+		numOfParticipants = 0l;
+		numOfCoaches = 0l;
+		numOfOwners = 0l;
 		toolsLink = null;
 		resourcesLink = null;
 	}
 	
-	public CurriculumElementRow(CurriculumElement element, long numOfResources, FormLink toolsLink, FormLink resourcesLink) {
+	public CurriculumElementRow(CurriculumElement element, long numOfResources,
+			long numOfParticipants, long numOfCoaches, long numOfOwners,
+			FormLink toolsLink, FormLink resourcesLink) {
 		this.element = element;
 		this.toolsLink = toolsLink;
 		this.numOfResources = numOfResources;
+		this.numOfParticipants = numOfParticipants;
+		this.numOfCoaches = numOfCoaches;
+		this.numOfOwners = numOfOwners;
 		this.resourcesLink = resourcesLink;
 		elementType = element.getType();
 		parentKey = element.getParent() == null ? null : element.getParent().getKey();
@@ -146,6 +157,22 @@ public class CurriculumElementRow implements CurriculumElementRef, FlexiTreeTabl
 	
 	public long getNumOfResources() {
 		return numOfResources;
+	}
+
+	public long getNumOfParticipants() {
+		return numOfParticipants;
+	}
+
+	public long getNumOfCoaches() {
+		return numOfCoaches;
+	}
+
+	public long getNumOfOwners() {
+		return numOfOwners;
+	}
+	
+	public long getNumOfMembers() {
+		return numOfOwners + numOfCoaches + numOfParticipants;
 	}
 
 	@Override

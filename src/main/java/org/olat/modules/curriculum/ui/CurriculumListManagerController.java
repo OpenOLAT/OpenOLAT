@@ -167,17 +167,18 @@ public class CurriculumListManagerController extends FormBasicController impleme
 		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
 		if("Curriculum".equalsIgnoreCase(type)) {
 			Long curriculumKey = entries.get(0).getOLATResourceable().getResourceableId();
-			activateCurriculum(ureq, curriculumKey);
+			List<ContextEntry> subEntries = entries.subList(1, entries.size());
+			activateCurriculum(ureq, curriculumKey, subEntries);
 		}
 	}
 	
-	private void activateCurriculum(UserRequest ureq, Long curriculumKey) {
+	private void activateCurriculum(UserRequest ureq, Long curriculumKey, List<ContextEntry> entries) {
 		if(composerCtrl != null && curriculumKey.equals(composerCtrl.getCurriculum().getKey())) return;
 		
 		List<CurriculumRow> rows = tableModel.getObjects();
 		for(CurriculumRow row:rows) {
 			if(curriculumKey.equals(row.getKey())) {
-				doSelectCurriculum(ureq, row);
+				doSelectCurriculum(ureq, row, entries);
 				break;
 			}
 		}
@@ -239,7 +240,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 				String cmd = se.getCommand();
 				if("select".equals(cmd)) {
 					CurriculumRow row = tableModel.getObject(se.getIndex());
-					doSelectCurriculum(ureq, row);
+					doSelectCurriculum(ureq, row, null);
 				} else if("edit".equals(cmd)) {
 					CurriculumRow row = tableModel.getObject(se.getIndex());
 					doEditCurriculum(ureq, row);
@@ -285,7 +286,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 		}
 	}
 	
-	private void doSelectCurriculum(UserRequest ureq, CurriculumRow row) {
+	private void doSelectCurriculum(UserRequest ureq, CurriculumRow row, List<ContextEntry> entries) {
 		Curriculum curriculum = curriculumService.getCurriculum(row);
 		if(curriculum == null) {
 			showWarning("warning.curriculum.deleted");
@@ -294,6 +295,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 			composerCtrl = new CurriculumComposerController(ureq, swControl, toolbarPanel, curriculum, secCallback);
 			listenTo(composerCtrl);
 			toolbarPanel.pushController(row.getDisplayName(), composerCtrl);
+			composerCtrl.activate(ureq, entries, null);
 		}
 	}
 	

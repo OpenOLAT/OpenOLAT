@@ -55,6 +55,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
@@ -63,6 +64,8 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.resource.OresHelper;
@@ -90,7 +93,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CurriculumComposerController extends FormBasicController implements FlexiTableCssDelegate, TooledController {
+public class CurriculumComposerController extends FormBasicController implements Activateable2, FlexiTableCssDelegate, TooledController {
 	
 	private Link newElementButton;
 	private FlexiTableElement tableEl;
@@ -178,6 +181,10 @@ public class CurriculumComposerController extends FormBasicController implements
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.endDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementCols.type));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.resources));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.numOfMembers, "members"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementCols.numOfParticipants, "members"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementCols.numOfCoaches, "members"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementCols.numOfOwners, "members"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.calendars));
 
 		DefaultFlexiColumnModel zoomColumn = new DefaultFlexiColumnModel("zoom", translate("zoom"), "tt-focus");
@@ -269,6 +276,7 @@ public class CurriculumComposerController extends FormBasicController implements
 			resourcesLink = uifactory.addFormLink("resources_" + (++counter), "resources", String.valueOf(element.getNumOfResources()), null, null, Link.NONTRANSLATED);
 		}
 		CurriculumElementRow row = new CurriculumElementRow(element.getCurriculumElement(), element.getNumOfResources(),
+				element.getNumOfParticipants(), element.getNumOfCoaches(), element.getNumOfOwners(),
 				toolsLink, resourcesLink);
 		toolsLink.setUserObject(row);
 		if(resourcesLink != null) {
@@ -282,6 +290,21 @@ public class CurriculumComposerController extends FormBasicController implements
 			calendarsLink.setUserObject(row);
 		}
 		return row;
+	}
+	
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if("CurriculumElement".equals(type)) {
+			Long elementKey = entries.get(0).getOLATResourceable().getResourceableId();
+			CurriculumElementRow row = tableModel.getCurriculumElementRowByKey(elementKey);
+			if(row != null) {
+				List<ContextEntry> subEntries = entries.subList(1, entries.size());
+				doEditCurriculumElement(ureq, row, subEntries);
+			}
+		}
 	}
 
 	@Override
@@ -347,7 +370,12 @@ public class CurriculumComposerController extends FormBasicController implements
 				String cmd = se.getCommand();
 				if("select".equals(cmd)) {
 					CurriculumElementRow row = tableModel.getObject(se.getIndex());
-					doEditCurriculumElement(ureq, row);
+					doEditCurriculumElement(ureq, row, null);
+				} else if("members".equals(cmd)) {
+					CurriculumElementRow row = tableModel.getObject(se.getIndex());
+					List<ContextEntry> entries = BusinessControlFactory.getInstance()
+							.createCEListFromString(OresHelper.createOLATResourceableInstance("tab", 2l));
+					doEditCurriculumElement(ureq, row, entries);
 				}
 			}
 		} else if (source instanceof FormLink) {
@@ -411,7 +439,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		}
 	}
 	
-	private void doEditCurriculumElement(UserRequest ureq, CurriculumElementRow row) {
+	private void doEditCurriculumElement(UserRequest ureq, CurriculumElementRow row, List<ContextEntry> entries) {
 		CurriculumElement element = curriculumService.getCurriculumElement(row);
 		if(element == null) {
 			tableEl.reloadData();
@@ -421,6 +449,7 @@ public class CurriculumComposerController extends FormBasicController implements
 			EditCurriculumElementOverviewController editCtrl = new EditCurriculumElementOverviewController(ureq, swControl, element, curriculum, secCallback);
 			listenTo(editCtrl);
 			toolbarPanel.pushController(row.getDisplayName(), editCtrl);
+			editCtrl.activate(ureq, entries, null);
 		}
 	}
 	
@@ -648,7 +677,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		protected void event(UserRequest ureq, Component source, Event event) {
 			if(editLink == source) {
 				close();
-				doEditCurriculumElement(ureq, row);
+				doEditCurriculumElement(ureq, row, null);
 			} else if(moveLink == source) {
 				close();
 				doMoveCurriculumElement(ureq, row);

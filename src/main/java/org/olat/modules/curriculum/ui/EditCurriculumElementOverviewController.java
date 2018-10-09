@@ -19,13 +19,19 @@
  */
 package org.olat.modules.curriculum.ui;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
+import org.olat.core.gui.components.tabbedpane.TabbedPaneChangedEvent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
@@ -36,7 +42,7 @@ import org.olat.modules.curriculum.CurriculumSecurityCallback;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class EditCurriculumElementOverviewController extends BasicController {
+public class EditCurriculumElementOverviewController extends BasicController implements Activateable2 {
 	
 	private TabbedPane tabPane;
 	
@@ -89,10 +95,15 @@ public class EditCurriculumElementOverviewController extends BasicController {
 	}
 
 	@Override
-	protected void event(UserRequest ureq, Component source, Event event) {
-		//
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		tabPane.activate(ureq, entries, state);
 	}
-	
-	
 
+	@Override
+	protected void event(UserRequest ureq, Component source, Event event) {
+		 if (source == tabPane && event instanceof TabbedPaneChangedEvent) {
+			 tabPane.addToHistory(ureq, getWindowControl());
+		}
+	}
 }

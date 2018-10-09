@@ -35,6 +35,7 @@ import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupMembership;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
@@ -220,7 +221,16 @@ public class CurriculumElementDAO {
 		sb.append("select el, ")
 		  .append(" (select count(distinct reToGroup.entry.key) from repoentrytogroup reToGroup")
 		  .append("  where reToGroup.group.key=baseGroup.key")
-		  .append(" ) as numOfElements")
+		  .append(" ) as numOfElements,")
+		  .append(" (select count(distinct participants.identity.key) from bgroupmember as participants")
+		  .append("  where participants.group.key=baseGroup.key and participants.role='").append(GroupRoles.participant.name()).append("'")
+		  .append(" ) as numOfParticipants,")
+		  .append(" (select count(distinct coaches.identity.key) from bgroupmember as coaches")
+		  .append("  where coaches.group.key=baseGroup.key and coaches.role='").append(GroupRoles.coach.name()).append("'")
+		  .append(" ) as numOfCoaches,")
+		  .append(" (select count(distinct owners.identity.key) from bgroupmember as owners")
+		  .append("  where owners.group.key=baseGroup.key and owners.role='").append(GroupRoles.owner.name()).append("'")
+		  .append(" ) as numOfOwners")
 		  .append(" from curriculumelement el")
 		  .append(" inner join fetch el.curriculum curriculum")
 		  .append(" inner join fetch el.group baseGroup")
@@ -237,7 +247,13 @@ public class CurriculumElementDAO {
 			CurriculumElement element = (CurriculumElement)rawObject[0];
 			Long rawNumOfResources = PersistenceHelper.extractLong(rawObject, 1);
 			long numOfResources = rawNumOfResources == null ? 0l : rawNumOfResources.longValue();
-			infos.add(new CurriculumElementInfos(element, numOfResources));
+			Long rawNumOfParticipants = PersistenceHelper.extractLong(rawObject, 2);
+			long numOfParticipants = rawNumOfParticipants == null ? 0l : rawNumOfParticipants.longValue();
+			Long rawNumOfCoaches = PersistenceHelper.extractLong(rawObject, 3);
+			long numOfCoaches = rawNumOfCoaches == null ? 0l : rawNumOfCoaches.longValue();
+			Long rawNumOfOwners = PersistenceHelper.extractLong(rawObject, 4);
+			long numOfOwners = rawNumOfOwners == null ? 0l : rawNumOfOwners.longValue();
+			infos.add(new CurriculumElementInfos(element, numOfResources, numOfParticipants, numOfCoaches, numOfOwners));
 		}
 		return infos;
 	}

@@ -19,6 +19,7 @@
  */
 package org.olat.modules.curriculum.ui;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
@@ -42,6 +43,17 @@ public class CurriculumComposerTableModel extends DefaultFlexiTreeTableDataModel
 	public void filter(List<FlexiTableFilter> filters) {
 		//
 	}
+	
+	public CurriculumElementRow getCurriculumElementRowByKey(Long elementKey) {
+		List<CurriculumElementRow> rows = new ArrayList<>(backupRows);
+		for(CurriculumElementRow row:rows) {
+			if(elementKey.equals(row.getKey())) {
+				return row;
+			}
+		}
+		return null;
+	}
+	
 
 	@Override
 	public boolean hasChildren(int row) {
@@ -63,6 +75,10 @@ public class CurriculumComposerTableModel extends DefaultFlexiTreeTableDataModel
 			case resources: return element.getResources();
 			case status: return element.getStatus();
 			case tools: return element.getTools();
+			case numOfMembers: return element.getNumOfMembers();
+			case numOfParticipants: return element.getNumOfParticipants();
+			case numOfCoaches: return element.getNumOfCoaches();
+			case numOfOwners: return element.getNumOfOwners();
 			case calendars: return element.getCalendarsLink();
 			default: return "ERROR";
 		}
@@ -82,6 +98,10 @@ public class CurriculumComposerTableModel extends DefaultFlexiTreeTableDataModel
 		endDate("table.header.end.date"),
 		type("table.header.type"),
 		resources("table.header.resources"),
+		numOfMembers("table.header.num.of.members"),
+		numOfParticipants("table.header.num.of.participants"),
+		numOfCoaches("table.header.num.of.coaches"),
+		numOfOwners("table.header.num.of.owners"),
 		calendars("table.header.calendars"),
 		status("table.header.status"),
 		tools("table.header.tools");

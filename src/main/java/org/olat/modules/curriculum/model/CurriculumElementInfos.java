@@ -32,10 +32,17 @@ public class CurriculumElementInfos implements CurriculumElementRef {
 	
 	private final CurriculumElement curriculumElement;
 	private final long numOfResources;
+	private final long numOfParticipants;
+	private final long numOfCoaches;
+	private final long numOfOwners;
 	
-	public CurriculumElementInfos(CurriculumElement curriculumElement, long numOfResources) {
+	public CurriculumElementInfos(CurriculumElement curriculumElement, long numOfResources,
+			long numOfParticipants, long numOfCoaches, long numOfOwners) {
 		this.curriculumElement = curriculumElement;
 		this.numOfResources = numOfResources;
+		this.numOfParticipants = numOfParticipants;
+		this.numOfCoaches = numOfCoaches;
+		this.numOfOwners = numOfOwners;
 	}
 	
 	@Override
@@ -49,5 +56,17 @@ public class CurriculumElementInfos implements CurriculumElementRef {
 
 	public long getNumOfResources() {
 		return numOfResources;
+	}
+
+	public long getNumOfParticipants() {
+		return numOfParticipants;
+	}
+
+	public long getNumOfCoaches() {
+		return numOfCoaches;
+	}
+
+	public long getNumOfOwners() {
+		return numOfOwners;
 	}
 }
