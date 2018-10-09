@@ -39,6 +39,7 @@ import org.olat.repository.RepositoryEntryRef;
 public class SearchParameters {
 
 	private Integer minTotalLectures;
+	private Integer maxTotalLectures;
 	private Integer selectingLecture;
 	private boolean lastLectureBlock = false;
 	private QualityGeneratorRef finishedDataCollectionForGeneratorAndTopicIdentityRef;
@@ -58,6 +59,14 @@ public class SearchParameters {
 
 	public void setMinTotalLectures(Integer minTotalLectures) {
 		this.minTotalLectures = minTotalLectures;
+	}
+
+	public Integer getMaxTotalLectures() {
+		return maxTotalLectures;
+	}
+
+	public void setMaxTotalLectures(Integer maxTotalLectures) {
+		this.maxTotalLectures = maxTotalLectures;
 	}
 
 	public Integer getSelectingLecture() {

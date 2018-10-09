@@ -87,9 +87,12 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 	public static final String CONFIG_KEY_REMINDER1_AFTER_DC_DAYS = "reminder1.after.dc.start.days";
 	public static final String CONFIG_KEY_REMINDER2_AFTER_DC_DAYS = "reminder2.after.dc.start.days";
 	public static final String CONFIG_KEY_ROLES = "participants.roles";
-	public static final String CONFIG_KEY_SURVEY_LECTURE = "survey.lecture";
+	public static final String CONFIG_KEY_SURVEY_LECTURE = "survey.lecture.start";
+	public static final String CONFIG_KEY_SURVEY_LECTURE_NUMBER = "survey.lecture";
+	public static final String CONFIG_KEY_SURVEY_LECTURE_LAST = "survey.lecture.last";
 	public static final String CONFIG_KEY_TITLE = "title";
-	public static final String CONFIG_KEY_TOTAL_LECTURES = "total.lecture";
+	public static final String CONFIG_KEY_TOTAL_LECTURES_MIN = "total.lecture";
+	public static final String CONFIG_KEY_TOTAL_LECTURES_MAX = "total.lecture.max";
 	public static final String CONFIG_KEY_WHITE_LIST = "white.list";
 	public static final String CONFIG_KEY_TOPIC = "topic";
 	public static final String CONFIG_KEY_TOPIC_COACH = "config.topic.coach";
@@ -267,13 +270,57 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 		Collection<CurriculumElementRef> curriculumElementRefs = CurriculumElementWhiteListController.getCurriculumElementRefs(configs);
 		searchParams.setCurriculumElementRefs(curriculumElementRefs);
 		
-		Integer minExceedingLectures = Integer.parseInt(configs.getValue(CONFIG_KEY_TOTAL_LECTURES));
-		searchParams.setMinTotalLectures(minExceedingLectures);
+		String minLectures = configs.getValue(CONFIG_KEY_TOTAL_LECTURES_MIN);
+		if (StringHelper.containsNonWhitespace(minLectures)) {
+			Integer minExceedingLectures = Integer.parseInt(minLectures);
+			searchParams.setMinTotalLectures(minExceedingLectures);
+		}
 		
-		Integer selectingLecture = Integer.parseInt(configs.getValue(CONFIG_KEY_SURVEY_LECTURE));
-		searchParams.setSelectingLecture(selectingLecture);
+		String maxLectures = configs.getValue(CONFIG_KEY_TOTAL_LECTURES_MAX);
+		if (StringHelper.containsNonWhitespace(maxLectures)) {
+			Integer maxExceedingLectures = Integer.parseInt(maxLectures);
+			searchParams.setMaxTotalLectures(maxExceedingLectures);
+		}
+		
+		updateSurveyLectureKey(configs, generator);
+		String surveyLecture = configs.getValue(CONFIG_KEY_SURVEY_LECTURE);
+		switch (surveyLecture) {
+		case CONFIG_KEY_SURVEY_LECTURE_LAST:
+			searchParams.setLastLectureBlock(true);
+			break;
+		case CONFIG_KEY_SURVEY_LECTURE_NUMBER:
+			String lectureNumber = configs.getValue(CONFIG_KEY_SURVEY_LECTURE_NUMBER);
+			try {
+				Integer selectingLecture = Integer.parseInt(lectureNumber);
+				searchParams.setSelectingLecture(selectingLecture);
+			} catch (Exception e) {
+				searchParams.setSelectingLecture(-1); // select nothing
+				log.warn("Quality data collection generator is not properly configured: " + generator);
+			}
+			break;
+		default:
+			searchParams.setSelectingLecture(-1); // select nothing
+			log.warn("Quality data collection generator is not properly configured: " + generator);
+			break;
+		}
 		
 		return searchParams;
+	}
+
+	/**
+	 * CONFIG_KEY_SURVEY_LECTURE was added in the second version of that generator.
+	 * If not set, init the value as function of other CONFIG_KEYs.
+	 *
+	 * @param configs
+	 * @param generator 
+	 */
+	private void updateSurveyLectureKey(QualityGeneratorConfigs configs, QualityGenerator generator) {
+		String surveyLecture = configs.getValue(CONFIG_KEY_SURVEY_LECTURE);
+		boolean surveyLectureNotSet = !StringHelper.containsNonWhitespace(surveyLecture);
+		if (surveyLectureNotSet) {
+			configs.setValue(CONFIG_KEY_SURVEY_LECTURE, CONFIG_KEY_SURVEY_LECTURE_NUMBER);
+			log.info("Updated CONFIG_KEY_SURVEY_LECTURE to CONFIG_KEY_SURVEY_LECTURE_NUMBER for quality generator: " + generator);
+		}
 	}
 
 	private String getTopicKey(QualityGeneratorConfigs configs) {
