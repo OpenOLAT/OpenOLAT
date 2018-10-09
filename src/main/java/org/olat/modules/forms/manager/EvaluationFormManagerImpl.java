@@ -150,7 +150,7 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 	}
 	
 	private boolean isPartOfSeries(EvaluationFormSurvey survey) {
-		return survey.getSeriesPrevious() != null || evaluationFormSurveyDao.hasSeriesNext(survey);
+		return survey != null && (survey.getSeriesPrevious() != null || evaluationFormSurveyDao.hasSeriesNext(survey));
 	}
 
 	@Override
