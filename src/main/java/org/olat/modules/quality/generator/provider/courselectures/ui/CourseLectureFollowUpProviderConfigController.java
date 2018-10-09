@@ -62,6 +62,7 @@ public class CourseLectureFollowUpProviderConfigController extends ProviderConfi
 	private TextElement gradeTotalLimitEl;
 	private SingleSelection gradeSingleCheckEl;
 	private TextElement gradeSingleLimitEl;
+	private TextElement lecturesTotalMinEl;
 	private TextElement durationEl;
 	private TextElement minutesBeforeEndEl;
 	private TextElement invitationDaysEl;
@@ -128,6 +129,9 @@ public class CourseLectureFollowUpProviderConfigController extends ProviderConfi
 		String singleLimit = configs.getValue(CourseLecturesFollowUpProvider.CONFIG_KEY_GRADE_SINGLE_LIMIT);
 		gradeSingleLimitEl = uifactory.addTextElement("followup.config.single.limit", 5, singleLimit, formLayout);
 		
+		String lecturesTotalMin = configs.getValue(CourseLecturesProvider.CONFIG_KEY_TOTAL_LECTURES_MIN);
+		lecturesTotalMinEl = uifactory.addTextElement("config.lectures.total.min", 4, lecturesTotalMin, formLayout);
+		
 		String minutesBeforeEnd = configs.getValue(CourseLecturesFollowUpProvider.CONFIG_KEY_MINUTES_BEFORE_END);
 		minutesBeforeEndEl = uifactory.addTextElement("config.minutes.before.end", 3, minutesBeforeEnd, formLayout);
 
@@ -151,6 +155,7 @@ public class CourseLectureFollowUpProviderConfigController extends ProviderConfi
 		boolean enabled = !readOnly;
 		titleEl.setEnabled(enabled);
 		previousGeneratorEl.setEnabled(enabled);
+		lecturesTotalMinEl.setEnabled(enabled);
 		minutesBeforeEndEl.setEnabled(enabled);
 		invitationDaysEl.setEnabled(enabled);
 		reminder1DaysEl.setEnabled(enabled);
@@ -167,6 +172,7 @@ public class CourseLectureFollowUpProviderConfigController extends ProviderConfi
 		allOk &= validateIsMandatory(previousGeneratorEl);
 		allOk &= validateDouble(gradeTotalLimitEl, 0, 12);
 		allOk &= validateDouble(gradeSingleLimitEl, 0, 12);
+		allOk &= validateInteger(lecturesTotalMinEl, 1, 10000);
 		allOk &= validateIsMandatory(minutesBeforeEndEl) && validateInteger(minutesBeforeEndEl, 0, 1000);
 		allOk &= validateIsMandatory(durationEl) && validateInteger(durationEl, 1, 10000);
 		allOk &= validateInteger(invitationDaysEl, 0, 10000);
@@ -181,6 +187,7 @@ public class CourseLectureFollowUpProviderConfigController extends ProviderConfi
 		titleEl.clearError();
 		gradeTotalLimitEl.clearError();
 		gradeSingleLimitEl.clearError();
+		lecturesTotalMinEl.clearError();
 		minutesBeforeEndEl.clearError();
 		durationEl.clearError();
 		invitationDaysEl.clearError();
@@ -209,6 +216,9 @@ public class CourseLectureFollowUpProviderConfigController extends ProviderConfi
 		
 		String singleLimit = gradeSingleLimitEl.getValue();
 		configs.setValue(CourseLecturesFollowUpProvider.CONFIG_KEY_GRADE_SINGLE_LIMIT, singleLimit);
+		
+		String lecturesTotalMin = lecturesTotalMinEl.getValue();
+		configs.setValue(CourseLecturesProvider.CONFIG_KEY_TOTAL_LECTURES_MIN, lecturesTotalMin);
 		
 		String minutesBeforeEnd = minutesBeforeEndEl.getValue();
 		configs.setValue(CourseLecturesFollowUpProvider.CONFIG_KEY_MINUTES_BEFORE_END, minutesBeforeEnd);

@@ -258,11 +258,11 @@ public class CourseLectureProviderConfigController extends ProviderConfigControl
 		String topicKey = topicEl.isOneSelected()? topicEl.getSelectedKey(): null;
 		configs.setValue(CourseLecturesProvider.CONFIG_KEY_TOPIC, topicKey);
 		
-		String lecturesTotalMax = lecturesTotalMinEl.getValue();
-		configs.setValue(CourseLecturesProvider.CONFIG_KEY_TOTAL_LECTURES_MIN, lecturesTotalMax);
+		String lecturesTotalMin = lecturesTotalMinEl.getValue();
+		configs.setValue(CourseLecturesProvider.CONFIG_KEY_TOTAL_LECTURES_MIN, lecturesTotalMin);
 		
-		String lecturesTotalMin = lecturesTotalMaxEl.getValue();
-		configs.setValue(CourseLecturesProvider.CONFIG_KEY_TOTAL_LECTURES_MAX, lecturesTotalMin);
+		String lecturesTotalMax = lecturesTotalMaxEl.getValue();
+		configs.setValue(CourseLecturesProvider.CONFIG_KEY_TOTAL_LECTURES_MAX, lecturesTotalMax);
 		
 		if (surveyLectureStartEl.isOneSelected()) {
 			String selectedKey = surveyLectureStartEl.getSelectedKey();

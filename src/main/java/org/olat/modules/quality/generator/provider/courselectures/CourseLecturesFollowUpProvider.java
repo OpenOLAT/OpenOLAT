@@ -102,6 +102,7 @@ public class CourseLecturesFollowUpProvider implements QualityGeneratorProvider 
 	public static final String CONFIG_KEY_REMINDER1_AFTER_DC_DAYS = "reminder1.after.dc.start.days";
 	public static final String CONFIG_KEY_REMINDER2_AFTER_DC_DAYS = "reminder2.after.dc.start.days";
 	public static final String CONFIG_KEY_TITLE = "title";
+	public static final String CONFIG_KEY_TOTAL_LECTURES_MIN = "total.lecture";
 
 	public static final String ROLES_DELIMITER = ",";
 	
@@ -192,7 +193,6 @@ public class CourseLecturesFollowUpProvider implements QualityGeneratorProvider 
 			List<Organisation> organisations, LectureBlockInfo lectureBlockInfo,
 			QualityGeneratorRef previousGeneratorRef, QualityGeneratorConfigs previosGeneratorConfigs) {
 		// Load data
-		RepositoryEntry formEntry = generator.getFormEntry();
 		RepositoryEntry course = repositoryService.loadByKey(lectureBlockInfo.getCourseRepoKey());
 		Identity teacher = securityManager.loadIdentityByKey(lectureBlockInfo.getTeacherKey());
 		String topicKey = getTopicKey(previosGeneratorConfigs);
@@ -291,6 +291,12 @@ public class CourseLecturesFollowUpProvider implements QualityGeneratorProvider 
 		} else {
 			searchParams.setFinishedDataCollectionForGeneratorAndTopicRepositoryRef(previousGeneratorRef);
 			searchParams.setExcludeGeneratorAndTopicRepositoryRef(generator);
+		}
+		
+		String minLectures = configs.getValue(CONFIG_KEY_TOTAL_LECTURES_MIN);
+		if (StringHelper.containsNonWhitespace(minLectures)) {
+			Integer minExceedingLectures = Integer.parseInt(minLectures);
+			searchParams.setMinTotalLectures(minExceedingLectures);
 		}
 		
 		String minutesBeforeEnd = configs.getValue(CONFIG_KEY_MINUTES_BEFORE_END);
