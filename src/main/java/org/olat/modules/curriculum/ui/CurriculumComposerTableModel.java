@@ -20,12 +20,18 @@
 package org.olat.modules.curriculum.ui;
 
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
+import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTreeTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.util.StringHelper;
+import org.olat.modules.curriculum.CurriculumElementStatus;
 
 /**
  * 
@@ -34,14 +40,108 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
  *
  */
 public class CurriculumComposerTableModel extends DefaultFlexiTreeTableDataModel<CurriculumElementRow> {
-	
+
 	public CurriculumComposerTableModel(FlexiTableColumnModel columnModel) {
 		super(columnModel);
 	}
-
+	
 	@Override
-	public void filter(List<FlexiTableFilter> filters) {
-		//
+	public void filter(String searchString, List<FlexiTableFilter> filters) {
+		if(StringHelper.containsNonWhitespace(searchString) || (filters != null && !filters.isEmpty() && filters.get(0) != null)) {
+			FlexiTableFilter filter = null;
+			if(filters != null && !filters.isEmpty()) {
+				filter = filters.get(0);
+			}
+			
+			Date now = new Date();
+			Date nowBegin = CalendarUtils.removeTime(now);
+			Date nowEnd = CalendarUtils.endOfDay(now);
+			
+			Long searchLong = null;
+			if(StringHelper.isLong(searchString)) {
+				searchLong = Long.valueOf(searchString);
+			}
+			filter(searchString, searchLong, nowBegin, nowEnd, filter);
+		} else {
+			for(CurriculumElementRow row:backupRows) {
+				row.setAcceptedByFilter(true);
+			}
+			setUnfilteredObjects();
+		}
+	}
+	
+	private void filter(String searchString, Long searchLong, Date nowBegin, Date nowEnd, FlexiTableFilter filter) {
+		boolean searched = searchString != null || searchLong != null;
+		boolean filtered = filter != null && !filter.isShowAll();
+		
+		if(searchString != null) {
+			searchString = searchString.toLowerCase();
+		}
+
+		List<CurriculumElementRow> filteredRows = new ArrayList<>(backupRows.size());
+		for(CurriculumElementRow row:backupRows) {
+			boolean accept = false;
+			if(searched && filtered) {
+				accept = accept(row, nowBegin, nowEnd, filter) && accept(row, searchString, searchLong);
+			} else if(searched) {
+				accept = accept(row, searchString, searchLong);
+			} else if(filtered) {
+				accept = accept(row, nowBegin, nowEnd, filter);
+			}
+
+			row.setAcceptedByFilter(accept);
+			if(accept) {
+				filteredRows.add(row);
+			}
+		}
+		if(filteredRows.size() < backupRows.size()) {
+			reconstructParentLine(filteredRows);
+		}
+		setFilteredObjects(filteredRows);
+	}
+	
+	private void reconstructParentLine(List<CurriculumElementRow> rows) {
+		Set<CurriculumElementRow> rowSet = new HashSet<>(rows);
+		for(int i=0; i<rows.size(); i++) {
+			CurriculumElementRow row = rows.get(i);
+			for(CurriculumElementRow parent=row.getParent(); parent != null && !rowSet.contains(parent); parent=parent.getParent()) {
+				rows.add(i, parent);
+				rowSet.add(parent);	
+			}
+		}
+	}
+
+	private boolean accept(CurriculumElementRow row, String searchString, Long searchLong) {
+		boolean accept = false;
+		if(searchLong != null && searchLong.equals(row.getKey())) {
+			accept = true;
+		}
+		
+		if(!accept && (
+				(row.getDisplayName() != null && row.getDisplayName().toLowerCase().contains(searchString))
+				|| (row.getIdentifier() != null && row.getIdentifier().toLowerCase().contains(searchString))
+				|| (row.getExternalId() != null && row.getExternalId().toLowerCase().contains(searchString)))) {
+			accept = true;
+		}
+		return accept;
+	}
+	
+	private boolean accept(CurriculumElementRow row, Date nowBegin, Date nowEnd, FlexiTableFilter filter) {
+		boolean accept = false;
+		if("active".equals(filter.getFilter())) {
+			if(row.getStatus() == CurriculumElementStatus.active
+					&& (row.getBeginDate() == null || row.getBeginDate().compareTo(nowBegin) >= 0)
+					&& (row.getEndDate() == null || row.getEndDate().compareTo(nowBegin) <= 0)) {
+				accept = true;
+			}
+		} else if("inactive".equals(filter.getFilter())) {
+			if(row.getStatus() == CurriculumElementStatus.inactive
+					|| (row.getBeginDate() != null && row.getBeginDate().compareTo(nowEnd) <= 0)
+					|| (row.getEndDate() != null && row.getEndDate().compareTo(nowEnd) <= 0)) {
+				accept = true;
+			}
+		}
+		return accept;
 	}
 	
 	public CurriculumElementRow getCurriculumElementRowByKey(Long elementKey) {
@@ -83,6 +183,8 @@ public class CurriculumComposerTableModel extends DefaultFlexiTreeTableDataModel
 			default: return "ERROR";
 		}
 	}
+	
+	
 	
 	@Override
 	public CurriculumComposerTableModel createCopyWithEmptyList() {

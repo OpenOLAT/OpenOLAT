@@ -129,7 +129,7 @@ public class CheckListAssessmentDataModel extends DefaultFlexiTableDataModel<Che
 	 * @param key
 	 */
 	@Override
-	public void filter(List<FlexiTableFilter> filters) {
+	public void filter(String searchString, List<FlexiTableFilter> filters) {
 		setObjects(backupRows);
 		
 		Long groupKey = extractKey(filters, "businessgroup-");

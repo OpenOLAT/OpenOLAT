@@ -162,7 +162,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		//filter
 		if(ftE.isFilterEnabled()) {
 			List<FlexiTableFilter> filters = ftE.getFilters();
-			if(filters != null && filters.size() > 0) {
+			if(filters != null && !filters.isEmpty()) {
 				filterIndication = renderFilterDropdown(sb, ftE, filters);
 			}
 		}
@@ -170,7 +170,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		//sort
 		if(ftE.isSortEnabled()) {
 			List<FlexiTableSort> sorts = ftE.getSorts();
-			if(sorts != null && sorts.size() > 0) {
+			if(sorts != null && !sorts.isEmpty()) {
 				renderSortDropdown(sb, ftE, sorts);
 			}
 		}
@@ -371,13 +371,11 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 	}
 	
 	protected void renderBreadcrumbs(StringOutput sb, FlexiTableElementImpl ftE, FlexiTreeTableNode crumb, String index) {
-		Form theForm = ftE.getRootForm();
-		String dispatchId = ftE.getFormItemComponent().getDispatchID();
-		sb.append("<li><a href=\"javascript:")
-		  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, true, true, true,
+		String dispatchId = ftE.getFormDispatchId();
+		sb.append("<li><a id='").append(dispatchId).append("_").append(index).append("_bc' href=\"javascript:;\" onclick=\"")
+		  .append(FormJSHelper.getXHRFnCallFor(ftE.getRootForm(), dispatchId, 1, true, true, true,
 				  new NameValuePair("tt-crumb", index)))
 		  .append("\">").append(crumb.getCrump()).append("</a></li>");
-
 	}
 	
 	protected void renderFormItem(Renderer renderer, StringOutput sb, FormItem item, URLBuilder ubu, Translator translator,

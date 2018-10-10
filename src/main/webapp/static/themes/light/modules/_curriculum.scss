@@ -73,6 +73,19 @@ $o-curriculum-entry-bg							: #CCFFCC;
 
 
 
+.o_curriculum_el_listing {
+	tr.o_curriculum_element_inactive, tr.o_curriculum_element_inactive td, tr.o_curriculum_element_inactive td span, tr.o_curriculum_element_inactive td a {
+		color: $o-curriculum-element-inactive-color;
+	}
+	tr.o_curriculum_element_unfiltered, tr.o_curriculum_element_unfiltered td, tr.o_curriculum_element_unfiltered td span, tr.o_curriculum_element_unfiltered td a {
+		color: lighten($o-curriculum-element-inactive-color, 20%);
+	}
+	tr.o_curriculum_element_deleted, tr.o_curriculum_element_deleted td, tr.o_curriculum_element_deleted td span, tr.o_curriculum_element_deleted td a {
+		color: $o-curriculum-element-inactive-color;
+		text-decoration: line-through;
+	}
+}
+
 .o_curriculumtable {
 	/* Default table style rendering */
 	@for $i from 0 through 11 {

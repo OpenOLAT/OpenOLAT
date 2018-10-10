@@ -273,7 +273,7 @@ public class MediaCenterController extends FormBasicController
 			}
 		}
 		model.setObjects(rows);
-		model.filter(tableEl.getSelectedFilters());
+		model.filter(null, tableEl.getSelectedFilters());
 		
 		Map<Long,MediaRow> rowMap = model.getObjects()
 				.stream().collect(Collectors.toMap(r -> r.getKey(), r -> r));

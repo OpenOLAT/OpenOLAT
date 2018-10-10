@@ -451,7 +451,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 		usersTableModel.setObjects(rows);
 		List<FlexiTableFilter> filters = tableEl.getSelectedFilters();
 		if(filters != null && !filters.isEmpty() && filters.get(0) != null) {
-			usersTableModel.filter(Collections.singletonList(filters.get(0)));
+			usersTableModel.filter(tableEl.getQuickSearchString(), Collections.singletonList(filters.get(0)));
 		}
 		tableEl.reset();
 		tableEl.reloadData();

@@ -53,7 +53,7 @@ public class SharedBindersDataModel extends DefaultFlexiTableDataModel<SharedIte
 	}
 
 	@Override
-	public void filter(List<FlexiTableFilter> filters) {
+	public void filter(String searchString, List<FlexiTableFilter> filters) {
 		String key = filters == null || filters.isEmpty() || filters.get(0) == null ? null : filters.get(0).getFilter();
 		if(SharedBindersDataModel.EMPTY_SECTIONS.equals(key)) {
 			List<SharedItemRow> filteredRows = backups.stream()

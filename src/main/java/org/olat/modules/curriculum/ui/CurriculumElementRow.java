@@ -51,6 +51,8 @@ public class CurriculumElementRow implements CurriculumElementRef, FlexiTreeTabl
 	private final FormLink resourcesLink;
 	private FormLink calendarsLink;
 	
+	private boolean acceptedByFilter = true;
+	
 	public CurriculumElementRow(CurriculumElement element) {
 		this.element = element;
 		elementType = element.getType();
@@ -129,6 +131,14 @@ public class CurriculumElementRow implements CurriculumElementRef, FlexiTreeTabl
 			}
 		}
 		return enabled;
+	}
+
+	public boolean isAcceptedByFilter() {
+		return acceptedByFilter;
+	}
+
+	public void setAcceptedByFilter(boolean acceptedByFilter) {
+		this.acceptedByFilter = acceptedByFilter;
 	}
 
 	@Override

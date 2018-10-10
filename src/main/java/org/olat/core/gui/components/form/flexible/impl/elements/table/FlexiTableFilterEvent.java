@@ -21,21 +21,26 @@ package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
 import java.util.List;
 
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 
 /**
- * Mark a data model as filterable
  * 
- * Initial date: 11.02.2014<br>
+ * Initial date: 10 Oct 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface FilterableFlexiTableModel {
+public class FlexiTableFilterEvent extends FlexiTableReduceEvent {
+
+	private static final long serialVersionUID = -7676917137818815141L;
+
+	public FlexiTableFilterEvent(String cmd, FormItem source, String search, List<FlexiTableFilter> filters,
+			List<FlexiTableFilter> extendedFilters, List<String> condQueries, int action) {
+		super(cmd, source, search, filters, extendedFilters, condQueries, action);
+	}
 	
-	/**
-	 * @param key
-	 * @return True if a reload is needed
-	 */
-	public void filter(String searchString, List<FlexiTableFilter> filters);
+	public FlexiTableFilterEvent(FormItem source, int action) {
+		super(source, action);
+	}
 
 }

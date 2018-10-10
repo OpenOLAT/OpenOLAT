@@ -54,7 +54,7 @@ public class MediaDataModel extends DefaultFlexiTableDataModel<MediaRow>
 	}
 
 	@Override
-	public void filter(List<FlexiTableFilter> filters) {
+	public void filter(String searchString, List<FlexiTableFilter> filters) {
 		String key = filters == null || filters.isEmpty() || filters.get(0) == null ? null : filters.get(0).getFilter();
 		if(StringHelper.containsNonWhitespace(key) && !"showall".equals(key)) {
 			List<MediaRow> filteredRows = new ArrayList<>();

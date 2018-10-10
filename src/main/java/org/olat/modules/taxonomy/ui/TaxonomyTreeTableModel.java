@@ -57,7 +57,7 @@ implements FilterableFlexiTableModel  {
 	}
 	
 	@Override
-	public void filter(List<FlexiTableFilter> filters) {
+	public void filter(String searchString, List<FlexiTableFilter> filters) {
 		if(filters != null && !filters.isEmpty() && filters.get(0) != null) {
 			Set<Long> typeKeys = new HashSet<>();
 			boolean noType = false;

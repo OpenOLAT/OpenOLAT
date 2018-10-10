@@ -23,9 +23,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.commons.persistence.SortKey;
-import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FilterableFlexiTableModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
@@ -39,18 +37,13 @@ import org.olat.modules.coach.ui.ProgressValue;
  *
  */
 public class AssessedBusinessGroupTableModel extends DefaultFlexiTableDataModel<AssessedBusinessGroup>
-implements SortableFlexiTableDataModel<AssessedBusinessGroup>, FilterableFlexiTableModel {
+implements SortableFlexiTableDataModel<AssessedBusinessGroup> {
 	
 	private final Locale locale;
 	
 	public AssessedBusinessGroupTableModel(FlexiTableColumnModel columnsModel, Locale locale) {
 		super(columnsModel);
 		this.locale = locale;
-	}
-	
-	@Override
-	public void filter(List<FlexiTableFilter> filters) {
-		//
 	}
 
 	@Override

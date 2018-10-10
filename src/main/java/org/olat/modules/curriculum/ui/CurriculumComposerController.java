@@ -32,6 +32,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -39,6 +40,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableReduceEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
@@ -134,6 +136,10 @@ public class CurriculumComposerController extends FormBasicController implements
 		
 		initForm(ureq);
 		loadModel();
+		if(tableEl.getSelectedFilterValue() == null) {
+			tableEl.setSelectedFilterKey("active");
+			tableModel.filter(tableEl.getQuickSearchString(), tableEl.getSelectedFilters());
+		}
 	}
 	
 	public Curriculum getCurriculum() {
@@ -207,8 +213,19 @@ public class CurriculumComposerController extends FormBasicController implements
 		tableEl.setNumOfRowsEnabled(false);
 		tableEl.setExportEnabled(true);
 		tableEl.setPageSize(40);
-		tableEl.setAndLoadPersistedPreferences(ureq, "curriculum-composer");
 		tableEl.setCssDelegate(this);
+		tableEl.setSearchEnabled(true);
+		tableEl.setFilters("activity", getFilters(), false);
+		tableEl.setAndLoadPersistedPreferences(ureq, "curriculum-composer");
+	}
+	
+	private List<FlexiTableFilter> getFilters() {
+		List<FlexiTableFilter> filters = new ArrayList<>(5);
+		filters.add(new FlexiTableFilter(translate("filter.active"), "active"));
+		filters.add(new FlexiTableFilter(translate("filter.inactive"), "inactive"));
+		filters.add(FlexiTableFilter.SPACER);
+		filters.add(new FlexiTableFilter(translate("show.all"), "all", true));
+		return filters;
 	}
 	
 	protected boolean isAllowedToOverrideManaged(UserRequest ureq) {
@@ -233,12 +250,17 @@ public class CurriculumComposerController extends FormBasicController implements
 	@Override
 	public String getRowCssClass(FlexiTableRendererType type, int pos) {
 		CurriculumElementRow row = tableModel.getObject(pos);
-		if(row.getStatus() == CurriculumElementStatus.inactive) {
-			return "o_curriculum_element_inactive";
+		String cssClass;
+		if(!row.isAcceptedByFilter()) {
+			cssClass = "o_curriculum_element_unfiltered";
+		} else if(row.getStatus() == CurriculumElementStatus.inactive) {
+			cssClass = "o_curriculum_element_inactive";
 		} else if(row.getStatus() == CurriculumElementStatus.deleted) {
-			return "o_curriculum_element_deleted";
+			cssClass = "o_curriculum_element_deleted";
+		} else {
+			cssClass = "o_curriculum_element_active";
 		}
-		return "o_curriculum_element_active";
+		return cssClass;
 	}
 
 	@Override
@@ -377,6 +399,10 @@ public class CurriculumComposerController extends FormBasicController implements
 							.createCEListFromString(OresHelper.createOLATResourceableInstance("tab", 2l));
 					doEditCurriculumElement(ureq, row, entries);
 				}
+			} else if(event instanceof FlexiTableReduceEvent) {
+				FlexiTableReduceEvent se = (FlexiTableReduceEvent)event;
+				tableModel.filter(se.getSearch(), se.getFilters());
+				tableEl.reset(false, true, false);
 			}
 		} else if (source instanceof FormLink) {
 			FormLink link = (FormLink)source;
@@ -393,7 +419,6 @@ public class CurriculumComposerController extends FormBasicController implements
 		super.formInnerEvent(ureq, source, event);
 	}
 	
-
 	private void doOverrideManagedResource() {
 		overrideManagedResource(true);
 	}

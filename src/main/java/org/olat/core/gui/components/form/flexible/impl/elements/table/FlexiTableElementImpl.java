@@ -901,9 +901,9 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		} else if(StringHelper.containsNonWhitespace(removeExtendedFilter)) {
 			removeExtendedFilter(ureq);
 		} else if(dispatchuri != null && StringHelper.containsNonWhitespace(filter)) {
-			doFilter(filter);
+			doFilter(ureq, filter);
 		} else if(StringHelper.containsNonWhitespace(removeFilter)) {
-			doFilter(null);
+			doFilter(ureq, null);
 		} else if(StringHelper.isLong(treeTableFocus)) {
 			doFocus(Integer.parseInt(treeTableFocus));
 		} else if(StringHelper.isLong(treeTableOpen)) {
@@ -1116,7 +1116,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		}
 	}
 	
-	private void doFilter(String filterKey) {
+	private void doFilter(UserRequest ureq, String filterKey) {
 		List<FlexiTableFilter> selectedFilters = new ArrayList<>();
 		if(filterKey == null) {
 			for(FlexiTableFilter filter:filters) {
@@ -1169,7 +1169,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			rowCount = -1;
 			currentPage = 0;
 			doUnSelectAll();
-			((FilterableFlexiTableModel)dataModel).filter(selectedFilters);
+			((FilterableFlexiTableModel)dataModel).filter(getQuickSearchString(), selectedFilters);
 		} else if(dataSource != null) {
 			rowCount = -1;
 			currentPage = 0;
@@ -1183,6 +1183,9 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			}
 		}
 		component.setDirty(true);
+		
+		getRootForm().fireFormEvent(ureq, new FlexiTableFilterEvent(FlexiTableFilterEvent.FILTER, this,
+				getQuickSearchString(), getSelectedFilters(), getSelectedExtendedFilters(), null, FormEvent.ONCLICK));
 	}
 	
 	private void removeExtendedFilter(UserRequest ureq) {
@@ -1230,14 +1233,14 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	private void doOpen(int row) {
 		if(dataModel instanceof FlexiTreeTableDataModel) {
 			((FlexiTreeTableDataModel<?>)dataModel).open(row);
-			reset(true, true, true);
+			resetInternComponents();
 		}
 	}
 	
 	private void doClose(int row) {
 		if(dataModel instanceof FlexiTreeTableDataModel) {
 			((FlexiTreeTableDataModel<?>)dataModel).close(row);
-			reset(true, true, true);
+			resetInternComponents();
 		}
 	}
 	
@@ -1261,15 +1264,18 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	
 	private void doOpenAll() {
 		if(dataModel instanceof FlexiTreeTableDataModel) {
+			if(dataModel instanceof FilterableFlexiTableModel) {
+				((FilterableFlexiTableModel)dataModel).filter(getQuickSearchString(), getFilters());
+			}
 			((FlexiTreeTableDataModel<?>)dataModel).openAll();
-			reset(true, true, true);
+			resetInternComponents();
 		}
 	}
 	
 	private void doCloseAll() {
 		if(dataModel instanceof FlexiTreeTableDataModel) {
 			((FlexiTreeTableDataModel<?>)dataModel).closeAll();
-			reset(true, true, true);
+			resetInternComponents();
 		}
 	}
 	
@@ -1352,7 +1358,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			VisibleFlexiColumnsModel model = (VisibleFlexiColumnsModel)visibleColsChoice.getModel();
 			for(int i=model.getRowCount(); i-->0; ) {
 				FlexiColumnModel col = model.getObject(i);
-				if(visibleCols.contains(new Integer(i))) {
+				if(visibleCols.contains(Integer.valueOf(i))) {
 					enabledColumnIndex.add(col.getColumnIndex());
 				} else {
 					enabledColumnIndex.remove(col.getColumnIndex());
@@ -1368,7 +1374,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		for(int i=dataModel.getTableColumnModel().getColumnCount(); i-->0; ) {
 			FlexiColumnModel col = dataModel.getTableColumnModel().getColumnModel(i);
 			if(col.isDefaultVisible()) {
-				enabledColumnIndex.add(new Integer(col.getColumnIndex()));
+				enabledColumnIndex.add(Integer.valueOf(col.getColumnIndex()));
 			}
 		}
 		
@@ -1469,7 +1475,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			for(int i=colModel.getColumnCount(); i-->0; ) {
 				FlexiColumnModel col = colModel.getColumnModel(i);
 				if(columnKey.equals(col.getColumnKey())) {
-					index.add(new Integer(col.getColumnIndex()));
+					index.add(Integer.valueOf(col.getColumnIndex()));
 				}
 			}
 		}
@@ -1775,7 +1781,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			if(dataModel instanceof FilterableFlexiTableModel) {
 				if(isFilterEnabled()) {
 					List<FlexiTableFilter> filter = getSelectedFilters();
-					((FilterableFlexiTableModel)dataModel).filter(filter);
+					((FilterableFlexiTableModel)dataModel).filter(getQuickSearchString(), filter);
 				}
 			}
 			

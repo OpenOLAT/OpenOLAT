@@ -67,7 +67,7 @@ implements SortableFlexiTableDataModel<AppealRollCallRow>, FilterableFlexiTableM
 	}
 	
 	@Override
-	public void filter(List<FlexiTableFilter> filters) {
+	public void filter(String searchString, List<FlexiTableFilter> filters) {
 		if(filters != null && !filters.isEmpty() && filters.get(0) != null) {
 			List<AppealRollCallRow> filteredRows = backups.stream()
 						.filter(row -> accept(row, filters))

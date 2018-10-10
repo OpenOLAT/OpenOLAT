@@ -188,14 +188,26 @@ implements FlexiTreeTableDataModel<U>, FilterableFlexiTableModel {
 		return refreshedCrumbs;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public void openAll() {
 		openedRows.clear();
-		if(focusedNode == null) {
-			super.setObjects(backupRows);
+		
+		List<U> currentRows = getObjects();
+		for(U currentRow:currentRows) {
+			if(currentRow.getParent() != null) {
+				openedRows.add((U)currentRow.getParent());
+			} else if(currentRow.getParent() == null) {
+				openedRows.add(currentRow);
+			}
+		}
+
+		if(focusedNode != null) {// refocus if needed
+			int row = currentRows.indexOf(focusedNode);
+			currentRows = focusedNodes(currentRows, focusedNode, row);
+			super.setObjects(currentRows);
 		} else {
-			// reload the focused node
-			popBreadcrumb(focusedNode);
+			super.setObjects(currentRows);
 		}
 	}
 

@@ -41,7 +41,7 @@ public class OrganisationTreeDataModel extends DefaultFlexiTreeTableDataModel<Or
 	}
 
 	@Override
-	public void filter(List<FlexiTableFilter> filters) {
+	public void filter(String searchString, List<FlexiTableFilter> filters) {
 		//
 	}
 	
