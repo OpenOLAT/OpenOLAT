@@ -103,11 +103,12 @@ public class SearchParameters {
 		StringBuilder builder = new StringBuilder();
 		builder.append("SearchParameters [generatorRef=");
 		builder.append(generatorRef);
-		builder.append(", organisationRefs (keys)=");
+		builder.append(", organisationRefs (keys)=[");
 		builder.append(organisationRefs.stream()
 				.map(OrganisationRef::getKey)
 				.map(k -> k.toString())
 				.collect(Collectors.joining(", ")));
+		builder.append("]");
 		builder.append(", beginFrom=");
 		builder.append(beginFrom);
 		builder.append(", beginTo=");

@@ -71,16 +71,13 @@ public class CurriculumElementProviderDAOTest extends OlatTestCase {
 	@Test
 	public void shouldLoadCurriculumElements() {
 		Organisation organisation = organisationService.createOrganisation(random(), random(), null, null, null);
-		List<Organisation> organisations = Collections.singletonList(organisation);
 		CurriculumElementType ceType = curriculumService.createCurriculumElementType(random(), random(), null, null);
 		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), null, organisation);
 		CurriculumElement curriculumElement = curriculumService.createCurriculumElement(random(), random(),
 				oneDayAgo(), inOneDay(), null, ceType, CurriculumCalendars.disabled, curriculum);
-		QualityGenerator generator = generatorService.createGenerator(random(), organisations);
 		dbInstance.commitAndCloseSession();
 
-		SearchParameters searchParams = new SearchParameters(generator, organisations, ceType.getKey(), oneMonthAgo(), today());
-		searchParams.setStartDate(true);
+		SearchParameters searchParams = new SearchParameters();
 		List<CurriculumElement> pending = sut.loadPending(searchParams);
 
 		assertThat(pending).contains(curriculumElement);
@@ -90,21 +87,20 @@ public class CurriculumElementProviderDAOTest extends OlatTestCase {
 	public void shouldFilterByAlreadyCreated() {
 		Organisation organisation = organisationService.createOrganisation(random(), random(), null, null, null);
 		List<Organisation> organisations = Collections.singletonList(organisation);
-		CurriculumElementType ceType = curriculumService.createCurriculumElementType(random(), random(), null, null);
 		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), null, organisation);
 		CurriculumElement curriculumElement = curriculumService.createCurriculumElement(random(), random(),
-				oneDayAgo(), inOneDay(), null, ceType, CurriculumCalendars.disabled, curriculum);
+				oneDayAgo(), inOneDay(), null, null, CurriculumCalendars.disabled, curriculum);
 		QualityGenerator generator = generatorService.createGenerator(random(), organisations);
 		dbInstance.commitAndCloseSession();
 
 		CurriculumElement curriculumElementCreated = curriculumService.createCurriculumElement(random(), random(),
-				oneDayAgo(), inOneDay(), null, ceType, CurriculumCalendars.disabled, curriculum);
+				oneDayAgo(), inOneDay(), null, null, CurriculumCalendars.disabled, curriculum);
 		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		qualityService.createDataCollection(organisations, formEntry, generator, curriculumElementCreated.getKey());
 		dbInstance.commitAndCloseSession();
 
-		SearchParameters searchParams = new SearchParameters(generator, organisations, ceType.getKey(), oneMonthAgo(), today());
-		searchParams.setStartDate(true);
+		SearchParameters searchParams = new SearchParameters();
+		searchParams.setGeneratorRef(generator);
 		List<CurriculumElement> pending = sut.loadPending(searchParams);
 
 		assertThat(pending).contains(curriculumElement).doesNotContain(curriculumElementCreated);
@@ -113,22 +109,19 @@ public class CurriculumElementProviderDAOTest extends OlatTestCase {
 	@Test
 	public void shouldFilterByOrganisation() {
 		Organisation organisation = organisationService.createOrganisation(random(), random(), null, null, null);
-		List<Organisation> organisations = Collections.singletonList(organisation);
-		CurriculumElementType ceType = curriculumService.createCurriculumElementType(random(), random(), null, null);
 		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), null, organisation);
 		CurriculumElement curriculumElement = curriculumService.createCurriculumElement(random(), random(),
-				oneDayAgo(), inOneDay(), null, ceType, CurriculumCalendars.disabled, curriculum);
-		QualityGenerator generator = generatorService.createGenerator(random(), organisations);
+				oneDayAgo(), inOneDay(), null, null, CurriculumCalendars.disabled, curriculum);
 		dbInstance.commitAndCloseSession();
 
 		Organisation otherOrganisation = organisationService.createOrganisation(random(), random(), null, null, null);
 		Curriculum otherCurriculum = curriculumService.createCurriculum(random(), random(), null, otherOrganisation);
 		CurriculumElement otherCurriculumElement = curriculumService.createCurriculumElement(random(), random(),
-				oneDayAgo(), inOneDay(), null, ceType, CurriculumCalendars.disabled, otherCurriculum);
+				oneDayAgo(), inOneDay(), null, null, CurriculumCalendars.disabled, otherCurriculum);
 		dbInstance.commitAndCloseSession();
 
-		SearchParameters searchParams = new SearchParameters(generator, organisations, ceType.getKey(), oneMonthAgo(), today());
-		searchParams.setStartDate(true);
+		SearchParameters searchParams = new SearchParameters();
+		searchParams.setOrganisationRefs(asList(organisation));
 		List<CurriculumElement> pending = sut.loadPending(searchParams);
 
 		assertThat(pending).contains(curriculumElement).doesNotContain(otherCurriculumElement);
@@ -137,12 +130,10 @@ public class CurriculumElementProviderDAOTest extends OlatTestCase {
 	@Test
 	public void shouldFilterByCurriculumElementType() {
 		Organisation organisation = organisationService.createOrganisation(random(), random(), null, null, null);
-		List<Organisation> organisations = Collections.singletonList(organisation);
 		CurriculumElementType ceType = curriculumService.createCurriculumElementType(random(), random(), null, null);
 		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), null, organisation);
 		CurriculumElement curriculumElement = curriculumService.createCurriculumElement(random(), random(),
 				oneDayAgo(), inOneDay(), null, ceType, CurriculumCalendars.disabled, curriculum);
-		QualityGenerator generator = generatorService.createGenerator(random(), organisations);
 		dbInstance.commitAndCloseSession();
 
 		CurriculumElementType otherCeType  = curriculumService.createCurriculumElementType(random(), random(), null, null);
@@ -150,8 +141,8 @@ public class CurriculumElementProviderDAOTest extends OlatTestCase {
 				oneDayAgo(), inOneDay(), null, otherCeType, CurriculumCalendars.disabled, curriculum);
 		dbInstance.commitAndCloseSession();
 
-		SearchParameters searchParams = new SearchParameters(generator, organisations, ceType.getKey(), oneMonthAgo(), today());
-		searchParams.setStartDate(true);
+		SearchParameters searchParams = new SearchParameters();
+		searchParams.setCeTypeKey(ceType.getKey());
 		List<CurriculumElement> pending = sut.loadPending(searchParams);
 
 		assertThat(pending).contains(curriculumElement).doesNotContain(otherCurriculumElement);
@@ -160,23 +151,19 @@ public class CurriculumElementProviderDAOTest extends OlatTestCase {
 	@Test
 	public void shouldFilterByCurriculumElement() {
 		Organisation organisation = organisationService.createOrganisation(random(), random(), null, null, null);
-		List<Organisation> organisations = Collections.singletonList(organisation);
-		CurriculumElementType ceType = curriculumService.createCurriculumElementType(random(), random(), null, null);
 		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), null, organisation);
-		QualityGenerator generator = generatorService.createGenerator(random(), organisations);
 		dbInstance.commitAndCloseSession();
 
 		CurriculumElement curriculumElement1 = curriculumService.createCurriculumElement(random(), random(),
-				oneDayAgo(), inOneDay(), null, ceType, CurriculumCalendars.disabled, curriculum);
+				oneDayAgo(), inOneDay(), null, null, CurriculumCalendars.disabled, curriculum);
 		CurriculumElement curriculumElement2 = curriculumService.createCurriculumElement(random(), random(),
-				oneDayAgo(), inOneDay(), null, ceType, CurriculumCalendars.disabled, curriculum);
+				oneDayAgo(), inOneDay(), null, null, CurriculumCalendars.disabled, curriculum);
 		CurriculumElement otherCurriculumElement = curriculumService.createCurriculumElement(random(), random(),
-				oneDayAgo(), inOneDay(), null, ceType, CurriculumCalendars.disabled, curriculum);
+				oneDayAgo(), inOneDay(), null, null, CurriculumCalendars.disabled, curriculum);
 		dbInstance.commitAndCloseSession();
 
-		SearchParameters searchParams = new SearchParameters(generator, organisations, ceType.getKey(), oneMonthAgo(), today());
+		SearchParameters searchParams = new SearchParameters();
 		searchParams.setCurriculumElementRefs(asList(curriculumElement1, curriculumElement2));
-		searchParams.setStartDate(true);
 		List<CurriculumElement> pending = sut.loadPending(searchParams);
 
 		assertThat(pending)
@@ -187,25 +174,23 @@ public class CurriculumElementProviderDAOTest extends OlatTestCase {
 	@Test
 	public void shouldFilterByBeginDate() {
 		Organisation organisation = organisationService.createOrganisation(random(), random(), null, null, null);
-		List<Organisation> organisations = Collections.singletonList(organisation);
-		CurriculumElementType ceType = curriculumService.createCurriculumElementType(random(), random(), null, null);
 		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), null, organisation);
-
-		QualityGenerator generator = generatorService.createGenerator(random(), organisations);
 		dbInstance.commitAndCloseSession();
 
 		CurriculumElement beginBeforeFrom = curriculumService.createCurriculumElement(random(), random(),
-				oneYearAgo(), oneYearAgo(), null, ceType, CurriculumCalendars.disabled, curriculum);
+				oneYearAgo(), oneYearAgo(), null, null, CurriculumCalendars.disabled, curriculum);
 		CurriculumElement beginBetweenFromAndTo = curriculumService.createCurriculumElement(random(), random(),
-				oneDayAgo(), oneDayAgo(), null, ceType, CurriculumCalendars.disabled, curriculum);
+				oneDayAgo(), oneDayAgo(), null, null, CurriculumCalendars.disabled, curriculum);
 		CurriculumElement beginAfterTo = curriculumService.createCurriculumElement(random(), random(),
-				inOneDay(), inOneDay(), null, ceType, CurriculumCalendars.disabled, curriculum);
+				inOneDay(), inOneDay(), null, null, CurriculumCalendars.disabled, curriculum);
 		CurriculumElement beginNull = curriculumService.createCurriculumElement(random(), random(),
-				null, null, null, ceType, CurriculumCalendars.disabled, curriculum);
+				null, null, null, null, CurriculumCalendars.disabled, curriculum);
 		beginAfterTo.setBeginDate(inOneDay());
 		dbInstance.commitAndCloseSession();
 
-		SearchParameters searchParams = new SearchParameters(generator, organisations, ceType.getKey(), oneMonthAgo(), today());
+		SearchParameters searchParams = new SearchParameters();
+		searchParams.setFrom(oneMonthAgo());
+		searchParams.setTo(today());
 		searchParams.setStartDate(true);
 		List<CurriculumElement> pending = sut.loadPending(searchParams);
 
@@ -215,25 +200,23 @@ public class CurriculumElementProviderDAOTest extends OlatTestCase {
 	@Test
 	public void shouldFilterByEndDate() {
 		Organisation organisation = organisationService.createOrganisation(random(), random(), null, null, null);
-		List<Organisation> organisations = Collections.singletonList(organisation);
-		CurriculumElementType ceType = curriculumService.createCurriculumElementType(random(), random(), null, null);
 		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), null, organisation);
-
-		QualityGenerator generator = generatorService.createGenerator(random(), organisations);
 		dbInstance.commitAndCloseSession();
 
 		CurriculumElement endBeforeFrom = curriculumService.createCurriculumElement(random(), random(),
-				oneYearAgo(), oneYearAgo(), null, ceType, CurriculumCalendars.disabled, curriculum);
+				oneYearAgo(), oneYearAgo(), null, null, CurriculumCalendars.disabled, curriculum);
 		CurriculumElement endBetweenFromAndTo = curriculumService.createCurriculumElement(random(), random(),
-				oneDayAgo(), oneDayAgo(), null, ceType, CurriculumCalendars.disabled, curriculum);
+				oneDayAgo(), oneDayAgo(), null, null, CurriculumCalendars.disabled, curriculum);
 		CurriculumElement endAfterTo = curriculumService.createCurriculumElement(random(), random(),
-				inOneDay(), inOneDay(), null, ceType, CurriculumCalendars.disabled, curriculum);
+				inOneDay(), inOneDay(), null, null, CurriculumCalendars.disabled, curriculum);
 		CurriculumElement endNull = curriculumService.createCurriculumElement(random(), random(),
-				null, null, null, ceType, CurriculumCalendars.disabled, curriculum);
+				null, null, null, null, CurriculumCalendars.disabled, curriculum);
 		endAfterTo.setBeginDate(inOneDay());
 		dbInstance.commitAndCloseSession();
 
-		SearchParameters searchParams = new SearchParameters(generator, organisations, ceType.getKey(), oneMonthAgo(), today());
+		SearchParameters searchParams = new SearchParameters();
+		searchParams.setFrom(oneMonthAgo());
+		searchParams.setTo(today());
 		searchParams.setStartDate(false);
 		List<CurriculumElement> pending = sut.loadPending(searchParams);
 
@@ -243,49 +226,25 @@ public class CurriculumElementProviderDAOTest extends OlatTestCase {
 	@Test
 	public void shouldFilterActiveOnly() {
 		Organisation organisation = organisationService.createOrganisation(random(), random(), null, null, null);
-		List<Organisation> organisations = Collections.singletonList(organisation);
-		CurriculumElementType ceType = curriculumService.createCurriculumElementType(random(), random(), null, null);
 		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), null, organisation);
 		CurriculumElement active = curriculumService.createCurriculumElement(random(), random(),
-				oneDayAgo(), inOneDay(), null, ceType, CurriculumCalendars.disabled, curriculum);
-		QualityGenerator generator = generatorService.createGenerator(random(), organisations);
+				oneDayAgo(), inOneDay(), null, null, CurriculumCalendars.disabled, curriculum);
 		dbInstance.commitAndCloseSession();
 
 		CurriculumElement inactive = curriculumService.createCurriculumElement(random(), random(),
-				oneDayAgo(), inOneDay(), null, ceType, CurriculumCalendars.disabled, curriculum);
+				oneDayAgo(), inOneDay(), null, null, CurriculumCalendars.disabled, curriculum);
 		inactive.setElementStatus(CurriculumElementStatus.inactive);
 		inactive = curriculumService.updateCurriculumElement(inactive);
 		CurriculumElement deleted = curriculumService.createCurriculumElement(random(), random(),
-				oneDayAgo(), inOneDay(), null, ceType, CurriculumCalendars.disabled, curriculum);
+				oneDayAgo(), inOneDay(), null, null, CurriculumCalendars.disabled, curriculum);
 		deleted.setElementStatus(CurriculumElementStatus.deleted);
 		deleted = curriculumService.updateCurriculumElement(deleted);
 		dbInstance.commitAndCloseSession();
 
-		SearchParameters searchParams = new SearchParameters(generator, organisations, ceType.getKey(), oneMonthAgo(), today());
-		searchParams.setStartDate(true);
+		SearchParameters searchParams = new SearchParameters();
 		List<CurriculumElement> pending = sut.loadPending(searchParams);
 
 		assertThat(pending).contains(active).doesNotContain(inactive, deleted);
-	}
-	
-	@Test
-	public void shouldLoadCount() {
-		Organisation organisation = organisationService.createOrganisation(random(), random(), null, null, null);
-		List<Organisation> organisations = Collections.singletonList(organisation);
-		CurriculumElementType ceType = curriculumService.createCurriculumElementType(random(), random(), null, null);
-		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), null, organisation);
-		curriculumService.createCurriculumElement(random(), random(), oneDayAgo(), inOneDay(), null, ceType,
-				CurriculumCalendars.disabled, curriculum);
-		curriculumService.createCurriculumElement(random(), random(), oneDayAgo(), inOneDay(), null, ceType,
-				CurriculumCalendars.disabled, curriculum);
-		QualityGenerator generator = generatorService.createGenerator(random(), organisations);
-		dbInstance.commitAndCloseSession();
-
-		SearchParameters searchParams = new SearchParameters(generator, organisations, ceType.getKey(), oneMonthAgo(), today());
-		searchParams.setStartDate(true);
-		Long count = sut.loadPendingCount(searchParams);
-
-		assertThat(count).isEqualTo(2);
 	}
 	
 	private String random() {

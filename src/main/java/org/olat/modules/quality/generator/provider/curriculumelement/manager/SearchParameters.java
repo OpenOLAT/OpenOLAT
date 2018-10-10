@@ -19,9 +19,9 @@
  */
 package org.olat.modules.quality.generator.provider.curriculumelement.manager;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.stream.Collectors;
 
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
@@ -30,10 +30,11 @@ import org.olat.modules.quality.generator.QualityGeneratorRef;
 
 /**
  * Initial date: 20.08.2018<br>
- * @author  uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * 
+ * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  */
 public class SearchParameters {
-	
+
 	private QualityGeneratorRef generatorRef;
 	private Collection<? extends OrganisationRef> organisationRefs;
 	private Long ceTypeKey;
@@ -41,15 +42,6 @@ public class SearchParameters {
 	private Date from;
 	private Date to;
 	private boolean startDate;
-
-	public SearchParameters(QualityGeneratorRef generatorRef, Collection<? extends OrganisationRef> organisationRefs,
-			Long ceTypeKey, Date from, Date to) {
-		this.generatorRef = generatorRef;
-		this.organisationRefs = organisationRefs;
-		this.ceTypeKey = ceTypeKey;
-		this.from = from;
-		this.to = to;
-	}
 
 	public QualityGeneratorRef getGeneratorRef() {
 		return generatorRef;
@@ -60,20 +52,14 @@ public class SearchParameters {
 	}
 
 	public Collection<? extends OrganisationRef> getOrganisationRefs() {
-		if (organisationRefs == null) {
-			organisationRefs = new ArrayList<>(0);
-		}
 		return organisationRefs;
 	}
 
-	public void setOrganisations(Collection<Organisation> organisations) {
+	public void setOrganisationRefs(Collection<Organisation> organisations) {
 		this.organisationRefs = organisations;
 	}
 
 	public Collection<? extends CurriculumElementRef> getCurriculumElementRefs() {
-		if (curriculumElementRefs == null) {
-			curriculumElementRefs = new ArrayList<>(0);
-		}
 		return curriculumElementRefs;
 	}
 
@@ -111,5 +97,28 @@ public class SearchParameters {
 
 	public void setStartDate(boolean startDate) {
 		this.startDate = startDate;
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("SearchParameters [generatorRef=");
+		builder.append(generatorRef);
+		builder.append(", organisationRefs (keys)=[");
+		builder.append(organisationRefs.stream().map(OrganisationRef::getKey).map(k -> k.toString())
+				.collect(Collectors.joining(", ")));
+		builder.append("]");
+		builder.append(", ceTypeKey=");
+		builder.append(ceTypeKey);
+		builder.append(", curriculumElementRefs=");
+		builder.append(curriculumElementRefs);
+		builder.append(", from=");
+		builder.append(from);
+		builder.append(", to=");
+		builder.append(to);
+		builder.append(", startDate=");
+		builder.append(startDate);
+		builder.append("]");
+		return builder.toString();
 	}
 }

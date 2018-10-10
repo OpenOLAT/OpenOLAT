@@ -39,4 +39,13 @@ public class CurriculumElementRefImpl implements CurriculumElementRef {
 	public Long getKey() {
 		return key;
 	}
+
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("CurriculumElementRefImpl [key=");
+		builder.append(key);
+		builder.append("]");
+		return builder.toString();
+	}
 }

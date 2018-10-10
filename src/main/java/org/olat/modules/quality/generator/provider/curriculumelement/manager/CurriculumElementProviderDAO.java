@@ -19,13 +19,14 @@
  */
 package org.olat.modules.quality.generator.provider.curriculumelement.manager;
 
-import java.util.ArrayList;
+import static java.util.stream.Collectors.toList;
+
 import java.util.List;
-import java.util.stream.Collectors;
 
 import javax.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.OrganisationRef;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
@@ -46,13 +47,10 @@ public class CurriculumElementProviderDAO {
 	private DB dbInstance;
 
 	public List<CurriculumElement> loadPending(SearchParameters searchParams) {
-		if (validateSearchParams(searchParams)) {
-			return new ArrayList<>(0);
-		}
-		
-		StringBuilder sb = new StringBuilder(256);
+		QueryBuilder sb = new QueryBuilder(512);
 		sb.append("select curEle");
-		appendFrom(sb);
+		sb.append("  from curriculumelement as curEle");
+		sb.append("       inner join curEle.curriculum cur");;
 		appendWhere(sb, searchParams);
 		
 		TypedQuery<CurriculumElement> query = dbInstance.getCurrentEntityManager()
@@ -61,66 +59,64 @@ public class CurriculumElementProviderDAO {
 		return query.getResultList();
 	}
 
-	public Long loadPendingCount(SearchParameters searchParams) {
-		if (validateSearchParams(searchParams)) {
-			return 0l;
+	private void appendWhere(QueryBuilder sb, SearchParameters searchParams) {
+		sb.and().append("curEle.status = '").append(CurriculumElementStatus.active.name()).append("'");
+		if (searchParams.isStartDate() && searchParams.getFrom() != null) {
+			sb.and().append("curEle.beginDate >= :beginFrom");
 		}
-		
-		StringBuilder sb = new StringBuilder(256);
-		sb.append("select count(curEle)");
-		appendFrom(sb);
-		appendWhere(sb, searchParams);
-		
-		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Long.class);
-		appendParameter(query, searchParams);
-		
-		List<Long> counts = query.getResultList();
-		return !counts.isEmpty()? counts.get(0): 0l;
-	}
-
-	private boolean validateSearchParams(SearchParameters searchParams) {
-		return searchParams.getGeneratorRef() == null || searchParams.getGeneratorRef().getKey() == null
-				|| searchParams.getOrganisationRefs().isEmpty() || searchParams.getCeTypeKey() == null
-				|| searchParams.getFrom() == null || searchParams.getTo() == null;
-	}
-
-	private void appendFrom(StringBuilder sb) {
-		sb.append(" from  curriculumelement as curEle");
-		sb.append("       inner join curEle.curriculum cur");
-	}
-
-	private void appendWhere(StringBuilder sb, SearchParameters searchParams) {
-		sb.append(" where curEle.type.key = :ceTypeKey");
-		sb.append("   and curEle.status = '").append(CurriculumElementStatus.active.name()).append("'");
-		sb.append("   and cur.organisation.key in :organisationKeys");
-		sb.append("   and curEle.key not in (");
-		sb.append("       select datacollection.generatorProviderKey");
-		sb.append("         from qualitydatacollection as datacollection");
-		sb.append("        where datacollection.generator.key = :generatorKey");
-		sb.append("     )");
-		
-		if (searchParams.isStartDate()) {
-			sb.append(" and curEle.beginDate > :from and curEle.beginDate <= :to");
-		} else {
-			sb.append(" and curEle.endDate > :from and curEle.endDate <= :to");
+		if (searchParams.isStartDate() && searchParams.getTo() != null) {
+			sb.and().append("curEle.beginDate <= :beginTo");
 		}
-		
-		if (!searchParams.getCurriculumElementRefs().isEmpty()) {
-			sb.append(" and curEle.key in :curEleKeys");
+		if (!searchParams.isStartDate() && searchParams.getFrom() != null) {
+			sb.and().append("curEle.endDate >= :endFrom");
+		}
+		if (!searchParams.isStartDate() && searchParams.getTo() != null) {
+			sb.and().append("curEle.endDate <= :endTo");
+		}
+		if (searchParams.getCeTypeKey() != null) {
+			sb.and().append("curEle.type.key = :ceTypeKey");
+		}
+		if (searchParams.getGeneratorRef() != null) {
+			sb.and();
+			sb.append("curEle.key not in (");
+			sb.append("select datacollection.generatorProviderKey");
+			sb.append("  from qualitydatacollection as datacollection");
+			sb.append(" where datacollection.generator.key = :generatorKey");
+			sb.append(")");
+		}
+		if (searchParams.getOrganisationRefs() != null && !searchParams.getOrganisationRefs().isEmpty()) {
+			sb.and().append("cur.organisation.key in :organisationKeys");
+		}
+		if (searchParams.getCurriculumElementRefs() != null && !searchParams.getCurriculumElementRefs().isEmpty()) {
+			sb.and().append("curEle.key in :curEleKeys");
 		}
 	}
 	
 	private void appendParameter(TypedQuery<?> query, SearchParameters searchParams) {
-		List<Long> organisationKeys = searchParams.getOrganisationRefs().stream().map(OrganisationRef::getKey).collect(Collectors.toList());
-		query.setParameter("ceTypeKey", searchParams.getCeTypeKey())
-				.setParameter("organisationKeys", organisationKeys)
-				.setParameter("generatorKey", searchParams.getGeneratorRef().getKey())
-				.setParameter("from", searchParams.getFrom())
-				.setParameter("to", searchParams.getTo());
-		
-		if (!searchParams.getCurriculumElementRefs().isEmpty()) {
-			List<Long> curEleKeys = searchParams.getCurriculumElementRefs().stream().map(CurriculumElementRef::getKey).collect(Collectors.toList());
+		if (searchParams.isStartDate() && searchParams.getFrom() != null) {
+			query.setParameter("beginFrom", searchParams.getFrom());
+		}
+		if (searchParams.isStartDate() && searchParams.getTo() != null) {
+			query.setParameter("beginTo", searchParams.getTo());
+		}
+		if (!searchParams.isStartDate() && searchParams.getFrom() != null) {
+			query.setParameter("endFrom", searchParams.getFrom());
+		}
+		if (!searchParams.isStartDate() && searchParams.getTo() != null) {
+			query.setParameter("endTo", searchParams.getTo());
+		}
+		if (searchParams.getCeTypeKey() != null) {
+			query.setParameter("ceTypeKey", searchParams.getCeTypeKey());
+		}
+		if (searchParams.getGeneratorRef() != null) {
+			query.setParameter("generatorKey", searchParams.getGeneratorRef().getKey());
+		}
+		if (searchParams.getOrganisationRefs() != null && !searchParams.getOrganisationRefs().isEmpty()) {
+			List<Long> organisationKeys = searchParams.getOrganisationRefs().stream().map(OrganisationRef::getKey).collect(toList());
+			query.setParameter("organisationKeys", organisationKeys);
+		}
+		if (searchParams.getCurriculumElementRefs() != null && !searchParams.getCurriculumElementRefs().isEmpty()) {
+			List<Long> curEleKeys = searchParams.getCurriculumElementRefs().stream().map(CurriculumElementRef::getKey).collect(toList());
 			query.setParameter("curEleKeys", curEleKeys);
 		}
 	}

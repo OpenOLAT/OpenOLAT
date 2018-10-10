@@ -150,7 +150,7 @@ public class CourseProvider implements QualityGeneratorProvider {
 		}
 		
 		if (!courses.isEmpty()) {
-			log.debug(courses + " data collections created by generator " + generator.toString());
+			log.info(courses + " data collections created by generator " + generator.toString());
 		}
 	}
 

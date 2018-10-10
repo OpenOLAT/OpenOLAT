@@ -122,23 +122,9 @@ public class CurriculumElementProvider implements QualityGeneratorProvider {
 		Translator translator = Util.createPackageTranslator(CurriculumElementProviderConfigController.class, locale);
 		
 		List<Organisation> organisations = generatorService.loadGeneratorOrganisations(generator);
-		String ceTypeKeyString = configs.getValue(CONFIG_KEY_CURRICULUM_ELEMENT_TYPE);
-		Long ceTypeKey = Long.valueOf(ceTypeKeyString);
-		SearchParameters searchParams = new SearchParameters(generator, organisations, ceTypeKey, fromDate, toDate);
-		List<CurriculumElementRef> curriculumElementRefs = CurriculumElementWhiteListController.getCurriculumElementRefs(configs);
-		searchParams.setCurriculumElementRefs(curriculumElementRefs);
+		List<CurriculumElement> elements = loadCurriculumElements(generator, configs, fromDate, toDate, organisations);
 		
-		Long count = 0l;
-		String dueDateType = configs.getValue(CONFIG_KEY_DUE_DATE_TYPE);
-		if (CONFIG_KEY_DUE_DATE_BEGIN.equals(dueDateType)) {
-			searchParams.setStartDate(true);
-			count = providerDao.loadPendingCount(searchParams);
-		} else if (CONFIG_KEY_DUE_DATE_END.equals(dueDateType)) {
-			searchParams.setStartDate(false);
-			count = providerDao.loadPendingCount(searchParams);
-		}
-		
-		return translator.translate("generate.info", new String[] { String.valueOf(count)});
+		return translator.translate("generate.info", new String[] { String.valueOf( elements.size() )});
 	}
 	
 	@Override
@@ -155,44 +141,31 @@ public class CurriculumElementProvider implements QualityGeneratorProvider {
 
 	@Override
 	public void generate(QualityGenerator generator, QualityGeneratorConfigs configs, Date fromDate, Date toDate) {
-		int numCreated = 0;
 		List<Organisation> organisations = generatorService.loadGeneratorOrganisations(generator);
-		String ceTypeKeyString = configs.getValue(CONFIG_KEY_CURRICULUM_ELEMENT_TYPE);
-		Long ceTypeKey = Long.valueOf(ceTypeKeyString);
-		SearchParameters searchParams = new SearchParameters(generator, organisations, ceTypeKey, fromDate, toDate);
-		List<CurriculumElementRef> curriculumElementRefs = CurriculumElementWhiteListController.getCurriculumElementRefs(configs);
-		searchParams.setCurriculumElementRefs(curriculumElementRefs);
+		List<CurriculumElement> elements = loadCurriculumElements(generator, configs, fromDate, toDate, organisations);
 		
-		String dueDateType = configs.getValue(CONFIG_KEY_DUE_DATE_TYPE);
-		String dueDateDays = configs.getValue(CONFIG_KEY_DUE_DATE_DAYS);
-		if (CONFIG_KEY_DUE_DATE_BEGIN.equals(dueDateType)) {
-			searchParams.setStartDate(true);
-			List<CurriculumElement> curriculumElementsFormStart = providerDao.loadPending(searchParams);
-			for (CurriculumElement curriculumElement: curriculumElementsFormStart) {
-				Date dcStart = addDays(curriculumElement.getBeginDate(), dueDateDays);
-				generateDataCollection(generator, configs, organisations, curriculumElement, dcStart);
-			}
-			numCreated += curriculumElementsFormStart.size();
-		} else if (CONFIG_KEY_DUE_DATE_END.equals(dueDateType)) {
-			searchParams.setStartDate(false);
-			List<CurriculumElement> curriculumElementsFormEnd = providerDao.loadPending(searchParams);
-			for (CurriculumElement curriculumElement: curriculumElementsFormEnd) {
-				Date dcStart = addDays(curriculumElement.getEndDate(), dueDateDays);
-				generateDataCollection(generator, configs, organisations, curriculumElement, dcStart);
-			}
-			numCreated += curriculumElementsFormEnd.size();
+		for (CurriculumElement element : elements) {
+			generateDataCollection(generator, configs, organisations, element);
 		}
 		
-		log.debug(numCreated + " data collections created by generator " + generator.toString());
+		if (!elements.isEmpty()) {
+			log.info(elements + " data collections created by generator " + generator.toString());
+		}
 	}
 
 	private void generateDataCollection(QualityGenerator generator, QualityGeneratorConfigs configs,
-			List<Organisation> organisations, CurriculumElement curriculumElement, Date dcStart) {
+			List<Organisation> organisations, CurriculumElement curriculumElement) {
 		// create data collection	
 		RepositoryEntry formEntry = generator.getFormEntry();
 		Long generatorProviderKey = curriculumElement.getKey();
 		QualityDataCollection dataCollection = qualityService.createDataCollection(organisations, formEntry, generator, generatorProviderKey);
 
+		String dueDateType = configs.getValue(CONFIG_KEY_DUE_DATE_TYPE);
+		String dueDateDays = configs.getValue(CONFIG_KEY_DUE_DATE_DAYS);
+		Date dcStart = CONFIG_KEY_DUE_DATE_BEGIN.equals(dueDateType)
+				? curriculumElement.getBeginDate()
+				: curriculumElement.getEndDate();
+		dcStart = addDays(dcStart, dueDateDays);
 		dataCollection.setStart(dcStart);
 		
 		String duration = configs.getValue(CONFIG_KEY_DURATION_DAYS);
@@ -238,6 +211,46 @@ public class CurriculumElementProvider implements QualityGeneratorProvider {
 			Date reminder2Date = addDays(dcStart, reminder2Day);
 			qualityService.createReminder(dataCollection, reminder2Date, QualityReminderType.REMINDER2);
 		}
+	}
+
+	private List<CurriculumElement> loadCurriculumElements(QualityGenerator generator, QualityGeneratorConfigs configs,
+			Date fromDate, Date toDate, List<Organisation> organisations) {
+		SearchParameters searchParams = createSearchParams(generator, configs, fromDate, toDate, organisations);
+		if(log.isDebug()) log.debug("Generator " + generator + " searches with " + searchParams);
+		
+		List<CurriculumElement> elements = providerDao.loadPending(searchParams);
+		
+		if(log.isDebug()) log.debug("Generator " + generator + " found " + elements.size() + " curriculum elements");
+		return elements;
+	}
+	
+	private SearchParameters createSearchParams(QualityGenerator generator, QualityGeneratorConfigs configs,
+			Date fromDate, Date toDate, List<Organisation> organisations) {
+		SearchParameters searchParams = new SearchParameters();
+		searchParams.setGeneratorRef(generator);
+		searchParams.setOrganisationRefs(organisations);
+		
+		String ceTypeKeyString = configs.getValue(CONFIG_KEY_CURRICULUM_ELEMENT_TYPE);
+		Long ceTypeKey = Long.valueOf(ceTypeKeyString);
+		searchParams.setCeTypeKey(ceTypeKey);
+
+		String dueDateDays = configs.getValue(CONFIG_KEY_DUE_DATE_DAYS);
+		Date dueDateFrom = addDays(fromDate, dueDateDays);
+		searchParams.setFrom(dueDateFrom);
+		Date dueDateTo = addDays(toDate, dueDateDays);
+		searchParams.setTo(dueDateTo);
+		
+		String dueDateType = configs.getValue(CONFIG_KEY_DUE_DATE_TYPE);
+		if (CONFIG_KEY_DUE_DATE_BEGIN.equals(dueDateType)) {
+			searchParams.setStartDate(true);
+		} else if (CONFIG_KEY_DUE_DATE_END.equals(dueDateType)) {
+			searchParams.setStartDate(false);
+		}
+		
+		List<CurriculumElementRef> curriculumElementRefs = CurriculumElementWhiteListController.getCurriculumElementRefs(configs);
+		searchParams.setCurriculumElementRefs(curriculumElementRefs);
+		
+		return searchParams;
 	}
 
 }
