@@ -277,9 +277,21 @@ public class CoursesTest extends OlatJerseyTestCase {
 
 	@Test
 	public void testGetCoursesWithPaging() throws IOException, URISyntaxException {
-		assertTrue(conn.login("administrator", "openolat"));
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("rest-courses");
+		assertTrue(conn.login(author.getName(), JunitTestHelper.PWD));
+		
+		// prepare 3 courses
+		String ref = UUID.randomUUID().toString();
+		RepositoryEntry entry1 = JunitTestHelper.deployBasicCourse(author, RepositoryEntryStatusEnum.published, false, false);
+		RepositoryEntry entry2 = JunitTestHelper.deployBasicCourse(author, RepositoryEntryStatusEnum.published, false, false);
+		RepositoryEntry entry3 = JunitTestHelper.deployBasicCourse(author, RepositoryEntryStatusEnum.published, false, false);
+		repositoryManager.setDescriptionAndName(entry1, null, null, null, null, null, ref, null, null);
+		repositoryManager.setDescriptionAndName(entry2, null, null, null, null, null, ref, null, null);
+		repositoryManager.setDescriptionAndName(entry3, null, null, null, null, null, ref, null, null);
+		dbInstance.commitAndCloseSession();
 
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
+				.queryParam("externalRef", ref)
 				.queryParam("start", "0").queryParam("limit", "1").build();
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON + ";pagingspec=1.0", true);
 		HttpResponse response = conn.execute(method);
