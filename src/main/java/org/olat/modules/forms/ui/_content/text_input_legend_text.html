@@ -1,0 +1,12 @@
+#if($r.available("textinput.download.link"))
+	#if($r.isNotNull($downloadInfo))
+		$downloadInfo 
+	#end
+	$r.render("textinput.download.link")
+#end
+#if($r.isNotNull($noText)) 
+	$noText
+#end
+#if($r.available("legend.text"))
+	$r.render("legend.text")
+#end

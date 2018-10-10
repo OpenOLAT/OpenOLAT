@@ -24,6 +24,8 @@ import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.modules.forms.EvaluationFormResponse;
+import org.olat.modules.forms.EvaluationFormsModule;
+import org.olat.modules.forms.Paging;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.manager.EvaluationFormReportDAO;
 import org.olat.modules.forms.ui.ReportHelper;
@@ -41,6 +43,7 @@ public class TextInputLegendTextDataSource implements LegendTextDataSource {
 	private final ReportHelper reportHelper;
 	
 	private EvaluationFormReportDAO reportDAO;
+	private EvaluationFormsModule evaluationFormsModule;
 	
 	public TextInputLegendTextDataSource(String responseIdentifier, SessionFilter filter, ReportHelper reportHelper) {
 		super();
@@ -48,18 +51,35 @@ public class TextInputLegendTextDataSource implements LegendTextDataSource {
 		this.filter = filter;
 		this.reportHelper = reportHelper;
 		this.reportDAO = CoreSpringFactory.getImpl(EvaluationFormReportDAO.class);
+		this.evaluationFormsModule = CoreSpringFactory.getImpl(EvaluationFormsModule.class);
 	}
 
 	@Override
 	public List<SessionText> getResponses() {
+		return getResponses(getPaginMax());
+	}
+
+	public List<SessionText> getResponses(Paging paging) {
 		List<SessionText> sessionTexts = new ArrayList<>();
-		List<EvaluationFormResponse> responses = reportDAO.getResponses(responseIdentifier, filter);
+		List<EvaluationFormResponse> responses = reportDAO.getResponses(responseIdentifier, filter, paging);
 		responses.sort((r1, r2) -> reportHelper.getComparator().compare(r1.getSession(), r2.getSession()));
 		for (EvaluationFormResponse response : responses) {
 			SessionText sessionText = new SessionText(response.getSession(), response.getStringuifiedResponse());
 			sessionTexts.add(sessionText);
 		}
 		return sessionTexts;
+	}
+	
+	public Long getResponsesCount() {
+		return getResponsesCount(getPaginMax());
+	}
+	
+	public Long getResponsesCount(Paging paging) {
+		return reportDAO.getResponsesCount(responseIdentifier, filter, paging);
+	}
+
+	private Paging getPaginMax() {
+		return Paging.max(evaluationFormsModule.getReportMaxSessions());
 	}
 
 }

@@ -59,6 +59,8 @@ public class EvaluationFormsModule extends AbstractSpringModule implements Confi
 	private String fileUploadLimitsMB;
 	private List<Long> orderedFileUploadLimitsKB = new ArrayList<>(4);
 	private long maxFileUploadLimitsKB = FileElement.UPLOAD_UNLIMITED;
+	@Value("${forms.report.max.sessions:100}")
+	private int reportMaxSessions;
 	
 	@Autowired
 	public EvaluationFormsModule(CoordinatorManager coordinatorManager) {
@@ -114,6 +116,10 @@ public class EvaluationFormsModule extends AbstractSpringModule implements Confi
 	
 	public long getMaxFileUploadLimitKB() {
 		return maxFileUploadLimitsKB;
+	}
+
+	public int getReportMaxSessions() {
+		return reportMaxSessions;
 	}
 	
 }

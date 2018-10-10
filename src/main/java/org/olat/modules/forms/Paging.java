@@ -17,39 +17,45 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.forms.ui.model;
-
-import java.util.List;
-
-import org.olat.core.CoreSpringFactory;
-import org.olat.modules.forms.EvaluationFormResponse;
-import org.olat.modules.forms.Paging;
-import org.olat.modules.forms.SessionFilter;
-import org.olat.modules.forms.manager.EvaluationFormReportDAO;
+package org.olat.modules.forms;
 
 /**
  * 
- * Initial date: 06.05.2018<br>
+ * Initial date: 10.10.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class RawResponsesDataSource implements ResponseDataSource {
-
-	private final String responseIdentifier;
-	private final SessionFilter filter;
+public class Paging {
 	
-	private EvaluationFormReportDAO reportDAO;
+	private int start = 0;
+	private int max = -1;
 	
-	public RawResponsesDataSource(String responseIdentifier, SessionFilter filter) {
-		super();
-		this.responseIdentifier = responseIdentifier;
-		this.filter = filter;
-		this.reportDAO = CoreSpringFactory.getImpl(EvaluationFormReportDAO.class);
+	public static Paging all() {
+		return new Paging(0, -1);
+	}
+	
+	public static Paging start(int start) {
+		return new Paging(start, -1);
+	}
+	
+	public static Paging max(int max) {
+		return new Paging(0, max);
+	}	
+	public static Paging of(int start, int max) {
+		return new Paging(start, max);
+	}
+	
+	private Paging(int start, int max) {
+		this.start = start;
+		this.max = max;
 	}
 
-	@Override
-	public List<EvaluationFormResponse> getResponses() {
-		return reportDAO.getResponses(responseIdentifier, filter, Paging.all());
+	public int getStart() {
+		return start;
 	}
 
+	public int getMax() {
+		return max;
+	}
+	
 }

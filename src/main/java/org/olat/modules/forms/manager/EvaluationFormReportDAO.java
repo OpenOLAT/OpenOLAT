@@ -19,15 +19,19 @@
  */
 package org.olat.modules.forms.manager;
 
+import static java.util.Collections.singletonList;
+
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.forms.EvaluationFormResponse;
+import org.olat.modules.forms.Paging;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.model.jpa.CalculatedDouble;
 import org.olat.modules.forms.model.jpa.CalculatedLong;
@@ -45,30 +49,60 @@ public class EvaluationFormReportDAO {
 	
 	@Autowired
 	private DB dbInstance;
+	
+	public Long getResponsesCount(String responseIdentifier, SessionFilter filter, Paging paging) {
+		return getResponsesCount(singletonList(responseIdentifier) , filter, paging);
+	}
 
-	public List<EvaluationFormResponse> getResponses(String responseIdentifier, SessionFilter filter) {
-		List<String> responseIdentifiers = Collections.singletonList(responseIdentifier);
-		return getResponses(responseIdentifiers , filter);
+	public Long getResponsesCount(List<String> responseIdentifiers, SessionFilter filter, Paging paging) {
+		QueryBuilder sb = new QueryBuilder(256);
+		sb.append("select count(response.key)");
+		getResponsesAppendFrom(sb, filter, false);
+		
+		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class);
+		getResponsesAppendParameters(query, responseIdentifiers, filter, paging);
+		return query.getResultList().get(0);
 	}
 	
-	public List<EvaluationFormResponse> getResponses(List<String> responseIdentifiers, SessionFilter filter) {
+	public List<EvaluationFormResponse> getResponses(String responseIdentifier, SessionFilter filter, Paging paging) {
+		return getResponses(singletonList(responseIdentifier) , filter, paging);
+	}
+	
+	public List<EvaluationFormResponse> getResponses(List<String> responseIdentifiers, SessionFilter filter, Paging paging) {
 		if (responseIdentifiers == null || responseIdentifiers.isEmpty() || filter == null)
 			return new ArrayList<>();;
 		
-		StringBuilder sb = new StringBuilder();
-		sb.append("select response from evaluationformresponse as response");
-		sb.append(" inner join fetch response.session");
+		QueryBuilder sb = new QueryBuilder(256);
+		sb.append("select response");
+		getResponsesAppendFrom(sb, filter, true);
+		
+		TypedQuery<EvaluationFormResponse> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), EvaluationFormResponse.class);
+		getResponsesAppendParameters(query, responseIdentifiers, filter, paging);
+		return query.getResultList();
+	}
+
+	private void getResponsesAppendFrom(QueryBuilder sb, SessionFilter filter, boolean fetch) {
+		sb.append("  from evaluationformresponse as response");
+		sb.append(" inner join").append(" fetch", fetch).append(" response.session");
 		sb.append(" where response.responseIdentifier in (:responseIdentifiers)");
 		sb.append("   and response.session.key in (");
 		sb.append(filter.getSelectKeys());
 		sb.append("       )");
 		sb.append("   and (response.noResponse is false or response.noResponse is null)");
-		
-		TypedQuery<EvaluationFormResponse> query = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), EvaluationFormResponse.class)
-				.setParameter("responseIdentifiers", responseIdentifiers);
+	}
+
+	private void getResponsesAppendParameters(Query query, List<String> responseIdentifiers, SessionFilter filter,
+			Paging paging) {
+		query.setParameter("responseIdentifiers", responseIdentifiers);
+		if (paging.getStart() > 0) {
+			query.setFirstResult(paging.getStart());
+		}
+		if (paging.getMax() > -1) {
+			query.setMaxResults(paging.getMax());
+		}
 		filter.addParameters(query);
-		return query.getResultList();
 	}
 
 	public List<CalculatedLong> getCountByStringuifideResponse(String responseIdentifier, SessionFilter filter) {

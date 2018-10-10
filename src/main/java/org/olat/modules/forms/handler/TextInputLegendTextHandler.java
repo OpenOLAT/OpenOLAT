@@ -25,11 +25,10 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.model.xml.TextInput;
-import org.olat.modules.forms.ui.LegendTextController;
 import org.olat.modules.forms.ui.ReportHelper;
+import org.olat.modules.forms.ui.TextInputLegendTextController;
 import org.olat.modules.forms.ui.model.EvaluationFormControllerReportElement;
 import org.olat.modules.forms.ui.model.EvaluationFormReportElement;
-import org.olat.modules.forms.ui.model.LegendTextDataSource;
 import org.olat.modules.forms.ui.model.TextInputLegendTextDataSource;
 
 /**
@@ -50,8 +49,8 @@ public class TextInputLegendTextHandler implements EvaluationFormReportHandler {
 			SessionFilter filter, ReportHelper reportHelper) {
 		if (element instanceof TextInput) {
 			TextInput textInput = (TextInput) element;
-			LegendTextDataSource dataSource = new TextInputLegendTextDataSource(textInput.getId(), filter, reportHelper);
-			Controller ctrl = new LegendTextController(ureq, windowControl, dataSource, reportHelper);
+			TextInputLegendTextDataSource dataSource = new TextInputLegendTextDataSource(textInput.getId(), filter, reportHelper);
+			Controller ctrl = new TextInputLegendTextController(ureq, windowControl, dataSource, reportHelper);
 			return new EvaluationFormControllerReportElement(ctrl);
 		}
 		return null;

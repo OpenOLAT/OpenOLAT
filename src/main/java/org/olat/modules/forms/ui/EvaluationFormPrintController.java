@@ -33,6 +33,7 @@ import org.olat.core.util.CodeHelper;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormPrintSelection;
 import org.olat.modules.forms.EvaluationFormSession;
+import org.olat.modules.forms.EvaluationFormsModule;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.handler.DefaultReportProvider;
 import org.olat.modules.forms.handler.MultipleChoiceTableHandler;
@@ -54,8 +55,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class EvaluationFormPrintController extends BasicController {
 	
-	private static final long MAX_SESSIONS_TO_PRINT = 100;
-	
 	private VelocityContainer mainVC;
 	
 	private final Form form;
@@ -64,6 +63,8 @@ public class EvaluationFormPrintController extends BasicController {
 	
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
+	@Autowired
+	private EvaluationFormsModule evaluationFormsModule;
 
 	public EvaluationFormPrintController(UserRequest ureq, WindowControl wControl, Form form, SessionFilter filter,
 			List<EvaluationFormFigure> figures, ReportHelper reportHelper,
@@ -97,10 +98,10 @@ public class EvaluationFormPrintController extends BasicController {
 		
 		if (printSelection.isSessions()) {
 			Long sessionsCount = evaluationFormManager.loadSessionsCount(filter);
-			if (sessionsCount <= MAX_SESSIONS_TO_PRINT) {
+			if (sessionsCount <= evaluationFormsModule.getReportMaxSessions()) {
 				mainVC.contextPut("sessionWrappers", createSessionWrappers(ureq));
 			} else {
-				showWarning("report.max.session.exceeded", String.valueOf(MAX_SESSIONS_TO_PRINT));
+				showWarning("report.max.session.exceeded", String.valueOf(evaluationFormsModule.getReportMaxSessions()));
 			}
 		}
 

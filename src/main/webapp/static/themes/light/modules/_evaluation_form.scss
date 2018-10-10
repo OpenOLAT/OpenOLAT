@@ -95,13 +95,17 @@
 		font-weight: $o-evaluation-side-labels-font-weight;
 	}
 	
+	.o_evaluation_text_legend {
+		margin-bottom: 1em;
+	}
+	
 	.o_evaluation_legend {
 		padding-left: 0.5em;
 		margin-bottom: 0.5em;
 	}
 	
 	.o_evaluation_textinput {
-		.o_evaluation_text {	
+		.o_evaluation_text {
 		}
 	}
 	

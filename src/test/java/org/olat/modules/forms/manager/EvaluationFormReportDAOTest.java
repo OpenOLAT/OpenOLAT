@@ -35,6 +35,7 @@ import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormResponse;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSessionRef;
+import org.olat.modules.forms.Paging;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.SessionFilterFactory;
 import org.olat.modules.forms.model.jpa.CalculatedDouble;
@@ -91,11 +92,68 @@ public class EvaluationFormReportDAOTest extends OlatTestCase {
 		List<String> responseIdentifiers = Arrays.asList(responseIdentifier1, responseIdentifier2);
 		List<EvaluationFormSession> sessions = Arrays.asList(session1, session2);
 		SessionFilter filter = SessionFilterFactory.create(sessions);
-		List<EvaluationFormResponse> responses = sut.getResponses(responseIdentifiers, filter);
+		List<EvaluationFormResponse> responses = sut.getResponses(responseIdentifiers, filter, Paging.all());
 		
 		assertThat(responses)
 				.containsExactlyInAnyOrder(response111, response112, response121, response221)
 				.doesNotContain(responseOtherIdentifier, responseOtherSession, noResponse);
+	}
+	
+	@Test
+	public void shouldReturnResponsesCount() {
+		String responseIdentifier1 = UUID.randomUUID().toString();
+		String responseIdentifier2 = UUID.randomUUID().toString();
+		String otherIdentifier = UUID.randomUUID().toString();
+		EvaluationFormSession session1 = evaTestHelper.createSession();
+		EvaluationFormSession session2 = evaTestHelper.createSession();
+		EvaluationFormSession otherSession = evaTestHelper.createSession();
+		String stringResponse11 = UUID.randomUUID().toString();
+		String stringResponse12 = UUID.randomUUID().toString();
+		String stringResponse21 = UUID.randomUUID().toString();
+		String otherIdentifierResponse = UUID.randomUUID().toString();
+		String otherSessionResponse = UUID.randomUUID().toString();
+		
+		EvaluationFormResponse response111 = evaluationFormManager.createStringResponse(responseIdentifier1, session1, stringResponse11);
+		EvaluationFormResponse response112 = evaluationFormManager.createStringResponse(responseIdentifier1, session1, stringResponse12);
+		EvaluationFormResponse response121 = evaluationFormManager.createStringResponse(responseIdentifier2, session1, stringResponse11);
+		EvaluationFormResponse response221 = evaluationFormManager.createStringResponse(responseIdentifier1, session2, stringResponse21);
+		evaluationFormManager.createStringResponse(otherIdentifier, session1, otherIdentifierResponse);
+		evaluationFormManager.createStringResponse(responseIdentifier1, otherSession, otherSessionResponse);
+		evaluationFormManager.createNoResponse(responseIdentifier1, session1);
+		dbInstance.commit();
+		
+		List<String> responseIdentifiers = Arrays.asList(responseIdentifier1, responseIdentifier2);
+		List<EvaluationFormSession> sessions = Arrays.asList(session1, session2);
+		SessionFilter filter = SessionFilterFactory.create(sessions);
+		Long count = sut.getResponsesCount(responseIdentifiers, filter, Paging.all());
+		
+		long expected = Arrays.asList(response111, response112, response121, response221).size();
+		assertThat(count).isEqualTo(expected);
+	}
+	
+	@Test
+	public void shouldReturnResponsesPaged() {
+		String responseIdentifier1 = UUID.randomUUID().toString();
+		EvaluationFormSession session1 = evaTestHelper.createSession();
+		EvaluationFormSession session2 = evaTestHelper.createSession();
+		EvaluationFormSession session3 = evaTestHelper.createSession();
+		String stringResponse11 = UUID.randomUUID().toString();
+		String stringResponse21 = UUID.randomUUID().toString();
+		String otherSessionResponse = UUID.randomUUID().toString();
+		
+		evaluationFormManager.createStringResponse(responseIdentifier1, session1, stringResponse11);
+		evaluationFormManager.createStringResponse(responseIdentifier1, session2, stringResponse21);
+		evaluationFormManager.createStringResponse(responseIdentifier1, session3, otherSessionResponse);
+		evaluationFormManager.createNoResponse(responseIdentifier1, session1);
+		dbInstance.commit();
+		
+		List<String> responseIdentifiers = Arrays.asList(responseIdentifier1);
+		List<EvaluationFormSession> sessions = Arrays.asList(session1, session2);
+		SessionFilter filter = SessionFilterFactory.create(sessions);
+		int max = 1;
+		List<EvaluationFormResponse> responses = sut.getResponses(responseIdentifiers, filter, Paging.max(max));
+		
+		assertThat(responses).hasSize(max);
 	}
 
 	@Test
