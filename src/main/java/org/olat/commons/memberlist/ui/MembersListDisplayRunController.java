@@ -36,7 +36,6 @@ import org.olat.commons.memberlist.ui.MembersAvatarDisplayRunController.Identity
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -61,7 +60,6 @@ import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupMembership;
-import org.olat.group.ui.main.MemberListTableModel;
 import org.olat.group.ui.main.MemberRow;
 import org.olat.modules.co.ContactFormController;
 import org.olat.repository.RepositoryEntry;
@@ -69,7 +67,6 @@ import org.olat.user.DisplayPortraitManager;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
-
 
 
 /**
@@ -105,19 +102,20 @@ public class MembersListDisplayRunController extends BasicController {
 	private final boolean showWaiting;
 	private final boolean deduplicateList;
 	
+	private final CourseEnvironment courseEnv;
 	private final UserCourseEnvironment userCourseEnv;
 	private final BusinessGroup businessGroup;
 	private final RepositoryEntry repoEntry;
 	
-	protected FlexiTableElement ownersTable, coachesTable, participantsTable, waitingTable;
-	protected MemberListTableModel ownersModel, coachesModel, participantsModel, waitingModel;
-	
-	private MembersTableController ownersTableCtrl, coachesTableCtrl, participantsTableCtrl, waitingTableCtrl;
+	private MembersTableController ownersTableCtrl;
+	private MembersTableController coachesTableCtrl;
+	private MembersTableController participantsTableCtrl;
+	private MembersTableController waitingTableCtrl;
 	
 	private Map<Long,BusinessGroupMembership> groupmemberships;
-	private	Map<Long,Date> recentLaunches, initialLaunches;
+	private	Map<Long,Date> recentLaunches;
+	private	Map<Long,Date> initialLaunches;
 
-	
 	private final VelocityContainer mainVC;
 	
 	@Autowired
@@ -131,7 +129,6 @@ public class MembersListDisplayRunController extends BasicController {
 	@Autowired
 	private UserCourseInformationsManager userInfosMgr;
 
-	
 	public MembersListDisplayRunController(UserRequest ureq, WindowControl wControl, Translator translator, UserCourseEnvironment userCourseEnv, BusinessGroup businessGroup,
 			List<Identity> owners, List<Identity> coaches, List<Identity> participants, List<Identity> waiting, Map<Long,CurriculumMemberInfos> curriculumInfos,
 			boolean canEmail, boolean canDownload, boolean deduplicateList, boolean showOwners, boolean showCoaches, boolean showParticipants, boolean showWaiting, boolean editable) {
@@ -142,9 +139,10 @@ public class MembersListDisplayRunController extends BasicController {
 		mainVC = createVelocityContainer("membersTable");
 		
 		this.userCourseEnv = userCourseEnv;
+		courseEnv = userCourseEnv == null ? null : userCourseEnv.getCourseEnvironment();
 		this.businessGroup = businessGroup;
 		this.curriculumInfos = curriculumInfos;
-		repoEntry = userCourseEnv != null ? userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry() : null;
+		repoEntry = courseEnv != null ? courseEnv.getCourseGroupManager().getCourseEntry() : null;
 
 		Roles roles = ureq.getUserSession().getRoles();
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
@@ -192,28 +190,28 @@ public class MembersListDisplayRunController extends BasicController {
 		
 		if (showOwners && !owners.isEmpty()) {
 			ownersTableCtrl = new MembersTableController(ureq, wControl, owners, duplicateCatcher, recentLaunches, initialLaunches, curriculumInfos,
-					userPropertyHandlers, groupmemberships,	repoEntry, businessGroup, userCourseEnv.getCourseEnvironment(),
+					userPropertyHandlers, groupmemberships,	repoEntry, businessGroup, courseEnv,
 					deduplicateList, getTranslator(), editable, canEmail, userLastTimeVisible);
 			listenTo(ownersTableCtrl);
 			mainVC.put("ownerList", ownersTableCtrl.getInitialComponent());
 		}
 		if (showCoaches && !coaches.isEmpty()) {
 			coachesTableCtrl = new MembersTableController(ureq, wControl, coaches, duplicateCatcher, recentLaunches, initialLaunches, curriculumInfos,
-					userPropertyHandlers, groupmemberships, repoEntry, businessGroup, userCourseEnv.getCourseEnvironment(),
+					userPropertyHandlers, groupmemberships, repoEntry, businessGroup, courseEnv,
 					deduplicateList, getTranslator(), editable, canEmail, userLastTimeVisible);
 			listenTo(coachesTableCtrl);
 			mainVC.put("coachList", coachesTableCtrl.getInitialComponent());
 		}
 		if (showParticipants && !participants.isEmpty()) {
 			participantsTableCtrl = new MembersTableController(ureq, wControl, participants, duplicateCatcher, recentLaunches, initialLaunches, curriculumInfos,
-					userPropertyHandlers, groupmemberships,	repoEntry, businessGroup, userCourseEnv.getCourseEnvironment(),
+					userPropertyHandlers, groupmemberships,	repoEntry, businessGroup, courseEnv,
 					deduplicateList, getTranslator(), editable, canEmail, userLastTimeVisible);
 			listenTo(participantsTableCtrl);
 			mainVC.put("participantList", participantsTableCtrl.getInitialComponent());
 		}
 		if (showWaiting && !waiting.isEmpty()) {
 			waitingTableCtrl = new MembersTableController(ureq, wControl, waiting, duplicateCatcher, recentLaunches, initialLaunches, curriculumInfos,
-					userPropertyHandlers, groupmemberships, repoEntry, businessGroup, userCourseEnv.getCourseEnvironment(),
+					userPropertyHandlers, groupmemberships, repoEntry, businessGroup, courseEnv,
 					deduplicateList, getTranslator(), editable, canEmail, userLastTimeVisible);
 			listenTo(waitingTableCtrl);
 			mainVC.put("waitingList", waitingTableCtrl.getInitialComponent());
@@ -291,7 +289,7 @@ public class MembersListDisplayRunController extends BasicController {
 		if(mailCtrl != null || cmc != null) return;
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(mailCtrl);
-		mailCtrl = new MembersMailController(ureq, getWindowControl(), getTranslator(), userCourseEnv.getCourseEnvironment(),
+		mailCtrl = new MembersMailController(ureq, getWindowControl(), getTranslator(), courseEnv,
 				ownerList, coachList, participantList, waitingtList, createBodyTemplate());
 		listenTo(mailCtrl);
 		
@@ -311,7 +309,6 @@ public class MembersListDisplayRunController extends BasicController {
 				.append("/url/BusinessGroup/").append(businessGroup.getKey());
 			return translate("email.body.template", new String[]{groupName, groupLink.toString()});	
 		} else {
-			CourseEnvironment courseEnv = userCourseEnv.getCourseEnvironment();
 			String courseName = courseEnv.getCourseTitle();
 			// Build REST URL to course element, use hack via group manager to access repo entry
 			StringBuilder courseLink = new StringBuilder();
@@ -323,7 +320,6 @@ public class MembersListDisplayRunController extends BasicController {
 		}
 	}
 	
-	
 	private void doExport(UserRequest ureq) {
 		MediaResource resource = exportManager.getXlsMediaResource(showOwners, showCoaches, showParticipants, showWaiting, 
 				owners, coaches, participants, waiting, curriculumInfos, getTranslator(), userPropertyHandlers, repoEntry, businessGroup);
@@ -332,7 +328,7 @@ public class MembersListDisplayRunController extends BasicController {
 	}
 	
 	private void doPrint(UserRequest ureq) {
-		final String title = businessGroup != null ? businessGroup.getName() : userCourseEnv.getCourseEnvironment().getCourseTitle();
+		final String title = businessGroup != null ? businessGroup.getName() : courseEnv.getCourseTitle();
 		
 		ControllerCreator printControllerCreator = (lureq, lwControl) -> {
 			lwControl.getWindowBackOffice().getChiefController().addBodyCssClass("o_cmembers_print");
