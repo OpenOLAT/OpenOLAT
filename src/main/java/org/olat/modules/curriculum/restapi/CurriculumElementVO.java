@@ -49,6 +49,7 @@ public class CurriculumElementVO {
 	
 	private String externalId;
 	private String managedFlagsString;
+	private String calendars;
 
 	private Long parentElementKey;
 	private Long curriculumKey;
@@ -79,6 +80,7 @@ public class CurriculumElementVO {
 		if(element.getType() != null) {
 			vo.setCurriculumElementTypeKey(element.getType().getKey());
 		}
+		vo.setCalendars(element.getCalendars().name());
 		return vo;
 	}
 
@@ -152,6 +154,14 @@ public class CurriculumElementVO {
 
 	public void setManagedFlagsString(String managedFlagsString) {
 		this.managedFlagsString = managedFlagsString;
+	}
+
+	public String getCalendars() {
+		return calendars;
+	}
+
+	public void setCalendars(String calendars) {
+		this.calendars = calendars;
 	}
 
 	public Long getParentElementKey() {

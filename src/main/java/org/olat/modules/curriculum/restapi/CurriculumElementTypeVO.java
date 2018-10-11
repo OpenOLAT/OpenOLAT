@@ -43,6 +43,7 @@ public class CurriculumElementTypeVO {
 	private String cssClass;
 	private String externalId;
 	private String managedFlagsString;
+	private String calendars;
 	
 	public CurriculumElementTypeVO() {
 		//
@@ -57,6 +58,7 @@ public class CurriculumElementTypeVO {
 		vo.setCssClass(type.getCssClass());
 		vo.setExternalId(type.getExternalId());
 		vo.setManagedFlagsString(CurriculumElementTypeManagedFlag.toString(type.getManagedFlags()));
+		vo.setCalendars(type.getCalendars().name());
 		return vo;
 	}
 
@@ -115,4 +117,12 @@ public class CurriculumElementTypeVO {
 	public void setManagedFlagsString(String managedFlagsString) {
 		this.managedFlagsString = managedFlagsString;
 	}
+
+	public String getCalendars() {
+		return calendars;
+	}
+
+	public void setCalendars(String calendars) {
+		this.calendars = calendars;
+	}	
 }
