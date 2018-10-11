@@ -208,15 +208,14 @@ public class TableRenderer extends DefaultComponentRenderer {
 			boolean ajaxEnabled, URLBuilder ubu) {
 		if (table.isMultiSelect() && !table.isMultiSelectAsDisabled()) {
 			target.append("<div class='o_table_checkall input-sm'>")
-			  .append("<label class='checkbox-inline'>")
 			  .append("<a href='#' onclick=\"javascript:o_table_toggleCheck('").append(formName).append("', true)\">")
 			  .append("<i class='o_icon o_icon-lg o_icon_check_on'> </i> ")
 			  .append(translator.translate("checkall"))
-			  .append("</a></label>");
-			target.append("<label class='checkbox-inline'><a href=\"#\" onclick=\"javascript:o_table_toggleCheck('").append(formName).append("', false)\">")
+			  .append("</a>");
+			target.append("<a href=\"#\" onclick=\"javascript:o_table_toggleCheck('").append(formName).append("', false)\">")
 			  .append("<i class='o_icon o_icon-lg o_icon_check_off'> </i> ")
 			  .append(translator.translate("uncheckall"))
-			  .append("</a></label>")
+			  .append("</a>")
 			  .append("</div>");
 		}
 

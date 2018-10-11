@@ -69,7 +69,7 @@ public class TaxonomyTreePage {
 	}
 	
 	public TaxonomyLevelPage selectTaxonomyLevel(String identifier) {
-		By selectBy = By.xpath("//div[contains(@class,'o_sel_taxonomy_levels_tree')]//table//tr[td[text()[contains(.,'" + identifier + "')]]]/td/a[contains(@href,'select')]");
+		By selectBy = By.xpath("//div[contains(@class,'o_sel_taxonomy_levels_tree')]//table//tr/td/a[contains(@href,'select')][text()[contains(.,'" + identifier + "')]]");
 		OOGraphene.waitElement(selectBy, browser);
 		browser.findElement(selectBy).click();
 		OOGraphene.waitBusy(browser);
