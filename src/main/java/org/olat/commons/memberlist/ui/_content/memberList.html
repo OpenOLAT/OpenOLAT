@@ -13,6 +13,9 @@
 					$r.render($member.getChatComponentName())
 				#end
 				$r.render($member.getIdLink().getComponent().getComponentName())
+				#if($r.available($member.getEmailComponentName()))
+					$r.render($member.getEmailComponentName())
+				#end
 				#set ($skipNextBR=false)
 				#foreach($userPropertyHandler in $userPropertyHandlers)
 					#if($userPropertyHandler.name != "firstName" && $userPropertyHandler.name != "lastName") 
@@ -22,9 +25,6 @@
 							<div class="o_prop o_${userPropertyHandler.name}">$prop</div>
 						#end
 					#end					
-				#end
-				#if($r.available($member.getEmailComponentName()))
-					$r.render($member.getEmailComponentName())
 				#end
 			</div>
 		</div>
