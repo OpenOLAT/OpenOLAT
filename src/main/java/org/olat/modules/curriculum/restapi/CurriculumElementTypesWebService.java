@@ -35,6 +35,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.olat.core.util.StringHelper;
+import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumElementTypeManagedFlag;
 import org.olat.modules.curriculum.CurriculumElementTypeToType;
@@ -171,8 +173,12 @@ public class CurriculumElementTypesWebService {
 			elementType.setDescription(elementTypeVo.getDescription());
 			elementType.setExternalId(elementTypeVo.getExternalId());
 		}
-		
 		elementType.setCssClass(elementTypeVo.getCssClass());
+		if(StringHelper.containsNonWhitespace(elementTypeVo.getCalendars())) {
+			elementType.setCalendars(CurriculumCalendars.valueOf(elementTypeVo.getCalendars()));
+		} else {
+			elementType.setCalendars(CurriculumCalendars.disabled);
+		}
 		elementType.setManagedFlags(CurriculumElementTypeManagedFlag.toEnum(elementTypeVo.getManagedFlagsString()));
 		return curriculumService.updateCurriculumElementType(elementType);
 	}

@@ -78,9 +78,9 @@ public class CurriculumElementImpl implements CurriculumElement, Persistable {
 	@Column(name="lastmodified", nullable=false, insertable=true, updatable=true)
 	private Date lastModified;
 	
-	/** Only used for order by */
+	/** Only used for order by (hibernate hack) */
 	@GeneratedValue
-	@Column(name="pos", insertable=false, updatable=false)//TODO order hack
+	@Column(name="pos", insertable=false, updatable=false)
 	private Long pos;
 	
 	@Column(name="c_identifier", nullable=true, insertable=true, updatable=true)
@@ -201,9 +201,17 @@ public class CurriculumElementImpl implements CurriculumElement, Persistable {
 	}
 
 	@Override
+	@Transient
 	public CurriculumCalendars getCalendars() {
-		return StringHelper.containsNonWhitespace(calendarsEnabledString)
-				? CurriculumCalendars.valueOf(calendarsEnabledString): CurriculumCalendars.disabled;
+		CurriculumCalendars enabled;
+		if(StringHelper.containsNonWhitespace(calendarsEnabledString)) {
+			enabled = CurriculumCalendars.valueOf(calendarsEnabledString);
+		} else if(this.type != null) {
+			enabled = CurriculumCalendars.inherited;
+		} else {
+			enabled = CurriculumCalendars.disabled;
+		}
+		return enabled;
 	}
 
 	@Override

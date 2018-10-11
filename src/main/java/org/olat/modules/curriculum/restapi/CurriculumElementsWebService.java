@@ -265,7 +265,11 @@ public class CurriculumElementsWebService {
 		if(StringHelper.containsNonWhitespace(curriculumElement.getStatus())) {
 			elementToSave.setElementStatus(CurriculumElementStatus.valueOf(curriculumElement.getStatus()));
 		}
-		
+		if(StringHelper.containsNonWhitespace(curriculumElement.getCalendars())) {
+			elementToSave.setCalendars(CurriculumCalendars.valueOf(curriculumElement.getCalendars()));
+		} else {
+			elementToSave.setCalendars(null);
+		}
 		CurriculumElement savedElement = curriculumService.updateCurriculumElement(elementToSave);
 		if(move) {
 			curriculumService.moveCurriculumElement(savedElement, parentElement);
