@@ -84,7 +84,7 @@ public class CurriculumElementWithViewsRow implements CurriculumElementWithView,
 	
 	public CurriculumElementWithViewsRow(CurriculumElement element, CurriculumElementMembership curriculumMembership, int myEntryCount) {
 		this.element = element;
-		elementType = element == null ? null : element.getType();
+		elementType = element.getType();
 		this.curriculumMembership = curriculumMembership;
 		curriculumMember = curriculumMembership != null && curriculumMembership.hasMembership();
 		singleEntry = false;

@@ -154,7 +154,6 @@ public class CurriculumComposerTableModel extends DefaultFlexiTreeTableDataModel
 		return null;
 	}
 	
-
 	@Override
 	public boolean hasChildren(int row) {
 		CurriculumElementRow element = getObject(row);
@@ -183,8 +182,6 @@ public class CurriculumComposerTableModel extends DefaultFlexiTreeTableDataModel
 			default: return "ERROR";
 		}
 	}
-	
-	
 	
 	@Override
 	public CurriculumComposerTableModel createCopyWithEmptyList() {

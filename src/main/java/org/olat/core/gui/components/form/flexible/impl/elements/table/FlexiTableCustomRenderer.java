@@ -151,8 +151,20 @@ class FlexiTableCustomRenderer extends AbstractFlexiTableRenderer implements Com
 				}
 			}
 		}
+		
+		if(dataModel instanceof FlexiTreeTableDataModel) {
+			boolean hasChildren = ((FlexiTreeTableDataModel<?>)dataModel).hasChildren(row);
+			container.contextPut("hasChildren", hasChildren);
+			if(hasChildren) {
+				container.contextPut("isOpen", ((FlexiTreeTableDataModel<?>)dataModel).isOpen(row));
+			}
+		}
 
 		container.getHTMLRendererSingleton().render(renderer, sb, container, ubu, translator, renderResult, null);
+		container.contextRemove("openCloseLink");
+		container.contextRemove("hasChildren");
+		container.contextRemove("rowIndex");
+		container.contextRemove("isOpen");
 		container.contextRemove("row");
 		container.contextRemove("f");
 

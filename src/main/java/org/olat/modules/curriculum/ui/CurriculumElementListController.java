@@ -50,6 +50,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.TreeNodeFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -74,7 +75,6 @@ import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.modules.curriculum.model.CurriculumElementRepositoryEntryViews;
 import org.olat.modules.curriculum.ui.CurriculumElementWithViewsDataModel.ElementViewCols;
 import org.olat.modules.curriculum.ui.component.CurriculumElementCompositeRenderer;
-import org.olat.modules.curriculum.ui.component.CurriculumElementIndentRenderer;
 import org.olat.modules.curriculum.ui.component.CurriculumElementViewsRowComparator;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryMyView;
@@ -154,9 +154,8 @@ public class CurriculumElementListController extends FormBasicController impleme
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementViewCols.key));
-		DefaultFlexiColumnModel elementNameCol = new DefaultFlexiColumnModel(ElementViewCols.displayName, "select");
-		elementNameCol.setCellRenderer(new CurriculumElementCompositeRenderer("select", new CurriculumElementIndentRenderer()));
-		columnsModel.addFlexiColumnModel(elementNameCol);
+		TreeNodeFlexiCellRenderer treeNodeRenderer = new TreeNodeFlexiCellRenderer("select");
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.displayName, treeNodeRenderer));
 		DefaultFlexiColumnModel elementIdentifierCol = new DefaultFlexiColumnModel(ElementViewCols.identifier, "select");
 		elementIdentifierCol.setCellRenderer(new CurriculumElementCompositeRenderer("select", new TextFlexiCellRenderer()));
 		columnsModel.addFlexiColumnModel(elementIdentifierCol);

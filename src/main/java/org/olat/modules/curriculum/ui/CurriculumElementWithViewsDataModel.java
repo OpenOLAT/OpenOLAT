@@ -19,7 +19,11 @@
  */
 package org.olat.modules.curriculum.ui;
 
-import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTreeTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 
@@ -29,12 +33,23 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CurriculumElementWithViewsDataModel extends DefaultFlexiTableDataModel<CurriculumElementWithViewsRow> {
+public class CurriculumElementWithViewsDataModel extends DefaultFlexiTreeTableDataModel<CurriculumElementWithViewsRow> {
 	
 	public CurriculumElementWithViewsDataModel(FlexiTableColumnModel columnsModel) {
 		super(columnsModel);
 	}
 	
+	@Override
+	public void filter(String searchString, List<FlexiTableFilter> filters) {
+		setObjects(new ArrayList<>(backupRows));
+	}
+	
+	@Override
+	public boolean hasChildren(int row) {
+		CurriculumElementWithViewsRow element = getObject(row);
+		return element.hasChildren();
+	}
+
 	@Override
 	public Object getValueAt(int row, int col) {
 		CurriculumElementWithViewsRow curriculum = getObject(row);

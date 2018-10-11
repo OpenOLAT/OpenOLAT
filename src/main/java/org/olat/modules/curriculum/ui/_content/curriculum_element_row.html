@@ -3,6 +3,14 @@
 #if(${row.isCurriculumElementOnly()} || ${row.isCurriculumElementWithEntry()})
 	#set ($headerTag = "h" + ($row.level + 2))
 	<$headerTag class="o_curriculum_element_title">
+		#if($r.isTrue($hasChildren))
+			#if($r.isTrue($isOpen))
+				<a href="javascript:;" onclick="$f.ffXHREvent("tt-close",${rowIndex})">
+			#else
+				<a href="javascript:;" onclick="$f.ffXHREvent("tt-open",${rowIndex})">
+			#end
+			<i class='o_icon o_icon-fw #if($r.isTrue($isOpen)) o_icon_close_tree #else o_icon_open_tree #end'> </i></a>
+		#end
 		$r.escapeHtml($row.curriculumElementDisplayName) 
 		<small>$r.escapeHtml($row.curriculumElementIdentifier) </small>
 		#if($row.getCurriculumElementTypeName())<small class="o_type">($row.getCurriculumElementTypeName())</small>#end
