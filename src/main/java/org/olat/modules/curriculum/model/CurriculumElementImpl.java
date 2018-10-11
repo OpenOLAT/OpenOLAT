@@ -361,7 +361,8 @@ public class CurriculumElementImpl implements CurriculumElement, Persistable {
 	public CurriculumElementType getType() {
 		return type;
 	}
-	
+
+	@Override
 	public void setType(CurriculumElementType type) {
 		this.type = type;
 	}

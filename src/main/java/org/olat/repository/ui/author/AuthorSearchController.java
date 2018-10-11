@@ -175,11 +175,11 @@ public class AuthorSearchController extends FormBasicController implements Exten
 		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
 		formLayout.add(buttonLayout);
-		searchButton = uifactory.addFormLink("search", buttonLayout, Link.BUTTON);
-		searchButton.setCustomEnabledLinkCSS("btn btn-primary");
 		if(cancelAllowed) {
 			uifactory.addFormCancelButton("quick.search", buttonLayout, ureq, getWindowControl());
 		}
+		searchButton = uifactory.addFormLink("search", buttonLayout, Link.BUTTON);
+		searchButton.setCustomEnabledLinkCSS("btn btn-primary");
 	}
 	
 	public void update(SearchEvent se) {

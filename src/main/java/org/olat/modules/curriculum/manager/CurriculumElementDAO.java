@@ -27,15 +27,19 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.persistence.TemporalType;
 import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupMembership;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
@@ -54,6 +58,8 @@ import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.model.CurriculumElementImpl;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipImpl;
+import org.olat.modules.curriculum.model.CurriculumElementSearchInfos;
+import org.olat.modules.curriculum.model.CurriculumElementSearchParams;
 import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -321,6 +327,205 @@ public class CurriculumElementDAO {
 			query.setParameter("key", key);
 		}
 		return query.getResultList();
+	}
+	
+	/**
+	 * Search curriculum, curriculum element, courses
+	 * 
+	 * @param params
+	 * @return
+	 */
+	public List<CurriculumElementSearchInfos> searchElements(CurriculumElementSearchParams params) {
+		QueryBuilder sb = new QueryBuilder(2048);
+		sb.append("select curEl,")
+		  .append(" (select count(distinct reToGroup.entry.key) from repoentrytogroup reToGroup")
+		  .append("  where reToGroup.group.key=bGroup.key")
+		  .append(" ) as numOfElements")
+		  .append(" from curriculumelement curEl")
+		  .append(" inner join fetch curEl.curriculum cur")
+		  .append(" inner join fetch cur.group baseGroup")
+		  .append(" inner join fetch curEl.group bGroup")
+		  .append(" left join fetch cur.organisation organis")
+		  .append(" left join repoentrytogroup as rel on (bGroup.key=rel.group.key)")
+		  .append(" left join repositoryentry as v on (rel.entry.key=v.key)")
+		  .append(" left join v.olatResource as res");
+		
+		// generic search
+		Long key = null;
+		String ref = null;
+		String fuzzyRef = null;
+		if(StringHelper.containsNonWhitespace(params.getSearchString())) {
+			ref = params.getSearchString();
+			fuzzyRef = PersistenceHelper.makeFuzzyQueryString(ref);
+			
+			sb.and()
+			  .append(" (cur.externalId=:ref or curEl.externalId=:ref or v.externalId=:ref or ")
+			  .likeFuzzy("cur.displayName", "fuzzyRef", dbInstance.getDbVendor())
+			  .append(" or ")
+			  .likeFuzzy("cur.identifier", "fuzzyRef", dbInstance.getDbVendor())
+			  .append(" or ")
+			  .likeFuzzy("curEl.displayName", "fuzzyRef", dbInstance.getDbVendor())
+			  .append(" or ")
+			  .likeFuzzy("curEl.identifier", "fuzzyRef", dbInstance.getDbVendor())
+			  .append(" or ")
+			  .likeFuzzy("v.displayname", "fuzzyRef", dbInstance.getDbVendor())
+			  .append(" or ")
+			  .likeFuzzy("v.externalRef", "fuzzyRef", dbInstance.getDbVendor());
+			if(StringHelper.isLong(ref)) {
+				key = Long.valueOf(ref);
+				sb.append(" or cur.key=:cKey or curEl.key=:cKey");
+			}
+			sb.append(")");	
+		}
+		
+		//dates
+		if(params.getElementBeginDate() != null && params.getElementEndDate() != null) {
+			sb.and()
+			  .append("(curEl.beginDate is not null or curEl.endDate is not null)")
+			  .append(" and (")
+			  .append(" (curEl.endDate is null and (curEl.beginDate is null or curEl.beginDate>=:elementBegin))")
+			  .append("  or ")
+			  .append(" (curEl.beginDate is null and (curEl.endDate is null or curEl.endDate<=:elementEnd))")
+			  .append("  or ")
+			  .append(" (curEl.beginDate is not null and curEl.endDate is not null and curEl.beginDate>=:elementBegin and curEl.endDate<=:elementEnd)")
+			  .append(" )");
+		} else if(params.getElementBeginDate() != null) {
+			sb.and()
+			  .append("curEl.beginDate>=:elementBegin");
+		} else if(params.getElementEndDate() != null) {
+			sb.and()
+			  .append("curEl.endDate<=:elementEnd");
+		}
+		
+		// curriculum element
+		Long elementKey = null;
+		String elementFuzzyRef = null;
+		if(StringHelper.containsNonWhitespace(params.getElementId())) {
+			String elementId = params.getElementId();
+			elementFuzzyRef = PersistenceHelper.makeFuzzyQueryString(elementId);
+			
+			sb.and()
+			  .append("(")
+			  .likeFuzzy("curEl.identifier", "elementFuzzyRef", dbInstance.getDbVendor())
+			  .append(" or ")
+			  .likeFuzzy("curEl.externalId", "elementFuzzyRef", dbInstance.getDbVendor());
+			if(StringHelper.isLong(elementId)) {
+				elementKey = Long.valueOf(elementId);
+				sb.append(" or curEl.key=:elementKey");
+			}
+			sb.append(")");	
+		}
+
+		String elementTextFuzzyRef = null;
+		if(StringHelper.containsNonWhitespace(params.getElementText())) {
+			elementTextFuzzyRef = PersistenceHelper.makeFuzzyQueryString(params.getElementText());
+			sb.and()
+			  .append("(")
+			  .likeFuzzy("curEl.displayName", "elementTextFuzzyRef", dbInstance.getDbVendor())
+			  .append(")");
+		}
+		
+		// repository entry
+		Long entryKey = null;
+		String entryRef = null;
+		String entryFuzzyRef = null;
+		if(StringHelper.containsNonWhitespace(params.getEntryId())) {
+			entryRef = params.getEntryId();
+			entryFuzzyRef = PersistenceHelper.makeFuzzyQueryString(entryRef);
+			
+			sb.and()
+			  .append("(v.softkey=:entryRef or v.externalId=:entryRef or ")
+			  .likeFuzzy("v.externalRef", "entryFuzzyRef", dbInstance.getDbVendor());
+			if(StringHelper.isLong(entryRef)) {
+				entryKey = Long.valueOf(entryRef);
+				sb.append(" or v.key=:entryKey or res.resId=:entryKey");
+			}
+			sb.append(")");	
+		}
+		
+		String entryTextFuzzyRef = null;
+		if(StringHelper.containsNonWhitespace(params.getEntryText())) {
+			entryTextFuzzyRef = PersistenceHelper.makeFuzzyQueryString(params.getEntryText());
+			sb.and()
+			  .append("(")
+			  .likeFuzzy("v.displayname", "entryTextFuzzyRef", dbInstance.getDbVendor())
+			  .append(")");
+		}
+		
+		
+		// permissions
+		if(params.getManagerIdentity() != null) {
+			sb.and()
+			  .append("exists (select membership.key from bgroupmember as membership")
+			  .append("  where membership.identity.key=:managerKey")
+			  .append("  and (membership.group.key=baseGroup.key or organis.group.key=baseGroup.key)")
+			  .append("  and role in ('").append(CurriculumRoles.curriculummanager).append("','").append(OrganisationRoles.administrator).append("')")
+			  .append(")");
+		}
+
+		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class);
+		if(params.getElementBeginDate() != null) {
+			query.setParameter("elementBegin", params.getElementBeginDate(), TemporalType.TIMESTAMP);
+		}
+		if(params.getElementEndDate() != null) {
+			query.setParameter("elementEnd", params.getElementEndDate(), TemporalType.TIMESTAMP);
+		}
+		
+		if(key != null) {
+			query.setParameter("cKey", key);
+		}
+		if(ref != null) {
+			query.setParameter("ref", ref);
+		}
+		if(fuzzyRef != null) {
+			query.setParameter("fuzzyRef", fuzzyRef);
+		}
+		if(params.getManagerIdentity() != null) {
+			query.setParameter("managerKey", params.getManagerIdentity().getKey());
+		}
+		
+		if(elementKey != null) {
+			query.setParameter("elementKey", elementKey);
+		}
+		if(elementFuzzyRef != null) {
+			query.setParameter("elementFuzzyRef", elementFuzzyRef);
+		}
+		if(elementTextFuzzyRef != null) {
+			query.setParameter("elementTextFuzzyRef", elementTextFuzzyRef);
+		}
+		
+		if(entryKey != null) {
+			query.setParameter("entryKey", entryKey);
+		}
+		if(entryRef != null) {
+			query.setParameter("entryRef", entryRef);
+		}
+		if(entryFuzzyRef != null) {
+			query.setParameter("entryFuzzyRef", entryFuzzyRef);
+		}
+		if(entryTextFuzzyRef != null) {
+			query.setParameter("entryTextFuzzyRef", entryTextFuzzyRef);
+		}
+		
+		if(params.getManagerIdentity() != null) {
+			query.setParameter("managerKey", params.getManagerIdentity().getKey());
+		}
+
+		List<Object[]> rawObjects = query.getResultList();
+		List<CurriculumElementSearchInfos> infos = new ArrayList<>(rawObjects.size());
+		Set<CurriculumElement> deduplicates = new HashSet<>();
+		for(Object[] rawObject:rawObjects) {
+			CurriculumElement element = (CurriculumElement)rawObject[0];
+			if(!deduplicates.contains(element)) {
+				Long rawNumOfResources = PersistenceHelper.extractLong(rawObject, 1);
+				long numOfResources = rawNumOfResources == null ? 0l : rawNumOfResources.longValue();
+				
+				infos.add(new CurriculumElementSearchInfos(element, numOfResources));
+				deduplicates.add(element);
+			}
+		}
+		return infos;
 	}
 	
 	public List<CurriculumElement> getParentLine(CurriculumElement curriculumElement) {

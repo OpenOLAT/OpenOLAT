@@ -68,7 +68,6 @@ import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.member.wizard.ImportMember_1a_LoginListStep;
@@ -84,9 +83,9 @@ import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
 import org.olat.modules.curriculum.ui.CurriculumComposerTableModel.ElementCols;
+import org.olat.modules.curriculum.ui.event.SelectReferenceEvent;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
-import org.olat.repository.ui.RepositoyUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -346,7 +345,13 @@ public class CurriculumComposerController extends FormBasicController implements
 			}
 			cmc.deactivate();
 			cleanUp();
-		} else if(cmc == source) {
+		} else if (referencesCtrl == source) {
+			toolsCalloutCtrl.deactivate();
+			cleanUp();
+			if(event instanceof SelectReferenceEvent) {
+				launch(ureq, ((SelectReferenceEvent)event).getEntry());
+			}
+		} else if(cmc == source || toolsCalloutCtrl == source) {
 			cleanUp();
 		}
 		super.event(ureq, source, event);
@@ -356,10 +361,14 @@ public class CurriculumComposerController extends FormBasicController implements
 		removeAsListenerAndDispose(confirmDeleteCtrl);
 		removeAsListenerAndDispose(moveElementCtrl);
 		removeAsListenerAndDispose(newElementCtrl);
+		removeAsListenerAndDispose(referencesCtrl);
+		removeAsListenerAndDispose(toolsCalloutCtrl);
 		removeAsListenerAndDispose(cmc);
+		toolsCalloutCtrl = null;
 		confirmDeleteCtrl = null;
 		moveElementCtrl = null;
 		newElementCtrl = null;
+		referencesCtrl = null;
 		cmc = null;
 	}
 
@@ -560,7 +569,7 @@ public class CurriculumComposerController extends FormBasicController implements
 	}
 	
 	private void doOpenReferences(UserRequest ureq, CurriculumElementRow row, FormLink link) {
-		removeAsListenerAndDispose(toolsCtrl);
+		removeAsListenerAndDispose(referencesCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
 
 		CurriculumElement element = curriculumService.getCurriculumElement(row);
@@ -568,7 +577,7 @@ public class CurriculumComposerController extends FormBasicController implements
 			tableEl.reloadData();
 			showWarning("warning.curriculum.element.deleted");
 		} else {
-			referencesCtrl = new ReferencesController(ureq, getWindowControl(), element);
+			referencesCtrl = new ReferencesController(ureq, getWindowControl(), getTranslator(), element);
 			listenTo(referencesCtrl);
 	
 			toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
@@ -605,47 +614,6 @@ public class CurriculumComposerController extends FormBasicController implements
 		String businessPath = "[RepositoryEntry:" + ref.getKey() + "]";
 		if(!NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl())) {
 			tableEl.reloadData();
-		}
-	}
-	
-	private class ReferencesController extends BasicController {
-		
-		public ReferencesController(UserRequest ureq, WindowControl wControl, CurriculumElement element) {
-			super(ureq, wControl);
-			setTranslator(CurriculumComposerController.this.getTranslator());
-			VelocityContainer mainVC = createVelocityContainer("references");
-
-			List<RepositoryEntry> refs = curriculumService.getRepositoryEntries(element);
-
-			List<String> refLinks = new ArrayList<>(refs.size());
-			for(RepositoryEntry ref:refs) {
-				String name = "ref-" + (++counter);
-				Link refLink = LinkFactory.createLink(name, "reference", getTranslator(), mainVC, this, Link.NONTRANSLATED);
-				refLink.setCustomDisplayText(StringHelper.escapeHtml(ref.getDisplayname()));
-				refLink.setUserObject(ref);
-				refLink.setIconLeftCSS("o_icon o_icon-fw " + RepositoyUIFactory.getIconCssClass(ref));
-				refLinks.add(name);
-			}
-			mainVC.contextPut("referenceLinks", refLinks);
-			
-			putInitialPanel(mainVC);
-		}
-
-		@Override
-		protected void event(UserRequest ureq, Component source, Event event) {
-			if(source instanceof Link) {
-				fireEvent(ureq, Event.DONE_EVENT);
-				Link link = (Link)source;
-				if("reference".equals(link.getCommand())) {
-					RepositoryEntryRef uobject = (RepositoryEntryRef)link.getUserObject();
-					launch(ureq, uobject);
-				}
-			}
-		}
-
-		@Override
-		protected void doDispose() {
-			//
 		}
 	}
 	

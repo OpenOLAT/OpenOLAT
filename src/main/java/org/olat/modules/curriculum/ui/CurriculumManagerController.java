@@ -23,7 +23,13 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.stack.ButtonGroupComponent;
+import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -44,23 +50,43 @@ import org.olat.modules.curriculum.CurriculumSecurityCallbackFactory;
  */
 public class CurriculumManagerController extends BasicController implements Activateable2 {
 	
+	private final Link searchLink;
+	private final Link curriculumsLink;
 	private final TooledStackedPanel toolbarPanel;
-	private final CurriculumListManagerController curriculumListCtrl;
+	private final ButtonGroupComponent segmentButtonsCmp;
+	
+	private CurriculumSearchManagerController searchCtrl;
+	private CurriculumListManagerController curriculumListCtrl;
+	
+	private final CurriculumSecurityCallback secCallback;
 	
 	public CurriculumManagerController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		
+		UserSession usess = ureq.getUserSession();
+		secCallback = CurriculumSecurityCallbackFactory.createCallback(usess.getRoles());
+		
 		toolbarPanel = new TooledStackedPanel("categoriesStackPanel", getTranslator(), this);
-		toolbarPanel.setInvisibleCrumb(0); // show root level
 		toolbarPanel.setShowCloseLink(false, false);
 		putInitialPanel(toolbarPanel);
 		
-		UserSession usess = ureq.getUserSession();
-		CurriculumSecurityCallback secCallback = CurriculumSecurityCallbackFactory.createCallback(usess.getRoles());
+		CurriculumRootWrapperController rootCtrl = new CurriculumRootWrapperController(ureq, getWindowControl());
+		listenTo(rootCtrl);
+		toolbarPanel.pushController(translate("toolbar.curriculums"), rootCtrl);
+
+		segmentButtonsCmp = new ButtonGroupComponent("segments");
 		
-		curriculumListCtrl = new CurriculumListManagerController(ureq, getWindowControl(), toolbarPanel, secCallback);
-		listenTo(curriculumListCtrl);
-		toolbarPanel.pushController("Curriculums", curriculumListCtrl);
+		curriculumsLink = LinkFactory.createToolLink("curriculum.browser", translate("curriculum.browser"), this);
+		curriculumsLink.setElementCssClass("o_sel_cur_browser");
+		segmentButtonsCmp.addButton(curriculumsLink, true);
+		
+		searchLink = LinkFactory.createToolLink("curriculum.search", translate("curriculum.search"), this);
+		searchLink.setElementCssClass("o_sel_cur_browser");
+		segmentButtonsCmp.addButton(searchLink, false);
+
+		toolbarPanel.addTool(segmentButtonsCmp, Align.segment, true);
+
+		doOpenBrowser(ureq);
 	}
 
 	@Override
@@ -71,11 +97,66 @@ public class CurriculumManagerController extends BasicController implements Acti
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) return;
-		curriculumListCtrl.activate(ureq, entries, state);
+		
+		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if("Curriculum".equalsIgnoreCase(type)) {
+			doOpenBrowser(ureq);
+			segmentButtonsCmp.setSelectedButton(curriculumsLink);
+			curriculumListCtrl.activate(ureq, entries, state);
+		}
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		//
+		if(curriculumsLink == source) {
+			doOpenBrowser(ureq);
+		} else if(searchLink == source) {
+			doOpenSearch(ureq);
+		} else if(toolbarPanel == source) {
+			if(event instanceof PopEvent) {
+				PopEvent pe = (PopEvent)event;
+				if(pe.getController() instanceof CurriculumListManagerController
+						|| pe.getController() instanceof CurriculumSearchManagerController) {
+					doOpenBrowser(ureq);
+					segmentButtonsCmp.setSelectedButton(curriculumsLink);
+				}
+			}
+		}
+	}
+	
+	private void doOpenBrowser(UserRequest ureq) {
+		toolbarPanel.popUpToRootController(ureq);
+		removeAsListenerAndDispose(curriculumListCtrl);
+		
+		curriculumListCtrl = new CurriculumListManagerController(ureq, getWindowControl(), toolbarPanel, secCallback);
+		listenTo(curriculumListCtrl);
+		toolbarPanel.pushController(translate("toolbar.curriculums.browser"), curriculumListCtrl);
+	}
+	
+	private void doOpenSearch(UserRequest ureq) {
+		toolbarPanel.popUpToRootController(ureq);
+		removeAsListenerAndDispose(searchCtrl);
+		
+		searchCtrl = new CurriculumSearchManagerController(ureq, getWindowControl(), toolbarPanel, secCallback);
+		listenTo(searchCtrl);
+		toolbarPanel.pushController(translate("toolbar.curriculums.search"), searchCtrl);
+	}
+	
+	private class CurriculumRootWrapperController extends BasicController {
+		
+		public CurriculumRootWrapperController(UserRequest ureq, WindowControl wControl) {
+			super(ureq, wControl);
+			putInitialPanel(new Panel("root_curriculum"));
+		}
+
+		@Override
+		protected void doDispose() {
+			//
+		}
+
+		@Override
+		protected void event(UserRequest ureq, Component source, Event event) {
+			//
+		}
 	}
 }

@@ -31,6 +31,8 @@ import org.olat.core.id.Roles;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
 import org.olat.modules.curriculum.model.CurriculumElementRepositoryEntryViews;
+import org.olat.modules.curriculum.model.CurriculumElementSearchInfos;
+import org.olat.modules.curriculum.model.CurriculumElementSearchParams;
 import org.olat.modules.curriculum.model.CurriculumElementWebDAVInfos;
 import org.olat.modules.curriculum.model.CurriculumInfos;
 import org.olat.modules.curriculum.model.CurriculumMember;
@@ -263,6 +265,13 @@ public interface CurriculumService {
 	 * @return A list of curriculum elements
 	 */
 	public List<CurriculumElement> searchCurriculumElements(String externalId, String identifier, Long key);
+	
+	/**
+	 * 
+	 * @param params
+	 * @return A list of curriculum elements
+	 */
+	public List<CurriculumElementSearchInfos> searchCurriculumElements(CurriculumElementSearchParams params);
 
 	/**
 	 * Return the parent line of the specified curriculum element.
