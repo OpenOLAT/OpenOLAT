@@ -13,6 +13,9 @@
 					$r.render($member.getChatComponentName())
 				#end
 				$r.render($member.getIdLink().getComponent().getComponentName())
+				#if($r.available($member.getEmailComponentName()))
+					$r.render($member.getEmailComponentName())
+				#end
 				#set ($skipNextBR=false)
 				#foreach($userPropertyHandler in $userPropertyHandlers)
 					#if($userPropertyHandler.name != "firstName" && $userPropertyHandler.name != "lastName") 
@@ -31,10 +34,6 @@
 					#else if($r.isNotEmpty($member.curriculumRootElementDisplayName))
 						<div class="o_prop o_curriculum_root_el_displayname">$member.curriculumRootElementDisplayName</div>
 					#end
-				#end
-				
-				#if($r.available($member.getEmailComponentName()))
-					$r.render($member.getEmailComponentName())
 				#end
 			</div>
 		</div>

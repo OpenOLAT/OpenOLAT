@@ -1021,9 +1021,13 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 			VelocityHelper vh = VelocityHelper.getInstance();
 			vh.mergeContent(page, ctx, sb, null);
 			ctx.remove("r");
+			if(!renderer.isMathJax()) {
+				renderer.setMathJax(fHints.isMathJax());
+			}
 		} catch(IOException e) {
 			log.error("", e);
 		}
+		
 	}
 	
 	private String getInteractionTemplate(QtiNode interaction) {
