@@ -447,8 +447,6 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 			}
 		} else if(eventCalloutCtr == source) {
 			cleanUp();
-		} else if(eventDetailsCtr == source) {
-			
 		}
 		
 		if (calendarEl.getComponent().isDirty()) {

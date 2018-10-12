@@ -113,9 +113,6 @@ public class FullCalendarElement extends FormItemImpl {
 		component.setAlwaysVisibleCalendars(alwaysVisibleCalendars);
 	}
 	
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.FormItemImpl#evalFormRequest(org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	public void evalFormRequest(UserRequest ureq) {
 		String selectedEventId = getRootForm().getRequestParameter("evSelect");
@@ -170,9 +167,10 @@ public class FullCalendarElement extends FormItemImpl {
 			component.setCurrentDate(cal.getTime());
 		}
 
-		if("month".equals(viewName) || "agendaWeek".equals(viewName)
-				|| "agendaDay".equals(viewName) || "basicWeek".equals(viewName)
-				|| "basicDay".equals(viewName)) {
+		if("month".equals(viewName)
+				|| "agendaWeek".equals(viewName) || "agendaDay".equals(viewName) 
+				|| "listYear".equals(viewName) || "listMonth".equals(viewName) || "listWeek".equals(viewName) || "listDay".equals(viewName)
+				|| "basicWeek".equals(viewName) || "basicDay".equals(viewName)) {
 			component.setViewName(viewName);
 		}
 	}

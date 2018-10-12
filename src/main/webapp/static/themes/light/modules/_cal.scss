@@ -167,6 +167,26 @@ $o-cal-color-width : 20px;
 	}
 }
 
+.fc-listYear-button:before, .fc-listMonth-button:before, .fc-listWeek-button:before, .fc-listDay-button:before {
+	content: $fa-var-list-alt;
+	margin-right: 5px;
+	font-family: FontAwesome;
+	font-style: normal;
+	font-weight: normal;
+	font-size: 80%;
+	webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+table.fc-list-table .fc-list-item {
+	background-color: white;
+	color: #5D5D5D ! important;
+	
+	a, span {
+		color: #5D5D5D ! important;
+	}
+}
+
 /*
  * Print view
  */

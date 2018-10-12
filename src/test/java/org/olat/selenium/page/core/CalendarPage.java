@@ -87,7 +87,7 @@ public class CalendarPage {
 	public CalendarPage addEvent(int day) {
 		LocalDate date = LocalDate.now().withDayOfMonth(day);
 		String dateString = date.format(formatter);
-		By cellBy = By.xpath("//div[contains(@class,'o_cal')]//td[contains(@data-date,'" + dateString + "')]//div[contains(@class,'fc-day-content')]");
+		By cellBy = By.xpath("//div[contains(@class,'o_cal')]//td[contains(@data-date,'" + dateString + "')][contains(@class,'fc-day')][contains(@class,'fc-widget-content')]");
 		browser.findElement(cellBy).click();
 		OOGraphene.waitModalDialog(browser);
 		return this;
@@ -241,7 +241,7 @@ public class CalendarPage {
 	}
 	
 	public CalendarPage assertOnEventsAt(String subject, int numOfEvents, int atHour) {
-		By titleBy = By.xpath("//div[@class='o_cal']//div[contains(@class,'fc-event-inner')][span[contains(text(),'" + atHour + ".00')]]/span[contains(text(),'" + subject + "')]");
+		By titleBy = By.xpath("//div[@class='o_cal']//a[contains(@class,'fc-event')][div/span[contains(text(),'" + atHour + ".00')]]/div/span[contains(text(),'" + subject + "')]");
 		OOGraphene.waitElement(titleBy, 5, browser);
 		List<WebElement> eventEls = browser.findElements(titleBy);
 		Assert.assertEquals(numOfEvents, eventEls.size());
@@ -271,7 +271,7 @@ public class CalendarPage {
 		LocalDate date = LocalDate.now().withDayOfMonth(day);
 		String dateString = date.format(oocurenceIdFormatter);
 
-		By titleBy = By.xpath("//div[@class='o_cal']//div[contains(@id,'xOccOOccOx_" + dateString + "')][div/span[contains(text(),'" + subject + "')]]");
+		By titleBy = By.xpath("//div[@class='o_cal']//a[contains(@id,'xOccOOccOx_" + dateString + "')][div/span[contains(text(),'" + subject + "')]]");
 		OOGraphene.waitElement(titleBy, 5, browser);
 		if(browser instanceof FirefoxDriver) {
 			new Actions(browser).click(browser.findElement(titleBy)).click().build().perform();

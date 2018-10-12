@@ -163,6 +163,7 @@
 										<exclude>**/dragula/*</exclude>
 										<exclude>**/mediaelementjs/*</exclude>
 										<exclude>**/mediaelementjs/**/*</exclude>
+										<exclude>**/fullcalendar/*</exclude>
 										<exclude>**/sliderpips/jquery-ui-slider-pips.js</exclude>
 									</excludes>
 								</configuration>
@@ -195,6 +196,7 @@
 										<exclude>**/*.min.js</exclude>
 										<exclude>**/jw/*</exclude>
 										<exclude>**/dragula/*</exclude>
+										<exclude>**/fullcalendar/*</exclude>
 										<exclude>**/mediaelementjs/*</exclude>
 										<exclude>**/mediaelementjs/**/*</exclude>
 										<exclude>**/sliderpips/jquery-ui-slider-pips.js</exclude>
@@ -311,6 +313,7 @@
 									<excludes>
 										<exclude>**/jw/*</exclude>
 										<exclude>**/dragula/*</exclude>
+										<exclude>**/fullcalendar/*</exclude>
 										<exclude>**/mediaelementjs/*</exclude>
 										<exclude>**/mediaelementjs/**/*</exclude>
 										<exclude>**/sliderpips/jquery-ui-slider-pips.js</exclude>
@@ -348,6 +351,8 @@
 									<excludes>
 										<exclude>**/jw/*</exclude>
 										<exclude>**/dragula/*</exclude>
+										<exclude>**/fullcalendar/fullcalendar.js</exclude>
+										<exclude>**/fullcalendar/fullcalendar.min.js</exclude>
 										<exclude>**/mediaelementjs/*</exclude>
 										<exclude>**/mediaelementjs/**/*</exclude>
 										<exclude>**/sliderpips/jquery-ui-slider-pips.js</exclude>

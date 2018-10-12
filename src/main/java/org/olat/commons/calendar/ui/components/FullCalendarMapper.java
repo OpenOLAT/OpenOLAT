@@ -20,6 +20,7 @@
 package org.olat.commons.calendar.ui.components;
 
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -48,7 +49,8 @@ import org.olat.core.util.StringHelper;
 public class FullCalendarMapper implements Mapper {
 	
 	private static final OLog log = Tracing.createLoggerFor(FullCalendarMapper.class);
-	private static final DateFormat formatDateTime = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+	private static final DateFormat formatDate = new SimpleDateFormat("yyyy-MM-dd");
+	private static final DateFormat formatDateTime = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 	
 	private final FullCalendarComponent fcC;
 	private final CalendarManager calendarManager;
@@ -85,11 +87,15 @@ public class FullCalendarMapper implements Mapper {
 			if(StringHelper.isLong(start)) {
 				long startTime = Long.parseLong(start);
 				startDate = new Date(startTime * 1000);
+			} else if(StringHelper.containsNonWhitespace(start)) {
+				startDate = parseDate(start);
 			}
 			Date endDate = null;
 			if(StringHelper.isLong(end)) {
 				long time = Long.parseLong(end);
 				endDate = new Date(time * 1000);
+			} else if(StringHelper.containsNonWhitespace(end)) {
+				endDate = parseDate(end);
 			}
 			
 			collectKalendarEvents(ja, calendarId, startDate, endDate);
@@ -152,11 +158,16 @@ public class FullCalendarMapper implements Mapper {
 		jsonEvent.put("editable", Boolean.valueOf(cal.getAccess() == KalendarRenderWrapper.ACCESS_READ_WRITE));
 		
 		if(event.getBegin() != null) {
-			jsonEvent.put("start", formatDate(event.getBegin()));
+			String start = formatDateTime(event.getBegin());
+			jsonEvent.put("start", start);
 		}
 		if(event.getEnd() != null) {
-			jsonEvent.put("end", formatDate(event.getEnd()));
+			jsonEvent.put("end", formatDateTime(event.getEnd()));
 		}
+		if(event.getLocation() != null) {
+			jsonEvent.put("location", event.getLocation());
+		}
+		
 		return jsonEvent;
 	}
 	
@@ -207,9 +218,20 @@ public class FullCalendarMapper implements Mapper {
 		jsonEvent.put("className", classNames.toString());
 	}
 	
-	private String formatDate(Date date) {
+	private String formatDateTime(Date date) {
 		synchronized(formatDateTime) {
 			return formatDateTime.format(date);
+		}
+	}
+	
+	private Date parseDate(String date) {
+		try {
+			synchronized(formatDate) {
+				return formatDate.parse(date);
+			}
+		} catch (ParseException e) {
+			log.error("Cannot parse Fullcalendar date: " + date, e);
+			return null;
 		}
 	}
 }
