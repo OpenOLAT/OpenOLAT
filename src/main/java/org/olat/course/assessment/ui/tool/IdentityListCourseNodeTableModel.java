@@ -64,7 +64,7 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 		this.locale = locale;
 		this.courseNode = courseNode;
 		
-		if(!(courseNode instanceof STCourseNode) && courseNode.hasScoreConfigured()) {
+		if(courseNode != null && !(courseNode instanceof STCourseNode) && courseNode.hasScoreConfigured()) {
 			maxScore = courseNode.getMaxScoreConfiguration();
 			minScore = courseNode.getMinScoreConfiguration();
 		}

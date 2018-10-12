@@ -531,7 +531,7 @@ public class FeedManagerImpl extends FeedManager {
 				reloaded.setEnclosure(externalItem.getEnclosure());
 				
 				if(dbInstance.isMySQL()) {
-					mysqlCleanUp(externalItem);
+					mysqlCleanUp(reloaded);
 				}
 				itemDAO.updateItem(reloaded);
 			}
