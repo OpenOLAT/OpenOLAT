@@ -272,14 +272,20 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		  .append("<i class='o_icon o_icon_filter o_icon-lg'> </i> <b class='caret'></b></button>")
 		  .append("<div id='table-filters-").append(dispatchId).append("' class='hide'><ul class='o_dropdown list-unstyled' role='menu'>");
 		
+		List<FlexiTableFilter> selectedFilters = ftE.getSelectedFilters();
+		List<FlexiTableFilter> selectedExtendedFilters = ftE.getSelectedExtendedFilters();
+		
+		
 		for(FlexiTableFilter filter:filters) {
 			if(FlexiTableFilter.SPACER.equals(filter)) {
 				sb.append("<li class='divider'></li>");
 			} else {
+				boolean isSelected = filter.isSelected() || (filter.isShowAll() && selectedFilters.isEmpty() && selectedExtendedFilters.isEmpty());
+				
 				sb.append("<li><a href=\"javascript:")
 				  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, true, true, true,
 						  new NameValuePair("filter", filter.getFilter())))
-				  .append("\">").append("<i class='o_icon o_icon_check o_icon-fw'> </i> ", filter.isSelected());
+				  .append("\">").append("<i class='o_icon o_icon_check o_icon-fw'> </i> ", isSelected);
 				if(filter.getIconLeftCSS() != null) {
 					sb.append("<i class='o_icon ").append(filter.getIconLeftCSS()).append("'> </i> ");
 				}

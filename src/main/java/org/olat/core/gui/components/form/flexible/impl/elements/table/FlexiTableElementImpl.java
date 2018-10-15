@@ -599,7 +599,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	
 	@Override
 	public void setExtendedFilterButton(String label, List<FlexiTableFilter> extendedFilters) {
-		if(StringHelper.containsNonWhitespace(label) && extendedFilters != null && extendedFilters.size() > 0) {
+		if(StringHelper.containsNonWhitespace(label) && extendedFilters != null && !extendedFilters.isEmpty()) {
 			this.extendedFilters = extendedFilters;
 			
 			String dispatchId = component.getDispatchID();
@@ -619,7 +619,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	@Override
 	public List<FlexiTableFilter> getSelectedExtendedFilters() {
 		List<FlexiTableFilter> selectedFilters = new ArrayList<>();
-		if(extendedFilters != null && extendedFilters.size() > 0) {
+		if(extendedFilters != null && !extendedFilters.isEmpty()) {
 			for(FlexiTableFilter extendedFilter:extendedFilters) {
 				if(extendedFilter.isSelected()) {
 					selectedFilters.add(extendedFilter);
@@ -631,7 +631,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	
 	@Override
 	public void setSelectedExtendedFilters(List<FlexiTableFilter> filters) {
-		if(extendedFilters != null && extendedFilters.size() > 0) {
+		if(extendedFilters != null && !extendedFilters.isEmpty()) {
 			for(FlexiTableFilter extendedFilter:extendedFilters) {
 				boolean selected = false;
 				for(FlexiTableFilter filter:filters) {
