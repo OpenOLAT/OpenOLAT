@@ -129,15 +129,16 @@ public class CurriculumComposerTableModel extends DefaultFlexiTreeTableDataModel
 	private boolean accept(CurriculumElementRow row, Date nowBegin, Date nowEnd, FlexiTableFilter filter) {
 		boolean accept = false;
 		if("active".equals(filter.getFilter())) {
+			// empty dates and dates at same day as now count as "active" dates
 			if(row.getStatus() == CurriculumElementStatus.active
-					&& (row.getBeginDate() == null || row.getBeginDate().compareTo(nowBegin) >= 0)
-					&& (row.getEndDate() == null || row.getEndDate().compareTo(nowBegin) <= 0)) {
+					&& (row.getBeginDate() == null || row.getBeginDate().compareTo(nowBegin) <= 0)
+					&& (row.getEndDate() == null || row.getEndDate().compareTo(nowBegin) >= 0)) {
 				accept = true;
 			}
 		} else if("inactive".equals(filter.getFilter())) {
 			if(row.getStatus() == CurriculumElementStatus.inactive
-					|| (row.getBeginDate() != null && row.getBeginDate().compareTo(nowEnd) <= 0)
-					|| (row.getEndDate() != null && row.getEndDate().compareTo(nowEnd) <= 0)) {
+					|| (row.getBeginDate() != null && row.getBeginDate().compareTo(nowEnd) > 0)
+					|| (row.getEndDate() != null && row.getEndDate().compareTo(nowEnd) < 0)) {
 				accept = true;
 			}
 		}
