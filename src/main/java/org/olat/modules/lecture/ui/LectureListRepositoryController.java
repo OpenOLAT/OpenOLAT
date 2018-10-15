@@ -20,9 +20,11 @@
 package org.olat.modules.lecture.ui;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import org.olat.basesecurity.Group;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -51,6 +53,9 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.gui.control.generic.wizard.Step;
+import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
+import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.activity.CoreLoggingResourceable;
 import org.olat.core.logging.activity.LearningResourceLoggingAction;
@@ -65,6 +70,9 @@ import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.LectureBlockRow;
 import org.olat.modules.lecture.model.LectureBlockWithTeachers;
 import org.olat.modules.lecture.ui.LectureListRepositoryDataModel.BlockCols;
+import org.olat.modules.lecture.ui.blockimport.BlocksImport_1_InputStep;
+import org.olat.modules.lecture.ui.blockimport.ImportedLectureBlock;
+import org.olat.modules.lecture.ui.blockimport.ImportedLectureBlocks;
 import org.olat.modules.lecture.ui.export.LectureBlockAuditLogExport;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
@@ -79,13 +87,16 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class LectureListRepositoryController extends FormBasicController {
 
-	private FormLink addLectureButton, deleteLecturesButton;
+	private FormLink addLectureButton;
+	private FormLink deleteLecturesButton;
+	private FormLink importLecturesButton;
 	private FlexiTableElement tableEl;
 	private LectureListRepositoryDataModel tableModel;
 	
 	private ToolsController toolsCtrl;
 	private CloseableModalController cmc;
 	private DialogBoxController deleteDialogCtrl;
+	private StepsMainRunController importBlockWizard;
 	private DialogBoxController bulkDeleteDialogCtrl;
 	private EditLectureBlockController editLectureCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
@@ -118,6 +129,10 @@ public class LectureListRepositoryController extends FormBasicController {
 			addLectureButton = uifactory.addFormLink("add.lecture", formLayout, Link.BUTTON);
 			addLectureButton.setIconLeftCSS("o_icon o_icon_add");
 			addLectureButton.setElementCssClass("o_sel_repo_add_lecture");
+			
+			importLecturesButton = uifactory.addFormLink("import.lectures", formLayout, Link.BUTTON);
+			importLecturesButton.setIconLeftCSS("o_icon o_icon_import");
+			importLecturesButton.setElementCssClass("o_sel_repo_import_lectures");
 			
 			deleteLecturesButton = uifactory.addFormLink("delete", formLayout, Link.BUTTON);
 		}
@@ -196,6 +211,8 @@ public class LectureListRepositoryController extends FormBasicController {
 			doAddLectureBlock(ureq);
 		} else if(deleteLecturesButton == source) {
 			doConfirmBulkDelete(ureq);
+		} else if(importLecturesButton == source) {
+			doImportLecturesBlock(ureq);
 		} else if(source == tableEl) {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
@@ -234,6 +251,12 @@ public class LectureListRepositoryController extends FormBasicController {
 					toolsCalloutCtrl.deactivate();
 					cleanUp();
 				}
+			}
+		} else if(importBlockWizard == source) {
+			getWindowControl().pop();
+			cleanUp();
+			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				loadModel();
 			}
 		} else if(deleteDialogCtrl == source) {
 			if (DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
@@ -296,6 +319,45 @@ public class LectureListRepositoryController extends FormBasicController {
 		cmc = new CloseableModalController(getWindowControl(), "close", editLectureCtrl.getInitialComponent(), true, translate("add.lecture"));
 		listenTo(cmc);
 		cmc.activate();
+	}
+	
+	private void doImportLecturesBlock(UserRequest ureq) {
+		removeAsListenerAndDispose(importBlockWizard);
+
+		final ImportedLectureBlocks lectureBlocks = new ImportedLectureBlocks();
+		Step start = new BlocksImport_1_InputStep(ureq, entry, lectureBlocks);
+		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
+			doFinalizeImportedLectureBlocks(lectureBlocks);
+			return StepsMainRunController.DONE_MODIFIED;
+		};
+		
+		importBlockWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
+				translate("tools.import.table"), "o_sel_lecture_table_import_wizard");
+		listenTo(importBlockWizard);
+		getWindowControl().pushAsModalDialog(importBlockWizard.getInitialComponent());
+	}
+	
+	private void doFinalizeImportedLectureBlocks(ImportedLectureBlocks lectureBlocks) {
+		List<ImportedLectureBlock> importedBlocks = lectureBlocks.getLectureBlocks();
+		for(ImportedLectureBlock importedBlock:importedBlocks) {
+			LectureBlock lectureBlock = importedBlock.getLectureBlock();
+			boolean exists = lectureBlock.getKey() != null;
+
+			List<Group> groups;
+			if(importedBlock.getGroupMapping() != null && importedBlock.getGroupMapping().getGroup() != null) {
+				groups = Collections.singletonList(importedBlock.getGroupMapping().getGroup());
+			} else {
+				groups = new ArrayList<>();
+			}
+			lectureBlock = lectureService.save(lectureBlock, groups);
+			
+			if(exists) {
+				lectureService.adaptRollCalls(lectureBlock);
+			}
+			for(Identity teacher:importedBlock.getTeachers()) {
+				lectureService.addTeacher(lectureBlock, teacher);
+			}
+		}
 	}
 	
 	private void doCopy(LectureBlockRow row) {

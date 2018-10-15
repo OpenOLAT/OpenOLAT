@@ -174,7 +174,7 @@ public class EditLectureBlockController extends FormBasicController {
 		plannedLecturesEl.setEnabled(!readOnly && plannedLecturesEditable);
 		
 		String[] onValues = new String[]{ "" };
-		boolean compulsory = lectureBlock == null ? true : lectureBlock.isCompulsory();
+		boolean compulsory = lectureBlock != null && lectureBlock.isCompulsory();
 		compulsoryEl = uifactory.addCheckboxesVertical("compulsory", "lecture.compulsory", formLayout, onKeys, onValues, 1);
 		compulsoryEl.setEnabled(!readOnly && !lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.compulsory));
 		compulsoryEl.addActionListener(FormEvent.ONCHANGE);

@@ -237,35 +237,6 @@ public class Formatter {
 		formattedDate = formattedDate.replace("1", "%d");
 		return formattedDate;
 	}
-
-	/**
-	 * Generate a simple date pattern that formats a date with time using the
-	 * locale of the formatter
-	 * 
-	 * @return
-	 */
-	public String getSimpleDatePatternForDateAndTime() {
-		Calendar cal = new GregorianCalendar();
-		cal.set( 1999, Calendar.MARCH, 1, 4, 5, 0 );  		
-		Date testDate = cal.getTime();
-		String formattedDate = formatDateAndTime(testDate);
-		formattedDate = formattedDate.replace("1999", "%Y");
-		formattedDate = formattedDate.replace("99", "%Y");
-		formattedDate = formattedDate.replace("03", "%m");
-		formattedDate = formattedDate.replace("3", "%m");
-		formattedDate = formattedDate.replace("01", "%d");
-		formattedDate = formattedDate.replace("1", "%d");
-		formattedDate = formattedDate.replace("04", "%H");
-		formattedDate = formattedDate.replace("4", "%H");
-		formattedDate = formattedDate.replace("05", "%M");
-		formattedDate = formattedDate.replace("5", "%M");
-		if(formattedDate.endsWith("AM")) {
-			formattedDate = formattedDate.replace("%H","%I").replace("AM", "%p");
-		}
-		return formattedDate;
-	}
-
-
 	
 	/**
 	 * Formats the given date with the ISO 8601 standard also known as 'datetime'
