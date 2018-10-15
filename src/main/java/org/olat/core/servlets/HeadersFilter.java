@@ -64,7 +64,9 @@ public class HeadersFilter implements Filter {
 
 	@Override
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-		if(securityModule == null) {
+		if(securityModule == null || edubaseModule != null
+				|| analyticsModule != null || card2BrainModule != null
+				|| openMeetingsModule != null) {
 			CoreSpringFactory.autowireObject(this);
 		}
 		addSecurityHeaders(response);
@@ -230,8 +232,9 @@ public class HeadersFilter implements Filter {
 	}
 	
 	private void appendOpenMeetingsUrl(StringBuilder sb) {
-		if(!openMeetingsModule.isEnabled()) return;
-		appendUrl(sb, openMeetingsModule.getOpenMeetingsURI().toString());
+		if(openMeetingsModule != null && openMeetingsModule.isEnabled()) {
+			appendUrl(sb, openMeetingsModule.getOpenMeetingsURI().toString());
+		}
 	}
 	
 	private void appendGoogleAnalyticsUrl(StringBuilder sb) {
@@ -241,13 +244,15 @@ public class HeadersFilter implements Filter {
 	}
 	
 	private void appendEdubaseUrl(StringBuilder sb) {
-		if(!edubaseModule.isEnabled()) return;
-		appendUrl(sb, edubaseModule.getLtiBaseUrl());
+		if(edubaseModule != null && edubaseModule.isEnabled()) {
+			appendUrl(sb, edubaseModule.getLtiBaseUrl());
+		}
 	}
 	
 	private void appendCard2BrainUrl(StringBuilder sb) {
-		if(!card2BrainModule.isEnabled()) return;
-		appendUrl(sb, card2BrainModule.getVerifyLtiUrl());
+		if(card2BrainModule != null && card2BrainModule.isEnabled()) {
+			appendUrl(sb, card2BrainModule.getVerifyLtiUrl());
+		}
 	}
 	
 	private void appendUrl(StringBuilder sb, String urlString) {
