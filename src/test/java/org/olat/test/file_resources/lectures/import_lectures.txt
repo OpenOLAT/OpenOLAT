@@ -1,0 +1,5 @@
+L1	Mathematik Einführung	4	10/8/18	8:00	12:00	yes	kanu@cyberiacafe.ch	COURSE	Zürich, HS76	This is about this and that	Make your HP ready	Teacher identified via Email address, participants from course
+	Abschlussparty	2	12/23/18	18:00	21:00:00	no	aoi	GROUP::Curriculum course group 1	Im Wald	Ein schönes Abschlussfest	Ein Wichtelgeschenk mitbringen	Teacher identified via user name, Participants from a course group named "Samichlaus"
+	Excel Workshop	8	11/15/18	9:15	17:30	yes	kanu@cyberiacafe.ch	CURR::Physik	Online	Learn the basics of Excel		Teacher identified via institutional user identifier, participants from a course curriculum element with ID "2018-HS-INFO"
+	
+	

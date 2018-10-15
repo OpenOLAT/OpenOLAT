@@ -31,7 +31,7 @@ import org.openqa.selenium.WebDriver;
  */
 public class LectureRepositoryAdminListPage {
 	
-	private WebDriver browser;
+	private final WebDriver browser;
 	
 	public LectureRepositoryAdminListPage(WebDriver browser) {
 		this.browser = browser;
@@ -43,12 +43,27 @@ public class LectureRepositoryAdminListPage {
 		return this;
 	}
 	
+	public LectureRepositoryAdminListPage assertOnLectureBlock(String title) {
+		By titleBy = By.xpath("//div[contains(@class,'o_table_flexi')]//td[text()[contains(.,'" + title + "')]]");
+		OOGraphene.waitElement(titleBy, browser);
+		return this;
+	}
+	
 	public EditLectureBlockPage newLectureBlock() {
 		By addLectureBy = By.cssSelector("div.o_sel_repo_lectures_list a.o_sel_repo_add_lecture");
 		browser.findElement(addLectureBy).click();
 		OOGraphene.waitModalDialog(browser);
 		return new EditLectureBlockPage(browser);
 	}
+	
+	public ImportLecturesBlocksWizard importLecturesBlocks() {
+		By importLecturesBy = By.cssSelector("div.o_sel_repo_lectures_list a.o_sel_repo_import_lectures");
+		browser.findElement(importLecturesBy).click();
+		OOGraphene.waitModalDialog(browser);
+		return new ImportLecturesBlocksWizard(browser);
+	}
+	
+
 	
 	
 

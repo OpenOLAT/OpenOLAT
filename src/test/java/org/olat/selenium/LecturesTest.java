@@ -573,4 +573,65 @@ public class LecturesTest extends Deployments {
 			.assertOnParticipantLectureBlocks()
 			.assertOnParticipantLectureBlockAuthorised(author, lectureTitle, title);
 	}
+	
+	/**
+	 * An author create a course to use the absence management
+	 * and import some lectures blocks.
+	 * 
+	 * @param loginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void importLectures(@InitialPage LoginPage loginPage)
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+
+		// configure the lectures module
+		loginPage
+			.loginAs(author.getLogin(), author.getPassword())
+			.resume();
+		
+		//go to authoring
+		AuthoringEnvPage authoringEnv = navBar
+			.assertOnNavigationPage()
+			.openAuthoringEnvironment();
+		
+		String title = "Lecture " + UUID.randomUUID();
+		//create course
+		authoringEnv
+			.openCreateDropDown()
+			.clickCreate(ResourceType.course)
+			.fillCreateForm(title)
+			.assertOnGeneralTab()
+			.clickToolbarBack();
+		
+		CoursePageFragment course = new CoursePageFragment(browser);
+		//enable the lectures
+		LectureRepositoryAdminPage lecturesAdmin = course
+			.lecturesAdministration();
+		lecturesAdmin
+			.settings()
+			.enableLectures()
+			.overrideDefaultSettings()
+			.saveSettings();
+		
+		LectureRepositoryAdminListPage lectureList = lecturesAdmin
+				.lectureList();
+		
+		// import the lecture blocks
+		lectureList
+				.importLecturesBlocks()
+				.importFile("lectures/import_lectures.txt")
+				.next()
+				.assertOnNumberOfNewBlocks(3)
+				.finish();
+		
+		//check the blocks
+		lectureList
+			.assertOnLectureBlock("Abschlussparty")
+			.assertOnLectureBlock("Excel Workshop")
+			.assertOnLectureBlock("Mathematik Einf");
+	}
 }
