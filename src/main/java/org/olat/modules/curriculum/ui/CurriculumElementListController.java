@@ -252,7 +252,9 @@ public class CurriculumElementListController extends FormBasicController impleme
 			CurriculumElementMembership elementMembership = elementWithViews.getCurriculumMembership();
 			
 			if(elementWithViews.getEntries() == null || elementWithViews.getEntries().isEmpty()) {
-				rows.add(new CurriculumElementWithViewsRow(element, elementMembership, 0));
+				CurriculumElementWithViewsRow row = new CurriculumElementWithViewsRow(element, elementMembership, 0);
+				forgeCalendarsLink(row);
+				rows.add(row);
 			} else if(elementWithViews.getEntries().size() == 1) {
 				CurriculumElementWithViewsRow row = new CurriculumElementWithViewsRow(element, elementMembership, elementWithViews.getEntries().get(0), true);
 				forge(row, repoKeys, resourcesWithOffer);
@@ -517,8 +519,11 @@ public class CurriculumElementListController extends FormBasicController impleme
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Infos", 0l);
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 
-			RepositoryEntry entry = repositoryService.loadByKey(row.getRepositoryEntryKey());
-			if(entry == null) {
+			Long repoEntryKey = row.getRepositoryEntryKey();
+			RepositoryEntry entry = repositoryService.loadByKey(repoEntryKey);
+			if (repoEntryKey == null) {
+				showInfo("curriculum.element.empty");				
+			} else if(entry == null) {
 				showWarning("repositoryentry.not.existing");
 			} else {
 				detailsCtrl = new RepositoryEntryDetailsController(ureq, bwControl, entry, false);
