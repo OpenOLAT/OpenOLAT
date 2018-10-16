@@ -82,6 +82,16 @@ public class Position {
 		return new Position(x, y);
 	}
 	
+	public static Position valueOf(int x, int y, int firefoxCorrection, Dimension dimension, WebDriver browser) {
+		if(browser instanceof FirefoxDriver) {
+			x = x - Math.round(dimension.getWidth() / 2.0f);
+			y = y - Math.round(dimension.getHeight() / 2.0f);
+			x += firefoxCorrection;
+			y += firefoxCorrection;
+		}
+		return new Position(x, y);
+	}
+	
 	public static Position valueOf(int x, int y, int width, int height, WebDriver browser) {
 		if(browser instanceof FirefoxDriver) {
 			x = x - Math.round(width / 2.0f);
