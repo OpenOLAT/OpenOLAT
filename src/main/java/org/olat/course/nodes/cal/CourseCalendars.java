@@ -206,7 +206,7 @@ public class CourseCalendars {
 		
 		CourseNode rootNode = course.getRunStructure().getRootNode();
 		CalCourseNodeVisitor v = new CalCourseNodeVisitor();
-		new TreeVisitor(new CalCourseNodeVisitor(), rootNode, true).visitAll();
+		new TreeVisitor(v, rootNode, true).visitAll();
 		return v.isFound();
 	}
 	
