@@ -68,8 +68,7 @@ implements FlexiTreeTableDataModel<U>, FilterableFlexiTableModel {
 	protected final void setUnfilteredObjects() {
 		List<U> rows;
 		if(focusedNode != null) {
-			int row = backupRows.indexOf(focusedNode);
-			rows = focusedNodes(backupRows, focusedNode, row);
+			rows = focusedNodes(backupRows, focusedNode, backupRows.indexOf(focusedNode));
 		} else {
 			rows = new ArrayList<>(backupRows);
 		}
@@ -131,7 +130,7 @@ implements FlexiTreeTableDataModel<U>, FilterableFlexiTableModel {
 		focusedNode = object;
 	}
 	
-	private List<U> focusedNodes(List<U> currentRows, U object, int row) {
+	protected List<U> focusedNodes(List<U> currentRows, U object, int row) {
 		int depth = getIndentation(object);
 		FlexiTreeTableNode parentObject = object.getParent();
 		
@@ -193,7 +192,13 @@ implements FlexiTreeTableDataModel<U>, FilterableFlexiTableModel {
 	public void openAll() {
 		openedRows.clear();
 		
-		List<U> currentRows = getObjects();
+		List<U> currentRows;
+		if(focusedNode == null) {
+			currentRows = new ArrayList<>(backupRows);
+		} else {
+			currentRows = focusedNodes(backupRows, focusedNode, backupRows.indexOf(focusedNode));
+		}
+		
 		for(U currentRow:currentRows) {
 			if(currentRow.getParent() != null) {
 				openedRows.add((U)currentRow.getParent());
@@ -202,13 +207,7 @@ implements FlexiTreeTableDataModel<U>, FilterableFlexiTableModel {
 			}
 		}
 
-		if(focusedNode != null) {// refocus if needed
-			int row = currentRows.indexOf(focusedNode);
-			currentRows = focusedNodes(currentRows, focusedNode, row);
-			super.setObjects(currentRows);
-		} else {
-			super.setObjects(currentRows);
-		}
+		super.setObjects(currentRows);
 	}
 
 	@Override

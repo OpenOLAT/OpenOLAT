@@ -77,9 +77,16 @@ public class CurriculumComposerTableModel extends DefaultFlexiTreeTableDataModel
 		if(searchString != null) {
 			searchString = searchString.toLowerCase();
 		}
+		
+		List<CurriculumElementRow> rowsToFilter;
+		if(focusedNode == null) {
+			rowsToFilter = new ArrayList<>(backupRows);
+		} else {
+			rowsToFilter = focusedNodes(backupRows, focusedNode, backupRows.indexOf(focusedNode));
+		}
 
 		List<CurriculumElementRow> filteredRows = new ArrayList<>(backupRows.size());
-		for(CurriculumElementRow row:backupRows) {
+		for(CurriculumElementRow row:rowsToFilter) {
 			boolean accept = false;
 			if(searched && filtered) {
 				accept = accept(row, nowBegin, nowEnd, filter) && accept(row, searchString, searchLong);

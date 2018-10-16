@@ -48,6 +48,10 @@ public interface FlexiTreeTableDataModel<T extends FlexiTreeTableNode> extends F
 	
 	public void open(int row);
 	
+	/**
+	 * The table will call the openAll method and filter() right after.
+	 * 
+	 */
 	public void openAll();
 	
 	public void close(int row);

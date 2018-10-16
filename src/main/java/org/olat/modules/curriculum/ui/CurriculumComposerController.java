@@ -40,8 +40,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableReduceEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TreeNodeFlexiCellRenderer;
@@ -134,11 +134,10 @@ public class CurriculumComposerController extends FormBasicController implements
 		managed = CurriculumManagedFlag.isManaged(curriculum, CurriculumManagedFlag.members);
 		
 		initForm(ureq);
-		loadModel();
 		if(tableEl.getSelectedFilterValue() == null) {
 			tableEl.setSelectedFilterKey("active");
-			tableModel.filter(tableEl.getQuickSearchString(), tableEl.getSelectedFilters());
 		}
+		loadModel();
 	}
 	
 	public Curriculum getCurriculum() {
@@ -408,10 +407,8 @@ public class CurriculumComposerController extends FormBasicController implements
 							.createCEListFromString(OresHelper.createOLATResourceableInstance("tab", 2l));
 					doEditCurriculumElement(ureq, row, entries);
 				}
-			} else if(event instanceof FlexiTableReduceEvent) {
-				FlexiTableReduceEvent se = (FlexiTableReduceEvent)event;
-				tableModel.filter(se.getSearch(), se.getFilters());
-				tableEl.reset(false, true, false);
+			} else if(event instanceof FlexiTableSearchEvent) {
+				tableEl.reset(false, true, true);// only reload
 			}
 		} else if (source instanceof FormLink) {
 			FormLink link = (FormLink)source;

@@ -1258,17 +1258,14 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		}
 		if(dataModel instanceof FlexiTreeTableDataModel) {
 			((FlexiTreeTableDataModel<?>)dataModel).popBreadcrumb(crumb);
-			reset(true, true, true);
+			reset(false, true, true);
 		}
 	}
 	
 	private void doOpenAll() {
 		if(dataModel instanceof FlexiTreeTableDataModel) {
-			if(dataModel instanceof FilterableFlexiTableModel) {
-				((FilterableFlexiTableModel)dataModel).filter(getQuickSearchString(), getFilters());
-			}
 			((FlexiTreeTableDataModel<?>)dataModel).openAll();
-			resetInternComponents();
+			reset(false, true, true);
 		}
 	}
 	

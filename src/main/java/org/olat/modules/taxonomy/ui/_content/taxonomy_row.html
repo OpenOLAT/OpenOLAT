@@ -1,4 +1,4 @@
-<div class="panel panel-default o_binder #if($r.isNotNull($row.referenceEntryName)) o_portfolio_assignments #end #if($row.background) panel-imagebg" style="background-image:url('$mapperThumbnailUrl/$row.key/${row.imageName}');" #else " #end>
+<div class="panel panel-default #if($r.isNotNull($row.referenceEntryName)) o_portfolio_assignments #end #if($row.background) panel-imagebg" style="background-image:url('$mapperThumbnailUrl/$row.key/${row.imageName}');" #else " #end>
 	<div class="panel-heading">
 		<h4 class="panel-title">$r.escapeHtml($row.displayName) #if($r.isNotNull($row.identifier)) <small class="text-muted">$r.escapeHtml($row.identifier)</small>#end</h4>
 	</div>
