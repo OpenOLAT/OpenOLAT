@@ -170,14 +170,14 @@ public class CourseOverviewController extends BasicController  {
 		courseListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(MSCols.role.i18n(), MSCols.role.ordinal(), null, getLocale(), ColumnDescriptor.ALIGNMENT_LEFT, roleRenderer){
 			@Override
 			public int compareTo(int rowa, int rowb) {
-				CourseMemberView cmv1 = (CourseMemberView)table.getTableDataModel().getValueAt(rowa,dataColumn);
-				CourseMemberView cmv2 = (CourseMemberView)table.getTableDataModel().getValueAt(rowb,dataColumn);
-				if(cmv1 == null || cmv1.getMembership() == null) {
+				CourseMembership cmv1 = (CourseMembership)table.getTableDataModel().getValueAt(rowa,dataColumn);
+				CourseMembership cmv2 = (CourseMembership)table.getTableDataModel().getValueAt(rowb,dataColumn);
+				if(cmv1 == null) {
 					return -1;
-				} else if(cmv2 == null || cmv2.getMembership() == null) {
+				} else if(cmv2 == null) {
 					return 1;
 				}
-				return membershipComparator.compare(cmv1.getMembership(), cmv2.getMembership());
+				return membershipComparator.compare(cmv1, cmv2);
 			}
 		});
 		courseListCtr.addColumnDescriptor(new DefaultColumnDescriptor(MSCols.firstTime.i18n(), MSCols.firstTime.ordinal(), null, getLocale()));
