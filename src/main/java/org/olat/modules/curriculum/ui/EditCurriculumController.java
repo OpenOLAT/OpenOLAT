@@ -179,15 +179,16 @@ public class EditCurriculumController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		//create a new one
+		Organisation organisation;
+		if(organisationEl != null && organisationEl.isOneSelected()) {
+			organisation = organisationService
+					.getOrganisation(new OrganisationRefImpl(Long.valueOf(organisationEl.getSelectedKey())));
+		} else {
+			organisation = organisationService.getDefaultOrganisation();
+		}
+		
 		if(curriculum == null) {
-			//create a new one
-			Organisation organisation;
-			if(organisationEl != null && organisationEl.isOneSelected()) {
-				organisation = organisationService
-						.getOrganisation(new OrganisationRefImpl(Long.valueOf(organisationEl.getSelectedKey())));
-			} else {
-				organisation = organisationService.getDefaultOrganisation();
-			}
 			curriculum = curriculumService
 					.createCurriculum(identifierEl.getValue(), displayNameEl.getValue(), descriptionEl.getValue(), organisation);
 			curriculumService.addMember(curriculum, getIdentity(), CurriculumRoles.curriculummanager);
@@ -196,6 +197,7 @@ public class EditCurriculumController extends FormBasicController {
 			curriculum.setIdentifier(identifierEl.getValue());
 			curriculum.setDisplayName(displayNameEl.getValue());
 			curriculum.setDescription(descriptionEl.getValue());
+			curriculum.setOrganisation(organisation);
 			curriculum = curriculumService.updateCurriculum(curriculum);
 		}
 

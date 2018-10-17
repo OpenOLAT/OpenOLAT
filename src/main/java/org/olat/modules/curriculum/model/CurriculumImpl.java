@@ -86,7 +86,7 @@ public class CurriculumImpl implements Persistable, Curriculum {
 	private Group group;
 	
 	@ManyToOne(targetEntity=OrganisationImpl.class,fetch=FetchType.LAZY,optional=true)
-	@JoinColumn(name="fk_organisation", nullable=true, insertable=true, updatable=false)
+	@JoinColumn(name="fk_organisation", nullable=true, insertable=true, updatable=true)
 	private Organisation organisation;
 
 	@Override
