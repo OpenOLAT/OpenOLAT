@@ -124,14 +124,11 @@ public class AssessmentNotificationsHandler implements NotificationsHandler {
 	public SubscriptionContext getAssessmentSubscriptionContext(Identity ident, ICourse course) {
 		SubscriptionContext sctx = null;
 		if (ident == null || canSubscribeForAssessmentNotification(ident, course)) {
-			// Creates a new SubscriptionContext only if not found into cache
-			if (sctx == null) {
-				// a subscription context showing to the root node (the course's root
-				// node is started when clicking such a notification)
-				CourseNode cn = course.getRunStructure().getRootNode();
-				Long resourceableId = course.getResourceableId();
-				sctx = new SubscriptionContext(CourseModule.ORES_COURSE_ASSESSMENT, resourceableId, cn.getIdent());
-			}
+			// a subscription context showing to the root node (the course's root
+			// node is started when clicking such a notification)
+			CourseNode cn = course.getRunStructure().getRootNode();
+			Long resourceableId = course.getResourceableId();
+			sctx = new SubscriptionContext(CourseModule.ORES_COURSE_ASSESSMENT, resourceableId, cn.getIdent());
 		}
 		return sctx;
 	}
@@ -310,14 +307,13 @@ public class AssessmentNotificationsHandler implements NotificationsHandler {
 			// exceptions, course
 			// can't be loaded when already deleted
 			if (notificationsManager.isPublisherValid(p) && compareDate.before(latestNews)) {
-				Long courseId = new Long(p.getData());
+				Long courseId = Long.valueOf(p.getData());
 				final ICourse course = loadCourseFromId(courseId);
 				if (courseStatus(course)) {
 					// course admins or users with the course right to have full access to
 					// the assessment tool will have full access to user tests
 					CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
-					final boolean hasFullAccess = (cgm.isIdentityCourseAdministrator(identity) ? true : cgm.hasRight(identity,
-							CourseRights.RIGHT_ASSESSMENT));
+					final boolean hasFullAccess = cgm.isIdentityCourseAdministrator(identity) || cgm.hasRight(identity, CourseRights.RIGHT_ASSESSMENT);
 					final Set<Identity> coachedUsers = new HashSet<>();
 					if (!hasFullAccess) {
 						// initialize list of users, only when user has not full access

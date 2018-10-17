@@ -110,7 +110,7 @@ public class ImsQTI21InteractionsTest extends Deployments {
 			.clickToolbarBack()
 			.assertOnAssessmentItem()
 			.answerHotspot("circle")
-			.saveAnswer()
+			.saveGraphicAnswer()
 			.assertFeedback("Correct!")
 			.endTest();
 		//check the results
@@ -153,6 +153,7 @@ public class ImsQTI21InteractionsTest extends Deployments {
 		qtiPage
 			.clickToolbarBack()
 			.assertOnAssessmentItem()
+			.moveToAssociateItems()
 			.answerAssociate("Antonio", 1, true)
 			.answerAssociate("Prospero", 1, false)
 			.answerAssociate("Capulet", 2, true)
@@ -201,6 +202,7 @@ public class ImsQTI21InteractionsTest extends Deployments {
 		qtiPage
 			.clickToolbarBack()
 			.assertOnAssessmentItem()
+			.moveToGraphicAssociateInteraction()
 			.answerGraphicAssociate("B")
 			.answerGraphicAssociate("C")
 			.answerGraphicAssociate("C")
@@ -492,6 +494,7 @@ public class ImsQTI21InteractionsTest extends Deployments {
 		qtiPage
 			.clickToolbarBack()
 			.assertOnAssessmentItem()
+			.moveToGraphicOrderInteraction()
 			.answerGraphicOrderById("A")
 			.answerGraphicOrderById("D")
 			.answerGraphicOrderById("C")
@@ -539,9 +542,10 @@ public class ImsQTI21InteractionsTest extends Deployments {
 		qtiPage
 			.clickToolbarBack()
 			.assertOnAssessmentItem()
-			.answerPositionObject(0, 118, 184)
-			.answerPositionObject(1, 150, 235)
-			.answerPositionObject(2, 96, 114)
+			.moveToPositionObject()
+			.answerPositionObject(0, 118, 184, 4)
+			.answerPositionObject(1, 150, 235, 4)
+			.answerPositionObject(2, 96, 114, 4)
 			.saveAnswer()
 			.endTest()
 			.closeTest();
@@ -629,6 +633,7 @@ public class ImsQTI21InteractionsTest extends Deployments {
 		qtiPage
 			.clickToolbarBack()
 			.assertOnAssessmentItem()
+			.moveToVerticalSlider()
 			.answerVerticalSlider(16)
 			.saveAnswer()
 			.endTest()

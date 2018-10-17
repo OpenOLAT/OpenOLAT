@@ -182,6 +182,20 @@ public class QTI21Page {
 	}
 	
 	/**
+	 * Only move if Firefox.
+	 * 
+	 * @return Itself
+	 */
+	public QTI21Page moveToGraphicOrderInteraction() {
+		By imgBy = By.xpath("//div[contains(@class,'graphicOrderInteraction')]");
+		OOGraphene.waitElement(imgBy, browser);
+		if(browser instanceof FirefoxDriver) {
+			OOGraphene.scrollTo(imgBy, browser);
+		}
+		return this;
+	}
+	
+	/**
 	 * Select the area with the specified data-qti-id.
 	 * @param id The id save in data-qti-id
 	 * @return Itself
@@ -189,9 +203,20 @@ public class QTI21Page {
 	public QTI21Page answerGraphicOrderById(String id) {
 		OOGraphene.waitElement(By.className("graphicOrderInteraction"), browser);
 		By areaBy = By.xpath("//div[contains(@class,'graphicOrderInteraction')]//map/area[@data-qti-id='" + id + "']");
-		List<WebElement> elements = browser.findElements(areaBy);
-		Assert.assertEquals("Hotspot with data-qti-id " + id, 1, elements.size()); 
-		elements.get(0).click();
+		WebElement areaEl = browser.findElement(areaBy);
+		if(browser instanceof FirefoxDriver) {
+			String coords = areaEl.getAttribute("coords");
+			By imgBy = By.xpath("//div[contains(@class,'graphicOrderInteraction')]/div/img");
+			WebElement element = browser.findElement(imgBy);
+			Dimension dim = element.getSize();
+			Position pos = Position.valueOf(coords, dim, browser);
+			new Actions(browser)
+				.moveToElement(element, pos.getX(), pos.getY())
+				.click()
+				.perform();
+		} else {
+			areaEl.click();
+		}
 		return this;
 	}
 	
@@ -336,25 +361,67 @@ public class QTI21Page {
 		return this;
 	}
 	
+	/**
+	 * Only move if Firefox.
+	 * 
+	 * @return Itself
+	 */
+	public QTI21Page moveToAssociateItems() {
+		By associateItemsBy = By.xpath("//div[@class='association'][3]");
+		OOGraphene.waitElement(associateItemsBy, browser);
+		if(browser instanceof FirefoxDriver) {
+			OOGraphene.scrollTo(associateItemsBy, browser);
+		}
+		return this;
+	}
+	
 	public QTI21Page answerGraphicAssociate(String id) {
 		OOGraphene.waitElement(By.className("graphicAssociateInteraction"), browser);
 		By areaBy = By.xpath("//div[contains(@class,'graphicAssociateInteraction')]//map/area[@data-qti-id='" + id + "']");
-		List<WebElement> elements = browser.findElements(areaBy);
-		Assert.assertEquals("Area by " + id, 1, elements.size()); 
-		elements.get(0).click();
+		WebElement areaEl = browser.findElement(areaBy);
+		if(browser instanceof FirefoxDriver) {
+			String coords = areaEl.getAttribute("coords");
+			By imgBy = By.xpath("//div[contains(@class,'graphicAssociateInteraction')]/div/div/img");
+			WebElement element = browser.findElement(imgBy);
+			Dimension dim = element.getSize();
+			Position pos = Position.valueOf(coords, dim, browser);
+			new Actions(browser)
+				.moveToElement(element, pos.getX(), pos.getY())
+				.click()
+				.perform();
+		} else {
+			areaEl.click();
+		}
+		return this;
+	}
+	
+	/**
+	 * Only move if Firefox.
+	 * 
+	 * @return Itself
+	 */
+	public QTI21Page moveToGraphicAssociateInteraction() {
+		By associateItemsBy = By.xpath("//div[@class='graphicAssociateInteraction']");
+		OOGraphene.waitElement(associateItemsBy, browser);
+		if(browser instanceof FirefoxDriver) {
+			OOGraphene.scrollTo(associateItemsBy, browser);
+		}
 		return this;
 	}
 	
 	public QTI21Page answerOrderDropItem(String source) {
-		By sourceBy = By.xpath("//li[contains(@class,'o_assessmentitem_order_item')][text()[contains(.,'" + source + "')]]");
+		By sourceBy = By.xpath("//li[@class='o_assessmentitem_order_item'][contains(text(),'" + source + "')]");
 		OOGraphene.waitElement(sourceBy, 5, browser);
 		WebElement sourceEl = browser.findElement(sourceBy);
 		By targetBy = By.xpath("//div[@class='orderInteraction']//div[contains(@class,'target')]/ul");
 		WebElement targetEl = browser.findElement(targetBy);
+		
+		Position sourcePos = Position.valueOf(30, 30, sourceEl.getSize(), browser);
+		Position targetPos = Position.valueOf(30, 30,  targetEl.getSize(), browser);
 		new Actions(browser)
-			.moveToElement(sourceEl, 30, 30)
+			.moveToElement(sourceEl, sourcePos.getX(), sourcePos.getY())
 			.clickAndHold()
-			.moveToElement(targetEl, 30, 30)
+			.moveToElement(targetEl, targetPos.getX(), targetPos.getY())
 			.release()
 			.build()
 			.perform();
@@ -389,11 +456,23 @@ public class QTI21Page {
 	public QTI21Page answerGraphicGapClick(String item, String gap) {
 		By sourceBy = By.xpath("//div[contains(@class,'gap_container')]/div[contains(@class,'o_gap_item')][@data-qti-id='" + item + "']");
 		OOGraphene.waitElement(sourceBy, 5, browser);
-		WebElement sourceEl = browser.findElement(sourceBy);
-		sourceEl.click();
-		By targetBy = By.xpath("//div[@class='graphicGapMatchInteraction']//map/area[@data-qti-id='" + gap + "']");
-		WebElement targetEl = browser.findElement(targetBy);
-		targetEl.click();
+		browser.findElement(sourceBy).click();
+		By areaBy = By.xpath("//div[@class='graphicGapMatchInteraction']//map/area[@data-qti-id='" + gap + "']");
+		WebElement areaEl = browser.findElement(areaBy);
+		if(browser instanceof FirefoxDriver) {
+			String coords = areaEl.getAttribute("coords");
+			By imgBy = By.xpath("//div[contains(@class,'graphicGapMatchInteraction')]/div/div/img");
+			WebElement element = browser.findElement(imgBy);
+			Dimension dim = element.getSize();
+			Position pos = Position.valueOf(coords, dim, browser);
+			new Actions(browser)
+				.moveToElement(element, pos.getX(), pos.getY())
+				.click()
+				.perform();
+			
+		} else {
+			areaEl.click();
+		}
 		return this;
 	}
 	
@@ -417,27 +496,59 @@ public class QTI21Page {
 	}
 	
 	/**
+	 * Only move if Firefox.
+	 * 
+	 * @return Itself
+	 */
+	public QTI21Page moveToPositionObject() {
+		By itemBy = By.xpath("//div[contains(@class,'positionObjectStage')]//div[contains(@id,'object-item-')]");
+		OOGraphene.waitElement(itemBy, browser);
+		if(browser instanceof FirefoxDriver) {
+			OOGraphene.scrollTo(itemBy, browser);
+		}
+		return this;
+	}
+	
+	/**
 	 * Select the object by its index (start with 0) and
-	 * move it on the image and the specified coodinates.
+	 * move it on the image and the specified coordinates.
 	 * 
 	 * @param index The index of the object
 	 * @param x The x target coordinate
 	 * @param y The y target coordinate
 	 * @return Itself
 	 */
-	public QTI21Page answerPositionObject(int index, int x, int y) {
+	public QTI21Page answerPositionObject(int index, int x, int y, int firefoxCorrection) {
 		By itemBy = By.xpath("//div[contains(@class,'positionObjectStage')]//div[@id='object-item-" + index + "']");
 		OOGraphene.waitElement(itemBy, browser);
 		WebElement itemEl = browser.findElement(itemBy);
 		By targetBy = By.xpath("//div[@class='positionObjectStage']//img[contains(@id,'qtiworks_id_container_')]");
 		WebElement targetEl = browser.findElement(targetBy);
+		Dimension targetDim = targetEl.getSize();
+		Position targetPos = Position.valueOf(x, y, firefoxCorrection, targetDim, browser);
+		Dimension itemDim = itemEl.getSize();
+		Position itemPos = Position.valueOf(5, 5, itemDim, browser);
 		new Actions(browser)
-			.moveToElement(itemEl, 5, 5)
+			.moveToElement(itemEl, itemPos.getX(), itemPos.getY())
 			.clickAndHold()
-			.moveToElement(targetEl, x, y)
+			.moveToElement(targetEl, targetPos.getX() + 4, targetPos.getY() + 4)
 			.release()
 			.build()
 			.perform();
+		return this;
+	}
+	
+	/**
+	 * Only move if Firefox.
+	 * 
+	 * @return Itself
+	 */
+	public QTI21Page moveToVerticalSlider() {
+		By interactionBy = By.id("itemBody");
+		OOGraphene.waitElement(interactionBy, browser);
+		if(browser instanceof FirefoxDriver) {
+			OOGraphene.scrollTo(interactionBy, browser);
+		}
 		return this;
 	}
 	
@@ -453,14 +564,13 @@ public class QTI21Page {
 		WebElement sliderEl = browser.findElement(sliderBy);
 		Dimension size = sliderEl.getSize();
 		float height = (size.getHeight() / 100f) * val;
-		float scaledY = size.getHeight() - height;
-		
+		int scaledY = Math.round(size.getHeight() - height);
+		Position pos = Position.valueOf(5, scaledY, size, browser);
 		new Actions(browser)
-			.moveToElement(sliderEl, 5, Math.round(scaledY))
+			.moveToElement(sliderEl, pos.getX(), pos.getY())
 			.click()
 			.build()
 			.perform();
-		
 		
 		By valueBy = By.xpath("//div[contains(@class,'sliderInteraction')]/div[contains(@class,'sliderVertical')]/div[contains(@class,'sliderValue')]/span[text()='" + val + "']");
 		OOGraphene.waitElement(valueBy, browser);
