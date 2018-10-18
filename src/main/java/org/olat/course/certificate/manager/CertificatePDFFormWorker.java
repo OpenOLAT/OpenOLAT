@@ -256,7 +256,7 @@ public class CertificatePDFFormWorker {
 				field.setValue(value);
 			}
 
-			field.setReadonly(true);
+			field.setReadOnly(true);
 			field.setNoExport(true);
 		}
 	}

@@ -25,7 +25,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.util.PDFTextStripper;
+import org.apache.pdfbox.text.PDFTextStripper;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
@@ -66,22 +66,9 @@ public class PdfBoxExtractor implements PdfExtractor {
 	
 	private FileContent extractTextFromPdf(VFSLeaf leaf) throws IOException, DocumentAccessException {
 		if (log.isDebug()) log.debug("readContent from pdf starts...");
-		PDDocument document = null;
-		BufferedInputStream bis = null;
-		try {
-			bis = new BufferedInputStream(leaf.getInputStream());			
-			document = PDDocument.load(bis);
-			if (document.isEncrypted()) {
-				try {
-					document.decrypt("");
-				} catch (Exception e) {
-					log.warn("PDF is encrypted. Can not read content file=" + leaf.getName());
-					LimitedContentWriter writer = new LimitedContentWriter(128, FileDocumentFactory.getMaxFileSize());
-					writer.append(leaf.getName());
-					writer.close();
-					return new FileContent(leaf.getName(), writer.toString());
-				}
-			}	
+		
+		try(BufferedInputStream bis = new BufferedInputStream(leaf.getInputStream());
+				PDDocument document = PDDocument.load(bis)) {		
 			String title = getTitle(document);
 			if (log.isDebug()) log.debug("readContent PDDocument loaded");
 			PDFTextStripper stripper = new PDFTextStripper();
@@ -89,13 +76,19 @@ public class PdfBoxExtractor implements PdfExtractor {
 			stripper.writeText(document, writer);
 			writer.close();
 			return new FileContent(title, writer.toString());
-		} finally {
-			if (document != null) {
-			  document.close();
-			}
-			if (bis != null) {
-				bis.close();
-			}
+		} catch(Exception e) {
+			log.warn("Can not read content file=" + leaf.getName());
+			return createWithFilename(leaf) ;
+		}
+	}
+	
+	private FileContent createWithFilename(VFSLeaf leaf) {
+		try(LimitedContentWriter writer = new LimitedContentWriter(128, FileDocumentFactory.getMaxFileSize())) {
+			writer.append(leaf.getName());
+			return new FileContent(leaf.getName(), writer.toString());
+		} catch(Exception e) {
+			log.error("", e);
+			return null;
 		}
 	}
 	

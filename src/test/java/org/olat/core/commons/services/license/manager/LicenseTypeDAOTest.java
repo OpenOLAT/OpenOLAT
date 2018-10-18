@@ -112,8 +112,10 @@ public class LicenseTypeDAOTest extends OlatTestCase {
 		assertThat(licenseType.getSortOrder()).isEqualTo(sortOrder);
 		assertThat(licenseType.getCreationDate()).isNotNull();
 		assertThat(licenseType.getLastModified()).isNotNull();
+		
+		// small delay to be sure the modification time actually differs from the creation date
+		sleep(100);
 
-		sleep(100);// to make sure the last modified date is different
 		// update
 		licenseType = licenseTypeDao.save(licenseType);
 		dbInstance.commitAndCloseSession();

@@ -37,7 +37,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Iterator;
-import java.util.List;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -55,10 +54,11 @@ import javax.imageio.stream.MemoryCacheImageOutputStream;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.encryption.InvalidPasswordException;
+import org.apache.pdfbox.rendering.ImageType;
+import org.apache.pdfbox.rendering.PDFRenderer;
 import org.olat.core.commons.services.image.Crop;
 import org.olat.core.commons.services.image.Size;
-import org.olat.core.commons.services.thumbnail.CannotGenerateThumbnailException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
@@ -81,40 +81,29 @@ public class ImageHelperImpl extends AbstractImageHelper {
 	
 	private static final String OUTPUT_FORMAT = "jpeg";
 
-	
 	@Override
-	public Size thumbnailPDF(VFSLeaf pdfFile, VFSLeaf thumbnailFile, int maxWidth, int maxHeight) {
-		InputStream in = null;
+	public Size thumbnailPDF(VFSLeaf pdfFile, VFSLeaf thumbnailFile, int maxWidth, int maxHeight) {	
 		PDDocument document = null;
-		try {
+		try(InputStream in = pdfFile.getInputStream()) {
 			WorkThreadInformations.setInfoFiles(null, pdfFile);
 			WorkThreadInformations.set("Generate thumbnail VFSLeaf=" + pdfFile);
-			in = pdfFile.getInputStream();
+			
 			document = PDDocument.load(in);
-			if (document.isEncrypted()) {
-				try {
-					document.decrypt("");
-				} catch (Exception e) {
-					log.info("PDF document is encrypted: " + pdfFile);
-					throw new CannotGenerateThumbnailException("PDF document is encrypted: " + pdfFile);
-				}
-			}
-			List pages = document.getDocumentCatalog().getAllPages();
-			PDPage page = (PDPage) pages.get(0);
-			BufferedImage image = page.convertToImage(BufferedImage.TYPE_INT_BGR, 72);
+			PDFRenderer pdfRenderer = new PDFRenderer(document);
+			BufferedImage image = pdfRenderer.renderImageWithDPI(0, 72, ImageType.RGB);
 			Size size = scaleImage(image, thumbnailFile, maxWidth, maxHeight);
 			if(size != null) {
 				return size;
 			}
 			return null;
-		} catch (CannotGenerateThumbnailException e) {
+		} catch(InvalidPasswordException e) {
+			log.warn("Unable to decrypt. Unable to create image from pdf file.", e);
 			return null;
 		} catch (Exception e) {
 			log.warn("Unable to create image from pdf file.", e);
 			return null;
 		} finally {
 			WorkThreadInformations.unset();
-			FileUtils.closeSafely(in);
 			if (document != null) {
 				try {
 					document.close();
@@ -262,14 +251,13 @@ public class ImageHelperImpl extends AbstractImageHelper {
 	}
 	
 	private Size scaleImage(BufferedImage image, VFSLeaf scaledImage, int maxWidth, int maxHeight) {
-		OutputStream bos = null;
-		try {
+		try(OutputStream bos = new BufferedOutputStream(scaledImage.getOutputStream(false))) {
 			if (image == null) {
 				// happens with faulty Java implementation, e.g. on MacOSX Java 10, or
 				// unsupported image format
 				return null;				
 			}
-			bos = new BufferedOutputStream(scaledImage.getOutputStream(false));
+			
 			Size scaledSize = calcScaledSize(image, maxWidth, maxHeight);
 			if(writeTo(scaleTo(image, scaledSize), bos, scaledSize, getImageFormat(scaledImage))) {
 				return scaledSize;
@@ -277,8 +265,6 @@ public class ImageHelperImpl extends AbstractImageHelper {
 			return null;
 		} catch (Exception e) {
 			return null;
-		} finally {
-			FileUtils.closeSafely(bos);
 		}
 	}
 	

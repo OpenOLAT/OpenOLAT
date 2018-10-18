@@ -90,6 +90,7 @@
 	    <test.env.db.postgresql.host.port>5432</test.env.db.postgresql.host.port>
 	    <test.env.instance.id>myolat</test.env.instance.id>
 	    <test.env.jmx.rmi.port.0>3000</test.env.jmx.rmi.port.0>
+	    <test.env.webdriver.browser>chrome</test.env.webdriver.browser>
 	    <skipTests>true</skipTests>
 		<skipSeleniumTests>false</skipSeleniumTests>
 	</properties>
@@ -1280,7 +1281,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-failsafe-plugin</artifactId>
-				<version>2.20</version>
+				<version>2.21.0</version>
 				<configuration>
 					<encoding>UTF-8</encoding>
 					<skipITs>${skipSeleniumTests}</skipITs>
@@ -1300,6 +1301,7 @@
 						<test.env.instance.id>${test.env.instance.id}</test.env.instance.id>
 						<test.env.jmx.rmi.port.0>${test.env.jmx.rmi.port.0}</test.env.jmx.rmi.port.0>
 						<arquillian.launch>tomcat-7-managed</arquillian.launch>
+						<webdriver.browser>${test.env.webdriver.browser}</webdriver.browser>
 					</systemPropertyVariables>
 					<testNGArtifactName>none:none</testNGArtifactName>
 					<includes>
@@ -1852,7 +1854,7 @@
 		<dependency>
 			<groupId>org.apache.pdfbox</groupId>
 			<artifactId>pdfbox</artifactId>
-			<version>1.8.15</version>
+			<version>2.0.12</version>
 			<exclusions>
 				<exclusion>
 					<groupId>commons-logging</groupId>
@@ -1861,14 +1863,19 @@
 			</exclusions>
 		</dependency>
 		<dependency>
-			<groupId>org.bouncycastle</groupId>
-			<artifactId>bcmail-jdk15</artifactId>
-			<version>1.46</version>
+			<groupId>org.apache.pdfbox</groupId>
+			<artifactId>xmpbox</artifactId>
+			<version>2.0.12</version>
 		</dependency>
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
-			<artifactId>bcprov-jdk15</artifactId>
-			<version>1.46</version>
+			<artifactId>bcmail-jdk15on</artifactId>
+			<version>1.60</version>
+		</dependency>
+		<dependency>
+			<groupId>org.bouncycastle</groupId>
+			<artifactId>bcprov-jdk15on</artifactId>
+			<version>1.60</version>
 		</dependency>
 		<dependency>
 			<groupId>org.scribe</groupId>

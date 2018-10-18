@@ -21,7 +21,6 @@ package org.olat.core.commons.services.image;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
@@ -31,7 +30,6 @@ import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.MemoryCacheImageInputStream;
 
-import org.apache.commons.io.IOUtils;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
@@ -48,13 +46,10 @@ public class ImageUtils {
 	
 	
 	public static Size getImageSize(File image) {
-		InputStream in = null;
-		try {
+		try(InputStream in = new FileInputStream(image)) {
 			String suffix = FileUtils.getFileSuffix(image.getName());
-			in = new FileInputStream(image);
 			return getImageSize(suffix, in);
-		} catch (FileNotFoundException e) {
-			IOUtils.closeQuietly(in);
+		} catch (IOException e) {
 			return null;
 		}
 	}
@@ -65,8 +60,7 @@ public class ImageUtils {
 		Iterator<ImageReader> iter = ImageIO.getImageReadersBySuffix(suffix);
 		if (iter.hasNext()) {
 			ImageReader reader = iter.next();
-			try {
-				ImageInputStream stream = new MemoryCacheImageInputStream(in);
+			try(ImageInputStream stream = new MemoryCacheImageInputStream(in)) {
 				reader.setInput(stream);
 				
 				int imageIndex = reader.getMinIndex();
@@ -76,7 +70,6 @@ public class ImageUtils {
 			} catch (IOException e) {
 				log.error(e.getMessage());
 			} finally {
-				IOUtils.closeQuietly(in);
 				reader.dispose();
 			}
 		} else {

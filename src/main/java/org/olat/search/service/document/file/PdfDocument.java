@@ -50,7 +50,7 @@ public class PdfDocument extends FileDocument {
 	private static final long serialVersionUID = 6432923202585881794L;
 	private static final OLog log = Tracing.createLoggerFor(PdfDocument.class);
 
-	public final static String FILE_TYPE = "type.file.pdf";
+	public static final String FILE_TYPE = "type.file.pdf";
 	
 	private boolean externalIndexer;
 	private String pdfTextBufferPath;

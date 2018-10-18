@@ -19,28 +19,33 @@
  */
 package org.olat.core.util.pdf;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
 import javax.xml.transform.TransformerException;
 
-import org.apache.jempbox.xmp.XMPMetadata;
-import org.apache.jempbox.xmp.XMPSchemaBasic;
-import org.apache.jempbox.xmp.XMPSchemaDublinCore;
-import org.apache.jempbox.xmp.XMPSchemaPDF;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
 import org.apache.pdfbox.pdmodel.PDDocumentInformation;
 import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.PDPageContentStream.AppendMode;
+import org.apache.pdfbox.pdmodel.PDPageTree;
 import org.apache.pdfbox.pdmodel.common.PDMetadata;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
-import org.apache.pdfbox.pdmodel.edit.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.apache.xmpbox.XMPMetadata;
+import org.apache.xmpbox.schema.AdobePDFSchema;
+import org.apache.xmpbox.schema.DublinCoreSchema;
+import org.apache.xmpbox.schema.XMPBasicSchema;
+import org.apache.xmpbox.xml.XmpSerializer;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 
@@ -69,7 +74,7 @@ public class PdfDocument {
 	protected float currentY;
 	protected String printDate;
 	
-	public PdfDocument(Locale locale) throws IOException {
+	public PdfDocument(Locale locale) {
 		document = new PDDocument();
 		printDate = Formatter.getInstance(locale).formatDate(new Date());
 	}
@@ -79,11 +84,11 @@ public class PdfDocument {
 	}
 
 	public PDPage addPage() throws IOException {
-		return addPage(PDPage.PAGE_SIZE_A4);
+		return addPage(PDRectangle.A4);
 	}
 	
 	public PDPage addPageLandscape() throws IOException {
-		return addPage(new PDRectangle(PDPage.PAGE_SIZE_A4.getHeight(), PDPage.PAGE_SIZE_A4.getWidth()));
+		return addPage(new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth()));
 	}
 	
 	public PDPage addPage(PDRectangle size) throws IOException {
@@ -96,7 +101,7 @@ public class PdfDocument {
         currentPage = page;
         currentContentStream = new PDPageContentStream(document, currentPage);
         
-        PDRectangle mediabox = currentPage.findMediaBox();
+        PDRectangle mediabox = currentPage.getMediaBox();
         width = mediabox.getWidth() - 2 * marginLeftRight;
         currentY = mediabox.getUpperRightY() - marginTopBottom;
         return page;
@@ -112,8 +117,8 @@ public class PdfDocument {
     throws IOException {
         currentContentStream.beginText();
         currentContentStream.setFont(font, fontSize);
-        currentContentStream.moveTextPositionByAmount(marginLeftRight, currentY);
-        currentContentStream.drawString(text);
+        currentContentStream.newLineAtOffset(marginLeftRight, currentY);
+        currentContentStream.showText(text);
         currentContentStream.endText();
         
         float leading = lineHeightFactory * fontSize;
@@ -131,7 +136,7 @@ public class PdfDocument {
         
         PDFont textFont = bold ? fontBold : font;
 
-        List<String> lines = new ArrayList<String>();
+        List<String> lines = new ArrayList<>();
         int lastSpace = -1;
         while (text.length() > 0) {
             int spaceIndex = text.indexOf(' ', lastSpace + 1);
@@ -156,10 +161,10 @@ public class PdfDocument {
 
         currentContentStream.beginText();
         currentContentStream.setFont(textFont, fontSize);
-        currentContentStream.moveTextPositionByAmount(marginLeftRight, currentY);            
+        currentContentStream.newLineAtOffset(marginLeftRight, currentY);            
         for (String line: lines) {
-        	currentContentStream.drawString(line);
-            currentContentStream.moveTextPositionByAmount(0, -leading);
+        	currentContentStream.showText(line);
+            currentContentStream.newLineAtOffset(0, -leading);
             currentY -= leading; 
         }
         currentContentStream.endText();
@@ -173,7 +178,9 @@ public class PdfDocument {
     public void drawLine(float xStart, float yStart, float xEnd, float yEnd, float lineWidth) 
     throws IOException {
 		currentContentStream.setLineWidth(lineWidth);
-		currentContentStream.drawLine(xStart, yStart, xEnd, yEnd);
+		currentContentStream.moveTo(xStart, yStart);
+		currentContentStream.lineTo(xEnd, yEnd);
+		currentContentStream.stroke();
     }
     
     public void drawTextAtMovedPositionByAmount(String text, float fontSize, float textx, float texty)
@@ -182,8 +189,8 @@ public class PdfDocument {
     	
 		currentContentStream.beginText();
 		currentContentStream.setFont(font, fontSize);
-		currentContentStream.moveTextPositionByAmount(textx, texty);
-		currentContentStream.drawString(text);
+		currentContentStream.newLineAtOffset(textx, texty);
+		currentContentStream.showText(text);
 		currentContentStream.endText();
     }
     
@@ -200,37 +207,45 @@ public class PdfDocument {
         info.setTitle(title);
         info.setSubject(subject);
 
-        XMPMetadata metadata = new XMPMetadata();
-        XMPSchemaPDF pdfSchema = metadata.addPDFSchema();
+        XMPMetadata metadata = XMPMetadata.createXMPMetadata();
+        AdobePDFSchema pdfSchema = metadata.createAndAddAdobePDFSchema();
         pdfSchema.setProducer("OpenOLAT");
 
-        XMPSchemaBasic basicSchema = metadata.addBasicSchema();
+        XMPBasicSchema basicSchema = metadata.createAndAddXMPBasicSchema();
         basicSchema.setModifyDate(date);
         basicSchema.setCreateDate(date);
         basicSchema.setCreatorTool("OpenOLAT");
         basicSchema.setMetadataDate(date);
 
-        XMPSchemaDublinCore dcSchema = metadata.addDublinCoreSchema();
+        DublinCoreSchema dcSchema = metadata.createAndAddDublinCoreSchema();
         dcSchema.setTitle(title);
         dcSchema.addCreator(author);
         dcSchema.setDescription(subject);
 
         PDMetadata metadataStream = new PDMetadata(document);
-        metadataStream.importXMPMetadata(metadata);
+        
+        // Create and return XMP data structure in XML format
+        try(ByteArrayOutputStream xmpOutputStream = new ByteArrayOutputStream()) {
+            new XmpSerializer().serialize(metadata, xmpOutputStream, true);
+            metadataStream.importXMPMetadata(xmpOutputStream.toByteArray());
+        } catch(IOException e) {
+        	e.printStackTrace();
+        }
+        
         catalog.setMetadata(metadataStream);
     }
     
     public void addPageNumbers() throws IOException {
         float footerFontSize = 10.0f;
     	
-        @SuppressWarnings("unchecked")
-		List<PDPage> allPages = document.getDocumentCatalog().getAllPages();
-        int numOfPages = allPages.size();
-        for( int i=0; i<allPages.size(); i++ ) {
-            PDPage page = allPages.get( i );
-            PDRectangle pageSize = page.findMediaBox();
+		PDPageTree pageTree = document.getPages();
+        int i = 0;
+        int numOfPages = pageTree.getCount();
+        for(Iterator<PDPage> pageIt=pageTree.iterator(); pageIt.hasNext(); ) {
+            PDPage page = pageIt.next();
+            PDRectangle pageSize = page.getMediaBox();
             
-            String text = (i+1) + " / " + numOfPages;
+            String text = (++i) + " / " + numOfPages;
             float stringWidth = getStringWidth(text, footerFontSize);
             // calculate to center of the page
             float pageWidth = pageSize.getWidth();
@@ -238,19 +253,19 @@ public class PdfDocument {
             double y = (marginTopBottom / 2.0f);
            
             // append the content to the existing stream
-            PDPageContentStream contentStream = new PDPageContentStream(document, page, true, true,true);
+            PDPageContentStream contentStream = new PDPageContentStream(document, page, AppendMode.APPEND, true,true);
             contentStream.beginText();
             // set font and font size
             contentStream.setFont( font, footerFontSize );
             contentStream.setTextTranslation(x, y);
-            contentStream.drawString(text);
+            contentStream.showText(text);
             contentStream.endText();
             
             //set current date
             contentStream.beginText();
             contentStream.setFont(font, footerFontSize );
             contentStream.setTextTranslation(marginLeftRight, y);
-            contentStream.drawString(printDate);
+            contentStream.showText(printDate);
             contentStream.endText();
             
             contentStream.close();
