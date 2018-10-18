@@ -31,7 +31,6 @@ import java.util.Set;
 
 import javax.xml.transform.TransformerException;
 
-import org.apache.pdfbox.exceptions.COSVisitorException;
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
@@ -623,7 +622,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 			pdfExport.setGroupName(groupName);
 			pdfExport.create(checkboxList, model.getObjects());
 			ureq.getDispatchResult().setResultingMediaResource(pdfExport);
-		} catch (IOException | COSVisitorException | TransformerException e) {
+		} catch (IOException | TransformerException e) {
 			logError("", e);
 		}
 	}
@@ -639,7 +638,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 			pdfExport.setCourseTitle(course.getCourseTitle());
 			pdfExport.create(checkboxList, model.getObjects());
 			ureq.getDispatchResult().setResultingMediaResource(pdfExport);
-		} catch (IOException | COSVisitorException | TransformerException e) {
+		} catch (IOException | TransformerException e) {
 			logError("", e);
 		}
 	}

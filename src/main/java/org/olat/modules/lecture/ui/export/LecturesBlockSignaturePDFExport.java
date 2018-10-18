@@ -26,7 +26,6 @@ import java.util.List;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.TransformerException;
 
-import org.apache.pdfbox.exceptions.COSVisitorException;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -116,7 +115,7 @@ public class LecturesBlockSignaturePDFExport extends PdfDocument implements Medi
 			hres.setHeader("Content-Disposition","attachment; filename*=UTF-8''" + StringHelper.urlEncodeUTF8(filename));			
 			hres.setHeader("Content-Description",StringHelper.urlEncodeUTF8(filename));
 			document.save(hres.getOutputStream());
-		} catch (COSVisitorException | IOException e) {
+		} catch (IOException e) {
 			log.error("", e);
 		}
 	}
@@ -262,14 +261,14 @@ public class LecturesBlockSignaturePDFExport extends PdfDocument implements Medi
 		{
 			currentContentStream.beginText();
 			currentContentStream.setFont(fontBold, fontSize);
-			currentContentStream.moveTextPositionByAmount(textx, texty - rowHeight + (2 * cellMargin));
-			currentContentStream.drawString(translator.translate("pdf.table.header.participants"));
+			currentContentStream.newLineAtOffset(textx, texty - rowHeight + (2 * cellMargin));
+			currentContentStream.showText(translator.translate("pdf.table.header.participants"));
 			currentContentStream.endText();
 			
 			currentContentStream.beginText();
 			currentContentStream.setFont(fontBold, fontSize);
-			currentContentStream.moveTextPositionByAmount(textx + nameMaxSizeWithMargin, texty - rowHeight + (2 * cellMargin));
-			currentContentStream.drawString(translator.translate("pdf.table.header.signature"));
+			currentContentStream.newLineAtOffset(textx + nameMaxSizeWithMargin, texty - rowHeight + (2 * cellMargin));
+			currentContentStream.showText(translator.translate("pdf.table.header.signature"));
 			currentContentStream.endText();
 		}
 
@@ -289,16 +288,16 @@ public class LecturesBlockSignaturePDFExport extends PdfDocument implements Medi
 					String textLine = texts[k];
 					currentContentStream.beginText();
 					currentContentStream.setFont(font, fontSize);
-					currentContentStream.moveTextPositionByAmount(textx, lineTexty);
-					currentContentStream.drawString(textLine);
+					currentContentStream.newLineAtOffset(textx, lineTexty);
+					currentContentStream.showText(textLine);
 					currentContentStream.endText();
 					lineTexty -= (lineHeightFactory * fontSize);
 				}
 			} else {
 				currentContentStream.beginText();
 				currentContentStream.setFont(font, fontSize);
-				currentContentStream.moveTextPositionByAmount(textx, texty);
-				currentContentStream.drawString(text);
+				currentContentStream.newLineAtOffset(textx, texty);
+				currentContentStream.showText(text);
 				currentContentStream.endText();
 			}
 			texty -= rowHeights[i];

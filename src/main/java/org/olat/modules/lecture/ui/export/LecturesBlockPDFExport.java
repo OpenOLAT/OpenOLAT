@@ -23,16 +23,19 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.TransformerException;
 
-import org.apache.pdfbox.exceptions.COSVisitorException;
 import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.PDPageTree;
+import org.apache.pdfbox.pdmodel.PDPageContentStream.AppendMode;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
-import org.apache.pdfbox.pdmodel.edit.PDPageContentStream;
+import org.apache.pdfbox.util.Matrix;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -131,7 +134,7 @@ public class LecturesBlockPDFExport extends PdfDocument implements MediaResource
 			hres.setHeader("Content-Disposition","attachment; filename*=UTF-8''" + StringHelper.urlEncodeUTF8(filename));			
 			hres.setHeader("Content-Description",StringHelper.urlEncodeUTF8(filename));
 			document.save(hres.getOutputStream());
-		} catch (COSVisitorException | IOException e) {
+		} catch (IOException e) {
 			log.error("", e);
 		}
 	}
@@ -186,42 +189,42 @@ public class LecturesBlockPDFExport extends PdfDocument implements MediaResource
     public void addPageNumbers() throws IOException {
         float footerFontSize = 10.0f;
     	
-        @SuppressWarnings("unchecked")
-		List<PDPage> allPages = document.getDocumentCatalog().getAllPages();
-        int numOfPages = allPages.size();
-        for( int i=0; i<allPages.size(); i++ ) {
-            PDPage page = allPages.get( i );
-            PDRectangle pageSize = page.findMediaBox();
+		PDPageTree pageTree = document.getPages();
+        int numOfPages = pageTree.getCount();
+        int i = 0;
+        for(Iterator<PDPage> pageIt=pageTree.iterator(); pageIt.hasNext(); ) {
+            PDPage page = pageIt.next();
+            PDRectangle pageSize = page.getMediaBox();
             
-            String text = (i+1) + " / " + numOfPages;
+            String text = (++i) + " / " + numOfPages;
             float stringWidth = getStringWidth(text, footerFontSize);
             // calculate to center of the page
             float pageWidth = pageSize.getWidth();
-            double x = (pageWidth - stringWidth) / 2.0f;
-            double y = (marginTopBottom / 2.0f);
+            float x = (pageWidth - stringWidth) / 2.0f;
+            float y = (marginTopBottom / 2.0f);
            
             // append the content to the existing stream
-            PDPageContentStream contentStream = new PDPageContentStream(document, page, true, true,true);
+            PDPageContentStream contentStream = new PDPageContentStream(document, page, AppendMode.APPEND, true,true);
             
             // set warning
             contentStream.beginText();
             contentStream.setFont(font, footerFontSize );
-            contentStream.setTextTranslation(marginLeftRight, y + 14);
-            contentStream.drawString(translator.translate("rollcall.coach.hint"));
+            contentStream.setTextMatrix(Matrix.getTranslateInstance(marginLeftRight, y + 14));
+            contentStream.showText(translator.translate("rollcall.coach.hint"));
             contentStream.endText();
             
             contentStream.beginText();
             // set font and font size
             contentStream.setFont(font, footerFontSize );
-            contentStream.setTextTranslation(x, y);
-            contentStream.drawString(text);
+            contentStream.setTextMatrix(Matrix.getTranslateInstance(x, y));
+            contentStream.showText(text);
             contentStream.endText();
             
             //set current date
             contentStream.beginText();
             contentStream.setFont(font, footerFontSize );
-            contentStream.setTextTranslation(marginLeftRight, y);
-            contentStream.drawString(printDate);
+            contentStream.setTextMatrix(Matrix.getTranslateInstance(marginLeftRight, y));
+            contentStream.showText(printDate);
             contentStream.endText();
             
             contentStream.close();
@@ -369,16 +372,16 @@ public class LecturesBlockPDFExport extends PdfDocument implements MediaResource
 			
 			currentContentStream.beginText();
 			currentContentStream.setFont(fontBold, fontSize);
-			currentContentStream.moveTextPositionByAmount(headerX, headerY);
-			currentContentStream.drawString(translator.translate("pdf.table.header.participants"));
+			currentContentStream.newLineAtOffset(headerX, headerY);
+			currentContentStream.showText(translator.translate("pdf.table.header.participants"));
 			currentContentStream.endText();
 			
 			headerX += nameMaxSizeWithMargin;
 			for(int i=0; i<numOfLectures; i++) {
 				currentContentStream.beginText();
 				currentContentStream.setFont(fontBold, fontSize);
-				currentContentStream.moveTextPositionByAmount(headerX, headerY);
-				currentContentStream.drawString(Integer.toString(i+1));
+				currentContentStream.newLineAtOffset(headerX, headerY);
+				currentContentStream.showText(Integer.toString(i+1));
 				currentContentStream.endText();
 				headerX += lectureColWidth;
 			}
@@ -386,24 +389,24 @@ public class LecturesBlockPDFExport extends PdfDocument implements MediaResource
 			headerX += cellMargin;
 			currentContentStream.beginText();
 			currentContentStream.setFont(fontBold, fontSize);
-			currentContentStream.moveTextPositionByAmount(headerX, headerY);
-			currentContentStream.drawString(translator.translate("pdf.table.header.all"));
+			currentContentStream.newLineAtOffset(headerX, headerY);
+			currentContentStream.showText(translator.translate("pdf.table.header.all"));
 			currentContentStream.endText();
 			headerX += allColWidth;
 			
 			if(authorizedAbsenceEnabled) {
 				currentContentStream.beginText();
 				currentContentStream.setFont(fontBold, fontSize);
-				currentContentStream.moveTextPositionByAmount(headerX, headerY);
-				currentContentStream.drawString(translator.translate("pdf.table.header.authorised"));
+				currentContentStream.newLineAtOffset(headerX, headerY);
+				currentContentStream.showText(translator.translate("pdf.table.header.authorised"));
 				currentContentStream.endText();
 				headerX += authorisedColWidth;	
 			}
 
 			currentContentStream.beginText();
 			currentContentStream.setFont(fontBold, fontSize);
-			currentContentStream.moveTextPositionByAmount(headerX, headerY);
-			currentContentStream.drawString(translator.translate("pdf.table.header.comment"));
+			currentContentStream.newLineAtOffset(headerX, headerY);
+			currentContentStream.showText(translator.translate("pdf.table.header.comment"));
 			currentContentStream.endText();
 		}
 
@@ -423,16 +426,16 @@ public class LecturesBlockPDFExport extends PdfDocument implements MediaResource
 					String textLine = texts[k];
 					currentContentStream.beginText();
 					currentContentStream.setFont(font, fontSize);
-					currentContentStream.moveTextPositionByAmount(textx, lineTexty);
-					currentContentStream.drawString(textLine);
+					currentContentStream.newLineAtOffset(textx, lineTexty);
+					currentContentStream.showText(textLine);
 					currentContentStream.endText();
 					lineTexty -= (lineHeightFactory * fontSize);
 				}
 			} else {
 				currentContentStream.beginText();
 				currentContentStream.setFont(font, fontSize);
-				currentContentStream.moveTextPositionByAmount(textx, texty);
-				currentContentStream.drawString(text);
+				currentContentStream.newLineAtOffset(textx, texty);
+				currentContentStream.showText(text);
 				currentContentStream.endText();
 			}
 			
@@ -453,8 +456,8 @@ public class LecturesBlockPDFExport extends PdfDocument implements MediaResource
 				if(absences[j]) {
 					currentContentStream.beginText();
 					currentContentStream.setFont(font, fontSize);
-					currentContentStream.moveTextPositionByAmount(boxx + 2f, texty);
-					currentContentStream.drawString("x");
+					currentContentStream.newLineAtOffset(boxx + 2f, texty);
+					currentContentStream.showText("x");
 					currentContentStream.endText();
 				}
 				all &= absences[j];
@@ -472,8 +475,8 @@ public class LecturesBlockPDFExport extends PdfDocument implements MediaResource
 				if(all) {
 					currentContentStream.beginText();
 					currentContentStream.setFont(font, fontSize);
-					currentContentStream.moveTextPositionByAmount(startBoxx + 2f, texty);
-					currentContentStream.drawString("x");
+					currentContentStream.newLineAtOffset(startBoxx + 2f, texty);
+					currentContentStream.showText("x");
 					currentContentStream.endText();
 				}
 				boxx += allColWidth;
@@ -489,8 +492,8 @@ public class LecturesBlockPDFExport extends PdfDocument implements MediaResource
 				if(content[i].isAuthorised()) {
 					currentContentStream.beginText();
 					currentContentStream.setFont(font, fontSize);
-					currentContentStream.moveTextPositionByAmount(startBoxx + 2f, texty);
-					currentContentStream.drawString("x");
+					currentContentStream.newLineAtOffset(startBoxx + 2f, texty);
+					currentContentStream.showText("x");
 					currentContentStream.endText();
 				}
 				boxx += authorisedColWidth;
@@ -510,14 +513,14 @@ public class LecturesBlockPDFExport extends PdfDocument implements MediaResource
 						}
 						currentContentStream.beginText();
 						currentContentStream.setFont(font, fontSize - 2);
-						currentContentStream.moveTextPositionByAmount(boxx + 2f, texty);
-						currentContentStream.drawString(comment);
+						currentContentStream.newLineAtOffset(boxx + 2f, texty);
+						currentContentStream.showText(comment);
 						currentContentStream.endText();
 					} else {
 						currentContentStream.beginText();
 						currentContentStream.setFont(font, fontSize);
-						currentContentStream.moveTextPositionByAmount(boxx + 2f, texty);
-						currentContentStream.drawString(comment);
+						currentContentStream.newLineAtOffset(boxx + 2f, texty);
+						currentContentStream.showText(comment);
 						currentContentStream.endText();
 					}
 				}

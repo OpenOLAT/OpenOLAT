@@ -27,7 +27,6 @@ import java.util.List;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.TransformerException;
 
-import org.apache.pdfbox.exceptions.COSVisitorException;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.UserConstants;
@@ -57,7 +56,9 @@ public class CheckedPDFExport extends PdfDocument implements MediaResource {
 	private final boolean withScore;
 	private final Translator translator;
 	private final List<UserPropertyHandler> userPropertyHandlers;
-	private int firstNameIndex, lastNameIndex, institutionalUserIdentifierIndex;
+	private int firstNameIndex;
+	private int lastNameIndex;
+	private int institutionalUserIdentifierIndex;
 	
 	private int numOfCols = 0;
 	
@@ -162,7 +163,7 @@ public class CheckedPDFExport extends PdfDocument implements MediaResource {
 			hres.setHeader("Content-Disposition","attachment; filename*=UTF-8''" + StringHelper.urlEncodeUTF8(filename));			
 			hres.setHeader("Content-Description",StringHelper.urlEncodeUTF8(filename));
 			document.save(hres.getOutputStream());
-		} catch (COSVisitorException | IOException e) {
+		} catch (IOException e) {
 			log.error("", e);
 		}
 	}
@@ -177,7 +178,7 @@ public class CheckedPDFExport extends PdfDocument implements MediaResource {
 	}
 
 	public void create(CheckboxList checkboxList, List<CheckListAssessmentRow> rows)
-    throws IOException, COSVisitorException, TransformerException {
+    throws IOException, TransformerException {
 		addMetadata(courseNodeTitle, courseTitle, author);
 		
 		int i=0;
@@ -189,7 +190,7 @@ public class CheckedPDFExport extends PdfDocument implements MediaResource {
 	}
 		
 	private void create(Checkbox checkbox, int checkboxIndex, List<CheckListAssessmentRow> rows)
-	throws IOException, COSVisitorException, TransformerException {
+	throws IOException {
 		addPage();
 		
     	if(StringHelper.containsNonWhitespace(courseTitle)) {
@@ -313,8 +314,8 @@ public class CheckedPDFExport extends PdfDocument implements MediaResource {
 			}
 			currentContentStream.beginText();
 			currentContentStream.setFont(font, fontSize);
-			currentContentStream.moveTextPositionByAmount(textx, texty - headerHeight + cellMargin);
-			currentContentStream.drawString(text);
+			currentContentStream.newLineAtOffset(textx, texty - headerHeight + cellMargin);
+			currentContentStream.showText(text);
 			currentContentStream.endText();
 			textx += colWidth;
 		}
