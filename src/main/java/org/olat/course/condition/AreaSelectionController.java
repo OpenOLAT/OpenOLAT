@@ -45,11 +45,7 @@ import org.olat.group.area.BGArea;
 import org.olat.group.ui.NewAreaController;
 
 /**
- * Description:<br>
- * TODO: patrickb Class Description for MultiSelectColumnController
- * <P>
  * Initial Date: 15.06.2007 <br>
- * 
  * @author patrickb
  */
 public class AreaSelectionController extends FormBasicController {
@@ -132,8 +128,8 @@ public class AreaSelectionController extends FormBasicController {
 		}
 
 		entrySelector = uifactory.addCheckboxesVertical("entries",  null, formLayout, areaKeys, areaNames, 1);
-		uifactory.addFormSubmitButton("subm", "apply", formLayout);
 		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
+		uifactory.addFormSubmitButton("subm", "apply", formLayout);
 	}
 
 	@Override
@@ -147,7 +143,7 @@ public class AreaSelectionController extends FormBasicController {
 	}
 
 	public List<String> getSelectedNames() {
-		List<String> selectedNames = new ArrayList<String>();
+		List<String> selectedNames = new ArrayList<>();
 		for(int i=0; i<areaKeys.length; i++) {
 			if(entrySelector.isSelected(i)) {
 				selectedNames.add(areaNames[i]);
@@ -158,9 +154,9 @@ public class AreaSelectionController extends FormBasicController {
 	
 	public List<Long> getSelectedKeys() {
 		Collection<String> selectedKeys = entrySelector.getSelectedKeys();
-		List<Long> groupKeys = new ArrayList<Long>();
+		List<Long> groupKeys = new ArrayList<>();
 		for(String selectedKey:selectedKeys) {
-			groupKeys.add(new Long(selectedKey));
+			groupKeys.add(Long.valueOf(selectedKey));
 		}
 		return groupKeys;
 	}

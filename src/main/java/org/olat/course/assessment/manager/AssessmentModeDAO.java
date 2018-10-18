@@ -193,7 +193,7 @@ public class AssessmentModeDAO {
 				.setParameter("now", date)
 				.setParameter("repoKey", entry.getKey())
 				.getResultList();
-		return count != null && count.size() > 0 && count.get(0).intValue() > 0;
+		return count != null && !count.isEmpty() && count.get(0).intValue() > 0;
 	}
 	
 	public List<AssessmentMode> getCurrentAssessmentMode(RepositoryEntryRef entry, Date date) {
@@ -224,6 +224,7 @@ public class AssessmentModeDAO {
 		  .append(" inner join fetch mode.repositoryEntry entry")
 		  .append(" left join mode.groups as modeToGroup")
 		  .append(" left join mode.areas as modeToArea")
+		  .append(" left join mode.curriculumElements as modeToCurriculumElement")
 		  .append(" where mode.key in (:modeKeys)")
 		  .append("  and ((mode.targetAudienceString in ('").append(AssessmentMode.Target.courseAndGroups.name()).append("','").append(AssessmentMode.Target.groups.name()).append("')")
 		  .append("   and (exists (select businessGroup from businessgroup as businessGroup, bgroupmember as membership")
@@ -239,6 +240,11 @@ public class AssessmentModeDAO {
 		  .append("     where mode.repositoryEntry.key=rel.entry.key and membership.group.key=rel.group.key and rel.defaultGroup=true and membership.identity.key=:identityKey")
 		  .append("     and (membership.role='").append(GroupRoles.participant.name()).append("' or ")
 		  .append("       (mode.applySettingsForCoach=true and membership.role='").append(GroupRoles.coach.name()).append("'))")
+		  .append("  )) or (mode.targetAudienceString in ('").append(AssessmentMode.Target.courseAndGroups.name()).append("','").append(AssessmentMode.Target.curriculumEls.name()).append("')")
+		  .append("   and exists (select curElement from curriculumelement as curElement,  bgroupmember as curMembership ")
+		  .append("     where modeToCurriculumElement.curriculumElement.key=curElement.key and curMembership.group.key=curElement.group.key and curMembership.identity.key=:identityKey")
+		  .append("     and (curMembership.role='").append(GroupRoles.participant.name()).append("' or ")
+		  .append("       (mode.applySettingsForCoach=true and curMembership.role='").append(GroupRoles.coach.name()).append("'))")
 		  .append("  ))")
 		  .append(" )");
 
@@ -252,7 +258,7 @@ public class AssessmentModeDAO {
 				.setParameter("modeKeys", modeKeys)
 				.getResultList();
 		//quicker than distinct
-		return new ArrayList<AssessmentMode>(new HashSet<AssessmentMode>(modeList));
+		return new ArrayList<>(new HashSet<AssessmentMode>(modeList));
 	}
 	
 	public boolean isNodeInUse(RepositoryEntryRef entry, CourseNode node) {
@@ -276,7 +282,7 @@ public class AssessmentModeDAO {
 				.setParameter("nodeIdent", "%" + node.getIdent() + "%")
 				.setParameter("now", cal.getTime(), TemporalType.TIMESTAMP)
 				.getResultList();
-		return count != null && count.size() > 0 && count.get(0).intValue() > 0;
+		return count != null && !count.isEmpty() && count.get(0).intValue() > 0;
 	}
 	
 	public void delete(AssessmentMode assessmentMode) {

@@ -34,12 +34,18 @@ import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentMode.Target;
 import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.assessment.AssessmentModeToArea;
+import org.olat.course.assessment.AssessmentModeToCurriculumElement;
 import org.olat.course.assessment.AssessmentModeToGroup;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
 import org.olat.group.manager.BusinessGroupRelationDAO;
+import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumCalendars;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumRoles;
+import org.olat.modules.curriculum.CurriculumService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.test.JunitTestHelper;
@@ -59,6 +65,8 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 	private DB dbInstance;
 	@Autowired
 	private BGAreaManager areaMgr;
+	@Autowired
+	private CurriculumService curriculumService;
 	@Autowired
 	private AssessmentModeManager assessmentModeMgr;
 	@Autowired
@@ -728,6 +736,93 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void loadAssessmentMode_identityInCurriculum() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-30");
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-31");
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-32");
+		
+		Curriculum curriculum = curriculumService.createCurriculum("cur-as-mode-1", "Curriculum for assessment", "Curriculum", null);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-rel", "Element for assessment", null, null, null, null, CurriculumCalendars.disabled, curriculum);
+		dbInstance.commit();
+		curriculumService.addRepositoryEntry(element, entry, false);
+		curriculumService.addMember(element, participant, CurriculumRoles.participant);
+		curriculumService.addMember(element, coach, CurriculumRoles.coach);
+		dbInstance.commitAndCloseSession();
+		
+		AssessmentMode mode = createMinimalAssessmentmode(entry);
+		mode.setTargetAudience(AssessmentMode.Target.courseAndGroups);
+		mode.setApplySettingsForCoach(false);
+		mode = assessmentModeMgr.persist(mode);
+		
+		AssessmentModeToCurriculumElement modeToElement = assessmentModeMgr.createAssessmentModeToCurriculumElement(mode, element);
+		mode.getCurriculumElements().add(modeToElement);
+		mode = assessmentModeMgr.merge(mode, true);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(mode);
+		
+		//check participant
+		List<AssessmentMode> currentModes = assessmentModeMgr.getAssessmentModeFor(participant);
+		Assert.assertNotNull(currentModes);
+		Assert.assertEquals(1, currentModes.size());
+		Assert.assertTrue(currentModes.contains(mode));
+		
+		//check coach
+		List<AssessmentMode> currentCoachModes = assessmentModeMgr.getAssessmentModeFor(coach);
+		Assert.assertNotNull(currentCoachModes);
+		Assert.assertTrue(currentCoachModes.isEmpty());
+		
+		//check author
+		List<AssessmentMode> currentAuthorModes = assessmentModeMgr.getAssessmentModeFor(author);
+		Assert.assertNotNull(currentAuthorModes);
+		Assert.assertTrue(currentAuthorModes.isEmpty());
+	}
+	
+	@Test
+	public void loadAssessmentMode_identityInCurriculumCoach() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-35");
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-36");
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-37");
+		
+		Curriculum curriculum = curriculumService.createCurriculum("cur-as-mode-2", "Curriculum for assessment", "Curriculum", null);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-rel", "Element for assessment", null, null, null, null, CurriculumCalendars.disabled, curriculum);
+		dbInstance.commit();
+		curriculumService.addRepositoryEntry(element, entry, false);
+		curriculumService.addMember(element, participant, CurriculumRoles.participant);
+		curriculumService.addMember(element, coach, CurriculumRoles.coach);
+		dbInstance.commitAndCloseSession();
+		
+		AssessmentMode mode = createMinimalAssessmentmode(entry);
+		mode.setTargetAudience(AssessmentMode.Target.curriculumEls);
+		mode.setApplySettingsForCoach(true);
+		mode = assessmentModeMgr.persist(mode);
+		
+		AssessmentModeToCurriculumElement modeToElement = assessmentModeMgr.createAssessmentModeToCurriculumElement(mode, element);
+		mode.getCurriculumElements().add(modeToElement);
+		mode = assessmentModeMgr.merge(mode, true);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(mode);
+		
+		//check participant
+		List<AssessmentMode> currentModes = assessmentModeMgr.getAssessmentModeFor(participant);
+		Assert.assertNotNull(currentModes);
+		Assert.assertEquals(1, currentModes.size());
+		Assert.assertTrue(currentModes.contains(mode));
+		
+		//check coach
+		List<AssessmentMode> currentCoachModes = assessmentModeMgr.getAssessmentModeFor(coach);
+		Assert.assertNotNull(currentCoachModes);
+		Assert.assertEquals(1, currentCoachModes.size());
+		Assert.assertTrue(currentCoachModes.contains(mode));
+		
+		//check author
+		List<AssessmentMode> currentAuthorModes = assessmentModeMgr.getAssessmentModeFor(author);
+		Assert.assertNotNull(currentAuthorModes);
+		Assert.assertTrue(currentAuthorModes.isEmpty());
+	}
+	
+	@Test
 	public void getAssessedIdentities_course_groups() {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-15");
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
@@ -804,6 +899,49 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 		Assert.assertTrue(assessedIdentityKeys.contains(coach2.getKey()));
 		Assert.assertTrue(assessedIdentityKeys.contains(participant2.getKey()));
 	}
+	
+	@Test
+	public void getAssessedIdentities_course_curriculum() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-37");
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-38");
+		Identity coach1 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-39");
+		
+		Curriculum curriculum = curriculumService.createCurriculum("cur-as-mode-3", "Curriculum for assessment", "Curriculum", null);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-rel", "Element for assessment", null, null, null, null, CurriculumCalendars.disabled, curriculum);
+		dbInstance.commit();
+		curriculumService.addRepositoryEntry(element, entry, false);
+		curriculumService.addMember(element, participant1, CurriculumRoles.participant);
+		curriculumService.addMember(element, coach1, CurriculumRoles.coach);
+		dbInstance.commitAndCloseSession();
+		
+		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-23");
+		Identity coach2 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-24");
+		repositoryEntryRelationDao.addRole(participant2, entry, GroupRoles.participant.name());
+		repositoryEntryRelationDao.addRole(coach2, entry, GroupRoles.coach.name());
+		repositoryEntryRelationDao.addRole(author, entry, GroupRoles.owner.name());
+		
+		AssessmentMode mode = createMinimalAssessmentmode(entry);
+		mode.setTargetAudience(AssessmentMode.Target.courseAndGroups);
+		mode.setApplySettingsForCoach(true);
+		mode = assessmentModeMgr.persist(mode);
+
+		AssessmentModeToCurriculumElement modeToElement = assessmentModeMgr.createAssessmentModeToCurriculumElement(mode, element);
+		mode.getCurriculumElements().add(modeToElement);
+		mode = assessmentModeMgr.merge(mode, true);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(mode);
+
+		Set<Long> assessedIdentityKeys = assessmentModeMgr.getAssessedIdentityKeys(mode);
+		Assert.assertNotNull(assessedIdentityKeys);
+		Assert.assertEquals(4, assessedIdentityKeys.size());
+		Assert.assertFalse(assessedIdentityKeys.contains(author.getKey()));
+		Assert.assertTrue(assessedIdentityKeys.contains(coach1.getKey()));
+		Assert.assertTrue(assessedIdentityKeys.contains(participant1.getKey()));
+		Assert.assertTrue(assessedIdentityKeys.contains(coach2.getKey()));
+		Assert.assertTrue(assessedIdentityKeys.contains(participant2.getKey()));
+	}	
+	
 	
 	@Test
 	public void isIpAllowed_exactMatch() {

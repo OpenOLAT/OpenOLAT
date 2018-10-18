@@ -43,9 +43,11 @@ import org.olat.course.assessment.AssessmentMode.Status;
 import org.olat.course.assessment.AssessmentMode.Target;
 import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.assessment.AssessmentModeToArea;
+import org.olat.course.assessment.AssessmentModeToCurriculumElement;
 import org.olat.course.assessment.AssessmentModeToGroup;
 import org.olat.course.assessment.model.AssessmentModeImpl;
 import org.olat.course.assessment.model.AssessmentModeToAreaImpl;
+import org.olat.course.assessment.model.AssessmentModeToCurriculumElementImpl;
 import org.olat.course.assessment.model.AssessmentModeToGroupImpl;
 import org.olat.course.assessment.model.SearchAssessmentModeParams;
 import org.olat.course.nodes.CourseNode;
@@ -53,6 +55,9 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
 import org.olat.group.manager.BusinessGroupRelationDAO;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementRef;
+import org.olat.modules.curriculum.manager.CurriculumElementDAO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryRelationType;
@@ -77,6 +82,8 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 	private BGAreaManager areaMgr;
 	@Autowired
 	private AssessmentModeDAO assessmentModeDao;
+	@Autowired
+	private CurriculumElementDAO curriculumElementDao;
 	@Autowired
 	private BusinessGroupRelationDAO businessGroupRelationDao;
 	@Autowired
@@ -193,7 +200,7 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 	public List<AssessmentMode> getAssessmentModeFor(IdentityRef identity) {
 		List<AssessmentMode> currentModes = getAssessmentModes(new Date());
 		List<AssessmentMode> myModes = null;
-		if(currentModes.size() > 0) {
+		if(!currentModes.isEmpty()) {
 			//check permissions, groups, areas, course
 			myModes = assessmentModeDao.loadAssessmentModeFor(identity, currentModes);
 		}
@@ -212,6 +219,25 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 					: repositoryEntryRelationDao.getMemberKeys(re, RepositoryEntryRelationType.entryAndCurriculums, GroupRoles.participant.name());
 			assessedKeys.addAll(courseMemberKeys);
 		}
+		
+		if(targetAudience == Target.curriculumEls || targetAudience == Target.courseAndGroups) {
+			List<Long> courseMemberKeys = assessmentMode.isApplySettingsForCoach()
+					? repositoryEntryRelationDao.getMemberKeys(re, RepositoryEntryRelationType.entryAndCurriculums, GroupRoles.coach.name(), GroupRoles.participant.name())
+					: repositoryEntryRelationDao.getMemberKeys(re, RepositoryEntryRelationType.entryAndCurriculums, GroupRoles.participant.name());
+			assessedKeys.addAll(courseMemberKeys);
+			
+			List<CurriculumElementRef> curriculumElements = new ArrayList<>();
+			Set<AssessmentModeToCurriculumElement> modeTocurriculumElements  = assessmentMode.getCurriculumElements();
+			for(AssessmentModeToCurriculumElement modeTocurriculumElement:modeTocurriculumElements) {
+				curriculumElements.add(modeTocurriculumElement.getCurriculumElement());
+			}
+			
+			List<Long> curriculumMemberKeys = assessmentMode.isApplySettingsForCoach()
+					? curriculumElementDao.getMemberKeys(curriculumElements, GroupRoles.coach.name(), GroupRoles.participant.name())
+					: curriculumElementDao.getMemberKeys(curriculumElements, GroupRoles.participant.name());
+			assessedKeys.addAll(curriculumMemberKeys);
+		}
+		
 		if(targetAudience == Target.groups || targetAudience == Target.courseAndGroups) {
 			List<BusinessGroup> groups = new ArrayList<>();
 			
@@ -276,6 +302,15 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 	}
 
 	@Override
+	public AssessmentModeToCurriculumElement createAssessmentModeToCurriculumElement(AssessmentMode mode, CurriculumElement curriculumElement) {
+		AssessmentModeToCurriculumElementImpl modeToElement = new AssessmentModeToCurriculumElementImpl();
+		modeToElement.setAssessmentMode(mode);
+		modeToElement.setCurriculumElement(curriculumElement);
+		dbInstance.getCurrentEntityManager().persist(modeToElement);
+		return modeToElement;
+	}
+
+	@Override
 	public boolean isNodeInUse(RepositoryEntryRef entry, CourseNode node) {
 		return assessmentModeDao.isNodeInUse(entry, node);
 	}
@@ -289,8 +324,8 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 			for(StringTokenizer tokenizer = new StringTokenizer(ipList, "\n\r", false); tokenizer.hasMoreTokens(); ) {
 				String ipRange = tokenizer.nextToken();
 				if(StringHelper.containsNonWhitespace(ipRange)) {
-					int indexMask = ipRange.indexOf("/");
-					int indexPseudoRange = ipRange.indexOf("-");
+					int indexMask = ipRange.indexOf('/');
+					int indexPseudoRange = ipRange.indexOf('-');
 					if(indexMask > 0) {
 						allOk |= IPUtils.isValidRange(ipRange, address);
 					} else if(indexPseudoRange > 0) {

@@ -50,6 +50,7 @@ public class TargetAudienceCellRenderer implements FlexiCellRenderer {
 				case courseAndGroups: sb.append(translator.translate("target.courseAndGroups")); break;
 				case course: sb.append(translator.translate("target.course")); break;
 				case groups: sb.append(translator.translate("target.groups")); break;
+				case curriculumEls: sb.append(translator.translate("target.curriculumElements")); break;
 			}
 		}
 	}

@@ -30,6 +30,7 @@ import org.olat.course.assessment.model.SearchAssessmentModeParams;
 import org.olat.course.nodes.CourseNode;
 import org.olat.group.BusinessGroup;
 import org.olat.group.area.BGArea;
+import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 
@@ -48,12 +49,35 @@ public interface AssessmentModeManager {
 	 */
 	public AssessmentMode createAssessmentMode(RepositoryEntry entry);
 	
-
-	
+	/**
+	 * Create and persist a relation between the specified assessment mode
+	 * and a business group.
+	 * 
+	 * @param mode The assessment mode
+	 * @param group The business group
+	 * @return A relation assessment mode to business group
+	 */
 	public AssessmentModeToGroup createAssessmentModeToGroup(AssessmentMode mode, BusinessGroup group);
 	
-	
+	/**
+	 * Create and persist a relation between the specified assessment mode
+	 * and an area.
+	 * 
+	 * @param mode The assessment mode
+	 * @param area The area
+	 * @return A relation assessment mode to area
+	 */
 	public AssessmentModeToArea createAssessmentModeToArea(AssessmentMode mode, BGArea area);
+	
+	/**
+	 * Create and persist a relation between the specified assessment mode
+	 * and a curriculum element.
+	 * 
+	 * @param mode The assessment mode
+	 * @param curriculumElement The curriculum element
+	 * @return The relation assessment mode to curriculum element
+	 */
+	public AssessmentModeToCurriculumElement createAssessmentModeToCurriculumElement(AssessmentMode mode, CurriculumElement curriculumElement);
 	
 
 	public AssessmentMode persist(AssessmentMode assessmentMode);

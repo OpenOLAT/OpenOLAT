@@ -1,17 +1,31 @@
-#if($groupNames && $groupNames.size() > 0)
-	$r.translate("groups"):
+#if($r.isNotEmpty($groupNames))
+	<p><i class='o_icon o_icon-fw o_icon_group'> </i> $r.translate("groups"):</span>
 	#foreach($groupName in $groupNames)
-		<span>$groupName</span>
+		#if($foreach.count > 1), #end<span>$groupName</span>
 	#end
-	<br/>
+	</p>
 #end
 
-#if($areaNames && $areaNames.size() > 0)
-	$r.translate("areas"):
+#if($r.isNotEmpty($areaNames))
+	<p><i class='o_icon o_icon-fw o_icon_courseareas'> </i> $r.translate("areas"):</span>
 	#foreach($areaName in $areaNames)
-		<span>$areaName</span>
+		#if($foreach.count > 1), #end<span>$areaName</span>
 	#end
-	<br/>
+	</p>
 #end
 
-$r.render("choose.groups") $r.render("choose.areas")
+#if($r.isNotEmpty($curriculumElementNames))
+	<p><i class='o_icon o_icon-fw o_icon_curriculum_element'> </i> $r.translate("curriculum.elements"):
+	#foreach($curriculumElementName in $curriculumElementNames)
+		#if($foreach.count > 1), #end<span>$curriculumElementName</span>
+	#end
+	</p>
+#end
+
+<div class="btn-group">
+	$r.render("choose.groups")
+	$r.render("choose.areas")
+	#if($r.visible("choose.curriculum.elements"))
+		$r.render("choose.curriculum.elements")
+	#end
+</div>

@@ -19,6 +19,10 @@
  */
 package org.olat.modules.curriculum;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.olat.core.util.StringHelper;
 
 /**
@@ -34,6 +38,18 @@ public enum CurriculumRoles {
 	owner, //same as GroupRoles
 	coach, //same as GroupRoles
 	participant; //same as GroupRoles
+	
+	
+	public static List<String> toList(String... roles) {
+		if(roles != null && roles.length > 0 && !(roles.length == 1 && roles[0] == null)) {
+			List<String> roleList = new ArrayList<>(roles.length);
+			for(String role:roles) {
+				roleList.add(role);
+			}
+			return roleList;
+		}
+		return Collections.emptyList();
+	}
 	
 	public static final boolean isValueOf(String val) {
 		if(StringHelper.containsNonWhitespace(val)) {
