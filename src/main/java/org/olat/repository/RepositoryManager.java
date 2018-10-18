@@ -956,13 +956,13 @@ public class RepositoryManager {
 
 		QueryBuilder sb = new QueryBuilder(512);
 		sb.append("select v from repositoryentry v ")
-		  .append(" inner join fetch v.olatResource as res ")
+		  .append(" inner join fetch v.olatResource as res")
 		  .append(" inner join fetch v.statistics as statistics")
 		  .append(" left join fetch v.lifecycle as lifecycle")
 		  .append(" inner join v.groups as relGroup")
 		  .append(" inner join relGroup.group as baseGroup")
 		  .append(" inner join baseGroup.members as membership")
-		  .append(" where res.resName=:type and membership.identity.key=:identityKey and (");//TODO repo access
+		  .append(" where res.resName=:type and membership.identity.key=:identityKey and (");
 		if(owner) {
 			sb.append(" (v.status ").in(RepositoryEntryStatusEnum.preparationToClosed()).append(" and membership.role='").append(GroupRoles.owner).append("')");
 		}
@@ -1032,7 +1032,7 @@ public class RepositoryManager {
 		  .append(" inner join fetch v.statistics as statistics")
 		  .append(" left join fetch v.lifecycle as lifecycle")
 		  .append(" left join v.groups as relGroup")
-		  .append(" left join relGroup.group as baseGroup")//TODO roles repo
+		  .append(" left join relGroup.group as baseGroup")
 		  .append(" left join baseGroup.members as membership")
 		  .append(" where membership.identity.key=:identityKey")
 		  .append(" and (");
@@ -1057,7 +1057,7 @@ public class RepositoryManager {
 			sb.append(" and res.resName in (:resourcetypes)");
 		}
 		// restrict on author
-		if (author != null) { // fuzzy author search
+		if (StringHelper.containsNonWhitespace(author)) { // fuzzy author search
 			author = author.replace('*','%');
 			author = '%' + author + '%';
 			sb.append(" and exists (select rel from repoentrytogroup as rel, bgroup as baseGroup, bgroupmember as membership, ")
@@ -1068,13 +1068,13 @@ public class RepositoryManager {
 		         .append("  )");
 		}
 		// restrict on resource name
-		if (displayName != null) {
+		if (StringHelper.containsNonWhitespace(displayName)) {
 			displayName = displayName.replace('*','%');
 			displayName = '%' + displayName + '%';
 			sb.append(" and v.displayname like :displayname");
 		}
 		// restrict on resource description
-		if (desc != null) {
+		if (StringHelper.containsNonWhitespace(desc)) {
 			desc = desc.replace('*','%');
 			desc = '%' + desc + '%';
 			sb.append(" and v.description like :desc");
@@ -1084,13 +1084,13 @@ public class RepositoryManager {
 		TypedQuery<RepositoryEntry> dbquery = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), RepositoryEntry.class)
 				.setParameter("identityKey", identity.getKey());
-		if (author != null) {
+		if (StringHelper.containsNonWhitespace(author)) {
 			dbquery.setParameter("author", author);
 		}
-		if (displayName != null) {
+		if (StringHelper.containsNonWhitespace(displayName)) {
 			dbquery.setParameter("displayname", displayName);
 		}
-		if (desc != null) {
+		if (StringHelper.containsNonWhitespace(desc)) {
 			dbquery.setParameter("desc", desc);
 		}
 		if (resourceTypes != null) {
@@ -1113,8 +1113,8 @@ public class RepositoryManager {
 		  .append(" inner join fetch v.olatResource as res")
 		  .append(" inner join fetch v.statistics as statistics")
 		  .append(" left join fetch v.lifecycle as lifecycle")
-		  .append(" inner join v.groups as relGroup on relGroup.defaultGroup=true")
-		  .append(" inner join relGroup.group as baseGroup")//TODO repo access
+		  .append(" inner join v.groups as relGroup")
+		  .append(" inner join relGroup.group as baseGroup")
 		  .append(" inner join baseGroup.members as membership on membership.role='").append(GroupRoles.owner.name()).append("'")
 		  .append(" where membership.identity.key=:identityKey and v.status ").in(RepositoryEntryStatusEnum.preparationToClosed());
 		return dbInstance.getCurrentEntityManager()
@@ -1512,7 +1512,7 @@ public class RepositoryManager {
 		sb.append("select count(distinct v) from repositoryentry as v")
 		  .append(" inner join v.olatResource as res")
 		  .append(" inner join v.groups as relGroup")
-		  .append(" inner join relGroup.group as baseGroup")//TODO repo access
+		  .append(" inner join relGroup.group as baseGroup")
 		  .append(" inner join baseGroup.members as membership")
 		  .append(" where membership.identity.key=:identityKey and membership.role='").append(GroupRoles.participant).append("'")
 		  .append(" and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed()).append(" and res.resName=:resourceType");
@@ -1532,12 +1532,12 @@ public class RepositoryManager {
 			RepositoryEntryOrder... orderby) {
 		QueryBuilder sb = new QueryBuilder(1200);
 		sb.append("select distinct v from repositoryentry as v ")
-		  .append(" inner join fetch v.olatResource as res ")
+		  .append(" inner join fetch v.olatResource as res")
 		  .append(" inner join fetch v.statistics as statistics")
 		  .append(" left join fetch v.lifecycle as lifecycle")
 		  .append(" inner join v.groups as relGroup")
 		  .append(" inner join relGroup.group as baseGroup")
-		  .append(" inner join baseGroup.members as membership")//TODO repo queries
+		  .append(" inner join baseGroup.members as membership")
 		  .append(" where membership.identity.key=:identityKey and membership.role ").in(GroupRoles.participant)
 		  .append(" and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed());
 		if(StringHelper.containsNonWhitespace(type)) {
