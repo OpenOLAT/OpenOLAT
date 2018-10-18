@@ -19,6 +19,8 @@
  */
 package org.olat.modules.coach.model;
 
+import org.olat.repository.RepositoryEntryStatusEnum;
+
 /**
  * 
  *  Dummy bean to transport statistic values about course
@@ -29,6 +31,7 @@ public class CourseStatEntry {
 	// s.repoKey, 
 	private Long repoKey;
 	private String repoDisplayName;
+	private RepositoryEntryStatusEnum status;
 	private int countStudents;
 	private int countPassed;
 	private int countFailed;
@@ -71,6 +74,14 @@ public class CourseStatEntry {
 		this.repoDisplayName = repoDisplayName;
 	}
 	
+	public RepositoryEntryStatusEnum getRepoStatus() {
+		return status;
+	}
+
+	public void setRepoStatus(RepositoryEntryStatusEnum status) {
+		this.status = status;
+	}
+
 	public int getCountStudents() {
 		return countStudents;
 	}

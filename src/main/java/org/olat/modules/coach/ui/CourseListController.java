@@ -23,20 +23,20 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
-import org.olat.core.gui.components.table.ColumnDescriptor;
-import org.olat.core.gui.components.table.CustomRenderColumnDescriptor;
-import org.olat.core.gui.components.table.DefaultColumnDescriptor;
-import org.olat.core.gui.components.table.TableController;
-import org.olat.core.gui.components.table.TableDataModel;
-import org.olat.core.gui.components.table.TableEvent;
-import org.olat.core.gui.components.table.TableGuiConfiguration;
-import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
@@ -48,6 +48,7 @@ import org.olat.modules.coach.model.CourseStatEntry;
 import org.olat.modules.coach.ui.CoursesTableDataModel.Columns;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.ui.author.AccessRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -60,11 +61,12 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class CourseListController extends BasicController implements Activateable2 {
+public class CourseListController extends FormBasicController implements Activateable2 {
 	
+	private FlexiTableElement tableEl;
+	private CoursesTableDataModel tableModel;
 	private final TooledStackedPanel stackPanel;
-	private final TableController tableCtr;
-	private final VelocityContainer mainVC;
+
 	private CourseController courseCtrl;
 	
 	private boolean hasChanged = false;
@@ -75,37 +77,35 @@ public class CourseListController extends BasicController implements Activateabl
 	private RepositoryManager repositoryManager;
 	
 	public CourseListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel) {
-		super(ureq, wControl);
+		super(ureq, wControl, "course_list");
 		this.stackPanel = stackPanel;
 		stackPanel.addListener(this);
 
-		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
-		tableConfig.setTableEmptyMessage(translate("error.no.found"));
-		tableConfig.setDownloadOffered(true);
-		tableConfig.setPreferencesOffered(true, "courseListController");
-		
-		tableCtr = new TableController(tableConfig, ureq, getWindowControl(), null, null, null, null, true, getTranslator());
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.course.name", Columns.name.ordinal(), "select", getLocale()));
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.countStudents", Columns.countStudents.ordinal(), null, getLocale()));
-		tableCtr.addColumnDescriptor(new CustomRenderColumnDescriptor("table.header.login", Columns.initialLaunch.ordinal(), null, getLocale(),
-				ColumnDescriptor.ALIGNMENT_LEFT, new LightIconRenderer()));
-		tableCtr.addColumnDescriptor(new CustomRenderColumnDescriptor("table.header.passed", Columns.countPassed.ordinal(), null, getLocale(),
-				ColumnDescriptor.ALIGNMENT_LEFT, new ProgressRenderer(false, getTranslator())));
-		tableCtr.addColumnDescriptor(new CustomRenderColumnDescriptor("table.header.averageScore", Columns.averageScore.ordinal(), null, getLocale(),
-				ColumnDescriptor.ALIGNMENT_RIGHT, new ScoreCellRenderer()));
-		
-		listenTo(tableCtr);
+		initForm(ureq);
 		loadModel();
-		
-		mainVC = createVelocityContainer("course_list");
-		mainVC.put("coursTable", tableCtr.getInitialComponent());
-		putInitialPanel(mainVC);
 	}
 	
+	@Override
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.name, "select"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.access, new AccessRenderer(getLocale())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.countStudents));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.initialLaunch, new LightIconRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.countPassed, new ProgressRenderer(false, getTranslator())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.averageScore, new ScoreCellRenderer()));
+		
+		tableModel = new CoursesTableDataModel(columnsModel);
+		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 24, false, getTranslator(), formLayout);
+		tableEl.setExportEnabled(true);
+		tableEl.setEmtpyTableMessageKey("error.no.found");
+		tableEl.setAndLoadPersistedPreferences(ureq, "courseListController-v2");
+	}
+
 	private void loadModel() {
 		List<CourseStatEntry> courseStatistics = coachingService.getCoursesStatistics(getIdentity());
-		TableDataModel<CourseStatEntry> model = new CoursesTableDataModel(courseStatistics);
-		tableCtr.setTableDataModel(model);
+		tableModel.setObjects(courseStatistics);
+		tableEl.reset(false, true, true);
 	}
 	
 	private void reloadModel() {
@@ -121,7 +121,7 @@ public class CourseListController extends BasicController implements Activateabl
 	}
 
 	@Override
-	protected void event(UserRequest ureq, Component source, Event event) {
+	public void event(UserRequest ureq, Component source, Event event) {
 		if(source == stackPanel) {
 			if(event instanceof PopEvent) {
 				PopEvent pe = (PopEvent)event;
@@ -130,19 +130,32 @@ public class CourseListController extends BasicController implements Activateabl
 				}
 			}
 		}
+		super.event(ureq, source, event);
+	}
+	
+	@Override
+	protected void formOK(UserRequest ureq) {
+		//
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(tableEl == source) {
+			if(event instanceof SelectionEvent) {
+				SelectionEvent se = (SelectionEvent)event;
+				if("select".equals(se.getCommand())) {
+					CourseStatEntry courseStat = tableModel.getObject(se.getIndex());
+					selectCourse(ureq, courseStat);
+				}
+			}
+		}
+		
+		super.formInnerEvent(ureq, source, event);
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(source == tableCtr) {
-			if(event instanceof TableEvent) {
-				TableEvent e = (TableEvent) event;
-				if("select".equals(e.getActionId())) {
-					CourseStatEntry courseStat = (CourseStatEntry)tableCtr.getTableDataModel().getObject(e.getRowId());
-					selectCourse(ureq, courseStat);
-				}
-			}
-		} else if (source == courseCtrl) {
+		if (source == courseCtrl) {
 			if(event == Event.CHANGED_EVENT) {
 				hasChanged = true;
 			} else if("next.course".equals(event.getCommand())) {
@@ -160,10 +173,10 @@ public class CourseListController extends BasicController implements Activateabl
 		
 		ContextEntry ce = entries.get(0);
 		OLATResourceable ores = ce.getOLATResourceable();
-		if("RepositoryEntry".equals(ores.getResourceableTypeName())) {
+		if("RepositoryEntry".equalsIgnoreCase(ores.getResourceableTypeName())) {
 			Long repoKey = ores.getResourceableId();
-			for(int i=tableCtr.getRowCount(); i-->0; ) {
-				CourseStatEntry courseStat = (CourseStatEntry)tableCtr.getTableDataModel().getObject(i);
+			for(int i=tableModel.getRowCount(); i-->0; ) {
+				CourseStatEntry courseStat = tableModel.getObject(i);
 				if(repoKey.equals(courseStat.getRepoKey())) {
 					selectCourse(ureq, courseStat);
 					if(courseCtrl != null) {
@@ -177,21 +190,21 @@ public class CourseListController extends BasicController implements Activateabl
 	
 	private void previousCourse(UserRequest ureq) {
 		CourseStatEntry currentEntry = courseCtrl.getEntry();
-		int previousIndex = tableCtr.getIndexOfSortedObject(currentEntry) - 1;
-		if(previousIndex < 0 || previousIndex >= tableCtr.getRowCount()) {
-			previousIndex = tableCtr.getRowCount() - 1;
+		int previousIndex = tableModel.getIndexOfObject(currentEntry) - 1;
+		if(previousIndex < 0 || previousIndex >= tableModel.getRowCount()) {
+			previousIndex = tableModel.getRowCount() - 1;
 		}
-		CourseStatEntry previousEntry = (CourseStatEntry)tableCtr.getSortedObjectAt(previousIndex);
+		CourseStatEntry previousEntry = tableModel.getObject(previousIndex);
 		selectCourse(ureq, previousEntry);
 	}
 	
 	private void nextCourse(UserRequest ureq) {
 		CourseStatEntry currentEntry = courseCtrl.getEntry();
-		int nextIndex = tableCtr.getIndexOfSortedObject(currentEntry) + 1;
-		if(nextIndex < 0 || nextIndex >= tableCtr.getRowCount()) {
+		int nextIndex = tableModel.getIndexOfObject(currentEntry) + 1;
+		if(nextIndex < 0 || nextIndex >= tableModel.getRowCount()) {
 			nextIndex = 0;
 		}
-		CourseStatEntry nextEntry = (CourseStatEntry)tableCtr.getSortedObjectAt(nextIndex);
+		CourseStatEntry nextEntry = tableModel.getObject(nextIndex);
 		selectCourse(ureq, nextEntry);
 	}
 	
@@ -204,8 +217,8 @@ public class CourseListController extends BasicController implements Activateabl
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance(RepositoryEntry.class, re.getKey());
 			WindowControl bwControl = addToHistory(ureq, ores, null);
 			
-			int index = tableCtr.getIndexOfSortedObject(courseStat);
-			courseCtrl = new CourseController(ureq, bwControl, stackPanel, re, courseStat, index, tableCtr.getRowCount());
+			int index = tableModel.getIndexOfObject(courseStat);
+			courseCtrl = new CourseController(ureq, bwControl, stackPanel, re, courseStat, index, tableModel.getRowCount());
 			listenTo(courseCtrl);
 			stackPanel.popUpToRootController(ureq);
 			stackPanel.pushController(re.getDisplayname(), courseCtrl);

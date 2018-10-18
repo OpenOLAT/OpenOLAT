@@ -55,7 +55,7 @@ public class EfficiencyStatementEntryTableDataModel extends DefaultFlexiTableDat
 	}
 	
 	public boolean contains(IdentityResourceKey key) {
-		return certificateMap == null ? false : certificateMap.containsKey(key);
+		return certificateMap != null && certificateMap.containsKey(key);
 	}
 	
 	public void putCertificate(CertificateLight certificate) {
@@ -184,7 +184,7 @@ public class EfficiencyStatementEntryTableDataModel extends DefaultFlexiTableDat
 		return new EfficiencyStatementEntryTableDataModel(getTableColumnModel());
 	}
 	
-	public static enum Columns implements FlexiSortableColumnDef {
+	public enum Columns implements FlexiSortableColumnDef {
 		name("student.name"), 
 		repoName("table.header.course.name"),
 		score("table.header.score"),

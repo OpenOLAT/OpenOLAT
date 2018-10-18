@@ -213,7 +213,6 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 				RepoCols.lifecycleEnd.ordinal(), null, loc, ColumnDescriptor.ALIGNMENT_LEFT, dateRenderer));
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.author", RepoCols.author.ordinal(), null, loc));
 
-		AccessRenderer accessRenderer = new AccessRenderer(translator.getLocale());
 		ColumnDescriptor accessColDesc = new CustomRenderColumnDescriptor("table.header.access", RepoCols.repoEntry.ordinal(), null, loc, 
 				ColumnDescriptor.ALIGNMENT_LEFT, accessRenderer) {
 			@Override
@@ -227,7 +226,7 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 				RepositoryEntry re2 = (RepositoryEntry)o2;
 				
 				int ar1 = re1.getEntryStatus().ordinal();
-				if(!re1.isAllUsers() && !re1.isGuests()) {//TODO repo access
+				if(!re1.isAllUsers() && !re1.isGuests()) {
 					ar1 = 99;
 				}
 				

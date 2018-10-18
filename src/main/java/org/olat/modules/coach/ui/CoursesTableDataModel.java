@@ -19,13 +19,13 @@
  */
 package org.olat.modules.coach.ui;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.olat.core.gui.components.table.TableDataModel;
+import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.modules.coach.model.CourseStatEntry;
-import org.olat.modules.coach.ui.ProgressValue;
-
 import org.olat.modules.coach.ui.LightedValue.Light;
 
 /**
@@ -37,41 +37,41 @@ import org.olat.modules.coach.ui.LightedValue.Light;
  *
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class CoursesTableDataModel implements TableDataModel<CourseStatEntry> {
+public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStatEntry>
+	implements SortableFlexiTableDataModel<CourseStatEntry> {
+
+	public CoursesTableDataModel(FlexiTableColumnModel columnsModel) {
+		super(columnsModel);
+	}
 	
-	private List<CourseStatEntry> statistics;
-	
-	public CoursesTableDataModel(List<CourseStatEntry> cours) {
-		this.statistics = cours;
+	public int getIndexOfObject(CourseStatEntry entry) {
+		return getObjects().indexOf(entry);
 	}
 
 	@Override
-	public int getColumnCount() {
-		return 5;
-	}
-
-	@Override
-	public int getRowCount() {
-		return statistics == null ? 0 : statistics.size();
+	public void sort(SortKey orderBy) {
+		super.setObjects(new SortableFlexiTableModelDelegate<>(orderBy, this, null).sort());
 	}
 
 	@Override
 	public Object getValueAt(int row, int col) {
-		CourseStatEntry c = statistics.get(row);
+		CourseStatEntry c = getObject(row);
+		return getValueAt(c, col);
+	}
+
+	@Override
+	public Object getValueAt(CourseStatEntry row, int col) {
 		switch(Columns.getValueAt(col)) {
-			case name: {
-				return c.getRepoDisplayName();
-			}
-			case countStudents: {
-				return new Integer(c.getCountStudents());
-			}
+			case name: return row.getRepoDisplayName();
+			case access: return row.getRepoStatus();
+			case countStudents: return Integer.valueOf(row.getCountStudents());
 			case initialLaunch: {
-				int count = c.getCountStudents();
+				int count = row.getCountStudents();
 				if(count == 0) {
 					return new LightedValue(null, Light.grey);
 				}
 
-				int launch = c.getInitialLaunch();
+				int launch = row.getInitialLaunch();
 				Light light = Light.yellow;
 				if(launch == count) {
 					light = Light.green;
@@ -81,58 +81,70 @@ public class CoursesTableDataModel implements TableDataModel<CourseStatEntry> {
 				return new LightedValue(launch, light);
 			}
 			case countPassed: {
-				int numOfStudents = c.getCountStudents();
+				int numOfStudents = row.getCountStudents();
 				if(numOfStudents == 0) {
 					return numOfStudents;
 				}
 				
 				ProgressValue val = new ProgressValue();
 				val.setTotal(numOfStudents);
-				val.setGreen(c.getCountPassed());
+				val.setGreen(row.getCountPassed());
 				return val;
 			}
 			case countPassedLight: {
-				int count = c.getCountStudents();
+				int count = row.getCountStudents();
 				if(count == 0) {
 					return new LightedValue(null, Light.grey);
 				}
 				
-				int passed = c.getCountPassed();
+				int passed = row.getCountPassed();
 				Light light = Light.yellow;
 				if(passed == count) {
 					light = Light.green;
 				} else if (passed == 0) {
 					light = Light.red;
 				}
-				return new LightedValue(c.getCountPassed(), light);
+				return new LightedValue(row.getCountPassed(), light);
 			}
-			case averageScore: return c.getAverageScore();
+			case averageScore: return row.getAverageScore();
 		}
 		return null;
 	}
 
 	@Override
-	public CourseStatEntry getObject(int row) {
-		return statistics.get(row);
-	}
-
-	@Override
-	public void setObjects(List<CourseStatEntry> objects) {
-		statistics = objects;
-	}
-
-	@Override
 	public CoursesTableDataModel createCopyWithEmptyList() {
-		return new CoursesTableDataModel(new ArrayList<CourseStatEntry>());
+		return new CoursesTableDataModel(getTableColumnModel());
 	}
 	
-	public static enum Columns {
-		name,
-		countStudents,
-		initialLaunch,
-		countPassed,
-		countPassedLight,
-		averageScore;
+	public enum Columns implements FlexiSortableColumnDef {
+		name("table.header.course.name"),
+		access("table.header.course.access"),
+		countStudents("table.header.countStudents"),
+		initialLaunch("table.header.login"),
+		countPassed("table.header.passed"),
+		countPassedLight("table.header.passed"),
+		averageScore("table.header.averageScore");
+		
+		private final String i18nKey;
+		
+		private Columns(String i18nKey) {
+			this.i18nKey = i18nKey;
+		}
+		
+		@Override
+		public String i18nHeaderKey() {
+			return i18nKey;
+		}
+
+		@Override
+		public boolean sortable() {
+			return true;
+		}
+
+		@Override
+		public String sortKey() {
+			return name();
+		}
 
 		public static Columns getValueAt(int ordinal) {
 			if(ordinal >= 0 && ordinal < values().length) {
