@@ -219,7 +219,7 @@ public class EPArtefactPoolRunController extends BasicController implements Acti
 
 	private void initTPFilterView(UserRequest ureq) {
 		List<AbstractArtefact> filteredArtefacts = ePFMgr.filterArtefactsByFilterSettings(filterSettings, 
-				getIdentity(), ureq.getUserSession().getRoles());
+				getIdentity(), ureq.getUserSession().getRoles(), getLocale());
 		initMultiArtefactCtrl(ureq, filteredArtefacts);
 		initFilterPanel(ureq, Filter.extended);
 		setSegmentContent(artCtrl);

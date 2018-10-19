@@ -20,6 +20,7 @@
 package org.olat.search.service.searcher;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import org.apache.lucene.queryparser.classic.ParseException;
@@ -55,19 +56,19 @@ public class SearchClientLocal implements SearchClient {
 	}
 
 	@Override
-	public SearchResults doSearch(String queryString, List<String> condQueries, Identity identity, Roles roles,
+	public SearchResults doSearch(String queryString, List<String> condQueries, Identity identity, Roles roles, Locale locale,
 			int firstResult, int maxReturns, boolean doHighlighting)
 	throws ServiceNotAvailableException, ParseException, QueryException {
 		dbInstance.commitAndCloseSession();
-		return SearchServiceFactory.getService().doSearch(queryString, condQueries, identity, roles, firstResult, maxReturns, doHighlighting);
+		return SearchServiceFactory.getService().doSearch(queryString, condQueries, identity, roles, locale, firstResult, maxReturns, doHighlighting);
 	}
 
 	@Override
-	public List<Long> doSearch(String queryString, List<String> condQueries, Identity identity, Roles roles,
+	public List<Long> doSearch(String queryString, List<String> condQueries, Identity identity, Roles roles, Locale locale,
 			int firstResult, int maxResults, SortKey... orderBy)
 	throws ServiceNotAvailableException, ParseException, QueryException {
 		dbInstance.commitAndCloseSession();
-		return SearchServiceFactory.getService().doSearch(queryString, condQueries, identity, roles, firstResult, maxResults, orderBy);
+		return SearchServiceFactory.getService().doSearch(queryString, condQueries, identity, roles, locale, firstResult, maxResults, orderBy);
 	}
 
 	@Override

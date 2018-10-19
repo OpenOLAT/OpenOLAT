@@ -28,6 +28,7 @@ package org.olat.search.service.searcher;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import javax.jms.Connection;
@@ -68,14 +69,13 @@ import org.olat.search.ServiceNotAvailableException;
  */
 public class JmsSearchProvider implements MessageListener {
 	
-	private OLog log_ = Tracing.createLoggerFor(this.getClass());
+	private static final OLog log = Tracing.createLoggerFor(JmsSearchProvider.class);
 	private SearchService searchService;
-	private ConnectionFactory connectionFactory_;
-	private Connection connection_;
-	private Queue searchQueue_;
-	private Session session_;
-	private MessageConsumer consumer_;
-	private LinkedList<Session> sessions_ = new LinkedList<Session>();
+	private ConnectionFactory connectionFactory;
+	private Connection connection;
+	private Queue searchQueue;
+	private Session session;
+	private LinkedList<Session> sessions = new LinkedList<>();
 	private long receiveTimeout = 60000;
 	private TaskExecutorManager taskExecutorManager;
 	
@@ -88,11 +88,11 @@ public class JmsSearchProvider implements MessageListener {
 	}
 	
 	public void setConnectionFactory(ConnectionFactory conFac) {
-		connectionFactory_ = conFac;
+		connectionFactory = conFac;
 	}
 
 	public void setSearchQueue(Queue searchQueue) {
-		this.searchQueue_ = searchQueue;
+		this.searchQueue = searchQueue;
 	}
 
 	public void setReceiveTimeout(long receiveTimeout) {
@@ -107,9 +107,12 @@ public class JmsSearchProvider implements MessageListener {
 	 * Delegates execution to the searchService.
 	 * @see org.olat.search.service.searcher.OLATSearcher#doSearch(java.lang.String, org.olat.core.id.Identity, org.olat.core.id.Roles, boolean)
 	 */
-	public SearchResults doSearch(String queryString, List<String> condQueries, Identity identity, Roles roles, int firstResult, int maxResults, boolean doHighlighting) throws ServiceNotAvailableException, ParseException, QueryException {
-		if (searchService == null) throw new AssertException("searchService in ClusteredSearchProvider is null, please check the search configuration!");
-		return searchService.doSearch(queryString, condQueries, identity, roles, firstResult, maxResults, doHighlighting);		
+	public SearchResults doSearch(String queryString, List<String> condQueries, Identity identity, Roles roles, Locale locale,
+			int firstResult, int maxResults, boolean doHighlighting) throws ServiceNotAvailableException, ParseException, QueryException {
+		if (searchService == null) {
+			throw new AssertException("searchService in ClusteredSearchProvider is null, please check the search configuration!");
+		}
+		return searchService.doSearch(queryString, condQueries, identity, roles, locale, firstResult, maxResults, doHighlighting);		
 	}
 	
 	
@@ -119,28 +122,20 @@ public class JmsSearchProvider implements MessageListener {
 		return searchService.spellCheck(query);
 	}
 
-	/**
-	 * 
-	 * @see org.olat.search.service.searcher.OLATSearcher#getQueryCount()
-	 */
 	public long getQueryCount() {		
 		if (searchService == null) throw new AssertException("searchService in ClusteredSearchProvider is null, please check the search configuration!");
 		return searchService.getQueryCount();
 	}
 
-	/**
-	 * 
-	 * @see org.olat.search.service.searcher.OLATSearcher#stop()
-	 */
 	public void stop() {
 		if (searchService == null) throw new AssertException("searchService in ClusteredSearchProvider is null, please check the search configuration!");
 		searchService.stop();
 		try {
-			session_.close();
-			connection_.close();
-			log_.info("ClusteredSearchProvider stopped");
+			session.close();
+			connection.close();
+			log.info("ClusteredSearchProvider stopped");
 		} catch (JMSException e) {
-			log_.warn("Exception in stop ClusteredSearchProvider, ",e);
+			log.warn("Exception in stop ClusteredSearchProvider, ",e);
 		}
 	}	
 	
@@ -154,17 +149,18 @@ public class JmsSearchProvider implements MessageListener {
 	}
 	
 	public void springInit() throws JMSException {
-		connection_ = connectionFactory_.createConnection();
-		session_ = connection_.createSession(false, Session.AUTO_ACKNOWLEDGE);
-		consumer_ = session_.createConsumer(searchQueue_);
-		consumer_.setMessageListener(this);
-		connection_.start();
-		log_.info("ClusteredSearchProvider JMS started");
+		connection = connectionFactory.createConnection();
+		session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+		MessageConsumer consumer = session.createConsumer(searchQueue);
+		consumer.setMessageListener(this);
+		connection.start();
+		log.info("ClusteredSearchProvider JMS started");
 	}
 		
+	@Override
 	public void onMessage(Message message) {
-		if ( log_.isDebug() ) {
-			log_.debug("onMessage, message=" + message);
+		if ( log.isDebug() ) {
+			log.debug("onMessage, message=" + message);
 		}
 		try{
 			long sentTimestamp = message.getJMSTimestamp();
@@ -176,87 +172,75 @@ public class JmsSearchProvider implements MessageListener {
 				if (message instanceof ObjectMessage) {
 					ObjectMessage objectMessage = (ObjectMessage) message;
 					final SearchRequest searchRequest = (SearchRequest) objectMessage.getObject();
-					taskExecutorManager.execute(new Runnable() {
-		
-						public void run() {
-							onSearchMessage(searchRequest, correlationID, replyTo);
-						}
-						
+					taskExecutorManager.execute(() -> {
+						onSearchMessage(searchRequest, correlationID, replyTo);
 					});
 				} else if (message instanceof TextMessage) {				
 					TextMessage testMessage = (TextMessage)message;
 					final String spellText = testMessage.getText();
-					taskExecutorManager.execute(new Runnable() {
-		
-						public void run() {
-							onSpellMessage(spellText, correlationID, replyTo);
-						}
-						
+					taskExecutorManager.execute(() -> {
+						onSpellMessage(spellText, correlationID, replyTo);
 					});
 				}
 			} else {
 				// JMS message is too old, discard it (do nothing)
-				log_.warn("JMS message was too old, discard message,  timeout=" + receiveTimeout + "ms , received time=" + (currentTimestamp - sentTimestamp) + "ms");
+				log.warn("JMS message was too old, discard message,  timeout=" + receiveTimeout + "ms , received time=" + (currentTimestamp - sentTimestamp) + "ms");
 			}
 		} catch(JMSException e) {
-			log_.error("error when receiving jms messages", e);
-			return; //signal search not available
+			log.error("error when receiving jms messages", e);
 		} catch (Error err) {
-			log_.warn("Error in onMessage, ",err);
+			log.warn("Error in onMessage, ",err);
 			// OLAT-3973: don't throw exceptions here
 		} catch (RuntimeException runEx) {
-			log_.warn("RuntimeException in onMessage, ",runEx);
+			log.warn("RuntimeException in onMessage, ",runEx);
 			// OLAT-3973: don't throw exceptions here
 		}
 	}
 	
 	private synchronized Session acquireSession() throws JMSException {
-		if (sessions_.size()==0) {
-			return connection_.createSession(false, Session.AUTO_ACKNOWLEDGE);
+		if (sessions.isEmpty()) {
+			return connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 		} else {
-			return sessions_.getFirst();
+			return sessions.getFirst();
 		}
 	}
 	
-	private synchronized void releaseSession(Session session) {
-		if (session==null) {
-			return;
+	private synchronized void releaseSession(Session sessionToRelease) {
+		if (sessionToRelease != null) {
+			sessions.addLast(sessionToRelease);
 		}
-		sessions_.addLast(session);
 	}
 
 	void onSearchMessage(SearchRequest searchRequest, String correlationID, Destination replyTo) {
-		if ( log_.isDebug() ) {
-			log_.debug("onSearchMessage, correlationID=" + correlationID + " , replyTo=" + replyTo + " , searchRequest=" + searchRequest);
+		if ( log.isDebug() ) {
+			log.debug("onSearchMessage, correlationID=" + correlationID + " , replyTo=" + replyTo + " , searchRequest=" + searchRequest);
 		}
-		Session session = null;
+		Session searchSession = null;
 		try{
 			Identity identity = BaseSecurityManager.getInstance().loadIdentityByKey(searchRequest.getIdentityId());
 	
-			SearchResults searchResults = this.doSearch(searchRequest.getQueryString(), searchRequest.getCondQueries(), identity, searchRequest.getRoles(),
+			SearchResults searchResults = doSearch(searchRequest.getQueryString(), searchRequest.getCondQueries(),
+					identity, searchRequest.getRoles(), searchRequest.getLocale(),
 					searchRequest.getFirstResult(), searchRequest.getMaxResults(), searchRequest.isDoHighlighting());
-			if (log_.isDebug()) {
-				log_.debug("searchResults: " + searchResults.size());
+			if (log.isDebug()) {
+				log.debug("searchResults: " + searchResults.size());
 			}
 			if (searchResults != null) {
-				session = acquireSession();
-				Message responseMessage = session.createObjectMessage(searchResults);
+				searchSession = acquireSession();
+				Message responseMessage = searchSession.createObjectMessage(searchResults);
 				responseMessage.setJMSCorrelationID(correlationID);
 				responseMessage.setStringProperty(SearchClientProxy.JMS_RESPONSE_STATUS_PROPERTY_NAME, SearchClientProxy.JMS_RESPONSE_STATUS_OK);
-				MessageProducer producer = session.createProducer(replyTo);
-				if ( log_.isDebug() ) {
-					log_.debug("onSearchMessage, send ResponseMessage=" + responseMessage + " to replyTo=" + replyTo);
+				MessageProducer producer = searchSession.createProducer(replyTo);
+				if ( log.isDebug() ) {
+					log.debug("onSearchMessage, send ResponseMessage=" + responseMessage + " to replyTo=" + replyTo);
 				}
 				producer.send(responseMessage);
 				producer.close();
-				return;
 			} else {
-				log_.info("onSearchMessage, no searchResults (searchResults=null)");
+				log.info("onSearchMessage, no searchResults (searchResults=null)");
 			}
 		} catch (JMSException e) {
-			log_.error("error when receiving jms messages", e);
-			return; //signal search not available
-			// do not throw exceptions here throw new OLATRuntimeException();
+			log.error("error when receiving jms messages", e);
 		} catch (ServiceNotAvailableException sex) {
 			sendErrorResponse(SearchClientProxy.JMS_RESPONSE_STATUS_SERVICE_NOT_AVAILABLE_EXCEPTION, correlationID, replyTo);
 		} catch (ParseException pex) {
@@ -264,63 +248,52 @@ public class JmsSearchProvider implements MessageListener {
 		} catch (QueryException qex) {
 			sendErrorResponse(SearchClientProxy.JMS_RESPONSE_STATUS_QUERY_EXCEPTION, correlationID, replyTo);
 		}	catch (Throwable th) {
-			log_.error("error at ClusteredSearchProvider.receive()", th);
-			return;// signal search not available
-			// do not throw exceptions throw new OLATRuntimeException();
+			log.error("error at ClusteredSearchProvider.receive()", th);
 		} finally{
-			releaseSession(session);
+			releaseSession(searchSession);
 			DBFactory.getInstance().commitAndCloseSession();
 		}
 	}
 	
 	private void sendErrorResponse(String jmsResponseStatus, String correlationID, Destination replyTo) {
-		Session session = null;
+		Session sendSession = null;
 		try {
-			session = acquireSession();
-			Message responseMessage = session.createObjectMessage();
+			sendSession = acquireSession();
+			Message responseMessage = sendSession.createObjectMessage();
 			responseMessage.setJMSCorrelationID(correlationID);
 			responseMessage.setStringProperty(SearchClientProxy.JMS_RESPONSE_STATUS_PROPERTY_NAME, jmsResponseStatus);
-			MessageProducer producer = session.createProducer(replyTo);
-			if ( log_.isDebug() ) {
-				log_.debug("onSearchMessage, send ResponseMessage=" + responseMessage + " to replyTo=" + replyTo);
+			MessageProducer producer = sendSession.createProducer(replyTo);
+			if ( log.isDebug() ) {
+				log.debug("onSearchMessage, send ResponseMessage=" + responseMessage + " to replyTo=" + replyTo);
 			}
 			producer.send(responseMessage);
 			producer.close();
-			return;
-			
 		} catch (JMSException e) {
-			log_.error("error when receiving jms messages", e);
-			return; //signal search not available
+			log.error("error when receiving jms messages", e);
 		} finally{
-			releaseSession(session);
+			releaseSession(sendSession);
 		}
 	}
 
 	void onSpellMessage(String spellText, String correlationID, Destination replyTo) {			
-		Session session = null;
+		Session spellSession = null;
 		try {
 			Set<String> spellStrings = this.spellCheck(spellText);
 			if(spellStrings!=null) {
-				ArrayList<String> spellStringList = new ArrayList<String>(spellStrings);
-				session = acquireSession();
-				Message responseMessage = session.createObjectMessage(spellStringList);
+				ArrayList<String> spellStringList = new ArrayList<>(spellStrings);
+				spellSession = acquireSession();
+				Message responseMessage = spellSession.createObjectMessage(spellStringList);
 				responseMessage.setJMSCorrelationID(correlationID);
-				MessageProducer producer = session.createProducer(replyTo);
+				MessageProducer producer = spellSession.createProducer(replyTo);
 				producer.send(responseMessage);
 				producer.close();
-				return;
 			}
-			return; // signal search not available
 		} catch (JMSException e) {
-			log_.error("error when receiving jms messages", e);
-			return; //signal search not available
-			// do not throw exceptions here throw new OLATRuntimeException();
+			log.error("error when receiving jms messages", e);
 		} catch (Throwable th) {
-			log_.error("error at ClusteredSearchProvider.receive()", th);
-			return;// signal search not available
-			// do not throw exceptions throw new OLATRuntimeException();
+			log.error("error at ClusteredSearchProvider.receive()", th);
 		} finally{
-			releaseSession(session);
+			releaseSession(spellSession);
 			DBFactory.getInstance().commitAndCloseSession();
 		}
 	}

@@ -215,7 +215,7 @@ public class PoolDAOTest extends OlatTestCase {
 		poolDao.addItemToPool(item, Collections.singletonList(pool), false);
 		dbInstance.commit();
 		
-		SearchQuestionItemParams params = new SearchQuestionItemParams(null, null);
+		SearchQuestionItemParams params = new SearchQuestionItemParams(null, null, Locale.ENGLISH);
 		params.setPoolKey(pool.getKey());
 		
 		//check
@@ -253,9 +253,9 @@ public class PoolDAOTest extends OlatTestCase {
 		poolDao.addItemToPool(item2, Collections.singletonList(pool2), false);
 		dbInstance.commit();
 		
-		SearchQuestionItemParams params1 = new SearchQuestionItemParams(id, null);
+		SearchQuestionItemParams params1 = new SearchQuestionItemParams(id, null, Locale.ENGLISH);
 		params1.setPoolKey(pool1.getKey());
-		SearchQuestionItemParams params2 = new SearchQuestionItemParams(id, null);
+		SearchQuestionItemParams params2 = new SearchQuestionItemParams(id, null, Locale.ENGLISH);
 		params2.setPoolKey(pool2.getKey());
 		
 		//check
@@ -338,7 +338,7 @@ public class PoolDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 
-		SearchQuestionItemParams params = new SearchQuestionItemParams(id, null);
+		SearchQuestionItemParams params = new SearchQuestionItemParams(id, null, Locale.ENGLISH);
 		params.setPoolKey(pool.getKey());
 		
 		//check the pool and remove the items

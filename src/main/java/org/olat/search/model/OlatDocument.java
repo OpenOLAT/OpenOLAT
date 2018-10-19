@@ -85,9 +85,9 @@ public class OlatDocument extends AbstractOlatDocument {
 		if(getId() != null) {
 			document.add(new StringField(DB_ID_NAME, getId().toString(), Field.Store.YES));
 		}
-		document.add(createTextField(TITLE_FIELD_NAME, getTitle(), 4));
-		document.add(createTextField(DESCRIPTION_FIELD_NAME, getDescription(), 2));
-		document.add(createTextField(CONTENT_FIELD_NAME, getContent(), 0.5f));
+		document.add(new TextField(TITLE_FIELD_NAME, getTitle(), Field.Store.YES));
+		document.add(new TextField(DESCRIPTION_FIELD_NAME, getDescription(), Field.Store.YES));
+		document.add(new TextField(CONTENT_FIELD_NAME, getContent(), Field.Store.YES));
 		document.add(new StringField(RESOURCEURL_FIELD_NAME, getResourceUrl(), Field.Store.YES));
 		document.add(new StringField(RESOURCEURL_MD5_FIELD_NAME, Encoder.md5hash(getResourceUrl()), Field.Store.YES));
 		document.add(new StringField(DOCUMENTTYPE_FIELD_NAME, getDocumentType(), Field.Store.YES));
@@ -95,8 +95,8 @@ public class OlatDocument extends AbstractOlatDocument {
 			document.add(new StringField(CSS_ICON, getCssIcon(), Field.Store.YES));
 		}
 		document.add(new StringField(FILETYPE_FIELD_NAME, getFileType(), Field.Store.YES));
-		document.add(createTextField(AUTHOR_FIELD_NAME, getAuthor(), 2));
-		document.add(createTextField(LOCATION_FIELD_NAME, getLocation(), 2));
+		document.add(new TextField(AUTHOR_FIELD_NAME, getAuthor(), Field.Store.YES));
+		document.add(new TextField(LOCATION_FIELD_NAME, getLocation(), Field.Store.YES));
     
 		appendDayField(document, CREATED_FIELD_NAME, getCreatedDate());
 		appendDayField(document, CHANGED_FIELD_NAME, getLastChange());
@@ -108,13 +108,13 @@ public class OlatDocument extends AbstractOlatDocument {
 			for (Entry<String, List<String>> metaDataEntry : metadata.entrySet()) {
 				String key = metaDataEntry.getKey();
 				for (String value : metaDataEntry.getValue()) {
-					document.add(createTextField(key, value, 2) );
+					document.add(new TextField(key, value, Field.Store.YES));
 				}
 			}
 		}
 		
-		document.add(createTextField(PARENT_CONTEXT_TYPE_FIELD_NAME, getParentContextType(), 1.0f));
-		document.add(createTextField(PARENT_CONTEXT_NAME_FIELD_NAME, getParentContextName(), 1.0f));
+		document.add(new TextField(PARENT_CONTEXT_TYPE_FIELD_NAME, getParentContextType(), Field.Store.YES));
+		document.add(new TextField(PARENT_CONTEXT_NAME_FIELD_NAME, getParentContextName(), Field.Store.YES));
 		if(StringHelper.containsNonWhitespace(getReservedTo())) {
 			for(StringTokenizer tokenizer = new StringTokenizer(getReservedTo(), " "); tokenizer.hasMoreTokens(); ) {
 				String reserved = tokenizer.nextToken();
@@ -144,10 +144,8 @@ public class OlatDocument extends AbstractOlatDocument {
 	 * @param boost
 	 * @return
 	 */
-	protected static Field createTextField(String fieldName, String content, float boost) {
-		TextField field = new TextField(fieldName, content, Field.Store.YES);
-		field.setBoost(boost);
-		return field;
+	protected static Field createTextField(String fieldName, String content) {
+		return new TextField(fieldName, content, Field.Store.YES);
 	}
 	
 	protected static Field createDayField(String fieldName, Date date) {

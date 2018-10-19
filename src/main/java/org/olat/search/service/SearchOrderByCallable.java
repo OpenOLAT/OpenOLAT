@@ -22,24 +22,24 @@ package org.olat.search.service;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.TopDocs;
-import org.apache.lucene.search.BooleanClause.Occur;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
-import org.olat.search.SearchService;
 import org.olat.search.ServiceNotAvailableException;
 import org.olat.search.model.AbstractOlatDocument;
 
@@ -55,15 +55,17 @@ class SearchOrderByCallable implements Callable<List<Long>> {
 	
 	private String queryString;
 	private List<String> condQueries;
+	private Locale locale;
 	private SortKey[] orderBy;
 	private int firstResult;
 	private int maxResults;
 	private SearchServiceImpl searchService;
 	
-	public SearchOrderByCallable(String queryString, List<String> condQueries, SortKey[] orderBy,
+	public SearchOrderByCallable(String queryString, List<String> condQueries, SortKey[] orderBy, Locale locale,
 			int firstResult, int maxResults,  SearchServiceImpl searchService) {
 		this.queryString = queryString;
 		this.condQueries = condQueries;
+		this.locale = locale;
 		this.orderBy = orderBy;
 		this.firstResult = firstResult;
 		this.maxResults = maxResults;
@@ -81,13 +83,13 @@ class SearchOrderByCallable implements Callable<List<Long>> {
 			}
 			
 			searcher = searchService.getIndexSearcher();
-			BooleanQuery query = searchService.createQuery(queryString, condQueries);
+			BooleanQuery.Builder queryBuilder = searchService.createQuery(queryString, condQueries, locale);
 			
 			//only search document with an primary key
 			String idNotNull = AbstractOlatDocument.DB_ID_NAME + ":[* TO *]";
-			QueryParser idQueryParser = new QueryParser(SearchService.OO_LUCENE_VERSION, idNotNull, searchService.getAnalyzer());
+			QueryParser idQueryParser = new QueryParser(idNotNull, searchService.getAnalyzer());
 			Query idQuery = idQueryParser.parse(idNotNull);
-			query.add(idQuery, Occur.MUST);
+			queryBuilder.add(idQuery, Occur.MUST);
 
 			int n = searchService.getSearchModuleConfig().getMaxHits();
 			TopDocs docs;
@@ -97,16 +99,16 @@ class SearchOrderByCallable implements Callable<List<Long>> {
 					sortFields[i] = new SortField(orderBy[i].getKey(), SortField.Type.STRING_VAL, orderBy[i].isAsc());
 				}
 				Sort sort = new Sort(sortFields);
-				docs = searcher.search(query, n, sort);
+				docs = searcher.search(queryBuilder.build(), n, sort);
 			} else {
-				docs = searcher.search(query, n);
+				docs = searcher.search(queryBuilder.build(), n);
 			}
 
-			int numOfDocs = Math.min(n, docs.totalHits);
-			Set<String> retrievedFields = new HashSet<String>();
+			long numOfDocs = Math.min(n, docs.totalHits);
+			Set<String> retrievedFields = new HashSet<>();
 			retrievedFields.add(AbstractOlatDocument.DB_ID_NAME);
 			
-			List<Long> res = new ArrayList<Long>();
+			List<Long> res = new ArrayList<>();
 			for (int i=firstResult; i<numOfDocs && res.size() < maxResults; i++) {
 				Document doc = searcher.doc(docs.scoreDocs[i].doc, retrievedFields);
 				String dbKeyStr = doc.get(AbstractOlatDocument.DB_ID_NAME);

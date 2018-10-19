@@ -88,7 +88,7 @@ public class QuestionItemIndexer implements LifeIndexer {
 				}
 				counter += items.size();
 			} while(items.size() == BATCH_SIZE);
-			
+			log.info(counter + " question items indexed.");
 		} catch (Exception e) {
 			log.error("", e);
 		} finally {

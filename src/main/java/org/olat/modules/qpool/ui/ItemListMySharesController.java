@@ -118,12 +118,12 @@ public class ItemListMySharesController extends AbstractItemListController {
 			myShareEl.select(myShareKeys[0], true);
 			if(myPools.size() > 0) {
 				Pool firstPool = myPools.get(0);
-				PoolItemsSource source = new PoolItemsSource(getIdentity(), roles, firstPool);
+				PoolItemsSource source = new PoolItemsSource(getIdentity(), roles, getLocale(), firstPool);
 				source.getDefaultParams().setFormat(restrictToFormat);
 				updateSource(source);
 			} else if(myGroups.size() > 0) {
 				BusinessGroup firstGroup = myGroups.get(0);
-				SharedItemsSource source = new SharedItemsSource(firstGroup, getIdentity(), roles, false);
+				SharedItemsSource source = new SharedItemsSource(firstGroup, getIdentity(), roles, getLocale(), false);
 				source.setRestrictToFormat(restrictToFormat);
 				updateSource(source);
 			}
@@ -171,7 +171,7 @@ public class ItemListMySharesController extends AbstractItemListController {
 		if(myPool == null) {
 			updateSource(new EmptyItemsSource());
 		} else {
-			PoolItemsSource source = new PoolItemsSource(getIdentity(), ureq.getUserSession().getRoles(), myPool);
+			PoolItemsSource source = new PoolItemsSource(getIdentity(), ureq.getUserSession().getRoles(), getLocale(), myPool);
 			source.getDefaultParams().setFormat(restrictToFormat);
 			updateSource(source);
 		}
@@ -188,7 +188,7 @@ public class ItemListMySharesController extends AbstractItemListController {
 		if(myGroup == null) {
 			updateSource(new EmptyItemsSource());
 		} else {
-			SharedItemsSource source = new SharedItemsSource(myGroup, getIdentity(), ureq.getUserSession().getRoles(), false);
+			SharedItemsSource source = new SharedItemsSource(myGroup, getIdentity(), ureq.getUserSession().getRoles(), getLocale(), false);
 			source.setRestrictToFormat(restrictToFormat);
 			updateSource(source);
 		}

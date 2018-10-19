@@ -60,21 +60,20 @@ public class MyTaxonomyLevelTreeNode extends GenericTreeNode implements Controll
 		this.securityCallback = securityCallback;
 		this.taxonomyLevel = taxonomyLevel;
 		
-		this.setTitle(taxonomyLevel.getDisplayName());
+		setTitle(taxonomyLevel.getDisplayName());
 		TaxonomyLevelType type = taxonomyLevel.getType();
 		if (type != null && StringHelper.containsNonWhitespace(type.getCssClass())) {
 			setIconCssClass(type.getCssClass());
 		}
 		
-		this.setUserObject(taxonomyLevel);
+		setUserObject(taxonomyLevel);
 	}
 
 	@Override
 	public Controller getController(UserRequest ureq, WindowControl wControl) {
 		if (questionsCtrl == null) {
 			QuestionItemsSource source = new MyTaxonomyLevelItemsSource(
-					ureq.getIdentity(),
-					ureq.getUserSession().getRoles(),
+					ureq.getIdentity(), ureq.getUserSession().getRoles(), ureq.getLocale(),
 					taxonomyLevel);
 			OLATResourceable ores = OresHelper.createOLATResourceableInstanceWithoutCheck(MY_TAX_LEVEL + "_" + taxonomyLevel.getIdentifier(), taxonomyLevel.getKey());
 			WindowControl swControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ores, null, wControl, true);

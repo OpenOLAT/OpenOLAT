@@ -20,6 +20,7 @@
 package org.olat.modules.qpool.ui.datasource;
 
 import java.util.List;
+import java.util.Locale;
 
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -39,8 +40,8 @@ public abstract class TaxonomyLevelItemsSource extends DefaultItemsSource {
 
 	private final TaxonomyLevel taxonomyLevel;
 	
-	public TaxonomyLevelItemsSource(Identity me, Roles roles, TaxonomyLevel taxonomyLevel) {
-		super(me, roles, taxonomyLevel.getDisplayName());
+	public TaxonomyLevelItemsSource(Identity me, Roles roles, Locale locale, TaxonomyLevel taxonomyLevel) {
+		super(me, roles, locale, taxonomyLevel.getDisplayName());
 		this.taxonomyLevel = taxonomyLevel;
 		getDefaultParams().setLikeTaxonomyLevel(taxonomyLevel);
 	}

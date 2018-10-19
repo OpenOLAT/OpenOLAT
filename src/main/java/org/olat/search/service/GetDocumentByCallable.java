@@ -32,7 +32,6 @@ import org.apache.lucene.search.TopDocs;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Encoder;
-import org.olat.search.SearchService;
 import org.olat.search.model.AbstractOlatDocument;
 
 /**
@@ -62,14 +61,14 @@ class GetDocumentByCallable implements Callable<Document> {
 				searcher = searchService.getIndexSearcher();
 				String url = Encoder.md5hash(resourceUrl);
 				String queryStr = "+" + AbstractOlatDocument.RESOURCEURL_MD5_FIELD_NAME + ":\"" + url + "\"";
-				QueryParser idQueryParser = new QueryParser(SearchService.OO_LUCENE_VERSION, queryStr, new KeywordAnalyzer());
+				QueryParser idQueryParser = new QueryParser(queryStr, new KeywordAnalyzer());
 				Query query = idQueryParser.parse(queryStr);
 				
 				TopDocs docs = searcher.search(query, 500);
-				int numOfDocs = docs.totalHits;
+				long numOfDocs = docs.totalHits;
 				
 
-				Set<String> retrievedFields = new HashSet<String>();
+				Set<String> retrievedFields = new HashSet<>();
 				retrievedFields.add(AbstractOlatDocument.RESOURCEURL_FIELD_NAME);
 				retrievedFields.add(AbstractOlatDocument.RESOURCEURL_MD5_FIELD_NAME);
 

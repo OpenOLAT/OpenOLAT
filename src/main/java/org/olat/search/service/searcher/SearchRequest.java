@@ -26,6 +26,7 @@ package org.olat.search.service.searcher;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Locale;
 
 import org.olat.core.id.Roles;
 
@@ -42,19 +43,20 @@ public class SearchRequest implements Serializable {
 
 	private static final long serialVersionUID = -2886090379563029101L;
 	private String queryString;
-  private List<String> condQueries;
-  private Long identityId;
-  private Roles roles;
-  private boolean doHighlighting;
-  private int firstResult;
-  private int maxResults;
+	private List<String> condQueries;
+	private Long identityId;
+	private Roles roles;
+	private Locale locale;
+	private boolean doHighlighting;
+	private int firstResult;
+	private int maxResults;
   
-  public SearchRequest() {
-  	//default constructor
-  }
+	public SearchRequest() {
+		//default constructor
+	}
   
-	public SearchRequest(String queryString, List<String> condQueries, Long identityId, Roles roles, int firstResult, int maxResults,
-			boolean doHighlighting) {
+	public SearchRequest(String queryString, List<String> condQueries, Long identityId, Roles roles, Locale locale,
+			int firstResult, int maxResults, boolean doHighlighting) {
 		super();
 		this.queryString = queryString;
 		this.condQueries = condQueries;
@@ -62,6 +64,7 @@ public class SearchRequest implements Serializable {
 		this.maxResults = maxResults;
 		this.identityId = identityId;
 		this.roles = roles;
+		this.locale = locale;
 		this.doHighlighting = doHighlighting;
 	}
 
@@ -121,6 +124,14 @@ public class SearchRequest implements Serializable {
 		this.roles = roles;
 	}
   
+	public Locale getLocale() {
+		return locale;
+	}
+
+	public void setLocale(Locale locale) {
+		this.locale = locale;
+	}
+
 	@Override
 	public String toString() {
 		//dummy impl

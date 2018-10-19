@@ -19,6 +19,7 @@
  */
 package org.olat.upgrade;
 
+import java.io.File;
 import java.util.Collections;
 import java.util.List;
 
@@ -33,6 +34,7 @@ import org.olat.core.gui.control.navigation.SiteConfiguration;
 import org.olat.core.gui.control.navigation.SiteDefinitions;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.core.util.FileUtils;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationStatus;
@@ -54,6 +56,7 @@ import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.repository.manager.RepositoryEntryToOrganisationDAO;
+import org.olat.search.SearchModule;
 import org.olat.upgrade.model.RepositoryEntryAccessUpgrade;
 import org.olat.upgrade.model.RepositoryEntryAccessUpgradeStatus;
 import org.olat.user.UserManager;
@@ -75,6 +78,7 @@ public class OLATUpgrade_13_0_0 extends OLATUpgrade {
 	private static final String MIGRATE_SEND_APPEAL_DATES = "LECTURES SEND APPEAL DATES";
 	private static final String MIGRATE_ADMIN_SITE_SEC = "MIGRATE ADMIN SITE SECURITY CALLBACK";
 	private static final String MIGRATE_REPO_ENTRY_ACCESS = "MIGRATE REPO ENTRY ACCESS";
+	private static final String MIGRATE_LUCENE = "MIGRATE LUCENE 7.5";
 	
 	@Autowired
 	private DB dbInstance;
@@ -100,6 +104,8 @@ public class OLATUpgrade_13_0_0 extends OLATUpgrade {
 	private EvaluationFormManager evaManger;
 	@Autowired
 	private SiteDefinitions sitesModule;
+	@Autowired
+	private SearchModule searchModule;
 	
 	public OLATUpgrade_13_0_0() {
 		super();
@@ -133,6 +139,7 @@ public class OLATUpgrade_13_0_0 extends OLATUpgrade {
 		allOk &= migrateLecturesSendAppealDates(upgradeManager, uhd);
 		allOk &= migrateAdminSiteSecurityCallback(upgradeManager, uhd);
 		allOk &= migrateRepositoryEntriesAccess(upgradeManager, uhd);
+		allOk &= migrateLucene(upgradeManager, uhd);
 		
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
@@ -142,6 +149,37 @@ public class OLATUpgrade_13_0_0 extends OLATUpgrade {
 			log.audit("OLATUpgrade_13_0_0 not finished, try to restart OpenOLAT!");
 		}
 		return allOk;
+	}
+	
+	private boolean migrateLucene(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(MIGRATE_LUCENE)) {
+			try {
+				String indexPath = searchModule.getFullIndexPath();
+				deleteIndex(indexPath);
+				String permIndexPath = searchModule.getFullPermanentIndexPath();
+				deleteIndex(permIndexPath);
+				String tempIndexPath = searchModule.getFullTempIndexPath();
+				deleteIndex(tempIndexPath);
+				String spellIndexPath = searchModule.getSpellCheckDictionaryPath();
+				deleteIndex(spellIndexPath);
+			} catch (Exception e) {
+				log.error("", e);
+				allOk &= false;
+			}
+
+			uhd.setBooleanDataValue(MIGRATE_LUCENE, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		return allOk;
+	}
+	
+	private void deleteIndex(String path) {
+		File index = new File(path);
+		if(index.exists() && index.isDirectory()) {
+			FileUtils.deleteDirsAndFiles(index, true, true);
+			log.info("Delete Lucene index at: " + index);
+		}
 	}
 	
 	private boolean migrateAdminSiteSecurityCallback(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {

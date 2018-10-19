@@ -21,6 +21,7 @@ package org.olat.modules.qpool.ui.datasource;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -40,8 +41,8 @@ public class PoolItemsSource extends DefaultItemsSource {
 	
 	private final Pool pool;
 	
-	public PoolItemsSource(Identity me, Roles roles, Pool pool) {
-		super(me, roles, pool.getName());
+	public PoolItemsSource(Identity me, Roles roles, Locale locale, Pool pool) {
+		super(me, roles, locale, pool.getName());
 		this.pool = pool;
 		getDefaultParams().setPoolKey(pool.getKey());
 	}

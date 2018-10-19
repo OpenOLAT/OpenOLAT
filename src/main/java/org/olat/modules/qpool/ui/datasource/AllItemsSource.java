@@ -20,6 +20,7 @@
 package org.olat.modules.qpool.ui.datasource;
 
 import java.util.List;
+import java.util.Locale;
 
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -35,8 +36,8 @@ import org.olat.modules.qpool.QuestionStatus;
  */
 public class AllItemsSource extends DefaultItemsSource {
 
-	public AllItemsSource(Identity me, Roles roles, String name) {
-		super(me, roles, name);
+	public AllItemsSource(Identity me, Roles roles, Locale locale, String name) {
+		super(me, roles, locale, name);
 	}
 
 	@Override

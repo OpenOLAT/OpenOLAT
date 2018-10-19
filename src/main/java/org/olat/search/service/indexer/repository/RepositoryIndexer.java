@@ -45,7 +45,6 @@ import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.manager.RepositoryEntryDocumentFactory;
 import org.olat.repository.model.RepositoryEntrySecurity;
-import org.olat.repository.model.SearchRepositoryEntryParameters;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessResult;
 import org.olat.resource.accesscontrol.OfferAccess;
@@ -120,13 +119,7 @@ public class RepositoryIndexer extends AbstractHierarchicalIndexer {
 	@Override
 	public void doIndex(SearchResourceContext parentResourceContext, Object businessObj, OlatFullIndexer indexWriter)
 	throws IOException,InterruptedException {
-		final Roles roles = Roles.administratorRoles();
-
-		final SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters();
-		params.setRoles(roles);
 		boolean debug = isLogDebugEnabled();
-
-		
 		// loop over all repository-entries
 		// committing here to make sure the loadBusinessGroup below does actually
 		// reload from the database and not only use the session cache 
@@ -137,12 +130,12 @@ public class RepositoryIndexer extends AbstractHierarchicalIndexer {
 		int counter = 0;
 		List<RepositoryEntry> repositoryList;
 		do {
-			repositoryList = repositoryManager.genericANDQueryWithRolesRestriction(params, counter, BATCH_SIZE, true);
+			repositoryList = repositoryService.loadRepositoryEntries(counter, BATCH_SIZE);
 	
 			for(RepositoryEntry repositoryEntry:repositoryList) {
 				try {
 					// reload the repositoryEntry here before indexing it to make sure it has not been deleted in the meantime
-					RepositoryEntry reloadedRepositoryEntry = repositoryManager.lookupRepositoryEntry(repositoryEntry.getKey());
+					RepositoryEntry reloadedRepositoryEntry = repositoryService.loadByKey(repositoryEntry.getKey());
 					if (reloadedRepositoryEntry==null) {
 						logInfo("doIndex: repositoryEntry was deleted while we were indexing. The deleted repositoryEntry was: "+repositoryEntry);
 						continue;

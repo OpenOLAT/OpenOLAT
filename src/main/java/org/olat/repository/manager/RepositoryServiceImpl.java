@@ -364,6 +364,11 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	}
 
 	@Override
+	public List<RepositoryEntry> loadRepositoryEntries(int firstResult, int maxResult) {
+		return repositoryEntryDAO.loadRepositoryEntries(firstResult, maxResult);
+	}
+
+	@Override
 	public VFSLeaf getIntroductionImage(RepositoryEntry re) {
 		VFSContainer repositoryHome = new LocalFolderImpl(new File(FolderConfig.getCanonicalRepositoryHome()));
 		String imageName = re.getResourceableId() + ".jpg";

@@ -580,7 +580,7 @@ public class QuestionPoolServiceImpl implements QPoolService {
 				}
 				addConditionsOfParams(condQueries, searchParams);
 				List<Long> results = searchClient.doSearch(queryString, condQueries, searchParams.getIdentity(),
-						searchParams.getRoles(), 0, MAX_NUMBER_DOCS);
+						searchParams.getRoles(), searchParams.getLocale(), 0, MAX_NUMBER_DOCS);
 				if (!results.isEmpty()) {
 					List<QuestionItemView> items = itemQueriesDao.getItems(searchParams, results, firstResult,
 							maxResults, orderBy);
@@ -613,7 +613,7 @@ public class QuestionPoolServiceImpl implements QPoolService {
 				}
 				condQueries.add("pool:" + searchParams.getPoolKey());
 				List<Long> results = searchClient.doSearch(queryString, condQueries,
-						searchParams.getIdentity(), searchParams.getRoles(), 0, MAX_NUMBER_DOCS);
+						searchParams.getIdentity(), searchParams.getRoles(), searchParams.getLocale(), 0, MAX_NUMBER_DOCS);
 
 				if(results.isEmpty()) {
 					return new DefaultResultInfos<>();
@@ -641,7 +641,7 @@ public class QuestionPoolServiceImpl implements QPoolService {
 				}
 				condQueries.add(QItemDocument.OWNER_FIELD + ":" + author.getKey());
 				List<Long> results = searchClient.doSearch(queryString, condQueries,
-						searchParams.getIdentity(), searchParams.getRoles(), 0, MAX_NUMBER_DOCS);
+						searchParams.getIdentity(), searchParams.getRoles(), searchParams.getLocale(), 0, MAX_NUMBER_DOCS);
 
 				if(results.isEmpty()) {
 					return new DefaultResultInfos<>();
@@ -681,7 +681,7 @@ public class QuestionPoolServiceImpl implements QPoolService {
 				}
 				condQueries.add(getDbKeyConditionalQuery(favoritKeys));
 				List<Long> results = searchClient.doSearch(queryString, condQueries,
-						searchParams.getIdentity(), searchParams.getRoles(), 0, MAX_NUMBER_DOCS);
+						searchParams.getIdentity(), searchParams.getRoles(), searchParams.getLocale(), 0, MAX_NUMBER_DOCS);
 
 				if(results.isEmpty()) {
 					return new DefaultResultInfos<>();
@@ -758,7 +758,7 @@ public class QuestionPoolServiceImpl implements QPoolService {
 				}
 				condQueries.add(QItemDocument.SHARE_FIELD + ":" + resource.getKey());
 				List<Long> results = searchClient.doSearch(queryString, condQueries,
-						searchParams.getIdentity(), searchParams.getRoles(), 0, MAX_NUMBER_DOCS);
+						searchParams.getIdentity(), searchParams.getRoles(), searchParams.getLocale(), 0, MAX_NUMBER_DOCS);
 				if(results.isEmpty()) {
 					return new DefaultResultInfos<>();
 				}
@@ -842,7 +842,7 @@ public class QuestionPoolServiceImpl implements QPoolService {
 				}
 				condQueries.add(getDbKeyConditionalQuery(content));
 				List<Long> results = searchClient.doSearch(queryString, condQueries,
-						searchParams.getIdentity(), searchParams.getRoles(), 0, MAX_NUMBER_DOCS);
+						searchParams.getIdentity(), searchParams.getRoles(), searchParams.getLocale(), 0, MAX_NUMBER_DOCS);
 
 				if(results.isEmpty()) {
 					return new DefaultResultInfos<>();

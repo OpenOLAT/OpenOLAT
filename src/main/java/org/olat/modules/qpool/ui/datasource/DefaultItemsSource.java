@@ -21,6 +21,7 @@ package org.olat.modules.qpool.ui.datasource;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.ResultInfos;
@@ -52,10 +53,10 @@ public abstract class DefaultItemsSource implements QuestionItemsSource {
 	protected final QPoolService qpoolService;
 	private final SearchQuestionItemParams defaultParams;
 	
-	public DefaultItemsSource(Identity me, Roles roles, String name) {
+	public DefaultItemsSource(Identity me, Roles roles, Locale locale, String name) {
 		this.name = name;
 		this.identity = me;
-		defaultParams = new SearchQuestionItemParams(me, roles);
+		defaultParams = new SearchQuestionItemParams(me, roles, locale);
 		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 	}
 	

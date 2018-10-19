@@ -469,7 +469,8 @@ public class SearchInputController extends FormBasicController implements Generi
 
 			query = getQueryString(searchString, false);
 			condQueries = getCondQueryStrings(condSearchStrings, parentCtxt, docType, rsrcUrl);
-			SearchResults searchResults = searchClient.doSearch(query, condQueries, ureq.getIdentity(), ureq.getUserSession().getRoles(), firstResult, maxReturns, true);
+			SearchResults searchResults = searchClient.doSearch(query, condQueries,
+					getIdentity(), ureq.getUserSession().getRoles(), getLocale(), firstResult, maxReturns, true);
 
 			if(searchResults == null) {
 				getWindowControl().setWarning(translate("search.service.unexpected.error"));
@@ -510,7 +511,8 @@ public class SearchInputController extends FormBasicController implements Generi
 		hideDidYouMeanWords();
 		String query = getQueryString(searchString, true);
 		List<String> condQueries = getCondQueryStrings(condSearchStrings, parentCtxt, docType, rsrcUrl);
-		return searchClient.doSearch(query, condQueries, ureq.getIdentity(), ureq.getUserSession().getRoles(), firstResult, maxReturns, true);
+		return searchClient.doSearch(query, condQueries,
+				getIdentity(), ureq.getUserSession().getRoles(), getLocale(), firstResult, maxReturns, true);
 	}
 	
 	public Set<String> getDidYouMeanWords() {

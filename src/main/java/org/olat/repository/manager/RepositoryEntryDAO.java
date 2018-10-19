@@ -150,6 +150,15 @@ public class RepositoryEntryDAO {
 				.getResultList();
 	}
 	
+	public List<RepositoryEntry> loadRepositoryEntries(int firstResult, int maxResult) {
+		String query = "select v from repositoryentry as v order by v.key asc";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, RepositoryEntry.class)
+				.setFirstResult(firstResult)
+				.setMaxResults(maxResult)
+				.getResultList();
+	}
+	
 	public RepositoryEntry loadByResourceId(String resourceName, Long resourceId) {
 		List<RepositoryEntry> entries = dbInstance.getCurrentEntityManager()
 				.createNamedQuery("loadRepositoryEntryByResourceId", RepositoryEntry.class)

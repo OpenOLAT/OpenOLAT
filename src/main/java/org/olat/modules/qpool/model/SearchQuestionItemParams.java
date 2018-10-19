@@ -22,6 +22,7 @@ package org.olat.modules.qpool.model;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
@@ -57,10 +58,12 @@ public class SearchQuestionItemParams {
 	
 	private final Identity identity;
 	private final Roles roles;
+	private final Locale locale;
 	
-	public SearchQuestionItemParams(Identity identity, Roles roles) {
+	public SearchQuestionItemParams(Identity identity, Roles roles, Locale locale) {
 		this.identity = identity;
 		this.roles = roles;
+		this.locale = locale;
 	}
 
 	public Long getPoolKey() {
@@ -191,9 +194,13 @@ public class SearchQuestionItemParams {
 		return roles;
 	}
 	
+	public Locale getLocale() {
+		return locale;
+	}
+	
 	@Override
 	public SearchQuestionItemParams clone() {
-		SearchQuestionItemParams clone = new SearchQuestionItemParams(identity, roles);
+		SearchQuestionItemParams clone = new SearchQuestionItemParams(identity, roles, locale);
 		clone.poolKey = poolKey;
 		clone.format = format;
 		clone.searchString = searchString;

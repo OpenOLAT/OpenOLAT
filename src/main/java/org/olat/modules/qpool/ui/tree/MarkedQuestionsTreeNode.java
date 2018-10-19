@@ -58,19 +58,18 @@ public class MarkedQuestionsTreeNode extends GenericTreeNode implements Controll
 		this.stackPanel = stackPanel;
 		this.securityCallback = securityCallback;
 		
-		this.setTitle(title);
-		this.setIconCssClass(ICON_CSS_CLASS);
+		setTitle(title);
+		setIconCssClass(ICON_CSS_CLASS);
 		
 		// The user object is used to findNodeByPersistableUserObject
-		this.setUserObject(USER_OBJECT);
+		setUserObject(USER_OBJECT);
 	}
 	
 	@Override
 	public Controller getController(UserRequest ureq, WindowControl wControl) {
 		if(questionsCtrl == null) {
 			QuestionItemsSource source = new MarkedItemsSource(
-					ureq.getIdentity(),
-					ureq.getUserSession().getRoles(),
+					ureq.getIdentity(), ureq.getUserSession().getRoles(), ureq.getLocale(),
 					ITEM_SOURCE_NAME); 
 			WindowControl swControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ORES, null,
 					wControl, true);

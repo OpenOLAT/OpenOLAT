@@ -123,7 +123,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		markManager.setMark(item2, id, null, "[QuestionItem:" + item2 + "]");
 		dbInstance.commitAndCloseSession();
 		
-		SearchQuestionItemParams params = new SearchQuestionItemParams(id, null);
+		SearchQuestionItemParams params = new SearchQuestionItemParams(id, null, Locale.ENGLISH);
 		List<QuestionItemView> favorits = qItemQueriesDao.getFavoritItems(params, null, 0, -1);
 		List<Long> favoritKeys = new ArrayList<>();
 		for(QuestionItemView favorit:favorits) {
@@ -155,7 +155,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		markManager.setMark(item2, id, null, "[QuestionItem:" + item2 + "]");
 		dbInstance.commitAndCloseSession();
 		
-		SearchQuestionItemParams params = new SearchQuestionItemParams(id, null);
+		SearchQuestionItemParams params = new SearchQuestionItemParams(id, null, Locale.ENGLISH);
 		
 		//test order by
 		for(QuestionItemView.OrderBy order: QuestionItemView.OrderBy.values()) {
@@ -225,12 +225,12 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	@Test
 	public void getItemsByAuthor() {
 		//create an author with 2 items
-		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("QOwn-2-" + UUID.randomUUID().toString());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("QOwn-2-");
 		QuestionItem item1 = questionDao.createAndPersist(id, "NGC 2171", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
 		QuestionItem item2 = questionDao.createAndPersist(id, "NGC 2172", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
 		dbInstance.commitAndCloseSession();
 		
-		SearchQuestionItemParams params = new SearchQuestionItemParams(id, null);
+		SearchQuestionItemParams params = new SearchQuestionItemParams(id, null, Locale.ENGLISH);
 		params.setAuthor(id);
 		
 		//count the items of the author
@@ -261,14 +261,14 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	@Test
 	public void getItemsByAuthor_orderBy() {
 		//create an author with 2 items
-		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("QOwn-2-" + UUID.randomUUID().toString());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("QOwn-2-");
 		QuestionItem item1 = questionDao.createAndPersist(id, "NGC 2171", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
 		QuestionItem item2 = questionDao.createAndPersist(id, "NGC 2172", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(item1);
 		Assert.assertNotNull(item2);
 		
-		SearchQuestionItemParams params = new SearchQuestionItemParams(id, null);
+		SearchQuestionItemParams params = new SearchQuestionItemParams(id, null, Locale.ENGLISH);
 		params.setAuthor(id);
 		
 		//test order by
@@ -285,7 +285,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	
 	@Test
 	public void getItemsOfPool() {
-		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("Poolman-" + UUID.randomUUID().toString());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("Poolman-");
 		//create a pool
 		String poolTitle = "NGC-" + UUID.randomUUID().toString();
 		Pool pool = poolDao.createPool(null, poolTitle, true);
@@ -293,7 +293,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		poolDao.addItemToPool(item, Collections.singletonList(pool), false);
 		dbInstance.commitAndCloseSession();
 
-		SearchQuestionItemParams params = new SearchQuestionItemParams(id, null);
+		SearchQuestionItemParams params = new SearchQuestionItemParams(id, null, Locale.ENGLISH);
 		params.setPoolKey(pool.getKey());
 		
 		//retrieve
@@ -308,7 +308,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 
 	@Test
 	public void getItemsOfPool_orderBy() {
-		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("Poolman-" + UUID.randomUUID().toString());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("Poolman-");
 		//create a pool
 		String poolTitle = "NGC-" + UUID.randomUUID().toString();
 		Pool pool = poolDao.createPool(null, poolTitle, true);
@@ -316,7 +316,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		poolDao.addItemToPool(item, Collections.singletonList(pool), false);
 		dbInstance.commitAndCloseSession();
 
-		SearchQuestionItemParams params = new SearchQuestionItemParams(id, null);
+		SearchQuestionItemParams params = new SearchQuestionItemParams(id, null, Locale.ENGLISH);
 		params.setPoolKey(pool.getKey());
 		
 		//test order by
@@ -425,7 +425,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		createRandomItem(owner1);
 		dbInstance.commitAndCloseSession();
 		
-		SearchQuestionItemParams params = new SearchQuestionItemParams(createRandomIdentity(), null);
+		SearchQuestionItemParams params = new SearchQuestionItemParams(createRandomIdentity(), null, Locale.ENGLISH);
 		params.setFormat(QTIConstants.QTI_12_FORMAT);
 		int countItems = qItemQueriesDao.countItems(params);
 		
@@ -444,7 +444,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		QuestionItem item23 = createRandomItem(owner2);
 		dbInstance.commitAndCloseSession();
 		
-		SearchQuestionItemParams params = new SearchQuestionItemParams(createRandomIdentity(), null);
+		SearchQuestionItemParams params = new SearchQuestionItemParams(createRandomIdentity(), null, Locale.ENGLISH);
 		List<QuestionItemView> loadedItems = qItemQueriesDao.getItems(params, null, 0, -1);
 		
 		assertThat(loadedItems).hasSize(6);
@@ -464,7 +464,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		dbInstance.commitAndCloseSession();
 		
 		List<Long> inKeys = Arrays.asList(item12.getKey(), item21.getKey());
-		SearchQuestionItemParams params = new SearchQuestionItemParams(createRandomIdentity(), null);
+		SearchQuestionItemParams params = new SearchQuestionItemParams(createRandomIdentity(), null, Locale.ENGLISH);
 		List<QuestionItemView> loadedItems = qItemQueriesDao.getItems(params, inKeys, 0, -1);
 		
 		assertThat(loadedItems).hasSize(inKeys.size());
@@ -481,7 +481,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		QuestionItem item13 = createRandomItem(owner1);
 		dbInstance.commitAndCloseSession();
 		
-		SearchQuestionItemParams params = new SearchQuestionItemParams(createRandomIdentity(), null);
+		SearchQuestionItemParams params = new SearchQuestionItemParams(createRandomIdentity(), null, Locale.ENGLISH);
 		params.setFormat(QTIConstants.QTI_12_FORMAT);
 		List<QuestionItemView> loadedItems = qItemQueriesDao.getItems(params, null, 0, -1);
 		
@@ -499,7 +499,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		QuestionItem item21 = createRandomItem(owner2);
 		dbInstance.commitAndCloseSession();
 		
-		SearchQuestionItemParams params = new SearchQuestionItemParams(owner1, null);
+		SearchQuestionItemParams params = new SearchQuestionItemParams(owner1, null, Locale.ENGLISH);
 		List<QuestionItemView> loadedItems = qItemQueriesDao.getItems(params, null, 0, -1);
 		
 		assertThat(filterByKey(loadedItems, item11).isAuthor()).isTrue();
@@ -522,17 +522,17 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		item12.setTaxonomyLevel(taxonomySubLevel);
 		dbInstance.commitAndCloseSession();
 		
-		SearchQuestionItemParams params = new SearchQuestionItemParams(ownerAndTeacher, null);
+		SearchQuestionItemParams params = new SearchQuestionItemParams(ownerAndTeacher, null, Locale.ENGLISH);
 		List<QuestionItemView> loadedItems = qItemQueriesDao.getItems(params, null, 0, -1);
 		assertThat(filterByKey(loadedItems, item11).isTeacher()).isTrue();
 		assertThat(filterByKey(loadedItems, item12).isTeacher()).isTrue();
 		
-		params = new SearchQuestionItemParams(ownerAndTeacher, null);
+		params = new SearchQuestionItemParams(ownerAndTeacher, null, Locale.ENGLISH);
 		loadedItems = qItemQueriesDao.getItems(params, null, 0, -1);
 		assertThat(filterByKey(loadedItems, item11).isTeacher()).isTrue();
 		assertThat(filterByKey(loadedItems, item12).isTeacher()).isTrue();
 		
-		params = new SearchQuestionItemParams(noTeacher, null);
+		params = new SearchQuestionItemParams(noTeacher, null, Locale.ENGLISH);
 		loadedItems = qItemQueriesDao.getItems(params, null, 0, -1);
 		assertThat(filterByKey(loadedItems, item11).isTeacher()).isFalse();
 		assertThat(filterByKey(loadedItems, item12).isTeacher()).isFalse();
@@ -554,17 +554,17 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		item12.setTaxonomyLevel(taxonomySubLevel);
 		dbInstance.commitAndCloseSession();
 		
-		SearchQuestionItemParams params = new SearchQuestionItemParams(ownerAndManager, null);
+		SearchQuestionItemParams params = new SearchQuestionItemParams(ownerAndManager, null, Locale.ENGLISH);
 		List<QuestionItemView> loadedItems = qItemQueriesDao.getItems(params, null, 0, -1);
 		assertThat(filterByKey(loadedItems, item11).isManager()).isTrue();
 		assertThat(filterByKey(loadedItems, item12).isManager()).isTrue();
 		
-		params = new SearchQuestionItemParams(ownerAndManager, null);
+		params = new SearchQuestionItemParams(ownerAndManager, null, Locale.ENGLISH);
 		loadedItems = qItemQueriesDao.getItems(params, null, 0, -1);
 		assertThat(filterByKey(loadedItems, item11).isManager()).isTrue();
 		assertThat(filterByKey(loadedItems, item12).isManager()).isTrue();
 		
-		params = new SearchQuestionItemParams(noManager, null);
+		params = new SearchQuestionItemParams(noManager, null, Locale.ENGLISH);
 		loadedItems = qItemQueriesDao.getItems(params, null, 0, -1);
 		assertThat(filterByKey(loadedItems, item11).isManager()).isFalse();
 		assertThat(filterByKey(loadedItems, item12).isManager()).isFalse();
@@ -578,7 +578,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		commentAndRatingService.createRating(owner1, item11, null, 2);
 		dbInstance.commitAndCloseSession();
 		
-		SearchQuestionItemParams params = new SearchQuestionItemParams(owner1, null);
+		SearchQuestionItemParams params = new SearchQuestionItemParams(owner1, null, Locale.ENGLISH);
 		List<QuestionItemView> loadedItems = qItemQueriesDao.getItems(params, null, 0, -1);
 		
 		assertThat(filterByKey(loadedItems, item11).isRater()).isTrue();
@@ -596,7 +596,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		poolDao.addItemToPool(item12, Collections.singletonList(pool), false);
 		dbInstance.commitAndCloseSession();
 		
-		SearchQuestionItemParams params = new SearchQuestionItemParams(createRandomIdentity(), null);
+		SearchQuestionItemParams params = new SearchQuestionItemParams(createRandomIdentity(), null, Locale.ENGLISH);
 		List<QuestionItemView> loadedItems = qItemQueriesDao.getItems(params, null, 0, -1);
 		
 		assertThat(filterByKey(loadedItems, item11).isEditableInPool()).isTrue();
@@ -616,7 +616,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		questionDao.share(item12, groupResources, false);
 		dbInstance.commitAndCloseSession();
 		
-		SearchQuestionItemParams params = new SearchQuestionItemParams(createRandomIdentity(), null);
+		SearchQuestionItemParams params = new SearchQuestionItemParams(createRandomIdentity(), null, Locale.ENGLISH);
 		List<QuestionItemView> loadedItems = qItemQueriesDao.getItems(params, null, 0, -1);
 		
 		assertThat(filterByKey(loadedItems, item11).isEditableInShare()).isTrue();
@@ -632,7 +632,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		markManager.setMark(item11, owner1, null, "[QuestionItem:" + item11 + "]");
 		dbInstance.commitAndCloseSession();
 		
-		SearchQuestionItemParams params = new SearchQuestionItemParams(owner1, null);
+		SearchQuestionItemParams params = new SearchQuestionItemParams(owner1, null, Locale.ENGLISH);
 		List<QuestionItemView> loadedItems = qItemQueriesDao.getItems(params, null, 0, -1);
 		
 		assertThat(filterByKey(loadedItems, item11).isMarked()).isTrue();
@@ -648,7 +648,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		commentAndRatingService.createRating(createRandomIdentity(), item11, null, 4);
 		dbInstance.commitAndCloseSession();
 		
-		SearchQuestionItemParams params = new SearchQuestionItemParams(createRandomIdentity(), null);
+		SearchQuestionItemParams params = new SearchQuestionItemParams(createRandomIdentity(), null, Locale.ENGLISH);
 		List<QuestionItemView> loadedItems = qItemQueriesDao.getItems(params, null, 0, -1);
 		
 		assertThat(filterByKey(loadedItems, item11).getRating()).isEqualTo(3);
@@ -666,7 +666,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		commentAndRatingService.createRating(createRandomIdentity(), item12, null, 4);
 		dbInstance.commitAndCloseSession();
 		
-		SearchQuestionItemParams params = new SearchQuestionItemParams(createRandomIdentity(), null);
+		SearchQuestionItemParams params = new SearchQuestionItemParams(createRandomIdentity(), null, Locale.ENGLISH);
 		List<QuestionItemView> loadedItems = qItemQueriesDao.getItems(params, null, 0, -1);
 		
 		assertThat(filterByKey(loadedItems, item11).getNumberOfRatings()).isEqualTo(4);
@@ -688,7 +688,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		QuestionItem item23 = createRandomItem(createRandomIdentity());
 		dbInstance.commitAndCloseSession();
 		
-		SearchQuestionItemParams params = new SearchQuestionItemParams(createRandomIdentity(), null);
+		SearchQuestionItemParams params = new SearchQuestionItemParams(createRandomIdentity(), null, Locale.ENGLISH);
 		params.setLikeTaxonomyLevel(taxonomyLevel);
 		List<QuestionItemView> loadedItems = qItemQueriesDao.getItems(params, null, 0, -1);
 		
@@ -713,7 +713,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		QuestionItem item23 = createRandomItem(createRandomIdentity());
 		dbInstance.commitAndCloseSession();
 		
-		SearchQuestionItemParams params = new SearchQuestionItemParams(createRandomIdentity(), null);
+		SearchQuestionItemParams params = new SearchQuestionItemParams(createRandomIdentity(), null, Locale.ENGLISH);
 		params.setQuestionStatus(status);
 		List<QuestionItemView> loadedItems = qItemQueriesDao.getItems(params, null, 0, -1);
 		
@@ -742,7 +742,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		QuestionItem item23 = createRandomItem(createRandomIdentity());
 		dbInstance.commitAndCloseSession();
 		
-		SearchQuestionItemParams params = new SearchQuestionItemParams(createRandomIdentity(), null);
+		SearchQuestionItemParams params = new SearchQuestionItemParams(createRandomIdentity(), null, Locale.ENGLISH);
 		params.setWithoutTaxonomyLevelOnly(true);
 		List<QuestionItemView> loadedItems = qItemQueriesDao.getItems(params, null, 0, -1);
 		
@@ -765,7 +765,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		
 		dbInstance.commitAndCloseSession();
 		
-		SearchQuestionItemParams params = new SearchQuestionItemParams(createRandomIdentity(), null);
+		SearchQuestionItemParams params = new SearchQuestionItemParams(createRandomIdentity(), null, Locale.ENGLISH);
 		params.setWithoutAuthorOnly(true);
 		List<QuestionItemView> loadedItems = qItemQueriesDao.getItems(params, null, 0, -1);
 		
@@ -788,7 +788,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		QuestionItem item23 = createRandomItem(createRandomIdentity());
 		dbInstance.commitAndCloseSession();
 		
-		SearchQuestionItemParams params = new SearchQuestionItemParams(createRandomIdentity(), null);
+		SearchQuestionItemParams params = new SearchQuestionItemParams(createRandomIdentity(), null, Locale.ENGLISH);
 		params.setOnlyAuthor(owner1);
 		List<QuestionItemView> loadedItems = qItemQueriesDao.getItems(params, null, 0, -1);
 		
@@ -811,7 +811,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		QuestionItem item23 = createRandomItem(createRandomIdentity());
 		dbInstance.commitAndCloseSession();
 		
-		SearchQuestionItemParams params = new SearchQuestionItemParams(createRandomIdentity(), null);
+		SearchQuestionItemParams params = new SearchQuestionItemParams(createRandomIdentity(), null, Locale.ENGLISH);
 		params.setExcludeAuthor(owner1);
 		List<QuestionItemView> loadedItems = qItemQueriesDao.getItems(params, null, 0, -1);
 		
@@ -838,7 +838,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		commentAndRatingService.createRating(rater1, item23, null, 2);
 		dbInstance.commitAndCloseSession();
 		
-		SearchQuestionItemParams params = new SearchQuestionItemParams(createRandomIdentity(), null);
+		SearchQuestionItemParams params = new SearchQuestionItemParams(createRandomIdentity(), null, Locale.ENGLISH);
 		params.setExcludeRated(rater1);;
 		List<QuestionItemView> loadedItems = qItemQueriesDao.getItems(params, null, 0, -1);
 		

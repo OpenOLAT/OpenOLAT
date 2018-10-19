@@ -61,6 +61,7 @@ public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTr
 	private final TooledStackedPanel stackPanel;
 	private final Identity identity;
 	private final Roles roles;
+	private final Locale locale;
 	private final QPoolService qpoolService;
 	private final QPoolTaxonomyTreeBuilder qpoolTaxonomyTreeBuilder;
 	private final Translator translator;
@@ -76,6 +77,7 @@ public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTr
 		this(	stackPanel,
 				identity,
 				roles,
+				locale,
 				Util.createPackageTranslator(QuestionPoolMainEditorController.class, locale),
 				CoreSpringFactory.getImpl(QPoolService.class),
 				CoreSpringFactory.getImpl(QPoolTaxonomyTreeBuilder.class),
@@ -83,12 +85,13 @@ public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTr
 				);
 	}
 	
-	public QuestionPoolMenuTreeModel(TooledStackedPanel stackPanel, Identity identity, Roles roles, Translator translator,
+	public QuestionPoolMenuTreeModel(TooledStackedPanel stackPanel, Identity identity, Roles roles, Locale locale, Translator translator,
 			QPoolService qpoolService, QPoolTaxonomyTreeBuilder qpoolTaxonomyTreeBuilder, QPoolSecurityCallbackFactory qPoolSecurityCallbackFactory) {
 		super();
 		this.stackPanel = stackPanel;
 		this.identity = identity;
 		this.roles = roles;
+		this.locale = locale;
 		this.securityCallback = qPoolSecurityCallbackFactory.createQPoolSecurityCallback(roles);
 		this.translator = translator;
 		this.qpoolService = qpoolService;
@@ -299,7 +302,7 @@ public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTr
 			rootNode.addChild(reviewNode);
 			
 			for(TaxonomyLevel taxonomyLevel:taxonomyLevels) {
-				TreeNode node = new ReviewTreeNode(stackPanel, securityCallback, taxonomyLevel, identity, roles);
+				TreeNode node = new ReviewTreeNode(stackPanel, securityCallback, taxonomyLevel, identity, roles, locale);
 				reviewNode.addChild(node);
 			}
 			setFirstChildAsDelegate(reviewNode);

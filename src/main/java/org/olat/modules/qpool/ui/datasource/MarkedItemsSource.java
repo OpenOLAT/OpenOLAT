@@ -20,6 +20,7 @@
 package org.olat.modules.qpool.ui.datasource;
 
 import java.util.List;
+import java.util.Locale;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.mark.MarkManager;
@@ -40,8 +41,8 @@ public class MarkedItemsSource extends DefaultItemsSource {
 	private final Identity identity;
 	private final MarkManager markManager;
 	
-	public MarkedItemsSource(Identity me, Roles roles, String name) {
-		super(me, roles, name);
+	public MarkedItemsSource(Identity me, Roles roles, Locale locale, String name) {
+		super(me, roles, locale, name);
 		identity = me;
 		getDefaultParams().setFavoritOnly(true);
 		markManager = CoreSpringFactory.getImpl(MarkManager.class);

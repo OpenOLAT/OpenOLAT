@@ -77,8 +77,7 @@ public class BusinessGroupTreeNode extends GenericTreeNode implements Controller
 			boolean shareAdmin = isShareAdmin(ureq, group);
 			QuestionItemsSource source = new SharedItemsSource(
 					group,
-					ureq.getIdentity(),
-					ureq.getUserSession().getRoles(),
+					ureq.getIdentity(), ureq.getUserSession().getRoles(), ureq.getLocale(),
 					shareAdmin);
 			WindowControl swControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, group, null,
 					wControl, true);
@@ -90,8 +89,8 @@ public class BusinessGroupTreeNode extends GenericTreeNode implements Controller
 		return questionsCtrl;
 	}
 	
-	private boolean isShareAdmin(UserRequest ureq, BusinessGroup group) {
+	private boolean isShareAdmin(UserRequest ureq, BusinessGroup businessGroup) {
 		Identity identity = ureq.getIdentity();
-		return businessGroupService.isIdentityInBusinessGroup(identity, group.getKey(), true, false, null);
+		return businessGroupService.isIdentityInBusinessGroup(identity, businessGroup.getKey(), true, false, null);
 	}
 }

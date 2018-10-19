@@ -55,17 +55,15 @@ public class WithoutAuthorTreeNode extends GenericTreeNode implements Controller
 		this.stackPanel = stackPanel;
 		this.securityCallback = securityCallback;
 		
-		this.setTitle(title);
-		
-		this.setUserObject(WITHOUT_AUTHOR);
+		setTitle(title);
+		setUserObject(WITHOUT_AUTHOR);
 	}
 	
 	@Override
 	public Controller getController(UserRequest ureq, WindowControl wControl) {
 		if(questionsCtrl == null) {
 			QuestionItemsSource source = new WithoutAuthorItemSource(
-					ureq.getIdentity(),
-					ureq.getUserSession().getRoles(),
+					ureq.getIdentity(), ureq.getUserSession().getRoles(), ureq.getLocale(),
 					WITHOUT_AUTHOR); 
 			WindowControl swControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ORES, null,
 					wControl, true);

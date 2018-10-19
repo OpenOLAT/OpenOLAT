@@ -64,8 +64,7 @@ public class AllQuestionsTreeNode extends GenericTreeNode implements ControllerT
 	public Controller getController(UserRequest ureq, WindowControl wControl) {
 		if(questionsCtrl == null) {
 			QuestionItemsSource source = new AllItemsSource(
-					ureq.getIdentity(),
-					ureq.getUserSession().getRoles(),
+					ureq.getIdentity(), ureq.getUserSession().getRoles(), ureq.getLocale(),
 					ALL); 
 			WindowControl swControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ORES, null,
 					wControl, true);

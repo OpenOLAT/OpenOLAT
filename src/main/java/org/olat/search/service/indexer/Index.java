@@ -101,7 +101,7 @@ public class Index {
 	public boolean existIndex() {
 		try {
 			File indexFile = new File(indexPath);
-			Directory directory = FSDirectory.open(indexFile);
+			Directory directory = FSDirectory.open(indexFile.toPath());
 			return DirectoryReader.indexExists(directory);
 		} catch (IOException e) {
 			log.error("", e);
@@ -112,7 +112,7 @@ public class Index {
 	public boolean existPermanentIndex() {
 		try {
 			File indexFile = new File(permanentIndexPath);
-			Directory directory = FSDirectory.open(indexFile);
+			Directory directory = FSDirectory.open(indexFile.toPath());
 			return DirectoryReader.indexExists(directory);
 		} catch (IOException e) {
 			log.error("", e);

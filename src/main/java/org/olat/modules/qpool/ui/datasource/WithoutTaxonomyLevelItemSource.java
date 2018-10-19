@@ -19,6 +19,8 @@
  */
 package org.olat.modules.qpool.ui.datasource;
 
+import java.util.Locale;
+
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 
@@ -30,8 +32,8 @@ import org.olat.core.id.Roles;
  */
 public class WithoutTaxonomyLevelItemSource extends AllItemsSource {
 
-	public WithoutTaxonomyLevelItemSource(Identity me, Roles roles, String name) {
-		super(me, roles, name);
+	public WithoutTaxonomyLevelItemSource(Identity me, Roles roles, Locale locale, String name) {
+		super(me, roles, locale, name);
 		getDefaultParams().setWithoutTaxonomyLevelOnly(true);
 	}
 

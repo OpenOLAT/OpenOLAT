@@ -55,17 +55,15 @@ public class WithoutTaxonomyLevelTreeNode extends GenericTreeNode implements Con
 		this.stackPanel = stackPanel;
 		this.securityCallback = securityCallback;
 		
-		this.setTitle(title);
-		
-		this.setUserObject(WITHOUT_TAXONOMY_LEVEL);
+		setTitle(title);
+		setUserObject(WITHOUT_TAXONOMY_LEVEL);
 	}
 	
 	@Override
 	public Controller getController(UserRequest ureq, WindowControl wControl) {
 		if(questionsCtrl == null) {
 			QuestionItemsSource source = new WithoutTaxonomyLevelItemSource(
-					ureq.getIdentity(),
-					ureq.getUserSession().getRoles(),
+					ureq.getIdentity(), ureq.getUserSession().getRoles(), ureq.getLocale(),
 					WITHOUT_TAXONOMY_LEVEL); 
 			WindowControl swControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ORES, null,
 					wControl, true);

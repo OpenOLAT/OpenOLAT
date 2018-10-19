@@ -19,6 +19,8 @@
  */
 package org.olat.modules.qpool.ui.datasource;
 
+import java.util.Locale;
+
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.modules.qpool.QuestionStatus;
@@ -32,8 +34,8 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
  */
 public class MyTaxonomyLevelItemsSource extends TaxonomyLevelItemsSource {
 	
-	public MyTaxonomyLevelItemsSource(Identity me, Roles roles, TaxonomyLevel taxonomyLevel) {
-		super(me, roles, taxonomyLevel);
+	public MyTaxonomyLevelItemsSource(Identity me, Roles roles, Locale locale, TaxonomyLevel taxonomyLevel) {
+		super(me, roles, locale, taxonomyLevel);
 		setStatusFilter(QuestionStatus.draft);
 		getDefaultParams().setOnlyAuthor(me);
 	}

@@ -114,7 +114,7 @@ public class QuestionPoolServiceTest extends OlatTestCase {
 		Assert.assertEquals("My private collection", newColl.getName());
 		dbInstance.commit();//check if it's alright
 		
-		SearchQuestionItemParams params = new SearchQuestionItemParams(id, null);
+		SearchQuestionItemParams params = new SearchQuestionItemParams(id, null, Locale.ENGLISH);
 		
 		//retrieve the list of items in the collection
 		int numOfItemsInCollection = qpoolService.countItemsOfCollection(newColl, params);

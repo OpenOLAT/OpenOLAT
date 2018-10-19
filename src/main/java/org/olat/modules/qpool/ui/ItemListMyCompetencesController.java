@@ -113,7 +113,7 @@ public class ItemListMyCompetencesController extends AbstractItemListController 
 		if(level == null) {
 			updateSource(new EmptyItemsSource());
 		} else {
-			FinalItemsSource source = new FinalItemsSource(getIdentity(), ureq.getUserSession().getRoles(), level);
+			FinalItemsSource source = new FinalItemsSource(getIdentity(), ureq.getUserSession().getRoles(), getLocale(), level);
 			source.getDefaultParams().setFormat(restrictToFormat);
 			updateSource(source);
 		}

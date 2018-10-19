@@ -68,7 +68,7 @@ public class CollectionTreeNode extends GenericTreeNode implements ControllerTre
 		QuestionItemsSource source = new CollectionOfItemsSource(
 				questionItemCollection,
 				ureq.getIdentity(),
-				ureq.getUserSession().getRoles());
+				ureq.getUserSession().getRoles(), ureq.getLocale());
 		if (questionsCtrl == null) {
 			WindowControl swControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, questionItemCollection, null, wControl, true);
 			questionsCtrl = new QuestionsController(ureq, swControl, stackPanel, source, securityCallback,

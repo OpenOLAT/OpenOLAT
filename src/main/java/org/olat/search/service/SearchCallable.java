@@ -20,11 +20,13 @@
 package org.olat.search.service;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.Callable;
 
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TopDocs;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
@@ -45,19 +47,21 @@ class SearchCallable implements Callable<SearchResults> {
 	
 	private static final OLog log = Tracing.createLoggerFor(SearchCallable.class);
 	
-	private String queryString;
-	private List<String> condQueries;
-	private Identity identity;
-	private Roles roles;
-	private int firstResult;
-	private int maxResults;
-	private boolean doHighlighting;
-	private SearchServiceImpl searchService;
+	private final Locale locale;
+	private final String queryString;
+	private final List<String> condQueries;
+	private final Identity identity;
+	private final Roles roles;
+	private final int firstResult;
+	private final int maxResults;
+	private final boolean doHighlighting;
+	private final SearchServiceImpl searchService;
 	
-	public SearchCallable(String queryString, List<String> condQueries, Identity identity, Roles roles,
+	public SearchCallable(String queryString, List<String> condQueries, Identity identity, Roles roles, Locale locale,
 			int firstResult, int maxResults, boolean doHighlighting, SearchServiceImpl searchService) {
 		this.queryString = queryString;
 		this.condQueries = condQueries;
+		this.locale = locale;
 		this.identity = identity;
 		this.roles = roles;
 		this.firstResult = firstResult;
@@ -79,8 +83,8 @@ class SearchCallable implements Callable<SearchResults> {
 
 			if(debug) log.debug("queryString=" + queryString);
 			searcher = searchService.getIndexSearcher();
-			BooleanQuery query = searchService.createQuery(queryString, condQueries);
-			if(debug) log.debug("query=" + query);
+			BooleanQuery.Builder queryBuilder = searchService.createQuery(queryString, condQueries, locale);
+			if(debug) log.debug("query=" + queryBuilder);
 			
 			if(Thread.interrupted()) {
 				throw new InterruptedException();
@@ -89,6 +93,7 @@ class SearchCallable implements Callable<SearchResults> {
 			long startTime = System.currentTimeMillis();
 			int n = SearchServiceFactory.getService().getSearchModuleConfig().getMaxHits();
 	
+			Query query = queryBuilder.build();
 			TopDocs docs = searcher.search(query, n);
 			long queryTime = System.currentTimeMillis() - startTime;
 			if(debug) log.debug("hits.length()=" + docs.totalHits);

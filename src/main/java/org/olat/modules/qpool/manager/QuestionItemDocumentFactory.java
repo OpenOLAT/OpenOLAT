@@ -111,54 +111,54 @@ public class QuestionItemDocumentFactory {
 		if(provider != null) {
 			String content = provider.extractTextContent(item);
 			if(content != null) {
-				addStringField(document, AbstractOlatDocument.CONTENT_FIELD_NAME, content, 0.8f);
+				addStringField(document, AbstractOlatDocument.CONTENT_FIELD_NAME, content);
 			}
 		}
 		if(item.getDescription() != null) {
-			addStringField(document, AbstractOlatDocument.CONTENT_FIELD_NAME, item.getDescription(), 1.0f);
+			addStringField(document, AbstractOlatDocument.CONTENT_FIELD_NAME, item.getDescription());
 		}
 		
 		//general fields
-		addStringField(document, QItemDocument.IDENTIFIER_FIELD, item.getIdentifier(), 1.0f);
-		addStringField(document, QItemDocument.MASTER_IDENTIFIER_FIELD,  item.getMasterIdentifier(), 1.0f);
-		addTextField(document, QItemDocument.KEYWORDS_FIELD, item.getKeywords(), 2.0f);
-		addTextField(document, QItemDocument.COVERAGE_FIELD, item.getCoverage(), 2.0f);
-		addTextField(document, QItemDocument.ADD_INFOS_FIELD, item.getAdditionalInformations(), 2.0f);
-		addStringField(document, QItemDocument.LANGUAGE_FIELD,  item.getLanguage(), 1.0f);
-		addTextField(document, QItemDocument.TOPIC_FIELD, item.getTopic(), 2.0f);
+		addStringField(document, QItemDocument.IDENTIFIER_FIELD, item.getIdentifier());
+		addStringField(document, QItemDocument.MASTER_IDENTIFIER_FIELD,  item.getMasterIdentifier());
+		addTextField(document, QItemDocument.KEYWORDS_FIELD, item.getKeywords());
+		addTextField(document, QItemDocument.COVERAGE_FIELD, item.getCoverage());
+		addTextField(document, QItemDocument.ADD_INFOS_FIELD, item.getAdditionalInformations());
+		addStringField(document, QItemDocument.LANGUAGE_FIELD,  item.getLanguage());
+		addTextField(document, QItemDocument.TOPIC_FIELD, item.getTopic());
 		
 		//educational
 		if (qpoolModule.isEducationalContextEnabled()) {
 			if(item.getEducationalContext() != null) {
 				String context = item.getEducationalContext().getLevel();
-				addStringField(document, QItemDocument.EDU_CONTEXT_FIELD,  context, 1.0f);
+				addStringField(document, QItemDocument.EDU_CONTEXT_FIELD,  context);
 			}
 		}
 		
 		//question
 		if(item.getType() != null) {
 			String itemType = item.getType().getType();
-			addStringField(document, QItemDocument.ITEM_TYPE_FIELD,  itemType, 1.0f);
+			addStringField(document, QItemDocument.ITEM_TYPE_FIELD,  itemType);
 		}
-		addStringField(document, QItemDocument.ASSESSMENT_TYPE_FIELD, item.getAssessmentType(), 1.0f);
+		addStringField(document, QItemDocument.ASSESSMENT_TYPE_FIELD, item.getAssessmentType());
 		
 		//lifecycle
-		addStringField(document, QItemDocument.ITEM_VERSION_FIELD, item.getItemVersion(), 1.0f);
+		addStringField(document, QItemDocument.ITEM_VERSION_FIELD, item.getItemVersion());
 		if(item.getQuestionStatus() != null) {
-			addStringField(document, QItemDocument.ITEM_STATUS_FIELD, item.getQuestionStatus().name(), 1.0f);
+			addStringField(document, QItemDocument.ITEM_STATUS_FIELD, item.getQuestionStatus().name());
 		}
 		
 		//rights
 		ResourceLicense license = licenseService.loadLicense(item);
 		if(license != null && license.getLicenseType() != null) {
 			String licenseKey = String.valueOf(license.getLicenseType().getKey());
-			addTextField(document, QItemDocument.LICENSE_TYPE_FIELD_NAME, licenseKey, 2.0f);
+			addTextField(document, QItemDocument.LICENSE_TYPE_FIELD_NAME, licenseKey);
 		}
 
 		//technical
-		addTextField(document, QItemDocument.EDITOR_FIELD, item.getEditor(), 2.0f);
-		addStringField(document, QItemDocument.EDITOR_VERSION_FIELD, item.getEditorVersion(), 1.0f);
-		addStringField(document, QItemDocument.FORMAT_FIELD, item.getFormat(), 1.0f);
+		addTextField(document, QItemDocument.EDITOR_FIELD, item.getEditor());
+		addStringField(document, QItemDocument.EDITOR_VERSION_FIELD, item.getEditorVersion());
+		addStringField(document, QItemDocument.FORMAT_FIELD, item.getFormat());
 
 		//save owners key
 		for(Identity owner:owners) {
@@ -189,7 +189,6 @@ public class QuestionItemDocumentFactory {
 					Long key = ((QuestionItemImpl)item).getTaxonomyLevel().getKey();
 
 					TextField field = new TextField(QItemDocument.TAXONOMIC_FIELD, key.toString(), Field.Store.YES);
-					field.setBoost(3.0f);
 					document.add(field);
 				}
 			}
@@ -197,10 +196,9 @@ public class QuestionItemDocumentFactory {
 		return document;
 	}
 	
-	private void addStringField(Document doc, String fieldName, String content, float boost) {
+	private void addStringField(Document doc, String fieldName, String content) {
 		if(StringHelper.containsNonWhitespace(content)) {
 			TextField field = new TextField(fieldName, content, Field.Store.YES);
-			field.setBoost(boost);
 			doc.add(field);
 		}
 	}
@@ -212,10 +210,9 @@ public class QuestionItemDocumentFactory {
 	 * @param boost
 	 * @return
 	 */
-	private void addTextField(Document doc, String fieldName, String content, float boost) {
+	private void addTextField(Document doc, String fieldName, String content) {
 		if(StringHelper.containsNonWhitespace(content)) {
 			TextField field = new TextField(fieldName, content, Field.Store.YES);
-			field.setBoost(boost);
 			doc.add(field);
 		}
 	}

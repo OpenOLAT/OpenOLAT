@@ -64,24 +64,24 @@ public class FileDocumentFactory {
 	
 	private static OLog log = Tracing.createLoggerFor(FileDocumentFactory.class);
 
-	private final static String PDF_SUFFIX = "pdf";
-	private final static String EXCEL_SUFFIX = "xls";
-	private final static String WORD_SUFFIX = "doc";
-	private final static String POWERPOINT_SUFFIX = "ppt";
-	private final static String EXCEL_X_SUFFIX = "xlsx";
-	private final static String WORD_X_SUFFIX = "docx";
-	private final static String POWERPOINT_X_SUFFIX = "pptx";
-	private final static String OD_TEXT_SUFFIX = "odt";
-	private final static String OD_SPREADSHEET_SUFFIX = "ods";
-	private final static String OD_PRESENTATION_SUFFIX = "odp";
-	private final static String OD_FORMULA_SUFFIX = "odf";
-	private final static String OD_GRAPHIC_SUFFIX = "odg";
+	private static final String PDF_SUFFIX = "pdf";
+	private static final String EXCEL_SUFFIX = "xls";
+	private static final String WORD_SUFFIX = "doc";
+	private static final String POWERPOINT_SUFFIX = "ppt";
+	private static final String EXCEL_X_SUFFIX = "xlsx";
+	private static final String WORD_X_SUFFIX = "docx";
+	private static final String POWERPOINT_X_SUFFIX = "pptx";
+	private static final String OD_TEXT_SUFFIX = "odt";
+	private static final String OD_SPREADSHEET_SUFFIX = "ods";
+	private static final String OD_PRESENTATION_SUFFIX = "odp";
+	private static final String OD_FORMULA_SUFFIX = "odf";
+	private static final String OD_GRAPHIC_SUFFIX = "odg";
 
-	private final static String HTML_SUFFIX = "htm html xhtml";
-	private final static String XML_SUFFIX = "xml";
-	private final static String TEXT_SUFFIX = "txt tex readme csv";
+	private static final String HTML_SUFFIX = "htm html xhtml";
+	private static final String XML_SUFFIX = "xml";
+	private static final String TEXT_SUFFIX = "txt tex readme csv";
   
-	//as a special parser;
+	// IMS manifest has a special parser
 	private static final String IMS_MANIFEST_FILE = "imsmanifest.xml";
   
 	private int excludedFileSizeCount = 0;

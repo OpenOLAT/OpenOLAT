@@ -90,7 +90,7 @@ public class ItemListMyListsController extends AbstractItemListController {
             myListEl.select(myListKeys[0], true);
 
             QuestionItemCollection firstCollection = myCollections.get(0);
-            CollectionOfItemsSource source = new CollectionOfItemsSource(firstCollection, getIdentity(), ureq.getUserSession().getRoles());
+            CollectionOfItemsSource source = new CollectionOfItemsSource(firstCollection, getIdentity(), ureq.getUserSession().getRoles(), getLocale());
             source.setRestrictToFormat(restrictToFormat);
             updateSource(source);
         } else {
@@ -132,7 +132,7 @@ public class ItemListMyListsController extends AbstractItemListController {
 		if(myCollection == null) {
 			updateSource(new EmptyItemsSource());
 		} else {
-			CollectionOfItemsSource source = new CollectionOfItemsSource(myCollection, getIdentity(), ureq.getUserSession().getRoles());
+			CollectionOfItemsSource source = new CollectionOfItemsSource(myCollection, getIdentity(), ureq.getUserSession().getRoles(), getLocale());
 			source.setRestrictToFormat(restrictToFormat);
 			updateSource(source);
 		}

@@ -145,7 +145,7 @@ public class SelectItemController extends BasicController {
 
 	private int updateMarkedItems(UserRequest ureq) {
 		if(markedItemsCtrl == null) {
-			DefaultItemsSource source = new MarkedItemsSource(getIdentity(), ureq.getUserSession().getRoles(), "Fav");
+			DefaultItemsSource source = new MarkedItemsSource(getIdentity(), ureq.getUserSession().getRoles(), getLocale(), "Fav");
 			source.getDefaultParams().setFavoritOnly(true);
 			source.getDefaultParams().setFormat(restrictToFormat);
 			markedItemsCtrl = new ItemListController(ureq, getWindowControl(), secCallback, source);
@@ -158,7 +158,7 @@ public class SelectItemController extends BasicController {
 	
 	private void updateOwnedGroups(UserRequest ureq) {
 		if(ownedItemsCtrl == null) {
-			DefaultItemsSource source = new MyItemsSource(getIdentity(), ureq.getUserSession().getRoles(), "My"); 
+			DefaultItemsSource source = new MyItemsSource(getIdentity(), ureq.getUserSession().getRoles(), getLocale(), "My"); 
 			source.getDefaultParams().setAuthor(getIdentity());
 			source.getDefaultParams().setFormat(restrictToFormat);
 			ownedItemsCtrl = new ItemListController(ureq, getWindowControl(), secCallback, source);

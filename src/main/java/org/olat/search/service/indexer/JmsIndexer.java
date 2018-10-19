@@ -58,12 +58,9 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.search.SearchModule;
-import org.olat.search.SearchService;
 import org.olat.search.model.AbstractOlatDocument;
 
 /**
- * TODO or not: to make the Indexer cluster wide functional. It would be
- * possible to create on the fly an IndexWriter with a doInSync.
  * 
  * Initial date: 04.03.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
@@ -89,7 +86,7 @@ public class JmsIndexer implements MessageListener, LifeFullIndexer, ConfigOnOff
 	private double ramBufferSizeMB;
 	private boolean indexingNode;
 	
-	private List<LifeIndexer> indexers = new ArrayList<LifeIndexer>();
+	private List<LifeIndexer> indexers = new ArrayList<>();
 	
 	public JmsIndexer(SearchModule searchModuleConfig, CoordinatorManager coordinatorManager) {
 		indexingNode = searchModuleConfig.isSearchServiceEnabled();
@@ -145,7 +142,7 @@ public class JmsIndexer implements MessageListener, LifeFullIndexer, ConfigOnOff
 	}
 	
 	public List<LifeIndexer> getIndexerByType(String type) {
-		List<LifeIndexer> indexerByType = new ArrayList<LifeIndexer>();
+		List<LifeIndexer> indexerByType = new ArrayList<>();
 		for(LifeIndexer indexer:indexers) {
 			if(type.equals(indexer.getSupportedTypeName())) {
 				indexerByType.add(indexer);
@@ -179,7 +176,7 @@ public class JmsIndexer implements MessageListener, LifeFullIndexer, ConfigOnOff
 	public void initDirectory() {
 		try {
 			File tempIndexDir = new File(permanentIndexPath);
-			Directory indexPath = FSDirectory.open(tempIndexDir);
+			Directory indexPath = FSDirectory.open(tempIndexDir.toPath());
 			if(indexingNode) {
 				permanentIndexWriter = new IndexWriterHolder(indexPath, this);
 				boolean created = permanentIndexWriter.ensureIndexExists();
@@ -202,8 +199,8 @@ public class JmsIndexer implements MessageListener, LifeFullIndexer, ConfigOnOff
 	}
 	
 	public IndexWriterConfig newIndexWriterConfig() {
-		Analyzer analyzer = new StandardAnalyzer(SearchService.OO_LUCENE_VERSION);
-		IndexWriterConfig indexWriterConfig = new IndexWriterConfig(SearchService.OO_LUCENE_VERSION, analyzer);
+		Analyzer analyzer = new StandardAnalyzer();
+		IndexWriterConfig indexWriterConfig = new IndexWriterConfig(analyzer);
 		indexWriterConfig.setMergePolicy(newLogMergePolicy());
 		indexWriterConfig.setRAMBufferSizeMB(ramBufferSizeMB);// for better performance set to 48MB (see lucene docu 'how to make indexing faster")
 		indexWriterConfig.setOpenMode(OpenMode.CREATE_OR_APPEND);
@@ -327,7 +324,7 @@ public class JmsIndexer implements MessageListener, LifeFullIndexer, ConfigOnOff
 			String type = workUnit.getIndexType();
 			List<LifeIndexer> lifeIndexers = getIndexerByType(type);
 			for(LifeIndexer indexer:lifeIndexers) {
-				if(workUnit.getKeyList() != null && workUnit.getKeyList().size() > 0) {
+				if(workUnit.getKeyList() != null && !workUnit.getKeyList().isEmpty()) {
 					for(Long key:workUnit.getKeyList()) {
 						indexer.deleteDocument(key, this);
 					}

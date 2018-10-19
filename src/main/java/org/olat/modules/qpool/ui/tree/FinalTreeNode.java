@@ -60,13 +60,13 @@ public class FinalTreeNode extends GenericTreeNode implements ControllerTreeNode
 		this.securityCallback = securityCallback;
 		this.taxonomyLevel = taxonomyLevel;
 		
-		this.setTitle(taxonomyLevel.getDisplayName());
+		setTitle(taxonomyLevel.getDisplayName());
 		TaxonomyLevelType type = taxonomyLevel.getType();
 		if (type != null && StringHelper.containsNonWhitespace(type.getCssClass())) {
 			setIconCssClass(type.getCssClass());
 		}
 		
-		this.setUserObject(taxonomyLevel);
+		setUserObject(taxonomyLevel);
 	}
 	
 	public TaxonomyLevel getTanonomyLevel() {
@@ -77,8 +77,7 @@ public class FinalTreeNode extends GenericTreeNode implements ControllerTreeNode
 	public Controller getController(UserRequest ureq, WindowControl wControl) {
 		if (questionsCtrl == null) {
 			QuestionItemsSource source = new FinalItemsSource(
-					ureq.getIdentity(),
-					ureq.getUserSession().getRoles(),
+					ureq.getIdentity(), ureq.getUserSession().getRoles(), ureq.getLocale(),
 					taxonomyLevel);
 			String resName = FINAL + "_" + taxonomyLevel.getIdentifier();
 			OLATResourceable ores = OresHelper.createOLATResourceableInstanceWithoutCheck(resName, taxonomyLevel.getKey());

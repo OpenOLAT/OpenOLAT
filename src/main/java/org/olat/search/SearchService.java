@@ -26,11 +26,11 @@
 package org.olat.search;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.queryparser.classic.ParseException;
-import org.apache.lucene.util.Version;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
@@ -41,8 +41,6 @@ import org.olat.core.id.Roles;
  */
 public interface SearchService {
 	
-	public static final Version OO_LUCENE_VERSION = Version.LUCENE_48;
-	
   /**
    * 
    * @param query          Lucene query string
@@ -51,7 +49,7 @@ public interface SearchService {
    * @param doHighlighting Highlights founded text fragements in result  
    * @return               Search result for queury
    */
-	public SearchResults doSearch(String queryString, List<String> condQueries, Identity identity, Roles roles,
+	public SearchResults doSearch(String queryString, List<String> condQueries, Identity identity, Roles roles, Locale locale,
 			int firstResult, int maxReturns, boolean doHighlighting)
 	throws ServiceNotAvailableException, ParseException, QueryException;
 	
@@ -70,7 +68,7 @@ public interface SearchService {
 	 * @throws ParseException
 	 * @throws QueryException
 	 */
-	public List<Long> doSearch(String queryString, List<String> condQueries, Identity identity, Roles roles,
+	public List<Long> doSearch(String queryString, List<String> condQueries, Identity identity, Roles roles, Locale locale,
 			int firstResult, int maxReturns, SortKey... orderBy)
 	throws ServiceNotAvailableException, ParseException, QueryException;
 	

@@ -139,7 +139,7 @@ public class SearchResourceContext {
 	 */
 	public void setBusinessControlFor(CourseNode courseNode) {
 		if (log.isDebug()) log.debug("Course-node-ID=" + courseNode.getIdent());
-		setBusinessControlFor(OresHelper.createOLATResourceableInstance(CourseNode.class,new Long(courseNode.getIdent())));
+		setBusinessControlFor(OresHelper.createOLATResourceableInstance(CourseNode.class, Long.valueOf(courseNode.getIdent())));
   }
 
 	/**

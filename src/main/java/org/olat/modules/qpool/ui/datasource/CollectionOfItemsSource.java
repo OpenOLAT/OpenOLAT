@@ -22,6 +22,7 @@ package org.olat.modules.qpool.ui.datasource;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.ResultInfos;
@@ -51,14 +52,16 @@ import org.olat.modules.qpool.ui.QuestionItemsSource;
 public class CollectionOfItemsSource implements QuestionItemsSource {
 	
 	private final Roles roles;
+	private final Locale locale;
 	private final Identity identity;
 	private final QPoolService qpoolService;
 	private final QuestionItemCollection collection;
 	
 	private String restrictToFormat;
 	
-	public CollectionOfItemsSource(QuestionItemCollection collection, Identity identity, Roles roles) {
+	public CollectionOfItemsSource(QuestionItemCollection collection, Identity identity, Roles roles, Locale locale) {
 		this.roles = roles;
+		this.locale = locale;
 		this.identity = identity;
 		this.collection = collection;
 		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
@@ -180,7 +183,7 @@ public class CollectionOfItemsSource implements QuestionItemsSource {
 
 	@Override
 	public int getNumOfItems() {
-		SearchQuestionItemParams params = new SearchQuestionItemParams(identity, roles);
+		SearchQuestionItemParams params = new SearchQuestionItemParams(identity, roles, locale);
 		if(StringHelper.containsNonWhitespace(restrictToFormat)) {
 			params.setFormat(restrictToFormat);
 		}
@@ -189,7 +192,7 @@ public class CollectionOfItemsSource implements QuestionItemsSource {
 
 	@Override
 	public List<QuestionItemView> getItems(Collection<Long> key) {
-		SearchQuestionItemParams params = new SearchQuestionItemParams(identity, roles);
+		SearchQuestionItemParams params = new SearchQuestionItemParams(identity, roles, locale);
 		params.setItemKeys(key);
 		if(StringHelper.containsNonWhitespace(restrictToFormat)) {
 			params.setFormat(restrictToFormat);
@@ -205,7 +208,7 @@ public class CollectionOfItemsSource implements QuestionItemsSource {
 
 	@Override
 	public ResultInfos<QuestionItemView> getItems(String query, List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy) {
-		SearchQuestionItemParams params = new SearchQuestionItemParams(identity, roles);
+		SearchQuestionItemParams params = new SearchQuestionItemParams(identity, roles, locale);
 		params.setSearchString(query);
 		params.setCondQueries(condQueries);
 		if(StringHelper.containsNonWhitespace(restrictToFormat)) {

@@ -213,8 +213,8 @@ public class OlatFullIndexer {
 
 	
 	public IndexWriterConfig newIndexWriterConfig() {
-		Analyzer analyzer = new StandardAnalyzer(SearchService.OO_LUCENE_VERSION);
-		IndexWriterConfig indexWriterConfig = new IndexWriterConfig(SearchService.OO_LUCENE_VERSION, analyzer);
+		Analyzer analyzer = new StandardAnalyzer();
+		IndexWriterConfig indexWriterConfig = new IndexWriterConfig(analyzer);
 		indexWriterConfig.setMergePolicy(newLogMergePolicy());
 		indexWriterConfig.setRAMBufferSizeMB(ramBufferSizeMB);// for better performance set to 48MB (see lucene docu 'how to make indexing faster")
 		indexWriterConfig.setOpenMode(OpenMode.CREATE_OR_APPEND);
@@ -231,17 +231,17 @@ public class OlatFullIndexer {
 	private void doIndex() throws InterruptedException{
 		try {
 			if(indexerExecutor == null) {
-				BlockingQueue<Runnable> queue = new LinkedBlockingQueue<Runnable>(2);
+				BlockingQueue<Runnable> queue = new LinkedBlockingQueue<>(2);
 				indexerExecutor = new ThreadPoolExecutor(indexerPoolSize, indexerPoolSize, 0L, TimeUnit.MILLISECONDS,
 						queue, indexWorkersThreadFactory, new ThreadPoolExecutor.CallerRunsPolicy());
 			}
 			if(indexerWriterExecutor == null) {
-				BlockingQueue<Runnable> queue = new LinkedBlockingQueue<Runnable>(2);
+				BlockingQueue<Runnable> queue = new LinkedBlockingQueue<>(2);
 				indexerWriterExecutor = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS, queue, indexWriterThreadFactory);
 			}
 			
 			File tempIndexDir = new File(tempIndexPath);
-			Directory tmpIndexPath = FSDirectory.open(new File(tempIndexDir, "main"));
+			Directory tmpIndexPath = FSDirectory.open(new File(tempIndexDir, "main").toPath());
 			indexWriter = new IndexWriter(tmpIndexPath, newIndexWriterConfig());// analyzer, true, IndexWriter.MAX_TERM_LENGTH.UNLIMITED);
 			indexWriter.deleteAll();
 			
@@ -256,7 +256,6 @@ public class OlatFullIndexer {
 			indexerExecutor.awaitTermination(10, TimeUnit.MINUTES);
 			DBFactory.getInstance().commitAndCloseSession();
 			
-
 			log.info("Wait until index writer executor is finished");
 			int waitWriter = 0;
 			while (indexerWriterExecutor.getActiveCount() > 0 && (waitWriter++ < MAX_WAITING_COUNT)) { 
@@ -362,7 +361,7 @@ public class OlatFullIndexer {
 	 * @param document
 	 * @throws IOException
 	 */
-	public void addDocument(Document document) throws IOException,InterruptedException {
+	public void addDocument(Document document) throws InterruptedException {
 		DBFactory.getInstance().commitAndCloseSession();
 		
 		if (!stopIndexing && indexerWriterExecutor != null && !indexerWriterExecutor.isShutdown()) {
@@ -391,7 +390,7 @@ public class OlatFullIndexer {
 			  intValue = fileCounter.intValue();
 			}
 			intValue++;
-			fileTypeCounters.put(fileType, new Integer(intValue));
+			fileTypeCounters.put(fileType, Integer.valueOf(intValue));
 		}
 	}
 
@@ -403,7 +402,7 @@ public class OlatFullIndexer {
 		  intValue = docCounter.intValue();
 		}
 		intValue++;
-		documentCounters.put(documentType, new Integer(intValue));
+		documentCounters.put(documentType, Integer.valueOf(intValue));
 	}
 
 	private void countIndexPerMinute() {
@@ -452,8 +451,8 @@ public class OlatFullIndexer {
 	}
 	
 	private void resetDocumentCounters() {
-		documentCounters = new Hashtable<String,Integer>();
-		fileTypeCounters = new Hashtable<String,Integer>();		
+		documentCounters = new Hashtable<>();
+		fileTypeCounters = new Hashtable<>();		
 	}
 	
 	private class CloseIndexCallable implements Callable<Boolean> {

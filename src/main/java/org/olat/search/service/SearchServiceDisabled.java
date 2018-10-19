@@ -26,6 +26,7 @@
 package org.olat.search.service;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import org.apache.lucene.document.Document;
@@ -71,17 +72,21 @@ public class SearchServiceDisabled implements SearchService {
 		return false;
 	}
 
+	@Override
 	public void init() {
+		//
 	}
 
-	
+	@Override
 	public SearchServiceStatus getStatus() {
 		return null;
 	}
 
+	@Override
 	public void setIndexInterval(long indexInterval) {
 	}
-	
+
+	@Override
 	public long getIndexInterval() {
 		return 0;
 	}
@@ -90,20 +95,20 @@ public class SearchServiceDisabled implements SearchService {
 	 * 
 	 * @return  Resturn search module configuration.
 	 */
+	@Override
 	public SearchModule getSearchModuleConfig() {
 		return null;
 	}
 
-	/**
-	 * 
-	 * @see org.olat.search.SearchService#spellCheck(java.lang.String)
-	 */
+	@Override
 	public Set<String> spellCheck(String query) throws ServiceNotAvailableException {		
 		log.error("call spellCheck on disabled search service");
 		throw new ServiceNotAvailableException("call spellCheck on disabled search service");
 	}
 
+	@Override
 	public void stop() {
+		//
 	}
 
 	public boolean isEnabled() {
@@ -116,7 +121,7 @@ public class SearchServiceDisabled implements SearchService {
 	}
 
 	@Override
-	public SearchResults doSearch(String queryString, List<String> condQueries, Identity identity, Roles roles,
+	public SearchResults doSearch(String queryString, List<String> condQueries, Identity identity, Roles roles, Locale locale,
 			int firstResult, int maxResults, boolean doHighlighting)
 			throws ServiceNotAvailableException, ParseException, QueryException {
 		log.error("call doSearch on disabled search service");
@@ -124,7 +129,7 @@ public class SearchServiceDisabled implements SearchService {
 	}
 
 	@Override
-	public List<Long> doSearch(String queryString, List<String> condQueries, Identity identity, Roles roles,
+	public List<Long> doSearch(String queryString, List<String> condQueries, Identity identity, Roles roles, Locale locale,
 			int firstResult, int maxReturns, SortKey... orderBy)
 			throws ServiceNotAvailableException, ParseException, QueryException {
 		log.error("call doSearch on disabled search service");

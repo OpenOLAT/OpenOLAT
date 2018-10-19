@@ -85,6 +85,8 @@ public interface RepositoryService {
 	 * @return The olat resource of the repository entry
 	 */
 	public OLATResource loadRepositoryEntryResourceBySoftKey(String softkey);
+	
+	public List<RepositoryEntry> loadRepositoryEntries(int firstResult, int maxResult);
 
 	public VFSLeaf getIntroductionImage(RepositoryEntry re);
 

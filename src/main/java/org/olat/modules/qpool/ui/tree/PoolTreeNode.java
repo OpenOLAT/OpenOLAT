@@ -60,11 +60,11 @@ public class PoolTreeNode extends GenericTreeNode implements ControllerTreeNode 
 		this.securityCallback = securityCallback;
 		this.qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 		
-		this.setTitle(pool.getName());
-		this.setIconCssClass(ICON_CSS_CLASS);
+		setTitle(pool.getName());
+		setIconCssClass(ICON_CSS_CLASS);
 
 		// The user object is used to findNodeByPersistableUserObject
-		this.setUserObject(pool);
+		setUserObject(pool);
 	}
 	
 	public Pool getPool() {
@@ -75,8 +75,7 @@ public class PoolTreeNode extends GenericTreeNode implements ControllerTreeNode 
 	public Controller getController(UserRequest ureq, WindowControl wControl) {
 		if(questionsCtrl == null) {
 			PoolItemsSource source = new PoolItemsSource(
-					ureq.getIdentity(),
-					ureq.getUserSession().getRoles(),
+					ureq.getIdentity(), ureq.getUserSession().getRoles(), ureq.getLocale(),
 					pool);
 			source.setRemoveEnabled(isRemoveEnabled(ureq, pool));
 			WindowControl swControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, pool, null,

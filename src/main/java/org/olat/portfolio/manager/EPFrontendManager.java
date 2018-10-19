@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -505,8 +506,8 @@ public class EPFrontendManager implements UserDataDeletable, DeletableGroupData 
 	 * @param filterSettings Settings for the filter to work on
 	 * @return
 	 */
-	public List<AbstractArtefact> filterArtefactsByFilterSettings(EPFilterSettings filterSettings, Identity identity, Roles roles) {
-		List<Long> artefactKeys = fulltextSearchAfterArtefacts(filterSettings, identity, roles);
+	public List<AbstractArtefact> filterArtefactsByFilterSettings(EPFilterSettings filterSettings, Identity identity, Roles roles, Locale locale) {
+		List<Long> artefactKeys = fulltextSearchAfterArtefacts(filterSettings, identity, roles, locale);
 		if(artefactKeys == null || artefactKeys.isEmpty()) {
 			List<AbstractArtefact> allArtefacts = artefactManager.getArtefactPoolForUser(identity);
 			return artefactManager.filterArtefactsByFilterSettings(allArtefacts, filterSettings);
@@ -518,16 +519,16 @@ public class EPFrontendManager implements UserDataDeletable, DeletableGroupData 
 		return artefactManager.filterArtefactsByFilterSettings(artefacts, settings);
 	}
 	
-	private List<Long> fulltextSearchAfterArtefacts(EPFilterSettings filterSettings, Identity identity, Roles roles) {
+	private List<Long> fulltextSearchAfterArtefacts(EPFilterSettings filterSettings, Identity identity, Roles roles, Locale locale) {
 		String query = filterSettings.getTextFilter();
 		if (StringHelper.containsNonWhitespace(query)) {
 			try {
-				List<String> queries = new ArrayList<String>();
+				List<String> queries = new ArrayList<>();
 				appendAnd(queries, AbstractOlatDocument.RESERVED_TO, ":\"", identity.getKey().toString(), "\"");
 				appendAnd(queries, "(", AbstractOlatDocument.DOCUMENTTYPE_FIELD_NAME, ":(", PortfolioArtefactIndexer.TYPE, "*))");
-				SearchResults searchResults = searchClient.doSearch(query, queries, identity, roles, 0, 1000, false);
+				SearchResults searchResults = searchClient.doSearch(query, queries, identity, roles, locale, 0, 1000, false);
 
-				List<Long> keys = new ArrayList<Long>();
+				List<Long> keys = new ArrayList<>();
 				if (searchResults != null) {
 					String marker = AbstractArtefact.class.getSimpleName();
 					for (ResultDocument doc : searchResults.getList()) {

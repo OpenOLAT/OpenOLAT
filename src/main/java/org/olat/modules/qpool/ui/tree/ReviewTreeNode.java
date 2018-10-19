@@ -19,6 +19,8 @@
  */
 package org.olat.modules.qpool.ui.tree;
 
+import java.util.Locale;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.badge.Badge;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
@@ -58,12 +60,12 @@ public class ReviewTreeNode extends GenericTreeNode implements ControllerTreeNod
 	private final QuestionItemsSource source;
 
 	public ReviewTreeNode(TooledStackedPanel stackPanel, QPoolSecurityCallback securityCallback,
-			TaxonomyLevel taxonomyLevel, Identity identity, Roles roles) {
+			TaxonomyLevel taxonomyLevel, Identity identity, Roles roles, Locale locale) {
 		super();
 		this.stackPanel = stackPanel;
 		this.securityCallback = securityCallback;
 		this.taxonomyLevel = taxonomyLevel;
-		source = new ReviewItemsSource(identity, roles, taxonomyLevel);
+		source = new ReviewItemsSource(identity, roles, locale, taxonomyLevel);
 		
 		setTitle(taxonomyLevel.getDisplayName());
 		TaxonomyLevelType type = taxonomyLevel.getType();
@@ -72,7 +74,7 @@ public class ReviewTreeNode extends GenericTreeNode implements ControllerTreeNod
 		}
 		reloadCount();
 		
-		this.setUserObject(taxonomyLevel);
+		setUserObject(taxonomyLevel);
 	}
 
 	@Override
