@@ -1230,6 +1230,13 @@ create table o_as_mode_course_to_area (
    primary key (id)
 );
 
+create table o_as_mode_course_to_cur_el (
+   id bigint not null auto_increment,
+   fk_assessment_mode_id bigint not null,
+   fk_cur_element_id bigint not null,
+   primary key (id)
+);
+
 create table o_cer_template (
    id bigint not null,
    creationdate datetime not null,
@@ -2883,6 +2890,7 @@ alter table o_as_user_course_infos ENGINE = InnoDB;
 alter table o_as_mode_course ENGINE = InnoDB;
 alter table o_as_entry ENGINE = InnoDB;
 alter table o_as_mode_course_to_area ENGINE = InnoDB;
+alter table o_as_mode_course_to_cur_el ENGINE = InnoDB;
 alter table o_cal_use_config ENGINE = InnoDB;
 alter table o_cal_import ENGINE = InnoDB;
 alter table o_cal_import_to ENGINE = InnoDB;
@@ -3496,6 +3504,9 @@ alter table o_as_mode_course_to_group add constraint as_modetogroup_mode_idx for
 
 alter table o_as_mode_course_to_area add constraint as_modetoarea_area_idx foreign key (fk_area_id) references o_gp_bgarea (area_id);
 alter table o_as_mode_course_to_area add constraint as_modetoarea_mode_idx foreign key (fk_assessment_mode_id) references o_as_mode_course (id);
+
+alter table o_as_mode_course_to_cur_el add constraint as_modetocur_el_idx foreign key (fk_cur_element_id) references o_cur_curriculum_element (id);
+alter table o_as_mode_course_to_cur_el add constraint as_modetocur_mode_idx foreign key (fk_assessment_mode_id) references o_as_mode_course (id);
 
 -- certificate
 alter table o_cer_certificate add constraint cer_to_identity_idx foreign key (fk_identity) references o_bs_identity (id);

@@ -249,7 +249,6 @@ public class HomeCalendarManager implements PersonalCalendarManager, UserDataDel
 					ICourse course = CourseFactory.loadCourse(courseEntry);
 					if(CourseCalendars.isCourseCalendarEnabled(course)) {
 						//calendar course aren't enabled per default but course node of type calendar are always possible
-						//REVIEW if (!course.getCourseEnvironment().getCourseConfig().isCalendarEnabled()) continue;
 						// add course calendar
 						KalendarRenderWrapper courseCalendarWrapper = calendarManager.getCourseCalendar(course);
 						boolean isPrivileged = GroupRoles.owner.name().equals(role) || editoredResources.contains(courseEntry.getOlatResource());
@@ -295,7 +294,7 @@ public class HomeCalendarManager implements PersonalCalendarManager, UserDataDel
 		  .append(" inner join retogroup.group as baseGroup")
 		  .append(" inner join baseGroup.members as membership")
 		  .append(" where v.olatResource.resName='CourseModule' and membership.identity.key=:identityKey and")
-		  .append(" (")//TODO repo access
+		  .append(" (")
 		  .append("   (v.status ").in(RepositoryEntryStatusEnum.reviewToClosed()).append(" and membership.role='").append(GroupRoles.owner.name()).append("')")
 		  .append("   or")
 		  .append("   (v.status ").in(RepositoryEntryStatusEnum.coachPublishedToClosed()).append(" and membership.role='").append(GroupRoles.coach.name()).append("')")

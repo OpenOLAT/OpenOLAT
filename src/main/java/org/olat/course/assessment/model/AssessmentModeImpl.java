@@ -44,6 +44,7 @@ import org.olat.core.id.Persistable;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentModeToArea;
+import org.olat.course.assessment.AssessmentModeToCurriculumElement;
 import org.olat.course.assessment.AssessmentModeToGroup;
 import org.olat.repository.RepositoryEntry;
 
@@ -120,6 +121,10 @@ public class AssessmentModeImpl implements Persistable, AssessmentMode {
 	
 	@OneToMany(targetEntity=AssessmentModeToAreaImpl.class, mappedBy="assessmentMode", cascade= { CascadeType.REMOVE })
 	private Set<AssessmentModeToArea> areas;
+	
+	@OneToMany(targetEntity=AssessmentModeToCurriculumElementImpl.class, mappedBy="assessmentMode", cascade= { CascadeType.REMOVE })
+	private Set<AssessmentModeToCurriculumElement> curriculumElements;
+	
 	
 	@Column(name="a_restrictaccesselements", nullable=true, insertable=true, updatable=true)
 	private boolean restrictAccessElements;
@@ -316,6 +321,18 @@ public class AssessmentModeImpl implements Persistable, AssessmentMode {
 
 	public void setAreas(Set<AssessmentModeToArea> areas) {
 		this.areas = areas;
+	}
+
+	@Override
+	public Set<AssessmentModeToCurriculumElement> getCurriculumElements() {
+		if(curriculumElements == null) {
+			curriculumElements = new HashSet<>();
+		}
+		return curriculumElements;
+	}
+
+	public void setCurriculumElements(Set<AssessmentModeToCurriculumElement> curriculumElements) {
+		this.curriculumElements = curriculumElements;
 	}
 
 	@Override

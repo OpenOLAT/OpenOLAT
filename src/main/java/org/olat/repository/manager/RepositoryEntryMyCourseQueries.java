@@ -364,7 +364,7 @@ public class RepositoryEntryMyCourseQueries {
 	
 	private boolean appendMyViewAccessSubSelect(QueryBuilder sb, Roles roles, List<Filter> filters, boolean membershipMandatory) {
 		if(roles.isGuestOnly()) {
-			sb.append(" v.guests=true and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed());//TODO repo access	
+			sb.append(" v.guests=true and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed());
 			return false;
 		}
 

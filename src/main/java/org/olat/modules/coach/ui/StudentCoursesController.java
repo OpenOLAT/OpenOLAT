@@ -429,7 +429,7 @@ public class StudentCoursesController extends FormBasicController implements Act
 	}
 	
 	private void openHome(UserRequest ureq) {
-		List<ContextEntry> ces = new ArrayList<ContextEntry>(4);
+		List<ContextEntry> ces = new ArrayList<>(4);
 		ces.add(BusinessControlFactory.getInstance().createContextEntry(student));
 
 		BusinessControl bc = BusinessControlFactory.getInstance().createFromContextEntries(ces);

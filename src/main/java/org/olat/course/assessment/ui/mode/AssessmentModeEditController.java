@@ -58,8 +58,10 @@ import org.olat.course.assessment.AssessmentMode.Target;
 import org.olat.course.assessment.AssessmentModeCoordinationService;
 import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.assessment.AssessmentModeToArea;
+import org.olat.course.assessment.AssessmentModeToCurriculumElement;
 import org.olat.course.assessment.AssessmentModeToGroup;
 import org.olat.course.condition.AreaSelectionController;
+import org.olat.course.condition.CurriculumElementSelectionController;
 import org.olat.course.condition.GroupSelectionController;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.CourseNode;
@@ -68,6 +70,10 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumModule;
+import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -86,7 +92,11 @@ public class AssessmentModeEditController extends FormBasicController {
 	private IntegerElement leadTimeEl, followupTimeEl;
 	private DateChooser beginEl, endEl;
 	private StaticTextElement startElementEl;
-	private FormLink chooseGroupsButton, chooseAreasButton, chooseStartElementButton, chooseElementsButton;
+	private FormLink chooseGroupsButton;
+	private FormLink chooseAreasButton;
+	private FormLink chooseStartElementButton;
+	private FormLink chooseElementsButton;
+	private FormLink chooseCurriculumElementsButton;
 	private TextElement nameEl, ipListEl, safeExamBrowserKeyEl;
 	private RichTextElement descriptionEl, safeExamBrowserHintEl;
 	private FormLayoutContainer chooseGroupsCont, chooseElementsCont;
@@ -98,11 +108,14 @@ public class AssessmentModeEditController extends FormBasicController {
 	private GroupSelectionController groupChooseCtrl;
 	private ChooseElementsController chooseElementsCtrl;
 	private ChooseStartElementController chooseStartElementCtrl;
+	private CurriculumElementSelectionController curriculumElementChooseCtrl;
 	
 	private List<Long> areaKeys;
 	private List<String> areaNames;
 	private List<Long> groupKeys;
 	private List<String> groupNames;
+	private List<Long> curriculumElementKeys;
+	private List<String> curriculumElementNames;
 	private List<String> elementKeys;
 	private List<String> elementNames;
 	private String startElementKey;
@@ -113,11 +126,15 @@ public class AssessmentModeEditController extends FormBasicController {
 	@Autowired
 	private BGAreaManager areaMgr;
 	@Autowired
+	private CurriculumModule curriculumModule;
+	@Autowired
+	private CurriculumService curriculumService;
+	@Autowired
 	private AssessmentModeManager assessmentModeMgr;
 	@Autowired
-	private AssessmentModeCoordinationService modeCoordinationService;
-	@Autowired
 	private BusinessGroupService businessGroupService;
+	@Autowired
+	private AssessmentModeCoordinationService modeCoordinationService;
 	
 	public AssessmentModeEditController(UserRequest ureq, WindowControl wControl,
 			OLATResourceable courseOres, AssessmentMode assessmentMode) {
@@ -224,12 +241,14 @@ public class AssessmentModeEditController extends FormBasicController {
 		String[] audienceKeys = new String[] {
 			AssessmentMode.Target.courseAndGroups.name(),
 			AssessmentMode.Target.course.name(),
-			AssessmentMode.Target.groups.name()
+			AssessmentMode.Target.groups.name(),
+			AssessmentMode.Target.curriculumEls.name()
 		};
 		String[] audienceValues = new String[] {
 			translate("target.courseAndGroups"),
 			translate("target.course"),
-			translate("target.groups")
+			translate("target.groups"),
+			translate("target.curriculumElements")
 		};
 		targetEl = uifactory.addRadiosVertical("audience", "mode.target", formLayout, audienceKeys, audienceValues);
 		targetEl.setElementCssClass("o_sel_assessment_mode_audience");
@@ -245,7 +264,7 @@ public class AssessmentModeEditController extends FormBasicController {
 		if(!targetEl.isOneSelected()) {
 			targetEl.select(audienceKeys[0], true);
 		}
-		//choose groups
+		//choose groups / curriculum
 		String groupPage = velocity_root + "/choose_groups.html";
 		chooseGroupsCont = FormLayoutContainer.createCustomFormLayout("chooseGroups", getTranslator(), groupPage);
 		chooseGroupsCont.setRootForm(mainForm);
@@ -255,6 +274,9 @@ public class AssessmentModeEditController extends FormBasicController {
 		chooseGroupsButton.setEnabled(status != Status.end);
 		chooseAreasButton = uifactory.addFormLink("choose.areas", chooseGroupsCont, Link.BUTTON);
 		chooseAreasButton.setEnabled(status != Status.end);
+		chooseCurriculumElementsButton = uifactory.addFormLink("choose.curriculum.elements", chooseGroupsCont, Link.BUTTON);
+		chooseCurriculumElementsButton.setEnabled(status != Status.end);
+		chooseCurriculumElementsButton.setVisible(curriculumModule.isEnabled());
 
 		groupKeys = new ArrayList<>();
 		groupNames = new ArrayList<>();
@@ -264,7 +286,7 @@ public class AssessmentModeEditController extends FormBasicController {
 			groupNames.add(StringHelper.escapeHtml(group.getName()));
 		}
 		chooseGroupsCont.getFormItemComponent().contextPut("groupNames", groupNames);
-		
+
 		areaKeys = new ArrayList<>();
 		areaNames = new ArrayList<>();
 		for(AssessmentModeToArea modeToArea: assessmentMode.getAreas()) {
@@ -273,7 +295,16 @@ public class AssessmentModeEditController extends FormBasicController {
 			areaNames.add(StringHelper.escapeHtml(area.getName()));
 		}
 		chooseGroupsCont.getFormItemComponent().contextPut("areaNames", areaNames);
-	
+
+		curriculumElementKeys = new ArrayList<>();
+		curriculumElementNames = new ArrayList<>();
+		for(AssessmentModeToCurriculumElement modeToElement: assessmentMode.getCurriculumElements()) {
+			CurriculumElement element = modeToElement.getCurriculumElement();
+			curriculumElementKeys.add(element.getKey());
+			curriculumElementNames.add(StringHelper.escapeHtml(element.getDisplayName()));
+		}
+		chooseGroupsCont.getFormItemComponent().contextPut("curriculumElementNames", curriculumElementNames);
+
 		//course elements
 		courseElementsRestrictionEl = uifactory.addCheckboxesHorizontal("cer", "mode.course.element.restriction", formLayout, onKeys, onValues);
 		courseElementsRestrictionEl.addActionListener(FormEvent.ONCHANGE);
@@ -344,10 +375,10 @@ public class AssessmentModeEditController extends FormBasicController {
 		
 		FormLayoutContainer buttonCont = FormLayoutContainer.createButtonLayout("button", getTranslator());
 		formLayout.add(buttonCont);
+		uifactory.addFormCancelButton("cancel", buttonCont, ureq, getWindowControl());
 		if(status != Status.end) {
 			uifactory.addFormSubmitButton("save", buttonCont);
 		}
-		uifactory.addFormCancelButton("cancel", buttonCont, ureq, getWindowControl());
 	}
 	
 	private String getCourseNodeName(String ident, CourseEditorTreeModel treeModel) {
@@ -378,10 +409,24 @@ public class AssessmentModeEditController extends FormBasicController {
 			if(Event.DONE_EVENT == event || Event.CHANGED_EVENT == event) {
 				areaKeys = areaChooseCtrl.getSelectedKeys();
 				List<String> newAreaNames = areaChooseCtrl.getSelectedNames();
+				areaNames.clear();
 				for(String newAreaName:newAreaNames) {
 					areaNames.add(StringHelper.escapeHtml(newAreaName));
 				}
 				chooseGroupsCont.getFormItemComponent().contextPut("areaNames", areaNames);
+				flc.setDirty(true);
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(curriculumElementChooseCtrl == source) {
+			if(Event.DONE_EVENT == event || Event.CHANGED_EVENT == event) {
+				curriculumElementKeys = curriculumElementChooseCtrl.getSelectedKeys();
+				List<String> newCurriculumElementNames = curriculumElementChooseCtrl.getSelectedNames();
+				curriculumElementNames.clear();
+				for(String newCurriculumElementName:newCurriculumElementNames) {
+					curriculumElementNames.add(StringHelper.escapeHtml(newCurriculumElementName));
+				}
+				chooseGroupsCont.getFormItemComponent().contextPut("curriculumElementNames", curriculumElementNames);
 				flc.setDirty(true);
 			}
 			cmc.deactivate();
@@ -414,11 +459,13 @@ public class AssessmentModeEditController extends FormBasicController {
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(curriculumElementChooseCtrl);
 		removeAsListenerAndDispose(chooseStartElementCtrl);
 		removeAsListenerAndDispose(chooseElementsCtrl);
 		removeAsListenerAndDispose(groupChooseCtrl);
 		removeAsListenerAndDispose(areaChooseCtrl);
 		removeAsListenerAndDispose(cmc);
+		curriculumElementChooseCtrl = null;
 		chooseStartElementCtrl = null;
 		chooseElementsCtrl = null;
 		groupChooseCtrl = null;
@@ -428,7 +475,7 @@ public class AssessmentModeEditController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		nameEl.clearError();
 		if(StringHelper.containsNonWhitespace(nameEl.getValue())) {
@@ -467,11 +514,21 @@ public class AssessmentModeEditController extends FormBasicController {
 		targetEl.clearError();
 		if(targetEl.isOneSelected()) {
 			Target target = AssessmentMode.Target.valueOf(targetEl.getSelectedKey());
-			if(target == Target.courseAndGroups || target == Target.groups) {
-				if(groupKeys.isEmpty() && areaKeys.isEmpty()) {
+			if(target == Target.courseAndGroups ) {
+				if(groupKeys.isEmpty() && areaKeys.isEmpty() && curriculumElementKeys.isEmpty()) {
 					targetEl.setErrorKey("error.group.missing", null);
 					allOk &= false;
 				}	
+			} else if(target == Target.groups) {
+				if(groupKeys.isEmpty() && areaKeys.isEmpty()) {
+					targetEl.setErrorKey("error.group.missing", null);
+					allOk &= false;
+				}
+			} else if(target == Target.curriculumEls) {
+				if(curriculumElementKeys.isEmpty()) {
+					targetEl.setErrorKey("error.curriculum.missing", null);
+					allOk &= false;
+				}
 			}
 		} else {
 			targetEl.setErrorKey("form.legende.mandatory", null);
@@ -495,7 +552,7 @@ public class AssessmentModeEditController extends FormBasicController {
 				allOk &= false;
 			}
 		}
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override
@@ -654,6 +711,31 @@ public class AssessmentModeEditController extends FormBasicController {
 				}
 			}
 		}
+		
+		//update areas
+		if(curriculumElementKeys.isEmpty()) {
+			if(!assessmentMode.getCurriculumElements().isEmpty()) {
+				assessmentMode.getCurriculumElements().clear();
+			}
+		} else {
+			Set<Long> currentKeys = new HashSet<>();
+			for(Iterator<AssessmentModeToCurriculumElement> modeToElementIt=assessmentMode.getCurriculumElements().iterator(); modeToElementIt.hasNext(); ) {
+				Long currentKey = modeToElementIt.next().getCurriculumElement().getKey();
+				if(!curriculumElementKeys.contains(currentKey)) {
+					modeToElementIt.remove();
+				} else {
+					currentKeys.add(currentKey);
+				}
+			}
+			
+			for(Long curriculumElementKey:curriculumElementKeys) {
+				if(!currentKeys.contains(curriculumElementKey)) {
+					CurriculumElement element = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(curriculumElementKey));
+					AssessmentModeToCurriculumElement modeToElement = assessmentModeMgr.createAssessmentModeToCurriculumElement(assessmentMode, element);
+					assessmentMode.getCurriculumElements().add(modeToElement);
+				}
+			}
+		}
 
 		assessmentMode = assessmentModeMgr.merge(assessmentMode, forceStatus);
 		fireEvent(ureq, Event.CHANGED_EVENT);
@@ -674,6 +756,8 @@ public class AssessmentModeEditController extends FormBasicController {
 			doChooseAreas(ureq);
 		} else if(chooseGroupsButton == source) {
 			doChooseGroups(ureq);
+		} else if(chooseCurriculumElementsButton == source) {
+			doChooseCurriculumElements(ureq);
 		} else if(chooseElementsButton == source) {
 			doChooseElements(ureq);
 		} else if(chooseStartElementButton == source) {
@@ -695,7 +779,7 @@ public class AssessmentModeEditController extends FormBasicController {
 		listenTo(chooseElementsCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), "close", chooseElementsCtrl.getInitialComponent(),
-				true, translate("popup.chooseelements"), false);
+				true, translate("popup.chooseelements"), true);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -708,8 +792,8 @@ public class AssessmentModeEditController extends FormBasicController {
 		chooseStartElementCtrl = new ChooseStartElementController(ureq, getWindowControl(), startElementKey, allowedKeys, courseOres);
 		listenTo(chooseStartElementCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), null, chooseStartElementCtrl.getInitialComponent(),
-				true, translate("popup.choosestartelement"), false);
+		cmc = new CloseableModalController(getWindowControl(), "close", chooseStartElementCtrl.getInitialComponent(),
+				true, translate("popup.choosestartelement"), true);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -722,8 +806,8 @@ public class AssessmentModeEditController extends FormBasicController {
 		areaChooseCtrl = new AreaSelectionController(ureq, getWindowControl(), true, groupManager, areaKeys);
 		listenTo(areaChooseCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), null, areaChooseCtrl.getInitialComponent(),
-				true, translate("popup.chooseareas"), false);
+		cmc = new CloseableModalController(getWindowControl(), "close", areaChooseCtrl.getInitialComponent(),
+				true, translate("popup.chooseareas"), true);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -736,9 +820,24 @@ public class AssessmentModeEditController extends FormBasicController {
 		groupChooseCtrl = new GroupSelectionController(ureq, getWindowControl(), true, groupManager, groupKeys);
 		listenTo(groupChooseCtrl);
 
-		cmc = new CloseableModalController(getWindowControl(), null, groupChooseCtrl.getInitialComponent(),
-				true, translate("popup.choosegroups"), false);
+		cmc = new CloseableModalController(getWindowControl(), "close", groupChooseCtrl.getInitialComponent(),
+				true, translate("popup.choosegroups"), true);
 		listenTo(cmc);
 		cmc.activate();
 	}
+	
+	private void doChooseCurriculumElements(UserRequest ureq) {
+		if(curriculumElementChooseCtrl != null) return;
+		
+		ICourse course = CourseFactory.loadCourse(courseOres);
+		CourseGroupManager groupManager = course.getCourseEnvironment().getCourseGroupManager();
+		curriculumElementChooseCtrl = new CurriculumElementSelectionController(ureq, getWindowControl(), groupManager, curriculumElementKeys);
+		listenTo(curriculumElementChooseCtrl);
+
+		cmc = new CloseableModalController(getWindowControl(), "close", curriculumElementChooseCtrl.getInitialComponent(),
+				true, translate("popup.choosecurriculumelements"), true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
 }

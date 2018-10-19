@@ -83,13 +83,10 @@ public class AssessmentModule extends AbstractSpringModule implements GenericEve
 		updateProperties();
 	}
 
-	/**
-	 * @see org.olat.core.configuration.OLATModule#init(com.anthonyeden.lib.config.Configuration)
-	 */
 	@Override
 	public void init() {
 		updateProperties();
-		upcomingWork = new ArrayList<Long>();
+		upcomingWork = new ArrayList<>();
 		/*
 		 * always last step, register for course events
 		 */
@@ -117,7 +114,7 @@ public class AssessmentModule extends AbstractSpringModule implements GenericEve
 		 * no other code before here!
 		 */
 		//check that working queue is empty
-		if(upcomingWork.size()>0){
+		if(!upcomingWork.isEmpty()) {
 			//hanging work!!
 			log.warn("still some Efficiency Statement recalculations open!!");
 		}
@@ -134,7 +131,6 @@ public class AssessmentModule extends AbstractSpringModule implements GenericEve
 			if (pe.getState() == PublishEvent.PRE_PUBLISH && pe.isEventOnThisNode()) {
 				// PRE PUBLISH -> check node for changes
 				addToUpcomingWork(pe);
-				return;
 			} else if (pe.getState() == PublishEvent.PUBLISH && pe.isEventOnThisNode()) {
 				// a publish event, check if it matches a previous checked
 				prepareUpdate(pe.getPublishedCourseResId());
@@ -200,7 +196,6 @@ public class AssessmentModule extends AbstractSpringModule implements GenericEve
 		synchronized (upcomingWork) { //o_clusterOK by:ld synchronized OK - only one cluster node must update the EfficiencyStatements (the course is locked for editing)
 			upcomingWork.add(course.getResourceableId());
 		}
-		return;
 	}
 
 	public boolean isAssessmentModeEnabled() {

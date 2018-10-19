@@ -58,21 +58,23 @@ public class AccessRenderer implements FlexiCellRenderer, CustomCellRenderer {
 		} else if(val instanceof RepositoryEntry) {
 			RepositoryEntry re = (RepositoryEntry)val;
 			render(sb, re.getEntryStatus());
+		} else if(val instanceof RepositoryEntryStatusEnum) {
+			RepositoryEntryStatusEnum entryStatus = (RepositoryEntryStatusEnum)val;
+			render(sb, entryStatus);
 		}
 	}
 
 	@Override
 	public void render(StringOutput sb, Renderer renderer, Object val, Locale locale, int alignment, String action) {
 		// use the FlexiCellRenderer method
-		this.render(renderer, sb, val, -1, null, null, null);
+		render(renderer, sb, val, -1, null, null, null);
 	}
 
 	public void render(StringOutput sb, RepositoryEntryStatusEnum status) {
-		
-		sb.append("<span class='o_labeled_light o_repo_status_").append(status.name());
-		sb.append("' title=\"").append(StringHelper.escapeHtml(translator.translate("status." + status.name() + ".desc"))).append("\">");
-		sb.append("<i class='o_icon o_icon-fw o_icon_repo_status_").append(status.name()).append("'> </i> <span>");
-		sb.append(translator.translate("table.status.".concat(status.name())));
-		sb.append("</span></span>");
+		sb.append("<span class='o_labeled_light o_repo_status_").append(status.name())
+		  .append("' title=\"").append(StringHelper.escapeHtml(translator.translate("status." + status.name() + ".desc"))).append("\">")
+		  .append("<i class='o_icon o_icon-fw o_icon_repo_status_").append(status.name()).append("'> </i> <span>")
+		  .append(translator.translate("table.status.".concat(status.name())))
+		  .append("</span></span>");
 	}
 }

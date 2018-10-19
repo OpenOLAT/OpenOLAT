@@ -180,10 +180,11 @@ public class RepositoryEntryAuthorQueries {
 		needIdentity |= appendAccessSubSelect(sb, params);
 		
 		if(params.getClosed() != null) {
+			sb.append(" and v.status ");
 			if(params.getClosed().booleanValue()) {
-				sb.append(" and v.status ").in(RepositoryEntryStatusEnum.closed);
+				sb.in(RepositoryEntryStatusEnum.closed);
 			} else {
-				sb.append(" and v.status ").in(RepositoryEntryStatusEnum.preparationToPublished());
+				sb.in(RepositoryEntryStatusEnum.preparationToPublished());
 			}
 		}
 		
@@ -360,7 +361,7 @@ public class RepositoryEntryAuthorQueries {
 		} else {
 			sb.append("(")
 			  .append(" (v.allUsers=true and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed()).append(")")
-			  // or owner, principal, lear resource manager and administrator which can see all
+			  // or owner, principal, learn resource manager and administrator which can see all
 			  .append(" or (v.key in (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
 			  .append("     where rel.group.key=membership.group.key and membership.identity.key=:identityKey")
 			  .append("     and membership.role ").in(OrganisationRoles.administrator, OrganisationRoles.principal, OrganisationRoles.learnresourcemanager, GroupRoles.owner).append(")")
@@ -372,7 +373,8 @@ public class RepositoryEntryAuthorQueries {
 				  .append("     where rel.group.key=membership.group.key and membership.identity.key=:identityKey")
 				  .append("     and membership.role ='").append(OrganisationRoles.author).append("')")
 				  .append("     and v.status ").in(RepositoryEntryStatusEnum.reviewToClosed())
-				  .append(")");// End or of autho
+				  .append("     and (v.canCopy=true or v.canReference=true or v.canDownload=true)")
+				  .append(")");// End or of author
 			}
 			sb.append(")");
 		}
@@ -417,6 +419,10 @@ public class RepositoryEntryAuthorQueries {
 					sb.append(" order by lower(v.location)");
 					appendAsc(sb, asc).append(", lower(v.displayname) asc");	
 					break;
+				case guests:
+					sb.append(" order by v.guests");
+					appendAsc(sb, asc).append(", lower(v.displayname) asc");	
+					break; 
 				case access:
 					if(asc) {
 						sb.append(" order by v.allUsers asc, v.status asc, lower(v.displayname) asc");

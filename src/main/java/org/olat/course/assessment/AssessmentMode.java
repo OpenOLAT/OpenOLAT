@@ -83,6 +83,8 @@ public interface AssessmentMode extends ModifiedInfo, CreateInfo {
 	public Set<AssessmentModeToGroup> getGroups();
 	
 	public Set<AssessmentModeToArea> getAreas();
+	
+	public Set<AssessmentModeToCurriculumElement> getCurriculumElements();
 
 	public boolean isRestrictAccessElements();
 
@@ -122,9 +124,10 @@ public interface AssessmentMode extends ModifiedInfo, CreateInfo {
 	
 
 	public enum Target {
-		courseAndGroups,
+		courseAndGroups,//it's in fact course, groups and curriculum elements
 		course,
-		groups
+		groups,
+		curriculumEls
 	}
 	
 	public enum Status {
