@@ -7,19 +7,21 @@ let cleanCSS = require('gulp-clean-css');
 
 var theme = 'light';
 var assetsPath = 'src/main/webapp/static/';
+
+// set to true, if you run OpenOlat in debug mode
 var guidebug = false;
 
 
 gulp.task('theme', function() {
 
-    return gulp.src('static/themes/' + theme + '/theme.scss')
+    return gulp.src(assetsPath + 'themes/' + theme + '/theme.scss')
         .pipe(sass({
             includePaths: [
-                'static/themes',
-                'static/themes/light'
+                assetsPath + 'themes',
+                assetsPath + 'themes/light'
             ],
         }))
-        .pipe(gulp.dest('static/themes/' + theme))
+        .pipe(gulp.dest(assetsPath + 'themes/' + theme))
 
 });
 
@@ -66,7 +68,7 @@ gulp.task('js:build', function () {
     )
         .pipe(gulp.dest(assetsPath + 'js/jquery/qrcodejs'))
 
-    // bundle plugins: bootstrap, jquery plugins
+    // bundle plugins: bootstrap (sass), jquery plugins
     if (!guidebug) {
         // production mode: concat and uglify
         gulp.src([
@@ -78,7 +80,7 @@ gulp.task('js:build', function () {
             assetsPath + 'static/js/tinymce4/tinymce/jquery.tinymce.min.js',
             assetsPath + 'static/functions.js',
             assetsPath + 'node_modules/jquery.transit/jquery.transit.js',
-            assetsPath + 'node_modules/bootstrap/dist/js/bootstrap.min.js'
+            assetsPath + 'node_modules/bootstrap-sass/assets/javascripts/bootstrap.min.js'
         ])
             .pipe(concat('js.plugins.min.js'))
             .pipe(uglify())
@@ -91,7 +93,7 @@ gulp.task('js:build', function () {
             .pipe(gulp.dest(assetsPath + 'js/jquery/transit'))
 
         gulp.src([
-            'node_modules/bootstrap/js/*'
+            'node_modules/bootstrap-sass/assets/javascripts/bootstrap/*'
         ])
             .pipe(gulp.dest(assetsPath + 'bootstrap/javascripts/bootstrap'))
 
@@ -106,12 +108,12 @@ gulp.task('css:build', function () {
             // production mode: concat and minify
             gulp.src(
                 [
-                    'static/js/jquery/tagsinput/bootstrap-tagsinput.css',
-                    'static/js/jquery/fullcalendar/fullcalendar.css',
-                    'static/js/jquery/cropper/cropper.css',
-                    'static/js/jquery/sliderpips/jquery-ui-slider-pips.css',
-                    'static/js/jquery/ui/jquery-ui-1.11.4.custom.min.css',
-                    'static/js/dragula/dragula.css'
+                    assetsPath + 'static/js/jquery/tagsinput/bootstrap-tagsinput.css',
+                    assetsPath + 'static/js/jquery/fullcalendar/fullcalendar.css',
+                    assetsPath + 'static/js/jquery/cropper/cropper.css',
+                    assetsPath + 'static/js/jquery/sliderpips/jquery-ui-slider-pips.css',
+                    assetsPath + 'static/js/jquery/ui/jquery-ui-1.11.4.custom.min.css',
+                    assetsPath + 'static/js/dragula/dragula.css'
                 ])
                 .pipe(concat('js.plugins.min.css'))
                 .pipe(cleanCSS({debug: true, level: {1: {specialComments: 'none'}}}, (details) => {
@@ -138,7 +140,8 @@ gulp.task('css:build', function () {
 
 gulp.task('watch', function() {
     gulp.watch('static/themes/**/*.scss', ['theme']);
+    gulp.watch('node_modules/**/*', ['default']);
 });
 
 // Default Task
-gulp.task('default', ['css:build', 'js:build']);
+gulp.task('default', ['css:build', 'js:build', 'theme']);

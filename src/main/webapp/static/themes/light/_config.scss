@@ -28,7 +28,7 @@
 $input-bg-disabled				: #fafafa !default; /* lighter than default bootstrap */
 
 /* 	Add standard bootstrap variables to the mix */
-@import "../../bootstrap/stylesheets/bootstrap/variables";
+@import "../../../../../../node_modules/bootstrap-sass/assets/stylesheets/bootstrap/variables";
 
 /* ---- OpenOLAT specific configurations ---- */
 $o-images-path : "../light/images/" !default; 

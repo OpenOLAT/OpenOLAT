@@ -29,7 +29,7 @@
     "gulp-uglify": "^3.0.1"
   },
   "dependencies": {
-    "bootstrap": "^3.2.0",
+    "bootstrap-sass": "^3.3.1",
     "d3": "4.13.0",
     "dragula": "^3.7.2",
     "font-awesome": "^4.7.0",

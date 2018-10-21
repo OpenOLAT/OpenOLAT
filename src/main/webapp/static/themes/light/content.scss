@@ -22,12 +22,12 @@
 /* 
 	Bootstrap includes for base element styling 
 */
-@import "../../bootstrap/stylesheets/bootstrap/mixins";
-@import "../../bootstrap/stylesheets/bootstrap/normalize";
-@import "../../bootstrap/stylesheets/bootstrap/print";
+@import "../../../../../../node_modules/bootstrap-sass/assets/stylesheets/bootstrap/mixins";
+@import "../../../../../../node_modules/bootstrap-sass/assets/stylesheets/bootstrap/normalize";
+@import "../../../../../../node_modules/bootstrap-sass/assets/stylesheets/bootstrap/print";
 
-@import "../../bootstrap/stylesheets/bootstrap/scaffolding"; 
-@import "../../bootstrap/stylesheets/bootstrap/type";
+@import "../../../../../../node_modules/bootstrap-sass/assets/stylesheets/bootstrap/scaffolding";
+@import "../../../../../../node_modules/bootstrap-sass/assets/stylesheets/bootstrap/type";
 
 /* 
 	Icon font includes. everyhting necessary to load the font and have the variables. 
