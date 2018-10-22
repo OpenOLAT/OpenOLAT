@@ -29,6 +29,7 @@ package org.olat.ims.cp.objects;
 import java.util.Iterator;
 import java.util.Vector;
 
+import org.dom4j.Element;
 import org.dom4j.tree.DefaultElement;
 import org.olat.ims.cp.CPCore;
 
@@ -54,10 +55,10 @@ public class CPOrganizations extends DefaultElement implements CPNode {
 	 * 
 	 * @param me
 	 */
-	public CPOrganizations(DefaultElement me) {
+	public CPOrganizations(Element me) {
 		super(me.getName());
-		orgas = new Vector<CPOrganization>();
-		errors = new Vector<String>();
+		orgas = new Vector<>();
+		errors = new Vector<>();
 		// setAttributes(me.attributes());
 		setContent(me.content());
 	}
@@ -67,19 +68,16 @@ public class CPOrganizations extends DefaultElement implements CPNode {
 	 */
 	public CPOrganizations() {
 		super(CPCore.ORGANIZATIONS);
-		orgas = new Vector<CPOrganization>();
-		errors = new Vector<String>();
+		orgas = new Vector<>();
+		errors = new Vector<>();
 	}
 
-	/**
-	 * 
-	 * @see org.olat.ims.cp.objects.CPNode#buildChildren()
-	 */
+	@Override
 	public void buildChildren() {
-		Iterator<DefaultElement> children = this.elementIterator();
+		Iterator<Element> children = elementIterator();
 		// iterate through children
 		while (children.hasNext()) {
-			DefaultElement child = children.next();
+			Element child = children.next();
 			if (child.getName().equals(CPCore.ORGANIZATION)) {
 				CPOrganization org = new CPOrganization(child);
 				org.setParentElement(this);
@@ -93,10 +91,7 @@ public class CPOrganizations extends DefaultElement implements CPNode {
 		validateElement();
 	}
 
-	/**
-	 * 
-	 * @see org.olat.ims.cp.objects.CPNode#validateElement()
-	 */
+	@Override
 	public boolean validateElement() {
 		if (orgas.size() < 1) {
 			errors.add("Invalid IMS-Manifest ( missing <organization> element, must have one at least)");
@@ -105,18 +100,15 @@ public class CPOrganizations extends DefaultElement implements CPNode {
 		return true;
 	}
 
-	/**
-	 * 
-	 * @see org.olat.ims.cp.objects.CPNode#buildDocument(org.dom4j.tree.DefaultDocument)
-	 */
-	public void buildDocument(DefaultElement parent) {
+	@Override
+	public void buildDocument(Element parentEl) {
 		DefaultElement orgaElement = new DefaultElement(CPCore.ORGANIZATIONS);
 
 		for (Iterator<CPOrganization> itOrgas = orgas.iterator(); itOrgas.hasNext();) {
 			CPOrganization org = itOrgas.next();
 			org.buildDocument(orgaElement);
 		}
-		parent.add(orgaElement);
+		parentEl.add(orgaElement);
 	}
 
 	// *** cp manipulation ****
@@ -141,10 +133,7 @@ public class CPOrganizations extends DefaultElement implements CPNode {
 		return orgas.iterator();
 	}
 
-	/**
-	 * 
-	 * @see org.olat.ims.cp.objects.CPNode#getPosition()
-	 */
+	@Override
 	public int getPosition() {
 		// there is only one <organizations> element, so position is always 0
 		return 0;
@@ -168,9 +157,7 @@ public class CPOrganizations extends DefaultElement implements CPNode {
 		return null;
 	}
 
-	/**
-	 * @see org.olat.ims.cp.objects.CPNode#getElementByIdentifier(java.lang.String)
-	 */
+	@Override
 	public DefaultElement getElementByIdentifier(String id) {
 		DefaultElement e;
 		for (Iterator<CPOrganization> it = orgas.iterator(); it.hasNext();) {
@@ -190,7 +177,7 @@ public class CPOrganizations extends DefaultElement implements CPNode {
 	 * @return
 	 */
 	String getLastError() {
-		if (errors.size() == 0) {
+		if (errors.isEmpty()) {
 			for (Iterator<CPOrganization> it = orgas.iterator(); it.hasNext();) {
 				CPOrganization orga = it.next();
 				String err = orga.getLastError();
@@ -204,10 +191,7 @@ public class CPOrganizations extends DefaultElement implements CPNode {
 
 	// ***SETTERS***
 
-	/**
-	 * 
-	 * @see org.olat.ims.cp.objects.CPNode#setPosition(int)
-	 */
+	@Override
 	public void setPosition(int pos) {
 	// There is only one <organizations>...
 	}

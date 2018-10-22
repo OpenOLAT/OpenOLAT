@@ -29,6 +29,7 @@ package org.olat.ims.cp.objects;
 import java.util.Iterator;
 import java.util.Vector;
 
+import org.dom4j.Element;
 import org.dom4j.tree.DefaultElement;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.util.CodeHelper;
@@ -63,10 +64,10 @@ public class CPResource extends DefaultElement implements CPNode {
 	 * 
 	 * @param me
 	 */
-	public CPResource(DefaultElement me) {
+	public CPResource(Element me) {
 		super(me.getName());
-		files = new Vector<CPFile>();
-		dependencies = new Vector<CPDependency>();
+		files = new Vector<>();
+		dependencies = new Vector<>();
 
 		// setAttributes(me.attributes());
 		setContent(me.content());
@@ -88,8 +89,8 @@ public class CPResource extends DefaultElement implements CPNode {
 		this.identifier = identifier;
 		type = "";
 		href = "";
-		files = new Vector<CPFile>();
-		dependencies = new Vector<CPDependency>();
+		files = new Vector<>();
+		dependencies = new Vector<>();
 	}
 
 	public CPResource() {
@@ -99,6 +100,7 @@ public class CPResource extends DefaultElement implements CPNode {
 	/**
 	 * @see org.dom4j.tree.DefaultElement#clone()
 	 */
+	@Override
 	public Object clone() {
 		CPResource copy = (CPResource) super.clone();
 		copy.setIdentifier(CodeHelper.getGlobalForeverUniqueID());
@@ -120,15 +122,13 @@ public class CPResource extends DefaultElement implements CPNode {
 		return copy;
 	}
 
-	/**
-	 * 
-	 * @see org.olat.ims.cp.objects.CPNode#buildChildren()
-	 */
+
+	@Override
 	public void buildChildren() {
-		Iterator<DefaultElement> children = this.elementIterator();
+		Iterator<Element> children = this.elementIterator();
 		// iterate through children
 		while (children.hasNext()) {
-			DefaultElement child = children.next();
+			Element child = children.next();
 			if (child.getName().equals(CPCore.FILE)) {
 				CPFile file = new CPFile(child, this.xmlbase, parent.getRootDir());
 				file.buildChildren();
@@ -151,21 +151,15 @@ public class CPResource extends DefaultElement implements CPNode {
 		validateElement();
 	}
 
-	/**
-	 * 
-	 * @see org.olat.ims.cp.objects.CPNode#validateElement()
-	 */
+	@Override
 	public boolean validateElement() {
 		if (this.type == null) { throw new OLATRuntimeException(CPOrganizations.class, "Invalid IMS-Manifest (missing \"type\" attribute)",
 				new Exception()); }
 		return true;
 	}
 
-	/**
-	 * 
-	 * @see org.olat.ims.cp.objects.CPNode#getXML(java.lang.StringBuilder)
-	 */
-	public void buildDocument(DefaultElement parent) {
+	@Override
+	public void buildDocument(Element parentEl) {
 		// String base = "";
 		// if(xmlbase != null && !xmlbase.equals("")) base="
 		// xml:base=\""+xmlbase+"\"";
@@ -195,7 +189,7 @@ public class CPResource extends DefaultElement implements CPNode {
 			dep.buildDocument(resourceElement);
 		}
 
-		parent.add(resourceElement);
+		parentEl.add(resourceElement);
 	}
 
 	// *** CP manipulations ***
@@ -290,14 +284,13 @@ public class CPResource extends DefaultElement implements CPNode {
 		return dependencies.iterator();
 	}
 
-	/**
-	 * @see org.olat.ims.cp.objects.CPNode#getElementByIdentifier(java.lang.String)
-	 */
+	@Override
 	public DefaultElement getElementByIdentifier(String id) {
 		if (identifier.equals(id)) return this;
 		return null;
 	}
 
+	@Override
 	public int getPosition() {
 		return position;
 	}
@@ -324,6 +317,7 @@ public class CPResource extends DefaultElement implements CPNode {
 		this.xmlbase = xmlBase;
 	}
 
+	@Override
 	public void setPosition(int pos) {
 		position = pos;
 	}

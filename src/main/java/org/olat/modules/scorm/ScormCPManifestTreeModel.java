@@ -38,6 +38,7 @@ import java.util.Map;
 
 import org.dom4j.Document;
 import org.dom4j.Element;
+import org.dom4j.Node;
 import org.dom4j.XPath;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
@@ -53,13 +54,13 @@ import org.olat.ims.resources.IMSEntityResolver;
 public class ScormCPManifestTreeModel extends GenericTreeModel {
 
 	private Element rootElement;
-	private Map<String,String>	nsuris = new HashMap<String,String>(2);
-	private Map<String,GenericTreeNode> hrefToTreeNode = new HashMap<String,GenericTreeNode>();
+	private Map<String,String>	nsuris = new HashMap<>(2);
+	private Map<String,GenericTreeNode> hrefToTreeNode = new HashMap<>();
 	private Map<String,String> resources; // keys: resource att 'identifier'; values: resource att 'href'
 	private int nodeId = 0;
 	//number tree ascending in depth first traversal. Keys: GenericTreeNode | values: int
-	private Map<GenericTreeNode,Integer> nodeToId = new HashMap<GenericTreeNode,Integer>();
-	private Map<String,GenericTreeNode> scormIdToNode = new HashMap<String,GenericTreeNode>();
+	private Map<GenericTreeNode,Integer> nodeToId = new HashMap<>();
+	private Map<String,GenericTreeNode> scormIdToNode = new HashMap<>();
 	private Map<String,String> itemStatus;
 
 	/**
@@ -84,7 +85,7 @@ public class ScormCPManifestTreeModel extends GenericTreeModel {
 		if (elResources == null) throw new AssertException("could not find element resources");
 		
 		List<Element> resourcesList = elResources.elements("resource");
-		resources = new HashMap<String,String>(resourcesList.size());
+		resources = new HashMap<>(resourcesList.size());
 		for (Iterator<Element> iter = resourcesList.iterator(); iter.hasNext();) {
 			Element elRes = iter.next();
 			String identVal = elRes.attributeValue("identifier");
@@ -101,7 +102,7 @@ public class ScormCPManifestTreeModel extends GenericTreeModel {
 		/*
 		 * Get all organizations
 		 */
-		List<Element> organizations = meta.selectNodes(rootElement);
+		List<Node> organizations = meta.selectNodes(rootElement);
 		if (organizations.isEmpty()) {
 			throw new AssertException("could not find element organization");
 		}
@@ -123,13 +124,13 @@ public class ScormCPManifestTreeModel extends GenericTreeModel {
 		return hrefToTreeNode.get(href);
 	}
 
-	private GenericTreeNode buildTreeNodes(List<Element> organizations) {
+	private GenericTreeNode buildTreeNodes(List<Node> organizations) {
 		GenericTreeNode gtn = new GenericTreeNode();
 		// 0 is a valid index since List is testet be be not empty above
 		String rootNode = organizations.get(0).getParent().elementText("default");
 		// if only one organization avoid too much hierarchy levels...
 		if (organizations.size() == 1) {
-			return buildNode(organizations.get(0));
+			return buildNode((Element)organizations.get(0));
 		}
 		// FIXME: localize "Content:"
 		gtn.setTitle((rootNode == null) ? "Content:" : rootNode);
@@ -137,7 +138,7 @@ public class ScormCPManifestTreeModel extends GenericTreeModel {
 		gtn.setAccessible(false);
 		
 		for (int i = 0; i < organizations.size(); ++i) {
-			GenericTreeNode gtnchild = buildNode(organizations.get(i));
+			GenericTreeNode gtnchild = buildNode((Element)organizations.get(i));
 			gtn.addChild(gtnchild);
 		}
 		return gtn;
@@ -156,8 +157,8 @@ public class ScormCPManifestTreeModel extends GenericTreeModel {
 			treeNode.setIconCssClass("o_scorm_org");
 			treeNode.setAccessible(false);
 		} else if (item.getName().equals("item")) {
-			scormIdToNode.put(new Integer(nodeId).toString(), treeNode);
-			nodeToId.put(treeNode, new Integer(nodeId));
+			scormIdToNode.put(Integer.toString(nodeId), treeNode);
+			nodeToId.put(treeNode, Integer.valueOf(nodeId));
 			
 			//set node images according to scorm sco status
 			String itemStatusDesc = itemStatus.get(Integer.toString(nodeId));
@@ -193,26 +194,13 @@ public class ScormCPManifestTreeModel extends GenericTreeModel {
 	}
 	
 	private Document loadDocument(File documentF) {
-		FileInputStream in = null;
-		BufferedInputStream bis = null;
 		Document doc = null;
-		try {
-			in = new FileInputStream(documentF);
-			bis = new BufferedInputStream(in);
+		try(FileInputStream in = new FileInputStream(documentF);
+				BufferedInputStream bis = new BufferedInputStream(in)) {
 			XMLParser xmlParser = new XMLParser(new IMSEntityResolver());
 			doc = xmlParser.parse(bis, false);
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			throw new OLATRuntimeException(ScormCPManifestTreeModel.class, "could not read and parse from file "+documentF.getAbsolutePath(),e);
-		}
-		finally {
-			try {
-				if (in != null)	 in.close();
-				if (bis != null) bis.close();
-			}
-			catch (Exception e) {
-				// we did our best to close the inputStream
-			}
 		}
 		return doc;
 	}
@@ -231,8 +219,7 @@ public class ScormCPManifestTreeModel extends GenericTreeModel {
 	 * @return an uri that points to the ressource identified by a flat id
 	 */
 	public TreeNode getNodeByScormItemId(String itemId) {
-		TreeNode node = scormIdToNode.get(itemId);
-		return node;
+		return scormIdToNode.get(itemId);
 	}
 	
 	/**
@@ -241,5 +228,4 @@ public class ScormCPManifestTreeModel extends GenericTreeModel {
 	public Map<String,GenericTreeNode> getScormIdToNodeRelation(){
 		return scormIdToNode;
 	}
-
 }

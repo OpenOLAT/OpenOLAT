@@ -39,6 +39,7 @@ import java.util.List;
 import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.Element;
+import org.dom4j.Node;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.PathUtils;
@@ -83,8 +84,7 @@ public class TestFileResource extends FileResource {
 			XMLParser xmlParser = new XMLParser(new IMSEntityResolver());
 			Document doc = xmlParser.parse(in, true);
 			ParserManager parser = new ParserManager();
-			QTIDocument document = (QTIDocument)parser.parse(doc);
-			return document;
+			return (QTIDocument)parser.parse(doc);
 		} catch (Exception e) {			
 			log.error("Exception when parsing input QTI input stream for ", e);
 			return null;
@@ -137,7 +137,7 @@ public class TestFileResource extends FileResource {
 			boolean validType = false;
 			boolean validScore = true;
 			
-			List assessment = doc.selectNodes("questestinterop/assessment");
+			List<Node> assessment = doc.selectNodes("questestinterop/assessment");
 			if(assessment.size() == 1) {
 				Object assessmentObj = assessment.get(0);
 				if(assessmentObj instanceof Element) {
@@ -148,8 +148,8 @@ public class TestFileResource extends FileResource {
 					}
 
 					// check if this is marked as test
-					List metas = assessmentEl.selectNodes("qtimetadata/qtimetadatafield");
-					for (Iterator iter = metas.iterator(); iter.hasNext();) {
+					List<Node> metas = assessmentEl.selectNodes("qtimetadata/qtimetadatafield");
+					for (Iterator<Node> iter = metas.iterator(); iter.hasNext();) {
 						Element el_metafield = (Element) iter.next();
 						Element el_label = (Element) el_metafield.selectSingleNode("fieldlabel");
 						String label = el_label.getText();
@@ -164,10 +164,10 @@ public class TestFileResource extends FileResource {
 					}
 			
 					// check if at least one section with one item
-					List<Element> sectionItems = assessmentEl.selectNodes("section/item");
-					if (sectionItems.size() > 0) {
-						for (Element it : sectionItems) {
-							List<?> sv = it.selectNodes("resprocessing/outcomes/decvar[@varname='SCORE']");
+					List<Node> sectionItems = assessmentEl.selectNodes("section/item");
+					if (!sectionItems.isEmpty()) {
+						for (Node it : sectionItems) {
+							List<Node> sv = it.selectNodes("resprocessing/outcomes/decvar[@varname='SCORE']");
 							// the QTIv1.2 system relies on the SCORE variable of items
 							if (sv.size() != 1) {
 								validScore &= false;

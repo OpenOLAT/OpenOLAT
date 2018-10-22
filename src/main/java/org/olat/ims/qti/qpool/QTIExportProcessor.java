@@ -203,14 +203,12 @@ public class QTIExportProcessor {
 	 */
 	private void collectResourcesInMatText(Element el, VFSContainer container, ItemsAndMaterials materials) {
 		//mattext
-		@SuppressWarnings("unchecked")
-		List<Element> mattextList = el.selectNodes(".//mattext");
-		for(Element mat:mattextList) {
+		List<Node> mattextList = el.selectNodes(".//mattext");
+		for(Node matNode:mattextList) {
+			Element mat = (Element)matNode;
 			Attribute texttypeAttr = mat.attribute("texttype");
-			String texttype = texttypeAttr.getValue();
-			if("text/html".equals(texttype)) {
-				@SuppressWarnings("unchecked")
-				List<Node> childElList = new ArrayList<Node>(mat.content());
+			if(texttypeAttr != null && "text/html".equals(texttypeAttr.getValue())) {
+				List<Node> childElList = new ArrayList<>(mat.content());
 				for(Node childEl:childElList) {
 					mat.remove(childEl);
 				}
@@ -243,15 +241,15 @@ public class QTIExportProcessor {
 		}
 	}
 	
-	@SuppressWarnings("unchecked")
 	private void collectResourcesInMatMedias(Element el, VFSContainer container, ItemsAndMaterials materials) {
 		//matimage uri
-		List<Element> matList = new ArrayList<Element>();
+		List<Node> matList = new ArrayList<>();
 		matList.addAll(el.selectNodes(".//matimage"));
 		matList.addAll(el.selectNodes(".//mataudio"));
 		matList.addAll(el.selectNodes(".//matvideo"));
 		
-		for(Element mat:matList) {
+		for(Node matNode:matList) {
+			Element mat = (Element)matNode;
 			Attribute uriAttr = mat.attribute("uri");
 			String uri = uriAttr.getValue();
 			
@@ -368,8 +366,7 @@ public class QTIExportProcessor {
 	 * @param item
 	 */
 	protected void enrichScoreDontUseIt(Element item) {
-		@SuppressWarnings("unchecked")
-		List<Element> sv = item.selectNodes("./resprocessing/outcomes/decvar[@varname='SCORE']");
+		List<Node> sv = item.selectNodes("./resprocessing/outcomes/decvar[@varname='SCORE']");
 		// the QTIv1.2 system relies on the SCORE variable of items
 		if (sv.isEmpty()) {
 			//create resprocessing if needed

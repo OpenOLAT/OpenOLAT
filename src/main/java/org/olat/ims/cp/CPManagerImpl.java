@@ -33,7 +33,6 @@ import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 
-import org.apache.commons.io.IOUtils;
 import org.dom4j.tree.DefaultDocument;
 import org.dom4j.tree.DefaultElement;
 import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
@@ -118,22 +117,15 @@ public class CPManagerImpl extends CPManager {
 				configXml.delete();
 			}
 		} else {
-			OutputStream out = null;
-			try {
-				out = new FileOutputStream(configXml);
+			try(OutputStream out = new FileOutputStream(configXml)) {
 				configXstream.toXML(config, out);
 			} catch (IOException e) {
 				log.error("", e);
-			} finally {
-				IOUtils.closeQuietly(out);
 			}
 		}
 	}
 
-	/**
-	 * 
-	 * @see org.olat.ims.cp.CPManager#load(org.olat.core.util.vfs.VFSContainer)
-	 */
+	@Override
 	public ContentPackage load(VFSContainer directory, OLATResourceable ores) {
 		XMLParser parser = new XMLParser();
 		ContentPackage cp;
@@ -167,9 +159,7 @@ public class CPManagerImpl extends CPManager {
 		return cp;
 	}
 
-	/**
-	 * @see org.olat.ims.cp.CPManager#createNewCP(org.olat.core.id.OLATResourceable)
-	 */
+	@Override
 	public ContentPackage createNewCP(OLATResourceable ores, String initalPageTitle) {
 		// copy template cp to new repo-location
 		if (copyTemplCP(ores)) {
@@ -231,6 +221,7 @@ public class CPManagerImpl extends CPManager {
 		return orga;
 	}
 
+	@Override
 	public boolean isSingleUsedResource(CPResource res, ContentPackage cp) {
 		return cp.isSingleUsedResource(res);
 	}
@@ -250,73 +241,48 @@ public class CPManagerImpl extends CPManager {
 		cp.updatePage(page);
 	}
 
-	/**
-	 * @see org.olat.ims.cp.CPManager#addElement(org.olat.ims.cp.ContentPackage,
-	 *      org.dom4j.tree.DefaultElement)
-	 */
+	@Override
 	public boolean addElement(ContentPackage cp, DefaultElement newElement) {
 		return cp.addElement(newElement);
 
 	}
 
-	/**
-	 * @see org.olat.ims.cp.CPManager#addElement(org.olat.ims.cp.ContentPackage,
-	 *      org.dom4j.tree.DefaultElement, java.lang.String)
-	 */
+	@Override
 	public boolean addElement(ContentPackage cp, DefaultElement newElement, String parentIdentifier, int position) {
 		return cp.addElement(newElement, parentIdentifier, position);
 	}
 
-	/**
-	 * 
-	 * @see org.olat.ims.cp.CPManager#addElementAfter(org.olat.ims.cp.ContentPackage,
-	 *      org.dom4j.tree.DefaultElement, java.lang.String)
-	 */
+	@Override
 	public boolean addElementAfter(ContentPackage cp, DefaultElement newElement, String identifier) {
 		return cp.addElementAfter(newElement, identifier);
 	}
 
-	/**
-	 * 
-	 * @see org.olat.ims.cp.CPManager#removeElement(org.olat.ims.cp.ContentPackage,
-	 *      java.lang.String)
-	 */
+	@Override
 	public void removeElement(ContentPackage cp, String identifier, boolean deleteResource) {
 		cp.removeElement(identifier, deleteResource);
 	}
 
-	/**
-	 * @see org.olat.ims.cp.CPManager#moveElement(org.olat.ims.cp.ContentPackage,
-	 *      java.lang.String, java.lang.String, int)
-	 */
+	@Override
 	public void moveElement(ContentPackage cp, String nodeID, String newParentID, int position) {
 		cp.moveElement(nodeID, newParentID, position);
 	}
 
-	/**
-	 * 
-	 * @see org.olat.ims.cp.CPManager#copyElement(org.olat.ims.cp.ContentPackage,
-	 *      java.lang.String)
-	 */
+	@Override
 	public String copyElement(ContentPackage cp, String sourceID) {
 		return cp.copyElement(sourceID, sourceID);
 	}
 
-	/**
-	 * @see org.olat.ims.cp.CPManager#getDocument(org.olat.ims.cp.ContentPackage)
-	 */
+	@Override
 	public DefaultDocument getDocument(ContentPackage cp) {
 		return cp.getDocument();
 	}
 
+	@Override
 	public String getItemTitle(ContentPackage cp, String itemID) {
 		return cp.getItemTitle(itemID);
 	}
 
-	/**
-	 * @see org.olat.ims.cp.CPManager#getElementByIdentifier(org.olat.ims.cp.ContentPackage,
-	 *      java.lang.String)
-	 */
+	@Override
 	public DefaultElement getElementByIdentifier(ContentPackage cp, String identifier) {
 		return cp.getElementByIdentifier(identifier);
 	}
@@ -326,34 +292,22 @@ public class CPManagerImpl extends CPManager {
 		return cp.buildTreeDataModel();
 	}
 
-	/**
-	 * 
-	 * @see org.olat.ims.cp.CPManager#getFirstOrganizationInManifest(org.olat.ims.cp.ContentPackage)
-	 */
 	@Override
 	public CPOrganization getFirstOrganizationInManifest(ContentPackage cp) {
 		return cp.getFirstOrganizationInManifest();
 	}
 
-	/**
-	 * 
-	 * @see org.olat.ims.cp.CPManager#getFirstPageToDisplay(org.olat.ims.cp.ContentPackage)
-	 */
 	@Override
 	public CPPage getFirstPageToDisplay(ContentPackage cp) {
 		return cp.getFirstPageToDisplay();
 	}
 
-	/**
-	 * @see org.olat.ims.cp.CPManager#WriteToFile(org.olat.ims.cp.ContentPackage)
-	 */
+	@Override
 	public void writeToFile(ContentPackage cp) {
 		cp.writeToFile();
 	}
 
-	/**
-	 * @see org.olat.ims.cp.CPManager#writeToZip(org.olat.ims.cp.ContentPackage)
-	 */
+	@Override
 	public VFSLeaf writeToZip(ContentPackage cp) {
 		OLATResourceable ores = cp.getResourcable();
 		VFSContainer cpRoot = cp.getRootDir();
@@ -372,15 +326,9 @@ public class CPManagerImpl extends CPManager {
 			oldArchive.deleteSilently();//don't versioned the zip
 		}
 		ZipUtil.zip(cpRoot.getItems(), oresRoot.createChildLeaf(zipFileName), true);
-		VFSLeaf zip = (VFSLeaf) oresRoot.resolve(zipFileName);
-		return zip;
+		return (VFSLeaf) oresRoot.resolve(zipFileName);
 	}
 
-	/**
-	 * 
-	 * @see org.olat.ims.cp.CPManager#getPageByItemId(org.olat.ims.cp.ContentPackage,
-	 *      java.lang.String)
-	 */
 	@Override
 	public String getPageByItemId(ContentPackage cp, String itemIdentifier) {
 		return cp.getPageByItemId(itemIdentifier);
@@ -415,5 +363,4 @@ public class CPManagerImpl extends CPManager {
 
 		return true;
 	}
-
 }

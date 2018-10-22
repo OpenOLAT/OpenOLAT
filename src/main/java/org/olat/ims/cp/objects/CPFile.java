@@ -29,6 +29,7 @@ package org.olat.ims.cp.objects;
 import java.util.Iterator;
 import java.util.List;
 
+import org.dom4j.Element;
 import org.dom4j.tree.DefaultElement;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.util.vfs.VFSContainer;
@@ -63,9 +64,8 @@ public class CPFile extends DefaultElement implements CPNode {
 	 * 
 	 * @param me
 	 * @param xmlBase xmlBase-attribute of the parental resource-element
-	 * @param packageFolder TODO
 	 */
-	public CPFile(DefaultElement me, String xmlBase, VFSContainer rootDir) {
+	public CPFile(Element me, String xmlBase, VFSContainer rootDir) {
 		super(me.getName());
 		setContent(me.content());
 		this.href = me.attributeValue(CPCore.HREF);
@@ -87,9 +87,7 @@ public class CPFile extends DefaultElement implements CPNode {
 		this.file = file;
 	}
 
-	/**
-	 * @see org.dom4j.tree.DefaultElement#clone()
-	 */
+	@Override
 	public Object clone() {
 		CPFile copy = (CPFile) super.clone();
 		// Don't copy metadata, since we don't edit them anyway.
@@ -119,15 +117,12 @@ public class CPFile extends DefaultElement implements CPNode {
 		return path.toString();
 	}
 
-	/**
-	 * 
-	 * @see org.olat.ims.cp.objects.CPNode#buildChildren()
-	 */
+	@Override
 	public void buildChildren() {
-		Iterator<DefaultElement> children = this.elementIterator();
+		Iterator<Element> children = elementIterator();
 		// iterate through children
 		while (children.hasNext()) {
-			DefaultElement child = children.next();
+			Element child = children.next();
 			if (child.getName().equals(CPCore.METADATA)) {
 				// TODO: implement METADATA
 				metadata = new CPMetadata(child);
@@ -136,31 +131,24 @@ public class CPFile extends DefaultElement implements CPNode {
 						new Exception());
 			}
 		}
-		this.clearContent();
+		clearContent();
 		validateElement();
 	}
 
-	/**
-	 * 
-	 * @see org.olat.ims.cp.objects.CPNode#validateElement()
-	 */
+	@Override
 	public boolean validateElement() {
 		if (this.href == null) { throw new OLATRuntimeException(CPOrganizations.class,
 				"Invalid IMS-Manifest (missing \"href\" attribute in <file> element)", new Exception()); }
 		return true;
 	}
 
-	/**
-	 * 
-	 * @see org.olat.ims.cp.objects.CPNode#getXML(java.lang.StringBuilder)
-	 */
-	public void buildDocument(DefaultElement parent) {
+	public void buildDocument(Element parentEl) {
 		DefaultElement fileElement = new DefaultElement(CPCore.FILE);
 		fileElement.addAttribute(CPCore.HREF, href);
 		if (metadata != null) {
 			metadata.buildDocument(fileElement);
 		}
-		parent.add(fileElement);
+		parentEl.add(fileElement);
 	}
 
 	/**
@@ -185,7 +173,7 @@ public class CPFile extends DefaultElement implements CPNode {
 		VFSItemFilter filter = new VFSItemExcludePrefixFilter(unwantedPrefixes);
 		if (container != null) {
 			List<VFSItem> items = container.getItems(filter);
-			if (items == null || items.size() == 0) {
+			if (items == null || !items.isEmpty()) {
 				container.delete();
 			}
 		}
@@ -205,10 +193,12 @@ public class CPFile extends DefaultElement implements CPNode {
 		return file.getName();
 	}
 
+	@Override
 	public int getPosition() {
 		return position;
 	}
 
+	@Override
 	public DefaultElement getElementByIdentifier(String id) {
 		// <file>-elements do not have an identifier and do not have children...
 		return null;

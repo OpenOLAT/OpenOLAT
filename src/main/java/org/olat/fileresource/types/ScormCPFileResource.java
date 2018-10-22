@@ -43,6 +43,7 @@ import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.Namespace;
+import org.dom4j.Node;
 import org.dom4j.XPath;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -127,7 +128,7 @@ public class ScormCPFileResource extends FileResource {
 				return false;
 			}
 			
-			Map<String, Object> nsuris = new HashMap<>(5);
+			Map<String, String> nsuris = new HashMap<>(5);
 			nsuris.put("ns", nsuri);
 			//nsuris.put("adluri", adluri);
 			//we might have a scorm 2004 which we do not yet support
@@ -154,22 +155,22 @@ public class ScormCPFileResource extends FileResource {
 			}
 			XPath itemsXPath = rootElement.createXPath("//ns:item");
 			itemsXPath.setNamespaceURIs(nsuris);
-			List items = itemsXPath.selectNodes(rootElement);
-			if (items.size() == 0) {
+			List<Node> items = itemsXPath.selectNodes(rootElement);
+			if (items.isEmpty()) {
 				return false; // no <item> element.
 			}
 			
 			// check for scorm 2004 simple sequencing stuff which we do not yet support
 			if (seqencingUri != null) {
 					XPath seqencingXPath = rootElement.createXPath("//ns:imsss");
-					List sequences = seqencingXPath.selectNodes(rootElement);
-					if (sequences.size() > 0) {
+					List<Node> sequences = seqencingXPath.selectNodes(rootElement);
+					if (!sequences.isEmpty()) {
 						return false; // seqencing elements found -> scorm 2004
 					}
 			}
 			
-			Set<String> set = new HashSet<String>();
-			for (Iterator iter = items.iterator(); iter.hasNext();) {
+			Set<String> set = new HashSet<>();
+			for (Iterator<Node> iter = items.iterator(); iter.hasNext();) {
 				Element item = (Element) iter.next();
 				String identifier = item.attributeValue("identifier");
 				//check if identifiers are unique, reject if not so
@@ -179,7 +180,7 @@ public class ScormCPFileResource extends FileResource {
 			}
 			
 			
-			for (Iterator iter = items.iterator(); iter.hasNext();) {
+			for (Iterator<Node> iter = items.iterator(); iter.hasNext();) {
 				Element item = (Element) iter.next();
 				String identifierref = item.attributeValue("identifierref");
 				if (identifierref == null) continue;

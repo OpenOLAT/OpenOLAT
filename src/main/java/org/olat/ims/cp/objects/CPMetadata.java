@@ -26,6 +26,7 @@
 
 package org.olat.ims.cp.objects;
 
+import org.dom4j.Element;
 import org.dom4j.tree.DefaultElement;
 import org.olat.ims.cp.CPCore;
 
@@ -48,9 +49,9 @@ public class CPMetadata extends DefaultElement implements CPNode {
 	public static final String STATUS_UNAVAILABLE = "s_3";
 
 	private int position;
-	private DefaultElement parent;
+	private Element parent;
 
-	public CPMetadata(DefaultElement me) {
+	public CPMetadata(Element me) {
 		super(me.getName());
 		setContent(me.content());
 		// TODO: parse xml to LOM-Object!
@@ -63,29 +64,28 @@ public class CPMetadata extends DefaultElement implements CPNode {
 		super(CPCore.METADATA);
 	}
 
+	@Override
 	public void buildChildren() {
 		validateElement();
 	}
 
+	@Override
 	public boolean validateElement() {
 		return true;
 	}
 
-	/**
-	 * 
-	 * @see org.olat.ims.cp.objects.CPNode#buildDocument(org.dom4j.tree.DefaultElement)
-	 */
-	public void buildDocument(DefaultElement parent) {
+	@Override
+	public void buildDocument(Element parentEl) {
 		DefaultElement metaElement = new DefaultElement(CPCore.METADATA);
 		metaElement.setContent(this.content());
-		parent.add(metaElement);
+		parentEl.add(metaElement);
 	}
 
 	/**
 	 * removes this metadata-element from the manfifest
 	 */
 	public void removeFromManifest() {
-		DefaultElement p = getParentElement();
+		Element p = getParentElement();
 
 		if (p instanceof CPManifest) {
 			CPManifest mani = (CPManifest) p;
@@ -107,16 +107,18 @@ public class CPMetadata extends DefaultElement implements CPNode {
 
 	// *** GETTERS ***
 
+	@Override
 	public DefaultElement getElementByIdentifier(String id) {
 		// <metadata>-elements do not have an identifier and do not have children...
 		return null;
 	}
 
+	@Override
 	public int getPosition() {
 		return position;
 	}
 
-	public DefaultElement getParentElement() {
+	public Element getParentElement() {
 		return parent;
 	}
 
@@ -165,6 +167,7 @@ public class CPMetadata extends DefaultElement implements CPNode {
 
 	// *** SETTERS ***
 
+	@Override
 	public void setPosition(int pos) {
 		position = pos;
 	}

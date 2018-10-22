@@ -31,6 +31,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 
+import org.dom4j.Element;
 import org.dom4j.tree.DefaultElement;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
@@ -50,32 +51,31 @@ import org.olat.ims.cp.CPCore;
  */
 public class CPItem extends DefaultElement implements CPNode {
 
+	private static final OLog log = Tracing.createLoggerFor(CPItem.class);
+
 	private String identifier;
 	private String identifierRef;
 	private String title;
 	private CPMetadata metadata;
 
 	private int position;
-	private DefaultElement parent;
+	private Element parent;
 
 	private boolean visible;
 
 	private Vector<CPItem> items;
 	private Vector<String> errors;
 
-	private OLog log;
 
 	/**
 	 * constructor is needed while building the datamodel-tree (parsing XML)
 	 * 
 	 * @param me
 	 */
-	public CPItem(DefaultElement me, DefaultElement parent) {
+	public CPItem(Element me, Element parent) {
 		super(me.getName());
-		items = new Vector<CPItem>();
-		errors = new Vector<String>();
-		log = Tracing.createLoggerFor(this.getClass());
-		// setAttributes(me.attributes());
+		items = new Vector<>();
+		errors = new Vector<>();
 		setContent(me.content());
 		this.parent = parent;
 		this.identifier = me.attributeValue(CPCore.IDENTIFIER);
@@ -91,27 +91,23 @@ public class CPItem extends DefaultElement implements CPNode {
 	 */
 	public CPItem(String identifier) {
 		super(CPCore.ITEM);
-		log = Tracing.createLoggerFor(this.getClass());
 		visible = true;
 		this.identifier = identifier;
 		this.identifierRef = "";
-		items = new Vector<CPItem>();
-		errors = new Vector<String>();
+		items = new Vector<>();
+		errors = new Vector<>();
 	}
 
 	public CPItem() {
 		this(CodeHelper.getGlobalForeverUniqueID());
 	}
 
-	/**
-	 * 
-	 * @see org.olat.ims.cp.objects.CPNode#buildChildren()
-	 */
+	@Override
 	public void buildChildren() {
-		Iterator<DefaultElement> children = this.elementIterator();
+		Iterator<Element> children = elementIterator();
 		// iterate through children
 		while (children.hasNext()) {
-			DefaultElement child = children.next();
+			Element child = children.next();
 			if (child.getName().equals(CPCore.ITEM)) {
 				CPItem item = new CPItem(child, this);
 				item.buildChildren();
@@ -130,10 +126,7 @@ public class CPItem extends DefaultElement implements CPNode {
 		validateElement();
 	}
 
-	/**
-	 * 
-	 * @see org.olat.ims.cp.objects.CPNode#validateElement()
-	 */
+	@Override
 	public boolean validateElement() {
 		if (this.title == null || this.title.equals("")) {
 			errors.add("Invalid IMS-Manifest (missing \"title\" element in item " + this.identifier + " )");
@@ -145,12 +138,9 @@ public class CPItem extends DefaultElement implements CPNode {
 		}
 		return true;
 	}
-
-	/**
-	 * 
-	 * @see org.olat.ims.cp.objects.CPNode#getXML(java.lang.StringBuilder)
-	 */
-	public void buildDocument(DefaultElement parent) {
+	
+	@Override
+	public void buildDocument(Element parentEl) {
 		if(!validateElement()) return;
 		
 		DefaultElement itemElement = new DefaultElement(CPCore.ITEM);
@@ -172,7 +162,7 @@ public class CPItem extends DefaultElement implements CPNode {
 			item.buildDocument(itemElement);
 		}
 
-		parent.add(itemElement);
+		parentEl.add(itemElement);
 
 	}
 
@@ -240,9 +230,7 @@ public class CPItem extends DefaultElement implements CPNode {
 
 	}
 
-	/**
-	 * @see org.dom4j.tree.DefaultElement#clone()
-	 */
+	@Override
 	public Object clone() {
 		CPItem copy = (CPItem) super.clone();
 		copy.setIdentifier(CodeHelper.getGlobalForeverUniqueID());
@@ -301,9 +289,7 @@ public class CPItem extends DefaultElement implements CPNode {
 		return null;
 	}
 
-	/**
-	 * @see org.olat.ims.cp.objects.CPNode#getElementByIdentifier(java.lang.String)
-	 */
+	@Override
 	public DefaultElement getElementByIdentifier(String id) {
 		if (identifier.equals(id)) return this;
 		DefaultElement e;
@@ -327,6 +313,7 @@ public class CPItem extends DefaultElement implements CPNode {
 		return this.identifierRef;
 	}
 
+	@Override
 	public int getPosition() {
 		return position;
 	}
@@ -358,7 +345,7 @@ public class CPItem extends DefaultElement implements CPNode {
 
 	}
 
-	public DefaultElement getParentElement() {
+	public Element getParentElement() {
 		return parent;
 	}
 
@@ -371,7 +358,7 @@ public class CPItem extends DefaultElement implements CPNode {
 	}
 
 	public List<String> getItemIdentifiers() {
-		List<String> ids = new ArrayList<String>();
+		List<String> ids = new ArrayList<>();
 		for (CPItem item : items) {
 			ids.add(item.getIdentifier());
 		}
@@ -385,7 +372,7 @@ public class CPItem extends DefaultElement implements CPNode {
 	 */
 	public Vector<CPItem> getAllItems() {
 
-		Vector<CPItem> allItems = new Vector<CPItem>();
+		Vector<CPItem> allItems = new Vector<>();
 		allItems.addAll(this.getItems());
 		for (Iterator<CPItem> it = items.iterator(); it.hasNext();) {
 			CPItem item = it.next();
@@ -404,7 +391,7 @@ public class CPItem extends DefaultElement implements CPNode {
 	 * @return
 	 */
 	String getLastError() {
-		if (errors.size() > 0) return errors.lastElement();
+		if (!errors.isEmpty()) return errors.lastElement();
 		return null;
 	}
 
@@ -426,6 +413,7 @@ public class CPItem extends DefaultElement implements CPNode {
 		this.visible = visible;
 	}
 
+	@Override
 	public void setPosition(int position) {
 		this.position = position;
 	}

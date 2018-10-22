@@ -27,6 +27,7 @@
 package org.olat.ims.cp.objects;
 
 
+import org.dom4j.Element;
 import org.dom4j.tree.DefaultElement;
 
 
@@ -60,7 +61,7 @@ public interface CPNode {
 	 * This Function is needed to build the DefaultDocument of the ContentPackage
 	 * @param parent
 	 */
-	public void buildDocument(DefaultElement parent);
+	public void buildDocument(Element parent);
 	
 
 	/**

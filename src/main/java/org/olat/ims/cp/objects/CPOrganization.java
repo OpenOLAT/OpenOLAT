@@ -29,6 +29,7 @@ package org.olat.ims.cp.objects;
 import java.util.Iterator;
 import java.util.Vector;
 
+import org.dom4j.Element;
 import org.dom4j.tree.DefaultElement;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.ims.cp.CPCore;
@@ -59,28 +60,23 @@ public class CPOrganization extends DefaultElement implements CPNode {
 	 * 
 	 * @param me
 	 */
-	CPOrganization(DefaultElement me) {
+	CPOrganization(Element me) {
 		super(me.getName());
-		items = new Vector<CPItem>();
-		errors = new Vector<String>();
+		items = new Vector<>();
+		errors = new Vector<>();
 		setAttributes(me.attributes());
 		setContent(me.content());
 
-		this.identifier = me.attributeValue(CPCore.IDENTIFIER);
-		this.structure = me.attributeValue(CPCore.STRUCTURE, "hierarchical");
-//		this.title = me.
-
+		identifier = me.attributeValue(CPCore.IDENTIFIER);
+		structure = me.attributeValue(CPCore.STRUCTURE, "hierarchical");
 	}
 
-	/**
-	 * 
-	 * @see org.olat.ims.cp.objects.CPNode#buildChildren()
-	 */
+	@Override
 	public void buildChildren() {
-		Iterator<DefaultElement> children = this.elementIterator();
+		Iterator<Element> children = this.elementIterator();
 		// iterate through children
 		while (children.hasNext()) {
-			DefaultElement child = children.next();
+			Element child = children.next();
 			if (child.getName().equals(CPCore.ITEM)) {
 				CPItem item = new CPItem(child, this);
 				item.setParentElement(this);
@@ -101,20 +97,14 @@ public class CPOrganization extends DefaultElement implements CPNode {
 		validateElement();
 	}
 
-	/**
-	 * 
-	 * @see org.olat.ims.cp.objects.CPNode#validateElement()
-	 */
+	@Override
 	public boolean validateElement() {
 		// nothing to validate
 		return true;
 	}
 
-	/**
-	 * 
-	 * @see org.olat.ims.cp.objects.CPNode#getXML(java.lang.StringBuilder)
-	 */
-	public void buildDocument(DefaultElement parent) {
+	@Override
+	public void buildDocument(Element parent) {
 
 		DefaultElement orgaElement = new DefaultElement(CPCore.ORGANIZATION);
 
@@ -238,9 +228,7 @@ public class CPOrganization extends DefaultElement implements CPNode {
 		return structure;
 	}
 
-	/**
-	 * @see org.olat.ims.cp.objects.CPNode#getElementByIdentifier(java.lang.String)
-	 */
+	@Override
 	public DefaultElement getElementByIdentifier(String id) {
 		if (identifier.equals(id)) return this;
 
@@ -253,6 +241,7 @@ public class CPOrganization extends DefaultElement implements CPNode {
 		return null;
 	}
 
+	@Override
 	public int getPosition() {
 		return position;
 	}
@@ -264,13 +253,12 @@ public class CPOrganization extends DefaultElement implements CPNode {
 	 * @return vector
 	 */
 	public Vector<CPItem> getAllItems() {
-		Vector<CPItem> allItems = new Vector<CPItem>();
+		Vector<CPItem> allItems = new Vector<>();
 		for (Iterator<CPItem> itItem = items.iterator(); itItem.hasNext();) {
 			CPItem item = itItem.next();
 			allItems.add(item);
 			allItems.addAll(item.getAllItems());
 		}
-		// System.out.println("item count: "+allItems.size());
 		return allItems;
 	}
 
@@ -281,7 +269,7 @@ public class CPOrganization extends DefaultElement implements CPNode {
 	 * @return
 	 */
 	public CPItem getFirstItem() {
-		if (items.size() > 0) return items.firstElement();
+		if (!items.isEmpty()) return items.firstElement();
 		return null;
 	}
 
@@ -308,6 +296,7 @@ public class CPOrganization extends DefaultElement implements CPNode {
 
 	// *** SETTERS ***
 
+	@Override
 	public void setPosition(int pos) {
 		position = pos;
 	}

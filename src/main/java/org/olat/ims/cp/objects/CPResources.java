@@ -27,8 +27,10 @@
 package org.olat.ims.cp.objects;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.Vector;
 
+import org.dom4j.Element;
 import org.dom4j.tree.DefaultElement;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
@@ -48,22 +50,23 @@ import org.olat.ims.cp.CPCore;
  */
 public class CPResources extends DefaultElement implements CPNode {
 
-	private Vector<CPResource> resources;
+	private static final OLog log = Tracing.createLoggerFor(CPResources.class);
+	
+	private List<CPResource> resources;
 	private CPManifest parent;
 
-	private OLog log;
-	private Vector<String> errors;
+	private List<String> errors;
 
 	/**
 	 * this constructor i used when building up the cp (parsing XML manifest)
 	 * 
 	 * @param me
 	 */
-	public CPResources(DefaultElement me) {
+	public CPResources(Element me) {
 		super(me.getName());
-		log = Tracing.createLoggerFor(this.getClass());
-		resources = new Vector<CPResource>();
-		errors = new Vector<String>();
+		
+		resources = new Vector<>();
+		errors = new Vector<>();
 
 		setAttributes(me.attributes());
 		setContent(me.content());
@@ -74,20 +77,16 @@ public class CPResources extends DefaultElement implements CPNode {
 	 */
 	public CPResources() {
 		super(CPCore.RESOURCES);
-		log = Tracing.createLoggerFor(this.getClass());
-		resources = new Vector<CPResource>();
-		errors = new Vector<String>();
+		resources = new Vector<>();
+		errors = new Vector<>();
 	}
 
-	/**
-	 * 
-	 * @see org.olat.ims.cp.objects.CPNode#buildChildren()
-	 */
+	@Override
 	public void buildChildren() {
-		Iterator<DefaultElement> children = this.elementIterator();
+		Iterator<Element> children = this.elementIterator();
 		// iterate through children
 		while (children.hasNext()) {
-			DefaultElement child = children.next();
+			Element child = children.next();
 			if (child.getName().equals(CPCore.RESOURCE)) {
 				CPResource res = new CPResource(child);
 				res.setParentElement(this);
@@ -102,29 +101,27 @@ public class CPResources extends DefaultElement implements CPNode {
 		validateElement();
 	}
 
-	/**
-	 * 
-	 * @see org.olat.ims.cp.objects.CPNode#validateElement()
-	 */
+	@Override
 	public boolean validateElement() {
 		// nothing to validate
 		return true;
 	}
 
-	public void buildDocument(DefaultElement parent) {
+	@Override
+	public void buildDocument(Element parentEl) {
 		DefaultElement resourceElement = new DefaultElement(CPCore.RESOURCES);
 
 		for (Iterator<CPResource> itResources = resources.iterator(); itResources.hasNext();) {
 			CPResource res = itResources.next();
 			res.buildDocument(resourceElement);
 		}
-		parent.add(resourceElement);
+		parentEl.add(resourceElement);
 	}
 
 	// *** CP manipulation ***
 
 	/**
-	 * Adds a new Resouce - element to the end of the resources-vector
+	 * Adds a new Resource - element to the end of the resources-vector
 	 */
 	public void addResource(CPResource newResource) {
 		newResource.setParentElement(this);
@@ -149,7 +146,7 @@ public class CPResources extends DefaultElement implements CPNode {
 
 	// ***GETTERS ***
 
-	public Vector<CPResource> getResources() {
+	public List<CPResource> getResources() {
 		return resources;
 	}
 
@@ -176,9 +173,7 @@ public class CPResources extends DefaultElement implements CPNode {
 		return null;
 	}
 
-	/**
-	 * @see org.olat.ims.cp.objects.CPNode#getElementByIdentifier(java.lang.String)
-	 */
+	@Override
 	public DefaultElement getElementByIdentifier(String id) {
 		DefaultElement e;
 		for (Iterator<CPResource> itResources = resources.iterator(); itResources.hasNext();) {
@@ -189,6 +184,7 @@ public class CPResources extends DefaultElement implements CPNode {
 		return null;
 	}
 
+	@Override
 	public int getPosition() {
 		// there is only one <resources> element
 		return 0;
@@ -207,8 +203,8 @@ public class CPResources extends DefaultElement implements CPNode {
 	 * 
 	 * @return
 	 */
-	public Vector<CPDependency> getAllDependencies() {
-		Vector<CPDependency> deps = new Vector<CPDependency>();
+	public List<CPDependency> getAllDependencies() {
+		List<CPDependency> deps = new Vector<>();
 		for (CPResource res : getResources()) {
 			deps.addAll(res.getDependencies());
 		}
@@ -220,8 +216,8 @@ public class CPResources extends DefaultElement implements CPNode {
 	 * 
 	 * @return
 	 */
-	public Vector<CPFile> getAllFiles() {
-		Vector<CPFile> files = new Vector<CPFile>();
+	public List<CPFile> getAllFiles() {
+		List<CPFile> files = new Vector<>();
 		for (CPResource res : getResources()) {
 			files.addAll(res.getFiles());
 		}
@@ -229,7 +225,7 @@ public class CPResources extends DefaultElement implements CPNode {
 	}
 
 	// *** SETTERS ***
-
+	@Override
 	public void setPosition(int pos) {
 	// there is only one <resources> element
 	}

@@ -31,6 +31,7 @@ import java.util.List;
 
 import org.dom4j.Document;
 import org.dom4j.Element;
+import org.dom4j.Node;
 import org.olat.ims.qti.process.ImsRepositoryResolver;
 import org.olat.ims.qti.process.Resolver;
 import org.olat.repository.RepositoryEntry;
@@ -98,14 +99,13 @@ public class QTIObjectTreeBuilder {
 	public final List<QTIItemObject> getQTIItemObjectList(Resolver resolver) {
 		Document doc = resolver.getQTIDocument();
 		Element root = doc.getRootElement();
-		@SuppressWarnings("unchecked")
-		List<Element> items = root.selectNodes("//item");
-		List<QTIItemObject> itemList = new ArrayList<QTIItemObject>();
-		for (Iterator<Element> iter= items.iterator(); iter.hasNext();) {
-			Element el_item= iter.next();
-			if (el_item.selectNodes(".//response_lid").size() > 0){
+		List<Node> items = root.selectNodes("//item");
+		List<QTIItemObject> itemList = new ArrayList<>();
+		for (Iterator<Node> iter= items.iterator(); iter.hasNext();) {
+			Element el_item = (Element)iter.next();
+			if (!el_item.selectNodes(".//response_lid").isEmpty()){
 				itemList.add(new ItemWithResponseLid(el_item));
-			}else if (el_item.selectNodes(".//response_str").size() > 0){
+			} else if (!el_item.selectNodes(".//response_str").isEmpty()){
 				itemList.add(new ItemWithResponseStr(el_item));
 			}
 		}

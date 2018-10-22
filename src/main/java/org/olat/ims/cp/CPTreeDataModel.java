@@ -32,8 +32,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.dom4j.Element;
 import org.dom4j.tree.DefaultElement;
-import org.json.JSONException;
 import org.olat.core.gui.components.tree.DnDTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
@@ -60,7 +60,8 @@ public class CPTreeDataModel extends GenericTreeModel implements DnDTreeModel {
 	private static final OLog log = Tracing.createLoggerFor(CPTreeDataModel.class);
 	
 	private final ContentPackage cp;
-	private Map<String, String> map, reverseMap;
+	private Map<String, String> map;
+	private Map<String, String> reverseMap;
 
 	private int nodeCounter;
 	private final String rootNodeId;
@@ -77,8 +78,8 @@ public class CPTreeDataModel extends GenericTreeModel implements DnDTreeModel {
 		this.cp = cp;
 		this.rootNodeId = rootNodeId;
 		nodeCounter = 1;
-		map = new Hashtable<String, String>();
-		reverseMap = new Hashtable<String, String>();
+		map = new Hashtable<>();
+		reverseMap = new Hashtable<>();
 		map.put(rootNodeId, orgaIdentifyer);
 		reverseMap.put(orgaIdentifyer, rootNodeId);
 		update();
@@ -102,8 +103,7 @@ public class CPTreeDataModel extends GenericTreeModel implements DnDTreeModel {
 	 * @return
 	 */
 	public String getIdentifierForNodeID(String nodeID) {
-		String identifier = map.get(nodeID);
-		return identifier;
+		return map.get(nodeID);
 	}
 
 	/**
@@ -166,7 +166,7 @@ public class CPTreeDataModel extends GenericTreeModel implements DnDTreeModel {
 	}
 	
 	public List<TreeNode> getChildrenFor(String nodeId) {
-		List<TreeNode> nodeList = new ArrayList<TreeNode>();
+		List<TreeNode> nodeList = new ArrayList<>();
 		nodeId = getIdentifierForNodeID(nodeId);
 		DefaultElement el = cp.getElementByIdentifier(nodeId);
 		if (el == null) {
@@ -190,14 +190,14 @@ public class CPTreeDataModel extends GenericTreeModel implements DnDTreeModel {
 				// element is not item nor orga -> ergo wrong element
 				log.info("unknown element while building treemodel for gui (id: " + nodeId + ")");
 			}
-		} catch (JSONException e) {
+		} catch (Exception e) {
 			log.error("error while building treemodel");
 		}
 
 		return nodeList;
 	}
 	
-	private void addItem(List<TreeNode> nodeList, CPItem item) throws JSONException {
+	private void addItem(List<TreeNode> nodeList, CPItem item) {
 		String nId = putIdentifierForNodeID(item.getIdentifier());
 		GenericTreeNode child = new GenericTreeNode(nId, item.getTitle(), item);
 		child.setIconCssClass("o_cp_item");
@@ -213,57 +213,6 @@ public class CPTreeDataModel extends GenericTreeModel implements DnDTreeModel {
 	public boolean isNodeDraggable(TreeNode node) {
 		return !rootNodeId.equals(node.getIdent());
 	}
-	
-/*
-	@Override
-	public List<AjaxTreeNode> getChildrenFor(String nodeId) {
-
-		CPManagerImpl cpMgm = (CPManagerImpl) CPManager.getInstance();
-		Vector<AjaxTreeNode> nodeList = new Vector<AjaxTreeNode>();
-
-		nodeId = getIdentifierForNodeID(nodeId);
-		DefaultElement el = cpMgm.getElementByIdentifier(cp, nodeId);
-		if (el == null) {
-			log.info("element not found (id " + nodeId + ")");
-			return nodeList;
-		}
-		try {
-			if (el.getName().equals(CPCore.ORGANIZATION)) {
-				CPOrganization org = (CPOrganization) el;
-				for (Iterator<CPItem> it = org.getItemIterator(); it.hasNext();) {
-					CPItem item = it.next();
-					addItem(nodeList, item);
-				}
-			} else if (el.getName().equals(CPCore.ITEM)) {
-				CPItem pItem = (CPItem) el;
-				for (Iterator<CPItem> it = pItem.getItemIterator(); it.hasNext();) {
-					CPItem item = it.next();
-					addItem(nodeList, item);
-				}
-			} else {
-				// element is not item nor orga -> ergo wrong element
-				log.info("unknown element while building treemodel for gui (id: " + nodeId + ")");
-			}
-		} catch (JSONException e) {
-			log.error("error while building treemodel");
-		}
-
-		return nodeList;
-	}
-
-	private void addItem(Vector<AjaxTreeNode> nodeList, CPItem item) throws JSONException {
-		String nId;
-		nId = putIdentifierForNodeID(item.getIdentifier());
-		AjaxTreeNode child = new AjaxTreeNode(nId, item.getTitle());
-		if (item.getItems().size() == 0) {
-			// Expand the leaf in order to get rid of the plus sign in front of it.
-			child.put(AjaxTreeNode.CONF_EXPANDED, true);
-		} 
-		child.put(AjaxTreeNode.CONF_ICON_CSS_CLASS, "o_cp_item");
-		nodeList.add(child);
-	}*/
-
-
 
 	/**
 	 * Returns the path of the given item in the tree.
@@ -276,7 +225,7 @@ public class CPTreeDataModel extends GenericTreeModel implements DnDTreeModel {
 	 * @return The path to the node in the tree
 	 */
 	public String getPath(String identifier) {
-		StringBuffer path = new StringBuffer();
+		StringBuilder path = new StringBuilder(128);
 		DefaultElement elem = cp.getElementByIdentifier(identifier);
 		if (elem instanceof CPOrganization) {
 			// Special case. Somehow, the root path should be an empty string.
@@ -293,12 +242,12 @@ public class CPTreeDataModel extends GenericTreeModel implements DnDTreeModel {
 	 * @param slash
 	 * @param elem
 	 */
-	private void addElementToPath(DefaultElement elem, StringBuffer path) {
+	private void addElementToPath(Element elem, StringBuilder path) {
 		final String slash = "/";
 		if (elem instanceof CPItem) {
 			CPItem item = (CPItem) elem;
 			path.insert(0, slash).insert(1, getNodeIDForIdentifier(item.getIdentifier()));
-			DefaultElement parent = item.getParentElement();
+			Element parent = item.getParentElement();
 			if (parent != null) addElementToPath(parent, path);
 		} else if (elem instanceof CPOrganization) {
 			CPOrganization item = (CPOrganization) elem;

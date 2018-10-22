@@ -26,6 +26,7 @@
 
 package org.olat.ims.cp.objects;
 
+import org.dom4j.Element;
 import org.dom4j.tree.DefaultElement;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.ims.cp.CPCore;
@@ -52,7 +53,7 @@ public class CPDependency extends DefaultElement implements CPNode {
 	 * 
 	 * @param me
 	 */
-	public CPDependency(DefaultElement me) {
+	public CPDependency(Element me) {
 		super(me.getName());
 		identifierRef = me.attributeValue(CPCore.IDENTIFIERREF);
 		if (identifierRef.equals(null)) { throw new OLATRuntimeException(CPOrganizations.class,
@@ -79,19 +80,14 @@ public class CPDependency extends DefaultElement implements CPNode {
 		this.identifierRef = identifierRef;
 	}
 
-	/**
-	 * 
-	 * @see org.olat.ims.cp.objects.CPNode#getXML(java.lang.StringBuilder)
-	 */
-	public void buildDocument(DefaultElement parent) {
+	@Override
+	public void buildDocument(Element parentEl) {
 		DefaultElement depElement = new DefaultElement(CPCore.DEPENDENCY);
 		depElement.addAttribute(CPCore.IDENTIFIERREF, identifierRef);
-		parent.add(depElement);
+		parentEl.add(depElement);
 	}
 
-	/**
-	 * @see org.olat.ims.cp.objects.CPNode#validateElement()
-	 */
+	@Override
 	public boolean validateElement() {
 		if (this.identifierRef == null || this.identifierRef.equals("")) { throw new OLATRuntimeException(CPOrganizations.class,
 				"Invalid IMS-Manifest (missing \"identifierref\" attribute in dependency element )", new Exception()); }
@@ -104,16 +100,18 @@ public class CPDependency extends DefaultElement implements CPNode {
 		return identifierRef;
 	}
 
+	@Override
 	public int getPosition() {
 		return position;
 	}
 
-
+	@Override
 	public void buildChildren() {
 	// dependency has no children
 
 	}
 
+	@Override
 	public DefaultElement getElementByIdentifier(String id) {
 		// <dependency>-elements do not have an identifier and do not have
 		// children...
@@ -129,7 +127,8 @@ public class CPDependency extends DefaultElement implements CPNode {
 	public void setIdentifierRef(String identifierRef) {
 		this.identifierRef = identifierRef;
 	}
-	
+
+	@Override
 	public void setPosition(int pos) {
 		position = pos;
 	}

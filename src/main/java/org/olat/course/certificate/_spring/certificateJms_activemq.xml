@@ -6,7 +6,8 @@
 
 	<!-- JMS Stuff for ActiveMQ -->
 	<bean id="certificateConnectionFactory" class="org.apache.activemq.spring.ActiveMQConnectionFactory" lazy-init="true">
-		<property name="brokerURL" value="${certificate.broker.url}" /> 
+		<property name="brokerURL" value="${certificate.broker.url}" />
+		<property name="trustAllPackages" value="true"/>
 	</bean>
 
 	<bean id="certificateQueue" class="org.apache.activemq.command.ActiveMQQueue" lazy-init="true">

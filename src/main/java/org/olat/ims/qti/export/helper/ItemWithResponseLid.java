@@ -66,7 +66,7 @@ public class ItemWithResponseLid implements QTIItemObject {
 		this.itemTitle = el_item.attributeValue("title");
 		this.itemIdent = el_item.attributeValue("ident");
 
-		List<Element> responseLids = el_item.selectNodes(".//response_lid");
+		List<Node> responseLids = el_item.selectNodes(".//response_lid");
 
 		// Question text
 		// CELFI#107		
@@ -74,11 +74,11 @@ public class ItemWithResponseLid implements QTIItemObject {
 		if (temp != null) this.questionText = ((Element) temp).getTextTrim();
 		
 		int i = 1;
-		for (Iterator<Element> itresponseLid = responseLids.iterator(); itresponseLid.hasNext();) {	
-			Element el_responseLid = itresponseLid.next();
+		for (Iterator<Node> itresponseLid = responseLids.iterator(); itresponseLid.hasNext();) {	
+			Element el_responseLid = (Element)itresponseLid.next();
 			isSingle = el_responseLid.attributeValue("rcardinality").equals("Single");
 			
-			List<Element> labels = el_responseLid.selectNodes(".//response_label");
+			List<Node> labels = el_responseLid.selectNodes(".//response_label");
 			Element decvar = (Element) el_item.selectSingleNode(".//outcomes/decvar");
 			if (decvar != null) {
 				this.itemMinValue = decvar.attributeValue("minvalue");
@@ -86,15 +86,15 @@ public class ItemWithResponseLid implements QTIItemObject {
 				this.itemCutValue = decvar.attributeValue("cutvalue");
 			}
 			
-			for (Iterator<Element> itlabel = labels.iterator(); itlabel.hasNext();) {
-				Element el_label = itlabel.next();
+			for (Iterator<Node> itlabel = labels.iterator(); itlabel.hasNext();) {
+				Element el_label = (Element)itlabel.next();
 				String sIdent = el_label.attributeValue("ident");
 				responseLabelIdents.add(sIdent);
 				
-				List<Element> materials = el_label.selectNodes(".//mattext");
+				List<Node> materials = el_label.selectNodes(".//mattext");
 				StringBuilder mat = new StringBuilder();
-				for (Iterator<Element> itmaterial = materials.iterator(); itmaterial.hasNext();) {
-					Element el_material = itmaterial.next();
+				for (Iterator<Node> itmaterial = materials.iterator(); itmaterial.hasNext();) {
+					Element el_material = (Element)itmaterial.next();
 					mat.append(el_material.getText());
 				}
 				responseLabelMaterials.add(mat.length() == 0 ? "IDENT: " + sIdent : mat.toString());				

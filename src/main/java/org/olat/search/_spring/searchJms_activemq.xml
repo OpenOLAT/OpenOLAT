@@ -2,11 +2,12 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans 
-                        http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+                        http://www.springframework.org/schema/beans/spring-beans.xsd">
 
 	<!-- JMS Stuff for ActiveMQ -->
 	<bean id="searchConnectionFactory" class="org.apache.activemq.spring.ActiveMQConnectionFactory" lazy-init="true">
-		<property name="brokerURL" value="${search.broker.url}" /> 
+		<property name="brokerURL" value="${search.broker.url}" />
+		<property name="trustAllPackages" value="true"/>
 	</bean>
 
 	<bean id="searchQueue" class="org.apache.activemq.command.ActiveMQQueue" lazy-init="true">
@@ -15,7 +16,8 @@
 	
 	
 	<bean id="indexConnectionFactory" class="org.apache.activemq.spring.ActiveMQConnectionFactory" lazy-init="true">
-		<property name="brokerURL" value="${index.broker.url}" /> 
+		<property name="brokerURL" value="${index.broker.url}" />
+		<property name="trustAllPackages" value="true"/>
 	</bean>
 
 	<bean id="indexQueue" class="org.apache.activemq.command.ActiveMQQueue" lazy-init="true">

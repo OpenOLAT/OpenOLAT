@@ -29,6 +29,7 @@ package org.olat.ims.cp.objects;
 import java.util.Iterator;
 import java.util.Vector;
 
+import org.dom4j.Element;
 import org.dom4j.Namespace;
 import org.dom4j.tree.DefaultAttribute;
 import org.dom4j.tree.DefaultDocument;
@@ -51,6 +52,8 @@ import org.olat.ims.cp.CPCore;
  * @author sergio
  */
 public class CPManifest extends DefaultElement implements CPNode {
+	
+	private static final OLog log = Tracing.createLoggerFor(CPManifest.class);
 
 	private static final String DEFAULT_SCHEMALOC = "http://www.imsglobal.org/xsd/imscp_v1p1 imscp_v1p1.xsd http://www.imsglobal.org/xsd/imsmd_v1p2 imsmd_v1p2p2.xsd";
 	private static final String DEFAULT_NMS = "http://www.imsglobal.org/xsd/imsmd_v1p2";
@@ -61,7 +64,6 @@ public class CPManifest extends DefaultElement implements CPNode {
 	private CPCore cp;
 	private CPMetadata metadata;
 
-	private OLog log;
 
 	private Vector<String> errors;
 
@@ -72,8 +74,7 @@ public class CPManifest extends DefaultElement implements CPNode {
 	 */
 	public CPManifest(CPCore cp, DefaultElement me) {
 		super(me.getName());
-		log = Tracing.createLoggerFor(this.getClass());
-		errors = new Vector<String>();
+		errors = new Vector<>();
 		this.identifier = me.attributeValue(CPCore.IDENTIFIER);
 		this.schemaLocation = me.attributeValue(CPCore.SCHEMALOCATION);
 		this.setNamespace(me.getNamespace());
@@ -90,13 +91,12 @@ public class CPManifest extends DefaultElement implements CPNode {
 	 */
 	public CPManifest(CPCore cp, String identifier) {
 		super(CPCore.MANIFEST);
-		log = Tracing.createLoggerFor(this.getClass());
 		this.identifier = identifier;
 		schemaLocation = CPManifest.DEFAULT_SCHEMALOC;
 		setNamespace(new Namespace("imsmd", DEFAULT_NMS));
 		organizations = new CPOrganizations();
 		resources = new CPResources();
-		errors = new Vector<String>();
+		errors = new Vector<>();
 		this.cp = cp;
 	}
 
@@ -104,17 +104,14 @@ public class CPManifest extends DefaultElement implements CPNode {
 		this(cp, CodeHelper.getGlobalForeverUniqueID());
 	}
 
-	/**
-	 * 
-	 * @see org.olat.ims.cp.objects.CPNode#buildChildren()
-	 */
+	@Override
 	public void buildChildren() {
-		Iterator<DefaultElement> children = this.elementIterator();
+		Iterator<Element> children = elementIterator();
 		boolean organizationsAdded = false;
 		boolean resourcesAdded = false;
 
 		while (children.hasNext()) {
-			DefaultElement child = children.next();
+			Element child = children.next();
 			if (child.getName().equals(CPCore.ORGANIZATIONS)) {
 				if (organizationsAdded) errors.add("Invalid IMS-Manifest ( only one <organizations> element is allowed )");
 
@@ -145,6 +142,7 @@ public class CPManifest extends DefaultElement implements CPNode {
 	/**
 	 * checks whether required child-elements are present
 	 */
+	@Override
 	public boolean validateElement() {
 		if (this.organizations == null) {
 			errors.add("Invalid IMS-Manifest ( missing <organizations> element )");
@@ -167,13 +165,13 @@ public class CPManifest extends DefaultElement implements CPNode {
 	 * @return
 	 */
 	public Vector<String> getAllIdentifiers() {
-		Vector<String> ids = new Vector<String>();
+		Vector<String> ids = new Vector<>();
 
 		for (Iterator<CPOrganization> it = organizations.getOrganizationIterator(); it.hasNext();) {
 			CPOrganization org = it.next();
 			ids.add(org.getIdentifier());
 
-			Vector<CPItem> allItems = new Vector<CPItem>();
+			Vector<CPItem> allItems = new Vector<>();
 			for (Iterator<CPItem> itemIt = org.getItemIterator(); itemIt.hasNext();) {
 				CPItem item = itemIt.next();
 				allItems.addAll(item.getAllItems());
@@ -223,10 +221,8 @@ public class CPManifest extends DefaultElement implements CPNode {
 
 	}
 
-	/**
-	 * @see org.olat.ims.cp.objects.CPNode#buildDocument(org.dom4j.tree.DefaultElement)
-	 */
-	public void buildDocument(DefaultElement parent) {
+	@Override
+	public void buildDocument(Element parentEl) {
 	// because the Manifest is the root-element of the document, we need "public
 	// void buildDocument(DefaultDocument doc)" instead...
 	}
@@ -249,9 +245,7 @@ public class CPManifest extends DefaultElement implements CPNode {
 		return metadata;
 	}
 
-	/**
-	 * @see org.olat.ims.cp.objects.CPNode#getElementByIdentifier(java.lang.String)
-	 */
+	@Override
 	public DefaultElement getElementByIdentifier(String id) {
 		if (id.equals(identifier)) return this;
 		if (id.equals(CPCore.ORGANIZATIONS)) return organizations;
@@ -266,6 +260,7 @@ public class CPManifest extends DefaultElement implements CPNode {
 		return e;
 	}
 
+	@Override
 	public int getPosition() {
 		// there is only one <manifest> element
 		return 0;
@@ -280,7 +275,7 @@ public class CPManifest extends DefaultElement implements CPNode {
 	}
 	
 	public String getLastError() {
-		if (errors.size() == 0) {
+		if (errors.isEmpty()) {
 			return organizations.getLastError();
 		} else {
 			return errors.lastElement();
@@ -290,6 +285,7 @@ public class CPManifest extends DefaultElement implements CPNode {
 
 	// *** SETTERS ***
 
+	@Override
 	public void setPosition(int pos) {
 	// there is only one <manifest> element
 	}
