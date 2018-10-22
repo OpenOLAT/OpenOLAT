@@ -83,6 +83,7 @@ public class HeatMapController extends FormBasicController implements Filterable
 			GroupBy.TOPIC_ORGANISATION, GroupBy.TOPIC_CURRICULUM, GroupBy.TOPIC_CURRICULUM_ELEMENT,
 			GroupBy.TOPIC_REPOSITORY);
 	
+	private FormLayoutContainer groupingCont;
 	private SingleSelection groupEl1;
 	private SingleSelection groupEl2;
 	private SingleSelection groupEl3;
@@ -172,21 +173,21 @@ public class HeatMapController extends FormBasicController implements Filterable
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		String groupPage = velocity_root + "/heatmap_grouping.html";
-		FormLayoutContainer grouping = FormLayoutContainer.createCustomFormLayout("grouping", getTranslator(), groupPage);
-		flc.add("grouping", grouping);
+		groupingCont = FormLayoutContainer.createCustomFormLayout("grouping", getTranslator(), groupPage);
+		flc.add("grouping", groupingCont);
 		
-		groupEl1 = uifactory.addDropdownSingleselect("heatmap.group1", grouping, EMPTY_ARRAY, EMPTY_ARRAY);
+		groupEl1 = uifactory.addDropdownSingleselect("heatmap.group1", groupingCont, EMPTY_ARRAY, EMPTY_ARRAY);
 		groupEl1.addActionListener(FormEvent.ONCHANGE);
-		groupEl2 = uifactory.addDropdownSingleselect("heatmap.group2", grouping, EMPTY_ARRAY, EMPTY_ARRAY);
+		groupEl2 = uifactory.addDropdownSingleselect("heatmap.group2", groupingCont, EMPTY_ARRAY, EMPTY_ARRAY);
 		groupEl2.setAllowNoSelection(true);
 		groupEl2.addActionListener(FormEvent.ONCHANGE);
-		groupEl3 = uifactory.addDropdownSingleselect("heatmap.group3", grouping, EMPTY_ARRAY, EMPTY_ARRAY);
+		groupEl3 = uifactory.addDropdownSingleselect("heatmap.group3", groupingCont, EMPTY_ARRAY, EMPTY_ARRAY);
 		groupEl3.setAllowNoSelection(true);
 		groupEl3.addActionListener(FormEvent.ONCHANGE);
 		updateGroupingUI();
 		
 		// Insufficient filter
-		insufficientEl = uifactory.addCheckboxesVertical("heatmap.insufficient", grouping, INSUFFICIENT_KEYS,
+		insufficientEl = uifactory.addCheckboxesVertical("heatmap.insufficient", groupingCont, INSUFFICIENT_KEYS,
 				translateAll(getTranslator(), INSUFFICIENT_KEYS), 1);
 		insufficientEl.addActionListener(FormEvent.ONCHANGE);
 		if (insufficientOnly) {
@@ -201,7 +202,7 @@ public class HeatMapController extends FormBasicController implements Filterable
 	private void updateGroupingUI() {
 		KeyValues groupByKV1 = initGroupByKeyValues(groupEl1);
 		String[] groupKeys1 = groupByKV1.keys();
-		if (multiGroupBy.isNoGroupBy()) {
+		if (multiGroupBy.isNoGroupBy() && groupKeys1.length > 0) {
 			GroupBy groupBy1 = GroupBy.valueOf(groupKeys1[0]);
 			multiGroupBy = MultiGroupBy.of(groupBy1);
 		}
@@ -217,6 +218,9 @@ public class HeatMapController extends FormBasicController implements Filterable
 		groupEl3.setKeysAndValues(groupByKV3.keys(), groupByKV3.values(), null);
 		groupEl3.setVisible(!groupByKV3.isEmpty());
 		selectGroupBy(groupEl3, multiGroupBy.getGroupBy3());
+		
+		boolean groupingVisible = !groupByKV1.isEmpty();
+		groupingCont.setVisible(groupingVisible);
 	}
 	
 	private KeyValues initGroupByKeyValues(SingleSelection groupEl) {
