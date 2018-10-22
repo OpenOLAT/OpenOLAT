@@ -192,13 +192,17 @@ public class QualityGeneratorServiceImpl implements QualityGeneratorService {
 	}
 
 	private void tryToGenerateDataCollection(QualityGenerator generator) {
-		if (generator.isEnabled() && providerFactory.isAvailable(generator)) {
-			QualityGeneratorProvider provider = providerFactory.getProvider(generator.getType());
-			QualityGeneratorConfigsImpl configs = new QualityGeneratorConfigsImpl(generator);
-			Date now = new Date();
-			provider.generate(generator, configs, generator.getLastRun(), now);
-			generator.setLastRun(now);
-			generatorDao.save(generator);
+		if (generator.isEnabled()) {
+			if (providerFactory.isAvailable(generator)) {
+				QualityGeneratorProvider provider = providerFactory.getProvider(generator.getType());
+				QualityGeneratorConfigsImpl configs = new QualityGeneratorConfigsImpl(generator);
+				Date now = new Date();
+				provider.generate(generator, configs, generator.getLastRun(), now);
+				generator.setLastRun(now);
+				generatorDao.save(generator);
+			} else {
+				log.warn("Provider not found for quality data generator: " + generator.getType());
+			}
 		}
 	}
 

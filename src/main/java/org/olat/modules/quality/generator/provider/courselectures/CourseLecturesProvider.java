@@ -163,7 +163,9 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 			generateDataCollection(generator, configs, organisations, lectureBlockInfo);
 		}
 		
-		log.debug(infos.size() + " data collections created by generator " + generator.toString());
+		if (!infos.isEmpty()) {
+			log.info(infos + " data collections created by generator " + generator.toString());
+		}
 	}
 	
 	private void generateDataCollection(QualityGenerator generator, QualityGeneratorConfigs configs,

@@ -186,7 +186,9 @@ public class CourseLecturesFollowUpProvider implements QualityGeneratorProvider 
 					previosGeneratorConfigs);
 		}
 	
-		log.debug(lectureBlockInfos.size() + " data collections created by generator " + generator.toString());
+		if (!lectureBlockInfos.isEmpty()) {
+			log.info(lectureBlockInfos + " data collections created by generator " + generator.toString());
+		}
 	}
 
 	private void generateDataCollection(QualityGenerator generator, QualityGeneratorConfigs configs,
