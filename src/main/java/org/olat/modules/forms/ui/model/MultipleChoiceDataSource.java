@@ -26,7 +26,6 @@ import java.util.stream.Collectors;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.chart.BarSeries;
-import org.olat.core.util.filter.impl.OWASPAntiSamyXSSFilter;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.manager.EvaluationFormReportDAO;
 import org.olat.modules.forms.model.jpa.CalculatedLong;
@@ -44,14 +43,12 @@ public class MultipleChoiceDataSource implements CountDataSource, BarSeriesDataS
 	private final MultipleChoice multipleChoice;
 	private final SessionFilter filter;
 	
-	private final OWASPAntiSamyXSSFilter xssFilter;
 	private EvaluationFormReportDAO reportDAO;
 	
 	public MultipleChoiceDataSource(MultipleChoice multipleChoice, SessionFilter filter) {
 		super();
 		this.multipleChoice = multipleChoice;
 		this.filter = filter;
-		this.xssFilter = new OWASPAntiSamyXSSFilter();
 		this.reportDAO = CoreSpringFactory.getImpl(EvaluationFormReportDAO.class);
 	}
 
@@ -64,7 +61,7 @@ public class MultipleChoiceDataSource implements CountDataSource, BarSeriesDataS
 		for (Choice choice: multipleChoice.getChoices().asList()) {
 			Long count = identToCount.remove(choice.getId());
 			long value = count != null? (long) count: 0;
-			String name = xssFilter.filter(choice.getValue());
+			String name =choice.getValue();
 			CountResult countResult = new CountResult(name, value);
 			countResults.add(countResult);
 		}
@@ -72,7 +69,7 @@ public class MultipleChoiceDataSource implements CountDataSource, BarSeriesDataS
 		for (String otherValue: identToCount.keySet()) {
 			Long count = identToCount.get(otherValue);
 			long value = count != null? (long) count: 0;
-			String name = xssFilter.filter(otherValue);
+			String name = otherValue;
 			CountResult countResult = new CountResult(name, value);
 			countResults.add(countResult);
 		}
@@ -88,14 +85,14 @@ public class MultipleChoiceDataSource implements CountDataSource, BarSeriesDataS
 		for (Choice choice: multipleChoice.getChoices().asList()) {
 			Long count = identToValue.remove(choice.getId());
 			double value = count != null? (double) count: 0;
-			Comparable<?> category = xssFilter.filter(choice.getValue());
+			Comparable<?> category = choice.getValue();
 			series.add(value, category);
 		}
 		// other values
 		for (String otherValue: identToValue.keySet()) {
 			Long count = identToValue.get(otherValue);
 			double value = count != null? (double) count: 0;
-			Comparable<?> category = xssFilter.filter(otherValue);
+			Comparable<?> category = otherValue;
 			series.add(value, category);
 		}
 		return series;

@@ -34,6 +34,7 @@ public abstract class AbstractElement implements PageElement, Serializable {
 	private static final long serialVersionUID = 3008833598017875672L;
 	private String id;
 
+	@Override
 	public String getId() {
 		return id;
 	}

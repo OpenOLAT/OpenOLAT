@@ -142,13 +142,22 @@
 	#end
 </div>
 #else
-<div class="o_evaluation_block o_evaluation_slider">
+<div class="o_evaluation_block o_evaluation_continous">
+	<div class="clearfix">
+		<div class="$colLeft"></div>
+		<div class="$colMiddle o_evaluation_step_labels hidden-xs">
+		</div>
+		#if($isNoResponseEnabled)
+			<div class="$colNoResponse o_evaluation_step_labels"><span class="hidden-xs">$r.translate("no.response")</span></div>
+		#end
+		<div class="$colRight"></div>
+	</div>
 	#foreach($slider in $element.getSliders())
 	<div class="o_slider clearfix">
 		<div class="$colLeft o_evaluation_left_label #if($hasRightLabels) o_evaluation_left_label_la #end">$slider.startLabel</div>
 		<div class="$colMiddle">$r.render($slider.formItem)</div>
 		#if($isNoResponseEnabled)
-			<div class="$colNoResponse text-center o_evaluation_no_response">$r.render($slider.noResponseEl)</div>
+			<div class="$colNoResponse text-center o_small o_evaluation_no_response">$r.render($slider.noResponseEl)</div>
 		#end
 		<div class="$colRight o_evaluation_right_label">$slider.endLabel</div>
 	</div>

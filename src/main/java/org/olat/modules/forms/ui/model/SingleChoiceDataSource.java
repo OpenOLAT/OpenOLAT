@@ -26,7 +26,6 @@ import java.util.stream.Collectors;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.chart.BarSeries;
-import org.olat.core.util.filter.impl.OWASPAntiSamyXSSFilter;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.manager.EvaluationFormReportDAO;
 import org.olat.modules.forms.model.jpa.CalculatedLong;
@@ -44,14 +43,12 @@ public class SingleChoiceDataSource implements CountDataSource, BarSeriesDataSou
 	private final SingleChoice singleChoice;
 	private final SessionFilter filter;
 	
-	private OWASPAntiSamyXSSFilter xssFilter;
 	private EvaluationFormReportDAO reportDAO;
 	
 	public SingleChoiceDataSource(SingleChoice singleChoice, SessionFilter filter) {
 		super();
 		this.singleChoice = singleChoice;
 		this.filter = filter;
-		this.xssFilter = new OWASPAntiSamyXSSFilter();
 		this.reportDAO = CoreSpringFactory.getImpl(EvaluationFormReportDAO.class);
 	}
 
@@ -63,7 +60,7 @@ public class SingleChoiceDataSource implements CountDataSource, BarSeriesDataSou
 		for (Choice choice: singleChoice.getChoices().asList()) {
 			Long count = identToCount.get(choice.getId());
 			long value = count != null? (long) count: 0;
-			String name = xssFilter.filter(choice.getValue());
+			String name = choice.getValue();
 			CountResult countResult = new CountResult(name, value);
 			countResults.add(countResult);
 		}
@@ -78,7 +75,7 @@ public class SingleChoiceDataSource implements CountDataSource, BarSeriesDataSou
 		for (Choice choice: singleChoice.getChoices().asList()) {
 			Long count = identToCount.get(choice.getId());
 			double value = count != null? (double) count: 0;
-			Comparable<?> category = xssFilter.filter(choice.getValue());
+			Comparable<?> category = choice.getValue();
 			series.add(value, category);
 		}
 		return series;

@@ -62,7 +62,7 @@ public class BarSeries {
 		return legend;
 	}
 
-	protected List<BarPoint> getPoints() {
+	public List<BarPoint> getPoints() {
 		return points;
 	}
 	
@@ -169,12 +169,12 @@ public class BarSeries {
 		}	
 	}
 
-	protected static class BarPoint {
+	public static class BarPoint {
 		private final Comparable<?> category;
 		private final double value;
 		private final String cssColor;
 		
-		public BarPoint(double value, Comparable<?> category, String cssColor) {
+		BarPoint(double value, Comparable<?> category, String cssColor) {
 			this.value = value;
 			this.category = category;
 			this.cssColor = cssColor;

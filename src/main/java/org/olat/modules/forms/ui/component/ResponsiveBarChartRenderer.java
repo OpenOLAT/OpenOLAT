@@ -87,7 +87,6 @@ public class ResponsiveBarChartRenderer extends DefaultComponentRenderer {
 		sb.append("    .append('g')");
 		sb.append("    .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');");
 		
-
 		//append x axis and legend
 		sb.append("svg.append('g')")
 		  .append("   .attr('class', 'x axis')")

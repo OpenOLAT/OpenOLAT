@@ -18,25 +18,28 @@
 	.o_slider {
 		margin-bottom: $o-evaluation-slider-margin-bottom;
 			
-			label {
-				padding: 0;
-			}
-			
-			input {
-				padding: 0;
-				margin: 0;
-				position: relative;
-			}
-			
-			.o_evaluation_no_response {
-				label {
-					margin-top: -3px;
-				}
-			}
+		label {
+			padding: 0;
+		}
+		
+		input {
+			padding: 0;
+			margin: 0;
+			position: relative;
+		}
 	}
 	
 	.o_slider.hover {
 		background-color: $o-evaluation-slider-hover-background-color;
+	}
+	
+	.o_evaluation_continous {
+		.o_evaluation_no_response {
+			div.radio {
+				padding: 0;
+				margin: 0;
+			}
+		}
 	}
 	
 	.o_evaluation_discrete_radio {
@@ -77,6 +80,7 @@
 	
 	.o_slider .ui-slider.ui-slider-horizontal.ui-widget-content {
 		margin-top: 0.3em;
+		margin-bottom: 10px;
 	}
 
 	.o_evaluation_left_label {
@@ -164,6 +168,17 @@
 
 .d3chart {
 	.o_eva_bar { fill: $o-d3chart-default; }
+}
+
+.o_qual_hm_legend {
+	padding: 5px;
+	
+	li {
+		font-size: 90%;
+	}
+	.ident {
+		font-weight: bold;
+	}
 }
 
 .o_evaluation_discrete_slider {
@@ -285,17 +300,15 @@
 			}
 		}
 		
-		.o_evaluation_slider {
-			.o_evaluation_no_response {
-				margin-top: 0.7em;
-			}	
-		}
-
 		.o_slider {
 			margin-bottom: 2em;
 			
 			div {
 				padding-left: 0;
+			}
+			
+			.o_evaluation_no_response {
+				margin-top: 0.7em;
 			}
 		}
 	}
