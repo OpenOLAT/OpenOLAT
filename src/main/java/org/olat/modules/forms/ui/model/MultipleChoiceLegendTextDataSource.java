@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 import org.olat.core.CoreSpringFactory;
 import org.olat.modules.forms.EvaluationFormResponse;
 import org.olat.modules.forms.EvaluationFormSession;
-import org.olat.modules.forms.Paging;
+import org.olat.modules.forms.Limit;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.manager.EvaluationFormReportDAO;
 import org.olat.modules.forms.model.xml.Choice;
@@ -60,7 +60,7 @@ public class MultipleChoiceLegendTextDataSource implements LegendTextDataSource 
 	@Override
 	public List<SessionText> getResponses() {
 		List<SessionText> sessionTexts = new ArrayList<>();
-		List<EvaluationFormResponse> responses = reportDAO.getResponses(multipleChoice.getId(), filter, Paging.all());
+		List<EvaluationFormResponse> responses = reportDAO.getResponses(multipleChoice.getId(), filter, Limit.all());
 		Map<EvaluationFormSession, List<EvaluationFormResponse>> sessionToResponse = responses.stream()
 				.collect(Collectors.groupingBy(EvaluationFormResponse::getSession));
 		

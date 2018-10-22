@@ -31,7 +31,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.forms.EvaluationFormResponse;
-import org.olat.modules.forms.Paging;
+import org.olat.modules.forms.Limit;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.model.jpa.CalculatedDouble;
 import org.olat.modules.forms.model.jpa.CalculatedLong;
@@ -50,26 +50,26 @@ public class EvaluationFormReportDAO {
 	@Autowired
 	private DB dbInstance;
 	
-	public Long getResponsesCount(String responseIdentifier, SessionFilter filter, Paging paging) {
-		return getResponsesCount(singletonList(responseIdentifier) , filter, paging);
+	public Long getResponsesCount(String responseIdentifier, SessionFilter filter, Limit limit) {
+		return getResponsesCount(singletonList(responseIdentifier) , filter, limit);
 	}
 
-	public Long getResponsesCount(List<String> responseIdentifiers, SessionFilter filter, Paging paging) {
+	public Long getResponsesCount(List<String> responseIdentifiers, SessionFilter filter, Limit limit) {
 		QueryBuilder sb = new QueryBuilder(256);
 		sb.append("select count(response.key)");
 		getResponsesAppendFrom(sb, filter, false);
 		
 		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Long.class);
-		getResponsesAppendParameters(query, responseIdentifiers, filter, paging);
+		getResponsesAppendParameters(query, responseIdentifiers, filter, limit);
 		return query.getResultList().get(0);
 	}
 	
-	public List<EvaluationFormResponse> getResponses(String responseIdentifier, SessionFilter filter, Paging paging) {
-		return getResponses(singletonList(responseIdentifier) , filter, paging);
+	public List<EvaluationFormResponse> getResponses(String responseIdentifier, SessionFilter filter, Limit limit) {
+		return getResponses(singletonList(responseIdentifier) , filter, limit);
 	}
 	
-	public List<EvaluationFormResponse> getResponses(List<String> responseIdentifiers, SessionFilter filter, Paging paging) {
+	public List<EvaluationFormResponse> getResponses(List<String> responseIdentifiers, SessionFilter filter, Limit limit) {
 		if (responseIdentifiers == null || responseIdentifiers.isEmpty() || filter == null)
 			return new ArrayList<>();;
 		
@@ -79,7 +79,7 @@ public class EvaluationFormReportDAO {
 		
 		TypedQuery<EvaluationFormResponse> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), EvaluationFormResponse.class);
-		getResponsesAppendParameters(query, responseIdentifiers, filter, paging);
+		getResponsesAppendParameters(query, responseIdentifiers, filter, limit);
 		return query.getResultList();
 	}
 
@@ -94,13 +94,10 @@ public class EvaluationFormReportDAO {
 	}
 
 	private void getResponsesAppendParameters(Query query, List<String> responseIdentifiers, SessionFilter filter,
-			Paging paging) {
+			Limit limit) {
 		query.setParameter("responseIdentifiers", responseIdentifiers);
-		if (paging.getStart() > 0) {
-			query.setFirstResult(paging.getStart());
-		}
-		if (paging.getMax() > -1) {
-			query.setMaxResults(paging.getMax());
+		if (limit.getMax() > -1) {
+			query.setMaxResults(limit.getMax());
 		}
 		filter.addParameters(query);
 	}

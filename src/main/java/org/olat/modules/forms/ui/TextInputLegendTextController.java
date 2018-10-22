@@ -27,7 +27,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.modules.forms.Paging;
+import org.olat.modules.forms.Limit;
 import org.olat.modules.forms.ui.model.LegendTextDataSource;
 import org.olat.modules.forms.ui.model.TextInputLegendTextDataSource;
 
@@ -57,7 +57,7 @@ public class TextInputLegendTextController extends BasicController {
 
 		Long showCount = dataSource.getResponsesCount();
 		if (showCount > 0) {
-			Long showAll = dataSource.getResponsesCount(Paging.all());
+			Long showAll = dataSource.getResponsesCount(Limit.all());
 			if (showAll > showCount) {
 				mainVC.contextPut("downloadInfo", translate("textinput.download.info", new String[] { showCount.toString(), showAll.toString() }));
 			}

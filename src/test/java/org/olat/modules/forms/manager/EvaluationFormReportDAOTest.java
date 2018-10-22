@@ -35,7 +35,7 @@ import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormResponse;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSessionRef;
-import org.olat.modules.forms.Paging;
+import org.olat.modules.forms.Limit;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.SessionFilterFactory;
 import org.olat.modules.forms.model.jpa.CalculatedDouble;
@@ -92,7 +92,7 @@ public class EvaluationFormReportDAOTest extends OlatTestCase {
 		List<String> responseIdentifiers = Arrays.asList(responseIdentifier1, responseIdentifier2);
 		List<EvaluationFormSession> sessions = Arrays.asList(session1, session2);
 		SessionFilter filter = SessionFilterFactory.create(sessions);
-		List<EvaluationFormResponse> responses = sut.getResponses(responseIdentifiers, filter, Paging.all());
+		List<EvaluationFormResponse> responses = sut.getResponses(responseIdentifiers, filter, Limit.all());
 		
 		assertThat(responses)
 				.containsExactlyInAnyOrder(response111, response112, response121, response221)
@@ -125,7 +125,7 @@ public class EvaluationFormReportDAOTest extends OlatTestCase {
 		List<String> responseIdentifiers = Arrays.asList(responseIdentifier1, responseIdentifier2);
 		List<EvaluationFormSession> sessions = Arrays.asList(session1, session2);
 		SessionFilter filter = SessionFilterFactory.create(sessions);
-		Long count = sut.getResponsesCount(responseIdentifiers, filter, Paging.all());
+		Long count = sut.getResponsesCount(responseIdentifiers, filter, Limit.all());
 		
 		long expected = Arrays.asList(response111, response112, response121, response221).size();
 		assertThat(count).isEqualTo(expected);
@@ -151,7 +151,7 @@ public class EvaluationFormReportDAOTest extends OlatTestCase {
 		List<EvaluationFormSession> sessions = Arrays.asList(session1, session2);
 		SessionFilter filter = SessionFilterFactory.create(sessions);
 		int max = 1;
-		List<EvaluationFormResponse> responses = sut.getResponses(responseIdentifiers, filter, Paging.max(max));
+		List<EvaluationFormResponse> responses = sut.getResponses(responseIdentifiers, filter, Limit.max(max));
 		
 		assertThat(responses).hasSize(max);
 	}

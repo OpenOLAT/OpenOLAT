@@ -25,33 +25,20 @@ package org.olat.modules.forms;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class Paging {
+public class Limit {
 	
-	private int start = 0;
 	private int max = -1;
 	
-	public static Paging all() {
-		return new Paging(0, -1);
+	public static Limit all() {
+		return new Limit(-1);
 	}
 	
-	public static Paging start(int start) {
-		return new Paging(start, -1);
-	}
-	
-	public static Paging max(int max) {
-		return new Paging(0, max);
+	public static Limit max(int max) {
+		return new Limit(max);
 	}	
-	public static Paging of(int start, int max) {
-		return new Paging(start, max);
-	}
 	
-	private Paging(int start, int max) {
-		this.start = start;
+	private Limit(int max) {
 		this.max = max;
-	}
-
-	public int getStart() {
-		return start;
 	}
 
 	public int getMax() {

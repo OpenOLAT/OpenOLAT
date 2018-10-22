@@ -25,7 +25,7 @@ import java.util.List;
 import org.olat.core.CoreSpringFactory;
 import org.olat.modules.forms.EvaluationFormResponse;
 import org.olat.modules.forms.EvaluationFormsModule;
-import org.olat.modules.forms.Paging;
+import org.olat.modules.forms.Limit;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.manager.EvaluationFormReportDAO;
 import org.olat.modules.forms.ui.ReportHelper;
@@ -59,9 +59,9 @@ public class TextInputLegendTextDataSource implements LegendTextDataSource {
 		return getResponses(getPaginMax());
 	}
 
-	public List<SessionText> getResponses(Paging paging) {
+	public List<SessionText> getResponses(Limit limit) {
 		List<SessionText> sessionTexts = new ArrayList<>();
-		List<EvaluationFormResponse> responses = reportDAO.getResponses(responseIdentifier, filter, paging);
+		List<EvaluationFormResponse> responses = reportDAO.getResponses(responseIdentifier, filter, limit);
 		responses.sort((r1, r2) -> reportHelper.getComparator().compare(r1.getSession(), r2.getSession()));
 		for (EvaluationFormResponse response : responses) {
 			SessionText sessionText = new SessionText(response.getSession(), response.getStringuifiedResponse());
@@ -74,12 +74,12 @@ public class TextInputLegendTextDataSource implements LegendTextDataSource {
 		return getResponsesCount(getPaginMax());
 	}
 	
-	public Long getResponsesCount(Paging paging) {
-		return reportDAO.getResponsesCount(responseIdentifier, filter, paging);
+	public Long getResponsesCount(Limit limit) {
+		return reportDAO.getResponsesCount(responseIdentifier, filter, limit);
 	}
 
-	private Paging getPaginMax() {
-		return Paging.max(evaluationFormsModule.getReportMaxSessions());
+	private Limit getPaginMax() {
+		return Limit.max(evaluationFormsModule.getReportMaxSessions());
 	}
 
 }

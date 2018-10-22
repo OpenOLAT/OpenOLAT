@@ -23,7 +23,7 @@ import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.modules.forms.EvaluationFormResponse;
-import org.olat.modules.forms.Paging;
+import org.olat.modules.forms.Limit;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.manager.EvaluationFormReportDAO;
 
@@ -49,7 +49,7 @@ public class RawResponsesDataSource implements ResponseDataSource {
 
 	@Override
 	public List<EvaluationFormResponse> getResponses() {
-		return reportDAO.getResponses(responseIdentifier, filter, Paging.all());
+		return reportDAO.getResponses(responseIdentifier, filter, Limit.all());
 	}
 
 }
