@@ -117,8 +117,7 @@ public class QualityReminderDAO {
 				.getResultList();
 	}
 
-
-	public void delete(QualityReminder reminder) {
+	void delete(QualityReminder reminder) {
 		if (reminder == null || reminder.getKey() == null) return;
 		
 		StringBuilder sb = new StringBuilder(256);
@@ -129,6 +128,19 @@ public class QualityReminderDAO {
 				.createQuery(sb.toString())
 				.setParameter("reminderKey", reminder.getKey())
 				.executeUpdate();
+	}
+
+	void deleteReminders(QualityDataCollectionRef dataCollectionRef) {
+		if (dataCollectionRef == null || dataCollectionRef.getKey() == null) return;
+		
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("delete from qualityreminder as reminder");
+		sb.append(" where reminder.dataCollection.key = :dataCollectionKey");
+		
+		dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString())
+				.setParameter("dataCollectionKey", dataCollectionRef.getKey())
+				.executeUpdate();	
 	}
 
 }

@@ -244,6 +244,7 @@ public class QualityServiceImpl
 		evaluationFormManager.deleteSurvey(survey);
 		deleteReferences(dataCollection);
 		resourceManager.deleteOLATResourceable(dataCollection);
+		reminderDao.deleteReminders(dataCollection);
 		dataCollectionToOrganisationDao.deleteRelations(dataCollection);
 		dataCollectionDao.deleteDataCollection(dataCollection);
 		log.info("Quality management data collection deleted: " + dataCollection.toString());

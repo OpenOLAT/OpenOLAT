@@ -182,4 +182,25 @@ public class QualityReminderDAOTest extends OlatTestCase {
 		QualityReminder otherReminder = sut.load(dataCollectionRef, otherType);
 		assertThat(otherReminder).isNotNull();
 	}
+	
+	@Test
+	public void shouldDeleteRemindersByDataCollection() {
+		Date sendDate = new Date();
+		QualityDataCollectionRef dataCollection = qualityTestHelper.createDataCollection();
+		QualityDataCollectionRef dataCollectionOther = qualityTestHelper.createDataCollection();
+		QualityReminderType type = QualityReminderType.REMINDER1;
+		sut.create(dataCollection, sendDate, type);
+		sut.create(dataCollectionOther, sendDate, type);
+		dbInstance.commitAndCloseSession();
+		
+		sut.deleteReminders(dataCollection);
+		dbInstance.commitAndCloseSession();
+		
+		QualityReminder loadedReminder = sut.load(dataCollection, type);
+		assertThat(loadedReminder).isNull();
+		
+		QualityReminder otherReminder = sut.load(dataCollectionOther, type);
+		assertThat(otherReminder).isNotNull();
+	}
+
 }
