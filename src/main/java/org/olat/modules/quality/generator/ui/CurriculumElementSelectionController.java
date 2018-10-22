@@ -81,8 +81,12 @@ class CurriculumElementSelectionController extends FormBasicController {
 		params.setOrganisations(organisationRefs);
 		List<Curriculum> curriculums = curriculumService.getCurriculums(params);
 		KeysValues curriculumKeysValues = QualityUIFactory.getCurriculumKeysValues(curriculums, null);
+		String[] curriculumKeys = curriculumKeysValues.getKeys();
 		curriculumEl = uifactory.addDropdownSingleselect("curriculum.element.select.curriculum", formLayout,
-				curriculumKeysValues.getKeys(), curriculumKeysValues.getValues());
+				curriculumKeys, curriculumKeysValues.getValues());
+		if (curriculumKeys.length > 0) {
+			curriculumEl.select(curriculumKeys[0], true);
+		}
 		curriculumEl.addActionListener(FormEvent.ONCHANGE);
 		
 		curriculumElementEl = uifactory.addDropdownSingleselect(
