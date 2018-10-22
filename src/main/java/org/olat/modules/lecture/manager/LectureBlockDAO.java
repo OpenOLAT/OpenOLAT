@@ -211,7 +211,8 @@ public class LectureBlockDAO {
 		  .append(" left join tGroup.members membership on (membership.role='").append("teacher").append("')")
 		  .append(" left join membership.identity teacher")
 		  .append(" left join fetch teacher.user userteacher")
-		  .append(" inner join lectureentryconfig config on (config.entry.key=block.entry.key)");
+		  .append(" inner join lectureentryconfig config on (config.entry.key=block.entry.key)")
+		  .append(" where config.lectureEnabled=true");
 		
 		if(from != null) {
 			sb.append(" and block.startDate>=:startDate");
