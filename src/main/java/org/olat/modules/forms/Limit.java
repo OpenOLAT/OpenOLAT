@@ -27,10 +27,12 @@ package org.olat.modules.forms;
  */
 public class Limit {
 	
+	private static final Limit ALL = new Limit(-1);
+	
 	private int max = -1;
 	
 	public static Limit all() {
-		return new Limit(-1);
+		return ALL;
 	}
 	
 	public static Limit max(int max) {
