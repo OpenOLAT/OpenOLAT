@@ -79,12 +79,16 @@ public class MembersCourseNode extends AbstractAccessableCourseNode {
 	public static final String CONFIG_KEY_COACHES_GROUP_ID = "members_GroupCoachesIds";
 	public static final String CONFIG_KEY_COACHES_AREA = "members_AreaCoaches";
 	public static final String CONFIG_KEY_COACHES_AREA_IDS = "members_AreaCoachesIds";
+	public static final String CONFIG_KEY_COACHES_CUR_ELEMENT = "members_CurriculumElementCoaches";
+	public static final String CONFIG_KEY_COACHES_CUR_ELEMENT_ID = "members_CurriculumElementCoachesIds";
 	
 	public static final String CONFIG_KEY_PARTICIPANTS_COURSE = "members_CourseParticipants";
 	public static final String CONFIG_KEY_PARTICIPANTS_GROUP = "members_GroupParticipants";
 	public static final String CONFIG_KEY_PARTICIPANTS_GROUP_ID = "members_GroupParticipantsIds";
 	public static final String CONFIG_KEY_PARTICIPANTS_AREA = "members_AreaParticipants";
 	public static final String CONFIG_KEY_PARTICIPANTS_AREA_ID = "members_AreaParticipantsIds";
+	public static final String CONFIG_KEY_PARTICIPANTS_CUR_ELEMENT = "members_CurriculumElementParticipants";
+	public static final String CONFIG_KEY_PARTICIPANTS_CUR_ELEMENT_ID = "members_CurriculumElementParticipantsIds";
 
 
 	public MembersCourseNode() {

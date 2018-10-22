@@ -370,6 +370,14 @@ public class CurriculumServiceImpl implements CurriculumService {
 	}
 	
 	@Override
+	public List<Identity> getMembersIdentity(List<Long> curriculumElementKeys, CurriculumRoles role) {
+		if(role == null || curriculumElementKeys == null || curriculumElementKeys.isEmpty()) {
+			return new ArrayList<>();
+		}
+		return curriculumElementDao.getMembersIdentity(curriculumElementKeys, role.name());
+	}
+
+	@Override
 	public void updateCurriculumElementMemberships(Identity doer, Roles roles,
 			List<CurriculumElementMembershipChange> changes) {
 		

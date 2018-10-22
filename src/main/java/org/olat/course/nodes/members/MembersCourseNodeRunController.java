@@ -101,17 +101,18 @@ public class MembersCourseNodeRunController extends BasicController {
 		
 		boolean showCoaches = false;
 		if(config.anyTrue(MembersCourseNode.CONFIG_KEY_COACHES_ALL, MembersCourseNode.CONFIG_KEY_COACHES_COURSE)		
-				|| config.hasAnyOf(MembersCourseNode.CONFIG_KEY_COACHES_GROUP, MembersCourseNode.CONFIG_KEY_COACHES_AREA)) {
+				|| config.hasAnyOf(MembersCourseNode.CONFIG_KEY_COACHES_GROUP, MembersCourseNode.CONFIG_KEY_COACHES_AREA,
+						MembersCourseNode.CONFIG_KEY_COACHES_CUR_ELEMENT)) {
 			
 			CourseGroupManager cgm = courseEnv.getCourseGroupManager();
 			MembersHelpers.addCoaches(config, cgm, businessGroupService, coaches);
-			
 			showCoaches = true;
 		}
 		
 		boolean showParticipants = false;
 		if(config.anyTrue(MembersCourseNode.CONFIG_KEY_PARTICIPANTS_ALL, MembersCourseNode.CONFIG_KEY_PARTICIPANTS_COURSE)
-				|| config.hasAnyOf(MembersCourseNode.CONFIG_KEY_PARTICIPANTS_GROUP, MembersCourseNode.CONFIG_KEY_PARTICIPANTS_AREA)) {
+				|| config.hasAnyOf(MembersCourseNode.CONFIG_KEY_PARTICIPANTS_GROUP, MembersCourseNode.CONFIG_KEY_PARTICIPANTS_AREA,
+						MembersCourseNode.CONFIG_KEY_PARTICIPANTS_CUR_ELEMENT)) {
 			
 			CourseGroupManager cgm = courseEnv.getCourseGroupManager();
 			MembersHelpers.addParticipants(config, cgm, businessGroupService, participants);

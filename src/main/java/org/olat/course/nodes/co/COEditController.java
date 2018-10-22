@@ -64,29 +64,29 @@ public class COEditController extends ActivateableTabbableDefaultController impl
 	public static final String CONFIG_KEY_EMAILTOGROUPS = "emailToGroups";
 	
 	/** config key: to email addresses to be extracted from specified learn areas */
-	public static final String CONFIG_KEY_EMAILTOCOACHES_AREA = "emailTo" + "AreaCoaches";
+	public static final String CONFIG_KEY_EMAILTOCOACHES_AREA = "emailToAreaCoaches";
 	/** config key: to email addresses to be extracted from specified learn areas */
-	public static final String CONFIG_KEY_EMAILTOCOACHES_AREA_IDS = "emailTo" + "AreaCoachesIds";
+	public static final String CONFIG_KEY_EMAILTOCOACHES_AREA_IDS = "emailToAreaCoachesIds";
 	
 	/** config key: keys of the course participants list */
-	public static final String CONFIG_KEY_EMAILTOPARTICIPANTS_ALL = "emailTo" + "ParticipantsAll";
+	public static final String CONFIG_KEY_EMAILTOPARTICIPANTS_ALL = "emailToParticipantsAll";
 	/** config key: keys of the group participants list */
-	public static final String CONFIG_KEY_EMAILTOPARTICIPANTS_GROUP_ID = "emailTo" + "GroupParticipantsIds";
+	public static final String CONFIG_KEY_EMAILTOPARTICIPANTS_GROUP_ID = "emailToGroupParticipantsIds";
 	/** config key: email goes to group participants */
-	public static final String CONFIG_KEY_EMAILTOPARTICIPANTS_GROUP = "emailTo" + "GroupParticipants";
-	public static final String CONFIG_KEY_EMAILTOPARTICIPANTS_AREA_ID = "emailTo" + "AreaParticipantsIds";
+	public static final String CONFIG_KEY_EMAILTOPARTICIPANTS_GROUP = "emailToGroupParticipants";
+	public static final String CONFIG_KEY_EMAILTOPARTICIPANTS_AREA_ID = "emailToAreaParticipantsIds";
 	/** config key: email goes to group participants */
-	public static final String CONFIG_KEY_EMAILTOPARTICIPANTS_AREA = "emailTo" + "AreaParticipants";
+	public static final String CONFIG_KEY_EMAILTOPARTICIPANTS_AREA = "emailToAreaParticipants";
 	/** config key: email goes to course participants */
-	public static final String CONFIG_KEY_EMAILTOPARTICIPANTS_COURSE = "emailTo" + "CourseParticipants";
+	public static final String CONFIG_KEY_EMAILTOPARTICIPANTS_COURSE = "emailToCourseParticipants";
 	/** config key: email goes to group coaches */
-	public static final String CONFIG_KEY_EMAILTOCOACHES_GROUP = "emailTo" + "GroupCoaches";
+	public static final String CONFIG_KEY_EMAILTOCOACHES_GROUP = "emailToGroupCoaches";
 	/** config key: key of the group coaches list */
-	public static final String CONFIG_KEY_EMAILTOCOACHES_GROUP_ID = "emailTo" + "GroupCoachesIds";
+	public static final String CONFIG_KEY_EMAILTOCOACHES_GROUP_ID = "emailToGroupCoachesIds";
 	/** config key: key of the course coaches list */
-	public static final String CONFIG_KEY_EMAILTOCOACHES_ALL = "emailTo" + "CoachesAll";
+	public static final String CONFIG_KEY_EMAILTOCOACHES_ALL = "emailToCoachesAll";
 	/** config key: email goes to course coaches */
-	public static final String CONFIG_KEY_EMAILTOCOACHES_COURSE = "emailTo" + "CourseCoaches";
+	public static final String CONFIG_KEY_EMAILTOCOACHES_COURSE = "emailToCourseCoaches";
 	/** config key: email goes to course owners */
 	public static final String CONFIG_KEY_EMAILTOOWNERS = "emailToOwners";
 	/** config key: email goes to email address */

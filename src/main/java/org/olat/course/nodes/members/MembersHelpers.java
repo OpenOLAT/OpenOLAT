@@ -73,6 +73,11 @@ public class MembersHelpers {
 			list.addAll(retrieveCoachesFromAreas(coachAreaKeys, cgm));
 		}
 		
+		if(moduleConfiguration.has(MembersCourseNode.CONFIG_KEY_COACHES_CUR_ELEMENT)) {
+			List<Long> coachElementKeys = moduleConfiguration.getList(MembersCourseNode.CONFIG_KEY_COACHES_CUR_ELEMENT_ID, Long.class);
+			list.addAll(retrieveCoachesFromCurriculumElements(coachElementKeys, cgm));
+		}
+		
 		if(moduleConfiguration.anyTrue(MembersCourseNode.CONFIG_KEY_COACHES_COURSE, MembersCourseNode.CONFIG_KEY_COACHES_ALL)) {
 			list.addAll(retrieveCoachesFromCourse(cgm));
 		}
@@ -86,6 +91,12 @@ public class MembersHelpers {
 		return new ArrayList<>(new HashSet<>(coaches));
 	}
 	
+	public static List<Identity> retrieveCoachesFromCurriculumElements(List<Long> elementKeys, CourseGroupManager cgm) {
+		List<Identity> coaches = cgm.getCoachesFromCurriculumElements(elementKeys);
+		return new ArrayList<>(new HashSet<>(coaches));
+	}
+
+	
 	public static List<Identity> retrieveCoachesFromGroups(List<Long> groupKeys, CourseGroupManager cgm) {
 		return new ArrayList<>(new HashSet<>(cgm.getCoachesFromBusinessGroups(groupKeys)));
 	}
@@ -98,6 +109,7 @@ public class MembersHelpers {
 		Set<Identity> uniq = new HashSet<>();
 		uniq.addAll(cgm.getCoachesFromAreas());
 		uniq.addAll(cgm.getCoachesFromBusinessGroups());
+		uniq.addAll(cgm.getCoachesFromCurriculumElements());
 		return new ArrayList<>(uniq);
 	}
 	
@@ -123,10 +135,15 @@ public class MembersHelpers {
 			list.addAll(retrieveParticipantsFromAreas(participantAreaKeys, cgm));
 		}
 		
-		if(moduleConfiguration.anyTrue(MembersCourseNode.CONFIG_KEY_PARTICIPANTS_COURSE
-				, MembersCourseNode.CONFIG_KEY_PARTICIPANTS_ALL)) {
+		if(moduleConfiguration.has(MembersCourseNode.CONFIG_KEY_PARTICIPANTS_CUR_ELEMENT)) {
+			List<Long> coachElementKeys = moduleConfiguration.getList(MembersCourseNode.CONFIG_KEY_PARTICIPANTS_CUR_ELEMENT_ID, Long.class);
+			list.addAll(retrieveParticipantsFromCurriculumElements(coachElementKeys, cgm));
+		}
+		
+		if(moduleConfiguration.anyTrue(MembersCourseNode.CONFIG_KEY_PARTICIPANTS_COURSE, MembersCourseNode.CONFIG_KEY_PARTICIPANTS_ALL)) {
 			list.addAll(retrieveParticipantsFromCourse(cgm));
 		}
+		
 		if(moduleConfiguration.anyTrue(MembersCourseNode.CONFIG_KEY_PARTICIPANTS_ALL)) {
 			list.addAll(retrieveParticipantsFromCourseGroups(cgm));
 		}
@@ -140,6 +157,10 @@ public class MembersHelpers {
 		return cgm.getParticipantsFromBusinessGroups(groupKeys);
 	}
 	
+	public static List<Identity> retrieveParticipantsFromCurriculumElements(List<Long> elementKeys, CourseGroupManager cgm) {
+		return cgm.getParticipantsFromCurriculumElements(elementKeys);
+	}
+	
 	public static List<Identity> retrieveParticipantsFromCourse(CourseGroupManager cgm) {
 		return cgm.getParticipants();
 	}
@@ -148,6 +169,7 @@ public class MembersHelpers {
 		Set<Identity> uniq = new HashSet<>();
 		uniq.addAll(cgm.getParticipantsFromAreas());
 		uniq.addAll(cgm.getParticipantsFromBusinessGroups());
+		uniq.addAll(cgm.getParticipantsFromCurriculumElements());
 		return new ArrayList<>(uniq);
 	}
 }

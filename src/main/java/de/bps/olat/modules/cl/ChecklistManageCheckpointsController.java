@@ -65,6 +65,7 @@ import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.CourseRights;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
+import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.user.UserInfoMainController;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -142,7 +143,7 @@ public class ChecklistManageCheckpointsController extends BasicController {
 			// collect all identities in learning groups
 			Set<Identity> identitiesInGroups = new HashSet<>();
 			identitiesInGroups.addAll(cgm.getParticipantsFromBusinessGroups());
-			//fxdiff VCRP-1,2: access control of resources
+			identitiesInGroups.addAll(cgm.getParticipantsFromCurriculumElements());
 			identitiesInGroups.addAll(cgm.getParticipants());
 			
 			// all identities with result and/or in learning groups
@@ -163,7 +164,7 @@ public class ChecklistManageCheckpointsController extends BasicController {
 			// collect all identities in learning groups
 			Set<Identity> identitiesInGroups = new HashSet<>();
 			identitiesInGroups.addAll(cgm.getParticipantsFromBusinessGroups());
-			//fxdiff VCRP-1,2: access control of resources
+			identitiesInGroups.addAll(cgm.getParticipantsFromCurriculumElements());
 			identitiesInGroups.addAll(cgm.getParticipants());
 			allIdentities.addAll(identitiesInGroups);
 			
@@ -171,6 +172,13 @@ public class ChecklistManageCheckpointsController extends BasicController {
 			lstGroups.addAll(cgm.getAllBusinessGroups());
 		} else if(cgm.isIdentityCourseCoach(identity)) {
 			Set<Identity> identitiesInGroups = new HashSet<>();
+			List<CurriculumElement> coachedElements = cgm.getCoachedCurriculumElements(identity);
+			List<Long> curriculumElementKeys = new ArrayList<>();
+			for(CurriculumElement coachedElement:coachedElements) {
+				curriculumElementKeys.add(coachedElement.getKey());
+			}
+			List<Identity> participants = cgm.getParticipantsFromCurriculumElements(curriculumElementKeys);
+			identitiesInGroups.addAll(participants);
 			for( BusinessGroup group : cgm.getAllBusinessGroups() ) {
 				if(businessGroupService.hasRoles(identity, group, GroupRoles.coach.name())) {
 					lstGroups.add(group);

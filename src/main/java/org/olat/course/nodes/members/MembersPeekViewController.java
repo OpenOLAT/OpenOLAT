@@ -119,7 +119,7 @@ public class MembersPeekViewController extends BasicController {
 		List<Identity> participants = new ArrayList<>();
 		MembersHelpers.addParticipants(config, cgm, businessGroupService, participants);
 		
-		Set<Long> duplicateCatcher = new HashSet<Long>();
+		Set<Long> duplicateCatcher = new HashSet<>();
 		List<Identity> filteredOwners = owners.stream()
 				.filter(ident -> {
 					if (duplicateCatcher.contains(ident.getKey())) {

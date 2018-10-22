@@ -74,7 +74,7 @@ public class COConfigForm extends MembersSelectorFormFragment {
 	 */
 	protected COConfigForm(UserRequest ureq, WindowControl wControl,
 			ModuleConfiguration config, UserCourseEnvironment uce) {
-		super(ureq, wControl, uce.getCourseEditorEnv(), config);
+		super(ureq, wControl, uce.getCourseEditorEnv(), config, false);
 	}
 
 	@Override
@@ -95,6 +95,16 @@ public class COConfigForm extends MembersSelectorFormFragment {
 	@Override
 	protected String getConfigKeyCoachesAreaIds() {
 		return COEditController.CONFIG_KEY_EMAILTOCOACHES_AREA_IDS;
+	}
+
+	@Override
+	protected String getConfigKeyCoachesCurriculumElement() {
+		return null;// not used now
+	}
+
+	@Override
+	protected String getConfigKeyCoachesCurriculumElementIds() {
+		return null;// not used now
 	}
 
 	@Override
@@ -128,6 +138,16 @@ public class COConfigForm extends MembersSelectorFormFragment {
 	}
 
 	@Override
+	protected String getConfigKeyParticipantsCurriculumElement() {
+		return null;// not used now
+	}
+
+	@Override
+	protected String getConfigKeyParticipantsCurriculumElementIds() {
+		return null;// not used now
+	}
+
+	@Override
 	protected String getConfigKeyParticipantsCourse() {
 		return COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_COURSE;
 	}
@@ -137,12 +157,9 @@ public class COConfigForm extends MembersSelectorFormFragment {
 		return COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_ALL;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.Form#validate(org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean isOK = true;
+		boolean isOK = super.validateFormLogic(ureq);
 		
 		if (!sendToCoaches() && !sendToPartips() && !wantEmail.isSelected(0) && !sendToOwners()) {
 			recipentsContainer.setErrorKey("no.recipents.specified", null);
@@ -169,11 +186,11 @@ public class COConfigForm extends MembersSelectorFormFragment {
 		
 		//check validity of manually provided e-mails
 		if ((emailAdress != null) && (emailAdress.length > 0) && (!"".equals(emailAdress[0]))) {
-			this.eList = new ArrayList<String>();
+			this.eList = new ArrayList<>();
 			for (int i = 0; i < emailAdress.length; i++) {
 				String eAd = emailAdress[i].trim();
 				boolean emailok = MailHelper.isValidEmailAddress(eAd);
-				if (emailok == false) {
+				if (!emailok) {
 					teArElEmailToAdresses.setErrorKey("email.not.valid", null);
 					isOK = false;
 				}
@@ -181,7 +198,7 @@ public class COConfigForm extends MembersSelectorFormFragment {
 			}
 		}
 		
-		return isOK & super.validateFormLogic(ureq);
+		return isOK;
 	}
 	
 	/**
@@ -229,7 +246,7 @@ public class COConfigForm extends MembersSelectorFormFragment {
 		String emailToAdresses = "";
 		if (eList != null) {
 			emailToAdresses = StringHelper.formatIdentitesAsEmailToString(eList, "\n");
-			wantEmail.select("xx", eList.size()>0);
+			wantEmail.select("xx", !eList.isEmpty());
 		}
 		teArElEmailToAdresses = uifactory.addTextAreaElement("email", "message.emailtoadresses", -1, 3, 60, true, false, emailToAdresses, formLayout);
 		teArElEmailToAdresses.setMandatory(true);
@@ -293,11 +310,11 @@ public class COConfigForm extends MembersSelectorFormFragment {
 	}
 
 	@Override
-	protected void storeConfiguration(ModuleConfiguration config) {
-		super.storeConfiguration(config);
-		config.setBooleanEntry(COEditController.CONFIG_KEY_EMAILTOOWNERS, sendToOwners());
-		config.set(COEditController.CONFIG_KEY_EMAILTOADRESSES, getEmailList());
-		config.set(COEditController.CONFIG_KEY_MSUBJECT_DEFAULT, getMSubject());
-		config.set(COEditController.CONFIG_KEY_MBODY_DEFAULT, getMBody());
+	protected void storeConfiguration(ModuleConfiguration configToStore) {
+		super.storeConfiguration(configToStore);
+		configToStore.setBooleanEntry(COEditController.CONFIG_KEY_EMAILTOOWNERS, sendToOwners());
+		configToStore.set(COEditController.CONFIG_KEY_EMAILTOADRESSES, getEmailList());
+		configToStore.set(COEditController.CONFIG_KEY_MSUBJECT_DEFAULT, getMSubject());
+		configToStore.set(COEditController.CONFIG_KEY_MBODY_DEFAULT, getMBody());
 	}
 }

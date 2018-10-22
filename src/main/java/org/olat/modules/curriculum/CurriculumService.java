@@ -94,9 +94,19 @@ public interface CurriculumService {
 	 * 
 	 * @param curriculum The curriculum
 	 * @param role The role (mandatory)
-	 * @return
+	 * @return A list of identities
 	 */
 	public List<Identity> getMembersIdentity(CurriculumRef curriculum, CurriculumRoles role);
+	
+	/**
+	 * Get the list of members with the specified role in the list of curriculum
+	 * elements.
+	 * 
+	 * @param curriculumElementKeys A list of curriculum element keys
+	 * @param role The role (mandatory)
+	 * @return A list of identities
+	 */
+	public List<Identity> getMembersIdentity(List<Long> curriculumElementKeys, CurriculumRoles role);
 	
 	/**
 	 * 

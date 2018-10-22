@@ -464,6 +464,16 @@ public class PersistingCourseGroupManager implements CourseGroupManager {
 	}
 
 	@Override
+	public List<Identity> getCoachesFromCurriculumElements() {
+		return repositoryService.getMembers(getCourseEntry(), RepositoryEntryRelationType.curriculums, GroupRoles.coach.name());
+	}
+
+	@Override
+	public List<Identity> getCoachesFromCurriculumElements(List<Long> curriculumElementKeys) {
+		return curriculumService.getMembersIdentity(curriculumElementKeys, CurriculumRoles.coach);
+	}
+
+	@Override
 	public List<Identity> getParticipantsFromAreas() {
 		List<BusinessGroup> bgs = getAllBusinessGroups();
 		return businessGroupService.getMembers(bgs, GroupRoles.participant.name());
@@ -476,10 +486,16 @@ public class PersistingCourseGroupManager implements CourseGroupManager {
 		return businessGroupService.getMembers(groups, GroupRoles.participant.name());
 	}
 
-	/**
-	 * 
-	 * @see org.olat.course.groupsandrights.CourseGroupManager#getWaitingListGroups(org.olat.core.id.Identity)
-	 */
+	@Override
+	public List<Identity> getParticipantsFromCurriculumElements() {
+		return repositoryService.getMembers(getCourseEntry(), RepositoryEntryRelationType.curriculums, GroupRoles.participant.name());
+	}
+
+	@Override
+	public List<Identity> getParticipantsFromCurriculumElements(List<Long> curriculumElementKeys) {
+		return curriculumService.getMembersIdentity(curriculumElementKeys, CurriculumRoles.participant);
+	}
+
 	@Override
 	public List<BusinessGroup> getWaitingListGroups(Identity identity) {
 		return businessGroupService.findBusinessGroupsWithWaitingListAttendedBy(identity, getCourseEntry());

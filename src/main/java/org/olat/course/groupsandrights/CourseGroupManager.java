@@ -289,7 +289,7 @@ public interface CourseGroupManager {
 	public List<Identity> getCoachesFromBusinessGroups(List<Long> groupKeys);
 
 	/**
-	 * The coahces in the course and its curriculums.
+	 * The coaches in the course.
 	 * 
 	 * @return A list of identities
 	 */
@@ -305,6 +305,11 @@ public interface CourseGroupManager {
 	public List<Identity> getCoachesFromAreas();
 	
 	public List<Identity> getCoachesFromAreas(List<Long> areaKeys);
+	
+
+	public List<Identity> getCoachesFromCurriculumElements();
+	
+	public List<Identity> getCoachesFromCurriculumElements(List<Long> curriculumElementKeys);
 
 	/**
 	 * List with identities being participants in the learning groups of this course. If
@@ -318,7 +323,7 @@ public interface CourseGroupManager {
 	public List<Identity> getParticipantsFromBusinessGroups(List<Long> groupKeys);
 	
 	/**
-	 * The participants in the course and its curriculums.
+	 * The participants in the course.
 	 * 
 	 * @return A list of identities
 	 */
@@ -334,6 +339,12 @@ public interface CourseGroupManager {
 	public List<Identity> getParticipantsFromAreas();
 	
 	public List<Identity> getParticipantsFromAreas(List<Long> areaKeys);
+	
+
+	public List<Identity> getParticipantsFromCurriculumElements();
+	
+	public List<Identity> getParticipantsFromCurriculumElements(List<Long> curriculumElementKeys);
+	
 
 	/**
 	 * @param identity

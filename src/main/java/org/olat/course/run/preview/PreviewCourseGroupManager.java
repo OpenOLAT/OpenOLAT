@@ -36,7 +36,6 @@ import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.AssertException;
-import org.olat.core.manager.BasicManager;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.CourseRights;
@@ -45,6 +44,8 @@ import org.olat.group.BusinessGroupService;
 import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumRoles;
+import org.olat.modules.curriculum.CurriculumService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -56,16 +57,18 @@ import org.olat.resource.OLATResource;
  *
  * @author Mike Stock
  */
-final class PreviewCourseGroupManager extends BasicManager implements CourseGroupManager {
+final class PreviewCourseGroupManager implements CourseGroupManager {
 
 	private List<BGArea> areas;
 	private List<BusinessGroup> groups;
+	
 	private RepositoryEntry courseResource;
 	private boolean isCoach;
 	private boolean isCourseAdmin;
 	
 	private final BGAreaManager areaManager;
 	private final RepositoryService repositoryService;
+	private final CurriculumService curriculumService;
 	private final BusinessGroupService businessGroupService;
 	
 	/**
@@ -84,6 +87,7 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 
 		areaManager = CoreSpringFactory.getImpl(BGAreaManager.class);
 		repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
+		curriculumService = CoreSpringFactory.getImpl(CurriculumService.class);
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 	}
 
@@ -297,6 +301,11 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 		List<BusinessGroup> groupList = areaManager.findBusinessGroupsOfAreas(areas);
 		return businessGroupService.getMembers(groupList, GroupRoles.coach.name());
 	}
+	
+	@Override
+	public List<Identity> getCoachesFromCurriculumElements() {
+		return repositoryService.getMembers(getCourseEntry(), RepositoryEntryRelationType.curriculums, GroupRoles.coach.name());
+	}
 
 	@Override
 	public List<Identity> getParticipantsFromBusinessGroups() {
@@ -329,18 +338,33 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 	}
 
 	@Override
+	public List<Identity> getCoachesFromCurriculumElements(List<Long> curriculumElementKeys) {
+		return curriculumService.getMembersIdentity(curriculumElementKeys, CurriculumRoles.coach);
+	}
+
+	@Override
+	public List<Identity> getParticipantsFromCurriculumElements() {
+		return repositoryService.getMembers(getCourseEntry(), RepositoryEntryRelationType.curriculums, GroupRoles.participant.name());
+	}
+
+	@Override
+	public List<Identity> getParticipantsFromCurriculumElements(List<Long> curriculumElementKeys) {
+		return curriculumService.getMembersIdentity(curriculumElementKeys, CurriculumRoles.participant);
+	}
+
+	@Override
 	public List<Identity> getParticipantsFromAreas() {
 		return businessGroupService.getMembers(groups, GroupRoles.participant.name());
 	}
 	
 	@Override
 	public List<Identity> getCoaches() {
-		return repositoryService.getMembers(getCourseEntry(), RepositoryEntryRelationType.entryAndCurriculums, GroupRoles.coach.name());
+		return repositoryService.getMembers(getCourseEntry(), RepositoryEntryRelationType.defaultGroup, GroupRoles.coach.name());
 	}
 
 	@Override
 	public List<Identity> getParticipants() {
-		return repositoryService.getMembers(getCourseEntry(), RepositoryEntryRelationType.entryAndCurriculums, GroupRoles.participant.name());
+		return repositoryService.getMembers(getCourseEntry(), RepositoryEntryRelationType.defaultGroup, GroupRoles.participant.name());
 	}
 
 	@Override

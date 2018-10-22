@@ -67,7 +67,7 @@ public class MembersConfigForm extends MembersSelectorFormFragment {
 	 */
 	protected MembersConfigForm(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment euce, ModuleConfiguration config) {
-		super(ureq, wControl, euce.getCourseEditorEnv(), config);
+		super(ureq, wControl, euce.getCourseEditorEnv(), config, true);
 	}
 
 	@Override
@@ -88,6 +88,16 @@ public class MembersConfigForm extends MembersSelectorFormFragment {
 	@Override
 	protected String getConfigKeyCoachesAreaIds() {
 		return MembersCourseNode.CONFIG_KEY_COACHES_AREA_IDS;
+	}
+	
+	@Override
+	protected String getConfigKeyCoachesCurriculumElement() {
+		return MembersCourseNode.CONFIG_KEY_COACHES_CUR_ELEMENT;
+	}
+	
+	@Override
+	protected String getConfigKeyCoachesCurriculumElementIds() {
+		return MembersCourseNode.CONFIG_KEY_COACHES_CUR_ELEMENT_ID;
 	}
 
 	@Override
@@ -121,6 +131,16 @@ public class MembersConfigForm extends MembersSelectorFormFragment {
 	}
 
 	@Override
+	protected String getConfigKeyParticipantsCurriculumElement() {
+		return MembersCourseNode.CONFIG_KEY_PARTICIPANTS_CUR_ELEMENT;
+	}
+
+	@Override
+	protected String getConfigKeyParticipantsCurriculumElementIds() {
+		return MembersCourseNode.CONFIG_KEY_PARTICIPANTS_CUR_ELEMENT_ID;
+	}
+
+	@Override
 	protected String getConfigKeyParticipantsCourse() {
 		return MembersCourseNode.CONFIG_KEY_PARTICIPANTS_COURSE;
 	}
@@ -131,9 +151,9 @@ public class MembersConfigForm extends MembersSelectorFormFragment {
 	}
 
 	@Override
-	public void storeConfiguration(ModuleConfiguration config) {
-		config.setBooleanEntry(MembersCourseNode.CONFIG_KEY_SHOWOWNER, showOwners.isSelected(0));
-		super.storeConfiguration(config);
+	public void storeConfiguration(ModuleConfiguration configToStore) {
+		configToStore.setBooleanEntry(MembersCourseNode.CONFIG_KEY_SHOWOWNER, showOwners.isSelected(0));
+		super.storeConfiguration(configToStore);
 	}
 
 	@Override
@@ -196,7 +216,7 @@ public class MembersConfigForm extends MembersSelectorFormFragment {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		super.formInnerEvent(ureq, source, event);
 		
-		if(showOwners == source) { // || showCoaches == source || showParticipants == source) {
+		if(showOwners == source) {
 			config.setBooleanEntry(MembersCourseNode.CONFIG_KEY_SHOWOWNER, showOwners.isSelected(0));
 			update();
 			fireEvent(ureq, Event.CHANGED_EVENT);

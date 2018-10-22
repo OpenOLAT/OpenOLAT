@@ -239,7 +239,7 @@ public class CORunController extends BasicController {
 	private ContactList retrieveCoachesFromAreas(List<Long> areaKeys) {
 		List<Identity> coaches = cgm.getCoachesFromAreas(areaKeys);
 		Set<Identity> coachesWithoutDuplicates = new HashSet<>(coaches);
-		coaches = new ArrayList<Identity>(coachesWithoutDuplicates);
+		coaches = new ArrayList<>(coachesWithoutDuplicates);
 		ContactList cl = new ContactList(translate("form.message.chckbx.coaches"));
 		cl.addAllIdentites(coaches);
 		return cl;
@@ -247,8 +247,10 @@ public class CORunController extends BasicController {
 	
 	private ContactList retrieveCoachesFromCourse() {
 		List<Identity> coaches = cgm.getCoaches();
+		List<Identity> curriculumCoaches = cgm.getCoachesFromCurriculumElements();
 		ContactList cl = new ContactList(translate("form.message.chckbx.partips"));
 		cl.addAllIdentites(coaches);
+		cl.addAllIdentites(curriculumCoaches);
 		return cl;
 	}
 
@@ -261,8 +263,10 @@ public class CORunController extends BasicController {
 	
 	private ContactList retrieveParticipantsFromCourse() {
 		List<Identity> participiants = cgm.getParticipants();
+		List<Identity> curriculumParticipants = cgm.getParticipantsFromCurriculumElements();
 		ContactList cl = new ContactList(translate("form.message.chckbx.partips"));
 		cl.addAllIdentites(participiants);
+		cl.addAllIdentites(curriculumParticipants);
 		return cl;
 	}
 	
