@@ -173,7 +173,7 @@ public class CPFile extends DefaultElement implements CPNode {
 		VFSItemFilter filter = new VFSItemExcludePrefixFilter(unwantedPrefixes);
 		if (container != null) {
 			List<VFSItem> items = container.getItems(filter);
-			if (items == null || !items.isEmpty()) {
+			if (items == null || items.isEmpty()) {
 				container.delete();
 			}
 		}
