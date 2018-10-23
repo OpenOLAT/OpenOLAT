@@ -28,6 +28,7 @@ import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.model.xml.Rubric;
+import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.repository.RepositoryEntry;
 
@@ -76,6 +77,8 @@ public interface QualityAnalysisService {
 	public List<CurriculumElement> loadContextCurriculumElements(AnalysisSearchParameter searchParams, boolean withParents);
 
 	public List<TaxonomyLevel> loadContextTaxonomyLevels(AnalysisSearchParameter searchParams, boolean withParents);
+
+	public List<QualityDataCollection> loadDataCollections(AnalysisSearchParameter searchParams);
 	
 	public Integer loadMaxSeriesIndex(AnalysisSearchParameter searchParams);
 

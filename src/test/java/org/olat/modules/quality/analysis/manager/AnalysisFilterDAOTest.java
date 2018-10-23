@@ -210,6 +210,7 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		assertThat(attributes.isContextCurriculumElement()).isFalse();
 		assertThat(attributes.isContextTaxonomyLevel()).isFalse();
 		assertThat(attributes.isSeriesIndex()).isFalse();
+		assertThat(attributes.isDataCollection()).isFalse();
 	}
 	
 	@Test
@@ -385,6 +386,20 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		AvailableAttributes attributes = sut.getAvailableAttributes(searchParams);
 		
 		assertThat(attributes.isSeriesIndex()).isTrue();
+	}
+	
+	@Test
+	public void shouldGetAvailableAttributeForDataCollection() {
+		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Organisation dcOrganisation = qualityTestHelper.createOrganisation();
+		QualityDataCollection dc1 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		finish(asList(dc1));
+		dbInstance.commitAndCloseSession();
+		
+		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
+		AvailableAttributes attributes = sut.getAvailableAttributes(searchParams);
+		
+		assertThat(attributes.isDataCollection()).isTrue();
 	}
 
 	private QualityDataCollection createFinishedDataCollection() {
@@ -729,6 +744,26 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		
 		assertThat(filtered)
 				.containsExactlyInAnyOrder(taxonomyLevel1.getMaterializedPathKeys(), taxonomyLevel2.getMaterializedPathKeys())
+				.doesNotContainNull();
+	}
+	
+	@Test
+	public void shouldLoadDistinctDataCollection() {
+		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity executor1 = JunitTestHelper.createAndPersistIdentityAsUser("");
+		Identity executor2 = JunitTestHelper.createAndPersistIdentityAsUser("");
+		Organisation dcOrganisation = qualityTestHelper.createOrganisation();
+		QualityDataCollection dc = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participations = qualityService.addParticipations(dc, asList(executor1, executor2));
+		qualityService.createContextBuilder(dc, participations.get(0)).build();
+		qualityService.createContextBuilder(dc, participations.get(1)).build();
+		finish(asList(dc));
+		
+		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
+		List<QualityDataCollection> filtered = sut.loadDataCollection(searchParams);
+		
+		assertThat(filtered)
+				.containsExactlyInAnyOrder(dc)
 				.doesNotContainNull();
 	}
 	

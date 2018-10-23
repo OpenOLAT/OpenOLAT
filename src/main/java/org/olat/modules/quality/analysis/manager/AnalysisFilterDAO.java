@@ -36,6 +36,7 @@ import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumRef;
+import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityDataCollectionLight;
 import org.olat.modules.quality.QualityDataCollectionStatus;
 import org.olat.modules.quality.analysis.AnalysisSearchParameter;
@@ -74,6 +75,7 @@ public class AnalysisFilterDAO {
 		sb.append("     , count(contextToCurriculumElement.curriculumElement.key) > 0");
 		sb.append("     , count(contextToTaxonomyLevel.taxonomyLevel.key) > 0");
 		sb.append("     , CASE WHEN max(survey.seriesIndex) is not null THEN max(survey.seriesIndex) ELSE 0 END >= 2");
+		sb.append("     , count(collection.key) > 0");
 		sb.append("       )");
 		appendFrom(sb, searchParams);
 		appendWhere(sb, searchParams);
@@ -255,6 +257,18 @@ public class AnalysisFilterDAO {
 		appendParameters(query, searchParams);
 		return query.getResultList();
 	}
+	
+	public List<QualityDataCollection> loadDataCollection(AnalysisSearchParameter searchParams) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select distinct collection");
+		appendFrom(sb, searchParams);
+		appendWhere(sb, searchParams);
+		
+		TypedQuery<QualityDataCollection> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), QualityDataCollection.class);
+		appendParameters(query, searchParams);
+		return query.getResultList();
+	}
 
 	public Integer loadMaxSeriesIndex(AnalysisSearchParameter searchParams) {
 		QueryBuilder sb = new QueryBuilder();
@@ -357,6 +371,9 @@ public class AnalysisFilterDAO {
 			break;
 		case CONTEXT_TAXONOMY_LEVEL:
 			castAsString(sb, "contextToTaxonomyLevel.taxonomyLevel.key", select);
+			break;
+		case DATA_COLLECTION:
+			castAsString(sb, "collection.key", select);
 			break;
 		default: 
 		}

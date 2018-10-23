@@ -38,11 +38,12 @@ public class AvailableAttributes {
 	private final boolean contextCurriculumElement;
 	private final boolean contextTaxonomyLevel;
 	private final boolean seriesIndex;
+	private final boolean dataCollection;
 
 	public AvailableAttributes(boolean topicIdentity, boolean topicRepository, boolean topicOrganisation,
 			boolean topicCurriculum, boolean topicCurriculumElement, Boolean contextLocation,
 			boolean contextOrganisation, boolean contextCurriculum, boolean contextCurriculumElement,
-			boolean contextTaxonomyLevel, boolean seriesIndex) {
+			boolean contextTaxonomyLevel, boolean seriesIndex, boolean dataCollection) {
 		this.topicIdentity = topicIdentity;
 		this.topicRepository = topicRepository;
 		this.topicOrganisation = topicOrganisation;
@@ -54,6 +55,7 @@ public class AvailableAttributes {
 		this.contextCurriculumElement = contextCurriculumElement;
 		this.contextTaxonomyLevel = contextTaxonomyLevel;
 		this.seriesIndex = seriesIndex;
+		this.dataCollection = dataCollection;
 	}
 
 	public boolean isTopicIdentity() {
@@ -98,6 +100,10 @@ public class AvailableAttributes {
 
 	public boolean isSeriesIndex() {
 		return seriesIndex;
+	}
+
+	public boolean isDataCollection() {
+		return dataCollection;
 	}
 
 }

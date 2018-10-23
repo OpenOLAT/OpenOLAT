@@ -57,6 +57,7 @@ import org.olat.modules.forms.model.xml.AbstractElement;
 import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.forms.model.xml.Slider;
+import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.analysis.AnalysisSearchParameter;
 import org.olat.modules.quality.analysis.AvailableAttributes;
 import org.olat.modules.quality.analysis.GroupBy;
@@ -109,6 +110,7 @@ public class HeatMapController extends FormBasicController implements Filterable
 	private Map<String, String> groupNamesContextCurriculum;
 	private Map<String, String> groupNamesContextCurriculumElement;
 	private Map<String, String> groupNamesContextTaxonomyLevel;
+	private Map<String, String> groupNamesDataCollection;
 	
 	@Autowired
 	private QualityAnalysisService analysisService;
@@ -254,6 +256,9 @@ public class HeatMapController extends FormBasicController implements Filterable
 		}
 		if (availableAttributes.isContextLocation()) {
 			addEntry(keyValues, GroupBy.CONTEXT_LOCATION);
+		}
+		if (availableAttributes.isDataCollection()) {
+			addEntry(keyValues, GroupBy.DATA_COLLECTION);
 		}
 		Collection<GroupBy> elsewhereSelected = getElsewhereSelected(groupEl);
 		for (GroupBy groupBy : elsewhereSelected) {
@@ -483,6 +488,8 @@ public class HeatMapController extends FormBasicController implements Filterable
 			return translate("heatmap.table.title.taxonomy.level");
 		case CONTEXT_LOCATION:
 			return translate("heatmap.table.title.location");
+		case DATA_COLLECTION:
+			return translate("heatmap.table.title.data.collection");
 		default:
 			return null;
 		}
@@ -510,6 +517,8 @@ public class HeatMapController extends FormBasicController implements Filterable
 			return getContextTaxonomyLevelGroupName(key);
 		case CONTEXT_LOCATION:
 			return key;
+		case DATA_COLLECTION:
+			return getDataCollectionGroupName(key);
 		default:
 			return null;
 		}
@@ -666,6 +675,23 @@ public class HeatMapController extends FormBasicController implements Filterable
 			}
 		}
 		return groupNamesContextTaxonomyLevel;
+	}
+	
+	private String getDataCollectionGroupName(String key) {
+		return getDataCollectionGroupNames().get(key);
+	}
+
+	private Map<String, String> getDataCollectionGroupNames() {
+		if (groupNamesDataCollection == null) {
+			groupNamesDataCollection = new HashMap<>();
+			List<QualityDataCollection> dataCollections = analysisService.loadDataCollections(getGroupNamesSearchParams());
+			for (QualityDataCollection dataCollection : dataCollections) {
+				String key = dataCollection.getKey().toString();
+				String value = dataCollection.getTitle();
+				groupNamesDataCollection.put(key, value);
+			}
+		}
+		return groupNamesDataCollection;
 	}
 
 	private AnalysisSearchParameter getGroupNamesSearchParams() {
