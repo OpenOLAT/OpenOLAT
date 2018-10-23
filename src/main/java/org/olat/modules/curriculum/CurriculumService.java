@@ -136,7 +136,7 @@ public interface CurriculumService {
 	 * @param identity The identity which loose its membership
 	 * @param role The role
 	 */
-	public void removeMember(Curriculum curriculum, Identity member, CurriculumRoles role);
+	public void removeMember(Curriculum curriculum, IdentityRef member, CurriculumRoles role);
 	
 	/**
 	 * Remove all memberships of the curriculum for the specified member.

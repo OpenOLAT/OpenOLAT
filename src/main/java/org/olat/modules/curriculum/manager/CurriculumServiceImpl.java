@@ -161,7 +161,7 @@ public class CurriculumServiceImpl implements CurriculumService {
 	}
 
 	@Override
-	public void removeMember(Curriculum curriculum, Identity member, CurriculumRoles role) {
+	public void removeMember(Curriculum curriculum, IdentityRef member, CurriculumRoles role) {
 		groupDao.removeMembership(curriculum.getGroup(), member, role.name());
 	}
 

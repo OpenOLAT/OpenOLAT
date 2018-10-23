@@ -253,7 +253,10 @@ public class CurriculumElementUserManagementController extends FormBasicControll
 	
 	private void doRemove(List<CurriculumMemberRow> membersToRemove) {
 		for(CurriculumMemberRow memberToRemove:membersToRemove) {
-			curriculumService.removeMember(curriculumElement, new IdentityRefImpl(memberToRemove.getIdentityKey()));
+			if(CurriculumRoles.isValueOf(memberToRemove.getRole())) {
+				CurriculumRoles role = CurriculumRoles.valueOf(memberToRemove.getRole());
+				curriculumService.removeMember(curriculumElement, new IdentityRefImpl(memberToRemove.getIdentityKey()), role);
+			}
 		}
 		loadModel(true);
 	}

@@ -59,7 +59,9 @@ public class CourseRoleCellRenderer implements CustomCellRenderer, FlexiCellRend
 	
 	private void render(StringOutput sb, CourseMembership membership) {
 		boolean and = false;
-		if(membership.isOwner()) {
+		
+		// default repository entry group
+		if(membership.isRepositoryEntryOwner()) {
 			and = and(sb, and);
 			sb.append(translator.translate("role.repo.owner"));
 		}
@@ -67,18 +69,22 @@ public class CourseRoleCellRenderer implements CustomCellRenderer, FlexiCellRend
 			and = and(sb, and);
 			sb.append(translator.translate("role.repo.tutor"));
 		}
-		if(membership.isBusinessGroupCoach()) {
-			and = and(sb, and);
-			sb.append(translator.translate("role.group.tutor"));
-		}
 		if(membership.isRepositoryEntryParticipant()) {
 			and = and(sb, and);
 			sb.append(translator.translate("role.repo.participant"));
+		}
+		
+		// business groups
+		if(membership.isBusinessGroupCoach()) {
+			and = and(sb, and);
+			sb.append(translator.translate("role.group.tutor"));
 		}
 		if(membership.isBusinessGroupParticipant()) {
 			and = and(sb, and);
 			sb.append(translator.translate("role.group.participant"));
 		}
+		
+		// curriculum
 		if(membership.isCurriculumElementParticipant()) {
 			and = and(sb, and);
 			sb.append(translator.translate("role.curriculum.participant"));

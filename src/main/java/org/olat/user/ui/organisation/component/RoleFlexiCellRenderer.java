@@ -28,6 +28,7 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.curriculum.CurriculumRoles;
 
 /**
  * 
@@ -55,7 +56,9 @@ public class RoleFlexiCellRenderer implements FlexiCellRenderer {
 				target.append(translator.translate("role.".concat(OrganisationRoles.valueOf(val).name())));
 			} else if(GroupRoles.isValueOf(val)) {
 				target.append(translator.translate("role.".concat(GroupRoles.valueOf(val).name())));
-			} else {
+			} else if(CurriculumRoles.isValueOf(val)) {
+				target.append(translator.translate("role.".concat(CurriculumRoles.valueOf(val).name())));
+			}  else {
 				target.append(StringHelper.escapeHtml(val));
 			}
 		}
