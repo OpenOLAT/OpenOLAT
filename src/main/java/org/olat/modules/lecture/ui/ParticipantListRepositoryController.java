@@ -142,11 +142,14 @@ public class ParticipantListRepositoryController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(formLayout instanceof FormLayoutContainer && !printView) {
+		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
-			layoutCont.contextPut("winid", "w" + layoutCont.getFormItemComponent().getDispatchID());
-			layoutCont.getFormItemComponent().addListener(this);
-			layoutCont.getFormItemComponent().contextPut("withPrint", Boolean.TRUE);
+			if(!printView) {
+				layoutCont.contextPut("winid", "w" + layoutCont.getFormItemComponent().getDispatchID());
+				layoutCont.getFormItemComponent().addListener(this);
+				layoutCont.getFormItemComponent().contextPut("withPrint", Boolean.TRUE);
+			}
+			layoutCont.contextPut("printCommand", Boolean.valueOf(printView));
 		}
 
 		FlexiTableSortOptions options = new FlexiTableSortOptions();
@@ -209,7 +212,8 @@ public class ParticipantListRepositoryController extends FormBasicController {
 		}
 		
 		tableModel = new ParticipantListDataModel(columnsModel, getTranslator(), getLocale()); 
-		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
+		int pageSize = printView ? 32000 : 20;
+		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, pageSize, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(!printView);
 		tableEl.setEmtpyTableMessageKey("empty.table.participant.list");
 		tableEl.setSortSettings(options);
@@ -304,14 +308,11 @@ public class ParticipantListRepositoryController extends FormBasicController {
 	}
 	
 	private void doPrint(UserRequest ureq) {
-		ControllerCreator printControllerCreator = new ControllerCreator() {
-			@Override
-			public Controller createController(UserRequest lureq, WindowControl lwControl) {
-				lwControl.getWindowBackOffice().getChiefController().addBodyCssClass("o_lectures_print");
-				Controller printCtrl = new ParticipantListRepositoryController(lureq, lwControl, entry, true, admin);
-				listenTo(printCtrl);
-				return printCtrl;
-			}					
+		ControllerCreator printControllerCreator = (lureq, lwControl) -> {
+			lwControl.getWindowBackOffice().getChiefController().addBodyCssClass("o_lectures_print");
+			Controller printCtrl = new ParticipantListRepositoryController(lureq, lwControl, entry, true, admin);
+			listenTo(printCtrl);
+			return printCtrl;					
 		};
 		ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createPrintPopupLayout(printControllerCreator);
 		openInNewBrowserWindow(ureq, layoutCtrlr);
