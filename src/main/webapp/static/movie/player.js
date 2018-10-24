@@ -174,7 +174,7 @@ var BPlayer = {
 		var iframe = '<iframe name="' + frameName + '" id="' + frameName
 		           + '" src="' + url
 		           + '" style="width:' + config.width + 'px; height:' + config.height + 'px; overflow:hidden;"'
-		           + ' frameborder="0"'
+		           + ' frameborder="0" allow="fullscreen" allowfullscreen="true"'
 		           + '></iframe>';
 		jQuery('#' + domId).append(jQuery(iframe));
 		jQuery('#' + domId).css("border", "none");
