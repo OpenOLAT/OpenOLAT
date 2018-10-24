@@ -290,6 +290,7 @@ public abstract class FormBasicController extends BasicController {
 	}
 	
 	
+	@Override
 	protected void removeAsListenerAndDispose(Controller controller) {
 		super.removeAsListenerAndDispose(controller);
 		
@@ -323,6 +324,8 @@ public abstract class FormBasicController extends BasicController {
 	 * called if form validation was not ok.<br>
 	 * default implementation does nothing. Each element is assumed to set
 	 * errormessages. Needed only if complex business logic is checked even
+	 * 
+	 * @param ureq 
 	 */
 	protected void formNOK(UserRequest ureq) {
 	// by default nothing to do -> e.g. looping until form is ok
@@ -351,6 +354,7 @@ public abstract class FormBasicController extends BasicController {
 	/**
 	 * called if an element inside of the form triggered an event
 	 * 
+	 * @param ureq 
 	 * @param source
 	 * @param event
 	 */
@@ -454,9 +458,10 @@ public abstract class FormBasicController extends BasicController {
 		if (i18nKey == null) {
 			flc.contextRemove("off_title");
 		} else {
-			flc.contextPut("off_title", getTranslator().translate(i18nKey));			
+			flc.contextPut("off_title", getTranslator().translate(i18nKey));
 		}
 	}
+	
 	/**
 	 * Set an optional form title that is rendered as a fieldset legend. If you
 	 * use a custom template this will have no effect
@@ -518,6 +523,14 @@ public abstract class FormBasicController extends BasicController {
 			flc.contextRemove("off_desc");
 		} else {
 			flc.contextPut("off_desc", getTranslator().translate(i18nKey, args));
+		}
+	}
+	
+	protected void setFormTranslatedDescription(String translatedDescription) {
+		if (translatedDescription == null) {
+			flc.contextRemove("off_desc");
+		} else {
+			flc.contextPut("off_desc", translatedDescription);
 		}
 	}
 
@@ -630,6 +643,7 @@ public abstract class FormBasicController extends BasicController {
 	public void dispose() {
 		super.dispose();
 		ThreadLocalUserActivityLoggerInstaller.runWithUserActivityLogger(new Runnable() {
+			@Override
 			public void run() {
 				// Dispose also disposable form items (such as file uploads that needs to
 				// cleanup temporary files)

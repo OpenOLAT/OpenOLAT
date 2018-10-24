@@ -31,6 +31,8 @@ import org.olat.modules.quality.generator.QualityGenerator;
  */
 public interface QualitySecurityCallback {
 
+	public boolean canCreateSuggestion();
+
 	public boolean canViewDataCollections();
 	
 	public boolean canCreateDataCollections();

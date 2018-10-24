@@ -688,7 +688,7 @@ public class FormUIFactory {
 	 *          available space
 	 * @param isAutoHeightEnabled true: element expands to fit content height,
 	 *          (max 100 lines); false: specified rows used
-	 * @param fixedFontWidth TODO
+	 * @param fixedFontWidth 
 	 * @param initialValue Initial value
 	 * @param formLayout
 	 * @return

@@ -76,7 +76,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * <b>Main Purpose: </b> is to provide an easy interface for <i>contact message
  * creation and sending </i> from within different OLAT bulding blocks.
  * <P>
- * <b>Responsabilites: </b> <br>
+ * <b>Responsibilities: </b> <br>
  * <UL>
  * <LI>supplies a workflow for creating and sending contact messages</LI>
  * <LI>works with the ContactList encapsulating the e-mail addresses in a
@@ -100,16 +100,6 @@ public class ContactFormController extends BasicController {
 	@Autowired
 	private MailManager mailService;
 	
-	/**
-	 * 
-	 * @param ureq
-	 * @param windowControl
-	 * @param useDefaultTitle
-	 * @param isCanceable
-	 * @param isReadonly
-	 * @param hasRecipientsEditable
-	 * @param cmsg
-	 */
 	public ContactFormController(UserRequest ureq, WindowControl windowControl, boolean isCanceable, boolean isReadonly, boolean hasRecipientsEditable, ContactMessage cmsg) {
 		super(ureq, windowControl);
 		
@@ -139,6 +129,12 @@ public class ContactFormController extends BasicController {
 	public void setContactFormTitle(String translatedTitle) {
 		if(cntctForm != null) {
 			cntctForm.setFormTranslatedTitle(translatedTitle);
+		}
+	}
+	
+	public void setContactFormDescription(String translatedDescription) {
+		if(cntctForm != null) {
+			cntctForm.setFormTranslatedDescription(translatedDescription);
 		}
 	}
 
@@ -171,10 +167,6 @@ public class ContactFormController extends BasicController {
 		return null;
 	}
 
-	/**
-	 * @param useDefaultTitle
-	 * @param hasAtLeastOneAddress
-	 */
 	private void init(UserRequest ureq, boolean hasAtLeastOneAddress, List<Identity> disabledIdentities) {
 		if (hasAtLeastOneAddress) {
 			putInitialPanel(cntctForm.getInitialComponent());	
@@ -185,7 +177,7 @@ public class ContactFormController extends BasicController {
 		}
 		if(!hasAtLeastOneAddress | disabledIdentities.size() > 0){
 			//show error that message can not be sent
-			myButtons = new ArrayList<String>();
+			myButtons = new ArrayList<>();
 			myButtons.add(translate("back"));
 			String title = "";
 			String message = "";
@@ -200,10 +192,6 @@ public class ContactFormController extends BasicController {
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == noUsersErrorCtr) {
@@ -237,10 +225,10 @@ public class ContactFormController extends BasicController {
 			MailBundle bundle = new MailBundle();
 			bundle.setContext(context);
 			if (emailFrom == null) {
-				// in case the user provides his own email in form						
+				// in case the user provides his own email in form
 				bundle.setFrom(cntctForm.getEmailFrom()); 
 			} else {
-				bundle.setFromId(emailFrom);						
+				bundle.setFromId(emailFrom);
 			}
 			bundle.setContactLists(cntctForm.getEmailToContactLists());
 			bundle.setContent(cntctForm.getSubject(), cntctForm.getBody(), attachments);
@@ -304,9 +292,6 @@ public class ContactFormController extends BasicController {
 		//
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
 	@Override
 	protected void doDispose() {
 		//

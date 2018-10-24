@@ -24,15 +24,18 @@ import static org.olat.modules.quality.QualityDataCollectionStatus.PREPARATION;
 import static org.olat.modules.quality.QualityDataCollectionStatus.READY;
 
 import org.olat.basesecurity.OrganisationRoles;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Roles;
 import org.olat.modules.quality.QualityDataCollectionLight;
 import org.olat.modules.quality.QualityDataCollectionStatus;
 import org.olat.modules.quality.QualityExecutorParticipation;
 import org.olat.modules.quality.QualityExecutorParticipationStatus;
+import org.olat.modules.quality.QualityModule;
 import org.olat.modules.quality.QualityReminder;
 import org.olat.modules.quality.QualitySecurityCallback;
 import org.olat.modules.quality.analysis.AnalysisPresentation;
 import org.olat.modules.quality.generator.QualityGenerator;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -43,9 +46,18 @@ import org.olat.modules.quality.generator.QualityGenerator;
 public class QualitySecurityCallbackImpl implements QualitySecurityCallback {
 
 	private final Roles roles;
+	
+	@Autowired
+	private QualityModule qualityModule;
 
 	public QualitySecurityCallbackImpl(Roles roles) {
 		this.roles = roles;
+		CoreSpringFactory.autowireObject(this);
+	}
+
+	@Override
+	public boolean canCreateSuggestion() {
+		return qualityModule.isSuggestionEnabled();
 	}
 
 	@Override

@@ -20,63 +20,47 @@
 package org.olat.modules.quality.ui;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.form.flexible.FormItem;
-import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.modules.quality.QualityModule;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.olat.core.gui.control.controller.BasicController;
 
 /**
  * 
- * Initial date: 04.07.2018<br>
+ * Initial date: 24.10.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class QualityAdminController extends FormBasicController {
-	
-	private static final String[] onKeys = new String[] { "on" };
-	
-	private MultipleSelectionElement enableEl;
-	
-	@Autowired
-	private QualityModule qualityModule;
-	
+public class QualityAdminController extends BasicController {
+
+	private VelocityContainer mainVC;
+	private QualityAdminGeneralController generalCtrl;
+	private QualityAdminSuggestionController suggestionCtrl;
+
 	public QualityAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		initForm(ureq);
-	}
-
-	@Override
-	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("admin.config.title");
 		
-		String[] onValues = new String[] { translate("on") };
-		enableEl = uifactory.addCheckboxesHorizontal("admin.enabled", formLayout, onKeys, onValues);
-		enableEl.addActionListener(FormEvent.ONCHANGE);
-		if(qualityModule.isEnabled()) {
-			enableEl.select(onKeys[0], true);
-		}
+		generalCtrl = new QualityAdminGeneralController(ureq, wControl);
+		listenTo(generalCtrl);
+		
+		suggestionCtrl = new QualityAdminSuggestionController(ureq, wControl);
+		listenTo(suggestionCtrl);
+		
+		mainVC = createVelocityContainer("admin");
+		mainVC.put("general", generalCtrl.getInitialComponent());
+		mainVC.put("suggestion", suggestionCtrl.getInitialComponent());
+		
+		putInitialPanel(mainVC);
 	}
 
 	@Override
-	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(enableEl == source) {
-			qualityModule.setEnabled(enableEl.isAtLeastSelected(1));
-		}
-		super.formInnerEvent(ureq, source, event);
-	}
-	
-	@Override
-	protected void doDispose() {
+	protected void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
 
 	@Override
-	protected void formOK(UserRequest ureq) {
+	protected void doDispose() {
 		//
 	}
 

@@ -19,6 +19,11 @@
  */
 package org.olat.modules.quality;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.olat.NewControllerFactory;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.configuration.ConfigOnOff;
@@ -39,9 +44,20 @@ import org.springframework.stereotype.Service;
 public class QualityModule extends AbstractSpringModule implements ConfigOnOff {
 	
 	private static final String QUALITY_ENABLED = "quality.enabled";
+	private static final String SUGGESTION_ENABLED = "quality.suggestion.enabled";
+	private static final String SUGGESTION_EMAIL_ADDRESSES = "quality.suggestion.addresses";
+	private static final String SUGGESTION_EMAIL_SUBJECT = "quality.suggestion.email.subject";
+	private static final String SUGGESTION_EMAIL_BODY = "quality.suggestion.email.body";
+	private static final String DELIMITER = ",";
 	
 	@Value("${quality.enabled:false}")
 	private boolean enabled;
+	
+	@Value("${quality.suggestion:false}")
+	private boolean suggestionEnabled;
+	private String suggestionEmailAddresses;
+	private String suggestionEmailSubject;
+	private String suggestionEmailBody;
 
 	@Autowired
 	public QualityModule(CoordinatorManager coordinatorManager) {
@@ -66,6 +82,26 @@ public class QualityModule extends AbstractSpringModule implements ConfigOnOff {
 		if (StringHelper.containsNonWhitespace(enabledObj)) {
 			enabled = "true".equals(enabledObj);
 		}
+		
+		String suggestionEnabledObj = getStringPropertyValue(SUGGESTION_ENABLED, true);
+		if (StringHelper.containsNonWhitespace(suggestionEnabledObj)) {
+			suggestionEnabled = "true".equals(suggestionEnabledObj);
+		}
+		
+		String suggestionEmailAddressesObj = getStringPropertyValue(SUGGESTION_EMAIL_ADDRESSES, true);
+		if (StringHelper.containsNonWhitespace(suggestionEmailAddressesObj)) {
+			suggestionEmailAddresses = suggestionEmailAddressesObj;
+		}
+		
+		String suggestionEmailSubjectObj = getStringPropertyValue(SUGGESTION_EMAIL_SUBJECT, true);
+		if (StringHelper.containsNonWhitespace(suggestionEmailSubjectObj)) {
+			suggestionEmailSubject = suggestionEmailSubjectObj;
+		}
+		
+		String suggestionEmailBodyObj = getStringPropertyValue(SUGGESTION_EMAIL_BODY, true);
+		if (StringHelper.containsNonWhitespace(suggestionEmailBodyObj)) {
+			suggestionEmailBody = suggestionEmailBodyObj;
+		}
 	}
 
 	@Override
@@ -76,6 +112,45 @@ public class QualityModule extends AbstractSpringModule implements ConfigOnOff {
 	public void setEnabled(boolean enabled) {
 		this.enabled = enabled;
 		setStringProperty(QUALITY_ENABLED, Boolean.toString(enabled), true);
+	}
+	
+	public boolean isSuggestionEnabled() {
+		return suggestionEnabled;
+	}
+	
+	public void setSuggestionEnabled(boolean suggestionEnabled) {
+		this.suggestionEnabled = suggestionEnabled;
+		setStringProperty(SUGGESTION_ENABLED, Boolean.toString(suggestionEnabled), true);
+	}
+
+	public List<String> getSuggestionEmailAddresses() {
+		if (!StringHelper.containsNonWhitespace(suggestionEmailAddresses)) return Collections.emptyList();
+		
+		return Arrays.asList(suggestionEmailAddresses.split(DELIMITER));
+	}
+
+	public void setSuggestionEmailAddresses(List<String> emailAddresses) {
+		String joinedAddresses = emailAddresses.stream().collect(Collectors.joining(DELIMITER));
+		this.suggestionEmailAddresses = joinedAddresses;
+		setStringProperty(SUGGESTION_EMAIL_ADDRESSES, joinedAddresses, true);
+	}
+
+	public String getSuggestionEmailSubject() {
+		return suggestionEmailSubject;
+	}
+
+	public void setSuggestionEmailSubject(String suggestionEmailSubject) {
+		this.suggestionEmailSubject = suggestionEmailSubject;
+		setStringProperty(SUGGESTION_EMAIL_SUBJECT, suggestionEmailSubject, true);
+	}
+
+	public String getSuggestionEmailBody() {
+		return suggestionEmailBody;
+	}
+
+	public void setSuggestionEmailBody(String suggestionEmailBody) {
+		this.suggestionEmailBody = suggestionEmailBody;
+		setStringProperty(SUGGESTION_EMAIL_BODY, suggestionEmailBody, true);
 	}
 
 }
