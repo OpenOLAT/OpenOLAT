@@ -23,6 +23,7 @@ import static java.util.stream.Collectors.toList;
 
 import java.util.List;
 
+import javax.persistence.TemporalType;
 import javax.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
@@ -70,6 +71,11 @@ public class CourseProviderDAO {
 			sb.append("select datacollection.generatorProviderKey");
 			sb.append("  from qualitydatacollection as datacollection");
 			sb.append(" where datacollection.generator.key = :generatorKey");
+			if (searchParams.getGeneratorDataCollectionStart() != null) {
+				sb.append(" and year(datacollection.start) = year(DATE(:generatorStart))");
+				sb.append(" and month(datacollection.start) = month(DATE(:generatorStart))");
+				sb.append(" and day(datacollection.start) = day(DATE(:generatorStart))");
+			}
 			sb.append(")");
 		}
 		if (searchParams.getOrganisationRefs() != null && !searchParams.getOrganisationRefs().isEmpty()) {
@@ -96,6 +102,12 @@ public class CourseProviderDAO {
 			sb.and();
 			sb.append("lifecycle.validTo <= :endTo");
 		}
+		if (searchParams.getLifecycleValidAt() != null) {
+			sb.and();
+			sb.append("(lifecycle.validFrom <= :validAt or lifecycle.validFrom is null)");
+			sb.and();
+			sb.append("(lifecycle.validTo >= :validAt or lifecycle.validTo is null)");
+		}
 		if (searchParams.getRepositoryEntryRefs() != null && !searchParams.getRepositoryEntryRefs().isEmpty()) {
 			sb.and().append("entry.key in :repositoryKeys");
 		}
@@ -103,7 +115,10 @@ public class CourseProviderDAO {
 
 	private void appendParameter(TypedQuery<RepositoryEntry> query, SearchParameters searchParams) {
 		if (searchParams.getGeneratorRef() != null) {
-			query.setParameter("generatorKey", searchParams.getGeneratorRef() .getKey());
+			query.setParameter("generatorKey", searchParams.getGeneratorRef().getKey());
+			if (searchParams.getGeneratorDataCollectionStart() != null) {
+				query.setParameter("generatorStart", searchParams.getGeneratorDataCollectionStart(), TemporalType.DATE);
+			}
 		}
 		if (searchParams.getOrganisationRefs() != null && !searchParams.getOrganisationRefs().isEmpty()) {
 			List<Long> organisationKeys = searchParams.getOrganisationRefs().stream().map(OrganisationRef::getKey).collect(toList());
@@ -120,6 +135,9 @@ public class CourseProviderDAO {
 		}
 		if (searchParams.getEndTo() != null) {
 			query.setParameter("endTo", searchParams.getEndTo());
+		}
+		if (searchParams.getLifecycleValidAt() != null) {
+			query.setParameter("validAt", searchParams.getLifecycleValidAt());
 		}
 		if (searchParams.getRepositoryEntryRefs() != null && !searchParams.getRepositoryEntryRefs().isEmpty()) {
 			List<Long> keys = searchParams.getRepositoryEntryRefs().stream().map(RepositoryEntryRef::getKey).collect(toList());

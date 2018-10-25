@@ -36,11 +36,13 @@ import org.olat.repository.RepositoryEntryRef;
 public class SearchParameters {
 	
 	private QualityGeneratorRef generatorRef;
+	private Date generatorDataCollectionStart;
 	private Collection<? extends OrganisationRef> organisationRefs;
 	private Date beginFrom;
 	private Date beginTo;
 	private Date endFrom;
 	private Date endTo;
+	private Date lifecycleValidAt;
 	private Collection<? extends RepositoryEntryRef> repositoryEntryRefs;
 	
 	public QualityGeneratorRef getGeneratorRef() {
@@ -91,6 +93,14 @@ public class SearchParameters {
 		this.endTo = endTo;
 	}
 
+	public Date getLifecycleValidAt() {
+		return lifecycleValidAt;
+	}
+	
+	public void setLifecycleValidAt(Date lifecycleValidAt) {
+		this.lifecycleValidAt = lifecycleValidAt;
+	}
+	
 	public Collection<? extends RepositoryEntryRef> getRepositoryEntryRefs() {
 		return repositoryEntryRefs;
 	}
@@ -98,6 +108,15 @@ public class SearchParameters {
 	public void setRepositoryEntryRefs(Collection<? extends RepositoryEntryRef> repositoryEntryRefs) {
 		this.repositoryEntryRefs = repositoryEntryRefs;
 	}
+	
+	public Date getGeneratorDataCollectionStart() {
+		return generatorDataCollectionStart;
+	}
+
+	public void setGeneratorDataCollectionStart(Date generatorDataCollectionStart) {
+		this.generatorDataCollectionStart = generatorDataCollectionStart;
+	}
+
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
@@ -119,6 +138,8 @@ public class SearchParameters {
 		builder.append(endTo);
 		builder.append(", repositoryEntryRefs=");
 		builder.append(repositoryEntryRefs);
+		builder.append(", generatorDataCollectionStart=");
+		builder.append(generatorDataCollectionStart);
 		builder.append("]");
 		return builder.toString();
 	}
