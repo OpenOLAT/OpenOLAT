@@ -64,7 +64,7 @@ public class PdfBoxExtractor implements PdfExtractor {
 		}
 	}
 	
-	private FileContent extractTextFromPdf(VFSLeaf leaf) throws IOException, DocumentAccessException {
+	private FileContent extractTextFromPdf(VFSLeaf leaf) throws IOException {
 		if (log.isDebug()) log.debug("readContent from pdf starts...");
 		
 		try(BufferedInputStream bis = new BufferedInputStream(leaf.getInputStream());
@@ -72,6 +72,8 @@ public class PdfBoxExtractor implements PdfExtractor {
 			String title = getTitle(document);
 			if (log.isDebug()) log.debug("readContent PDDocument loaded");
 			PDFTextStripper stripper = new PDFTextStripper();
+			stripper.setSortByPosition(true);
+			stripper.setSuppressDuplicateOverlappingText(true);
 			LimitedContentWriter writer = new LimitedContentWriter(50000, FileDocumentFactory.getMaxFileSize());
 			stripper.writeText(document, writer);
 			writer.close();
@@ -88,7 +90,7 @@ public class PdfBoxExtractor implements PdfExtractor {
 			return new FileContent(leaf.getName(), writer.toString());
 		} catch(Exception e) {
 			log.error("", e);
-			return null;
+			return new FileContent("", "");
 		}
 	}
 	

@@ -66,7 +66,7 @@ public class PdfExternalExtractor implements PdfExtractor {
 			return;
 		}
 		
-		List<String> cmds = new ArrayList<String>();
+		List<String> cmds = new ArrayList<>();
 		cmds.add(searchModule.getPdfExternalIndexerCmd());
 		cmds.add(((LocalFileImpl)document).getBasefile().getAbsolutePath());
 		cmds.add(bufferFile.getAbsolutePath());

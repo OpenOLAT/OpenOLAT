@@ -334,9 +334,15 @@ public class JmsIndexer implements MessageListener, LifeFullIndexer, ConfigOnOff
 	}
 	
 	private DirectoryReader getReader() throws IOException {
-		DirectoryReader newReader = DirectoryReader.openIfChanged(reader);
-		if(newReader != null) {
-			reader = newReader;
+		if(reader == null) {
+			File tempIndexDir = new File(permanentIndexPath);
+			Directory indexPath = FSDirectory.open(tempIndexDir.toPath());
+			reader = DirectoryReader.open(indexPath);
+		} else {
+			DirectoryReader newReader = DirectoryReader.openIfChanged(reader);
+			if(newReader != null) {
+				reader = newReader;
+			}
 		}
 		return reader;
 	}
