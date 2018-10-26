@@ -19,7 +19,8 @@
  */
 package org.olat.modules.quality.manager;
 
-import java.util.Collections;
+import static java.util.Collections.singletonList;
+
 import java.util.List;
 
 import org.olat.basesecurity.GroupRoles;
@@ -37,6 +38,7 @@ import org.olat.modules.quality.QualityContextRole;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -82,20 +84,42 @@ public class RepositoryEntryQualityContextBuilder extends ForwardingQualityConte
 		
 		Identity executor = evaluationFormParticipation.getExecutor();
 		if (executor != null) {
-			CurriculumRoles curriculumRole = CurriculumRoles.valueOf(role.name());
-			List<CurriculumRoles> curriculumRoles = Collections.singletonList(curriculumRole);
-			List<CurriculumElement> curriculumElements = curriculumService.getCurriculumElements(repositoryEntry, executor, curriculumRoles);
-			for (CurriculumElement curriculumElement: curriculumElements) {
-				builder.addCurriculumElement(curriculumElement);
-				Curriculum curriculum = curriculumElement.getCurriculum();
-				builder.addCurriculum(curriculum);
-				Organisation organisation = curriculum.getOrganisation();
-				builder.addOrganisation(organisation);
+			initCurriculumContext(executor, repositoryEntry, role);
+			if (GroupRoles.coach.equals(role)) {
+				initCurriculumContextForCoach(repositoryEntry);
 			}
 		}
 		List<TaxonomyLevel> taxonomyLevels = repositoryService.getTaxonomy(repositoryEntry);
 		for (TaxonomyLevel taxonomyLevel: taxonomyLevels) {
 			builder.addTaxonomyLevel(taxonomyLevel);
+		}
+	}
+
+	private void initCurriculumContext(Identity identity, RepositoryEntry repositoryEntry, GroupRoles role) {
+		CurriculumRoles curriculumRole = CurriculumRoles.valueOf(role.name());
+		List<CurriculumElement> curriculumElements = curriculumService.getCurriculumElements(repositoryEntry, identity,
+				singletonList(curriculumRole));
+		for (CurriculumElement curriculumElement : curriculumElements) {
+			builder.addCurriculumElement(curriculumElement);
+			Curriculum curriculum = curriculumElement.getCurriculum();
+			builder.addCurriculum(curriculum);
+			Organisation organisation = curriculum.getOrganisation();
+			builder.addOrganisation(organisation);
+		}
+	}
+
+	/**
+	 * A coach gains not only the the context informations of his curriculum
+	 * elements, but also the distinct informations of all participants of the
+	 * course. This is because the membership of a coach in curriculum element is
+	 * not explicit stored but implicit derived form the participant memberships.
+	 *
+	 */
+	private void initCurriculumContextForCoach(RepositoryEntry repositoryEntry) {
+		List<Identity> participants = repositoryService.getMembers(repositoryEntry,
+				RepositoryEntryRelationType.curriculums, GroupRoles.participant.name());
+		for (Identity participant : participants) {
+			initCurriculumContext(participant, repositoryEntry, GroupRoles.participant);
 		}
 	}
 

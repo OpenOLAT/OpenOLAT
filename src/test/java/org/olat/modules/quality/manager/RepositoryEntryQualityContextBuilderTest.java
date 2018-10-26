@@ -98,7 +98,7 @@ public class RepositoryEntryQualityContextBuilderTest extends OlatTestCase {
 	}
 
 	@Test
-	public void shouldInitWithAllRelations() {
+	public void shouldInitParticipantContextWithAllRelations() {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String location = "Kaiserslautern";
 		repositoryManager.setDescriptionAndName(entry, "", null, location, null, null, null, null, null);
@@ -183,6 +183,107 @@ public class RepositoryEntryQualityContextBuilderTest extends OlatTestCase {
 		softly.assertThat(organisations)
 				.containsExactlyInAnyOrder(organisation1, organisation2)
 				.doesNotContain(organisation3);
+		List<TaxonomyLevel> taxonomyLevels = context
+				.getContextToTaxonomyLevel().stream()
+				.map(QualityContextToTaxonomyLevel::getTaxonomyLevel)
+				.collect(Collectors.toList());
+		softly.assertThat(taxonomyLevels)
+				.containsExactlyInAnyOrder(taxonomyLevel1, taxonomyLevel2)
+				.doesNotContain(taxonomyLevel3, taxonomyLevelOfCurriculumElement);
+		softly.assertAll();
+	}
+	
+	@Test
+	public void shouldInitCoachContextWithAllRelations() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		String location = "Frankfurt";
+		repositoryManager.setDescriptionAndName(entry, "", null, location, null, null, null, null, null);
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndAuthor("");
+		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndAuthor("");
+		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndAuthor("");
+		Identity participant3 = JunitTestHelper.createAndPersistIdentityAsRndAuthor("");
+		Identity participantOther = JunitTestHelper.createAndPersistIdentityAsRndAuthor("");
+		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
+		List<EvaluationFormParticipation> participations = qualityService.addParticipations(dataCollection,
+				Arrays.asList(coach));
+		EvaluationFormParticipation evaluationFormParticipation = participations.get(0);
+
+		Organisation organisation1 = organisationService.createOrganisation("", UUID.randomUUID().toString(), "", null,
+				null);
+		Organisation organisation2Parent = organisationService.createOrganisation("", UUID.randomUUID().toString(), "",
+				null, null);
+		Organisation organisation2 = organisationService.createOrganisation("", UUID.randomUUID().toString(), "",
+				organisation2Parent, null);
+		Organisation organisationOther = organisationService.createOrganisation("", UUID.randomUUID().toString(), "", null,
+				null);
+		Curriculum curriculum1 = curriculumService.createCurriculum(UUID.randomUUID().toString(), "", "",
+				organisation1);
+		Curriculum curriculum2 = curriculumService.createCurriculum(UUID.randomUUID().toString(), "", "",
+				organisation2);
+		Curriculum curriculumOther = curriculumService.createCurriculum(UUID.randomUUID().toString(), "", "",
+				organisationOther);
+		CurriculumElement curriculumElement1 = curriculumService.createCurriculumElement(UUID.randomUUID().toString(),
+				"", null, null, null, null, CurriculumCalendars.disabled, curriculum1);
+		CurriculumElement curriculumElement2Parent = curriculumService
+				.createCurriculumElement(UUID.randomUUID().toString(), "", null, null, null, null, CurriculumCalendars.disabled, curriculum2);
+		CurriculumElement curriculumElement2 = curriculumService.createCurriculumElement(UUID.randomUUID().toString(),
+				"", null, null, curriculumElement2Parent, null, CurriculumCalendars.disabled, curriculum2);
+		CurriculumElement curriculumElementOther = curriculumService.createCurriculumElement(UUID.randomUUID().toString(),
+				"", null, null, null, null, CurriculumCalendars.disabled, curriculumOther);
+		curriculumService.addRepositoryEntry(curriculumElement1, entry, true);
+		curriculumService.addRepositoryEntry(curriculumElement2, entry, true);
+		Taxonomy taxonomy = taxonomyService.createTaxonomy(UUID.randomUUID().toString(), "", "", null);
+		TaxonomyLevel taxonomyLevel1 = taxonomyService.createTaxonomyLevel(UUID.randomUUID().toString(), "", "", null,
+				null, null, taxonomy);
+		TaxonomyLevel taxonomyLevel2Parent = taxonomyService.createTaxonomyLevel(UUID.randomUUID().toString(), "", "",
+				null, null, null, taxonomy);
+		TaxonomyLevel taxonomyLevel2 = taxonomyService.createTaxonomyLevel(UUID.randomUUID().toString(), "", "", null,
+				null, taxonomyLevel2Parent, taxonomy);
+		TaxonomyLevel taxonomyLevel3 = taxonomyService.createTaxonomyLevel(UUID.randomUUID().toString(), "", "", null,
+				null, null, taxonomy);
+		TaxonomyLevel taxonomyLevelOfCurriculumElement = taxonomyService
+				.createTaxonomyLevel(UUID.randomUUID().toString(), "", "", null, null, null, taxonomy);
+		repositoryTaxonomyDao.createRelation(entry, taxonomyLevel1);
+		repositoryTaxonomyDao.createRelation(entry, taxonomyLevel2);
+		curriculumElementToTaxonomyLevelDao.createRelation(curriculumElement1, taxonomyLevelOfCurriculumElement);
+		curriculumService.addMember(curriculumElement1, coach, CurriculumRoles.coach);
+		curriculumService.addMember(curriculumElement1, participant1, CurriculumRoles.participant);
+		curriculumService.addMember(curriculumElement2, participant2, CurriculumRoles.participant);
+		curriculumService.addMember(curriculumElement2, participant3, CurriculumRoles.participant);
+		curriculumService.addMember(curriculumElementOther, participantOther, CurriculumRoles.participant);
+		dbInstance.commitAndCloseSession();
+
+		entry = repositoryService.loadByKey(entry.getKey());
+		QualityContext context = RepositoryEntryQualityContextBuilder
+				.builder(dataCollection, evaluationFormParticipation, entry, GroupRoles.coach).build();
+
+		SoftAssertions softly = new SoftAssertions();
+		softly.assertThat(context.getDataCollection()).isEqualTo(dataCollection);
+		softly.assertThat(context.getEvaluationFormParticipation()).isEqualTo(evaluationFormParticipation);
+		softly.assertThat(context.getRole()).isEqualTo(QualityContextRole.coach);
+		softly.assertThat(context.getLocation()).isEqualTo(location);
+		softly.assertThat(context.getAudienceRepositoryEntry()).isEqualTo(entry);
+		List<Curriculum> curriculms = context
+				.getContextToCurriculum().stream()
+				.map(QualityContextToCurriculum::getCurriculum)
+				.collect(Collectors.toList());
+		softly.assertThat(curriculms)
+				.containsExactlyInAnyOrder(curriculum1, curriculum2)
+				.doesNotContain(curriculumOther);
+		List<CurriculumElement> curriculumElements = context
+				.getContextToCurriculumElement().stream()
+				.map(QualityContextToCurriculumElement::getCurriculumElement)
+				.collect(Collectors.toList());
+		softly.assertThat(curriculumElements)
+				.containsExactlyInAnyOrder(curriculumElement1, curriculumElement2)
+				.doesNotContain(curriculumElementOther);
+		List<Organisation> organisations = context
+				.getContextToOrganisation().stream()
+				.map(QualityContextToOrganisation::getOrganisation)
+				.collect(Collectors.toList());
+		softly.assertThat(organisations)
+				.containsExactlyInAnyOrder(organisation1, organisation2)
+				.doesNotContain(organisationOther);
 		List<TaxonomyLevel> taxonomyLevels = context
 				.getContextToTaxonomyLevel().stream()
 				.map(QualityContextToTaxonomyLevel::getTaxonomyLevel)
