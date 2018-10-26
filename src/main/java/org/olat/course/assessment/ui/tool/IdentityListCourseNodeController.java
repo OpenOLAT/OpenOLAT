@@ -854,25 +854,27 @@ public class IdentityListCourseNodeController extends FormBasicController
 		} else if(courseNode instanceof AssessableCourseNode) {
 			ICourse course = CourseFactory.loadCourse(courseEntry);
 			AssessableCourseNode assessableCourseNode = (AssessableCourseNode)courseNode;
-			
 			for(AssessedIdentityElementRow row:rows) {
 				Identity assessedIdentity = securityManager.loadIdentityByKey(row.getIdentityKey());
-				
-				Roles roles = securityManager.getRoles(assessedIdentity);
-				
-				IdentityEnvironment identityEnv = new IdentityEnvironment(assessedIdentity, roles);
-				UserCourseEnvironment assessedUserCourseEnv = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment(), coachCourseEnv.isCourseReadOnly());
-				assessedUserCourseEnv.getScoreAccounting().evaluateAll();
-
-				ScoreEvaluation scoreEval = assessableCourseNode.getUserScoreEvaluation(assessedUserCourseEnv);
-				ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getPassed(),
-						AssessmentEntryStatus.done, null, scoreEval.getFullyAssessed(),
-						scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
-				assessableCourseNode.updateUserScoreEvaluation(doneEval, assessedUserCourseEnv, getIdentity(), false, Role.coach);
+				doSetDone(assessedIdentity, assessableCourseNode, course);
 			}
-			
 			loadModel(ureq);
 		}
+	}
+	
+	protected void doSetDone(Identity assessedIdentity, AssessableCourseNode assessableCourseNode, ICourse course) {
+		Roles roles = securityManager.getRoles(assessedIdentity);
+		
+		IdentityEnvironment identityEnv = new IdentityEnvironment(assessedIdentity, roles);
+		UserCourseEnvironment assessedUserCourseEnv = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment(), coachCourseEnv.isCourseReadOnly());
+		assessedUserCourseEnv.getScoreAccounting().evaluateAll();
+
+		ScoreEvaluation scoreEval = assessableCourseNode.getUserScoreEvaluation(assessedUserCourseEnv);
+		ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getPassed(),
+				AssessmentEntryStatus.done, null, scoreEval.getFullyAssessed(),
+				scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
+		assessableCourseNode.updateUserScoreEvaluation(doneEval, assessedUserCourseEnv, getIdentity(), false, Role.coach);
+		
 	}
 	
 	private void doUpdateCompletion(Double completion, AssessmentRunStatus status, Long assessedIdentityKey) {

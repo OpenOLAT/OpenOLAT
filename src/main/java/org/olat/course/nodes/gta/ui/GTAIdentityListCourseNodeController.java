@@ -36,7 +36,9 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
+import org.olat.course.ICourse;
 import org.olat.course.archiver.ArchiveResource;
 import org.olat.course.assessment.bulk.BulkAssessmentToolController;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
@@ -48,10 +50,12 @@ import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.GTAType;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskList;
+import org.olat.course.nodes.gta.TaskProcess;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentToolOptions;
+import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.ui.AssessedIdentityElementRow;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
@@ -69,7 +73,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class GTAIdentityListCourseNodeController extends IdentityListCourseNodeController {
 	
-	private FormLink downloadButton, groupAssessmentButton;
+	private FormLink downloadButton;
+	private FormLink groupAssessmentButton;
 	
 	private GroupAssessmentController assessmentCtrl;
 	
@@ -198,6 +203,23 @@ public class GTAIdentityListCourseNodeController extends IdentityListCourseNodeC
 		super.cleanUp();
 	}
 	
+	@Override
+	protected Controller createCalloutController(UserRequest ureq, Identity assessedIdentity) {
+		return new GTAIdentityListCourseNodeToolsController(ureq, getWindowControl(),
+				(AssessableCourseNode)courseNode, assessedIdentity, coachCourseEnv);
+	}
+
+	@Override
+	protected void doSetDone(Identity assessedIdentity, AssessableCourseNode assessableCourseNode, ICourse course) {
+		super.doSetDone(assessedIdentity, assessableCourseNode, course);
+		
+		TaskList taskList = gtaManager.getTaskList(getCourseRepositoryEntry(), (GTACourseNode)assessableCourseNode);
+		Task task = gtaManager.getTask(assessedIdentity, taskList);
+		if(task != null) {
+			gtaManager.updateTask(task, TaskProcess.graded, (GTACourseNode)assessableCourseNode, Role.coach);
+		}
+	}
+
 	private void doDownload(UserRequest ureq) {
 		AssessmentToolOptions asOptions = getOptions();
 		OLATResource courseOres = getCourseRepositoryEntry().getOlatResource();

@@ -45,6 +45,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentRunStatus;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -71,6 +72,7 @@ public abstract class AbstractToolsController extends BasicController {
 	
 	private final boolean courseReadonly;
 	protected final Identity assessedIdentity;
+	private final RepositoryEntry courseEntry;
 	private final AssessmentEvaluation scoreEval;
 	protected final AssessableCourseNode courseNode;
 	protected final UserCourseEnvironment assessedUserCourseEnv;
@@ -88,6 +90,7 @@ public abstract class AbstractToolsController extends BasicController {
 		this.courseNode = courseNode;
 		this.assessedIdentity = assessedIdentity;
 		courseReadonly = coachCourseEnv.isCourseReadOnly();
+		courseEntry = coachCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 
 		assessedUserCourseEnv = AssessmentHelper
 				.createAndInitUserCourseEnvironment(assessedIdentity, coachCourseEnv.getCourseEnvironment());
@@ -96,6 +99,10 @@ public abstract class AbstractToolsController extends BasicController {
 	
 	public boolean isCourseReadonly() {
 		return courseReadonly;
+	}
+	
+	public RepositoryEntry getCourseRepositoryEntry() {
+		return courseEntry;
 	}
 	
 	protected final void initTools() {
@@ -219,24 +226,32 @@ public abstract class AbstractToolsController extends BasicController {
 	
 	private void doReopen(UserRequest ureq) {
 		if (scoreEval != null) {
-			ScoreEvaluation reopenedEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getPassed(),
-					AssessmentEntryStatus.inReview, scoreEval.getUserVisible(), scoreEval.getFullyAssessed(),
-					scoreEval.getCurrentRunCompletion(), AssessmentRunStatus.running,
-					scoreEval.getAssessmentID());
-			courseNode.updateUserScoreEvaluation(reopenedEval, assessedUserCourseEnv, getIdentity(), false, Role.coach);
+			reopenEvaluation();
 		}
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
+	protected void reopenEvaluation() {
+		ScoreEvaluation reopenedEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getPassed(),
+				AssessmentEntryStatus.inReview, scoreEval.getUserVisible(), scoreEval.getFullyAssessed(),
+				scoreEval.getCurrentRunCompletion(), AssessmentRunStatus.running,
+				scoreEval.getAssessmentID());
+		courseNode.updateUserScoreEvaluation(reopenedEval, assessedUserCourseEnv, getIdentity(), false, Role.coach);
+	}
+	
 	private void doSetDone(UserRequest ureq) {
 		if (scoreEval != null) {
-			ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getPassed(),
-					AssessmentEntryStatus.done, scoreEval.getUserVisible(), scoreEval.getFullyAssessed(),
-					scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(),
-					scoreEval.getAssessmentID());
-			courseNode.updateUserScoreEvaluation(doneEval, assessedUserCourseEnv, getIdentity(), false, Role.coach);
+			doneEvalution();
 		}
 		fireEvent(ureq, Event.CHANGED_EVENT);
+	}
+	
+	protected void doneEvalution() {
+		ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getPassed(),
+				AssessmentEntryStatus.done, scoreEval.getUserVisible(), scoreEval.getFullyAssessed(),
+				scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(),
+				scoreEval.getAssessmentID());
+		courseNode.updateUserScoreEvaluation(doneEval, assessedUserCourseEnv, getIdentity(), false, Role.coach);
 	}
 	
 	private void doSetVisibility(UserRequest ureq, boolean visible) {
