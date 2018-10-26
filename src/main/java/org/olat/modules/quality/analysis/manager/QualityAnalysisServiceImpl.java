@@ -219,6 +219,18 @@ public class QualityAnalysisServiceImpl implements QualityAnalysisService {
 	}
 
 	@Override
+	public List<Organisation> loadContextCurriculumOrganisations(AnalysisSearchParameter searchParams, boolean withParents) {
+		List<Organisation> organisations = organisationService.getOrganisations();
+		List<String> pathes = filterDao.loadContextCurriculumOrganisationPathes(searchParams);
+		if (withParents) {
+			organisations.removeIf(e -> isUnusedChild(e.getMaterializedPathKeys(), pathes));
+		} else {
+			organisations.removeIf(e -> isUnused(e.getMaterializedPathKeys(), pathes));
+		}	
+		return organisations;
+	}
+
+	@Override
 	public List<TaxonomyLevel> loadContextTaxonomyLevels(AnalysisSearchParameter searchParams, boolean withParents) {
 		List<TaxonomyLevel> levels = taxonomyService.getTaxonomyLevels(null);
 		List<String> pathes = filterDao.loadContextTaxonomyLevelPathes(searchParams);

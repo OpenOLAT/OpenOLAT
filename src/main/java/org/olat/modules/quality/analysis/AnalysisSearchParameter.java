@@ -52,6 +52,7 @@ public class AnalysisSearchParameter {
 	private List<? extends OrganisationRef> contextOrganisationRefs;
 	private Collection<? extends CurriculumRef> contextCurriculumRefs;
 	private List<? extends CurriculumElementRef> contextCurriculumElementRefs;
+	private List<? extends OrganisationRef> contextCurriculumOrganisationRefs;
 	private List<? extends TaxonomyLevelRef> contextTaxonomyLevelRefs;
 	private Collection<Integer> seriesIndexes;
 	private boolean withUserInfosOnly;
@@ -111,6 +112,14 @@ public class AnalysisSearchParameter {
 
 	public void setTopicCurriculumElementRefs(List<? extends CurriculumElementRef> topicCurriculumElementRefs) {
 		this.topicCurriculumElementRefs = topicCurriculumElementRefs;
+	}
+
+	public List<? extends OrganisationRef> getContextCurriculumOrganisationRefs() {
+		return contextCurriculumOrganisationRefs;
+	}
+
+	public void setContextCurriculumOrganisationRefs(List<? extends OrganisationRef> contextCurriculumOrganisationRefs) {
+		this.contextCurriculumOrganisationRefs = contextCurriculumOrganisationRefs;
 	}
 
 	public List<? extends RepositoryEntryRef> getTopicRepositoryRefs() {

@@ -73,6 +73,7 @@ public class AnalysisFilterDAO {
 		sb.append("     , count(contextToOrganisation.organisation.key) > 0");
 		sb.append("     , count(contextCurriculum.key) > 0");
 		sb.append("     , count(contextCurriculumElement.key) > 0");
+		sb.append("     , count(contextCurriculumOrganisation.key) > 0");
 		sb.append("     , count(contextToTaxonomyLevel.taxonomyLevel.key) > 0");
 		sb.append("     , CASE WHEN max(survey.seriesIndex) is not null THEN max(survey.seriesIndex) ELSE 0 END >= 2");
 		sb.append("     , count(collection.key) > 0");
@@ -114,7 +115,6 @@ public class AnalysisFilterDAO {
 		return query.getResultList();
 	}
 
-
 	List<String> loadContextOrganisationPathes(AnalysisSearchParameter searchParams) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select distinct contextOrganisation.materializedPathKeys");
@@ -150,6 +150,19 @@ public class AnalysisFilterDAO {
 		
 		TypedQuery<CurriculumElement> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), CurriculumElement.class);
+		appendParameters(query, searchParams);
+		return query.getResultList();
+	}
+
+	List<String> loadContextCurriculumOrganisationPathes(AnalysisSearchParameter searchParams) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select distinct contextCurriculumOrganisation.materializedPathKeys");
+		appendFrom(sb, searchParams);
+		appendWhere(sb, searchParams);
+		sb.and().append("contextCurriculumOrganisation.key is not null");
+		
+		TypedQuery<String> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), String.class);
 		appendParameters(query, searchParams);
 		return query.getResultList();
 	}
@@ -369,6 +382,9 @@ public class AnalysisFilterDAO {
 		case CONTEXT_CURRICULUM_ELEMENT:
 			castAsString(sb, "contextCurriculumElement.key", select);
 			break;
+		case CONTEXT_CURRICULUM_ORGANISATION:
+			castAsString(sb, "contextCurriculumOrganisation.key", select);
+			break;
 		case CONTEXT_TAXONOMY_LEVEL:
 			castAsString(sb, "contextToTaxonomyLevel.taxonomyLevel.key", select);
 			break;
@@ -396,6 +412,7 @@ public class AnalysisFilterDAO {
 		sb.append("       left join curriculumelement contextCurriculumElement");
 		sb.append("              on contextToCurriculumElement.curriculumElement.key = contextCurriculumElement.key");
 		sb.append("       left join contextCurriculumElement.curriculum contextCurriculum");
+		sb.append("       left join contextCurriculum.organisation contextCurriculumOrganisation");
 		sb.append("       left join contexttoorganisation contextToOrganisation");
 		sb.append("              on contextToOrganisation.context.key = context.key");
 		sb.append("       left join organisation contextOrganisation");
@@ -467,6 +484,21 @@ public class AnalysisFilterDAO {
 				}
 				sb.append("contextCurriculumElement.materializedPathKeys like :elePath").append(i);
 				if (i == searchParams.getContextCurriculumElementRefs().size() - 1) {
+					sb.append(")");
+				}
+			}
+		}
+		if (searchParams.getContextCurriculumOrganisationRefs() != null && !searchParams.getContextCurriculumOrganisationRefs().isEmpty()) {
+			// load the organisations and all children
+			sb.and();
+			for (int i = 0; i < searchParams.getContextCurriculumOrganisationRefs().size(); i++) {
+				if (i == 0) {
+					sb.append("(");
+				} else {
+					sb.append(" or ");
+				}
+				sb.append("contextCurriculumOrganisation.materializedPathKeys like :contextCurriculumOrganisationPath").append(i);
+				if (i == searchParams.getContextCurriculumOrganisationRefs().size() - 1) {
 					sb.append(")");
 				}
 			}
@@ -552,6 +584,14 @@ public class AnalysisFilterDAO {
 			for (int i = 0; i < searchParams.getContextCurriculumElementRefs().size(); i++) {
 				String parameter = new StringBuilder(12).append("elePath").append(i).toString();
 				Long key = searchParams.getContextCurriculumElementRefs().get(i).getKey();
+				String value = new StringBuilder(32).append("%/").append(key).append("/%").toString();
+				query.setParameter(parameter, value);
+			}
+		}
+		if (searchParams.getContextCurriculumOrganisationRefs() != null && !searchParams.getContextCurriculumOrganisationRefs().isEmpty()) {
+			for (int i = 0; i < searchParams.getContextCurriculumOrganisationRefs().size(); i++) {
+				String parameter = new StringBuilder(40).append("contextCurriculumOrganisationPath").append(i).toString();
+				Long key = searchParams.getContextCurriculumOrganisationRefs().get(i).getKey();
 				String value = new StringBuilder(32).append("%/").append(key).append("/%").toString();
 				query.setParameter(parameter, value);
 			}

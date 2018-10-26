@@ -70,11 +70,13 @@ public interface QualityAnalysisService {
 
 	public List<String> loadContextLocations(AnalysisSearchParameter searchParams);
 
-	public List<Organisation> loadContextOrganisations(AnalysisSearchParameter searchParams, boolean withParentsb);
+	public List<Organisation> loadContextOrganisations(AnalysisSearchParameter searchParams, boolean withParents);
 
 	public List<Curriculum> loadContextCurriculums(AnalysisSearchParameter searchParams);
 
 	public List<CurriculumElement> loadContextCurriculumElements(AnalysisSearchParameter searchParams, boolean withParents);
+	
+	public List<Organisation> loadContextCurriculumOrganisations(AnalysisSearchParameter searchParams, boolean withParents);
 
 	public List<TaxonomyLevel> loadContextTaxonomyLevels(AnalysisSearchParameter searchParams, boolean withParents);
 

@@ -35,6 +35,7 @@ public enum GroupBy {
 	CONTEXT_ORGANISATION("heatmap.group.context.organisation"),
 	CONTEXT_CURRICULUM("heatmap.group.context.curriculum"),
 	CONTEXT_CURRICULUM_ELEMENT("heatmap.group.context.curriculum.element"),
+	CONTEXT_CURRICULUM_ORGANISATION("heatmap.group.context.curriculum.organisation"),
 	CONTEXT_TAXONOMY_LEVEL("heatmap.group.context.taxonomy.level"),
 	CONTEXT_LOCATION("heatmap.group.context.location"),
 	DATA_COLLECTION("heatmap.group.data.collection");

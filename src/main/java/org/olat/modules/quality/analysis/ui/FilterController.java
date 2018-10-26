@@ -91,6 +91,7 @@ public class FilterController extends FormBasicController {
 	private MultipleSelectionElement contextOrganisationEl;
 	private MultipleSelectionElement contextCurriculumEl;
 	private MultipleSelectionElement contextCurriculumElementEl;
+	private MultipleSelectionElement contextCurriculumOrganisationEl;
 	private MultipleSelectionElement contextTaxonomyLevelEl;
 	private MultipleSelectionElement contextLocationEl;
 	private MultipleSelectionElement seriesIndexEl;
@@ -164,6 +165,9 @@ public class FilterController extends FormBasicController {
 		contextCurriculumElementEl = uifactory.addCheckboxesDropdown("filter.context.curriculum.elements", formLayout);
 		contextCurriculumElementEl.addActionListener(FormEvent.ONCLICK);
 
+		contextCurriculumOrganisationEl = uifactory.addCheckboxesDropdown("filter.context.curriculum.organisations", formLayout);
+		contextCurriculumOrganisationEl.addActionListener(FormEvent.ONCLICK);
+
 		contextTaxonomyLevelEl = uifactory.addCheckboxesDropdown("filter.context.taxonomy.level", formLayout);
 		contextTaxonomyLevelEl.addActionListener(FormEvent.ONCLICK);
 
@@ -190,6 +194,7 @@ public class FilterController extends FormBasicController {
 		setContextOrganisationValues();
 		setContextCurriculumValues();
 		setContextCurriculumElementValues();
+		setContextCurriculumOrganisationValues();
 		setContextTaxonomyLevelValues();
 		setContextLocationValues();
 		setSeriesIndexValues();
@@ -289,8 +294,7 @@ public class FilterController extends FormBasicController {
 	}
 
 	private void setContextOrganisationValues() {
-		if (!availableAttributes.isContextOrganisation() || !organisationModule.isEnabled()
-				|| !curriculumModule.isEnabled()) {
+		if (!availableAttributes.isContextOrganisation() || !organisationModule.isEnabled()) {
 			contextOrganisationEl.setVisible(false);
 			return;
 		}
@@ -299,8 +303,6 @@ public class FilterController extends FormBasicController {
 
 		AnalysisSearchParameter searchParamsClone = searchParams.clone();
 		searchParamsClone.setContextOrganisationRefs(null);
-		searchParamsClone.setContextCurriculumRefs(null);
-		searchParamsClone.setContextCurriculumElementRefs(null);
 		List<Organisation> organisations = analysisService.loadContextOrganisations(searchParamsClone, true);
 		OrganisationTreeModel organisationModel = new OrganisationTreeModel();
 		organisationModel.loadTreeModel(organisations);
@@ -359,6 +361,30 @@ public class FilterController extends FormBasicController {
 		}
 	}
 
+	private void setContextCurriculumOrganisationValues() {
+		if (!availableAttributes.isContextCurriculumOrganisation() || !organisationModule.isEnabled()
+				|| !curriculumModule.isEnabled()) {
+			contextCurriculumOrganisationEl.setVisible(false);
+			return;
+		}
+
+		Collection<String> selectedKeys = contextCurriculumOrganisationEl.getSelectedKeys();
+
+		AnalysisSearchParameter searchParamsClone = searchParams.clone();
+		searchParamsClone.setContextCurriculumOrganisationRefs(null);
+		searchParamsClone.setContextCurriculumRefs(null);
+		searchParamsClone.setContextCurriculumElementRefs(null);
+		List<Organisation> organisations = analysisService.loadContextCurriculumOrganisations(searchParamsClone, true);
+		OrganisationTreeModel organisationModel = new OrganisationTreeModel();
+		organisationModel.loadTreeModel(organisations);
+
+		KeysValues keysValues = QualityUIFactory.getOrganisationKeysValues(organisationModel, null);
+		contextCurriculumOrganisationEl.setKeysAndValues(keysValues.getKeys(), keysValues.getValues());
+		for (String key : selectedKeys) {
+			contextCurriculumOrganisationEl.select(key, true);
+		}
+	}
+	
 	private void setContextTaxonomyLevelValues() {
 		if (!availableAttributes.isContextTaxonomyLevel()) {
 			contextTaxonomyLevelEl.setVisible(false);
@@ -461,6 +487,8 @@ public class FilterController extends FormBasicController {
 			doFiltered(ureq);
 		} else if (source == contextCurriculumElementEl) {
 			doFiltered(ureq);
+		} else if (source == contextCurriculumOrganisationEl) {
+			doFiltered(ureq);
 		} else if (source == contextTaxonomyLevelEl) {
 			doFiltered(ureq);
 		} else if (source == contextLocationEl) {
@@ -490,6 +518,7 @@ public class FilterController extends FormBasicController {
 		getSearchParamContextOrganisations();
 		getSearchParamContextCurriculums();
 		getSearchParamContextCurriculumElements();
+		getSearchParamContextCurriculumOrganisations();
 		getSearchParamContextTaxonomyLevels();
 		getSearchParamContextLocations();
 		getSearchParamSeriesIndex();
@@ -596,6 +625,16 @@ public class FilterController extends FormBasicController {
 			searchParams.setContextCurriculumElementRefs(curriculumElementRefs);
 		} else {
 			searchParams.setContextCurriculumElementRefs(null);
+		}
+	}
+	
+	private void getSearchParamContextCurriculumOrganisations() {
+		if (contextCurriculumOrganisationEl.isVisible() && contextCurriculumOrganisationEl.isAtLeastSelected(1)) {
+			List<OrganisationRef> organisationRefs = contextCurriculumOrganisationEl.getSelectedKeys().stream()
+					.map(key -> QualityUIFactory.getOrganisationRef(key)).collect(toList());
+			searchParams.setContextCurriculumOrganisationRefs(organisationRefs);
+		} else {
+			searchParams.setContextCurriculumOrganisationRefs(null);
 		}
 	}
 

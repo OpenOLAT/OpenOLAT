@@ -109,6 +109,7 @@ public class HeatMapController extends FormBasicController implements Filterable
 	private Map<String, String> groupNamesContextOrganisation;
 	private Map<String, String> groupNamesContextCurriculum;
 	private Map<String, String> groupNamesContextCurriculumElement;
+	private Map<String, String> groupNamesContextCurriculumOrganisation;
 	private Map<String, String> groupNamesContextTaxonomyLevel;
 	private Map<String, String> groupNamesDataCollection;
 	
@@ -250,6 +251,9 @@ public class HeatMapController extends FormBasicController implements Filterable
 		}
 		if (availableAttributes.isContextCurriculumElement() && curriculumModule.isEnabled()) {
 			addEntry(keyValues, GroupBy.CONTEXT_CURRICULUM_ELEMENT);
+		}
+		if (availableAttributes.isContextCurriculumOrganisation() && curriculumModule.isEnabled()) {
+			addEntry(keyValues, GroupBy.CONTEXT_CURRICULUM_ORGANISATION);
 		}
 		if (availableAttributes.isContextTaxonomyLevel()) {
 			addEntry(keyValues, GroupBy.CONTEXT_TAXONOMY_LEVEL);
@@ -484,6 +488,8 @@ public class HeatMapController extends FormBasicController implements Filterable
 			return translate("heatmap.table.title.curriculum");
 		case CONTEXT_CURRICULUM_ELEMENT:
 			return translate("heatmap.table.title.curriculum.element");
+		case CONTEXT_CURRICULUM_ORGANISATION:
+			return translate("heatmap.table.title.curriculum.organisation");
 		case CONTEXT_TAXONOMY_LEVEL:
 			return translate("heatmap.table.title.taxonomy.level");
 		case CONTEXT_LOCATION:
@@ -513,6 +519,8 @@ public class HeatMapController extends FormBasicController implements Filterable
 			return getContextCurriculumGroupName(key);
 		case CONTEXT_CURRICULUM_ELEMENT:
 			return getContextCurriculumElementGroupName(key);
+		case CONTEXT_CURRICULUM_ORGANISATION:
+			return getContextCurriculumOrganisationGroupName(key);
 		case CONTEXT_TAXONOMY_LEVEL:
 			return getContextTaxonomyLevelGroupName(key);
 		case CONTEXT_LOCATION:
@@ -658,6 +666,23 @@ public class HeatMapController extends FormBasicController implements Filterable
 			}
 		}
 		return groupNamesContextCurriculumElement;
+	}
+	
+	private String getContextCurriculumOrganisationGroupName(String key) {
+		return getContextCurriculumOrganisationGroupNames().get(key);
+	}
+
+	private Map<String, String> getContextCurriculumOrganisationGroupNames() {
+		if (groupNamesContextCurriculumOrganisation == null) {
+			groupNamesContextCurriculumOrganisation = new HashMap<>();
+			List<Organisation> elements = analysisService.loadContextCurriculumOrganisations(getGroupNamesSearchParams(), false);
+			for (Organisation element : elements) {
+				String key = element.getKey().toString();
+				String value = element.getDisplayName();
+				groupNamesContextCurriculumOrganisation.put(key, value);
+			}
+		}
+		return groupNamesContextCurriculumOrganisation;
 	}
 
 	private String getContextTaxonomyLevelGroupName(String key) {
