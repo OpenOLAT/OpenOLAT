@@ -1,2 +1,4 @@
 $r.render("chPwdForm")
-$r.render("tokenForm")
+#if($r.visible("tokenForm"))
+	$r.render("tokenForm")
+#end
