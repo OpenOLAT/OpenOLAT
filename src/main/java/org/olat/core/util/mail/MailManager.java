@@ -55,11 +55,11 @@ public interface MailManager {
 	public Subscriber getSubscriber(Identity identity);
 	
 	/**
-	 * Subscribe to mail news
-	 * @param identity
+	 * Subscribe to mail news (asynchronously).
+	 * 
+	 * @param identity The identity which want to subscribe the mails news
 	 */
 	public void subscribe(Identity identity);
-	
 	
 	/**
 	 * @param key

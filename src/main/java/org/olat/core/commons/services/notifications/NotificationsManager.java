@@ -32,10 +32,9 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.manager.BasicManager;
 import org.olat.core.util.event.GenericEventListener;
 
-public abstract class NotificationsManager extends BasicManager {
+public abstract class NotificationsManager {
 	
 	
 	protected static NotificationsManager INSTANCE = null;
@@ -311,6 +310,15 @@ public abstract class NotificationsManager extends BasicManager {
 	 * @param publisherData
 	 */
 	public abstract void subscribe(Identity identity, SubscriptionContext subscriptionContext, PublisherData publisherData);
+	
+	/**
+	 * The method is equivalent to the method above but is done through the JMS server.
+	 * 
+	 * @param identity The identity which subscribe
+	 * @param subscriptionContext The context
+	 * @param publisherData The additional data
+	 */
+	public abstract void asyncSubscribe(Identity identity, SubscriptionContext subscriptionContext, PublisherData publisherData);
 	
 	public abstract void subscribe(List<Identity> identities, SubscriptionContext subscriptionContext, PublisherData publisherData);
 

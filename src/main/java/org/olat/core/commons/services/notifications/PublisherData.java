@@ -26,17 +26,20 @@
 
 package org.olat.core.commons.services.notifications;
 
+import java.io.Serializable;
+
 /**
- * Description:<br>
- * TODO: Felix Jost Class Description for PublisherData
- * 
- * <P>
  * Initial Date:  05.01.2005 <br>
  *
  * @author Felix Jost
  */
-public class PublisherData {
-	private final String type, data, businessPath;
+public class PublisherData implements Serializable {
+
+	private static final long serialVersionUID = -8294086638277708232L;
+	
+	private final String type;
+	private final String data;
+	private final String businessPath;
 	
 	/**
 	 * @param type

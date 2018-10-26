@@ -26,6 +26,8 @@
 
 package org.olat.core.commons.services.notifications;
 
+import java.io.Serializable;
+
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
 
@@ -36,7 +38,10 @@ import org.olat.core.logging.AssertException;
  * Initial Date: 25.10.2004 <br>
  * @author Felix Jost
  */
-public class SubscriptionContext {
+public class SubscriptionContext implements Serializable {
+
+	private static final long serialVersionUID = 2704406819309583263L;
+	
 	private final String resName;
 	private final Long resId;
 	private final String subidentifier;

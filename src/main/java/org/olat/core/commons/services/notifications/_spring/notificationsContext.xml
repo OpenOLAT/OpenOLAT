@@ -14,10 +14,11 @@
 	<bean id="org.olat.modules.wiki.WikiPageChangeOrCreateNotificationHandler" class="org.olat.modules.wiki.WikiPageChangeOrCreateNotificationHandler" />
 	<bean id="org.olat.user.notification.NewUsersNotificationHandler" class="org.olat.user.notification.NewUsersNotificationHandler" />
 	
-	<bean id="notificationsManager" class="org.olat.core.commons.services.notifications.manager.NotificationsManagerImpl" >
+	<bean id="notificationsManager" class="org.olat.core.commons.services.notifications.manager.NotificationsManagerImpl">
 		<property name="dbInstance" ref="database"/>
 		<property name="securityManager" ref="baseSecurityManager"/>
 		<property name="propertyManager" ref="propertyManager"/>
+		<property name="coordinatorManager" ref="coordinatorManager" />
 		<!-- 
 			Configure which notification intervals you want the user to choose from. 
 			Don't add other intervals unless you also implement them. But you can surely
