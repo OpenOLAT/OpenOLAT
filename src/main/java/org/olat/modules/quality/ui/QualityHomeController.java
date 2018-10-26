@@ -58,20 +58,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class QualityHomeController extends BasicController implements Activateable2{
 
 	private static final String ORES_MY_TYPE = "my";
+	private static final String ORES_SUGGESTION_TYPE = "suggestion";
 	private static final String ORES_DATA_COLLECTIONS_TYPE = "datacollections";
 	private static final String ORES_GENERATORS_TYPE = "generators";
 	private static final String ORES_ANALYSIS_TYPE = "analysis";
 	
 	private final VelocityContainer mainVC;
-	private Link dataCollectionLink;
 	private Link executorParticipationLink;
+	private Link suggestionLink;
+	private Link dataCollectionLink;
 	private Link generatorsLink;
 	private Link analysisLink;
 	private List<Component> analysisPresenatationLinks = Collections.emptyList();
 	
 	private final TooledStackedPanel stackPanel;
-	private DataCollectionListController dataCollectionListCtrl;
 	private ExecutorParticipationsListController executorParticipationListCtrl;
+	private SuggestionController suggestionCtrl;
+	private DataCollectionListController dataCollectionListCtrl;
 	private GeneratorListController generatorsListCtrl;
 	private AnalysisListController analysisListCtrl;
 	
@@ -100,6 +103,13 @@ public class QualityHomeController extends BasicController implements Activateab
 		executorParticipationLink.setIconRightCSS("o_icon o_icon_start");
 		wrappers.add(new PanelWrapper(translate("goto.executor.participation.title"),
 				translate("goto.executor.participation.help"), executorParticipationLink, null));
+		
+		if (secCallback.canCreateSuggestion()) {
+			suggestionLink = LinkFactory.createLink("goto.suggestion.link", mainVC, this);
+			suggestionLink.setIconRightCSS("o_icon o_icon_start");
+			wrappers.add(new PanelWrapper(translate("goto.suggestion.title"),
+					translate("goto.suggestion.help"), suggestionLink, null));
+		}
 		
 		if (secCallback.canViewDataCollections()) {
 			dataCollectionLink = LinkFactory.createLink("goto.data.collection.link", mainVC, this);
@@ -158,6 +168,9 @@ public class QualityHomeController extends BasicController implements Activateab
 			doOpenUserParticipations(ureq);
 			List<ContextEntry> subEntries = entries.subList(1, entries.size());
 			executorParticipationListCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
+		} else if (ORES_SUGGESTION_TYPE.equalsIgnoreCase(resource.getResourceableTypeName())
+				&& secCallback.canCreateSuggestion()) {
+			doOpenSuggestion(ureq);
 		} else if (ORES_DATA_COLLECTIONS_TYPE.equalsIgnoreCase(resource.getResourceableTypeName())
 				&& secCallback.canViewDataCollections()) {
 			doOpenDataCollection(ureq);
@@ -179,13 +192,18 @@ public class QualityHomeController extends BasicController implements Activateab
 	}
 
 	private boolean canOnlyExecute() {
-		return !secCallback.canViewDataCollections();
+		return !secCallback.canCreateSuggestion()
+				&& !secCallback.canViewDataCollections()
+				&& !secCallback.canCreateGenerators()
+				&& !secCallback.canViewAnalysis();
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (executorParticipationLink == source) {
 			doOpenUserParticipations(ureq);
+		} else if (suggestionLink == source) {
+			doOpenSuggestion(ureq);
 		} else if (dataCollectionLink == source) {
 			doOpenDataCollection(ureq);
 		} else if (generatorsLink == source) {
@@ -209,6 +227,15 @@ public class QualityHomeController extends BasicController implements Activateab
 		executorParticipationListCtrl = new ExecutorParticipationsListController(ureq, bwControl, secCallback);
 		listenTo(executorParticipationListCtrl);
 		stackPanel.pushController(translate("breadcrumb.executor.participations"), executorParticipationListCtrl);
+	}
+	
+	private void doOpenSuggestion(UserRequest ureq) {
+		stackPanel.popUpToRootController(ureq);
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance(ORES_SUGGESTION_TYPE, 0l);
+		WindowControl bwControl = addToHistory(ureq, ores, null);
+		suggestionCtrl = new SuggestionController(ureq, bwControl);
+		listenTo(suggestionCtrl);
+		stackPanel.pushController(translate("breadcrumb.suggestion"), suggestionCtrl);
 	}
 
 	private void doOpenDataCollection(UserRequest ureq) {

@@ -49,6 +49,7 @@ import org.olat.core.id.OrganisationNameComparator;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
+import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.nodes.INode;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -574,6 +575,16 @@ public class QualityUIFactory {
 			}
 		}
 		return allOk;
+	}
+
+	public static boolean validateEmailAdresses(List<String> emailAddresses) {
+		for (String emailAddress : emailAddresses) {
+			boolean valid = MailHelper.isValidEmailAddress(emailAddress);
+			if (!valid) {
+				return false;
+			}
+		}
+		return true;
 	}
 	
 	public static class KeysValues {

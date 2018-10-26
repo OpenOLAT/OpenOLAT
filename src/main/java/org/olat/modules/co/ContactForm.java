@@ -98,7 +98,7 @@ public class ContactForm extends FormBasicController {
 	private final static String NLS_CONTACT_ATTACHMENT_EXPL = "contact.attachment.maxsize";
 	private int contactAttachmentMaxSizeInMb = 5;
 	private FileElement attachmentEl;
-	private List<FormLink> attachmentLinks = new ArrayList<FormLink>();
+	private List<FormLink> attachmentLinks = new ArrayList<>();
 	private FormLayoutContainer uploadCont;
 	private boolean recipientsAreEditable = false;
 	private final static int emailCols = 60;
@@ -110,9 +110,9 @@ public class ContactForm extends FormBasicController {
 	private Identity emailFrom;
 	private File attachementTempDir;
 	private long attachmentSize = 0l;
-	private Map<String,String> attachmentCss = new HashMap<String,String>();
-	private Map<String,String> attachmentNames = new HashMap<String,String>();
-	private Map<String,ContactList> contactLists = new Hashtable<String,ContactList>();
+	private Map<String,String> attachmentCss = new HashMap<>();
+	private Map<String,String> attachmentNames = new HashMap<>();
+	private Map<String,ContactList> contactLists = new Hashtable<>();
 	
 	private final UserManager userManager;
 
@@ -140,9 +140,6 @@ public class ContactForm extends FormBasicController {
 	}
 		
 
-	/**
-	 * @param defaultSubject
-	 */
 	protected void setSubject(final String defaultSubject) {
 		tsubject.setValue(defaultSubject);
 		tsubject.setEnabled(!readOnly);
@@ -170,9 +167,6 @@ public class ContactForm extends FormBasicController {
 		}
 	}
 
-	/**
-	 * @param defaultEmailTo
-	 */
 	private void addContactFormEmailTo(String defaultEmailTo) {
 		defaultEmailTo += tto.getValue();
 		tto.setValue(defaultEmailTo);
@@ -182,9 +176,6 @@ public class ContactForm extends FormBasicController {
 		ttoBig.setVisible(recipientsAreEditable);
 	}
 
-	/**
-	 * @param defaultBody
-	 */
 	public void setBody(String defaultBody) {
 		tbody.setValue(defaultBody);
 		tbody.setEnabled(!readOnly);
@@ -224,9 +215,6 @@ public class ContactForm extends FormBasicController {
 		return subjectOk && bodyOk && toOk && fromOk && fromMailAddOk;
 	}
 
-	/**
-	 * @return
-	 */
 	public String getEmailFrom() {
 		return tfrom.getValue().trim();
 	}
@@ -237,7 +225,7 @@ public class ContactForm extends FormBasicController {
 	 * @return
 	 */
 	public List<ContactList> getEmailToContactLists() {
-		List<ContactList> retVal = new ArrayList<ContactList>();
+		List<ContactList> retVal = new ArrayList<>();
 		retVal.addAll(contactLists.values());
 		return retVal;
 	}
@@ -272,22 +260,16 @@ public class ContactForm extends FormBasicController {
 		return retVal;
 	}
 
-	/**
-	 * @return
-	 */
 	public String getSubject() {
 		return tsubject.getValue();
 	}
 
-	/**
-	 * @return email body text
- 	 */
  	public String getBody() {
  		return tbody.getValue(FilterFactory.getSmileysCssToDataUriFilter());
 	}
  	
  	public File[] getAttachments() {
- 		List<File> attachments = new ArrayList<File>();
+ 		List<File> attachments = new ArrayList<>();
  		for(FormLink removeLink : attachmentLinks) {
  			attachments.add((File)removeLink.getUserObject());
  		}
@@ -305,7 +287,7 @@ public class ContactForm extends FormBasicController {
  		return tcpfrom.isSelected(0);
  	}
  	
- 	protected void setDisplayOnly (boolean readOnly) {
+ 	protected void setDisplayOnly(boolean readOnly) {
  		this.readOnly = readOnly;
  		if (readOnly) {
  			flc.setEnabled(false);
@@ -316,15 +298,20 @@ public class ContactForm extends FormBasicController {
 	protected void setFormTranslatedTitle(String translatedTitle) {
 		super.setFormTranslatedTitle(translatedTitle);
 	}
-
+	
+	@Override
+	protected void setFormTranslatedDescription(String translatedDescription) {
+		super.setFormTranslatedDescription(translatedDescription);
+	}
+	
 	@Override
 	protected void formOK(UserRequest ureq) {
-		fireEvent (ureq, Event.DONE_EVENT);
+		fireEvent(ureq, Event.DONE_EVENT);
 	}
 	
 	@Override
 	protected void formCancelled(UserRequest ureq) {
-		fireEvent (ureq, Event.CANCELLED_EVENT);
+		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 	
 	@Override
@@ -431,7 +418,6 @@ public class ContactForm extends FormBasicController {
 			uifactory.addFormCancelButton("msg.cancel", buttonGroupLayout, ureq, getWindowControl());
 		}
 	}
-
 
 	@Override
 	protected void doDispose() {
