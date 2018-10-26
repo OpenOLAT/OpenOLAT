@@ -204,7 +204,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 		PublisherData data = getPublisherData();
 		SubscriptionContext context = getSubscriptionContext();
 		if(context != null) {
-			notificationsManager.subscribe(identity, context, data);
+			notificationsManager.asyncSubscribe(identity, context, data);
 		}
 	}
 

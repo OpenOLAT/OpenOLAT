@@ -54,8 +54,7 @@ public class LecturesBlockSignaturePDFExport extends PdfDocument implements Medi
 	private final LectureBlock lectureBlock;
 	private final RepositoryEntry entry;
 	
-	public LecturesBlockSignaturePDFExport(LectureBlock lectureBlock, Translator translator)
-			throws IOException {
+	public LecturesBlockSignaturePDFExport(LectureBlock lectureBlock, Translator translator) {
 		super(translator.getLocale());
 		
 		marginTopBottom = 62.0f;

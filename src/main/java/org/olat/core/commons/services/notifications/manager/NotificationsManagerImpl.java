@@ -66,6 +66,7 @@ import org.olat.core.commons.services.notifications.model.NoSubscriptionInfo;
 import org.olat.core.commons.services.notifications.model.PublisherImpl;
 import org.olat.core.commons.services.notifications.model.SubscriberImpl;
 import org.olat.core.commons.services.notifications.ui.NotificationSubscriptionController;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
@@ -96,6 +97,7 @@ import org.olat.properties.PropertyManager;
 import org.olat.user.UserDataDeletable;
 import org.olat.user.UserDataExportable;
 import org.olat.user.manager.ManifestBuilder;
+import org.springframework.beans.factory.InitializingBean;
 
 /**
  * Description: <br>
@@ -104,7 +106,8 @@ import org.olat.user.manager.ManifestBuilder;
  * Initial Date: 21.10.2004 <br>
  * @author Felix Jost
  */
-public class NotificationsManagerImpl extends NotificationsManager implements UserDataDeletable, UserDataExportable {
+public class NotificationsManagerImpl extends NotificationsManager
+implements UserDataDeletable, UserDataExportable, GenericEventListener, InitializingBean {
 	private static final OLog log = Tracing.createLoggerFor(NotificationsManagerImpl.class);
 
 	private static final int PUB_STATE_OK = 0;
@@ -114,6 +117,7 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	private static final SubscriptionInfo NOSUBSINFO = new NoSubscriptionInfo();
 
 	private final OLATResourceable oresMyself = OresHelper.lookupType(NotificationsManagerImpl.class);
+	private final OLATResourceable asyncSubscription = OresHelper.createOLATResourceableType("NotificationsManagerAsyncSub");
 
 	private Map<String, NotificationsHandler> notificationHandlers;
 	
@@ -125,6 +129,7 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	private DB dbInstance;
 	private BaseSecurity securityManager;
 	private PropertyManager propertyManager;
+	private CoordinatorManager coordinatorManager;
 	
 	/**
 	 * [used by spring]
@@ -157,6 +162,27 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	 */
 	public void setPropertyManager(PropertyManager propertyManager) {
 		this.propertyManager = propertyManager;
+	}
+	
+	/**
+	 * [used by Spring]
+	 * @param coordinatorManager
+	 */
+	public void setCoordinatorManager(CoordinatorManager coordinatorManager) {
+		this.coordinatorManager = coordinatorManager;
+	}
+
+
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		coordinatorManager.getCoordinator().getEventBus().registerFor(this, null, asyncSubscription);
+	}
+
+	@Override
+	public void event(Event event) {
+		if(event instanceof AsyncSubscriptionEvent) {
+			processAsyncSubscription((AsyncSubscriptionEvent)event);
+		}
 	}
 
 	/**
@@ -345,7 +371,7 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	
 	@Override
 	public void notifyAllSubscribersByEmail() {
-		logAudit("starting notification cronjob to send email", null);
+		log.audit("starting notification cronjob to send email", null);
 		WorkThreadInformations.setLongRunningTask("sendNotifications");
 		
 		int counter = 0;
@@ -371,7 +397,7 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 		
 		// done, purge last entry
 		WorkThreadInformations.unsetLongRunningTask("sendNotifications");
-		logAudit("end notification cronjob to send email", null);
+		log.audit("end notification cronjob to send email", null);
 	}
 	
 	private void processSubscribersByEmail(Identity ident) {
@@ -441,7 +467,7 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	private void notifySubscribersByEmail(Subscriber latestSub, List<SubscriptionItem> items, List<Subscriber> subsToUpdate, Translator translator, long start, boolean veto) {
 		if(veto) {
 			if(latestSub != null) {
-				logAudit(latestSub.getIdentity().getKey() + " already received notification email within prefs interval");
+				log.audit(latestSub.getIdentity().getKey() + " already received notification email within prefs interval");
 			}
 		} else if (items.size() > 0) {
 			Identity curIdent = latestSub.getIdentity();
@@ -459,9 +485,9 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 			  
 				StringBuilder mailLog = new StringBuilder();
 				mailLog.append("Notifications mailed for ").append(curIdent.getKey()).append(' ').append(items.size()).append(' ').append((System.currentTimeMillis() - start)).append("ms");
-				logAudit(mailLog.toString());
+				log.audit(mailLog.toString());
 			} else {
-				logAudit("Error sending notification email to : " + curIdent.getKey());
+				log.audit("Error sending notification email to : " + curIdent.getKey());
 			}
 		}
 		//collecting the SubscriptionItem can potentially make a lot of DB calls
@@ -500,7 +526,7 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	@Override
 	public String getUserIntervalOrDefault(Identity ident){
 		if(ident == null || ident.getUser() == null || ident.getUser().getPreferences() == null) {
-			logWarn("Identity " + (ident == null ? "NULL" : ident.getKey()) + " has no preferences invalid", null);
+			log.warn("Identity " + (ident == null ? "NULL" : ident.getKey()) + " has no preferences invalid", null);
 			return getDefaultNotificationInterval();
 		}
 		
@@ -508,7 +534,7 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 		if (!StringHelper.containsNonWhitespace(userInterval)) userInterval = getDefaultNotificationInterval();
 		List<String> avIntvls = getEnabledNotificationIntervals();
 		if (!avIntvls.contains(userInterval)) {
-			logWarn("Identity " + ident.getKey() + " has an invalid notification-interval (not found in config): " + userInterval, null);
+			log.warn("Identity " + ident.getKey() + " has an invalid notification-interval (not found in config): " + userInterval, null);
 			userInterval = getDefaultNotificationInterval();
 		}
 		return userInterval;
@@ -790,7 +816,7 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	 *         given publisher
 	 */
 	@Override
-	public Subscriber getSubscriber(Identity identity, Publisher publisher) {
+	public Subscriber getSubscriber(IdentityRef identity, Publisher publisher) {
 		List<Subscriber> res = dbInstance.getCurrentEntityManager()
 				.createNamedQuery("subscribersByPublisherAndIdentity", Subscriber.class)
 				.setParameter("publisherKey", publisher.getKey())
@@ -911,6 +937,28 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 		dbInstance.commit();
 	}
 	
+	@Override
+	public void asyncSubscribe(Identity identity, SubscriptionContext subscriptionContext, PublisherData publisherData) {
+		if(coordinatorManager != null) {
+			AsyncSubscriptionEvent event = new AsyncSubscriptionEvent(identity.getKey(), subscriptionContext, publisherData);
+			coordinatorManager.getCoordinator().getEventBus().fireEventToListenersOf(event, asyncSubscription);
+		} else {
+			log.error("Subscription lost");
+		}
+	}
+	
+	private void processAsyncSubscription(AsyncSubscriptionEvent event) {
+		try {
+			Identity identity = securityManager.loadIdentityByKey(event.getIdentityKey());
+			if(identity != null) {
+				subscribe(identity, event.getSubscriptionContext(), event.getPublisherData());
+			}
+		} catch (Exception e) {
+			log.error("", e);
+			dbInstance.commitAndCloseSession();
+		}
+	}
+
 	@Override
 	public void subscribe(List<Identity> identities, SubscriptionContext subscriptionContext,
 			PublisherData publisherData) {
@@ -1058,7 +1106,7 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 			if (s != null) {
 				deleteSubscriber(s);
 			} else {
-				logWarn("could not unsubscribe " + identity.getKey() + " from publisher:" + p.getResName() + ","	+ p.getResId() + "," + p.getSubidentifier(), null);
+				log.warn("could not unsubscribe " + identity.getKey() + " from publisher:" + p.getResName() + ","	+ p.getResId() + "," + p.getSubidentifier(), null);
 			}
 		}
 		dbInstance.commit();
@@ -1075,7 +1123,7 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 				if (s != null) {
 					deleteSubscriber(s);
 				} else {
-					logWarn("could not unsubscribe " + identity.getKey() + " from publisher:" + p.getResName() + ","	+ p.getResId() + "," + p.getSubidentifier(), null);
+					log.warn("could not unsubscribe " + identity.getKey() + " from publisher:" + p.getResName() + ","	+ p.getResId() + "," + p.getSubidentifier(), null);
 				}
 			}
 		}
@@ -1092,7 +1140,7 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 		if (foundSub != null) {
 			deleteSubscriber(foundSub);
 		} else {
-			logWarn("could not unsubscribe " + s.getIdentity().getKey() + " from publisher:" + s.getPublisher().getResName() + ","	+ s.getPublisher().getResId() + "," + s.getPublisher().getSubidentifier(), null);
+			log.warn("could not unsubscribe " + s.getIdentity().getKey() + " from publisher:" + s.getPublisher().getResName() + ","	+ s.getPublisher().getResId() + "," + s.getPublisher().getSubidentifier(), null);
 		}
 	}
 
@@ -1214,15 +1262,15 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 		if (latestEmailed == null) throw new AssertException("compareDate may not be null, use a date from history");
 		
 		try {
-			boolean debug = isLogDebugEnabled();
+			boolean debug = log.isDebug();
 			
 			SubscriptionItem si = null;
 			Publisher pub = subscriber.getPublisher();
 			NotificationsHandler notifHandler = getNotificationsHandler(pub);
-			if(debug) logDebug("create subscription with handler: " + notifHandler.getClass().getName());
+			if(debug) log.debug("create subscription with handler: " + notifHandler.getClass().getName());
 			// do not create subscription item when deleted
 			if (isPublisherValid(pub) && notifHandler != null) {
-				if(debug) logDebug("NotifHandler: " + notifHandler.getClass().getName() + " compareDate: " + latestEmailed.toString() + " now: " + new Date().toString(), null);
+				if(debug) log.debug("NotifHandler: " + notifHandler.getClass().getName() + " compareDate: " + latestEmailed.toString() + " now: " + new Date().toString(), null);
 				SubscriptionInfo subsInfo = notifHandler.createSubscriptionInfo(subscriber, locale, latestEmailed);
 				if (subsInfo.hasNews()) {
 					si = createSubscriptionItem(subsInfo, subscriber, locale, mimeTypeTitle, mimeTypeContent);
@@ -1294,7 +1342,7 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 		for (Subscriber subscriber:subscribers) {
 			deleteSubscriber(subscriber);
 		}
-		logDebug("All notification-subscribers deleted for identity=" + identity, null);
+		log.debug("All notification-subscribers deleted for identity=" + identity, null);
 	}
 
 	@Override

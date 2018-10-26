@@ -34,6 +34,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
 import org.olat.login.auth.OLATAuthManager;
+import org.olat.user.UserModule;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -55,6 +56,8 @@ public class UserChangePasswordController extends BasicController {
 	private Identity user;
 	
 	@Autowired
+	private UserModule userModule;
+	@Autowired
 	private OLATAuthManager olatAuthenticationSpi;
 
 	/**
@@ -66,15 +69,16 @@ public class UserChangePasswordController extends BasicController {
 		super(ureq, wControl);
 
 		user = changeableUser;
+		mainVC = createVelocityContainer("pwd");
 		chPwdForm = new ChangeUserPasswordForm(ureq, wControl, user);
 		listenTo(chPwdForm);
-		tokenForm = new SendTokenToUserForm(ureq, wControl, user);
-		listenTo(tokenForm);
-
-		mainVC = createVelocityContainer("pwd");
 		mainVC.put("chPwdForm", chPwdForm.getInitialComponent());
-		mainVC.put("tokenForm", tokenForm.getInitialComponent());
-		
+		if (userModule.isAnyPasswordChangeAllowed()) {
+			tokenForm = new SendTokenToUserForm(ureq, wControl, user);
+			listenTo(tokenForm);
+			mainVC.put("tokenForm", tokenForm.getInitialComponent());
+		}
+
 		putInitialPanel(mainVC);
 	}
 

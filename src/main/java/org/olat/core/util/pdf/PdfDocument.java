@@ -41,11 +41,14 @@ import org.apache.pdfbox.pdmodel.common.PDMetadata;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.apache.pdfbox.util.Matrix;
 import org.apache.xmpbox.XMPMetadata;
 import org.apache.xmpbox.schema.AdobePDFSchema;
 import org.apache.xmpbox.schema.DublinCoreSchema;
 import org.apache.xmpbox.schema.XMPBasicSchema;
 import org.apache.xmpbox.xml.XmpSerializer;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 
@@ -59,6 +62,8 @@ import org.olat.core.util.StringHelper;
  *
  */
 public class PdfDocument {
+	
+	private static final OLog log = Tracing.createLoggerFor(PdfDocument.class);
 	
 	protected PDFont font = PDType1Font.HELVETICA;
 	protected PDFont fontBold = PDType1Font.HELVETICA_BOLD;
@@ -135,6 +140,8 @@ public class PdfDocument {
         float leading = lineHeightFactory * fontSize;
         
         PDFont textFont = bold ? fontBold : font;
+        
+        text = text.replace('\n', ' ').replace('\r', ' ');
 
         List<String> lines = new ArrayList<>();
         int lastSpace = -1;
@@ -172,6 +179,7 @@ public class PdfDocument {
     
     public float getStringWidth(String string, float fontSize)
     throws IOException {
+    	string = string.replace('\n', ' ').replace('\r', ' ');
     	return fontSize * font.getStringWidth(string) / 1000;
     }
     
@@ -229,7 +237,7 @@ public class PdfDocument {
             new XmpSerializer().serialize(metadata, xmpOutputStream, true);
             metadataStream.importXMPMetadata(xmpOutputStream.toByteArray());
         } catch(IOException e) {
-        	e.printStackTrace();
+        	log.error("", e);
         }
         
         catalog.setMetadata(metadataStream);
@@ -257,14 +265,14 @@ public class PdfDocument {
             contentStream.beginText();
             // set font and font size
             contentStream.setFont( font, footerFontSize );
-            contentStream.setTextTranslation(x, y);
+            contentStream.setTextMatrix(Matrix.getTranslateInstance((float)x, (float)y));
             contentStream.showText(text);
             contentStream.endText();
             
             //set current date
             contentStream.beginText();
             contentStream.setFont(font, footerFontSize );
-            contentStream.setTextTranslation(marginLeftRight, y);
+            contentStream.setTextMatrix(Matrix.getTranslateInstance(marginLeftRight, (float)y));
             contentStream.showText(printDate);
             contentStream.endText();
             
@@ -296,7 +304,8 @@ public class PdfDocument {
 				indexBefore = -1;//use more place
 			}
 
-			String one, two;
+			String one;
+			String two;
 			if(indexBefore <= 0) {
 				//one word
 				indexBefore = Math.min(text.length(), maxNumOfLetter - 6);
