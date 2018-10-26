@@ -32,6 +32,7 @@ import java.util.concurrent.TimeUnit;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
@@ -229,7 +230,7 @@ public class MailManagerTest extends OlatTestCase {
 	}
 	
 	
-	@Test
+	@Test @Ignore // not really needed anymore, the subscribe process is asynchrone and serial
 	public void testParalellSubscribers() {
 		final int NUM_OF_THREADS = 10;
 		final int NUM_OF_USERS = 10;
@@ -259,6 +260,7 @@ public class MailManagerTest extends OlatTestCase {
 		
 		// sleep until threads should have terminated/excepted
 		try {
+			Thread.sleep(30000);// eat all JMS events
 			finishCount.await(120, TimeUnit.SECONDS);
 		} catch (InterruptedException e) {
 			log.error("", e);

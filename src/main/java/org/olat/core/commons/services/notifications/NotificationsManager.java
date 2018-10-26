@@ -129,7 +129,7 @@ public abstract class NotificationsManager {
 	 * @return a Subscriber object belonging to the identity and listening to the
 	 *         given publisher
 	 */
-	public abstract Subscriber getSubscriber(Identity identity, Publisher publisher);
+	public abstract Subscriber getSubscriber(IdentityRef identity, Publisher publisher);
 	
 	/**
 	 * Delete the subscriber with the specified primary key.

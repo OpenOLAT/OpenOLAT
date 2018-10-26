@@ -820,7 +820,7 @@ implements UserDataDeletable, UserDataExportable, GenericEventListener, Initiali
 	 *         given publisher
 	 */
 	@Override
-	public Subscriber getSubscriber(Identity identity, Publisher publisher) {
+	public Subscriber getSubscriber(IdentityRef identity, Publisher publisher) {
 		List<Subscriber> res = dbInstance.getCurrentEntityManager()
 				.createNamedQuery("subscribersByPublisherAndIdentity", Subscriber.class)
 				.setParameter("publisherKey", publisher.getKey())
