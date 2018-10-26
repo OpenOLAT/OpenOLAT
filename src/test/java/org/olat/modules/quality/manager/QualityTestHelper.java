@@ -240,7 +240,11 @@ public class QualityTestHelper {
 	}
 
 	public CurriculumElement createCurriculumElement() {
-		return curriculumService.createCurriculumElement("i", "d", null, null, null, null, CurriculumCalendars.disabled, createCurriculum());
+		return createCurriculumElement(createCurriculum());
+	}
+	
+	public CurriculumElement createCurriculumElement(Curriculum curriculum) {
+		return curriculumService.createCurriculumElement("i", "d", null, null, null, null, CurriculumCalendars.disabled, curriculum);
 	}
 
 	public RepositoryEntry createRepositoryEntry() {

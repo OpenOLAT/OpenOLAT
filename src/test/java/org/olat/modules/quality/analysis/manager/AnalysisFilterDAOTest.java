@@ -160,21 +160,21 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		Identity executor1 = JunitTestHelper.createAndPersistIdentityAsUser("");
 		Identity executor2 = JunitTestHelper.createAndPersistIdentityAsUser("");
 		Organisation dcOrganisation = qualityTestHelper.createOrganisation();
-		Curriculum curriculum1 = qualityTestHelper.createCurriculum();
-		Curriculum curriculum2 = qualityTestHelper.createCurriculum();
+		CurriculumElement element1 = qualityTestHelper.createCurriculumElement();
+		CurriculumElement element2 = qualityTestHelper.createCurriculumElement();
 		// Data collection with two participations and finished sessions
 		QualityDataCollection dc = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
 		List<EvaluationFormParticipation> participations1 = qualityService.addParticipations(dc, asList(executor1, executor2));
 		// First participation
 		EvaluationFormParticipation participation1 = participations1.get(0);
 		QualityContextBuilder contextBuilder1 = qualityService.createContextBuilder(dc, participation1);
-		contextBuilder1.addCurriculum(curriculum1).addCurriculum(curriculum2).build();
+		contextBuilder1.addCurriculumElement(element1).addCurriculumElement(element2).build();
 		EvaluationFormSession session1 = evaManager.createSession(participation1);
 		session1 = evaManager.finishSession(session1);
 		// Second participation
 		EvaluationFormParticipation participation2 = participations1.get(0);
 		QualityContextBuilder contextBuilder2 = qualityService.createContextBuilder(dc, participation2);
-		contextBuilder2.addCurriculum(curriculum2).addCurriculum(curriculum2).build();
+		contextBuilder2.addCurriculumElement(element2).build();
 		EvaluationFormSession session2 = evaManager.createSession(participation2);
 		evaManager.finishSession(session2);
 		// Participation with two curriculums and no session
@@ -182,7 +182,7 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		List<EvaluationFormParticipation> participationsNoSession = qualityService.addParticipations(dcNoSession, Collections.singletonList(executor1));
 		EvaluationFormParticipation participationNoSession = participationsNoSession.get(0);
 		QualityContextBuilder contextBuilderNoSession = qualityService.createContextBuilder(dcNoSession, participationNoSession);
-		contextBuilderNoSession.addCurriculum(curriculum1).addCurriculum(curriculum2).build();
+		contextBuilderNoSession.addCurriculumElement(element1).addCurriculumElement(element2).build();
 		finish(asList(dc));
 		dbInstance.commitAndCloseSession();
 		
@@ -324,10 +324,11 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		QualityDataCollection dataCollection = createFinishedDataCollection();
 		Identity executor = JunitTestHelper.createAndPersistIdentityAsRndUser("");
 		Curriculum curriculum = qualityTestHelper.createCurriculum();
+		CurriculumElement element = qualityTestHelper.createCurriculumElement(curriculum);
 		List<EvaluationFormParticipation> participations = qualityService.addParticipations(dataCollection,
 				singletonList(executor));
 		qualityService.createContextBuilder(dataCollection, participations.get(0))
-				.addCurriculum(curriculum)
+				.addCurriculumElement(element)
 				.build();
 		dbInstance.commitAndCloseSession();
 		
@@ -614,22 +615,24 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		Identity executor = JunitTestHelper.createAndPersistIdentityAsUser("");
 		Organisation dcOrganisation = qualityTestHelper.createOrganisation();
 		Curriculum curriculum1 = qualityTestHelper.createCurriculum();
+		CurriculumElement element1 = qualityTestHelper.createCurriculumElement(curriculum1);
 		Curriculum curriculum2 = qualityTestHelper.createCurriculum();
+		CurriculumElement element2 = qualityTestHelper.createCurriculumElement(curriculum2);
 		// Participation with curriculum
 		QualityDataCollection dc1 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
 		List<EvaluationFormParticipation> participations1 = qualityService.addParticipations(dc1, Collections.singletonList(executor));
 		QualityContextBuilder contextBuilder1 = qualityService.createContextBuilder(dc1, participations1.get(0));
-		contextBuilder1.addCurriculum(curriculum1).build();
+		contextBuilder1.addCurriculumElement(element1).build();
 		// Participation with another curriculum
 		QualityDataCollection dc2 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
 		List<EvaluationFormParticipation> participations2 = qualityService.addParticipations(dc2, Collections.singletonList(executor));
 		QualityContextBuilder contextBuilder2 = qualityService.createContextBuilder(dc2, participations2.get(0));
-		contextBuilder2.addCurriculum(curriculum2).build();
+		contextBuilder2.addCurriculumElement(element2).build();
 		// Second participation with curriculum (to test distinct)
 		QualityDataCollection dcDistinct = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
 		List<EvaluationFormParticipation> participationsDistinct = qualityService.addParticipations(dcDistinct, Collections.singletonList(executor));
 		QualityContextBuilder contextBuilderDistinct = qualityService.createContextBuilder(dcDistinct, participationsDistinct.get(0));
-		contextBuilderDistinct.addCurriculum(curriculum1).build();
+		contextBuilderDistinct.addCurriculumElement(element1).build();
 		// Participation without curriculum (to test no nulls)
 		QualityDataCollection dcNull = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
 		qualityService.addParticipations(dcNull, Collections.singletonList(executor));
@@ -859,7 +862,9 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		Organisation organisation2 = qualityTestHelper.createOrganisation();
 		Collection<Organisation> organisations = asList(organisation1, organisation2);
 		Curriculum curriculum1 = qualityTestHelper.createCurriculum();
+		CurriculumElement element1 = qualityTestHelper.createCurriculumElement(curriculum1);
 		Curriculum curriculum2 = qualityTestHelper.createCurriculum();
+		CurriculumElement element2 = qualityTestHelper.createCurriculumElement(curriculum2);
 		Collection<Curriculum> curriculums = asList(curriculum1, curriculum2);
 		TaxonomyLevel level1 = qualityTestHelper.createTaxonomyLevel();
 		TaxonomyLevel level2 = qualityTestHelper.createTaxonomyLevel();
@@ -868,8 +873,8 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		List<EvaluationFormParticipation> participations = qualityService.addParticipations(dc, asList(executor));
 		EvaluationFormParticipation participation = participations.get(0);
 		QualityContextBuilder contextBuilder = qualityService.createContextBuilder(dc, participation);
-		contextBuilder.addOrganisation(organisation1).addOrganisation(organisation2).addCurriculum(curriculum1)
-				.addCurriculum(curriculum2).addTaxonomyLevel(level1).addTaxonomyLevel(level2).build();
+		contextBuilder.addOrganisation(organisation1).addOrganisation(organisation2).addCurriculumElement(element1)
+				.addCurriculumElement(element2).addTaxonomyLevel(level1).addTaxonomyLevel(level2).build();
 		EvaluationFormSession session = evaManager.createSession(participation);
 		evaManager.createNumericalResponse(identifier , session, expected);
 		evaManager.finishSession(session);
@@ -1173,23 +1178,26 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		Identity executor = JunitTestHelper.createAndPersistIdentityAsUser("");
 		Organisation dcOrganisation = qualityTestHelper.createOrganisation();
 		Curriculum curriculum1 = qualityTestHelper.createCurriculum();
+		CurriculumElement element1 = qualityTestHelper.createCurriculumElement(curriculum1);
 		Curriculum curriculum2 = qualityTestHelper.createCurriculum();
-		Curriculum otherCurriculum = qualityTestHelper.createCurriculum();
+		CurriculumElement element2 = qualityTestHelper.createCurriculumElement(curriculum2);
+		Curriculum curriculumOther = qualityTestHelper.createCurriculum();
+		CurriculumElement elementOther = qualityTestHelper.createCurriculumElement(curriculumOther);
 		// Participation with curriculum
 		QualityDataCollection dc1 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
 		List<EvaluationFormParticipation> participations1 = qualityService.addParticipations(dc1, Collections.singletonList(executor));
 		QualityContextBuilder contextBuilder1 = qualityService.createContextBuilder(dc1, participations1.get(0));
-		contextBuilder1.addCurriculum(curriculum1).build();
+		contextBuilder1.addCurriculumElement(element1).build();
 		// Participation with another curriculum
 		QualityDataCollection dc2 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
 		List<EvaluationFormParticipation> participations2 = qualityService.addParticipations(dc2, Collections.singletonList(executor));
 		QualityContextBuilder contextBuilder2 = qualityService.createContextBuilder(dc2, participations2.get(0));
-		contextBuilder2.addCurriculum(curriculum2).build();
+		contextBuilder2.addCurriculumElement(element2).build();
 		// Participation with other curriculum
 		QualityDataCollection dcOther = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
 		List<EvaluationFormParticipation> participationsOther = qualityService.addParticipations(dcOther, Collections.singletonList(executor));
 		QualityContextBuilder contextBuilderOther = qualityService.createContextBuilder(dcOther, participationsOther.get(0));
-		contextBuilderOther.addCurriculum(otherCurriculum).build();
+		contextBuilderOther.addCurriculumElement(elementOther).build();
 		// Participation without curriculum
 		QualityDataCollection dcNull = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
 		qualityService.addParticipations(dcNull, Collections.singletonList(executor));

@@ -71,8 +71,8 @@ public class AnalysisFilterDAO {
 		sb.append("     , count(collection.topicCurriculumElement.key) > 0");
 		sb.append("     , sum(CASE WHEN context.location is not null THEN 1 ELSE 0 END) > 0");
 		sb.append("     , count(contextToOrganisation.organisation.key) > 0");
-		sb.append("     , count(contextToCurriculum.curriculum.key) > 0");
-		sb.append("     , count(contextToCurriculumElement.curriculumElement.key) > 0");
+		sb.append("     , count(contextCurriculum.key) > 0");
+		sb.append("     , count(contextCurriculumElement.key) > 0");
 		sb.append("     , count(contextToTaxonomyLevel.taxonomyLevel.key) > 0");
 		sb.append("     , CASE WHEN max(survey.seriesIndex) is not null THEN max(survey.seriesIndex) ELSE 0 END >= 2");
 		sb.append("     , count(collection.key) > 0");
@@ -130,10 +130,10 @@ public class AnalysisFilterDAO {
 
 	List<Curriculum> loadContextCurriculums(AnalysisSearchParameter searchParams) {
 		QueryBuilder sb = new QueryBuilder();
-		sb.append("select distinct curriculum");
+		sb.append("select distinct contextCurriculum");
 		appendFrom(sb, searchParams);
 		appendWhere(sb, searchParams);
-		sb.and().append("curriculum.key is not null");
+		sb.and().append("contextCurriculum.key is not null");
 		
 		TypedQuery<Curriculum> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Curriculum.class);
@@ -143,10 +143,10 @@ public class AnalysisFilterDAO {
 
 	List<CurriculumElement> loadContextCurriculumElements(AnalysisSearchParameter searchParams) {
 		QueryBuilder sb = new QueryBuilder();
-		sb.append("select distinct curriculumElement");
+		sb.append("select distinct contextCurriculumElement");
 		appendFrom(sb, searchParams);
 		appendWhere(sb, searchParams);
-		sb.and().append("curriculumElement.key is not null");
+		sb.and().append("contextCurriculumElement.key is not null");
 		
 		TypedQuery<CurriculumElement> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), CurriculumElement.class);
@@ -156,10 +156,10 @@ public class AnalysisFilterDAO {
 
 	List<String> loadContextCurriculumElementPathes(AnalysisSearchParameter searchParams) {
 		QueryBuilder sb = new QueryBuilder();
-		sb.append("select distinct curriculumElement.materializedPathKeys");
+		sb.append("select distinct contextCurriculumElement.materializedPathKeys");
 		appendFrom(sb, searchParams);
 		appendWhere(sb, searchParams);
-		sb.and().append("curriculumElement.key is not null");
+		sb.and().append("contextCurriculumElement.key is not null");
 		
 		TypedQuery<String> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), String.class);
@@ -169,10 +169,10 @@ public class AnalysisFilterDAO {
 
 	List<Long> loadContextCurriculumElementsCurriculumKey(AnalysisSearchParameter searchParams) {
 		QueryBuilder sb = new QueryBuilder();
-		sb.append("select distinct curriculumElement.curriculum.key");
+		sb.append("select distinct contextCurriculum.key");
 		appendFrom(sb, searchParams);
 		appendWhere(sb, searchParams);
-		sb.and().append("curriculumElement.key is not null");
+		sb.and().append("contextCurriculum.key is not null");
 		
 		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Long.class);
@@ -364,10 +364,10 @@ public class AnalysisFilterDAO {
 			castAsString(sb, "contextToOrganisation.organisation.key", select);
 			break;
 		case CONTEXT_CURRICULUM:
-			castAsString(sb, "contextToCurriculum.curriculum.key", select);
+			castAsString(sb, "contextCurriculum.key", select);
 			break;
 		case CONTEXT_CURRICULUM_ELEMENT:
-			castAsString(sb, "contextToCurriculumElement.curriculumElement.key", select);
+			castAsString(sb, "contextCurriculumElement.key", select);
 			break;
 		case CONTEXT_TAXONOMY_LEVEL:
 			castAsString(sb, "contextToTaxonomyLevel.taxonomyLevel.key", select);
@@ -391,14 +391,11 @@ public class AnalysisFilterDAO {
 		sb.append("       left join collection.topicOrganisation topicOrganisation");
 		sb.append("       left join qualitycontext context");
 		sb.append("              on context.dataCollection.key = collection.key");
-		sb.append("       left join contexttocurriculum contextToCurriculum");
-		sb.append("              on contextToCurriculum.context.key = context.key");
-		sb.append("       left join curriculum curriculum");
-		sb.append("              on contextToCurriculum.curriculum.key = curriculum.key");
 		sb.append("       left join contexttocurriculumelement contextToCurriculumElement");
 		sb.append("              on contextToCurriculumElement.context.key = context.key");
-		sb.append("       left join curriculumelement curriculumElement");
-		sb.append("              on contextToCurriculumElement.curriculumElement.key = curriculumElement.key");
+		sb.append("       left join curriculumelement contextCurriculumElement");
+		sb.append("              on contextToCurriculumElement.curriculumElement.key = contextCurriculumElement.key");
+		sb.append("       left join contextCurriculumElement.curriculum contextCurriculum");
 		sb.append("       left join contexttoorganisation contextToOrganisation");
 		sb.append("              on contextToOrganisation.context.key = context.key");
 		sb.append("       left join organisation contextOrganisation");
@@ -457,7 +454,7 @@ public class AnalysisFilterDAO {
 			}
 		}
 		if (searchParams.getContextCurriculumRefs() != null && !searchParams.getContextCurriculumRefs().isEmpty()) {
-			sb.and().append("curriculum.key in :curriculumKeys");
+			sb.and().append("contextCurriculum.key in :contextCurriculumKeys");
 		}
 		if (searchParams.getContextCurriculumElementRefs() != null && !searchParams.getContextCurriculumElementRefs().isEmpty()) {
 			// load the curriculum elements and all children
@@ -468,7 +465,7 @@ public class AnalysisFilterDAO {
 				} else {
 					sb.append(" or ");
 				}
-				sb.append("curriculumElement.materializedPathKeys like :elePath").append(i);
+				sb.append("contextCurriculumElement.materializedPathKeys like :elePath").append(i);
 				if (i == searchParams.getContextCurriculumElementRefs().size() - 1) {
 					sb.append(")");
 				}
@@ -549,7 +546,7 @@ public class AnalysisFilterDAO {
 		}
 		if (searchParams.getContextCurriculumRefs() != null && !searchParams.getContextCurriculumRefs().isEmpty()) {
 			List<Long> keys = searchParams.getContextCurriculumRefs().stream().map(CurriculumRef::getKey).collect(toList());
-			query.setParameter("curriculumKeys", keys);
+			query.setParameter("contextCurriculumKeys", keys);
 		}
 		if (searchParams.getContextCurriculumElementRefs() != null && !searchParams.getContextCurriculumElementRefs().isEmpty()) {
 			for (int i = 0; i < searchParams.getContextCurriculumElementRefs().size(); i++) {

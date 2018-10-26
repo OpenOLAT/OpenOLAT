@@ -63,7 +63,6 @@ class ForwardingQualityContextBuilder implements QualityContextBuilder {
 		return this;
 	}
 
-	@Override
 	public QualityContextBuilder addCurriculum(Curriculum curriculum) {
 		builder.addCurriculum(curriculum);
 		return this;

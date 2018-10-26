@@ -20,7 +20,6 @@
 package org.olat.modules.quality;
 
 import org.olat.core.id.Organisation;
-import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 
@@ -37,8 +36,6 @@ public interface QualityContextBuilder {
 	QualityContextBuilder withLocation(String location);
 	
 	QualityContextBuilder addToDelete(QualityContext context);
-
-	QualityContextBuilder addCurriculum(Curriculum curriculum);
 
 	QualityContextBuilder addCurriculumElement(CurriculumElement curriculumElement);
 

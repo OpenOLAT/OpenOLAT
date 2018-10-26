@@ -113,7 +113,6 @@ class DefaultQualityContextBuilder implements QualityContextBuilder {
 		return this;
 	}
 	
-	@Override
 	public DefaultQualityContextBuilder addCurriculum(Curriculum curriculum) {
 		if (curriculum != null) {
 			curriculums.add(curriculum);
