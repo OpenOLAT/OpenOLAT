@@ -197,7 +197,7 @@ public class ACOrderManagerTest extends OlatTestCase {
 
 		long start = System.nanoTime();
 		List<RawOrderItem> items = acOrderManager.findNativeOrderItems(randomOres, null, null, null, null, null, 0, -1, null);
-		CodeHelper.printNanoTime(start, "Order itemized");
+		CodeHelper.printMilliSecondTime(start, "Order itemized");
 		Assert.assertNotNull(items);
 		
 		//check the order by
@@ -232,7 +232,7 @@ public class ACOrderManagerTest extends OlatTestCase {
 		
 		long start = System.nanoTime();
 		List<RawOrderItem> items = acOrderManager.findNativeOrderItems(randomOres, null, null, null, null, null, 0, -1, null);
-		CodeHelper.printNanoTime(start, "Order itemized");
+		CodeHelper.printMilliSecondTime(start, "Order itemized");
 		Assert.assertNotNull(items);
 	}
 	

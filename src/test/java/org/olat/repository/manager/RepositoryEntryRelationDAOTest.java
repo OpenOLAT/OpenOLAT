@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.Group;
@@ -132,6 +133,28 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 		Assert.assertNotNull(ownerRoles);
 		Assert.assertEquals(1, ownerRoles.size());
 		Assert.assertEquals(GroupRoles.owner.name(), ownerRoles.get(0));
+	}
+	
+	@Test
+	public void getRoleAndDefaults() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("get-roles-1-");
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		RepositoryEntry re = repositoryService.create(null, "Rei Ayanami", "rel", "rel", null, null,
+				RepositoryEntryStatusEnum.trash, defOrganisation);
+		dbInstance.commit();
+		repositoryEntryRelationDao.addRole(id, re, GroupRoles.participant.name());
+		dbInstance.commit();
+		
+		List<Object[]> participantRoles = repositoryEntryRelationDao.getRoleAndDefaults(id, re);
+		Assert.assertNotNull(participantRoles);
+		Assert.assertEquals(2, participantRoles.size());
+	
+		Object[] firstRole = participantRoles.get(0);
+		Object[] secondRole = participantRoles.get(1);
+		Assert.assertThat((String)firstRole[0], Matchers
+				.either(Matchers.is(GroupRoles.participant.name())).or(Matchers.is(OrganisationRoles.user.name())));
+		Assert.assertThat((String)secondRole[0], Matchers
+				.either(Matchers.is(GroupRoles.participant.name())).or(Matchers.is(OrganisationRoles.user.name())));
 	}
 	
 	@Test

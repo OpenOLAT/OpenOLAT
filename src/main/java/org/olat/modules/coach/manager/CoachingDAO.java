@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.persistence.FlushModeType;
 import javax.persistence.Query;
 
 import org.olat.basesecurity.GroupRoles;
@@ -89,6 +90,7 @@ public class CoachingDAO {
 		
 		List<Long> firstKey = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Long.class)
+				.setFlushMode(FlushModeType.COMMIT)
 				.setParameter("identityKey", coach.getKey())
 				.setFirstResult(0)
 				.setMaxResults(1)

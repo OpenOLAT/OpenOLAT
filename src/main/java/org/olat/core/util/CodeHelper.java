@@ -106,13 +106,18 @@ public class CodeHelper {
 	
 	public static long nanoToMilliTime(long start) {
 		long end = System.nanoTime();
-		long takes = (end - start) / 1000000;
-		return takes;
+		return (end - start) / 1000000l;
 	}
 	
-	public static void printNanoTime(long start, String action) {
+	public static void printMilliSecondTime(long nanoStart, String action) {
 		long end = System.nanoTime();
-		long takes = (end - start) / 1000000;
+		long takes = (end - nanoStart) / 1000000l;
 		System.out.println(action + " takes (ms): " + takes);
+	}
+	
+	public static void printMicroSecondTime(long nanoStart, String action) {
+		long end = System.nanoTime();
+		long takes = (end - nanoStart) / 1000l;
+		System.out.println(action + " takes (\u00B5s): " + takes);
 	}
 }

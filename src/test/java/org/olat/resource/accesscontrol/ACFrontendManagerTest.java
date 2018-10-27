@@ -367,7 +367,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		Assert.assertNotNull(acResult);
 		Assert.assertTrue(acResult.isAccessible());
 		dbInstance.commit();
-		CodeHelper.printNanoTime(start, "One click");
+		CodeHelper.printMilliSecondTime(start, "One click");
 	}
 	
 	@Test

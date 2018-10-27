@@ -1028,15 +1028,15 @@ public class CoachingDAOTest extends OlatTestCase {
 		if(coach != null) {
 			long start = System.nanoTime();
 			coachingDAO.getCoursesStatisticsNative(coach);
-			CodeHelper.printNanoTime(start, "Courses");
+			CodeHelper.printMilliSecondTime(start, "Courses");
 			
 			start = System.nanoTime();
 			coachingDAO.getGroupsStatisticsNative(coach);
-			CodeHelper.printNanoTime(start, "Groups");
+			CodeHelper.printMilliSecondTime(start, "Groups");
 			
 			start = System.nanoTime();
 			coachingDAO.getStudentsStatisticsNative(coach, userPropertyHandlers);
-			CodeHelper.printNanoTime(start, "Students");
+			CodeHelper.printMilliSecondTime(start, "Students");
 		}
 	}
 }

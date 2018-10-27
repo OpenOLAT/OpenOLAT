@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.persistence.FlushModeType;
 import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.GroupRoles;
@@ -87,7 +88,9 @@ public class RepositoryEntryMyCourseQueries {
 		}
 		
 		TypedQuery<Number> query = creatMyViewQuery(params, Number.class);
-		Number count = query.getSingleResult();
+		Number count = query
+				.setFlushMode(FlushModeType.COMMIT)
+				.getSingleResult();
 		return count == null ? 0 : count.intValue();
 	}
 
@@ -98,7 +101,8 @@ public class RepositoryEntryMyCourseQueries {
 		}
 
 		TypedQuery<Object[]> query = creatMyViewQuery(params, Object[].class);
-		query.setFirstResult(firstResult);
+		query.setFlushMode(FlushModeType.COMMIT)
+		     .setFirstResult(firstResult);
 		if(maxResults > 0) {
 			query.setMaxResults(maxResults);
 		}

@@ -55,7 +55,6 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ActionType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
-import org.olat.core.util.CodeHelper;
 import org.olat.core.util.async.ProgressDelegate;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.mail.ContactList;
@@ -1783,10 +1782,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 
 	@Override
 	public List<Identity> getIdentitiesWithRole(String role) {
-		long start = System.nanoTime();
-		List<Identity> ids = businessGroupRelationDAO.getIdentitiesWithRole(role);
-		CodeHelper.printNanoTime(start, "Group with role");
-		return ids;
+		return businessGroupRelationDAO.getIdentitiesWithRole(role);
 	}
 
 	@Override

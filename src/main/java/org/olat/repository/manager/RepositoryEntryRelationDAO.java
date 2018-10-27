@@ -32,6 +32,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
+import javax.persistence.FlushModeType;
 import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.Group;
@@ -76,13 +77,12 @@ public class RepositoryEntryRelationDAO {
 	 */
 	public List<String> getRoles(IdentityRef identity, RepositoryEntryRef re) {
 		StringBuilder sb = new StringBuilder(512);
-		sb.append("select membership.role from repositoryentry as v")
-		  .append(" inner join v.groups as relGroup")
+		sb.append("select membership.role from repoentrytogroup as relGroup")
 		  .append(" inner join relGroup.group as baseGroup")
 		  .append(" inner join baseGroup.members as membership")
 		  .append(" left join businessgroup as businessGroup on (businessGroup.baseGroup.key=baseGroup.key)")
 		  .append(" left join curriculumelement as curEl on (curEl.group.key=baseGroup.key)")
-		  .append(" where v.key=:repoKey and membership.identity.key=:identityKey and (relGroup.defaultGroup=true or businessGroup.key is not null or curEl is not null)");
+		  .append(" where relGroup.entry.key=:repoKey and membership.identity.key=:identityKey and (relGroup.defaultGroup=true or businessGroup.key is not null or curEl is not null)");
 
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), String.class)
@@ -101,12 +101,11 @@ public class RepositoryEntryRelationDAO {
 	public List<Object[]> getRoleAndDefaults(IdentityRef identity, RepositoryEntryRef re) {
 		StringBuilder sb = new StringBuilder(512);
 		sb.append("select membership.role, relGroup.defaultGroup, curEl.key")
-		  .append(" from repositoryentry as v")
-		  .append(" inner join v.groups as relGroup")
+		  .append(" from repoentrytogroup as relGroup")
 		  .append(" inner join relGroup.group as baseGroup")
 		  .append(" inner join baseGroup.members as membership")
 		  .append(" left join curriculumelement curEl on (curEl.group.key=baseGroup.key)")
-		  .append(" where v.key=:repoKey and membership.identity.key=:identityKey");
+		  .append(" where relGroup.entry.key=:repoKey and membership.identity.key=:identityKey");
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class)
 				.setParameter("identityKey", identity.getKey())
@@ -276,13 +275,14 @@ public class RepositoryEntryRelationDAO {
 	 */
 	public void filterMembership(IdentityRef identity, Collection<Long> entries) {
 		if(entries == null || entries.isEmpty()) return;
-		
+
 		List<Object[]> membershipList = dbInstance.getCurrentEntityManager()
-				.createNamedQuery("filterRepositoryEntryMembership", Object[].class)
+				.createNamedQuery("filterRepositoryEntryRelationMembership", Object[].class)
 				.setParameter("identityKey", identity.getKey())
 				.setParameter("repositoryEntryKey", entries)
+				.setFlushMode(FlushModeType.COMMIT)
 				.getResultList();
-		
+
 		Set<Object> memberships = new HashSet<>();
 		for(Object[] membership: membershipList) {
 			memberships.add(membership[0]);
