@@ -296,7 +296,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 		for(RepositoryEntry entry:repoEntries) {
 			CatalogEntryRow row = new CatalogEntryRow(entry);
 			List<PriceMethod> types = new ArrayList<>();
-			if (!entry.isAllUsers() && !entry.isGuests()) {
+			if (!entry.isAllUsers() && !entry.isGuests()) {//TODO repo access
 				// members only always show lock icon
 				types.add(new PriceMethod("", "o_ac_membersonly_icon", translate("cif.access.membersonly.short")));
 			} else {

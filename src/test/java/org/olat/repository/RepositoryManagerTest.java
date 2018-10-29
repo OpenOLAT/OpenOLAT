@@ -682,22 +682,6 @@ public class RepositoryManagerTest extends OlatTestCase {
 		Assert.assertTrue((endCreate - startCreate) > (endSearchReferencable - startSearchReferencable));
 	}
 	
-
-	
-	@Test
-	public void countLearningResourcesAsOwner() {
-		//create a repository entry with an owner and a participant
-		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("re-owner-is-");
-		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
-		dbInstance.commitAndCloseSession();
-		repositoryEntryRelationDao.addRole(owner, re, GroupRoles.owner.name());
-		dbInstance.commitAndCloseSession();
-		
-		//check
-		int count = repositoryManager.countLearningResourcesAsOwner(owner);
-		Assert.assertEquals(1, count);
-	}
-	
 	@Test
 	public void countLearningResourcesAsStudent() {
 		//create a repository entry with an owner and a participant

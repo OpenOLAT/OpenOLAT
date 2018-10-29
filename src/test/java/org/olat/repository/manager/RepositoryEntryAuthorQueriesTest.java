@@ -67,6 +67,33 @@ public class RepositoryEntryAuthorQueriesTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void searchViews_withoutRoles() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("view-");
+		dbInstance.commit();
+		
+		SearchAuthorRepositoryEntryViewParams params
+			= new SearchAuthorRepositoryEntryViewParams(id, null);
+		params.setMarked(Boolean.TRUE);
+		
+		List<RepositoryEntryAuthorView> views = repositoryEntryAuthorViewQueries.searchViews(params, 0, 10);
+		Assert.assertNotNull(views);
+	}
+	
+	@Test
+	public void searchViews_deleted() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndLearnResourceManager("view-");
+		dbInstance.commit();
+		Roles roles = securityManager.getRoles(id);
+		
+		SearchAuthorRepositoryEntryViewParams params
+			= new SearchAuthorRepositoryEntryViewParams(id, roles);
+		params.setDeleted(true);
+		
+		List<RepositoryEntryAuthorView> views = repositoryEntryAuthorViewQueries.searchViews(params, 0, 10);
+		Assert.assertNotNull(views);
+	}
+	
+	@Test
 	public void searchViews_orderBy() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("view-");
 		dbInstance.commit();

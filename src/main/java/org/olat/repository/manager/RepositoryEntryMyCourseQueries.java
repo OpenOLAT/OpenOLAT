@@ -31,6 +31,7 @@ import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityImpl;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.QueryBuilder;
@@ -87,7 +88,7 @@ public class RepositoryEntryMyCourseQueries {
 			return 0;
 		}
 		
-		TypedQuery<Number> query = creatMyViewQuery(params, Number.class);
+		TypedQuery<Number> query = createMyViewQuery(params, Number.class);
 		Number count = query
 				.setFlushMode(FlushModeType.COMMIT)
 				.getSingleResult();
@@ -100,7 +101,7 @@ public class RepositoryEntryMyCourseQueries {
 			return Collections.emptyList();
 		}
 
-		TypedQuery<Object[]> query = creatMyViewQuery(params, Object[].class);
+		TypedQuery<Object[]> query = createMyViewQuery(params, Object[].class);
 		query.setFlushMode(FlushModeType.COMMIT)
 		     .setFirstResult(firstResult);
 		if(maxResults > 0) {
@@ -153,7 +154,7 @@ public class RepositoryEntryMyCourseQueries {
 		return views;
 	}
 
-	protected <T> TypedQuery<T> creatMyViewQuery(SearchMyRepositoryEntryViewParams params,
+	protected <T> TypedQuery<T> createMyViewQuery(SearchMyRepositoryEntryViewParams params,
 			Class<T> type) {
 
 		Roles roles = params.getRoles();
@@ -385,12 +386,8 @@ public class RepositoryEntryMyCourseQueries {
 			}
 		}
 		//+ membership
-		sb.append("(");
-		if(inRoles.isEmpty() && !membershipMandatory) {
-			//sub select are very quick
-			sb.append("(v.allUsers=true and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed()).append(") or ");
-		}
-		if(inRoles.isEmpty()) {
+		boolean emptyRoles = inRoles.isEmpty();
+		if(emptyRoles) {
 			inRoles.add(GroupRoles.owner);
 			inRoles.add(GroupRoles.coach);
 			inRoles.add(GroupRoles.participant);
@@ -413,8 +410,16 @@ public class RepositoryEntryMyCourseQueries {
 		if(inRoles.contains(GroupRoles.participant)) {
 			if(or) sb.append(" or ");
 			sb.append(" (membership.role='").append(GroupRoles.participant).append("' and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed()).append(")");
+			or = true;
 		}
-		sb.append(")))");
+		if(emptyRoles && !membershipMandatory) {
+			if(or) sb.append(" or ");
+			sb.append(" (v.allUsers=true and membership.role not ")
+			  .in(OrganisationRoles.guest, GroupRoles.invitee, GroupRoles.waiting)
+			  .append(" and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed()).append(")");
+		}
+		
+		sb.append("))");
 		return true;
 	}
 	

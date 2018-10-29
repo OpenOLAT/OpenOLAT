@@ -205,38 +205,36 @@ public class RepositoryEntryQueries {
 		  .append(" where membership.identity.key=:identityKey and");
 
 		if(onlyExplicitMember) {
+			sb.append("((")
+			  .append(" membership.role='").append(GroupRoles.owner.name()).append("' and v.status ").in(RepositoryEntryStatusEnum.preparationToClosed())
+			  .append(") or (")
+			  .append(" membership.role='").append(GroupRoles.coach.name()).append("' and v.status ").in(RepositoryEntryStatusEnum.coachPublishedToClosed())
+			  .append(") or (")
+			  .append(" membership.role='").append(GroupRoles.participant.name()).append("' and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed())
+			  .append("))");
+		} else {
+			//access rules as user
 			sb.append("(")
-			  .append(" (v.allUsers=true and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed()).append(")")
-			  .append(" or")
-			  .append(" (membership.role='").append(GroupRoles.owner.name()).append("' and v.status ").in(RepositoryEntryStatusEnum.preparationToClosed()).append(")")
-			  .append(" or")
-			  .append(" (membership.role='").append(GroupRoles.coach.name()).append("' and v.status ").in(RepositoryEntryStatusEnum.coachPublishedToClosed()).append(")")
-			  .append(" or")
-			  .append(" (membership.role='").append(GroupRoles.participant.name()).append("' and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed()).append(")")
-			  .append(")");
-			return true;
+			  .append("(membership.role not ").in(OrganisationRoles.guest, OrganisationRoles.invitee, GroupRoles.waiting)
+			  .append("   and v.allUsers=true and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed())
+			// administrator, learn resource manager and owner
+			  .append(") or (")
+			  .append(" membership.role ").in(OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager, GroupRoles.owner)
+			  .append("  and v.status ").in(RepositoryEntryStatusEnum.preparationToClosed());
+			if(roles.isAuthor()) {
+				// as author
+				sb.append(") or (")
+				  .append(" membership.role ").in(OrganisationRoles.author).append("  and v.status ").in(RepositoryEntryStatusEnum.reviewToClosed());
+			}
+			// as coach
+			sb.append(") or (")
+			  .append(" membership.role ").in(GroupRoles.coach).append("  and v.status ").in(RepositoryEntryStatusEnum.coachPublishedToClosed())
+			// as member
+			  .append(") or (")
+			  .append(" membership.role ").in(GroupRoles.participant).append("  and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed());
+			
+			sb.append("))");
 		}
-
-		//access rules as user
-		sb.append("(")
-		  .append(" (v.allUsers=true and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed()).append(")");
-		// administrator, learn resource manager and owner
-		sb.append(" or (membership.role ").in(OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager, GroupRoles.owner)
-		  .append("  and v.status ").in(RepositoryEntryStatusEnum.preparationToClosed()).append(")");
-		if(roles.isAuthor()) {
-			// as author
-			sb.append(" or (membership.role ").in(OrganisationRoles.author)
-			  .append("  and v.status ").in(RepositoryEntryStatusEnum.reviewToClosed()).append(")");
-		}
-		// as coach
-		sb.append(" or (membership.role ").in(GroupRoles.coach)
-		  .append("  and v.status ").in(RepositoryEntryStatusEnum.coachPublishedToClosed()).append(")");
-		// as member
-		sb.append(" or (membership.role ").in(GroupRoles.participant)
-		  .append("  and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed()).append(")");
-		
-		sb.append(")");
-
 		return true;
 	}
 }

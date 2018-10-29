@@ -1600,19 +1600,22 @@ public class RepositoryManager {
 		  .append("   where mark.creator.key=:identityKey and mark.resId=v.key and mark.resName='RepositoryEntry'")
 		  .append(" ) ")
 		  .append(" and res.resName=:resourceType")
-		  .append(" and (")
-		  .append("  (v.allUsers=true and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed()).append(")")
-		  .append("  or exists (select rel from repoentrytogroup as rel, bgroup as baseGroup, bgroupmember as membership")
-		  .append("    where rel.entry=v and rel.group=baseGroup and membership.group=baseGroup and membership.identity.key=:identityKey")
-		  .append("    and (")
-		  .append("     (membership.role ").in(OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager, GroupRoles.owner).append(" and v.status").in(RepositoryEntryStatusEnum.preparationToClosed()).append(")")
-		  .append("     or")
-		  .append("     (membership.role ").in(GroupRoles.coach).append(" and v.status").in(RepositoryEntryStatusEnum.coachPublishedToClosed()).append(")")
-		  .append("     or")
-		  .append("     (membership.role ").in(GroupRoles.participant).append(" and v.status").in(RepositoryEntryStatusEnum.publishedAndClosed()).append(")")
-		  .append("    )")
-		  .append(" ))");
-
+		  .append(" and exists (select rel from repoentrytogroup as rel, bgroup as baseGroup, bgroupmember as membership")
+		  .append("   where rel.entry=v and rel.group=baseGroup and membership.group=baseGroup and membership.identity.key=:identityKey")
+		  .append("   and (")
+		  .append("     (")
+		  .append("      membership.role ").in(OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager, GroupRoles.owner).append(" and v.status").in(RepositoryEntryStatusEnum.preparationToClosed())
+		  .append("     ) or (")
+		  .append("      membership.role ").in(GroupRoles.coach).append(" and v.status").in(RepositoryEntryStatusEnum.coachPublishedToClosed())
+		  .append("     ) or (")
+		  .append("      membership.role ").in(GroupRoles.participant).append(" and v.status").in(RepositoryEntryStatusEnum.publishedAndClosed())
+		  .append("     ) or (")
+		  .append("      v.allUsers=true and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed())
+		  .append("       and membership.role not ").in(OrganisationRoles.invitee, OrganisationRoles.guest, GroupRoles.waiting)
+		  .append("     )")
+		  .append("   )")
+		  .append(" )");
+		
 		TypedQuery<RepositoryEntry> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), RepositoryEntry.class)
 				.setParameter("identityKey", identity.getKey())
@@ -1628,10 +1631,15 @@ public class RepositoryManager {
 		QueryBuilder sb = new QueryBuilder(512);
 		sb.append("select v from repositoryentry as v ")
 		  .append(" inner join fetch v.olatResource as res ")
-		  .append(" where (exists (select rel from repoentrytogroup as rel, bgroup as baseGroup, bgroupmember as membership")
-		  .append("    where rel.entry=v and rel.group=baseGroup and membership.group=baseGroup and membership.identity.key=:identityKey")
-		  .append("      and membership.role='").append(GroupRoles.participant.name()).append("')")
-		  .append(" or v.allUsers=true) and v.status").in(RepositoryEntryStatusEnum.publishedAndClosed());
+		  .append(" where exists (select rel from repoentrytogroup as rel, bgroupmember as membership")
+		  .append("   where rel.entry.key=v.key and rel.group.key=membership.group.key and membership.identity.key=:identityKey")
+		  .append("   and (")
+		  .append("     membership.role='").append(GroupRoles.participant.name()).append("'")
+		  .append("     or ")
+		  .append("     (v.allUsers=true and membership.role not ").in(OrganisationRoles.guest, OrganisationRoles.invitee, GroupRoles.waiting).append(")")
+		  .append("   )")
+		  .append(" )")
+		  .append(" and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed());
 		appendOrderBy(sb, "v", orderby);
 
 		TypedQuery<RepositoryEntry> query = dbInstance.getCurrentEntityManager()
@@ -1641,20 +1649,6 @@ public class RepositoryManager {
 			query.setMaxResults(maxResults);
 		}
 		return query.getResultList();
-	}
-
-	public int countLearningResourcesAsOwner(IdentityRef identity) {
-		QueryBuilder sb = new QueryBuilder(512);
-		sb.append("select count(v) from repositoryentry v")
-		  .append(" inner join v.groups as relGroup")
-		  .append(" inner join relGroup.group as baseGroup")
-		  .append(" inner join baseGroup.members as membership")
-		  .append(" where v.status ").in(RepositoryEntryStatusEnum.preparationToClosed()).append(" and membership.identity.key=:identityKey and membership.role='").append(GroupRoles.owner.name()).append("'");
-
-		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Number.class)
-				.setParameter("identityKey", identity.getKey())
-				.getSingleResult().intValue();
 	}
 
 	/**

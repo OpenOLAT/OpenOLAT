@@ -49,6 +49,7 @@ public class FullAccessAssessmentCallback implements IAssessmentCallback {
 		return true;
 	}
 
+	@Override
 	public boolean mayAssessCoachedUsers() {
 		return true;
 	}

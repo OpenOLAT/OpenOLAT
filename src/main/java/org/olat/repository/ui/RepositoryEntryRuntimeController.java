@@ -794,7 +794,8 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		if(security.isEntryAdmin() || security.isPrincipal()) {
 			launchContent(ureq, security);
 		} else {
-			// guest are allowed to see resource with BARG 
+			// guest are allowed to see resource with BARG
+			//TODO repo access
 			if(re.isAllUsers() && ureq.getUserSession().getRoles().isGuestOnly()) {
 				launchContent(ureq, security);
 			} else {

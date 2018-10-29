@@ -59,15 +59,7 @@ public class ACRenderer implements FlexiCellRenderer {
 			}
 		} else if (val instanceof AuthoringEntryRow) {
 			AuthoringEntryRow entry = (AuthoringEntryRow)val;			
-			if(entry.getEntryStatus() != RepositoryEntryStatusEnum.trash && entry.getEntryStatus() != RepositoryEntryStatusEnum.deleted) {
-
-	// TODO: move to separate column renderer
-	//			boolean guestLoginEnabled = CoreSpringFactory.getImpl(LoginModule.class).isGuestLoginLinksEnabled();
-	//			if(entry.isGuests() && guestLoginEnabled) {
-	//				if(entry.isAllUsers()) {
-	//					sb.append(",");
-	//				}
-	//			}				
+			if(entry.getEntryStatus() != RepositoryEntryStatusEnum.trash && entry.getEntryStatus() != RepositoryEntryStatusEnum.deleted) {				
 				StringOutput methodsSb = new StringOutput();
 				renderPriceMethods(renderer, methodsSb, entry.getAccessTypes());
 				sb.append(methodsSb);
@@ -86,7 +78,7 @@ public class ACRenderer implements FlexiCellRenderer {
 	}
 	
 	private void renderPriceMethods(Renderer renderer, StringOutput sb, List<PriceMethod> methods) {
-		if (methods != null && methods.size() > 0) {
+		if (methods != null && !methods.isEmpty()) {
 			if(renderer == null) {
 				for (PriceMethod priceMethod : methods) {
 					String price = priceMethod.getPrice();

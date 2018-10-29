@@ -175,7 +175,7 @@ implements SortableFlexiTableDataModel<RepositoryEntry> {
 	}
 	
 	private Object getAccessControl(RepositoryEntry re) {
-		if (!re.isAllUsers() && !re.isGuests()) {
+		if (!re.isAllUsers() && !re.isGuests()) {//TODO repo access
 			// members only always show lock icon
 			return Collections.singletonList("o_ac_membersonly");
 		}
