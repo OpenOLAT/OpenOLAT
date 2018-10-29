@@ -70,7 +70,7 @@ public interface QualityAnalysisService {
 
 	public List<String> loadContextLocations(AnalysisSearchParameter searchParams);
 
-	public List<Organisation> loadContextOrganisations(AnalysisSearchParameter searchParams, boolean withParents);
+	public List<Organisation> loadContextExecutorOrganisations(AnalysisSearchParameter searchParams, boolean withParents);
 
 	public List<Curriculum> loadContextCurriculums(AnalysisSearchParameter searchParams);
 

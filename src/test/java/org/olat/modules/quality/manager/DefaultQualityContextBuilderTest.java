@@ -24,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.id.Organisation;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.forms.EvaluationFormParticipation;
@@ -59,6 +60,7 @@ public class DefaultQualityContextBuilderTest extends OlatTestCase {
 		RepositoryEntry repositoryEntry = qualityTestHelper.createRepositoryEntry();
 		Curriculum curriculum = qualityTestHelper.createCurriculum();
 		CurriculumElement curriculumElement = qualityTestHelper.createCurriculumElement();
+		Organisation organisation = qualityTestHelper.createOrganisation();
 		TaxonomyLevel taxonomyLevel = qualityTestHelper.createTaxonomyLevel();
 		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
 		EvaluationFormParticipation evaluationFormParticipation = qualityTestHelper.createParticipation();
@@ -67,13 +69,15 @@ public class DefaultQualityContextBuilderTest extends OlatTestCase {
 		QualityContext context = DefaultQualityContextBuilder.builder(dataCollection, evaluationFormParticipation)
 			.withAudienceRepositoryEntry(repositoryEntry)
 			.addCurriculum(qualityTestHelper.createCurriculum())
+			.addCurriculum(curriculum)
+			.addCurriculum(curriculum)
 			.addCurriculumElement(qualityTestHelper.createCurriculumElement())
-			.addOrganisation(qualityTestHelper.createOrganisation())
+			.addCurriculumElement(curriculumElement)
+			.addCurriculumElement(curriculumElement)
+			.addExecutorOrganisation(qualityTestHelper.createOrganisation())
+			.addExecutorOrganisation(organisation)
+			.addExecutorOrganisation(organisation)
 			.addTaxonomyLevel(qualityTestHelper.createTaxonomyLevel())
-			.addCurriculum(curriculum)
-			.addCurriculum(curriculum)
-			.addCurriculumElement(curriculumElement)
-			.addCurriculumElement(curriculumElement)
 			.addTaxonomyLevel(taxonomyLevel)
 			.addTaxonomyLevel(taxonomyLevel)
 			.build();
@@ -86,12 +90,12 @@ public class DefaultQualityContextBuilderTest extends OlatTestCase {
 		assertThat(context.getAudienceRepositoryEntry()).isEqualTo(repositoryEntry);
 		assertThat(context.getContextToCurriculum()).hasSize(2);
 		assertThat(context.getContextToCurriculumElement()).hasSize(2);
-		assertThat(context.getContextToOrganisation()).hasSize(1);
+		assertThat(context.getContextToOrganisation()).hasSize(2);
 		assertThat(context.getContextToTaxonomyLevel()).hasSize(2);
 	}
 	
 	@Test
-	public void shouldDelteContexts() {
+	public void shouldDeleteContexts() {
 		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
 		EvaluationFormParticipation evaluationFormParticipation = qualityTestHelper.createParticipation();
 		DefaultQualityContextBuilder builder = DefaultQualityContextBuilder.builder(dataCollection, evaluationFormParticipation);

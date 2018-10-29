@@ -22,6 +22,7 @@ package org.olat.modules.quality.manager;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -30,6 +31,7 @@ import org.assertj.core.api.SoftAssertions;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
@@ -107,21 +109,21 @@ public class RepositoryEntryQualityContextBuilderTest extends OlatTestCase {
 		List<EvaluationFormParticipation> participations = qualityService.addParticipations(dataCollection,
 				Arrays.asList(executor));
 		EvaluationFormParticipation evaluationFormParticipation = participations.get(0);
-
-		Organisation organisation1 = organisationService.createOrganisation("", UUID.randomUUID().toString(), "", null,
-				null);
-		Organisation organisation2Parent = organisationService.createOrganisation("", UUID.randomUUID().toString(), "",
-				null, null);
-		Organisation organisation2 = organisationService.createOrganisation("", UUID.randomUUID().toString(), "",
-				organisation2Parent, null);
-		Organisation organisation3 = organisationService.createOrganisation("", UUID.randomUUID().toString(), "", null,
-				null);
+		
+		Organisation curriculumOrganisation1 = organisationService.createOrganisation("", UUID.randomUUID().toString(),
+				"", null, null);
+		Organisation curriculumOrganisation2Parent = organisationService.createOrganisation("",
+				UUID.randomUUID().toString(), "", null, null);
+		Organisation curriculumOrganisation2 = organisationService.createOrganisation("", UUID.randomUUID().toString(),
+				"", curriculumOrganisation2Parent, null);
+		Organisation curriculumOrganisation3 = organisationService.createOrganisation("", UUID.randomUUID().toString(),
+				"", null, null);
 		Curriculum curriculum1 = curriculumService.createCurriculum(UUID.randomUUID().toString(), "", "",
-				organisation1);
+				curriculumOrganisation1);
 		Curriculum curriculum2 = curriculumService.createCurriculum(UUID.randomUUID().toString(), "", "",
-				organisation2);
+				curriculumOrganisation2);
 		Curriculum curriculum3 = curriculumService.createCurriculum(UUID.randomUUID().toString(), "", "",
-				organisation3);
+				curriculumOrganisation3);
 		CurriculumElement curriculumElement1 = curriculumService.createCurriculumElement(UUID.randomUUID().toString(),
 				"", null, null, null, null, CurriculumCalendars.disabled, curriculum1);
 		CurriculumElement curriculumElement2Parent = curriculumService
@@ -162,6 +164,7 @@ public class RepositoryEntryQualityContextBuilderTest extends OlatTestCase {
 		softly.assertThat(context.getRole()).isEqualTo(QualityContextRole.participant);
 		softly.assertThat(context.getLocation()).isEqualTo(location);
 		softly.assertThat(context.getAudienceRepositoryEntry()).isEqualTo(entry);
+		
 		List<Curriculum> curriculms = context
 				.getContextToCurriculum().stream()
 				.map(QualityContextToCurriculum::getCurriculum)
@@ -169,6 +172,7 @@ public class RepositoryEntryQualityContextBuilderTest extends OlatTestCase {
 		softly.assertThat(curriculms)
 				.containsExactlyInAnyOrder(curriculum1, curriculum2)
 				.doesNotContain(curriculum3);
+		
 		List<CurriculumElement> curriculumElements = context
 				.getContextToCurriculumElement().stream()
 				.map(QualityContextToCurriculumElement::getCurriculumElement)
@@ -176,13 +180,7 @@ public class RepositoryEntryQualityContextBuilderTest extends OlatTestCase {
 		softly.assertThat(curriculumElements)
 				.containsExactlyInAnyOrder(curriculumElement1, curriculumElement2)
 				.doesNotContain(curriculumElement3);
-		List<Organisation> organisations = context
-				.getContextToOrganisation().stream()
-				.map(QualityContextToOrganisation::getOrganisation)
-				.collect(Collectors.toList());
-		softly.assertThat(organisations)
-				.containsExactlyInAnyOrder(organisation1, organisation2)
-				.doesNotContain(organisation3);
+		
 		List<TaxonomyLevel> taxonomyLevels = context
 				.getContextToTaxonomyLevel().stream()
 				.map(QualityContextToTaxonomyLevel::getTaxonomyLevel)
@@ -208,20 +206,20 @@ public class RepositoryEntryQualityContextBuilderTest extends OlatTestCase {
 				Arrays.asList(coach));
 		EvaluationFormParticipation evaluationFormParticipation = participations.get(0);
 
-		Organisation organisation1 = organisationService.createOrganisation("", UUID.randomUUID().toString(), "", null,
+		Organisation curriculumOrganisation1 = organisationService.createOrganisation("", UUID.randomUUID().toString(), "", null,
 				null);
-		Organisation organisation2Parent = organisationService.createOrganisation("", UUID.randomUUID().toString(), "",
+		Organisation curriculumOrganisation2Parent = organisationService.createOrganisation("", UUID.randomUUID().toString(), "",
 				null, null);
 		Organisation organisation2 = organisationService.createOrganisation("", UUID.randomUUID().toString(), "",
-				organisation2Parent, null);
-		Organisation organisationOther = organisationService.createOrganisation("", UUID.randomUUID().toString(), "", null,
+				curriculumOrganisation2Parent, null);
+		Organisation curriculumOrganisationOther = organisationService.createOrganisation("", UUID.randomUUID().toString(), "", null,
 				null);
 		Curriculum curriculum1 = curriculumService.createCurriculum(UUID.randomUUID().toString(), "", "",
-				organisation1);
+				curriculumOrganisation1);
 		Curriculum curriculum2 = curriculumService.createCurriculum(UUID.randomUUID().toString(), "", "",
 				organisation2);
 		Curriculum curriculumOther = curriculumService.createCurriculum(UUID.randomUUID().toString(), "", "",
-				organisationOther);
+				curriculumOrganisationOther);
 		CurriculumElement curriculumElement1 = curriculumService.createCurriculumElement(UUID.randomUUID().toString(),
 				"", null, null, null, null, CurriculumCalendars.disabled, curriculum1);
 		CurriculumElement curriculumElement2Parent = curriculumService
@@ -263,6 +261,7 @@ public class RepositoryEntryQualityContextBuilderTest extends OlatTestCase {
 		softly.assertThat(context.getRole()).isEqualTo(QualityContextRole.coach);
 		softly.assertThat(context.getLocation()).isEqualTo(location);
 		softly.assertThat(context.getAudienceRepositoryEntry()).isEqualTo(entry);
+		
 		List<Curriculum> curriculms = context
 				.getContextToCurriculum().stream()
 				.map(QualityContextToCurriculum::getCurriculum)
@@ -270,6 +269,7 @@ public class RepositoryEntryQualityContextBuilderTest extends OlatTestCase {
 		softly.assertThat(curriculms)
 				.containsExactlyInAnyOrder(curriculum1, curriculum2)
 				.doesNotContain(curriculumOther);
+		
 		List<CurriculumElement> curriculumElements = context
 				.getContextToCurriculumElement().stream()
 				.map(QualityContextToCurriculumElement::getCurriculumElement)
@@ -277,13 +277,7 @@ public class RepositoryEntryQualityContextBuilderTest extends OlatTestCase {
 		softly.assertThat(curriculumElements)
 				.containsExactlyInAnyOrder(curriculumElement1, curriculumElement2)
 				.doesNotContain(curriculumElementOther);
-		List<Organisation> organisations = context
-				.getContextToOrganisation().stream()
-				.map(QualityContextToOrganisation::getOrganisation)
-				.collect(Collectors.toList());
-		softly.assertThat(organisations)
-				.containsExactlyInAnyOrder(organisation1, organisation2)
-				.doesNotContain(organisationOther);
+		
 		List<TaxonomyLevel> taxonomyLevels = context
 				.getContextToTaxonomyLevel().stream()
 				.map(QualityContextToTaxonomyLevel::getTaxonomyLevel)
@@ -292,6 +286,149 @@ public class RepositoryEntryQualityContextBuilderTest extends OlatTestCase {
 				.containsExactlyInAnyOrder(taxonomyLevel1, taxonomyLevel2)
 				.doesNotContain(taxonomyLevel3, taxonomyLevelOfCurriculumElement);
 		softly.assertAll();
+	}
+	
+	@Test
+	public void shouldAddMatchingUserAndCurriculumOrganisation() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity executor = JunitTestHelper.createAndPersistIdentityAsRndAuthor("");
+		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
+		List<EvaluationFormParticipation> participations = qualityService.addParticipations(dataCollection,
+				Arrays.asList(executor));
+		EvaluationFormParticipation evaluationFormParticipation = participations.get(0);
+		
+		Organisation organisationExecutorAndCurriculum1 = qualityTestHelper.createOrganisation();
+		organisationService.addMember(organisationExecutorAndCurriculum1, executor, OrganisationRoles.user);
+		Organisation organisationExecutorAndCurriculum2 = qualityTestHelper.createOrganisation();
+		organisationService.addMember(organisationExecutorAndCurriculum2, executor, OrganisationRoles.user);
+		Organisation organisationExecutorOnly = qualityTestHelper.createOrganisation();
+		organisationService.addMember(organisationExecutorOnly, executor, OrganisationRoles.user);
+		Organisation organisationExecutorAndCurriculumButManager = qualityTestHelper.createOrganisation();
+		organisationService.addMember(organisationExecutorAndCurriculumButManager, executor, OrganisationRoles.usermanager);
+		Organisation organisationRepositoreyOnly = qualityTestHelper.createOrganisation();
+		
+		Curriculum curriculum1 = curriculumService.createCurriculum(UUID.randomUUID().toString(), "", "",
+				organisationExecutorAndCurriculum1);
+		CurriculumElement curriculumElement1 = curriculumService.createCurriculumElement(UUID.randomUUID().toString(), "", null, null, null, null,
+				CurriculumCalendars.disabled, curriculum1);
+		curriculumService.addMember(curriculumElement1, executor, CurriculumRoles.participant);
+		curriculumService.addRepositoryEntry(curriculumElement1, entry, true);
+		
+		Curriculum curriculum2 = curriculumService.createCurriculum(UUID.randomUUID().toString(), "", "",
+				organisationExecutorAndCurriculum2);
+		CurriculumElement curriculumElement2 = curriculumService.createCurriculumElement(UUID.randomUUID().toString(), "", null, null, null, null,
+				CurriculumCalendars.disabled, curriculum2);
+		curriculumService.addMember(curriculumElement2, executor, CurriculumRoles.participant);
+		curriculumService.addRepositoryEntry(curriculumElement2, entry, true);
+		
+		Curriculum curriculum3 = curriculumService.createCurriculum(UUID.randomUUID().toString(), "", "",
+				organisationExecutorAndCurriculumButManager);
+		CurriculumElement curriculumElement3 = curriculumService.createCurriculumElement(UUID.randomUUID().toString(), "", null, null, null, null,
+				CurriculumCalendars.disabled, curriculum3);
+		curriculumService.addMember(curriculumElement3, executor, CurriculumRoles.participant);
+		curriculumService.addRepositoryEntry(curriculumElement3, entry, true);
+		
+		entry = repositoryManager.setDescriptionAndName(entry, "", null, null, null, null, null, null, null, null, null,
+				null, Collections.singletonList(organisationRepositoreyOnly), null);
+		dbInstance.commitAndCloseSession();
+		
+		QualityContext context = RepositoryEntryQualityContextBuilder
+				.builder(dataCollection, evaluationFormParticipation, entry, GroupRoles.participant).build();
+
+		List<Organisation> organisations = context
+				.getContextToOrganisation().stream()
+				.map(QualityContextToOrganisation::getOrganisation)
+				.collect(Collectors.toList());
+		assertThat(organisations)
+				.containsExactlyInAnyOrder(
+						organisationExecutorAndCurriculum1,
+						organisationExecutorAndCurriculum2)
+				.doesNotContain(
+						organisationExecutorOnly,
+						organisationExecutorAndCurriculumButManager,
+						organisationRepositoreyOnly);
+	}
+	
+	@Test
+	public void shouldAddMatchingUserAndRepositoryOrganisation() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity executor = JunitTestHelper.createAndPersistIdentityAsRndAuthor("");
+		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
+		List<EvaluationFormParticipation> participations = qualityService.addParticipations(dataCollection,
+				Arrays.asList(executor));
+		EvaluationFormParticipation evaluationFormParticipation = participations.get(0);
+		
+		Organisation organisationExecutorOnly = qualityTestHelper.createOrganisation();
+		organisationService.addMember(organisationExecutorOnly, executor, OrganisationRoles.user);
+		Organisation organisationExecutorAndCurriculumButManager = qualityTestHelper.createOrganisation();
+		organisationService.addMember(organisationExecutorAndCurriculumButManager, executor, OrganisationRoles.curriculummanager);
+		Organisation organisationUserAndRepository = qualityTestHelper.createOrganisation();
+		organisationService.addMember(organisationUserAndRepository, executor, OrganisationRoles.user);
+		Organisation organisationUserAndRepositoryButManager = qualityTestHelper.createOrganisation();
+		organisationService.addMember(organisationUserAndRepositoryButManager, executor, OrganisationRoles.linemanager);
+		Organisation organisationRepositoreyOnly = qualityTestHelper.createOrganisation();
+
+		Curriculum curriculum3 = curriculumService.createCurriculum(UUID.randomUUID().toString(), "", "",
+				organisationExecutorAndCurriculumButManager);
+		CurriculumElement curriculumElement3 = curriculumService.createCurriculumElement(UUID.randomUUID().toString(),
+				"", null, null, null, null, CurriculumCalendars.disabled, curriculum3);
+		curriculumService.addMember(curriculumElement3, executor, CurriculumRoles.participant);
+		curriculumService.addRepositoryEntry(curriculumElement3, entry, true);
+		
+		entry = repositoryManager.setDescriptionAndName(entry, "", null, null, null, null, null, null, null, null, null, null,
+				Arrays.asList(organisationUserAndRepository, organisationUserAndRepositoryButManager, organisationRepositoreyOnly), null);
+		dbInstance.commitAndCloseSession();
+		
+		QualityContext context = RepositoryEntryQualityContextBuilder
+				.builder(dataCollection, evaluationFormParticipation, entry, GroupRoles.participant).build();
+
+		List<Organisation> organisations = context
+				.getContextToOrganisation().stream()
+				.map(QualityContextToOrganisation::getOrganisation)
+				.collect(Collectors.toList());
+		assertThat(organisations)
+				.containsExactlyInAnyOrder(
+						organisationUserAndRepository)
+				.doesNotContain(
+						organisationExecutorOnly,
+						organisationExecutorAndCurriculumButManager,
+						organisationRepositoreyOnly);
+	}
+	
+	@Test
+	public void shouldAddAllUserOrganisationsIfNoMatch() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity executor = JunitTestHelper.createAndPersistIdentityAsRndAuthor("");
+		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
+		List<EvaluationFormParticipation> participations = qualityService.addParticipations(dataCollection,
+				Arrays.asList(executor));
+		EvaluationFormParticipation evaluationFormParticipation = participations.get(0);
+		
+		Organisation executorDefaultOrganisation = organisationService.getDefaultOrganisation();
+		Organisation organisationExecutorOnly = qualityTestHelper.createOrganisation();
+		organisationService.addMember(organisationExecutorOnly, executor, OrganisationRoles.user);
+		Organisation organisationUserAndRepositoryButManager = qualityTestHelper.createOrganisation();
+		organisationService.addMember(organisationUserAndRepositoryButManager, executor, OrganisationRoles.linemanager);
+		Organisation organisationRepositoreyOnly = qualityTestHelper.createOrganisation();
+
+		entry = repositoryManager.setDescriptionAndName(entry, "", null, null, null, null, null, null, null, null, null, null,
+				Arrays.asList(organisationUserAndRepositoryButManager, organisationRepositoreyOnly), null);
+		dbInstance.commitAndCloseSession();
+		
+		QualityContext context = RepositoryEntryQualityContextBuilder
+				.builder(dataCollection, evaluationFormParticipation, entry, GroupRoles.participant).build();
+
+		List<Organisation> organisations = context
+				.getContextToOrganisation().stream()
+				.map(QualityContextToOrganisation::getOrganisation)
+				.collect(Collectors.toList());
+		assertThat(organisations)
+				.containsExactlyInAnyOrder(
+						executorDefaultOrganisation,
+						organisationExecutorOnly)
+				.doesNotContain(
+						organisationUserAndRepositoryButManager,
+						organisationRepositoreyOnly);
 	}
 	
 	@Test

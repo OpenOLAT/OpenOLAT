@@ -205,7 +205,7 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		assertThat(attributes.isTopicCurriculum()).isFalse();
 		assertThat(attributes.isTopicCurriculumElement()).isFalse();
 		assertThat(attributes.isContextLocation()).isFalse();
-		assertThat(attributes.isContextOrganisation()).isFalse();
+		assertThat(attributes.isContextExecutorOrganisation()).isFalse();
 		assertThat(attributes.isContextCurriculum()).isFalse();
 		assertThat(attributes.isContextCurriculumElement()).isFalse();
 		assertThat(attributes.isContextCurriculumOrganisation()).isFalse();
@@ -310,14 +310,14 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		List<EvaluationFormParticipation> participations = qualityService.addParticipations(dataCollection,
 				singletonList(executor));
 		qualityService.createContextBuilder(dataCollection, participations.get(0))
-				.addOrganisation(organisation)
+				.addExecutorOrganisation(organisation)
 				.build();
 		dbInstance.commitAndCloseSession();
 		
 		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
 		AvailableAttributes attributes = sut.getAvailableAttributes(searchParams);
 		
-		assertThat(attributes.isContextOrganisation()).isTrue();
+		assertThat(attributes.isContextExecutorOrganisation()).isTrue();
 	}
 
 	@Test
@@ -610,12 +610,12 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		QualityDataCollection dc1 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
 		List<EvaluationFormParticipation> participations1 = qualityService.addParticipations(dc1, Collections.singletonList(executor));
 		QualityContextBuilder contextBuilder1 = qualityService.createContextBuilder(dc1, participations1.get(0));
-		contextBuilder1.addOrganisation(organisation1).addOrganisation(organisation2).build();
+		contextBuilder1.addExecutorOrganisation(organisation1).addExecutorOrganisation(organisation2).build();
 		// Participation with the same organisation
 		QualityDataCollection dc2 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
 		List<EvaluationFormParticipation> participations2 = qualityService.addParticipations(dc2, Collections.singletonList(executor));
 		QualityContextBuilder contextBuilder2 = qualityService.createContextBuilder(dc2, participations2.get(0));
-		contextBuilder2.addOrganisation(organisation2).build();
+		contextBuilder2.addExecutorOrganisation(organisation2).build();
 		// Participation without organisation
 		QualityDataCollection dcNull = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
 		qualityService.addParticipations(dcNull, Collections.singletonList(executor));
@@ -934,7 +934,7 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		List<EvaluationFormParticipation> participations = qualityService.addParticipations(dc, asList(executor));
 		EvaluationFormParticipation participation = participations.get(0);
 		QualityContextBuilder contextBuilder = qualityService.createContextBuilder(dc, participation);
-		contextBuilder.addOrganisation(organisation1).addOrganisation(organisation2).addCurriculumElement(element1)
+		contextBuilder.addExecutorOrganisation(organisation1).addExecutorOrganisation(organisation2).addCurriculumElement(element1)
 				.addCurriculumElement(element2).addTaxonomyLevel(level1).addTaxonomyLevel(level2).build();
 		EvaluationFormSession session = evaManager.createSession(participation);
 		evaManager.createNumericalResponse(identifier , session, expected);
@@ -1284,22 +1284,22 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		QualityDataCollection dc1 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
 		List<EvaluationFormParticipation> participations1 = qualityService.addParticipations(dc1, Collections.singletonList(executor));
 		QualityContextBuilder contextBuilder1 = qualityService.createContextBuilder(dc1, participations1.get(0));
-		contextBuilder1.addOrganisation(organisation1).addOrganisation(organisation2).build();
+		contextBuilder1.addExecutorOrganisation(organisation1).addExecutorOrganisation(organisation2).build();
 		// Participation with the same organisation
 		QualityDataCollection dc2 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
 		List<EvaluationFormParticipation> participations2 = qualityService.addParticipations(dc2, Collections.singletonList(executor));
 		QualityContextBuilder contextBuilder2 = qualityService.createContextBuilder(dc2, participations2.get(0));
-		contextBuilder2.addOrganisation(organisation2).build();
+		contextBuilder2.addExecutorOrganisation(organisation2).build();
 		// Participation in a child organisation (include them)
 		QualityDataCollection dcChild = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
 		List<EvaluationFormParticipation> participationscild = qualityService.addParticipations(dcChild, Collections.singletonList(executor));
 		QualityContextBuilder contextBuilderChild = qualityService.createContextBuilder(dcChild, participationscild.get(0));
-		contextBuilderChild.addOrganisation(subOrganisation).build();
+		contextBuilderChild.addExecutorOrganisation(subOrganisation).build();
 		// Participation with an other organisation
 		QualityDataCollection dcOther = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
 		List<EvaluationFormParticipation> participationsOther = qualityService.addParticipations(dcOther, Collections.singletonList(executor));
 		QualityContextBuilder contextBuilderOther = qualityService.createContextBuilder(dcOther, participationsOther.get(0));
-		contextBuilderOther.addOrganisation(otherOrganisation).build();
+		contextBuilderOther.addExecutorOrganisation(otherOrganisation).build();
 		// Participation without organisation
 		QualityDataCollection dcNull = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
 		qualityService.addParticipations(dcNull, Collections.singletonList(executor));

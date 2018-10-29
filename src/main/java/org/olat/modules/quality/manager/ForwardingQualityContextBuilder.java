@@ -75,8 +75,8 @@ class ForwardingQualityContextBuilder implements QualityContextBuilder {
 	}
 
 	@Override
-	public QualityContextBuilder addOrganisation(Organisation organisation) {
-		builder.addOrganisation(organisation);
+	public QualityContextBuilder addExecutorOrganisation(Organisation organisation) {
+		builder.addExecutorOrganisation(organisation);
 		return this;
 	}
 

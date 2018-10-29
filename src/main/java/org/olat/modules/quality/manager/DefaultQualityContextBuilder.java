@@ -129,7 +129,7 @@ class DefaultQualityContextBuilder implements QualityContextBuilder {
 	}
 	
 	@Override
-	public DefaultQualityContextBuilder addOrganisation(Organisation organisation) {
+	public DefaultQualityContextBuilder addExecutorOrganisation(Organisation organisation) {
 		if (organisation != null) {
 			organisations.add(organisation);
 		}

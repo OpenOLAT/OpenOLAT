@@ -49,7 +49,7 @@ public class AnalysisSearchParameter {
 	private List<? extends CurriculumElementRef> topicCurriculumElementRefs;
 	private List<? extends RepositoryEntryRef> topicRepositoryRefs;
 	private Collection<String> contextLocations;
-	private List<? extends OrganisationRef> contextOrganisationRefs;
+	private List<? extends OrganisationRef> contextOrganisationRefs; // of the executor
 	private Collection<? extends CurriculumRef> contextCurriculumRefs;
 	private List<? extends CurriculumElementRef> contextCurriculumElementRefs;
 	private List<? extends OrganisationRef> contextCurriculumOrganisationRefs;

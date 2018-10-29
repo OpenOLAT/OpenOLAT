@@ -106,7 +106,7 @@ public class HeatMapController extends FormBasicController implements Filterable
 	private Map<String, String> groupNamesTopicCurriculum;
 	private Map<String, String> groupNamesTopicCurriculumElement;
 	private Map<String, String> groupNamesTopicRepositoryEntry;
-	private Map<String, String> groupNamesContextOrganisation;
+	private Map<String, String> groupNamesContextExecutorOrganisation;
 	private Map<String, String> groupNamesContextCurriculum;
 	private Map<String, String> groupNamesContextCurriculumElement;
 	private Map<String, String> groupNamesContextCurriculumOrganisation;
@@ -243,7 +243,7 @@ public class HeatMapController extends FormBasicController implements Filterable
 		if (availableAttributes.isTopicRepository()) {
 			addEntry(keyValues, GroupBy.TOPIC_REPOSITORY);
 		}
-		if (availableAttributes.isContextOrganisation() && organisationModule.isEnabled()) {
+		if (availableAttributes.isContextExecutorOrganisation() && organisationModule.isEnabled()) {
 			addEntry(keyValues, GroupBy.CONTEXT_ORGANISATION);
 		}
 		if (availableAttributes.isContextCurriculum() && curriculumModule.isEnabled()) {
@@ -514,7 +514,7 @@ public class HeatMapController extends FormBasicController implements Filterable
 		case TOPIC_REPOSITORY:
 			return getTopicRepositoryEntryGroupName(key);
 		case CONTEXT_ORGANISATION:
-			return getContextOrganisationGroupName(key);
+			return getContextExecutorOrganisationGroupName(key);
 		case CONTEXT_CURRICULUM:
 			return getContextCurriculumGroupName(key);
 		case CONTEXT_CURRICULUM_ELEMENT:
@@ -617,21 +617,21 @@ public class HeatMapController extends FormBasicController implements Filterable
 		return groupNamesTopicRepositoryEntry;
 	}
 
-	private String getContextOrganisationGroupName(String key) {
-		return getContextOrganisationGroupNames().get(key);
+	private String getContextExecutorOrganisationGroupName(String key) {
+		return getContextExecutorOrganisationGroupNames().get(key);
 	}
 
-	private Map<String, String> getContextOrganisationGroupNames() {
-		if (groupNamesContextOrganisation == null) {
-			groupNamesContextOrganisation = new HashMap<>();
-			List<Organisation> elements = analysisService.loadContextOrganisations(getGroupNamesSearchParams(), false);
+	private Map<String, String> getContextExecutorOrganisationGroupNames() {
+		if (groupNamesContextExecutorOrganisation == null) {
+			groupNamesContextExecutorOrganisation = new HashMap<>();
+			List<Organisation> elements = analysisService.loadContextExecutorOrganisations(getGroupNamesSearchParams(), false);
 			for (Organisation element : elements) {
 				String key = element.getKey().toString();
 				String value = element.getDisplayName();
-				groupNamesContextOrganisation.put(key, value);
+				groupNamesContextExecutorOrganisation.put(key, value);
 			}
 		}
-		return groupNamesContextOrganisation;
+		return groupNamesContextExecutorOrganisation;
 	}
 
 	private String getContextCurriculumGroupName(String key) {

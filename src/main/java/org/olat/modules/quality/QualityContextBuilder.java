@@ -39,7 +39,7 @@ public interface QualityContextBuilder {
 
 	QualityContextBuilder addCurriculumElement(CurriculumElement curriculumElement);
 
-	QualityContextBuilder addOrganisation(Organisation organisation);
+	QualityContextBuilder addExecutorOrganisation(Organisation organisation);
 
 	QualityContextBuilder addTaxonomyLevel(TaxonomyLevel taxonomyLevel);
 

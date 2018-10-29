@@ -21,7 +21,10 @@ package org.olat.modules.quality.manager;
 
 import java.util.List;
 
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.id.Organisation;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.quality.QualityContext;
 import org.olat.modules.quality.QualityDataCollection;
@@ -37,6 +40,8 @@ class AudiencelessQualityContextBuilder extends ForwardingQualityContextBuilder 
 
 	@Autowired
 	private QualityContextDAO qualityContextDao;
+	@Autowired
+	private OrganisationService organisationService;
 	
 	static final AudiencelessQualityContextBuilder builder(QualityDataCollection dataCollection,
 			EvaluationFormParticipation evaluationFormParticipation) {
@@ -53,6 +58,12 @@ class AudiencelessQualityContextBuilder extends ForwardingQualityContextBuilder 
 	private void initBuilder(EvaluationFormParticipation evaluationFormParticipation) {
 		List<QualityContext> contextToDelete = qualityContextDao.loadByWithoutAudience(evaluationFormParticipation);
 		contextToDelete.forEach(c -> builder.addToDelete(c));
+		
+		List<Organisation> organisations = organisationService
+				.getOrganisations(evaluationFormParticipation.getExecutor(), OrganisationRoles.user);
+		for (Organisation organisation : organisations) {
+			builder.addExecutorOrganisation(organisation);
+		}
 	}
 
 }

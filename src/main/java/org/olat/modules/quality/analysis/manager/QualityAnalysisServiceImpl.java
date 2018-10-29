@@ -185,7 +185,7 @@ public class QualityAnalysisServiceImpl implements QualityAnalysisService {
 	}
 
 	@Override
-	public List<Organisation> loadContextOrganisations(AnalysisSearchParameter searchParams, boolean withParents) {
+	public List<Organisation> loadContextExecutorOrganisations(AnalysisSearchParameter searchParams, boolean withParents) {
 		List<Organisation> organisations = organisationService.getOrganisations();
 		List<String> pathes = filterDao.loadContextOrganisationPathes(searchParams);
 		if (withParents) {

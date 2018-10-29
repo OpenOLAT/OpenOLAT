@@ -21,6 +21,8 @@ package org.olat.modules.quality.manager;
 
 import java.util.List;
 
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Organisation;
 import org.olat.modules.curriculum.Curriculum;
@@ -45,6 +47,8 @@ class CurriculumElementQualityContextBuilder extends ForwardingQualityContextBui
 	@Autowired
 	private QualityContextDAO qualityContextDao;
 	@Autowired
+	private OrganisationService organisationService;
+	@Autowired
 	private CurriculumService curriculumService;
 	
 	static final CurriculumElementQualityContextBuilder builder(QualityDataCollection dataCollection,
@@ -67,7 +71,7 @@ class CurriculumElementQualityContextBuilder extends ForwardingQualityContextBui
 		
 		QualityContextRole contextRole = QualityContextRole.valueOf(role.name());
 		builder.withRole(contextRole);
-		builder.withAudiencCurriculumElement(curriculumElement);
+		builder.withAudiencCurriculumElement(curriculumElement);	
 
 		List<QualityContext> contextToDelete = qualityContextDao
 				.loadByAudienceCurriculumElement(evaluationFormParticipation, curriculumElement, contextRole);
@@ -75,8 +79,18 @@ class CurriculumElementQualityContextBuilder extends ForwardingQualityContextBui
 		builder.addCurriculumElement(curriculumElement);
 		Curriculum curriculum = curriculumElement.getCurriculum();
 		builder.addCurriculum(curriculum);
-		Organisation organisation = curriculum.getOrganisation();
-		builder.addOrganisation(organisation);
+		
+		Organisation curriculumOrganisation = curriculum.getOrganisation();
+		List<Organisation> organisations = organisationService
+				.getOrganisations(evaluationFormParticipation.getExecutor(), OrganisationRoles.user);
+		if (organisations.contains(curriculumOrganisation)) {
+			builder.addExecutorOrganisation(curriculumOrganisation);
+		} else {
+			for (Organisation organisation : organisations) {
+				builder.addExecutorOrganisation(organisation);
+			}
+		}
+		
 		List<TaxonomyLevel> taxonomyLevels = curriculumService.getTaxonomy(curriculumElement);
 		for (TaxonomyLevel taxonomyLevel: taxonomyLevels) {
 			builder.addTaxonomyLevel(taxonomyLevel);

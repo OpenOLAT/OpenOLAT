@@ -32,7 +32,7 @@ public enum GroupBy {
 	TOPIC_CURRICULUM("heatmap.group.topic.curriculum"),
 	TOPIC_CURRICULUM_ELEMENT("heatmap.group.topic.curriculum.element"),
 	TOPIC_REPOSITORY("heatmap.group.topic.repository"),
-	CONTEXT_ORGANISATION("heatmap.group.context.organisation"),
+	CONTEXT_ORGANISATION("heatmap.group.context.organisation"), // of the executor
 	CONTEXT_CURRICULUM("heatmap.group.context.curriculum"),
 	CONTEXT_CURRICULUM_ELEMENT("heatmap.group.context.curriculum.element"),
 	CONTEXT_CURRICULUM_ORGANISATION("heatmap.group.context.curriculum.organisation"),

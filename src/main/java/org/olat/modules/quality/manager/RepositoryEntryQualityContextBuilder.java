@@ -24,9 +24,12 @@ import static java.util.Collections.singletonList;
 import java.util.List;
 
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.OrganisationRef;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumRoles;
@@ -52,6 +55,8 @@ public class RepositoryEntryQualityContextBuilder extends ForwardingQualityConte
 	
 	@Autowired
 	private QualityContextDAO qualityContextDao;
+	@Autowired
+	private OrganisationService organisationService;
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
@@ -83,6 +88,8 @@ public class RepositoryEntryQualityContextBuilder extends ForwardingQualityConte
 		contextToDelete.forEach(c -> builder.addToDelete(c));
 		
 		Identity executor = evaluationFormParticipation.getExecutor();
+		initExecutorOrganisation(executor, repositoryEntry, role);
+			
 		if (executor != null) {
 			initCurriculumContext(executor, repositoryEntry, role);
 			if (GroupRoles.coach.equals(role)) {
@@ -95,6 +102,54 @@ public class RepositoryEntryQualityContextBuilder extends ForwardingQualityConte
 		}
 	}
 
+	private void initExecutorOrganisation(Identity executor, RepositoryEntry repositoryEntry, GroupRoles role) {
+		List<Organisation> userOrganisations = organisationService.getOrganisations(executor, OrganisationRoles.user);
+		boolean organisationDone = initOrganisationFromCurriculum(executor, repositoryEntry, role, userOrganisations);
+		if (!organisationDone) {
+			organisationDone = initOrganisationFromRepositoreyEntry(repositoryEntry, userOrganisations);
+		}
+		if (!organisationDone) {
+			initOrganisationFromUser(userOrganisations);
+		}
+	}
+
+	private boolean initOrganisationFromCurriculum(Identity executor, RepositoryEntry repositoryEntry, GroupRoles role,
+			List<Organisation> userOrganisations) {
+		boolean organisationDone = false;
+		CurriculumRoles curriculumRole = CurriculumRoles.valueOf(role.name());
+		List<CurriculumElement> curriculumElements = curriculumService.getCurriculumElements(repositoryEntry, executor,
+				singletonList(curriculumRole));
+		for (CurriculumElement curriculumElement : curriculumElements) {
+			Organisation curriculumOrganisation = curriculumElement.getCurriculum().getOrganisation();
+			if (userOrganisations.contains(curriculumOrganisation)) {
+				builder.addExecutorOrganisation(curriculumOrganisation);
+				organisationDone = true;
+			}
+		}
+		return organisationDone;
+	}
+
+	private boolean initOrganisationFromRepositoreyEntry(RepositoryEntry repositoryEntry,
+			List<Organisation> userOrganisations) {
+		boolean organisationDone = false;
+		List<OrganisationRef> repositoryOrganisations = repositoryService.getOrganisationReferences(repositoryEntry);
+		for (OrganisationRef repositoryOrganisation : repositoryOrganisations) {
+			for (Organisation userOrganisation: userOrganisations) {
+				if (userOrganisation.getKey().equals(repositoryOrganisation.getKey())) {
+					builder.addExecutorOrganisation(userOrganisation);
+					organisationDone = true;
+				}
+			}
+		}
+		return organisationDone;
+	}
+
+	private void initOrganisationFromUser(List<Organisation> userOrganisations) {
+		for (Organisation organisation : userOrganisations) {
+			builder.addExecutorOrganisation(organisation);
+		}
+	}
+
 	private void initCurriculumContext(Identity identity, RepositoryEntry repositoryEntry, GroupRoles role) {
 		CurriculumRoles curriculumRole = CurriculumRoles.valueOf(role.name());
 		List<CurriculumElement> curriculumElements = curriculumService.getCurriculumElements(repositoryEntry, identity,
@@ -103,8 +158,6 @@ public class RepositoryEntryQualityContextBuilder extends ForwardingQualityConte
 			builder.addCurriculumElement(curriculumElement);
 			Curriculum curriculum = curriculumElement.getCurriculum();
 			builder.addCurriculum(curriculum);
-			Organisation organisation = curriculum.getOrganisation();
-			builder.addOrganisation(organisation);
 		}
 	}
 
