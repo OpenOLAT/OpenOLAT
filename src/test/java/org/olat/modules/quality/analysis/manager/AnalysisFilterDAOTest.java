@@ -603,6 +603,8 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 	public void shouldLoadDistinctContextOrganisationPathes() {
 		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Identity executor = JunitTestHelper.createAndPersistIdentityAsUser("");
+		Organisation defaultOrganisation = organisationService.getDefaultOrganisation();
+		organisationService.removeMember(defaultOrganisation, executor);
 		Organisation dcOrganisation = qualityTestHelper.createOrganisation();
 		Organisation organisation1 = qualityTestHelper.createOrganisation();
 		Organisation organisation2 = qualityTestHelper.createOrganisation();
