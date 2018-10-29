@@ -19,6 +19,9 @@
  */
 package org.olat.modules.curriculum.ui;
 
+import java.text.Collator;
+import java.util.Locale;
+
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeNodeComparator;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
 
@@ -29,6 +32,12 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeT
  *
  */
 public class CurriculumElementTreeRowComparator extends FlexiTreeNodeComparator {
+
+	private final Collator collator;
+	
+	public CurriculumElementTreeRowComparator(Locale locale) {
+		collator = Collator.getInstance(locale);
+	}
 	
 	@Override
 	protected int compareNodes(FlexiTreeTableNode o1, FlexiTreeTableNode o2) {
@@ -43,7 +52,7 @@ public class CurriculumElementTreeRowComparator extends FlexiTreeNodeComparator 
 		
 		int c = 0;
 		if(parentKey1 == null && parentKey2 == null) {
-			c = compareDisplayName(c1, c2);
+			c = compareCurriculumElements(c1, c2);
 		} else if(parentKey1 != null && parentKey1.equals(parentKey2)) {
 			Long pos1 = c1.getPos();
 			Long pos2 = c2.getPos();
@@ -56,13 +65,13 @@ public class CurriculumElementTreeRowComparator extends FlexiTreeNodeComparator 
 			// This case is usually not possible
 			CurriculumElementRow p1 = c1.getParent();
 			CurriculumElementRow p2 = c2.getParent();
-			c = compareDisplayName(p1, p2);
+			c = compareCurriculumElements(p1, p2);
 			if(c == 0) {
 				c = Long.compare(p1.getKey().longValue(), p2.getKey().longValue());
 			}
 		} else {
 			// This case is usually not possible
-			c = compareDisplayName(c1, c2);
+			c = compareCurriculumElements(c1, c2);
 		}
 		
 		if(c == 0) {
@@ -71,12 +80,33 @@ public class CurriculumElementTreeRowComparator extends FlexiTreeNodeComparator 
 		return c;
 	}
 	
-	private int compareDisplayName(CurriculumElementRow c1, CurriculumElementRow c2) {
-		String d1 = c1.getDisplayName();
-		String d2 = c2.getDisplayName();
-		if(d1 == null || d2 == null) {
-			return compareNullObjects(d1, d2);
+	private int compareCurriculumElements(CurriculumElementRow c1, CurriculumElementRow c2) {
+		int c = 0;
+		if(c1.getBeginDate() == null || c2.getBeginDate() == null) {
+			c = compareNullObjects(c1.getBeginDate(), c2.getBeginDate());
+		} else {
+			c = c1.getBeginDate().compareTo(c2.getBeginDate());
 		}
-		return d1.compareTo(d2);
+		
+		if(c == 0) {
+			if(c1.getDisplayName() == null || c2.getDisplayName() == null) {
+				c = compareNullObjects(c1.getDisplayName(), c2.getDisplayName());
+			} else {
+				c = collator.compare(c1.getDisplayName(), c2.getDisplayName());
+			}
+		}
+		
+		if(c == 0) {
+			if(c1.getIdentifier() == null || c2.getIdentifier() == null) {
+				c = compareNullObjects(c1.getIdentifier(), c2.getIdentifier());
+			} else {
+				c = collator.compare(c1.getIdentifier(), c2.getIdentifier());
+			}
+		}
+		
+		if(c == 0) {
+			c = Long.compare(c1.getKey().longValue(), c2.getKey().longValue());
+		}
+		return c;
 	}
 }
