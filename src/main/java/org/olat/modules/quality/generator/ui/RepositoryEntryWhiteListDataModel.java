@@ -62,7 +62,7 @@ class RepositoryEntryWhiteListDataModel extends DefaultFlexiTableDataModel<Repos
 	@Override
 	public Object getValueAt(RepositoryEntry row, int col) {
 		switch(Cols.values()[col]) {
-			case id: row.getKey();
+			case id: return row.getKey();
 			case displayName: return row.getDisplayname();
 			case identifier: return row.getExternalRef();
 			case begin: {
