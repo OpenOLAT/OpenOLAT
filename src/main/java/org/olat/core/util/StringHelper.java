@@ -211,7 +211,7 @@ public class StringHelper {
 	 * @return The encoded string
 	 */
 	public static String encodeBase64(String unencoded) {
-		return new Base64Encoder().encode(unencoded.getBytes());
+		return new Base64Encoder(true).encode(unencoded.getBytes());
 	}
 	
 	/**
@@ -221,7 +221,7 @@ public class StringHelper {
 	 * @return The encoded string
 	 */
 	public static String encodeBase64(byte[] unencoded) {
-		return new Base64Encoder().encode(unencoded);
+		return new Base64Encoder(true).encode(unencoded);
 	}
 	
 	/**
@@ -231,7 +231,7 @@ public class StringHelper {
 	 * @return The decoded string
 	 */
 	public static String decodeBase64(String encoded) {
-		byte[] decoded = new Base64Encoder().decode(encoded);
+		byte[] decoded = new Base64Encoder(true).decode(encoded);
 		return new String(decoded);
 	}
 
