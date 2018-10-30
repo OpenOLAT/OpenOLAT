@@ -81,7 +81,7 @@ class QualityParticipationDAO {
 		sb.append("     , user.lastName as lastname");
 		sb.append("     , user.email as email");
 		sb.append("     , context.key");
-		sb.append("     , context.role as name");
+		sb.append("     , context.role as role");
 		sb.append("     , audienceRepositoryEntry.displayname as repositoryEntryName");
 		sb.append("     , audienceCurriculumElement.displayName as curriculumElementName");
 		sb.append("       )");
