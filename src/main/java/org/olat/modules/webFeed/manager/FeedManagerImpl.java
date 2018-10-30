@@ -307,8 +307,6 @@ public class FeedManagerImpl extends FeedManager {
 		Feed feed = feedDAO.loadFeed(ores);
 		itemDAO.removeItems(feed);
 		feedDAO.removeFeedForResourceable(ores);
-		resourceManager.deleteOLATResourceable(ores);
-		feed = null;
 	}
 
 	@Override
