@@ -47,6 +47,10 @@ import org.olat.modules.quality.QualityExecutorParticipation;
 import org.olat.modules.quality.QualityExecutorParticipationSearchParams;
 import org.olat.modules.quality.QualityReminder;
 import org.olat.modules.quality.ui.QualityMainController;
+import org.olat.modules.quality.ui.QualityUIContextsBuilder;
+import org.olat.modules.quality.ui.QualityUIContextsBuilder.Attribute;
+import org.olat.modules.quality.ui.QualityUIContextsBuilder.KeyValue;
+import org.olat.modules.quality.ui.QualityUIContextsBuilder.UIContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -140,6 +144,8 @@ class QualityMailing {
 		Long participationKey = participation != null? participation.getParticipationRef().getKey(): null;
 		String url = getUrl(participationKey);
 		
+		String surveyContext = createSurveyContext(participation, locale);
+		
 		MailTemplate mailTempl = new MailTemplate(subject, body, null) {
 			@Override
 			public void putVariablesInMailContext(VelocityContext context, Identity identity) {
@@ -152,6 +158,7 @@ class QualityMailing {
 				context.put("title", title);
 				context.put("previousTitle", previousTitle);
 				context.put("seriePosition", seriePosition);
+				context.put("context", surveyContext);
 				context.put("url", url);
 				context.put("invitation", invitation);
 			}
@@ -168,6 +175,24 @@ class QualityMailing {
 			url.append(participationKey);
 		}
 		return url.toString();
+	}
+
+	private String createSurveyContext(QualityExecutorParticipation participation, Locale locale) {
+		StringBuilder sb = new StringBuilder();
+		List<UIContext> uiContexts = QualityUIContextsBuilder.builder(participation, locale)
+				.addAttribute(Attribute.ROLE)
+				.addAttribute(Attribute.COURSE)
+				.addAttribute(Attribute.CURRICULUM_ELEMENTS	)
+				.addAttribute(Attribute.TAXONOMY_LEVELS)
+				.build()
+				.getUiContexts();
+		for (UIContext uiContext : uiContexts) {
+			sb.append("<br/>");
+			for (KeyValue kv : uiContext.getKeyValues()) {
+				sb.append("<br/>").append(kv.getKey()).append(": ").append(kv.getValue());
+			}
+		}
+		return sb.toString();
 	}
 	
 }

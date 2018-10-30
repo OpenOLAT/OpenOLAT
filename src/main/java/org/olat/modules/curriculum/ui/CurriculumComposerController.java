@@ -36,6 +36,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DateFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableCssDelegate;
@@ -181,8 +182,9 @@ public class CurriculumComposerController extends FormBasicController implements
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.displayName, treeNodeRenderer));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.identifier, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementCols.externalId));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.beginDate));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.endDate));
+		DateFlexiCellRenderer dateRenderer = new DateFlexiCellRenderer(getLocale());
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.beginDate, dateRenderer));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.endDate, dateRenderer));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementCols.type));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.resources));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.numOfMembers, "members"));
@@ -281,7 +283,7 @@ public class CurriculumComposerController extends FormBasicController implements
 				row.setParent(keyToRows.get(row.getParentKey()));
 			}
 		}
-		Collections.sort(rows, new CurriculumElementTreeRowComparator());
+		Collections.sort(rows, new CurriculumElementTreeRowComparator(getLocale()));
 		
 		tableModel.setObjects(rows);
 		tableEl.reset(false, true, true);

@@ -297,7 +297,7 @@ public class EditMembershipController extends FormBasicController {
 				}
 			}
 			
-			Collections.sort(rows, new CurriculumElementTreeRowComparator());
+			Collections.sort(rows, new CurriculumElementTreeRowComparator(getLocale()));
 			
 			List<CurriculumElement> orderedElements = new ArrayList<>(rows.size());
 			for(CurriculumElementRow row:rows) {
