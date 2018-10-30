@@ -1,5 +1,6 @@
 (function ($) {
 	$.fn.matchInteractionDnd = function(options) {
+		"use strict";
 		var settings = $.extend({
 			responseIdentifier : null,
 			formDispatchFieldId : null,
@@ -157,18 +158,33 @@
 
     function initializeTargetEvents(jElements, containerId, settings) {
 		jElements.on('click', function(e, el) {
-			var box = jQuery(this);
+			var box = this;
+			var boxEl = jQuery(box);
 			var hasItems = jQuery(".o_associate_item", this).size();
 			if(hasItems == 0) {
 				jQuery("#" + containerId + " .o_match_dnd_sources .oo-selected").each(function(index, selectedEl) {
 					var choiceEl = jQuery(selectedEl);
-					if(needToBeAvailable(selectedEl, containerId)) {
-						choiceEl.removeClass('oo-selected');
-						choiceEl = choiceEl.clone();
-						moveSourceToTarget(choiceEl, box, containerId);
-						initializeSourceEvents(choiceEl, containerId, settings);
-					} else {
-						moveSourceToTarget(choiceEl, box, containerId);
+					var choiceQtiId = choiceEl.data('qti-id');
+					var currentItems = jQuery(".o_match_dnd_source[data-qti-id='" + choiceQtiId + "']", box).size();
+					
+					var moveAllowed = currentItems == 0;
+					var targetMatchMax = jQuery(box).data("qti-match-max");
+					if(targetMatchMax > 0) {
+						var filled = jQuery(".o_match_dnd_source", box).size();
+						if(filled >= targetMatchMax) {
+							moveAllowed &= false;
+						}
+					}
+					
+					if(moveAllowed) {
+						if(needToBeAvailable(selectedEl, containerId)) {
+							choiceEl.removeClass('oo-selected');
+							choiceEl = choiceEl.clone();
+							moveSourceToTarget(choiceEl, boxEl, containerId);
+							initializeSourceEvents(choiceEl, containerId, settings);
+						} else {
+							moveSourceToTarget(choiceEl, boxEl, containerId);
+						}
 					}
 				});
 			}
