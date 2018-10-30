@@ -125,8 +125,8 @@ public class DataCollectionListController extends FormBasicController implements
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, DataCollectionCols.generatorTitle));
 		
 		Collection<? extends OrganisationRef> organisationRefs = organisationService.getOrganisations(getIdentity(),
-				ureq.getUserSession().getRoles(), OrganisationRoles.administrator, OrganisationRoles.qualitymanager);
-		DataCollectionDataSource dataSource = new DataCollectionDataSource(getTranslator(), organisationRefs);
+				ureq.getUserSession().getRoles(), secCallback.getViewDataCollectionRoles());
+		DataCollectionDataSource dataSource = new DataCollectionDataSource(getTranslator(), organisationRefs, getIdentity());
 		dataModel = new DataCollectionDataModel(dataSource, columnsModel, getTranslator(), secCallback);
 		tableEl = uifactory.addTableElement(getWindowControl(), "dataCollections", dataModel, 25, true, getTranslator(), formLayout);
 		tableEl.setElementCssClass("o_qual_dc_list");

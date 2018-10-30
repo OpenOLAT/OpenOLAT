@@ -242,6 +242,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.quality.manager.QualityDataCollectionDAOTest.class,
 	org.olat.modules.quality.manager.QualityParticipationDAOTest.class,
 	org.olat.modules.quality.manager.QualityReminderDAOTest.class,
+	org.olat.modules.quality.manager.QualityReportAccessDAOTest.class,
 	org.olat.modules.quality.manager.RepositoryEntryQualityContextBuilderTest.class,
 	org.olat.modules.lecture.manager.LectureBlockDAOTest.class,
 	org.olat.modules.lecture.manager.LectureBlockRollCallDAOTest.class,

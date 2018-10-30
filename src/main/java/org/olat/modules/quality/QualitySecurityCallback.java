@@ -35,9 +35,13 @@ public interface QualitySecurityCallback {
 
 	public boolean canViewDataCollections();
 	
+	public OrganisationRoles[] getViewDataCollectionRoles();
+	
 	public boolean canCreateDataCollections();
 	
 	public boolean canEditDataCollections();
+	
+	public boolean canViewDataCollectionConfigurations();
 	
 	public boolean canUpdateBaseConfiguration(QualityDataCollectionLight dataCollection);
 	
@@ -60,6 +64,10 @@ public interface QualitySecurityCallback {
 	public boolean canEditReminders();
 
 	public boolean canEditReminder(QualityDataCollectionLight dataCollection, QualityReminder reminder);
+	
+	public boolean canViewReportAccesses();
+	
+	public boolean canEditReportAccesses();
 
 	public boolean canViewReports();
 
@@ -85,9 +93,9 @@ public interface QualitySecurityCallback {
 
 	public boolean canViewAnalysis();
 	
-	public OrganisationRoles[] getAnalysisViewRoles();
+	public OrganisationRoles[] getViewAnalysisRoles();
 	
-	public OrganisationRoles[] getPresentationViewRoles();
+	public OrganisationRoles[] getViewPresentationRoles();
 	
 	public boolean canEditPresentations();
 

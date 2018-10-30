@@ -66,6 +66,7 @@ public class DataCollectionController extends BasicController implements TooledC
 	private Link configurationLink;
 	private Link participantsLink;
 	private Link remindersLink;
+	private Link reportAccessLink;
 	private Link reportLink;
 	private Link previousReportLink;
 	private Link followUpReportLink;
@@ -76,6 +77,7 @@ public class DataCollectionController extends BasicController implements TooledC
 	private DataCollectionConfigurationController configurationCtrl;
 	private ParticipationListController participationsCtrl;
 	private RemindersController remindersCtrl;
+	private ReportAccessController reportAccessCtrl;
 	private DataCollectionReportController reportCtrl;
 	private DataCollectionReportController previousReportCtrl;
 	private DataCollectionReportController followUpReportCtrl;
@@ -100,13 +102,15 @@ public class DataCollectionController extends BasicController implements TooledC
 		this.dataCollection = qualityService.loadDataCollectionByKey(dataCollectionLight);
 		
 		segmentButtonsCmp = new ButtonGroupComponent("segments");
-		if (secCallback.canViewDataCollections()) {
+		if (secCallback.canViewDataCollectionConfigurations()) {
 			configurationLink = LinkFactory.createLink("data.collection.configuration", getTranslator(), this);
 			segmentButtonsCmp.addButton(configurationLink, false);
 			participantsLink = LinkFactory.createLink("data.collection.participations", getTranslator(), this);
 			segmentButtonsCmp.addButton(participantsLink, false);
 			remindersLink = LinkFactory.createLink("data.collection.reminders", getTranslator(), this);
 			segmentButtonsCmp.addButton(remindersLink, false);
+			reportAccessLink = LinkFactory.createLink("data.collection.report.access", getTranslator(), this);
+			segmentButtonsCmp.addButton(reportAccessLink, false);
 		}
 		addReportButtons();
 		
@@ -135,7 +139,11 @@ public class DataCollectionController extends BasicController implements TooledC
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		doOpenConfiguration(ureq);
+		if (secCallback.canViewDataCollectionConfigurations()) {
+			doOpenConfiguration(ureq);
+		} else if (secCallback.canViewReport(dataCollection)) {
+			doOpenReport(ureq);
+		}
 	}
 
 	@Override
@@ -188,6 +196,8 @@ public class DataCollectionController extends BasicController implements TooledC
 			doOpenParticipants(ureq);
 		} else if(remindersLink == source) {
 			doOpenReminders(ureq);
+		} else if(reportAccessLink == source) {
+			doOpenReportAccess(ureq);
 		} else if(reportLink == source) {
 			doOpenReport(ureq);
 		} else if(previousReportLink == source) {
@@ -234,6 +244,14 @@ public class DataCollectionController extends BasicController implements TooledC
 		segmentButtonsCmp.setSelectedButton(remindersLink);
 	}
 	
+	private void doOpenReportAccess(UserRequest ureq) {
+		stackPanel.popUpToController(this);
+		reportAccessCtrl = new ReportAccessController(ureq, getWindowControl(), secCallback, stackPanel, dataCollection);
+		listenTo(reportAccessCtrl);
+		stackPanel.pushController(translate("data.collection.report.access"), reportAccessCtrl);
+		segmentButtonsCmp.setSelectedButton(reportAccessLink);
+	}
+	
 	private void doOpenReport(UserRequest ureq) {
 		stackPanel.popUpToController(this);
 		reportCtrl = new DataCollectionReportController(ureq, getWindowControl(), secCallback, stackPanel, dataCollection);
@@ -250,13 +268,13 @@ public class DataCollectionController extends BasicController implements TooledC
 		segmentButtonsCmp.setSelectedButton(previousReportLink);
 	}
 	
-private void doOpenFollowUpReport(UserRequest ureq) {
-	stackPanel.popUpToController(this);
-	followUpReportCtrl = new DataCollectionReportController(ureq, getWindowControl(), secCallback, stackPanel, followUpDataCollection);
-	listenTo(followUpReportCtrl);
-	stackPanel.pushController(translate("data.collection.report.followup"), followUpReportCtrl);
-	segmentButtonsCmp.setSelectedButton(followUpReportLink);
-}
+	private void doOpenFollowUpReport(UserRequest ureq) {
+		stackPanel.popUpToController(this);
+		followUpReportCtrl = new DataCollectionReportController(ureq, getWindowControl(), secCallback, stackPanel, followUpDataCollection);
+		listenTo(followUpReportCtrl);
+		stackPanel.pushController(translate("data.collection.report.followup"), followUpReportCtrl);
+		segmentButtonsCmp.setSelectedButton(followUpReportLink);
+	}
 
 	@Override
 	protected void doDispose() {
@@ -346,6 +364,10 @@ private void doOpenFollowUpReport(UserRequest ureq) {
 		if (remindersCtrl != null) {
 			remindersCtrl.setDataCollection(ureq, dataCollection);
 			remindersCtrl.initTools();
+		}
+		if (reportAccessCtrl != null) {
+			reportAccessCtrl.setDataCollection(ureq, dataCollection);
+			reportAccessCtrl.initTools();
 		}
 		addReportButtons();
 		if (reportCtrl != null) {

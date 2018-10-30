@@ -140,7 +140,7 @@ public interface QualityService {
 	 * @param dataCollection
 	 * @param participation
 	 * @param entry
-	 * @param role 
+	 * @param name 
 	 * @return
 	 */
 	public QualityContextBuilder createContextBuilder(QualityDataCollection dataCollection,
@@ -153,7 +153,7 @@ public interface QualityService {
 	 * @param dataCollection
 	 * @param participation
 	 * @param curriculumElement
-	 * @param role
+	 * @param name
 	 * @return
 	 */
 	public QualityContextBuilder createContextBuilder(QualityDataCollection dataCollection,
@@ -186,5 +186,12 @@ public interface QualityService {
 	 * @param until all reminders with a planed date before this date
 	 */
 	public void sendReminders(Date until);
+	
+	public QualityReportAccess createReportAccess(QualityReportAccessReference reference, QualityReportAccess.Type type,
+			String role);
+
+	public QualityReportAccess updateReportAccess(QualityReportAccess reportAccess);
+	
+	public List<QualityReportAccess> loadReportAccesses(QualityReportAccessSearchParams searchParams);
 
 }

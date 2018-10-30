@@ -98,7 +98,7 @@ public class AnalysisListController extends FormBasicController implements Flexi
 		stackPanel.addListener(this);
 		this.secCallback = secCallback;
 		this.organisations = organisationService.getOrganisations(getIdentity(), ureq.getUserSession().getRoles(),
-				secCallback.getAnalysisViewRoles());
+				secCallback.getViewAnalysisRoles());
 		initForm(ureq);
 	}
 	

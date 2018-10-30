@@ -47,6 +47,7 @@ import org.olat.modules.quality.QualityDataCollectionStatus;
 import org.olat.modules.quality.QualityDataCollectionTopicType;
 import org.olat.modules.quality.QualityDataCollectionView;
 import org.olat.modules.quality.QualityDataCollectionViewSearchParams;
+import org.olat.modules.quality.QualityReportAccess;
 import org.olat.modules.quality.generator.QualityGenerator;
 import org.olat.modules.quality.model.QualityDataCollectionImpl;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
@@ -316,10 +317,9 @@ public class QualityDataCollectionDAO {
 	}
 
 	int getDataCollectionCount(QualityDataCollectionViewSearchParams searchParams) {
-		StringBuilder sb = new StringBuilder(256);
+		QueryBuilder sb = new QueryBuilder(256);
 		sb.append("select count(collection)");
 		sb.append("  from qualitydatacollection as collection");
-		sb.append(" where 1=1");
 		appendWhereClause(sb, searchParams);
 		
 		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
@@ -332,7 +332,7 @@ public class QualityDataCollectionDAO {
 
 	List<QualityDataCollectionView> loadDataCollections(Translator translator,
 			QualityDataCollectionViewSearchParams searchParams, int firstResult, int maxResults, SortKey... orderBy) {
-		StringBuilder sb = new StringBuilder();
+		QueryBuilder sb = new QueryBuilder();
 		sb.append("select new org.olat.modules.quality.model.QualityDataCollectionViewImpl(");
 		sb.append("       collection.key as key");
 		sb.append("     , collection.status as status");
@@ -385,7 +385,6 @@ public class QualityDataCollectionDAO {
 		sb.append("       left join survey.seriesPrevious as previousSurvey");
 		sb.append("       left join qualitydatacollection as previousCollection on previousSurvey.resName = '").append(QualityDataCollectionLight.RESOURCEABLE_TYPE_NAME).append("'");
 		sb.append("                                                            and previousSurvey.resId = previousCollection.key");
-		sb.append(" where 1=1");
 		appendWhereClause(sb, searchParams);
 		
 		appendOrderBy(sb, orderBy);
@@ -403,19 +402,48 @@ public class QualityDataCollectionDAO {
 		return query.getResultList();
 	}
 	
-	private void appendWhereClause(StringBuilder sb, QualityDataCollectionViewSearchParams searchParams) {
+	private void appendWhereClause(QueryBuilder sb, QualityDataCollectionViewSearchParams searchParams) {
 		if (searchParams != null) {
 			if (searchParams.getDataCollectionRef() != null && searchParams.getDataCollectionRef().getKey() != null) {
-				sb.append(" and collection.key = :collectionKey");
+				sb.and().append("collection.key = :collectionKey");
 			}
-			if (searchParams.getOrgansationRefs() != null && !searchParams.getOrgansationRefs().isEmpty()) {
-				sb.append(" and collection.key in (");
-				sb.append("     select collectionToOrganisation.dataCollection.key");
-				sb.append("       from qualitydatacollectiontoorganisation as collectionToOrganisation");
-				sb.append("      where collectionToOrganisation.organisation.key in :organisationKeys");
-				sb.append(" )");
+			if (hasEntries(searchParams.getOrgansationRefs()) || searchParams.getReportAccessIdentity() != null) {
+				sb.and().append("(");
+				boolean or = false;
+				if (hasEntries(searchParams.getOrgansationRefs())) {
+					sb.append("collection.key in (");
+					sb.append("select collectionToOrganisation.dataCollection.key");
+					sb.append("  from qualitydatacollectiontoorganisation as collectionToOrganisation");
+					sb.append("  where collectionToOrganisation.organisation.key in :organisationKeys");
+					sb.append(")");
+					or = true;
+				}
+				if (searchParams.getReportAccessIdentity() != null) {
+					sb.append(" or ", or);
+					sb.append("exists (");
+					sb.append("select collection.key");
+					sb.append("  from qualityreportaccess ra");
+					sb.append("     , qualitycontext as context");
+					sb.append("     , repoentrytogroup as rel");
+					sb.append("     , bgroupmember as membership");
+					sb.append(" where ra.dataCollection.key = collection.key");
+					sb.append("   and collection.key = context.dataCollection.key");
+					sb.append("   and rel.entry.key = context.audienceRepositoryEntry.key");
+					sb.append("   and rel.group.key = membership.group.key");
+					sb.append("   and membership.role = ra.role");
+					sb.append("   and ra.online = true");
+					sb.append("   and ra.type = '").append(QualityReportAccess.Type.GroupRoles).append("'");
+					sb.append("   and collection.status = '").append(QualityDataCollectionStatus.FINISHED).append("'");
+					sb.append("   and membership.identity.key = :reportAccessIdentityKey");
+					sb.append(")");
+				}
+				sb.append(")");
 			}
 		}
+	}
+
+	private boolean hasEntries(Collection<?> collection) {
+		return collection != null && !collection.isEmpty();
 	}
 	
 	private void appendParameter(TypedQuery<?> query, QualityDataCollectionViewSearchParams searchParams) {
@@ -423,14 +451,19 @@ public class QualityDataCollectionDAO {
 			if (searchParams.getDataCollectionRef() != null && searchParams.getDataCollectionRef().getKey() != null) {
 				query.setParameter("collectionKey", searchParams.getDataCollectionRef().getKey());
 			}
-			if (searchParams.getOrgansationRefs() != null && !searchParams.getOrgansationRefs().isEmpty()) {
-				List<Long> organiationKeys = searchParams.getOrgansationRefs().stream().map(OrganisationRef::getKey).collect(toList());
-				query.setParameter("organisationKeys", organiationKeys);
+			if (hasEntries(searchParams.getOrgansationRefs()) || searchParams.getReportAccessIdentity() != null) {
+				if (hasEntries(searchParams.getOrgansationRefs())) {
+					List<Long> organiationKeys = searchParams.getOrgansationRefs().stream().map(OrganisationRef::getKey).collect(toList());
+					query.setParameter("organisationKeys", organiationKeys);
+				}
+				if (searchParams.getReportAccessIdentity() != null) {
+					query.setParameter("reportAccessIdentityKey", searchParams.getReportAccessIdentity().getKey());
+				}
 			}
 		}
 	}
 
-	private void appendOrderBy(StringBuilder sb, SortKey... orderBy) {
+	private void appendOrderBy(QueryBuilder sb, SortKey... orderBy) {
 		if(orderBy != null && orderBy.length > 0 && orderBy[0] != null) {
 			String sortKey = orderBy[0].getKey();
 			boolean asc = orderBy[0].isAsc();
@@ -442,7 +475,7 @@ public class QualityDataCollectionDAO {
 		}
 	}
 	
-	private final StringBuilder appendAsc(StringBuilder sb, boolean asc) {
+	private final QueryBuilder appendAsc(QueryBuilder sb, boolean asc) {
 		if(asc) {
 			sb.append(" asc");
 		} else {

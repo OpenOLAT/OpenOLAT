@@ -67,6 +67,10 @@ import org.olat.modules.quality.QualityExecutorParticipationSearchParams;
 import org.olat.modules.quality.QualityParticipation;
 import org.olat.modules.quality.QualityReminder;
 import org.olat.modules.quality.QualityReminderType;
+import org.olat.modules.quality.QualityReportAccess;
+import org.olat.modules.quality.QualityReportAccess.Type;
+import org.olat.modules.quality.QualityReportAccessReference;
+import org.olat.modules.quality.QualityReportAccessSearchParams;
 import org.olat.modules.quality.QualityService;
 import org.olat.modules.quality.generator.QualityGenerator;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
@@ -104,9 +108,11 @@ public class QualityServiceImpl
 	@Autowired
 	private QualityContextToTaxonomyLevelDAO contextToTaxonomyLevelDao;
 	@Autowired
+	private QualityParticipationDAO participationDao;
+	@Autowired
 	private QualityReminderDAO reminderDao;
 	@Autowired
-	private QualityParticipationDAO participationDao;
+	private QualityReportAccessDAO reportAccessDao;
 	@Autowired
 	private QualityMailing qualityMailing;
 	@Autowired
@@ -244,6 +250,7 @@ public class QualityServiceImpl
 		evaluationFormManager.deleteSurvey(survey);
 		deleteReferences(dataCollection);
 		resourceManager.deleteOLATResourceable(dataCollection);
+		reportAccessDao.deleteReportAccesses(dataCollection);
 		reminderDao.deleteReminders(dataCollection);
 		dataCollectionToOrganisationDao.deleteRelations(dataCollection);
 		dataCollectionDao.deleteDataCollection(dataCollection);
@@ -483,5 +490,20 @@ public class QualityServiceImpl
 	@Override
 	public void onReopen(SessionStatusInformation infos) {
 		contextDao.reopen(infos.getSession(), infos.getParticipation());
+	}
+
+	@Override
+	public QualityReportAccess createReportAccess(QualityReportAccessReference reference, Type type, String role) {
+		return reportAccessDao.create(reference, type, role);
+	}
+
+	@Override
+	public QualityReportAccess updateReportAccess(QualityReportAccess reportAccess) {
+		return reportAccessDao.save(reportAccess);
+	}
+
+	@Override
+	public List<QualityReportAccess> loadReportAccesses(QualityReportAccessSearchParams searchParams) {
+		return reportAccessDao.load(searchParams);
 	}
 }

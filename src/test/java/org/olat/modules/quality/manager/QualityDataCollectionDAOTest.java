@@ -20,12 +20,14 @@
 package org.olat.modules.quality.manager;
 
 import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.olat.modules.quality.QualityDataCollectionStatus.FINISHED;
 import static org.olat.modules.quality.QualityDataCollectionStatus.PREPARATION;
 import static org.olat.modules.quality.QualityDataCollectionStatus.READY;
 import static org.olat.modules.quality.QualityDataCollectionStatus.RUNNING;
+import static org.olat.modules.quality.QualityReportAccessReference.of;
 
 import java.util.Calendar;
 import java.util.Collection;
@@ -36,12 +38,14 @@ import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityDataCollectionRef;
 import org.olat.modules.quality.QualityDataCollectionSearchParams;
@@ -49,10 +53,12 @@ import org.olat.modules.quality.QualityDataCollectionStatus;
 import org.olat.modules.quality.QualityDataCollectionTopicType;
 import org.olat.modules.quality.QualityDataCollectionView;
 import org.olat.modules.quality.QualityDataCollectionViewSearchParams;
+import org.olat.modules.quality.QualityReportAccess;
 import org.olat.modules.quality.QualityService;
 import org.olat.modules.quality.generator.QualityGenerator;
 import org.olat.modules.quality.ui.DataCollectionDataModel.DataCollectionCols;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryService;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,6 +79,8 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 	private QualityTestHelper qualityTestHelper;
 	@Autowired
 	private QualityService qualityService;
+	@Autowired
+	private RepositoryService repositoryService;
 	
 	@Autowired
 	private QualityDataCollectionDAO sut;
@@ -520,6 +528,99 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 		assertThat(loadedKeys)
 				.containsExactlyInAnyOrder(dataCollection1.getKey(), dataCollection2.getKey())
 				.doesNotContain(otherDataCollection.getKey());
+	}
+	
+	@Test
+	public void shouldFilterDataCollectionsByReportAccessGroupRole() {
+		Identity reportViewer = JunitTestHelper.createAndPersistIdentityAsRndUser("report-viewer");
+		GroupRoles reportViewerRole = GroupRoles.owner;
+		Identity executor = JunitTestHelper.createAndPersistIdentityAsRndUser("executer");
+		GroupRoles executorRole = GroupRoles.participant;
+		// Everything fulfilled: Data collection has participant of the course
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		repositoryService.addRole(reportViewer, entry, reportViewerRole.name());
+		repositoryService.addRole(executor, entry, executorRole.name());
+		QualityDataCollection dc = qualityTestHelper.createDataCollection();
+		dc.setStatus(FINISHED);
+		qualityService.updateDataCollection(dc);
+		List<EvaluationFormParticipation> participations = qualityService.addParticipations(dc, singletonList(executor));
+		qualityService.createContextBuilder(dc, participations.get(0), entry, executorRole).build();
+		QualityReportAccess ra = qualityService.createReportAccess(of(dc), QualityReportAccess.Type.GroupRoles, reportViewerRole.name());
+		ra.setOnline(true);
+		qualityService.updateReportAccess(ra);
+		// Report viewer has other course name
+		RepositoryEntry entryOtherRole = JunitTestHelper.createAndPersistRepositoryEntry();
+		repositoryService.addRole(reportViewer, entryOtherRole, GroupRoles.participant.name());
+		repositoryService.addRole(executor, entryOtherRole, executorRole.name());
+		QualityDataCollection dcOtherRole = qualityTestHelper.createDataCollection();
+		dcOtherRole.setStatus(FINISHED);
+		qualityService.updateDataCollection(dcOtherRole);
+		List<EvaluationFormParticipation> participationsOtherRole = qualityService.addParticipations(dcOtherRole, singletonList(executor));
+		qualityService.createContextBuilder(dcOtherRole, participationsOtherRole.get(0), entryOtherRole, executorRole).build();
+		QualityReportAccess raOtherRole = qualityService.createReportAccess(of(dcOtherRole), QualityReportAccess.Type.GroupRoles, reportViewerRole.name());
+		raOtherRole.setOnline(true);
+		qualityService.updateReportAccess(raOtherRole);
+		// Report viewer is not member in the course
+		RepositoryEntry entryNotMember = JunitTestHelper.createAndPersistRepositoryEntry();
+		repositoryService.addRole(executor, entryNotMember, executorRole.name());
+		QualityDataCollection dcNotMember = qualityTestHelper.createDataCollection();
+		dcNotMember.setStatus(FINISHED);
+		qualityService.updateDataCollection(dcNotMember);
+		List<EvaluationFormParticipation> participationsNotMember = qualityService.addParticipations(dcNotMember, singletonList(executor));
+		qualityService.createContextBuilder(dcNotMember, participationsNotMember.get(0), entryNotMember, executorRole).build();
+		QualityReportAccess raNotMember = qualityService.createReportAccess(of(dcNotMember), QualityReportAccess.Type.GroupRoles, reportViewerRole.name());
+		raNotMember.setOnline(true);
+		qualityService.updateReportAccess(raNotMember);
+		// Data collection is not finished
+		RepositoryEntry entryNotFinished = JunitTestHelper.createAndPersistRepositoryEntry();
+		repositoryService.addRole(reportViewer, entryNotFinished, reportViewerRole.name());
+		repositoryService.addRole(executor, entryNotFinished, executorRole.name());
+		QualityDataCollection dcNotFinished = qualityTestHelper.createDataCollection();
+		dcNotFinished.setStatus(QualityDataCollectionStatus.RUNNING);
+		qualityService.updateDataCollection(dcNotFinished);
+		List<EvaluationFormParticipation> participationsNotFinished = qualityService.addParticipations(dcNotFinished, singletonList(executor));
+		qualityService.createContextBuilder(dcNotFinished, participationsNotFinished.get(0), entryNotFinished, executorRole).build();
+		QualityReportAccess raNotFinished = qualityService.createReportAccess(of(dcNotFinished), QualityReportAccess.Type.GroupRoles, reportViewerRole.name());
+		raNotFinished.setOnline(true);
+		qualityService.updateReportAccess(raNotFinished);
+		// Data collection has no report access configured
+		RepositoryEntry entryNoAccess = JunitTestHelper.createAndPersistRepositoryEntry();
+		repositoryService.addRole(reportViewer, entryNoAccess, reportViewerRole.name());
+		repositoryService.addRole(executor, entryNoAccess, executorRole.name());
+		QualityDataCollection dcNoAccess = qualityTestHelper.createDataCollection();
+		dcNoAccess.setStatus(FINISHED);
+		qualityService.updateDataCollection(dcNoAccess);
+		List<EvaluationFormParticipation> participationsNoAccess = qualityService.addParticipations(dcNoAccess, singletonList(executor));
+		qualityService.createContextBuilder(dcNoAccess, participationsNoAccess.get(0), entryNoAccess, executorRole).build();
+		// Report user has access denied
+		RepositoryEntry entryAccessDenied = JunitTestHelper.createAndPersistRepositoryEntry();
+		repositoryService.addRole(reportViewer, entryAccessDenied, reportViewerRole.name());
+		repositoryService.addRole(executor, entryAccessDenied, executorRole.name());
+		QualityDataCollection dcAccessDenied = qualityTestHelper.createDataCollection();
+		dcAccessDenied.setStatus(FINISHED);
+		qualityService.updateDataCollection(dcAccessDenied);
+		List<EvaluationFormParticipation> participationsAccessDenied = qualityService.addParticipations(dcAccessDenied, singletonList(executor));
+		qualityService.createContextBuilder(dcAccessDenied, participationsAccessDenied.get(0), entryAccessDenied, executorRole).build();
+		QualityReportAccess raAccessDenied = qualityService.createReportAccess(of(dcAccessDenied), QualityReportAccess.Type.GroupRoles, reportViewerRole.name());
+		raAccessDenied.setOnline(false);
+		qualityService.updateReportAccess(raAccessDenied);
+		
+		QualityDataCollectionViewSearchParams searchParams = new QualityDataCollectionViewSearchParams();
+		Organisation organisation = qualityTestHelper.createOrganisation();
+		searchParams.setOrgansationRefs(Collections.singletonList(organisation));
+		searchParams.setReportAccessIdentity(reportViewer);
+		List<QualityDataCollectionView> dataCollections = sut.loadDataCollections(TRANSLATOR, searchParams, 0, -1);
+		
+		List<Long> loadedKeys = dataCollections.stream().map(QualityDataCollectionView::getKey).collect(toList());
+		assertThat(loadedKeys)
+				.containsExactlyInAnyOrder(dc.getKey())
+				.doesNotContain(
+						dcOtherRole.getKey(),
+						dcNotMember.getKey(),
+						dcNotFinished.getKey(),
+						dcNoAccess.getKey(),
+						dcAccessDenied.getKey()
+						);
 	}
 
 }

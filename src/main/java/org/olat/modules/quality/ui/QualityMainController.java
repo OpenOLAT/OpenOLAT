@@ -49,7 +49,8 @@ public class QualityMainController extends MainLayoutBasicController implements 
 	
 	public QualityMainController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		QualitySecurityCallback secCallback = new QualitySecurityCallbackImpl(ureq.getUserSession().getRoles());
+		QualitySecurityCallback secCallback = new QualitySecurityCallbackImpl(getIdentity(),
+				ureq.getUserSession().getRoles());
 		
 		stackPanel = new TooledStackedPanel("qualitiy.management", getTranslator(), this);
 		stackPanel.setToolbarAutoEnabled(true);

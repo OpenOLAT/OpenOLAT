@@ -19,45 +19,22 @@
  */
 package org.olat.modules.quality;
 
-import java.util.Collection;
-
-import org.olat.basesecurity.IdentityRef;
-import org.olat.core.id.OrganisationRef;
-
 /**
  * 
- * Initial date: 07.08.2018<br>
+ * Initial date: 29.10.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class QualityDataCollectionViewSearchParams {
+public class QualityReportAccessSearchParams {
 	
-	private QualityDataCollectionRef dataCollectionRef;
-	private Collection<? extends OrganisationRef> organsationRefs;
-	private IdentityRef reportAccessIdentity;
+	private QualityReportAccessReference reference;
 
 	public QualityDataCollectionRef getDataCollectionRef() {
-		return dataCollectionRef;
+		return reference != null? reference.getDataCollectionRef(): null;
 	}
 
-	public void setDataCollectionRef(QualityDataCollectionRef dataCollectionRef) {
-		this.dataCollectionRef = dataCollectionRef;
-	}
-
-	public Collection<? extends OrganisationRef> getOrgansationRefs() {
-		return organsationRefs;
-	}
-
-	public void setOrgansationRefs(Collection<? extends OrganisationRef> organsationRefs) {
-		this.organsationRefs = organsationRefs;
-	}
-
-	public IdentityRef getReportAccessIdentity() {
-		return reportAccessIdentity;
-	}
-
-	public void setReportAccessIdentity(IdentityRef identityRef) {
-		this.reportAccessIdentity = identityRef;
+	public void setReference(QualityReportAccessReference reference) {
+		this.reference = reference;
 	}
 
 }

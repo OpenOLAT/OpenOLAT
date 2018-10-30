@@ -139,7 +139,7 @@ public class QualityHomeController extends BasicController implements Activateab
 	private List<Component> getAnalysisPresentationLinks(UserRequest ureq) {
 		int counter = 0;
 		List<Organisation> organisations = organisationService.getOrganisations(getIdentity(),
-				ureq.getUserSession().getRoles(), secCallback.getPresentationViewRoles());
+				ureq.getUserSession().getRoles(), secCallback.getViewPresentationRoles());
 		AnalysisPresentationSearchParameter searchParams = new AnalysisPresentationSearchParameter();
 		searchParams.setOrganisationRefs(organisations);
 		List<AnalysisPresentation> presentations = analysisService.loadPresentations(searchParams);

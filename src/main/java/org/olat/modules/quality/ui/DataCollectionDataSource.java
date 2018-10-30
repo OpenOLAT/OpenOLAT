@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DefaultResultInfos;
 import org.olat.core.commons.persistence.ResultInfos;
@@ -46,21 +47,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class DataCollectionDataSource implements FlexiTableDataSourceDelegate<DataCollectionRow> {
 	
 	private final Translator translator;
-	private final Collection<? extends OrganisationRef> organsationRefs;
+	private final QualityDataCollectionViewSearchParams searchParams;
 	
 	@Autowired
 	private QualityService qualityService;
 
-	public DataCollectionDataSource(Translator translator, Collection<? extends OrganisationRef> organsationRefs) {
+	public DataCollectionDataSource(Translator translator, Collection<? extends OrganisationRef> organsationRefs,
+			IdentityRef identityRef) {
 		this.translator = translator;
-		this.organsationRefs = organsationRefs;
+		searchParams = new QualityDataCollectionViewSearchParams();
+		searchParams.setOrgansationRefs(organsationRefs);
+		searchParams.setReportAccessIdentity(identityRef);
 		CoreSpringFactory.autowireObject(this);
 	}
 
 	@Override
 	public int getRowCount() {
-		QualityDataCollectionViewSearchParams searchParams = new QualityDataCollectionViewSearchParams();
-		searchParams.setOrgansationRefs(organsationRefs);
 		return qualityService.getDataCollectionCount(searchParams);
 	}
 
@@ -73,8 +75,6 @@ public class DataCollectionDataSource implements FlexiTableDataSourceDelegate<Da
 	public ResultInfos<DataCollectionRow> getRows(String query, List<FlexiTableFilter> filters,
 			List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy) {
 
-		QualityDataCollectionViewSearchParams searchParams = new QualityDataCollectionViewSearchParams();
-		searchParams.setOrgansationRefs(organsationRefs);
 		List<QualityDataCollectionView> dataCollections = qualityService.loadDataCollections(translator, searchParams,
 				firstResult, maxResults, orderBy);
 		List<DataCollectionRow> rows = new ArrayList<>();

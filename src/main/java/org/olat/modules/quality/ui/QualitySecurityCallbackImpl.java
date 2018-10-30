@@ -23,16 +23,19 @@ import static org.olat.modules.quality.QualityDataCollectionStatus.FINISHED;
 import static org.olat.modules.quality.QualityDataCollectionStatus.PREPARATION;
 import static org.olat.modules.quality.QualityDataCollectionStatus.READY;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Roles;
 import org.olat.modules.quality.QualityDataCollectionLight;
 import org.olat.modules.quality.QualityDataCollectionStatus;
+import org.olat.modules.quality.QualityDataCollectionViewSearchParams;
 import org.olat.modules.quality.QualityExecutorParticipation;
 import org.olat.modules.quality.QualityExecutorParticipationStatus;
 import org.olat.modules.quality.QualityModule;
 import org.olat.modules.quality.QualityReminder;
 import org.olat.modules.quality.QualitySecurityCallback;
+import org.olat.modules.quality.QualityService;
 import org.olat.modules.quality.analysis.AnalysisPresentation;
 import org.olat.modules.quality.generator.QualityGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,13 +49,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class QualitySecurityCallbackImpl implements QualitySecurityCallback {
 
 	private final Roles roles;
+	private final boolean hasReportAccess;
 	
 	@Autowired
 	private QualityModule qualityModule;
+	@Autowired
+	private QualityService qualityService;
 
-	public QualitySecurityCallbackImpl(Roles roles) {
+	public QualitySecurityCallbackImpl(IdentityRef identityRef, Roles roles) {
 		this.roles = roles;
 		CoreSpringFactory.autowireObject(this);
+		
+		QualityDataCollectionViewSearchParams searchParams = new QualityDataCollectionViewSearchParams();
+		searchParams.setReportAccessIdentity(identityRef);
+		this.hasReportAccess = qualityService.getDataCollectionCount(searchParams) > 0;
 	}
 
 	@Override
@@ -62,7 +72,16 @@ public class QualitySecurityCallbackImpl implements QualitySecurityCallback {
 
 	@Override
 	public boolean canViewDataCollections() {
-		return canEditDataCollections() || roles.isPrincipal();
+		return canEditDataCollections() || roles.isPrincipal() || hasReportAccess;
+	}
+
+	@Override
+	public OrganisationRoles[] getViewDataCollectionRoles() {
+		return new OrganisationRoles[] { 
+				OrganisationRoles.qualitymanager,
+				OrganisationRoles.administrator,
+				OrganisationRoles.principal 
+			};
 	}
 
 	@Override
@@ -73,6 +92,11 @@ public class QualitySecurityCallbackImpl implements QualitySecurityCallback {
 	@Override
 	public boolean canCreateDataCollections() {
 		return canEditDataCollections();
+	}
+
+	@Override
+	public boolean canViewDataCollectionConfigurations() {
+		return canEditDataCollections() || roles.isPrincipal();
 	}
 	
 	@Override
@@ -133,6 +157,16 @@ public class QualitySecurityCallbackImpl implements QualitySecurityCallback {
 	private boolean isNotSent(QualityReminder reminder) {
 		return reminder == null || !reminder.isSent();
 	}
+	
+	@Override
+	public boolean canViewReportAccesses() {
+		return canEditDataCollections();
+	}
+	
+	@Override
+	public boolean canEditReportAccesses() {
+		return canEditDataCollections();
+	}
 
 	@Override
 	public boolean canViewReports() {
@@ -166,7 +200,7 @@ public class QualitySecurityCallbackImpl implements QualitySecurityCallback {
 
 	@Override
 	public boolean canViewGenerators() {
-		return canViewDataCollections();
+		return roles.isQualityManager() || roles.isAdministrator() || roles.isPrincipal();
 	}
 
 	@Override
@@ -210,7 +244,7 @@ public class QualitySecurityCallbackImpl implements QualitySecurityCallback {
 	}
 
 	@Override
-	public OrganisationRoles[] getAnalysisViewRoles() {
+	public OrganisationRoles[] getViewAnalysisRoles() {
 		return new OrganisationRoles[] { 
 				OrganisationRoles.qualitymanager,
 				OrganisationRoles.administrator,
@@ -219,7 +253,7 @@ public class QualitySecurityCallbackImpl implements QualitySecurityCallback {
 	}
 
 	@Override
-	public OrganisationRoles[] getPresentationViewRoles() {
+	public OrganisationRoles[] getViewPresentationRoles() {
 		return new OrganisationRoles[] { 
 				OrganisationRoles.qualitymanager,
 				OrganisationRoles.administrator,

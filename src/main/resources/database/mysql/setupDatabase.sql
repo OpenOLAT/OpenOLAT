@@ -1974,6 +1974,19 @@ create table o_qual_reminder (
    primary key (id)
 );
 
+create table o_qual_report_access (
+  id bigint not null auto_increment,
+  creationdate datetime not null,
+  lastmodified datetime not null,
+  q_type varchar(64),
+  q_role varchar(64),
+  q_online bit default 0,
+  q_email_trigger varchar(64),
+  fk_data_collection bigint,
+  fk_generator bigint,
+  primary key (id)
+);
+
 create table o_qual_generator (
    id bigint not null auto_increment,
    creationdate datetime not null,
@@ -2955,6 +2968,7 @@ alter table o_qual_context_to_curriculum ENGINE = InnoDB;
 alter table o_qual_context_to_cur_element ENGINE = InnoDB;
 alter table o_qual_context_to_tax_level ENGINE = InnoDB;
 alter table o_qual_reminder ENGINE = InnoDB;
+alter table o_qual_report_access ENGINE = InnoDB;
 alter table o_qual_generator ENGINE = InnoDB;
 alter table o_qual_generator_config ENGINE = InnoDB;
 alter table o_qual_generator_to_org ENGINE = InnoDB;
@@ -3457,6 +3471,9 @@ alter table o_qual_context_to_tax_level add constraint qual_con_to_tax_level_con
 create unique index idx_con_to_tax_level_tax_idx on o_qual_context_to_tax_level (fk_tax_leveL, fk_context);
 
 alter table o_qual_reminder add constraint qual_rem_to_data_collection_idx foreign key (fk_data_collection) references o_qual_data_collection (id);
+
+alter table o_qual_report_access add constraint qual_repacc_to_dc_idx foreign key (fk_data_collection) references o_qual_data_collection (id);
+alter table o_qual_report_access add constraint qual_repacc_to_generator_idx foreign key (fk_generator) references o_qual_generator (id);
 
 alter table o_qual_data_collection add constraint qual_dc_to_gen_idx foreign key (fk_generator) references o_qual_generator (id);
 
