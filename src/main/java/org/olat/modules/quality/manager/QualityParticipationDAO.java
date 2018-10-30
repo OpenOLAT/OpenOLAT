@@ -157,7 +157,7 @@ class QualityParticipationDAO {
 		sb.append("     , case");
 		sb.append("           when participation.status = '").append(EvaluationFormParticipationStatus.done).append("'");
 		sb.append("           then ").append(QualityExecutorParticipationStatus.PARTICIPATED.getOrder());
-		sb.append("           when session is not null");
+		sb.append("           when session is not null and collection.status = '").append(QualityDataCollectionStatus.RUNNING).append("'");
 		sb.append("           then ").append(QualityExecutorParticipationStatus.PARTICIPATING.getOrder());
 		sb.append("           when collection.status = '").append(QualityDataCollectionStatus.FINISHED).append("'");
 		sb.append("           then ").append(QualityExecutorParticipationStatus.OVER.getOrder());
