@@ -1119,6 +1119,13 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			//someone try to send the form in review with tab / return
 			return;
 		}
+		
+		ItemSessionState currentItemSession = testSessionState.getCurrentItemSessionState();
+		if(currentItemSession != null && currentItemSession.isEnded()) {
+			showWarning("error.item.ended");
+			return;
+		}
+		
 		if(!qtiWorksCtrl.validatePresentedItem(currentItemKey)) {
 			logError("Response send by browser doesn't match current item key", null);
 			ServletUtil.printOutRequestParameters(ureq.getHttpReq());
