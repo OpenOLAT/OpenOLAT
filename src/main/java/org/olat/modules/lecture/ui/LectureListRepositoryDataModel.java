@@ -66,6 +66,7 @@ public class LectureListRepositoryDataModel extends DefaultFlexiTableDataModel<L
 			case date: return row.getLectureBlock().getStartDate();
 			case startTime: return row.getLectureBlock().getStartDate();
 			case endTime: return row.getLectureBlock().getEndDate();
+			case status: return row.getLectureBlock();
 			case teachers: return row.getTeachers();
 			case tools: return row.getToolsLink();
 			default: return null;
@@ -85,7 +86,8 @@ public class LectureListRepositoryDataModel extends DefaultFlexiTableDataModel<L
 		startTime("table.header.start.time"),
 		endTime("table.header.end.time"),
 		teachers("table.header.teachers"),
-		tools("table.header.actions")
+		tools("table.header.actions"),
+		status("table.header.status")
 		;
 		
 		private final String i18nKey;

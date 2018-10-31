@@ -65,7 +65,9 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockAuditLog;
 import org.olat.modules.lecture.LectureBlockManagedFlag;
+import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureModule;
+import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.LectureBlockRow;
 import org.olat.modules.lecture.model.LectureBlockWithTeachers;
@@ -73,6 +75,7 @@ import org.olat.modules.lecture.ui.LectureListRepositoryDataModel.BlockCols;
 import org.olat.modules.lecture.ui.blockimport.BlocksImport_1_InputStep;
 import org.olat.modules.lecture.ui.blockimport.ImportedLectureBlock;
 import org.olat.modules.lecture.ui.blockimport.ImportedLectureBlocks;
+import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer;
 import org.olat.modules.lecture.ui.export.LectureBlockAuditLogExport;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
@@ -145,6 +148,7 @@ public class LectureListRepositoryController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.startTime, new TimeFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.endTime, new TimeFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.teachers));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.status, new LectureBlockStatusCellRenderer(getTranslator())));
 
 		DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel("table.header.edit", -1, "edit",
 				new StaticFlexiCellRenderer("", "edit", "o_icon o_icon-lg o_icon_edit", translate("edit"), null));
@@ -427,6 +431,24 @@ public class LectureListRepositoryController extends FormBasicController {
 		ureq.getDispatchResult().setResultingMediaResource(export);
 	}
 	
+	private void doReopen(LectureBlockRow row) {
+		LectureBlock lectureBlock = lectureService.getLectureBlock(row);
+		String before = lectureService.toAuditXml(lectureBlock);
+		lectureBlock.setRollCallStatus(LectureRollCallStatus.reopen);
+		if(lectureBlock.getStatus() == LectureBlockStatus.cancelled) {
+			lectureBlock.setStatus(LectureBlockStatus.active);
+		}
+		
+		lectureBlock = lectureService.save(lectureBlock, null);
+		
+		String after = lectureService.toAuditXml(lectureBlock);
+		lectureService.auditLog(LectureBlockAuditLog.Action.reopenLectureBlock, before, after, null, lectureBlock, null, lectureBlock.getEntry(), null, getIdentity());
+		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LECTURE_BLOCK_ROLL_CALL_REOPENED, getClass(),
+				CoreLoggingResourceable.wrap(lectureBlock, OlatResourceableType.lectureBlock, lectureBlock.getTitle()));
+		
+		loadModel();
+	}
+	
 	private void doOpenTools(UserRequest ureq, LectureBlockRow row, FormLink link) {
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
@@ -445,6 +467,7 @@ public class LectureListRepositoryController extends FormBasicController {
 		private Link deleteLink;
 		private Link copyLink;
 		private Link logLink;
+		private Link reopenLink;
 		
 		private final LectureBlockRow row;
 		
@@ -453,6 +476,15 @@ public class LectureListRepositoryController extends FormBasicController {
 			this.row = row;
 			
 			VelocityContainer mainVC = createVelocityContainer("lectures_tools");
+			
+			LectureBlock lectureBlock = row.getLectureBlock();
+
+			if(lectureBlock.getStatus() == LectureBlockStatus.cancelled
+					|| lectureBlock.getRollCallStatus() == LectureRollCallStatus.closed
+					|| lectureBlock.getRollCallStatus() == LectureRollCallStatus.autoclosed) {
+				reopenLink = LinkFactory.createLink("reopen.lecture.blocks", "reopen", getTranslator(), mainVC, this, Link.LINK);
+				reopenLink.setIconLeftCSS("o_icon o_icon-fw o_icon_reopen");
+			}
 			
 			if(secCallback.canNewLectureBlock()) {
 				copyLink = LinkFactory.createLink("copy", "copy", getTranslator(), mainVC, this, Link.LINK);
@@ -481,6 +513,8 @@ public class LectureListRepositoryController extends FormBasicController {
 				doConfirmDelete(ureq, row);
 			} else if(logLink == source) {
 				doExportLog(ureq, row);
+			} else if(reopenLink == source) {
+				doReopen(row);
 			}
 		}
 	}

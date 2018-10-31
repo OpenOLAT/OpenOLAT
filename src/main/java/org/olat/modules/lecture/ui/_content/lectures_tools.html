@@ -1,4 +1,7 @@
 <ul class="o_dropdown list-unstyled">
+#if($r.available("reopen.lecture.blocks"))
+	<li>$r.render("reopen.lecture.blocks")</li>
+#end
 #if($r.available("copy"))
 	<li>$r.render("copy")</li>
 #end
