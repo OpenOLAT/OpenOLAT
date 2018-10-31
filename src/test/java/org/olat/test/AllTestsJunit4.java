@@ -444,6 +444,7 @@ import org.junit.runners.Suite;
 	org.olat.shibboleth.handler.FirstValueHandlerTest.class,
 	org.olat.shibboleth.handler.SchacGenderHandlerTest.class,
 	org.olat.user.UserManagerImplTest.class,
+	org.olat.core.gui.components.form.flexible.impl.elements.FileElementRendererTest.class,
 	/**
 	 *
 	 * Place tests which load their own Spring context
