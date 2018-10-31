@@ -54,6 +54,11 @@ import org.olat.core.util.Util;
 
 public class FileElementRenderer extends DefaultComponentRenderer {
 
+	public Translator getTranslator(Translator fallbackTranslator) {
+		return Util.createPackageTranslator(
+				FileElementRenderer.class, fallbackTranslator.getLocale(), fallbackTranslator);
+	}
+
 	/* (non-Javadoc)
 	 * @see org.olat.core.gui.components.ComponentRenderer#render(org.olat.core.gui.render.Renderer, org.olat.core.gui.render.StringOutput, org.olat.core.gui.components.Component, org.olat.core.gui.render.URLBuilder, org.olat.core.gui.translator.Translator, org.olat.core.gui.render.RenderResult, java.lang.String[])
 	 */
@@ -62,7 +67,7 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 			URLBuilder ubu, Translator translator, RenderResult renderResult,
 			String[] args) {
 		// Use translator with flexi form elements fallback
-		Translator trans = Util.createPackageTranslator(FileElementRenderer.class, translator.getLocale(), translator);
+		Translator trans = getTranslator(translator);
 		//
 		FileElementComponent fileComp = (FileElementComponent) source;
 		FileElementImpl fileElem = fileComp.getFileElementImpl();
