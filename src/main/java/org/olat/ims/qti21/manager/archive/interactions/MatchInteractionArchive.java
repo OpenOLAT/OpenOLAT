@@ -19,6 +19,7 @@
  */
 package org.olat.ims.qti21.manager.archive.interactions;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -52,7 +53,7 @@ public class MatchInteractionArchive extends DefaultInteractionArchive {
 			dataRow.addCell(col++, header, workbook.getStyles().getHeaderStyle());
 		}
 		MatchInteraction matchInteraction = (MatchInteraction)interaction;
-		int numOfChoices = matchInteraction.getSimpleMatchSets().get(0).getSimpleAssociableChoices().size();
+		int numOfChoices = matchInteraction.getSimpleMatchSets().get(1).getSimpleAssociableChoices().size();
 		if(numOfChoices > 0) {
 			col += (numOfChoices - 1);
 		}
@@ -67,7 +68,7 @@ public class MatchInteractionArchive extends DefaultInteractionArchive {
 				|| QTI21QuestionType.hasClass(matchInteraction, QTI21Constants.CSS_MATCH_KPRIM);
 		String fix = kprim ? "_KP" : "_K";
 		
-		int numOfChoices = matchInteraction.getSimpleMatchSets().get(0).getSimpleAssociableChoices().size();
+		int numOfChoices = matchInteraction.getSimpleMatchSets().get(1).getSimpleAssociableChoices().size();
 		if(numOfChoices > 0) {
 			for(int i=0; i<numOfChoices; i++) {
 				String header = (itemNumber + 1) + fix + (i + 1);
@@ -85,7 +86,7 @@ public class MatchInteractionArchive extends DefaultInteractionArchive {
 		MatchInteraction matchInteraction = (MatchInteraction)interaction;
 		String stringuifiedResponse = response == null ? null : response.getStringuifiedResponse();
 		if(!StringHelper.containsNonWhitespace(stringuifiedResponse)) {
-			col += matchInteraction.getSimpleMatchSets().get(0).getSimpleAssociableChoices().size();
+			col += matchInteraction.getSimpleMatchSets().get(1).getSimpleAssociableChoices().size();
 		} else {
 			boolean kprim = matchInteraction.getResponseIdentifier().toString().startsWith("KPRIM_")
 					|| QTI21QuestionType.hasClass(matchInteraction, QTI21Constants.CSS_MATCH_KPRIM);
@@ -93,10 +94,10 @@ public class MatchInteractionArchive extends DefaultInteractionArchive {
 			Set<String> correctAnswers = CorrectResponsesUtil.getCorrectDirectPairResponses(item, matchInteraction, false);
 			List<String> responses = CorrectResponsesUtil.parseResponses(stringuifiedResponse);
 			
-			SimpleMatchSet firstMatchSet = matchInteraction.getSimpleMatchSets().get(0);
-			SimpleMatchSet secondMatchSet = matchInteraction.getSimpleMatchSets().get(1);
+			SimpleMatchSet sourceMatchSet = matchInteraction.getSimpleMatchSets().get(0);
+			SimpleMatchSet targetMatchSet = matchInteraction.getSimpleMatchSets().get(1);
 			
-			for(SimpleAssociableChoice choice:firstMatchSet.getSimpleAssociableChoices()) {
+			for(SimpleAssociableChoice choice:targetMatchSet.getSimpleAssociableChoices()) {
 				String choiceIdentifier = choice.getIdentifier().toString();
 				
 				if(kprim) {
@@ -114,6 +115,7 @@ public class MatchInteractionArchive extends DefaultInteractionArchive {
 						value = "-";
 					}
 					
+					
 					if(stringuifiedResponse.indexOf(rightFlag) >= 0) {
 						dataRow.addCell(col++, value, workbook.getStyles().getCorrectStyle());
 					} else if(stringuifiedResponse.indexOf(wrongFlag) >= 0) {
@@ -122,28 +124,44 @@ public class MatchInteractionArchive extends DefaultInteractionArchive {
 						col++;
 					}
 				} else {
-					String aResponse = null;
+					Set<String> choiceResponses = new HashSet<>();
 					for(String r:responses) {
-						if(r.startsWith(choiceIdentifier)) {
-							aResponse = r;
+						if(r.endsWith(choiceIdentifier)) {
+							choiceResponses.add(r);
 						}
 					}
 					
-					if(StringHelper.containsNonWhitespace(aResponse)) {
-						boolean correct = correctAnswers.contains(aResponse);
+					// defined correct answers
+					Set<String> choiceCorrectAnswers = new HashSet<>();
+					for(String a:correctAnswers) {
+						if(a.endsWith(choiceIdentifier)) {
+							choiceCorrectAnswers.add(a);
+						}
+					}
+					
+					if(!choiceResponses.isEmpty()) {
+						boolean correct = choiceResponses.containsAll(choiceCorrectAnswers)
+								&& choiceCorrectAnswers.containsAll(choiceResponses);
 						
-						String value = null;
-						for(SimpleAssociableChoice association:secondMatchSet.getSimpleAssociableChoices()) {
-							if(aResponse.endsWith(association.getIdentifier().toString())) {
-								value = getContent(association);
-								break;
+						StringBuilder value = new StringBuilder(64);
+						for(SimpleAssociableChoice association:sourceMatchSet.getSimpleAssociableChoices()) {
+							for(String choiceResponse:choiceResponses) {
+								if(choiceResponse.startsWith(association.getIdentifier().toString())) {
+									if(value.length() > 0) value.append(", ");
+									
+									String val = getContent(association);
+									if(val != null) {
+										value.append(val);
+									}
+									
+								}
 							}
 						}
 						
 						if(correct) {
-							dataRow.addCell(col++, value, workbook.getStyles().getCorrectStyle());
+							dataRow.addCell(col++, value.toString(), workbook.getStyles().getCorrectStyle());
 						} else {
-							dataRow.addCell(col++, value, null);
+							dataRow.addCell(col++, value.toString(), null);
 						}
 					} else {
 						col++;
