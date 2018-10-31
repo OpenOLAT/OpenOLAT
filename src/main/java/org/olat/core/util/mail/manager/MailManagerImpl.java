@@ -30,6 +30,7 @@ import java.io.OutputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -1584,6 +1585,20 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 		return new InternetAddress(fromPlainAddress);
 	}
 
+	private boolean hasExternalFromAndRecipient(MimeMessage msg) throws MessagingException {
+		String fromDomain = WebappHelper.getMailConfig("mailFromDomain");
+		if (!StringHelper.containsNonWhitespace(fromDomain)) {
+			return false;// domain not defined, same behavior as older release of OpenOLAT
+		}
+		return containsExternalAddress(msg.getFrom(), fromDomain)
+				&& containsExternalAddress(msg.getAllRecipients(), fromDomain);
+	}
+
+	private boolean containsExternalAddress(Address[] addressArray, String fromDomain) {
+		return !(Arrays.stream(addressArray).map(r -> ((InternetAddress) r).getAddress())
+				.filter(x -> x.contains("@")).allMatch(x -> x.endsWith(fromDomain)));
+	}
+
 	@Override
 	public MimeMessage createMimeMessage(Address from, Address[] tos, Address[] ccs, Address[] bccs, String subject, String body,
 			List<File> attachments, MailerResult result) {
@@ -1601,6 +1616,17 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 			
 			if(bccs != null && bccs.length > 0) {
 				msg.addRecipients(RecipientType.BCC, bccs);
+			}
+
+			String platformFrom = WebappHelper.getMailConfig("mailFrom");
+			String platformName = WebappHelper.getMailConfig("mailFromName");
+			Address viewablePlatformFrom = createAddressWithName(platformFrom, platformName);
+			// in case the sender and one of the recipients has an external mail address domain we set
+			// the from header to the admin address to prevent rejected or messages detected as spam.
+			msg.setFrom(from);
+			// from has to be set for this check to work
+			if (hasExternalFromAndRecipient(msg)) {
+				msg.setFrom(viewablePlatformFrom);
 			}
 
 			if (attachments != null && !attachments.isEmpty()) {
@@ -1686,17 +1712,6 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 				SMTPMessage smtpMsg = new SMTPMessage(msg);
 				smtpMsg.setEnvelopeFrom(smtpFrom);
 				msg = smtpMsg;
-			} catch (MessagingException e) {
-				log.error("", e);
-			}
-		} else {
-			try {
-				if (msg.getReplyTo().length > 0) {
-					Address a = msg.getReplyTo()[0];
-					SMTPMessage smtpMsg = new SMTPMessage(msg);
-					smtpMsg.setEnvelopeFrom(((InternetAddress)a).getAddress());
-					msg = smtpMsg;
-				}
 			} catch (MessagingException e) {
 				log.error("", e);
 			}

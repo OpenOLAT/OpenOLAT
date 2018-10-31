@@ -31,6 +31,7 @@
 				<entry key="sslEnabled" value="${smtp.sslEnabled}"/>
 				<entry key="sslCheckCertificate" value="${smtp.sslCheckCertificate}"/>
 				<entry key="smtpStarttls" value="${smtp.starttls}"/>
+				<entry key="mailFromDomain" value="${fromdomain}"/>
 				<entry key="mailFrom" value="${fromemail}"/>
 				<entry key="mailFromName" value="${fromname}"/>
 				<entry key="smtpFrom" value="${smtp.from}"/>
