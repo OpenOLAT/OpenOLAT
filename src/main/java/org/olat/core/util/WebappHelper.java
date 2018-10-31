@@ -426,6 +426,7 @@ public class WebappHelper implements Initializable, Destroyable, ServletContextA
 	 *	key="smtpPwd"
 	 *	key="mailSupport"
 	 *  key="mailReplyTo" - default from email address (reply-to)
+	 *  key="mailFromDomain" - own domain of our smtp server where it is allowed to use foreign addresses
 	 *  key="mailFrom" - real from email address
 	 *  key="mailFromName" - plain text name for from address
 	 * @param string
@@ -433,6 +434,10 @@ public class WebappHelper implements Initializable, Destroyable, ServletContextA
 	 */
 	public static String getMailConfig(String key) {
 		return WebappHelper.mailConfig.get(key);
+	}
+
+	public static String setMailConfig(String key, String value) {
+		return WebappHelper.mailConfig.put(key, value);
 	}
 
 	public static boolean isMailHostAuthenticationEnabled() {
