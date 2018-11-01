@@ -31,6 +31,7 @@ import java.io.Reader;
 import java.io.Writer;
 
 import org.apache.commons.lang.StringEscapeUtils;
+import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.filter.impl.OWASPAntiSamyXSSFilter;
@@ -70,6 +71,7 @@ public class StringOutput extends Writer {
 		sb.append(val);
 		return this;
 	}
+	
 	public StringOutput append(String format, Object...args) {
 		return appendFmt(format, args);
 	}
@@ -185,6 +187,16 @@ public class StringOutput extends Writer {
 		} catch (IOException e) {
 			log.error("Error escaping HTML", e);
 		}
+		return this;
+	}
+	
+	/**
+	 * Generate the following html code: onclick="call" onkeyup="if(event.which == 13 || event.keyCode){ call }"
+	 * @param call The JavaScript method to envelop
+	 * @return The generated html attributes
+	 */
+	public StringOutput onClickKeyEnter(String call) {
+		FormJSHelper.onClickKeyEnter(sb, call);
 		return this;
 	}
 	
