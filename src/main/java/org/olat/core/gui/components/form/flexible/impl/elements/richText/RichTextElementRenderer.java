@@ -76,14 +76,14 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 				TextModeState textModeState = te.getAvailableTextModes();
 				currentTextMode = textModeState.getCurrentMode();
 				List<TextMode> modes = textModeState.getAvailableTextModes();
-				if(modes.size() > 0) {
+				if(!modes.isEmpty()) {
 					Form form = te.getRootForm();
 					sb.append("<div class='o_richtext_mce_modes'><div class='btn-group'>");
 					for(TextMode mode:modes) {
 						sb.append("<a href='javascript:;' class='btn btn-default btn-xs")
-						  .append(" active", currentTextMode == mode).append("'")
-						  .append(" onclick=\"").append(FormJSHelper.getXHRFnCallFor(form, teC.getFormDispatchId(), 1, false, false, true,
-								new NameValuePair("cmd", mode.name()))).append("\">")
+						  .append(" active", currentTextMode == mode).append("' ")
+						  .onClickKeyEnter(FormJSHelper.getXHRFnCallFor(form, teC.getFormDispatchId(), 1, false, false, true,
+								new NameValuePair("cmd", mode.name()))).append(">")
 						  .append(source.getTranslator().translate(mode.name()))
 						  .append("</a>");
 					}

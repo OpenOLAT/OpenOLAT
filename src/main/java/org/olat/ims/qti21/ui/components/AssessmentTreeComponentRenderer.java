@@ -109,7 +109,7 @@ public class AssessmentTreeComponentRenderer extends AssessmentObjectComponentRe
 	
 	private void renderNavigation(AssessmentRenderer renderer, StringOutput sb,
 			AssessmentTreeComponent component, URLBuilder ubu, Translator translator, RenderingRequest options) {
-		sb.append("<div id='o_qti_menu' class='qtiworks o_assessmenttest o_testpartnavigation o_qti_menu_menustyle'>");
+		sb.append("<div id='o_qti_menu' class='qtiworks o_assessmenttest o_testpartnavigation o_qti_menu_menustyle' role='navigation'>");
 		//part, sections and item refs
 		TestPlanNode currentTestPartNode = component.getCurrentTestPartNode();
 		if(currentTestPartNode != null) {
@@ -138,7 +138,6 @@ public class AssessmentTreeComponentRenderer extends AssessmentObjectComponentRe
 			URLBuilder ubu, Translator translator, RenderingRequest options) {
 		sb.append("<li class='o_assessmentsection o_qti_menu_item'>")
 		  .append("<header><h4>").append(StringHelper.escapeHtml(sectionNode.getSectionPartTitle())).append("</h4>");
-		//renderAssessmentSectionRubrickBlock(renderer, sb, component, sectionNode, ubu, translator);
 
 		sb.append("</header><ul class='o_testpartnavigation_inner list-unstyled'>");
 		sectionNode.getChildren().forEach((child)
@@ -209,10 +208,10 @@ public class AssessmentTreeComponentRenderer extends AssessmentObjectComponentRe
 		if(event == null) {
 			sb.append("<span class='o_assessmentitem_nav_disabled'>");
 		} else {
-			sb.append("<a href='javascript:;' onclick=\"")
-			  .append(FormJSHelper.getXHRFnCallFor(form, dispatchId, 1, true, true,
+			sb.append("<a href='javascript:;' ")
+			  .onClickKeyEnter(FormJSHelper.getXHRFnCallFor(form, dispatchId, 1, true, true,
 					new NameValuePair("cid", event.name()), new NameValuePair("item", key)))
-			  .append(";\" class='o_sel_assessmentitem'>");
+			  .append(" class='o_sel_assessmentitem'>");
 		}
 		String title;
 		if(component.isShowTitles()) {
@@ -245,9 +244,13 @@ public class AssessmentTreeComponentRenderer extends AssessmentObjectComponentRe
 		boolean mark = component.getCandidateSessionContext().isMarked(key);
 		
 		sb.append("<a href='javascript:;' onclick=\"")
-		  .append(FormJSHelper.getXHRFnCallFor(form, dispatchId, 1, true, true,
+		  .append(FormJSHelper.getXHRNFFnCallFor(form, dispatchId, 1,
 				new NameValuePair("cid", Event.mark.name()), new NameValuePair("item", key)))
-		  .append("; o_toggleMark(this); return false;\" class='o_assessmentitem_marks'><i class='o_icon ")
+		  .append("; o_toggleMark(this); return false;\" onkeydown=\"if(event.which == 13 || event.keyCode == 13) {")
+		  .append(FormJSHelper.getXHRNFFnCallFor(form, dispatchId, 1,
+					new NameValuePair("cid", Event.mark.name()), new NameValuePair("item", key)))
+		  .append("; o_toggleMark(this); return false; }\" ")
+		  .append(" class='o_assessmentitem_marks'><i class='o_icon ")
 		  .append("o_icon_bookmark", "o_icon_bookmark_add", mark)
 		  .append("' title='").append(StringHelper.escapeHtml(translator.translate("assessment.item.mark"))).append("'>&nbsp;</i></a>");
 	}

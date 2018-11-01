@@ -72,12 +72,6 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 		super();
 	}
 
-	/**
-	 * @see org.olat.core.gui.render.ui.ComponentRenderer#render(org.olat.core.gui.render.Renderer,
-	 *      org.olat.core.gui.render.StringOutput, org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.render.URLBuilder, org.olat.core.gui.translator.Translator,
-	 *      org.olat.core.gui.render.RenderResult, java.lang.String[])
-	 */
 	@Override
 	public void render(Renderer renderer, StringOutput target, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
@@ -124,7 +118,7 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 		if(StringHelper.containsNonWhitespace(tree.getElementCssClass())) {
 			target.append(" ").append(tree.getElementCssClass());
 		}
-		target.append("'><ul class=\"o_tree_l0\">");
+		target.append("' role='navigation'><ul class=\"o_tree_l0\">");
 		if(tree.isRootVisible()) {
 			renderLevel(renderer, target, 0, root, selPath, openNodeIds, elements, ubu, flags, tree);
 		} else {
@@ -341,7 +335,7 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 		String alt = curRoot.getAltText();
 		if (alt != null) {
 			target.append(" title=\"")
-			      .append(StringEscapeUtils.escapeHtml(alt).toString())
+			      .append(StringEscapeUtils.escapeHtml(alt))
 			      .append("\"");
 		}
 		target.append(">");

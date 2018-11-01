@@ -206,9 +206,9 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 	private void renderControl(StringOutput sb, AssessmentTestComponent component, String title, boolean primary, String cssClass, NameValuePair... pairs) {
 		Form form = component.getQtiItem().getRootForm();
 		String dispatchId = component.getQtiItem().getFormDispatchId();
-		sb.append("<button type='button' onclick=\"");
-		sb.append(FormJSHelper.getXHRFnCallFor(form, dispatchId, 1, true, true, pairs))
-		  .append(";\" class='btn ").append("btn-primary ", "btn-default ", primary).append(cssClass).append("'").append("><span>").append(title).append("</span></button>");
+		sb.append("<button type='button' ")
+		  .onClickKeyEnter(FormJSHelper.getXHRFnCallFor(form, dispatchId, 1, true, true, pairs))
+		  .append(" class='btn ").append("btn-primary ", "btn-default ", primary).append(cssClass).append("'").append("><span>").append(title).append("</span></button>");
 	}
 	
 	private void renderTestItem(AssessmentRenderer renderer, StringOutput sb, AssessmentTestComponent component,
@@ -626,17 +626,17 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		if(currentTestPart.getNavigationMode() == NavigationMode.NONLINEAR || itemSessionState.getEntryTime() != null) {
 			
 			sb.append("<li class='o_assessmentitem'>");
-			sb.append("<button type='button' onclick=\"");
+			sb.append("<button type='button' ");
 			String key = itemNode.getKey().toString();
-			sb.append(FormJSHelper.getXHRFnCallFor(component.getQtiItem(), true, true,
-					new NameValuePair("cid", Event.reviewItem.name()), new NameValuePair("item", key)));
-			sb.append(";\" class='btn btn-default' ").append(" disabled", !reviewable).append("><span class='questionTitle'>")
+			sb.onClickKeyEnter(FormJSHelper.getXHRFnCallFor(component.getQtiItem(), true, true,
+					new NameValuePair("cid", Event.reviewItem.name()), new NameValuePair("item", key)))
+			  .append(" class='btn btn-default' ").append(" disabled", !reviewable).append("><span class='questionTitle'>")
 			  .append(StringHelper.escapeHtml(itemNode.getSectionPartTitle())).append("</span>");
 
 			if(!reviewable) {
 				renderItemStatusMessage("reviewNotAllowed", "assessment.item.status.reviewNot", sb, translator);
-			} else if(itemSessionState.getUnboundResponseIdentifiers().size() > 0
-					|| itemSessionState.getInvalidResponseIdentifiers().size() > 0) {
+			} else if(!itemSessionState.getUnboundResponseIdentifiers().isEmpty()
+					|| !itemSessionState.getInvalidResponseIdentifiers().isEmpty()) {
 				renderItemStatusMessage("reviewInvalid", "assessment.item.status.reviewInvalidAnswer", sb, translator);
 			} else if(itemSessionState.isResponded()) {
 				renderItemStatusMessage("review", "assessment.item.status.review", sb, translator);
@@ -704,18 +704,18 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 					&& testSessionController.mayEndCurrentTestPart();
 			
 			sb.append("<div class='o_button_group'>");
-			sb.append("<button type='button' onclick=\"");
+			sb.append("<button type='button' ");
 			if(allowedToEndTestPart) {
 				Form form = component.getQtiItem().getRootForm();
 				String dispatchId = component.getQtiItem().getFormDispatchId();
-				sb.append(FormJSHelper.getXHRFnCallFor(form, dispatchId, 1, true, true,
+				sb.onClickKeyEnter(FormJSHelper.getXHRFnCallFor(form, dispatchId, 1, true, true,
 						new NameValuePair("cid", Event.endTestPart.name())));
 			} else {
-				sb.append("javascript:");
+				sb.append(" onclick=\"javascript:;\"");
 			}
 			String endTestTitle = multiPartTest ?
 					translator.translate("assessment.test.end.testPart") : translator.translate("assessment.test.end.test");
-			sb.append(";\" class='btn btn-default o_sel_end_testpart'").append(" disabled", !allowedToEndTestPart).append("><span>")
+			sb.append(" class='btn btn-default o_sel_end_testpart'").append(" disabled", !allowedToEndTestPart).append("><span>")
 			  .append(endTestTitle).append("</span>");
 	
 			sb.append("</button>");
