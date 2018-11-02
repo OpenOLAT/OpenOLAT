@@ -1,7 +1,7 @@
 #if($r.isNotEmpty($tableTitle))
 	<h4>$tableTitle</h4>
 #end
-<table class="o_ce_table table table-hover #if($r.isNotEmpty($settings.tableStyle)) $r.escapeHtml($settings.tableStyle) #end  #if($r.isTrue($settings.striped)) table-striped #end #if($r.isTrue($settings.bordered)) table-bordered #end">
+<table class="o_ce_table #if($r.isNotEmpty($settings.tableStyle)) $r.escapeHtml($settings.tableStyle) #end  #if(!$r.isTrue($settings.striped)) b_no_stripes #end #if($r.isTrue($settings.bordered)) b_border #else b_borderless #end">
 	#if($r.isNotEmpty($tableCaption))
 	<caption>$tableCaption</caption>
 	#end

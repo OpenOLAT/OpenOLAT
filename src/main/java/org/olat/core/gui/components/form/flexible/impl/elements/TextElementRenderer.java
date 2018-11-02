@@ -58,9 +58,11 @@ class TextElementRenderer extends DefaultComponentRenderer {
 		htmlVal.append(StringEscapeUtils.escapeHtml(value));
 		if (source.isEnabled()) {
 			//read write view			
+			String elementCSS = te.getElementCssClass();
 			sb.append("<input type=\"").append(te.getHtmlInputType()).append("\" id=\"").append(id)
 			  .append("\" name=\"").append(id)
-			  .append("\" class='form-control' size=\"").append(te.displaySize);
+			  .append("\" class='form-control ").append(elementCSS, elementCSS != null)
+			  .append("' size=\"").append(te.displaySize);
 			if(te.maxlength > -1){
 				sb.append("\" maxlength=\"");
 				sb.append(te.maxlength);

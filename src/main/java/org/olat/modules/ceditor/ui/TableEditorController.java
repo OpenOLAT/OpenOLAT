@@ -118,6 +118,7 @@ public class TableEditorController extends FormBasicController implements PageEl
 		columnsEl.addActionListener(FormEvent.ONCHANGE);
 		
 		TableSettings settings = table.getTableSettings();
+		this.flc.contextPut("settings", settings);
 		
 		String[] rowHeaderValues = new String[] { translate("table.row.header") };
 		rowHeaderEl = uifactory.addCheckboxesHorizontal("table.row.header", "table.row.header", formLayout, onKeys, rowHeaderValues);
@@ -168,8 +169,12 @@ public class TableEditorController extends FormBasicController implements PageEl
 		}
 		
 		titleEl = uifactory.addTextElement("table.title", null, 32000, content.getTitle(), formLayout);
+		titleEl.setPlaceholderKey("table.title.placeholder", null);
+		titleEl.setElementCssClass("h4");
 		titleEl.addActionListener(FormEvent.ONCHANGE);
 		captionEl = uifactory.addTextElement("table.caption", null, 32000, content.getCaption(), formLayout);
+		captionEl.setPlaceholderKey("table.caption.placeholder", null);
+		captionEl.setElementCssClass("o_caption");
 		captionEl.addActionListener(FormEvent.ONCHANGE);
 	}
 
@@ -304,6 +309,7 @@ public class TableEditorController extends FormBasicController implements PageEl
 		table.setContent(contentXml);
 		table = store.savePageElement(table);
 		runCtrl.loadModel(table);//update preview
+		this.flc.contextPut("settings", settings); // live preview
 		fireEvent(ureq, new ChangePartEvent(table));	
 	}
 	

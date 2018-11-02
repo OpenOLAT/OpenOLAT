@@ -261,49 +261,36 @@ div.o_page_content_editor .gu-mirror, .o_page_content_editor .gu-transit {
 }
 
 .o_page_table_edition {
-	width: 70%;
-	float:left;
 	.o_table_title, .o_table_caption {
-		padding: 5px 5em;
-		background-color: #efefef;
-	}
-	
-	table {
-		border-collapse: collapse;
-	}
-	
-	td {
-		border: 3px solid white;
-	}
-	
-	table th {
-		border: 3px solid #efefef;
-		background-color: #efefef;
+		padding: 5px;
 	}
 }
 
-.o_page_image_edition {
-	width: 70%;
-	float:left;
-}
 
-.o_page_side_options {
-	width: 30%;
-	float:left;
+/* Editor elements with side options on right side */
+.o_page_with_side_options_wrapper {
+	display: flex;
+	align-items: stretch;
+	flex-direction: row;
+}
+.o_page_side_options_target {
 	background-color: $o-editor-settings-bg;
+	flex-grow: 4;
+}
+.o_page_side_options {
+	flex-grow: 0;
+	background-color: $o-portfolio-editor-border-color;
 	border-left: 1px solid darken($o-editor-settings-bg, 25%);
 	border-bottom: 1px solid darken($o-editor-settings-bg, 25%);
-	border-radius: 0 0 0 5px;
 	padding: 5px;
-	margin-bottom: 5px;
 	z-index: 2;
 }
-
 @media (max-width: $screen-xs-max) {
-	.o_page_image_edition, .o_page_table_edition, .o_page_side_options {
-		width: 50%;
+	.o_page_with_side_options_wrapper {
+		flex-direction: column-reverse;
 	}
 }
+
 
 .o_page_add_contents {
 	clear: both;

@@ -64,7 +64,7 @@ div.b_scrollblock {
 @mixin o-make-colored-table($bgcolor){
 	border-collapse: collapse;
 	td, th { 
-		padding: $padding-xs-vertical $padding-xs-horizontal;
+		padding: $table-cell-padding;
 		background: $bgcolor;
 		border: 1px solid lighten($bgcolor,5%);
 	}
@@ -76,25 +76,31 @@ div.b_scrollblock {
 		background: lighten($bgcolor,5%);
 		border: 1px solid $bgcolor;
 	}
+	&.b_no_stripes tbody tr:nth-child(even) td {
+		background: $bgcolor;
+		border: 1px solid lighten($bgcolor,5%);
+	}
 }
 
 /* nice table formatting */
 table {
 	td {
+        line-height: $line-height-base;
 		vertical-align: top;	
 	}
 	
 	&.b_default {
 		td, th { 
-			padding: $padding-xs-vertical $padding-xs-horizontal;
-		}
+			padding: $table-cell-padding;
+	        vertical-align: top;		
+	    }
 	}
 	&.b_grid {
 		width: 99.5%; 
 		background: transparent;
 		border-collapse: separate;
-		td, th { 
-			padding: $padding-xs-vertical $padding-xs-horizontal;
+		td, th { 	
+			padding: $table-cell-padding;
 			border: 1px solid $o-content-table-border;
 		}
 		thead td, th {
@@ -107,7 +113,7 @@ table {
 		background: transparent;
 		border-collapse: collapse;
 		td, th { 
-			padding: $padding-xs-vertical $padding-xs-horizontal;
+			padding: $table-cell-padding;
 			border: 1px solid $o-content-table-border;
 		}	
 		thead td, th {
@@ -120,8 +126,8 @@ table {
 		background: transparent;
 		border-collapse: separate;
 		td, th { 
-			padding: $padding-xs-vertical $padding-xs-horizontal;
-			border: 0;
+			padding: $table-cell-padding;
+			border: 0 !important;
 		}
 		thead td, th { 
 			font-weight: bold;
@@ -283,9 +289,21 @@ p.b_figure_title {
 p.b_figure_caption {
 	clear: both;
 	margin: ($line-height-computed / 4) 0 $line-height-computed 0;
-	font-size: floor((100% * $font-size-small / $font-size-base));
-	font-family: $headings-font-family;
 }
+
+
+
+/* Captions for table and figures */
+caption, 
+figcaption,
+.o_caption {
+  	padding-top: $table-cell-padding;
+  	padding-bottom: $table-cell-padding;
+  	color: $text-muted;
+  	text-align: left;	
+	font-style: italic;
+}
+
 
 /* float clear classes */
 .b_clear_float, p.b_clear_float, div.b_clear_float { 
