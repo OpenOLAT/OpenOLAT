@@ -62,7 +62,7 @@ class ReportAccessDataModel extends DefaultFlexiTableDataModel<ReportAccessRow>
 		switch(ReportAccessCols.values()[col]) {
 			case name: return row.getName();
 			case online: return row.getOnlineEl();
-//			case emailTrigger: return row.getEmailTriggerEl();
+			case emailTrigger: return row.getEmailTriggerEl();
 			default: return null;
 		}
 	}

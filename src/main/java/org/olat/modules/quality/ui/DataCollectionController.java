@@ -44,6 +44,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.modules.quality.QualityDataCollection;
@@ -63,6 +64,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class DataCollectionController extends BasicController implements TooledController, Activateable2 {
 
+	private static final String ORES_REPORT_TYPE = "report";
+	
 	private Link configurationLink;
 	private Link participantsLink;
 	private Link remindersLink;
@@ -139,7 +142,13 @@ public class DataCollectionController extends BasicController implements TooledC
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		if (secCallback.canViewDataCollectionConfigurations()) {
+		if (entries != null && !entries.isEmpty()) {
+			OLATResourceable resource = entries.get(0).getOLATResourceable();
+			if (ORES_REPORT_TYPE.equalsIgnoreCase(resource.getResourceableTypeName())
+					&& secCallback.canViewReport(dataCollection)) {
+				doOpenReport(ureq);
+			}
+		} else if (secCallback.canViewDataCollectionConfigurations()) {
 			doOpenConfiguration(ureq);
 		} else if (secCallback.canViewReport(dataCollection)) {
 			doOpenReport(ureq);
@@ -347,8 +356,7 @@ public class DataCollectionController extends BasicController implements TooledC
 	}
 
 	private void doChangeStatus(UserRequest ureq, QualityDataCollectionStatus status) {
-		dataCollection.setStatus(status);
-		dataCollection = qualityService.updateDataCollection(dataCollection);
+		dataCollection = qualityService.updateDataCollectionStatus(dataCollection, status);
 		updateUI(ureq);
 	}
 	

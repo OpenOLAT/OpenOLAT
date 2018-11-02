@@ -69,6 +69,8 @@ public interface QualitySecurityCallback {
 	
 	public boolean canEditReportAccesses();
 
+	public boolean canEditReportAccessEmail(QualityDataCollection dataCollection);
+
 	public boolean canViewReports();
 
 	public boolean canViewReport(QualityDataCollectionLight dataCollection);

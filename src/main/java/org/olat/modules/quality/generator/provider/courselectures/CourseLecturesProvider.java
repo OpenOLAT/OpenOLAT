@@ -202,7 +202,7 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 			dataCollection.setTopicRepositoryEntry(course);
 		}
 		
-		dataCollection.setStatus(QualityDataCollectionStatus.READY);
+		dataCollection = qualityService.updateDataCollectionStatus(dataCollection, QualityDataCollectionStatus.READY);
 		qualityService.updateDataCollection(dataCollection);
 		
 		// add participants

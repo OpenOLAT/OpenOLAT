@@ -179,8 +179,8 @@ public class CurriculumElementProvider implements QualityGeneratorProvider {
 		dataCollection.setTopicType(QualityDataCollectionTopicType.CURRICULUM_ELEMENT);
 		dataCollection.setTopicCurriculumElement(curriculumElement);
 		
-		dataCollection.setStatus(QualityDataCollectionStatus.READY);
-		qualityService.updateDataCollection(dataCollection);
+		dataCollection = qualityService.updateDataCollection(dataCollection);
+		dataCollection = qualityService.updateDataCollectionStatus(dataCollection, QualityDataCollectionStatus.READY);
 		
 		// add participants
 		String[] roleNames = configs.getValue(CONFIG_KEY_ROLES).split(ROLES_DELIMITER);

@@ -20,6 +20,7 @@
 package org.olat.modules.quality.ui;
 
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.modules.quality.QualityReportAccess.Type;
 
 /**
@@ -34,6 +35,7 @@ public class ReportAccessRow {
 	private final Type type;
 	private final String role;
 	private MultipleSelectionElement onlineEl;
+	private SingleSelection emailTriggerEl;
 
 	public ReportAccessRow(String name, Type type, String role) {
 		this.name = name;
@@ -59,6 +61,14 @@ public class ReportAccessRow {
 
 	public MultipleSelectionElement getOnlineEl() {
 		return onlineEl;
+	}
+
+	public SingleSelection getEmailTriggerEl() {
+		return emailTriggerEl;
+	}
+
+	public void setEmailTriggerEl(SingleSelection emailTriggerEl) {
+		this.emailTriggerEl = emailTriggerEl;
 	}
 
 }

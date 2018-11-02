@@ -80,6 +80,16 @@ public class QualityDataCollectionDAO {
 		dbInstance.getCurrentEntityManager().persist(dataCollectionImpl);
 		return dataCollectionImpl;
 	}
+
+	QualityDataCollection updateDataCollectionStatus(QualityDataCollection dataCollection,
+			QualityDataCollectionStatus status) {
+		if (dataCollection instanceof QualityDataCollectionImpl) {
+			QualityDataCollectionImpl dataCollectionImpl = (QualityDataCollectionImpl) dataCollection;
+			dataCollectionImpl.setStatus(status);
+			return updateDataCollection(dataCollectionImpl);
+		}
+		return dataCollection;
+	}
 	
 	QualityDataCollection updateDataCollection(QualityDataCollection dataCollection) {
 		if (dataCollection instanceof QualityDataCollectionImpl) {

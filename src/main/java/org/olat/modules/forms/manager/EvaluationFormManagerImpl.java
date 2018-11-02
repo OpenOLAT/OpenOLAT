@@ -441,48 +441,7 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 
 	@Override
 	public RubricRating getRubricRating(Rubric rubric, Double value) {
-		Range sufficientRange = new Range(rubric.getLowerBoundSufficient(), rubric.getUpperBoundSufficient());
-		Range neutralRange = new Range(rubric.getLowerBoundNeutral(), rubric.getUpperBoundNeutral());
-		Range insufficientRange = new Range(rubric.getLowerBoundInsufficient(), rubric.getUpperBoundInsufficient());
-		
-		RubricRating rating = RubricRating.NOT_RATED;
-		if (sufficientRange.getLower() <= value && value <= sufficientRange.getUpper()) {
-			rating = RubricRating.SUFFICIENT;
-		} else if (neutralRange.getLower() <= value && value <= neutralRange.getUpper()) {
-			rating = RubricRating.NEUTRAL;
-		} else if (insufficientRange.getLower() <= value && value <= insufficientRange.getUpper()) {
-			rating = RubricRating.INSUFFICIENT;
-		}
-		return rating;
+		return RubricRatingEvaluator.rate(rubric, value);
 	}
 	
-	private static final class Range {
-		private final Double lower;
-		private final Double upper;
-		
-		Range(Double value1, Double value2) {
-			if (value1 != null && value2 != null) {
-				if (value1 < value2) {
-					lower = value1;
-					upper = value2;
-				} else {
-					lower = value2;
-					upper = value1;
-				}
-			} else {
-				lower = -99999d;
-				upper= -99999d;
-			}
-		}
-
-		public Double getLower() {
-			return lower;
-		}
-
-		public Double getUpper() {
-			return upper;
-		}
-		
-	}
-
 }

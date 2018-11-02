@@ -57,5 +57,5 @@ public interface QualityReportAccess extends CreateInfo, ModifiedInfo {
 	public EmailTrigger getEmailTrigger();
 	
 	public void setEmailTrigger(EmailTrigger trigger);
-	
+
 }

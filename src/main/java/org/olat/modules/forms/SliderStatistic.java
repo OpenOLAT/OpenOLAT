@@ -42,5 +42,7 @@ public interface SliderStatistic {
 	public Double getStdDev();
 
 	public List<Long> getStepCounts();
-
+	
+	public RubricRating getRating();
+	
 }

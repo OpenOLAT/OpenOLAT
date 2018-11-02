@@ -21,14 +21,17 @@ package org.olat.modules.quality.manager;
 
 import static org.olat.modules.quality.QualityDataCollectionStatus.FINISHED;
 import static org.olat.modules.quality.QualityDataCollectionStatus.RUNNING;
+import static org.olat.modules.quality.QualityReportAccessReference.of;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationDataDeletable;
@@ -49,8 +52,14 @@ import org.olat.modules.forms.EvaluationFormParticipationRef;
 import org.olat.modules.forms.EvaluationFormParticipationStatus;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.EvaluationFormSurveyRef;
+import org.olat.modules.forms.RubricRating;
+import org.olat.modules.forms.RubricStatistic;
+import org.olat.modules.forms.SessionFilter;
+import org.olat.modules.forms.SessionFilterFactory;
 import org.olat.modules.forms.SessionStatusHandler;
 import org.olat.modules.forms.SessionStatusInformation;
+import org.olat.modules.forms.model.xml.Form;
+import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.quality.QualityContext;
 import org.olat.modules.quality.QualityContextBuilder;
 import org.olat.modules.quality.QualityContextRef;
@@ -68,6 +77,7 @@ import org.olat.modules.quality.QualityParticipation;
 import org.olat.modules.quality.QualityReminder;
 import org.olat.modules.quality.QualityReminderType;
 import org.olat.modules.quality.QualityReportAccess;
+import org.olat.modules.quality.QualityReportAccess.EmailTrigger;
 import org.olat.modules.quality.QualityReportAccess.Type;
 import org.olat.modules.quality.QualityReportAccessReference;
 import org.olat.modules.quality.QualityReportAccessSearchParams;
@@ -206,7 +216,7 @@ public class QualityServiceImpl
 		Collection<QualityDataCollection> dataCollections = dataCollectionDao.loadWithPendingStart(until);
 		log.debug("Update status to RUNNING. Number of pending data collections: " + dataCollections.size());
 		for (QualityDataCollection dataCollection: dataCollections) {
-			updateDataCollection(dataCollection, RUNNING);
+			updateDataCollectionStatus(dataCollection, RUNNING);
 		}
 	}
 
@@ -215,18 +225,80 @@ public class QualityServiceImpl
 		Collection<QualityDataCollection> dataCollections = dataCollectionDao.loadWithPendingDeadline(until);
 		log.debug("Update status to FINISHED. Number of pending data collections: " + dataCollections.size());
 		for (QualityDataCollection dataCollection: dataCollections) {
-			updateDataCollection(dataCollection, FINISHED);
+			updateDataCollectionStatus(dataCollection, FINISHED);
 		}
 	}
 
-	private void updateDataCollection(QualityDataCollection dataCollection, QualityDataCollectionStatus status) {
+	@Override
+	public QualityDataCollection updateDataCollectionStatus(QualityDataCollection dataCollection, QualityDataCollectionStatus status) {
+		QualityDataCollection updatedDataCollection = dataCollection;
 		try {
-			dataCollection.setStatus(status);
-			QualityDataCollection updatedDataCollection = dataCollectionDao.updateDataCollection(dataCollection);
+			QualityDataCollectionStatus previousStatus = dataCollection.getStatus();
+			updatedDataCollection = dataCollectionDao.updateDataCollectionStatus(dataCollection, status);
+			if (QualityDataCollectionStatus.FINISHED.equals(status) && !QualityDataCollectionStatus.FINISHED.equals(previousStatus)) {
+				sendReportAccessMails(dataCollection);
+			}
 			log.info("Status of quality data collection updated to " + status + ". " + updatedDataCollection.toString());
 		} catch (Exception e) {
 			log.error("Update of status of quality data collection to " + status + " failed! " + dataCollection.toString(), e);
 		}
+		return updatedDataCollection;
+	}
+
+	private void sendReportAccessMails(QualityDataCollection dataCollection) {
+		List<RubricStatistic> rubricStatistics = getRubricsStatistics(dataCollection);
+		
+		QualityReportAccessSearchParams searchParams = new QualityReportAccessSearchParams();
+		searchParams.setReference(of(dataCollection));
+		List<QualityReportAccess> reportAccesses = reportAccessDao.load(searchParams);
+		Set<Identity> receivers = new HashSet<>();
+		
+		for (QualityReportAccess reportAccess : reportAccesses) {
+			EmailTrigger emailTrigger = reportAccess.getEmailTrigger();
+			if (containsTrigger(rubricStatistics, emailTrigger)) {
+				List<Identity> identities = reportAccessDao.loadReceivers(reportAccess);
+				receivers.addAll(identities);
+			}
+		}
+		
+		qualityMailing.sendReportAccessEmail(dataCollection, receivers, rubricStatistics);
+	}
+
+	private boolean containsTrigger(List<RubricStatistic> rubricStatistics, EmailTrigger emailTrigger) {
+		if (QualityReportAccess.EmailTrigger.always.equals(emailTrigger)) {
+			return true;
+		}
+		for (RubricStatistic rubricStatistic : rubricStatistics) {
+			RubricRating rating = rubricStatistic.getTotalStatistic().getRating();
+			if (RubricRating.NEUTRAL.equals(rating)
+					&& EmailTrigger.insufficientNeutral.equals(emailTrigger)) {
+				return true;
+			}
+			if (RubricRating.INSUFFICIENT.equals(rating) 
+					&& Arrays.asList(EmailTrigger.insufficientNeutral, EmailTrigger.insufficient).contains(emailTrigger)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	private List<RubricStatistic> getRubricsStatistics(QualityDataCollection dataCollection) {
+		RepositoryEntry formEntry = loadFormEntry(dataCollection);
+		Form form = evaluationFormManager.loadForm(formEntry);
+		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(dataCollection, null);
+		SessionFilter filter = SessionFilterFactory.createSelectDone(survey);
+		
+		List<Rubric> rubrics = form.getElements().stream()
+				.filter(e -> Rubric.TYPE.equals(e.getType()))
+				.map(e -> (Rubric)e)
+				.collect(Collectors.toList());
+		
+		List<RubricStatistic> statistics = new ArrayList<>(rubrics.size());
+		for (Rubric rubric: rubrics) {
+			RubricStatistic rubricStatistic = evaluationFormManager.getRubricStatistic(rubric, filter);
+			statistics.add(rubricStatistic);
+		}
+		return statistics;
 	}
 
 	@Override
@@ -440,7 +512,7 @@ public class QualityServiceImpl
 		QualityReminder invitation = getInvitation(reminder);
 		List<EvaluationFormParticipation> participations = getParticipants(reminder);
 		for (EvaluationFormParticipation participation : participations) {
-			qualityMailing.sendMail(reminder, invitation, participation);
+			qualityMailing.sendReminderMail(reminder, invitation, participation);
 		}
 	}
 

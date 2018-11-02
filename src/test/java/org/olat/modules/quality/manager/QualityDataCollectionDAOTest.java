@@ -117,10 +117,22 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 		assertThat(dataCollection.getGenerator()).isEqualTo(generator);
 		assertThat(dataCollection.getGeneratorProviderKey()).isEqualTo(providerKey);
 	}
+	
+	@Test
+	public void shouldUpdateDataCollectionStatus() {
+		QualityDataCollectionStatus status = QualityDataCollectionStatus.FINISHED;
+		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
+		dbInstance.commitAndCloseSession();
+		
+		QualityDataCollection updatedDataCollection = sut.updateDataCollectionStatus(dataCollection, status);
+		dbInstance.commitAndCloseSession();
+
+		updatedDataCollection = sut.loadDataCollectionByKey(updatedDataCollection);
+		assertThat(updatedDataCollection.getStatus()).isEqualByComparingTo(status);
+	}
 
 	@Test
 	public void shouldUpdateDataCollection() {
-		QualityDataCollectionStatus status = QualityDataCollectionStatus.FINISHED;
 		String title = "changed title";
 		Date start = new GregorianCalendar(2014, Calendar.FEBRUARY, 11).getTime();
 		Date end = new GregorianCalendar(2014, Calendar.FEBRUARY, 20).getTime();
@@ -133,7 +145,6 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
 		dbInstance.commitAndCloseSession();
 		
-		dataCollection.setStatus(status);
 		dataCollection.setTitle(title);
 		dataCollection.setStart(start);
 		dataCollection.setDeadline(end);
@@ -147,7 +158,6 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		updatedDataCollection = sut.loadDataCollectionByKey(updatedDataCollection);
-		assertThat(updatedDataCollection.getStatus()).isEqualByComparingTo(status);
 		assertThat(updatedDataCollection.getTitle()).isEqualTo(title);
 		assertThat(updatedDataCollection.getStart()).isEqualToIgnoringSeconds(start);
 		assertThat(updatedDataCollection.getDeadline()).isEqualToIgnoringSeconds(end);
@@ -541,20 +551,18 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 		repositoryService.addRole(reportViewer, entry, reportViewerRole.name());
 		repositoryService.addRole(executor, entry, executorRole.name());
 		QualityDataCollection dc = qualityTestHelper.createDataCollection();
-		dc.setStatus(FINISHED);
-		qualityService.updateDataCollection(dc);
+		dc = qualityService.updateDataCollectionStatus(dc, FINISHED);
 		List<EvaluationFormParticipation> participations = qualityService.addParticipations(dc, singletonList(executor));
 		qualityService.createContextBuilder(dc, participations.get(0), entry, executorRole).build();
 		QualityReportAccess ra = qualityService.createReportAccess(of(dc), QualityReportAccess.Type.GroupRoles, reportViewerRole.name());
 		ra.setOnline(true);
 		qualityService.updateReportAccess(ra);
-		// Report viewer has other course name
+		// Report viewer has other course role
 		RepositoryEntry entryOtherRole = JunitTestHelper.createAndPersistRepositoryEntry();
 		repositoryService.addRole(reportViewer, entryOtherRole, GroupRoles.participant.name());
 		repositoryService.addRole(executor, entryOtherRole, executorRole.name());
 		QualityDataCollection dcOtherRole = qualityTestHelper.createDataCollection();
-		dcOtherRole.setStatus(FINISHED);
-		qualityService.updateDataCollection(dcOtherRole);
+		dcOtherRole = qualityService.updateDataCollectionStatus(dcOtherRole, FINISHED);
 		List<EvaluationFormParticipation> participationsOtherRole = qualityService.addParticipations(dcOtherRole, singletonList(executor));
 		qualityService.createContextBuilder(dcOtherRole, participationsOtherRole.get(0), entryOtherRole, executorRole).build();
 		QualityReportAccess raOtherRole = qualityService.createReportAccess(of(dcOtherRole), QualityReportAccess.Type.GroupRoles, reportViewerRole.name());
@@ -564,8 +572,7 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 		RepositoryEntry entryNotMember = JunitTestHelper.createAndPersistRepositoryEntry();
 		repositoryService.addRole(executor, entryNotMember, executorRole.name());
 		QualityDataCollection dcNotMember = qualityTestHelper.createDataCollection();
-		dcNotMember.setStatus(FINISHED);
-		qualityService.updateDataCollection(dcNotMember);
+		dcNotMember = qualityService.updateDataCollectionStatus(dcNotMember, FINISHED);
 		List<EvaluationFormParticipation> participationsNotMember = qualityService.addParticipations(dcNotMember, singletonList(executor));
 		qualityService.createContextBuilder(dcNotMember, participationsNotMember.get(0), entryNotMember, executorRole).build();
 		QualityReportAccess raNotMember = qualityService.createReportAccess(of(dcNotMember), QualityReportAccess.Type.GroupRoles, reportViewerRole.name());
@@ -576,8 +583,7 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 		repositoryService.addRole(reportViewer, entryNotFinished, reportViewerRole.name());
 		repositoryService.addRole(executor, entryNotFinished, executorRole.name());
 		QualityDataCollection dcNotFinished = qualityTestHelper.createDataCollection();
-		dcNotFinished.setStatus(QualityDataCollectionStatus.RUNNING);
-		qualityService.updateDataCollection(dcNotFinished);
+		dcNotFinished = qualityService.updateDataCollectionStatus(dcNotFinished, QualityDataCollectionStatus.RUNNING);
 		List<EvaluationFormParticipation> participationsNotFinished = qualityService.addParticipations(dcNotFinished, singletonList(executor));
 		qualityService.createContextBuilder(dcNotFinished, participationsNotFinished.get(0), entryNotFinished, executorRole).build();
 		QualityReportAccess raNotFinished = qualityService.createReportAccess(of(dcNotFinished), QualityReportAccess.Type.GroupRoles, reportViewerRole.name());
@@ -588,8 +594,7 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 		repositoryService.addRole(reportViewer, entryNoAccess, reportViewerRole.name());
 		repositoryService.addRole(executor, entryNoAccess, executorRole.name());
 		QualityDataCollection dcNoAccess = qualityTestHelper.createDataCollection();
-		dcNoAccess.setStatus(FINISHED);
-		qualityService.updateDataCollection(dcNoAccess);
+		dcNoAccess = qualityService.updateDataCollectionStatus(dcNoAccess, FINISHED);
 		List<EvaluationFormParticipation> participationsNoAccess = qualityService.addParticipations(dcNoAccess, singletonList(executor));
 		qualityService.createContextBuilder(dcNoAccess, participationsNoAccess.get(0), entryNoAccess, executorRole).build();
 		// Report user has access denied
@@ -597,8 +602,7 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 		repositoryService.addRole(reportViewer, entryAccessDenied, reportViewerRole.name());
 		repositoryService.addRole(executor, entryAccessDenied, executorRole.name());
 		QualityDataCollection dcAccessDenied = qualityTestHelper.createDataCollection();
-		dcAccessDenied.setStatus(FINISHED);
-		qualityService.updateDataCollection(dcAccessDenied);
+		dcAccessDenied = qualityService.updateDataCollectionStatus(dcAccessDenied, FINISHED);
 		List<EvaluationFormParticipation> participationsAccessDenied = qualityService.addParticipations(dcAccessDenied, singletonList(executor));
 		qualityService.createContextBuilder(dcAccessDenied, participationsAccessDenied.get(0), entryAccessDenied, executorRole).build();
 		QualityReportAccess raAccessDenied = qualityService.createReportAccess(of(dcAccessDenied), QualityReportAccess.Type.GroupRoles, reportViewerRole.name());

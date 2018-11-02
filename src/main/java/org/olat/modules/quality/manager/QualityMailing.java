@@ -25,16 +25,13 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 
-import org.apache.velocity.VelocityContext;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
-import org.olat.core.id.UserConstants;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.mail.MailBundle;
@@ -42,10 +39,13 @@ import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.modules.forms.EvaluationFormParticipation;
+import org.olat.modules.forms.RubricStatistic;
+import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityDataCollectionStatus;
 import org.olat.modules.quality.QualityExecutorParticipation;
 import org.olat.modules.quality.QualityExecutorParticipationSearchParams;
 import org.olat.modules.quality.QualityReminder;
+import org.olat.modules.quality.model.QualityMailTemplateBuilder;
 import org.olat.modules.quality.ui.QualityMainController;
 import org.olat.modules.quality.ui.QualityUIContextsBuilder;
 import org.olat.modules.quality.ui.QualityUIContextsBuilder.Attribute;
@@ -73,10 +73,10 @@ class QualityMailing {
 	@Autowired
 	private QualityParticipationDAO participationDao;
 
-	void sendMail(QualityReminder reminder, QualityReminder invitation, EvaluationFormParticipation participation) {
+	void sendReminderMail(QualityReminder reminder, QualityReminder invitation, EvaluationFormParticipation participation) {
 		if (participation.getExecutor() != null) {
 			Identity executor = participation.getExecutor();
-			MailTemplate template = createMailTemplate(reminder, invitation, executor);
+			MailTemplate template = createReminderMailTemplate(reminder, invitation, executor);
 			
 			MailerResult result = new MailerResult();
 			MailManager mailManager = CoreSpringFactory.getImpl(MailManager.class);
@@ -94,10 +94,9 @@ class QualityMailing {
 		}
 	}
 
-	MailTemplate createMailTemplate(QualityReminder reminder, QualityReminder invitationReminder, Identity executor) {
+	private MailTemplate createReminderMailTemplate(QualityReminder reminder, QualityReminder invitationReminder, Identity executor) {
 		Locale locale = I18nManager.getInstance().getLocaleOrDefault(executor.getUser().getPreferences().getLanguage());
 		Translator translator = Util.createPackageTranslator(QualityMainController.class, locale);
-		Formatter formatter = Formatter.getInstance(locale);
 		
 		QualityExecutorParticipationSearchParams searchParams = new QualityExecutorParticipationSearchParams();
 		searchParams.setExecutorRef(executor);
@@ -109,64 +108,40 @@ class QualityMailing {
 			participation = participations.get(0);
 		}
 		
-		User user = executor.getUser();
-		String firstname = user.getProperty(UserConstants.FIRSTNAME, null);
-		String lastname = user.getProperty(UserConstants.LASTNAME, null);
-		
-		String start = participation != null && participation.getStart() != null
-				? formatter.formatDateAndTime(participation.getStart())
-				: "";
-		String deadline = participation != null && participation.getDeadline() != null
-				? formatter.formatDateAndTime(participation.getDeadline())
-				: "";
-		String topictype = participation != null && participation.getTranslatedTopicType() != null
-				? participation.getTranslatedTopicType()
-				: "";
-		String topic = participation != null && participation.getTopic() != null
-				? participation.getTopic()
-				: "";
-		String title = participation != null && participation.getTitle() != null
-				? participation.getTitle()
-				: "";
-		String previousTitle = participation != null && participation.getPreviousTitle() != null
-				? participation.getPreviousTitle()
-				: "";
-		String seriePosition = participation != null && participation.getPreviousTitle() != null
-				? translator.translate("reminder.serie.followup")
-				: translator.translate("reminder.serie.primary");
-		String invitation = invitationReminder != null && invitationReminder.getSendDone() != null
-				? formatter.formatDateAndTime(invitationReminder.getSendDone())
-				: "";
-				
 		String subject = translator.translate(reminder.getType().getSubjectI18nKey());
 		String body = translator.translate(reminder.getType().getBodyI18nKey());
-
-		Long participationKey = participation != null? participation.getParticipationRef().getKey(): null;
-		String url = getUrl(participationKey);
+		QualityMailTemplateBuilder mailBuilder = QualityMailTemplateBuilder.builder(subject, body, locale);
 		
-		String surveyContext = createSurveyContext(participation, locale);
+		User user = executor.getUser();
+		mailBuilder.withExecutor(user);
 		
-		MailTemplate mailTempl = new MailTemplate(subject, body, null) {
-			@Override
-			public void putVariablesInMailContext(VelocityContext context, Identity identity) {
-				context.put("firstname", firstname);
-				context.put("lastname", lastname);
-				context.put("start", start);
-				context.put("deadline", deadline);
-				context.put("topictype", topictype);
-				context.put("topic", topic);
-				context.put("title", title);
-				context.put("previousTitle", previousTitle);
-				context.put("seriePosition", seriePosition);
-				context.put("context", surveyContext);
-				context.put("url", url);
-				context.put("invitation", invitation);
-			}
-		};
-		return mailTempl;
+		if (participation != null) {
+			mailBuilder.withStart(participation.getStart())
+					.withDeadline(participation.getDeadline())
+					.withTopicType(participation.getTranslatedTopicType())
+					.withTopic(participation.getTopic())
+					.withTitle(participation.getTitle())
+					.withPreviousTitle(participation.getPreviousTitle());
+			
+			String seriePorition = participation.getPreviousTitle() != null
+					? translator.translate("reminder.serie.followup")
+					: translator.translate("reminder.serie.primary");
+			mailBuilder.withSeriePosition(seriePorition);
+			
+			Long participationKey = participation.getParticipationRef().getKey();
+			String url = getParticipationUrl(participationKey);
+			mailBuilder.withUrl(url);
+			
+			String surveyContext = createParticipationContext(participation, locale);
+			mailBuilder.withContext(surveyContext);
+		}
+		
+		mailBuilder.withInvitation(invitationReminder.getSendDone());
+		
+		return mailBuilder.build();
 	}
 
-	private String getUrl(Long participationKey) {
+	private String getParticipationUrl(Long participationKey) {
 		StringBuilder url = new StringBuilder();
 		url.append(Settings.getServerContextPathURI());
 		url.append("/url/QualitySite/0/quality/0/my/0/");
@@ -177,7 +152,7 @@ class QualityMailing {
 		return url.toString();
 	}
 
-	private String createSurveyContext(QualityExecutorParticipation participation, Locale locale) {
+	private String createParticipationContext(QualityExecutorParticipation participation, Locale locale) {
 		StringBuilder sb = new StringBuilder();
 		List<UIContext> uiContexts = QualityUIContextsBuilder.builder(participation, locale)
 				.addAttribute(Attribute.ROLE)
@@ -193,6 +168,67 @@ class QualityMailing {
 			}
 		}
 		return sb.toString();
+	}
+
+	void sendReportAccessEmail(QualityDataCollection dataCollection, Collection<Identity> receivers,
+			List<RubricStatistic> rubricStatistics) {
+		for (Identity receiver : receivers) {
+			sendReportAccessEmail(dataCollection, receiver, rubricStatistics);
+		}
+		
+	}
+	
+	private void sendReportAccessEmail(QualityDataCollection dataCollection, Identity receiver, List<RubricStatistic> rubricStatistics) {
+		MailTemplate template = createReportAccessMailTemplate(dataCollection, receiver, rubricStatistics);
+		
+		MailerResult result = new MailerResult();
+		MailManager mailManager = CoreSpringFactory.getImpl(MailManager.class);
+		MailBundle bundle = mailManager.makeMailBundle(null, receiver, template, null, null, result);
+		if(bundle != null) {
+			result = mailManager.sendMessage(bundle);
+			if (result.isSuccessful()) {
+				log.info("Report access email send");
+				log.info(MessageFormat.format("Report access email for quality data collection [key={0}] sent to {1}",
+						dataCollection.getKey(), receiver));
+			} else {
+				log.warn(MessageFormat.format("Sending report access email for quality data collection [key={0}] to {1} failed: {2}",
+						dataCollection.getKey(), receiver, result.getErrorMessage()));
+			}
+		}
+	}
+
+	private MailTemplate createReportAccessMailTemplate(QualityDataCollection dataCollection, Identity receiver,
+			List<RubricStatistic> rubricStatistics) {
+		Locale locale = I18nManager.getInstance().getLocaleOrDefault(receiver.getUser().getPreferences().getLanguage());
+		Translator translator = Util.createPackageTranslator(QualityMainController.class, locale);
+		
+		String subject = translator.translate("report.access.email.subject");
+		String body = translator.translate("report.access.email.body");
+		QualityMailTemplateBuilder mailBuilder = QualityMailTemplateBuilder.builder(subject, body, locale);
+		
+		User user = receiver.getUser();
+		mailBuilder.withExecutor(user);
+		
+		String url = getReportUrl(dataCollection.getKey());
+		mailBuilder.withUrl(url);
+		
+		//TODO uh add rating
+		//TODO uh Data collections informations
+		//TODO uh context
+		
+		return mailBuilder.build();
+	}
+	
+	private String getReportUrl(Long dataCollectionKey) {
+		StringBuilder url = new StringBuilder();
+		url.append(Settings.getServerContextPathURI());
+		url.append("/url/QualitySite/0/quality/0/datacollections/0/");
+		if (dataCollectionKey != null) {
+			url.append("datacollection/");
+			url.append(dataCollectionKey);
+			url.append("/report/0/");
+		}
+		return url.toString();
 	}
 	
 }

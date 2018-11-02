@@ -279,12 +279,12 @@ public class CourseLecturesProviderDAOTest extends OlatTestCase {
 		QualityDataCollection runningDataCollection = qualityService.createDataCollection(organisations, formEntry, generator, courseRunningDC.getKey());
 		runningDataCollection.setTopicIdentity(teacher);
 		runningDataCollection.setTopicType(QualityDataCollectionTopicType.IDENTIY);
-		runningDataCollection.setStatus(QualityDataCollectionStatus.RUNNING);
+		runningDataCollection = qualityService.updateDataCollectionStatus(runningDataCollection, QualityDataCollectionStatus.RUNNING);
 		qualityService.updateDataCollection(runningDataCollection);
 		QualityDataCollection finishedDataCollection = qualityService.createDataCollection(organisations, formEntry, generator, courseFinishedDC.getKey());
 		finishedDataCollection.setTopicIdentity(teacher);
 		finishedDataCollection.setTopicType(QualityDataCollectionTopicType.IDENTIY);
-		finishedDataCollection.setStatus(QualityDataCollectionStatus.FINISHED);
+		finishedDataCollection = qualityService.updateDataCollectionStatus(finishedDataCollection, QualityDataCollectionStatus.FINISHED);
 		qualityService.updateDataCollection(finishedDataCollection);
 		dbInstance.commitAndCloseSession();
 
@@ -319,12 +319,12 @@ public class CourseLecturesProviderDAOTest extends OlatTestCase {
 		QualityDataCollection runningDataCollection = qualityService.createDataCollection(organisations, formEntry, generator, teacher.getKey());
 		runningDataCollection.setTopicRepositoryEntry(courseRunningDC);
 		runningDataCollection.setTopicType(QualityDataCollectionTopicType.REPOSITORY);
-		runningDataCollection.setStatus(QualityDataCollectionStatus.RUNNING);
+		runningDataCollection = qualityService.updateDataCollectionStatus(runningDataCollection, QualityDataCollectionStatus.RUNNING);
 		qualityService.updateDataCollection(runningDataCollection);
 		QualityDataCollection finishedDataCollection = qualityService.createDataCollection(organisations, formEntry, generator, teacher.getKey());
 		finishedDataCollection.setTopicRepositoryEntry(courseFinishedDC);
 		finishedDataCollection.setTopicType(QualityDataCollectionTopicType.REPOSITORY);
-		finishedDataCollection.setStatus(QualityDataCollectionStatus.FINISHED);
+		finishedDataCollection = qualityService.updateDataCollectionStatus(finishedDataCollection, QualityDataCollectionStatus.FINISHED);
 		qualityService.updateDataCollection(finishedDataCollection);
 		dbInstance.commitAndCloseSession();
 

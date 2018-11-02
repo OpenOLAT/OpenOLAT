@@ -290,8 +290,8 @@ public class CourseProvider implements QualityGeneratorProvider {
 		dataCollection.setTopicType(QualityDataCollectionTopicType.REPOSITORY);
 		dataCollection.setTopicRepositoryEntry(course);
 		
-		dataCollection.setStatus(QualityDataCollectionStatus.READY);
-		qualityService.updateDataCollection(dataCollection);
+		dataCollection = qualityService.updateDataCollection(dataCollection);
+		dataCollection = qualityService.updateDataCollectionStatus(dataCollection, QualityDataCollectionStatus.READY);
 		
 		// add participants
 		String[] roleNames = configs.getValue(CONFIG_KEY_ROLES).split(ROLES_DELIMITER);
