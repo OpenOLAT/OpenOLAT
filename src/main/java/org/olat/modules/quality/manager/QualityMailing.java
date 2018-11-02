@@ -32,6 +32,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.mail.MailBundle;
@@ -39,9 +40,14 @@ import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.modules.forms.EvaluationFormParticipation;
+import org.olat.modules.forms.RubricRating;
 import org.olat.modules.forms.RubricStatistic;
+import org.olat.modules.forms.ui.EvaluationFormFormatter;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityDataCollectionStatus;
+import org.olat.modules.quality.QualityDataCollectionTopicType;
+import org.olat.modules.quality.QualityDataCollectionView;
+import org.olat.modules.quality.QualityDataCollectionViewSearchParams;
 import org.olat.modules.quality.QualityExecutorParticipation;
 import org.olat.modules.quality.QualityExecutorParticipationSearchParams;
 import org.olat.modules.quality.QualityReminder;
@@ -72,6 +78,8 @@ class QualityMailing {
 	
 	@Autowired
 	private QualityParticipationDAO participationDao;
+	@Autowired
+	private QualityDataCollectionDAO dataCollectionDao;
 
 	void sendReminderMail(QualityReminder reminder, QualityReminder invitation, EvaluationFormParticipation participation) {
 		if (participation.getExecutor() != null) {
@@ -118,10 +126,14 @@ class QualityMailing {
 		if (participation != null) {
 			mailBuilder.withStart(participation.getStart())
 					.withDeadline(participation.getDeadline())
-					.withTopicType(participation.getTranslatedTopicType())
 					.withTopic(participation.getTopic())
 					.withTitle(participation.getTitle())
 					.withPreviousTitle(participation.getPreviousTitle());
+			
+			String custom = translator.translate(QualityDataCollectionTopicType.CUSTOM.getI18nKey());
+			if (!custom.equals(participation.getTranslatedTopicType())) {
+				mailBuilder.withTopicType(participation.getTranslatedTopicType());
+			}
 			
 			String seriePorition = participation.getPreviousTitle() != null
 					? translator.translate("reminder.serie.followup")
@@ -157,7 +169,7 @@ class QualityMailing {
 		List<UIContext> uiContexts = QualityUIContextsBuilder.builder(participation, locale)
 				.addAttribute(Attribute.ROLE)
 				.addAttribute(Attribute.COURSE)
-				.addAttribute(Attribute.CURRICULUM_ELEMENTS	)
+				.addAttribute(Attribute.CURRICULUM_ELEMENTS)
 				.addAttribute(Attribute.TAXONOMY_LEVELS)
 				.build()
 				.getUiContexts();
@@ -209,12 +221,37 @@ class QualityMailing {
 		User user = receiver.getUser();
 		mailBuilder.withExecutor(user);
 		
+		QualityDataCollectionViewSearchParams searchParams = new QualityDataCollectionViewSearchParams();
+		searchParams.setDataCollectionRef(dataCollection);
+		List<QualityDataCollectionView> dataCollectionViews = dataCollectionDao.loadDataCollections(translator, searchParams, 0, -1);
+		
+		if (!dataCollectionViews.isEmpty()) {
+			QualityDataCollectionView dataCollectionView = dataCollectionViews.get(0);
+			mailBuilder.withStart(dataCollectionView.getStart())
+					.withDeadline(dataCollectionView.getDeadline())
+					.withTopic(dataCollectionView.getTopic())
+					.withTitle(dataCollectionView.getTitle())
+					.withPreviousTitle(dataCollectionView.getPreviousTitle());
+			
+			String custom = translator.translate(QualityDataCollectionTopicType.CUSTOM.getI18nKey());
+			if (!custom.equals(dataCollectionView.getTranslatedTopicType())) {
+				mailBuilder.withTopicType(dataCollectionView.getTranslatedTopicType());
+			}
+			
+			String seriePorition = dataCollectionView.getPreviousTitle() != null
+					? translator.translate("reminder.serie.followup")
+					: translator.translate("reminder.serie.primary");
+			mailBuilder.withSeriePosition(seriePorition);
+		}
+		
 		String url = getReportUrl(dataCollection.getKey());
 		mailBuilder.withUrl(url);
 		
-		//TODO uh add rating
-		//TODO uh Data collections informations
-		//TODO uh context
+		String surveyContext = createDatCollectionContext(dataCollection, locale);
+		mailBuilder.withContext(surveyContext);
+		
+		String result = getResult(translator, rubricStatistics);
+		mailBuilder.withResult(result);
 		
 		return mailBuilder.build();
 	}
@@ -231,4 +268,61 @@ class QualityMailing {
 		return url.toString();
 	}
 	
+	private String createDatCollectionContext(QualityDataCollection dataCollection, Locale locale) {
+		StringBuilder sb = new StringBuilder();
+		List<UIContext> uiContexts = QualityUIContextsBuilder.builder(dataCollection, locale)
+				.addAttribute(Attribute.ROLE)
+				.addAttribute(Attribute.COURSE)
+				.addAttribute(Attribute.CURRICULUM_ELEMENTS)
+				.addAttribute(Attribute.TAXONOMY_LEVELS)
+				.build()
+				.getUiContexts();
+		for (UIContext uiContext : uiContexts) {
+			sb.append("<br/>");
+			for (KeyValue kv : uiContext.getKeyValues()) {
+				sb.append("<br/>").append(kv.getKey()).append(": ").append(kv.getValue());
+			}
+		}
+		return sb.toString();
+	}
+	
+	private String getResult(Translator translator, List<RubricStatistic> rubricStatistics) {
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < rubricStatistics.size(); i++) {
+			RubricStatistic rubricStatistic = rubricStatistics.get(i);
+			
+			String rubricName = rubricStatistic.getRubric().getName();
+			String rubricTranslatedName = StringHelper.containsNonWhitespace(rubricName)
+					? translator.translate("report.access.email.rubric.name", new String[] {rubricName})
+					: "";
+			RubricRating rating = rubricStatistic.getTotalStatistic().getRating();
+			String translatedRating = translator.translate(getRatingI18n(rating));
+			
+			String[] args = {
+					String.valueOf(i + 1),                                    // rubric index
+					rubricTranslatedName,                                     // rubric name
+					EvaluationFormFormatter.formatDouble(
+							rubricStatistic.getTotalStatistic().getAvg()),    // average
+					translatedRating                                          // rating
+			};
+			
+			sb.append("<br/>");
+			sb.append(translator.translate("report.access.email.rubric.rating", args));
+		}
+		return sb.toString();
+	}
+
+	private String getRatingI18n(RubricRating rating) {
+		switch (rating) {
+		case SUFFICIENT: 
+			return "report.access.rating.sufficient";
+		case NEUTRAL: 
+			return "report.access.rating.neutral";
+		case INSUFFICIENT: 
+			return "report.access.rating.insufficient";
+		default: 
+			return "report.access.rating.not.rated";
+		}
+	}
+
 }

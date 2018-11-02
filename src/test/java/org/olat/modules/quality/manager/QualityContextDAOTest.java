@@ -114,6 +114,24 @@ public class QualityContextDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void shouldLoadByDataCollectionFetched() {
+		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
+		EvaluationFormParticipation evaluationFormParticipation = qualityTestHelper.createParticipation();
+		QualityContext context1 = sut.createContext(dataCollection, evaluationFormParticipation, null, null, null, null);
+		QualityContext context2 = sut.createContext(dataCollection, evaluationFormParticipation, null, null, null, null);
+		QualityDataCollection otherDataCollection = qualityTestHelper.createDataCollection();
+		EvaluationFormParticipation otherParticpation = qualityTestHelper.createParticipation();
+		QualityContext otherContext = sut.createContext(otherDataCollection, otherParticpation, null, null, null, null);
+		dbInstance.commitAndCloseSession();
+		
+		List<QualityContext> reloadedContext = sut.loadByDataCollectionFetched(dataCollection);
+		
+		assertThat(reloadedContext)
+				.containsExactlyInAnyOrder(context1, context2)
+				.doesNotContain(otherContext);
+	}
+	
+	@Test
 	public void shouldLoadByParticipation() {
 		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
 		EvaluationFormParticipation evaluationFormParticipation = qualityTestHelper.createParticipation();

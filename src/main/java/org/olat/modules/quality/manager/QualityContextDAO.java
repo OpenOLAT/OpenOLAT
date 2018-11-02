@@ -36,7 +36,7 @@ import org.olat.modules.quality.QualityContext;
 import org.olat.modules.quality.QualityContextRef;
 import org.olat.modules.quality.QualityContextRole;
 import org.olat.modules.quality.QualityDataCollection;
-import org.olat.modules.quality.QualityDataCollectionLight;
+import org.olat.modules.quality.QualityDataCollectionRef;
 import org.olat.modules.quality.model.QualityContextImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
@@ -89,8 +89,8 @@ class QualityContextDAO {
 		return contexts.isEmpty() ? null : contexts.get(0);
 	}
 
-	List<QualityContext> loadByDataCollection(QualityDataCollectionLight dataCollection) {
-		if (dataCollection == null || dataCollection.getKey() == null) {
+	List<QualityContext> loadByDataCollection(QualityDataCollectionRef dataCollectionRef) {
+		if (dataCollectionRef == null || dataCollectionRef.getKey() == null) {
 			return Collections.emptyList();
 		}
 		
@@ -101,7 +101,41 @@ class QualityContextDAO {
 		
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), QualityContext.class)
-				.setParameter("dataCollectionKey", dataCollection.getKey())
+				.setParameter("dataCollectionKey", dataCollectionRef.getKey())
+				.getResultList();
+	}
+	
+	List<QualityContext> loadByDataCollectionFetched(QualityDataCollectionRef dataCollectionRef) {
+		if (dataCollectionRef == null || dataCollectionRef.getKey() == null) {
+			return Collections.emptyList();
+		}
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select context");
+		sb.append("  from qualitycontext as context");
+		sb.append("       left join fetch context.audienceRepositoryEntry");
+		sb.append("       left join fetch context.audienceCurriculumElement");
+		sb.append("       left join fetch contexttocurriculumelement contextToCurriculumElement");
+		sb.append("              on contextToCurriculumElement.context.key = context.key");
+		sb.append("       left join fetch curriculumelement as curriculumElement");
+		sb.append("              on contextToCurriculumElement.curriculumElement.key = curriculumElement.key");
+		sb.append("       left join fetch contexttocurriculum contextToCurriculum");
+		sb.append("              on contextToCurriculum.context.key = context.key");
+		sb.append("       left join fetch curriculum as curriculum");
+		sb.append("              on contextToCurriculum.curriculum.key = curriculum.key");
+		sb.append("       left join fetch contexttoorganisation contextToOrganisation");
+		sb.append("              on contextToOrganisation.context.key = context.key");
+		sb.append("       left join fetch organisation as organisation");
+		sb.append("              on contextToOrganisation.organisation.key = organisation.key");
+		sb.append("       left join fetch contexttotaxonomylevel contextToTaxonomyLevel");
+		sb.append("              on contextToTaxonomyLevel.context.key = context.key");
+		sb.append("       left join fetch ctaxonomylevel as taxonomyLevel");
+		sb.append("              on contextToTaxonomyLevel.taxonomyLevel.key = taxonomyLevel.key");
+		sb.append(" where context.dataCollection.key = :dataCollectionKey");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), QualityContext.class)
+				.setParameter("dataCollectionKey", dataCollectionRef.getKey())
 				.getResultList();
 	}
 

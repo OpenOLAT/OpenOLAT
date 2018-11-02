@@ -141,13 +141,13 @@ public class EvaluationFormDAOTest extends OlatTestCase {
 		Date sooner = new GregorianCalendar(2014, Calendar.FEBRUARY, 10).getTime();
 		QualityDataCollection dcSooner = qualityService.createDataCollection(emptyList(), formEntry);
 		dcSooner.setStart(sooner);
-		dcSooner =qualityService.updateDataCollection(dcSooner);
+		dcSooner = qualityService.updateDataCollection(dcSooner);
 		dcSooner = qualityService.updateDataCollectionStatus(dcSooner, QualityDataCollectionStatus.FINISHED);
 		// soonest
 		Date soonest = new GregorianCalendar(2014, Calendar.FEBRUARY, 9).getTime();
 		QualityDataCollection dcSoonest = qualityService.createDataCollection(emptyList(), formEntry);
 		dcSoonest.setStart(soonest);
-		dcSoonest =qualityService.updateDataCollection(dcSoonest);
+		dcSoonest = qualityService.updateDataCollection(dcSoonest);
 		dcSoonest = qualityService.updateDataCollectionStatus(dcSoonest, QualityDataCollectionStatus.FINISHED);
 		dbInstance.commitAndCloseSession();
 		
@@ -164,13 +164,13 @@ public class EvaluationFormDAOTest extends OlatTestCase {
 		Date latest = new GregorianCalendar(2014, Calendar.FEBRUARY, 11).getTime();
 		QualityDataCollection dcLatest = qualityService.createDataCollection(emptyList(), formEntry);
 		dcLatest.setDeadline(latest);
-		dcLatest =qualityService.updateDataCollection(dcLatest);
+		dcLatest = qualityService.updateDataCollection(dcLatest);
 		dcLatest = qualityService.updateDataCollectionStatus(dcLatest, QualityDataCollectionStatus.FINISHED);
 		// later
 		Date later = new GregorianCalendar(2014, Calendar.FEBRUARY, 10).getTime();
 		QualityDataCollection dcLater = qualityService.createDataCollection(emptyList(), formEntry);
 		dcLater.setDeadline(later);
-		dcLater =qualityService.updateDataCollection(dcLater);
+		dcLater = qualityService.updateDataCollection(dcLater);
 		dcLater = qualityService.updateDataCollectionStatus(dcLater, QualityDataCollectionStatus.FINISHED);
 		// late
 		Date late = new GregorianCalendar(2014, Calendar.FEBRUARY, 9).getTime();

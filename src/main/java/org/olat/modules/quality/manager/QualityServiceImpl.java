@@ -451,6 +451,11 @@ public class QualityServiceImpl
 	}
 	
 	@Override
+	public List<QualityContext> loadContextByDataCollection(QualityDataCollectionRef dataCollectionRef) {
+		return contextDao.loadByDataCollectionFetched(dataCollectionRef);
+	}
+	
+	@Override
 	public void deleteContext(QualityContextRef contextRef) {
 		if (contextRef != null) {
 			contextToCurriculumDao.deleteRelations(contextRef);

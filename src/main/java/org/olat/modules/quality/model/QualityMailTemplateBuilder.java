@@ -55,6 +55,7 @@ public class QualityMailTemplateBuilder {
 	private String surveyContext;
 	private String url;
 	private String invitation;
+	private String result;
 	
 	public static QualityMailTemplateBuilder builder(String subject, String body, Locale locale) {
 		return new QualityMailTemplateBuilder(subject, body, locale);
@@ -122,6 +123,11 @@ public class QualityMailTemplateBuilder {
 		return this;
 	}
 	
+	public QualityMailTemplateBuilder withResult(String result) {
+		this.result = result;
+		return this;
+	}
+	
 	public MailTemplate build() {
 		MailTemplate mailTempl = new MailTemplate(subject, body, null) {
 			@Override
@@ -135,9 +141,10 @@ public class QualityMailTemplateBuilder {
 				context.put("title", blankIfNull(title));
 				context.put("previousTitle", blankIfNull(previousTitle));
 				context.put("seriePosition", blankIfNull(seriePosition));
-				context.put("surveyContext", blankIfNull(surveyContext));
+				context.put("context", blankIfNull(surveyContext));
 				context.put("url", blankIfNull(url));
 				context.put("invitation", blankIfNull(invitation));
+				context.put("result", blankIfNull(result));
 			}
 		};
 		return mailTempl;
