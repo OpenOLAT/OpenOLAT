@@ -838,6 +838,14 @@ table.o_qti_item_kprim {
 	td.o_qti_item_kprim_input_wrong {
 		background-color: $o-qti-match-kprim-wrong-bg;
 	}
+	
+	td.o_qti_item_kprim_input_correct, td.o_qti_item_kprim_input_wrong,
+	th.o_qti_item_kprim_input_correct, th.o_qti_item_kprim_input_wrong {
+		width: 11%;
+	}
+	td.o_qti_item_kprim_text, th.o_qti_item_kprim_text {
+		width: 88%;
+	}
 }	
 
 .matchInteraction {
