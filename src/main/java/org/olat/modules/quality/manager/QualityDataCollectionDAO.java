@@ -116,6 +116,9 @@ public class QualityDataCollectionDAO {
 		sb.append("  from qualitydatacollection as collection");
 		sb.append("       left join fetch collection.topicIdentity");
 		sb.append("       left join fetch collection.topicOrganisation");
+		sb.append("       left join fetch collection.topicCurriculum");
+		sb.append("       left join fetch collection.topicCurriculumElement");
+		sb.append("       left join fetch collection.topicRepositoryEntry");
 		sb.append(" where collection.key=:collectionKey");
 		
 		 List<QualityDataCollection> dataCollections = dbInstance.getCurrentEntityManager()

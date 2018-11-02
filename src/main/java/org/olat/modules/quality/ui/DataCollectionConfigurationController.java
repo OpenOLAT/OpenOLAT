@@ -39,6 +39,7 @@ import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElem
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
@@ -81,7 +82,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class DataCollectionConfigurationController extends AbstractDataCollectionEditController {
+public class DataCollectionConfigurationController extends FormBasicController {
 
 	private static final String[] EMPTY_ARRAY = new String[] {};
 	
@@ -117,6 +118,10 @@ public class DataCollectionConfigurationController extends AbstractDataCollectio
 	private CurriculumElement topicCurriculumElement;
 	private RepositoryEntry topicRepository;
 	
+	private final TooledStackedPanel stackPanel;
+	private final QualitySecurityCallback secCallback;
+	private QualityDataCollection dataCollection;
+	
 	@Autowired
 	private QualityService qualityService;
 	@Autowired
@@ -131,7 +136,10 @@ public class DataCollectionConfigurationController extends AbstractDataCollectio
 	public DataCollectionConfigurationController(UserRequest ureq, WindowControl wControl,
 			QualitySecurityCallback secCallback, TooledStackedPanel stackPanel,
 			QualityDataCollection dataCollection, boolean validate) {
-		super(ureq, wControl, secCallback, stackPanel, dataCollection);
+		super(ureq, wControl);
+		this.secCallback = secCallback;
+		this.stackPanel = stackPanel;
+		this.dataCollection = qualityService.loadDataCollectionByKey(dataCollection);
 		this.formEntry = qualityService.loadFormEntry(dataCollection);
 		this.topicType = dataCollection.getTopicType();
 		this.topicIdentity = dataCollection.getTopicIdentity();
@@ -216,14 +224,14 @@ public class DataCollectionConfigurationController extends AbstractDataCollectio
 		updateUI();
 	}
 	
-	@Override
-	protected void updateUI(UserRequest ureq) {
+	public void setDataCollection(QualityDataCollection dataCollection) {
+		this.dataCollection = dataCollection;
 		startEl.setDate(dataCollection.getStart());
 		deadlineEl.setDate(dataCollection.getDeadline());
 		updateUI();
 	}
 	
-	protected void updateUI() {
+	private void updateUI() {
 		boolean updateBaseConfiguration = secCallback.canUpdateBaseConfiguration(dataCollection);
 		titleEl.setEnabled(updateBaseConfiguration);
 		evaFormReplaceLink.setVisible(updateBaseConfiguration);
@@ -249,6 +257,7 @@ public class DataCollectionConfigurationController extends AbstractDataCollectio
 	}
 
 	private void updateTopicUI() {
+		dataCollection = qualityService.loadDataCollectionByKey(dataCollection);
 		topicCustomTextEl.setVisible(false);
 		topicIdentityNameEl.setVisible(false);
 		topicIdentitySelectLink.setVisible(false);

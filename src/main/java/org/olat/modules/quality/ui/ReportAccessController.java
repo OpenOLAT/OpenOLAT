@@ -33,11 +33,11 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
-import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -59,7 +59,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class ReportAccessController extends AbstractDataCollectionEditController {
+public class ReportAccessController extends FormBasicController {
 	
 	private static final String[] ONLINE_KEYS = new String[] { "enabled" };
 	private static final String[] ONLINE_VALUES = new String[] { "" };
@@ -69,6 +69,9 @@ public class ReportAccessController extends AbstractDataCollectionEditController
 	private final String[] emailTriggerKeys;
 	private final String[] emailTriggerValues;
 	
+	private final QualitySecurityCallback secCallback;
+	private QualityDataCollection dataCollection;
+	
 	private QualityReportAccessSearchParams searchParams;
 	private List<QualityReportAccess> reportAccesses;
 	
@@ -76,8 +79,10 @@ public class ReportAccessController extends AbstractDataCollectionEditController
 	private QualityService qualityService;
 
 	public ReportAccessController(UserRequest ureq, WindowControl windowControl, QualitySecurityCallback secCallback,
-			TooledStackedPanel stackPanel, QualityDataCollection dataCollection) {
-		super(ureq, windowControl, secCallback, stackPanel, dataCollection, "report_access");
+			QualityDataCollection dataCollection) {
+		super(ureq, windowControl, "report_access");
+		this.secCallback = secCallback;
+		this.dataCollection = dataCollection;
 		this.searchParams = new QualityReportAccessSearchParams();
 		this.searchParams.setReference(of(dataCollection));
 		KeyValues emailTriggerKV = getEmailTriggerKV();
@@ -100,11 +105,11 @@ public class ReportAccessController extends AbstractDataCollectionEditController
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		updateUI(ureq);
+		initTable(ureq);
 	}
 	
-	@Override
-	protected void updateUI(UserRequest ureq) {
+	public void setDataCollection(QualityDataCollection dataCollection, UserRequest ureq) {
+		this.dataCollection = dataCollection;
 		initTable(ureq);
 	}
 
