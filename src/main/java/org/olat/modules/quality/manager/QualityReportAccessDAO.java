@@ -19,6 +19,7 @@
  */
 package org.olat.modules.quality.manager;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -26,9 +27,11 @@ import javax.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
+import org.olat.core.id.Identity;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityDataCollectionRef;
 import org.olat.modules.quality.QualityReportAccess;
+import org.olat.modules.quality.QualityReportAccess.Type;
 import org.olat.modules.quality.QualityReportAccessReference;
 import org.olat.modules.quality.QualityReportAccessSearchParams;
 import org.olat.modules.quality.generator.QualityGenerator;
@@ -93,6 +96,7 @@ class QualityReportAccessDAO {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select reportaccess");
 		sb.append("  from qualityreportaccess as reportaccess");
+		sb.append("       join fetch reportaccess.dataCollection");
 		appendWhere(sb, searchParams);
 		
 		TypedQuery<QualityReportAccess> query = dbInstance.getCurrentEntityManager().
@@ -111,6 +115,34 @@ class QualityReportAccessDAO {
 		if (searchParams.getDataCollectionRef() != null) {
 			query.setParameter("dataCollectionKey", searchParams.getDataCollectionRef().getKey());
 		}
+	}
+
+	List<Identity> loadReceivers(QualityReportAccess reportAccess) {
+		Type type = reportAccess.getType();
+		switch (type) {
+		case GroupRoles: return loadReceiversOfGroupRoles(reportAccess);
+		default: return Collections.emptyList();
+		}
+	}
+
+	private List<Identity> loadReceiversOfGroupRoles(QualityReportAccess reportAccess) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select membership.identity");
+		sb.append("  from qualityreportaccess as ra");
+		sb.append("     , qualitydatacollection as collection");
+		sb.append("     , qualitycontext as context");
+		sb.append("     , repoentrytogroup as rel");
+		sb.append("     , bgroupmember as membership");
+		sb.and().append("ra.dataCollection.key = context.dataCollection.key");
+		sb.and().append("rel.entry.key = context.audienceRepositoryEntry.key");
+		sb.and().append("rel.group.key = membership.group.key");
+		sb.and().append("membership.role = ra.role");
+		sb.and().append("ra.key= :reportAccessKey");
+		
+		TypedQuery<Identity> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Identity.class)
+				.setParameter("reportAccessKey", reportAccess.getKey());
+		return query.getResultList();
 	}
 
 }

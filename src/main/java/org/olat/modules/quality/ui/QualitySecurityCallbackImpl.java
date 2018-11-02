@@ -27,6 +27,7 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Roles;
+import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityDataCollectionLight;
 import org.olat.modules.quality.QualityDataCollectionStatus;
 import org.olat.modules.quality.QualityDataCollectionViewSearchParams;
@@ -166,6 +167,11 @@ public class QualitySecurityCallbackImpl implements QualitySecurityCallback {
 	@Override
 	public boolean canEditReportAccesses() {
 		return canEditDataCollections();
+	}
+	
+	@Override
+	public boolean canEditReportAccessEmail(QualityDataCollection dataCollection) {
+		return canEditReportAccesses() && isNotFinished(dataCollection);
 	}
 
 	@Override

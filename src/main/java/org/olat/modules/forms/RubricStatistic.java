@@ -19,6 +19,7 @@
  */
 package org.olat.modules.forms;
 
+import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.forms.model.xml.Slider;
 
 /**
@@ -28,6 +29,8 @@ import org.olat.modules.forms.model.xml.Slider;
  *
  */
 public interface RubricStatistic {
+	
+	public Rubric getRubric();
 
 	public SliderStatistic getSliderStatistic(Slider slider);
 

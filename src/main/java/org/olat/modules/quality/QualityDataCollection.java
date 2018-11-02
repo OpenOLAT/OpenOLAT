@@ -38,8 +38,6 @@ import org.olat.repository.RepositoryEntry;
  */
 public interface QualityDataCollection extends QualityDataCollectionLight, CreateInfo, ModifiedInfo {
 	
-	public void setStatus(QualityDataCollectionStatus status);
-	
 	public void setTitle(String title);
 	
 	public void setStart(Date start);

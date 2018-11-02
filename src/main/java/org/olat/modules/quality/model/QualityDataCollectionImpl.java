@@ -153,7 +153,6 @@ public class QualityDataCollectionImpl implements QualityDataCollection, Persist
 		return status;
 	}
 
-	@Override
 	public void setStatus(QualityDataCollectionStatus status) {
 		this.status = status;
 	}

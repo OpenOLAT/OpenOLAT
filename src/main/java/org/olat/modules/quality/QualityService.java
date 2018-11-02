@@ -54,6 +54,9 @@ public interface QualityService {
 	public QualityDataCollection createDataCollection(Collection<Organisation> organisations, QualityDataCollection previous,
 			QualityGenerator generator, Long generatorProviderKey);
 	
+	public QualityDataCollection updateDataCollectionStatus(QualityDataCollection dataCollection,
+			QualityDataCollectionStatus status);
+	
 	public QualityDataCollection updateDataCollection(QualityDataCollection dataCollection);
 
 	public List<QualityDataCollection> loadAllDataCollections();

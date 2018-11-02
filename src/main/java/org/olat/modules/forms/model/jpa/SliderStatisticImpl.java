@@ -21,6 +21,7 @@ package org.olat.modules.forms.model.jpa;
 
 import java.util.List;
 
+import org.olat.modules.forms.RubricRating;
 import org.olat.modules.forms.SliderStatistic;
 
 /**
@@ -38,9 +39,10 @@ public class SliderStatisticImpl implements SliderStatistic {
 	private final Double variance;
 	private final Double stdDev;
 	private final List<Long> stepCounts;
+	private final RubricRating rating;
 	
 	public SliderStatisticImpl(Long numberOfNoResponses, Long numberOfResponses, Double median, Double avg, Double variance,
-			Double stdDev, List<Long> stepCounts) {
+			Double stdDev, List<Long> stepCounts, RubricRating rating) {
 		super();
 		this.numberOfNoResponses = numberOfNoResponses;
 		this.numberOfResponses = numberOfResponses;
@@ -49,6 +51,7 @@ public class SliderStatisticImpl implements SliderStatistic {
 		this.variance = variance;
 		this.stdDev = stdDev;
 		this.stepCounts = stepCounts;
+		this.rating = rating;
 	}
 
 	@Override
@@ -84,6 +87,11 @@ public class SliderStatisticImpl implements SliderStatistic {
 	@Override
 	public List<Long> getStepCounts() {
 		return stepCounts;
+	}
+
+	@Override
+	public RubricRating getRating() {
+		return rating;
 	}
 	
 }

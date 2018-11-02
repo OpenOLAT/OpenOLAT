@@ -72,7 +72,7 @@ public class QualityReportAccessImpl implements QualityReportAccess, Persistable
 	@Column(name="q_online", nullable=true, insertable=true, updatable=true)
 	private boolean online;
 	@Enumerated(EnumType.STRING)
-	@Column(name="q_email_trigger", nullable=true, insertable=true, updatable=false)
+	@Column(name="q_email_trigger", nullable=true, insertable=true, updatable=true)
 	private QualityReportAccess.EmailTrigger emailTrigger;
 	
 	@ManyToOne(targetEntity=QualityDataCollectionImpl.class)

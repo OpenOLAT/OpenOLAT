@@ -159,4 +159,5 @@ public class QualityServiceImplTest {
 
 		verify(evaluationFormManagerMock, never()).deleteParticipations(any());
 	}
+	
 }

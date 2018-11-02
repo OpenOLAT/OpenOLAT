@@ -255,10 +255,10 @@ public class ExampleData extends OlatTestCase {
 		dataCollection.setTitle(PREFIX + "Coach: " + course.getDisplayname());
 		dataCollection.setStart(ProviderHelper.addDays(new Date(), "-1"));
 		dataCollection.setDeadline(ProviderHelper.addDays(new Date(), "100"));
-		dataCollection.setStatus(QualityDataCollectionStatus.RUNNING);
 		dataCollection.setTopicType(QualityDataCollectionTopicType.REPOSITORY);
 		dataCollection.setTopicRepositoryEntry(course);
 		dataCollection = qualityService.updateDataCollection(dataCollection);
+		dataCollection = qualityService.updateDataCollectionStatus(dataCollection, QualityDataCollectionStatus.RUNNING);
 		
 		List<Identity> participants = repositoryService.getMembers(course, RepositoryEntryRelationType.all, "participant");
 		List<EvaluationFormParticipation> participations = qualityService.addParticipations(dataCollection, participants);
@@ -291,9 +291,9 @@ public class ExampleData extends OlatTestCase {
 
 	private void generateRandomData(QualityDataCollection dataCollection) {
 		generateRandomResponses(dataCollection);
-		dataCollection.setStatus(QualityDataCollectionStatus.FINISHED);
 		dataCollection.setDeadline(new Date());
-		qualityService.updateDataCollection(dataCollection);
+		dataCollection = qualityService.updateDataCollection(dataCollection);
+		dataCollection = qualityService.updateDataCollectionStatus(dataCollection, QualityDataCollectionStatus.FINISHED);
 	}
 	
 	private void generateRandomResponses(QualityDataCollection dataCollection) {

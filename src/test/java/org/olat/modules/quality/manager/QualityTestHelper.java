@@ -186,8 +186,7 @@ public class QualityTestHelper {
 	}
 	
 	public QualityDataCollection updateStatus(QualityDataCollection dataCollection, QualityDataCollectionStatus status) {
-		dataCollection.setStatus(status);
-		return qualityService.updateDataCollection(dataCollection);
+		return qualityService.updateDataCollectionStatus(dataCollection, status);
 	}
 
 	QualityContext createContext() {

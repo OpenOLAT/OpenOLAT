@@ -156,17 +156,21 @@ public class DataCollectionListController extends FormBasicController implements
 				dataModel.load(null, null, null, 0, -1);
 				row = dataModel.getObjectByKey(key);
 				if (row != null) {
-					doOpenDataCollection(ureq, type, row.getDataCollection());
 					int index = dataModel.getObjects().indexOf(row);
 					if (index >= 1 && tableEl.getPageSize() > 1) {
 						int page = index / tableEl.getPageSize();
 						tableEl.setPage(page);
 					}
+					doOpenDataCollection(ureq, type, row.getDataCollection());
+					List<ContextEntry> subEntries = entries.subList(1, entries.size());
+					dataCollectionCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
 				} else {
 					tableEl.reset();
 				}
 			} else {
 				doOpenDataCollection(ureq, type, row.getDataCollection());
+				List<ContextEntry> subEntries = entries.subList(1, entries.size());
+				dataCollectionCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
 			}
 		}
 	}
