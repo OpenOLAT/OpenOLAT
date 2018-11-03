@@ -19,39 +19,14 @@
  */
 package org.olat.modules.quality.generator.ui;
 
-import org.olat.core.gui.control.Event;
-import org.olat.modules.quality.generator.QualityGenerator;
+import org.olat.core.gui.control.Controller;
 
 /**
  * 
- * Initial date: 21.08.2018<br>
+ * Initial date: 03.11.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class GeneratorEvent extends Event {
-	
-	private static final long serialVersionUID = 8386442706262170426L;
-
-	public enum Action {
-		DELETE,
-		CHANGED
-	}
-
-	private final QualityGenerator generator;
-	private final Action action;
-
-	public GeneratorEvent(QualityGenerator generator, Action action) {
-		super("generator-event");
-		this.generator = generator;
-		this.action = action;
-	}
-
-	public QualityGenerator getGenerator() {
-		return generator;
-	}
-
-	public Action getAction() {
-		return action;
-	}
+public interface GeneratorWhiteListController extends Controller, GeneratorChangedController {
 
 }

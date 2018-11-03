@@ -33,6 +33,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
@@ -40,6 +41,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.stack.TooledController;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.control.Controller;
@@ -48,7 +50,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.StringHelper;
 import org.olat.course.CourseModule;
-import org.olat.modules.quality.QualitySecurityCallback;
 import org.olat.modules.quality.generator.QualityGenerator;
 import org.olat.modules.quality.generator.QualityGeneratorConfigs;
 import org.olat.modules.quality.generator.ui.RepositoryEntryWhiteListDataModel.Cols;
@@ -65,7 +66,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class RepositoryEntryWhiteListController extends AbstractGeneratorEditController {
+public class RepositoryEntryWhiteListController extends FormBasicController
+		implements GeneratorWhiteListController, TooledController {
 
 	private static final String COURSE_WHITE_LIST = "course.white.list";
 	private static final String KEY_DELIMITER = ",";
@@ -79,15 +81,16 @@ public class RepositoryEntryWhiteListController extends AbstractGeneratorEditCon
 	private ReferencableEntriesSearchController selectCtrl;
 	private RepositoryEntryRemoveConfirmationController removeConfirmationCtrl;
 	
+	private final TooledStackedPanel stackPanel;
 	private final QualityGeneratorConfigs configs;
 	
 	@Autowired
 	private RepositoryService repositoryService;
 
 	public RepositoryEntryWhiteListController(UserRequest ureq, WindowControl wControl,
-			QualitySecurityCallback secCallback, TooledStackedPanel stackPanel, QualityGenerator generator,
-			QualityGeneratorConfigs configs) {
-		super(ureq, wControl, secCallback, stackPanel, generator);
+			TooledStackedPanel stackPanel, QualityGeneratorConfigs configs) {
+		super(ureq, wControl, LAYOUT_BAREBONE);
+		this.stackPanel = stackPanel;
 		this.configs = configs;
 		initForm(ureq);
 	}
@@ -118,8 +121,6 @@ public class RepositoryEntryWhiteListController extends AbstractGeneratorEditCon
 	
 	@Override
 	public void initTools() {
-		super.initTools();
-		
 		addLink = LinkFactory.createToolLink("repository.entry.select", translate("repository.entry.select"), this);
 		addLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_gen_re_add");
 		stackPanel.addTool(addLink, Align.right);
@@ -270,7 +271,7 @@ public class RepositoryEntryWhiteListController extends AbstractGeneratorEditCon
 	}
 
 	@Override
-	protected void updateUI() {
+	public void onChanged(QualityGenerator generator) {
 		//
 	}
 

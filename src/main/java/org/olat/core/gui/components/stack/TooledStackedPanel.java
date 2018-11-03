@@ -120,13 +120,29 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel implements Stac
 		
 		TooledBreadCrumb breadCrumb = getCurrentCrumb();
 		if(breadCrumb != null) {
-			for(Iterator<Tool> it=breadCrumb.getTools().iterator(); it.hasNext(); ) {
-				if(toolComponent == it.next().getComponent()) {
-					it.remove();
+			removeTool(toolComponent, breadCrumb);
+		}
+	}
+	
+	public void removeTool(Component toolComponent, Controller controller) {
+		for(int i=0; i<stack.size(); i++) {
+			Object uo = stack.get(i).getUserObject();
+			if(uo instanceof TooledBreadCrumb) {
+				TooledBreadCrumb crumb = (TooledBreadCrumb)uo;
+				if (controller.equals(crumb.getController())) {
+					removeTool(toolComponent, crumb);
 				}
 			}
 		}
-		setDirty(true);
+	}
+	
+	private void removeTool(Component toolComponent, TooledBreadCrumb breadCrumb) {
+		for(Iterator<Tool> it=breadCrumb.getTools().iterator(); it.hasNext(); ) {
+			if(toolComponent == it.next().getComponent()) {
+				it.remove();
+				setDirty(true);
+			}
+		}
 	}
 	
 	public void removeAllTools() {
@@ -142,14 +158,33 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel implements Stac
 	 * @param toolComponent
 	 */
 	public void addTool(Component toolComponent, Align align, boolean inherit, String css) {
+		addTool(toolComponent, align, inherit, css, null);
+	}
+	
+	public void addTool(Component toolComponent, Align align, boolean inherit, String css, Controller controller) {
 		if(toolComponent == null) return;
 		
 		Tool tool = new Tool(toolComponent, align, inherit, css);
-		TooledBreadCrumb breadCrumb = getCurrentCrumb();
+		TooledBreadCrumb breadCrumb = controller == null
+				? getCurrentCrumb()
+				: getBreadCrumb(controller);
 		if(breadCrumb != null) {
 			breadCrumb.addTool(tool);
 		}
 		setDirty(true);
+	}
+	
+	private TooledBreadCrumb getBreadCrumb(Controller controller) {
+		for(int i=0; i<stack.size(); i++) {
+			Object uo = stack.get(i).getUserObject();
+			if(uo instanceof TooledBreadCrumb) {
+				TooledBreadCrumb crumb = (TooledBreadCrumb)uo;
+				if (controller.equals(crumb.getController())) {
+					return crumb;
+				}
+			}
+		}
+		return null;
 	}
 	
 	public List<Tool> getTools() {

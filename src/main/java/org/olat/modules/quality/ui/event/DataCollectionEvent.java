@@ -34,10 +34,6 @@ public class DataCollectionEvent extends Event {
 	
 	public enum Action {
 		CHANGED,
-		STATUS_PREPARATION_SELECTED,
-		STATUS_READY_SELECTED,
-		STATUS_RUNNING_SELECTED,
-		STATUS_FINISHED_SELECTED,
 		DELETE
 	}
 

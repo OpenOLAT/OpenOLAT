@@ -21,6 +21,7 @@ package org.olat.modules.quality.generator.ui;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
@@ -28,6 +29,8 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.quality.QualitySecurityCallback;
 import org.olat.modules.quality.generator.QualityGenerator;
+import org.olat.modules.quality.generator.QualityGeneratorService;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -35,14 +38,25 @@ import org.olat.modules.quality.generator.QualityGenerator;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class GeneratorEditController extends AbstractGeneratorEditController {
+public class GeneratorEditController extends FormBasicController implements GeneratorChangedController {
 	
 	private GeneratorConfigController configCtrl;
 	private ProviderConfigController providerConfigCtrl;
+
+	private QualitySecurityCallback secCallback;
+	private TooledStackedPanel stackPanel;
+	
+	private QualityGenerator generator;
+	
+	@Autowired
+	private QualityGeneratorService generatorService;
 	
 	public GeneratorEditController(UserRequest ureq, WindowControl wControl, QualitySecurityCallback secCallback,
 			TooledStackedPanel stackPanel, QualityGenerator generator, boolean validate) {
-		super(ureq, wControl, secCallback, stackPanel, generator);
+		super(ureq, wControl, LAYOUT_BAREBONE);
+		this.secCallback = secCallback;
+		this.stackPanel = stackPanel;
+		this.generator = generator;
 		initForm(ureq);
 		
 		if (validate) {
@@ -73,8 +87,12 @@ public class GeneratorEditController extends AbstractGeneratorEditController {
 	}
 
 	@Override
-	protected void updateUI() {
+	public void onChanged(QualityGenerator generator) {
 		configCtrl.setGenerator(generator);
+		updateUI();
+	}
+	
+	private void updateUI() {
 		providerConfigCtrl.setReadOnly(generator.isEnabled());
 	}
 

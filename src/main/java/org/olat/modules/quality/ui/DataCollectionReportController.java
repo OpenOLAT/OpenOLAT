@@ -26,7 +26,7 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
@@ -42,7 +42,6 @@ import org.olat.modules.forms.ui.ReportSegment;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityDataCollectionView;
 import org.olat.modules.quality.QualityDataCollectionViewSearchParams;
-import org.olat.modules.quality.QualitySecurityCallback;
 import org.olat.modules.quality.QualityService;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -52,19 +51,21 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class DataCollectionReportController extends AbstractDataCollectionEditController {
+public class DataCollectionReportController extends FormBasicController {
 	
 	private Controller reportHeaderCtrl;
 	private Controller reportsCtrl;
+	
+	private QualityDataCollection dataCollection;
 	
 	@Autowired
 	private QualityService qualityService;
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
 
-	public DataCollectionReportController(UserRequest ureq, WindowControl wControl, QualitySecurityCallback secCallback,
-			TooledStackedPanel stackPanel, QualityDataCollection dataCollection) {
-		super(ureq, wControl, secCallback, stackPanel, dataCollection, "report");
+	public DataCollectionReportController(UserRequest ureq, WindowControl wControl, QualityDataCollection dataCollection) {
+		super(ureq, wControl, "report");
+		this.dataCollection = dataCollection;
 		initForm(ureq);
 	}
 
@@ -93,11 +94,6 @@ public class DataCollectionReportController extends AbstractDataCollectionEditCo
 		flc.put("report", reportsCtrl.getInitialComponent());
 	}
 	
-	@Override
-	protected void updateUI(UserRequest ureq) {
-		//
-	}
-
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//

@@ -29,6 +29,8 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.dropdown.Dropdown;
+import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
@@ -38,6 +40,7 @@ import org.olat.core.gui.components.stack.ButtonGroupComponent;
 import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledController;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -66,6 +69,11 @@ public class DataCollectionController extends BasicController implements TooledC
 
 	private static final String ORES_REPORT_TYPE = "report";
 	
+	private Link statusPreparationLink;
+	private Link statusReadyLink;
+	private Link statusRunningLink;
+	private Link statusFinishedLink;
+	private Link deleteLink;
 	private Link configurationLink;
 	private Link participantsLink;
 	private Link remindersLink;
@@ -73,6 +81,7 @@ public class DataCollectionController extends BasicController implements TooledC
 	private Link reportLink;
 	private Link previousReportLink;
 	private Link followUpReportLink;
+	private Component statusCmp;
 	private final ButtonGroupComponent segmentButtonsCmp;
 	private final TooledStackedPanel stackPanel;
 	private final StackedPanel mainPanel;
@@ -95,7 +104,7 @@ public class DataCollectionController extends BasicController implements TooledC
 	
 	@Autowired
 	private QualityService qualityService;
-	
+
 	protected DataCollectionController(UserRequest ureq, WindowControl wControl, QualitySecurityCallback secCallback,
 			TooledStackedPanel stackPanel, QualityDataCollectionLight dataCollectionLight) {
 		super(ureq, wControl);
@@ -158,6 +167,79 @@ public class DataCollectionController extends BasicController implements TooledC
 	@Override
 	public void initTools() {
 		stackPanel.addTool(segmentButtonsCmp, true);
+		initStatusTools();
+		initButtons();
+	}
+	
+	private void initStatusTools() {
+		stackPanel.removeTool(statusCmp, this);
+		if (canChangeStatus()) {
+			statusCmp = buildStatusDrowdown();
+		} else {
+			statusCmp = buildStatusLink();
+		}
+		stackPanel.addTool(statusCmp, Align.left, true, null, this);
+	}
+
+	private boolean canChangeStatus() {
+		return secCallback.canSetPreparation(dataCollection)
+				|| secCallback.canSetReady(dataCollection)
+				|| secCallback.canSetRunning(dataCollection)
+				|| secCallback.canSetFinished(dataCollection);
+	}
+
+	private Dropdown buildStatusDrowdown() {
+		QualityDataCollectionStatus actualStatus = dataCollection.getStatus();
+	
+		Dropdown statusDropdown = new Dropdown("process.states", "data.collection.status." + actualStatus.name().toLowerCase(), false, getTranslator());
+		statusDropdown.setElementCssClass("o_qual_tools_status o_qual_dc_status_" + actualStatus.name().toLowerCase());
+		statusDropdown.setIconCSS("o_icon o_icon-fw o_icon_qual_dc_" + actualStatus.name().toLowerCase());
+		statusDropdown.setOrientation(DropdownOrientation.normal);
+	
+		statusPreparationLink = LinkFactory.createToolLink("data.collection.status.preparation", translate("data.collection.status.preparation"), this);
+		statusPreparationLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_dc_preparation");
+		statusPreparationLink.setElementCssClass("o_labeled o_qual_status o_qual_dc_status_preparation");
+		statusPreparationLink.setVisible(secCallback.canSetPreparation(dataCollection));
+		statusDropdown.addComponent(statusPreparationLink);
+	
+		statusReadyLink = LinkFactory.createToolLink("data.collection.status.ready", translate("data.collection.status.ready"), this);
+		statusReadyLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_dc_ready");
+		statusReadyLink.setElementCssClass("o_labeled o_qual_status o_qual_dc_status_ready");
+		statusReadyLink.setVisible(secCallback.canSetReady(dataCollection));
+		statusDropdown.addComponent(statusReadyLink);
+		
+		statusRunningLink = LinkFactory.createToolLink("data.collection.status.running", translate("data.collection.status.running"), this);
+		statusRunningLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_dc_running");
+		statusRunningLink.setElementCssClass("o_labeled o_qual_status o_qual_dc_status_running");
+		statusRunningLink.setVisible(secCallback.canSetRunning(dataCollection));
+		statusDropdown.addComponent(statusRunningLink);
+		
+		statusFinishedLink = LinkFactory.createToolLink("data.collection.status.finished", translate("data.collection.status.finished"), this);
+		statusFinishedLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_dc_finished");
+		statusFinishedLink.setElementCssClass("o_labeled o_qual_status o_qual_dc_status_finished");
+		statusFinishedLink.setVisible(secCallback.canSetFinished(dataCollection));
+		statusDropdown.addComponent(statusFinishedLink);
+		
+		return statusDropdown;
+	}
+
+	private Component buildStatusLink() {
+		QualityDataCollectionStatus actualStatus = dataCollection.getStatus();
+		Link statusLink = LinkFactory.createToolLink("status.link",
+				translate("data.collection.status." + actualStatus.name().toLowerCase()), this);
+		statusLink.setElementCssClass("o_qual_tools_status o_qual_dc_status_" + actualStatus.name().toLowerCase());
+		statusLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_dc_" + actualStatus.name().toLowerCase());
+		return statusLink;
+	}
+
+	private void initButtons() {
+		if (deleteLink != null) stackPanel.removeTool(deleteLink, this);
+		if (secCallback.canDeleteDataCollection(dataCollection) ) {
+			deleteLink = LinkFactory.createToolLink("data.collection.delete", translate("data.collection.delete"),
+					this);
+			deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_dc_delete");
+			stackPanel.addTool(deleteLink, Align.left, true, null, this);
+		}
 	}
 	
 	@Override
@@ -168,14 +250,6 @@ public class DataCollectionController extends BasicController implements TooledC
 			if (Action.CHANGED.equals(action)) {
 				dataCollection = dccEvent.getDataCollection();
 				stackPanel.changeDisplayname(dataCollection.getTitle(), null, this);
-			} else if (Action.STATUS_PREPARATION_SELECTED.equals(action)) {
-				doSetStatusPreparation(ureq);
-			} else if (Action.STATUS_READY_SELECTED.equals(action)) {
-				doSetStatusReady(ureq);
-			} else if (Action.STATUS_RUNNING_SELECTED.equals(action)) {
-				doConfirmStatusRunning(ureq);
-			} else if (Action.STATUS_FINISHED_SELECTED.equals(action)) {
-				doConfirmStatusFinished(ureq);
 			} else {
 				fireEvent(ureq, event);
 			}
@@ -199,7 +273,17 @@ public class DataCollectionController extends BasicController implements TooledC
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if (configurationLink == source) {
+		if (source == statusPreparationLink) {
+			doSetStatusPreparation(ureq);
+		} else if (source == statusReadyLink) {
+			doSetStatusReady(ureq);
+		} else if (source == statusRunningLink) {
+			doConfirmStatusRunning(ureq);
+		} else if (source == statusFinishedLink) {
+			doConfirmStatusFinished(ureq);
+		} else if (source == deleteLink) {
+			fireEvent(ureq, new DataCollectionEvent(dataCollection, Action.DELETE));
+		} else if (configurationLink == source) {
 			doOpenConfiguration(ureq);
 		} else if(participantsLink == source) {
 			doOpenParticipants(ureq);
@@ -247,7 +331,7 @@ public class DataCollectionController extends BasicController implements TooledC
 	
 	private void doOpenReminders(UserRequest ureq) {
 		stackPanel.popUpToController(this);
-		remindersCtrl = new RemindersController(ureq, getWindowControl(), secCallback, stackPanel, dataCollection);
+		remindersCtrl = new RemindersController(ureq, getWindowControl(), secCallback, dataCollection);
 		listenTo(remindersCtrl);
 		stackPanel.pushController(translate("data.collection.reminders"), remindersCtrl);
 		segmentButtonsCmp.setSelectedButton(remindersLink);
@@ -255,7 +339,7 @@ public class DataCollectionController extends BasicController implements TooledC
 	
 	private void doOpenReportAccess(UserRequest ureq) {
 		stackPanel.popUpToController(this);
-		reportAccessCtrl = new ReportAccessController(ureq, getWindowControl(), secCallback, stackPanel, dataCollection);
+		reportAccessCtrl = new ReportAccessController(ureq, getWindowControl(), secCallback, dataCollection);
 		listenTo(reportAccessCtrl);
 		stackPanel.pushController(translate("data.collection.report.access"), reportAccessCtrl);
 		segmentButtonsCmp.setSelectedButton(reportAccessLink);
@@ -263,15 +347,15 @@ public class DataCollectionController extends BasicController implements TooledC
 	
 	private void doOpenReport(UserRequest ureq) {
 		stackPanel.popUpToController(this);
-		reportCtrl = new DataCollectionReportController(ureq, getWindowControl(), secCallback, stackPanel, dataCollection);
+		reportCtrl = new DataCollectionReportController(ureq, getWindowControl(), dataCollection);
 		listenTo(reportCtrl);
 		stackPanel.pushController(translate("data.collection.report"), reportCtrl);
 		segmentButtonsCmp.setSelectedButton(reportLink);
 	}
-		
+	
 	private void doOpenPreviousReport(UserRequest ureq) {
 		stackPanel.popUpToController(this);
-		previousReportCtrl = new DataCollectionReportController(ureq, getWindowControl(), secCallback, stackPanel, previousDataCollection);
+		previousReportCtrl = new DataCollectionReportController(ureq, getWindowControl(), previousDataCollection);
 		listenTo(previousReportCtrl);
 		stackPanel.pushController(translate("data.collection.report.previous"), previousReportCtrl);
 		segmentButtonsCmp.setSelectedButton(previousReportLink);
@@ -279,7 +363,7 @@ public class DataCollectionController extends BasicController implements TooledC
 	
 	private void doOpenFollowUpReport(UserRequest ureq) {
 		stackPanel.popUpToController(this);
-		followUpReportCtrl = new DataCollectionReportController(ureq, getWindowControl(), secCallback, stackPanel, followUpDataCollection);
+		followUpReportCtrl = new DataCollectionReportController(ureq, getWindowControl(), followUpDataCollection);
 		listenTo(followUpReportCtrl);
 		stackPanel.pushController(translate("data.collection.report.followup"), followUpReportCtrl);
 		segmentButtonsCmp.setSelectedButton(followUpReportLink);
@@ -357,37 +441,24 @@ public class DataCollectionController extends BasicController implements TooledC
 
 	private void doChangeStatus(UserRequest ureq, QualityDataCollectionStatus status) {
 		dataCollection = qualityService.updateDataCollectionStatus(dataCollection, status);
-		updateUI(ureq);
+		afterDataCollectionUpdated(ureq);
 	}
 	
-	private void updateUI(UserRequest ureq) {
+	private void afterDataCollectionUpdated(UserRequest ureq) {
+		initTools();
 		if (configurationCtrl != null) {
-			configurationCtrl.setDataCollection(ureq, dataCollection);
-			configurationCtrl.initTools();
+			configurationCtrl.setDataCollection(dataCollection);
 		}
 		if (participationsCtrl != null) {
-			participationsCtrl.setDataCollection(ureq, dataCollection);
-			participationsCtrl.initTools();
+			participationsCtrl.setDataCollection(dataCollection, ureq);
 		}
 		if (remindersCtrl != null) {
-			remindersCtrl.setDataCollection(ureq, dataCollection);
-			remindersCtrl.initTools();
+			remindersCtrl.setDataCollection(dataCollection);
 		}
 		if (reportAccessCtrl != null) {
-			reportAccessCtrl.setDataCollection(ureq, dataCollection);
-			reportAccessCtrl.initTools();
+			reportAccessCtrl.setDataCollection(dataCollection, ureq);
 		}
 		addReportButtons();
-		if (reportCtrl != null) {
-			reportCtrl.setDataCollection(ureq, dataCollection);
-			reportCtrl.initTools();
-		}
-		if (previousReportCtrl != null) {
-			previousReportCtrl.initTools();
-		}
-		if (followUpReportCtrl != null) {
-			followUpReportCtrl.initTools();
-		}
 	}
 
 }

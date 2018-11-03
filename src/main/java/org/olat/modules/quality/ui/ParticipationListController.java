@@ -30,6 +30,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
@@ -37,6 +38,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.stack.TooledController;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.control.Controller;
@@ -74,7 +76,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class ParticipationListController extends AbstractDataCollectionEditController {
+public class ParticipationListController extends FormBasicController implements TooledController {
 
 	private Link addUsersLink;
 	private Link addCourseUsersLink;
@@ -88,6 +90,10 @@ public class ParticipationListController extends AbstractDataCollectionEditContr
 	private CloseableModalController cmc;
 	private ParticipationRemoveConfirmationController removeConfirmationCtrl;
 	
+	private final TooledStackedPanel stackPanel;
+	private final QualitySecurityCallback secCallback;
+	private QualityDataCollection dataCollection;
+	
 	@Autowired
 	private QualityService qualityService;
 	@Autowired
@@ -100,17 +106,21 @@ public class ParticipationListController extends AbstractDataCollectionEditContr
 	public ParticipationListController(UserRequest ureq, WindowControl windowControl,
 			QualitySecurityCallback secCallback, TooledStackedPanel stackPanel,
 			QualityDataCollection dataCollection) {
-		super(ureq, windowControl, secCallback, stackPanel, dataCollection, LAYOUT_BAREBONE);
+		super(ureq, windowControl, LAYOUT_BAREBONE);
+		this.secCallback = secCallback;
+		this.stackPanel = stackPanel;
+		this.dataCollection = dataCollection;
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		updateUI(ureq);
+		initTable(ureq);
 	}
 	
-	@Override
-	protected void updateUI(UserRequest ureq) {
+	public void setDataCollection(QualityDataCollection dataCollection, UserRequest ureq) {
+		this.dataCollection = dataCollection;
+//		initTools();
 		initTable(ureq);
 	}
 
@@ -145,7 +155,6 @@ public class ParticipationListController extends AbstractDataCollectionEditContr
 
 	@Override
 	public void initTools() {
-		super.initTools();
 		if (secCallback.canAddParticipants(dataCollection)) {
 			addCourseUsersLink = LinkFactory.createToolLink("participation.user.add.course", translate("participation.user.add.course"), this);
 			addCourseUsersLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qual_part_user_add_course");
