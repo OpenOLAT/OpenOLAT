@@ -25,7 +25,11 @@
 
 package org.olat.admin.sysinfo;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.olat.admin.sysinfo.model.UserSessionView;
 import org.olat.core.gui.components.table.DefaultTableDataModel;
@@ -39,6 +43,7 @@ import org.olat.core.gui.components.table.DefaultTableDataModel;
 public class UserSessionTableModel extends DefaultTableDataModel<UserSessionView> {
 	
 	private final Long myIdentityKey;
+	private final Map<String,String> fromFQN = new ConcurrentHashMap<>();
 
 	/**
 	 * @param userSessions
@@ -47,17 +52,13 @@ public class UserSessionTableModel extends DefaultTableDataModel<UserSessionView
 		super(userSessions);
 		this.myIdentityKey = myIdentityKey;
 	}
-	
-	/**
-	 * @see org.olat.core.gui.components.table.TableDataModel#getColumnCount()
-	 */
+
+	@Override
 	public int getColumnCount() {
 		return 7;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.table.TableDataModel#getValueAt(int, int)
-	 */
+	@Override
 	public Object getValueAt(int row, int col) {
 		UserSessionView usess = getObject(row); 
 		if (usess.isAuthenticated()) {
@@ -66,7 +67,18 @@ public class UserSessionTableModel extends DefaultTableDataModel<UserSessionView
 				case 1: return usess.getFirstname();
 				case 2: return usess.getLogin();
 				case 3: return usess.getAuthProvider();
-				case 4: return usess.getFromFQN();
+				case 4: return fromFQN.computeIfAbsent(usess.getFromIP(), ip -> {
+					String fqn = null;
+					try {
+						InetAddress[] iaddr = InetAddress.getAllByName(ip);
+						if (iaddr.length > 0) {
+							fqn = iaddr[0].getHostName();
+						}
+					} catch (UnknownHostException e) {
+						//       ok, already set IP as FQDN
+					}
+					return fqn == null ? ip : fqn;
+				});
 				case 5: return usess.getLastClickTime();
 				case 6: return usess.getSessionDuration();
 				case 7: return usess.getMode();

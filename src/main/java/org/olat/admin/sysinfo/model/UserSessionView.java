@@ -35,9 +35,11 @@ public class UserSessionView {
 	
 	private boolean authenticated;
 	private Long identityKey;
-	private String firstname, lastname;
-	private String login, authProvider;
-	private String fromFQN;
+	private String firstname;
+	private String lastname;
+	private String login;
+	private String fromIP;
+	private String authProvider;
 	private Date lastClickTime;
 	private Date lastAccessTime;
 	private long sessionDuration;
@@ -55,8 +57,8 @@ public class UserSessionView {
 			firstname = sessInfo.getFirstname();
 			lastname = sessInfo.getLastname();
 			login = sessInfo.getLogin();
+			fromIP = sessInfo.getFromIP();
 			authProvider = sessInfo.getAuthProvider();
-			fromFQN = sessInfo.getFromFQN();
 			try {
 				lastClickTime = new Date(sessInfo.getLastClickTime());
 			} catch (Exception ise) {
@@ -118,8 +120,8 @@ public class UserSessionView {
 		return authProvider;
 	}
 	
-	public String getFromFQN() {
-		return fromFQN;
+	public String getFromIP() {
+		return fromIP;
 	}
 	
 	public Date getLastClickTime() {

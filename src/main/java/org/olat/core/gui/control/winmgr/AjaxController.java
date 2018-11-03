@@ -308,7 +308,6 @@ public class AjaxController extends DefaultController {
 			      .append("\",\"cmd\":").append(Integer.toString(c.getCommand()))
 			      .append(",\"cda\":");
 			c.getSubJSON().write(writer);
-			c.getSubJSON().toString(2);
 			writer.append("}");
 		} catch (JSONException e) {
 			throw new AssertException("json exception:", e);

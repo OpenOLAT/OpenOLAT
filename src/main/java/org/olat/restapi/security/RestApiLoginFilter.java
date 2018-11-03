@@ -20,8 +20,6 @@
 package org.olat.restapi.security;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -327,13 +325,6 @@ public class RestApiLoginFilter implements Filter {
 			sinfo.setFirstname("REST");
 			sinfo.setLastname(remoteAddr);
 			sinfo.setFromIP(remoteAddr);
-			sinfo.setFromFQN(remoteAddr);
-			try {
-				InetAddress[] iaddr = InetAddress.getAllByName(request.getRemoteAddr());
-				if (iaddr.length > 0) sinfo.setFromFQN(iaddr[0].getHostName());
-			} catch (UnknownHostException e) {
-				 // ok, already set IP as FQDN
-			}
 			sinfo.setAuthProvider("IP");
 			sinfo.setUserAgent(request.getHeader("User-Agent"));
 			sinfo.setSecure(request.isSecure());

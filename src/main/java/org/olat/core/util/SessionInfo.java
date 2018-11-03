@@ -51,7 +51,6 @@ public class SessionInfo implements Serializable {
 	private String firstname;
 	private String lastname;
 	private String fromIP;
-	private String fromFQN;
 	private String authProvider;
 	private String userAgent;
 	private String webMode;
@@ -60,7 +59,7 @@ public class SessionInfo implements Serializable {
 	private boolean secure;
 	private long timestmp=-1;
 	private long creationTime=-1;
-	private static final String FORMATTED = "identity: [%s] first: [%s] last: [%s] fromIP: [%s] fromFQN: [%s] authProvider: [%s] webdav: [%s] REST: [%s] secure: [%s] webMode: [%s] duration: [%d]s";
+	private static final String FORMATTED = "identity: [%s] first: [%s] last: [%s] fromIP: [%s] authProvider: [%s] webdav: [%s] REST: [%s] secure: [%s] webMode: [%s] duration: [%d]s";
 	
 	/**
 	 * @param login
@@ -89,7 +88,7 @@ public class SessionInfo implements Serializable {
 
 	@Override
 	public String toString() {
-		return String.format(FORMATTED, identityKey, firstname, lastname, fromIP, fromFQN, authProvider, isWebDAV, isREST, isSecure(), getWebMode(),
+		return String.format(FORMATTED, identityKey, firstname, lastname, fromIP, authProvider, isWebDAV, isREST, isSecure(), getWebMode(),
 				getSessionDuration() / 1000);
 	}
 	/**
@@ -170,24 +169,10 @@ public class SessionInfo implements Serializable {
 	}
 
 	/**
-	 * @return the fully qualified domain name of this user
-	 */
-	public String getFromFQN() {
-		return fromFQN;
-	}
-
-	/**
 	 * @return the ip of this user
 	 */
 	public String getFromIP() {
 		return fromIP;
-	}
-
-	/**
-	 * @param string
-	 */
-	public void setFromFQN(String string) {
-		fromFQN = string;
 	}
 
 	/**

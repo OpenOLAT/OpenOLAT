@@ -25,8 +25,6 @@
 
 package org.olat.core.commons.services.webdav.manager;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.UUID;
@@ -298,13 +296,6 @@ public class WebDAVManagerImpl implements WebDAVManager, InitializingBean {
 			
 			String remoteAddr = request.getRemoteAddr();
 			sinfo.setFromIP(remoteAddr);
-			sinfo.setFromFQN(remoteAddr);
-			try {
-				InetAddress[] iaddr = InetAddress.getAllByName(request.getRemoteAddr());
-				if (iaddr.length > 0) sinfo.setFromFQN(iaddr[0].getHostName());
-			} catch (UnknownHostException e) {
-				 // ok, already set IP as FQDN
-			}
 			sinfo.setAuthProvider(BaseSecurityModule.getDefaultAuthProviderIdentifier());
 			sinfo.setUserAgent(request.getHeader("User-Agent"));
 			sinfo.setSecure(request.isSecure());

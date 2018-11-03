@@ -25,8 +25,6 @@
 
 package org.olat.basesecurity;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -427,13 +425,6 @@ public class AuthHelper {
 		sinfo.setFirstname(identity.getUser().getProperty(UserConstants.FIRSTNAME, ureq.getLocale()));
 		sinfo.setLastname(identity.getUser().getProperty(UserConstants.LASTNAME, ureq.getLocale()));
 		sinfo.setFromIP(ureq.getHttpReq().getRemoteAddr());
-		sinfo.setFromFQN(ureq.getHttpReq().getRemoteAddr());
-		try {
-			InetAddress[] iaddr = InetAddress.getAllByName(ureq.getHttpReq().getRemoteAddr());
-			if (iaddr.length > 0) sinfo.setFromFQN(iaddr[0].getHostName());
-		} catch (UnknownHostException e) {
-			//       ok, already set IP as FQDN
-		}
 		sinfo.setAuthProvider(authProvider);
 		sinfo.setUserAgent(ureq.getHttpReq().getHeader("User-Agent"));
 		sinfo.setSecure(ureq.getHttpReq().isSecure());
