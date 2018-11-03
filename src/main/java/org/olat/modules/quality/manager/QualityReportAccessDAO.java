@@ -23,14 +23,15 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
 import org.olat.modules.quality.QualityDataCollection;
-import org.olat.modules.quality.QualityDataCollectionRef;
 import org.olat.modules.quality.QualityReportAccess;
+import org.olat.modules.quality.QualityReportAccess.EmailTrigger;
 import org.olat.modules.quality.QualityReportAccess.Type;
 import org.olat.modules.quality.QualityReportAccessReference;
 import org.olat.modules.quality.QualityReportAccessSearchParams;
@@ -52,13 +53,26 @@ class QualityReportAccessDAO {
 	
 	@Autowired
 	private DB dbInstance;
-
+	
 	QualityReportAccess create(QualityReportAccessReference reference, QualityReportAccess.Type type, String role) {
+		return create(reference, type, role, false, EmailTrigger.never);
+	}
+
+	QualityReportAccess copy(QualityReportAccessReference reference, QualityReportAccess reportAccess) {
+		return create(
+				reference,
+				reportAccess.getType(),
+				reportAccess.getRole(),
+				reportAccess.isOnline(),
+				reportAccess.getEmailTrigger());
+	}
+	
+	private QualityReportAccess create(QualityReportAccessReference reference, QualityReportAccess.Type type, String role, boolean online, EmailTrigger emailTrigger) {
 		QualityReportAccessImpl reportAccess = new QualityReportAccessImpl();
 		reportAccess.setCreationDate(new Date());
 		reportAccess.setLastModified(reportAccess.getCreationDate());
-		reportAccess.setOnline(false);
-		reportAccess.setEmailTrigger(QualityReportAccess.EmailTrigger.never);
+		reportAccess.setOnline(online);
+		reportAccess.setEmailTrigger(emailTrigger);
 		reportAccess.setType(type);
 		reportAccess.setRole(role);
 		if (reference.isDataCollectionRef()) {
@@ -79,24 +93,33 @@ class QualityReportAccessDAO {
 		return dbInstance.getCurrentEntityManager().merge(reportAccess);
 	}
 
-	void deleteReportAccesses(QualityDataCollectionRef dataCollectionRef) {
-		if (dataCollectionRef == null || dataCollectionRef.getKey() == null) return;
+	void deleteReportAccesses(QualityReportAccessReference reference) {
+		if (reference == null) return;
 		
-		StringBuilder sb = new StringBuilder(256);
+		QueryBuilder sb = new QueryBuilder(256);
 		sb.append("delete from qualityreportaccess as reportaccess");
-		sb.append(" where reportaccess.dataCollection.key = :dataCollectionKey");
+		if (reference.getDataCollectionRef() != null) {
+			sb.and().append("reportaccess.dataCollection.key = :dataCollectionKey");
+		}
+		if (reference.getGeneratorRef() != null) {
+			sb.and().append("reportaccess.generator.key = :generatorKey");
+		}
 		
-		dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString())
-				.setParameter("dataCollectionKey", dataCollectionRef.getKey())
-				.executeUpdate();	
+		Query query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString());
+		if (reference.getDataCollectionRef() != null) {
+			query.setParameter("dataCollectionKey", reference.getDataCollectionRef().getKey());
+		}
+		if (reference.getGeneratorRef() != null) {
+			query.setParameter("generatorKey", reference.getGeneratorRef().getKey());
+		}
+		query.executeUpdate();
 	}
 
 	List<QualityReportAccess> load(QualityReportAccessSearchParams searchParams) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select reportaccess");
 		sb.append("  from qualityreportaccess as reportaccess");
-		sb.append("       join fetch reportaccess.dataCollection");
 		appendWhere(sb, searchParams);
 		
 		TypedQuery<QualityReportAccess> query = dbInstance.getCurrentEntityManager().
@@ -106,14 +129,24 @@ class QualityReportAccessDAO {
 	}
 
 	private void appendWhere(QueryBuilder sb, QualityReportAccessSearchParams searchParams) {
-		if (searchParams.getDataCollectionRef() != null) {
-			sb.and().append("reportaccess.dataCollection.key = :dataCollectionKey");
+		if (searchParams.getReference() != null) {
+			if (searchParams.getReference().getDataCollectionRef() != null) {
+				sb.and().append("reportaccess.dataCollection.key = :dataCollectionKey");
+			}
+			if (searchParams.getReference().getGeneratorRef() != null) {
+				sb.and().append("reportaccess.generator.key = :generatorKey");
+			}
 		}
 	}
 
 	private void appendParameter(TypedQuery<QualityReportAccess> query, QualityReportAccessSearchParams searchParams) {
-		if (searchParams.getDataCollectionRef() != null) {
-			query.setParameter("dataCollectionKey", searchParams.getDataCollectionRef().getKey());
+		if (searchParams.getReference() != null) {
+			if (searchParams.getReference().getDataCollectionRef() != null) {
+				query.setParameter("dataCollectionKey", searchParams.getReference().getDataCollectionRef().getKey());
+			}
+			if (searchParams.getReference().getGeneratorRef() != null) {
+				query.setParameter("generatorKey", searchParams.getReference().getGeneratorRef().getKey());
+			}
 		}
 	}
 

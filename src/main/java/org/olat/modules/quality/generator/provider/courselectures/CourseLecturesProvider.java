@@ -22,6 +22,7 @@ package org.olat.modules.quality.generator.provider.courselectures;
 import static org.olat.modules.quality.generator.ProviderHelper.addDays;
 import static org.olat.modules.quality.generator.ProviderHelper.addMinutes;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -155,20 +156,22 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 	}
 
 	@Override
-	public void generate(QualityGenerator generator, QualityGeneratorConfigs configs, Date fromDate, Date toDate) {
+	public List<QualityDataCollection> generate(QualityGenerator generator, QualityGeneratorConfigs configs,
+			Date fromDate, Date toDate) {
 		List<Organisation> organisations = generatorService.loadGeneratorOrganisations(generator);
 		SearchParameters searchParams = getSeachParameters(generator, configs, organisations, fromDate, toDate);
 		List<LectureBlockInfo> infos = providerDao.loadLectureBlockInfo(searchParams);
-		for (LectureBlockInfo lectureBlockInfo: infos) {
-			generateDataCollection(generator, configs, organisations, lectureBlockInfo);
-		}
 		
-		if (!infos.isEmpty()) {
-			log.info(infos + " data collections created by generator " + generator.toString());
+		List<QualityDataCollection> dataCollections = new ArrayList<>();
+		for (LectureBlockInfo lectureBlockInfo: infos) {
+			QualityDataCollection dataCollection = generateDataCollection(generator, configs, organisations,
+					lectureBlockInfo);
+			dataCollections.add(dataCollection);
 		}
+		return dataCollections;
 	}
 	
-	private void generateDataCollection(QualityGenerator generator, QualityGeneratorConfigs configs,
+	private QualityDataCollection generateDataCollection(QualityGenerator generator, QualityGeneratorConfigs configs,
 			List<Organisation> organisations, LectureBlockInfo lectureBlockInfo) {
 		// Load data
 		RepositoryEntry formEntry = generator.getFormEntry();
@@ -250,6 +253,8 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 			Date reminder2Date = addDays(dcStart, reminder2Day);
 			qualityService.createReminder(dataCollection, reminder2Date, QualityReminderType.REMINDER2);
 		}
+		
+		return dataCollection;
 	}
 	
 	private SearchParameters getSeachParameters(QualityGenerator generator, QualityGeneratorConfigs configs,

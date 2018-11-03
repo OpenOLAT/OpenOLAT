@@ -23,6 +23,7 @@ import static org.olat.modules.quality.generator.ProviderHelper.addDays;
 import static org.olat.modules.quality.generator.ProviderHelper.addMinutes;
 import static org.olat.modules.quality.generator.ProviderHelper.toDouble;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -170,7 +171,8 @@ public class CourseLecturesFollowUpProvider implements QualityGeneratorProvider 
 	}
 
 	@Override
-	public void generate(QualityGenerator generator, QualityGeneratorConfigs configs, Date fromDate, Date toDate) {
+	public List<QualityDataCollection> generate(QualityGenerator generator, QualityGeneratorConfigs configs,
+			Date fromDate, Date toDate) {
 		List<Organisation> organisations = generatorService.loadGeneratorOrganisations(generator);
 		
 		String previousGeneratorKey = configs.getValue(CONFIG_KEY_PREVIOUS_GENERATOR_KEY);
@@ -181,17 +183,17 @@ public class CourseLecturesFollowUpProvider implements QualityGeneratorProvider 
 				previousGeneratorRef, previosGeneratorConfigs);
 		List<LectureBlockInfo> lectureBlockInfos = providerDao.loadLectureBlockInfo(searchParams);
 		lectureBlockInfos.removeIf(lb -> gradeIsSufficient(lb, configs, previousGeneratorRef, previosGeneratorConfigs));
+		
+		List<QualityDataCollection> dataCollections = new ArrayList<>();
 		for (LectureBlockInfo lectureBlockInfo: lectureBlockInfos) {
-			generateDataCollection(generator, configs, organisations, lectureBlockInfo, previousGeneratorRef,
-					previosGeneratorConfigs);
+			QualityDataCollection dataCollection = generateDataCollection(generator, configs, organisations,
+					lectureBlockInfo, previousGeneratorRef, previosGeneratorConfigs);
+			dataCollections.add(dataCollection);
 		}
-	
-		if (!lectureBlockInfos.isEmpty()) {
-			log.info(lectureBlockInfos + " data collections created by generator " + generator.toString());
-		}
+		return dataCollections;
 	}
 
-	private void generateDataCollection(QualityGenerator generator, QualityGeneratorConfigs configs,
+	private QualityDataCollection generateDataCollection(QualityGenerator generator, QualityGeneratorConfigs configs,
 			List<Organisation> organisations, LectureBlockInfo lectureBlockInfo,
 			QualityGeneratorRef previousGeneratorRef, QualityGeneratorConfigs previosGeneratorConfigs) {
 		// Load data
@@ -279,6 +281,7 @@ public class CourseLecturesFollowUpProvider implements QualityGeneratorProvider 
 			qualityService.createReminder(dataCollection, reminder2Date, QualityReminderType.REMINDER2);
 		}
 		
+		return dataCollection;
 	}
 
 	private SearchParameters getSeachParameters(QualityGenerator generator, QualityGeneratorConfigs configs,

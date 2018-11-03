@@ -158,20 +158,15 @@ public class QualitySecurityCallbackImpl implements QualitySecurityCallback {
 	private boolean isNotSent(QualityReminder reminder) {
 		return reminder == null || !reminder.isSent();
 	}
-	
+
 	@Override
-	public boolean canViewReportAccesses() {
-		return canEditDataCollections();
-	}
-	
-	@Override
-	public boolean canEditReportAccesses() {
+	public boolean canEditReportAccessOnline(QualityDataCollection dataCollection) {
 		return canEditDataCollections();
 	}
 	
 	@Override
 	public boolean canEditReportAccessEmail(QualityDataCollection dataCollection) {
-		return canEditReportAccesses() && isNotFinished(dataCollection);
+		return canEditDataCollections() && isNotFinished(dataCollection);
 	}
 
 	@Override
@@ -227,6 +222,16 @@ public class QualitySecurityCallbackImpl implements QualitySecurityCallback {
 	@Override
 	public boolean canEditGeneratorForm(QualityGenerator generator, Long numOfDataCollections) {
 		return canEditGenerator(generator) && numOfDataCollections < 1;
+	}
+
+	@Override
+	public boolean canEditReportAccessOnline(QualityGenerator generator) {
+		return canEditGenerator(generator);
+	}
+
+	@Override
+	public boolean canEditReportAccessEmail(QualityGenerator generator) {
+		return canEditGenerator(generator);
 	}
 
 	@Override

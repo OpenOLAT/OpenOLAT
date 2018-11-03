@@ -19,6 +19,7 @@
  */
 package org.olat.modules.quality.generator.ui;
 
+import org.olat.core.gui.UserRequest;
 import org.olat.modules.quality.generator.QualityGenerator;
 
 /**
@@ -29,6 +30,6 @@ import org.olat.modules.quality.generator.QualityGenerator;
  */
 public interface GeneratorChangedController {
 	
-	public void onChanged(QualityGenerator generator);
+	public void onChanged(QualityGenerator generator, UserRequest ureq);
 
 }

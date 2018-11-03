@@ -20,7 +20,6 @@
 package org.olat.modules.quality.ui;
 
 import static org.olat.core.gui.components.util.KeyValues.entry;
-import static org.olat.modules.quality.QualityReportAccessReference.of;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,12 +42,11 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
-import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityReportAccess;
 import org.olat.modules.quality.QualityReportAccess.EmailTrigger;
 import org.olat.modules.quality.QualityReportAccess.Type;
+import org.olat.modules.quality.QualityReportAccessReference;
 import org.olat.modules.quality.QualityReportAccessSearchParams;
-import org.olat.modules.quality.QualitySecurityCallback;
 import org.olat.modules.quality.QualityService;
 import org.olat.modules.quality.ui.ReportAccessDataModel.ReportAccessCols;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,7 +57,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class ReportAccessController extends FormBasicController {
+public abstract class ReportAccessController extends FormBasicController {
 	
 	private static final String[] ONLINE_KEYS = new String[] { "enabled" };
 	private static final String[] ONLINE_VALUES = new String[] { "" };
@@ -69,27 +67,26 @@ public class ReportAccessController extends FormBasicController {
 	private final String[] emailTriggerKeys;
 	private final String[] emailTriggerValues;
 	
-	private final QualitySecurityCallback secCallback;
-	private QualityDataCollection dataCollection;
-	
+	private QualityReportAccessReference reference;
 	private QualityReportAccessSearchParams searchParams;
 	private List<QualityReportAccess> reportAccesses;
 	
 	@Autowired
 	private QualityService qualityService;
 
-	public ReportAccessController(UserRequest ureq, WindowControl windowControl, QualitySecurityCallback secCallback,
-			QualityDataCollection dataCollection) {
+	protected ReportAccessController(UserRequest ureq, WindowControl windowControl, QualityReportAccessReference reference) {
 		super(ureq, windowControl, "report_access");
-		this.secCallback = secCallback;
-		this.dataCollection = dataCollection;
+		this.reference = reference;
 		this.searchParams = new QualityReportAccessSearchParams();
-		this.searchParams.setReference(of(dataCollection));
+		this.searchParams.setReference(reference);
 		KeyValues emailTriggerKV = getEmailTriggerKV();
 		this.emailTriggerKeys = emailTriggerKV.keys();
 		this.emailTriggerValues = emailTriggerKV.values();
-		initForm(ureq);
 	}
+	
+	protected abstract boolean canEditReportAccessOnline();
+	
+	protected abstract boolean canEditReportAccessEmail();
 
 	private KeyValues getEmailTriggerKV() {
 		EmailTrigger[] emailTriggers = QualityReportAccess.EmailTrigger.values();
@@ -107,13 +104,8 @@ public class ReportAccessController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		initTable(ureq);
 	}
-	
-	public void setDataCollection(QualityDataCollection dataCollection, UserRequest ureq) {
-		this.dataCollection = dataCollection;
-		initTable(ureq);
-	}
 
-	private void initTable(UserRequest ureq) {
+	protected void initTable(UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReportAccessCols.name));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReportAccessCols.online));
@@ -163,7 +155,7 @@ public class ReportAccessController extends FormBasicController {
 		onlineEl.addActionListener(FormEvent.ONCHANGE);
 		onlineEl.setAjaxOnly(true);
 		onlineEl.select(ONLINE_KEYS[0], access != null && access.isOnline());
-		onlineEl.setEnabled(secCallback.canEditReportAccesses());
+		onlineEl.setEnabled(canEditReportAccessOnline());
 		return onlineEl;
 	}
 
@@ -176,7 +168,7 @@ public class ReportAccessController extends FormBasicController {
 		if (Arrays.asList(emailTriggerKeys).contains(accessKey)) {
 			emailTriggerEl.select(accessKey, true);
 		}
-		emailTriggerEl.setEnabled(secCallback.canEditReportAccessEmail(dataCollection));
+		emailTriggerEl.setEnabled(canEditReportAccessEmail());
 		return emailTriggerEl;
 	}
 
@@ -212,7 +204,7 @@ public class ReportAccessController extends FormBasicController {
 	private QualityReportAccess getOrCreateReportAccess(ReportAccessRow row) {
 		QualityReportAccess reportAccess = getCachedReportAccess(row.getType(), row.getRole());
 		if (reportAccess == null) {
-			reportAccess = qualityService.createReportAccess(of(dataCollection), row.getType(), row.getRole());
+			reportAccess = qualityService.createReportAccess(reference, row.getType(), row.getRole());
 		}
 		return reportAccess;
 	}

@@ -195,8 +195,21 @@ public interface QualityService {
 	public QualityReportAccess createReportAccess(QualityReportAccessReference reference, QualityReportAccess.Type type,
 			String role);
 
+	/**
+	 * Creates a new report access for a reference and copies all values of the
+	 * given report access to the new report access.
+	 *
+	 * @param reference
+	 * @param reportAccess
+	 * @return the created report access
+	 */
+	public QualityReportAccess copyReportAccess(QualityReportAccessReference reference,
+			QualityReportAccess reportAccess);
+
 	public QualityReportAccess updateReportAccess(QualityReportAccess reportAccess);
 	
 	public List<QualityReportAccess> loadReportAccesses(QualityReportAccessSearchParams searchParams);
+	
+	public void deleteReportAccess(QualityReportAccessReference reference);
 
 }

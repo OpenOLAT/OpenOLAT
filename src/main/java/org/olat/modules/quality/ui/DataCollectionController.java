@@ -89,7 +89,7 @@ public class DataCollectionController extends BasicController implements TooledC
 	private DataCollectionConfigurationController configurationCtrl;
 	private ParticipationListController participationsCtrl;
 	private RemindersController remindersCtrl;
-	private ReportAccessController reportAccessCtrl;
+	private DataCollectionReportAccessController reportAccessCtrl;
 	private DataCollectionReportController reportCtrl;
 	private DataCollectionReportController previousReportCtrl;
 	private DataCollectionReportController followUpReportCtrl;
@@ -339,7 +339,7 @@ public class DataCollectionController extends BasicController implements TooledC
 	
 	private void doOpenReportAccess(UserRequest ureq) {
 		stackPanel.popUpToController(this);
-		reportAccessCtrl = new ReportAccessController(ureq, getWindowControl(), secCallback, dataCollection);
+		reportAccessCtrl = new DataCollectionReportAccessController(ureq, getWindowControl(), secCallback, dataCollection);
 		listenTo(reportAccessCtrl);
 		stackPanel.pushController(translate("data.collection.report.access"), reportAccessCtrl);
 		segmentButtonsCmp.setSelectedButton(reportAccessLink);

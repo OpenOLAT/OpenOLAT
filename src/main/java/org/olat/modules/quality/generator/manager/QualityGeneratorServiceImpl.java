@@ -19,6 +19,8 @@
  */
 package org.olat.modules.quality.generator.manager;
 
+import static org.olat.modules.quality.QualityReportAccessReference.of;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -35,8 +37,12 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Organisation;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityGeneratorProviderReferenceable;
+import org.olat.modules.quality.QualityReportAccess;
+import org.olat.modules.quality.QualityReportAccessSearchParams;
 import org.olat.modules.quality.QualitySecurityCallback;
+import org.olat.modules.quality.QualityService;
 import org.olat.modules.quality.generator.QualityGenerator;
 import org.olat.modules.quality.generator.QualityGeneratorConfigs;
 import org.olat.modules.quality.generator.QualityGeneratorProvider;
@@ -67,6 +73,8 @@ public class QualityGeneratorServiceImpl implements QualityGeneratorService {
 	private QualityGeneratorToOrganisationDAO generatorToOrganisationDao;
 	@Autowired
 	private QualityGeneratorProviderFactory providerFactory;
+	@Autowired
+	private QualityService qualityService;
 
 	@Override
 	public QualityGenerator createGenerator(String providerType, Collection<Organisation> organisations) {
@@ -102,6 +110,7 @@ public class QualityGeneratorServiceImpl implements QualityGeneratorService {
 
 	@Override
 	public void deleteGenerator(QualityGeneratorRef generatorRef) {
+		qualityService.deleteReportAccess(of(generatorRef));
 		generatorToOrganisationDao.deleteRelations(generatorRef);
 		generatorDao.delete(generatorRef);
 	}
@@ -197,11 +206,28 @@ public class QualityGeneratorServiceImpl implements QualityGeneratorService {
 				QualityGeneratorProvider provider = providerFactory.getProvider(generator.getType());
 				QualityGeneratorConfigsImpl configs = new QualityGeneratorConfigsImpl(generator);
 				Date now = new Date();
-				provider.generate(generator, configs, generator.getLastRun(), now);
+				List<QualityDataCollection> dataCollections = provider.generate(generator, configs, generator.getLastRun(), now);
+				copyReportAccess(generator, dataCollections);
 				generator.setLastRun(now);
 				generatorDao.save(generator);
+				if (!dataCollections.isEmpty()) {
+					log.info(dataCollections.size() + " data collections created by generator " + generator.toString());
+				}
 			} else {
 				log.warn("Provider not found for quality data generator: " + generator.getType());
+			}
+		}
+	}
+
+	private void copyReportAccess(QualityGenerator generator, List<QualityDataCollection> dataCollections) {
+		if (dataCollections == null || dataCollections.isEmpty()) return;
+		
+		QualityReportAccessSearchParams searchParams = new QualityReportAccessSearchParams();
+		searchParams.setReference(of(generator));
+		List<QualityReportAccess> reportAccesses = qualityService.loadReportAccesses(searchParams);
+		for (QualityDataCollection dataCollection : dataCollections) {
+			for (QualityReportAccess reportAccess : reportAccesses) {
+				qualityService.copyReportAccess(of(dataCollection), reportAccess);
 			}
 		}
 	}

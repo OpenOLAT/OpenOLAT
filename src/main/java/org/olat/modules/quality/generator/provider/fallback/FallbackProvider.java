@@ -19,7 +19,9 @@
  */
 package org.olat.modules.quality.generator.provider.fallback;
 
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.gui.UserRequest;
@@ -28,6 +30,7 @@ import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
+import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualitySecurityCallback;
 import org.olat.modules.quality.generator.QualityGenerator;
 import org.olat.modules.quality.generator.QualityGeneratorConfigs;
@@ -83,8 +86,9 @@ public class FallbackProvider implements QualityGeneratorProvider {
 	}
 
 	@Override
-	public void generate(QualityGenerator generator, QualityGeneratorConfigs configs, Date fromDate, Date toDate) {
-		//
+	public List<QualityDataCollection> generate(QualityGenerator generator, QualityGeneratorConfigs configs,
+			Date fromDate, Date toDate) {
+		return Collections.emptyList();
 	}
 
 }

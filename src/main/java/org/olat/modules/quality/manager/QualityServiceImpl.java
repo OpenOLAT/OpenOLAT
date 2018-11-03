@@ -322,7 +322,7 @@ public class QualityServiceImpl
 		evaluationFormManager.deleteSurvey(survey);
 		deleteReferences(dataCollection);
 		resourceManager.deleteOLATResourceable(dataCollection);
-		reportAccessDao.deleteReportAccesses(dataCollection);
+		reportAccessDao.deleteReportAccesses(of(dataCollection));
 		reminderDao.deleteReminders(dataCollection);
 		dataCollectionToOrganisationDao.deleteRelations(dataCollection);
 		dataCollectionDao.deleteDataCollection(dataCollection);
@@ -575,6 +575,11 @@ public class QualityServiceImpl
 	}
 
 	@Override
+	public QualityReportAccess copyReportAccess(QualityReportAccessReference reference, QualityReportAccess reportAccess) {
+		return reportAccessDao.copy(reference, reportAccess);
+	}
+
+	@Override
 	public QualityReportAccess updateReportAccess(QualityReportAccess reportAccess) {
 		return reportAccessDao.save(reportAccess);
 	}
@@ -583,4 +588,10 @@ public class QualityServiceImpl
 	public List<QualityReportAccess> loadReportAccesses(QualityReportAccessSearchParams searchParams) {
 		return reportAccessDao.load(searchParams);
 	}
+
+	@Override
+	public void deleteReportAccess(QualityReportAccessReference reference) {
+		reportAccessDao.deleteReportAccesses(reference);
+	}
+	
 }

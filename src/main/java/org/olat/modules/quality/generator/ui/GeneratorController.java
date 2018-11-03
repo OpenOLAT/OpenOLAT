@@ -47,6 +47,7 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.modules.quality.QualitySecurityCallback;
 import org.olat.modules.quality.generator.QualityGenerator;
 import org.olat.modules.quality.generator.QualityGeneratorService;
+import org.olat.modules.quality.ui.GeneratorReportAccessController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -62,12 +63,14 @@ public class GeneratorController extends BasicController implements TooledContro
 	private Link disableLink;
 	private Link deleteLink;
 	private Link configurationLink;
+	private Link reportAccessLink;
 	private Link whiteListLink;
 	private final ButtonGroupComponent segmentButtonsCmp;
 	private final TooledStackedPanel stackPanel;
 	private final StackedPanel mainPanel;
 	
 	private GeneratorEditController configCtrl;
+	private GeneratorReportAccessController reportAccessCtrl;
 	private GeneratorWhiteListController whiteListCtrl;
 	private CloseableModalController cmc;
 	private GeneratorEnableConfirmationController enableConfirmationCtrl;
@@ -91,6 +94,8 @@ public class GeneratorController extends BasicController implements TooledContro
 		if (secCallback.canViewGenerators()) {
 			configurationLink = LinkFactory.createLink("generator.configuration", getTranslator(), this);
 			segmentButtonsCmp.addButton(configurationLink, false);
+			reportAccessLink = LinkFactory.createLink("generator.report.access", getTranslator(), this);
+			segmentButtonsCmp.addButton(reportAccessLink, false);
 			if (generatorService.hasWhiteListController(generator)) {
 				whiteListLink = LinkFactory.createLink("generator.white.list", getTranslator(), this);
 				segmentButtonsCmp.addButton(whiteListLink, false);
@@ -153,6 +158,8 @@ public class GeneratorController extends BasicController implements TooledContro
 			fireEvent(ureq, new GeneratorEvent(generator, GeneratorEvent.Action.DELETE));
 		} else if (configurationLink == source) {
 			doOpenConfiguration(ureq);
+		} else if(reportAccessLink == source) {
+			doOpenReportAccess(ureq);
 		} else if(whiteListLink == source) {
 			doOpenWhiteList(ureq);
 		} else if (stackPanel == source && stackPanel.getLastController() == this && event instanceof PopEvent) {
@@ -179,13 +186,13 @@ public class GeneratorController extends BasicController implements TooledContro
 		} else if (source == enableConfirmationCtrl) {
 			if (Event.DONE_EVENT.equals(event)) {
 				Date fromDate = enableConfirmationCtrl.getFromDate();
-				doEnableGenerator(fromDate);
+				doEnableGenerator(ureq, fromDate);
 			}
 			cmc.deactivate();
 			cleanUp();
 		} else if (source == disableConfirmationCtrl) {
 			if (Event.DONE_EVENT.equals(event)) {
-				doDisabledGenerator();
+				doDisabledGenerator(ureq);
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -217,8 +224,15 @@ public class GeneratorController extends BasicController implements TooledContro
 		segmentButtonsCmp.setSelectedButton(configurationLink);
 	}
 	
-	private void doOpenWhiteList(UserRequest ureq) {
+	private void doOpenReportAccess(UserRequest ureq) {
+		reportAccessCtrl = new GeneratorReportAccessController(ureq, getWindowControl(), secCallback, generator);
+		listenTo(reportAccessCtrl);
 		stackPanel.popUpToController(this);
+		stackPanel.pushController(translate("generator.report.access"), reportAccessCtrl);
+		segmentButtonsCmp.setSelectedButton(reportAccessLink);
+	}
+	
+	private void doOpenWhiteList(UserRequest ureq) {
 		whiteListCtrl = generatorService.getWhiteListController(ureq, getWindowControl(), secCallback, stackPanel,
 				generator);
 		listenTo(whiteListCtrl);
@@ -241,12 +255,12 @@ public class GeneratorController extends BasicController implements TooledContro
 		}
 	}
 
-	private void doEnableGenerator(Date fromDate) {
+	private void doEnableGenerator(UserRequest ureq, Date fromDate) {
 		generator = generatorService.loadGenerator(generator);
 		generator.setEnabled(true);
 		generator.setLastRun(fromDate);
 		generator = generatorService.updateGenerator(generator);
-		updateUI();	
+		updateUI(ureq);	
 	}
 	
 	private void doConfirmDisableGenerator(UserRequest ureq) {
@@ -259,20 +273,23 @@ public class GeneratorController extends BasicController implements TooledContro
 		listenTo(cmc);
 	}
 	
-	private void doDisabledGenerator() {
+	private void doDisabledGenerator(UserRequest ureq) {
 		generator = generatorService.loadGenerator(generator);
 		generator.setEnabled(false);
 		generator = generatorService.updateGenerator(generator);
-		updateUI();
+		updateUI(ureq);
 	}
 	
-	private void updateUI() {
+	private void updateUI(UserRequest ureq) {
 		initButtons();
 		if (configCtrl != null) {
-			configCtrl.onChanged(generator);
+			configCtrl.onChanged(generator, ureq);
+		}
+		if (reportAccessCtrl != null) {
+			reportAccessCtrl.onChanged(generator, ureq);
 		}
 		if (whiteListCtrl != null) {
-			whiteListCtrl.onChanged(generator);
+			whiteListCtrl.onChanged(generator, ureq);
 		}
 	}
 

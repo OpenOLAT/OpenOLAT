@@ -20,12 +20,14 @@
 package org.olat.modules.quality.generator;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualitySecurityCallback;
 import org.olat.modules.quality.generator.ui.GeneratorWhiteListController;
 import org.olat.modules.quality.generator.ui.ProviderConfigController;
@@ -54,6 +56,7 @@ public interface QualityGeneratorProvider {
 			QualitySecurityCallback secCallback, TooledStackedPanel stackPanel, QualityGenerator generator,
 			QualityGeneratorConfigs configs);
 
-	public void generate(QualityGenerator generator, QualityGeneratorConfigs configs, Date fromDate, Date toDate);
+	public List<QualityDataCollection> generate(QualityGenerator generator, QualityGeneratorConfigs configs,
+			Date fromDate, Date toDate);
 
 }

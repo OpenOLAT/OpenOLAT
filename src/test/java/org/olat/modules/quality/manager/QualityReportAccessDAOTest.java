@@ -39,6 +39,7 @@ import org.olat.modules.quality.QualityReportAccess.EmailTrigger;
 import org.olat.modules.quality.QualityReportAccess.Type;
 import org.olat.modules.quality.QualityReportAccessSearchParams;
 import org.olat.modules.quality.QualityService;
+import org.olat.modules.quality.generator.QualityGenerator;
 import org.olat.modules.quality.generator.QualityGeneratorRef;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
@@ -111,6 +112,33 @@ public class QualityReportAccessDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void shouldCopyReportAccess() {
+		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
+		QualityGeneratorRef generatorRef = qualityTestHelper.createGenerator();
+		QualityReportAccess.Type type = QualityReportAccess.Type.GroupRoles;
+		String role = "name";
+		boolean online = true;
+		EmailTrigger emailTrigger = QualityReportAccess.EmailTrigger.always;
+		QualityReportAccess reportAccess = sut.create(of(generatorRef), type, role);
+		reportAccess.setOnline(online);
+		reportAccess.setEmailTrigger(emailTrigger);
+		sut.save(reportAccess);
+		dbInstance.commitAndCloseSession();
+		
+		QualityReportAccess copy = sut.copy(of(dataCollection), reportAccess);
+
+		SoftAssertions softly = new SoftAssertions();
+		softly.assertThat(copy).isNotNull();
+		softly.assertThat(copy.getCreationDate()).isNotNull();
+		softly.assertThat(copy.getLastModified()).isNotNull();
+		softly.assertThat(copy.getType()).isEqualTo(type);
+		softly.assertThat(copy.getRole()).isEqualTo(role);
+		softly.assertThat(copy.isOnline()).isEqualTo(online);
+		softly.assertThat(copy.getEmailTrigger()).isEqualTo(emailTrigger);
+		softly.assertAll();
+	}
+	
+	@Test
 	public void shouldSaveReportAccess() {
 		QualityGeneratorRef generatorRef = qualityTestHelper.createGenerator();
 		QualityReportAccess.Type type = QualityReportAccess.Type.GroupRoles;
@@ -138,16 +166,42 @@ public class QualityReportAccessDAOTest extends OlatTestCase {
 		sut.create(of(dc), QualityReportAccess.Type.TopicIdentity, null);
 		sut.create(of(dc), QualityReportAccess.Type.CurriculumRoles, null);
 		QualityDataCollectionRef dcOther = qualityTestHelper.createDataCollection();
-		sut.create(of(dcOther), QualityReportAccess.Type.TopicIdentity, null);
+		QualityReportAccess reportAccessOther = sut.create(of(dcOther), QualityReportAccess.Type.TopicIdentity, null);
 		dbInstance.commitAndCloseSession();
 		
-		sut.deleteReportAccesses(dc);
+		sut.deleteReportAccesses(of(dc));
 		dbInstance.commitAndCloseSession();
 		
 		QualityReportAccessSearchParams searchParams = new QualityReportAccessSearchParams();
 		searchParams.setReference(of(dc));
 		List<QualityReportAccess> accesses = sut.load(searchParams);
 		assertThat(accesses).isEmpty();
+		
+		searchParams.setReference(of(dcOther));
+		List<QualityReportAccess> accessesOther = sut.load(searchParams);
+		assertThat(accessesOther).contains(reportAccessOther);
+	}
+	
+	@Test
+	public void shouldDeleteByGenerator() {
+		QualityGenerator generator = qualityTestHelper.createGenerator();
+		sut.create(of(generator), QualityReportAccess.Type.TopicIdentity, null);
+		sut.create(of(generator), QualityReportAccess.Type.CurriculumRoles, null);
+		QualityGenerator generatorOther = qualityTestHelper.createGenerator();
+		QualityReportAccess reportAccessOther = sut.create(of(generatorOther), QualityReportAccess.Type.TopicIdentity, null);
+		dbInstance.commitAndCloseSession();
+		
+		sut.deleteReportAccesses(of(generator));
+		dbInstance.commitAndCloseSession();
+		
+		QualityReportAccessSearchParams searchParams = new QualityReportAccessSearchParams();
+		searchParams.setReference(of(generator));
+		List<QualityReportAccess> accesses = sut.load(searchParams);
+		assertThat(accesses).isEmpty();
+		
+		searchParams.setReference(of(generatorOther));
+		List<QualityReportAccess> accessesOther = sut.load(searchParams);
+		assertThat(accessesOther).contains(reportAccessOther);
 	}
 	
 	@Test
@@ -161,6 +215,24 @@ public class QualityReportAccessDAOTest extends OlatTestCase {
 		
 		QualityReportAccessSearchParams searchParams = new QualityReportAccessSearchParams();
 		searchParams.setReference(of(dc));
+		List<QualityReportAccess> accesses = sut.load(searchParams);
+		
+		assertThat(accesses)
+				.containsExactlyInAnyOrder(access1, access2)
+				.doesNotContain(accessOther);
+	}
+	
+	@Test
+	public void shouldFilterByGenerator() {
+		QualityGenerator generator = qualityTestHelper.createGenerator();
+		QualityReportAccess access1 = sut.create(of(generator), QualityReportAccess.Type.TopicIdentity, null);
+		QualityReportAccess access2 = sut.create(of(generator), QualityReportAccess.Type.CurriculumRoles, null);
+		QualityGenerator generatorOther = qualityTestHelper.createGenerator();
+		QualityReportAccess accessOther = sut.create(of(generatorOther), QualityReportAccess.Type.TopicIdentity, null);
+		dbInstance.commitAndCloseSession();
+		
+		QualityReportAccessSearchParams searchParams = new QualityReportAccessSearchParams();
+		searchParams.setReference(of(generator));
 		List<QualityReportAccess> accesses = sut.load(searchParams);
 		
 		assertThat(accesses)

@@ -22,6 +22,7 @@ package org.olat.modules.quality.generator.provider.curriculumelement;
 import static java.util.Collections.singletonList;
 import static org.olat.modules.quality.generator.ProviderHelper.addDays;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -140,22 +141,21 @@ public class CurriculumElementProvider implements QualityGeneratorProvider {
 	}
 
 	@Override
-	public void generate(QualityGenerator generator, QualityGeneratorConfigs configs, Date fromDate, Date toDate) {
+	public List<QualityDataCollection> generate(QualityGenerator generator, QualityGeneratorConfigs configs,
+			Date fromDate, Date toDate) {
 		List<Organisation> organisations = generatorService.loadGeneratorOrganisations(generator);
 		List<CurriculumElement> elements = loadCurriculumElements(generator, configs, fromDate, toDate, organisations);
 		
+		List<QualityDataCollection> dataCollections = new ArrayList<>();
 		for (CurriculumElement element : elements) {
-			generateDataCollection(generator, configs, organisations, element);
+			QualityDataCollection dataCollection = generateDataCollection(generator, configs, organisations, element);
+			dataCollections.add(dataCollection);
 		}
-		
-		if (!elements.isEmpty()) {
-			log.info(elements + " data collections created by generator " + generator.toString());
-		}
+		return dataCollections;
 	}
 
-	private void generateDataCollection(QualityGenerator generator, QualityGeneratorConfigs configs,
+	private QualityDataCollection generateDataCollection(QualityGenerator generator, QualityGeneratorConfigs configs,
 			List<Organisation> organisations, CurriculumElement curriculumElement) {
-		// create data collection	
 		RepositoryEntry formEntry = generator.getFormEntry();
 		Long generatorProviderKey = curriculumElement.getKey();
 		QualityDataCollection dataCollection = qualityService.createDataCollection(organisations, formEntry, generator, generatorProviderKey);
@@ -211,6 +211,8 @@ public class CurriculumElementProvider implements QualityGeneratorProvider {
 			Date reminder2Date = addDays(dcStart, reminder2Day);
 			qualityService.createReminder(dataCollection, reminder2Date, QualityReminderType.REMINDER2);
 		}
+		
+		return dataCollection;
 	}
 
 	private List<CurriculumElement> loadCurriculumElements(QualityGenerator generator, QualityGeneratorConfigs configs,

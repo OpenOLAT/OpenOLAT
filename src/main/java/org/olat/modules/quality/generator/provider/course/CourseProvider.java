@@ -25,6 +25,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -166,31 +167,31 @@ public class CourseProvider implements QualityGeneratorProvider {
 	}
 
 	@Override
-	public void generate(QualityGenerator generator, QualityGeneratorConfigs configs, Date fromDate, Date toDate) {
+	public List<QualityDataCollection> generate(QualityGenerator generator, QualityGeneratorConfigs configs, Date fromDate, Date toDate) {
 		List<Organisation> organisations = generatorService.loadGeneratorOrganisations(generator);
 		SearchParameters searchParams = getSeachParameters(generator, configs, organisations);
 		
-		int numberDataCollections = 0;
 		String trigger = configs.getValue(CONFIG_KEY_TRIGGER);
+		List<QualityDataCollection> dataCollections = new ArrayList<>();
 		if (CONFIG_KEY_TRIGGER_BEGIN.equals(trigger) || CONFIG_KEY_TRIGGER_END.equals(trigger)) {
-			numberDataCollections = generateByDueDate(generator, configs, fromDate, toDate, organisations, searchParams);
+			List<QualityDataCollection> byDueDate = generateByDueDate(generator, configs, fromDate, toDate,
+					organisations, searchParams);
+			dataCollections.addAll(byDueDate);
 		} else if (CONFIG_KEY_TRIGGER_DAILY.equals(trigger)) {
-			numberDataCollections = generateDaily(generator, configs, fromDate, toDate, organisations, searchParams);
+			List<QualityDataCollection> daily = generateDaily(generator, configs, fromDate, toDate, organisations,
+					searchParams);
+			dataCollections.addAll(daily);
 		}
-		
-		if (numberDataCollections > 0) {
-			log.info(numberDataCollections + " data collections created by generator " + numberDataCollections);
-		}
+		return dataCollections;
 	}
 
-	private int generateByDueDate(QualityGenerator generator, QualityGeneratorConfigs configs, Date fromDate,
-			Date toDate, List<Organisation> organisations, SearchParameters searchParams) {
-		int numberDataCollections;
+	private List<QualityDataCollection> generateByDueDate(QualityGenerator generator, QualityGeneratorConfigs configs,
+			Date fromDate, Date toDate, List<Organisation> organisations, SearchParameters searchParams) {
 		appendForDueDate(searchParams, generator, configs, fromDate, toDate);
 		List<RepositoryEntry> courses = loadCourses(generator, searchParams);
-		numberDataCollections = courses.size();
 
 		String trigger = configs.getValue(CONFIG_KEY_TRIGGER);
+		List<QualityDataCollection> dataCollections = new ArrayList<>();
 		for (RepositoryEntry course : courses) {
 			Date dcStart = null;
 			switch (trigger) {
@@ -209,26 +210,29 @@ public class CourseProvider implements QualityGeneratorProvider {
 			}
 			
 			if (dcStart != null) {
-				generateDataCollection(generator, configs, organisations, course, dcStart);
+				QualityDataCollection dataCollection = generateDataCollection(generator, configs, organisations, course,
+						dcStart);
+				dataCollections.add(dataCollection);
 			}
 		}
-		return numberDataCollections;
+		return dataCollections;
 	}
 
-	private int generateDaily(QualityGenerator generator, QualityGeneratorConfigs configs, Date fromDate, Date toDate,
-			List<Organisation> organisations, SearchParameters searchParams) {
+	private List<QualityDataCollection> generateDaily(QualityGenerator generator, QualityGeneratorConfigs configs,
+			Date fromDate, Date toDate, List<Organisation> organisations, SearchParameters searchParams) {
 		List<Date> dcStarts = getDailyStarts(configs, fromDate, toDate);
 	
-		int numberDataCollections = 0;
+		List<QualityDataCollection> dataCollections = new ArrayList<>();
 		for (Date dcStart : dcStarts) {
 			appendForDaily(searchParams, dcStart);
 			List<RepositoryEntry> courses = loadCourses(generator, searchParams);
-			numberDataCollections += courses.size();
 			for (RepositoryEntry course : courses) {
-				generateDataCollection(generator, configs, organisations, course, dcStart);
+				QualityDataCollection dataCollection = generateDataCollection(generator, configs, organisations, course,
+						dcStart);
+				dataCollections.add(dataCollection);
 			}
 		}
-		return numberDataCollections;
+		return dataCollections;
 	}
 
 	private List<Date> getDailyStarts(QualityGeneratorConfigs configs, Date fromDate, Date toDate) {
@@ -271,9 +275,8 @@ public class CourseProvider implements QualityGeneratorProvider {
 		dateTimes.removeIf(date -> date.isAfter(now));
 	}
 
-	private void generateDataCollection(QualityGenerator generator, QualityGeneratorConfigs configs,
+	private QualityDataCollection generateDataCollection(QualityGenerator generator, QualityGeneratorConfigs configs,
 			List<Organisation> organisations, RepositoryEntry course, Date dcStart) {
-		// create data collection	
 		RepositoryEntry formEntry = generator.getFormEntry();
 		Long generatorProviderKey = course.getKey();
 		QualityDataCollection dataCollection = qualityService.createDataCollection(organisations, formEntry, generator, generatorProviderKey);
@@ -322,6 +325,9 @@ public class CourseProvider implements QualityGeneratorProvider {
 			Date reminder2Date = addDays(dataCollection.getStart(), reminder2Day);
 			qualityService.createReminder(dataCollection, reminder2Date, QualityReminderType.REMINDER2);
 		}
+		
+		
+		return dataCollection;
 	}
 
 	private List<RepositoryEntry> loadCourses(QualityGenerator generator, SearchParameters seachParameters) {

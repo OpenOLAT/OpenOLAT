@@ -87,7 +87,7 @@ public class GeneratorEditController extends FormBasicController implements Gene
 	}
 
 	@Override
-	public void onChanged(QualityGenerator generator) {
+	public void onChanged(QualityGenerator generator, UserRequest ureq) {
 		configCtrl.setGenerator(generator);
 		updateUI();
 	}

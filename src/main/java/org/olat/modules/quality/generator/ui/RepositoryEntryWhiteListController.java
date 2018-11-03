@@ -271,7 +271,7 @@ public class RepositoryEntryWhiteListController extends FormBasicController
 	}
 
 	@Override
-	public void onChanged(QualityGenerator generator) {
+	public void onChanged(QualityGenerator generator, UserRequest ureq) {
 		//
 	}
 

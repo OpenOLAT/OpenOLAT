@@ -29,8 +29,8 @@ public class QualityReportAccessSearchParams {
 	
 	private QualityReportAccessReference reference;
 
-	public QualityDataCollectionRef getDataCollectionRef() {
-		return reference != null? reference.getDataCollectionRef(): null;
+	public QualityReportAccessReference getReference() {
+		return reference;
 	}
 
 	public void setReference(QualityReportAccessReference reference) {
