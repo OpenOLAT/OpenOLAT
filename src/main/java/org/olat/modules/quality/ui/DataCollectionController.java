@@ -250,14 +250,6 @@ public class DataCollectionController extends BasicController implements TooledC
 			if (Action.CHANGED.equals(action)) {
 				dataCollection = dccEvent.getDataCollection();
 				stackPanel.changeDisplayname(dataCollection.getTitle(), null, this);
-			} else if (Action.STATUS_PREPARATION_SELECTED.equals(action)) {
-				doSetStatusPreparation(ureq);
-			} else if (Action.STATUS_READY_SELECTED.equals(action)) {
-				doSetStatusReady(ureq);
-			} else if (Action.STATUS_RUNNING_SELECTED.equals(action)) {
-				doConfirmStatusRunning(ureq);
-			} else if (Action.STATUS_FINISHED_SELECTED.equals(action)) {
-				doConfirmStatusFinished(ureq);
 			} else {
 				fireEvent(ureq, event);
 			}

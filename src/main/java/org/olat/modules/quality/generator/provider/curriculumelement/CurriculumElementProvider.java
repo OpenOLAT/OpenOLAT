@@ -56,8 +56,8 @@ import org.olat.modules.quality.generator.TitleCreator;
 import org.olat.modules.quality.generator.provider.curriculumelement.manager.CurriculumElementProviderDAO;
 import org.olat.modules.quality.generator.provider.curriculumelement.manager.SearchParameters;
 import org.olat.modules.quality.generator.provider.curriculumelement.ui.CurriculumElementProviderConfigController;
-import org.olat.modules.quality.generator.ui.AbstractGeneratorEditController;
 import org.olat.modules.quality.generator.ui.CurriculumElementWhiteListController;
+import org.olat.modules.quality.generator.ui.GeneratorWhiteListController;
 import org.olat.modules.quality.generator.ui.ProviderConfigController;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -133,10 +133,10 @@ public class CurriculumElementProvider implements QualityGeneratorProvider {
 	}
 
 	@Override
-	public AbstractGeneratorEditController getWhiteListController(UserRequest ureq, WindowControl wControl,
+	public GeneratorWhiteListController getWhiteListController(UserRequest ureq, WindowControl wControl,
 			QualitySecurityCallback secCallback, TooledStackedPanel stackPanel, QualityGenerator generator,
 			QualityGeneratorConfigs configs) {
-		return new CurriculumElementWhiteListController(ureq, wControl, secCallback, stackPanel, generator, configs);
+		return new CurriculumElementWhiteListController(ureq, wControl, stackPanel, generator, configs);
 	}
 
 	@Override

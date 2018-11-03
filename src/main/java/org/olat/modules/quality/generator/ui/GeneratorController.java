@@ -24,6 +24,8 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.dropdown.Dropdown;
+import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
@@ -33,6 +35,7 @@ import org.olat.core.gui.components.stack.ButtonGroupComponent;
 import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledController;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -54,6 +57,10 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class GeneratorController extends BasicController implements TooledController, Activateable2 {
 
+	private Dropdown enableDropdown;
+	private Link enableLink;
+	private Link disableLink;
+	private Link deleteLink;
 	private Link configurationLink;
 	private Link whiteListLink;
 	private final ButtonGroupComponent segmentButtonsCmp;
@@ -61,7 +68,7 @@ public class GeneratorController extends BasicController implements TooledContro
 	private final StackedPanel mainPanel;
 	
 	private GeneratorEditController configCtrl;
-	private AbstractGeneratorEditController whiteListCtrl;
+	private GeneratorWhiteListController whiteListCtrl;
 	private CloseableModalController cmc;
 	private GeneratorEnableConfirmationController enableConfirmationCtrl;
 	private GeneratorDisableConfirmationController disableConfirmationCtrl;
@@ -102,11 +109,49 @@ public class GeneratorController extends BasicController implements TooledContro
 	@Override
 	public void initTools() {
 		stackPanel.addTool(segmentButtonsCmp, true);
+		initButtons();
+	}
+	
+	public void initButtons() {
+		stackPanel.removeTool(enableDropdown, this);
+		if (secCallback.canActivateGenerators()) {
+			String enabled = generator.isEnabled()? "enabled": "disabled";
+			
+			enableDropdown = new Dropdown("generator.enable.dropdown", "generator." + enabled + ".hover", false, getTranslator());
+			enableDropdown.setIconCSS("o_icon o_icon-fw o_icon_qual_gen_" + enabled);
+			enableDropdown.setOrientation(DropdownOrientation.normal);
+		
+			enableLink = LinkFactory.createToolLink("generator.enable", translate("generator.enable"), this);
+			enableLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_gen_enabled");
+			enableLink.setVisible(!generator.isEnabled());
+			enableDropdown.addComponent(enableLink);
+			
+			disableLink = LinkFactory.createToolLink("generator.disable", translate("generator.disable"), this);
+			disableLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_gen_disabled");
+			disableLink.setVisible(generator.isEnabled());
+			enableDropdown.addComponent(disableLink);
+			
+			stackPanel.addTool(enableDropdown, Align.left, true, null, this);
+		}
+		
+		long numberDataCollections = generatorService.getNumberOfDataCollections(generator);
+		stackPanel.removeTool(deleteLink, this);
+		if (secCallback.canDeleteGenerator(numberDataCollections)) {
+			deleteLink = LinkFactory.createToolLink("generator.delete", translate("generator.delete"), this);
+			deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_gen_delete");
+			stackPanel.addTool(deleteLink, Align.left, true, null, this);
+		}
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if (configurationLink == source) {
+		if (source == enableLink) {
+			doConfirmEnableGenerator(ureq);
+		} else if (source == disableLink) {
+			doConfirmDisableGenerator(ureq);
+		} else if (source == deleteLink) {
+			fireEvent(ureq, new GeneratorEvent(generator, GeneratorEvent.Action.DELETE));
+		} else if (configurationLink == source) {
 			doOpenConfiguration(ureq);
 		} else if(whiteListLink == source) {
 			doOpenWhiteList(ureq);
@@ -128,10 +173,6 @@ public class GeneratorController extends BasicController implements TooledContro
 			generator = gEvent.getGenerator();
 			if (GeneratorEvent.Action.CHANGED.equals(action)) {
 				stackPanel.changeDisplayname(generator.getTitle(), null, this);
-			} else if (GeneratorEvent.Action.ENABLE.equals(action)) {
-				doConfirmEnableGenerator(ureq);
-			} else if (GeneratorEvent.Action.DISABLE.equals(action)) {
-				doConfirmDisableGenerator(ureq);
 			} else {
 				fireEvent(ureq, event);
 			}
@@ -226,13 +267,12 @@ public class GeneratorController extends BasicController implements TooledContro
 	}
 	
 	private void updateUI() {
+		initButtons();
 		if (configCtrl != null) {
-			configCtrl.setGenerator(generator);
-			configCtrl.initTools();
+			configCtrl.onChanged(generator);
 		}
 		if (whiteListCtrl != null) {
-			whiteListCtrl.setGenerator(generator);
-			whiteListCtrl.initTools();
+			whiteListCtrl.onChanged(generator);
 		}
 	}
 

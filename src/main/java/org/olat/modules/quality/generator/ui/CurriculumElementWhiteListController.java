@@ -31,6 +31,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
@@ -38,6 +39,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.stack.TooledController;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.control.Controller;
@@ -49,7 +51,6 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumService;
-import org.olat.modules.quality.QualitySecurityCallback;
 import org.olat.modules.quality.generator.QualityGenerator;
 import org.olat.modules.quality.generator.QualityGeneratorConfigs;
 import org.olat.modules.quality.generator.QualityGeneratorService;
@@ -62,7 +63,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class CurriculumElementWhiteListController extends AbstractGeneratorEditController {
+public class CurriculumElementWhiteListController extends FormBasicController
+implements GeneratorWhiteListController, TooledController {
 
 	private static final String CURRICULUM_ELEMENT_WHITE_LIST = "curriculum.element.white.list";
 	private static final String KEY_DELIMITER = ",";
@@ -76,6 +78,8 @@ public class CurriculumElementWhiteListController extends AbstractGeneratorEditC
 	private CurriculumElementSelectionController selectCtrl;
 	private CurriculumElementRemoveConfirmationController removeConfirmationCtrl;
 	
+	private final TooledStackedPanel stackPanel;
+	private final QualityGenerator generator;
 	private final QualityGeneratorConfigs configs;
 	
 	@Autowired
@@ -84,9 +88,10 @@ public class CurriculumElementWhiteListController extends AbstractGeneratorEditC
 	private CurriculumService curriculumService;
 
 	public CurriculumElementWhiteListController(UserRequest ureq, WindowControl wControl,
-			QualitySecurityCallback secCallback, TooledStackedPanel stackPanel, QualityGenerator generator,
-			QualityGeneratorConfigs configs) {
-		super(ureq, wControl, secCallback, stackPanel, generator);
+			TooledStackedPanel stackPanel, QualityGenerator generator, QualityGeneratorConfigs configs) {
+		super(ureq, wControl, LAYOUT_BAREBONE);
+		this.stackPanel = stackPanel;
+		this.generator = generator;
 		this.configs = configs;
 		initForm(ureq);
 	}
@@ -117,8 +122,6 @@ public class CurriculumElementWhiteListController extends AbstractGeneratorEditC
 	
 	@Override
 	public void initTools() {
-		super.initTools();
-		
 		addLink = LinkFactory.createToolLink("curriculum.element.add", translate("curriculum.element.add"), this);
 		addLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_gen_ce_add");
 		stackPanel.addTool(addLink, Align.right);
@@ -264,17 +267,17 @@ public class CurriculumElementWhiteListController extends AbstractGeneratorEditC
 	}
 
 	@Override
-	protected void updateUI() {
-		//
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		//
 	}
 
 	@Override
 	protected void doDispose() {
+		//
+	}
+
+	@Override
+	public void onChanged(QualityGenerator generator) {
 		//
 	}
 

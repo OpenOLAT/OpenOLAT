@@ -61,7 +61,7 @@ import org.olat.modules.quality.generator.TitleCreator;
 import org.olat.modules.quality.generator.provider.course.manager.CourseProviderDAO;
 import org.olat.modules.quality.generator.provider.course.manager.SearchParameters;
 import org.olat.modules.quality.generator.provider.course.ui.CourseProviderConfigController;
-import org.olat.modules.quality.generator.ui.AbstractGeneratorEditController;
+import org.olat.modules.quality.generator.ui.GeneratorWhiteListController;
 import org.olat.modules.quality.generator.ui.ProviderConfigController;
 import org.olat.modules.quality.generator.ui.RepositoryEntryWhiteListController;
 import org.olat.repository.RepositoryEntry;
@@ -159,10 +159,10 @@ public class CourseProvider implements QualityGeneratorProvider {
 	}
 
 	@Override
-	public AbstractGeneratorEditController getWhiteListController(UserRequest ureq, WindowControl wControl,
+	public GeneratorWhiteListController getWhiteListController(UserRequest ureq, WindowControl wControl,
 			QualitySecurityCallback secCallback, TooledStackedPanel stackPanel, QualityGenerator generator,
 			QualityGeneratorConfigs configs) {
-		return new RepositoryEntryWhiteListController(ureq, wControl, secCallback, stackPanel, generator, configs);
+		return new RepositoryEntryWhiteListController(ureq, wControl, stackPanel, configs);
 	}
 
 	@Override

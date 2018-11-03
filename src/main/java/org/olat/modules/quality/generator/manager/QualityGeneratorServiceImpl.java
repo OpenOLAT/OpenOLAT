@@ -45,7 +45,7 @@ import org.olat.modules.quality.generator.QualityGeneratorSearchParams;
 import org.olat.modules.quality.generator.QualityGeneratorService;
 import org.olat.modules.quality.generator.QualityGeneratorToOrganisation;
 import org.olat.modules.quality.generator.QualityGeneratorView;
-import org.olat.modules.quality.generator.ui.AbstractGeneratorEditController;
+import org.olat.modules.quality.generator.ui.GeneratorWhiteListController;
 import org.olat.modules.quality.generator.ui.ProviderConfigController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -168,7 +168,7 @@ public class QualityGeneratorServiceImpl implements QualityGeneratorService {
 	}
 
 	@Override
-	public AbstractGeneratorEditController getWhiteListController(UserRequest ureq, WindowControl wControl,
+	public GeneratorWhiteListController getWhiteListController(UserRequest ureq, WindowControl wControl,
 			QualitySecurityCallback secCallback, TooledStackedPanel stackPanel, QualityGenerator generator) {
 		QualityGeneratorProvider provider = providerFactory.getProvider(generator.getType());
 		QualityGeneratorConfigsImpl configs = new QualityGeneratorConfigsImpl(generator);

@@ -72,7 +72,7 @@ import org.olat.modules.quality.generator.provider.courselectures.manager.Course
 import org.olat.modules.quality.generator.provider.courselectures.manager.LectureBlockInfo;
 import org.olat.modules.quality.generator.provider.courselectures.manager.SearchParameters;
 import org.olat.modules.quality.generator.provider.courselectures.ui.CourseLectureFollowUpProviderConfigController;
-import org.olat.modules.quality.generator.ui.AbstractGeneratorEditController;
+import org.olat.modules.quality.generator.ui.GeneratorWhiteListController;
 import org.olat.modules.quality.generator.ui.ProviderConfigController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
@@ -163,7 +163,7 @@ public class CourseLecturesFollowUpProvider implements QualityGeneratorProvider 
 	}
 
 	@Override
-	public AbstractGeneratorEditController getWhiteListController(UserRequest ureq, WindowControl wControl,
+	public GeneratorWhiteListController getWhiteListController(UserRequest ureq, WindowControl wControl,
 			QualitySecurityCallback secCallback, TooledStackedPanel stackPanel, QualityGenerator generator,
 			QualityGeneratorConfigs configs) {
 		return null;

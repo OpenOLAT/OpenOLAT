@@ -32,8 +32,8 @@ import org.olat.modules.quality.QualitySecurityCallback;
 import org.olat.modules.quality.generator.QualityGenerator;
 import org.olat.modules.quality.generator.QualityGeneratorConfigs;
 import org.olat.modules.quality.generator.QualityGeneratorProvider;
-import org.olat.modules.quality.generator.ui.AbstractGeneratorEditController;
 import org.olat.modules.quality.generator.ui.GeneratorListController;
+import org.olat.modules.quality.generator.ui.GeneratorWhiteListController;
 import org.olat.modules.quality.generator.ui.ProviderConfigController;
 import org.springframework.stereotype.Service;
 
@@ -76,7 +76,7 @@ public class FallbackProvider implements QualityGeneratorProvider {
 	}
 
 	@Override
-	public AbstractGeneratorEditController getWhiteListController(UserRequest ureq, WindowControl wControl,
+	public GeneratorWhiteListController getWhiteListController(UserRequest ureq, WindowControl wControl,
 			QualitySecurityCallback secCallback, TooledStackedPanel stackPanel, QualityGenerator generator,
 			QualityGeneratorConfigs configs) {
 		return null;
