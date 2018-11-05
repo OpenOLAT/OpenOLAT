@@ -1508,12 +1508,16 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 	}
 	
 	/**
-	 * Only legal way to create a MimeMessage!
+	 * Only legal way to create a MimeMessage!<br>
+	 * 
+	 * The specified from will be at the end the reply-to of the mime message.
+	 * The from from the mime message is the property defined with fromemail
+	 * in olat.local.properties.<br>
 	 * 
 	 * @see FXOLAT-74: send all mails as <fromemail> (in config) to have a valid reverse lookup and therefore pass spam protection.
 	 *
-	 * @param subject
-	 * @param from
+	 * @param subject The subject
+	 * @param from The from will be the reply-to
 	 * @return
 	 * @throws AddressException
 	 * @throws MessagingException
@@ -1591,7 +1595,8 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 	private boolean hasExternalFromAndRecipient(MimeMessage msg) throws MessagingException {
 		String fromDomain = WebappHelper.getMailConfig("mailFromDomain");
 		if (!StringHelper.containsNonWhitespace(fromDomain)) {
-			return false;// domain not defined, same behavior as older release of OpenOLAT
+			// if no mailFromDomain property is set every address is considered external
+			return true;
 		}
 		return containsExternalAddress(msg.getFrom(), fromDomain)
 				&& containsExternalAddress(msg.getAllRecipients(), fromDomain);
