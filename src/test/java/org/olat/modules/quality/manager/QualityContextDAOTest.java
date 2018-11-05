@@ -221,15 +221,23 @@ public class QualityContextDAOTest extends OlatTestCase {
 	public void shouldAddSessionAndRemovePaticipationWhenFinishing() {
 		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
 		EvaluationFormParticipation participation = qualityTestHelper.createParticipation();
-		sut.createContext(dataCollection, participation, null,null,  null, null);
+		sut.createContext(dataCollection, participation, null,null, null, null);
+		// Second context should be handled as well
+		sut.createContext(dataCollection, participation, null,null, null, null);
 		dbInstance.commitAndCloseSession();
 		
 		EvaluationFormSession session = qualityTestHelper.createSession(participation);
-		QualityContext context = sut.finish(participation, session);
+		sut.finish(participation, session);
+		dbInstance.commitAndCloseSession();
 		
 		SoftAssertions softly = new SoftAssertions();
-		softly.assertThat(context.getEvaluationFormParticipation()).isNull();
-		softly.assertThat(context.getEvaluationFormSession()).isEqualTo(session);
+		List<QualityContext> contexts = sut.loadByParticipation(participation);
+		softly.assertThat(contexts).isEmpty();
+		contexts = sut.loadBySession(session);
+		for (QualityContext context : contexts) {
+			softly.assertThat(context.getEvaluationFormParticipation()).isNull();
+			softly.assertThat(context.getEvaluationFormSession()).isEqualTo(session);
+		}
 		softly.assertAll();
 	}
 
@@ -238,15 +246,22 @@ public class QualityContextDAOTest extends OlatTestCase {
 		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
 		EvaluationFormParticipation participation = qualityTestHelper.createParticipation();
 		sut.createContext(dataCollection, participation, null, null, null, null);
+		sut.createContext(dataCollection, participation, null, null, null, null);
 		EvaluationFormSession session = qualityTestHelper.createSession(participation);
 		sut.finish(participation, session);
 		dbInstance.commitAndCloseSession();
 		
-		QualityContext context = sut.reopen(session, participation);
+		sut.reopen(session, participation);
+		dbInstance.commitAndCloseSession();
 		
 		SoftAssertions softly = new SoftAssertions();
-		assertThat(context.getEvaluationFormSession()).isNull();
-		assertThat(context.getEvaluationFormParticipation()).isEqualTo(participation);
+		List<QualityContext> contexts = sut.loadBySession(session);
+		softly.assertThat(contexts).isEmpty();
+		contexts = sut.loadByParticipation(participation);
+		for (QualityContext context : contexts) {
+			assertThat(context.getEvaluationFormSession()).isNull();
+			assertThat(context.getEvaluationFormParticipation()).isEqualTo(participation);
+		}
 		softly.assertAll();
 	}
 
