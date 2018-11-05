@@ -558,10 +558,6 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		try {
@@ -579,6 +575,11 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				euce.getCourseEditorEnv().validateCourse();
 				StatusDescription[] courseStatus = euce.getCourseEditorEnv().getCourseStatus();
 				updateCourseStatusMessages(ureq.getLocale(), courseStatus);
+				TreeNode node = menuTree.getSelectedNode();
+				if(node instanceof CourseEditorTreeNode) {
+					CourseEditorTreeNode cet = (CourseEditorTreeNode)node;
+					main.contextPut("courseNode", cet.getCourseNode());
+				}
 			}
 		} else if (source == statusCtr) {
 			if (event.getCommand().startsWith(NLS_START_HELP_WIZARD)) {
