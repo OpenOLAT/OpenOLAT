@@ -251,17 +251,17 @@ public class QualityServiceImpl
 		QualityReportAccessSearchParams searchParams = new QualityReportAccessSearchParams();
 		searchParams.setReference(of(dataCollection));
 		List<QualityReportAccess> reportAccesses = reportAccessDao.load(searchParams);
-		Set<Identity> receivers = new HashSet<>();
+		Set<Identity> recipients = new HashSet<>();
 		
 		for (QualityReportAccess reportAccess : reportAccesses) {
 			EmailTrigger emailTrigger = reportAccess.getEmailTrigger();
 			if (containsTrigger(rubricStatistics, emailTrigger)) {
-				List<Identity> identities = reportAccessDao.loadReceivers(reportAccess);
-				receivers.addAll(identities);
+				List<Identity> identities = reportAccessDao.loadRecipients(reportAccess);
+				recipients.addAll(identities);
 			}
 		}
 		
-		qualityMailing.sendReportAccessEmail(dataCollection, receivers, rubricStatistics);
+		qualityMailing.sendReportAccessEmail(dataCollection, recipients, rubricStatistics);
 	}
 
 	private boolean containsTrigger(List<RubricStatistic> rubricStatistics, EmailTrigger emailTrigger) {

@@ -45,7 +45,10 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
+import org.olat.modules.forms.EvaluationFormParticipationStatus;
+import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityDataCollectionRef;
 import org.olat.modules.quality.QualityDataCollectionSearchParams;
@@ -79,6 +82,8 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 	private QualityTestHelper qualityTestHelper;
 	@Autowired
 	private QualityService qualityService;
+	@Autowired
+	private EvaluationFormManager evaluationFormManager;
 	@Autowired
 	private RepositoryService repositoryService;
 	
@@ -621,6 +626,126 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 				.doesNotContain(
 						dcOtherRole.getKey(),
 						dcNotMember.getKey(),
+						dcNotFinished.getKey(),
+						dcNoAccess.getKey(),
+						dcAccessDenied.getKey()
+						);
+	}
+	
+	@Test
+	public void shouldFilterDataCollectionsByReportDoneParticipants() {
+		Identity executor = JunitTestHelper.createAndPersistIdentityAsRndUser("p1");
+		// participated and session finished
+		QualityDataCollection dc = qualityTestHelper.createDataCollection();
+		qualityService.updateDataCollectionStatus(dc, QualityDataCollectionStatus.FINISHED);
+		EvaluationFormParticipation participationFinished = qualityService.addParticipations(dc, singletonList(executor)).get(0);
+		EvaluationFormSession session = evaluationFormManager.createSession(participationFinished);
+		evaluationFormManager.finishSession(session);
+		QualityReportAccess ra = qualityService.createReportAccess(of(dc), QualityReportAccess.Type.Participants, EvaluationFormParticipationStatus.done.name());
+		ra.setOnline(true);
+		qualityService.updateReportAccess(ra);
+		// participation but session not finished
+		QualityDataCollection dcSessionNotFinished = qualityTestHelper.createDataCollection();
+		qualityService.updateDataCollectionStatus(dcSessionNotFinished, QualityDataCollectionStatus.FINISHED);
+		EvaluationFormParticipation participationNotFinished = qualityService.addParticipations(dc, singletonList(executor)).get(0);
+		evaluationFormManager.createSession(participationNotFinished);
+		QualityReportAccess raSessionNotFinished = qualityService.createReportAccess(of(dcSessionNotFinished), QualityReportAccess.Type.Participants, EvaluationFormParticipationStatus.done.name());
+		raSessionNotFinished.setOnline(true);
+		qualityService.updateReportAccess(raSessionNotFinished);
+		// participated and data collection finished
+		QualityDataCollection dcNotFinished = qualityTestHelper.createDataCollection();
+		qualityService.updateDataCollectionStatus(dcNotFinished, QualityDataCollectionStatus.RUNNING);
+		EvaluationFormParticipation participationDcNotFinished = qualityService.addParticipations(dcNotFinished, singletonList(executor)).get(0);
+		EvaluationFormSession sessionSessionDcNotFinished = evaluationFormManager.createSession(participationDcNotFinished);
+		evaluationFormManager.finishSession(sessionSessionDcNotFinished);
+		QualityReportAccess raSessionDcNotFinished = qualityService.createReportAccess(of(dcNotFinished), QualityReportAccess.Type.Participants, EvaluationFormParticipationStatus.done.name());
+		raSessionDcNotFinished.setOnline(true);
+		qualityService.updateReportAccess(raSessionDcNotFinished);
+		// No access configured
+		QualityDataCollection dcNoAccess = qualityTestHelper.createDataCollection();
+		qualityService.updateDataCollectionStatus(dcNoAccess, QualityDataCollectionStatus.FINISHED);
+		EvaluationFormParticipation participationBoAccess = qualityService.addParticipations(dcNoAccess, singletonList(executor)).get(0);
+		EvaluationFormSession sessionNoAccess = evaluationFormManager.createSession(participationBoAccess);
+		evaluationFormManager.finishSession(sessionNoAccess);
+		// Executor has access denied
+		QualityDataCollection dcAccessDenied = qualityTestHelper.createDataCollection();
+		qualityService.updateDataCollectionStatus(dcAccessDenied, QualityDataCollectionStatus.FINISHED);
+		EvaluationFormParticipation participationAccessDenied = qualityService.addParticipations(dcAccessDenied, singletonList(executor)).get(0);
+		EvaluationFormSession sessionAccessDenied = evaluationFormManager.createSession(participationAccessDenied);
+		evaluationFormManager.finishSession(sessionAccessDenied);
+		QualityReportAccess raAccessDenied = qualityService.createReportAccess(of(dcAccessDenied), QualityReportAccess.Type.Participants, EvaluationFormParticipationStatus.done.name());
+		raAccessDenied.setOnline(false);
+		qualityService.updateReportAccess(raAccessDenied);
+		
+		QualityDataCollectionViewSearchParams searchParams = new QualityDataCollectionViewSearchParams();
+		searchParams.setReportAccessIdentity(executor);
+		List<QualityDataCollectionView> dataCollections = sut.loadDataCollections(TRANSLATOR, searchParams, 0, -1);
+		
+		List<Long> loadedKeys = dataCollections.stream().map(QualityDataCollectionView::getKey).collect(toList());
+		assertThat(loadedKeys)
+				.containsExactlyInAnyOrder(dc.getKey())
+				.doesNotContain(
+						dcSessionNotFinished.getKey(),
+						dcNotFinished.getKey(),
+						dcNoAccess.getKey(),
+						dcAccessDenied.getKey()
+						);
+	}
+	
+	@Test
+	public void shouldFilterDataCollectionsByReportAllParticipants() {
+		Identity executor = JunitTestHelper.createAndPersistIdentityAsRndUser("p1");
+		// participated and session finished
+		QualityDataCollection dc = qualityTestHelper.createDataCollection();
+		qualityService.updateDataCollectionStatus(dc, QualityDataCollectionStatus.FINISHED);
+		EvaluationFormParticipation participationFinished = qualityService.addParticipations(dc, singletonList(executor)).get(0);
+		EvaluationFormSession session = evaluationFormManager.createSession(participationFinished);
+		evaluationFormManager.finishSession(session);
+		QualityReportAccess ra = qualityService.createReportAccess(of(dc), QualityReportAccess.Type.Participants, null);
+		ra.setOnline(true);
+		qualityService.updateReportAccess(ra);
+		// participation but session not finished
+		QualityDataCollection dcSessionNotFinished = qualityTestHelper.createDataCollection();
+		qualityService.updateDataCollectionStatus(dcSessionNotFinished, QualityDataCollectionStatus.FINISHED);
+		qualityService.addParticipations(dcSessionNotFinished, singletonList(executor));
+		QualityReportAccess raSessionNotFinished = qualityService.createReportAccess(of(dcSessionNotFinished), QualityReportAccess.Type.Participants, null);
+		raSessionNotFinished.setOnline(true);
+		qualityService.updateReportAccess(raSessionNotFinished);
+		// participated and data collection finished
+		QualityDataCollection dcNotFinished = qualityTestHelper.createDataCollection();
+		qualityService.updateDataCollectionStatus(dcNotFinished, QualityDataCollectionStatus.RUNNING);
+		EvaluationFormParticipation participationDcNotFinished = qualityService.addParticipations(dcNotFinished, singletonList(executor)).get(0);
+		EvaluationFormSession sessionSessionDcNotFinished = evaluationFormManager.createSession(participationDcNotFinished);
+		evaluationFormManager.finishSession(sessionSessionDcNotFinished);
+		QualityReportAccess raSessionDcNotFinished = qualityService.createReportAccess(of(dcNotFinished), QualityReportAccess.Type.Participants, null);
+		raSessionDcNotFinished.setOnline(true);
+		qualityService.updateReportAccess(raSessionDcNotFinished);
+		// No access configured
+		QualityDataCollection dcNoAccess = qualityTestHelper.createDataCollection();
+		qualityService.updateDataCollectionStatus(dcNoAccess, QualityDataCollectionStatus.FINISHED);
+		EvaluationFormParticipation participationBoAccess = qualityService.addParticipations(dcNoAccess, singletonList(executor)).get(0);
+		EvaluationFormSession sessionNoAccess = evaluationFormManager.createSession(participationBoAccess);
+		evaluationFormManager.finishSession(sessionNoAccess);
+		// Executor has access denied
+		QualityDataCollection dcAccessDenied = qualityTestHelper.createDataCollection();
+		qualityService.updateDataCollectionStatus(dcAccessDenied, QualityDataCollectionStatus.FINISHED);
+		EvaluationFormParticipation participationAccessDenied = qualityService.addParticipations(dcAccessDenied, singletonList(executor)).get(0);
+		EvaluationFormSession sessionAccessDenied = evaluationFormManager.createSession(participationAccessDenied);
+		evaluationFormManager.finishSession(sessionAccessDenied);
+		QualityReportAccess raAccessDenied = qualityService.createReportAccess(of(dcAccessDenied), QualityReportAccess.Type.Participants, null);
+		raAccessDenied.setOnline(false);
+		qualityService.updateReportAccess(raAccessDenied);
+		
+		QualityDataCollectionViewSearchParams searchParams = new QualityDataCollectionViewSearchParams();
+		searchParams.setReportAccessIdentity(executor);
+		List<QualityDataCollectionView> dataCollections = sut.loadDataCollections(TRANSLATOR, searchParams, 0, -1);
+		
+		List<Long> loadedKeys = dataCollections.stream().map(QualityDataCollectionView::getKey).collect(toList());
+		assertThat(loadedKeys)
+				.containsExactlyInAnyOrder(
+						dc.getKey(),
+						dcSessionNotFinished.getKey())
+				.doesNotContain(
 						dcNotFinished.getKey(),
 						dcNoAccess.getKey(),
 						dcAccessDenied.getKey()

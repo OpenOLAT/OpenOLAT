@@ -41,8 +41,6 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.forms.EvaluationFormManager;
@@ -89,8 +87,6 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class CourseLecturesFollowUpProvider implements QualityGeneratorProvider {
-
-	private static final OLog log = Tracing.createLoggerFor(CourseLecturesFollowUpProvider.class);
 
 	public static final String CONFIG_KEY_DURATION_DAYS = "duration.days";
 	public static final String CONFIG_KEY_GRADE_TOTAL_LIMIT = "grade.total.limit";

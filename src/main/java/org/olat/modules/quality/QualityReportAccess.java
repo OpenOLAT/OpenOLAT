@@ -34,7 +34,7 @@ public interface QualityReportAccess extends CreateInfo, ModifiedInfo {
 		GroupRoles,
 		CurriculumRoles,
 		TopicIdentity,
-		DataCollectionParticipants
+		Participants
 	}
 	
 	public enum EmailTrigger {

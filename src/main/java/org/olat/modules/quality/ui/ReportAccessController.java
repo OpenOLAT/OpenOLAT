@@ -42,6 +42,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.forms.EvaluationFormParticipationStatus;
 import org.olat.modules.quality.QualityReportAccess;
 import org.olat.modules.quality.QualityReportAccess.EmailTrigger;
 import org.olat.modules.quality.QualityReportAccess.Type;
@@ -132,6 +133,8 @@ public abstract class ReportAccessController extends FormBasicController {
 	private List<ReportAccessRow> createRows() {
 		List<ReportAccessRow> rows = new ArrayList<>();
 
+		rows.add(createRow("report.access.name.participants.all", Type.Participants, null));
+		rows.add(createRow("report.access.name.participants.done", Type.Participants, EvaluationFormParticipationStatus.done.name()));
 		rows.add(createRow("report.access.name.repo.owner", Type.GroupRoles, GroupRoles.owner.name()));
 		rows.add(createRow("report.access.name.repo.coach", Type.GroupRoles, GroupRoles.coach.name()));
 		

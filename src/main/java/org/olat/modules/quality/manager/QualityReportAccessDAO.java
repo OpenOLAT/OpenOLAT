@@ -30,6 +30,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
 import org.olat.modules.quality.QualityDataCollection;
+import org.olat.modules.quality.QualityDataCollectionLight;
 import org.olat.modules.quality.QualityReportAccess;
 import org.olat.modules.quality.QualityReportAccess.EmailTrigger;
 import org.olat.modules.quality.QualityReportAccess.Type;
@@ -150,32 +151,53 @@ class QualityReportAccessDAO {
 		}
 	}
 
-	List<Identity> loadReceivers(QualityReportAccess reportAccess) {
+	List<Identity> loadRecipients(QualityReportAccess reportAccess) {
 		Type type = reportAccess.getType();
 		switch (type) {
-		case GroupRoles: return loadReceiversOfGroupRoles(reportAccess);
-		default: return Collections.emptyList();
-		}
+		case Participants: return loadRecipientsOfParticipants(reportAccess);
+		case GroupRoles: return loadRecipientsOfGroupRoles(reportAccess);
+	default: return Collections.emptyList();
 	}
+}
 
-	private List<Identity> loadReceiversOfGroupRoles(QualityReportAccess reportAccess) {
-		QueryBuilder sb = new QueryBuilder();
-		sb.append("select membership.identity");
-		sb.append("  from qualityreportaccess as ra");
-		sb.append("     , qualitydatacollection as collection");
-		sb.append("     , qualitycontext as context");
-		sb.append("     , repoentrytogroup as rel");
-		sb.append("     , bgroupmember as membership");
-		sb.and().append("ra.dataCollection.key = context.dataCollection.key");
-		sb.and().append("rel.entry.key = context.audienceRepositoryEntry.key");
-		sb.and().append("rel.group.key = membership.group.key");
-		sb.and().append("membership.role = ra.role");
-		sb.and().append("ra.key= :reportAccessKey");
-		
-		TypedQuery<Identity> query = dbInstance.getCurrentEntityManager()
+private List<Identity> loadRecipientsOfParticipants(QualityReportAccess reportAccess) {
+	QueryBuilder sb = new QueryBuilder();
+	sb.append("select participation.executor");
+	sb.append("  from qualityreportaccess as ra");
+	sb.append("       join ra.dataCollection as collection");
+	sb.append("       join evaluationformsurvey survey");
+	sb.append("         on survey.resName = '").append(QualityDataCollectionLight.RESOURCEABLE_TYPE_NAME).append("'");
+	sb.append("        and survey.resId = collection.key");
+	sb.append("       join evaluationformparticipation as participation");
+	sb.append("         on participation.survey.key = survey.key");
+	sb.and().append("ra.key = :reportAccessKey");
+	sb.and().append("((ra.role is null) or (participation.status = ra.role))");
+	sb.and().append("participation.executor is not null");
+	
+	return dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Identity.class)
+			.setParameter("reportAccessKey", reportAccess.getKey())
+			.getResultList();
+}
+
+private List<Identity> loadRecipientsOfGroupRoles(QualityReportAccess reportAccess) {
+	QueryBuilder sb = new QueryBuilder();
+	sb.append("select membership.identity");
+	sb.append("  from qualityreportaccess as ra");
+	sb.append("     , qualitydatacollection as collection");
+	sb.append("     , qualitycontext as context");
+	sb.append("     , repoentrytogroup as rel");
+	sb.append("     , bgroupmember as membership");
+	sb.and().append("ra.dataCollection.key = context.dataCollection.key");
+	sb.and().append("rel.entry.key = context.audienceRepositoryEntry.key");
+	sb.and().append("rel.group.key = membership.group.key");
+	sb.and().append("membership.role = ra.role");
+	sb.and().append("ra.key = :reportAccessKey");
+	
+	return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Identity.class)
-				.setParameter("reportAccessKey", reportAccess.getKey());
-		return query.getResultList();
+				.setParameter("reportAccessKey", reportAccess.getKey())
+				.getResultList();
 	}
 
 }

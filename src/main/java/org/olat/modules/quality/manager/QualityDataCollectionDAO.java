@@ -449,6 +449,24 @@ public class QualityDataCollectionDAO {
 					sb.append("   and collection.status = '").append(QualityDataCollectionStatus.FINISHED).append("'");
 					sb.append("   and membership.identity.key = :reportAccessIdentityKey");
 					sb.append(")");
+					or = true;
+					sb.append(" or ", or);
+					sb.append("exists (");
+					sb.append("select collection.key");
+					sb.append("  from qualityreportaccess as ra");
+					sb.append("     , evaluationformsurvey survey");
+					sb.append("     , evaluationformparticipation as participation");
+					sb.append(" where ra.dataCollection.key = collection.key");
+					sb.append("   and survey.resName = '").append(QualityDataCollectionLight.RESOURCEABLE_TYPE_NAME).append("'");
+					sb.append("   and survey.resId = collection.key");
+					sb.append("   and participation.survey.key = survey.key");
+					sb.append("   and ra.online = true");
+					sb.append("   and ra.type = '").append(QualityReportAccess.Type.Participants).append("'");
+					sb.append("   and collection.status = '").append(QualityDataCollectionStatus.FINISHED).append("'");
+					sb.append("   and ((ra.role is null) or (participation.status = ra.role))");
+					sb.append("   and participation.executor.key = :reportAccessIdentityKey");
+					sb.append(")");
+					or = true;
 				}
 				sb.append(")");
 			}

@@ -182,43 +182,43 @@ class QualityMailing {
 		return sb.toString();
 	}
 
-	void sendReportAccessEmail(QualityDataCollection dataCollection, Collection<Identity> receivers,
+	void sendReportAccessEmail(QualityDataCollection dataCollection, Collection<Identity> recipients,
 			List<RubricStatistic> rubricStatistics) {
-		for (Identity receiver : receivers) {
-			sendReportAccessEmail(dataCollection, receiver, rubricStatistics);
+		for (Identity recipient : recipients) {
+			sendReportAccessEmail(dataCollection, recipient, rubricStatistics);
 		}
 		
 	}
 	
-	private void sendReportAccessEmail(QualityDataCollection dataCollection, Identity receiver, List<RubricStatistic> rubricStatistics) {
-		MailTemplate template = createReportAccessMailTemplate(dataCollection, receiver, rubricStatistics);
+	private void sendReportAccessEmail(QualityDataCollection dataCollection, Identity recipient, List<RubricStatistic> rubricStatistics) {
+		MailTemplate template = createReportAccessMailTemplate(dataCollection, recipient, rubricStatistics);
 		
 		MailerResult result = new MailerResult();
 		MailManager mailManager = CoreSpringFactory.getImpl(MailManager.class);
-		MailBundle bundle = mailManager.makeMailBundle(null, receiver, template, null, null, result);
+		MailBundle bundle = mailManager.makeMailBundle(null, recipient, template, null, null, result);
 		if(bundle != null) {
 			result = mailManager.sendMessage(bundle);
 			if (result.isSuccessful()) {
 				log.info("Report access email send");
 				log.info(MessageFormat.format("Report access email for quality data collection [key={0}] sent to {1}",
-						dataCollection.getKey(), receiver));
+						dataCollection.getKey(), recipient));
 			} else {
 				log.warn(MessageFormat.format("Sending report access email for quality data collection [key={0}] to {1} failed: {2}",
-						dataCollection.getKey(), receiver, result.getErrorMessage()));
+						dataCollection.getKey(), recipient, result.getErrorMessage()));
 			}
 		}
 	}
 
-	private MailTemplate createReportAccessMailTemplate(QualityDataCollection dataCollection, Identity receiver,
+	private MailTemplate createReportAccessMailTemplate(QualityDataCollection dataCollection, Identity recipient,
 			List<RubricStatistic> rubricStatistics) {
-		Locale locale = I18nManager.getInstance().getLocaleOrDefault(receiver.getUser().getPreferences().getLanguage());
+		Locale locale = I18nManager.getInstance().getLocaleOrDefault(recipient.getUser().getPreferences().getLanguage());
 		Translator translator = Util.createPackageTranslator(QualityMainController.class, locale);
 		
 		String subject = translator.translate("report.access.email.subject");
 		String body = translator.translate("report.access.email.body");
 		QualityMailTemplateBuilder mailBuilder = QualityMailTemplateBuilder.builder(subject, body, locale);
 		
-		User user = receiver.getUser();
+		User user = recipient.getUser();
 		mailBuilder.withExecutor(user);
 		
 		QualityDataCollectionViewSearchParams searchParams = new QualityDataCollectionViewSearchParams();

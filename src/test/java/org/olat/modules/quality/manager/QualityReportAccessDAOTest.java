@@ -31,7 +31,10 @@ import org.junit.Test;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
+import org.olat.modules.forms.EvaluationFormParticipationStatus;
+import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityDataCollectionRef;
 import org.olat.modules.quality.QualityReportAccess;
@@ -63,6 +66,8 @@ public class QualityReportAccessDAOTest extends OlatTestCase {
 	private QualityService qualityService;
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private EvaluationFormManager evaluationFormManager;
 	
 	@Autowired
 	private QualityReportAccessDAO sut;
@@ -241,6 +246,64 @@ public class QualityReportAccessDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void shouldLoadReceiversForDoneParticipations() {
+		Identity executorFinished = JunitTestHelper.createAndPersistIdentityAsRndUser("p1");
+		Identity executorNotFinished = JunitTestHelper.createAndPersistIdentityAsRndUser("p2");
+		Identity executorOther = JunitTestHelper.createAndPersistIdentityAsRndUser("p3");
+		QualityDataCollection dc = qualityTestHelper.createDataCollection();
+		// participated and session finished
+		EvaluationFormParticipation participationFinished = qualityService.addParticipations(dc, singletonList(executorFinished)).get(0);
+		EvaluationFormSession session = evaluationFormManager.createSession(participationFinished);
+		evaluationFormManager.finishSession(session);
+		// participation but session not finished
+		EvaluationFormParticipation participationNotFinished = qualityService.addParticipations(dc, singletonList(executorNotFinished)).get(0);
+		evaluationFormManager.createSession(participationNotFinished);
+		// participation to an other data collection
+		QualityDataCollection dcOther = qualityTestHelper.createDataCollection();
+		EvaluationFormParticipation participationOther = qualityService.addParticipations(dcOther, singletonList(executorOther)).get(0);
+		EvaluationFormSession sessionOther = evaluationFormManager.createSession(participationOther);
+		evaluationFormManager.finishSession(sessionOther);
+		
+		QualityReportAccess reportAccess = qualityService.createReportAccess(of(dc), Type.Participants, EvaluationFormParticipationStatus.done.name());
+		dbInstance.commitAndCloseSession();
+		
+		List<Identity> receivers = sut.loadRecipients(reportAccess);
+		
+		assertThat(receivers)
+				.containsExactlyInAnyOrder(executorFinished)
+				.doesNotContain(executorNotFinished, executorOther);
+	}
+	
+	@Test
+	public void shouldLoadReceiversForAllParticipations() {
+		Identity executorFinished = JunitTestHelper.createAndPersistIdentityAsRndUser("p1");
+		Identity executorNotFinished = JunitTestHelper.createAndPersistIdentityAsRndUser("p2");
+		Identity executorOther = JunitTestHelper.createAndPersistIdentityAsRndUser("p3");
+		QualityDataCollection dc = qualityTestHelper.createDataCollection();
+		// participated and session finished
+		EvaluationFormParticipation participationFinished = qualityService.addParticipations(dc, singletonList(executorFinished)).get(0);
+		EvaluationFormSession session = evaluationFormManager.createSession(participationFinished);
+		evaluationFormManager.finishSession(session);
+		// participation but session not finished
+		EvaluationFormParticipation participationNotFinished = qualityService.addParticipations(dc, singletonList(executorNotFinished)).get(0);
+		evaluationFormManager.createSession(participationNotFinished);
+		// participation to an other data collection
+		QualityDataCollection dcOther = qualityTestHelper.createDataCollection();
+		EvaluationFormParticipation participationOther = qualityService.addParticipations(dcOther, singletonList(executorOther)).get(0);
+		EvaluationFormSession sessionOther = evaluationFormManager.createSession(participationOther);
+		evaluationFormManager.finishSession(sessionOther);
+		
+		QualityReportAccess reportAccess = qualityService.createReportAccess(of(dc), Type.Participants, null);
+		dbInstance.commitAndCloseSession();
+		
+		List<Identity> receivers = sut.loadRecipients(reportAccess);
+		
+		assertThat(receivers)
+				.containsExactlyInAnyOrder(executorFinished, executorNotFinished)
+				.doesNotContain(executorOther);
+	}
+	
+	@Test
 	public void shouldLoadReceiversForGroupRole() {
 		Identity reportViewerEntry1 = JunitTestHelper.createAndPersistIdentityAsRndUser("course1");
 		Identity reportViewerEntry2 = JunitTestHelper.createAndPersistIdentityAsRndUser("course1");
@@ -272,7 +335,7 @@ public class QualityReportAccessDAOTest extends OlatTestCase {
 		QualityReportAccess reportAccess = qualityService.createReportAccess(of(dc), Type.GroupRoles, reportViewerRole.name());
 		dbInstance.commitAndCloseSession();
 		
-		List<Identity> receivers = sut.loadReceivers(reportAccess);
+		List<Identity> receivers = sut.loadRecipients(reportAccess);
 		
 		assertThat(receivers)
 				.containsExactlyInAnyOrder(reportViewerEntry1, reportViewerEntry2)
