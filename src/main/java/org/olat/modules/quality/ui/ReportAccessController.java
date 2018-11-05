@@ -137,7 +137,7 @@ public abstract class ReportAccessController extends FormBasicController {
 		rows.add(createRow("report.access.name.participants.done", Type.Participants, EvaluationFormParticipationStatus.done.name()));
 		rows.add(createRow("report.access.name.repo.owner", Type.GroupRoles, GroupRoles.owner.name()));
 		rows.add(createRow("report.access.name.repo.coach", Type.GroupRoles, GroupRoles.coach.name()));
-		
+		rows.add(createRow("report.access.name.topic.identity", Type.TopicIdentity, null));
 		return rows;
 	}
 	

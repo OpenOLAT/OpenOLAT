@@ -342,4 +342,27 @@ public class QualityReportAccessDAOTest extends OlatTestCase {
 				.doesNotContain(reportViewerOtherRole, reportViewerNoParticipant);
 	}
 	
+	@Test
+	public void shouldLoadReceiversForTopicIdentity() {
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsUser("c1");
+		Identity coachOther = JunitTestHelper.createAndPersistIdentityAsUser("c2");
+		// Everything fulfilled
+		QualityDataCollection dc = qualityTestHelper.createDataCollection();
+		dc.setTopicIdentity(coach);
+		qualityService.updateDataCollection(dc);
+		// Data collection with other coach
+		QualityDataCollection dcOther = qualityTestHelper.createDataCollection();
+		dcOther.setTopicIdentity(coachOther);
+		qualityService.updateDataCollection(dcOther);
+		
+		QualityReportAccess reportAccess = qualityService.createReportAccess(of(dc), Type.TopicIdentity, null);
+		dbInstance.commitAndCloseSession();
+		
+		List<Identity> receivers = sut.loadRecipients(reportAccess);
+		
+		assertThat(receivers)
+				.containsExactlyInAnyOrder(coach)
+				.doesNotContain(coachOther);
+	}
+
 }

@@ -467,6 +467,17 @@ public class QualityDataCollectionDAO {
 					sb.append("   and participation.executor.key = :reportAccessIdentityKey");
 					sb.append(")");
 					or = true;
+					sb.append(" or ", or);
+					sb.append("exists (");
+					sb.append("select collection.key");
+					sb.append("  from qualityreportaccess as ra");
+					sb.append(" where ra.dataCollection.key = collection.key");
+					sb.append("   and ra.online = true");
+					sb.append("   and ra.type = '").append(QualityReportAccess.Type.TopicIdentity).append("'");
+					sb.append("   and collection.status = '").append(QualityDataCollectionStatus.FINISHED).append("'");
+					sb.append("   and collection.topicIdentity.key = :reportAccessIdentityKey");
+					sb.append(")");
+					or = true;
 				}
 				sb.append(")");
 			}
