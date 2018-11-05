@@ -164,23 +164,15 @@ jQuery(function() {
 $r.render("jsCssRawHtmlHeader", "pre-theme")
 ## 2) CSS theme inclusion, theme JavaScript, favicons and appicons
 $theme.renderHTMLHeaderElements()
- ## 3) Insert IE specific class names
-<!--[if IE 8]>
-<script type="text/javascript">
-	jQuery(document).ready(function() { jQuery('body').addClass('o_browser_ie8'); });
-</script>
-<![endif]-->
-<!--[if IE 9]>
-<script type="text/javascript">
-	jQuery(document).ready(function() { jQuery('body').addClass('o_browser_ie9'); });
-</script>
-<![endif]-->
-## Detect IE 10
-<script type="text/javascript">
-	if (Function('/*@cc_on return document.documentMode===10@*/')()){
-		jQuery(document).ready(function() { jQuery('body').addClass('o_browser_ie10'); });
-	}
-</script>
+## 3) Insert IE specific class names
+	<script type="text/javascript">
+        jQuery(document).ready(function() {
+            /* Detect IE below version 11 */
+            if (window.navigator.userAgent.indexOf('MSIE ') > 0) {
+                jQuery('body').addClass('o_browser_ie10');
+            }
+        });
+	</script>
 ## 5) Dynamic overriding of CSS rules
 $r.render("jsCssRawHtmlHeader", "post-theme")
 ## 6) Add user font size (id o_fontSize_css used to place on demand css)
