@@ -188,8 +188,9 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 		boolean anonymous = !notAnonymous;
 		flc.contextPut("anonymous", Boolean.valueOf(showDoneButton && anonymous));
 
-		saveLink = uifactory.addFormLink("save.intermediate", "save.intermediate", null, flc, Link.BUTTON);
 		doneLink = uifactory.addFormLink("save.as.done", "save.as.done", null, flc, Link.BUTTON);
+		doneLink.setPrimary(true);
+		saveLink = uifactory.addFormLink("save.intermediate", "save.intermediate", null, flc, Link.BUTTON);
 		showHideButtons();
 	}
 	
@@ -335,6 +336,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 			}
 		}
 		confirmDoneCtrl = activateYesNoDialog(ureq, null, sb.toString(), confirmDoneCtrl);
+		confirmDoneCtrl.setPrimary(0);
 	}
 
 	private void saveAsDone(UserRequest ureq) {

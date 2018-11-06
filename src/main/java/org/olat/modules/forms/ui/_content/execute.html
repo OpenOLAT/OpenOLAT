@@ -20,11 +20,11 @@
 		$r.render("fragments")
 		
 		<div class="o_button_group">
-			#if($r.available("save.intermediate") && $r.visible("save.intermediate"))
-				$r.render("save.intermediate")
-			#end
 			#if($r.available("save.as.done") && $r.visible("save.as.done"))
 				$r.render("save.as.done")
+			#end
+			#if($r.available("save.intermediate") && $r.visible("save.intermediate"))
+				$r.render("save.intermediate")
 			#end
 		</div>
 	</div>
