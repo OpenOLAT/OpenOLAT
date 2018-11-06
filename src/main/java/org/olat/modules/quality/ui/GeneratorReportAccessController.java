@@ -49,7 +49,7 @@ public class GeneratorReportAccessController extends ReportAccessController impl
 	@Override
 	public void onChanged(QualityGenerator generator, UserRequest ureq) {
 		this.generator = generator;
-		initTable(ureq);
+		initForm(ureq);
 	}
 
 	@Override
@@ -60,6 +60,11 @@ public class GeneratorReportAccessController extends ReportAccessController impl
 	@Override
 	protected boolean canEditReportAccessEmail() {
 		return secCallback.canEditReportAccessEmail(generator);
+	}
+
+	@Override
+	protected boolean canEditReportMembers() {
+		return secCallback.canEditReportAccessMembers(generator);
 	}
 
 }

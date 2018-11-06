@@ -1876,6 +1876,7 @@ create table o_qual_report_access (
   q_email_trigger varchar(64),
   fk_data_collection bigint,
   fk_generator bigint,
+  fk_group bigint,
   primary key (id)
 );
 

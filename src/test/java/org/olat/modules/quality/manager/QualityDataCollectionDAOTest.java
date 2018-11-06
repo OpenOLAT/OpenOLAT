@@ -812,5 +812,52 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 						dcAccessDenied.getKey()
 						);
 	}
-
+	
+	@Test
+	public void shouldFilterDataCollectionsByReportMembers() {
+		Identity member = JunitTestHelper.createAndPersistIdentityAsRndUser("p1");
+		// Everything fulfilled
+		QualityDataCollection dc = qualityTestHelper.createDataCollection();
+		qualityService.addReportMember(of(dc), member);
+		dc = qualityService.updateDataCollectionStatus(dc, QualityDataCollectionStatus.FINISHED);
+		QualityReportAccess ra = qualityService.loadMembersReportAccess(of(dc));
+		ra.setOnline(true);
+		qualityService.updateReportAccess(ra);
+		// Data collection has other members
+		Identity memberOther = JunitTestHelper.createAndPersistIdentityAsRndUser("p1");
+		QualityDataCollection dcOther = qualityTestHelper.createDataCollection();
+		qualityService.addReportMember(of(dcOther), memberOther);
+		dcOther = qualityService.updateDataCollectionStatus(dcOther, QualityDataCollectionStatus.FINISHED);
+		QualityReportAccess raOther = qualityService.loadMembersReportAccess(of(dcOther));
+		raOther.setOnline(true);
+		qualityService.updateReportAccess(raOther);
+		// data collection not finished
+		QualityDataCollection dcNotFinished = qualityTestHelper.createDataCollection();
+		qualityService.addReportMember(of(dcNotFinished), member);
+		QualityReportAccess raBotFinished = qualityService.loadMembersReportAccess(of(dcNotFinished));
+		raBotFinished.setOnline(true);
+		qualityService.updateReportAccess(raBotFinished);
+		// Report access denied
+		QualityDataCollection dcAccessDenied = qualityTestHelper.createDataCollection();
+		qualityService.addReportMember(of(dcAccessDenied), member);
+		dcAccessDenied = qualityService.updateDataCollectionStatus(dcAccessDenied, QualityDataCollectionStatus.FINISHED);
+		QualityReportAccess raAccessDenied = qualityService.loadMembersReportAccess(of(dcAccessDenied));
+		raAccessDenied.setOnline(false);
+		qualityService.updateReportAccess(raAccessDenied);
+		dbInstance.commitAndCloseSession();
+		
+		QualityDataCollectionViewSearchParams searchParams = new QualityDataCollectionViewSearchParams();
+		searchParams.setReportAccessIdentity(member);
+		List<QualityDataCollectionView> dataCollections = sut.loadDataCollections(TRANSLATOR, searchParams, 0, -1);
+		
+		List<Long> loadedKeys = dataCollections.stream().map(QualityDataCollectionView::getKey).collect(toList());
+		assertThat(loadedKeys)
+				.containsExactlyInAnyOrder(
+						dc.getKey())
+				.doesNotContain(
+						dcOther.getKey(),
+						dcNotFinished.getKey(),
+						dcAccessDenied.getKey()
+						);
+	}
 }

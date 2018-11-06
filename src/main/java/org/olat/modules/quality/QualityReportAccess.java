@@ -19,6 +19,7 @@
  */
 package org.olat.modules.quality;
 
+import org.olat.basesecurity.Group;
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
 
@@ -34,7 +35,8 @@ public interface QualityReportAccess extends CreateInfo, ModifiedInfo {
 		GroupRoles,
 		CurriculumRoles,
 		TopicIdentity,
-		Participants
+		Participants,
+		ReportMember
 	}
 	
 	public enum EmailTrigger {
@@ -57,5 +59,7 @@ public interface QualityReportAccess extends CreateInfo, ModifiedInfo {
 	public EmailTrigger getEmailTrigger();
 	
 	public void setEmailTrigger(EmailTrigger trigger);
+	
+	public Group getGroup();
 
 }

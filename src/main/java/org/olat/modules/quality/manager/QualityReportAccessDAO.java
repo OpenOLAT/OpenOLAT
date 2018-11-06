@@ -26,6 +26,7 @@ import java.util.List;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
+import org.olat.basesecurity.Group;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
@@ -68,7 +69,8 @@ class QualityReportAccessDAO {
 				reportAccess.getEmailTrigger());
 	}
 	
-	private QualityReportAccess create(QualityReportAccessReference reference, QualityReportAccess.Type type, String role, boolean online, EmailTrigger emailTrigger) {
+	private QualityReportAccess create(QualityReportAccessReference reference, QualityReportAccess.Type type,
+			String role, boolean online, EmailTrigger emailTrigger) {
 		QualityReportAccessImpl reportAccess = new QualityReportAccessImpl();
 		reportAccess.setCreationDate(new Date());
 		reportAccess.setLastModified(reportAccess.getCreationDate());
@@ -86,6 +88,15 @@ class QualityReportAccessDAO {
 			reportAccess.setGenerator(generator);
 		}
 		dbInstance.getCurrentEntityManager().persist(reportAccess);
+		return reportAccess;
+	}
+
+	QualityReportAccess setGroup(QualityReportAccess reportAccess, Group group) {
+		if (reportAccess instanceof QualityReportAccessImpl) {
+			QualityReportAccessImpl reportAccessImpl = (QualityReportAccessImpl) reportAccess;
+			reportAccessImpl.setGroup(group);
+			return save(reportAccessImpl);
+		}
 		return reportAccess;
 	}
 
@@ -138,6 +149,9 @@ class QualityReportAccessDAO {
 				sb.and().append("reportaccess.generator.key = :generatorKey");
 			}
 		}
+		if (searchParams.getType() != null) {
+			sb.and().append("reportaccess.type = :type");
+		}
 	}
 
 	private void appendParameter(TypedQuery<QualityReportAccess> query, QualityReportAccessSearchParams searchParams) {
@@ -149,6 +163,9 @@ class QualityReportAccessDAO {
 				query.setParameter("generatorKey", searchParams.getReference().getGeneratorRef().getKey());
 			}
 		}
+		if (searchParams.getType() != null) {
+			query.setParameter("type", searchParams.getType());
+		}
 	}
 
 	List<Identity> loadRecipients(QualityReportAccess reportAccess) {
@@ -157,6 +174,7 @@ class QualityReportAccessDAO {
 		case Participants: return loadRecipientsOfParticipants(reportAccess);
 		case GroupRoles: return loadRecipientsOfGroupRoles(reportAccess);
 		case TopicIdentity: return loadRecipientsOfTopicIdentity(reportAccess);
+		case ReportMember: return loadRecipientsOfReportMember(reportAccess);
 		default: return Collections.emptyList();
 		}
 	}
@@ -215,5 +233,18 @@ class QualityReportAccessDAO {
 					.getResultList();
 	}
 
+	private List<Identity> loadRecipientsOfReportMember(QualityReportAccess reportAccess) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select membership.identity");
+		sb.append("  from qualityreportaccess as ra");
+		sb.append("     , bgroupmember as membership");
+		sb.and().append("ra.group.key = membership.group.key");
+		sb.and().append("ra.key = :reportAccessKey");
+		
+		return dbInstance.getCurrentEntityManager()
+					.createQuery(sb.toString(), Identity.class)
+					.setParameter("reportAccessKey", reportAccess.getKey())
+					.getResultList();
+	}
 
 }

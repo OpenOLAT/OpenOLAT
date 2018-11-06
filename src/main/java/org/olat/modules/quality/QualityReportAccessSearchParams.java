@@ -19,6 +19,8 @@
  */
 package org.olat.modules.quality;
 
+import org.olat.modules.quality.QualityReportAccess.Type;
+
 /**
  * 
  * Initial date: 29.10.2018<br>
@@ -28,6 +30,7 @@ package org.olat.modules.quality;
 public class QualityReportAccessSearchParams {
 	
 	private QualityReportAccessReference reference;
+	private Type type;
 
 	public QualityReportAccessReference getReference() {
 		return reference;
@@ -35,6 +38,14 @@ public class QualityReportAccessSearchParams {
 
 	public void setReference(QualityReportAccessReference reference) {
 		this.reference = reference;
+	}
+
+	public Type getType() {
+		return type;
+	}
+
+	public void setType(Type type) {
+		this.type = type;
 	}
 
 }

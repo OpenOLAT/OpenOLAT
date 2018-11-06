@@ -25,6 +25,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -34,6 +35,8 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import org.olat.basesecurity.Group;
+import org.olat.basesecurity.model.GroupImpl;
 import org.olat.core.id.Persistable;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityReportAccess;
@@ -75,10 +78,14 @@ public class QualityReportAccessImpl implements QualityReportAccess, Persistable
 	@Column(name="q_email_trigger", nullable=true, insertable=true, updatable=true)
 	private QualityReportAccess.EmailTrigger emailTrigger;
 	
-	@ManyToOne(targetEntity=QualityDataCollectionImpl.class)
+	@ManyToOne(targetEntity=GroupImpl.class, fetch=FetchType.LAZY, optional=true)
+	@JoinColumn(name="fk_group", nullable=true, insertable=true, updatable=true)
+	private Group group;
+	
+	@ManyToOne(targetEntity=QualityDataCollectionImpl.class, fetch=FetchType.LAZY, optional=true)
 	@JoinColumn(name="fk_data_collection", nullable=true, insertable=true, updatable=false)
 	private QualityDataCollection dataCollection;
-	@ManyToOne(targetEntity=QualityGeneratorImpl.class)
+	@ManyToOne(targetEntity=QualityGeneratorImpl.class, fetch=FetchType.LAZY, optional=true)
 	@JoinColumn(name="fk_generator", nullable=true, insertable=true, updatable=false)
 	private QualityGenerator generator;
 	
@@ -146,6 +153,15 @@ public class QualityReportAccessImpl implements QualityReportAccess, Persistable
 	@Override
 	public void setEmailTrigger(QualityReportAccess.EmailTrigger emailTrigger) {
 		this.emailTrigger = emailTrigger;
+	}
+
+	@Override
+	public Group getGroup() {
+		return group;
+	}
+
+	public void setGroup(Group group) {
+		this.group = group;
 	}
 
 	public QualityDataCollection getDataCollection() {

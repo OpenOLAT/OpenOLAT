@@ -170,6 +170,11 @@ public class QualitySecurityCallbackImpl implements QualitySecurityCallback {
 	}
 
 	@Override
+	public boolean canEditReportAccessMembers(QualityDataCollection dataCollection) {
+		return canEditDataCollections();
+	}
+
+	@Override
 	public boolean canViewReports() {
 		return canViewDataCollections() ;
 	}
@@ -231,6 +236,11 @@ public class QualitySecurityCallbackImpl implements QualitySecurityCallback {
 
 	@Override
 	public boolean canEditReportAccessEmail(QualityGenerator generator) {
+		return canEditGenerator(generator);
+	}
+
+	@Override
+	public boolean canEditReportAccessMembers(QualityGenerator generator) {
 		return canEditGenerator(generator);
 	}
 

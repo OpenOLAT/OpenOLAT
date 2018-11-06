@@ -69,6 +69,8 @@ public interface QualitySecurityCallback {
 	
 	public boolean canEditReportAccessEmail(QualityDataCollection dataCollection);
 
+	public boolean canEditReportAccessMembers(QualityDataCollection dataCollection);
+
 	public boolean canViewReports();
 
 	public boolean canViewReport(QualityDataCollectionLight dataCollection);
@@ -88,6 +90,8 @@ public interface QualitySecurityCallback {
 	public boolean canEditReportAccessOnline(QualityGenerator generator);
 	
 	public boolean canEditReportAccessEmail(QualityGenerator generator);
+
+	public boolean canEditReportAccessMembers(QualityGenerator generator);
 
 	public boolean canActivateGenerators();
 

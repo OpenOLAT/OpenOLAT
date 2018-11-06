@@ -33,8 +33,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OrganisationDataDeletable;
+import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -102,6 +105,8 @@ public class QualityServiceImpl
 		implements QualityService, OrganisationDataDeletable, CurriculumDataDeletable, SessionStatusHandler {
 
 	private static final OLog log = Tracing.createLoggerFor(QualityServiceImpl.class);
+	
+	private static final String REPORT_MEMBER_ROLE = "member";
 
 	@Autowired
 	private QualityDataCollectionDAO dataCollectionDao;
@@ -123,6 +128,8 @@ public class QualityServiceImpl
 	private QualityReminderDAO reminderDao;
 	@Autowired
 	private QualityReportAccessDAO reportAccessDao;
+	@Autowired
+	private GroupDAO groupDao;
 	@Autowired
 	private QualityMailing qualityMailing;
 	@Autowired
@@ -322,7 +329,7 @@ public class QualityServiceImpl
 		evaluationFormManager.deleteSurvey(survey);
 		deleteReferences(dataCollection);
 		resourceManager.deleteOLATResourceable(dataCollection);
-		reportAccessDao.deleteReportAccesses(of(dataCollection));
+		deleteReportAccess(of(dataCollection));
 		reminderDao.deleteReminders(dataCollection);
 		dataCollectionToOrganisationDao.deleteRelations(dataCollection);
 		dataCollectionDao.deleteDataCollection(dataCollection);
@@ -576,7 +583,16 @@ public class QualityServiceImpl
 
 	@Override
 	public QualityReportAccess copyReportAccess(QualityReportAccessReference reference, QualityReportAccess reportAccess) {
-		return reportAccessDao.copy(reference, reportAccess);
+		QualityReportAccess copy = reportAccessDao.copy(reference, reportAccess);
+		if (reportAccess.getGroup() != null) {
+			Group copyGroup = groupDao.createGroup();
+			copy = reportAccessDao.setGroup(copy, copyGroup);
+			List<Identity> members = groupDao.getMembers(reportAccess.getGroup(), REPORT_MEMBER_ROLE);
+			for (Identity identity : members) {
+				addReportMember(copyGroup, identity);
+			}
+		}
+		return copy;
 	}
 
 	@Override
@@ -591,7 +607,66 @@ public class QualityServiceImpl
 
 	@Override
 	public void deleteReportAccess(QualityReportAccessReference reference) {
+		QualityReportAccessSearchParams searchParams = new QualityReportAccessSearchParams();
+		searchParams.setReference(reference);
+		List<QualityReportAccess> reportAccesses = reportAccessDao.load(searchParams);
+		for (QualityReportAccess reportAccess : reportAccesses) {
+			if (reportAccess.getGroup() != null) {
+				groupDao.removeMemberships(reportAccess.getGroup());
+				groupDao.removeGroup(reportAccess.getGroup());
+			}
+		}
 		reportAccessDao.deleteReportAccesses(reference);
+	}
+
+	@Override
+	public QualityReportAccess loadMembersReportAccess(QualityReportAccessReference reference) {
+		QualityReportAccessSearchParams searchParams = new QualityReportAccessSearchParams();
+		searchParams.setReference(reference);
+		searchParams.setType(QualityReportAccess.Type.ReportMember);
+		List<QualityReportAccess> reportAccesses = reportAccessDao.load(searchParams);
+		return !reportAccesses.isEmpty() ? reportAccesses.get(0): null;
+	}
+
+	@Override
+	public void addReportMember(QualityReportAccessReference reference, Identity identity) {
+		QualityReportAccess reportAccess = loadMembersReportAccess(reference);
+		if (reportAccess == null) {
+			reportAccess = createMembersReportAccess(reference);
+		}
+		Group group = reportAccess.getGroup();
+		if (group == null) {
+			group = groupDao.createGroup();
+			reportAccessDao.setGroup(reportAccess, group);
+		}
+		addReportMember(group, identity);
+	}
+
+	private void addReportMember(Group group, Identity identity) {
+		if (!groupDao.hasRole(group, identity, REPORT_MEMBER_ROLE)) {
+			groupDao.addMembershipOneWay(group, identity, REPORT_MEMBER_ROLE);
+		}
+	}
+
+	@Override
+	public void removeReportMember(QualityReportAccessReference reference, IdentityRef identityRef) {
+		QualityReportAccess reportAccess = loadMembersReportAccess(reference);
+		if (reportAccess != null && reportAccess.getGroup() != null) {
+			groupDao.removeMembership(reportAccess.getGroup(), identityRef);
+		}
+	}
+
+	private QualityReportAccess createMembersReportAccess(QualityReportAccessReference reference) {
+		return reportAccessDao.create(reference, QualityReportAccess.Type.ReportMember, null);
+	}
+
+	@Override
+	public List<Identity> loadReportMembers(QualityReportAccessReference reference) {
+		QualityReportAccess reportAccess = loadMembersReportAccess(reference);
+		if (reportAccess != null && reportAccess.getGroup() != null) {
+			return groupDao.getMembers(reportAccess.getGroup(), REPORT_MEMBER_ROLE);
+		}
+		return Collections.emptyList();
 	}
 	
 }

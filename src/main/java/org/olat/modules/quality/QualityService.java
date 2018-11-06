@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -211,5 +212,13 @@ public interface QualityService {
 	public List<QualityReportAccess> loadReportAccesses(QualityReportAccessSearchParams searchParams);
 	
 	public void deleteReportAccess(QualityReportAccessReference reference);
+	
+	public QualityReportAccess loadMembersReportAccess(QualityReportAccessReference reference);
+	
+	public void addReportMember(QualityReportAccessReference reference, Identity identity);
+
+	public List<Identity> loadReportMembers(QualityReportAccessReference reference);
+
+	public void removeReportMember(QualityReportAccessReference reference, IdentityRef identityRef);
 
 }

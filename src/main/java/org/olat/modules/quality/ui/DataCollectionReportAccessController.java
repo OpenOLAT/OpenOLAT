@@ -47,12 +47,12 @@ public class DataCollectionReportAccessController extends ReportAccessController
 	
 	public void setDataCollection(QualityDataCollection dataCollection, UserRequest ureq) {
 		this.dataCollection = dataCollection;
-		initTable(ureq);
+		initForm(ureq);
 	}
 
 	@Override
 	protected boolean canEditReportAccessOnline() {
-		return secCallback.canEditDataCollections();
+		return secCallback.canEditReportAccessOnline(dataCollection);
 	}
 
 	@Override
@@ -60,5 +60,9 @@ public class DataCollectionReportAccessController extends ReportAccessController
 		return secCallback.canEditReportAccessEmail(dataCollection);
 	}
 
+	@Override
+	protected boolean canEditReportMembers() {
+		return secCallback.canEditReportAccessMembers(dataCollection);
+	}
 
 }

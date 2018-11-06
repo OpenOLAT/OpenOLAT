@@ -22,6 +22,7 @@ create table o_qual_report_access (
   q_email_trigger varchar2(64),
   fk_data_collection number(20),
   fk_generator number(20),
+  fk_group number(20),
   primary key (id)
 );
 

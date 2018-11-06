@@ -28,7 +28,9 @@ import java.util.List;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.Before;
 import org.junit.Test;
+import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.modules.forms.EvaluationFormManager;
@@ -68,6 +70,8 @@ public class QualityReportAccessDAOTest extends OlatTestCase {
 	private RepositoryService repositoryService;
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
+	@Autowired
+	private GroupDAO groupDao;
 	
 	@Autowired
 	private QualityReportAccessDAO sut;
@@ -141,6 +145,19 @@ public class QualityReportAccessDAOTest extends OlatTestCase {
 		softly.assertThat(copy.isOnline()).isEqualTo(online);
 		softly.assertThat(copy.getEmailTrigger()).isEqualTo(emailTrigger);
 		softly.assertAll();
+	}
+	
+	@Test
+	public void shouldSetGroup() {
+		QualityGeneratorRef generatorRef = qualityTestHelper.createGenerator();
+		QualityReportAccess.Type type = QualityReportAccess.Type.GroupRoles;
+		QualityReportAccess access = sut.create(of(generatorRef), type, null);
+		dbInstance.commitAndCloseSession();
+		
+		Group group = groupDao.createGroup();
+		access = sut.setGroup(access, group);
+		
+		assertThat(access.getGroup()).isEqualTo(group);
 	}
 	
 	@Test
@@ -238,6 +255,26 @@ public class QualityReportAccessDAOTest extends OlatTestCase {
 		
 		QualityReportAccessSearchParams searchParams = new QualityReportAccessSearchParams();
 		searchParams.setReference(of(generator));
+		List<QualityReportAccess> accesses = sut.load(searchParams);
+		
+		assertThat(accesses)
+				.containsExactlyInAnyOrder(access1, access2)
+				.doesNotContain(accessOther);
+	}
+	
+	@Test
+	public void shouldFilterByType() {
+		Type type = QualityReportAccess.Type.TopicIdentity;
+		QualityGenerator generator = qualityTestHelper.createGenerator();
+		QualityReportAccess access1 = sut.create(of(generator), type, null);
+		QualityReportAccess access2 = sut.create(of(generator), type, null);
+		QualityGenerator generatorOther = qualityTestHelper.createGenerator();
+		Type otherType = QualityReportAccess.Type.Participants;
+		QualityReportAccess accessOther = sut.create(of(generatorOther), otherType, null);
+		dbInstance.commitAndCloseSession();
+		
+		QualityReportAccessSearchParams searchParams = new QualityReportAccessSearchParams();
+		searchParams.setType(type);
 		List<QualityReportAccess> accesses = sut.load(searchParams);
 		
 		assertThat(accesses)
@@ -363,6 +400,23 @@ public class QualityReportAccessDAOTest extends OlatTestCase {
 		assertThat(receivers)
 				.containsExactlyInAnyOrder(coach)
 				.doesNotContain(coachOther);
+	}
+	@Test
+	public void shouldLoadReceiversForReportMembers() {
+		Identity member = JunitTestHelper.createAndPersistIdentityAsUser("m1");
+		Identity memberOther = JunitTestHelper.createAndPersistIdentityAsUser("m2");
+		QualityDataCollection dc = qualityTestHelper.createDataCollection();
+		qualityService.addReportMember(of(dc), member);
+		QualityDataCollection dcOther = qualityTestHelper.createDataCollection();
+		qualityService.addReportMember(of(dcOther), memberOther);
+		dbInstance.commitAndCloseSession();
+		
+		QualityReportAccess reportAccess = qualityService.loadMembersReportAccess(of(dc));
+		List<Identity> receivers = sut.loadRecipients(reportAccess);
+		
+		assertThat(receivers)
+				.containsExactlyInAnyOrder(member)
+				.doesNotContain(memberOther);
 	}
 
 }
