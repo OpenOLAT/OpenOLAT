@@ -63,6 +63,7 @@ public class QTI21AdminController extends FormBasicController {
 	private MultipleSelectionElement mathExtensionEl;
 	private MultipleSelectionElement digitalSignatureEl;
 	private MultipleSelectionElement createQTI12resourcesEl;
+	private MultipleSelectionElement createQTI12SurveyResourcesEl;
 	private MultipleSelectionElement anonymCorrectionWorkflowEl;
 	private FileElement certificateEl;
 	private TextElement certificatePasswordEl;
@@ -94,6 +95,11 @@ public class QTI21AdminController extends FormBasicController {
 			createQTI12resourcesEl.select(onKeys[0], true);
 		}
 		
+		createQTI12SurveyResourcesEl = uifactory.addCheckboxesHorizontal("create.12.survey.resources", "create.12.survey.resources", qti12LayoutCont,
+				onKeys, onValues);
+		if(qti12Module.isCreateSurveyResourcesEnabled()) {
+			createQTI12SurveyResourcesEl.select(onKeys[0], true);
+		}
 		
 		FormLayoutContainer layoutCont = FormLayoutContainer.createDefaultFormLayout("options", getTranslator());
 		layoutCont.setRootForm(mainForm);
@@ -228,6 +234,7 @@ public class QTI21AdminController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		qti12Module.setCreateResourcesEnabled(createQTI12resourcesEl.isSelected(0));
+		qti12Module.setCreateSurveyResourcesEnabled(createQTI12SurveyResourcesEl.isSelected(0));
 		CorrectionWorkflow correctionWf = anonymCorrectionWorkflowEl.isAtLeastSelected(1)
 				? CorrectionWorkflow.anonymous : CorrectionWorkflow.named;
 		qti21Module.setCorrectionWorkflow(correctionWf);

@@ -44,6 +44,7 @@ import org.springframework.stereotype.Service;
 public class QTIModule extends AbstractSpringModule {
 	
 	private static final String CREATE_RESOURCES_ENABLED = "qti12.create.resources.enabled";
+	private static final String CREATE_SURVEY_RESOURCES_ENABLED = "qti12.create.survey.resources.enabled";
 
 	@Value("${qti12.create.resources.enabled:false}")
 	private boolean createResourcesEnabled;
@@ -64,9 +65,14 @@ public class QTIModule extends AbstractSpringModule {
 
 	@Override
 	protected void initFromChangedProperties() {
-		String mathExtensionObj = getStringPropertyValue(CREATE_RESOURCES_ENABLED, true);
-		if(StringHelper.containsNonWhitespace(mathExtensionObj)) {
-			createResourcesEnabled = "true".equals(mathExtensionObj);
+		String createResourceEnabledObj = getStringPropertyValue(CREATE_RESOURCES_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(createResourceEnabledObj)) {
+			createResourcesEnabled = "true".equals(createResourceEnabledObj);
+		}
+		
+		String createSurveyResourceObj = getStringPropertyValue(CREATE_SURVEY_RESOURCES_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(createSurveyResourceObj)) {
+			createSurveyResourcesEnabled = "true".equals(createSurveyResourceObj);
 		}
 	}
 
@@ -81,5 +87,10 @@ public class QTIModule extends AbstractSpringModule {
 	
 	public boolean isCreateSurveyResourcesEnabled() {
 		return createSurveyResourcesEnabled;
+	}
+
+	public void setCreateSurveyResourcesEnabled(boolean enabled) {
+		createSurveyResourcesEnabled = enabled;
+		setStringProperty(CREATE_SURVEY_RESOURCES_ENABLED, enabled ? "true" : "false", true);
 	}
 }
