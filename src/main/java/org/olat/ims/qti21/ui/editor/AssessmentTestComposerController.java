@@ -423,7 +423,8 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		if(event instanceof AssessmentTestEvent) {
 			AssessmentTestEvent ate = (AssessmentTestEvent)event;
 			if(ate == AssessmentTestEvent.ASSESSMENT_TEST_CHANGED_EVENT) {
-				doSaveAssessmentTest(ureq, null);
+				AssessmentTest ast = assessmentTestBuilder.getAssessmentTest();
+				doUpdate(ast.getIdentifier(), ast.getTitle());
 			}
 		} else if(event instanceof AssessmentTestPartEvent) {
 			AssessmentTestPartEvent atpe = (AssessmentTestPartEvent)event;
@@ -1147,15 +1148,20 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		}
 		manifestBuilder.write(new File(unzippedDirRoot, "imsmanifest.xml"));
 	}
-	
+
 	private void doUpdate(Identifier identifier, String newTitle) {
+		doUpdate(identifier.toString(), newTitle);
+	}
+	
+	private void doUpdate(String identifier, String newTitle) {
 		TreeNode node = menuTree.getTreeModel()
-				.getNodeById(identifier.toString());
+				.getNodeById(identifier);
 		if(node instanceof GenericTreeNode) {
 			GenericTreeNode itemNode = (GenericTreeNode)node;
 			if(!newTitle.equals(itemNode.getTitle())) {
 				itemNode.setTitle(newTitle);
 				menuTree.setDirty(true);
+				mainVC.contextPut("title", newTitle);
 			}
 		}
 	}
