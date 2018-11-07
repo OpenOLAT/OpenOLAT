@@ -24,6 +24,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 
 import org.olat.basesecurity.BaseSecurity;
@@ -183,6 +184,7 @@ public class EditLectureBlockController extends FormBasicController {
 		}
 
 		List<Identity> coaches = repositoryService.getMembers(entry, RepositoryEntryRelationType.entryAndCurriculums, GroupRoles.coach.name());
+		coaches = new ArrayList<>(new HashSet<>(coaches));
 		teacherKeys = new String[coaches.size() + 1];
 		teacherValues = new String[coaches.size() + 1];
 		for(int i=coaches.size() + 1; i-->1; ) {
@@ -198,7 +200,7 @@ public class EditLectureBlockController extends FormBasicController {
 		teacherEl.setEnabled(!readOnly && !lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.teachers));
 		
 		boolean found = false;
-		if(teachers != null && teachers.size() > 0) {
+		if(teachers != null && !teachers.isEmpty()) {
 			for(Identity teacher:teachers) {
 				String currentTeacherKey = teacher.getKey().toString();
 				for(String teacherKey:teacherKeys) {
