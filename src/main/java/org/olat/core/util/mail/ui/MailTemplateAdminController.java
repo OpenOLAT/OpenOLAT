@@ -21,11 +21,13 @@ package org.olat.core.util.mail.ui;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.TextAreaElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.helpers.GUISettings;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
 import org.olat.core.util.mail.MailManager;
@@ -44,6 +46,8 @@ public class MailTemplateAdminController extends FormBasicController  {
 	
 	@Autowired
 	private MailManager mailManager;
+	@Autowired
+	private GUISettings guiSettings;
 	
 	public MailTemplateAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, null, Util.createPackageTranslator(MailModule.class, ureq.getLocale()));
@@ -55,6 +59,11 @@ public class MailTemplateAdminController extends FormBasicController  {
 		setFormTitle("mail.template.title");
 		setFormDescription("mail.template.description");
 		setFormContextHelp("E-Mail Settings#_template");
+		
+		String emailCss = guiSettings.getGuiTheme().getEmailCss();
+		emailCss = emailCss.replaceAll("}", "}\n");
+		TextAreaElement emailCssEl = uifactory.addTextAreaElement("mail.admin.css", "mail.admin.css", -1, 10, 50, true, true, emailCss, formLayout);
+		emailCssEl.setEnabled(false);
 
 		String def = mailManager.getMailTemplate();
 		templateEl = uifactory.addTextAreaElement("mail.template", "mail.template", -1, 25, 50, true, false, def, formLayout);

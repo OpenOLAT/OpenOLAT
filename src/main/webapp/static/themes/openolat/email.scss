@@ -1,0 +1,10 @@
+@charset "UTF-8";
+
+/* Use OpenOLAT configuration to override defaults */
+@import "openolat_config";
+
+/* Add all default config and apply styles from light theme */
+@import "light/email";
+
+/* Override with OpenOLAT customizations */
+@import "openolat_email"; 

@@ -20,12 +20,18 @@
 package org.olat.core.gui.themes;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.helpers.GUISettings;
 import org.olat.core.helpers.Settings;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.WebappHelper;
 
 /**
@@ -36,6 +42,9 @@ import org.olat.core.util.WebappHelper;
  * @author Florian Gnaegi, frentix GmbH, http://www.frentix.com
  */
 public class Theme {
+
+	private static final OLog log = Tracing.createLoggerFor(Theme.class);
+	
 	public static final String DEFAULTTHEME = "light";
 	private static final String CUSTOM_JS_FILENAME = "theme.js";
 	private static final String CUSTOM_FAVICON_ICO_FILENAME = "favicon.ico"; // legacy
@@ -48,11 +57,13 @@ public class Theme {
 	private static final String CUSTOM_TILEICON_PNG310_FILENAME = "meta/tileicon310.png";
 	private static final String CUSTOM_MANIFEST_FILENAME = "meta/manifest.json";
 	private static final String CUSTOM_MS_APPLICATION_CONFIG_FILENAM = "meta/msapplication-config.xml";
+	private static final String CUSTOM_EMAIL_CSS_FILENAME = "email.css";
 	
 	private String identifyer;
 	private String baseURI;
 	private String relPathToThemesDir;
 	private String htmlHeaderElements;
+	private String emailCss;
 
 	/**
 	 * Theme is cached and shared with all sessions.
@@ -103,6 +114,10 @@ public class Theme {
 	public String getRelPathToCustomJS() {
 		return relPathToThemesDir + CUSTOM_JS_FILENAME;
 	}
+	
+	public String getEmailCss() {
+		return emailCss;
+	}
 
 	/**
 	 * Update values in this theme with the values from the given identifyer.
@@ -119,6 +134,8 @@ public class Theme {
 		
 		// Build theme header include string with resources available in the theme
 		this.htmlHeaderElements = buildHTMLHeaderElements();
+		
+		this.emailCss = loadEmailCss();
 	}
 
 	
@@ -128,25 +145,20 @@ public class Theme {
 	 */
 	private String buildHTMLHeaderElements() {
 		StringBuilder sb = new StringBuilder(512);
-		// 1) lookup theme in release files
-		String staticThemesPath = WebappHelper.getContextRealPath("/static/themes/");
-		if(staticThemesPath == null) {
-			staticThemesPath = WebappHelper.getContextRoot() + "/static/themes/";
-		}
-		String guiThemIdentifyer = CoreSpringFactory.getImpl(GUISettings.class).getGuiThemeIdentifyer();
-		File themeFolder = new File(staticThemesPath, guiThemIdentifyer);
-		if (!themeFolder.exists() && Settings.getGuiCustomThemePath() != null) {
-			// 2) fallback to custom themes folder
-			themeFolder = new File(Settings.getGuiCustomThemePath(), guiThemIdentifyer);
-		}
+		File themeFolder = getThemeFolder();
 		// Include the theme css file
 		sb.append("<link id='o_theme_css' href='").append(baseURI).append("theme.css' rel='stylesheet' type='text/css' />\n");
+		// Include the email css file. It is necessary because AntiSAMY filters the styles in the OpenOLAT email module.
+		Path cssPath = getEmailCssPath();
+		if (Files.exists(cssPath)) {
+			sb.append("<link id='o_email_css' href='").append(baseURI).append("email.css' rel='stylesheet' type='text/css' />\n");
+		}
 		// Include custom theme javascript file, for login caroussel, js-based layout patches etc
 		if (new File(themeFolder,CUSTOM_JS_FILENAME).exists()) {
 			sb.append("<script type='text/javascript' src='").append(baseURI).append(CUSTOM_JS_FILENAME).append("'></script>\n");
 		}
 		// Include the favicons in legacy .ico format and others in png format and different resolutions
-		if (new File(themeFolder,CUSTOM_FAVICON_ICO_FILENAME).exists()) {
+		if (new File(themeFolder,CUSTOM_FAVICON_ICO_FILENAME).exists()) {	
 			sb.append("<link rel='icon' href='").append(baseURI).append(CUSTOM_FAVICON_ICO_FILENAME).append("' type='image/x-icon' />\n");
 		}
 		if (new File(themeFolder,CUSTOM_FAVICON_PNG16_FILENAME).exists()) {
@@ -183,5 +195,47 @@ public class Theme {
 		}
 		
 		return sb.toString();
+	}
+	
+	private String loadEmailCss() {
+		Path css = getEmailCssPath();
+		if (Files.exists(css)) {
+			try {
+				return new String(Files.readAllBytes(css));
+			} catch (IOException e) {
+				log.error("Loading the email CSS file of the the theme failed.", e);
+			}
+		}
+		return "";
+	}
+
+	private Path getEmailCssPath() {
+		Path themes = Paths.get(getThemesFolderPath());
+		String themeIdentifier = CoreSpringFactory.getImpl(GUISettings.class).getGuiThemeIdentifyer();
+		Path css = themes.resolve(themeIdentifier).resolve(CUSTOM_EMAIL_CSS_FILENAME);
+		if (Files.notExists(css)) {
+			css = themes.resolve(DEFAULTTHEME).resolve(CUSTOM_EMAIL_CSS_FILENAME);
+		}
+		return css;
+	}
+
+	private File getThemeFolder() {
+		// 1) lookup theme in release files
+		String staticThemesPath = getThemesFolderPath();
+		String guiThemIdentifyer = CoreSpringFactory.getImpl(GUISettings.class).getGuiThemeIdentifyer();
+		File themeFolder = new File(staticThemesPath, guiThemIdentifyer);
+		if (!themeFolder.exists() && Settings.getGuiCustomThemePath() != null) {
+			// 2) fallback to custom themes folder
+			themeFolder = new File(Settings.getGuiCustomThemePath(), guiThemIdentifyer);
+		}
+		return themeFolder;
+	}
+
+	private String getThemesFolderPath() {
+		String staticThemesPath = WebappHelper.getContextRealPath("/static/themes/");
+		if (staticThemesPath == null) {
+			staticThemesPath = WebappHelper.getContextRoot() + "/static/themes/";
+		}
+		return staticThemesPath;
 	}
 }

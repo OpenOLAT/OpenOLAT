@@ -1,0 +1,78 @@
+@charset "UTF-8";
+
+/*
+ *  =================================================
+ *  
+ *   SaSS file for OpenOLAT email styles. This is 
+ *   included in email to nicely display content. 
+ *   
+ *   @author uhensler, www.frentix.com
+ *   @date November 2018
+ *
+ *	 also read themes.README!
+ *  =================================================
+ */
+
+@import "config";
+
+
+/*** General style of the email text ***/
+.o_email_body {
+	font-family: $o-email-font-family;
+
+	.o_email_content {
+		margin: $o-email-content-margin;
+	}
+	.o_email_footer {
+		background: $o-email-footer-bg;
+		border: $o-email-footer-border;
+		border-radius: $o-email-footer-border-radius;
+		padding: $o-email-footer-padding;
+		margin: $o-email-footer-margin;
+	}
+}
+
+
+/*** Buttons ***/
+/* Usage:
+	...  <a class="o_email_button" href="https://www.openolat.com/">OpenOLAT</a> ...
+	... <div class="o_email_button_group o_email_button_group_left"><a class="o_email_button" href="$url">Open report</a></div> ...
+*/
+.o_email_body {
+	.o_email_button {
+		color: $o-email-btn-color;
+		background-color: $o-email-btn-bg;
+		border-color: $o-email-btn-border-color;
+		border-radius: $o-email-btn-border-radius;
+		padding: 6px 12px;
+		text-align: center;
+		white-space: nowrap;
+		vertical-align: middle;
+		touch-action: manipulation;
+		cursor: pointer;
+		text-decoration: none;
+	}
+	
+	.o_email_button_group {
+		margin-top: 1em;
+		margin-bottom: 1em;
+		text-align: center;
+		
+		a {
+			margin-right: 5px;
+			margin-bottom: 0.5em;
+			&:last-child {
+				margin-right: 0;
+			}
+		}
+	}
+	
+	/* use together with o_email_button_group to have buttons left or right aligned */
+	.o_email_button_group_left {
+		text-align: left;
+	}
+	.o_email_button_group_right {
+		text-align: right;
+	}
+}
+

@@ -30,8 +30,8 @@ import java.io.OutputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
-import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
@@ -82,6 +82,7 @@ import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.Subscriber;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.taskexecutor.model.DBSecureRunnable;
+import org.olat.core.helpers.GUISettings;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -149,6 +150,8 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 	@Autowired
 	private NotificationsManager notificationsManager;
 	private final MailModule mailModule;
+	@Autowired
+	private GUISettings guiSettings;
 
 	private FileStorage attachmentStorage;
 	
@@ -709,6 +712,9 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 
 		String template = getMailTemplate();
 		boolean htmlTemplate = StringHelper.isHtml(template);
+		if (htmlTemplate) {
+			template = decorateStyle(template);
+		}
 		String body = content.getBody();
 		boolean htmlContent =  StringHelper.isHtml(body);
 		if(htmlTemplate && !htmlContent) {
@@ -734,6 +740,14 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 		return new SimpleMailContent(content.getSubject(), decoratedBody, content.getAttachments());
 	}
 	
+	private String decorateStyle(String template) {
+		String emailCss = guiSettings.getGuiTheme().getEmailCss();
+		return new StringBuilder()
+				.append("<head><style>").append(emailCss).append("</style></head>")
+				.append(template)
+				.toString();
+	}
+
 	protected MailContent createWithContext(Identity recipient, MailTemplate template, MailerResult result) {
 		VelocityContext context;
 		if(template != null && template.getContext() != null) {

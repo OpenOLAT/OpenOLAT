@@ -71,14 +71,14 @@ public class GUISettings extends AbstractSpringModule {
 	 * @return the CSS theme used for this webapp
 	 */
 	public String getGuiThemeIdentifyer() {
-		return guiThemeIdentifyer;			
+		return guiThemeIdentifyer;
 	}
 	
 	public synchronized Theme getGuiTheme() {
 		if(guiTheme == null) {
 			guiTheme = new Theme(getGuiThemeIdentifyer());
 		}
-		return guiTheme;			
+		return guiTheme;
 	}
 
 	/**

@@ -835,6 +835,19 @@ $o-qpool-revised-color				: #993333;
 $o-qpool-finalVersion-color			: #14892c;
 $o-qpool-endOfLife-color			: #aaa;
 
+/* Email */
+$o-email-font-family					: 'HelveticaNeue-Light', 'Helvetica Neue Light', 'Helvetica Neue', Helvetica, Arial, 'Lucida Grande', sans-serif;
+$o-email-content-margin					: 1em 0 1em 0;
+$o-email-footer-bg						: #FAFAFA;
+$o-email-footer-border					: 1px solid #eee;
+$o-email-footer-border-radius			: 5px;
+$o-email-footer-padding					: 0 0.5em 0.5em 0.5em;
+$o-email-footer-margin					: 1em 0 1em 0;
+$o-email-btn-color						: $btn-primary-color;
+$o-email-btn-bg							: $btn-primary-bg;
+$o-email-btn-border-color				: $btn-primary-border;
+$o-email-btn-border-radius				: 4px;
+
 /* other configurations */
 $o-portrait-radius				: 50% !default;
 $o-portrait-border				: none !default;
