@@ -20,7 +20,6 @@
 
 package org.olat.group.ui.edit;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -33,6 +32,7 @@ import org.olat.group.BusinessGroupManagedFlag;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.ui.AccessConfigurationController;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -46,20 +46,20 @@ import org.olat.resource.accesscontrol.ui.AccessConfigurationController;
 public class BusinessGroupEditAccessController extends FormBasicController {
 	
 	private final boolean managed;
+	private BusinessGroup businessGroup;
 	private AccessConfigurationController configController;
 	
+	@Autowired
+	private AccessControlModule acModule;
+	
 	public BusinessGroupEditAccessController(UserRequest ureq, WindowControl wControl, BusinessGroup businessGroup) {
-		super(ureq, wControl, LAYOUT_VERTICAL);
+		super(ureq, wControl, "tab_bgBooking");
 		setTranslator(Util.createPackageTranslator(AccessConfigurationController.class, getLocale(), getTranslator()));
-
+		this.businessGroup = businessGroup;
 		managed = BusinessGroupManagedFlag.isManaged(businessGroup, BusinessGroupManagedFlag.bookings);
-		
-		AccessControlModule acModule = CoreSpringFactory.getImpl(AccessControlModule.class);
+
 		if(acModule.isEnabled()) {
-			OLATResource resource = businessGroup.getResource();
-			boolean waitingList = businessGroup.getWaitingListEnabled();
-			configController = new AccessConfigurationController(ureq, wControl, resource, businessGroup.getName(), !waitingList, !managed, mainForm);
-			listenTo(configController);
+			initConfigurationController(ureq);
 		}
 		
 		initForm(ureq);
@@ -77,12 +77,25 @@ public class BusinessGroupEditAccessController extends FormBasicController {
 		formLayout.setElementCssClass("o_block_large_bottom");
 
 		if(configController != null) {
-			formLayout.add(configController.getInitialFormItem());
+			formLayout.add("access", configController.getInitialFormItem());
+			
+			uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
+			uifactory.addFormSubmitButton("save", formLayout);
 		}
 	}
 	
-	public void updateBusinessGroup(BusinessGroup businessGroup) {
+	private void initConfigurationController(UserRequest ureq) {
+		removeAsListenerAndDispose(configController);
+		
+		OLATResource resource = businessGroup.getResource();
 		boolean waitingList = businessGroup.getWaitingListEnabled();
+		configController = new AccessConfigurationController(ureq, getWindowControl(), resource, businessGroup.getName(), !waitingList, !managed, mainForm);
+		listenTo(configController);
+	}
+	
+	public void updateBusinessGroup(BusinessGroup updatedGroup) {
+		this.businessGroup = updatedGroup;
+		boolean waitingList = updatedGroup.getWaitingListEnabled();
 		configController.setAllowPaymentMethod(!waitingList);
 	}
 	
@@ -97,7 +110,17 @@ public class BusinessGroupEditAccessController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		//
+		if(configController != null) {
+			configController.commitChanges();
+		}
+	}
+
+	@Override
+	protected void formCancelled(UserRequest ureq) {
+		if(configController != null) {
+			initConfigurationController(ureq);
+			flc.add("access", configController.getInitialFormItem());
+		}
 	}
 
 	@Override

@@ -57,6 +57,8 @@ public interface RepositoryEntryMyView extends OLATResourceable {
 	
 	public boolean isGuests();
 	
+	public boolean isBookable();
+	
 	public OLATResource getOlatResource();
 	
 	public RepositoryEntryLifecycle getLifecycle();

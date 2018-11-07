@@ -25,7 +25,6 @@
 				encoding : 'UTF-8',
 				method : 'GET', 
 				success: function(data, textStatus, jqXHR) {
-					console.log(data);
 					jQuery(document).data("o_glossaries")[glossaryId] = eval(data);
 					o_tm_highlightFromArray(glossaryId, "$domId");
 				}

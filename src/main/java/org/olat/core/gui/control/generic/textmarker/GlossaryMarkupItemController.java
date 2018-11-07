@@ -51,8 +51,7 @@ public class GlossaryMarkupItemController extends BasicController {
 	
 	private String domId;
 	private VFSContainer glossaryFolder;
-	private VelocityContainer tmContainer = createVelocityContainer("tmContainer");
-	private JSAndCSSComponent glossHelpJs;
+	private final VelocityContainer tmContainer = createVelocityContainer("tmContainer");
 	private boolean textMarkingEnabled;
 	private String glossaryId;
 	
@@ -70,7 +69,7 @@ public class GlossaryMarkupItemController extends BasicController {
 
 	public GlossaryMarkupItemController(UserRequest ureq, WindowControl control, Component tmComponent, VFSContainer glossaryFolder, String glossaryId) {
 		super(ureq,control);
-		this.domId = "o_tm"+Integer.toString(this.getClass().hashCode());
+		domId = "o_tm".concat(Integer.toString(this.getClass().hashCode()));
 		this.glossaryFolder = glossaryFolder;
 		this.glossaryId = glossaryId;
 		
@@ -82,7 +81,7 @@ public class GlossaryMarkupItemController extends BasicController {
 		tmContainer.contextPut("domId", domId);
 
 		String[] js = new String[]{"js/openolat/glossaryhelper.js", "js/openolat/glossaryhighlighter.js"};
-		glossHelpJs = new JSAndCSSComponent("glossHelpJs", js, null);
+		JSAndCSSComponent glossHelpJs = new JSAndCSSComponent("glossHelpJs", js, null);
 		tmContainer.put("glossHelpJs", glossHelpJs);
 		
 		String glossFolderString = ((LocalFolderImpl)glossaryFolder).getBasefile().toString();
@@ -115,19 +114,12 @@ public class GlossaryMarkupItemController extends BasicController {
 		//iframes get cleared by IframeDisplayController, which removes glossaryhighlighter.js, so no more highlighting at all
 		getWindowControl().getWindowBackOffice().getWindow().setDirty(true);
 	}
-	
-	
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose()
-	 */
+
 	@Override
 	protected void doDispose() {
 		//
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//

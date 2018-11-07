@@ -41,7 +41,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
  */
 public class ColorLA extends AbstractLayoutAttribute {
 
-	public static final String IDENTIFIER = "color";
+	private static final String IDENTIFIER = "color";
 
 	public ColorLA() {
 		setAttributeKey("color");

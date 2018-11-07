@@ -80,7 +80,7 @@ public class GlossaryMainController extends BasicController implements Activatea
 	private final boolean eventProfil;
 	private DialogBoxController deleteDialogCtr;
 	private Controller glossEditCtrl;
-	private ArrayList<GlossaryItem> glossaryItemList;
+	private List<GlossaryItem> glossaryItemList;
 	private GlossaryItem currentDeleteItem;
 	private String filterIndex = "";
 	private VFSContainer glossaryFolder;
@@ -98,10 +98,13 @@ public class GlossaryMainController extends BasicController implements Activatea
 	private static final String CMD_MODIFIER = "cmd.modifier.";
 	private static final String REGISTER_LINK = "register.link.";
 	private final Formatter formatter;
+	
 	@Autowired
 	private UserManager userManager;
 	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private GlossaryItemManager glossaryItemManager;
 
 	public GlossaryMainController(WindowControl control, UserRequest ureq, VFSContainer glossaryFolder, OLATResource res,
 			GlossarySecurityCallback glossarySecCallback, boolean eventProfil) {
@@ -116,8 +119,8 @@ public class GlossaryMainController extends BasicController implements Activatea
 
 		formatter = Formatter.getInstance(getLocale());
 
-		glossaryItemList = GlossaryItemManager.getInstance().getGlossaryItemListByVFSItem(glossaryFolder);
-		Properties glossProps = GlossaryItemManager.getInstance().getGlossaryConfig(glossaryFolder);
+		glossaryItemList = glossaryItemManager.getGlossaryItemListByVFSItem(glossaryFolder);
+		Properties glossProps = glossaryItemManager.getGlossaryConfig(glossaryFolder);
 		Boolean registerEnabled = Boolean.valueOf(glossProps.getProperty(GlossaryItemManager.REGISTER_ONOFF));
 		glistVC.contextPut("registerEnabled", registerEnabled);
 		if (!registerEnabled) {
@@ -189,11 +192,6 @@ public class GlossaryMainController extends BasicController implements Activatea
 		return indexLinkList;
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.control.Event)
-	 */
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == addButton) {
@@ -281,8 +279,8 @@ public class GlossaryMainController extends BasicController implements Activatea
 		super.event(ureq, source, event);
 		if (source == cmc){
 			// modal dialog closed -> persist changes on glossaryitem
-			GlossaryItemManager.getInstance().saveGlossaryItemList(glossaryFolder, glossaryItemList);
-			glossaryItemList = GlossaryItemManager.getInstance().getGlossaryItemListByVFSItem(glossaryFolder);
+			glossaryItemManager.saveGlossaryItemList(glossaryFolder, glossaryItemList);
+			glossaryItemList = glossaryItemManager.getGlossaryItemListByVFSItem(glossaryFolder);
 			updateRegisterAndGlossaryItems();
 		} else if(source == cmcUserInfo) {
 			removeAsListenerAndDispose(cmcUserInfo);
@@ -292,7 +290,7 @@ public class GlossaryMainController extends BasicController implements Activatea
 		} else if (source == deleteDialogCtr) {
 			if (DialogBoxUIFactory.isYesEvent(event)) {
 				glossaryItemList.remove(currentDeleteItem);
-				GlossaryItemManager.getInstance().saveGlossaryItemList(glossaryFolder, glossaryItemList);
+				glossaryItemManager.saveGlossaryItemList(glossaryFolder, glossaryItemList);
 				// back to glossary view
 				updateRegisterAndGlossaryItems();
 			}
@@ -316,11 +314,11 @@ public class GlossaryMainController extends BasicController implements Activatea
 	 * @return a list (same size as GlossaryItems) which contains again lists with
 	 *         one editButton and one deleteButton
 	 */
-	private List<GlossaryItemWrapper> updateView(ArrayList<GlossaryItem> gIList, String choosenFilterIndex) {
+	private List<GlossaryItemWrapper> updateView(List<GlossaryItem> gIList, String choosenFilterIndex) {
 		int linkNum = 1;
-		Set<String> keys = new HashSet<String>();
+		Set<String> keys = new HashSet<>();
 		StringBuilder bufDublicates = new StringBuilder();
-		List<GlossaryItemWrapper> items = new ArrayList<GlossaryItemWrapper>();
+		List<GlossaryItemWrapper> items = new ArrayList<>();
 		Collections.sort(gIList);
 		
 		glistVC.contextPut("filterIndex", choosenFilterIndex);		
@@ -460,11 +458,11 @@ public class GlossaryMainController extends BasicController implements Activatea
 			return delegate.getRevHistory();
 		}
 
-		public ArrayList<String> getGlossFlexions() {
+		public List<String> getGlossFlexions() {
 			return delegate.getGlossFlexions();
 		}
 
-		public ArrayList<String> getGlossSynonyms() {
+		public List<String> getGlossSynonyms() {
 			return delegate.getGlossSynonyms();
 		}
 
@@ -472,11 +470,11 @@ public class GlossaryMainController extends BasicController implements Activatea
 			return delegate.getGlossDef();
 		}
 
-		public ArrayList<URI> getGlossLinks() {
+		public List<URI> getGlossLinks() {
 			return delegate.getGlossLinks();
 		}
 
-		public ArrayList<GlossaryItem> getGlossSeeAlso() {
+		public List<GlossaryItem> getGlossSeeAlso() {
 			return delegate.getGlossSeeAlso();
 		}
 

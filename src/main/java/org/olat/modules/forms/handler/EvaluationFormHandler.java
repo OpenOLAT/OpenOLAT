@@ -57,7 +57,6 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.xml.XStreamHelper;
-import org.olat.course.assessment.AssessmentMode;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.ZippedDirectoryMediaResource;
 import org.olat.fileresource.types.FileResource;
@@ -77,7 +76,6 @@ import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.EditionSupport;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.model.RepositoryEntrySecurity;
-import org.olat.repository.ui.RepositoryEntryRuntimeController.RuntimeControllerCreator;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -197,7 +195,7 @@ public class EvaluationFormHandler implements RepositoryHandler {
 
 	@Override
 	public EditionSupport supportsEdit(OLATResourceable resource) {
-		return EditionSupport.embedded;
+		return EditionSupport.yes;
 	}
 	
 	@Override
@@ -254,14 +252,10 @@ public class EvaluationFormHandler implements RepositoryHandler {
 	@Override
 	public MainLayoutController createLaunchController(RepositoryEntry re, RepositoryEntrySecurity reSecurity, UserRequest ureq, WindowControl wControl) {
 		return new EvaluationFormRuntimeController(ureq, wControl, re, reSecurity,
-			new RuntimeControllerCreator() {
-				@Override
-				public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel,
-						RepositoryEntry entry, RepositoryEntrySecurity security, AssessmentMode assessmentMode) {
+			(uureq, wwControl, toolbarPanel, entry, security, assessmentMode) -> {
 					File repositoryDir = new File(FileResourceManager.getInstance().getFileResourceRoot(re.getOlatResource()), FileResourceManager.ZIPDIR);
 					File formFile = new File(repositoryDir, FORM_XML_FILE);
 					return new EvaluationFormExecutionController(uureq, wwControl, formFile);
-				}
 			});
 	}
 

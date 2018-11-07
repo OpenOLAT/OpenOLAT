@@ -54,6 +54,7 @@ public class RepositoryEntryAuthorImpl implements RepositoryEntryAuthorView {
 	private final RepositoryEntryStatusEnum status;
 	private final boolean allUsers;
 	private final boolean guests;
+	private final boolean bookable;
 	
 	private final Date lastUsage;
 	
@@ -91,6 +92,7 @@ public class RepositoryEntryAuthorImpl implements RepositoryEntryAuthorView {
 		status = re.getEntryStatus();
 		allUsers = re.isAllUsers();
 		guests = re.isGuests();
+		bookable = re.isBookable();
 		
 		lastUsage = re.getStatistics().getLastUsage();
 		
@@ -190,6 +192,11 @@ public class RepositoryEntryAuthorImpl implements RepositoryEntryAuthorView {
 	@Override
 	public boolean isGuests() {
 		return guests;
+	}
+
+	@Override
+	public boolean isBookable() {
+		return bookable;
 	}
 
 	@Override

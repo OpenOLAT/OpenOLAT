@@ -33,7 +33,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.ContextEntry;
@@ -45,6 +44,7 @@ import org.olat.ims.qti21.QTI21DeliveryOptions.TestType;
 import org.olat.ims.qti21.QTI21Module;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.ui.settings.ReloadSettingsEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -363,6 +363,6 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 		
 		qtiService.setDeliveryOptions(testEntry, deliveryOptions);
 		changes = true;
-		fireEvent(ureq, Event.DONE_EVENT);
+		fireEvent(ureq, new ReloadSettingsEvent());
 	}
 }

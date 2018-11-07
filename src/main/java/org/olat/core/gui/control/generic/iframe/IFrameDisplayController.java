@@ -42,7 +42,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
-import org.olat.core.gui.control.generic.textmarker.TextMarkerManagerImpl;
+import org.olat.core.gui.control.generic.textmarker.TextMarkerManager;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -58,6 +58,7 @@ import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSMediaResource;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Class that loads a resource (html) in an Iframe and tries to adjust the size of the Iframe to hide the scrollbars.
@@ -97,6 +98,9 @@ public class IFrameDisplayController extends BasicController implements GenericE
 	private boolean allowDownload = false;
 	
 	private String iFrameId;
+	
+	@Autowired
+	private TextMarkerManager textMarkerManager;
 	
 	/**
 	 * 
@@ -158,7 +162,7 @@ public class IFrameDisplayController extends BasicController implements GenericE
 		}
 		this.deliveryOptions = options;
 		
-		boolean  enableTextmarking = TextMarkerManagerImpl.getInstance().isTextmarkingEnabled(ureq, contextResourceable);
+		boolean  enableTextmarking = textMarkerManager.isTextmarkingEnabled(ureq, contextResourceable);
 		// Set correct user content theme
 		String themeBaseUri = wControl.getWindowBackOffice().getWindow().getGuiTheme().getBaseURI();
 		if (frameId == null) {

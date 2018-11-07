@@ -33,7 +33,7 @@ package org.olat.course.config.ui.courselayout.attribs;
  */
 public class BackgroundColorLA extends ColorLA {
 
-	public static final String IDENTIFIER = "backgroundColor";
+	private static final String BG_IDENTIFIER = "backgroundColor";
 	
 	public BackgroundColorLA() {
 		super();
@@ -43,7 +43,7 @@ public class BackgroundColorLA extends ColorLA {
 
 	@Override
 	public String getLayoutAttributeTypeName() {
-		return IDENTIFIER;
+		return BG_IDENTIFIER;
 	}	
 
 }

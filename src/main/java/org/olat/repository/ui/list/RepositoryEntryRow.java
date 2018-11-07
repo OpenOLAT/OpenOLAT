@@ -58,6 +58,7 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 	private final RepositoryEntryStatusEnum status;
 	private final boolean allUsers;
 	private final boolean guests;
+	private final boolean bookable;
 	
 	private final String score;
 	private final Boolean passed;
@@ -110,6 +111,7 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 		status = entry.getEntryStatus();
 		allUsers = entry.isAllUsers();
 		guests = entry.isGuests();
+		bookable = entry.isBookable();
 		
 		//bookmark
 		setMarked(entry.isMarked());
@@ -159,6 +161,10 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 	
 	public boolean isGuests() {
 		return guests;
+	}
+	
+	public boolean isBookable() {
+		return bookable;
 	}
 
 	public String getExternalId() {

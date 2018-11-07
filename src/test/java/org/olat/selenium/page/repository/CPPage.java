@@ -22,6 +22,7 @@ package org.olat.selenium.page.repository;
 import java.util.List;
 
 import org.junit.Assert;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -36,7 +37,6 @@ import org.openqa.selenium.WebElement;
 public class CPPage {
 	
 	private final By toolsMenu = By.cssSelector("ul.o_sel_repository_tools");
-	private static final By settingsMenu = By.cssSelector("ul.o_sel_course_settings");
 	
 	private WebDriver browser;
 	
@@ -88,17 +88,17 @@ public class CPPage {
 	 * 
 	 * @return
 	 */
-	public RepositoryAccessPage accessConfiguration() {
-		if(!browser.findElement(settingsMenu).isDisplayed()) {
-			openSettingsMenu();
+	public RepositorySettingsPage settings() {
+		if(!browser.findElement(toolsMenu).isDisplayed()) {
+			openToolsMenu();
 		}
-		By accessConfigBy = By.cssSelector("a.o_sel_course_access");
-		browser.findElement(accessConfigBy).click();
+		By settingsBy = By.cssSelector("a.o_sel_repo_settings");
+		browser.findElement(settingsBy).click();
 		OOGraphene.waitBusy(browser);
 
 		By mainId = By.id("o_main_container");
-		OOGraphene.waitElement(mainId, 5, browser);
-		return new RepositoryAccessPage(browser);
+		OOGraphene.waitElement(mainId, browser);
+		return new RepositorySettingsPage(browser);
 	}
 	
 	/**
@@ -112,14 +112,24 @@ public class CPPage {
 		return this;
 	}
 	
-	/**
-	 * Open the settings menu.
-	 * @return
-	 */
-	public CPPage openSettingsMenu() {
-		By toolsMenuCaret = By.cssSelector("a.o_sel_course_settings");
-		browser.findElement(toolsMenuCaret).click();
-		OOGraphene.waitElement(settingsMenu, browser);
+	public CPPage publish() {
+		return changeStatus(RepositoryEntryStatusEnum.published);
+	}
+	
+	public CPPage changeStatus(RepositoryEntryStatusEnum status) {
+		By statusMenuBy = By.cssSelector("ul.o_entry_tools_status");
+		if(!browser.findElement(statusMenuBy).isDisplayed()) {
+			By statusMenuCaret = By.cssSelector("a.o_entry_tools_status");
+			browser.findElement(statusMenuCaret).click();
+			OOGraphene.waitElement(statusMenuBy, browser);
+		}
+		
+		By statusBy = By.cssSelector("ul.o_entry_tools_status>li>a.o_entry_status_" + status.name());
+		browser.findElement(statusBy).click();
+		OOGraphene.waitBusy(browser);
+		
+		By statusViewBy = By.xpath("//li[contains(@class,'o_tool_dropdown')]/a[contains(@class,'o_entry_tools_status') and contains(@class,'o_entry_status_" + status + "')]");
+		OOGraphene.waitElement(statusViewBy, browser);
 		return this;
 	}
 

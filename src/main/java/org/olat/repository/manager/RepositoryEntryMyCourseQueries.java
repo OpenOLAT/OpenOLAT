@@ -414,7 +414,7 @@ public class RepositoryEntryMyCourseQueries {
 		}
 		if(emptyRoles && !membershipMandatory) {
 			if(or) sb.append(" or ");
-			sb.append(" (v.allUsers=true and membership.role not ")
+			sb.append(" ((v.allUsers=true or v.bookable=true) and membership.role not ")
 			  .in(OrganisationRoles.guest, GroupRoles.invitee, GroupRoles.waiting)
 			  .append(" and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed()).append(")");
 		}

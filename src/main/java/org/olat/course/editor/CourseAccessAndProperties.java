@@ -21,6 +21,7 @@ package org.olat.course.editor;
 
 import java.util.List;
 
+import org.olat.core.id.Organisation;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryAllowToLeaveOptions;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -32,15 +33,17 @@ import org.olat.resource.accesscontrol.OfferAccess;
  *
  */
 public class CourseAccessAndProperties {
-	private RepositoryEntry repoEntry;
+	private final RepositoryEntry repoEntry;
 	private RepositoryEntryAllowToLeaveOptions setting;
 	private RepositoryEntryStatusEnum status;
 	private boolean allUsers;
 	private boolean guests;
+	private boolean bookable;
 	private boolean canCopy;
 	private boolean canReference;
 	private boolean canDownload;	
 	private Boolean confirmationEmail;
+	private List<Organisation> organisations;
 	
 	private List<OfferAccess> offerAccess;
 	private List<Offer> deletedOffer;
@@ -50,16 +53,15 @@ public class CourseAccessAndProperties {
 	}
 	
 	public CourseAccessAndProperties(RepositoryEntry re, RepositoryEntryAllowToLeaveOptions setting,
-			RepositoryEntryStatusEnum status, boolean allUsers, boolean guests,
-			boolean canCopy, boolean canReference, boolean canDownload) {
+			RepositoryEntryStatusEnum status, boolean bookable, boolean allUsers, boolean guests,
+			List<Organisation> organisations) {
 		this.repoEntry = re;
 		this.setting = setting;
 		this.status = status;
 		this.allUsers = allUsers;
 		this.guests = guests;
-		this.canCopy = canCopy;
-		this.canReference = canReference;
-		this.canDownload = canDownload;
+		this.bookable = bookable;
+		this.organisations = organisations;
 	}	
 	
 	public List<OfferAccess> getOfferAccess() {
@@ -82,10 +84,6 @@ public class CourseAccessAndProperties {
 		return repoEntry;
 	}
 
-	public void setRepositoryEntry(RepositoryEntry re) {
-		this.repoEntry = re;
-	}
-
 	public RepositoryEntryAllowToLeaveOptions getSetting() {
 		return setting;
 	}
@@ -100,6 +98,14 @@ public class CourseAccessAndProperties {
 
 	public void setStatus(RepositoryEntryStatusEnum status) {
 		this.status = status;
+	}
+
+	public boolean isBookable() {
+		return bookable;
+	}
+
+	public void setBookable(boolean bookable) {
+		this.bookable = bookable;
 	}
 
 	public boolean isAllUsers() {
@@ -148,5 +154,9 @@ public class CourseAccessAndProperties {
 
 	public void setConfirmationEmail(Boolean confirmationEmail) {
 		this.confirmationEmail = confirmationEmail;
+	}
+	
+	public List<Organisation> getOrganisations() {
+		return organisations;
 	}
 }

@@ -555,11 +555,11 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 
 		allOk &= validateTextElement(language, 255);
 		allOk &= validateTextElement(location, 255);
-		allOk &= validateTextElement(objectives, 2000);
-		allOk &= validateTextElement(requirements, 2000);
-		allOk &= validateTextElement(credits, 2000);
+		allOk &= validateTextElement(objectives, 16000);
+		allOk &= validateTextElement(requirements, 16000);
+		allOk &= validateTextElement(credits, 16000);
 		allOk &= validateTextElement(externalRef, 58);
-		allOk &= validateTextElement(expenditureOfWork, 225);
+		allOk &= validateTextElement(expenditureOfWork, 16000);
 		allOk &= validateTextElement(authors, 2000);
 		
 		if (publicDatesEl != null) {

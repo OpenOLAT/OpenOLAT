@@ -167,11 +167,8 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 			row.setMarked(entry.isMarked());
 
 			// access control
-			List<PriceMethod> types = new ArrayList<>();
-			if (!entry.isAllUsers() && !entry.isGuests()) {//TODO repo access
-				// members only always show lock icon
-				types.add(new PriceMethod("", "o_ac_membersonly_icon", uifactory.getTranslator().translate("cif.access.membersonly.short")));
-			} else {
+			List<PriceMethod> types = new ArrayList<>(3);
+			if(entry.isBookable()) {
 				// collect access control method icons
 				OLATResource resource = entry.getOlatResource();
 				for(OLATResourceAccess resourceAccess:resourcesWithOffer) {
@@ -185,6 +182,9 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 						}
 					}
 				}
+			} else if(!entry.isAllUsers() && !entry.isGuests()) {
+				// members only always show lock icon
+				types.add(new PriceMethod("", "o_ac_membersonly_icon", uifactory.getTranslator().translate("cif.access.membersonly.short")));
 			}
 			
 			if(!types.isEmpty()) {

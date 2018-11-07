@@ -45,6 +45,7 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.util.ArrayHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -70,15 +71,16 @@ public class GlossaryFlexionController extends FormBasicController {
 	private SingleSelection selectMS;
 	private Properties glossProps;
 	private VFSContainer glossaryFolder;
-	private GlossaryItemManager gItMgr;
+	
+	@Autowired
+	private GlossaryItemManager glossaryItemManager;
 
 	protected GlossaryFlexionController(UserRequest ureq, WindowControl control, GlossaryItem glossaryItem, VFSContainer glossaryFolder) {
 		super(ureq, control, "editFlexion");
 		this.glossaryItem = glossaryItem;
 		this.glossaryFolder = glossaryFolder;
-		this.gItMgr = GlossaryItemManager.getInstance();
 		
-		glossProps = gItMgr.getGlossaryConfig(glossaryFolder);
+		glossProps = glossaryItemManager.getGlossaryConfig(glossaryFolder);
 		String configuredMS = glossProps.getProperty(GlossaryItemManager.MS_KEY);
 		// a MS was configured for this glossary, check if its enabled as bean in global glossary-config
 		List<MorphologicalService> morphServices = GlossaryModule.getMorphologicalServices();
@@ -115,7 +117,7 @@ public class GlossaryFlexionController extends FormBasicController {
 						showInfo("flexions.guessed");
 					}
 
-					if (flexionsMSResult.size()==0){
+					if (flexionsMSResult.isEmpty()){
 						showError("flexions.answer.error");
 						logError("Check reply from flexion service, there is a reply, but with an empty list! Contact flexion-service provider.", null);
 						flexionsMSResult = null;
@@ -155,7 +157,7 @@ public class GlossaryFlexionController extends FormBasicController {
 			if (!selectMS.getSelectedKey().equals(glossProps.getProperty(GlossaryItemManager.MS_KEY))){
 				// change occurred, persist this
 				glossProps.setProperty(GlossaryItemManager.MS_KEY, selectMS.getSelectedKey());
-				gItMgr.setGlossaryConfig(glossaryFolder, glossProps);
+				glossaryItemManager.setGlossaryConfig(glossaryFolder, glossProps);
 			}
 		}
 	}
@@ -171,7 +173,7 @@ public class GlossaryFlexionController extends FormBasicController {
 	private void saveSelectedFlexions() {
 		if (existingFlexions != null) {
 			Collection<String> choosedFlexions = existingFlexions.getSelectedKeys();
-			ArrayList<String> glossItemFlexionsToSave = new ArrayList<String>(choosedFlexions.size());
+			ArrayList<String> glossItemFlexionsToSave = new ArrayList<>(choosedFlexions.size());
 			glossItemFlexionsToSave.addAll(choosedFlexions);
 			glossaryItem.setGlossFlexions(glossItemFlexionsToSave);
 		}
@@ -186,7 +188,7 @@ public class GlossaryFlexionController extends FormBasicController {
 		String[] msKeys = new String[morphServices.size()];
 		String[] msValues = new String[morphServices.size()];
 		String[] msCSS = new String[morphServices.size()];
-		if (morphServices!=null && morphServices.size()!=0){
+		if (morphServices != null && !morphServices.isEmpty()){
 			int i=0;
 			for (Iterator<MorphologicalService> iterator = morphServices.iterator(); iterator.hasNext();) {
 				MorphologicalService fsMgr = iterator.next();
@@ -204,9 +206,8 @@ public class GlossaryFlexionController extends FormBasicController {
 		}		
 		
 		//combining flexion list from already existing and newly fetched
-		@SuppressWarnings("unchecked")
-		List<String> glossItemFlexions = (List<String>) glossaryItem.getGlossFlexions().clone();
-		if (glossItemFlexions.size() != 0 || flexionsMSResult != null) {
+		List<String> glossItemFlexions = new ArrayList<>(glossaryItem.getGlossFlexions());
+		if (!glossItemFlexions.isEmpty() || flexionsMSResult != null) {
 			String[] existingKeys = ArrayHelper.toArray(glossItemFlexions);
 			if (flexionsMSResult != null) glossItemFlexions.addAll(flexionsMSResult);
 			removeDuplicate(glossItemFlexions);
@@ -233,7 +234,7 @@ public class GlossaryFlexionController extends FormBasicController {
 	 * @param arlList
 	 */
 	private static void removeDuplicate(List<String> arlList) {
-		Set<String> h = new HashSet<String>(arlList);
+		Set<String> h = new HashSet<>(arlList);
 		arlList.clear();
 		arlList.addAll(h);
 	}

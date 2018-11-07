@@ -17,28 +17,24 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.repository.ui.author;
+package org.olat.repository.ui.settings;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.stack.TooledStackedPanel;
-import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -59,11 +55,9 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CatalogSettingsController extends FormBasicController {
 	
-	private Link addToCatalogLink;
+	private FormLink addToCatalogLink;
 	private FlexiTableElement tableEl;
 	private CategoriesListModel model;
-	private TooledStackedPanel stackPanel;
-	private FormLayoutContainer catalog;
 
 	private CloseableModalController cmc;
 	private Controller catalogAdddController;
@@ -73,45 +67,28 @@ public class CatalogSettingsController extends FormBasicController {
 	@Autowired
 	private CatalogManager catalogManager;
 	
-	public CatalogSettingsController(UserRequest ureq, WindowControl wControl,
-			TooledStackedPanel stackPanel, RepositoryEntry entry) {
-		super(ureq, wControl, LAYOUT_BAREBONE);
+	public CatalogSettingsController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
+		super(ureq, wControl, "catalog_settings");
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		this.entry = entry;
-		this.stackPanel = stackPanel;
-		
 		initForm(ureq);
-		stackPanel.pushController(translate("details.categoriesheader"), this);
-	}
-	
-	public void initToolbar() {
-		addToCatalogLink = LinkFactory.createToolLink("cat", translate("details.catadd"), this, "o_icon_add");
-		addToCatalogLink.setElementCssClass("o_sel_repo_add_to_catalog");
-		stackPanel.addTool(addToCatalogLink, Align.left);
+		loadModel();
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		String catalogPage = velocity_root + "/catalog_info.html";
-		catalog = FormLayoutContainer.createCustomFormLayout("info", getTranslator(), catalogPage);
-		catalog.setRootForm(mainForm);
-		formLayout.add(catalog);
+		addToCatalogLink = uifactory.addFormLink("details.catadd", formLayout, Link.BUTTON);
+		addToCatalogLink.setIconLeftCSS("o_icon o_icon_add");
+		addToCatalogLink.setElementCssClass("o_sel_repo_add_to_catalog");
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("catalog.path", 0));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("remove", translate("remove"), "remove"));
 		
-		List<CatalogEntry> catalogEntries = catalogManager.getCatalogCategoriesFor(entry);
-		model = new CategoriesListModel(catalogEntries, columnsModel);
-		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 200, true, getTranslator(), formLayout);
+		model = new CategoriesListModel(new ArrayList<>(), columnsModel);
+		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 200, false, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(false);
-		tableEl.setVisible(true);
-		if (catalogEntries.size() == 0) {
-			catalog.contextPut("hasContent", false);
-			tableEl.setEmtpyTableMessageKey("no.catalog.entries");
-		} else {
-			catalog.contextPut("hasContent", true);
-		}
+		tableEl.setEmtpyTableMessageKey("no.catalog.entries");
 	}
 	
 	@Override
@@ -130,15 +107,9 @@ public class CatalogSettingsController extends FormBasicController {
 					doRemove(row);
 				}
 			}
-		}
-	}
-
-	@Override
-	public void event(UserRequest ureq, Component source, Event event) {
-		if(addToCatalogLink == source) {
+		} else if(addToCatalogLink == source) {
 			doAddCatalog(ureq);
 		}
-		super.event(ureq, source, event);
 	}
 
 	@Override
@@ -147,7 +118,7 @@ public class CatalogSettingsController extends FormBasicController {
 			cleanUp();
 		} else if(catalogAdddController == source) {
 			cmc.deactivate();
-			updateTable();
+			loadModel();
 			cleanUp();
 		}
 		super.event(ureq, source, event);
@@ -164,6 +135,8 @@ public class CatalogSettingsController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		//
 	}
+	
+	
 	
 	/**
 	 * Internal helper to initiate the add to catalog workflow
@@ -193,18 +166,13 @@ public class CatalogSettingsController extends FormBasicController {
 		}
 
 		//update table
-		updateTable();
+		loadModel();
 	}
 	
-	private void updateTable() {
+	private void loadModel() {
 		List<CatalogEntry> catalogEntries = catalogManager.getCatalogCategoriesFor(entry);
 		model.setObjects(catalogEntries);
-		if (catalogEntries.size() == 0) {
-			catalog.contextPut("hasContent", false);
-			tableEl.setEmtpyTableMessageKey("no.catalog.entries");
-		} else {
-			catalog.contextPut("hasContent", true);
-		}
+		flc.contextPut("hasContent", Boolean.valueOf(!catalogEntries.isEmpty()));
 		tableEl.reset();
 	}
 

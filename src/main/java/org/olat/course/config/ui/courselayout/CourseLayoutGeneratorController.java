@@ -21,7 +21,7 @@ package org.olat.course.config.ui.courselayout;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -40,10 +40,12 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.image.ImageComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
@@ -65,6 +67,7 @@ import org.olat.course.ICourse;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.config.CourseConfigEvent;
 import org.olat.course.config.CourseConfigEvent.CourseConfigType;
+import org.olat.course.config.ui.CourseSettingsController;
 import org.olat.course.config.ui.courselayout.attribs.AbstractLayoutAttribute;
 import org.olat.course.config.ui.courselayout.attribs.PreviewLA;
 import org.olat.course.config.ui.courselayout.attribs.SpecialAttributeFormItemHandler;
@@ -88,8 +91,13 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 
 	private static final String ELEMENT_ATTRIBUTE_DELIM = "__";
 	private static final String PREVIEW_IMAGE_NAME = "preview.png";
+	
+	private static final String[] onKeys = new String[] {"xx"};
+	private final String[] onValues;
 
 	private SingleSelection styleSel;
+	private SelectionElement menuEl;
+	private SelectionElement breadCrumbEl;
 	private FileElement logoUpl;
 	private FormLayoutContainer previewImgFlc;
 	private FormLayoutContainer styleFlc;
@@ -112,7 +120,7 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 
 	public CourseLayoutGeneratorController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, CourseConfig courseConfig,
 			CourseEnvironment courseEnvironment, boolean editable) {
-		super(ureq, wControl);
+		super(ureq, wControl, Util.createPackageTranslator(CourseSettingsController.class, ureq.getLocale()));
 
 		this.courseEntry = entry;
 		this.courseConfig = courseConfig;
@@ -120,6 +128,7 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 		lockEntry = CoordinatorManager.getInstance().getCoordinator().getLocker()
 				.acquireLock(entry.getOlatResource(), getIdentity(), CourseFactory.COURSE_EDITOR_LOCK);
 		this.editable = (lockEntry != null && lockEntry.isSuccess()) && editable;
+		this.onValues = new String[] {translate("on")};
 		
 		// stack the translator to get attribs/elements
 		Translator pt = Util.createPackageTranslator(AbstractLayoutAttribute.class, getLocale(), getTranslator());
@@ -139,10 +148,6 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 		}
 	}
 	
-	
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose()
-	 */
 	@Override
 	protected void doDispose() {
 		if (lockEntry != null && lockEntry.isSuccess()) {
@@ -151,16 +156,13 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#initForm(org.olat.core.gui.components.form.flexible.FormItemContainer, org.olat.core.gui.control.Controller, org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("tab.layout.title");
 		
-		List<String> keys = new ArrayList<String>();
-		List<String> vals = new ArrayList<String>();
-		List<String> csss = new ArrayList<String>();
+		List<String> keys = new ArrayList<>();
+		List<String> vals = new ArrayList<>();
+		List<String> csss = new ArrayList<>();
 
 		String actualCSSSettings = courseConfig.getCssLayoutRef();
 		
@@ -170,7 +172,7 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 		csss.add("");
 		
 		// check for old legacy template, only available if yet one set
-		if(actualCSSSettings.startsWith("/") && actualCSSSettings.lastIndexOf("/") == 0) {
+		if(actualCSSSettings.startsWith("/") && actualCSSSettings.lastIndexOf('/') == 0) {
 			keys.add(actualCSSSettings);
 			vals.add(translate("course.layout.legacy", actualCSSSettings));
 			csss.add("");
@@ -243,7 +245,7 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 		if(editable) {
 			logoUpl = uifactory.addFileElement(getWindowControl(), "upload.second.logo", formLayout);
 			logoUpl.addActionListener(FormEvent.ONCHANGE);
-			Set<String> mimeTypes = new HashSet<String>();
+			Set<String> mimeTypes = new HashSet<>();
 			mimeTypes.add("image/*");
 			logoUpl.limitToMimeType(mimeTypes, "logo.file.type.error", null);
 			logoUpl.setMaxUploadSizeKB(2048, "logo.size.error", null);
@@ -255,14 +257,24 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 		styleFlc.setLabel(null, null);
 		enableDisableCustom(CourseLayoutHelper.CONFIG_KEY_CUSTOM.equals(actualCSSSettings));
 		
-		if(editable) {
-			uifactory.addFormSubmitButton("course.layout.save", formLayout);
-		}
+		
+		menuEl = uifactory.addCheckboxesHorizontal("menuIsOn", "chkbx.menu.onoff", formLayout, onKeys, onValues);
+		menuEl.select(onKeys[0], courseConfig.isMenuEnabled());
+		menuEl.addActionListener(FormEvent.ONCHANGE);
+		menuEl.setEnabled(editable);
+		
+		breadCrumbEl = uifactory.addCheckboxesHorizontal("breadCrumbIsOn", "chkbx.breadcrumb.onoff", formLayout, onKeys, onValues);
+		breadCrumbEl.select(onKeys[0], courseConfig.isBreadCrumbEnabled());
+		breadCrumbEl.addActionListener(FormEvent.ONCHANGE);
+		
+		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+		buttonsCont.setRootForm(mainForm);
+		formLayout.add(buttonsCont);
+		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
+		FormSubmit submit = uifactory.addFormSubmitButton("course.layout.save", buttonsCont);
+		submit.setEnabled(editable);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formInnerEvent(org.olat.core.gui.UserRequest, org.olat.core.gui.components.form.flexible.FormItem, org.olat.core.gui.components.form.flexible.impl.FormEvent)
-	 */
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == styleSel) {
@@ -322,7 +334,7 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 			return false;
 		}
 		// target file:
-		String fileType = logoUpl.getUploadFileName().substring(logoUpl.getUploadFileName().lastIndexOf("."));
+		String fileType = logoUpl.getUploadFileName().substring(logoUpl.getUploadFileName().lastIndexOf('.'));
 		VFSContainer base = (VFSContainer) courseEnvironment.getCourseBaseContainer().resolve(CourseLayoutHelper.LAYOUT_COURSE_SUBFOLDER);
 		if (base == null) {
 			base = courseEnvironment.getCourseBaseContainer().createChildContainer(CourseLayoutHelper.LAYOUT_COURSE_SUBFOLDER);
@@ -347,18 +359,12 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 			}
 		} else {
 			// only persist without scaling
-			InputStream in = null;
-			OutputStream out = null;
-			try {
-				in = new FileInputStream(image);
-				out = targetFile.getOutputStream(false);
+			try(InputStream in = new FileInputStream(image);
+					OutputStream out = targetFile.getOutputStream(false)) {
 				FileUtils.copy(in, out);
-			} catch (FileNotFoundException e) {
+			} catch (IOException e) {
 				logError("Problem reading uploaded image to copy", e);
 				return false;
-			} finally {
-				FileUtils.closeSafely(in);
-				FileUtils.closeSafely(out);
 			}
 		}
 		return true;
@@ -400,9 +406,11 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 		logoImgFlc.remove(logoImgFlc.getComponent("preview"));
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formOK(org.olat.core.gui.UserRequest)
-	 */
+	@Override
+	protected void formCancelled(UserRequest ureq) {
+		fireEvent(ureq, Event.CANCELLED_EVENT);
+	}
+
 	@Override
 	protected void formOK(UserRequest ureq) {
 		OLATResource courseRes = courseEntry.getOlatResource();
@@ -425,6 +433,11 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 			if (!elWithErrorExists) prepareStyleEditor(customConfig);
 		}
 		
+		boolean menuEnabled = menuEl.isSelected(0);
+		courseConfig.setMenuEnabled(menuEnabled);
+		boolean breadCrumbEnabled = breadCrumbEl.isSelected(0);
+		courseConfig.setBreadCrumbEnabled(breadCrumbEnabled);
+		
 		CourseFactory.setCourseConfig(course.getResourceableId(), courseConfig);
 		CourseFactory.closeCourseEditSession(course.getResourceableId(), true);
 		
@@ -438,11 +451,11 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 	private Map<String, Map<String, Object>> compileCustomConfigFromGuiWrapper(){
 		// get config from wrapper-object
 		elWithErrorExists = false;
-		Map<String, Map<String, Object>> customConfig = new HashMap<String, Map<String, Object>>();
+		Map<String, Map<String, Object>> customConfig = new HashMap<>();
 		for (Iterator<Entry<String, Map<String, FormItem>>> iterator = guiWrapper.entrySet().iterator(); iterator.hasNext();) {
 			Entry<String, Map<String, FormItem>> type =  iterator.next();
 			String cIdent = type.getKey();
-			Map<String, Object> elementConfig = new HashMap<String, Object>();
+			Map<String, Object> elementConfig = new HashMap<>();
 			Map<String, FormItem> element = type.getValue();
 			for (Entry<String, FormItem> entry : element.entrySet()) {
 				String attribName = entry.getKey();
@@ -451,7 +464,7 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 					String value = "";
 					if (foItem instanceof SingleSelection) {
 						value = ((SingleSelection)foItem).isOneSelected() ? ((SingleSelection)foItem).getSelectedKey() : "";
-					} else if (foItem.getUserObject() != null && foItem.getUserObject() instanceof SpecialAttributeFormItemHandler) {
+					} else if (foItem.getUserObject() instanceof SpecialAttributeFormItemHandler) {
 						// enclosed item
 						SpecialAttributeFormItemHandler specHandler = (SpecialAttributeFormItemHandler) foItem.getUserObject();
 						value = specHandler.getValue();						
@@ -471,7 +484,7 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 	
 	
 	private void prepareStyleEditor(Map<String, Map<String, Object>> customConfig){
-		guiWrapper = new LinkedHashMap<String, Map<String, FormItem>>(); //keep config order
+		guiWrapper = new LinkedHashMap<>(); //keep config order
 
 		List<AbstractLayoutElement> allElements = customCMgr.getAllAvailableElements();
 		List<AbstractLayoutAttribute> allAttribs = customCMgr.getAllAvailableAttributes();
@@ -483,7 +496,7 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 			Map<String, Object> elConf = customConfig.get(elementType);
 			AbstractLayoutElement concreteElmt = abstractLayoutElement.createInstance(elConf);
 			
-			HashMap<String, FormItem> elAttribGui = new HashMap<String, FormItem>();
+			HashMap<String, FormItem> elAttribGui = new HashMap<>();
 
 			List<AbstractLayoutAttribute> attributes = concreteElmt.getAvailableAttributes();
 			for (AbstractLayoutAttribute attrib : attributes) {

@@ -123,6 +123,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		// go to options and show the results
 		qtiPage
 			.clickToolbarBack()
+			.settings()
 			.options()
 			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
 			.save();
@@ -201,6 +202,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		// go to options and show the results
 		qtiPage
 			.clickToolbarBack()
+			.settings()
 			.options()
 			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
 			.save();
@@ -328,11 +330,16 @@ public class ImsQTI21EditorTest extends Deployments {
 			.clickToolbarBack();
 		// access to all
 		qtiPage
+			.settings()
 			.accessConfiguration()
 			.setUserAccess(UserAccess.guest)
+			.save()
 			.clickToolbarBack();
+		qtiPage
+			.publish();
 		// show results
 		qtiPage
+			.settings()
 			.options()
 			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
 			.save();
@@ -543,11 +550,16 @@ public class ImsQTI21EditorTest extends Deployments {
 			.clickToolbarBack();
 		// access to all
 		qtiPage
+			.settings()
 			.accessConfiguration()
 			.setUserAccess(UserAccess.guest)
+			.save()
 			.clickToolbarBack();
+		qtiPage
+			.publish();
 		// show results
 		qtiPage
+			.settings()
 			.options()
 			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
 			.save();
@@ -811,11 +823,16 @@ public class ImsQTI21EditorTest extends Deployments {
 			.clickToolbarBack();
 		// access to all
 		qtiPage
+			.settings()
 			.accessConfiguration()
 			.setUserAccess(UserAccess.guest)
+			.save()
 			.clickToolbarBack();
+		qtiPage
+			.publish();
 		// show results
 		qtiPage
+			.settings()
 			.options()
 			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
 			.save();
@@ -988,11 +1005,16 @@ public class ImsQTI21EditorTest extends Deployments {
 			.clickToolbarBack();
 		// access to all
 		qtiPage
+			.settings()
 			.accessConfiguration()
 			.setUserAccess(UserAccess.guest)
+			.save()
 			.clickToolbarBack();
+		qtiPage
+			.publish();
 		// show results
 		qtiPage
+			.settings()
 			.options()
 			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
 			.save();
@@ -1163,11 +1185,16 @@ public class ImsQTI21EditorTest extends Deployments {
 			.clickToolbarBack();
 		// access to all
 		qtiPage
+			.settings()
 			.accessConfiguration()
 			.setUserAccess(UserAccess.guest)
+			.save()
 			.clickToolbarBack();
+		qtiPage
+			.publish();
 		// show results
 		qtiPage
+			.settings()
 			.options()
 			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
 			.save();
@@ -1332,11 +1359,16 @@ public class ImsQTI21EditorTest extends Deployments {
 			.clickToolbarBack();
 		// access to all
 		qtiPage
+			.settings()
 			.accessConfiguration()
 			.setUserAccess(UserAccess.guest)
+			.save()
 			.clickToolbarBack();
+		qtiPage
+			.publish();
 		// show results
 		qtiPage
+			.settings()
 			.options()
 			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
 			.save();
@@ -1504,11 +1536,16 @@ public class ImsQTI21EditorTest extends Deployments {
 			.clickToolbarBack();
 		// access to all
 		qtiPage
+			.settings()
 			.accessConfiguration()
 			.setUserAccess(UserAccess.guest)
+			.save()
 			.clickToolbarBack();
+		qtiPage
+			.publish();
 		// show results
 		qtiPage
+			.settings()
 			.options()
 			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
 			.save();
@@ -1668,11 +1705,16 @@ public class ImsQTI21EditorTest extends Deployments {
 			.clickToolbarBack();
 		// access to all
 		qtiPage
+			.settings()
 			.accessConfiguration()
 			.setUserAccess(UserAccess.guest)
+			.save()
 			.clickToolbarBack();
+		qtiPage
+			.publish();
 		// show results
 		qtiPage
+			.settings()
 			.options()
 			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
 			.save();
@@ -1813,11 +1855,16 @@ public class ImsQTI21EditorTest extends Deployments {
 			.clickToolbarBack();
 		// access to all
 		qtiPage
+			.settings()
 			.accessConfiguration()
 			.setUserAccess(UserAccess.guest)
+			.save()
 			.clickToolbarBack();
+		qtiPage
+			.publish();
 		// show results
 		qtiPage
+			.settings()
 			.options()
 			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
 			.save();
@@ -1962,11 +2009,16 @@ public class ImsQTI21EditorTest extends Deployments {
 			.clickToolbarBack();
 		// access to all
 		qtiPage
+			.settings()
 			.accessConfiguration()
 			.setUserAccess(UserAccess.guest)
+			.save()
 			.clickToolbarBack();
+		qtiPage
+			.publish();
 		// show results
 		qtiPage
+			.settings()
 			.options()
 			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
 			.save();
@@ -2149,11 +2201,17 @@ public class ImsQTI21EditorTest extends Deployments {
 			.clickToolbarBack();
 		// access to all
 		qtiPage
+			.settings()
 			.accessConfiguration()
 			.setUserAccess(UserAccess.guest)
+			.save()
 			.clickToolbarBack();
+		// publish
+		qtiPage
+			.publish();
 		// show results
 		qtiPage
+			.settings()
 			.options()
 			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
 			.save();
@@ -2343,11 +2401,16 @@ public class ImsQTI21EditorTest extends Deployments {
 			.clickToolbarBack();
 		// access to all
 		qtiPage
+			.settings()
 			.accessConfiguration()
 			.setUserAccess(UserAccess.guest)
+			.save()
 			.clickToolbarBack();
+		qtiPage
+			.publish();
 		// show results
 		qtiPage
+			.settings()
 			.options()
 			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
 			.save();
@@ -2527,11 +2590,16 @@ public class ImsQTI21EditorTest extends Deployments {
 			.clickToolbarBack();
 		// access to all
 		qtiPage
+			.settings()
 			.accessConfiguration()
 			.setUserAccess(UserAccess.guest)
+			.save()
 			.clickToolbarBack();
+		qtiPage
+			.publish();
 		// show results
 		qtiPage
+			.settings()
 			.options()
 			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
 			.save();
@@ -2709,11 +2777,16 @@ public class ImsQTI21EditorTest extends Deployments {
 			.clickToolbarBack();
 		// access to all
 		qtiPage
+			.settings()
 			.accessConfiguration()
 			.setUserAccess(UserAccess.guest)
+			.save()
 			.clickToolbarBack();
+		qtiPage
+			.publish();
 		// show results
 		qtiPage
+			.settings()
 			.options()
 			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
 			.save();
@@ -2843,11 +2916,16 @@ public class ImsQTI21EditorTest extends Deployments {
 			.clickToolbarBack();
 		// access to all
 		qtiPage
+			.settings()
 			.accessConfiguration()
 			.setUserAccess(UserAccess.guest)
+			.save()
 			.clickToolbarBack();
+		qtiPage
+			.publish();
 		// show results
 		qtiPage
+			.settings()
 			.options()
 			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
 			.save();
@@ -2942,11 +3020,16 @@ public class ImsQTI21EditorTest extends Deployments {
 			.clickToolbarBack();
 		// access to all
 		qtiPage
+			.settings()
 			.accessConfiguration()
 			.setUserAccess(UserAccess.guest)
+			.save()
 			.clickToolbarBack();
+		qtiPage
+			.publish();
 		// show results
 		qtiPage
+			.settings()
 			.options()
 			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
 			.save();
@@ -3043,11 +3126,16 @@ public class ImsQTI21EditorTest extends Deployments {
 			.clickToolbarBack();
 		// access to all
 		qtiPage
+			.settings()
 			.accessConfiguration()
 			.setUserAccess(UserAccess.guest)
+			.save()
 			.clickToolbarBack();
+		qtiPage
+			.publish();
 		// show results
 		qtiPage
+			.settings()
 			.options()
 			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
 			.save();
@@ -3152,11 +3240,16 @@ public class ImsQTI21EditorTest extends Deployments {
 			.clickToolbarBack();
 		// access to all
 		qtiPage
+			.settings()
 			.accessConfiguration()
 			.setUserAccess(UserAccess.guest)
+			.save()
 			.clickToolbarBack();
+		qtiPage
+			.publish();
 		// show results
 		qtiPage
+			.settings()
 			.options()
 			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
 			.save();
@@ -3304,11 +3397,16 @@ public class ImsQTI21EditorTest extends Deployments {
 			.clickToolbarBack();
 		// access to all
 		qtiPage
+			.settings()
 			.accessConfiguration()
 			.setUserAccess(UserAccess.guest)
+			.save()
 			.clickToolbarBack();
+		qtiPage
+			.publish();
 		// show results
 		qtiPage
+			.settings()
 			.options()
 			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
 			.save();

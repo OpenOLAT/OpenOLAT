@@ -34,6 +34,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.IOUtils;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
@@ -275,7 +276,8 @@ public class ScormCourseNode extends AbstractAccessableCourseNode implements Per
 					DeliveryOptions nodeDeliveryOptions = new DeliveryOptions();
 					RepositoryEntry re = getReferencedRepositoryEntry();
 					if(re != null) {
-						reConfig = ScormMainManager.getInstance().getScormPackageConfig(re.getOlatResource());
+						ScormMainManager scormMainManager = CoreSpringFactory.getImpl(ScormMainManager.class);
+						reConfig = scormMainManager.getScormPackageConfig(re.getOlatResource());
 
 						//move the settings from the node to the repo
 						if(reConfig == null || reConfig.getDeliveryOptions() == null) {
@@ -294,7 +296,7 @@ public class ScormCourseNode extends AbstractAccessableCourseNode implements Per
 							}
 							reConfig.getDeliveryOptions().setContentEncoding(contentEncoding);
 							reConfig.getDeliveryOptions().setJavascriptEncoding(jsEncoding);
-							ScormMainManager.getInstance().setScormPackageConfig(re.getOlatResource(), reConfig);
+							scormMainManager.setScormPackageConfig(re.getOlatResource(), reConfig);
 						} else {
 							DeliveryOptions repoDeliveryOptions = reConfig.getDeliveryOptions();
 							boolean reRawContent = repoDeliveryOptions.getStandardMode() == null ? true : repoDeliveryOptions.getStandardMode().booleanValue();

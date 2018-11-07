@@ -192,6 +192,7 @@ public class ImsQTI21Test extends Deployments {
 				.getQTI21Page(browser);
 		qtiPage
 			.clickToolbarBack()
+			.settings()
 			.options()
 			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
 			.save();
@@ -244,6 +245,7 @@ public class ImsQTI21Test extends Deployments {
 				.getQTI21Page(browser);
 		qtiPage
 			.clickToolbarBack()
+			.settings()
 			.options()
 			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
 			.save();
@@ -385,6 +387,7 @@ public class ImsQTI21Test extends Deployments {
 		QTI21Page qtiPage = QTI21Page
 				.getQTI21Page(browser);
 		qtiPage
+			.settings()
 			.options()
 			.showResults(Boolean.TRUE, new QTI21AssessmentResultsOptions(true, true, false, false, false))
 			.save();
@@ -437,15 +440,20 @@ public class ImsQTI21Test extends Deployments {
 		QTI21Page qtiPage = QTI21Page
 				.getQTI21Page(browser);
 		qtiPage
+			.settings()
 			.options()
 			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
 			.enableSuspend()
 			.save();
 		
 		qtiPage
+			.settings()
 			.accessConfiguration()
 			.setUserAccess(UserAccess.registred)
+			.save()
 			.clickToolbarBack();
+		qtiPage
+			.publish();
 		
 		//check simple time limit
 		qtiPage
@@ -853,13 +861,16 @@ public class ImsQTI21Test extends Deployments {
 		//publish the course
 		courseEditor
 			.autoPublish()
+			.settings()
 			.accessConfiguration()
-			.setUserAccess(UserAccess.membersOnly);
+			.setUserAccess(UserAccess.membersOnly)
+			.save();
 		
 		//add a participant
 		CoursePageFragment courseRuntime = courseEditor
 			.clickToolbarBack();
 		courseRuntime
+			.publish()
 			.members()
 			.quickAdd(participant);
 		//open the assessment tool
@@ -978,13 +989,16 @@ public class ImsQTI21Test extends Deployments {
 		//publish the course
 		courseEditor
 			.autoPublish()
+			.settings()
 			.accessConfiguration()
-			.setUserAccess(UserAccess.membersOnly);
+			.setUserAccess(UserAccess.membersOnly)
+			.save();
 		
 		//add a participant
 		CoursePageFragment courseRuntime = courseEditor
 			.clickToolbarBack();
 		courseRuntime
+			.publish()
 			.members()
 			.quickAdd(participant);
 		

@@ -76,6 +76,7 @@ public class BinderDeliveryOptionsController extends FormBasicController impleme
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormContextHelp("Portfolio template: Administration and editing#configuration");
+		setFormTitle("portfolio.template.options.title");
 		
 		newEntriesEl = uifactory.addCheckboxesHorizontal("canAddEntries", "allow.new.entries", formLayout, onKeys, onValues);
 		if(deliveryOptions.isAllowNewEntries()) {
@@ -91,6 +92,7 @@ public class BinderDeliveryOptionsController extends FormBasicController impleme
 		FormLayoutContainer buttonsLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsLayout.setRootForm(mainForm);
 		formLayout.add(buttonsLayout);
+		uifactory.addFormCancelButton("cancel", buttonsLayout, ureq, getWindowControl());
 		uifactory.addFormSubmitButton("save", buttonsLayout);
 	}
 	
@@ -122,7 +124,12 @@ public class BinderDeliveryOptionsController extends FormBasicController impleme
 		deliveryOptions.setAllowDeleteBinder(allowDeleteBinder);
 		portfolioService.setDeliveryOptions(binder.getOlatResource(), deliveryOptions);
 	}
-	
+
+	@Override
+	protected void formCancelled(UserRequest ureq) {
+		fireEvent(ureq, Event.CANCELLED_EVENT);
+	}
+
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(deleteOptionCtrl == source) {

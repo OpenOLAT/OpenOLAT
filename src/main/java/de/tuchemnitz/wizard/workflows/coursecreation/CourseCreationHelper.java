@@ -70,6 +70,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.manager.CatalogManager;
 import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.OfferAccess;
 
 import de.tuchemnitz.wizard.helper.course.CourseExtensionHelper;
@@ -267,19 +268,35 @@ public class CourseCreationHelper {
 		// 3.1. setup rights
 		// --------------------------
 		if (courseConfig.getPublish()) {
-			
-			CourseAccessAndProperties accessAndProps = courseConfig.getAccessAndProperties();
-			RepositoryManager manager = RepositoryManager.getInstance();			
-			
-			addedEntry = manager.setAccessAndProperties(accessAndProps.getRepositoryEntry(),
-					accessAndProps.getStatus(), accessAndProps.isAllUsers(), accessAndProps.isGuests(),
-					accessAndProps.isCanCopy(), accessAndProps.isCanReference(), accessAndProps.isCanDownload());
-			addedEntry = manager.setLeaveSetting(addedEntry, accessAndProps.getSetting());
-			
-			List<OfferAccess> offerAccess = accessAndProps.getOfferAccess();
 			ACService acService = CoreSpringFactory.getImpl(ACService.class);
-			for (OfferAccess newLink : offerAccess) {
-				acService.saveOfferAccess(newLink);
+			RepositoryManager repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
+			
+			CourseAccessAndProperties accessAndProps = courseConfig.getAccessAndProperties();	
+			
+			addedEntry = repositoryManager.setAccess(accessAndProps.getRepositoryEntry(),
+					 accessAndProps.isAllUsers(), accessAndProps.isGuests(), accessAndProps.isBookable(),
+					 accessAndProps.getSetting(), accessAndProps.getOrganisations());
+			
+			addedEntry = repositoryManager.setAccessAndProperties(addedEntry, accessAndProps.getStatus(),
+					accessAndProps.isAllUsers(), accessAndProps.isGuests(),
+					accessAndProps.isCanCopy(), accessAndProps.isCanReference(), accessAndProps.isCanDownload());
+			
+			if(accessAndProps.isBookable()) {
+				Boolean confirmationEmail = accessAndProps.getConfirmationEmail();
+				boolean sendConfirmationEmail = confirmationEmail != null && confirmationEmail.booleanValue();
+	
+				List<OfferAccess> offerAccess = accessAndProps.getOfferAccess();
+				for (OfferAccess newLink : offerAccess) {
+					if(sendConfirmationEmail) {
+						Offer offer = newLink.getOffer();
+						offer.setConfirmationEmail(sendConfirmationEmail);
+						if(offer.getKey() != null) {
+							acService.save(offer);
+						}
+					}
+					
+					acService.saveOfferAccess(newLink);
+				}
 			}
 		}
 

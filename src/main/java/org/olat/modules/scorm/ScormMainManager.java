@@ -29,29 +29,25 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import org.apache.commons.io.IOUtils;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.manager.BasicManager;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.fileresource.FileResourceManager;
+import org.springframework.stereotype.Service;
 
 import com.thoughtworks.xstream.XStream;
 
 
 /**
- * Description:<br>
- * TODO:
- * 
- * <P>
  * Initial Date:  08.10.2007 <br>
  * @author Felix Jost, http://www.goodsolutions.ch
  */
-public class ScormMainManager extends BasicManager {
+@Service
+public class ScormMainManager {
 	
 	public static final String PACKAGE_CONFIG_FILE_NAME = "ScormPackageConfig.xml";
 	
@@ -62,21 +58,10 @@ public class ScormMainManager extends BasicManager {
 		configXstream.alias("deliveryOptions", DeliveryOptions.class);
 	}
 	
-	private static ScormMainManager INSTANCE = new ScormMainManager();
-	
-	private ScormMainManager() {
-		// singleton
-	}
-	
-	public static ScormMainManager getInstance() {
-		return INSTANCE;
-	}
-	
 	public ScormPackageConfig getScormPackageConfig(File cpRoot) {
 		File configXml = new File(cpRoot.getParentFile(), PACKAGE_CONFIG_FILE_NAME);
 		if(configXml.exists()) {
-			ScormPackageConfig config = (ScormPackageConfig)configXstream.fromXML(configXml);
-			return config;
+			return (ScormPackageConfig)configXstream.fromXML(configXml);
 		}
 		return null;
 	}
@@ -86,8 +71,7 @@ public class ScormMainManager extends BasicManager {
 		File reFolder = frm.getFileResourceRoot(ores);
 		File configXml = new File(reFolder, PACKAGE_CONFIG_FILE_NAME);
 		if(configXml.exists()) {
-			ScormPackageConfig config = (ScormPackageConfig)configXstream.fromXML(configXml);
-			return config;
+			return (ScormPackageConfig)configXstream.fromXML(configXml);
 		}
 		return null;
 	}
@@ -101,14 +85,10 @@ public class ScormMainManager extends BasicManager {
 				configXml.delete();
 			}
 		} else {
-			OutputStream out = null;
-			try {
-				out = new FileOutputStream(configXml);
+			try(OutputStream out = new FileOutputStream(configXml)) {
 				configXstream.toXML(config, out);
 			} catch (IOException e) {
 				log.error("", e);
-			} finally {
-				IOUtils.closeQuietly(out);
 			}
 		}
 	}
@@ -124,7 +104,6 @@ public class ScormMainManager extends BasicManager {
 	 *          "review"
 	 * @param credit_mode add null for the default value or "credit", "no-credit"
 	 */
-	//fxdiff FXOLAT-116: SCORM improvements
 	public ScormAPIandDisplayController createScormAPIandDisplayController(UserRequest ureq, WindowControl wControl,
 			boolean showMenu, ScormAPICallback apiCallback, File cpRoot, Long scormResourceId, String courseId,
 			String lesson_mode, String credit_mode, boolean previewMode, String assessableType, boolean activate,

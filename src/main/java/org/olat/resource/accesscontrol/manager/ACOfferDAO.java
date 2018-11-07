@@ -109,8 +109,8 @@ public class ACOfferDAO {
 		  .append(" where resource.key in (:resourceKeys)");
 		TypedQuery<Long> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Long.class);
 
-		Set<Long> resourceWithOffers = new HashSet<Long>();
-		List<Long> keys = new ArrayList<Long>(resourceKeys);
+		Set<Long> resourceWithOffers = new HashSet<>();
+		List<Long> keys = new ArrayList<>(resourceKeys);
 
 		//too much in with hibernate can generate a stack overflow
 		int hibernateInBatch = 500;

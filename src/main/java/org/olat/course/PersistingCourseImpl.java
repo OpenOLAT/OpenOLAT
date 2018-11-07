@@ -53,7 +53,6 @@ import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.config.CourseConfigManager;
-import org.olat.course.config.CourseConfigManagerImpl;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNode.Processing;
@@ -86,7 +85,7 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 
 	private static final long serialVersionUID = -1022498371474445868L;
 
-	public static String COURSE_ROOT_DIR_NAME = "course";
+	public static final String COURSE_ROOT_DIR_NAME = "course";
 	
 	private static final String EDITORTREEMODEL_XML = "editortreemodel.xml";
 	private static final String RUNSTRUCTURE_XML = "runstructure.xml";
@@ -127,7 +126,7 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 		this.resourceableId = resource.getResourceableId();
 		// prepare filesystem and set course base path and course folder paths
 		prepareFilesystem();
-		courseConfig = CourseConfigManagerImpl.getInstance().loadConfigFor(this); // load or init defaults
+		courseConfig = CoreSpringFactory.getImpl(CourseConfigManager.class).loadConfigFor(this); // load or init defaults
 		courseEnvironment = new CourseEnvironmentImpl(this, resource);
 	}
 	
@@ -136,7 +135,7 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 		resourceableId = courseEntry.getOlatResource().getResourceableId();
 		// prepare filesystem and set course base path and course folder paths
 		prepareFilesystem();
-		courseConfig = CourseConfigManagerImpl.getInstance().loadConfigFor(this); // load or init defaults
+		courseConfig = CoreSpringFactory.getImpl(CourseConfigManager.class).loadConfigFor(this); // load or init defaults
 		courseEnvironment = new CourseEnvironmentImpl(this, courseEntry);
 	}
 	
@@ -347,7 +346,7 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 				// export failed, delete reference to shared folder in the course config
 				log.info("exportToFilesystem: exporting course "+this+": export of shared folder failed.");
 				config.setSharedFolderSoftkey(CourseConfig.VALUE_EMPTY_SHAREDFOLDER_SOFTKEY);
-				CourseConfigManagerImpl.getInstance().saveConfigTo(this, config);
+				CoreSpringFactory.getImpl(CourseConfigManager.class).saveConfigTo(this, config);
 			}
 			log.info("exportToFilesystem: exporting course "+this+": shared folder...done.");
 		}
@@ -362,12 +361,14 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 		// export glossary
 		if (config.hasGlossary()) {
 			log.info("exportToFilesystem: exporting course "+this+": glossary...");
-			if (!GlossaryManager.getInstance().exportGlossary(
+			final GlossaryManager glossaryManager = CoreSpringFactory.getImpl(GlossaryManager.class);
+			final CourseConfigManager courseConfigManager = CoreSpringFactory.getImpl(CourseConfigManager.class);
+			if (!glossaryManager.exportGlossary(
 					config.getGlossarySoftKey(), fExportedDataDir)) {
 				// export failed, delete reference to glossary in the course config
 				log.info("exportToFilesystem: exporting course "+this+": export of glossary failed.");
 				config.setGlossarySoftKey(null);
-				CourseConfigManagerImpl.getInstance().saveConfigTo(this, config);
+				courseConfigManager.saveConfigTo(this, config);
 			}
 			log.info("exportToFilesystem: exporting course "+this+": glossary...done.");
 		}
@@ -535,7 +536,7 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 	 */
 	protected void setCourseConfig(CourseConfig courseConfig) {
 		this.courseConfig = courseConfig;
-		CourseConfigManagerImpl.getInstance().saveConfigTo(this, courseConfig);
+		CoreSpringFactory.getImpl(CourseConfigManager.class).saveConfigTo(this, courseConfig);
 	}
 	
 	/**

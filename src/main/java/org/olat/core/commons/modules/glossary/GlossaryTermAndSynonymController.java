@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import org.olat.core.gui.UserRequest;
@@ -42,6 +43,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -55,13 +57,16 @@ public class GlossaryTermAndSynonymController extends FormBasicController {
 	private GlossaryItem glossaryItem;
 	private TextElement glossaryTermField;
 	private TextElement newSynonymField;
-	private ArrayList<String> glossItemSynonyms;
-	private ArrayList<TextElement> synonymTextElementList;
+	private List<String> glossItemSynonyms;
+	private List<TextElement> synonymTextElementList;
 	private VFSContainer glossaryFolder;
 	private GlossaryItem duplicateGlossItem;
 	private static final String CMD_DELETE_SYNONYM = "delete.synonym.";
 	private static final String SYNONYM_TEXT_ELEMENT = "synonym.";
 	private final boolean add;
+	
+	@Autowired
+	private GlossaryItemManager glossaryItemManager;
 
 	protected GlossaryTermAndSynonymController(UserRequest ureq, WindowControl control, GlossaryItem glossaryItem, VFSContainer glossaryFolder,
 			boolean add) {
@@ -76,7 +81,7 @@ public class GlossaryTermAndSynonymController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		String glossTerm = glossaryTermField.getValue().trim();
 		if (StringHelper.containsNonWhitespace(glossTerm)) {
-			if (!glossTerm.equals(glossaryItem.getGlossTerm()) && glossaryItem.getGlossFlexions().size() > 0) {
+			if (!glossTerm.equals(glossaryItem.getGlossTerm()) && !glossaryItem.getGlossFlexions().isEmpty()) {
 				showWarning("flexions.warn.after.changed.term");
 			}
 			glossaryItem.setGlossTerm(glossTerm);
@@ -84,7 +89,7 @@ public class GlossaryTermAndSynonymController extends FormBasicController {
 		
 		// save all changes made in existing synonyms
 		int oldSynonymCount = glossItemSynonyms.size();
-		glossItemSynonyms = new ArrayList<String>();
+		glossItemSynonyms = new ArrayList<>();
 		for (int i = 0; i < oldSynonymCount; i++) {
 			String textElementValue = synonymTextElementList.get(i).getValue().trim();
 			if (StringHelper.containsNonWhitespace(textElementValue)) {
@@ -121,20 +126,19 @@ public class GlossaryTermAndSynonymController extends FormBasicController {
 		} else fireEvent(ureq, new Event("termOK"));
 	}
 	
-/**
- * looks up complete glossary for same flexion, synonym or term
- * 
- * @return
- */
+	/**
+	 * looks up complete glossary for same flexion, synonym or term
+	 * 
+	 * @return
+	 */
 	private boolean checkForDuplicatesInGlossary(){
-		ArrayList<String> allOfThisItem = glossaryItem.getAllStringsToMarkup();		
-		ArrayList<GlossaryItem> glossaryItemList = GlossaryItemManager.getInstance().getGlossaryItemListByVFSItem(glossaryFolder);
+		List<String> allOfThisItem = glossaryItem.getAllStringsToMarkup();		
+		List<GlossaryItem> glossaryItemList = glossaryItemManager.getGlossaryItemListByVFSItem(glossaryFolder);
 		int foundItselfCounter = 0;
 		int foundAnother = 0;
-//		if ( glossaryItemList.contains(glossaryItem)) foundItselfCounter++;
 		for (Iterator<GlossaryItem> iterator = glossaryItemList.iterator(); iterator.hasNext();) {
 			GlossaryItem tmpItem = iterator.next();
-			ArrayList<String> currentAllList = tmpItem.getAllStringsToMarkup();
+			List<String> currentAllList = tmpItem.getAllStringsToMarkup();
 			if (tmpItem.equals(glossaryItem) ){
 				if (! Collections.disjoint(allOfThisItem, currentAllList)) foundItselfCounter++;
 				else foundAnother++;
@@ -153,10 +157,6 @@ public class GlossaryTermAndSynonymController extends FormBasicController {
 		return true;
 	}
 
-
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formNOK(org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void formNOK(UserRequest ureq) {
 		// disable other tabs
@@ -170,7 +170,7 @@ public class GlossaryTermAndSynonymController extends FormBasicController {
 			FormLink delButton = (FormLink) source;
 			String synonymToDelete = (String) delButton.getUserObject();
 			glossItemSynonyms.remove(synonymToDelete);
-			createOrUpdateSynonymLayout(this.flc, glossItemSynonyms);
+			createOrUpdateSynonymLayout(flc, glossItemSynonyms);
 		}  
 	}
 
@@ -191,7 +191,7 @@ public class GlossaryTermAndSynonymController extends FormBasicController {
 		createOrUpdateSynonymLayout(formLayout, glossItemSynonyms);
 	}
 
-	private void createOrUpdateSynonymLayout(FormItemContainer formLayout, ArrayList<String> glossItemSynonymsToUse){
+	private void createOrUpdateSynonymLayout(FormItemContainer formLayout, List<String> glossItemSynonymsToUse){
 		FormUIFactory formUIf = FormUIFactory.getInstance();
 		FormItem synLay = formLayout.getFormComponent("synonymLayout");
 		if (synLay != null) {
@@ -206,7 +206,7 @@ public class GlossaryTermAndSynonymController extends FormBasicController {
 		tmpLayout.contextPut("glossItemSynonyms", glossItemSynonymsToUse);
 
 		// add input fields with existing synonyms
-		synonymTextElementList = new ArrayList<TextElement>(glossItemSynonymsToUse.size());
+		synonymTextElementList = new ArrayList<>(glossItemSynonymsToUse.size());
 		for (int synNum = 1; synNum < glossItemSynonymsToUse.size() + 1; synNum++) {
 			TextElement tmpSynonymTE = formUIf.addTextElement(SYNONYM_TEXT_ELEMENT + synNum, null, 100, glossItemSynonymsToUse.get(synNum - 1), tmpLayout);
 			synonymTextElementList.add(tmpSynonymTE);
@@ -232,10 +232,9 @@ public class GlossaryTermAndSynonymController extends FormBasicController {
 	// nothing to do
 	}
 
-	private static void removeDuplicate(ArrayList<String> arlList) {
-		Set<String> h = new HashSet<String>(arlList);
+	private static void removeDuplicate(List<String> arlList) {
+		Set<String> h = new HashSet<>(arlList);
 		arlList.clear();
 		arlList.addAll(h);
 	}
-
 }

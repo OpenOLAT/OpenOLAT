@@ -33,7 +33,6 @@ import org.olat.core.gui.components.stack.TooledController;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.components.velocity.VelocityContainer;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -61,7 +60,6 @@ public class LectureRepositoryAdminController extends BasicController implements
 	
 	private Link logLink;
 	private Link archiveLink;
-	private Link settingsLink;
 	private final Link appealsLink;
 	private final Link lecturesLink;
 	private final Link participantsLink;
@@ -71,11 +69,9 @@ public class LectureRepositoryAdminController extends BasicController implements
 
 	private AppealListRepositoryController appealsCtrl;
 	private LectureListRepositoryController lecturesCtrl;
-	private final LectureRepositorySettingsController settingsCtrl;
 	private ParticipantListRepositoryController participantsCtrl;
 	
 	private RepositoryEntry entry;
-	private boolean configurationChanges = false;
 	private final boolean isAdministrativeUser;
 	private final boolean authorizedAbsenceEnabled;
 	private final LecturesSecurityCallback secCallback;
@@ -107,34 +103,14 @@ public class LectureRepositoryAdminController extends BasicController implements
 		participantsLink = LinkFactory.createLink("repo.participants", mainVC, this);
 		appealsLink = LinkFactory.createLink("repo.lectures.appeals", mainVC, this);
 
-		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Settings"), null);
-		settingsCtrl = new LectureRepositorySettingsController(ureq, swControl, entry);
-		listenTo(settingsCtrl);
-		if(settingsCtrl.isLectureEnabled()) {
-			segmentView.addSegment(lecturesLink, true);
-			segmentView.addSegment(participantsLink, false);
-			if(lectureModule.isAbsenceAppealEnabled()) {
-				segmentView.addSegment(appealsLink, false);
-			}
-			doOpenLectures(ureq);
-		} else {
-			doOpenSettings(ureq);
+		segmentView.addSegment(lecturesLink, true);
+		segmentView.addSegment(participantsLink, false);
+		if(lectureModule.isAbsenceAppealEnabled()) {
+			segmentView.addSegment(appealsLink, false);
 		}
-		
-		if(secCallback.canEditConfiguration()) {
-			settingsLink = LinkFactory.createLink("repo.settings", mainVC, this);
-			segmentView.addSegment(settingsLink, !settingsCtrl.isLectureEnabled());
-		}
+		doOpenLectures(ureq);
 
 		putInitialPanel(mainVC);
-	}
-	
-	public boolean hasConfigurationChanges() {
-		return configurationChanges;
-	}
-	
-	public void configurationChangesConsumed() {
-		configurationChanges = false;
 	}
 
 	@Override
@@ -146,12 +122,10 @@ public class LectureRepositoryAdminController extends BasicController implements
 	public void initTools() {
 		archiveLink = LinkFactory.createToolLink("archive.entry", translate("archive.entry"), this);
 		archiveLink.setIconLeftCSS("o_icon o_icon_archive_tool");
-		archiveLink.setVisible(settingsCtrl.isLectureEnabled());
 		stackPanel.addTool(archiveLink, Align.right);
 		
 		logLink = LinkFactory.createToolLink("log", translate("log"), this);
 		logLink.setIconLeftCSS("o_icon o_icon_log");
-		logLink.setVisible(settingsCtrl.isLectureEnabled());
 		stackPanel.addTool(logLink, Align.right);
 	}
 
@@ -166,9 +140,6 @@ public class LectureRepositoryAdminController extends BasicController implements
 		} else if("Participants".equalsIgnoreCase(name)) {
 			doOpenParticipants(ureq);
 			segmentView.select(participantsLink);
-		} else if("Settings".equalsIgnoreCase(name) && settingsLink != null) {
-			doOpenSettings(ureq);
-			segmentView.select(settingsLink);
 		} else if("Appeals".equalsIgnoreCase(name)) {
 			if(lectureModule.isAbsenceAppealEnabled()) {
 				doOpenAppeals(ureq);
@@ -186,8 +157,6 @@ public class LectureRepositoryAdminController extends BasicController implements
 				Component clickedLink = mainVC.getComponent(segmentCName);
 				if (clickedLink == lecturesLink) {
 					doOpenLectures(ureq);
-				} else if (clickedLink == settingsLink){
-					doOpenSettings(ureq);
 				} else if(clickedLink == participantsLink) {
 					doOpenParticipants(ureq);
 				} else if(clickedLink == appealsLink) {
@@ -200,36 +169,6 @@ public class LectureRepositoryAdminController extends BasicController implements
 			doExportLog(ureq);
 		}
 	}
-	
-	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(settingsCtrl == source) {
-			if(event == Event.DONE_EVENT) {
-				updateSegments();
-				configurationChanges = true;
-			}
-		}
-	}
-	
-	/**
-	 * Update the segment view after a change in the configuration.
-	 */
-	private void updateSegments() {
-		if(settingsCtrl.isLectureEnabled()) {
-			if(segmentView.getSegments().size() == 1) {
-				if(lectureModule.isAbsenceAppealEnabled()) {
-					segmentView.addSegment(0, appealsLink, false);
-				}
-				segmentView.addSegment(0, participantsLink, false);
-				segmentView.addSegment(0, lecturesLink, false);
-			}
-		} else if(segmentView.getSegments().size() > 1) {
-			// remove the unused segments
-			segmentView.removeSegment(lecturesLink);
-			segmentView.removeSegment(participantsLink);
-			segmentView.removeSegment(appealsLink);
-		}	
-	}
 
 	private void doOpenLectures(UserRequest ureq) {
 		if(lecturesCtrl == null) {
@@ -241,11 +180,6 @@ public class LectureRepositoryAdminController extends BasicController implements
 			addToHistory(ureq, lecturesCtrl);
 		}
 		mainVC.put("segmentCmp", lecturesCtrl.getInitialComponent());
-	}
-	
-	private void doOpenSettings(UserRequest ureq) {
-		mainVC.put("segmentCmp", settingsCtrl.getInitialComponent());
-		addToHistory(ureq, settingsCtrl);
 	}
 	
 	private void doOpenParticipants(UserRequest ureq) {

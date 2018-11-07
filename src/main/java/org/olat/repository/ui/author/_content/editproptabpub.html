@@ -1,15 +1,3 @@
-$r.render("proppupform")
-	
-#if($r.available("accesscontrol") && $isGuestAccess)
-<div class="o_warning">
-	<h4>$r.translate("warn.header")</h4> 
-	$r.translate("cif.access.users_guests.warning")
-</div>
-#end
-#if($r.available("leaveform"))
-	$r.render("leaveform")
-#end
-#if($r.available("accesscontrol"))
-	$r.render("accesscontrol")
-#end
+$r.render("accessAndBooking")
+$r.render("authorAccess")
 

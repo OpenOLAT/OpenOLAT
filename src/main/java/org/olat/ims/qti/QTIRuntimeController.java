@@ -19,6 +19,8 @@
  */
 package org.olat.ims.qti;
 
+import java.util.List;
+
 import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -32,6 +34,7 @@ import org.olat.core.gui.control.VetoableCloseController;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.context.ContextEntry;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.ims.qti21.pool.QTI12To21Converter;
 import org.olat.repository.RepositoryEntry;
@@ -101,10 +104,8 @@ public class QTIRuntimeController extends RepositoryEntryRuntimeController imple
 			if(event == Event.DONE_EVENT) {
 				if(delayedClose != null) {
 					switch(delayedClose) {
-						case access: super.doAccess(ureq); break;
 						case details: super.doDetails(ureq); break;
-						case editSettings: super.doEditSettings(ureq); break;
-						case catalog: super.doCatalog(ureq); break;
+						case settings: super.doSettings(ureq, null); break;
 						case members: super.doMembers(ureq); break;
 						case orders: super.doOrders(ureq); break;
 						case close: super.doClose(ureq); break;
@@ -171,12 +172,12 @@ public class QTIRuntimeController extends RepositoryEntryRuntimeController imple
 	}
 
 	@Override
-	protected void doAccess(UserRequest ureq) {
+	protected Activateable2 doSettings(UserRequest ureq, List<ContextEntry> entries) {
 		if(requestForClose(ureq)) {
-			super.doAccess(ureq);
-		} else {
-			delayedClose = Delayed.access; 
+			return super.doSettings(ureq, entries);
 		}
+		delayedClose = Delayed.settings;
+		return null;
 	}
 
 	@Override
@@ -189,31 +190,12 @@ public class QTIRuntimeController extends RepositoryEntryRuntimeController imple
 	}
 
 	@Override
-	protected void doEditSettings(UserRequest ureq) {
-		if(requestForClose(ureq)) {
-			super.doEditSettings(ureq);
-		} else {
-			delayedClose = Delayed.editSettings; 
-		}
-	}
-
-	@Override
-	protected void doCatalog(UserRequest ureq) {
-		if(requestForClose(ureq)) {
-			super.doCatalog(ureq);
-		} else {
-			delayedClose = Delayed.catalog; 
-		}
-	}
-
-	@Override
 	protected Activateable2 doMembers(UserRequest ureq) {
 		if(requestForClose(ureq)) {
 			return super.doMembers(ureq);
-		} else {
-			delayedClose = Delayed.members;
-			return null;
 		}
+		delayedClose = Delayed.members;
+		return null;
 	}
 
 	@Override
@@ -243,10 +225,8 @@ public class QTIRuntimeController extends RepositoryEntryRuntimeController imple
 	}
 
 	private enum Delayed {
-		access,
 		details,
-		editSettings,
-		catalog,
+		settings,
 		members,
 		orders,
 		close,

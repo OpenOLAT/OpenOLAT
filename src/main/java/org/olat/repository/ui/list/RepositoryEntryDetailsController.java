@@ -344,17 +344,15 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 			//access control
 			String accessI18n = null;
 			List<PriceMethod> types = new ArrayList<>();
-			if (!entry.isAllUsers() && !entry.isGuests()) {
-				// members only
-				if(isMember) {
-					String linkText = translate("start.with.type", translate(entry.getOlatResource().getResourceableTypeName()));
-					startLink = uifactory.addFormLink("start", "start", linkText, null, layoutCont, Link.BUTTON_LARGE + Link.NONTRANSLATED);
-					startLink.setElementCssClass("o_start btn-block");
-					startLink.setIconRightCSS("o_icon o_icon_start o_icon-lg");
-					startLink.setPrimary(true);
+			if(entry.isAllUsers() || entry.isGuests()) {
+				String linkText = translate("start.with.type", translate(entry.getOlatResource().getResourceableTypeName()));
+				startLink = uifactory.addFormLink("start", "start", linkText, null, layoutCont, Link.BUTTON_LARGE + Link.NONTRANSLATED);
+				startLink.setElementCssClass("o_start btn-block");
+				if(guestOnly) {
+					startLink.setVisible(entry.isGuests());
 				}
-				accessI18n = translate("cif.access.membersonly");
-			} else {
+				accessI18n = translate("cif.status.".concat(entry.getEntryStatus().name()));
+			} else if(entry.isBookable()) {
 				AccessResult acResult = acService.isAccessible(entry, getIdentity(), isMember, false);
 				if(acResult.isAccessible()) {
 					String linkText = translate("start.with.type", translate(entry.getOlatResource().getResourceableTypeName()));
@@ -370,27 +368,31 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 						String displayName = amh.getMethodName(getLocale());
 						types.add(new PriceMethod(price, type, displayName));
 					}
-					String linkText = guestOnly ? translate("start.with.type", translate(entry.getOlatResource().getResourceableTypeName())) 
-							: translate("book.with.type", translate(entry.getOlatResource().getResourceableTypeName()));
+					String linkText = translate("book.with.type", translate(entry.getOlatResource().getResourceableTypeName()));
 					startLink = uifactory.addFormLink("start", "start", linkText, null, layoutCont, Link.BUTTON_LARGE + Link.NONTRANSLATED);
 					startLink.setCustomEnabledLinkCSS("btn btn-success"); // custom style
 					startLink.setElementCssClass("o_book btn-block");
-					if(guestOnly) {
-						startLink.setVisible(entry.isGuests());
-					} else {
-						startLink.setVisible(true);
-					}
-				} else {
-					String linkText = translate("start.with.type", translate(entry.getOlatResource().getResourceableTypeName()));
-					startLink = uifactory.addFormLink("start", "start", linkText, null, layoutCont, Link.BUTTON_LARGE + Link.NONTRANSLATED);
-					startLink.setElementCssClass("o_start btn-block");
 					startLink.setVisible(!guestOnly);
+				} else {
+					// booking not available -> button not visible
+					String linkText = translate("book.with.type", translate(entry.getOlatResource().getResourceableTypeName()));
+					startLink = uifactory.addFormLink("start", "start", linkText, null, layoutCont, Link.BUTTON_LARGE + Link.NONTRANSLATED);
+					startLink.setVisible(false);
 				}
-				startLink.setIconRightCSS("o_icon o_icon_start o_icon-lg");
-				startLink.setPrimary(true);
-				startLink.setFocus(true);
 				accessI18n = translate("cif.status.".concat(entry.getEntryStatus().name()));
+			} else {
+				// visible only to members only
+				String linkText = translate("start.with.type", translate(entry.getOlatResource().getResourceableTypeName()));
+				startLink = uifactory.addFormLink("start", "start", linkText, null, layoutCont, Link.BUTTON_LARGE + Link.NONTRANSLATED);
+				startLink.setElementCssClass("o_start btn-block");
+				startLink.setVisible(isMember);
+				accessI18n = translate("cif.access.membersonly");
 			}
+			
+			startLink.setIconRightCSS("o_icon o_icon_start o_icon-lg");
+			startLink.setPrimary(true);
+			startLink.setFocus(true);
+
 			layoutCont.contextPut("accessI18n", accessI18n);
 			
 			if(!types.isEmpty()) {

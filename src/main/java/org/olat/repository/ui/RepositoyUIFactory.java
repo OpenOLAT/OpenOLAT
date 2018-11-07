@@ -40,16 +40,10 @@ import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryModule;
 
 /**
- * Description:<br>
- * TODO: patrickb Class Description for RepositoyUIFactory
- * 
- * <P>
  * Initial Date:  03.12.2007 <br>
  * @author patrickb
  */
 public class RepositoyUIFactory {
-	
-	private static final String HIERARCHY_DELIMITER = " / ";
 	
 	public static String getIconCssClass(String type) {
 		String iconCSSClass = "o_" + type.replace(".", "-");
@@ -116,8 +110,7 @@ public class RepositoyUIFactory {
 	}
 
 	
-	public static Controller createLifecylceAdminController(UserRequest ureq, WindowControl wControl) {
-		Controller ctrl = new LifecycleAdminController(ureq, wControl);
-		return ctrl;
+	public static Controller createLifecycleAdminController(UserRequest ureq, WindowControl wControl) {
+		return new LifecycleAdminController(ureq, wControl);
 	}
 }

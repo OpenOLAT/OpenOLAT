@@ -106,7 +106,7 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 	public final ResultInfos<RepositoryEntryRow> getRows(String query, List<FlexiTableFilter> filters, 
 			List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy) {
 		
-		if(filters != null && filters.size() > 0 && filters.get(0) != null) {
+		if(filters != null && !filters.isEmpty() && filters.get(0) != null) {
 			String filter = filters.get(0).getFilter();
 			if(StringHelper.containsNonWhitespace(filter)) {
 				searchParams.setFilters(Collections.singletonList(Filter.valueOf(filter)));
@@ -131,7 +131,7 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 		
 		List<RepositoryEntryMyView> views = repositoryService.searchMyView(searchParams, firstResult, maxResults);
 		List<RepositoryEntryRow> rows = processViewModel(views);
-		ResultInfos<RepositoryEntryRow> results = new DefaultResultInfos<RepositoryEntryRow>(firstResult + rows.size(), -1, rows);
+		ResultInfos<RepositoryEntryRow> results = new DefaultResultInfos<>(firstResult + rows.size(), -1, rows);
 		if(firstResult == 0 && views.size() < maxResults) {
 			count = Integer.valueOf(views.size());
 		}
@@ -159,11 +159,8 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 				row.setThumbnailRelPath(uifactory.getMapperThumbnailUrl() + "/" + image.getName());
 			}
 
-			List<PriceMethod> types = new ArrayList<>();
-			if (!entry.isAllUsers() && !entry.isGuests()) {//TODO repo access
-				// members only always show lock icon
-				types.add(new PriceMethod("", "o_ac_membersonly_icon", uifactory.getTranslator().translate("cif.access.membersonly.short")));
-			} else {
+			List<PriceMethod> types = new ArrayList<>(3);
+			if(entry.isBookable()) {
 				// collect access control method icons
 				OLATResource resource = entry.getOlatResource();
 				for(OLATResourceAccess resourceAccess:resourcesWithOffer) {
@@ -177,7 +174,10 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 						}
 					}
 				}
-			}
+			} else if (!entry.isAllUsers() && !entry.isGuests()) {
+				// members only always show lock icon
+				types.add(new PriceMethod("", "o_ac_membersonly_icon", uifactory.getTranslator().translate("cif.access.membersonly.short")));
+			} 
 			
 			row.setMember(repoKeys.contains(entry.getKey()));
 			

@@ -1061,16 +1061,6 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 		} else {
 			unsyncInternalCalendar(config.getEntry());
 		}
-		
-		/*if(ConfigurationHelper.isSyncParticipantCalendarEnabled(config, lectureModule)) {
-			List<LectureBlock> blocks = getLectureBlocks(entry);
-			for(LectureBlock block:blocks) {
-				List<Identity> participants = getParticipants(block);
-				syncInternalCalendar(block, participants);
-			}
-		} else {
-			unsyncParticipantsCalendar(entry);
-		}*/
 	}
 
 	@Override
@@ -1089,16 +1079,7 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 		} else {
 			unsyncCourseCalendar(lectureBlock, config.getEntry());
 		}
-		
-		/*if(ConfigurationHelper.isSyncParticipantCalendarEnabled(config, lectureModule)) {
-			List<Identity> participants = getParticipants(lectureBlock);
-			syncInternalCalendar(lectureBlock, participants);
-		} else {
-			List<Identity> participants = getParticipants(lectureBlock);
-			unsyncInternalCalendar(lectureBlock, participants);
-		}*/
 	}
-	
 
 	private void syncCourseCalendar(LectureBlock lectureBlock, RepositoryEntry entry) {
 		Kalendar cal = calendarMgr.getCalendar(CalendarManager.TYPE_COURSE, entry.getOlatResource().getResourceableId().toString());
@@ -1217,13 +1198,6 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 		List<Identity> teachers = getTeachers(entry);
 		unsyncInternalCalendar(entry, teachers);
 	}
-	
-	/*
-	private void unsyncParticipantsCalendar(RepositoryEntry entry) {
-		List<Identity> participants = getParticipants(entry);
-		unsyncInternalCalendar(entry, participants);
-	}
-	*/
 	
 	private void unsyncInternalCalendar(RepositoryEntry entry, List<Identity> identities) {
 		String prefix = generateExternalIdPrefix(entry);

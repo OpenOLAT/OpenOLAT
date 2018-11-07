@@ -102,6 +102,7 @@ public class ImsQTI21InteractionsTest extends Deployments {
 		QTI21Page qtiPage = QTI21Page
 				.getQTI21Page(browser);
 		qtiPage
+			.settings()
 			.options()
 			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
 			.save();
@@ -146,6 +147,7 @@ public class ImsQTI21InteractionsTest extends Deployments {
 		QTI21Page qtiPage = QTI21Page
 				.getQTI21Page(browser);
 		qtiPage
+			.settings()
 			.options()
 			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
 			.save();
@@ -195,6 +197,7 @@ public class ImsQTI21InteractionsTest extends Deployments {
 		QTI21Page qtiPage = QTI21Page
 				.getQTI21Page(browser);
 		qtiPage
+			.settings()
 			.options()
 			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
 			.save();
@@ -242,6 +245,7 @@ public class ImsQTI21InteractionsTest extends Deployments {
 		QTI21Page qtiPage = QTI21Page
 				.getQTI21Page(browser);
 		qtiPage
+			.settings()
 			.options()
 			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
 			.save();
@@ -290,6 +294,7 @@ public class ImsQTI21InteractionsTest extends Deployments {
 		QTI21Page qtiPage = QTI21Page
 				.getQTI21Page(browser);
 		qtiPage
+			.settings()
 			.options()
 			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
 			.save();
@@ -336,6 +341,7 @@ public class ImsQTI21InteractionsTest extends Deployments {
 		QTI21Page qtiPage = QTI21Page
 				.getQTI21Page(browser);
 		qtiPage
+			.settings()
 			.options()
 			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
 			.save();
@@ -397,6 +403,7 @@ public class ImsQTI21InteractionsTest extends Deployments {
 		QTI21Page qtiPage = QTI21Page
 				.getQTI21Page(browser);
 		qtiPage
+			.settings()
 			.options()
 			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
 			.save();
@@ -443,6 +450,7 @@ public class ImsQTI21InteractionsTest extends Deployments {
 		QTI21Page qtiPage = QTI21Page
 				.getQTI21Page(browser);
 		qtiPage
+			.settings()
 			.options()
 			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
 			.save();
@@ -487,6 +495,7 @@ public class ImsQTI21InteractionsTest extends Deployments {
 		QTI21Page qtiPage = QTI21Page
 				.getQTI21Page(browser);
 		qtiPage
+			.settings()
 			.options()
 			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
 			.save();
@@ -535,6 +544,7 @@ public class ImsQTI21InteractionsTest extends Deployments {
 		QTI21Page qtiPage = QTI21Page
 				.getQTI21Page(browser);
 		qtiPage
+			.settings()
 			.options()
 			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
 			.save();
@@ -582,6 +592,7 @@ public class ImsQTI21InteractionsTest extends Deployments {
 		QTI21Page qtiPage = QTI21Page
 				.getQTI21Page(browser);
 		qtiPage
+			.settings()
 			.options()
 			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
 			.save();
@@ -626,6 +637,7 @@ public class ImsQTI21InteractionsTest extends Deployments {
 		QTI21Page qtiPage = QTI21Page
 				.getQTI21Page(browser);
 		qtiPage
+			.settings()
 			.options()
 			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
 			.save();
@@ -671,6 +683,7 @@ public class ImsQTI21InteractionsTest extends Deployments {
 		QTI21Page qtiPage = QTI21Page
 				.getQTI21Page(browser);
 		qtiPage
+			.settings()
 			.options()
 			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
 			.save();
@@ -716,6 +729,7 @@ public class ImsQTI21InteractionsTest extends Deployments {
 		QTI21Page qtiPage = QTI21Page
 				.getQTI21Page(browser);
 		qtiPage
+			.settings()
 			.options()
 			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
 			.save();

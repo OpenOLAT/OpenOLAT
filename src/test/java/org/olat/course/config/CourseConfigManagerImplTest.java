@@ -37,6 +37,7 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
+import org.olat.course.config.manager.CourseConfigManagerImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryService;
@@ -59,6 +60,8 @@ public class CourseConfigManagerImplTest extends OlatTestCase {
 	@Autowired
 	private OLATResourceManager resourceManager;
 	@Autowired
+	private CourseConfigManager courseConfigManager;
+	@Autowired
 	private OrganisationService organisationService;
 
 	@Test
@@ -77,21 +80,20 @@ public class CourseConfigManagerImplTest extends OlatTestCase {
 		 * a new created course gets its configuration upon the first load with
 		 * default values
 		 */
-		CourseConfigManager ccm = CourseConfigManagerImpl.getInstance();
-		CourseConfig cc1 = ccm.loadConfigFor(course);
+		CourseConfig cc1 = courseConfigManager.loadConfigFor(course);
 		assertNotNull("CourseConfiguration is not null", cc1);
 		/*
 		 * update values
 		 */
-		ccm.saveConfigTo(course, cc1);
+		courseConfigManager.saveConfigTo(course, cc1);
 		cc1 = null;
 		// check the saved values
-		cc1 = ccm.loadConfigFor(course);
+		cc1 = courseConfigManager.loadConfigFor(course);
 		assertNotNull("CourseConfiguration is not null", cc1);
 		/*
 		 * delete configuration
 		 */
-		ccm.deleteConfigOf(course);
+		courseConfigManager.deleteConfigOf(course);
 		VFSItem cc1File = CourseConfigManagerImpl.getConfigFile(course);
 		assertFalse("CourseConfig file no longer exists.", cc1File != null);
 	}

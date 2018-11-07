@@ -72,6 +72,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
 import org.olat.util.logging.activity.LoggingResourceable;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<BR/> Edit controller for content packaging course nodes <P/>
@@ -139,6 +140,9 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 	private Link previewLink;
 	private Link chooseCPButton;
 	private Link changeCPButton;
+	
+	@Autowired
+	private ScormMainManager scormMainManager;
 
 	/**
 	 * @param cpNode CourseNode
@@ -182,7 +186,7 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 				previewLink.setCustomEnabledLinkCSS("o_preview");
 				previewLink.setTitle(getTranslator().translate("command.preview"));
 				
-				ScormPackageConfig scormConfig = ScormMainManager.getInstance().getScormPackageConfig(re.getOlatResource());
+				ScormPackageConfig scormConfig = scormMainManager.getScormPackageConfig(re.getOlatResource());
 				parentConfig = scormConfig == null ? null : scormConfig.getDeliveryOptions();
 			}
 		} else {
@@ -230,10 +234,7 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 		main.setContent(cpConfigurationVc);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == chooseCPButton || source == changeCPButton) { // those must be links
 			removeAsListenerAndDispose(searchController);
@@ -258,7 +259,7 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 				boolean fullWindow = config.getBooleanSafe(CONFIG_FULLWINDOW, true);
 				
 				ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapScormRepositoryEntry(re));
-				ScormAPIandDisplayController previewController = ScormMainManager.getInstance().createScormAPIandDisplayController(ureq, getWindowControl(),
+				ScormAPIandDisplayController previewController = scormMainManager.createScormAPIandDisplayController(ureq, getWindowControl(),
 						showMenu, null, cpRoot, null, course.getResourceableId().toString(), ScormConstants.SCORM_MODE_BROWSE,
 						ScormConstants.SCORM_MODE_NOCREDIT, true, null, true, fullWindow, false, null);				
 				// configure some display options
@@ -291,7 +292,7 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 					// editormaincontroller
 					fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
 					
-					ScormPackageConfig scormConfig = ScormMainManager.getInstance().getScormPackageConfig(re.getOlatResource());
+					ScormPackageConfig scormConfig = scormMainManager.getScormPackageConfig(re.getOlatResource());
 					DeliveryOptions parentConfig = scormConfig == null ? null : scormConfig.getDeliveryOptions();
 					deliveryOptionsCtrl.setParentDeliveryOptions(parentConfig);
 				}

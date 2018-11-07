@@ -67,7 +67,7 @@ public class CourseWizardPage {
 	public CourseWizardPage nextCatalog() {
 		OOGraphene.nextStep(browser);
 		OOGraphene.closeBlueMessageWindow(browser);
-		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_repositoryentry_access"), 5, browser);
+		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_repo_access_configuration"), 5, browser);
 		return this;
 	}
 	

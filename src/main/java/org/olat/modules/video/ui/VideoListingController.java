@@ -63,6 +63,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams.OrderBy;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -164,8 +165,8 @@ public class VideoListingController extends FormBasicController implements Activ
 	 */
 	private void doShowVideo(UserRequest ureq, Long id) {
 		RepositoryEntry videoEntry = repositoryManager.lookupRepositoryEntry(id);
-		if (repositoryManager.isAllowed(ureq, videoEntry).canLaunch()) {
-			
+		RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(ureq, videoEntry);
+		if (reSecurity.canLaunch()) {// no booking implemented for video
 			boolean readOnly = videoEntry.getEntryStatus().decommissioned();
 			VideoDisplayController videoDisplayCtr = new VideoDisplayController(ureq, getWindowControl(), videoEntry, true, true, true, true, null, false, true, null, readOnly);
 			listenTo(videoDisplayCtr);

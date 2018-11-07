@@ -104,7 +104,7 @@ public class CourseSiteContextEntryControllerCreator extends DefaultContextEntry
 			}
 		}
 		
-		if (!reSecurity.canLaunch()) {
+		if (!reSecurity.canLaunch() && !re.isBookable()) {
 			return messageController(ureq, wControl, "launch.noaccess");
 		}
 

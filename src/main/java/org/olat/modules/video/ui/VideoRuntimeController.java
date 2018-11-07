@@ -50,9 +50,9 @@ import org.olat.repository.ui.RepositoryEntryRuntimeController;
  */
 public class VideoRuntimeController extends RepositoryEntryRuntimeController {
 
-	private Link settingsLink;
+	private Link editorLink;
 	private Link changeVideoLink;
-	private VideoSettingsController settingsCtr;
+	private VideoSettingsController videoSettingsCtr;
 	private RepositoryEntry repositoryEntry;
 
 	public VideoRuntimeController(UserRequest ureq, WindowControl wControl,
@@ -60,31 +60,30 @@ public class VideoRuntimeController extends RepositoryEntryRuntimeController {
 		super(ureq, wControl, re, reSecurity, runtimeControllerCreator);
 		this.repositoryEntry = re;
 	}
-
+	
 	@Override
-	protected void initEditionTools(Dropdown settingsDropdown) {
-		super.initEditionTools(settingsDropdown);
+	protected void initEditorTools(Dropdown toolsDropdown) {
 		if (reSecurity.isEntryAdmin()) {
-			settingsLink = LinkFactory.createToolLink("metaDataConfig", translate("tab.video.settings"), this);
-			settingsLink.setIconLeftCSS("o_icon o_icon-fw o_icon_quota o_icon_settings");
-			settingsDropdown.addComponent(4, settingsLink);
+			toolsDropdown.addComponent(new Spacer("video-editor"));
+			
+			editorLink = LinkFactory.createToolLink("metaDataConfig", translate("tab.video.settings"), this);
+			editorLink.setIconLeftCSS("o_icon o_icon-fw o_icon_quota o_icon_settings");
+			toolsDropdown.addComponent(editorLink);
 			
 			changeVideoLink = LinkFactory.createToolLink("changeVideo", translate("tab.video.exchange"), this);
 			changeVideoLink.setIconLeftCSS("o_icon o_icon_refresh o_icon-fw");
-			settingsDropdown.addComponent(3, changeVideoLink);			
-
-			settingsDropdown.addComponent(new Spacer("metadata-poster"));
+			toolsDropdown.addComponent(changeVideoLink);
 		}
 	}
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		entries = removeRepositoryEntry(entries);
-		if(entries != null && entries.size() > 0) {
+		if(entries != null && !entries.isEmpty()) {
 			String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
-			if("settings".equalsIgnoreCase(type)) {
+			if("Editor".equalsIgnoreCase(type)) {
 				entries = entries.subList(1, entries.size());
-				doSettings(ureq).activate(ureq, entries, null);
+				doEditor(ureq).activate(ureq, entries, null);
 			}
 		}
 		super.activate(ureq, entries, state);
@@ -92,9 +91,9 @@ public class VideoRuntimeController extends RepositoryEntryRuntimeController {
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if(settingsLink == source){
-			doSettings(ureq);
-		} else if (source == changeVideoLink) {
+		if(editorLink == source){
+			doEditor(ureq);
+		} else if (changeVideoLink == source) {
 			doReplaceVideo(ureq);
 		} else {
 			if (event instanceof RootEvent || event instanceof PopEvent) {
@@ -115,17 +114,17 @@ public class VideoRuntimeController extends RepositoryEntryRuntimeController {
 		setActiveTool(changeVideoLink);
 	}
 
-	private Activateable2 doSettings(UserRequest ureq) {
-		removeAsListenerAndDispose(settingsCtr);
+	protected Activateable2 doEditor(UserRequest ureq) {
+		removeAsListenerAndDispose(videoSettingsCtr);
 
 		RepositoryEntry entry = getRepositoryEntry();
-		OLATResourceable ores = OresHelper.createOLATResourceableType("settings");
+		OLATResourceable ores = OresHelper.createOLATResourceableType("Editor");
 		WindowControl swControl = addToHistory(ureq, ores, null);
 		VideoSettingsController configCtrl = new VideoSettingsController(ureq, swControl, entry);
 		listenTo(configCtrl);
-		settingsCtr = pushController(ureq, translate("tab.video.settings"), configCtrl);
+		videoSettingsCtr = pushController(ureq, translate("tab.video.settings"), configCtrl);
 		setActiveTool(settingsLink);
-		return settingsCtr;
+		return videoSettingsCtr;
 	}
 	
 	private void doRefreshVideoPosterIfEntryAdmin() {

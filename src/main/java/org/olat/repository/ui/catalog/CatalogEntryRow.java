@@ -48,6 +48,7 @@ public class CatalogEntryRow implements RepositoryEntryRef, RepositoryEntryLight
 	
 	private boolean allUsers;
 	private boolean guests;
+	private boolean bookable;
 	private RepositoryEntryStatusEnum status;
 
 	private Date creationDate;
@@ -132,6 +133,11 @@ public class CatalogEntryRow implements RepositoryEntryRef, RepositoryEntryLight
 	@Override
 	public boolean isGuests() {
 		return guests;
+	}
+	
+	@Override
+	public boolean isBookable() {
+		return bookable;
 	}
 
 	@Override

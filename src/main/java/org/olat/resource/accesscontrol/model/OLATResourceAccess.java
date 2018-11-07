@@ -28,7 +28,7 @@ import org.olat.resource.accesscontrol.Price;
 public class OLATResourceAccess {
 	
 	private OLATResource resource;
-	private List<PriceMethodBundle> methods = new ArrayList<PriceMethodBundle>(3);
+	private List<PriceMethodBundle> methods = new ArrayList<>(3);
 	
 	public OLATResourceAccess() {
 		//
@@ -59,6 +59,4 @@ public class OLATResourceAccess {
 			this.methods.add(new PriceMethodBundle(price, method));
 		}
 	}
-
-
 }

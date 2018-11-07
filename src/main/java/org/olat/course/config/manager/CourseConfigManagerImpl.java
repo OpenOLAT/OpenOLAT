@@ -23,70 +23,61 @@
 * under the Apache 2.0 license as the original file.
 */
 
-package org.olat.course.config;
+package org.olat.course.config.manager;
+
+import java.util.HashMap;
+import java.util.Hashtable;
 
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.manager.BasicManager;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.version.Versionable;
 import org.olat.core.util.vfs.version.VersionsFileManager;
 import org.olat.core.util.xml.XStreamHelper;
-import org.olat.course.CourseXStreamAliases;
 import org.olat.course.ICourse;
+import org.olat.course.config.CourseConfig;
+import org.olat.course.config.CourseConfigManager;
+import org.springframework.stereotype.Service;
 
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.security.ExplicitTypePermission;
 
 /**
- * Description: <br>
- * TODO: patrick Class Description for CourseConfigManagerImpl
  * <P>
  * Initial Date: Jun 3, 2005 <br>
  * @author patrick
  */
-public class CourseConfigManagerImpl extends BasicManager implements CourseConfigManager {
+@Service
+public class CourseConfigManagerImpl implements CourseConfigManager {
 
 	private static final OLog log = Tracing.createLoggerFor(CourseConfigManagerImpl.class);
-	private static final CourseConfigManagerImpl INSTANCE = new CourseConfigManagerImpl();
-
 	
-	private CourseConfigManagerImpl() {
-			// private for singleton
-	}
-	
-	
-	/**
-	 * Singleton pattern
-	 * 
-	 * @return instance
-	 */
-	public static CourseConfigManager getInstance() {
-		return INSTANCE;
+	private static final XStream xstream = XStreamHelper.createXStreamInstance();
+	static {
+		XStream.setupDefaultSecurity(xstream);
+		Class<?>[] types = new Class[] {
+				CourseConfig.class, Hashtable.class, HashMap.class
+		};
+		xstream.addPermission(new ExplicitTypePermission(types));
 	}
 
-	/**
-	 * @see org.olat.course.config.CourseConfigManager#copyConfigOf(org.olat.course.ICourse)
-	 */
+	@Override
 	public CourseConfig copyConfigOf(ICourse course) {
-		CourseConfig tmp = course.getCourseEnvironment().getCourseConfig();
-
-		return tmp;
+		return course.getCourseEnvironment().getCourseConfig();
 	}
 
-	/**
-	 * @see org.olat.course.config.CourseConfigManager#deleteConfigOf(org.olat.course.ICourse)
-	 */
+	@Override
 	public boolean deleteConfigOf(ICourse course) {
 		VFSLeaf configFile = getConfigFile(course);
-		if (configFile != null) { return configFile.delete() == VFSConstants.YES; }
+		if (configFile != null) {
+			return configFile.delete() == VFSConstants.YES;
+		}
 		return false;
 	}
 
-	/**
-	 * @see org.olat.course.config.CourseConfigManager#loadConfigFor(org.olat.course.ICourse)
-	 */
+	@Override
 	public CourseConfig loadConfigFor(ICourse course) {
 		CourseConfig retVal = null;
 		VFSLeaf configFile = getConfigFile(course);
@@ -97,12 +88,10 @@ public class CourseConfigManagerImpl extends BasicManager implements CourseConfi
 			saveConfigTo(course, retVal);
 		} else {
 			//file exists, load it with XStream, resolve version
-			XStream xstream = CourseXStreamAliases.getReadCourseXStream();
 			Object tmp = XStreamHelper.readObject(xstream, configFile.getInputStream());
 			if (tmp instanceof CourseConfig) {
 				retVal = (CourseConfig) tmp;
-				if (retVal.resolveVersionIssues()){
-					configFile = null;
+				if (retVal.resolveVersionIssues()) {
 					saveConfigTo(course, retVal);
 				}
 			}
@@ -110,10 +99,7 @@ public class CourseConfigManagerImpl extends BasicManager implements CourseConfi
 		return retVal;
 	}
 
-	/**
-	 * @see org.olat.course.config.CourseConfigManager#saveConfigTo(org.olat.course.ICourse,
-	 *      org.olat.course.config.CourseConfig)
-	 */
+	@Override
 	public void saveConfigTo(ICourse course, CourseConfig courseConfig) {
 		VFSLeaf configFile = getConfigFile(course);
 		if (configFile == null) {
@@ -126,7 +112,7 @@ public class CourseConfigManagerImpl extends BasicManager implements CourseConfi
 				log.error("Cannot versioned CourseConfig.xml", e);
 			}
 		}
-		XStreamHelper.writeObject(configFile, courseConfig);
+		XStreamHelper.writeObject(xstream, configFile, courseConfig);
 	}
 
 	/**
@@ -138,10 +124,8 @@ public class CourseConfigManagerImpl extends BasicManager implements CourseConfi
 	 * @param course
 	 * @return the configuration file or null if file does not exist
 	 */
-	static VFSLeaf getConfigFile(ICourse course) {
+	public static VFSLeaf getConfigFile(ICourse course) {
 		VFSItem item = course.getCourseBaseContainer().resolve(COURSECONFIG_XML);
-		if (item == null || !(item instanceof VFSLeaf)) return null;
-		return (VFSLeaf)item;
+		return item instanceof VFSLeaf ? (VFSLeaf)item : null;
 	}
-
 }

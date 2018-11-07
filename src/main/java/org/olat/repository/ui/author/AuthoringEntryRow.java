@@ -55,6 +55,7 @@ public class AuthoringEntryRow implements RepositoryEntryRef, RepositoryEntryLig
 	private RepositoryEntryStatusEnum status;
 	private final boolean allUsers;
 	private final boolean guests;
+	private final boolean bookable;
 
 	private final Date lastUsage;
 	private final Date creationDate;
@@ -115,6 +116,7 @@ public class AuthoringEntryRow implements RepositoryEntryRef, RepositoryEntryLig
 		status = view.getEntryStatus();
 		allUsers = view.isAllUsers();
 		guests = view.isGuests();
+		bookable = view.isBookable();
 		
 		olatResource = OresHelper.clone(view.getOlatResource());
 		
@@ -162,6 +164,11 @@ public class AuthoringEntryRow implements RepositoryEntryRef, RepositoryEntryLig
 	@Override
 	public boolean isGuests() {
 		return guests;
+	}
+	
+	@Override
+	public boolean isBookable() {
+		return bookable;
 	}
 
 	public Date getLastUsage() {

@@ -601,7 +601,7 @@ public class RepositoryManager {
 					|| status == RepositoryEntryStatusEnum.published
 					|| status == RepositoryEntryStatusEnum.closed)) {
 				// allow for authors if access granted at least for authors
-				canLaunch = true;
+				canLaunch = (re.getCanCopy() || re.getCanDownload() || re.getCanReference());
 			} else if(re.isAllUsers() || re.isGuests()) {
 				// allow if access granted for users
 				canLaunch = (status == RepositoryEntryStatusEnum.published || status == RepositoryEntryStatusEnum.closed);
@@ -635,6 +635,63 @@ public class RepositoryManager {
 		lifeIndexer.indexDocument(RepositoryEntryDocument.TYPE, updatedRe.getKey());
 		return updatedRe;
 	}
+	
+	
+	public RepositoryEntry setAccess(final RepositoryEntry re, boolean allUsers, boolean guests, boolean bookable,
+			RepositoryEntryAllowToLeaveOptions leaveSetting, List<Organisation> organisations) {
+		RepositoryEntry reloadedRe = repositoryEntryDao.loadForUpdate(re);
+		if(reloadedRe == null) {
+			return null;
+		}
+		
+		reloadedRe.setAllUsers(allUsers);
+		reloadedRe.setGuests(guests);
+		reloadedRe.setBookable(bookable);
+		reloadedRe.setLastModified(new Date());
+		reloadedRe.setAllowToLeaveOption(leaveSetting);
+		
+		if(organisations != null) {
+			// sync the relation re_to_group
+			List<Organisation> currentOrganisationsByGroups = repositoryEntryRelationDao.getOrganisations(reloadedRe);
+			for(Organisation currentOrganisation:currentOrganisationsByGroups) {
+				if(!organisations.contains(currentOrganisation)) {
+					repositoryEntryRelationDao.removeRelation(currentOrganisation.getGroup(), reloadedRe);
+				}
+			}
+			for(Organisation organisation:organisations) {
+				if(!currentOrganisationsByGroups.contains(organisation)) {
+					RepositoryEntryToGroupRelation relToGroup = repositoryEntryRelationDao.createRelation(organisation.getGroup(), reloadedRe);
+					reloadedRe.getGroups().add(relToGroup);
+				}
+			}
+			
+			// sync the relation repository entry to organisation	
+			Set<RepositoryEntryToOrganisation> currentRelations = reloadedRe.getOrganisations();
+			List<RepositoryEntryToOrganisation> copyRelations = new ArrayList<>(currentRelations);
+			List<Organisation> currentOrganisationsByRelations = new ArrayList<>();
+			for(RepositoryEntryToOrganisation relation:copyRelations) {
+				if(!organisations.contains(relation.getOrganisation())) {
+					repositoryEntryToOrganisationDao.delete(relation);
+					currentRelations.remove(relation);
+				} else {
+					currentOrganisationsByRelations.add(relation.getOrganisation());
+				}
+			}
+			
+			for(Organisation organisation:organisations) {
+				if(!currentOrganisationsByRelations.contains(organisation)) {
+					RepositoryEntryToOrganisation newRelation = repositoryEntryToOrganisationDao.createRelation(organisation, reloadedRe, false);
+					currentRelations.add(newRelation);
+				}
+			}
+			reloadedRe.setOrganisations(currentRelations);
+		}
+		
+		RepositoryEntry updatedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
+		dbInstance.commit();
+		lifeIndexer.indexDocument(RepositoryEntryDocument.TYPE, updatedRe.getKey());
+		return updatedRe;
+	}
 
 	public RepositoryEntry setAccessAndProperties(final RepositoryEntry re,
 			RepositoryEntryStatusEnum status, boolean allUsers, boolean guests,
@@ -658,6 +715,25 @@ public class RepositoryManager {
 			updatedRe.getLifecycle().getCreationDate();
 		}
 
+		dbInstance.commit();
+		return updatedRe;
+	}
+	
+	public RepositoryEntry setStatus(final RepositoryEntry re, RepositoryEntryStatusEnum status) {
+		RepositoryEntry reloadedRe = repositoryEntryDao.loadForUpdate(re);
+		if(reloadedRe == null) {
+			return null;
+		}
+		reloadedRe.setEntryStatus(status);
+
+		reloadedRe.setLastModified(new Date());
+		//properties
+		RepositoryEntry updatedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
+		//fetch the values
+		updatedRe.getStatistics().getLaunchCounter();
+		if(updatedRe.getLifecycle() != null) {
+			updatedRe.getLifecycle().getCreationDate();
+		}
 		dbInstance.commit();
 		return updatedRe;
 	}
@@ -1573,7 +1649,7 @@ public class RepositoryManager {
 		  .append(" left join fetch v.lifecycle as lifecycle")
 		  .append(" inner join v.groups as relGroup")
 		  .append(" inner join relGroup.group as baseGroup")
-		  .append(" inner join baseGroup.members as membership")//TODO repo access
+		  .append(" inner join baseGroup.members as membership")
 		  .append(" where membership.identity.key=:identityKey and (")
 		  .append("   (membership.role='").append(GroupRoles.participant.name()).append("' and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed()).append(")")
 		  .append("   or")
@@ -1593,10 +1669,10 @@ public class RepositoryManager {
 
 		QueryBuilder sb = new QueryBuilder(1200);
 		sb.append("select v from repositoryentry as v")
-		  .append(" inner join fetch v.olatResource as res ")
+		  .append(" inner join fetch v.olatResource as res")
 		  .append(" inner join fetch v.statistics as statistics")
 		  .append(" left join fetch v.lifecycle as lifecycle")
-		  .append(" where exists (select mark.key from ").append(MarkImpl.class.getName()).append(" as mark ")
+		  .append(" where exists (select mark.key from ").append(MarkImpl.class.getName()).append(" as mark")
 		  .append("   where mark.creator.key=:identityKey and mark.resId=v.key and mark.resName='RepositoryEntry'")
 		  .append(" ) ")
 		  .append(" and res.resName=:resourceType")
@@ -1610,7 +1686,7 @@ public class RepositoryManager {
 		  .append("     ) or (")
 		  .append("      membership.role ").in(GroupRoles.participant).append(" and v.status").in(RepositoryEntryStatusEnum.publishedAndClosed())
 		  .append("     ) or (")
-		  .append("      v.allUsers=true and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed())
+		  .append("      (v.allUsers=true or v.bookable=true) and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed())
 		  .append("       and membership.role not ").in(OrganisationRoles.invitee, OrganisationRoles.guest, GroupRoles.waiting)
 		  .append("     )")
 		  .append("   )")
@@ -1629,14 +1705,14 @@ public class RepositoryManager {
 
 	public List<RepositoryEntry> getParticipantRepositoryEntry(IdentityRef identity, int maxResults, RepositoryEntryOrder... orderby) {
 		QueryBuilder sb = new QueryBuilder(512);
-		sb.append("select v from repositoryentry as v ")
-		  .append(" inner join fetch v.olatResource as res ")
+		sb.append("select v from repositoryentry as v")
+		  .append(" inner join fetch v.olatResource as res")
 		  .append(" where exists (select rel from repoentrytogroup as rel, bgroupmember as membership")
 		  .append("   where rel.entry.key=v.key and rel.group.key=membership.group.key and membership.identity.key=:identityKey")
 		  .append("   and (")
 		  .append("     membership.role='").append(GroupRoles.participant.name()).append("'")
 		  .append("     or ")
-		  .append("     (v.allUsers=true and membership.role not ").in(OrganisationRoles.guest, OrganisationRoles.invitee, GroupRoles.waiting).append(")")
+		  .append("     ((v.allUsers=true or v.bookable=true) and membership.role not ").in(OrganisationRoles.guest, OrganisationRoles.invitee, GroupRoles.waiting).append(")")
 		  .append("   )")
 		  .append(" )")
 		  .append(" and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed());

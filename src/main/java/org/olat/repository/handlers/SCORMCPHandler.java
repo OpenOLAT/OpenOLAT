@@ -44,7 +44,6 @@ import org.olat.core.logging.AssertException;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.coordinate.LockResult;
-import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.ZippedDirectoryMediaResource;
@@ -60,7 +59,6 @@ import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.RepositoryEntrySecurity;
-import org.olat.repository.ui.RepositoryEntryRuntimeController.RuntimeControllerCreator;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -119,7 +117,7 @@ public class SCORMCPHandler extends FileHandler {
 	
 	@Override
 	public RepositoryEntry copy(Identity author, RepositoryEntry source, RepositoryEntry target) {
-		final ScormMainManager scormManager = ScormMainManager.getInstance();
+		final ScormMainManager scormManager = CoreSpringFactory.getImpl(ScormMainManager.class);
 		OLATResource sourceResource = source.getOlatResource();
 		OLATResource targetResource = target.getOlatResource();
 		
@@ -177,17 +175,13 @@ public class SCORMCPHandler extends FileHandler {
 		}
 		
 		return new ScormRuntimeController(ureq, wControl, re, reSecurity,
-			new RuntimeControllerCreator() {
-				@Override
-				public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel,
-						RepositoryEntry entry, RepositoryEntrySecurity security, AssessmentMode assessmentMode) {
+			(uureq, wwControl, toolbarPanel, entry, security, assessmentMode) ->  {
 					OLATResource res = entry.getOlatResource();
 					CoreSpringFactory.getImpl(UserCourseInformationsManager.class)
 						.updateUserCourseInformations(res, uureq.getIdentity());
 					File cpRoot = FileResourceManager.getInstance().unzipFileResource(res);
-					return ScormMainManager.getInstance().createScormAPIandDisplayController(uureq, wwControl, true, null, cpRoot,
+					return CoreSpringFactory.getImpl(ScormMainManager.class).createScormAPIandDisplayController(uureq, wwControl, true, null, cpRoot,
 							res.getResourceableId(), null, ScormConstants.SCORM_MODE_BROWSE, ScormConstants.SCORM_MODE_NOCREDIT, false, null, false, false, false, null);
-				}
 			});
 	}
 	

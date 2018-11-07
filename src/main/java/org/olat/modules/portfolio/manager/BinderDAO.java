@@ -752,7 +752,7 @@ public class BinderDAO {
 		List<Long> binderKeys = binderKeyQuery.setFirstResult(0)
 			.setMaxResults(1)
 			.getResultList();
-		return binderKeys != null && binderKeys.size() > 0 && binderKeys.get(0) != null && binderKeys.get(0).longValue() >= 0;
+		return binderKeys != null && !binderKeys.isEmpty() && binderKeys.get(0) != null && binderKeys.get(0).longValue() >= 0;
 	}
 	
 	public Binder getBinder(Identity owner, BinderRef template, RepositoryEntryRef entry, String subIdent) {
@@ -787,7 +787,7 @@ public class BinderDAO {
 		List<Binder> binders = binderKeyQuery.setFirstResult(0)
 			.setMaxResults(1)
 			.getResultList();
-		return binders != null && binders.size() > 0 && binders.get(0) != null ? binders.get(0) : null;
+		return binders != null && !binders.isEmpty() && binders.get(0) != null ? binders.get(0) : null;
 	}
 	
 	public List<Binder> getBinders(Identity owner, RepositoryEntryRef entry, String subIdent) {
@@ -1213,12 +1213,6 @@ public class BinderDAO {
 			.getResultList();
 	}
 	
-	/*public List<Section> getSections(BinderRef binder) {
-		BinderImpl refBinder = dbInstance.getCurrentEntityManager()
-				.getReference(BinderImpl.class, binder.getKey());
-		return refBinder.getSections();
-	}*/
-	
 	public Binder moveUpSection(BinderImpl binder, Section section) {
 		binder.getSections().size();
 		int index = binder.getSections().indexOf(section);
@@ -1257,7 +1251,7 @@ public class BinderDAO {
 		  .append(" inner join baseGroup.members as membership on (membership.identity.key=:identityKey and membership.role='").append(GroupRoles.participant.name()).append("')")
 		  .append(" inner join fetch v.olatResource as ores")
 		  .append(" inner join fetch v.statistics as statistics")
-		  .append(" left join fetch v.lifecycle as lifecycle")//TODO repo access
+		  .append(" left join fetch v.lifecycle as lifecycle")
 		  .append(" where v.status ").in(RepositoryEntryStatusEnum.published)
 		  .append(" and exists (select ref.key from references as ref ")
 		  .append("   inner join ref.target as targetOres")

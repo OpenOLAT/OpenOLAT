@@ -53,6 +53,7 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 	private final RepositoryEntryStatusEnum status;
 	private final boolean allUsers;
 	private final boolean guests;
+	private final boolean bookable;
 	
 	private final OLATResource olatResource;
 	private final RepositoryEntryLifecycle lifecycle;
@@ -86,6 +87,7 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 		status = re.getEntryStatus();
 		allUsers = re.isAllUsers();
 		guests = re.isGuests();
+		bookable = re.isBookable();
 		
 		olatResource = re.getOlatResource();
 		lifecycle = re.getLifecycle();
@@ -160,6 +162,11 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 	@Override
 	public boolean isGuests() {
 		return guests;
+	}
+	
+	@Override
+	public boolean isBookable() {
+		return bookable;
 	}
 
 	@Override

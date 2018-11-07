@@ -54,6 +54,7 @@ import org.olat.selenium.page.course.AssessmentCEConfigurationPage;
 import org.olat.selenium.page.course.AssessmentToolPage;
 import org.olat.selenium.page.course.CourseEditorPageFragment;
 import org.olat.selenium.page.course.CoursePageFragment;
+import org.olat.selenium.page.course.CourseSettingsPage;
 import org.olat.selenium.page.course.CourseWizardPage;
 import org.olat.selenium.page.course.MembersPage;
 import org.olat.selenium.page.course.PublisherPageFragment;
@@ -64,6 +65,7 @@ import org.olat.selenium.page.repository.AuthoringEnvPage.ResourceType;
 import org.olat.selenium.page.repository.CPPage;
 import org.olat.selenium.page.repository.RepositoryAccessPage;
 import org.olat.selenium.page.repository.RepositoryEditDescriptionPage;
+import org.olat.selenium.page.repository.RepositorySettingsPage;
 import org.olat.selenium.page.repository.UserAccess;
 import org.olat.selenium.page.user.UserToolsPage;
 import org.olat.test.JunitTestHelper;
@@ -74,6 +76,9 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
 /**
+ * The test @see confirmMembershipForCourse can break others if not successful
+ * as it changes the setting for confirmation for memberships and reset it at
+ * the end.
  * 
  * Initial date: 20.06.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
@@ -113,14 +118,12 @@ public class CourseTest extends Deployments {
 		
 		String title = "Create-Selen-" + UUID.randomUUID();
 		//create course
-		RepositoryEditDescriptionPage editDescription = authoringEnv
+		authoringEnv
 			.openCreateDropDown()
 			.clickCreate(ResourceType.course)
 			.fillCreateForm(title)
-			.assertOnGeneralTab();
-		
-		//from description editor, back to the course
-		editDescription
+			.assertOnInfos()
+			//from description editor, back to the course
 			.clickToolbarBack();
 		
 		//open course editor
@@ -186,7 +189,7 @@ public class CourseTest extends Deployments {
 			.openCreateDropDown()
 			.clickCreate(ResourceType.course)
 			.fillCreateForm(title)
-			.assertOnGeneralTab();
+			.assertOnInfos();
 		
 		//from description editor, back to the course
 		editDescription
@@ -243,13 +246,13 @@ public class CourseTest extends Deployments {
 			.finish();
 		//OOGraphene.closeErrorBox(browser);//STMP error
 		
-		RepositoryEditDescriptionPage editDescription = new RepositoryEditDescriptionPage(browser);
+		RepositorySettingsPage settings = new RepositorySettingsPage(browser);
 		//from description editor, back to details and launch the course
-		editDescription
-			.assertOnGeneralTab();
+		settings
+			.assertOnInfos();
 		OOGraphene.closeErrorBox(browser);//close mail error
-		editDescription	
-			.clickToolbarBack();
+		settings	
+			.back();
 		
 		//open course editor
 		CoursePageFragment course = CoursePageFragment.getCourse(browser);
@@ -302,7 +305,7 @@ public class CourseTest extends Deployments {
 			.openCreateDropDown()
 			.clickCreate(ResourceType.course)
 			.fillCreateForm(title)
-			.assertOnGeneralTab()
+			.assertOnInfos()
 			.clickToolbarBack();
 		//add a second owner
 		MembersPage members = new CoursePageFragment(browser)
@@ -732,10 +735,13 @@ public class CourseTest extends Deployments {
 		
 		// activate the calendar options
 		CoursePageFragment course = CoursePageFragment.getCourse(browser);
-		course
-			.options()
+		CourseSettingsPage settings = course
+			.settings();
+		settings
+			.toolbar()
 			.calendar(Boolean.TRUE)
-			.save()
+			.save();
+		settings
 			.clickToolbarBack();
 		
 		String calendarNodeTitle = "iCal-2";
@@ -818,7 +824,7 @@ public class CourseTest extends Deployments {
 			.openCreateDropDown()
 			.clickCreate(ResourceType.course)
 			.fillCreateForm(title)
-			.assertOnGeneralTab();
+			.assertOnInfos();
 
 		//open course editor
 		CoursePageFragment course = new CoursePageFragment(browser);
@@ -827,8 +833,10 @@ public class CourseTest extends Deployments {
 			.edit()
 			.createNode("info")
 			.autoPublish()
+			.settings()
 			.accessConfiguration()
-			.setUserAccess(UserAccess.registred);
+			.setUserAccess(UserAccess.booking)
+			.save();
 		//add booking by secret token
 		courseAccess
 			.boooking()
@@ -836,7 +844,11 @@ public class CourseTest extends Deployments {
 			.addTokenMethod()
 			.configureTokenMethod("secret", "The password is secret");
 		courseAccess
+			.save()
 			.clickToolbarBack();
+		// publish the course
+		course
+			.publish();
 		
 		//a user search the course
 		LoginPage ryomouLoginPage = LoginPage.getLoginPage(ryomouBrowser, deploymentUrl);
@@ -907,7 +919,7 @@ public class CourseTest extends Deployments {
 			.openCreateDropDown()
 			.clickCreate(ResourceType.course)
 			.fillCreateForm(title)
-			.assertOnGeneralTab();
+			.assertOnInfos();
 
 		//open course editor
 		CoursePageFragment course = new CoursePageFragment(browser);
@@ -916,8 +928,10 @@ public class CourseTest extends Deployments {
 			.edit()
 			.createNode("info")
 			.autoPublish()
+			.settings()
 			.accessConfiguration()
-			.setUserAccess(UserAccess.registred);
+			.setUserAccess(UserAccess.booking)
+			.save();
 		//add booking by secret token
 		courseAccess
 			.boooking()
@@ -925,7 +939,10 @@ public class CourseTest extends Deployments {
 			.addFreeBooking()
 			.configureFreeBooking("It's free");
 		courseAccess
+			.save()
 			.clickToolbarBack();
+		course
+			.publish();
 		
 		//a user search the course
 		LoginPage userLoginPage = LoginPage.getLoginPage(userBrowser, deploymentUrl);
@@ -1000,15 +1017,21 @@ public class CourseTest extends Deployments {
 		
 		String title = "Remind-me-" + UUID.randomUUID();
 		//create course
-		authoringEnv
+		RepositorySettingsPage settings = authoringEnv
 			.openCreateDropDown()
 			.clickCreate(ResourceType.course)
-			.fillCreateForm(title)
-			.assertOnGeneralTab()
-			.setLicense()
+			.fillCreateForm(title);
+		settings
+			.assertOnInfos();
+		settings
+			.metadata()
+			.setLicense();
+		settings
+			.execution()
 			.setLifecycle(validFrom, validTo, Locale.GERMAN)
-			.save()
-			.clickToolbarBack();
+			.save();
+		settings
+			.back();
 
 		//open course editor, create a node, set access
 		CoursePageFragment course = new CoursePageFragment(browser);
@@ -1017,9 +1040,13 @@ public class CourseTest extends Deployments {
 			.edit()
 			.createNode("info")
 			.autoPublish()
+			.settings()
 			.accessConfiguration()
 			.setUserAccess(UserAccess.membersOnly)
+			.save()
 			.clickToolbarBack();
+		course
+			.publish();
 		// add a participant
 		course
 			.members()
@@ -1097,7 +1124,7 @@ public class CourseTest extends Deployments {
 			.openCreateDropDown()
 			.clickCreate(ResourceType.course)
 			.fillCreateForm(title)
-			.assertOnGeneralTab()
+			.assertOnInfos()
 			.clickToolbarBack();
 		
 		String infoTitle = "Info - " + UUID.randomUUID();
@@ -1121,11 +1148,16 @@ public class CourseTest extends Deployments {
 		//select and set password on structure node
 			.selectTabPassword()
 			.setPassword("super secret")
-		//publish
+		//access settings
 			.autoPublish()
+			.settings()
 			.accessConfiguration()
 			.setUserAccess(UserAccess.registred)
+			.save()
 			.clickToolbarBack();
+		//publish
+		course
+			.publish();
 		
 		MenuTreePageFragment courseTree = course
 			.clickTree()
@@ -1268,7 +1300,8 @@ public class CourseTest extends Deployments {
 			.nextCatalog() // -> no problem found
 			.finish();
 		courseEditor
-			.clickToolbarBack();
+			.clickToolbarBack()
+			.publish();// don't forget to publish the course
 		
 		//add a member to the group we create above
 		MembersPage members = CoursePageFragment
@@ -1413,16 +1446,19 @@ public class CourseTest extends Deployments {
 			.clickToolbarBack();
 		
 		//set the course for members only
-		CoursePageFragment
-			.getCourse(authorBrowser)
+		CoursePageFragment course = CoursePageFragment
+			.getCourse(authorBrowser);
+		course
+			.publish();
+		course
+			.settings()
 			.accessConfiguration()
-			.setUserAccess(UserAccess.registred);
+			.setUserAccess(UserAccess.registred)
+			.save()
+			.clickToolbarBack();
 		
-		String currentUrl = authorBrowser.getCurrentUrl();
-		int index = currentUrl.indexOf("/Access");
-		Assert.assertTrue(index > 0);
-		String courseUrl = currentUrl.substring(0, index);
-		
+		String courseUrl = authorBrowser.getCurrentUrl();
+
 		//rest url -> login -> accept membership
 		reiBrowser.get(courseUrl);
 		new LoginPage(reiBrowser)
@@ -1478,7 +1514,7 @@ public class CourseTest extends Deployments {
 		navBar
 			.openAuthoringEnvironment()
 			.createCP(cpTitle)
-			.clickToolbarBack();
+			.back();
 		
 		String firstPage = "Page 1 " + UUID.randomUUID();
 		String secondPage = "Seite 2 " + UUID.randomUUID();
@@ -1514,9 +1550,14 @@ public class CourseTest extends Deployments {
 		
 		//set access to registered members
 		cpPage
+			.settings()
 			.accessConfiguration()
 			.setUserAccess(UserAccess.registred)
+			.save()
 			.clickToolbarBack();
+		//publish
+		cpPage
+			.publish();
 		
 		//a user search the content package
 		LoginPage ryomouLoginPage = LoginPage.getLoginPage(ryomouBrowser, deploymentUrl);

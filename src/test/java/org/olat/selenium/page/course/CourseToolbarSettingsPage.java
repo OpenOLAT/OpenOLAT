@@ -19,7 +19,6 @@
  */
 package org.olat.selenium.page.course;
 
-import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -27,19 +26,19 @@ import org.openqa.selenium.WebElement;
 
 /**
  * 
- * Initial date: 15 nov. 2016<br>
+ * Initial date: 6 Nov 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CourseOptionsPage {
-
-	private WebDriver browser;
+public class CourseToolbarSettingsPage {
 	
-	public CourseOptionsPage(WebDriver browser) {
+	private final WebDriver browser;
+	
+	public CourseToolbarSettingsPage(WebDriver browser) {
 		this.browser = browser;
 	}
 	
-	public CourseOptionsPage calendar(Boolean enable) {
+	public CourseToolbarSettingsPage calendar(Boolean enable) {
 		By calendarBy = By.cssSelector(".o_sel_course_options_calendar input[type='checkbox']");
 		WebElement calendarEl = browser.findElement(calendarBy);
 		OOGraphene.check(calendarEl, enable);
@@ -47,17 +46,11 @@ public class CourseOptionsPage {
 		return this;
 	}
 	
-	public CourseOptionsPage save() {
-		By saveBy = By.cssSelector("a.o_sel_course_options_save");
+	public CourseToolbarSettingsPage save() {
+		By saveBy = By.cssSelector("fieldset.o_sel_toolbar_settings button.o_sel_settings_save");
 		browser.findElement(saveBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;
-	}
-	
-	public CoursePageFragment clickToolbarBack() {
-		browser.findElement(NavigationPage.toolbarBackBy).click();
-		OOGraphene.waitBusy(browser);
-		return CoursePageFragment.getCourse(browser);
 	}
 
 }

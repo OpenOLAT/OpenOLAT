@@ -32,6 +32,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.resource.OLATResource;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -47,18 +48,20 @@ public class GlossaryEditSettingsController extends FormBasicController {
 	private OLATResource olatresource;
 	private MultipleSelectionElement editByUserEnabled;
 	private OlatRootFolderImpl glossaryFolder;
+	
+	@Autowired
+	private GlossaryManager glossaryManager;
+	@Autowired
+	private GlossaryItemManager glossaryItemManager;
 
 	public GlossaryEditSettingsController(UserRequest ureq, WindowControl control, OLATResource resource) {
 		super(ureq, control);
 		this.olatresource = resource;
-		glossaryFolder = GlossaryManager.getInstance().getGlossaryRootFolder(olatresource);
+		glossaryFolder = glossaryManager.getGlossaryRootFolder(olatresource);
 	
 		initForm(ureq);
 	}	
-	
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#initForm(org.olat.core.gui.components.form.flexible.FormItemContainer, org.olat.core.gui.control.Controller, org.olat.core.gui.UserRequest)
-	 */
+
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("edit.title");
@@ -69,38 +72,28 @@ public class GlossaryEditSettingsController extends FormBasicController {
 		editByUserEnabled = uifactory.addCheckboxesHorizontal("edit.onoff", formLayout, regKeys, regValues);
 		editByUserEnabled.addActionListener(FormEvent.ONCLICK);
 		
-		Properties glossProps = GlossaryItemManager.getInstance().getGlossaryConfig(glossaryFolder);
+		Properties glossProps = glossaryItemManager.getGlossaryConfig(glossaryFolder);
 		String configuredStatus = glossProps.getProperty(GlossaryItemManager.EDIT_USERS);
 		if (configuredStatus != null){
 			editByUserEnabled.select(configuredStatus, true);
 		}		
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#doDispose()
-	 */
 	@Override
 	protected void doDispose() {
 	// nothing
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formInnerEvent(org.olat.core.gui.UserRequest, org.olat.core.gui.components.form.flexible.FormItem, org.olat.core.gui.components.form.flexible.impl.FormEvent)
-	 */
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source == editByUserEnabled){
 			boolean editByUserChecked = editByUserEnabled.isSelected(0);
-			GlossaryItemManager gIM = GlossaryItemManager.getInstance();
-			Properties glossProps = gIM.getGlossaryConfig(glossaryFolder);
+			Properties glossProps = glossaryItemManager.getGlossaryConfig(glossaryFolder);
 			glossProps.put(GlossaryItemManager.EDIT_USERS, String.valueOf(editByUserChecked));
-			gIM.setGlossaryConfig(glossaryFolder, glossProps);
+			glossaryItemManager.setGlossaryConfig(glossaryFolder, glossProps);
 		}
 	}
-	
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formOK(org.olat.core.gui.UserRequest)
-	 */
+
 	@Override
 	protected void formOK(UserRequest ureq) {
 		// saved in innerEvent

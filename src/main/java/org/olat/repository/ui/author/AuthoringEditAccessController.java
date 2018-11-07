@@ -26,19 +26,15 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.MultiUserEvent;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryEntryAllowToLeaveOptions;
-import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.EntryChangedEvent.Change;
-import org.olat.resource.accesscontrol.AccessControlModule;
-import org.olat.resource.accesscontrol.ui.AccessConfigurationController;
+import org.olat.repository.ui.settings.ReloadSettingsEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -51,45 +47,24 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class AuthoringEditAccessController extends BasicController {
 	
-	private VelocityContainer editproptabpubVC;
+	private VelocityContainer mainVC;
 	
-	private AuthoringEntryPublishController propPupForm;
-	private final AuthoringEditAllowToLeaveOptionController leaveForm;
-	private AccessConfigurationController acCtr;
+	private AuthoringEditAuthorAccessController authorAccessCtrl;
+	private AuthoringEditAccessAndBookingController accessAndBookingCtrl;
 	
 	private RepositoryEntry entry;
-	@Autowired
-	private AccessControlModule acModule;
+	
 	@Autowired
 	private RepositoryManager repositoryManager;
 	
 	public AuthoringEditAccessController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
 		super(ureq, wControl);
-		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
-		
 		this.entry = entry;
 		
-		editproptabpubVC = createVelocityContainer("editproptabpub");
-		propPupForm = new AuthoringEntryPublishController(ureq, wControl, entry);
-		listenTo(propPupForm);
-		editproptabpubVC.put("proppupform", propPupForm.getInitialComponent());
-		
-		leaveForm = new AuthoringEditAllowToLeaveOptionController(ureq, wControl, entry);
-		listenTo(leaveForm);
-		editproptabpubVC.put("leaveform", leaveForm.getInitialComponent());
-
-		boolean managedBookings = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.bookings);
-		acCtr = new AccessConfigurationController(ureq, getWindowControl(), entry.getOlatResource(), entry.getDisplayname(), true, !managedBookings);
-		listenTo(acCtr);
-		
-		int numOfBookingConfigs = acCtr.getNumOfBookingConfigurations();
-		if(propPupForm.isAllUsers() || propPupForm.isGuests()) {
-			if((!managedBookings && acModule.isEnabled()) || numOfBookingConfigs > 0) {
-				editproptabpubVC.put("accesscontrol", acCtr.getInitialComponent());
-				editproptabpubVC.contextPut("isGuestAccess", Boolean.valueOf(propPupForm.isGuests()));
-			}
-		}
-		putInitialPanel(editproptabpubVC);
+		mainVC = createVelocityContainer("editproptabpub");
+		initAccessAndBooking(ureq);
+		initAuthorAccess(ureq);
+		putInitialPanel(mainVC);
 	}
 	
 	public RepositoryEntry getEntry() {
@@ -103,62 +78,69 @@ public class AuthoringEditAccessController extends BasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		
+		//
 	}
 	
 	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {	
-		if (source == propPupForm) {
-			if (event == Event.DONE_EVENT) {
-				// inform user about inconsistent configuration: doesn't make sense to set a repositoryEntry canReference=true if it is only accessible to owners
-				//TODO repo access				
-				// showError("warn.config.reference.no.access");
-
-				int numOfBookingConfigs = acCtr.getNumOfBookingConfigurations();
-				boolean guests = propPupForm.isGuests();
-				boolean allUsers = propPupForm.isAllUsers();
-				RepositoryEntryStatusEnum status = propPupForm.getEntryStatus();
-				entry = repositoryManager.setAccessAndProperties(entry, status, allUsers, guests,
-						propPupForm.canCopy(), propPupForm.canReference(), propPupForm.canDownload());
-				if(entry == null) {
-					showWarning("repositoryentry.not.existing");
-					fireEvent(ureq, Event.CLOSE_EVENT);
-				} else {
-					boolean managedBookings = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.bookings);
-					if(allUsers || guests) {
-						if((!managedBookings && acModule.isEnabled()) || numOfBookingConfigs > 0) {
-							editproptabpubVC.put("accesscontrol", acCtr.getInitialComponent());
-							editproptabpubVC.contextPut("isGuestAccess", Boolean.valueOf(guests));
-						}
-					} else {
-						editproptabpubVC.remove(acCtr.getInitialComponent());
-					}
-					
-					// inform anybody interested about this change
-					MultiUserEvent modifiedEvent = new EntryChangedEvent(entry, getIdentity(), Change.modifiedAccess, "authoring");
-					CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(modifiedEvent, entry);
-					CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(modifiedEvent, RepositoryService.REPOSITORY_EVENT_ORES);
-					fireEvent(ureq, Event.CHANGED_EVENT);
-				}
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(accessAndBookingCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				doSaveAccessAndBooking(ureq);
+				fireEvent(ureq, new ReloadSettingsEvent());
+			} else if(event == Event.CANCELLED_EVENT) {
+				initAccessAndBooking(ureq);
 			}
-		} else if(source == leaveForm) {
-			if (event == Event.DONE_EVENT) {
-				RepositoryEntryAllowToLeaveOptions leaveSetting = leaveForm.getSelectedLeaveSetting();
-				entry = repositoryManager.setLeaveSetting(entry, leaveSetting);
-				if(entry == null) {
-					showWarning("repositoryentry.not.existing");
-					fireEvent(ureq, Event.CLOSE_EVENT);
-				} else {
-					MultiUserEvent modifiedEvent = new EntryChangedEvent(entry, getIdentity(), Change.modifiedAccess, "authorings");
-					CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(modifiedEvent, entry);	
-					CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(modifiedEvent, RepositoryService.REPOSITORY_EVENT_ORES);
-					fireEvent(ureq, Event.CHANGED_EVENT);
-				}
-			}
-		} else if(acCtr == source) {
-			if(event == Event.CHANGED_EVENT) {
-				fireEvent(ureq, Event.CHANGED_EVENT);
+		} else if(authorAccessCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				doSaveAuthorAccess(ureq);
+				fireEvent(ureq, new ReloadSettingsEvent());
+			} else if(event == Event.CANCELLED_EVENT) {
+				initAuthorAccess(ureq);
 			}
 		}
+		
+		super.event(ureq, source, event);
+	}
+	
+	private void doSaveAccessAndBooking(UserRequest ureq) {
+		accessAndBookingCtrl.commitChanges();
+		
+		// inform anybody interested about this change
+		MultiUserEvent modifiedEvent = new EntryChangedEvent(entry, getIdentity(), Change.modifiedAccess, "authoring");
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(modifiedEvent, entry);
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(modifiedEvent, RepositoryService.REPOSITORY_EVENT_ORES);
+		fireEvent(ureq, Event.CHANGED_EVENT);
+	}
+	
+	private void initAccessAndBooking(UserRequest ureq) {
+		removeAsListenerAndDispose(authorAccessCtrl);
+		
+		accessAndBookingCtrl = new AuthoringEditAccessAndBookingController(ureq, getWindowControl(), entry);
+		listenTo(accessAndBookingCtrl);
+		mainVC.put("accessAndBooking", accessAndBookingCtrl.getInitialComponent());
+	}
+	
+	private void doSaveAuthorAccess(UserRequest ureq) {
+		boolean canCopy = authorAccessCtrl.canCopy();
+		boolean canReference = authorAccessCtrl.canReference();
+		boolean canDownload = authorAccessCtrl.canDownload();
+		entry = authorAccessCtrl.getEntry();
+		RepositoryEntryStatusEnum status = entry.getEntryStatus();
+		entry = repositoryManager.setAccessAndProperties(entry, status, entry.isAllUsers(), entry.isGuests(),
+				canCopy, canReference, canDownload);
+		
+		// inform anybody interested about this change
+		MultiUserEvent modifiedEvent = new EntryChangedEvent(entry, getIdentity(), Change.modifiedAccess, "authoring");
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(modifiedEvent, entry);
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(modifiedEvent, RepositoryService.REPOSITORY_EVENT_ORES);
+		fireEvent(ureq, Event.CHANGED_EVENT);
+	}
+	
+	private void initAuthorAccess(UserRequest ureq) {
+		removeAsListenerAndDispose(authorAccessCtrl);
+		
+		authorAccessCtrl = new AuthoringEditAuthorAccessController(ureq, getWindowControl(), entry);
+		listenTo(authorAccessCtrl);
+		mainVC.put("authorAccess", authorAccessCtrl.getInitialComponent());
 	}
 }

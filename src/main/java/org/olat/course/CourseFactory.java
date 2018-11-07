@@ -100,7 +100,7 @@ import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.archiver.ScoreAccountingHelper;
 import org.olat.course.config.CourseConfig;
-import org.olat.course.config.CourseConfigManagerImpl;
+import org.olat.course.config.CourseConfigManager;
 import org.olat.course.config.ui.courselayout.CourseLayoutHelper;
 import org.olat.course.editor.EditorMainController;
 import org.olat.course.editor.PublishProcess;
@@ -358,7 +358,7 @@ public class CourseFactory {
 		// delete course configuration (not really usefull, the config is in
 		// the course folder which is deleted right after)
 		if(course != null) {
-			CourseConfigManagerImpl.getInstance().deleteConfigOf(course);
+			CoreSpringFactory.getImpl(CourseConfigManager.class).deleteConfigOf(course);
 		}
 
 		CoreSpringFactory.getImpl(TaskExecutorManager.class).delete(res);
@@ -453,7 +453,7 @@ public class CourseFactory {
 
 		synchronized (sourceCourse) { // o_clusterNOK - cannot be solved with doInSync since could take too long (leads to error: "Lock wait timeout exceeded")
 			// copy configuration
-			CourseConfig courseConf = CourseConfigManagerImpl.getInstance().copyConfigOf(sourceCourse);
+			CourseConfig courseConf = CoreSpringFactory.getImpl(CourseConfigManager.class).copyConfigOf(sourceCourse);
 			targetCourse.setCourseConfig(courseConf);
 			// save structures
 			targetCourse.setRunStructure((Structure) XStreamHelper.xstreamClone(sourceCourse.getRunStructure()));
@@ -537,7 +537,9 @@ public class CourseFactory {
 	public static ICourse importCourseFromZip(OLATResource ores, File zipFile) {
 		// Generate course with filesystem
 		PersistingCourseImpl newCourse = new PersistingCourseImpl(ores);
-		CourseConfigManagerImpl.getInstance().deleteConfigOf(newCourse);
+		
+		CourseConfigManager courseConfigMgr = CoreSpringFactory.getImpl(CourseConfigManager.class);
+		courseConfigMgr.deleteConfigOf(newCourse);
 
 		// Unzip course strucure in new course
 		File fCanonicalCourseBasePath = newCourse.getCourseBaseContainer().getBasefile();
@@ -545,7 +547,7 @@ public class CourseFactory {
 			// Load course strucure now
 			try {
 				newCourse.load();
-				CourseConfig cc = CourseConfigManagerImpl.getInstance().loadConfigFor(newCourse);
+				CourseConfig cc = courseConfigMgr.loadConfigFor(newCourse);
 				//newCourse is not in cache yet, so we cannot call setCourseConfig()
 				newCourse.setCourseConfig(cc);
 				loadedCourses.put(newCourse.getResourceableId(), newCourse);

@@ -39,10 +39,10 @@ public class GlossaryItem implements Comparable<Object> {
 
 	private String glossTerm;
 	private String glossDef;
-	private ArrayList<GlossaryItem> glossSeeAlso;
-	private ArrayList<String> glossFlexions;
-	private ArrayList<String> glossSynonyms;
-	private ArrayList<URI> glossLinks;
+	private List<GlossaryItem> glossSeeAlso;
+	private List<String> glossFlexions;
+	private List<String> glossSynonyms;
+	private List<URI> glossLinks;
 	private List<Revision> revHistory;
 
 	public GlossaryItem(String glossTerm, String glossDef) {
@@ -72,6 +72,7 @@ public class GlossaryItem implements Comparable<Object> {
 	 * @param arg0
 	 * @return
 	 */
+	@Override
 	public int compareTo(Object arg0) {
 		// only compare against other GlossaryItem objects
 		if (arg0 instanceof GlossaryItem) {
@@ -84,6 +85,7 @@ public class GlossaryItem implements Comparable<Object> {
 	/**
 	 * Check only term and ignore case
 	 */
+	@Override
 	public boolean equals(Object obj) {
 		if (obj instanceof GlossaryItem) {
 			GlossaryItem glossItem = (GlossaryItem) obj;
@@ -98,18 +100,14 @@ public class GlossaryItem implements Comparable<Object> {
 	 * 
 	 * @return allStrings
 	 */
-	public ArrayList<String> getAllStringsToMarkup() {
-		ArrayList<String> allStrings = new ArrayList<String>();
+	public List<String> getAllStringsToMarkup() {
+		List<String> allStrings = new ArrayList<>();
 		allStrings.add(getGlossTerm());
 		allStrings.addAll(getGlossSynonyms());
 		allStrings.addAll(getGlossFlexions());
 		return allStrings;
 	}
 
-	/**
-	 * @see java.lang.Object#toString()
-	 * mainly used for debug reason
-	 */
 	@Override
 	public String toString() {
 		return getGlossTerm();
@@ -120,7 +118,7 @@ public class GlossaryItem implements Comparable<Object> {
 	 */
 	public List<Revision> getRevHistory() {
 		if(revHistory == null) {
-			revHistory = new ArrayList<Revision>();
+			revHistory = new ArrayList<>();
 		}
 		return revHistory;
 	}
@@ -135,30 +133,30 @@ public class GlossaryItem implements Comparable<Object> {
 	/**
 	 * @return Returns the glossFlexions.
 	 */
-	public ArrayList<String> getGlossFlexions() {
-		if (glossFlexions == null) return new ArrayList<String>();
+	public List<String> getGlossFlexions() {
+		if (glossFlexions == null) return new ArrayList<>();
 		return glossFlexions;
 	}
 
 	/**
 	 * @param glossFlexions The glossFlexions to set.
 	 */
-	public void setGlossFlexions(ArrayList<String> glossFlexions) {
+	public void setGlossFlexions(List<String> glossFlexions) {
 		this.glossFlexions = glossFlexions;
 	}
 
 	/**
 	 * @return Returns the glossSynonyms.
 	 */
-	public ArrayList<String> getGlossSynonyms() {
-		if (glossSynonyms == null) return new ArrayList<String>();
+	public List<String> getGlossSynonyms() {
+		if (glossSynonyms == null) return new ArrayList<>();
 		return glossSynonyms;
 	}
 
 	/**
 	 * @param glossSynonyms The glossSynonyms to set.
 	 */
-	public void setGlossSynonyms(ArrayList<String> glossSynonyms) {
+	public void setGlossSynonyms(List<String> glossSynonyms) {
 		this.glossSynonyms = glossSynonyms;
 	}
 
@@ -179,28 +177,28 @@ public class GlossaryItem implements Comparable<Object> {
 	/**
 	 * @return Returns the glossLinks.
 	 */
-	public ArrayList<URI> getGlossLinks() {
+	public List<URI> getGlossLinks() {
 		return glossLinks;
 	}
 
 	/**
 	 * @param glossLinks The glossLinks to set.
 	 */
-	public void setGlossLinks(ArrayList<URI> glossLinks) {
+	public void setGlossLinks(List<URI> glossLinks) {
 		this.glossLinks = glossLinks;
 	}
 
 	/**
 	 * @return Returns the glossSeeAlso.
 	 */
-	public ArrayList<GlossaryItem> getGlossSeeAlso() {
+	public List<GlossaryItem> getGlossSeeAlso() {
 		return glossSeeAlso;
 	}
 
 	/**
 	 * @param glossSeeAlso The glossSeeAlso to set.
 	 */
-	public void setGlossSeeAlso(ArrayList<GlossaryItem> glossSeeAlso) {
+	public void setGlossSeeAlso(List<GlossaryItem> glossSeeAlso) {
 		this.glossSeeAlso = glossSeeAlso;
 	}
 

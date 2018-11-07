@@ -107,8 +107,8 @@ public class GroupTaskPage {
 	}
 	
 	public GroupTaskPage submitText(String filename, String text) {
-		By uploadButtonBy = By.cssSelector("#o_step_submit_content .o_sel_course_gta_create_doc");
-		OOGraphene.clickAndWait(uploadButtonBy, browser);//TODO sel clickAndWait
+		By createButtonBy = By.cssSelector("#o_step_submit_content .o_sel_course_gta_create_doc");
+		OOGraphene.clickAndWait(createButtonBy, browser);
 		OOGraphene.waitModalDialog(browser);
 		
 		By filenameBy = By.cssSelector(".o_sel_course_gta_doc_filename input[type='text']");
@@ -119,8 +119,7 @@ public class GroupTaskPage {
 		
 		OOGraphene.tinymce(text, browser);
 		By saveAndCloseBy = By.cssSelector("#o_button_saveclose a.btn");
-		browser.findElement(saveAndCloseBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.clickAndWait(saveAndCloseBy, browser);
 		return this;
 	}
 	

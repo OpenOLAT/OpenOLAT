@@ -82,7 +82,6 @@ import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.PersistingCourseImpl;
 import org.olat.course.Structure;
-import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.editor.CourseAccessAndProperties;
 import org.olat.course.export.CourseEnvironmentMapper;
@@ -106,12 +105,11 @@ import org.olat.modules.sharedfolder.SharedFolderManager;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
-import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryEntryImportExport.RepositoryEntryImport;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.RepositoryEntrySecurity;
-import org.olat.repository.ui.RepositoryEntryRuntimeController.RuntimeControllerCreator;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.resource.references.ReferenceManager;
@@ -354,7 +352,7 @@ public class CourseHandler implements RepositoryHandler {
 	}
 	
 	private void importGlossary(ICourse course, Identity owner, Organisation organisation) {
-		GlossaryManager gm = GlossaryManager.getInstance();
+		GlossaryManager gm = CoreSpringFactory.getImpl(GlossaryManager.class);
 		RepositoryEntryImportExport importExport = gm.getRepositoryImportExport(course.getCourseExportDataDir().getBasefile());
 		GlossaryResource resource = gm.createGlossary();
 		if (resource == null) {
@@ -516,13 +514,9 @@ public class CourseHandler implements RepositoryHandler {
 	@Override
 	public MainLayoutController createLaunchController(RepositoryEntry re, RepositoryEntrySecurity reSecurity, UserRequest ureq, WindowControl wControl) {
 		return new CourseRuntimeController(ureq, wControl, re, reSecurity,
-				new RuntimeControllerCreator() {
-					@Override
-					public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel,
-							RepositoryEntry entry, RepositoryEntrySecurity security, AssessmentMode assessmentMode) {
+				(uureq, wwControl, toolbarPanel,  entry, security, assessmentMode) -> {
 						ICourse course = CourseFactory.loadCourse(entry);
 						return new RunMainController(uureq, wwControl, toolbarPanel, course, entry, security, assessmentMode);
-					}
 			}, true, true);
 	}
 

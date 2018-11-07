@@ -74,7 +74,7 @@ public class PublisherPageFragment {
 	
 	public PublisherPageFragment nextSelectNodes() {
 		OOGraphene.nextStep(browser);
-		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_repositoryentry_access"), 5, browser);
+		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_repo_access_configuration"), 5, browser);
 		return this;
 	}
 	
@@ -108,21 +108,31 @@ public class PublisherPageFragment {
 		publishStatusSelect.selectByValue("published");
 
 		if(access == UserAccess.registred || access == UserAccess.guest) {
-			By allUsersBy = By.xpath("//label/input[@name='cif.allusers' and @value='y']");
+			By allUsersBy = By.xpath("//div[@id='o_coentry_access_type']/div/label/input[@name='entry.access.type' and @value='shared']");
+			browser.findElement(allUsersBy).click();
+			OOGraphene.waitBusy(browser);
+			
+			By guestsBy = By.xpath("//div[contains(@class,'o_sel_repositoryentry_access_guest')]//label[input[@name='entry.access.guest' and @value='on']]");
+			OOGraphene.waitElement(guestsBy, browser);
+			
+			if(access == UserAccess.guest) {
+				By labelGuestsBy = By.xpath("//div[contains(@class,'o_sel_repositoryentry_access_guest')]//label/input[@name='entry.access.guest' and @value='on']");
+
+				WebElement guestsEl = browser.findElement(guestsBy);
+				WebElement labelGuestsEl = browser.findElement(labelGuestsBy);
+				OOGraphene.check(labelGuestsEl, guestsEl, Boolean.TRUE);
+			}
+		} else if(access == UserAccess.membersOnly) {
+			By allUsersBy = By.xpath("//div[@id='o_coentry_access_type']/div/label/input[@name='entry.access.type' and @value='private']");
+			browser.findElement(allUsersBy).click();
+			OOGraphene.waitBusy(browser);
+		} else if(access == UserAccess.booking) {
+			By allUsersBy = By.xpath("//div[@id='o_coentry_access_type']/div/label/input[@name='entry.access.type' and @value='private']");
 			browser.findElement(allUsersBy).click();
 			OOGraphene.waitBusy(browser);
 			
 			By accessConfigurationBy = By.cssSelector("fieldset.o_ac_configuration");
 			OOGraphene.waitElement(accessConfigurationBy, browser);
-		}
-		if(access == UserAccess.guest) {
-			By guestsBy = By.xpath("//label[input[@name='cif.guests' and @value='y']]");
-			By labelGuestsBy = By.xpath("//label/input[@name='cif.guests' and @value='y']");
-			OOGraphene.scrollTo(guestsBy, browser);
-			
-			WebElement guestsEl = browser.findElement(guestsBy);
-			WebElement labelGuestsEl = browser.findElement(labelGuestsBy);
-			OOGraphene.check(labelGuestsEl, guestsEl, Boolean.TRUE);
 		}
 		return this;
 	}

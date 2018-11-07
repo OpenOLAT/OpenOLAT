@@ -1,4 +1,4 @@
-<fieldset class="o_form form-horizontal o_ac_configuration" role="form">
+<fieldset class="o_form form-horizontal o_ac_configuration">
 #if ($off_title) 
 	<legend>
 		$off_title
@@ -12,13 +12,7 @@
 		#if ($off_info) <div class="o_info">$off_info</div> #end
 	</div></div>
 #end
-	#if($r.visible("confirmation.email"))
-	<div class="form-group">
-		<label class="control-label col-sm-3">$r.translate("confirmation.email")</label>
-		<div class="col-sm-9">$r.render("confirmation.email")</div>
-	</div>
-	#end
-	<div class="form-group">
+	<div class="form-group o_ac_methods">
 		<label class="control-label col-sm-3">$r.translate("ac.methods.label") $r.render("acMethodsLabelHelp")</label>
 		<div class="col-sm-9">$r.render("conf-controllers")</div>
 	</div>
@@ -31,5 +25,11 @@
 			#end
 		</ul>
 	</div></div></div>
+	#end
+	#if($r.visible("confirmation.email"))
+	<div class="form-group">
+		<label class="control-label col-sm-3">$r.translate("confirmation.email")</label>
+		<div class="col-sm-9">$r.render("confirmation.email")</div>
+	</div>
 	#end
 </fieldset>

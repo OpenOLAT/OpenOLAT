@@ -47,13 +47,6 @@ public class ConfigurationHelper {
 				|| ((lectureConfig == null || !lectureConfig.isOverrideModuleDefault()) && lectureModule.isCourseCalendarSyncEnabledDefault());
 	}
 	
-	/*
-	public static boolean isSyncParticipantCalendarEnabled(RepositoryEntryLectureConfiguration lectureConfig, LectureModule lectureModule) {
-		return (lectureConfig != null && lectureConfig.isOverrideModuleDefault() && lectureConfig.getParticipantCalendarSyncEnabled() != null && lectureConfig.getParticipantCalendarSyncEnabled().booleanValue())
-				|| ((lectureConfig == null || !lectureConfig.isOverrideModuleDefault()) && lectureModule.isParticipantCalendarSyncEnabledDefault());
-	}
-	*/
-	
 	public static boolean isRateEnabled(RepositoryEntryLectureConfiguration lectureConfig, LectureModule lectureModule) {
 		if(lectureConfig != null && lectureConfig.isOverrideModuleDefault()) {
 			return lectureConfig.getCalculateAttendanceRate() == null ?

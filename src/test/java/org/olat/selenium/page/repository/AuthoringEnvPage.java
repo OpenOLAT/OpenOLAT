@@ -23,6 +23,7 @@ import java.io.File;
 
 import org.junit.Assert;
 import org.olat.selenium.page.course.CoursePageFragment;
+import org.olat.selenium.page.course.CourseSettingsPage;
 import org.olat.selenium.page.course.CourseWizardPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
@@ -61,39 +62,38 @@ public class AuthoringEnvPage {
 		return this;
 	}
 	
-	public RepositoryEditDescriptionPage createCP(String title) {
+	public RepositorySettingsPage createCP(String title) {
 		return openCreateDropDown()
 			.clickCreate(ResourceType.cp)
-			.fillCreateForm(title)
-			.assertOnGeneralTab();
+			.fillCreateForm(title);
 	}
 	
-	public RepositoryEditDescriptionPage createWiki(String title) {
+	public RepositorySettingsPage createWiki(String title) {
 		return openCreateDropDown()
 			.clickCreate(ResourceType.wiki)
-			.fillCreateForm(title)
-			.assertOnGeneralTab();
+			.fillCreateForm(title);
 	}
 	
-	public RepositoryEditDescriptionPage createCourse(String title) {
-		return openCreateDropDown()
+	public CourseSettingsPage createCourse(String title) {
+		RepositorySettingsPage settings = openCreateDropDown()
 			.clickCreate(ResourceType.course)
-			.fillCreateForm(title)
-			.assertOnGeneralTab();
+			.fillCreateForm(title);
+		settings.assertOnInfos();
+		return new CourseSettingsPage(browser);
 	}
 	
 	public RepositoryEditDescriptionPage createPortfolioBinder(String title) {
 		return openCreateDropDown()
 			.clickCreate(ResourceType.portfolio)
 			.fillCreateForm(title)
-			.assertOnGeneralTab();
+			.assertOnInfos();
 	}
 	
 	public RepositoryEditDescriptionPage createQTI21Test(String title) {
 		return openCreateDropDown()
 			.clickCreate(ResourceType.qti21Test)
 			.fillCreateForm(title)
-			.assertOnGeneralTab();
+			.assertOnInfos();
 	}
 	
 	/**
@@ -128,7 +128,7 @@ public class AuthoringEnvPage {
 	 * @param displayName
 	 * @return
 	 */
-	public RepositoryEditDescriptionPage fillCreateForm(String displayName) {
+	public RepositorySettingsPage fillCreateForm(String displayName) {
 		OOGraphene.waitModalDialog(browser);
 		By inputBy = By.cssSelector("div.modal.o_sel_author_create_popup div.o_sel_author_displayname input");
 		browser.findElement(inputBy).sendKeys(displayName);
@@ -136,8 +136,7 @@ public class AuthoringEnvPage {
 		browser.findElement(submitBy).click();
 		OOGraphene.waitBusy(browser);
 		OOGraphene.waitElement(RepositoryEditDescriptionPage.generaltabBy, browser);
-		return new RepositoryEditDescriptionPage(browser)
-				.assertOnGeneralTab();
+		return new RepositorySettingsPage(browser);
 	}
 	
 	/**
@@ -163,7 +162,7 @@ public class AuthoringEnvPage {
 		RepositoryEditDescriptionPage editDescription = openCreateDropDown()
 			.clickCreate(ResourceType.course)
 			.fillCreateForm(title)
-			.assertOnGeneralTab();
+			.assertOnInfos();
 			
 		//from description editor, back to details and launch the course
 		editDescription

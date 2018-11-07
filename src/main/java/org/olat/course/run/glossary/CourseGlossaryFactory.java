@@ -68,13 +68,13 @@ public class CourseGlossaryFactory {
 	 *          configuration
 	 */
 	public static GlossaryMarkupItemController createGlossaryMarkupWrapper(UserRequest ureq, WindowControl wControl, Component tmComponent, CourseConfig courseConfig){
-		if (courseConfig.hasGlossary()) {
-			RepositoryEntry repoEntry = RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(courseConfig.getGlossarySoftKey(),	false);
+		if (courseConfig.hasGlossary() && courseConfig.isGlossaryEnabled()) {
+			RepositoryEntry repoEntry = CoreSpringFactory.getImpl(RepositoryManager.class).lookupRepositoryEntryBySoftkey(courseConfig.getGlossarySoftKey(),	false);
 			if (repoEntry == null) {
 				// seems to be removed
 				return null;
 			}
-			VFSContainer glossaryFolder = GlossaryManager.getInstance().getGlossaryRootFolder(repoEntry.getOlatResource());
+			VFSContainer glossaryFolder = CoreSpringFactory.getImpl(GlossaryManager.class).getGlossaryRootFolder(repoEntry.getOlatResource());
 			String glossaryId = repoEntry.getOlatResource().getResourceableId().toString();
 			return new GlossaryMarkupItemController(ureq, wControl, tmComponent, glossaryFolder, glossaryId);
 		}
@@ -107,17 +107,20 @@ public class CourseGlossaryFactory {
 	public static GlossaryMainController createCourseGlossaryMainRunController(WindowControl lwControl, UserRequest lureq, CourseConfig cc,
 			boolean hasGlossaryRights) {
 		if (cc.hasGlossary()) {
-			RepositoryEntry repoEntry = RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(cc.getGlossarySoftKey(),
+			RepositoryEntry repoEntry = CoreSpringFactory.getImpl(RepositoryManager.class)
+					.lookupRepositoryEntryBySoftkey(cc.getGlossarySoftKey(),
 					false);
 			if (repoEntry == null) {
 				// seems to be removed
 				return null;
 			}
 
-			RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
-			boolean owner = repositoryService.hasRole(lureq.getIdentity(), repoEntry, GroupRoles.owner.name());
-			VFSContainer glossaryFolder = GlossaryManager.getInstance().getGlossaryRootFolder(repoEntry.getOlatResource());
-			Properties glossProps = GlossaryItemManager.getInstance().getGlossaryConfig(glossaryFolder);
+			boolean owner = CoreSpringFactory.getImpl(RepositoryService.class)
+					.hasRole(lureq.getIdentity(), repoEntry, GroupRoles.owner.name());
+			VFSContainer glossaryFolder = CoreSpringFactory.getImpl(GlossaryManager.class)
+					.getGlossaryRootFolder(repoEntry.getOlatResource());
+			Properties glossProps = CoreSpringFactory.getImpl(GlossaryItemManager.class)
+					.getGlossaryConfig(glossaryFolder);
 			boolean editUsersEnabled =  "true".equals(glossProps.getProperty(GlossaryItemManager.EDIT_USERS));
 			GlossarySecurityCallback secCallback;
 			if (lureq.getUserSession().getRoles().isGuestOnly()) {

@@ -154,6 +154,7 @@ public class BinderController extends BasicController implements TooledControlle
 	protected void setSegmentButtonsVisible(boolean enabled) {
 		if(segmentButtonsCmp != null) {
 			segmentButtonsCmp.setVisible(enabled);
+			stackPanel.addTool(segmentButtonsCmp, true);
 		}
 	}
 

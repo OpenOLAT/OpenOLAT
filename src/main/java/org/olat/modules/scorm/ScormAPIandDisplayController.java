@@ -65,6 +65,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.course.CourseModule;
 import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -93,6 +94,9 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 	private String username;
 	private Link nextScoTop, nextScoBottom, previousScoTop, previousScoBottom;
 	private ListPanel scoTopButtons, scoBottomButtons;
+	
+	@Autowired
+	private ScormMainManager scormMainManager;
 
 	/**
 	 * @param ureq
@@ -171,7 +175,7 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 			}
 			courseOres = OresHelper.createOLATResourceableInstance(CourseModule.class, Long.valueOf(courseId));
 		}
-		ScormPackageConfig packageConfig = ScormMainManager.getInstance().getScormPackageConfig(cpRoot);
+		ScormPackageConfig packageConfig = scormMainManager.getScormPackageConfig(cpRoot);
 		if((deliveryOptions == null || (deliveryOptions.getInherit() != null && deliveryOptions.getInherit().booleanValue()))
 				&& packageConfig != null) {
 			deliveryOptions = packageConfig.getDeliveryOptions();

@@ -18,3 +18,12 @@ alter table o_qual_report_access ENGINE = InnoDB;
 alter table o_qual_report_access add constraint qual_repacc_to_dc_idx foreign key (fk_data_collection) references o_qual_data_collection (id);
 alter table o_qual_report_access add constraint qual_repacc_to_generator_idx foreign key (fk_generator) references o_qual_generator (id);
 
+
+-- repository
+alter table o_repositoryentry add column bookable bit default 0 not null;
+alter table o_repositoryentry modify objectives text(32000);
+alter table o_repositoryentry modify requirements text(32000);
+alter table o_repositoryentry modify credits text(32000);
+alter table o_repositoryentry modify expenditureofwork text(32000);
+
+

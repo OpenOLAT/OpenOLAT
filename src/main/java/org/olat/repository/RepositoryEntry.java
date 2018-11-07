@@ -171,6 +171,8 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 	private boolean allUsers;
 	@Column(name="guests", nullable=false, insertable=true, updatable=true)
 	private boolean guests;
+	@Column(name="bookable", nullable=false, insertable=true, updatable=true)
+	private boolean bookable;
 	
 	@Column(name="cancopy", nullable=false, insertable=true, updatable=true)
 	private boolean canCopy;
@@ -419,6 +421,14 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 	
 	public void setEntryStatus(RepositoryEntryStatusEnum status) {
 		this.status = status.name();
+	}
+
+	public boolean isBookable() {
+		return bookable;
+	}
+
+	public void setBookable(boolean bookable) {
+		this.bookable = bookable;
 	}
 
 	public boolean isAllUsers() {

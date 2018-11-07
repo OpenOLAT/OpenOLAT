@@ -29,13 +29,29 @@ import org.olat.core.util.StringHelper;
  */
 public enum RepositoryEntryStatusEnum {
 	
-	preparation,
-	review,
-	coachpublished,
-	published,
-	closed,
-	trash,
-	deleted;
+	preparation("cif.status.preparation", "o_icon_edit"),
+	review("cif.status.review", "o_icon_review"),
+	coachpublished("cif.status.coachpublished", "o_icon_published"),
+	published("cif.status.published", "o_icon_published"),
+	closed("cif.status.closed", "o_icon_closed"),
+	trash("cif.status.trash", "o_icon_trash"),
+	deleted("cif.status.deleted", "o_icon_deleted");
+	
+	private final String i18nKey;
+	private final String cssClass;
+	
+	private RepositoryEntryStatusEnum(String i18nKey, String cssClass) {
+		this.i18nKey = i18nKey;
+		this.cssClass = cssClass;
+	}
+	
+	public String i18nKey() {
+		return i18nKey;
+	}
+	
+	public String cssClass() {
+		return cssClass;
+	}
 	
 	/**
 	 * @return true if the value is closed, trash or deleted

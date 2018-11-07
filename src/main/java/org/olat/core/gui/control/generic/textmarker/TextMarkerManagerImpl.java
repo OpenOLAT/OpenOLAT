@@ -29,9 +29,7 @@ package org.olat.core.gui.control.generic.textmarker;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.dom4j.Attribute;
@@ -46,17 +44,17 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.xml.XMLParser;
+import org.springframework.stereotype.Service;
 
 /**
  * 
  * Description: Implementation of the TextMarkerManager that uses SAX to persist the TextMarker objects
  * 
- * FIXME: remove after all glossaries were migrated to new format.
- * 
  * @author gnaegi <www.goodsolutions.ch>
  * Initial Date: Jul 14, 2006
  * 
  */
+@Service
 public class TextMarkerManagerImpl implements TextMarkerManager {
 	
 	private static final OLog log = Tracing.createLoggerFor(TextMarkerManagerImpl.class);
@@ -64,64 +62,45 @@ public class TextMarkerManagerImpl implements TextMarkerManager {
 	public static final String XML_VERSION_ATTRIBUTE = "version";
 	public static final int VERSION = 1;
 
-	private static final TextMarkerManager INSTANCE = new TextMarkerManagerImpl();
-
-	/**
-	 * @return singleton instance
-	 */
-	public static TextMarkerManager getInstance() {
-		return INSTANCE;
-	}
-
-	/**
-	 * @see org.olat.core.gui.control.generic.textmarker.TextMarkerManager#loadTextMarkerList(org.olat.core.util.vfs.VFSLeaf)
-	 */
+	@Override
 	public List<TextMarker> loadTextMarkerList(VFSLeaf textMarkerFile) {
+		List<TextMarker> markers = new ArrayList<>();
 		if (textMarkerFile == null) {
 			// filename not defined at all
-			return new ArrayList<TextMarker>();
+			return markers;
 		}
 		XMLParser parser = new XMLParser();
-		InputStream stream = textMarkerFile.getInputStream();
-		if (stream == null) {
-			// e.g. file was removed
-			return new ArrayList<TextMarker>();
-		}
-		Document doc = parser.parse(stream, false);
-		Element root = doc.getRootElement();
-		if (root == null) {
-			// file was empty;
-			return new ArrayList<TextMarker>();
-		}
-		// Do version check. Not needed now, for future lazy migration code...
-		Attribute versionAttribute = root.attribute(XML_VERSION_ATTRIBUTE);
-		int version = (versionAttribute == null ? 1 : Integer.parseInt(versionAttribute.getStringValue()));
-		if (version != VERSION) {
-			// complain about version conflict or solve it
-			throw new OLATRuntimeException("Could not load glossary entries due to version conflict. Loaded version was::" + version, null);
-		}
-		// parse text marker objects and put them into a list
-		List markersElements = root.elements("textMarker");
-		List<TextMarker> markers = new ArrayList<TextMarker>();
-		Iterator iter = markersElements.iterator();
-		while (iter.hasNext()) {
-			Element textMarkerElement = (Element) iter.next();
-			TextMarker textMarker = new TextMarker(textMarkerElement);
-			markers.add(textMarker);
-		}
-		try {
-			stream.close();
+		try(InputStream stream = textMarkerFile.getInputStream()) {
+			if (stream == null) {
+				// e.g. file was removed
+				return markers;
+			}
+			Document doc = parser.parse(stream, false);
+			Element root = doc.getRootElement();
+			if (root == null) {
+				// file was empty
+				return markers;
+			}
+			// Do version check. Not needed now, for future lazy migration code...
+			Attribute versionAttribute = root.attribute(XML_VERSION_ATTRIBUTE);
+			int version = (versionAttribute == null ? 1 : Integer.parseInt(versionAttribute.getStringValue()));
+			if (version != VERSION) {
+				// complain about version conflict or solve it
+				throw new OLATRuntimeException("Could not load glossary entries due to version conflict. Loaded version was::" + version, null);
+			}
+			// parse text marker objects and put them into a list
+			List<Element> markersElements = root.elements("textMarker");
+			for (Element textMarkerElement:markersElements) {
+				markers.add(new TextMarker(textMarkerElement));
+			}
+
 		} catch (IOException e) {
 			throw new OLATRuntimeException(this.getClass(), "Error while closing text marker file stream", e);
 		}
 		return markers;
 	}
 
-
-	/**
-	 * @see org.olat.core.gui.control.generic.textmarker.TextMarkerManager#saveToFile(org.olat.core.util.vfs.VFSLeaf,
-	 *      java.util.List)
-	 */
+	@Override
 	public void saveToFile(VFSLeaf textMarkerFile, List<TextMarker> textMarkerList) {
 		DocumentFactory df = DocumentFactory.getInstance();
 		Document doc = df.createDocument();
@@ -133,22 +112,17 @@ public class TextMarkerManagerImpl implements TextMarkerManager {
 		for (TextMarker textMarker:textMarkerList) {
 			textMarker.addToElement(root);
 		}
-		OutputStream stream = textMarkerFile.getOutputStream(false);
-		try {
+		
+		try(OutputStream stream = textMarkerFile.getOutputStream(false)) {
 			XMLWriter writer = new XMLWriter(stream);
 			writer.write(doc);
 			writer.close();
-			stream.close();
-		} catch (UnsupportedEncodingException e) {
-			log.error("Error while saving text marker file", e);
 		} catch (IOException e) {
 			log.error("Error while saving text marker file", e);
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.generic.textmarker.TextMarkerManager#loadFileAsIndexableString(org.olat.core.util.vfs.VFSLeaf)
-	 */
+	@Override
 	public String loadFileAsString(VFSLeaf textMarkerFile) {
 		StringBuilder sb = new StringBuilder();
 		List<TextMarker> markers = loadTextMarkerList(textMarkerFile);
@@ -161,10 +135,7 @@ public class TextMarkerManagerImpl implements TextMarkerManager {
 		return sb.toString();
 	}
 
-	/**
-	 * 
-	 * @see org.olat.core.gui.control.generic.textmarker.TextMarkerManager#isTextmarkingEnabled(org.olat.core.gui.UserRequest, org.olat.core.id.OLATResourceable)
-	 */
+	@Override
 	public boolean isTextmarkingEnabled(UserRequest ureq, OLATResourceable ores) {
 		if (ores != null) {
 			//Glossary always on for guests. OLAT-4241
@@ -179,7 +150,4 @@ public class TextMarkerManagerImpl implements TextMarkerManager {
 		}
 		return false;
 	}
-
-
-
 }

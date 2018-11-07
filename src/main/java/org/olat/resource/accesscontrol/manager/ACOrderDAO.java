@@ -167,8 +167,7 @@ public class ACOrderDAO {
 			query.setParameter("status", statusStr);
 		}
 
-		List<Order> orders = query.getResultList();
-		return orders;
+		return query.getResultList();
 	}
 
 

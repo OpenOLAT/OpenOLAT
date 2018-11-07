@@ -56,7 +56,6 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.resource.OLATResourceableJustBeforeDeletedEvent;
 import org.olat.core.util.vfs.VFSContainer;
-import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.FileResource;
@@ -69,7 +68,6 @@ import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.RepositoryEntrySecurity;
-import org.olat.repository.ui.RepositoryEntryRuntimeController.RuntimeControllerCreator;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.resource.references.ReferenceManager;
@@ -97,7 +95,7 @@ public class GlossaryHandler implements RepositoryHandler {
 	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description,
 			Object createObject, Organisation organisation, Locale locale) {
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
-		GlossaryResource glossaryResource = GlossaryManager.getInstance().createGlossary();
+		GlossaryResource glossaryResource = CoreSpringFactory.getImpl(GlossaryManager.class).createGlossary();
 		OLATResource resource = OLATResourceManager.getInstance().findOrPersistResourceable(glossaryResource);
 		RepositoryEntry re = repositoryService.create(initialAuthor, null, "", displayname, description, resource,
 				RepositoryEntryStatusEnum.preparation, organisation);
@@ -124,10 +122,11 @@ public class GlossaryHandler implements RepositoryHandler {
 	public RepositoryEntry importResource(Identity initialAuthor, String initialAuthorAlt, String displayname, String description,
 			boolean withReferences, Organisation organisation, Locale locale, File file, String filename) {
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
-		GlossaryResource glossaryResource = GlossaryManager.getInstance().createGlossary();
+		GlossaryManager glossaryManager = CoreSpringFactory.getImpl(GlossaryManager.class);
+		GlossaryResource glossaryResource = glossaryManager.createGlossary();
 		OLATResource resource = OLATResourceManager.getInstance().findOrPersistResourceable(glossaryResource);
 		//copy resources
-		File glossyPath = GlossaryManager.getInstance().getGlossaryRootFolder(glossaryResource).getBasefile();
+		File glossyPath = glossaryManager.getGlossaryRootFolder(glossaryResource).getBasefile();
 		FileResource.copyResource(file, filename, glossyPath);
 		RepositoryEntry re = repositoryService.create(initialAuthor, null, "", displayname, description, resource,
 				RepositoryEntryStatusEnum.preparation, organisation);
@@ -186,15 +185,12 @@ public class GlossaryHandler implements RepositoryHandler {
 	@Override
 	public MainLayoutController createLaunchController(RepositoryEntry re, RepositoryEntrySecurity reSecurity, UserRequest ureq, WindowControl wControl) {
 		
-		
 		return new GlossaryRuntimeController(ureq, wControl, re, reSecurity,
-			new RuntimeControllerCreator() {
-				@Override
-				public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel,
-						RepositoryEntry entry, RepositoryEntrySecurity security, AssessmentMode assessmentMode) {
-					VFSContainer glossaryFolder = GlossaryManager.getInstance().getGlossaryRootFolder(entry.getOlatResource());
+				(uureq, wwControl, toolbarPanel, entry, security, assessmentMode) -> {
+					GlossaryManager glossaryManager = CoreSpringFactory.getImpl(GlossaryManager.class);
+					VFSContainer glossaryFolder = glossaryManager.getGlossaryRootFolder(entry.getOlatResource());
 
-					Properties glossProps = GlossaryItemManager.getInstance().getGlossaryConfig(glossaryFolder);
+					Properties glossProps = CoreSpringFactory.getImpl(GlossaryItemManager.class).getGlossaryConfig(glossaryFolder);
 					boolean editableByUser = "true".equals(glossProps.getProperty(GlossaryItemManager.EDIT_USERS));
 					boolean owner = security.isOwner();
 					
@@ -207,8 +203,7 @@ public class GlossaryHandler implements RepositoryHandler {
 
 					CoreSpringFactory.getImpl(UserCourseInformationsManager.class)
 						.updateUserCourseInformations(entry.getOlatResource(), uureq.getIdentity());
-					return new GlossaryMainController(wwControl, uureq, glossaryFolder, entry.getOlatResource(), secCallback, false);	
-				}
+					return new GlossaryMainController(wwControl, uureq, glossaryFolder, entry.getOlatResource(), secCallback, false);
 			});
 	}
 	
@@ -219,14 +214,14 @@ public class GlossaryHandler implements RepositoryHandler {
 
 	@Override
 	public MediaResource getAsMediaResource(OLATResourceable res, boolean backwardsCompatible) {
-		return GlossaryManager.getInstance().getAsMediaResource(res);
+		return CoreSpringFactory.getImpl(GlossaryManager.class).getAsMediaResource(res);
 	}
 
 	@Override
 	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbar) {
-		VFSContainer glossaryFolder = GlossaryManager.getInstance().getGlossaryRootFolder(re.getOlatResource());
+		VFSContainer glossaryFolder = CoreSpringFactory.getImpl(GlossaryManager.class).getGlossaryRootFolder(re.getOlatResource());
 
-		Properties glossProps = GlossaryItemManager.getInstance().getGlossaryConfig(glossaryFolder);
+		Properties glossProps = CoreSpringFactory.getImpl(GlossaryItemManager.class).getGlossaryConfig(glossaryFolder);
 		boolean editableByUser = "true".equals(glossProps.getProperty(GlossaryItemManager.EDIT_USERS));
 		GlossarySecurityCallback secCallback;
 		if (ureq.getUserSession().getRoles().isGuestOnly()) {
@@ -249,7 +244,7 @@ public class GlossaryHandler implements RepositoryHandler {
 		// FIXME:fj:c to be perfect, still need to notify
 		// repositorydetailscontroller and searchresultcontroller....
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(new OLATResourceableJustBeforeDeletedEvent(res), res);
-		GlossaryManager.getInstance().deleteGlossary(res);
+		CoreSpringFactory.getImpl(GlossaryManager.class).deleteGlossary(res);
 		return true;
 	}
 

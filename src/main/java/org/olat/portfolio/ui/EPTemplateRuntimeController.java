@@ -45,11 +45,9 @@ public class EPTemplateRuntimeController extends RepositoryEntryRuntimeControlle
 			RepositoryEntry re, RepositoryEntrySecurity reSecurity, RuntimeControllerCreator runtimeControllerCreator) {
 		super(ureq, wControl, re, reSecurity, runtimeControllerCreator);
 	}
-
+	
 	@Override
-	protected void initToolbar(Dropdown toolsDropdown, Dropdown settingsDropdown) {
-		super.initToolbar(toolsDropdown, settingsDropdown);
-		
+	protected void initEditorTools(Dropdown toolsDropdown) {
 		if(getRuntimeController() instanceof EPMapViewController) {
 			EPMapViewController mapCtrl = (EPMapViewController)getRuntimeController();
 			if(mapCtrl.canEditStructure()) {
@@ -60,7 +58,7 @@ public class EPTemplateRuntimeController extends RepositoryEntryRuntimeControlle
 			}
 		}
 	}
-	
+
 	@Override
 	protected void doEdit(UserRequest ureq) {
 		if(!reSecurity.isEntryAdmin()) return;

@@ -26,7 +26,7 @@
 		<property name="actionController">	
 			<bean class="org.olat.core.gui.control.creator.FactoryControllerCreator" scope="prototype">
 				<property name="factoryName" value="org.olat.repository.ui.RepositoyUIFactory"/>
-				<property name="factoryMethod" value="createLifecylceAdminController"/>
+				<property name="factoryMethod" value="createLifecycleAdminController"/>
 			</bean>
 		</property>
 		<property name="navigationKey" value="lifecycles" />

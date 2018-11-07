@@ -29,10 +29,10 @@ public interface RepositoryEntryLight extends RepositoryEntryShort {
 
 	public String getDescription();
 	
-	public RepositoryEntryStatusEnum getEntryStatus();
-	
 	public boolean isAllUsers();
 	
 	public boolean isGuests();
+	
+	public boolean isBookable();
 	
 }

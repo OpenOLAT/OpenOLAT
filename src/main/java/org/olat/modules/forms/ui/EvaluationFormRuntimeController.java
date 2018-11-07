@@ -21,14 +21,10 @@ package org.olat.modules.forms.ui;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.dropdown.Dropdown;
-import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.PopEvent;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.repository.ui.RepositoryEntryRuntimeController;
 
@@ -46,44 +42,23 @@ public class EvaluationFormRuntimeController extends RepositoryEntryRuntimeContr
 	}
 	
 	@Override
-	protected void initRuntimeTools(Dropdown toolsDropdown) {
-		if (reSecurity.isEntryAdmin()) {
-			boolean managed = RepositoryEntryManagedFlag.isManaged(getRepositoryEntry(), RepositoryEntryManagedFlag.editcontent);
-			editLink = LinkFactory.createToolLink("edit.cmd", translate("details.openeditor"), this, "o_sel_repository_editor");
-			editLink.setIconLeftCSS("o_icon o_icon-lg o_icon_edit");
-			editLink.setEnabled(!managed);
-			toolsDropdown.addComponent(editLink);
-			
-			membersLink = LinkFactory.createToolLink("members", translate("details.members"), this, "o_sel_repo_members");
-			membersLink.setIconLeftCSS("o_icon o_icon-fw o_icon_membersmanagement");
-			toolsDropdown.addComponent(membersLink);
-		}
-		
-		if (reSecurity.isEntryAdmin()) {
-			RepositoryEntry re = getRepositoryEntry();
-			ordersLink = LinkFactory.createToolLink("bookings", translate("details.orders"), this, "o_sel_repo_booking");
-			ordersLink.setIconLeftCSS("o_icon o_icon-fw o_icon_booking");
-			boolean booking = acService.isResourceAccessControled(re.getOlatResource(), null);
-			ordersLink.setEnabled(booking);
-			toolsDropdown.addComponent(ordersLink);	
-		}
-	}
-	
-	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if(toolbarPanel == source) {
+		 if(source == toolbarPanel) {
 			if(event instanceof PopEvent) {
-				PopEvent pe = (PopEvent)event;
-				Controller popedCtrl = pe.getController();
-				if(popedCtrl instanceof EvaluationFormEditorController) {
-					EvaluationFormEditorController formEditorCtrl = (EvaluationFormEditorController)popedCtrl;
-					if(formEditorCtrl.hasChanges()) {
-						doReloadRuntimeController(ureq);
-					}
-				}
+				processPopEvent(ureq, (PopEvent)event);
 			}
 		}
 		super.event(ureq, source, event);
+	}
+
+	@Override
+	protected void processPopEvent(UserRequest ureq, PopEvent pop) {
+		super.processPopEvent(ureq, pop);
+		if(pop.getController() == editorCtrl && editorCtrl instanceof EvaluationFormEditorController) {
+			if(((EvaluationFormEditorController)editorCtrl).hasChanges()) {
+				doReloadRuntimeController(ureq);
+			}
+		}
 	}
 	
 	private void doReloadRuntimeController(UserRequest ureq) {

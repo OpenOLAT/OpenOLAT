@@ -216,7 +216,7 @@ public class RepositoryEntryQueries {
 			//access rules as user
 			sb.append("(")
 			  .append("(membership.role not ").in(OrganisationRoles.guest, OrganisationRoles.invitee, GroupRoles.waiting)
-			  .append("   and v.allUsers=true and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed())
+			  .append("   and (v.allUsers=true or v.bookable=true) and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed())
 			// administrator, learn resource manager and owner
 			  .append(") or (")
 			  .append(" membership.role ").in(OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager, GroupRoles.owner)

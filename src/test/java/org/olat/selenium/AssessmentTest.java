@@ -226,6 +226,7 @@ public class AssessmentTest extends Deployments {
 		CoursePageFragment courseRuntime = courseEditor
 			.clickToolbarBack();
 		courseRuntime
+			.publish()
 			.clickTree()
 			.selectWithTitle(testNodeTitle);
 		
@@ -362,12 +363,17 @@ public class AssessmentTest extends Deployments {
 
 		//publish the course
 		courseEditor
-				.autoPublish()
-				.accessConfiguration()
-				.setUserAccess(UserAccess.membersOnly)
-				.clickToolbarBack();
-		
+			.autoPublish()
+			.settings()
+			.accessConfiguration()
+			.setUserAccess(UserAccess.membersOnly)
+			.save()
+			.clickToolbarBack();
+
 		CoursePageFragment courseRuntime = new CoursePageFragment(browser);
+		//publish the course
+		courseRuntime
+			.publish();
 		//add Ryomou as a course member
 		courseRuntime
 			.members()
@@ -377,7 +383,7 @@ public class AssessmentTest extends Deployments {
 			.nextOverview()
 			.nextPermissions()
 			.finish();
-		
+
 		//Ryomou open the course
 		LoginPage ryomouLoginPage = LoginPage.getLoginPage(ryomouBrowser, deploymentUrl);
 		ryomouLoginPage
@@ -601,13 +607,13 @@ public class AssessmentTest extends Deployments {
 		
 		//create a course
 		String courseTitle = "Course-With-Certificates-" + UUID.randomUUID();
-		navBar
+		CoursePageFragment courseRuntime = navBar
 			.openAuthoringEnvironment()
 			.createCourse(courseTitle)
 			.clickToolbarBack();
 
 		//create a course element of type CP with the CP that we create above
-		CoursePageFragment courseRuntime = CoursePageFragment.getCourse(browser)
+		courseRuntime
 			.edit()
 			.createNode("info")
 			.autoPublish();
@@ -625,14 +631,16 @@ public class AssessmentTest extends Deployments {
 		
 		// return to course
 		courseRuntime = members
-				.clickToolbarBack()
-				.efficiencyStatementConfiguration()
-				.clickToolbarBack()
-				.efficiencyStatementConfiguration()
-				.enableCertificates(false)
-				.enableRecertification()
-				.save()
-				.clickToolbarBack();
+			.clickToolbarBack()
+			.settings()
+			.efficiencyStatementConfiguration()
+			.enableCertificates(false)
+			.enableRecertification()
+			.save()
+			.clickToolbarBack();
+		//publish the course
+		courseRuntime
+			.publish();
 		//create a certificate
 		courseRuntime
 			.assessmentTool()
@@ -702,9 +710,14 @@ public class AssessmentTest extends Deployments {
 			.selectTabScore()
 			.enableRootScoreByNodes()
 			.autoPublish()
+			.settings()
 			.accessConfiguration()
 			.setUserAccess(UserAccess.membersOnly)
+			.save()
 			.clickToolbarBack();
+		//publish the course
+		courseRuntime
+			.publish();
 		
 		//add a participant to the course
 		MembersPage members = courseRuntime
@@ -719,12 +732,13 @@ public class AssessmentTest extends Deployments {
 		
 		// return to course
 		courseRuntime = members
-				.clickToolbarBack()
-				.efficiencyStatementConfiguration()
-				.enableCertificates(true)
-				.enableRecertification()
-				.save()
-				.clickToolbarBack();
+			.clickToolbarBack()
+			.settings()
+			.efficiencyStatementConfiguration()
+			.enableCertificates(true)
+			.enableRecertification()
+			.save()
+			.clickToolbarBack();
 		
 		//Participant log in
 		LoginPage reiLoginPage = LoginPage.getLoginPage(reiBrowser, deploymentUrl);
@@ -807,8 +821,10 @@ public class AssessmentTest extends Deployments {
 			.selectTabScore()
 			.enableRootScoreByNodes()
 			.autoPublish()
+			.settings()
 			.accessConfiguration()
-			.setUserAccess(UserAccess.registred);
+			.setUserAccess(UserAccess.registred)
+			.save();
 		
 		//go to members management
 		CoursePageFragment courseRuntime = courseEditor.clickToolbarBack();
@@ -928,7 +944,7 @@ public class AssessmentTest extends Deployments {
 		
 		courseEditor
 			.publish()
-			.quickPublish(UserAccess.guest);
+			.quickPublish(UserAccess.membersOnly);
 		
 		MembersPage membersPage = courseEditor
 			.clickToolbarBack()
@@ -962,6 +978,7 @@ public class AssessmentTest extends Deployments {
 		CoursePageFragment coursePage = membersPage
 			.clickToolbarBack();
 		coursePage
+			.publish()// publish the course for the participants
 			.clickTree()
 			.selectWithTitle(gtaNodeTitle);
 		
@@ -1265,11 +1282,16 @@ public class AssessmentTest extends Deployments {
 			.selectTabScore()
 			.enableRootScoreByNodes()
 			.autoPublish()
+			.settings()
 			.accessConfiguration()
-			.setUserAccess(UserAccess.membersOnly);
+			.setUserAccess(UserAccess.membersOnly)
+			.save();
+		CoursePageFragment courseRuntime = courseEditor
+			.clickToolbarBack();
+		courseRuntime
+			.publish();// publish the course
 		
 		//go to members management
-		CoursePageFragment courseRuntime = courseEditor.clickToolbarBack();
 		MembersPage members = courseRuntime
 			.members();
 		members

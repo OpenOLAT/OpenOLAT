@@ -349,7 +349,7 @@ public class RepositoryEntryAuthorQueries {
 				sb.append(" v.key in (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
 				  .append("     where rel.group.key=membership.group.key and membership.identity.key=:identityKey")
 				  .append("     and membership.role not ").in(OrganisationRoles.guest, OrganisationRoles.invitee, GroupRoles.waiting)
-				  .append(") and v.allUsers=true and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed());
+				  .append(") and (v.allUsers=true or v.bookable=true) and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed());
 			} else if(params.isDeleted() && (roles.isAdministrator() || roles.isLearnResourceManager())) {
 				sb.append(" v.key in (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
 				  .append("     where rel.group.key=membership.group.key and membership.identity.key=:identityKey")
@@ -366,7 +366,7 @@ public class RepositoryEntryAuthorQueries {
 				  .append(" or v.key in (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
 				  .append("     where rel.group.key=membership.group.key and membership.identity.key=:identityKey")
 				  .append("     and membership.role not ").in(OrganisationRoles.invitee, OrganisationRoles.guest, GroupRoles.waiting)
-				  .append("     and v.allUsers=true and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed())
+				  .append("     and (v.allUsers=true or v.bookable=true) and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed())
 				  .append(")");
 	
 				if(roles.isAuthor()) {

@@ -26,11 +26,11 @@
 
 package org.olat.core.gui.control.generic.textmarker;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.lang.StringEscapeUtils;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.glossary.GlossaryItem;
 import org.olat.core.commons.modules.glossary.GlossaryItemManager;
 import org.olat.core.util.StringHelper;
@@ -49,32 +49,28 @@ public class TextMarkerJsGenerator {
 
 	
 	public static String loadGlossaryItemListAsJSCommandsString(VFSContainer glossaryFolder, String domID) {
-		ArrayList<GlossaryItem> glossaryItemArr = GlossaryItemManager.getInstance().getGlossaryItemListByVFSItem(glossaryFolder);
-		StringBuilder sb = new StringBuilder();		
+		List<GlossaryItem> glossaryItemArr = CoreSpringFactory.getImpl(GlossaryItemManager.class).getGlossaryItemListByVFSItem(glossaryFolder);
+		StringBuilder sb = new StringBuilder(4096);		
 		sb.append("o_info.glossaryTermArray_").append(domID).append(" = ").append(buildJSArrayString(glossaryItemArr));
 		// start highlighting process with this array
 		sb.append("jQuery(function() {o_tm_highlightFromArray(o_info.glossaryTermArray_").append(domID).append(", \"").append(domID).append("\")});");
-		
 		return sb.toString();
 	}
 	
 	public static String loadGlossaryItemListAsJSArray(VFSContainer glossaryFolder) {
-		List<GlossaryItem> glossaryItemArr = GlossaryItemManager.getInstance().getGlossaryItemListByVFSItem(glossaryFolder);
-
-		StringBuilder sb = new StringBuilder();		
-		sb.append(buildJSArrayString(glossaryItemArr));
-		return sb.toString();		
+		List<GlossaryItem> glossaryItemArr = CoreSpringFactory.getImpl(GlossaryItemManager.class).getGlossaryItemListByVFSItem(glossaryFolder);
+		return buildJSArrayString(glossaryItemArr).toString();		
 	}
 	
 	/*
 	 * build array of glossaryTerms containing array with term, flexion, synonym...
 	 */
 	public static StringBuilder buildJSArrayString(List<GlossaryItem> glossaryItemArr){
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(4096);
 		sb.append("new Array(");
 		for (Iterator<GlossaryItem> iterator = glossaryItemArr.iterator(); iterator.hasNext();) {
 			GlossaryItem glossaryItem = iterator.next();
-			ArrayList<String> allHighlightStrings = glossaryItem.getAllStringsToMarkup();
+			List<String> allHighlightStrings = glossaryItem.getAllStringsToMarkup();
 			sb.append("new Array(\"");
 			for (Iterator<String> iterator2 = allHighlightStrings.iterator(); iterator2.hasNext();) {
 				String termFlexionSynonym = iterator2.next();

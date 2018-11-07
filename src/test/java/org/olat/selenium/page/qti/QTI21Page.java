@@ -23,10 +23,10 @@ import java.io.File;
 import java.util.List;
 
 import org.junit.Assert;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.graphene.Position;
-import org.olat.selenium.page.repository.RepositoryAccessPage;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.WebDriver;
@@ -44,7 +44,6 @@ import org.openqa.selenium.support.ui.Select;
 public class QTI21Page {
 	
 	private final By toolsMenu = By.cssSelector("ul.o_sel_repository_tools");
-	private final By settingsMenu = By.cssSelector("ul.o_sel_course_settings");
 	
 	private WebDriver browser;
 	
@@ -960,34 +959,16 @@ public class QTI21Page {
 		return editor;
 	}
 	
-	public QTI21OptionsPage options() {
-		if(!browser.findElement(settingsMenu).isDisplayed()) {
-			openSettingsMenu();
+	public QTI21SettingsPage settings() {
+		if(!browser.findElement(toolsMenu).isDisplayed()) {
+			openToolsMenu();
 		}
 		
-		By optionsBy = By.cssSelector("ul.o_sel_course_settings a.o_sel_qti_resource_options");
+		By optionsBy = By.cssSelector("ul.o_sel_repository_tools a.o_sel_repo_settings");
 		OOGraphene.waitElement(optionsBy, browser);
 		browser.findElement(optionsBy).click();
 		OOGraphene.waitBusy(browser);
-		return new QTI21OptionsPage(browser);
-	}
-	
-	/**
-	 * Open the access configuration
-	 * 
-	 * @return
-	 */
-	public RepositoryAccessPage accessConfiguration() {
-		if(!browser.findElement(settingsMenu).isDisplayed()) {
-			openSettingsMenu();
-		}
-		By accessConfigBy = By.cssSelector("a.o_sel_course_access");
-		browser.findElement(accessConfigBy).click();
-		OOGraphene.waitBusy(browser);
-
-		By mainId = By.id("o_main_container");
-		OOGraphene.waitElement(mainId, 5, browser);
-		return new RepositoryAccessPage(browser);
+		return new QTI21SettingsPage(browser);
 	}
 	
 	/**
@@ -1001,19 +982,32 @@ public class QTI21Page {
 		return this;
 	}
 	
-	public QTI21Page openSettingsMenu() {
-		By settingsMenuCaret = By.cssSelector("a.o_sel_course_settings");
-		OOGraphene.waitElement(settingsMenuCaret, browser);
-		browser.findElement(settingsMenuCaret).click();
-		OOGraphene.waitElement(settingsMenu, browser);
-		return this;
-	}
-	
 	public QTI21Page clickToolbarBack() {
 		OOGraphene.closeBlueMessageWindow(browser);
 		browser.findElement(NavigationPage.toolbarBackBy).click();
 		OOGraphene.waitBusy(browser);
 		return QTI21Page.getQTI21Page(browser);
+	}
+	
+	public QTI21Page publish() {
+		return changeStatus(RepositoryEntryStatusEnum.published);
+	}
+	
+	public QTI21Page changeStatus(RepositoryEntryStatusEnum status) {
+		By statusMenuBy = By.cssSelector("ul.o_entry_tools_status");
+		if(!browser.findElement(statusMenuBy).isDisplayed()) {
+			By statusMenuCaret = By.cssSelector("a.o_entry_tools_status");
+			browser.findElement(statusMenuCaret).click();
+			OOGraphene.waitElement(statusMenuBy, browser);
+		}
+		
+		By statusBy = By.cssSelector("ul.o_entry_tools_status>li>a.o_entry_status_" + status.name());
+		browser.findElement(statusBy).click();
+		OOGraphene.waitBusy(browser);
+		
+		By statusViewBy = By.xpath("//li[contains(@class,'o_tool_dropdown')]/a[contains(@class,'o_entry_tools_status') and contains(@class,'o_entry_status_" + status + "')]");
+		OOGraphene.waitElement(statusViewBy, browser);
+		return this;
 	}
 	
 	public enum TrueFalse {

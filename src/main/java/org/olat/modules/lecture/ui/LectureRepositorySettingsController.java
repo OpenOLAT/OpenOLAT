@@ -47,6 +47,7 @@ import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.ui.settings.ReloadSettingsEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -175,6 +176,7 @@ public class LectureRepositorySettingsController extends FormBasicController {
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
+		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 		saveButton = uifactory.addFormSubmitButton("save", buttonsCont);
 		saveButton.setVisible(!lectureConfigManaged || overrideManaged);
 	}
@@ -324,9 +326,14 @@ public class LectureRepositorySettingsController extends FormBasicController {
 		lectureConfig = lectureService.updateRepositoryEntryLectureConfiguration(lectureConfig);
 		dbInstance.commit();
 		lectureService.syncCalendars(entry);
-		fireEvent(ureq, Event.DONE_EVENT);
+		fireEvent(ureq, new ReloadSettingsEvent());
 	}
 	
+	@Override
+	protected void formCancelled(UserRequest ureq) {
+		fireEvent(ureq, Event.CANCELLED_EVENT);
+	}
+
 	private void doOverrideManagedResource() {
 		overrideManagedResource(true);
 	}

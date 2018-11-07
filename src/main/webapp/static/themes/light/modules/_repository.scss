@@ -108,6 +108,25 @@
 
 .o_ac_configuration {
 	span.o_ac_infos { font-weight:normal; color: grey; }
+	
+	div.o_ac_method {
+		background-color: #efefef;
+		padding: 5px;
+		border-radius: 3px;
+	}
+	div.o_ac_methods.form-group {
+		padding-bottom: 0;
+		margin-bottom: 0;
+	}
+}
+
+.o_repo_with_explanation {
+	padding-bottom: 0;
+	margin-bottom: 0;
+}
+
+.o_repo_explanation {
+	color: $brand-warning;
 }
 
 tr.o_entry_closed, tr.o_entry_closed td, tr.o_entry_closed td span,
@@ -117,6 +136,67 @@ tr.o_entry_unpublished, tr.o_entry_unpublished td, tr.o_entry_unpublished td spa
 
 tr.o_entry_deleted {
 
+}
+
+/* dropdown element in toolbar */
+a.o_entry_tools_status,
+.dropdown-toggle.o_entry_tools_status  {
+	@extend %o_labeled;
+}
+.dropdown-toggle.o_entry_tools_status > i {
+	margin: 0 0 3px 0;
+}
+
+.dropdown-menu.o_entry_tools_status {
+	cursor:pointer;
+}
+
+/* status element in dropdown menu */
+a.o_entry_tools_status {
+	margin: 0 2px 2px 2px;
+	text-align: left;
+}
+
+a.o_entry_status_preparation {
+    background-color: $o-repo-preparation-color !important;
+    border-color: $o-repo-preparation-color;
+    color: $o-repo-status-color-bright !important;
+}
+
+a.o_entry_status_review {
+    background-color:$o-repo-review-color !important;
+    border-color: $o-repo-review-color;
+    color: $o-repo-status-color-bright !important;
+}
+
+a.o_entry_status_coachpublished {
+    background-color: $o-repo-coachpublished-color !important;
+    border-color: $o-repo-coachpublished-color;
+    color: $o-repo-status-color-bright !important;
+}
+
+a.o_entry_status_published {
+    background-color: $o-repo-published-color !important;
+    border-color: $o-repo-published-color;
+    color: $o-repo-status-color-bright !important;
+}
+
+a.o_entry_status_closed {
+    background-color: $o-repo-closed-color !important;
+    border-color: $o-repo-closed-color;
+    color: $o-repo-status-color-bright !important;
+}
+
+a.o_entry_status_trash {
+    background-color: $o-repo-trash-color !important;
+    border-color: $o-repo-trash-color;
+    color: $o-repo-status-color-bright !important;
+}
+
+a.o_entry_status_deleted {
+    background-color: $o-repo-deleted-color !important;
+    border-color: $o-repo-deleted-color;
+    color: $o-repo-status-color-bright !important;
 }
 
 .o_repo_status_filter {

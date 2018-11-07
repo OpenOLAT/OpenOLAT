@@ -243,7 +243,7 @@ public class PortfolioV2Test extends Deployments {
 			.openCreateDropDown()
 			.clickCreate(ResourceType.course)
 			.fillCreateForm(courseTitle)
-			.clickToolbarBack();
+			.back();
 		
 		//open course editor
 		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
@@ -309,7 +309,7 @@ public class PortfolioV2Test extends Deployments {
 			.openCreateDropDown()
 			.clickCreate(ResourceType.wiki)
 			.fillCreateForm(title)
-			.assertOnGeneralTab()
+			.assertOnInfos()
 			.clickToolbarBack();
 		
 		//create a page in the wiki
@@ -457,8 +457,10 @@ public class PortfolioV2Test extends Deployments {
 			.selectTabScore()
 			.enableRootScoreByNodes()
 			.autoPublish()
+			.settings()
 			.accessConfiguration()
-			.setUserAccess(UserAccess.membersOnly);
+			.setUserAccess(UserAccess.membersOnly)
+			.save();
 		
 		//go to members management
 		CoursePageFragment courseRuntime = courseEditor.clickToolbarBack();

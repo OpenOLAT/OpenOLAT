@@ -214,7 +214,7 @@ public class RepositoryIndexer extends AbstractHierarchicalIndexer {
 		RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(identity, roles, repositoryEntry);
 		
 		boolean isAllowedToLaunch = false;
-		if (!reSecurity.isEntryAdmin() && reSecurity.canLaunch()) {
+		if (!reSecurity.isEntryAdmin() && !reSecurity.canLaunch() && repositoryEntry.isBookable()) {
 			List<ContextEntry> entries = businessControl.getEntriesDownTheControls();
 			if(entries.size() > 1) {
 				boolean hasAccess = false;

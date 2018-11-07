@@ -115,7 +115,7 @@ public class CourseElementTest extends Deployments {
 		navBar
 			.openAuthoringEnvironment()
 			.createCP(cpTitle)
-			.assertOnGeneralTab();
+			.assertOnInfos();
 		
 		navBar.openCourse(courseTitle);
 		
@@ -227,7 +227,7 @@ public class CourseElementTest extends Deployments {
 		navBar
 			.openAuthoringEnvironment()
 			.createWiki(wikiTitle)
-			.assertOnGeneralTab();
+			.assertOnInfos();
 		
 		navBar.openCourse(courseTitle);
 		
@@ -606,7 +606,7 @@ public class CourseElementTest extends Deployments {
 			.openCreateDropDown()
 			.clickCreate(ResourceType.course)
 			.fillCreateForm(title)
-			.assertOnGeneralTab()
+			.assertOnInfos()
 			.clickToolbarBack();
 		
 		String infoNodeTitle = "Infos - News";
@@ -711,7 +711,7 @@ public class CourseElementTest extends Deployments {
 			.openCreateDropDown()
 			.clickCreate(ResourceType.course)
 			.fillCreateForm(title)
-			.assertOnGeneralTab()
+			.assertOnInfos()
 			.clickToolbarBack();
 		
 		//add a participant
@@ -844,7 +844,7 @@ public class CourseElementTest extends Deployments {
 			.openCreateDropDown()
 			.clickCreate(ResourceType.course)
 			.fillCreateForm(title)
-			.assertOnGeneralTab()
+			.assertOnInfos()
 			.clickToolbarBack();
 		
 		//add 2 participants
@@ -986,7 +986,7 @@ public class CourseElementTest extends Deployments {
 			.openCreateDropDown()
 			.clickCreate(ResourceType.course)
 			.fillCreateForm(title)
-			.assertOnGeneralTab()
+			.assertOnInfos()
 			.clickToolbarBack();
 		
 		String participantFolderTitle = "ParticipantList";
@@ -1375,11 +1375,15 @@ public class CourseElementTest extends Deployments {
 			.selectTabScore()
 			.enableRootScoreByNodes()
 			.autoPublish()
+			.settings()
 			.accessConfiguration()
-			.setUserAccess(UserAccess.registred);
+			.setUserAccess(UserAccess.registred)
+			.save();
 		
 		//go to members management
 		CoursePageFragment courseRuntime = courseEditor.clickToolbarBack();
+		courseRuntime
+			.publish();
 		MembersPage members = courseRuntime
 			.members();
 		members

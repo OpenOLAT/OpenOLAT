@@ -23,13 +23,13 @@ import java.net.URL;
 import java.util.List;
 
 import org.junit.Assert;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.restapi.support.vo.CourseVO;
 import org.olat.selenium.page.core.BookingPage;
 import org.olat.selenium.page.core.MenuTreePageFragment;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.lecture.LectureRepositoryAdminPage;
 import org.olat.selenium.page.lecture.LecturesRepositoryPage;
-import org.olat.selenium.page.repository.RepositoryAccessPage;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -45,9 +45,6 @@ public class CoursePageFragment {
 	public static final By courseRun = By.className("o_course_run");
 	public static final By toolsMenu = By.cssSelector("ul.o_sel_course_tools");
 	public static final By toolsMenuCaret = By.cssSelector("a.o_sel_course_tools");
-
-	public static final By settingsMenu = By.cssSelector("ul.o_sel_course_settings");
-	public static final By settingsMenuCaret = By.cssSelector("a.o_sel_course_settings");
 	
 	public static final By editCourseBy = By.className("o_sel_course_editor");
 	public static final By accessConfigBy = By.className("o_sel_course_access");
@@ -153,19 +150,9 @@ public class CoursePageFragment {
 		return this;
 	}
 	
-	/**
-	 * Open the settings drop-down
-	 * @return
-	 */
-	public CoursePageFragment openSettingsMenu() {
-		browser.findElement(settingsMenuCaret).click();
-		OOGraphene.waitElement(settingsMenu, browser);
-		return this;
-	}
-	
 	public RemindersPage reminders() {
-		if(!browser.findElement(settingsMenu).isDisplayed()) {
-			openSettingsMenu();
+		if(!browser.findElement(toolsMenu).isDisplayed()) {
+			openToolsMenu();
 		}
 		By reminderBy = By.cssSelector("a.o_sel_course_reminders");
 		browser.findElement(reminderBy).click();
@@ -173,15 +160,16 @@ public class CoursePageFragment {
 		return new RemindersPage(browser);
 	}
 	
-	public CourseOptionsPage options() {
-		if(!browser.findElement(settingsMenu).isDisplayed()) {
-			openSettingsMenu();
+	public CourseSettingsPage settings() {
+		if(!browser.findElement(toolsMenu).isDisplayed()) {
+			openToolsMenu();
 		}
 		
-		By reminderBy = By.cssSelector("a.o_sel_course_options");
+		By reminderBy = By.cssSelector("a.o_sel_course_settings");
 		browser.findElement(reminderBy).click();
 		OOGraphene.waitBusy(browser);
-		return new CourseOptionsPage(browser);
+
+		return new CourseSettingsPage(browser);
 	}
 	
 	/**
@@ -228,7 +216,7 @@ public class CoursePageFragment {
 		OOGraphene.waitBusy(browser);
 
 		By mainId = By.id("o_main");
-		OOGraphene.waitElement(mainId, 5, browser);
+		OOGraphene.waitElement(mainId, browser);
 		return new MembersPage(browser);
 	}
 	
@@ -245,38 +233,17 @@ public class CoursePageFragment {
 	}
 	
 	public AssessmentModePage assessmentConfiguration() {
-		if(!browser.findElement(settingsMenu).isDisplayed()) {
-			openSettingsMenu();
+		if(!browser.findElement(toolsMenu).isDisplayed()) {
+			openToolsMenu();
 		}
 		browser.findElement(assessmentModeBy).click();
 		OOGraphene.waitBusy(browser);
 		return new AssessmentModePage(browser);
 	}
 	
-	public RepositoryAccessPage accessConfiguration() {
-		if(!browser.findElement(settingsMenu).isDisplayed()) {
-			openSettingsMenu();
-		}
-		browser.findElement(accessConfigBy).click();
-		OOGraphene.waitBusy(browser);
-
-		By mainId = By.id("o_main_container");
-		OOGraphene.waitElement(mainId, 5, browser);
-		return new RepositoryAccessPage(browser);
-	}
-	
-	public EfficiencyStatementConfigurationPage efficiencyStatementConfiguration() {
-		if(!browser.findElement(settingsMenu).isDisplayed()) {
-			openSettingsMenu();
-		}
-		browser.findElement(efficiencyStatementsBy).click();
-		OOGraphene.waitBusy(browser);
-		return new EfficiencyStatementConfigurationPage(browser);
-	}
-	
 	public LectureRepositoryAdminPage lecturesAdministration() {
-		if(!browser.findElement(settingsMenu).isDisplayed()) {
-			openSettingsMenu();
+		if(!browser.findElement(toolsMenu).isDisplayed()) {
+			openToolsMenu();
 		}
 		browser.findElement(lecturesAdministrationBy).click();
 		OOGraphene.waitBusy(browser);
@@ -301,5 +268,26 @@ public class CoursePageFragment {
 		browser.findElement(bookingBy).click();
 		OOGraphene.waitBusy(browser);
 		return new BookingPage(browser);
+	}
+	
+	public CoursePageFragment publish() {
+		return changeStatus(RepositoryEntryStatusEnum.published);
+	}
+	
+	public CoursePageFragment changeStatus(RepositoryEntryStatusEnum status) {
+		By statusMenuBy = By.cssSelector("ul.o_entry_tools_status");
+		if(!browser.findElement(statusMenuBy).isDisplayed()) {
+			By statusMenuCaret = By.cssSelector("a.o_entry_tools_status");
+			browser.findElement(statusMenuCaret).click();
+			OOGraphene.waitElement(statusMenuBy, browser);
+		}
+		
+		By statusBy = By.cssSelector("ul.o_entry_tools_status>li>a.o_entry_status_" + status.name());
+		browser.findElement(statusBy).click();
+		OOGraphene.waitBusy(browser);
+		
+		By statusViewBy = By.xpath("//li[contains(@class,'o_tool_dropdown')]/a[contains(@class,'o_entry_tools_status') and contains(@class,'o_entry_status_" + status + "')]");
+		OOGraphene.waitElement(statusViewBy, browser);
+		return this;
 	}
 }

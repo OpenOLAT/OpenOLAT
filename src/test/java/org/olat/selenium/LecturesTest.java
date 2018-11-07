@@ -38,6 +38,7 @@ import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.Participant;
 import org.olat.selenium.page.User;
 import org.olat.selenium.page.course.CoursePageFragment;
+import org.olat.selenium.page.course.CourseSettingsPage;
 import org.olat.selenium.page.lecture.LectureRepositoryAdminListPage;
 import org.olat.selenium.page.lecture.LectureRepositoryAdminPage;
 import org.olat.selenium.page.lecture.LectureRepositoryParticipantsPage;
@@ -118,15 +119,19 @@ public class LecturesTest extends Deployments {
 			.openCreateDropDown()
 			.clickCreate(ResourceType.course)
 			.fillCreateForm(title)
-			.assertOnGeneralTab()
+			.assertOnInfos()
 			.clickToolbarBack();
 		
 		//set access
 		CoursePageFragment course = new CoursePageFragment(browser);
 		course
+			.settings()
 			.accessConfiguration()
 			.setUserAccess(UserAccess.membersOnly)
+			.save()
 			.clickToolbarBack();
+		course
+			.publish();
 		
 		//add a coach
 		course
@@ -147,17 +152,20 @@ public class LecturesTest extends Deployments {
 			.nextOverview()
 			.nextPermissions()
 			.finish();
-		
+
 		//enable the lectures
-		LectureRepositoryAdminPage lecturesAdmin = course
-			.lecturesAdministration();
-		lecturesAdmin
-			.settings()
+		CourseSettingsPage settings = course
+			.settings();
+		settings
+			.lecturesConfiguration()
 			.enableLectures()
 			.overrideDefaultSettings()
 			.saveSettings();
+		settings
+			.clickToolbarBack();
 		
-		LectureRepositoryAdminListPage lectureList = lecturesAdmin
+		LectureRepositoryAdminListPage lectureList = course
+			.lecturesAdministration()
 			.lectureList();
 		
 		Calendar cal = Calendar.getInstance();
@@ -249,15 +257,19 @@ public class LecturesTest extends Deployments {
 			.openCreateDropDown()
 			.clickCreate(ResourceType.course)
 			.fillCreateForm(title)
-			.assertOnGeneralTab()
+			.assertOnInfos()
 			.clickToolbarBack();
 		
 		//set access
 		CoursePageFragment course = new CoursePageFragment(browser);
 		course
+			.settings()
 			.accessConfiguration()
 			.setUserAccess(UserAccess.membersOnly)
+			.save()
 			.clickToolbarBack();
+		course
+			.publish();
 		
 		//add a coach
 		course
@@ -280,15 +292,18 @@ public class LecturesTest extends Deployments {
 			.finish();
 		
 		//enable the lectures
-		LectureRepositoryAdminPage lecturesAdmin = course
-			.lecturesAdministration();
-		lecturesAdmin
-			.settings()
+		CourseSettingsPage settings = course
+			.settings();
+		settings
+			.lecturesConfiguration()
 			.enableLectures()
 			.overrideDefaultSettings()
 			.saveSettings();
+		settings
+			.clickToolbarBack();
 		
-		LectureRepositoryAdminListPage lectureList = lecturesAdmin
+		LectureRepositoryAdminListPage lectureList = course
+			.lecturesAdministration()
 			.lectureList();
 		
 		Calendar cal = Calendar.getInstance();
@@ -377,7 +392,7 @@ public class LecturesTest extends Deployments {
 			.openCreateDropDown()
 			.clickCreate(ResourceType.course)
 			.fillCreateForm(title)
-			.assertOnGeneralTab()
+			.assertOnInfos()
 			.clickToolbarBack();
 
 		CoursePageFragment course = new CoursePageFragment(browser);
@@ -391,15 +406,19 @@ public class LecturesTest extends Deployments {
 			.quickImport(participant1, participant2);
 		
 		//enable the lectures
-		LectureRepositoryAdminPage lecturesAdmin = course
-			.lecturesAdministration();
-		lecturesAdmin
-			.settings()
+		CourseSettingsPage settings = course
+			.settings();
+		settings
+			.lecturesConfiguration()
 			.enableLectures()
 			.overrideDefaultSettings()
 			.saveSettings();
+		settings
+			.clickToolbarBack();
 		
 		//add a lecture
+		LectureRepositoryAdminPage lecturesAdmin = course
+			.lecturesAdministration();
 		LectureRepositoryAdminListPage lectureList = lecturesAdmin
 			.lectureList();
 		
@@ -494,15 +513,19 @@ public class LecturesTest extends Deployments {
 			.openCreateDropDown()
 			.clickCreate(ResourceType.course)
 			.fillCreateForm(title)
-			.assertOnGeneralTab()
+			.assertOnInfos()
 			.clickToolbarBack();
 		
 		//set access
 		CoursePageFragment course = new CoursePageFragment(browser);
 		course
+			.settings()
 			.accessConfiguration()
 			.setUserAccess(UserAccess.membersOnly)
+			.save()
 			.clickToolbarBack();
+		course
+			.publish();
 		
 		//add a coach
 		course
@@ -525,15 +548,18 @@ public class LecturesTest extends Deployments {
 			.finish();
 		
 		//enable the lectures
-		LectureRepositoryAdminPage lecturesAdmin = course
-			.lecturesAdministration();
-		lecturesAdmin
-			.settings()
+		CourseSettingsPage settings = course
+			.settings();
+		settings
+			.lecturesConfiguration()
 			.enableLectures()
 			.overrideDefaultSettings()
 			.saveSettings();
-		
-		LectureRepositoryAdminListPage lectureList = lecturesAdmin
+		settings
+			.clickToolbarBack();
+
+		LectureRepositoryAdminListPage lectureList = course
+			.lecturesAdministration()
 			.lectureList();
 		
 		Calendar cal = Calendar.getInstance();
@@ -604,21 +630,24 @@ public class LecturesTest extends Deployments {
 			.openCreateDropDown()
 			.clickCreate(ResourceType.course)
 			.fillCreateForm(title)
-			.assertOnGeneralTab()
+			.assertOnInfos()
 			.clickToolbarBack();
 		
 		CoursePageFragment course = new CoursePageFragment(browser);
 		//enable the lectures
-		LectureRepositoryAdminPage lecturesAdmin = course
-			.lecturesAdministration();
-		lecturesAdmin
-			.settings()
+		CourseSettingsPage settings = course
+			.settings();
+		settings
+			.lecturesConfiguration()
 			.enableLectures()
 			.overrideDefaultSettings()
 			.saveSettings();
+		settings
+			.clickToolbarBack();
 		
-		LectureRepositoryAdminListPage lectureList = lecturesAdmin
-				.lectureList();
+		LectureRepositoryAdminListPage lectureList = course
+			.lecturesAdministration()
+			.lectureList();
 		
 		// import the lecture blocks
 		lectureList

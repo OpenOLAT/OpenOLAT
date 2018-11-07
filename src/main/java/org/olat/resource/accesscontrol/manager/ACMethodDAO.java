@@ -90,9 +90,7 @@ public class ACMethodDAO {
 				((AbstractAccessMethod)method).setCreationDate(now);
 				((AbstractAccessMethod)method).setLastModified(now);
 				dbInstance.getCurrentEntityManager().persist(method);
-			} catch (InstantiationException e) {
-				log.error("Failed to instantiate an access method", e);
-			} catch (IllegalAccessException e) {
+			} catch (InstantiationException | IllegalAccessException e) {
 				log.error("Failed to instantiate an access method", e);
 			}
 		} else {
@@ -160,8 +158,7 @@ public class ACMethodDAO {
 			.append(" and type(method) =").append(type.getName());
 
 		TypedQuery<AccessMethod> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), AccessMethod.class);
-		List<AccessMethod> methods = query.getResultList();
-		return methods;
+		return query.getResultList();
 	}
 
 	public List<OfferAccess> getOfferAccess(Offer offer, boolean valid) {
@@ -270,7 +267,7 @@ public class ACMethodDAO {
 		}
 
 		List<Object[]> rawResults = query.getResultList();
-		Map<Long,OLATResourceAccess> rawResultsMap = new HashMap<Long,OLATResourceAccess>();
+		Map<Long,OLATResourceAccess> rawResultsMap = new HashMap<>();
 		for(Object[] rawResult:rawResults) {
 			AccessMethod method = (AccessMethod)rawResult[0];
 			OLATResource resource = (OLATResource)rawResult[1];
@@ -289,7 +286,7 @@ public class ACMethodDAO {
 			}
 		}
 
-		return new ArrayList<OLATResourceAccess>(rawResultsMap.values());
+		return new ArrayList<>(rawResultsMap.values());
 	}
 
 	public OfferAccess createOfferAccess(Offer offer, AccessMethod method) {

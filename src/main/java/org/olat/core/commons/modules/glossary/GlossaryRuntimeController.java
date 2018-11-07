@@ -19,22 +19,12 @@
  */
 package org.olat.core.commons.modules.glossary;
 
-import java.util.List;
-
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.dropdown.Dropdown;
-import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.id.context.ContextEntry;
-import org.olat.core.id.context.StateEntry;
-import org.olat.modules.glossary.GlossaryEditSettingsController;
-import org.olat.modules.glossary.GlossaryRegisterSettingsController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.repository.ui.RepositoryEntryRuntimeController;
+import org.olat.repository.ui.RepositoryEntrySettingsController;
 
 /**
  * 
@@ -44,71 +34,13 @@ import org.olat.repository.ui.RepositoryEntryRuntimeController;
  */
 public class GlossaryRuntimeController extends RepositoryEntryRuntimeController {
 	
-	private Link registerLink, permissionLink;
-	
 	public GlossaryRuntimeController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry re, RepositoryEntrySecurity reSecurity, RuntimeControllerCreator runtimeControllerCreator) {
 		super(ureq, wControl, re, reSecurity, runtimeControllerCreator);
 	}
 
 	@Override
-	protected void initSettingsTools(Dropdown settingsDropdown) {
-		super.initSettingsTools(settingsDropdown);
-		if (reSecurity.isEntryAdmin()) {
-			registerLink = LinkFactory.createToolLink("register", translate("tab.glossary.register"), this, "o_sel_glossary_register");
-			registerLink.setIconLeftCSS("o_icon o_icon_pageing o_icon-fw");
-			settingsDropdown.addComponent(registerLink);
-			
-			permissionLink = LinkFactory.createToolLink("permissions", translate("tab.glossary.edit"), this, "o_sel_glossary_permission");
-			permissionLink.setIconLeftCSS("o_icon o_icon_edit o_icon-fw");
-			settingsDropdown.addComponent(permissionLink);
-		}
-	}
-	
-	@Override
-	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		entries = removeRepositoryEntry(entries);
-		if(entries != null && entries.size() > 0) {
-			String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
-			if("GlossarySettings".equalsIgnoreCase(type)) {
-				if (reSecurity.isEntryAdmin()) {
-					doRegister(ureq);
-				}
-			} else if("GlossaryPermissions".equalsIgnoreCase(type)) {
-				if (reSecurity.isEntryAdmin()) {
-					doPermission(ureq);
-				}
-			}
-		}
-		super.activate(ureq, entries, state);
-	}
-
-	@Override
-	protected void event(UserRequest ureq, Component source, Event event) {
-		if(registerLink == source) {
-			doRegister(ureq);
-		} else if(permissionLink == source) {
-			doPermission(ureq);
-		} else {
-			super.event(ureq, source, event);
-		}
-	}
-	
-	private void doRegister(UserRequest ureq) {
-		RepositoryEntry glossary = getRepositoryEntry();
-		WindowControl bwControl = getSubWindowControl("GlossarySettings");
-		GlossaryRegisterSettingsController glossRegisterSetCtr
-			= new GlossaryRegisterSettingsController(ureq, addToHistory(ureq, bwControl), glossary.getOlatResource());
-		pushController(ureq, translate("tab.glossary.register"), glossRegisterSetCtr);
-		setActiveTool(registerLink);
-	}
-	
-	private void doPermission(UserRequest ureq) {
-		RepositoryEntry glossary = getRepositoryEntry();
-		WindowControl bwControl = getSubWindowControl("GlossaryPermissions");
-		GlossaryEditSettingsController glossEditCtr
-			= new GlossaryEditSettingsController(ureq, addToHistory(ureq, bwControl), glossary.getOlatResource());
-		pushController(ureq, translate("tab.glossary.edit"), glossEditCtr);
-		setActiveTool(permissionLink);
+	protected RepositoryEntrySettingsController createSettingsController(UserRequest ureq, WindowControl bwControl, RepositoryEntry refreshedEntry) {
+		return new GlossarySettingsController(ureq, bwControl, toolbarPanel, refreshedEntry);
 	}
 }

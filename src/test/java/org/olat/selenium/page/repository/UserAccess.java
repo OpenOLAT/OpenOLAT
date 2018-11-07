@@ -28,5 +28,6 @@ package org.olat.selenium.page.repository;
 public enum UserAccess {
 	registred,		// published -> all users
 	guest,			// published -> all users, guests
-	membersOnly		// published
+	membersOnly,		// published
+	booking
 }

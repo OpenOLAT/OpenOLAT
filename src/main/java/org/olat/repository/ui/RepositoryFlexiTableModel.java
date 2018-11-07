@@ -175,15 +175,14 @@ implements SortableFlexiTableDataModel<RepositoryEntry> {
 	}
 	
 	private Object getAccessControl(RepositoryEntry re) {
-		if (!re.isAllUsers() && !re.isGuests()) {//TODO repo access
+		if(re.isBookable()) {
+			return repoEntriesWithOffer.get(re.getOlatResource().getKey());
+		}
+		if (!re.isAllUsers() && !re.isGuests()) {
 			// members only always show lock icon
 			return Collections.singletonList("o_ac_membersonly");
 		}
-		OLATResourceAccess access = repoEntriesWithOffer.get(re.getOlatResource().getKey());
-		if(access == null) {
-			return null;						
-		}
-		return access;
+		return null;
 	}
 	
 	private String getFullname(String author) {

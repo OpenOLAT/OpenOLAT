@@ -21,6 +21,7 @@ package org.olat.core.commons.modules.glossary;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,21 +32,20 @@ import java.util.Properties;
 
 import org.olat.core.gui.control.generic.textmarker.TextMarker;
 import org.olat.core.gui.control.generic.textmarker.TextMarkerManager;
-import org.olat.core.gui.control.generic.textmarker.TextMarkerManagerImpl;
 import org.olat.core.helpers.Settings;
-import org.olat.core.id.OLATResourceable;
-import org.olat.core.manager.BasicManager;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
-import org.olat.core.util.coordinate.SyncerExecutor;
-import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.xml.XStreamHelper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.core.util.QuickWriter;
@@ -62,9 +62,11 @@ import com.thoughtworks.xstream.io.xml.XppDriver;
  * 
  * @author Roman Haag, frentix GmbH, roman.haag@frentix.com
  */
-public class GlossaryItemManager extends BasicManager {
-
-	private static GlossaryItemManager INSTANCE;
+@Service
+public class GlossaryItemManager {
+	
+	private static final OLog log = Tracing.createLoggerFor(GlossaryItemManager.class);
+	
 	private static final String OLD_GLOSSARY_FILENAME = "glossary.textmarker.xml";
 	private static final String GLOSSARY_FILENAME = "glossary.xml";
 	private static final String XML_GLOSSARY_ITEM_NAME = "glossentry";
@@ -74,21 +76,42 @@ public class GlossaryItemManager extends BasicManager {
 	public static final String MS_KEY = "morphological.service.identifier";
 	public static final String REGISTER_ONOFF = "register.index.enabled";
 	public static final String EDIT_USERS = "edit.by.users.enabled";
-	private static final OLATResourceable glossaryEventBus = OresHelper.createOLATResourceableType("glossaryEventBus");
-	private CacheWrapper<String, ArrayList<GlossaryItem>> glossaryCache;
+	
+	private static final XStream xstreamReader = XStreamHelper.createXStreamInstance();
+	static {
+		xstreamReader.alias(XML_GLOSSARY_ITEM_NAME, GlossaryItem.class);
+		xstreamReader.alias(XML_REVISION_NAME, Revision.class);
+	}
+	
+	private static final XStream xstreamWriter = new XStream(new XppDriver() {
+		@Override
+		public HierarchicalStreamWriter createWriter(Writer out) {
+			return new PrettyPrintWriter(out) {
+				@Override
+				protected void writeText(QuickWriter writer, String text) {
+					if (text.contains("<")||text.contains(">")||text.contains("&")){
+						writer.write("<![CDATA[");
+						writer.write(text);
+						writer.write("]]>");
+					} else {
+						writer.write(text);
+					}
+				}
+			};
+		}
+	});
+	
+	static {
+		xstreamWriter.alias(XML_GLOSSARY_ITEM_NAME, GlossaryItem.class);
+		xstreamWriter.alias(XML_REVISION_NAME, Revision.class);
+	}
+
+	private CacheWrapper<String, List<GlossaryItem>> glossaryCache;
+	
+	@Autowired
+	private TextMarkerManager textMarkerManager;
+	@Autowired
 	private CoordinatorManager coordinatorManager;
-
-	/**
-	 * [spring]
-	 */
-	private GlossaryItemManager(CoordinatorManager coordinatorManager) {
-		this.coordinatorManager = coordinatorManager;
-		INSTANCE = this;
-	}
-
-	public static GlossaryItemManager getInstance() {
-		return INSTANCE;
-	}
 
 	/**
 	 * used to save new or changed entries in List
@@ -96,7 +119,7 @@ public class GlossaryItemManager extends BasicManager {
 	 * @param olatResource
 	 * @param glossItemList
 	 */
-	public void saveGlossaryItemList(VFSContainer glossaryFolder, ArrayList<GlossaryItem> glossItemList) {
+	public void saveGlossaryItemList(VFSContainer glossaryFolder, List<GlossaryItem> glossItemList) {
 		VFSLeaf glossaryFile = getGlossaryFile(glossaryFolder);
 		saveToFile(glossaryFile, glossItemList);
 		glossItemList = removeEmptyGlossaryItems(glossItemList);
@@ -108,8 +131,8 @@ public class GlossaryItemManager extends BasicManager {
 	 * @param glossItemList
 	 * @return
 	 */
-	private ArrayList<GlossaryItem> removeEmptyGlossaryItems(ArrayList<GlossaryItem> glossItemList){
-		ArrayList<GlossaryItem> newList = new ArrayList<GlossaryItem>();
+	private List<GlossaryItem> removeEmptyGlossaryItems(List<GlossaryItem> glossItemList){
+		List<GlossaryItem> newList = new ArrayList<>();
 		for (Iterator<GlossaryItem> iterator = glossItemList.iterator(); iterator.hasNext();) {
 			GlossaryItem glossaryItem = iterator.next();
 			if (StringHelper.containsNonWhitespace(glossaryItem.getGlossTerm())){
@@ -128,12 +151,11 @@ public class GlossaryItemManager extends BasicManager {
 	protected void upgradeAndDeleteOldGlossary(VFSContainer folderContainingGlossary, VFSLeaf textMarkerFile) {
 		// check if a new glossary exists, warn
 		if (folderContainingGlossary.resolve(GLOSSARY_FILENAME) != null) {
-			logError("Upgrading Glossary in " + folderContainingGlossary.toString() + ": There is already a new glossary-file. There can't be an old and a new version in the same directory!", null);
+			log.error("Upgrading Glossary in " + folderContainingGlossary.toString() + ": There is already a new glossary-file. There can't be an old and a new version in the same directory!", null);
 		} else { // upgrade it
-			TextMarkerManager textMarkerManager = TextMarkerManagerImpl.getInstance();
 			List<TextMarker> textMarkerList = textMarkerManager.loadTextMarkerList(textMarkerFile);
 			Collections.sort(textMarkerList);
-			ArrayList<GlossaryItem> glossaryItemArr = new ArrayList<GlossaryItem>();
+			ArrayList<GlossaryItem> glossaryItemArr = new ArrayList<>();
 
 			for (TextMarker tm : textMarkerList) {
 				String glossTerm = tm.getMarkedMainText();
@@ -144,7 +166,7 @@ public class GlossaryItemManager extends BasicManager {
 				String aliasString = tm.getMarkedAliasText();
 				if (StringHelper.containsNonWhitespace(aliasString)) {
 					String[] aliasArr = aliasString.split(";");
-					ArrayList<String> glossSynonyms = new ArrayList<String>();
+					ArrayList<String> glossSynonyms = new ArrayList<>();
 					glossSynonyms.addAll(Arrays.asList(aliasArr));
 					glossItem.setGlossSynonyms(glossSynonyms);
 				}
@@ -199,7 +221,6 @@ public class GlossaryItemManager extends BasicManager {
 		else return true;
 	}
 
-	//TODO:RH:gloss improvement: dtd in xml files
 	/**
 	 * writes glossary to xml-file
 	 * prepend doc-book dtd: 
@@ -208,58 +229,32 @@ public class GlossaryItemManager extends BasicManager {
 	 * @param glossaryFile
 	 * @param glossaryItemArr
 	 */
-	private void saveToFile(VFSLeaf glossaryFile, ArrayList<GlossaryItem> glossaryItemArr) {
+	private void saveToFile(VFSLeaf glossaryFile, List<GlossaryItem> glossaryItemArr) {
 		// cdata-tags should be used instead of strings, overwrite writer.
-		XStream xstream = new XStream(new XppDriver() {
-			public HierarchicalStreamWriter createWriter(Writer out) {
-				return new PrettyPrintWriter(out) {
-					protected void writeText(QuickWriter writer, String text) {
-						if (text.contains("<")||text.contains(">")||text.contains("&")){
-							writer.write("<![CDATA[");
-							writer.write(text);
-							writer.write("]]>");
-						} else {
-							writer.write(text);
-						}
-					}
-				};
-			}
-		});
-
-		xstream.alias(XML_GLOSSARY_ITEM_NAME, GlossaryItem.class);
-		xstream.alias(XML_REVISION_NAME, Revision.class);
 		glossaryItemArr = removeEmptyGlossaryItems(glossaryItemArr);
-		XStreamHelper.writeObject(xstream, glossaryFile, glossaryItemArr);
+		XStreamHelper.writeObject(xstreamWriter, glossaryFile, glossaryItemArr);
 	}
 
-	//FIXME: VFSItem should be capable of returning an identifier, instead of casting to LocalFolderImpl implement a getIdentifier for it!
-	public ArrayList<GlossaryItem> getGlossaryItemListByVFSItem(final VFSContainer glossaryFolder){		
+	public List<GlossaryItem> getGlossaryItemListByVFSItem(final VFSContainer glossaryFolder){		
 		final String glossaryKey = ((LocalFolderImpl)glossaryFolder).getBasefile().toString();
 		if (glossaryCache == null) {
 			glossaryCache = coordinatorManager.getCoordinator().getCacher().getCache(GlossaryItemManager.class.getSimpleName(), "glossary");
 		}
 		//try to load from cache
-		ArrayList<GlossaryItem> glossaryItemList = glossaryCache.get(glossaryKey);
+		List<GlossaryItem> glossaryItemList = glossaryCache.get(glossaryKey);
 		if (glossaryItemList != null){
-			if (isLogDebugEnabled()){
-				logDebug("Loading glossary from cache.", null);
+			if (log.isDebug()){
+				log.debug("Loading glossary from cache.", null);
 			}
 			return glossaryItemList;
 		}
-		// load from filesystem
-		coordinatorManager.getCoordinator().getSyncer().doInSync(glossaryEventBus, new SyncerExecutor() {
-			@SuppressWarnings("synthetic-access")
-			public void execute() {
-				ArrayList<GlossaryItem> glossaryItemListTemp = new ArrayList<GlossaryItem>();
-				if (isLogDebugEnabled()){
-					logDebug("Loading glossary from filesystem. Glossary folder: " + glossaryFolder, null);
-				}
-				glossaryItemListTemp = loadGlossaryItemListFromFile(getGlossaryFile(glossaryFolder));
-				glossaryCache.put(glossaryKey, glossaryItemListTemp);				
+		
+		return glossaryCache.computeIfAbsent(glossaryKey, key -> {
+			if (log.isDebug()){
+				log.debug("Loading glossary from filesystem. Glossary folder: " + glossaryFolder, null);
 			}
+			return loadGlossaryItemListFromFile(getGlossaryFile(glossaryFolder));
 		});
-		//return value from cache, as it was put in there before
-		return glossaryCache.get(glossaryKey);
 	}
 
 	/**
@@ -267,8 +262,7 @@ public class GlossaryItemManager extends BasicManager {
 	 * 
 	 * @param olatResource
 	 */
-	//FIXME: VFSItem should be capable of returning an identifier, instead of casting to LocalFolderImpl implement a getIdentifier for it!
-	private void updateCacheForGlossary(VFSContainer glossaryFolder, ArrayList<GlossaryItem> glossItemList) {
+	private void updateCacheForGlossary(VFSContainer glossaryFolder, List<GlossaryItem> glossItemList) {
 		final String glossaryKey = ((LocalFolderImpl)glossaryFolder).getBasefile().toString();
 		glossaryCache.update(glossaryKey, glossItemList);
 	}
@@ -280,18 +274,16 @@ public class GlossaryItemManager extends BasicManager {
 	 * @return list with GlossaryItem's
 	 */
 	@SuppressWarnings("unchecked")
-	private ArrayList<GlossaryItem> loadGlossaryItemListFromFile(VFSLeaf glossaryFile) {
-		ArrayList<GlossaryItem> glossaryItemList = new ArrayList<GlossaryItem>();
-		if (glossaryFile == null) { return new ArrayList<GlossaryItem>(); }
-		XStream xstream = XStreamHelper.createXStreamInstance();
-		xstream.alias(XML_GLOSSARY_ITEM_NAME, GlossaryItem.class);
-		xstream.alias(XML_REVISION_NAME, Revision.class);
-		Object glossObj = XStreamHelper.readObject(xstream, glossaryFile.getInputStream());
+	private List<GlossaryItem> loadGlossaryItemListFromFile(VFSLeaf glossaryFile) {
+		List<GlossaryItem> glossaryItemList = new ArrayList<>();
+		if (glossaryFile == null) { return new ArrayList<>(); }
+		
+		Object glossObj = XStreamHelper.readObject(xstreamReader, glossaryFile.getInputStream());
 		if (glossObj instanceof ArrayList) {
 			ArrayList<GlossaryItem> glossItemsFromFile = (ArrayList<GlossaryItem>) glossObj;
 			glossaryItemList.addAll(glossItemsFromFile);
 		} else {
-			logError("The Glossary-XML-File " + glossaryFile.toString() + " seems not to be correct!", null);
+			log.error("The Glossary-XML-File " + glossaryFile.toString() + " seems not to be correct!", null);
 		}
 
 		Collections.sort(glossaryItemList);
@@ -304,10 +296,10 @@ public class GlossaryItemManager extends BasicManager {
 	 * @return
 	 */
 	public String getGlossaryContent(VFSContainer glossaryFolder){
-		ArrayList<GlossaryItem> glossItems = getGlossaryItemListByVFSItem(glossaryFolder);
-		StringBuilder sb = new StringBuilder();
+		List<GlossaryItem> glossItems = getGlossaryItemListByVFSItem(glossaryFolder);
+		StringBuilder sb = new StringBuilder(1024);
 		for (GlossaryItem glossItem : glossItems) {
-			ArrayList<String> allStrings = glossItem.getAllStringsToMarkup();
+			List<String> allStrings = glossItem.getAllStringsToMarkup();
 			for (String markupStr : allStrings) {
 				sb.append(markupStr);
 				sb.append("\n");
@@ -319,19 +311,16 @@ public class GlossaryItemManager extends BasicManager {
 		return sb.toString();
 	}
 	
-	
-	
-//			Configuration of a glossary in properties file 
-	//TODO: RH: improvement in case fileReads should slow down system
+	// Configuration of a glossary in properties file 
 	// implement a GlossaryObject with settings and glossItemList and cache this.
 	public Properties getGlossaryConfig(VFSContainer glossaryFolder){
 		Properties props = new Properties();
 		VFSLeaf glossProp = (VFSLeaf) glossaryFolder.resolve(GLOSSARY_CONFIG_PROPERTIES_FILE);
-		if(glossProp!=null){
+		if(glossProp!=null) {
 			try {
 				props.load(glossProp.getInputStream());
 			} catch (IOException e) {
-				logError("Properties in " + glossProp + " could not be read.", e);
+				log.error("Properties in " + glossProp + " could not be read.", e);
 			}
 		} else {
 			//set default config
@@ -339,23 +328,18 @@ public class GlossaryItemManager extends BasicManager {
 			props.put(REGISTER_ONOFF, "true");
 			setGlossaryConfig(glossaryFolder, props);
 		}
-		
-		
 		return props;
 	}
-	
 	
 	public void setGlossaryConfig(VFSContainer glossaryFolder, Properties props){
 		VFSLeaf glossProp = (VFSLeaf) glossaryFolder.resolve(GLOSSARY_CONFIG_PROPERTIES_FILE);
 		if (glossProp==null){
 			glossProp = glossaryFolder.createChildLeaf(GLOSSARY_CONFIG_PROPERTIES_FILE);
 		}
-		try {
-			props.store(glossProp.getOutputStream(false), "Settings for the glossary saved in this folder.");
+		try(OutputStream out=glossProp.getOutputStream(false)) {
+			props.store(out, "Settings for the glossary saved in this folder.");
 		} catch (IOException e) {
-			logError("Properties in " + glossProp + " could not be written.", e);
+			log.error("Properties in " + glossProp + " could not be written.", e);
 		}
-		
 	}
-	
 }
