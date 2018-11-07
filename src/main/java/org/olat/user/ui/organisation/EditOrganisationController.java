@@ -200,7 +200,7 @@ public class EditOrganisationController extends FormBasicController {
 		if(organisation == null) {
 			//create a new one
 			organisation = organisationService
-					.createOrganisation(identifierEl.getValue(), displayNameEl.getValue(), descriptionEl.getValue(), parentOrganisation, organisationType);
+					.createOrganisation(displayNameEl.getValue(), identifierEl.getValue(), descriptionEl.getValue(), parentOrganisation, organisationType);
 		} else {
 			organisation = organisationService.getOrganisation(organisation);
 			organisation.setIdentifier(identifierEl.getValue());
