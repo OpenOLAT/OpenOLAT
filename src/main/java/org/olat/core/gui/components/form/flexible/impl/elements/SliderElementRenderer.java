@@ -50,6 +50,7 @@ public class SliderElementRenderer extends DefaultComponentRenderer {
 		
 		String inputId = sec.getFormDispatchId().concat("_sinput");
 		
+		sb.append("<div class='o_slider_wrapper'>");
 		sb.append("<div id='").append(sec.getFormDispatchId()).append("_slider' class='");
 		if (sec.hasValue()) {
 			sb.append("o_has_value");
@@ -93,5 +94,6 @@ public class SliderElementRenderer extends DefaultComponentRenderer {
 		
 		sb.append("});\n")
 		  .append("/* ]]> */</script>\n");
+		sb.append("</div>");
 	}
 }
