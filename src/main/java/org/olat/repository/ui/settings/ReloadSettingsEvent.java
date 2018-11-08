@@ -32,8 +32,30 @@ public class ReloadSettingsEvent extends Event {
 	private static final long serialVersionUID = -6750322705437476311L;
 	public static final String RELOAD_SETTINGS = "reload-settings";
 	
+	private final boolean changedTitle;
+	private final boolean changedToolbar;
+	private final boolean changedToolsMenu;
+	
 	public ReloadSettingsEvent() {
-		super(RELOAD_SETTINGS);
+		this(false, false, false);
 	}
 
+	public ReloadSettingsEvent(boolean changedToolsMenu, boolean changedToolbar, boolean changedTitle) {
+		super(RELOAD_SETTINGS);
+		this.changedTitle = changedTitle;
+		this.changedToolbar = changedToolbar;
+		this.changedToolsMenu = changedToolsMenu;
+	}
+
+	public boolean isChangedTitle() {
+		return changedTitle;
+	}
+
+	public boolean isChangedToolsMenu() {
+		return changedToolsMenu;
+	}
+	
+	public boolean isChangedToolbar() {
+		return changedToolbar;
+	}
 }

@@ -47,7 +47,7 @@ public class EPTemplateRuntimeController extends RepositoryEntryRuntimeControlle
 	}
 	
 	@Override
-	protected void initEditorTools(Dropdown toolsDropdown) {
+	protected void initToolsMenuEditor(Dropdown toolsDropdown) {
 		if(getRuntimeController() instanceof EPMapViewController) {
 			EPMapViewController mapCtrl = (EPMapViewController)getRuntimeController();
 			if(mapCtrl.canEditStructure()) {

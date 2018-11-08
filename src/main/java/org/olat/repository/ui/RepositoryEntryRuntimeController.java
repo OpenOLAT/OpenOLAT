@@ -122,7 +122,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	private RepositoryEntryDetailsController detailsCtrl;
 	private RepositoryMembersController membersEditController;
 	protected RepositoryEntrySettingsController settingsCtrl;
-	protected RepositoryEditDescriptionController descriptionCtrl;
+	protected RepositoryEditDescriptionController descriptionCtrl2;
 	
 	private Dropdown tools;
 	private Dropdown status;
@@ -361,13 +361,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	}
 	
 	protected void initToolbar(Dropdown toolsDropdown) {
-		toolsDropdown.removeAllComponents();
-		
-		initSettingsTools(toolsDropdown);
-		initEditorTools(toolsDropdown);
-		initRuntimeTools(toolsDropdown);
-		initEditionTools(toolsDropdown);
-		initDeleteTools(toolsDropdown);
+		initToolsMenu(toolsDropdown);
 
 		detailsLink = LinkFactory.createToolLink("details", translate("details.header"), this, "o_sel_repo_details");
 		detailsLink.setIconLeftCSS("o_icon o_icon-fw o_icon_details");
@@ -383,7 +377,17 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		toolbarPanel.addTool(bookmarkLink, Align.right);
 	}
 	
-	protected void initSettingsTools(Dropdown toolsDropdown) {
+	protected void initToolsMenu(Dropdown toolsDropdown) {
+		toolsDropdown.removeAllComponents();
+		
+		initToolsMenuSettings(toolsDropdown);
+		initToolsMenuEditor(toolsDropdown);
+		initToolsMenuRuntime(toolsDropdown);
+		initToolsMenuEdition(toolsDropdown);
+		initToolsMenuDelete(toolsDropdown);
+	}
+	
+	protected void initToolsMenuSettings(Dropdown toolsDropdown) {
 		if (reSecurity.isEntryAdmin()) {
 			settingsLink = LinkFactory.createToolLink("settings", translate("details.settings"), this, "o_sel_repo_settings");
 			settingsLink.setIconLeftCSS("o_icon o_icon-fw o_icon_settings");
@@ -396,7 +400,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		}
 	}
 	
-	protected void initEditorTools(Dropdown toolsDropdown) {
+	protected void initToolsMenuEditor(Dropdown toolsDropdown) {
 		if (reSecurity.isEntryAdmin() && handler.supportsEdit(re.getOlatResource()) == EditionSupport.yes) {
 			toolsDropdown.addComponent(new Spacer("editors-tools"));
 			
@@ -408,7 +412,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		}
 	}
 	
-	protected void initRuntimeTools(Dropdown toolsDropdown) {
+	protected void initToolsMenuRuntime(Dropdown toolsDropdown) {
 		if (reSecurity.isEntryAdmin()) {
 			ordersLink = LinkFactory.createToolLink("bookings", translate("details.orders"), this, "o_sel_repo_booking");
 			ordersLink.setIconLeftCSS("o_icon o_icon-fw o_icon_booking");
@@ -418,7 +422,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		}
 	}
 	
-	protected void initEditionTools(Dropdown toolsDropdown) {
+	protected void initToolsMenuEdition(Dropdown toolsDropdown) {
 		boolean copyManaged = RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.copy);
 		boolean canCopy = (isAuthor || reSecurity.isEntryAdmin()) && (re.getCanCopy() || reSecurity.isEntryAdmin()) && !copyManaged;
 		
@@ -449,7 +453,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		}
 	}
 	
-	protected void initDeleteTools(Dropdown toolsDropdown) {
+	protected void initToolsMenuDelete(Dropdown toolsDropdown) {
 		if(reSecurity.isEntryAdmin()) {
 			boolean deleteManaged = RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.delete);
 			toolsDropdown.addComponent(new Spacer("close-delete"));
@@ -538,6 +542,31 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		//
 	}
 	
+	protected void processReloadSettingsEvent(ReloadSettingsEvent event) {
+		if(event.isChangedTitle()) {
+			RepositoryEntry entry = repositoryService.loadByKey(getRepositoryEntry().getKey());
+			refreshRepositoryEntry(entry);
+			handler.onDescriptionChanged(entry);
+			// update name of root bread crumb and opened tabs in top nav in case the title has been modified
+			if (!toolbarPanel.getBreadCrumbs().isEmpty()) {					
+				String newTitle = entry.getDisplayname();
+				String oldTitle = toolbarPanel.getBreadCrumbs().get(0).getCustomDisplayText();
+				if (!newTitle.equals(oldTitle)) {						
+					// 1: update breadcrumb in toolbar
+					toolbarPanel.getBreadCrumbs().get(0).setCustomDisplayText(newTitle);
+					// 2: update dynamic tab in topnav
+					OLATResourceable reOres = OresHelper.clone(entry);
+					getWindowControl().getWindowBackOffice().getWindow().getDTabs().updateDTabTitle(reOres, newTitle);
+				}
+			}
+		} else if(event.isChangedToolbar()) {
+			RepositoryEntry entry = repositoryService.loadByKey(getRepositoryEntry().getKey());
+			refreshRepositoryEntry(entry);
+			initToolsMenu(tools);
+		}
+		settingsChanged = true;
+	}
+	
 	protected void processEntryChangedEvent(EntryChangedEvent repoEvent) {
 		if(repoEvent.isMe(getIdentity()) &&
 				(repoEvent.getChange() == Change.addBookmark || repoEvent.getChange() == Change.removeBookmark)) {
@@ -623,28 +652,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			} else if(event == Event.CLOSE_EVENT) {
 				doClose(ureq);
 			} else if(event instanceof ReloadSettingsEvent) {
-				settingsChanged = true;
-				initToolbar(tools);
-			}
-		} else if(descriptionCtrl == source) {
-			if(event == Event.CHANGED_EVENT) {
-				RepositoryEntry entry = descriptionCtrl.getRepositoryEntry();
-				refreshRepositoryEntry(entry);
-				handler.onDescriptionChanged(entry);
-				// update name of root bread crumb and opened tabs in top nav in case the title has been modified
-				if (!toolbarPanel.getBreadCrumbs().isEmpty()) {					
-					String newTitle = entry.getDisplayname();
-					String oldTitle = toolbarPanel.getBreadCrumbs().get(0).getCustomDisplayText();
-					if (!newTitle.equals(oldTitle)) {						
-						// 1: update breadcrumb in toolbar
-						toolbarPanel.getBreadCrumbs().get(0).setCustomDisplayText(newTitle);
-						// 2: update dynamic tab in topnav
-						OLATResourceable reOres = OresHelper.clone(entry);
-						getWindowControl().getWindowBackOffice().getWindow().getDTabs().updateDTabTitle(reOres, newTitle);
-					}
-				}
-			} else if(event == Event.CLOSE_EVENT) {
-				doClose(ureq);
+				processReloadSettingsEvent((ReloadSettingsEvent)event);
 			}
 		} else if(detailsCtrl == source) {
 			if(event instanceof LeavingEvent) {
@@ -701,7 +709,6 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		removeAsListenerAndDispose(confirmDeleteCtrl);
 		removeAsListenerAndDispose(accessController);
 		removeAsListenerAndDispose(confirmCloseCtrl);
-		removeAsListenerAndDispose(descriptionCtrl);
 		removeAsListenerAndDispose(detailsCtrl);
 		removeAsListenerAndDispose(editorCtrl);
 		removeAsListenerAndDispose(ordersCtlr);
@@ -712,7 +719,6 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		confirmDeleteCtrl = null;
 		accessController = null;
 		confirmCloseCtrl = null;
-		descriptionCtrl = null;
 		detailsCtrl = null;
 		editorCtrl = null;
 		ordersCtlr = null;

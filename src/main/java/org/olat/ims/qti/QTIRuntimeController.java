@@ -73,8 +73,8 @@ public class QTIRuntimeController extends RepositoryEntryRuntimeController imple
 	}
 	
 	@Override
-	protected void initEditionTools(Dropdown settingsDropdown) {
-		super.initEditionTools(settingsDropdown);
+	protected void initToolsMenuEdition(Dropdown settingsDropdown) {
+		super.initToolsMenuEdition(settingsDropdown);
 		RepositoryEntry re = getRepositoryEntry();
 		boolean copyManaged = RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.copy);
 		boolean canConvert = (isAuthor || reSecurity.isEntryAdmin()) && (re.getCanCopy() || reSecurity.isEntryAdmin()) && !copyManaged

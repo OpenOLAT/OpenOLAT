@@ -29,7 +29,6 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.MultiUserEvent;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
@@ -86,7 +85,7 @@ public class AuthoringEditAccessController extends BasicController {
 		if(accessAndBookingCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				doSaveAccessAndBooking(ureq);
-				fireEvent(ureq, new ReloadSettingsEvent());
+				fireEvent(ureq, new ReloadSettingsEvent(true, false, false));
 			} else if(event == Event.CANCELLED_EVENT) {
 				initAccessAndBooking(ureq);
 			}
@@ -125,9 +124,7 @@ public class AuthoringEditAccessController extends BasicController {
 		boolean canReference = authorAccessCtrl.canReference();
 		boolean canDownload = authorAccessCtrl.canDownload();
 		entry = authorAccessCtrl.getEntry();
-		RepositoryEntryStatusEnum status = entry.getEntryStatus();
-		entry = repositoryManager.setAccessAndProperties(entry, status, entry.isAllUsers(), entry.isGuests(),
-				canCopy, canReference, canDownload);
+		entry = repositoryManager.setAccess(entry, canCopy, canReference, canDownload);
 		
 		// inform anybody interested about this change
 		MultiUserEvent modifiedEvent = new EntryChangedEvent(entry, getIdentity(), Change.modifiedAccess, "authoring");

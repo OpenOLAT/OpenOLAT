@@ -68,8 +68,9 @@ public class CurriculumElementWithViewsRow implements CurriculumElementWithView,
 	private String shortenedDescription;
 	
 	private RepositoryEntryStatusEnum status;
-	private boolean allUsers;
 	private boolean guests;
+	private boolean allUsers;
+	private boolean bookable;
 	private List<PriceMethod> accessTypes;
 
 	private boolean member;
@@ -117,6 +118,7 @@ public class CurriculumElementWithViewsRow implements CurriculumElementWithView,
 		
 		guests = repositoryEntryView.isGuests();
 		allUsers = repositoryEntryView.isAllUsers();
+		bookable = repositoryEntryView.isBookable();
 		status = repositoryEntryView.getEntryStatus();
 		repositoryEntry = repositoryEntryView;
 		olatResource = repositoryEntryView.getOlatResource();
@@ -274,6 +276,10 @@ public class CurriculumElementWithViewsRow implements CurriculumElementWithView,
 	
 	public boolean isGuests() {
 		return guests;
+	}
+	
+	public boolean isBookable() {
+		return bookable;
 	}
 	
 	public boolean isThumbnailAvailable() {

@@ -79,7 +79,7 @@ public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 	}
 
 	@Override
-	protected void initRuntimeTools(Dropdown toolsDropdown) {
+	protected void initToolsMenuRuntime(Dropdown toolsDropdown) {
 		if (reSecurity.isEntryAdmin() || reSecurity.isCoach()) {
 			assessmentLink = LinkFactory.createToolLink("assessment", translate("command.openassessment"), this, "o_icon_assessment_tool");
 			assessmentLink.setElementCssClass("o_sel_course_assessment_tool");
@@ -89,7 +89,7 @@ public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 			toolsDropdown.addComponent(testStatisticLink);
 		}
 		
-		super.initRuntimeTools(toolsDropdown);
+		super.initToolsMenuRuntime(toolsDropdown);
 	}
 
 	@Override

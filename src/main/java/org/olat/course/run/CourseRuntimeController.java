@@ -429,14 +429,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			toolbarPanel.setBreadcrumbEnabled(false);
 		}
 		
-		if(!isAssessmentLock()) {
-			initSettingsTools(toolsDropdown);
-			initEditorTools(toolsDropdown, uce);
-			initRuntimeTools(toolsDropdown, uce);
-			initStatistics(toolsDropdown, course, uce);
-			initEditionTools(toolsDropdown);
-			initDeleteTools(toolsDropdown);
-		}
+		initToolsMenu(toolsDropdown);
 		initToolsMyCourse(course, uce);
 		initGeneralTools(course);
 		
@@ -457,7 +450,25 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	}
 	
 	@Override
-	protected void initSettingsTools(Dropdown tools) {
+	protected void initToolsMenu(Dropdown toolsDropdown) {
+		toolsDropdown.removeAllComponents();
+		toolsDropdown.setDirty(true);
+		
+		if(!isAssessmentLock()) {
+			ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
+			UserCourseEnvironmentImpl uce = getUserCourseEnvironment();
+			
+			initToolsMenuSettings(toolsDropdown);
+			initToolsMenuEditor(toolsDropdown, uce);
+			initToolsMenuRuntime(toolsDropdown, uce);
+			initToolsMenuStatistics(toolsDropdown, course, uce);
+			initToolsMenuEdition(toolsDropdown);
+			initToolsMenuDelete(toolsDropdown);
+		}
+	}
+	
+	@Override
+	protected void initToolsMenuSettings(Dropdown tools) {
 		// 1) administrative tools
 		if (reSecurity.isEntryAdmin() || reSecurity.isPrincipal() || reSecurity.isCoach()
 				|| hasCourseRight(CourseRights.RIGHT_COURSEEDITOR) || hasCourseRight(CourseRights.RIGHT_MEMBERMANAGEMENT)
@@ -482,7 +493,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		}
 	}
 	
-	private void initEditorTools(Dropdown tools, final UserCourseEnvironmentImpl uce) {
+	private void initToolsMenuEditor(Dropdown tools, final UserCourseEnvironmentImpl uce) {
 		if(uce == null) return;
 		
 		if (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR)) {
@@ -503,7 +514,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		}
 	}
 	
-	private void initRuntimeTools(Dropdown tools, final UserCourseEnvironmentImpl uce) {
+	private void initToolsMenuRuntime(Dropdown tools, final UserCourseEnvironmentImpl uce) {
 		boolean courseAuthorRight = reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR);
 		if (courseAuthorRight || reSecurity.isPrincipal() || reSecurity.isCoach()
 				|| hasCourseRight(CourseRights.RIGHT_DB)
@@ -559,7 +570,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		return lectureConfig != null && lectureConfig.isLectureEnabled();
 	}
 	
-	private void initStatistics(Dropdown tools, ICourse course, final UserCourseEnvironmentImpl uce) {
+	private void initToolsMenuStatistics(Dropdown tools, ICourse course, final UserCourseEnvironmentImpl uce) {
 		if (reSecurity.isEntryAdmin() || reSecurity.isPrincipal() || reSecurity.isCoach()
 				|| hasCourseRight(CourseRights.RIGHT_ARCHIVING) || hasCourseRight(CourseRights.RIGHT_STATISTICS)) {	
 
@@ -606,7 +617,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	}
 
 	@Override
-	protected void initDeleteTools(Dropdown settingsDropdown) {
+	protected void initToolsMenuDelete(Dropdown settingsDropdown) {
 		RepositoryEntry re = getRepositoryEntry();
 		boolean closeManged = RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.close);
 		

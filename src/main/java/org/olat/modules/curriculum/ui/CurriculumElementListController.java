@@ -324,13 +324,19 @@ public class CurriculumElementListController extends FormBasicController impleme
 	}
 	
 	private void forge(CurriculumElementWithViewsRow row, Collection<Long> repoKeys, List<OLATResourceAccess> resourcesWithOffer) {
-		if(row.getRepositoryEntryKey() == null) return;
-			
+		if(row.getRepositoryEntryKey() == null || guestOnly) return;// nothing for guests
+
+		boolean isMember = repoKeys.contains(row.getRepositoryEntryKey());
+		row.setMember(isMember);
+		
+		FormLink startLink = null;
 		List<PriceMethod> types = new ArrayList<>();
-		if (!row.isAllUsers() && !row.isGuests()) {
-			// members only always show lock icon
-			types.add(new PriceMethod("", "o_ac_membersonly_icon", translate("cif.access.membersonly.short")));
-		} else {
+		if(row.isAllUsers() || isMember) {
+			startLink = uifactory.addFormLink("start_" + (++counter), "start", "start", null, null, Link.LINK);
+			startLink.setElementCssClass("o_start btn-block");
+			startLink.setCustomEnabledLinkCSS("o_start btn-block");
+			startLink.setIconRightCSS("o_icon o_icon_start");
+		} else if(row.isBookable()) {
 			// collect access control method icons
 			OLATResource resource = row.getOlatResource();
 			for(OLATResourceAccess resourceAccess:resourcesWithOffer) {
@@ -344,15 +350,27 @@ public class CurriculumElementListController extends FormBasicController impleme
 					}
 				}
 			}
+			
+			startLink = uifactory.addFormLink("start_" + (++counter), "start", "book", null, null, Link.LINK);
+			startLink.setElementCssClass("o_start btn-block");
+			startLink.setCustomEnabledLinkCSS("o_book btn-block");
+			startLink.setIconRightCSS("o_icon o_icon_start");
 		}
+
+		if(startLink != null) {
+			startLink.setUserObject(row);
+			row.setStartLink(startLink);
+		}
+
 		
-		row.setMember(repoKeys.contains(row.getRepositoryEntryKey()));
-		
+		if (!row.isAllUsers() && !row.isGuests()) {
+			// members only always show lock icon
+			types.add(new PriceMethod("", "o_ac_membersonly_icon", translate("cif.access.membersonly.short")));
+		}
 		if(!types.isEmpty()) {
 			row.setAccessTypes(types);
 		}
 		
-		forgeStartLink(row);
 		forgeDetails(row);
 		forgeMarkLink(row);
 		forgeSelectLink(row);
@@ -363,22 +381,6 @@ public class CurriculumElementListController extends FormBasicController impleme
 		detailsLink.setCustomEnabledLinkCSS("o_details");
 		detailsLink.setUserObject(row);
 		row.setDetailsLink(detailsLink);
-	}
-	
-	private void forgeStartLink(CurriculumElementWithViewsRow row) {
-		String label;
-		boolean isStart = true;
-		if((row.isAllUsers() || row.isGuests()) && row.getAccessTypes() != null && !row.getAccessTypes().isEmpty() && !row.isMember()) {
-			label = "book";
-			isStart = false;
-		} else {
-			label = "start";
-		}
-		FormLink startLink = uifactory.addFormLink("start_" + (++counter), "start", label, null, null, Link.LINK);
-		startLink.setUserObject(row);
-		startLink.setCustomEnabledLinkCSS(isStart ? "o_start btn-block" : "o_book btn-block");
-		startLink.setIconRightCSS("o_icon o_icon_start");
-		row.setStartLink(startLink);
 	}
 	
 	private void forgeMarkLink(CurriculumElementWithViewsRow row) {

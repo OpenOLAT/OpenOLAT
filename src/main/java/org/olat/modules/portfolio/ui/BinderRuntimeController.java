@@ -63,7 +63,7 @@ public class BinderRuntimeController extends RepositoryEntryRuntimeController {
 	}
 
 	@Override
-	protected void initRuntimeTools(Dropdown toolsDropdown) {
+	protected void initToolsMenuRuntime(Dropdown toolsDropdown) {
 		if (reSecurity.isEntryAdmin()) {
 			membersLink = LinkFactory.createToolLink("members", translate("details.members"), this, "o_sel_repo_members");
 			membersLink.setIconLeftCSS("o_icon o_icon-fw o_icon_membersmanagement");

@@ -204,21 +204,21 @@ public class GroupPage {
 			By showOwnersBy = By.cssSelector(".o_sel_group_show_owners input[type='checkbox']");
 			browser.findElement(showOwnersBy).click();
 			OOGraphene.waitBusy(browser);
-			OOGraphene.waitElement(memberMenuItem, 5, browser);
+			OOGraphene.waitElement(memberMenuItem, browser);
 		}
 		
 		if(participants) {
 			By showParticipants = By.cssSelector(".o_sel_group_show_participants input[type='checkbox']");
 			browser.findElement(showParticipants).click();
 			OOGraphene.waitBusy(browser);
-			OOGraphene.waitElement(memberMenuItem, 5, browser);
+			OOGraphene.waitElement(memberMenuItem, browser);
 		}
 		
 		if(waitingList) {
 			By showWaitingListBy = By.cssSelector(".o_sel_group_show_waiting_list input[type='checkbox']");
 			browser.findElement(showWaitingListBy).click();
 			OOGraphene.waitBusy(browser);
-			OOGraphene.waitElement(memberMenuItem, 5, browser);
+			OOGraphene.waitElement(memberMenuItem, browser);
 		}
 		return this;
 	}
@@ -245,8 +245,7 @@ public class GroupPage {
 	 */
 	public GroupPage saveDetails() {
 		By submitBy = By.cssSelector(".o_sel_group_edit_group_form button.btn-primary");
-		WebElement submitButton = browser.findElement(submitBy);
-		submitButton.click();
+		browser.findElement(submitBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}

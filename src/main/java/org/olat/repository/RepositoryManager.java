@@ -636,6 +636,28 @@ public class RepositoryManager {
 		return updatedRe;
 	}
 	
+	public RepositoryEntry setAccess(final RepositoryEntry re,
+			boolean canCopy, boolean canReference, boolean canDownload) {
+		RepositoryEntry reloadedRe = repositoryEntryDao.loadForUpdate(re);
+		if(reloadedRe == null) {
+			return null;
+		}
+		reloadedRe.setLastModified(new Date());
+		//properties
+		reloadedRe.setCanCopy(canCopy);
+		reloadedRe.setCanReference(canReference);
+		reloadedRe.setCanDownload(canDownload);
+		RepositoryEntry updatedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
+		//fetch the values
+		updatedRe.getStatistics().getLaunchCounter();
+		if(updatedRe.getLifecycle() != null) {
+			updatedRe.getLifecycle().getCreationDate();
+		}
+
+		dbInstance.commit();
+		return updatedRe;
+	}
+	
 	
 	public RepositoryEntry setAccess(final RepositoryEntry re, boolean allUsers, boolean guests, boolean bookable,
 			RepositoryEntryAllowToLeaveOptions leaveSetting, List<Organisation> organisations) {

@@ -62,7 +62,7 @@ public class VideoRuntimeController extends RepositoryEntryRuntimeController {
 	}
 	
 	@Override
-	protected void initEditorTools(Dropdown toolsDropdown) {
+	protected void initToolsMenuEditor(Dropdown toolsDropdown) {
 		if (reSecurity.isEntryAdmin()) {
 			toolsDropdown.addComponent(new Spacer("video-editor"));
 			
