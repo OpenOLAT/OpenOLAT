@@ -61,6 +61,7 @@ public class CatalogSettingsController extends FormBasicController {
 
 	private CloseableModalController cmc;
 	private Controller catalogAdddController;
+	private AccessInformationController infosCtrl;
 	
 	private RepositoryEntry entry;
 
@@ -71,12 +72,18 @@ public class CatalogSettingsController extends FormBasicController {
 		super(ureq, wControl, "catalog_settings");
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		this.entry = entry;
+		
+		infosCtrl = new AccessInformationController(ureq, wControl, entry);
+		listenTo(infosCtrl);
+		
 		initForm(ureq);
 		loadModel();
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.add("infos", infosCtrl.getInitialFormItem());
+		
 		addToCatalogLink = uifactory.addFormLink("details.catadd", formLayout, Link.BUTTON);
 		addToCatalogLink.setIconLeftCSS("o_icon o_icon_add");
 		addToCatalogLink.setElementCssClass("o_sel_repo_add_to_catalog");
