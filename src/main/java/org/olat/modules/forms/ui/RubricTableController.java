@@ -73,7 +73,8 @@ public class RubricTableController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		List<LegendEntry> legendEntries = new ArrayList<>();
+		List<LegendEntry> legendLabels = new ArrayList<>();
+		List<LegendEntry> legendSigns = new ArrayList<>();
 		int columnIndex = 0;
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RubricReportCols.startLabel.i18nHeaderKey(), columnIndex++, false, null));
@@ -83,12 +84,10 @@ public class RubricTableController extends FormBasicController {
 			for (int step = 1; step <= rubric.getSteps(); step++) {
 				String label = rubric.getStepLabels().get(step -1).getLabel();
 				double stepValue = scaleType.getStepValue(rubric.getSteps(), step);
-				StringBuilder headerSb = new StringBuilder();
+				String header = EvaluationFormFormatter.formatZeroOrOneDecimals(stepValue);
 				if (StringHelper.containsNonWhitespace(label)) {
-					headerSb.append(label).append("<br>");
+					legendLabels.add(new LegendEntry(header, label));
 				}
-				headerSb.append("(").append(EvaluationFormFormatter.formatZeroOrOneDecimals(stepValue)).append(")");
-				String header = headerSb.toString();
 				DefaultFlexiColumnModel columnModel = new DefaultFlexiColumnModel(header, columnIndex++);
 				columnModel.setHeaderLabel(header);
 				columnModel.setHeaderAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
@@ -106,32 +105,32 @@ public class RubricTableController extends FormBasicController {
 			noResponsesColumn.setAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
 			noResponsesColumn.setHeaderAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
 			columnsModel.addFlexiColumnModel(noResponsesColumn);
-			legendEntries.add(new LegendEntry(translate("rubric.report.number.no.responses.abrev"), translate("rubric.report.number.no.responses.title")));
+			legendSigns.add(new LegendEntry(translate("rubric.report.number.no.responses.abrev"), translate("rubric.report.number.no.responses.title")));
 		}
 		
 		DefaultFlexiColumnModel responsesColumn = new DefaultFlexiColumnModel(RubricReportCols.numberOfResponses.i18nHeaderKey(), columnIndex++, false, null);
 		responsesColumn.setAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
 		responsesColumn.setHeaderAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
 		columnsModel.addFlexiColumnModel(responsesColumn);
-		legendEntries.add(new LegendEntry(translate("rubric.report.number.responses.abrev"), translate("rubric.report.number.responses.title")));
+		legendSigns.add(new LegendEntry(translate("rubric.report.number.responses.abrev"), translate("rubric.report.number.responses.title")));
 		
 		DefaultFlexiColumnModel medianColumn = new DefaultFlexiColumnModel(RubricReportCols.median.i18nHeaderKey(), columnIndex++, false, null);
 		medianColumn.setAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
 		medianColumn.setHeaderAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
 		columnsModel.addFlexiColumnModel(medianColumn);
-		legendEntries.add(new LegendEntry(translate("rubric.report.median.abrev"), translate("rubric.report.median.title")));
+		legendSigns.add(new LegendEntry(translate("rubric.report.median.abrev"), translate("rubric.report.median.title")));
 		
 		DefaultFlexiColumnModel varianceColumn = new DefaultFlexiColumnModel(RubricReportCols.variance.i18nHeaderKey(), columnIndex++, false, null);
 		varianceColumn.setAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
 		varianceColumn.setHeaderAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
 		columnsModel.addFlexiColumnModel(varianceColumn);
-		legendEntries.add(new LegendEntry(translate("rubric.report.variance.abrev"), translate("rubric.report.variance.title")));
+		legendSigns.add(new LegendEntry(translate("rubric.report.variance.abrev"), translate("rubric.report.variance.title")));
 		
 		DefaultFlexiColumnModel sdtDevColumn = new DefaultFlexiColumnModel(RubricReportCols.stdDev.i18nHeaderKey(), columnIndex++, false, null);
 		sdtDevColumn.setAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
 		sdtDevColumn.setHeaderAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
 		columnsModel.addFlexiColumnModel(sdtDevColumn);
-		legendEntries.add(new LegendEntry(translate("rubric.report.sdtdev.abrev"), translate("rubric.report.sdtdev.title")));
+		legendSigns.add(new LegendEntry(translate("rubric.report.sdtdev.abrev"), translate("rubric.report.sdtdev.title")));
 		
 		RubricAvgRenderer avgRenderer = new RubricAvgRenderer(rubric);
 		DefaultFlexiColumnModel avgColumn = new DefaultFlexiColumnModel(RubricReportCols.avg.i18nHeaderKey(), columnIndex++, false, null);
@@ -140,20 +139,28 @@ public class RubricTableController extends FormBasicController {
 		avgColumn.setAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
 		avgColumn.setHeaderAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
 		columnsModel.addFlexiColumnModel(avgColumn);
-		legendEntries.add(new LegendEntry(translate("rubric.report.avg.abrev"), translate("rubric.report.avg.title")));
+		legendSigns.add(new LegendEntry(translate("rubric.report.avg.abrev"), translate("rubric.report.avg.title")));
 
 		String footerHeader = translate("rubric.report.total", new String[] {rubric.getName()});
 		dataModel = new RubricDataModel(columnsModel, footerHeader);
 		tableEl = uifactory.addTableElement(getWindowControl(), "ru_" + CodeHelper.getRAMUniqueID(), dataModel, getTranslator(), formLayout);
+		tableEl.setElementCssClass("o_rubric_table");
 		tableEl.setNumOfRowsEnabled(false);
 		tableEl.setCustomizeColumns(false);
 		tableEl.setFooter(true);
 		
 		String legendPage = velocity_root + "/rubric_table_legend.html";
-		FormLayoutContainer legendLayout = FormLayoutContainer.createCustomFormLayout("legend", getTranslator(), legendPage);
-		flc.add("legend", legendLayout);
-		legendLayout.setElementCssClass("o_rubric_table_legend");
-		legendLayout.contextPut("legendEntries", legendEntries);
+		if (!legendLabels.isEmpty()) {
+			FormLayoutContainer legendLablesLayout = FormLayoutContainer.createCustomFormLayout("legendLables", getTranslator(), legendPage);
+			flc.add("legendLables", legendLablesLayout);
+			legendLablesLayout.setElementCssClass("o_rubric_table_legend");
+			legendLablesLayout.contextPut("legendEntries", legendLabels);
+		}
+		
+		FormLayoutContainer legendSignsLayout = FormLayoutContainer.createCustomFormLayout("legendSigns", getTranslator(), legendPage);
+		flc.add("legendSigns", legendSignsLayout);
+		legendSignsLayout.setElementCssClass("o_rubric_table_legend o_last");
+		legendSignsLayout.contextPut("legendEntries", legendSigns);
 	}
 
 	private void loadModel() {

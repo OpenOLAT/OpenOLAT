@@ -362,12 +362,26 @@
 		white-sprace: nowrap;
 	}
 	
+	.o_rubric_table {
+		.o_table_wrapper {
+			margin-bottom: 10px;
+		}
+	}
+	
 	.o_rubric_table_legend {
 		display: block;
 		
 		.ident {
 			font-weight: bold;
 		}
+		
+		.list-inline {
+			margin-bottom: 0px;
+		}
+	}
+	
+	.o_rubric_table_legend.o_last {
+		margin-bottom: 15px;
 	}
 }
 
