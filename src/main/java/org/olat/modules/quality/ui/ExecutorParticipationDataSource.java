@@ -57,7 +57,7 @@ class ExecutorParticipationDataSource implements FlexiTableDataSourceDelegate<Ex
 
 	@Override
 	public int getRowCount() {
-		return qualityService.getExecutorParticipationCount(searchParams);
+		return Math.toIntExact(qualityService.getExecutorParticipationCount(searchParams));
 	}
 
 	@Override

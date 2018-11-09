@@ -21,9 +21,6 @@ package org.olat.modules.quality.ui;
 
 import static org.olat.modules.quality.ui.QualityUIFactory.formatTopic;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -32,16 +29,17 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormSurvey;
+import org.olat.modules.forms.FiguresBuilder;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.SessionFilterFactory;
 import org.olat.modules.forms.model.xml.Form;
-import org.olat.modules.forms.ui.EvaluationFormFigure;
 import org.olat.modules.forms.ui.EvaluationFormFormatter;
 import org.olat.modules.forms.ui.EvaluationFormReportsController;
 import org.olat.modules.forms.ui.ReportSegment;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityDataCollectionView;
 import org.olat.modules.quality.QualityDataCollectionViewSearchParams;
+import org.olat.modules.quality.QualityExecutorParticipationSearchParams;
 import org.olat.modules.quality.QualityService;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -75,22 +73,27 @@ public class DataCollectionReportController extends FormBasicController {
 		searchParams.setDataCollectionRef(dataCollection);
 		QualityDataCollectionView dataCollectionView = qualityService.loadDataCollections(getTranslator(), searchParams, 0, -1).get(0);
 		reportHeaderCtrl = new DataCollectionReportHeaderController(ureq, getWindowControl(), dataCollectionView);
-		List<EvaluationFormFigure> figures = new ArrayList<>();
-		figures.add(new EvaluationFormFigure(translate("data.collection.figures.title"), dataCollectionView.getTitle()));
-		figures.add(new EvaluationFormFigure(translate("data.collection.figures.topic"), formatTopic(dataCollectionView)));
+		
+		FiguresBuilder builder = FiguresBuilder.builder();
+		QualityExecutorParticipationSearchParams countSearchParams = new QualityExecutorParticipationSearchParams();
+		countSearchParams.setDataCollectionRef(dataCollection);
+		Long participationCount = qualityService.getExecutorParticipationCount(countSearchParams);
+		builder.withNumberOfParticipations(participationCount);
+		builder.addCustomFigure(translate("data.collection.figures.title"), dataCollectionView.getTitle());
+		builder.addCustomFigure(translate("data.collection.figures.topic"), formatTopic(dataCollectionView));
 		if (StringHelper.containsNonWhitespace(dataCollectionView.getPreviousTitle())) {
-			figures.add(new EvaluationFormFigure(translate("data.collection.figures.previous.title"), dataCollectionView.getPreviousTitle()));
+			builder.addCustomFigure(translate("data.collection.figures.previous.title"), dataCollectionView.getPreviousTitle());
 		}
 		String period = EvaluationFormFormatter.period(dataCollectionView.getStart(), dataCollectionView.getDeadline(),
 				getLocale());
-		figures.add(new EvaluationFormFigure(translate("data.collection.figures.period"), period));
+		builder.addCustomFigure(translate("data.collection.figures.period"), period);
 		
 		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(dataCollection, null);
 		Form form = evaluationFormManager.loadForm(survey.getFormEntry());
 		SessionFilter filter = SessionFilterFactory.createSelectDone(survey);
 		
 		reportsCtrl = new EvaluationFormReportsController(ureq, getWindowControl(), form,
-				filter, ReportSegment.OVERVIEW, reportHeaderCtrl.getInitialComponent(), figures);
+				filter, ReportSegment.OVERVIEW, reportHeaderCtrl.getInitialComponent(), builder.build());
 		flc.put("report", reportsCtrl.getInitialComponent());
 	}
 	

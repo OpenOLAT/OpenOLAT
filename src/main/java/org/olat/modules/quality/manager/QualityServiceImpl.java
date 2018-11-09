@@ -423,7 +423,7 @@ public class QualityServiceImpl
 	}
 
 	@Override
-	public int getExecutorParticipationCount(QualityExecutorParticipationSearchParams searchParams) {
+	public Long getExecutorParticipationCount(QualityExecutorParticipationSearchParams searchParams) {
 		return participationDao.getExecutorParticipationCount(searchParams);
 	}
 

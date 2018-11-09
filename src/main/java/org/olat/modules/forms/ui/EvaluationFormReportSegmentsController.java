@@ -19,8 +19,6 @@
  */
 package org.olat.modules.forms.ui;
 
-import java.util.List;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -33,6 +31,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.modules.forms.Figures;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.handler.DefaultReportProvider;
 import org.olat.modules.forms.handler.MultipleChoiceTableHandler;
@@ -70,11 +69,11 @@ public class EvaluationFormReportSegmentsController extends BasicController {
 	private final Form form;
 	private final SessionFilter filter;
 	private final Component formHeader;
-	private final List<EvaluationFormFigure> figures;
+	private final Figures figures;
 	private final ReportHelper reportHelper;
 
 	public EvaluationFormReportSegmentsController(UserRequest ureq, WindowControl wControl, Form form,
-			SessionFilter filter, ReportSegment show, Component formHeader, List<EvaluationFormFigure> figures,
+			SessionFilter filter, ReportSegment show, Component formHeader, Figures figures,
 			ReportHelper reportHelper) {
 		super(ureq, wControl);
 		this.form = form;

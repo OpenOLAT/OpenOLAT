@@ -20,7 +20,6 @@
 package org.olat.modules.forms.ui;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.stream.Stream;
 
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
@@ -40,6 +39,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.modules.forms.EvaluationFormPrintSelection;
+import org.olat.modules.forms.Figures;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.model.xml.Form;
 
@@ -67,12 +67,12 @@ public class EvaluationFormPrintSelectionController extends FormBasicController 
 
 	private final Form form;
 	private final SessionFilter filter;
-	private final List<EvaluationFormFigure> figures;
+	private final Figures figures;
 	private final ReportHelper reportHelper;
 	private final EvaluationFormPrintSelection printSelection;
 
 	public EvaluationFormPrintSelectionController(UserRequest ureq, WindowControl wControl, Form form,
-			SessionFilter filter, List<EvaluationFormFigure> figures, ReportHelper reportHelper) {
+			SessionFilter filter, Figures figures, ReportHelper reportHelper) {
 		super(ureq, wControl, "report_print_selection");
 		this.form = form;
 		this.filter = filter;

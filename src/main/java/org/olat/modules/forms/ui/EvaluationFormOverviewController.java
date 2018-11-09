@@ -33,6 +33,8 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormStatistic;
+import org.olat.modules.forms.Figure;
+import org.olat.modules.forms.Figures;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.handler.EvaluationFormReportHandler;
 import org.olat.modules.forms.handler.EvaluationFormReportProvider;
@@ -60,23 +62,38 @@ public class EvaluationFormOverviewController extends BasicController {
 	private EvaluationFormManager evaluationFormManager;
 
 	public EvaluationFormOverviewController(UserRequest ureq, WindowControl wControl, Form form, SessionFilter filter,
-			List<EvaluationFormFigure> figures) {
+			Figures figures) {
 		super(ureq, wControl);
 
 		mainVC = createVelocityContainer("overview");
 
+		List<Figure> allFigures = new ArrayList<>();
+		if (figures != null) {
+			allFigures.addAll(figures.getCustomFigures());
+		}
+		
+		
 		EvaluationFormStatistic statistic = evaluationFormManager.getSessionsStatistic(filter);
+		
+		long numOfDoneSessions = statistic.getNumOfDoneSessions();
+		String numberSessions;
+		if (figures != null && figures.getNumberOfParticipations() != null) {
+			String[] args = new String[] {
+					String.valueOf(numOfDoneSessions),
+					String.valueOf(figures.getNumberOfParticipations())
+			};
+			numberSessions = translate("report.overview.figures.number.done.session.of", args);
+		} else {
+			numberSessions = String.valueOf(numOfDoneSessions);
+		}
+		allFigures.add(new Figure(translate("report.overview.figures.number.done.session"),
+				numberSessions));
+
 		String submissionPeriod = EvaluationFormFormatter.period(statistic.getFirstSubmission(),
 				statistic.getLastSubmission(), getLocale());
-		List<EvaluationFormFigure> allFigures = new ArrayList<>();
-		if (figures != null) {
-			allFigures.addAll(figures);
-		}
-		allFigures.add(new EvaluationFormFigure(translate("report.overview.figures.number.done.session"),
-				String.valueOf(statistic.getNumOfDoneSessions())));
 		allFigures.add(
-				new EvaluationFormFigure(translate("report.overview.figures.submission.period"), submissionPeriod));
-		allFigures.add(new EvaluationFormFigure(translate("report.overview.figures.average.duration"),
+				new Figure(translate("report.overview.figures.submission.period"), submissionPeriod));
+		allFigures.add(new Figure(translate("report.overview.figures.average.duration"),
 				EvaluationFormFormatter.duration(statistic.getAverageDuration())));
 		mainVC.contextPut("figures", allFigures);
 

@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.forms.ui;
+package org.olat.modules.forms;
 
 /**
  * 
@@ -25,12 +25,12 @@ package org.olat.modules.forms.ui;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class EvaluationFormFigure {
+public class Figure {
 	
 	private final String name;
 	private final String value;
 	
-	public EvaluationFormFigure(String name, String value) {
+	public Figure(String name, String value) {
 		this.name = name;
 		this.value = value;
 	}

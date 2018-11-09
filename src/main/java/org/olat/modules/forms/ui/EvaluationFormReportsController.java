@@ -20,7 +20,6 @@
 package org.olat.modules.forms.ui;
 
 import java.util.Comparator;
-import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -33,55 +32,54 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.modules.forms.EvaluationFormSession;
+import org.olat.modules.forms.Figures;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.model.xml.Form;
 
 /**
  * 
  * Initial date: 01.06.2018<br>
+ * 
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
 public class EvaluationFormReportsController extends BasicController {
-	
+
 	private static final String CMD_PRINT = "report.print";
 	private static final String CMD_EXPORT = "report.export";
-	
+
 	private Link printLink;
 	private Link exportLink;
 
-	private EvaluationFormReportSegmentsController segmentsController;	
+	private EvaluationFormReportSegmentsController segmentsController;
 	private CloseableCalloutWindowController calloutCtrl;
 	private EvaluationFormPrintSelectionController printSelectionCtrl;
-	
+
 	private final Form form;
 	private final SessionFilter filter;
-	private final List<EvaluationFormFigure> figures;
+	private final Figures figures;
 	private final ReportHelper reportHelper;
-	
+
 	public EvaluationFormReportsController(UserRequest ureq, WindowControl wControl, Form form, SessionFilter filter) {
 		this(ureq, wControl, form, filter, null);
 	}
-	
+
 	public EvaluationFormReportsController(UserRequest ureq, WindowControl wControl, Form form, SessionFilter filter,
 			ReportSegment show) {
 		this(ureq, wControl, form, filter, show, null, null);
 	}
 
 	public EvaluationFormReportsController(UserRequest ureq, WindowControl wControl, Form form, SessionFilter filter,
-			ReportSegment show, Component formHeader, List<EvaluationFormFigure> figures) {
+			ReportSegment show, Component formHeader, Figures figures) {
 		super(ureq, wControl);
 		this.form = form;
 		this.filter = filter;
 		this.figures = figures;
-		
+
 		Comparator<EvaluationFormSession> comparator = new NameShuffleAnonymousComparator();
 		LegendNameGenerator legendNameGenerator = new SessionInformationLegendNameGenerator(filter);
-		this.reportHelper = ReportHelper.builder(getLocale())
-				.withLegendNameGenrator(legendNameGenerator)
-				.withSessionComparator(comparator)
-				.withColors()
-				.build();
+		this.reportHelper = ReportHelper.builder(getLocale()).withLegendNameGenrator(legendNameGenerator)
+				.withSessionComparator(comparator).withColors().build();
 
 		VelocityContainer mainVC = createVelocityContainer("reports");
 
@@ -91,8 +89,8 @@ public class EvaluationFormReportsController extends BasicController {
 		exportLink = LinkFactory.createButtonSmall(CMD_EXPORT, mainVC, this);
 		exportLink.setIconLeftCSS("o_icon o_icon-fw o_icon_eva_export");
 
-		segmentsController = new EvaluationFormReportSegmentsController(ureq,
-				getWindowControl(), form, filter, show, formHeader, figures, reportHelper);
+		segmentsController = new EvaluationFormReportSegmentsController(ureq, getWindowControl(), form, filter, show,
+				formHeader, figures, reportHelper);
 		listenTo(segmentsController);
 		mainVC.put("segments", segmentsController.getInitialComponent());
 
@@ -101,7 +99,7 @@ public class EvaluationFormReportsController extends BasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if(source instanceof Link) {
+		if (source instanceof Link) {
 			Link link = (Link) source;
 			String cmd = link.getCommand();
 			if (cmd.equals(CMD_PRINT)) {
@@ -111,7 +109,7 @@ public class EvaluationFormReportsController extends BasicController {
 			}
 		}
 	}
-	
+
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == segmentsController) {
@@ -120,9 +118,9 @@ public class EvaluationFormReportsController extends BasicController {
 			calloutCtrl.deactivate();
 			cleanUp();
 		}
-		super.event(ureq,  source,  event);
+		super.event(ureq, source, event);
 	}
-	
+
 	@Override
 	protected void doDispose() {
 		removeAsListenerAndDispose(segmentsController);

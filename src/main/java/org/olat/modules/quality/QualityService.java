@@ -129,7 +129,7 @@ public interface QualityService {
 	public List<QualityParticipation> loadParticipations(QualityDataCollectionLight dataCollection,
 			int firstResult, int maxResults, SortKey... orderBy);
 
-	public int getExecutorParticipationCount(QualityExecutorParticipationSearchParams searchParams);
+	public Long getExecutorParticipationCount(QualityExecutorParticipationSearchParams searchParams);
 
 	public List<QualityExecutorParticipation> loadExecutorParticipations(Translator translator,
 			QualityExecutorParticipationSearchParams searchParams, int firstResult, int maxResults, SortKey... orderBy);

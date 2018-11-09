@@ -132,8 +132,8 @@ class QualityParticipationDAO {
 		return sb;
 	}
 
-	int getExecutorParticipationCount(QualityExecutorParticipationSearchParams searchParam) {
-		if (searchParam == null) return 0;
+	Long getExecutorParticipationCount(QualityExecutorParticipationSearchParams searchParam) {
+		if (searchParam == null) return 0l;
 		
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select count(participation.key)");
@@ -144,7 +144,7 @@ class QualityParticipationDAO {
 				.createQuery(sb.toString(), Long.class);
 		appendWhereParameters(query, searchParam);
 		List<Long> counts = query.getResultList();
-		return Math.toIntExact(counts.get(0));
+		return counts.get(0);
 	}
 
 	public List<QualityExecutorParticipation> loadExecutorParticipations(Translator translator,

@@ -34,6 +34,7 @@ import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormPrintSelection;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormsModule;
+import org.olat.modules.forms.Figures;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.handler.DefaultReportProvider;
 import org.olat.modules.forms.handler.MultipleChoiceTableHandler;
@@ -67,7 +68,7 @@ public class EvaluationFormPrintController extends BasicController {
 	private EvaluationFormsModule evaluationFormsModule;
 
 	public EvaluationFormPrintController(UserRequest ureq, WindowControl wControl, Form form, SessionFilter filter,
-			List<EvaluationFormFigure> figures, ReportHelper reportHelper,
+			Figures figures, ReportHelper reportHelper,
 			EvaluationFormPrintSelection printSelection) {
 		super(ureq, wControl);
 		this.form = form;

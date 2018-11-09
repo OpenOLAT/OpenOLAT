@@ -19,9 +19,6 @@
  */
 package org.olat.modules.quality.analysis.ui;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -29,9 +26,9 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.modules.forms.FiguresBuilder;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.model.xml.Form;
-import org.olat.modules.forms.ui.EvaluationFormFigure;
 import org.olat.modules.forms.ui.EvaluationFormReportsController;
 import org.olat.modules.forms.ui.ReportSegment;
 import org.olat.modules.forms.ui.ReportSegmentEvent;
@@ -74,15 +71,14 @@ public class AnalysisReportController extends BasicController implements Filtera
 		mainVC.clear();
 		SessionFilter filter = analysisService.createSessionFilter(searchParams);
 		
-		List<EvaluationFormFigure> figures = new ArrayList<>();
-		figures.add(new EvaluationFormFigure(translate("report.figure.form.name"), formName));
+		FiguresBuilder figuresBuilder = FiguresBuilder.builder();
+		figuresBuilder.addCustomFigure(translate("report.figure.form.name"), formName);
 		AnlaysisFigures analyticFigures = analysisService.loadFigures(searchParams);
-		figures.add(new EvaluationFormFigure(translate("report.figure.number.data.collections"),
-				analyticFigures.getDataCollectionCount().toString()));
-		figures.add(new EvaluationFormFigure(translate("report.figure.number.participations"),
-				analyticFigures.getParticipationCount().toString()));
+		figuresBuilder.withNumberOfParticipations(analyticFigures.getParticipationCount());
+		figuresBuilder.addCustomFigure(translate("report.figure.number.data.collections"),
+				analyticFigures.getDataCollectionCount().toString());
 		
-		reportsCtrl = new EvaluationFormReportsController(ureq, getWindowControl(), form, filter, currentSegment, null, figures);
+		reportsCtrl = new EvaluationFormReportsController(ureq, getWindowControl(), form, filter, currentSegment, null, figuresBuilder.build());
 		listenTo(reportsCtrl);
 		mainVC.put("report", reportsCtrl.getInitialComponent());
 	}

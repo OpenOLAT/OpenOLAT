@@ -199,7 +199,7 @@ public class QualityParticipationDAOTest extends OlatTestCase {
 		QualityExecutorParticipationSearchParams searchParams = new QualityExecutorParticipationSearchParams();
 		searchParams.setExecutorRef(identity);
 		searchParams.setDataCollectionStatus(asList(FINISHED, PREPARATION, READY, RUNNING));
-		int count = sut.getExecutorParticipationCount(searchParams);
+		Long count = sut.getExecutorParticipationCount(searchParams);
 		
 		assertThat(count).isEqualTo(2);
 	}
