@@ -24,6 +24,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -42,7 +43,7 @@ public class TextInputLegendTextController extends BasicController {
 	private final VelocityContainer mainVC;
 	private Link downloadLink;
 	
-	private LegendTextController legendTextCtrl;
+	private Controller legendTextCtrl;
 	
 	private final LegendTextDataSource dataSource;
 	private final ReportHelper reportHelper;
@@ -66,7 +67,7 @@ public class TextInputLegendTextController extends BasicController {
 			mainVC.contextPut("noText", translate("textinput.no.text"));
 		}
 		
-		legendTextCtrl = new LegendTextController(ureq, wControl, dataSource, reportHelper);
+		legendTextCtrl = new LegendTextFixedController(ureq, wControl, dataSource, reportHelper);
 		mainVC.put("legend.text", legendTextCtrl.getInitialComponent());
 		
 		putInitialPanel(mainVC);

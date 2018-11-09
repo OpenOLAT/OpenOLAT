@@ -1,0 +1,6 @@
+#foreach($wrapper in $wrappers)
+<div class="o_evaluation_text_legend clearfix o_evaluation_text_legend o_form">
+	<div class="o_evaluation_legend" style="border-left: 3px solid $wrapper.color"><h6>$r.escapeHtml($wrapper.name)</h6></div>
+	<div class="o_evaluation_text">$r.render($wrapper.content)</div>
+</div>
+#end
