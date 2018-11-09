@@ -21,6 +21,8 @@ package org.olat.modules.quality.ui;
 
 import static org.olat.modules.quality.ui.QualityUIFactory.formatTopic;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -41,6 +43,8 @@ import org.olat.modules.quality.QualityDataCollectionView;
 import org.olat.modules.quality.QualityDataCollectionViewSearchParams;
 import org.olat.modules.quality.QualityExecutorParticipationSearchParams;
 import org.olat.modules.quality.QualityService;
+import org.olat.modules.quality.ui.QualityUIContextsBuilder.Attribute;
+import org.olat.modules.quality.ui.QualityUIContextsBuilder.UIContext;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -84,6 +88,19 @@ public class DataCollectionReportController extends FormBasicController {
 		if (StringHelper.containsNonWhitespace(dataCollectionView.getPreviousTitle())) {
 			builder.addCustomFigure(translate("data.collection.figures.previous.title"), dataCollectionView.getPreviousTitle());
 		}
+		
+		QualityUIContextsBuilder.builder(dataCollection, getLocale())
+				.addAttribute(Attribute.ROLE)
+				.addAttribute(Attribute.COURSE)
+				.addAttribute(Attribute.CURRICULUM_ELEMENTS)
+				.addAttribute(Attribute.TAXONOMY_LEVELS)
+				.build()
+				.getUiContexts()
+				.stream()
+				.map(UIContext::getKeyValues)
+				.flatMap(List::stream)
+				.forEach(kv -> builder.addCustomFigure(kv.getKey(), kv.getValue()));
+		
 		String period = EvaluationFormFormatter.period(dataCollectionView.getStart(), dataCollectionView.getDeadline(),
 				getLocale());
 		builder.addCustomFigure(translate("data.collection.figures.period"), period);

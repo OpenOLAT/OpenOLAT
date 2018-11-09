@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementType;
@@ -87,32 +88,38 @@ public class QualityUIContextsDataCollectionBuilder extends QualityUIContextsBui
 				uiContext.add(keyValue);
 			}
 			if (attributes.contains(Attribute.PREVIOUS_TOPIC)) {
-				String key = translator.translate("executor.participation.figures.previous.title");
 				String value = dataCollectionView.getPreviousTitle();
-				KeyValue keyValue = new KeyValue(key, value);
-				uiContext.add(keyValue);
+				if (StringHelper.containsNonWhitespace(value)) {
+					String key = translator.translate("executor.participation.figures.previous.title");
+					KeyValue keyValue = new KeyValue(key, value);
+					uiContext.add(keyValue);
+				}
 			}
 		}
 		if (!contexts.isEmpty()) {
 			if (attributes.contains(Attribute.ROLE)) {
-				String key = translator.translate("executor.participation.rating");
 				String value = getRoles(contexts);
-				KeyValue keyValue = new KeyValue(key, value);
-				uiContext.add(keyValue);
+				if (StringHelper.containsNonWhitespace(value)) {
+					String key = translator.translate("executor.participation.rating");
+					KeyValue keyValue = new KeyValue(key, value);
+					uiContext.add(keyValue);
+				}
 			}
 			if (attributes.contains(Attribute.COURSE)) {
-				String key = translator.translate("executor.participation.repository");
 				String value = getAudienceCourses(contexts);
-				KeyValue keyValue = new KeyValue(key, value);
-				uiContext.add(keyValue);
+				if (StringHelper.containsNonWhitespace(value)) {
+					String key = translator.translate("executor.participation.repository");
+					KeyValue keyValue = new KeyValue(key, value);
+					uiContext.add(keyValue);
+				}
 			}
 			if (attributes.contains(Attribute.CURRICULUM_ELEMENTS)) {
 				Collection<KeyValue> keyValues = getCurriculumElements(contexts);
-				uiContext.addAll(keyValues );
+				uiContext.addAll(keyValues);
 			}
 			if (attributes.contains(Attribute.TAXONOMY_LEVELS)) {
 				Collection<KeyValue> keyValues = getTaxonomyLevels(contexts);
-				uiContext.addAll(keyValues );
+				uiContext.addAll(keyValues);
 			}
 		}
 		
