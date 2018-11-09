@@ -140,7 +140,8 @@ public class MultipleChoiceController extends FormBasicController implements Eva
 
 	@Override
 	public boolean hasResponse() {
-		return !multipleChoiceResponses.isEmpty();
+		// Multiple choice is always optional.
+		return true;
 	}
 
 	@Override
