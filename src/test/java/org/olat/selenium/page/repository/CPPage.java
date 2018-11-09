@@ -117,18 +117,18 @@ public class CPPage {
 	}
 	
 	public CPPage changeStatus(RepositoryEntryStatusEnum status) {
-		By statusMenuBy = By.cssSelector("ul.o_entry_tools_status");
+		By statusMenuBy = By.cssSelector("ul.o_repo_tools_status");
 		if(!browser.findElement(statusMenuBy).isDisplayed()) {
-			By statusMenuCaret = By.cssSelector("a.o_entry_tools_status");
+			By statusMenuCaret = By.cssSelector("a.o_repo_tools_status");
 			browser.findElement(statusMenuCaret).click();
 			OOGraphene.waitElement(statusMenuBy, browser);
 		}
 		
-		By statusBy = By.cssSelector("ul.o_entry_tools_status>li>a.o_entry_status_" + status.name());
+		By statusBy = By.cssSelector("ul.o_repo_tools_status>li>a.o_repo_status_" + status.name());
 		browser.findElement(statusBy).click();
 		OOGraphene.waitBusy(browser);
 		
-		By statusViewBy = By.xpath("//li[contains(@class,'o_tool_dropdown')]/a[contains(@class,'o_entry_tools_status') and contains(@class,'o_entry_status_" + status + "')]");
+		By statusViewBy = By.xpath("//li[contains(@class,'o_tool_dropdown')]/a[contains(@class,'o_repo_tools_status')]/span[contains(@class,'o_repo_status_" + status + "')]");
 		OOGraphene.waitElement(statusViewBy, browser);
 		return this;
 	}

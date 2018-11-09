@@ -518,15 +518,12 @@ public class RepositoryManager {
 		boolean isAdministrator = false;
 		boolean isLearnRessourceManager = false;
 		
-		boolean canLaunch = false;
-		
+		final boolean canLaunch;
 		RepositoryEntryStatusEnum status = re.getEntryStatus();
 		if (roles.isGuestOnly()) {
-			if (re.isGuests()) {
-				// allow for guests if access granted for guests
-				canLaunch = status == RepositoryEntryStatusEnum.published
-						|| status == RepositoryEntryStatusEnum.closed;
-			}
+			// allow for guests if access granted for guests
+			canLaunch = re.isGuests()
+					&& (status == RepositoryEntryStatusEnum.published || status == RepositoryEntryStatusEnum.closed);
 		} else {
 			// allow if identity is owner
 			List<Object[]> roleAndDefs = repositoryEntryRelationDao.getRoleAndDefaults(identity, re);
@@ -606,14 +603,19 @@ public class RepositoryManager {
 				} else if(re.isAllUsers() || re.isGuests()) {
 					canLaunch = status == RepositoryEntryStatusEnum.published
 							|| status == RepositoryEntryStatusEnum.closed;
+				} else {
+					canLaunch = false;
 				}
-			} else if(re.isAllUsers() || re.isGuests()) {
-				// allow if access granted for users
-				canLaunch = (status == RepositoryEntryStatusEnum.published || status == RepositoryEntryStatusEnum.closed);
-			} else if(!canLaunch && (isGroupParticipant || isGroupCoach || isCourseParticipant || isCourseCoach
-					|| isCurriculumParticipant || isCurriculumCoach)) {
-				// check if it's a member
-				canLaunch = (status == RepositoryEntryStatusEnum.published || status == RepositoryEntryStatusEnum.closed);
+			} else if(isGroupCoach || isCourseCoach || isCurriculumCoach) {
+				canLaunch = status == RepositoryEntryStatusEnum.coachpublished
+						|| status == RepositoryEntryStatusEnum.published
+						|| status == RepositoryEntryStatusEnum.closed;
+			} else if(re.isAllUsers() || re.isGuests()
+					|| isGroupParticipant  || isCourseParticipant || isCurriculumParticipant) {
+				canLaunch = status == RepositoryEntryStatusEnum.published
+						|| status == RepositoryEntryStatusEnum.closed;
+			} else {
+				canLaunch = false;
 			}
 		}
 

@@ -24,6 +24,7 @@ import java.util.List;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.Dropdown;
+import org.olat.core.gui.components.dropdown.Dropdown.Spacer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.PopEvent;
@@ -64,13 +65,9 @@ public class BinderRuntimeController extends RepositoryEntryRuntimeController {
 
 	@Override
 	protected void initToolsMenuRuntime(Dropdown toolsDropdown) {
-		if (reSecurity.isEntryAdmin()) {
-			membersLink = LinkFactory.createToolLink("members", translate("details.members"), this, "o_sel_repo_members");
-			membersLink.setIconLeftCSS("o_icon o_icon-fw o_icon_membersmanagement");
-			toolsDropdown.addComponent(membersLink);
-		}
-		
 		if (reSecurity.isEntryAdmin() || reSecurity.isCoach()) {
+			toolsDropdown.addComponent(new Spacer(""));
+			
 			assessmentLink = LinkFactory.createToolLink("assessment", translate("command.openassessment"), this, "o_icon_assessment_tool");
 			assessmentLink.setElementCssClass("o_sel_course_assessment_tool");
 			toolsDropdown.addComponent(assessmentLink);
