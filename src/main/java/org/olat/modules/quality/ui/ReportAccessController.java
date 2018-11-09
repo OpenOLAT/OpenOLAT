@@ -211,7 +211,7 @@ public abstract class ReportAccessController extends FormBasicController {
 
 	private SingleSelection createEmailTriggerEl(ReportAccessRow row, QualityReportAccess access) {
 		String name =  "email-" + CodeHelper.getRAMUniqueID();
-		SingleSelection emailTriggerEl = uifactory.addDropdownSingleselect(name, flc, emailTriggerKeys, emailTriggerValues);
+		SingleSelection emailTriggerEl = uifactory.addDropdownSingleselect(name, null, flc, emailTriggerKeys, emailTriggerValues);
 		emailTriggerEl.setUserObject(row);
 		emailTriggerEl.addActionListener(FormEvent.ONCHANGE);
 		String accessKey = access != null? access.getEmailTrigger().name(): null;
