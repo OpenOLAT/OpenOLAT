@@ -5,7 +5,7 @@
          <p>The goal of the REST API is to provide an easy way to exchange
          URLs. It is also used to integrate with other systems such as student
          administration, external course administration and/or external learning group
-         administration.;</p>
+         administration.</p>
          
          <h2>Concepts</h2>
          <p>Representational State Transfer or REST is a style of architecture to be primarily used with
@@ -14,7 +14,7 @@
          (GET to retrieve resources, PUT to create new ones, POST to modify them, DELETE...),
          HTTP Headers and Media Types for content negotiation...</p>
          <p>In OpenOLAT, the JRS-311 is used as a backend for the implementation of our REST API. JSR-311 is a standard
-         from J2EE. We use the reference implementation from the following standard: <a href="https://jersey.dev.java.net/">Jersey</a>.</p>
+         from J2EE. We use the reference implementation from the following standard: <a href="https://jersey.github.io">Jersey</a>.</p>
          <img src="schema.jpg" title="schema" />
          <h4>Usage</h4>
          <p>
