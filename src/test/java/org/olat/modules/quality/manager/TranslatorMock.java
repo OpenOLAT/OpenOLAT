@@ -48,7 +48,7 @@ public class TranslatorMock implements Translator {
 	}
 
 	@Override
-	public String translate(String key, String[] args, boolean fallBackToDefaultLocale) {
+	public String translate(String key, String[] args, int recursionLevel, boolean fallBackToDefaultLocale) {
 		return null;
 	}
 

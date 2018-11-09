@@ -51,7 +51,6 @@ public class PackageTranslator implements Translator {
 	private Translator fallBackTranslator;
 	private final String packageName;
 	private Locale locale;
-	private int fallBackLevel = 0;
 	
 	private transient I18nModule i18nModule;
 	private transient I18nManager i18nManager;
@@ -70,10 +69,6 @@ public class PackageTranslator implements Translator {
 		i18nManager = CoreSpringFactory.getImpl(I18nManager.class);
 		i18nModule = CoreSpringFactory.getImpl(I18nModule.class);
 		return this;
-	}
-	
-	public void setFallBack(PackageTranslator fallback){
-		this.fallBackTranslator = fallback;
 	}
 
 	/**
@@ -148,8 +143,7 @@ public class PackageTranslator implements Translator {
 	 */
 	@Override
 	public String translate(String key) {
-		String val = translate(key, null);
-		return val;
+		return translate(key, null);
 	}
 	
 	@Override
@@ -157,25 +151,19 @@ public class PackageTranslator implements Translator {
 		return translate(key, args, Level.WARN);
 	}
 
-	/**
-	 * @see org.olat.core.gui.translator.Translator#translate(java.lang.String,
-	 *      java.lang.String[])
-	 */
 	@Override
 	public String translate(String key, String[] args, Level missingTranslationLogLevel) {
-		String val = translate(key,args,false );		
+		String val = translate(key,args, 0, false);		
 		// if still null -> fallback to default locale (if not in debug mode)
 		if (val == null) {
 			if (Settings.isDebuging()) {
 				val = getErrorMessage(key);
 			} else {
 				// try with fallBackToDefaultLocale 
-				val = translate(key, args, true );
+				val = translate(key, args, 0, true);
 			}
-		} 
-		if (val != null){
-			fallBackLevel = 0;
 		}
+
 		// else value got translated or there is at least an error message telling
 		// which key was not found.
 		// Note: val may be null if there is a localstrings file missing in the default language. use the online translation tool to double-check
@@ -183,16 +171,16 @@ public class PackageTranslator implements Translator {
 		// Error: ! even in default language: missing translation key! 
 		if (val == null) {
 			val = getErrorMessage(key);
-			// TODO: 13.02.2009 Workaround to fix  shibboleth-attribute  WARN : 'no translation ... in org.olat.course.condition...'
-			if (!packageName.startsWith("org.olat.course.condition")) {
-				if (missingTranslationLogLevel!=null && !missingTranslationLogLevel.equals(Level.OFF)) {
-					if (missingTranslationLogLevel.equals(Level.ERROR)) {
-						log.error(val);
-					} else if (missingTranslationLogLevel.equals(Level.WARN)) {
-						log.warn(val);
-					} else if (missingTranslationLogLevel.equals(Level.INFO)) {
-						log.info(val);
-					}
+			// Workaround to prevent the warning about shibboleth-attribute
+			if (!packageName.startsWith("org.olat.course.condition")
+					&& missingTranslationLogLevel!=null
+					&& !missingTranslationLogLevel.equals(Level.OFF)) {
+				if (missingTranslationLogLevel.equals(Level.ERROR)) {
+					log.error(val);
+				} else if (missingTranslationLogLevel.equals(Level.WARN)) {
+					log.warn(val);
+				} else if (missingTranslationLogLevel.equals(Level.INFO)) {
+					log.info(val);
 				}
 			}
 			// don't use error message in GUI for production, use key instead (OLAT-5896)
@@ -210,14 +198,13 @@ public class PackageTranslator implements Translator {
    * @see org.olat.core.gui.translator.Translator#translate(java.lang.String, java.lang.String[], boolean)
    */
 	@Override
-	public String translate(String key, String[] args, boolean fallBackToDefaultLocale) {
+	public String translate(String key, String[] args, int recursionLevel, boolean fallBackToDefaultLocale) {
 		boolean overlayEnabled = i18nModule.isOverlayEnabled();
 		String val = i18nManager.getLocalizedString(packageName, key, args, locale, overlayEnabled, fallBackToDefaultLocale);
 		if (val == null) {
 			// if not found, try the fallBackTranslator
-			if (fallBackTranslator != null && fallBackLevel < 10) {
-				fallBackLevel++;
-				val = fallBackTranslator.translate(key, args, fallBackToDefaultLocale);
+			if (fallBackTranslator != null && recursionLevel < 10) {
+				val = fallBackTranslator.translate(key, args, recursionLevel+1, fallBackToDefaultLocale);
 			} else if (fallBack) { // both fallback and fallbacktranslator does not
 				// make sense; latest translator in chain should
 				// fallback to application fallback.
@@ -228,9 +215,6 @@ public class PackageTranslator implements Translator {
 				}
 			}
 		} 
-		if (val != null){
-			fallBackLevel = 0;
-		}
 		return val;
 	}
 	
@@ -242,13 +226,9 @@ public class PackageTranslator implements Translator {
 	private String getErrorMessage(String key) {
 
 		StringBuilder sb = new StringBuilder(150);
-		sb.append(NO_TRANSLATION_ERROR_PREFIX).append(key);
-		sb.append(", fallBackLevel ").append(fallBackLevel);
-		sb.append(": in ").append(packageName);
-		sb.append(" (fallback:").append(fallBack);
-
-//		Reset fallBackLevel
-		fallBackLevel = 0;
+		sb.append(NO_TRANSLATION_ERROR_PREFIX).append(key)
+		  .append(": in ").append(packageName)
+		  .append(" (fallback:").append(fallBack);
 
 		String babel;
 		if (fallBackTranslator instanceof PackageTranslator) {

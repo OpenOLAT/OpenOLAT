@@ -62,12 +62,13 @@ public interface Translator {
 	public String translate(String key, String[] args, Level missingTranslationLogLevel);
 
 	/**
-	 * @param key
-	 * @param args the args to translate, may be null
-	 * @param fallBackToDefaultLocale  if true fall back to configurated default language. 
+	 * @param key The i18n key
+	 * @param args The arguments to translate, may be null
+	 * @param recursionLevel The current recursion level
+	 * @param fallBackToDefaultLocale  if true fall back to configurate default language. 
 	 * @return
 	 */
-	public String translate(String key, String[] args, boolean fallBackToDefaultLocale);
+	public String translate(String key, String[] args, int recursionLevel, boolean fallBackToDefaultLocale);
 
 	/**
 	 * @return

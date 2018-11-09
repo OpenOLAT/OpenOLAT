@@ -69,20 +69,19 @@ public class HeaderColumnTranslator implements Translator {
 		}
 		return val;
 	}
-	
-	/**
-	 * @see org.olat.core.gui.translator.Translator#translate(java.lang.String,
-	 *      java.lang.String[], boolean)
-	 */
-	public String translate(String key, String[] args, boolean fallBackToDefaultLocale) {
+
+	@Override
+	public String translate(String key, String[] args, int recursionLevel, boolean fallBackToDefaultLocale) {
 		// no fall back to default locale
 		return translate(key, args);
 	}
 
+	@Override
 	public Locale getLocale() {
 		return origTranslator.getLocale();
 	}
 
+	@Override
 	public void setLocale(Locale locale) {
 		origTranslator.setLocale(locale);
 	}
