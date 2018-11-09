@@ -596,12 +596,17 @@ public class RepositoryManager {
 				isEntryAdmin = true;
 			} else if(isPrincipal) {
 				canLaunch = true;
-			} else if (isAuthor && (status == RepositoryEntryStatusEnum.review
-					|| status == RepositoryEntryStatusEnum.coachpublished
-					|| status == RepositoryEntryStatusEnum.published
-					|| status == RepositoryEntryStatusEnum.closed)) {
+			} else if (isAuthor) {
 				// allow for authors if access granted at least for authors
-				canLaunch = (re.getCanCopy() || re.getCanDownload() || re.getCanReference());
+				if(re.getCanCopy() || re.getCanDownload() || re.getCanReference() ) {
+					canLaunch = status == RepositoryEntryStatusEnum.review
+							|| status == RepositoryEntryStatusEnum.coachpublished
+							|| status == RepositoryEntryStatusEnum.published
+							|| status == RepositoryEntryStatusEnum.closed;
+				} else if(re.isAllUsers() || re.isGuests()) {
+					canLaunch = status == RepositoryEntryStatusEnum.published
+							|| status == RepositoryEntryStatusEnum.closed;
+				}
 			} else if(re.isAllUsers() || re.isGuests()) {
 				// allow if access granted for users
 				canLaunch = (status == RepositoryEntryStatusEnum.published || status == RepositoryEntryStatusEnum.closed);
