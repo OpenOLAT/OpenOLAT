@@ -191,32 +191,34 @@ public class DataCollectionController extends BasicController implements TooledC
 	private Dropdown buildStatusDrowdown() {
 		QualityDataCollectionStatus actualStatus = dataCollection.getStatus();
 	
-		Dropdown statusDropdown = new Dropdown("process.states", "data.collection.status." + actualStatus.name().toLowerCase(), false, getTranslator());
-		statusDropdown.setElementCssClass("o_qual_tools_status o_qual_dc_status_" + actualStatus.name().toLowerCase());
+		Dropdown statusDropdown = new Dropdown("process.states", "data.collection.status", false, getTranslator());
+		statusDropdown.setElementCssClass("o_qual_tools_status o_with_labeled");
 		statusDropdown.setIconCSS("o_icon o_icon-fw o_icon_qual_dc_" + actualStatus.name().toLowerCase());
+		statusDropdown.setInnerText(translate("data.collection.status." + actualStatus.name().toLowerCase()));
+		statusDropdown.setInnerCSS("o_labeled o_qual_dc_status_" + actualStatus.name().toLowerCase());
 		statusDropdown.setOrientation(DropdownOrientation.normal);
 	
 		statusPreparationLink = LinkFactory.createToolLink("data.collection.status.preparation", translate("data.collection.status.preparation"), this);
 		statusPreparationLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_dc_preparation");
-		statusPreparationLink.setElementCssClass("o_labeled o_qual_status o_qual_dc_status_preparation");
+		statusPreparationLink.setElementCssClass("o_labeled o_qual_dc_status_preparation");
 		statusPreparationLink.setVisible(secCallback.canSetPreparation(dataCollection));
 		statusDropdown.addComponent(statusPreparationLink);
 	
 		statusReadyLink = LinkFactory.createToolLink("data.collection.status.ready", translate("data.collection.status.ready"), this);
 		statusReadyLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_dc_ready");
-		statusReadyLink.setElementCssClass("o_labeled o_qual_status o_qual_dc_status_ready");
+		statusReadyLink.setElementCssClass("o_labeled o_qual_dc_status_ready");
 		statusReadyLink.setVisible(secCallback.canSetReady(dataCollection));
 		statusDropdown.addComponent(statusReadyLink);
 		
 		statusRunningLink = LinkFactory.createToolLink("data.collection.status.running", translate("data.collection.status.running"), this);
 		statusRunningLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_dc_running");
-		statusRunningLink.setElementCssClass("o_labeled o_qual_status o_qual_dc_status_running");
+		statusRunningLink.setElementCssClass("o_labeled o_qual_dc_status_running");
 		statusRunningLink.setVisible(secCallback.canSetRunning(dataCollection));
 		statusDropdown.addComponent(statusRunningLink);
 		
 		statusFinishedLink = LinkFactory.createToolLink("data.collection.status.finished", translate("data.collection.status.finished"), this);
 		statusFinishedLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_dc_finished");
-		statusFinishedLink.setElementCssClass("o_labeled o_qual_status o_qual_dc_status_finished");
+		statusFinishedLink.setElementCssClass("o_labeled o_qual_dc_status_finished");
 		statusFinishedLink.setVisible(secCallback.canSetFinished(dataCollection));
 		statusDropdown.addComponent(statusFinishedLink);
 		
@@ -227,7 +229,7 @@ public class DataCollectionController extends BasicController implements TooledC
 		QualityDataCollectionStatus actualStatus = dataCollection.getStatus();
 		Link statusLink = LinkFactory.createToolLink("status.link",
 				translate("data.collection.status." + actualStatus.name().toLowerCase()), this);
-		statusLink.setElementCssClass("o_qual_tools_status o_qual_dc_status_" + actualStatus.name().toLowerCase());
+		statusLink.setElementCssClass("o_labeled o_qual_dc_status_" + actualStatus.name().toLowerCase());
 		statusLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_dc_" + actualStatus.name().toLowerCase());
 		return statusLink;
 	}

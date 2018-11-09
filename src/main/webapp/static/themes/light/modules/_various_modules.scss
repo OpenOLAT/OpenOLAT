@@ -678,13 +678,14 @@ ul.o_assessment_docs>li:last-child {
 
 /* label */
 %o_labeled,
-.o_labeled {
+.o_labeled,
+a.o_labeled {
+	display: inline-block;
 	text-transform: uppercase;
 	text-align: center;
 	text-decoration: none;
-	vertical-align: text-bottom;
-	font-size: 75% !important;
-	font-weight: bold !important;
+	vertical-align: middle;
+	font-size: 75%;
 	line-height: 1;
 	white-space: nowrap;
 	border: 1px solid;
@@ -692,13 +693,14 @@ ul.o_assessment_docs>li:last-child {
 	padding: 2px 5px;
 	background-color: $o-labeled_bg-color;
 	color: $o-labeled_color;
+	position: relative;
 }
-.o_labeled_light {
+%o_labeled_light,
+.o_labeled_light,
+a.o_labeled_light {
 	@extend %o_labeled;
+	font-weight: bold;
 	background-color: 	$o-labeled-light-bg-color;
- }
- .dropdown-menu.o_labeled {
- 	background-color: inherit;
  }
  
  /* Multiselect dropdown element */

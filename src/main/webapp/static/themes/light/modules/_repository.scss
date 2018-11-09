@@ -138,67 +138,13 @@ tr.o_entry_deleted {
 
 }
 
-/* dropdown element in toolbar */
-a.o_entry_tools_status,
-.dropdown-toggle.o_entry_tools_status  {
-	@extend %o_labeled;
-}
-.dropdown-toggle.o_entry_tools_status > i {
-	margin: 0 0 3px 0;
-}
-
-.dropdown-menu.o_entry_tools_status {
-	cursor:pointer;
-}
 
 /* status element in dropdown menu */
-a.o_entry_tools_status {
+a.o_repo_tools_status {
+	cursor:pointer;
 	margin: 0 2px 2px 2px;
 	text-align: left;
 }
-
-a.o_entry_status_preparation {
-    background-color: $o-repo-preparation-color !important;
-    border-color: $o-repo-preparation-color;
-    color: $o-repo-status-color-bright !important;
-}
-
-a.o_entry_status_review {
-    background-color:$o-repo-review-color !important;
-    border-color: $o-repo-review-color;
-    color: $o-repo-status-color-bright !important;
-}
-
-a.o_entry_status_coachpublished {
-    background-color: $o-repo-coachpublished-color !important;
-    border-color: $o-repo-coachpublished-color;
-    color: $o-repo-status-color-bright !important;
-}
-
-a.o_entry_status_published {
-    background-color: $o-repo-published-color !important;
-    border-color: $o-repo-published-color;
-    color: $o-repo-status-color-bright !important;
-}
-
-a.o_entry_status_closed {
-    background-color: $o-repo-closed-color !important;
-    border-color: $o-repo-closed-color;
-    color: $o-repo-status-color-bright !important;
-}
-
-a.o_entry_status_trash {
-    background-color: $o-repo-trash-color !important;
-    border-color: $o-repo-trash-color;
-    color: $o-repo-status-color-bright !important;
-}
-
-a.o_entry_status_deleted {
-    background-color: $o-repo-deleted-color !important;
-    border-color: $o-repo-deleted-color;
-    color: $o-repo-status-color-bright !important;
-}
-
 .o_repo_status_filter {
 	.control-label {
 		margin-right: 0.5em;
@@ -216,8 +162,74 @@ a.o_entry_status_deleted {
 	}
 }
 
-/* Status light */
-.o_labeled_light {
+
+/* Status full style, e.g. in toolbar */
+.o_labeled,
+.o_toolbar .o_tools_container a.o_labeled {
+	&.o_repo_status_preparation {
+	    background-color: $o-repo-preparation-color;
+	    border-color: $o-repo-preparation-color;
+	    color: $o-repo-status-color-bright;
+	}
+	&.o_repo_status_review {
+	    background-color:$o-repo-review-color;
+	    border-color: $o-repo-review-color;
+	    color: $o-repo-status-color-bright;
+	}
+	&.o_repo_status_coachpublished {
+	    background-color: $o-repo-coachpublished-color;
+	    border-color: $o-repo-coachpublished-color;
+	    color: $o-repo-status-color-bright;
+	}
+	&.o_repo_status_published {
+	    background-color: $o-repo-published-color;
+	    border-color: $o-repo-published-color;
+	    color: $o-repo-status-color-bright;
+	}
+	&.o_repo_status_closed {
+	    background-color: $o-repo-closed-color;
+	    border-color: $o-repo-closed-color;
+	    color: $o-repo-status-color-bright;
+	}
+	&.o_repo_status_trash {
+	    background-color: $o-repo-trash-color;
+	    border-color: $o-repo-trash-color;
+	    color: $o-repo-status-color-bright;
+	}
+	&.o_repo_status_deleted {
+	    background-color: $o-repo-deleted-color;
+	    border-color: $o-repo-deleted-color;
+	    color: $o-repo-status-color-bright;
+	}	
+}
+/* hover effect for menu pulldowns in toolbar */
+.o_toolbar .o_tools_container a.o_labeled:hover {
+	&.o_repo_status_preparation {
+	    background-color: darken($o-repo-preparation-color,10%);
+	}
+	&.o_repo_status_review {
+	    background-color: darken($o-repo-review-color,10%);
+	}
+	&.o_repo_status_coachpublished {
+	    background-color: darken($o-repo-coachpublished-color,10%);
+	}
+	&.o_repo_status_published {
+	    background-color: darken($o-repo-published-color,10%);
+	}
+	&.o_repo_status_closed {
+	    background-color: darken($o-repo-closed-color,10%);
+	}
+	&.o_repo_status_trash {
+	    background-color: darken($o-repo-trash-color,10%);
+	}
+	&.o_repo_status_deleted {
+	    background-color: darken($o-repo-deleted-color,10%);
+	}	
+}
+
+/* Status light style, mainly for in-table renderings */
+.o_labeled_light,
+.o_toolbar .o_tools_container a.o_labeled_light {
 	&.o_repo_status_preparation {
 	    border-color: 		$o-repo-preparation-color;
 	    color: 				$o-repo-preparation-color;

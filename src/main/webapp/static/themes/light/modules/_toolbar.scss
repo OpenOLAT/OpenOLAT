@@ -238,9 +238,10 @@
 			i {
 				font-size: $o-toolbar-size-icon-md;
 			}
-			span {
+			span.o_label {
 				display: block;
 				font-size: $o-toolbar-size-text-md;
+				text-align: center;
 			}
 			.o_icon_caret {
 				position: absolute;
@@ -253,7 +254,7 @@
 				i {
 					font-size: $o-toolbar-size-icon-sm;
 				}
-				span, .o_icon_caret {
+				span.o_label, .o_icon_caret {
 					font-size: $o-toolbar-size-text-sm;
 				}
 				.o_icon_caret {
@@ -267,14 +268,84 @@
 				i {
 					font-size: $o-toolbar-size-icon-xs;
 				}
-				span {
+				span.o_label {
 					display: none;
 				}
 			}				
 		}
 		.dropdown-menu {
 			text-align: left;
+		}			
+		
+		/* drop down with status style rendering */
+		.o_inner_wrapper.o_labeled,
+		.o_inner_wrapper.o_labeled_light {
+			line-height: ($o-toolbar-size-icon-md - 2px);
+			font-size: 70% !important;
+			padding: 0 18px 0 4px;
+			position: relative;
+			top: -2px;
+						
+			i {
+				font-size: ($o-toolbar-size-icon-md - 6px) !important;
+				margin: 0 0 3px 0;
+			}
+			
+			+ .o_icon_caret {
+				position: absolute;
+				right: 5px;
+				top: 2px;
+				margin-right: 0;
+			}
+			
+			@media (min-width: $screen-xs-max) and (max-width: $screen-sm-max) { 
+				line-height: ($o-toolbar-size-icon-sm - 2px);
+				i {
+					font-size: ($o-toolbar-size-icon-sm - 6px) !important;
+				}
+				+ .o_icon_caret {
+					right: 5px;
+					top: 2px;
+					margin-right: 0;
+					font-size: $o-toolbar-size-caret-sm;				
+				}
+			}
+			@media (max-width: $screen-xs-max) {
+				padding: 0 18px 0 4px;
+				i {
+					font-size: $o-toolbar-size-icon-xs;
+				}
+				+ .o_icon_caret {
+					right: 15px;
+					top: 2px;
+					margin-right: 0;
+				}
+				span.o_inner_text,
+				span.o_label {
+					display: none;
+				}
+			}				
+			
 		}
+		/* dropdown element in toolbar */
+		.dropdown-toggle.o_with_labeled {
+			.o_inner_wrapper.o_labeled  + .o_icon_caret {
+				color: $o-repo-status-color-bright !important;
+			}
+		}
+		.dropdown-menu.o_with_labeled {
+			padding: 0;
+			margin: 0;
+			.o_labeled {
+				text-align: left;
+			}
+			& >li>a {
+				padding: 5px 5px;
+				margin: 1px;
+			}
+		}			
+		
+		
 	}	
 	
 	.o_tools_left {

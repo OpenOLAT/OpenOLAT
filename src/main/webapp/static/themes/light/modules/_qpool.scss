@@ -7,19 +7,6 @@
 	white-space: nowrap;
 }
 
-/* dropdown element in toolbar */
-a.o_qpool_tools_status,
-.dropdown-toggle.o_qpool_tools_status  {
-	@extend %o_labeled;
-}
-.dropdown-toggle.o_qpool_tools_status > i {
-	margin: 0 0 3px 0;
-}
-
-.dropdown-menu.o_qpool_tools_status {
-	cursor:pointer;
-}
-
 /* status element in dropdown menu */
 a.o_qpool_status {
 	margin: 0 2px 2px 2px;
@@ -27,57 +14,75 @@ a.o_qpool_status {
 }
 
 /* Status */
-a.o_qpool_status_draft,
-.dropdown-toggle.o_qpool_status_draft {
-    background-color: 	$o-qpool-draft-color !important;
-    border-color: 		$o-qpool-draft-color;
-    color: 				$o-qpool-status-color-bright	!important;
+.o_labeled,
+.o_toolbar .o_tools_container a.o_labeled {
+	&.o_qpool_status_draft {
+	    background-color: 	$o-qpool-draft-color;
+	    border-color: 		$o-qpool-draft-color;
+	    color: 				$o-qpool-status-color-bright;
+	}
+	&.o_qpool_status_review {
+	    background-color: 	$o-qpool-review-color;
+	    border-color: 		$o-qpool-review-color;
+	    color: 				$o-qpool-status-color-bright;
+	}
+	&.o_qpool_status_revised {
+	    background-color: 	$o-qpool-revised-color;
+	    border-color: 		$o-qpool-revised-color;
+	    color: 				$o-qpool-status-color-bright;
+	}
+	&.o_qpool_status_finalVersion {
+	    background-color: 	$o-qpool-finalVersion-color;
+	    border-color: 		$o-qpool-finalVersion-color;
+	    color: 				$o-qpool-status-color-bright;
+	}
+	&.o_qpool_status_endOfLife {
+	    background-color: 	$o-qpool-endOfLife-color;
+	    border-color: 		$o-qpool-endOfLife-color;
+	    color: 				$o-qpool-status-color-bright;
+	}
 }
-a.o_qpool_status_review,
-.dropdown-toggle.o_qpool_status_review {
-    background-color: 	$o-qpool-review-color !important;
-    border-color: 		$o-qpool-review-color;
-    color: 				$o-qpool-status-color-bright !important;
-}
-a.o_qpool_status_revised,
-.dropdown-toggle.o_qpool_status_revised {
-    background-color: 	$o-qpool-revised-color !important;
-    border-color: 		$o-qpool-revised-color;
-    color: 				$o-qpool-status-color-bright !important;
-}
-a.o_qpool_status_finalVersion,
-.dropdown-toggle.o_qpool_status_finalVersion {
-    background-color: 	$o-qpool-finalVersion-color !important;
-    border-color: 		$o-qpool-finalVersion-color;
-    color: 				$o-qpool-status-color-bright !important;
-}
-a.o_qpool_status_endOfLife,
-.dropdown-toggle.o_qpool_status_endOfLife {
-    background-color: 	$o-qpool-endOfLife-color !important;
-    border-color: 		$o-qpool-endOfLife-color;
-    color: 				$o-qpool-status-color-bright !important;
+.o_toolbar .o_tools_container a.o_labeled:hover {
+	&.o_qpool_status_draft {
+	    background-color: 	darken($o-qpool-draft-color,10%);
+	}
+	&.o_qpool_status_review {
+	    background-color: 	darken($o-qpool-review-color,10%);
+	}
+	&.o_qpool_status_revised {
+	    background-color: 	darken($o-qpool-revised-color,10%);
+	}
+	&.o_qpool_status_finalVersion {
+	    background-color: 	darken($o-qpool-finalVersion-color,10%);
+	}
+	&.o_qpool_status_endOfLife {
+	    background-color: 	darken($o-qpool-endOfLife-color,10%);
+	}
 }
 
 /* Status light */
-.o_qpool_status_draft_light {
-    border-color: 		$o-qpool-draft-color;
-    color: 				$o-qpool-draft-color;
-}
-.o_qpool_status_review_light {
-    border-color: 		$o-qpool-review-color;
-    color: 				$o-qpool-review-color-dark;
-}
-.o_qpool_status_revised_light {
-    border-color: 		$o-qpool-revised-color;
-    color: 				$o-qpool-revised-color;
-}
-.o_qpool_status_finalVersion_light {
-    border-color: 		$o-qpool-finalVersion-color;
-    color: 				$o-qpool-finalVersion-color;
-}
-.o_qpool_status_endOfLife_light {
-    border-color: 		$o-qpool-endOfLife-color;
-    color: 				$o-qpool-endOfLife-color;
+.o_labeled_light,
+.o_toolbar .o_tools_container a.o_labeled_light {
+	&.o_qpool_status_draft_light {
+	    border-color: 		$o-qpool-draft-color;
+	    color: 				$o-qpool-draft-color;
+	}
+	&.o_qpool_status_review_light {
+	    border-color: 		$o-qpool-review-color;
+	    color: 				$o-qpool-review-color-dark;
+	}
+	&.o_qpool_status_revised_light {
+	    border-color: 		$o-qpool-revised-color;
+	    color: 				$o-qpool-revised-color;
+	}
+	&.o_qpool_status_finalVersion_light {
+	    border-color: 		$o-qpool-finalVersion-color;
+	    color: 				$o-qpool-finalVersion-color;
+	}
+	&.o_qpool_status_endOfLife_light {
+	    border-color: 		$o-qpool-endOfLife-color;
+	    color: 				$o-qpool-endOfLife-color;
+	}
 }
 
 /* Status arrows */

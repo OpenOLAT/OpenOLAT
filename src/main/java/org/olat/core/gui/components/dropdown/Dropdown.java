@@ -30,6 +30,7 @@ import org.olat.core.gui.components.ComponentCollection;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 
 /**
  * 
@@ -47,6 +48,8 @@ public class Dropdown extends AbstractComponent implements ComponentCollection {
 	private boolean translated = false;
 	private DropdownOrientation orientation = DropdownOrientation.normal;
 	private String iconCSS;
+	private String innerText;
+	private String innerCSS;
 	private List<Component> components = new ArrayList<>();
 	
 	public Dropdown(String name, String i18nKey, boolean domReplacementWrapperRequired, Translator translator) {
@@ -192,10 +195,56 @@ public class Dropdown extends AbstractComponent implements ComponentCollection {
 	}
 
 	@Override
-	public ComponentRenderer getHTMLRendererSingleton() {
+	public ComponentRenderer getHTMLRendererSingleton() {		
 		return RENDERER;
 	}
 	
+	/**
+	 * 
+	 * @return The text displayed as part of the button or NULL if not used
+	 *         (default)
+	 */
+	public String getInnerText() {
+		return innerText;
+	}
+
+	/**
+	 * Set an optional text displayed together with the dropdown icon as an
+	 * icon-text combination.
+	 * 
+	 * @param innerText The text displayed as part of the button or NULL if not used
+	 *                  (default)
+	 */
+	public void setInnerText(String innerText) {
+		if (StringHelper.containsNonWhitespace(innerText)) {
+			this.innerText = innerText;
+		} else {			
+			this.innerText = null;
+		}
+	}
+
+	/**
+	 * @return CSS classes that should surround the inner dropdown wrapper or NULL
+	 *         (default)
+	 */
+	public String getInnerCSS() {
+		return innerCSS;
+	}
+
+	/**
+	 * Set an option CSS class that is added to the wrapper element surrounding the
+	 * icon or icon-text combination.
+	 * 
+	 * @param innerCSS
+	 */
+	public void setInnerCSS(String innerCSS) {
+		if (StringHelper.containsNonWhitespace(innerCSS)) {
+			this.innerCSS = innerCSS;
+		} else {			
+			this.innerCSS = null;
+		}
+	}
+
 	public static class Spacer extends AbstractComponent {
 		
 		public Spacer(String name) {

@@ -54,10 +54,23 @@ public class DropdownRenderer extends DefaultComponentRenderer {
 		if(StringHelper.containsNonWhitespace(dropdown.getElementCssClass())) {
 			sb.append(" ").append(dropdown.getElementCssClass());
 		}
-		sb.append("' data-toggle='dropdown'>");
+		sb.append("' data-toggle='dropdown'>");		
+
+		String dropdownInnerCss = dropdown.getInnerCSS();
+		sb.append("<span class='o_inner_wrapper ").append(dropdownInnerCss, (dropdownInnerCss != null)).append("'>");
+		// With or without Icon
 		if(StringHelper.containsNonWhitespace(dropdown.getIconCSS())) {
 			sb.append("<i class='").append(dropdown.getIconCSS()).append("'>&nbsp;</i>");
 		}
+		String dropdownInnerText = dropdown.getInnerText();
+		sb.append("<span class='o_inner_text'>", (dropdownInnerText != null));
+		sb.append(dropdownInnerText, (dropdownInnerText != null));
+		sb.append("</span>", (dropdownInnerText != null));
+		sb.append("</span>");
+
+		// Caret to indicate the drop-down nature of the button
+		sb.append(" <i class='o_icon o_icon_caret'> </i> ");
+		// Button label, normally rendered below the button, but within the clickable link
 		String i18nKey = dropdown.getI18nKey();
 		if(StringHelper.containsNonWhitespace(i18nKey)) {
 			String label;
@@ -66,9 +79,8 @@ public class DropdownRenderer extends DefaultComponentRenderer {
 			} else {
 				label = dropdown.getTranslator().translate(dropdown.getI18nKey());
 			}
-			sb.append("<span>").append(label).append("</span>");
+			sb.append("<span class='o_label'>").append(label).append("</span>");
 		}
-		sb.append(" <i class='o_icon o_icon_caret'> </i>");
 		
 		if(dropdown.isButton()) {
 			sb.append("</button>");

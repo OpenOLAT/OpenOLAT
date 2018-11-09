@@ -336,9 +336,11 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	protected void initStatus(Dropdown statusDropdown) {
 		RepositoryEntry entry = getRepositoryEntry();
 		RepositoryEntryStatusEnum entryStatus = entry.getEntryStatus();
-		statusDropdown.setI18nKey(entryStatus.i18nKey());
+		statusDropdown.setI18nKey("details.label.status");
+		statusDropdown.setElementCssClass("o_repo_tools_status o_with_labeled");
 		statusDropdown.setIconCSS("o_icon o_icon_repo_status_".concat(entryStatus.name()));
-		statusDropdown.setElementCssClass("o_entry_tools_status o_entry_status_".concat(entryStatus.name()));
+		statusDropdown.setInnerText(translate(entryStatus.i18nKey()));
+		statusDropdown.setInnerCSS("o_labeled o_repo_status_".concat(entryStatus.name()));
 		
 		if(entryStatus == RepositoryEntryStatusEnum.preparation || entryStatus == RepositoryEntryStatusEnum.review
 				|| entryStatus == RepositoryEntryStatusEnum.coachpublished || entryStatus == RepositoryEntryStatusEnum.published
@@ -352,9 +354,9 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	}
 	
 	protected Link initStatus(Dropdown statusDropdown, RepositoryEntryStatusEnum entryStatus, RepositoryEntryStatusEnum currentStatus) {
-		Link statusLink = LinkFactory.createToolLink("stauts.".concat(entryStatus.name()), translate(entryStatus.i18nKey()), this);
+		Link statusLink = LinkFactory.createToolLink("status.".concat(entryStatus.name()), translate(entryStatus.i18nKey()), this);
 		statusLink.setIconLeftCSS("o_icon o_icon-fw o_icon_repo_status_".concat(entryStatus.name()));
-		statusLink.setElementCssClass("o_entry_tools_status o_entry_status_".concat(entryStatus.name()));
+		statusLink.setElementCssClass("o_labeled o_repo_status_".concat(entryStatus.name()));
 		statusLink.setVisible(entryStatus != currentStatus);
 		statusDropdown.addComponent(statusLink);
 		return statusLink;

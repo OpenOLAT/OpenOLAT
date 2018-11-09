@@ -1,44 +1,43 @@
 .o_qual_main {
 
 	/* --- Data collection dc_status in configuration view --- */
-	
-	a.o_qual_tools_status, .dropdown-toggle.o_qual_tools_status  {
-		@extend %o_labeled;
+	.o_labeled,
+	.o_toolbar .o_tools_container a.o_labeled {
+		&.o_qual_dc_status_preparation {
+			background-color: 	$o-qual-dc-preparation-color;
+			border-color: 		$o-qual-dc-preparation-color;
+			color: 				$o-qual-status-color-bright;
+		}
+		&.o_qual_dc_status_ready {
+			background-color: 	$o-qual-dc-ready-color;
+			border-color: 		$o-qual-dc-ready-color;
+			color: 				$o-qual-status-color-bright;
+		}
+		&.o_qual_dc_status_running {
+			background-color: 	$o-qual-dc-running-color;
+			border-color: 		$o-qual-dc-running-color;
+			color: 				$o-qual-status-color-bright;
+		}
+		&.o_qual_dc_status_finished {
+			background-color: 	$o-qual-dc-finished-color;
+			border-color: 		$o-qual-dc-finished-color;
+			color: 				$o-qual-status-color-bright;
+		}
+	}	
+	.o_toolbar .o_tools_container a.o_labeled:hover {
+		&.o_qual_dc_status_preparation {
+			background-color: 	darken($o-qual-dc-preparation-color,10%);
+		}
+		&.o_qual_dc_status_ready {
+			background-color: 	darken($o-qual-dc-ready-color,10%);
+		}
+		&.o_qual_dc_status_running {
+			background-color: 	darken($o-qual-dc-running-color,10%);
+		}
+		&.o_qual_dc_status_finished {
+			background-color: 	darken($o-qual-dc-finished-color,10%);
+		}
 	}
-	.dropdown-toggle.o_qual_tools_status > i {
-		margin: 0 0 3px 0;
-	}
-
-	.dropdown-menu.o_qual_tools_status {
-		cursor:pointer;
-	}
-
-	a.o_qual_status {
-		margin: 0 2px 2px 2px;
-		text-align: left;
-	}
-
-	a.o_qual_dc_status_preparation, .dropdown-toggle.o_qual_dc_status_preparation {
-		background-color: 	$o-qual-dc-preparation-color !important;
-		border-color: 		$o-qual-dc-preparation-color;
-		color: 				$o-qual-status-color-bright	!important;
-	}
-	a.o_qual_dc_status_ready, .dropdown-toggle.o_qual_dc_status_ready {
-		background-color: 	$o-qual-dc-ready-color !important;
-		border-color: 		$o-qual-dc-ready-color;
-		color: 				$o-qual-status-color-bright !important;
-	}
-	a.o_qual_dc_status_running, .dropdown-toggle.o_qual_dc_status_running {
-		background-color: 	$o-qual-dc-running-color !important;
-		border-color: 		$o-qual-dc-running-color;
-		color: 				$o-qual-status-color-bright !important;
-	}
-	a.o_qual_dc_status_finished, .dropdown-toggle.o_qual_dc_status_finished {
-		background-color: 	$o-qual-dc-finished-color !important;
-		border-color: 		$o-qual-dc-finished-color;
-		color: 				$o-qual-status-color-bright !important;
-	}
-	
 	
 	/* --- Data collection status in data collection list --- */
 
@@ -52,22 +51,24 @@
 			}
 		}
 	}
-
-	.o_qual_dc_status_preparation_light {
-		border-color: 		$o-qual-dc-preparation-color;
-		color: 				$o-qual-dc-preparation-color;
-	}
-	.o_qual_dc_status_ready_light {
-		border-color: 		$o-qual-dc-ready-color;
-		color: 				$o-qual-dc-ready-color-dark;
-	}
-	.o_qual_dc_status_running_light {
-		border-color: 		$o-qual-dc-running-color;
-		color: 				$o-qual-dc-running-color;
-	}
-	.o_qual_dc_status_finished_light {
-		border-color: 		$o-qual-dc-finished-color;
-		color: 				$o-qual-dc-finished-color;
+	.o_labeled_light,
+	.o_toolbar .o_tools_container a.o_labeled_light {		
+		&.o_qual_dc_status_preparation_light {
+			border-color: 		$o-qual-dc-preparation-color;
+			color: 				$o-qual-dc-preparation-color;
+		}
+		&.o_qual_dc_status_ready_light {
+			border-color: 		$o-qual-dc-ready-color;
+			color: 				$o-qual-dc-ready-color-dark;
+		}
+		&.o_qual_dc_status_running_light {
+			border-color: 		$o-qual-dc-running-color;
+			color: 				$o-qual-dc-running-color;
+		}
+		&.o_qual_dc_status_finished_light {
+			border-color: 		$o-qual-dc-finished-color;
+			color: 				$o-qual-dc-finished-color;
+		}
 	}
 	
 	
