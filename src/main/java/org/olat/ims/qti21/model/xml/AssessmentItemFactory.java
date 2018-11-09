@@ -635,24 +635,23 @@ public class AssessmentItemFactory {
 		
 		String[] sources = new String[]{ "A", "B" };
 		for(int i=0; i<sources.length; i++) {
-			appendSimpleAssociableChoice(sourceMatchSet, sources[i], 1, 1); 
+			appendSimpleAssociableChoice(sourceMatchSet, sources[i], sources[i], 1, 1);
 		}
 		
 		SimpleMatchSet targetMatchSet = new SimpleMatchSet(matchInteraction);
 		matchInteraction.getSimpleMatchSets().add(targetMatchSet);
-		String[] targets = new String[]{ unanswered, right, wrong };
-		for(int i=0; i<targets.length; i++) {
-			appendSimpleAssociableChoice(targetMatchSet, targets[i], 0, 0); 
-		}
+		appendSimpleAssociableChoice(targetMatchSet, "unanswered", unanswered, 0, 0);
+		appendSimpleAssociableChoice(targetMatchSet, "right", right, 0, 0);
+		appendSimpleAssociableChoice(targetMatchSet, "wrong", wrong, 0, 0);
 		
 		return matchInteraction;
 	}
 	
-	public static void appendSimpleAssociableChoice(SimpleMatchSet matchSet, String value, int matchMax, int matchMin) {
+	public static void appendSimpleAssociableChoice(SimpleMatchSet matchSet, String identifierPrefix, String value, int matchMax, int matchMin) {
 		SimpleAssociableChoice choice = new SimpleAssociableChoice(matchSet);
 		choice.setMatchMax(matchMax);
 		choice.setMatchMin(matchMin);
-		choice.setIdentifier(IdentifierGenerator.newNumberAsIdentifier(value));
+		choice.setIdentifier(IdentifierGenerator.newNumberAsIdentifier(identifierPrefix));
 		P question = getParagraph(choice, value);
 		choice.getFlowStatics().add(question);
 		matchSet.getSimpleAssociableChoices().add(choice);
