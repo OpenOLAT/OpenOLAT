@@ -80,7 +80,8 @@ public class QTI21AssessmentMainLayoutController extends MainLayoutBasicControll
 		ChiefController cc = getWindowControl().getWindowBackOffice().getChiefController();
 		if (cc != null) {
 			thebaseChief = cc;
-			thebaseChief.getScreenMode().setMode(Mode.full);
+			String businessPath = getWindowControl().getBusinessControl().getAsString();
+			thebaseChief.getScreenMode().setMode(Mode.full, businessPath);
 		} else {
 			Windows.getWindows(ureq).setFullScreen(Boolean.TRUE);
 		}
@@ -95,13 +96,14 @@ public class QTI21AssessmentMainLayoutController extends MainLayoutBasicControll
 	public void deactivate(UserRequest ureq) {
 		getWindowControl().pop();
 		if (fullScreen) {
+			String businessPath = getWindowControl().getBusinessControl().getAsString();
 			if(thebaseChief != null) {
-				thebaseChief.getScreenMode().setMode(Mode.standard);
+				thebaseChief.getScreenMode().setMode(Mode.standard, businessPath);
 			} else if (ureq != null){
 				ChiefController cc = getWindowControl().getWindowBackOffice().getChiefController();
 				if (cc != null) {
 					thebaseChief = cc;
-					thebaseChief.getScreenMode().setMode(Mode.standard);
+					thebaseChief.getScreenMode().setMode(Mode.standard, businessPath);
 				}
 			}
 		}

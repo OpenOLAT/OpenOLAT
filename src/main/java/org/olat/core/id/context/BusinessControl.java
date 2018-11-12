@@ -54,9 +54,9 @@ import java.util.List;
  */
 public interface BusinessControl {
 	
-	public final static String START_TAG = "[";
-	public final static String END_TAG = "]";
-	public final static String DELIMITER_TAG = ":";
+	public static final String START_TAG = "[";
+	public static final String END_TAG = "]";
+	public static final String DELIMITER_TAG = ":";
 		
 	/**
 	 * Get String represation of BusinessControl. Used to save it as string (serializing)

@@ -370,7 +370,7 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 			
 			//make sure to see the navigation bar
 			ChiefController cc = Windows.getWindows(ureq).getChiefController();
-			cc.getScreenMode().setMode(Mode.standard);
+			cc.getScreenMode().setMode(Mode.standard, null);
 			
 			fireEvent(ureq, new Event("continue"));
 			String businessPath = "[MyCoursesSite:0]";

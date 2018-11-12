@@ -327,6 +327,7 @@ public class AuthenticatedDispatcher implements Dispatcher {
 				// render the window
 				Window w = windowBackOffice.getWindow();
 				w.dispatchRequest(ureq, true); // renderOnly
+				chiefController.resetReload();
 			} catch (Exception e) {
 				// try to render something
 				try {

@@ -194,7 +194,7 @@ public class LayoutMain3ColsController extends MainLayoutBasicController impleme
 		ChiefController cc = getWindowControl().getWindowBackOffice().getChiefController();
 		if (cc != null) {
 			thebaseChief = cc;
-			thebaseChief.getScreenMode().setMode(Mode.full);
+			thebaseChief.getScreenMode().setMode(Mode.full, null);
 		} else {
 			Windows.getWindows(ureq).setFullScreen(Boolean.TRUE);
 		}
@@ -209,12 +209,12 @@ public class LayoutMain3ColsController extends MainLayoutBasicController impleme
 		getWindowControl().pop();
 		if (fullScreen) {
 			if(thebaseChief != null) {
-				thebaseChief.getScreenMode().setMode(Mode.standard);
+				thebaseChief.getScreenMode().setMode(Mode.standard, null);
 			} else if (ureq != null){
 				ChiefController cc = getWindowControl().getWindowBackOffice().getChiefController();
 				if (cc != null) {
 					thebaseChief = cc;
-					thebaseChief.getScreenMode().setMode(Mode.standard);
+					thebaseChief.getScreenMode().setMode(Mode.standard, null);
 				}
 			}
 		}

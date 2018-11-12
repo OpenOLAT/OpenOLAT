@@ -380,7 +380,8 @@ public class LTIRunController extends BasicController {
 			ChiefController cc = getWindowControl().getWindowBackOffice().getChiefController();
 			if (cc != null) {
 				thebaseChief = cc;
-				thebaseChief.getScreenMode().setMode(Mode.full);
+				String businessPath = getWindowControl().getBusinessControl().getAsString();
+				thebaseChief.getScreenMode().setMode(Mode.full, businessPath);
 			}
 			fullScreen = true;
 			getWindowControl().pushToMainArea(run);
@@ -392,7 +393,8 @@ public class LTIRunController extends BasicController {
 	private void closeBasicLTI() {
 		if (fullScreen && thebaseChief != null) {
 			getWindowControl().pop();
-			thebaseChief.getScreenMode().setMode(Mode.standard);
+			String businessPath = getWindowControl().getBusinessControl().getAsString();
+			thebaseChief.getScreenMode().setMode(Mode.standard, businessPath);
 		}
 		mainPanel.setContent(startPage);
 	}

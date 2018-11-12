@@ -45,27 +45,17 @@ public class BaseFullWebappPopupBrowserWindow extends BaseFullWebappController i
 			BaseFullWebappControllerParts baseFullWebappControllerParts) {
 		super(ureq, baseFullWebappControllerParts);
 		// apply custom css if available
-		if (contentCtrl != null && contentCtrl instanceof MainLayoutController) {
+		if (contentCtrl instanceof MainLayoutController) {
 			MainLayoutController mainLayoutCtr = (MainLayoutController) contentCtrl;
 			addCurrentCustomCSSToView(mainLayoutCtr.getCustomCSS());
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.olat.core.gui.control.generic.popup.PopupBrowserWindow#open(org.olat
-	 * .core.gui.UserRequest)
-	 */
 	@Override
 	public void open(UserRequest ureq) {
 		ureq.getDispatchResult().setResultingWindow(getWindowControl().getWindowBackOffice().getWindow());
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.generic.popup.PopupBrowserWindow#getPopupWindowControl()
-	 */
 	@Override
 	public WindowControl getPopupWindowControl() {
 		return getWindowControl();

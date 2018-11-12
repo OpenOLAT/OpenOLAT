@@ -121,7 +121,7 @@ public class LayoutMain3ColsBackController extends MainLayoutBasicController imp
 		ChiefController cc = getWindowControl().getWindowBackOffice().getChiefController();
 		if (cc != null) {
 			thebaseChief = cc;
-			thebaseChief.getScreenMode().setMode(Mode.full);
+			thebaseChief.getScreenMode().setMode(Mode.full, null);
 		}
 		fullScreen = true;
 	}
@@ -133,7 +133,7 @@ public class LayoutMain3ColsBackController extends MainLayoutBasicController imp
 	public void deactivate() {
 		getWindowControl().pop();
 		if (fullScreen && thebaseChief != null) {
-			thebaseChief.getScreenMode().setMode(Mode.standard);
+			thebaseChief.getScreenMode().setMode(Mode.standard, null);
 		}
 	}
 

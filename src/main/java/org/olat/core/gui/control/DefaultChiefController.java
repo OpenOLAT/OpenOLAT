@@ -70,8 +70,13 @@ public abstract class DefaultChiefController extends DefaultController implement
 	}
 
 	@Override
-	public boolean wishReload(UserRequest ureq, boolean erase) {
-		return false;
+	public Reload wishReload(UserRequest ureq, boolean erase) {
+		return Reload.NO_RELOAD;
+	}
+	
+	@Override
+	public void resetReload() {
+		//
 	}
 
 	@Override

@@ -279,8 +279,9 @@ public abstract class AbstractTeacherOverviewController extends BasicController 
 				loadModel(currentSearchParams);
 			}
 			getWindowControl().pop();
+			String businessPath = getWindowControl().getBusinessControl().getAsString();
 			getWindowControl().getWindowBackOffice()
-				.getChiefController().getScreenMode().setMode(Mode.standard);
+				.getChiefController().getScreenMode().setMode(Mode.standard, businessPath);
 			cleanUp();
 		} else if(currentLecturesBlockCtrl == source || pendingLecturesBlockCtrl == source
 				|| nextLecturesBlockCtrl == source ||  closedLecturesBlockCtrl == source) {
@@ -368,7 +369,7 @@ public abstract class AbstractTeacherOverviewController extends BasicController 
 		listenTo(rollCallWizardCtrl);
 		
 		ChiefController cc = getWindowControl().getWindowBackOffice().getChiefController();
-		cc.getScreenMode().setMode(Mode.full);
+		cc.getScreenMode().setMode(Mode.full, null);
 		getWindowControl().pushToMainArea(rollCallWizardCtrl.getInitialComponent());
 		
 		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LECTURE_BLOCK_ROLL_CALL_STARTED, getClass(),

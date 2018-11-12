@@ -67,6 +67,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
+import org.olat.core.gui.control.Reload;
 import org.olat.core.gui.control.ScreenMode;
 import org.olat.core.gui.control.ScreenMode.Mode;
 import org.olat.core.gui.control.VetoableCloseController;
@@ -280,7 +281,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		Object fullScreen = Windows.getWindows(ureq).getFullScreen();
 		if(Boolean.TRUE.equals(fullScreen)) {
 			Windows.getWindows(ureq).setFullScreen(null);
-			screenMode.setMode(Mode.full);
+			screenMode.setMode(Mode.full, null);
 		}
 
 		// register for cycle event to be able to adjust the guimessage place
@@ -968,15 +969,20 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 	}
 	
 	@Override
-	public boolean wishReload(UserRequest ureq, boolean erase) {
+	public Reload wishReload(UserRequest ureq, boolean erase) {
 		boolean screen = getScreenMode().wishScreenModeSwitch(erase);
-		boolean r = (reload == null ? false : reload.booleanValue());
+		String screenBusinessPath = null;
+		if(screen && StringHelper.containsNonWhitespace(getScreenMode().getBusinessPath())) {
+			screenBusinessPath = BusinessControlFactory.getInstance()
+					.getURLFromBusinessPathString(getScreenMode().getBusinessPath());
+		}
+		boolean r = reload != null && reload.booleanValue();
 		if(erase && reload != null) {
 			reload = null;
 		}
 		boolean l = checkAssessmentGuard(ureq, lockMode);
 
-		return l || r || screen;
+		return new Reload(l || r || screen, screenBusinessPath);
 	}
 
 	@Override
@@ -984,6 +990,12 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		boolean screen = getScreenMode().wishScreenModeSwitch(erase);
 		boolean l = checkAssessmentGuard(ureq, lockMode);
 		return screen || l; 
+	}
+
+	@Override
+	public void resetReload() {
+		getScreenMode().reset();
+		reload = null;
 	}
 
 	@Override

@@ -66,7 +66,12 @@ public interface ChiefController extends Controller {
 	 * @param erase
 	 * @return
 	 */
-	public boolean wishReload(UserRequest ureq, boolean erase);
+	public Reload wishReload(UserRequest ureq, boolean erase);
+	
+	/**
+	 * Make sure a reload will not be triggered.
+	 */
+	public void resetReload();
 	
 	/**
 	 * 

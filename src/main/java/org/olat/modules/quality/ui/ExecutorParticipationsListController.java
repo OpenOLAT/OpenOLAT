@@ -170,9 +170,11 @@ public class ExecutorParticipationsListController extends FormBasicController im
 	}
 
 	private void doDeactivateExecution(UserRequest ureq) {
-		addToHistory(ureq, this);
+		WindowControl wControl = addToHistory(ureq, this);
 		getWindowControl().pop();
-		getWindowControl().getWindowBackOffice().getChiefController().getScreenMode().setMode(Mode.standard);
+		String businessPath = wControl.getBusinessControl().getAsString();
+		getWindowControl().getWindowBackOffice().getChiefController()
+			.getScreenMode().setMode(Mode.standard, businessPath);
 		cleanUp();
 		tableEl.reloadData();
 	}
@@ -205,7 +207,8 @@ public class ExecutorParticipationsListController extends FormBasicController im
 		listenTo(executionCtrl);
 		
 		ChiefController cc = getWindowControl().getWindowBackOffice().getChiefController();
-		cc.getScreenMode().setMode(Mode.full);
+		String businessPath = getWindowControl().getBusinessControl().getAsString();
+		cc.getScreenMode().setMode(Mode.full, businessPath);
 		getWindowControl().pushToMainArea(executionCtrl.getInitialComponent());
 	}
 
