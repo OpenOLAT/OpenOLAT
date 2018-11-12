@@ -19,16 +19,39 @@
 /*** General style of the email text ***/
 .o_email_body {
 	font-family: $o-email-font-family;
+	max-width: $o-email-max-width;
 
 	.o_email_content {
 		margin: $o-email-content-margin;
+		padding: $o-email-content-padding;
+		
+		h1 {
+			background-color: $o-email-content-h1-bg;
+			color: $o-email-content-h1-color;
+			padding: 20px $o-email-content-padding;
+			margin-bottom: 30px;
+			margin-left: -$o-email-content-padding;
+			margin-right: -$o-email-content-padding;
+			font-size: x-large;
+		}
+		
+		strong {
+			color: $o-email-content-strong-color;
+		}
 	}
 	.o_email_footer {
-		background: $o-email-footer-bg;
-		border: $o-email-footer-border;
-		border-radius: $o-email-footer-border-radius;
-		padding: $o-email-footer-padding;
-		margin: $o-email-footer-margin;
+		font-size: smaller;
+		color: $o-email-footer-color;
+		border-top: 5px solid $o-email-footer-top-color;
+		padding: 4px 12px;
+		margin-top: 1em;
+	}
+}
+
+// Use the font of the OpenOLAT theme inside the OpenOLAT mailbox.
+.o_mail_message {
+	.o_email_body {
+		font-family: inherit;
 	}
 }
 
@@ -61,6 +84,7 @@
 		a {
 			margin-right: 5px;
 			margin-bottom: 0.5em;
+			font-weight: bold;
 			&:last-child {
 				margin-right: 0;
 			}

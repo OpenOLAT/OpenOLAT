@@ -291,16 +291,16 @@ class QualityMailing {
 		for (int i = 0; i < rubricStatistics.size(); i++) {
 			RubricStatistic rubricStatistic = rubricStatistics.get(i);
 			
+			String index = String.valueOf(i + 1);
 			String rubricName = rubricStatistic.getRubric().getName();
-			String rubricTranslatedName = StringHelper.containsNonWhitespace(rubricName)
-					? translator.translate("report.access.email.rubric.name", new String[] {rubricName})
-					: "";
+			String rubricTranslatedIndexName = StringHelper.containsNonWhitespace(rubricName)
+					? translator.translate("report.access.email.rubric.index.name", new String[] {index, rubricName})
+					: translator.translate("report.access.email.rubric.index", new String[] {index});
 			RubricRating rating = rubricStatistic.getTotalStatistic().getRating();
 			String translatedRating = translator.translate(getRatingI18n(rating));
 			
 			String[] args = {
-					String.valueOf(i + 1),                                    // rubric index
-					rubricTranslatedName,                                     // rubric name
+					rubricTranslatedIndexName,                                // rubric index and name
 					EvaluationFormFormatter.formatDouble(
 							rubricStatistic.getTotalStatistic().getAvg()),    // average
 					translatedRating                                          // rating
