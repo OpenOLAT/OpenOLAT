@@ -70,6 +70,7 @@ import org.olat.modules.lecture.model.LectureBlockRow;
 import org.olat.modules.lecture.model.RollCallSecurityCallbackImpl;
 import org.olat.modules.lecture.ui.TeacherOverviewDataModel.TeachCols;
 import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer;
+import org.olat.modules.lecture.ui.component.YesNoCellRenderer;
 import org.olat.modules.lecture.ui.event.ReopenLectureBlockEvent;
 import org.olat.modules.lecture.ui.export.LectureBlockExport;
 import org.olat.modules.lecture.ui.export.LecturesBlockPDFExport;
@@ -145,6 +146,7 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.startTime, new TimeFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.endTime, new TimeFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.lectureBlock));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.compulsory, new YesNoCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.location));
 		if(withTeachers) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.teachers));
@@ -168,7 +170,7 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 		tableEl.setCustomizeColumns(false);
 		tableEl.setNumOfRowsEnabled(false);
 		tableEl.setEmtpyTableMessageKey(emptyI18nKey);
-		tableEl.setAndLoadPersistedPreferences(ureq, "lecture-teacher-overview-".concat(id));
+		tableEl.setAndLoadPersistedPreferences(ureq, "lecture-teacher-overview-v2-".concat(id));
 	}
 	
 	public int getRowCount() {

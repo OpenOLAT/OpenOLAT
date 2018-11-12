@@ -76,6 +76,7 @@ import org.olat.modules.lecture.ui.blockimport.BlocksImport_1_InputStep;
 import org.olat.modules.lecture.ui.blockimport.ImportedLectureBlock;
 import org.olat.modules.lecture.ui.blockimport.ImportedLectureBlocks;
 import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer;
+import org.olat.modules.lecture.ui.component.YesNoCellRenderer;
 import org.olat.modules.lecture.ui.export.LectureBlockAuditLogExport;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
@@ -143,6 +144,7 @@ public class LectureListRepositoryController extends FormBasicController {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, BlockCols.id));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.title));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.compulsory, new YesNoCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.location));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.date, new DateFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.startTime, new TimeFlexiCellRenderer(getLocale())));
@@ -171,7 +173,7 @@ public class LectureListRepositoryController extends FormBasicController {
 		FlexiTableSortOptions options = new FlexiTableSortOptions();
 		options.setDefaultOrderBy(new SortKey(BlockCols.date.name(), false));
 		tableEl.setSortSettings(options);
-		tableEl.setAndLoadPersistedPreferences(ureq, "repo-lecture-block-list");
+		tableEl.setAndLoadPersistedPreferences(ureq, "repo-lecture-block-list-v2");
 	}
 	
 	private void loadModel() {

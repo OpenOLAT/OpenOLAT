@@ -184,11 +184,16 @@ public class EditLectureBlockController extends FormBasicController {
 		}
 
 		List<Identity> coaches = repositoryService.getMembers(entry, RepositoryEntryRelationType.entryAndCurriculums, GroupRoles.coach.name());
-		coaches = new ArrayList<>(new HashSet<>(coaches));
-		teacherKeys = new String[coaches.size() + 1];
-		teacherValues = new String[coaches.size() + 1];
-		for(int i=coaches.size() + 1; i-->1; ) {
-			Identity coach = coaches.get(i - 1);
+		List<Identity> allPossibleTeachers = new ArrayList<>();
+		allPossibleTeachers.addAll(coaches);
+		if(teachers != null) {// eventually external teachers
+			allPossibleTeachers.addAll(teachers);
+		}
+		allPossibleTeachers = new ArrayList<>(new HashSet<>(allPossibleTeachers));
+		teacherKeys = new String[allPossibleTeachers.size() + 1];
+		teacherValues = new String[allPossibleTeachers.size() + 1];
+		for(int i=allPossibleTeachers.size() + 1; i-->1; ) {
+			Identity coach = allPossibleTeachers.get(i - 1);
 			teacherKeys[i] = coach.getKey().toString();
 			teacherValues[i] = userManager.getUserDisplayName(coach);
 		}
@@ -447,7 +452,9 @@ public class EditLectureBlockController extends FormBasicController {
 		lectureBlock.setCompulsory(compulsoryEl.isAtLeastSelected(1));
 		lectureBlock.setDescription(descriptionEl.getValue());
 		lectureBlock.setPreparation(preparationEl.getValue());
-		lectureBlock.setLocation(locationEl.getValue());
+		if(locationEl.isEnabled()) {// autocompleter don't collect value if disabled
+			lectureBlock.setLocation(locationEl.getValue());
+		}
 		
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(dateEl.getDate());

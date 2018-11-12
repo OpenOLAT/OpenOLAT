@@ -62,6 +62,7 @@ public class LectureListRepositoryDataModel extends DefaultFlexiTableDataModel<L
 		switch(BlockCols.values()[col]) {
 			case id: return row.getKey();
 			case title: return  row.getLectureBlock().getTitle();
+			case compulsory: return row.getLectureBlock().isCompulsory();
 			case location: return row.getLectureBlock().getLocation();
 			case date: return row.getLectureBlock().getStartDate();
 			case startTime: return row.getLectureBlock().getStartDate();
@@ -87,7 +88,8 @@ public class LectureListRepositoryDataModel extends DefaultFlexiTableDataModel<L
 		endTime("table.header.end.time"),
 		teachers("table.header.teachers"),
 		tools("table.header.actions"),
-		status("table.header.status")
+		status("table.header.status"),
+		compulsory("table.header.compulsory.long")
 		;
 		
 		private final String i18nKey;
