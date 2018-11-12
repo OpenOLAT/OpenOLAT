@@ -50,7 +50,8 @@ public class PageEditorComponent extends FormBaseComponentImpl implements Compon
 	private static final PageEditorComponentRenderer RENDERER = new PageEditorComponentRenderer();
 	
 	private PageEditorModel editorModel;
-	
+
+	private final Link container1Column;
 	private final Link container2Columns;
 	private final Link container3Columns;
 	private final Link container4Columns;
@@ -59,7 +60,8 @@ public class PageEditorComponent extends FormBaseComponentImpl implements Compon
 	public PageEditorComponent(String name) {
 		super(name);
 		setDomReplacementWrapperRequired(false);
-		
+
+		container1Column = LinkFactory.createLink("container.col.1", "text.column.1", null, this);
 		container2Columns = LinkFactory.createLink("container.col.2", "text.column.2", null, this);
 		container3Columns = LinkFactory.createLink("container.col.3", "text.column.3", null, this);
 		container4Columns = LinkFactory.createLink("container.col.4", "text.column.4", null, this);
@@ -71,6 +73,10 @@ public class PageEditorComponent extends FormBaseComponentImpl implements Compon
 
 	public void setModel(PageEditorModel editorModel) {
 		this.editorModel = editorModel;
+	}
+
+	public Link getContainer1Column() {
+		return container1Column;
 	}
 	
 	public Link getContainer2Columns() {
@@ -87,7 +93,9 @@ public class PageEditorComponent extends FormBaseComponentImpl implements Compon
 
 	@Override
 	public void dispatchEvent(UserRequest ureq, Component source, Event event) {
-		if(source == container2Columns) {
+		if(source == container1Column) {
+			processContainerEvent(ureq, 1);
+		} else if(source == container2Columns) {
 			processContainerEvent(ureq, 2);
 		} else if(source == container3Columns) {
 			processContainerEvent(ureq, 3);
@@ -172,6 +180,9 @@ public class PageEditorComponent extends FormBaseComponentImpl implements Compon
 
 	@Override
 	public Component getComponent(String name) {
+		if(container1Column.getComponentName().equals(name)) {
+			return container1Column;
+		}
 		if(container2Columns.getComponentName().equals(name)) {
 			return container2Columns;
 		}
@@ -201,6 +212,7 @@ public class PageEditorComponent extends FormBaseComponentImpl implements Compon
 	public Iterable<Component> getComponents() {
 		List<EditorFragment> fragments = editorModel.getFragments();
 		List<Component> components = new ArrayList<>(fragments.size() + 20);
+		components.add(container1Column);
 		components.add(container2Columns);
 		components.add(container3Columns);
 		components.add(container4Columns);

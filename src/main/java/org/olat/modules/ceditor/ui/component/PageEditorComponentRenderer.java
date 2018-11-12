@@ -183,6 +183,7 @@ public class PageEditorComponentRenderer extends DefaultComponentRenderer {
 		renderColumnLink(renderer, sb, cmp.getContainer4Columns(), numOfColumns == 4, ubu, translator, renderResult, args);
 		renderColumnLink(renderer, sb, cmp.getContainer3Columns(), numOfColumns == 3, ubu, translator, renderResult, args);
 		renderColumnLink(renderer, sb, cmp.getContainer2Columns(), numOfColumns == 2, ubu, translator, renderResult, args);
+		renderColumnLink(renderer, sb, cmp.getContainer1Column(), numOfColumns == 1, ubu, translator, renderResult, args);
 	}
 	
 	private void renderColumnLink(Renderer renderer, StringOutput sb, Link link, boolean selected,

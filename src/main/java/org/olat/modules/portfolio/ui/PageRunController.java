@@ -738,6 +738,10 @@ public class PageRunController extends BasicController implements TooledControll
 		private final List<PageElementHandler> creationHandlers = new ArrayList<>();
 		
 		public PortfolioPageEditorProvider() {
+			//handler for container
+			ContainerHandler containerHandler = new ContainerHandler();
+			handlers.add(containerHandler);
+			creationHandlers.add(containerHandler);
 			//handler for title
 			TitlePageElementHandler titleRawHandler = new TitlePageElementHandler();
 			handlers.add(titleRawHandler);
@@ -772,10 +776,6 @@ public class PageRunController extends BasicController implements TooledControll
 			SpacerElementHandler hrHandler = new SpacerElementHandler();
 			handlers.add(hrHandler);
 			creationHandlers.add(hrHandler);
-			//handler for container
-			ContainerHandler containerHandler = new ContainerHandler();
-			handlers.add(containerHandler);
-			creationHandlers.add(containerHandler);
 			//handler for HTML code
 			HTMLRawPageElementHandler htlmRawHandler = new HTMLRawPageElementHandler();
 			handlers.add(htlmRawHandler);
