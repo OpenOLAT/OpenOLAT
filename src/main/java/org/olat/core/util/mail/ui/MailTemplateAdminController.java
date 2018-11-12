@@ -20,13 +20,20 @@
 package org.olat.core.util.mail.ui;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.TextAreaElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.helpers.GUISettings;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
@@ -43,12 +50,15 @@ public class MailTemplateAdminController extends FormBasicController  {
 	private static final int MAX_LENGTH = 10 * 1000 * 1000;
 	
 	private TextElement templateEl;
+	private FormLink resetButton;
+	
+	private DialogBoxController confirmResetCtrl;
 	
 	@Autowired
 	private MailManager mailManager;
 	@Autowired
 	private GUISettings guiSettings;
-	
+
 	public MailTemplateAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, null, Util.createPackageTranslator(MailModule.class, ureq.getLocale()));
 		initForm(ureq);
@@ -71,8 +81,8 @@ public class MailTemplateAdminController extends FormBasicController  {
 		final FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
 		buttonGroupLayout.setRootForm(mainForm);
 		formLayout.add(buttonGroupLayout);
-		
 		uifactory.addFormSubmitButton("save", buttonGroupLayout);
+		resetButton = uifactory.addFormLink("mail.admin.reset.button", buttonGroupLayout, Link.BUTTON);
 	}
 	
 	@Override
@@ -80,6 +90,24 @@ public class MailTemplateAdminController extends FormBasicController  {
 		//
 	}
 	
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source == resetButton) {
+			doConfirmReset(ureq);
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (confirmResetCtrl == source) {
+			if (DialogBoxUIFactory.isYesEvent(event)) {
+				doReset(ureq);
+			}
+		}
+		super.event(ureq, source, event);
+	}
+
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
@@ -102,4 +130,15 @@ public class MailTemplateAdminController extends FormBasicController  {
 		mailManager.setMailTemplate(value);
 		getWindowControl().setInfo("saved");
 	}
+	
+	private void doConfirmReset(UserRequest ureq) {
+		confirmResetCtrl = activateYesNoDialog(ureq, null, translate("mail.admin.reset.confirm"), confirmResetCtrl);
+	}
+
+	private void doReset(UserRequest ureq) {
+		mailManager.deleteCustomMailTemplate();
+		String template = mailManager.getMailTemplate();
+		templateEl.setValue(template);
+	}
+
 }

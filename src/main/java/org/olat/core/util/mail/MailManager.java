@@ -144,6 +144,8 @@ public interface MailManager {
 	
 	public void setMailTemplate(String template);
 	
+	public void deleteCustomMailTemplate();
+	
 	public String getDefaultMailTemplate();
 
 	

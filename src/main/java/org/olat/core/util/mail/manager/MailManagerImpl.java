@@ -446,7 +446,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 
 	private void deleteMail(DBMailLight mail, Identity identity, boolean forceRemoveRecipient) {
 		boolean delete = true;
-		List<DBMailRecipient> updates = new ArrayList<DBMailRecipient>();
+		List<DBMailRecipient> updates = new ArrayList<>();
 		if(mail.getFrom() != null && mail.getFrom().getRecipient() != null) {
 			if(identity.equalsByPersistableKey(mail.getFrom().getRecipient())) {
 				DBMailRecipient from = mail.getFrom();
@@ -476,7 +476,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 		}
 		
 		if(delete) {
-			Set<String> paths = new HashSet<String>();
+			Set<String> paths = new HashSet<>();
 			
 			//all marked as deleted -> delete the mail
 			List<DBMailAttachment> attachments = getAttachments(mail);
@@ -598,7 +598,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 
 	@Override
 	public String getMailTemplate() {
-		File baseFolder = new File(WebappHelper.getUserDataRoot(), MAIL_TEMPLATE_FOLDER);	
+		File baseFolder = new File(WebappHelper.getUserDataRoot(), MAIL_TEMPLATE_FOLDER);
 		File template = new File(baseFolder, "mail_template.html");
 		if(template.exists()) {
 			try(InputStream in = new FileInputStream(template)) {
@@ -623,6 +623,19 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 			IOUtils.copy(reader, out, "UTF-8");
 		} catch (IOException e) {
 			log.error("", e);
+		}
+	}
+	
+	@Override
+	public void deleteCustomMailTemplate() {
+		File baseFolder = new File(WebappHelper.getUserDataRoot(), MAIL_TEMPLATE_FOLDER);
+		File customTemplate = new File(baseFolder, "mail_template.html");
+		if (customTemplate.exists()) {
+			try {
+				customTemplate.delete();
+			} catch (Exception e) {
+				log.error("", e);
+			}
 		}
 	}
 
@@ -886,9 +899,9 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 			
 			boolean makeRealMail = makeRealMail(toId, cc, bccLists);
 			Address fromAddress = null;
-			List<Address> toAddress = new ArrayList<Address>();
-			List<Address> ccAddress = new ArrayList<Address>();
-			List<Address> bccAddress = new ArrayList<Address>();
+			List<Address> toAddress = new ArrayList<>();
+			List<Address> ccAddress = new ArrayList<>();
+			List<Address> bccAddress = new ArrayList<>();
 			
 			if(fromId != null) {
 				DBMailRecipient fromRecipient = new DBMailRecipient();
@@ -1243,7 +1256,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 				}
 			}
 
-			List<Address> toList = new ArrayList<Address>();
+			List<Address> toList = new ArrayList<>();
 			if(StringHelper.containsNonWhitespace(to)) {
 				Address[] toAddresses = InternetAddress.parse(to);
 				for(Address toAddress:toAddresses) {
@@ -1256,7 +1269,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 				} 
 			}
 			
-			List<Address> ccList = new ArrayList<Address>();
+			List<Address> ccList = new ArrayList<>();
 			if(ccId != null) {
 				Address ccAddress = createAddress(ccId, result, true);
 				if(ccAddress != null) {
