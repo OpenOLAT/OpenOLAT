@@ -211,7 +211,7 @@ public class UserAdminPage {
 		browser.findElement(usernameBy).sendKeys(username);
 		
 		By searchBy = By.cssSelector(".o_sel_user_search_form a.btn-default");
-		browser.findElement(searchBy).click();
+		OOGraphene.click(searchBy, browser);
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
