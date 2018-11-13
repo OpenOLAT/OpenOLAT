@@ -206,10 +206,11 @@ public class ExecutorParticipationsListController extends FormBasicController im
 		executionCtrl = new ExecutionController(ureq, bwControl, participation);
 		listenTo(executionCtrl);
 		
-		ChiefController cc = getWindowControl().getWindowBackOffice().getChiefController();
-		String businessPath = getWindowControl().getBusinessControl().getAsString();
+		WindowControl wControl = getWindowControl();
+		ChiefController cc = wControl.getWindowBackOffice().getChiefController();
+		String businessPath = executionCtrl.getWindowControlForDebug().getBusinessControl().getAsString();
 		cc.getScreenMode().setMode(Mode.full, businessPath);
-		getWindowControl().pushToMainArea(executionCtrl.getInitialComponent());
+		wControl.pushToMainArea(executionCtrl.getInitialComponent());
 	}
 
 	@Override
