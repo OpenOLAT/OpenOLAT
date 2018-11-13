@@ -166,6 +166,7 @@ public class DataCollectionListController extends FormBasicController implements
 					dataCollectionCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
 				} else {
 					tableEl.reset();
+					showInfo("data.collection.forbidden");
 				}
 			} else {
 				doOpenDataCollection(ureq, type, row.getDataCollection());

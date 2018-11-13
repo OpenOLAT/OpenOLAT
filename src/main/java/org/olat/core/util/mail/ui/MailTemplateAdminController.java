@@ -19,6 +19,9 @@
  */
 package org.olat.core.util.mail.ui;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -37,6 +40,8 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.helpers.GUISettings;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
+import org.olat.core.util.mail.MailBundle;
+import org.olat.core.util.mail.MailContent;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailModule;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,8 +56,10 @@ public class MailTemplateAdminController extends FormBasicController  {
 	
 	private TextElement templateEl;
 	private FormLink resetButton;
+	private FormLink previewButton;
 	
 	private DialogBoxController confirmResetCtrl;
+	private DialogBoxController previewCtrl;
 	
 	@Autowired
 	private MailManager mailManager;
@@ -76,13 +83,14 @@ public class MailTemplateAdminController extends FormBasicController  {
 		emailCssEl.setEnabled(false);
 
 		String def = mailManager.getMailTemplate();
-		templateEl = uifactory.addTextAreaElement("mail.template", "mail.template", -1, 25, 50, true, false, def, formLayout);
+		templateEl = uifactory.addTextAreaElement("mail.template", "mail.template", -1, 12, 50, true, false, def, formLayout);
 
 		final FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
 		buttonGroupLayout.setRootForm(mainForm);
 		formLayout.add(buttonGroupLayout);
 		uifactory.addFormSubmitButton("save", buttonGroupLayout);
 		resetButton = uifactory.addFormLink("mail.admin.reset.button", buttonGroupLayout, Link.BUTTON);
+		previewButton = uifactory.addFormLink("mail.admin.preview.button", buttonGroupLayout, Link.BUTTON);
 	}
 	
 	@Override
@@ -94,6 +102,8 @@ public class MailTemplateAdminController extends FormBasicController  {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == resetButton) {
 			doConfirmReset(ureq);
+		} else if (source == previewButton) {
+			doPreview(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -102,7 +112,7 @@ public class MailTemplateAdminController extends FormBasicController  {
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (confirmResetCtrl == source) {
 			if (DialogBoxUIFactory.isYesEvent(event)) {
-				doReset(ureq);
+				doReset();
 			}
 		}
 		super.event(ureq, source, event);
@@ -135,10 +145,20 @@ public class MailTemplateAdminController extends FormBasicController  {
 		confirmResetCtrl = activateYesNoDialog(ureq, null, translate("mail.admin.reset.confirm"), confirmResetCtrl);
 	}
 
-	private void doReset(UserRequest ureq) {
+	private void doReset() {
 		mailManager.deleteCustomMailTemplate();
 		String template = mailManager.getMailTemplate();
 		templateEl.setValue(template);
+	}
+	
+	private void doPreview(UserRequest ureq) {
+		String title = translate("mail.admin.preview.title");
+		String body = translate("mail.admin.preview.text");
+		MailBundle bundle = new MailBundle();
+		bundle.setContent("Subject", body);
+		MailContent mail = mailManager.decorateMail(bundle);
+		List<String> buttonLabels = Arrays.asList(translate("ok"));
+		activateGenericDialog(ureq, title, mail.getBody(), buttonLabels, previewCtrl);
 	}
 
 }

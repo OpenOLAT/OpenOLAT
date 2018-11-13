@@ -23,7 +23,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
@@ -210,13 +209,8 @@ public class Theme {
 	}
 
 	private Path getEmailCssPath() {
-		Path themes = Paths.get(getThemesFolderPath());
-		String themeIdentifier = CoreSpringFactory.getImpl(GUISettings.class).getGuiThemeIdentifyer();
-		Path css = themes.resolve(themeIdentifier).resolve(CUSTOM_EMAIL_CSS_FILENAME);
-		if (Files.notExists(css)) {
-			css = themes.resolve(DEFAULTTHEME).resolve(CUSTOM_EMAIL_CSS_FILENAME);
-		}
-		return css;
+		File themeFolder = getThemeFolder();
+		return themeFolder.toPath().resolve(CUSTOM_EMAIL_CSS_FILENAME);
 	}
 
 	private File getThemeFolder() {
