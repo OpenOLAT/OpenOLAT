@@ -221,12 +221,15 @@ public class QualityHomeController extends BasicController implements Activateab
 	}
 
 	private void doOpenUserParticipations(UserRequest ureq) {
-		stackPanel.popUpToRootController(ureq);
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance(ORES_MY_TYPE, 0l);
-		WindowControl bwControl = addToHistory(ureq, ores, null);
-		executorParticipationListCtrl = new ExecutorParticipationsListController(ureq, bwControl, secCallback);
-		listenTo(executorParticipationListCtrl);
-		stackPanel.pushController(translate("breadcrumb.executor.participations"), executorParticipationListCtrl);
+		// reuse existing list controller allow full screen mode et prevent unwanted disposed controllers
+		if(!stackPanel.hasController(executorParticipationListCtrl)) {
+			stackPanel.popUpToRootController(ureq);
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance(ORES_MY_TYPE, 0l);
+			WindowControl bwControl = addToHistory(ureq, ores, null);
+			executorParticipationListCtrl = new ExecutorParticipationsListController(ureq, bwControl, secCallback);
+			listenTo(executorParticipationListCtrl);
+			stackPanel.pushController(translate("breadcrumb.executor.participations"), executorParticipationListCtrl);
+		}
 	}
 	
 	private void doOpenSuggestion(UserRequest ureq) {

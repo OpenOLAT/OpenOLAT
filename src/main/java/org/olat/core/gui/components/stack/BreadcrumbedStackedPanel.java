@@ -277,6 +277,10 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Bre
 		}
 		return controller;
 	}
+	
+	public boolean hasController(Controller controller) {
+		return getIndex(controller) >= 0;
+	}
 
 	@Override
 	public void popContent() {
