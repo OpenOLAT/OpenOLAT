@@ -153,8 +153,9 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 		}
 	
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.externalRef, "details"));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.entry, "details"));
+		String select = withPrint ? "details" : null;
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.externalRef, select));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.entry, select));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.plannedLectures));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.attendedLectures));
 		if(authorizedAbsenceEnabled) {
@@ -244,21 +245,23 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 		removeAsListenerAndDispose(lectureBlocksCtrl);
 		
 		RepositoryEntry entry = repositoryService.loadByKey(statistics.getRepoKey());
-		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("RepositoryEntry", entry.getKey()), null);
-		lectureBlocksCtrl = new ParticipantLectureBlocksController(ureq, swControl, entry, assessedIdentity);
-		listenTo(lectureBlocksCtrl);
-		stackPanel.pushController(entry.getDisplayname(), lectureBlocksCtrl);
+		if(entry == null) {
+			showWarning("warning.repositoryentry.deleted");
+			loadModel();
+		} else {
+			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("RepositoryEntry", entry.getKey()), null);
+			lectureBlocksCtrl = new ParticipantLectureBlocksController(ureq, swControl, entry, assessedIdentity);
+			listenTo(lectureBlocksCtrl);
+			stackPanel.pushController(entry.getDisplayname(), lectureBlocksCtrl);
+		}
 	}
 	
 	private void doPrint(UserRequest ureq) {
-		ControllerCreator printControllerCreator = new ControllerCreator() {
-			@Override
-			public Controller createController(UserRequest lureq, WindowControl lwControl) {
-				lwControl.getWindowBackOffice().getChiefController().addBodyCssClass("o_lectures_print");
-				Controller printCtrl = new ParticipantLecturesOverviewController(lureq, lwControl, assessedIdentity, false, false, false, true);
-				listenTo(printCtrl);
-				return printCtrl;
-			}					
+		ControllerCreator printControllerCreator = (lureq, lwControl) -> {
+			lwControl.getWindowBackOffice().getChiefController().addBodyCssClass("o_lectures_print");
+			Controller printCtrl = new ParticipantLecturesOverviewController(lureq, lwControl, assessedIdentity, false, false, false, true);
+			listenTo(printCtrl);
+			return printCtrl;				
 		};
 		ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createPrintPopupLayout(printControllerCreator);
 		openInNewBrowserWindow(ureq, layoutCtrlr);
