@@ -177,6 +177,7 @@ public class GeneratorListController extends FormBasicController implements Tool
 					}
 				} else {
 					tableEl.reset();
+					showInfo("generator.forbidden");
 				}
 			} else {
 				doEditGenerator(ureq, row.getGeneratorRef());
