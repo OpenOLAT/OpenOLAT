@@ -20,6 +20,7 @@
 package org.olat.modules.quality.generator;
 
 import java.util.Collection;
+import java.util.List;
 
 import org.olat.core.id.OrganisationRef;
 
@@ -32,7 +33,7 @@ import org.olat.core.id.OrganisationRef;
 public class QualityGeneratorSearchParams {
 	
 	private Collection<? extends QualityGeneratorRef> generatorRefs;
-	private Collection<? extends OrganisationRef> organisationRefs;
+	private List<? extends OrganisationRef> organisationRefs;
 	private String providerType;
 
 	public Collection<? extends QualityGeneratorRef> getGeneratorRefs() {
@@ -43,11 +44,11 @@ public class QualityGeneratorSearchParams {
 		this.generatorRefs = generatorRefs;
 	}
 
-	public Collection<? extends OrganisationRef> getOrganisationRefs() {
+	public List<? extends OrganisationRef> getOrganisationRefs() {
 		return organisationRefs;
 	}
 
-	public void setOrganisationRefs(Collection<? extends OrganisationRef> organisationRefs) {
+	public void setOrganisationRefs(List<? extends OrganisationRef> organisationRefs) {
 		this.organisationRefs = organisationRefs;
 	}
 

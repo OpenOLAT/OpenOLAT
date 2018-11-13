@@ -19,7 +19,6 @@
  */
 package org.olat.modules.quality.ui;
 
-import java.util.Collection;
 import java.util.List;
 
 import org.olat.basesecurity.OrganisationRoles;
@@ -120,7 +119,7 @@ public class DataCollectionListController extends FormBasicController implements
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, DataCollectionCols.creationDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, DataCollectionCols.generatorTitle));
 		
-		Collection<? extends OrganisationRef> organisationRefs = organisationService.getOrganisations(getIdentity(),
+		List<? extends OrganisationRef> organisationRefs = organisationService.getOrganisations(getIdentity(),
 				ureq.getUserSession().getRoles(), secCallback.getViewDataCollectionRoles());
 		DataCollectionDataSource dataSource = new DataCollectionDataSource(getTranslator(), organisationRefs, getIdentity());
 		dataModel = new DataCollectionDataModel(dataSource, columnsModel, getTranslator(), secCallback);

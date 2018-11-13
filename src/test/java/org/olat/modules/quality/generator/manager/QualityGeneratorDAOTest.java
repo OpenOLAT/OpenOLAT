@@ -178,11 +178,15 @@ public class QualityGeneratorDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldFilterGeneratorViewByOrganisations() {
-		Organisation organisation1 = qualityTestHelper.createOrganisation();
+		Organisation superOrganisation = qualityTestHelper.createOrganisation();
+		Organisation organisation1 = qualityTestHelper.createOrganisation(superOrganisation);
+		Organisation subOrganisation = qualityTestHelper.createOrganisation(organisation1);
 		Organisation organisation2 = qualityTestHelper.createOrganisation();
 		Organisation otherOrganisation = qualityTestHelper.createOrganisation();
+		QualityGenerator generatorSuper = qualityTestHelper.createGenerator(singletonList(superOrganisation));
 		QualityGenerator generator1 = qualityTestHelper.createGenerator(singletonList(organisation1));
 		QualityGenerator generator2 = qualityTestHelper.createGenerator(Arrays.asList(organisation2, organisation1));
+		QualityGenerator generatorSub = qualityTestHelper.createGenerator(singletonList(subOrganisation));
 		QualityGenerator otherGenerator = qualityTestHelper.createGenerator(singletonList(otherOrganisation));
 		dbInstance.commitAndCloseSession();
 		
@@ -191,8 +195,8 @@ public class QualityGeneratorDAOTest extends OlatTestCase {
 		List<QualityGeneratorView> generators = sut.load(searchParams);
 		
 		assertThat(generators).extracting(QualityGeneratorRef::getKey)
-				.containsExactlyInAnyOrder(generator1.getKey(), generator2.getKey())
-				.doesNotContain(otherGenerator.getKey());
+				.containsExactlyInAnyOrder(generator1.getKey(), generator2.getKey(), generatorSub.getKey())
+				.doesNotContain(generatorSuper.getKey(), otherGenerator.getKey());
 	}
 	
 	

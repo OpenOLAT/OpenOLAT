@@ -19,7 +19,6 @@
  */
 package org.olat.modules.quality.manager;
 
-import static java.util.stream.Collectors.toList;
 import static org.olat.modules.quality.QualityDataCollectionStatus.READY;
 import static org.olat.modules.quality.QualityDataCollectionStatus.RUNNING;
 
@@ -420,14 +419,26 @@ public class QualityDataCollectionDAO {
 			if (searchParams.getDataCollectionRef() != null && searchParams.getDataCollectionRef().getKey() != null) {
 				sb.and().append("collection.key = :collectionKey");
 			}
-			if (hasEntries(searchParams.getOrgansationRefs()) || searchParams.getReportAccessIdentity() != null) {
+			if (hasEntries(searchParams.getOrganisationRefs()) || searchParams.getReportAccessIdentity() != null) {
 				sb.and().append("(");
 				boolean or = false;
-				if (hasEntries(searchParams.getOrgansationRefs())) {
+				if (hasEntries(searchParams.getOrganisationRefs())) {
 					sb.append("collection.key in (");
 					sb.append("select collectionToOrganisation.dataCollection.key");
 					sb.append("  from qualitydatacollectiontoorganisation as collectionToOrganisation");
-					sb.append("  where collectionToOrganisation.organisation.key in :organisationKeys");
+					sb.append("  where ");
+					// load the organisations and all children
+					for (int i = 0; i < searchParams.getOrganisationRefs().size(); i++) {
+						if (i == 0) {
+							sb.append("(");
+						} else {
+							sb.append(" or ");
+						}
+						sb.append("collectionToOrganisation.organisation.materializedPathKeys like :orgPath").append(i);
+						if (i == searchParams.getOrganisationRefs().size() - 1) {
+							sb.append(")");
+						}
+					}
 					sb.append(")");
 					or = true;
 				}
@@ -507,10 +518,14 @@ public class QualityDataCollectionDAO {
 			if (searchParams.getDataCollectionRef() != null && searchParams.getDataCollectionRef().getKey() != null) {
 				query.setParameter("collectionKey", searchParams.getDataCollectionRef().getKey());
 			}
-			if (hasEntries(searchParams.getOrgansationRefs()) || searchParams.getReportAccessIdentity() != null) {
-				if (hasEntries(searchParams.getOrgansationRefs())) {
-					List<Long> organiationKeys = searchParams.getOrgansationRefs().stream().map(OrganisationRef::getKey).collect(toList());
-					query.setParameter("organisationKeys", organiationKeys);
+			if (hasEntries(searchParams.getOrganisationRefs()) || searchParams.getReportAccessIdentity() != null) {
+				if (hasEntries(searchParams.getOrganisationRefs())) {
+					for (int i = 0; i < searchParams.getOrganisationRefs().size(); i++) {
+						String parameter = new StringBuilder(12).append("orgPath").append(i).toString();
+						Long key = searchParams.getOrganisationRefs().get(i).getKey();
+						String value = new StringBuilder(32).append("%/").append(key).append("/%").toString();
+						query.setParameter(parameter, value);
+					}
 				}
 				if (searchParams.getReportAccessIdentity() != null) {
 					query.setParameter("reportAccessIdentityKey", searchParams.getReportAccessIdentity().getKey());

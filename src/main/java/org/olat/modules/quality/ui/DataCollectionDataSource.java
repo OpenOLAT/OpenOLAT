@@ -20,7 +20,6 @@
 package org.olat.modules.quality.ui;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -52,11 +51,11 @@ public class DataCollectionDataSource implements FlexiTableDataSourceDelegate<Da
 	@Autowired
 	private QualityService qualityService;
 
-	public DataCollectionDataSource(Translator translator, Collection<? extends OrganisationRef> organsationRefs,
+	public DataCollectionDataSource(Translator translator, List<? extends OrganisationRef> organsationRefs,
 			IdentityRef identityRef) {
 		this.translator = translator;
 		searchParams = new QualityDataCollectionViewSearchParams();
-		searchParams.setOrgansationRefs(organsationRefs);
+		searchParams.setOrganisationRefs(organsationRefs);
 		searchParams.setReportAccessIdentity(identityRef);
 		CoreSpringFactory.autowireObject(this);
 	}

@@ -21,11 +21,11 @@ package org.olat.modules.quality.analysis.manager;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toMap;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
@@ -233,14 +233,20 @@ public class EvaluationFormDAOTest extends OlatTestCase {
 	public void shouldFilterByOrganisations() {
 		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry otherFormEntry = JunitTestHelper.createAndPersistRepositoryEntry();
-		Organisation organisation = organisationService.createOrganisation("", "", null, null, null);
-		List<Organisation> organisations = Collections.singletonList(organisation);
+		Organisation superOrganisation = organisationService.createOrganisation("", "", null, null, null);
+		Organisation organisation = organisationService.createOrganisation("", "", null, superOrganisation, null);
+		Organisation subOrganisation = organisationService.createOrganisation("", "", null, organisation, null);
+		List<Organisation> organisations = singletonList(organisation);
 		Organisation otherOrganisation = organisationService.createOrganisation("", "", null, null, null);
-		List<Organisation> otherOrganisations = Collections.singletonList(otherOrganisation);
+		List<Organisation> otherOrganisations = singletonList(otherOrganisation);
+		QualityDataCollection dataCollectionSuper = qualityService.createDataCollection(singletonList(superOrganisation), formEntry);
+		qualityTestHelper.updateStatus(dataCollectionSuper, QualityDataCollectionStatus.FINISHED);
 		QualityDataCollection dataCollection1 = qualityService.createDataCollection(organisations, formEntry);
 		qualityTestHelper.updateStatus(dataCollection1, QualityDataCollectionStatus.FINISHED);
 		QualityDataCollection dataCollection2 = qualityService.createDataCollection(organisations, formEntry);
 		qualityTestHelper.updateStatus(dataCollection2, QualityDataCollectionStatus.FINISHED);
+		QualityDataCollection dataCollectionSub = qualityService.createDataCollection(singletonList(subOrganisation), formEntry);
+		qualityTestHelper.updateStatus(dataCollectionSub, QualityDataCollectionStatus.FINISHED);
 		QualityDataCollection dataCollectionOtherOrganisation = qualityService.createDataCollection(otherOrganisations, formEntry);
 		qualityTestHelper.updateStatus(dataCollectionOtherOrganisation, QualityDataCollectionStatus.FINISHED);
 		QualityDataCollection dataCollectionOtherForm = qualityService.createDataCollection(otherOrganisations, otherFormEntry);
@@ -252,7 +258,7 @@ public class EvaluationFormDAOTest extends OlatTestCase {
 		searchParams.setOrganisationRefs(organisations);
 		List<EvaluationFormView> forms = sut.load(searchParams);
 		
-		Long expectedNumberDataCollections = (long) asList(dataCollection1, dataCollection2).size();
+		Long expectedNumberDataCollections = (long) asList(dataCollection1, dataCollection2, dataCollectionSub).size();
 		assertThat(forms)
 				.hasSize(1)
 				.extracting(EvaluationFormView::getNumberDataCollections)
