@@ -107,11 +107,7 @@ public class DataCollectionListController extends FormBasicController implements
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DataCollectionCols.status, new DataCollectionStatusCellRenderer()));
-		if (secCallback.canEditDataCollections() || secCallback.canViewDataCollections()) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DataCollectionCols.title, CMD_EDIT));
-		} else {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DataCollectionCols.title));
-		}
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DataCollectionCols.title, CMD_EDIT));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DataCollectionCols.start));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DataCollectionCols.deadline));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DataCollectionCols.topicType));

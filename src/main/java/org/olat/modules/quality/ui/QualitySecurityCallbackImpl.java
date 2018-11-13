@@ -50,7 +50,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class QualitySecurityCallbackImpl implements QualitySecurityCallback {
 
 	private final Roles roles;
-	private final boolean hasReportAccess;
+	private final QualityDataCollectionViewSearchParams reportAccessParams;
+	private boolean canViewDataCollections;
 	
 	@Autowired
 	private QualityModule qualityModule;
@@ -61,9 +62,8 @@ public class QualitySecurityCallbackImpl implements QualitySecurityCallback {
 		this.roles = roles;
 		CoreSpringFactory.autowireObject(this);
 		
-		QualityDataCollectionViewSearchParams searchParams = new QualityDataCollectionViewSearchParams();
-		searchParams.setReportAccessIdentity(identityRef);
-		this.hasReportAccess = qualityService.getDataCollectionCount(searchParams) > 0;
+		reportAccessParams = new QualityDataCollectionViewSearchParams();
+		reportAccessParams.setReportAccessIdentity(identityRef);
 	}
 
 	@Override
@@ -73,7 +73,15 @@ public class QualitySecurityCallbackImpl implements QualitySecurityCallback {
 
 	@Override
 	public boolean canViewDataCollections() {
-		return canEditDataCollections() || roles.isPrincipal() || hasReportAccess;
+		if (!canViewDataCollections) {
+			// Check if the user has access gained in the meantime, e.g because he has now report access
+			canViewDataCollections = canEditDataCollections() || roles.isPrincipal() || hasReportAccess();
+		}
+		return canViewDataCollections;
+	}
+
+	private boolean hasReportAccess() {
+		return qualityService.getDataCollectionCount(reportAccessParams) > 0;
 	}
 
 	@Override
@@ -176,7 +184,7 @@ public class QualitySecurityCallbackImpl implements QualitySecurityCallback {
 
 	@Override
 	public boolean canViewReports() {
-		return canViewDataCollections() ;
+		return canViewDataCollections;
 	}
 
 	@Override

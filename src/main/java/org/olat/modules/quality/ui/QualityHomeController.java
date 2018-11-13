@@ -176,6 +176,9 @@ public class QualityHomeController extends BasicController implements Activateab
 			doOpenDataCollection(ureq);
 			List<ContextEntry> subEntries = entries.subList(1, entries.size());
 			dataCollectionListCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
+			if (dataCollectionLink == null) {
+				createPanels(ureq);
+			}
 		} else if (ORES_GENERATORS_TYPE.equalsIgnoreCase(resource.getResourceableTypeName())
 				&& secCallback.canViewGenerators()) {
 			doOpenGenerators(ureq);
@@ -192,10 +195,10 @@ public class QualityHomeController extends BasicController implements Activateab
 	}
 
 	private boolean canOnlyExecute() {
-		return !secCallback.canCreateSuggestion()
-				&& !secCallback.canViewDataCollections()
-				&& !secCallback.canCreateGenerators()
-				&& !secCallback.canViewAnalysis();
+		return suggestionLink == null
+				&& dataCollectionLink == null
+				&& generatorsLink == null
+				&& analysisLink == null;
 	}
 
 	@Override
