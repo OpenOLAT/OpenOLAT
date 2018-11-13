@@ -30,7 +30,6 @@ import javax.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
-import org.olat.core.id.OrganisationRef;
 import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.quality.QualityDataCollectionStatus;
 import org.olat.repository.RepositoryEntryRef;
@@ -142,13 +141,26 @@ public class CourseLecturesProviderDAO {
 		sb.append("          inner join o_bs_group_member tm");
 		sb.append("                on tm.fk_group_id = lb.fk_teacher_group");
 		sb.and().append("course.status").in(RepositoryEntryStatusEnum.preparationToClosed());
-		if (!searchParams.getOrgansationRefs().isEmpty()) {
+		if (!searchParams.getOrganisationRefs().isEmpty()) {
 			sb.and().append("exists (");
 			sb.append("              select fk_entry");
 			sb.append("                from o_re_to_organisation ro");
-			sb.append("               where ro.fk_organisation in :organisationKeys");
-			sb.append("                 and ro.fk_entry = lb.fk_entry");
-			sb.append("             )");
+			sb.append("                   , o_org_organisation org");
+			sb.append("               where ro.fk_entry = lb.fk_entry");
+			sb.append("                 and ro.fk_organisation = org.id");
+			sb.append("                 and ");
+			for (int i = 0; i < searchParams.getOrganisationRefs().size(); i++) {
+				if (i == 0) {
+					sb.append("(");
+				} else {
+					sb.append(" or ");
+				}
+				sb.append("org.o_m_path_keys like :orgPath").append(i);
+				if (i == searchParams.getOrganisationRefs().size() - 1) {
+					sb.append(")");
+				}
+			}
+			sb.append(")");
 		}
 		if (!searchParams.getCourseRefs().isEmpty()) {
 			sb.and().append("lb.fk_entry in :courseKeys");
@@ -384,13 +396,24 @@ public class CourseLecturesProviderDAO {
 			sb.append("     where el.key in :curriculumElementKeys");
 			sb.append("    )");
 		}
-		if (!searchParams.getOrgansationRefs().isEmpty()) {
+		if (!searchParams.getOrganisationRefs().isEmpty()) {
 			sb.and();
 			sb.append("course.key in (");
 			sb.append("    select courseOrg.entry.key");
 			sb.append("      from repoentrytoorganisation courseOrg");
-			sb.append("     where courseOrg.organisation.key in :organisationKeys");
-			sb.append("    )");
+			sb.append("     where ");
+			for (int i = 0; i < searchParams.getOrganisationRefs().size(); i++) {
+				if (i == 0) {
+					sb.append("(");
+				} else {
+					sb.append(" or ");
+				}
+				sb.append("courseOrg.organisation.materializedPathKeys like :orgPath").append(i);
+				if (i == searchParams.getOrganisationRefs().size() - 1) {
+					sb.append(")");
+				}
+			}
+			sb.append(")");
 		}
 		if (searchParams.getFrom() != null) {
 			sb.and().append("lectureblock.endDate > :from");
@@ -424,9 +447,13 @@ public class CourseLecturesProviderDAO {
 			List<Long> curriculumElementKeys = searchParams.getCurriculumElementRefs().stream().map(CurriculumElementRef::getKey).collect(Collectors.toList());
 			query.setParameter("curriculumElementKeys", curriculumElementKeys);
 		}
-		if (!searchParams.getOrgansationRefs().isEmpty()) {
-			List<Long> organisationKeys = searchParams.getOrgansationRefs().stream().map(OrganisationRef::getKey).collect(Collectors.toList());
-			query.setParameter("organisationKeys", organisationKeys);
+		if (!searchParams.getOrganisationRefs().isEmpty()) {
+			for (int i = 0; i < searchParams.getOrganisationRefs().size(); i++) {
+				String parameter = new StringBuilder(12).append("orgPath").append(i).toString();
+				Long key = searchParams.getOrganisationRefs().get(i).getKey();
+				String value = new StringBuilder(32).append("%/").append(key).append("/%").toString();
+				query.setParameter(parameter, value);
+			}
 		}
 		if (searchParams.getFrom() != null) {
 			query.setParameter("from", searchParams.getFrom());

@@ -258,14 +258,14 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 	}
 	
 	private SearchParameters getSeachParameters(QualityGenerator generator, QualityGeneratorConfigs configs,
-			Collection<? extends OrganisationRef> organisations, Date fromDate, Date toDate) {
+			List<? extends OrganisationRef> organisations, Date fromDate, Date toDate) {
 		SearchParameters searchParams = new SearchParameters();
 		if (CONFIG_KEY_TOPIC_COACH.equals(getTopicKey(configs))) {
 			searchParams.setExcludeGeneratorAndTopicIdentityRef(generator);
 		} else {
 			searchParams.setExcludeGeneratorAndTopicRepositoryRef(generator);
 		}
-		searchParams.setOrgansationRefs(organisations);
+		searchParams.setOrganisationRefs(organisations);
 
 		String minutesBeforeEnd = configs.getValue(CONFIG_KEY_MINUTES_BEFORE_END);
 		minutesBeforeEnd = StringHelper.containsNonWhitespace(minutesBeforeEnd)? minutesBeforeEnd: "0";

@@ -409,25 +409,33 @@ public class CourseLecturesProviderDAOTest extends OlatTestCase {
 	@Test
 	public void shouldFilterLectureBlockInfosByOrganisation() {
 		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("");
-		Organisation organisation = organisationService.createOrganisation("", "", null, null, null);
+		Organisation superOrganisation = organisationService.createOrganisation("", "", null, null, null);
+		Organisation organisation = organisationService.createOrganisation("", "", null, superOrganisation, null);
+		Organisation subOrganisation = organisationService.createOrganisation("", "", null, organisation, null);
+		RepositoryEntry courseSuperOrg = JunitTestHelper.createAndPersistRepositoryEntry();
+		repositoryService.addOrganisation(courseSuperOrg, superOrganisation);
 		RepositoryEntry course1 = JunitTestHelper.createAndPersistRepositoryEntry();
 		repositoryService.addOrganisation(course1, organisation);
 		RepositoryEntry course2 = JunitTestHelper.createAndPersistRepositoryEntry();
 		repositoryService.addOrganisation(course2, organisation);
+		RepositoryEntry courseSubOrg = JunitTestHelper.createAndPersistRepositoryEntry();
+		repositoryService.addOrganisation(courseSubOrg, subOrganisation);
 		RepositoryEntry otherCourse = JunitTestHelper.createAndPersistRepositoryEntry();
+		createLectureBlock(courseSuperOrg, teacher, 1);
 		createLectureBlock(course1, teacher, 1);
 		createLectureBlock(course2, teacher, 1);
+		createLectureBlock(courseSubOrg, teacher, 1);
 		createLectureBlock(otherCourse, teacher, 1);
 		dbInstance.commitAndCloseSession();
 
 		SearchParameters searchParams = new SearchParameters();
 		searchParams.setTeacherRef(teacher);
-		searchParams.setOrgansationRefs(Arrays.asList(organisation));
+		searchParams.setOrganisationRefs(Arrays.asList(organisation));
 		List<LectureBlockInfo> infos = sut.loadLectureBlockInfo(searchParams);
 
 		assertThat(infos).extracting(LectureBlockInfo::getCourseRepoKey)
-				.containsExactlyInAnyOrder(course1.getKey(), course2.getKey())
-				.doesNotContain(otherCourse.getKey());
+				.containsExactlyInAnyOrder(course1.getKey(), course2.getKey(), courseSubOrg.getKey())
+				.doesNotContain(courseSuperOrg.getKey(), otherCourse.getKey());
 	}
 	
 	@Test

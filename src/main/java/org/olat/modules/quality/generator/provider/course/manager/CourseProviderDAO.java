@@ -28,7 +28,6 @@ import javax.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
-import org.olat.core.id.OrganisationRef;
 import org.olat.course.CourseModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
@@ -83,7 +82,19 @@ public class CourseProviderDAO {
 			sb.append("entry.key in (");
 			sb.append("select courseOrg.entry.key");
 			sb.append("  from repoentrytoorganisation courseOrg");
-			sb.append(" where courseOrg.organisation.key in :organisationKeys");
+			sb.append(" where ");
+			// load the organisations and all children
+			for (int i = 0; i < searchParams.getOrganisationRefs().size(); i++) {
+				if (i == 0) {
+					sb.append("(");
+				} else {
+					sb.append(" or ");
+				}
+				sb.append("courseOrg.organisation.materializedPathKeys like :orgPath").append(i);
+				if (i == searchParams.getOrganisationRefs().size() - 1) {
+					sb.append(")");
+				}
+			}
 			sb.append(")");
 		}
 		if (searchParams.getBeginFrom() != null) {
@@ -121,8 +132,12 @@ public class CourseProviderDAO {
 			}
 		}
 		if (searchParams.getOrganisationRefs() != null && !searchParams.getOrganisationRefs().isEmpty()) {
-			List<Long> organisationKeys = searchParams.getOrganisationRefs().stream().map(OrganisationRef::getKey).collect(toList());
-			query.setParameter("organisationKeys", organisationKeys);
+			for (int i = 0; i < searchParams.getOrganisationRefs().size(); i++) {
+				String parameter = new StringBuilder(12).append("orgPath").append(i).toString();
+				Long key = searchParams.getOrganisationRefs().get(i).getKey();
+				String value = new StringBuilder(32).append("%/").append(key).append("/%").toString();
+				query.setParameter(parameter, value);
+			}
 		}
 		if (searchParams.getBeginFrom() != null) {
 			query.setParameter("beginFrom", searchParams.getBeginFrom());

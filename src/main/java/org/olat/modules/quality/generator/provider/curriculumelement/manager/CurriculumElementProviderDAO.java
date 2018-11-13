@@ -27,7 +27,6 @@ import javax.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
-import org.olat.core.id.OrganisationRef;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumElementStatus;
@@ -85,7 +84,19 @@ public class CurriculumElementProviderDAO {
 			sb.append(")");
 		}
 		if (searchParams.getOrganisationRefs() != null && !searchParams.getOrganisationRefs().isEmpty()) {
-			sb.and().append("cur.organisation.key in :organisationKeys");
+			sb.and();
+			// load the organisations and all children
+			for (int i = 0; i < searchParams.getOrganisationRefs().size(); i++) {
+				if (i == 0) {
+					sb.append("(");
+				} else {
+					sb.append(" or ");
+				}
+				sb.append("cur.organisation.materializedPathKeys like :orgPath").append(i);
+				if (i == searchParams.getOrganisationRefs().size() - 1) {
+					sb.append(")");
+				}
+			}
 		}
 		if (searchParams.getCurriculumElementRefs() != null && !searchParams.getCurriculumElementRefs().isEmpty()) {
 			sb.and().append("curEle.key in :curEleKeys");
@@ -112,8 +123,12 @@ public class CurriculumElementProviderDAO {
 			query.setParameter("generatorKey", searchParams.getGeneratorRef().getKey());
 		}
 		if (searchParams.getOrganisationRefs() != null && !searchParams.getOrganisationRefs().isEmpty()) {
-			List<Long> organisationKeys = searchParams.getOrganisationRefs().stream().map(OrganisationRef::getKey).collect(toList());
-			query.setParameter("organisationKeys", organisationKeys);
+			for (int i = 0; i < searchParams.getOrganisationRefs().size(); i++) {
+				String parameter = new StringBuilder(12).append("orgPath").append(i).toString();
+				Long key = searchParams.getOrganisationRefs().get(i).getKey();
+				String value = new StringBuilder(32).append("%/").append(key).append("/%").toString();
+				query.setParameter(parameter, value);
+			}
 		}
 		if (searchParams.getCurriculumElementRefs() != null && !searchParams.getCurriculumElementRefs().isEmpty()) {
 			List<Long> curEleKeys = searchParams.getCurriculumElementRefs().stream().map(CurriculumElementRef::getKey).collect(toList());

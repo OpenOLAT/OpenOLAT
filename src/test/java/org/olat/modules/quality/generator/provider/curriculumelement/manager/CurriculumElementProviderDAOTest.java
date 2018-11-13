@@ -108,11 +108,20 @@ public class CurriculumElementProviderDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldFilterByOrganisation() {
-		Organisation organisation = organisationService.createOrganisation(random(), random(), null, null, null);
+		Organisation organisationSuper = organisationService.createOrganisation(random(), random(), null, null, null);
+		Curriculum curriculumSuper = curriculumService.createCurriculum(random(), random(), null, organisationSuper);
+		CurriculumElement curriculumElementSuperOrg = curriculumService.createCurriculumElement(random(), random(),
+				oneDayAgo(), inOneDay(), null, null, CurriculumCalendars.disabled, curriculumSuper);
+		
+		Organisation organisation = organisationService.createOrganisation(random(), random(), null, organisationSuper, null);
 		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), null, organisation);
 		CurriculumElement curriculumElement = curriculumService.createCurriculumElement(random(), random(),
 				oneDayAgo(), inOneDay(), null, null, CurriculumCalendars.disabled, curriculum);
-		dbInstance.commitAndCloseSession();
+		
+		Organisation organisationSub = organisationService.createOrganisation(random(), random(), null, organisation, null);
+		Curriculum curriculumSubOrg = curriculumService.createCurriculum(random(), random(), null, organisationSub);
+		CurriculumElement curriculumElementSubOrg = curriculumService.createCurriculumElement(random(), random(),
+				oneDayAgo(), inOneDay(), null, null, CurriculumCalendars.disabled, curriculumSubOrg);
 
 		Organisation otherOrganisation = organisationService.createOrganisation(random(), random(), null, null, null);
 		Curriculum otherCurriculum = curriculumService.createCurriculum(random(), random(), null, otherOrganisation);
@@ -124,7 +133,9 @@ public class CurriculumElementProviderDAOTest extends OlatTestCase {
 		searchParams.setOrganisationRefs(asList(organisation));
 		List<CurriculumElement> pending = sut.loadPending(searchParams);
 
-		assertThat(pending).contains(curriculumElement).doesNotContain(otherCurriculumElement);
+		assertThat(pending)
+				.contains(curriculumElement, curriculumElementSubOrg)
+				.doesNotContain(curriculumElementSuperOrg, otherCurriculumElement);
 	}
 	
 	@Test

@@ -21,6 +21,7 @@ package org.olat.modules.quality.generator.provider.curriculumelement.manager;
 
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import org.olat.core.id.Organisation;
@@ -36,7 +37,7 @@ import org.olat.modules.quality.generator.QualityGeneratorRef;
 public class SearchParameters {
 
 	private QualityGeneratorRef generatorRef;
-	private Collection<? extends OrganisationRef> organisationRefs;
+	private List<? extends OrganisationRef> organisationRefs;
 	private Long ceTypeKey;
 	private Collection<? extends CurriculumElementRef> curriculumElementRefs;
 	private Date from;
@@ -51,11 +52,11 @@ public class SearchParameters {
 		this.generatorRef = generatorRef;
 	}
 
-	public Collection<? extends OrganisationRef> getOrganisationRefs() {
+	public List<? extends OrganisationRef> getOrganisationRefs() {
 		return organisationRefs;
 	}
 
-	public void setOrganisationRefs(Collection<Organisation> organisations) {
+	public void setOrganisationRefs(List<Organisation> organisations) {
 		this.organisationRefs = organisations;
 	}
 

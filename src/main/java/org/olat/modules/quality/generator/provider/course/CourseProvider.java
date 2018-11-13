@@ -339,7 +339,7 @@ public class CourseProvider implements QualityGeneratorProvider {
 	}
 	
 	private SearchParameters getSeachParameters(QualityGenerator generator, QualityGeneratorConfigs configs,
-			Collection<? extends OrganisationRef> organisations) {
+			List<? extends OrganisationRef> organisations) {
 		SearchParameters searchParams = new SearchParameters();
 		searchParams.setGeneratorRef(generator);
 		searchParams.setOrganisationRefs(organisations);

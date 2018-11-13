@@ -281,10 +281,10 @@ public class CourseLecturesFollowUpProvider implements QualityGeneratorProvider 
 	}
 
 	private SearchParameters getSeachParameters(QualityGenerator generator, QualityGeneratorConfigs configs,
-			Collection<? extends OrganisationRef> organisations, Date fromDate, Date toDate,
+			List<? extends OrganisationRef> organisations, Date fromDate, Date toDate,
 			QualityGeneratorRef previousGeneratorRef, QualityGeneratorConfigs previosGeneratorConfigs) {
 		SearchParameters searchParams = new SearchParameters();
-		searchParams.setOrgansationRefs(organisations);
+		searchParams.setOrganisationRefs(organisations);
 
 		if (CourseLecturesProvider.CONFIG_KEY_TOPIC_COACH.equals(getTopicKey(previosGeneratorConfigs))) {
 			searchParams.setFinishedDataCollectionForGeneratorAndTopicIdentityRef(previousGeneratorRef);

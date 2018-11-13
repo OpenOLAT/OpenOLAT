@@ -134,10 +134,14 @@ public class CourseProviderDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldFilterByOrganisation() {
-		Organisation organisation = organisationService.createOrganisation("", "o1", null, null, null);
+		Organisation superOrganisation = organisationService.createOrganisation("", "o1", null, null, null);
+		Organisation organisation = organisationService.createOrganisation("", "o1", null, superOrganisation, null);
+		Organisation subOrganisation = organisationService.createOrganisation("", "o1s", null, organisation, null);
 		Organisation organisationOther = organisationService.createOrganisation("", "o2", null, null, null);
+		RepositoryEntry courseSuper = createEntry(null, null, superOrganisation);
 		RepositoryEntry course1 = createEntry(null, null, organisation);
 		RepositoryEntry course2 = createEntry(null, null, organisation);
+		RepositoryEntry courseSub = createEntry(null, null, subOrganisation);
 		RepositoryEntry other = createEntry(null, null, organisationOther);
 		dbInstance.commitAndCloseSession();
 		
@@ -146,8 +150,8 @@ public class CourseProviderDAOTest extends OlatTestCase {
 		List<RepositoryEntry> courses = sut.loadCourses(seachParameters);
 
 		assertThat(courses)
-				.containsExactlyInAnyOrder(course1, course2)
-				.doesNotContain(other);
+				.containsExactlyInAnyOrder(course1, course2, courseSub)
+				.doesNotContain(courseSuper, other);
 	}
 	
 	@Test

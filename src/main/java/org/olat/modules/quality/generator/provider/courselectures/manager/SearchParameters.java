@@ -22,6 +22,7 @@ package org.olat.modules.quality.generator.provider.courselectures.manager;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.OrganisationRef;
@@ -49,7 +50,7 @@ public class SearchParameters {
 	private IdentityRef teacherRef;
 	private Collection<? extends RepositoryEntryRef> courseRefs;
 	private Collection<? extends CurriculumElementRef> curriculumElementRefs;
-	private Collection<? extends OrganisationRef> organsationRefs;
+	private List<? extends OrganisationRef> organisationRefs;
 	private Date from;
 	private Date to;
 
@@ -147,15 +148,15 @@ public class SearchParameters {
 		this.curriculumElementRefs = curriculumElementRefs;
 	}
 
-	public Collection<? extends OrganisationRef> getOrgansationRefs() {
-		if (organsationRefs == null) {
-			organsationRefs = Collections.emptyList();
+	public List<? extends OrganisationRef> getOrganisationRefs() {
+		if (organisationRefs == null) {
+			organisationRefs = Collections.emptyList();
 		}
-		return organsationRefs;
+		return organisationRefs;
 	}
 
-	public void setOrgansationRefs(Collection<? extends OrganisationRef> organsationRefs) {
-		this.organsationRefs = organsationRefs;
+	public void setOrganisationRefs(List<? extends OrganisationRef> organisationRefs) {
+		this.organisationRefs = organisationRefs;
 	}
 
 	public Date getFrom() {

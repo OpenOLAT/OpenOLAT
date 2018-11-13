@@ -21,6 +21,7 @@ package org.olat.modules.quality.generator.provider.course.manager;
 
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import org.olat.core.id.OrganisationRef;
@@ -37,7 +38,7 @@ public class SearchParameters {
 	
 	private QualityGeneratorRef generatorRef;
 	private Date generatorDataCollectionStart;
-	private Collection<? extends OrganisationRef> organisationRefs;
+	private List<? extends OrganisationRef> organisationRefs;
 	private Date beginFrom;
 	private Date beginTo;
 	private Date endFrom;
@@ -53,11 +54,11 @@ public class SearchParameters {
 		this.generatorRef = generatorRef;
 	}
 
-	public Collection<? extends OrganisationRef> getOrganisationRefs() {
+	public List<? extends OrganisationRef> getOrganisationRefs() {
 		return organisationRefs;
 	}
 	
-	public void setOrganisationRefs(Collection<? extends OrganisationRef> organisationRefs) {
+	public void setOrganisationRefs(List<? extends OrganisationRef> organisationRefs) {
 		this.organisationRefs = organisationRefs;
 	}
 	
