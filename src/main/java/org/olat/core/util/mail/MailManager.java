@@ -197,5 +197,7 @@ public interface MailManager {
 			List<File> attachments, MailerResult result);
 	
 	public void sendMessage(MimeMessage msg, MailerResult result);
+	
+	public MailContent decorateMail(MailBundle bundle);
 
 }

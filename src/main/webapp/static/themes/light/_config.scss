@@ -816,39 +816,40 @@ $o-slider-handler-border-color		: $brand-primary !default;
 $o-slider-handler-background-color	: $brand-primary !default;
 
 /* Labels */
-$o-labeled_color					: #fff;
-$o-labeled_bg-color					: #777;
-$o-labeled-light-bg-color			: $o-toolbar-bg-color;
+$o-labeled_color					: #fff !default;
+$o-labeled_bg-color					: #777 !default;
+$o-labeled-light-bg-color			: $o-toolbar-bg-color !default;
 
 /* QPool */
 $o-qpool-arrow-bg-color				: $o-toolbar-bg-color !default;
-$o-qpool-arrow-border-bottom-width	: 3px;
-$o-qpool-arrow-selected-bg-color	: $o-navbar-link-active-bg;
-$o-qpool-arrow-selected-color		: $o-navbar-link-active-color;
+$o-qpool-arrow-border-bottom-width	: 3px !default;
+$o-qpool-arrow-selected-bg-color	: $o-navbar-link-active-bg !default;
+$o-qpool-arrow-selected-color		: $o-navbar-link-active-color !default;
 
-$o-qpool-status-color-dark			: #333;
-$o-qpool-status-color-bright		: #fff;
-$o-qpool-draft-color				: #4a6785;
-$o-qpool-review-color				: #ffd351;
-$o-qpool-review-color-dark			: #333;
-$o-qpool-revised-color				: #993333;
-$o-qpool-finalVersion-color			: #14892c;
-$o-qpool-endOfLife-color			: #aaa;
+$o-qpool-status-color-dark			: #333 !default;
+$o-qpool-status-color-bright		: #fff !default;
+$o-qpool-draft-color				: #4a6785 !default;
+$o-qpool-review-color				: #ffd351 !default;
+$o-qpool-review-color-dark			: #333 !default;
+$o-qpool-revised-color				: #993333 !default;
+$o-qpool-finalVersion-color			: #14892c !default;
+$o-qpool-endOfLife-color			: #aaa !default;
 
 /* Email */
-$o-email-font-family					: 'HelveticaNeue-Light', 'Helvetica Neue Light', 'Helvetica Neue', Helvetica, Arial, 'Lucida Grande', sans-serif;
-$o-email-max-width						: 768px;
-$o-email-content-margin					: 1em 0 1em 0;
-$o-email-content-padding				: 12px;
-$o-email-content-h1-color				: $body-bg;
-$o-email-content-h1-bg					: $brand-primary;
-$o-email-content-strong-color			: $brand-primary;
-$o-email-footer-color					: rgb(170,170,170);
-$o-email-footer-top-color				: $brand-primary;
-$o-email-btn-color						: $btn-primary-color;
-$o-email-btn-bg							: $btn-primary-bg;
-$o-email-btn-border-color				: $btn-primary-border;
-$o-email-btn-border-radius				: 4px;
+$o-email-brand							: $btn-primary-bg !default;
+$o-email-font-family					: 'HelveticaNeue-Light', 'Helvetica Neue Light', 'Helvetica Neue', Helvetica, Arial, 'Lucida Grande', sans-serif !default;
+$o-email-max-width						: 768px !default;
+$o-email-content-margin					: 1em 0 1em 0 !default;
+$o-email-content-padding				: 12px !default;
+$o-email-content-h1-color				: $btn-primary-color !default;
+$o-email-content-h1-bg					: $o-email-brand !default;
+$o-email-content-strong-color			: $o-email-brand !default;
+$o-email-footer-color					: rgb(170,170,170) !default;
+$o-email-footer-top-color				: $o-email-brand !default;
+$o-email-btn-color						: $btn-primary-color !default;
+$o-email-btn-bg							: $btn-primary-bg !default;
+$o-email-btn-border-color				: $btn-primary-border !default;
+$o-email-btn-border-radius				: 4px !default;
 
 /* other configurations */
 $o-portrait-radius				: 50% !default;
