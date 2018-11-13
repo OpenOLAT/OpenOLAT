@@ -15,7 +15,6 @@
 
 @import "config";
 
-
 /*** General style of the email text ***/
 .o_email_body {
 	font-family: $o-email-font-family;
@@ -45,6 +44,10 @@
 		border-top: 5px solid $o-email-footer-top-color;
 		padding: 4px 12px;
 		margin-top: 1em;
+		
+		a {
+			color: $o-email-footer-color;
+		}
 	}
 }
 

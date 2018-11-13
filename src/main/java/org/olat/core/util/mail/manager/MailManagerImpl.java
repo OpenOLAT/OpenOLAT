@@ -720,7 +720,8 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 		return result;
 	}
 	
-	protected MailContent decorateMail(MailBundle bundle) {
+	@Override
+	public MailContent decorateMail(MailBundle bundle) {
 		MailContent content = bundle.getContent();
 
 		String template = getMailTemplate();
