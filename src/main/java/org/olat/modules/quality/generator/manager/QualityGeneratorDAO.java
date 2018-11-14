@@ -27,6 +27,7 @@ import java.util.List;
 import javax.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.quality.generator.QualityGenerator;
 import org.olat.modules.quality.generator.QualityGeneratorRef;
@@ -139,19 +140,7 @@ public class QualityGeneratorDAO {
 				sb.append(" and generator.key in (");
 				sb.append("     select generatorToOrganisation.generator.key");
 				sb.append("       from qualitygeneratortoorganisation as generatorToOrganisation");
-				sb.append("      where ");
-				// load the organisations and all children
-				for (int i = 0; i < searchParams.getOrganisationRefs().size(); i++) {
-					if (i == 0) {
-						sb.append("(");
-					} else {
-						sb.append(" or ");
-					}
-					sb.append("generatorToOrganisation.organisation.materializedPathKeys like :orgPath").append(i);
-					if (i == searchParams.getOrganisationRefs().size() - 1) {
-						sb.append(")");
-					}
-				}
+				sb.append("      where generatorToOrganisation.organisation.key in :organisationKeys");
 				sb.append(" )");
 			}
 			if (StringHelper.containsNonWhitespace(searchParams.getProviderType())) {
@@ -168,12 +157,8 @@ public class QualityGeneratorDAO {
 				query.setParameter("generatorKeys", generatorKeys);
 			}
 			if (searchParams.getOrganisationRefs() != null && !searchParams.getOrganisationRefs().isEmpty()) {
-				for (int i = 0; i < searchParams.getOrganisationRefs().size(); i++) {
-					String parameter = new StringBuilder(12).append("orgPath").append(i).toString();
-					Long key = searchParams.getOrganisationRefs().get(i).getKey();
-					String value = new StringBuilder(32).append("%/").append(key).append("/%").toString();
-					query.setParameter(parameter, value);
-				}
+				List<Long> organiationKeys = searchParams.getOrganisationRefs().stream().map(OrganisationRef::getKey).collect(toList());
+				query.setParameter("organisationKeys", organiationKeys);
 			}
 			if (StringHelper.containsNonWhitespace(searchParams.getProviderType())) {
 				query.setParameter("providerType", searchParams.getProviderType());

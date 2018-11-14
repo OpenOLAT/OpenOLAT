@@ -529,24 +529,20 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldFilterDataCollectionsByOrganisations() {
-		Organisation superOrganisation = qualityTestHelper.createOrganisation();
-		Organisation organisation = qualityTestHelper.createOrganisation(superOrganisation);
-		Organisation subOrganisation = qualityTestHelper.createOrganisation(organisation);
-		QualityDataCollection dataCollectionSuper = qualityTestHelper.createDataCollection(superOrganisation);
+		Organisation organisation = qualityTestHelper.createOrganisation();
 		QualityDataCollection dataCollection1 = qualityTestHelper.createDataCollection(organisation);
 		QualityDataCollection dataCollection2 = qualityTestHelper.createDataCollection(organisation);
-		QualityDataCollection dataCollectionSub = qualityTestHelper.createDataCollection(subOrganisation);
 		QualityDataCollection otherDataCollection = qualityTestHelper.createDataCollection();
 		dbInstance.commitAndCloseSession();
 
 		QualityDataCollectionViewSearchParams searchParams = new QualityDataCollectionViewSearchParams();
-		searchParams.setOrganisationRefs(Collections.singletonList(organisation));
+		searchParams.setOrgansationRefs(Collections.singletonList(organisation));
 		List<QualityDataCollectionView> dataCollections = sut.loadDataCollections(TRANSLATOR, searchParams, 0, -1);
 		
 		List<Long> loadedKeys = dataCollections.stream().map(QualityDataCollectionView::getKey).collect(toList());
 		assertThat(loadedKeys)
-				.containsExactlyInAnyOrder(dataCollection1.getKey(), dataCollection2.getKey(), dataCollectionSub.getKey())
-				.doesNotContain(otherDataCollection.getKey(), dataCollectionSuper.getKey());
+				.containsExactlyInAnyOrder(dataCollection1.getKey(), dataCollection2.getKey())
+				.doesNotContain(otherDataCollection.getKey());
 	}
 	
 	@Test
@@ -621,7 +617,7 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 		
 		QualityDataCollectionViewSearchParams searchParams = new QualityDataCollectionViewSearchParams();
 		Organisation organisation = qualityTestHelper.createOrganisation();
-		searchParams.setOrganisationRefs(Collections.singletonList(organisation));
+		searchParams.setOrgansationRefs(Collections.singletonList(organisation));
 		searchParams.setReportAccessIdentity(reportViewer);
 		List<QualityDataCollectionView> dataCollections = sut.loadDataCollections(TRANSLATOR, searchParams, 0, -1);
 		

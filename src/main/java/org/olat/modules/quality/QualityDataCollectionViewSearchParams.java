@@ -19,7 +19,7 @@
  */
 package org.olat.modules.quality;
 
-import java.util.List;
+import java.util.Collection;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.OrganisationRef;
@@ -33,7 +33,7 @@ import org.olat.core.id.OrganisationRef;
 public class QualityDataCollectionViewSearchParams {
 	
 	private QualityDataCollectionRef dataCollectionRef;
-	private List<? extends OrganisationRef> organisationRefs;
+	private Collection<? extends OrganisationRef> organsationRefs;
 	private IdentityRef reportAccessIdentity;
 
 	public QualityDataCollectionRef getDataCollectionRef() {
@@ -44,12 +44,12 @@ public class QualityDataCollectionViewSearchParams {
 		this.dataCollectionRef = dataCollectionRef;
 	}
 
-	public List<? extends OrganisationRef> getOrganisationRefs() {
-		return organisationRefs;
+	public Collection<? extends OrganisationRef> getOrgansationRefs() {
+		return organsationRefs;
 	}
 
-	public void setOrganisationRefs(List<? extends OrganisationRef> organisationRefs) {
-		this.organisationRefs = organisationRefs;
+	public void setOrgansationRefs(Collection<? extends OrganisationRef> organsationRefs) {
+		this.organsationRefs = organsationRefs;
 	}
 
 	public IdentityRef getReportAccessIdentity() {

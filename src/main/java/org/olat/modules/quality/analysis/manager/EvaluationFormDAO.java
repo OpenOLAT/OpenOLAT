@@ -20,11 +20,13 @@
 package org.olat.modules.quality.analysis.manager;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
+import org.olat.core.id.OrganisationRef;
 import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.modules.quality.QualityDataCollectionLight;
 import org.olat.modules.quality.QualityDataCollectionStatus;
@@ -81,31 +83,15 @@ public class EvaluationFormDAO {
 			sb.append("collection.key in (");
 			sb.append("   select dataCollection.key");
 			sb.append("     from qualitydatacollectiontoorganisation dcToOrg");
-			sb.append("    where ");
-			// load the organisations and all children
-			for (int i = 0; i < searchParams.getOrganisationRefs().size(); i++) {
-				if (i == 0) {
-					sb.append("(");
-				} else {
-					sb.append(" or ");
-				}
-				sb.append("dcToOrg.organisation.materializedPathKeys like :orgPath").append(i);
-				if (i == searchParams.getOrganisationRefs().size() - 1) {
-					sb.append(")");
-				}
-			}
+			sb.append("    where dcToOrg.organisation.key in :organisationKeys");
 			sb.append(")");
 		}
 	}
 
 	private void appendParameters(TypedQuery<EvaluationFormView> query, EvaluationFormViewSearchParams searchParams) {
 		if (searchParams.getOrganisationRefs() != null) {
-			for (int i = 0; i < searchParams.getOrganisationRefs().size(); i++) {
-				String parameter = new StringBuilder(12).append("orgPath").append(i).toString();
-				Long key = searchParams.getOrganisationRefs().get(i).getKey();
-				String value = new StringBuilder(32).append("%/").append(key).append("/%").toString();
-				query.setParameter(parameter, value);
-			}
+			List<Long> organisationKeys = searchParams.getOrganisationRefs().stream().map(OrganisationRef::getKey).collect(Collectors.toList());
+			query.setParameter("organisationKeys", organisationKeys);
 		}
 	}
 
