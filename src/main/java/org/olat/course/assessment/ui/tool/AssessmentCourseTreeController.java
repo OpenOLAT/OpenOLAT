@@ -284,9 +284,11 @@ public class AssessmentCourseTreeController extends BasicController implements A
 	}
 
 	private Controller doSelectCourseNodeUsersView(UserRequest ureq, CourseNode courseNode) {
+		removeAsListenerAndDispose(identityListCtrl);
+		
 		OLATResourceable oresUsers = OresHelper.createOLATResourceableInstance("Users", 0l);
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(oresUsers, null, getWindowControl());
-		OLATResourceable oresNode = OresHelper.createOLATResourceableInstance("Node", new Long(courseNode.getIdent()));
+		OLATResourceable oresNode = OresHelper.createOLATResourceableInstance("Node", Long.valueOf(courseNode.getIdent()));
 		WindowControl bbwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(oresNode, null, bwControl);
 		if(courseNode instanceof AssessableCourseNode) {
 			identityListCtrl = ((AssessableCourseNode)courseNode).getIdentityListController(ureq, getWindowControl(), stackPanel,
@@ -300,9 +302,11 @@ public class AssessmentCourseTreeController extends BasicController implements A
 	}
 	
 	private Controller doSelectCourseNodeBusinessGroupsView(UserRequest ureq, CourseNode courseNode) {
+		removeAsListenerAndDispose(businessGroupListCtrl);
+		
 		OLATResourceable oresGroups = OresHelper.createOLATResourceableInstance("BusinessGroups", 0l);
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(oresGroups, null, getWindowControl());
-		OLATResourceable oresNode = OresHelper.createOLATResourceableInstance("Node", new Long(courseNode.getIdent()));
+		OLATResourceable oresNode = OresHelper.createOLATResourceableInstance("Node", Long.valueOf(courseNode.getIdent()));
 		WindowControl bbwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(oresNode, null, bwControl);
 		if(courseNode instanceof AssessableCourseNode && ((AssessableCourseNode)courseNode).isAssessedBusinessGroups()) {
 			if(courseNode instanceof GTACourseNode) {
