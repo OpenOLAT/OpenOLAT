@@ -301,11 +301,11 @@ public class EvaluationFormExcelExport {
 
 	private void addRubric(OpenXMLWorksheet exportSheet, Rubric rubric) {
 		for (Slider slider: rubric.getSliders()) {
-			addSlider(exportSheet, slider);
+			addSlider(exportSheet, rubric, slider);
 		}
 	}
 
-	private void addSlider(OpenXMLWorksheet exportSheet, Slider slider) {
+	private void addSlider(OpenXMLWorksheet exportSheet, Rubric rubric, Slider slider) {
 		Row row = exportSheet.newRow();
 		int col = 0;
 		row.addCell(col++, getSliderLabel(slider));
@@ -314,7 +314,8 @@ public class EvaluationFormExcelExport {
 			if (response != null) {
 				BigDecimal value = response.getNumericalResponse();
 				if (value != null) {
-					row.addCell(col, value.intValue(), null);
+					double scaledValue = rubric.getScaleType().getStepValue(rubric.getSteps(), value.intValue());
+					row.addCell(col, scaledValue, null);
 				}
 			}
 			col++;
