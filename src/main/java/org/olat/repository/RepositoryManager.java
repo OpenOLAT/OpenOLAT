@@ -1107,7 +1107,7 @@ public class RepositoryManager {
 	}
 
 	/**
-	 * This is an administrative query which need author, learn resource manager
+	 * This is an administrative query which need author, learn resource manager, quality manager
 	 * or higher permissions.
 	 * 
 	 * @param identity
@@ -1125,7 +1125,7 @@ public class RepositoryManager {
 		if(!checkCanReference && !checkCanCopy) {
 			return Collections.emptyList();
 		}
-		if(!roles.isAuthor() && !roles.isLearnResourceManager() && !roles.isAdministrator()) {
+		if(!roles.isAuthor() && !roles.isLearnResourceManager() && !roles.isAdministrator() && !roles.isQualityManager()) {
 			return Collections.emptyList();
 		}
 
@@ -1155,6 +1155,17 @@ public class RepositoryManager {
 				sb.append(" and v.canCopy=true");
 			}
 		}
+		if(roles.isQualityManager()) {
+			sb.append(" or (membership.role ").in(OrganisationRoles.qualitymanager)
+			  .append(" and v.status ").in(RepositoryEntryStatusEnum.published).append(")");
+			if(checkCanReference) {
+				sb.append(" and v.canReference=true");
+			}
+			if(checkCanCopy) {
+				sb.append(" and v.canCopy=true");
+			}
+		}
+		
 		sb.append(")");
 		 
 		// restrict on type
