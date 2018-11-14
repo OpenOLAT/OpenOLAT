@@ -78,6 +78,7 @@ import org.olat.core.util.vfs.QuotaManager;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
+import org.olat.course.CorruptedCourseException;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
@@ -452,8 +453,12 @@ public class CollaborationTools implements Serializable {
 		List<ICourse> courses = new ArrayList<>(repoEntries.size());
 		for (RepositoryEntry repoEntry:repoEntries) {
 			if (repoEntry.getOlatResource().getResourceableTypeName().equals(CourseModule.getCourseTypeName())) {
-				ICourse course = CourseFactory.loadCourse(repoEntry);
-				courses.add(course);
+				try {
+					ICourse course = CourseFactory.loadCourse(repoEntry);
+					courses.add(course);
+				} catch (CorruptedCourseException e) {
+					log.error("Course corrupted: " + repoEntry.getKey() + " (" + repoEntry.getOlatResource().getResourceableId() + ")", e);
+				}
 			}
 		}
 		if(!courses.isEmpty()) {
