@@ -65,11 +65,11 @@ import org.olat.modules.forms.handler.EvaluationFormResource;
 import org.olat.modules.forms.ui.EvaluationFormExecutionController;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityDataCollectionTopicType;
-import org.olat.modules.quality.QualitySecurityCallback;
 import org.olat.modules.quality.QualityService;
 import org.olat.modules.quality.ui.QualityUIFactory.KeysValues;
 import org.olat.modules.quality.ui.event.DataCollectionEvent;
 import org.olat.modules.quality.ui.event.DataCollectionEvent.Action;
+import org.olat.modules.quality.ui.security.DataCollectionSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
 import org.olat.user.UserManager;
@@ -119,7 +119,7 @@ public class DataCollectionConfigurationController extends FormBasicController {
 	private RepositoryEntry topicRepository;
 	
 	private final TooledStackedPanel stackPanel;
-	private final QualitySecurityCallback secCallback;
+	private DataCollectionSecurityCallback secCallback;
 	private QualityDataCollection dataCollection;
 	
 	@Autowired
@@ -134,7 +134,7 @@ public class DataCollectionConfigurationController extends FormBasicController {
 	private CurriculumService curriculumService;
 
 	public DataCollectionConfigurationController(UserRequest ureq, WindowControl wControl,
-			QualitySecurityCallback secCallback, TooledStackedPanel stackPanel,
+			DataCollectionSecurityCallback secCallback, TooledStackedPanel stackPanel,
 			QualityDataCollection dataCollection, boolean validate) {
 		super(ureq, wControl);
 		this.secCallback = secCallback;
@@ -224,15 +224,16 @@ public class DataCollectionConfigurationController extends FormBasicController {
 		updateUI();
 	}
 	
-	public void setDataCollection(QualityDataCollection dataCollection) {
+	public void onChanged(QualityDataCollection dataCollection, DataCollectionSecurityCallback secCallback) {
 		this.dataCollection = dataCollection;
+		this.secCallback = secCallback;
 		startEl.setDate(dataCollection.getStart());
 		deadlineEl.setDate(dataCollection.getDeadline());
 		updateUI();
 	}
 	
 	private void updateUI() {
-		boolean updateBaseConfiguration = secCallback.canUpdateBaseConfiguration(dataCollection);
+		boolean updateBaseConfiguration = secCallback.canUpdateBaseConfiguration();
 		titleEl.setEnabled(updateBaseConfiguration);
 		evaFormReplaceLink.setVisible(updateBaseConfiguration);
 		evaFormEditLink.setVisible(updateBaseConfiguration);
@@ -279,7 +280,7 @@ public class DataCollectionConfigurationController extends FormBasicController {
 					: translate("data.collection.topic.identity.none");
 				topicIdentityNameEl.setValue(userName);
 				topicIdentityNameEl.setVisible(true);
-				topicIdentitySelectLink.setVisible(secCallback.canUpdateBaseConfiguration(dataCollection));
+				topicIdentitySelectLink.setVisible(secCallback.canUpdateBaseConfiguration());
 				break;
 			case ORGANISATION:
 				List<Organisation> organisations = organisationService.getOrganisations(getIdentity(),
@@ -334,7 +335,7 @@ public class DataCollectionConfigurationController extends FormBasicController {
 						: translate("data.collection.topic.repository.none");
 				topicRepositoryNameEl.setValue(repositoryName);
 				topicRepositoryNameEl.setVisible(true);
-				topicRepositorySelectLink.setVisible(secCallback.canUpdateBaseConfiguration(dataCollection));
+				topicRepositorySelectLink.setVisible(secCallback.canUpdateBaseConfiguration());
 				break;
 			}
 		}

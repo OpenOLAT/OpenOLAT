@@ -27,7 +27,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
-import org.olat.modules.quality.QualitySecurityCallback;
+import org.olat.modules.quality.ui.security.MainSecurityCallback;
 
 /**
  * 
@@ -38,10 +38,10 @@ import org.olat.modules.quality.QualitySecurityCallback;
 public class DataCollectionDataModel extends DefaultFlexiTableDataSourceModel<DataCollectionRow> {
 
 	private final Translator translator;
-	private final QualitySecurityCallback secCallback;
+	private final MainSecurityCallback secCallback;
 	
 	public DataCollectionDataModel(FlexiTableDataSourceDelegate<DataCollectionRow> dataSource,
-			FlexiTableColumnModel columnsModel, Translator translator, QualitySecurityCallback secCallback) {
+			FlexiTableColumnModel columnsModel, Translator translator, MainSecurityCallback secCallback) {
 		super(dataSource, columnsModel);
 		this.translator = translator;
 		this.secCallback = secCallback;

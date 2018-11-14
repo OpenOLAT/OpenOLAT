@@ -41,7 +41,6 @@ import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityGeneratorProviderReferenceable;
 import org.olat.modules.quality.QualityReportAccess;
 import org.olat.modules.quality.QualityReportAccessSearchParams;
-import org.olat.modules.quality.QualitySecurityCallback;
 import org.olat.modules.quality.QualityService;
 import org.olat.modules.quality.generator.QualityGenerator;
 import org.olat.modules.quality.generator.QualityGeneratorConfigs;
@@ -53,6 +52,7 @@ import org.olat.modules.quality.generator.QualityGeneratorToOrganisation;
 import org.olat.modules.quality.generator.QualityGeneratorView;
 import org.olat.modules.quality.generator.ui.GeneratorWhiteListController;
 import org.olat.modules.quality.generator.ui.ProviderConfigController;
+import org.olat.modules.quality.ui.security.GeneratorSecurityCallback;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -178,7 +178,7 @@ public class QualityGeneratorServiceImpl implements QualityGeneratorService {
 
 	@Override
 	public GeneratorWhiteListController getWhiteListController(UserRequest ureq, WindowControl wControl,
-			QualitySecurityCallback secCallback, TooledStackedPanel stackPanel, QualityGenerator generator) {
+			GeneratorSecurityCallback secCallback, TooledStackedPanel stackPanel, QualityGenerator generator) {
 		QualityGeneratorProvider provider = providerFactory.getProvider(generator.getType());
 		QualityGeneratorConfigsImpl configs = new QualityGeneratorConfigsImpl(generator);
 		return provider.getWhiteListController(ureq, wControl, secCallback, stackPanel, generator, configs);

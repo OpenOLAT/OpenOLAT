@@ -52,8 +52,8 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.quality.QualityDataCollectionStatus;
 import org.olat.modules.quality.QualityExecutorParticipation;
 import org.olat.modules.quality.QualityExecutorParticipationSearchParams;
-import org.olat.modules.quality.QualitySecurityCallback;
 import org.olat.modules.quality.ui.ExecutorParticipationDataModel.ExecutorParticipationCols;
+import org.olat.modules.quality.ui.security.MainSecurityCallback;
 
 /**
  * 
@@ -75,10 +75,10 @@ public class ExecutorParticipationsListController extends FormBasicController im
 
 	private ExecutionController executionCtrl;
 	
-	private final QualitySecurityCallback secCallback;
+	private final MainSecurityCallback secCallback;
 
 	public ExecutorParticipationsListController(UserRequest ureq, WindowControl wControl,
-			QualitySecurityCallback secCallback) {
+			MainSecurityCallback secCallback) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		this.secCallback = secCallback;
 		initForm(ureq);

@@ -17,16 +17,42 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.quality.generator.ui;
+package org.olat.modules.quality.ui.security;
 
-import org.olat.core.gui.control.Controller;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.modules.quality.QualityExecutorParticipation;
+import org.olat.modules.quality.analysis.AnalysisPresentation;
 
 /**
  * 
- * Initial date: 03.11.2018<br>
+ * Initial date: 08.06.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface GeneratorWhiteListController extends Controller {
+public interface MainSecurityCallback {
+
+	public boolean canCreateSuggestion();
+
+	public boolean canExecute(QualityExecutorParticipation participation);
+
+	public boolean canViewDataCollections();
+	
+	public OrganisationRoles[] getViewDataCollectionRoles();
+	
+	public boolean canCreateDataCollections();
+	
+	public boolean canViewGenerators();
+	
+	public boolean canCreateGenerators();
+
+	public boolean canViewAnalysis();
+	
+	public OrganisationRoles[] getViewAnalysisRoles();
+	
+	public OrganisationRoles[] getViewPresentationRoles();
+	
+	public boolean canEditPresentations();
+
+	public boolean canDeletePresentation(AnalysisPresentation presentation);
 
 }

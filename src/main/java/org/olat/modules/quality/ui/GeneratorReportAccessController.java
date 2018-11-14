@@ -23,9 +23,8 @@ import static org.olat.modules.quality.QualityReportAccessReference.of;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.modules.quality.QualitySecurityCallback;
 import org.olat.modules.quality.generator.QualityGenerator;
-import org.olat.modules.quality.generator.ui.GeneratorChangedController;
+import org.olat.modules.quality.ui.security.GeneratorSecurityCallback;
 
 /**
  * 
@@ -33,38 +32,35 @@ import org.olat.modules.quality.generator.ui.GeneratorChangedController;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class GeneratorReportAccessController extends ReportAccessController implements GeneratorChangedController {
+public class GeneratorReportAccessController extends ReportAccessController {
 
-	private final QualitySecurityCallback secCallback;
-	private QualityGenerator generator;
+	private GeneratorSecurityCallback secCallback;
 
 	public GeneratorReportAccessController(UserRequest ureq, WindowControl wControl,
-			QualitySecurityCallback secCallback, QualityGenerator generator) {
+			GeneratorSecurityCallback secCallback, QualityGenerator generator) {
 		super(ureq, wControl, of(generator));
 		this.secCallback = secCallback;
-		this.generator = generator;
 		initForm(ureq);
 	}
 
-	@Override
-	public void onChanged(QualityGenerator generator, UserRequest ureq) {
-		this.generator = generator;
+	public void onChanged(GeneratorSecurityCallback secCallback, UserRequest ureq) {
+		this.secCallback = secCallback;
 		initForm(ureq);
 	}
 
 	@Override
 	protected boolean canEditReportAccessOnline() {
-		return secCallback.canEditReportAccessOnline(generator);
+		return secCallback.canEditReportAccessOnline();
 	}
 
 	@Override
 	protected boolean canEditReportAccessEmail() {
-		return secCallback.canEditReportAccessEmail(generator);
+		return secCallback.canEditReportAccessEmail();
 	}
 
 	@Override
 	protected boolean canEditReportMembers() {
-		return secCallback.canEditReportAccessMembers(generator);
+		return secCallback.canEditReportAccessMembers();
 	}
 
 }

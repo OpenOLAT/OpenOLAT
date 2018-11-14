@@ -41,12 +41,12 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.modules.quality.QualitySecurityCallback;
 import org.olat.modules.quality.analysis.AnalysisPresentation;
 import org.olat.modules.quality.analysis.AnalysisPresentationSearchParameter;
 import org.olat.modules.quality.analysis.QualityAnalysisService;
 import org.olat.modules.quality.analysis.ui.AnalysisListController;
 import org.olat.modules.quality.generator.ui.GeneratorListController;
+import org.olat.modules.quality.ui.security.MainSecurityCallback;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -78,14 +78,14 @@ public class QualityHomeController extends BasicController implements Activateab
 	private GeneratorListController generatorsListCtrl;
 	private AnalysisListController analysisListCtrl;
 	
-	private final QualitySecurityCallback secCallback;
+	private final MainSecurityCallback secCallback;
 	
 	@Autowired
 	private QualityAnalysisService analysisService;
 	@Autowired
 	private OrganisationService organisationService;
 	
-	public QualityHomeController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, QualitySecurityCallback secCallback) {
+	public QualityHomeController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, MainSecurityCallback secCallback) {
 		super(ureq, wControl);
 		this.stackPanel = stackPanel;
 		this.stackPanel.setToolbarAutoEnabled(true);

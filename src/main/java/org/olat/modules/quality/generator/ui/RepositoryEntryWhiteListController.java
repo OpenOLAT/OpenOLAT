@@ -50,7 +50,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.StringHelper;
 import org.olat.course.CourseModule;
-import org.olat.modules.quality.generator.QualityGenerator;
 import org.olat.modules.quality.generator.QualityGeneratorConfigs;
 import org.olat.modules.quality.generator.ui.RepositoryEntryWhiteListDataModel.Cols;
 import org.olat.repository.RepositoryEntry;
@@ -268,11 +267,6 @@ public class RepositoryEntryWhiteListController extends FormBasicController
 		String keys = currentKeys.stream().collect(joining(KEY_DELIMITER));
 		configs.setValue(COURSE_WHITE_LIST, keys);
 		loadModel();
-	}
-
-	@Override
-	public void onChanged(QualityGenerator generator, UserRequest ureq) {
-		//
 	}
 
 	@Override

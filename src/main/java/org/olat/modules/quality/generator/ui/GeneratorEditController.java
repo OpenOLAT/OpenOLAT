@@ -27,9 +27,9 @@ import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.modules.quality.QualitySecurityCallback;
 import org.olat.modules.quality.generator.QualityGenerator;
 import org.olat.modules.quality.generator.QualityGeneratorService;
+import org.olat.modules.quality.ui.security.GeneratorSecurityCallback;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -38,23 +38,23 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class GeneratorEditController extends FormBasicController implements GeneratorChangedController {
+public class GeneratorEditController extends FormBasicController {
 	
 	private GeneratorConfigController configCtrl;
 	private ProviderConfigController providerConfigCtrl;
 
-	private QualitySecurityCallback secCallback;
 	private TooledStackedPanel stackPanel;
 	
+	private GeneratorSecurityCallback secCallback;
 	private QualityGenerator generator;
 	
 	@Autowired
 	private QualityGeneratorService generatorService;
 	
-	public GeneratorEditController(UserRequest ureq, WindowControl wControl, QualitySecurityCallback secCallback,
+	public GeneratorEditController(UserRequest ureq, WindowControl wControl, GeneratorSecurityCallback secCallback2,
 			TooledStackedPanel stackPanel, QualityGenerator generator, boolean validate) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
-		this.secCallback = secCallback;
+		this.secCallback = secCallback2;
 		this.stackPanel = stackPanel;
 		this.generator = generator;
 		initForm(ureq);
@@ -86,14 +86,15 @@ public class GeneratorEditController extends FormBasicController implements Gene
 		updateUI();
 	}
 
-	@Override
-	public void onChanged(QualityGenerator generator, UserRequest ureq) {
-		configCtrl.setGenerator(generator);
+	public void onChanged(QualityGenerator generator, GeneratorSecurityCallback secCallback) {
+		this.generator = generator;
+		this.secCallback = secCallback;
+		configCtrl.onChanged(generator, secCallback);
 		updateUI();
 	}
 	
 	private void updateUI() {
-		providerConfigCtrl.setReadOnly(generator.isEnabled());
+		providerConfigCtrl.setReadOnly(!secCallback.canEditGenerator());
 	}
 
 	@Override

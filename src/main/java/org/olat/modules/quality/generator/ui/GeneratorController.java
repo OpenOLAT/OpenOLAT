@@ -42,12 +42,14 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
-import org.olat.modules.quality.QualitySecurityCallback;
 import org.olat.modules.quality.generator.QualityGenerator;
 import org.olat.modules.quality.generator.QualityGeneratorService;
 import org.olat.modules.quality.ui.GeneratorReportAccessController;
+import org.olat.modules.quality.ui.security.GeneratorSecurityCallback;
+import org.olat.modules.quality.ui.security.QualitySecurityCallbackFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -76,30 +78,31 @@ public class GeneratorController extends BasicController implements TooledContro
 	private GeneratorEnableConfirmationController enableConfirmationCtrl;
 	private GeneratorDisableConfirmationController disableConfirmationCtrl;
 	
-	private final QualitySecurityCallback secCallback;
+	private GeneratorSecurityCallback secCallback;
 	private QualityGenerator generator;
+	private final List<Organisation> organisations;
 	
 	@Autowired
 	private QualityGeneratorService generatorService;
 
-	public GeneratorController(UserRequest ureq, WindowControl wControl, QualitySecurityCallback secCallback,
-			TooledStackedPanel stackPanel, QualityGenerator generator) {
+	public GeneratorController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+			QualityGenerator generator) {
 		super(ureq, wControl);
-		this.secCallback = secCallback;
 		this.stackPanel = stackPanel;
 		stackPanel.addListener(this);
 		this.generator = generator;
+		organisations = generatorService.loadGeneratorOrganisations(generator);
+		this.secCallback = QualitySecurityCallbackFactory
+				.createGeneratorSecurityCallback(ureq.getUserSession().getRoles(), generator, organisations);
 		
 		segmentButtonsCmp = new ButtonGroupComponent("segments");
-		if (secCallback.canViewGenerators()) {
-			configurationLink = LinkFactory.createLink("generator.configuration", getTranslator(), this);
-			segmentButtonsCmp.addButton(configurationLink, false);
-			reportAccessLink = LinkFactory.createLink("generator.report.access", getTranslator(), this);
-			segmentButtonsCmp.addButton(reportAccessLink, false);
-			if (generatorService.hasWhiteListController(generator)) {
-				whiteListLink = LinkFactory.createLink("generator.white.list", getTranslator(), this);
-				segmentButtonsCmp.addButton(whiteListLink, false);
-			}
+		configurationLink = LinkFactory.createLink("generator.configuration", getTranslator(), this);
+		segmentButtonsCmp.addButton(configurationLink, false);
+		reportAccessLink = LinkFactory.createLink("generator.report.access", getTranslator(), this);
+		segmentButtonsCmp.addButton(reportAccessLink, false);
+		if (generatorService.hasWhiteListController(generator)) {
+			whiteListLink = LinkFactory.createLink("generator.white.list", getTranslator(), this);
+			segmentButtonsCmp.addButton(whiteListLink, false);
 		}
 		
 		mainPanel = putInitialPanel(new SimpleStackedPanel("dataCollectionSegments"));
@@ -281,15 +284,15 @@ public class GeneratorController extends BasicController implements TooledContro
 	}
 	
 	private void updateUI(UserRequest ureq) {
+		secCallback = QualitySecurityCallbackFactory.createGeneratorSecurityCallback(ureq.getUserSession().getRoles(),
+				generator, organisations);
+		
 		initButtons();
 		if (configCtrl != null) {
-			configCtrl.onChanged(generator, ureq);
+			configCtrl.onChanged(generator, secCallback);
 		}
 		if (reportAccessCtrl != null) {
-			reportAccessCtrl.onChanged(generator, ureq);
-		}
-		if (whiteListCtrl != null) {
-			whiteListCtrl.onChanged(generator, ureq);
+			reportAccessCtrl.onChanged(secCallback, ureq);
 		}
 	}
 

@@ -37,7 +37,6 @@ import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.ui.ReportSegment;
 import org.olat.modules.forms.ui.ReportSegmentEvent;
-import org.olat.modules.quality.QualitySecurityCallback;
 import org.olat.modules.quality.analysis.AnalysisPresentation;
 import org.olat.modules.quality.analysis.AnalysisSearchParameter;
 import org.olat.modules.quality.analysis.AnalysisSegment;
@@ -45,6 +44,7 @@ import org.olat.modules.quality.analysis.AvailableAttributes;
 import org.olat.modules.quality.analysis.MultiGroupBy;
 import org.olat.modules.quality.analysis.QualityAnalysisService;
 import org.olat.modules.quality.analysis.ui.PresentationEvent.Action;
+import org.olat.modules.quality.ui.security.MainSecurityCallback;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -66,7 +66,7 @@ public class AnalysisController extends BasicController implements TooledControl
 	private CloseableModalController cmc;
 	private PresentationController presentationCtrl;
 	private PresentationDeleteConfirmationController presentationDeleteCtrl;
-	private final QualitySecurityCallback secCallback;
+	private final MainSecurityCallback secCallback;
 	private final TooledStackedPanel stackPanel;
 	
 	private final Form form;
@@ -79,7 +79,7 @@ public class AnalysisController extends BasicController implements TooledControl
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
 
-	protected AnalysisController(UserRequest ureq, WindowControl wControl, QualitySecurityCallback secCallback,
+	protected AnalysisController(UserRequest ureq, WindowControl wControl, MainSecurityCallback secCallback,
 			TooledStackedPanel stackPanel, AnalysisPresentation presentation) {
 		super(ureq, wControl);
 		this.secCallback = secCallback;

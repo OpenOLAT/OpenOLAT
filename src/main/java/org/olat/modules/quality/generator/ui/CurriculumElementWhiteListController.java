@@ -276,9 +276,4 @@ implements GeneratorWhiteListController, TooledController {
 		//
 	}
 
-	@Override
-	public void onChanged(QualityGenerator generator, UserRequest ureq) {
-		//
-	}
-
 }

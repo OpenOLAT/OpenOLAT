@@ -38,9 +38,9 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
-import org.olat.modules.quality.QualitySecurityCallback;
 import org.olat.modules.quality.analysis.AnalysisPresentation;
 import org.olat.modules.quality.analysis.AnalysisSegment;
+import org.olat.modules.quality.ui.security.MainSecurityCallback;
 
 /**
  * 
@@ -58,10 +58,10 @@ public class AnalysisSegmentsController extends BasicController implements Toole
 
 	private AnalysisController analysisCtrl;
 	
-	private final QualitySecurityCallback secCallback;
+	private final MainSecurityCallback secCallback;
 	private final AnalysisPresentation presentation;
 	
-	public AnalysisSegmentsController(UserRequest ureq, WindowControl wControl, QualitySecurityCallback secCallback,
+	public AnalysisSegmentsController(UserRequest ureq, WindowControl wControl, MainSecurityCallback secCallback,
 			TooledStackedPanel stackPanel, AnalysisPresentation presentation) {
 		super(ureq, wControl);
 		this.secCallback = secCallback;

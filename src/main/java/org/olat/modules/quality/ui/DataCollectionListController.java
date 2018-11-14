@@ -57,11 +57,11 @@ import org.olat.modules.forms.handler.EvaluationFormResource;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityDataCollectionLight;
 import org.olat.modules.quality.QualityDataCollectionView;
-import org.olat.modules.quality.QualitySecurityCallback;
 import org.olat.modules.quality.QualityService;
 import org.olat.modules.quality.ui.DataCollectionDataModel.DataCollectionCols;
 import org.olat.modules.quality.ui.event.DataCollectionEvent;
 import org.olat.modules.quality.ui.event.DataCollectionEvent.Action;
+import org.olat.modules.quality.ui.security.MainSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -86,7 +86,7 @@ public class DataCollectionListController extends FormBasicController implements
 	private ReferencableEntriesSearchController formSearchCtrl;
 	private DataCollectionDeleteConfirmationController deleteConfirmationCtrl;
 	
-	private final QualitySecurityCallback secCallback;
+	private final MainSecurityCallback secCallback;
 	
 	@Autowired
 	private QualityService qualityService;
@@ -94,7 +94,7 @@ public class DataCollectionListController extends FormBasicController implements
 	private OrganisationService organisationService;
 
 	public DataCollectionListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			QualitySecurityCallback secCallback) {
+			MainSecurityCallback secCallback) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		this.stackPanel = stackPanel;
 		stackPanel.addListener(this);
@@ -257,8 +257,7 @@ public class DataCollectionListController extends FormBasicController implements
 	
 	private void doEditDataCollection(UserRequest ureq, QualityDataCollectionLight dataCollection) {
 		WindowControl bwControl = addToHistory(ureq, dataCollection, null);
-		dataCollectionCtrl = new DataCollectionController(ureq, bwControl, secCallback, stackPanel,
-				dataCollection);
+		dataCollectionCtrl = new DataCollectionController(ureq, bwControl, stackPanel, dataCollection);
 		listenTo(dataCollectionCtrl);
 		String title = dataCollection.getTitle();
 		String formattedTitle = StringHelper.containsNonWhitespace(title)

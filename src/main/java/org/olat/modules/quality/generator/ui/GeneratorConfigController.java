@@ -50,13 +50,13 @@ import org.olat.core.util.StringHelper;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.modules.forms.handler.EvaluationFormResource;
 import org.olat.modules.forms.ui.EvaluationFormExecutionController;
-import org.olat.modules.quality.QualitySecurityCallback;
 import org.olat.modules.quality.generator.QualityGenerator;
 import org.olat.modules.quality.generator.QualityGeneratorRef;
 import org.olat.modules.quality.generator.QualityGeneratorSearchParams;
 import org.olat.modules.quality.generator.QualityGeneratorService;
 import org.olat.modules.quality.generator.QualityGeneratorView;
 import org.olat.modules.quality.ui.QualityUIFactory;
+import org.olat.modules.quality.ui.security.GeneratorSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,7 +80,7 @@ public class GeneratorConfigController extends FormBasicController {
 	private CloseableModalController cmc;
 	private ReferencableEntriesSearchController formSearchCtrl;
 	
-	private final QualitySecurityCallback secCallback;
+	private GeneratorSecurityCallback secCallback;
 	private final TooledStackedPanel stackPanel;
 	private QualityGenerator generator;
 	private List<Organisation> currentOrganisations;
@@ -92,7 +92,7 @@ public class GeneratorConfigController extends FormBasicController {
 	private OrganisationModule organisationModule;
 
 	public GeneratorConfigController(UserRequest ureq, WindowControl wControl, Form mainForm,
-			QualitySecurityCallback secCallback, TooledStackedPanel stackPanel, QualityGeneratorRef generatorRef) {
+			GeneratorSecurityCallback secCallback, TooledStackedPanel stackPanel, QualityGeneratorRef generatorRef) {
 		super(ureq, wControl, LAYOUT_DEFAULT, null, mainForm);
 		this.secCallback = secCallback;
 		this.stackPanel = stackPanel;
@@ -128,14 +128,15 @@ public class GeneratorConfigController extends FormBasicController {
 		updateUI();
 	}
 
-	public void setGenerator(QualityGeneratorRef generatorRef) {
-		generator = generatorService.loadGenerator(generatorRef);
-		formEntry = generator.getFormEntry();
+	public void onChanged(QualityGeneratorRef generatorRef, GeneratorSecurityCallback secCallback) {
+		this.generator = generatorService.loadGenerator(generatorRef);
+		this.formEntry = generator.getFormEntry();
+		this.secCallback = secCallback;
 		updateUI();
 	}
 
 	protected void updateUI() {
-		boolean editGenerator = secCallback.canEditGenerator(generator);
+		boolean editGenerator = secCallback.canEditGenerator();
 		titleEl.setEnabled(editGenerator);
 		organisationsEl.setEnabled(editGenerator);
 		organisationsEl.setVisible(organisationModule.isEnabled());
@@ -151,7 +152,7 @@ public class GeneratorConfigController extends FormBasicController {
 		searchParams.setGeneratorRefs(Collections.singletonList(generator));
 		List<QualityGeneratorView> generators = generatorService.loadGenerators(searchParams);
 		Long numOfDataCollections = generators.isEmpty()? 0l: generators.get(0).getNumberDataCollections();
-		boolean editGeneratorForm = secCallback.canEditGeneratorForm(generator, numOfDataCollections);
+		boolean editGeneratorForm = secCallback.canEditGeneratorForm(numOfDataCollections);
 		evaFormNotChoosen.setVisible(!hasRepoConfig);
 		evaFormSelectLink.setVisible(!hasRepoConfig);
 		evaFormPreviewLink.setVisible(hasRepoConfig);

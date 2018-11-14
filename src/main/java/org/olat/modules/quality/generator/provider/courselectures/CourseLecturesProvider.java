@@ -50,7 +50,6 @@ import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityDataCollectionStatus;
 import org.olat.modules.quality.QualityDataCollectionTopicType;
 import org.olat.modules.quality.QualityReminderType;
-import org.olat.modules.quality.QualitySecurityCallback;
 import org.olat.modules.quality.QualityService;
 import org.olat.modules.quality.generator.QualityGenerator;
 import org.olat.modules.quality.generator.QualityGeneratorConfigs;
@@ -64,6 +63,7 @@ import org.olat.modules.quality.generator.provider.courselectures.ui.CourseLectu
 import org.olat.modules.quality.generator.ui.CurriculumElementWhiteListController;
 import org.olat.modules.quality.generator.ui.GeneratorWhiteListController;
 import org.olat.modules.quality.generator.ui.ProviderConfigController;
+import org.olat.modules.quality.ui.security.GeneratorSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryService;
@@ -150,7 +150,7 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 
 	@Override
 	public GeneratorWhiteListController getWhiteListController(UserRequest ureq, WindowControl wControl,
-			QualitySecurityCallback secCallback, TooledStackedPanel stackPanel, QualityGenerator generator,
+			GeneratorSecurityCallback secCallback, TooledStackedPanel stackPanel, QualityGenerator generator,
 			QualityGeneratorConfigs configs) {
 		return new CurriculumElementWhiteListController(ureq, wControl, stackPanel, generator, configs);
 	}

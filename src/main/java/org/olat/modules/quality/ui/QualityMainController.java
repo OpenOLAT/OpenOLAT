@@ -32,7 +32,8 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.modules.quality.QualitySecurityCallback;
+import org.olat.modules.quality.ui.security.MainSecurityCallback;
+import org.olat.modules.quality.ui.security.QualitySecurityCallbackFactory;
 
 /**
  * 
@@ -49,8 +50,7 @@ public class QualityMainController extends MainLayoutBasicController implements 
 	
 	public QualityMainController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		QualitySecurityCallback secCallback = new QualitySecurityCallbackImpl(getIdentity(),
-				ureq.getUserSession().getRoles());
+		MainSecurityCallback secCallback = QualitySecurityCallbackFactory.createMainSecurityCallback(ureq.getUserSession().getRoles(), getIdentity());
 		
 		stackPanel = new TooledStackedPanel("qualitiy.management", getTranslator(), this);
 		stackPanel.setToolbarAutoEnabled(true);

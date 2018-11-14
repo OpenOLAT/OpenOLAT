@@ -30,9 +30,9 @@ import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Organisation;
 import org.olat.modules.quality.QualityGeneratorProviderReferenceable;
-import org.olat.modules.quality.QualitySecurityCallback;
 import org.olat.modules.quality.generator.ui.GeneratorWhiteListController;
 import org.olat.modules.quality.generator.ui.ProviderConfigController;
+import org.olat.modules.quality.ui.security.GeneratorSecurityCallback;
 
 /**
  * 
@@ -70,7 +70,7 @@ public interface QualityGeneratorService {
 	public boolean hasWhiteListController(QualityGenerator generator);
 	
 	public GeneratorWhiteListController getWhiteListController(UserRequest ureq, WindowControl wControl,
-			QualitySecurityCallback secCallback, TooledStackedPanel stackPanel, QualityGenerator generator);
+			GeneratorSecurityCallback secCallback, TooledStackedPanel stackPanel, QualityGenerator generator);
 
 	public void generateDataCollections();
 

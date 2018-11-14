@@ -31,8 +31,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityReminder;
 import org.olat.modules.quality.QualityReminderType;
-import org.olat.modules.quality.QualitySecurityCallback;
 import org.olat.modules.quality.QualityService;
+import org.olat.modules.quality.ui.security.DataCollectionSecurityCallback;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -48,7 +48,7 @@ public class RemindersController extends FormBasicController {
 	private DateChooser reminder2El;
 	private FormLayoutContainer buttonLayout;
 	
-	private final QualitySecurityCallback secCallback;
+	private DataCollectionSecurityCallback secCallback;
 	private QualityDataCollection dataCollection;
 	
 	private QualityReminder invitation;
@@ -58,7 +58,7 @@ public class RemindersController extends FormBasicController {
 	@Autowired
 	private QualityService qualityService;
 
-	public RemindersController(UserRequest ureq, WindowControl wControl, QualitySecurityCallback secCallback,
+	public RemindersController(UserRequest ureq, WindowControl wControl, DataCollectionSecurityCallback secCallback,
 			QualityDataCollection dataCollection) {
 		super(ureq, wControl);
 		this.secCallback = secCallback;
@@ -89,17 +89,18 @@ public class RemindersController extends FormBasicController {
 		updateUI();
 	}
 
-	protected void setDataCollection(QualityDataCollection dataCollection) {
+	protected void onChanged(QualityDataCollection dataCollection, DataCollectionSecurityCallback secCallback) {
 		this.dataCollection = dataCollection;
+		this.secCallback = secCallback;
 		updateUI();
 	}
 	
 	private void updateUI() {
-		boolean canEditInvitation = secCallback.canEditReminder(dataCollection, invitation);
+		boolean canEditInvitation = secCallback.canEditReminder(invitation);
 		invitationEl.setEnabled(canEditInvitation);
-		boolean canEditReminder1 = secCallback.canEditReminder(dataCollection, reminder1);
+		boolean canEditReminder1 = secCallback.canEditReminder(reminder1);
 		reminder1El.setEnabled(canEditReminder1);
-		boolean canEditReminder2 = secCallback.canEditReminder(dataCollection, reminder2);
+		boolean canEditReminder2 = secCallback.canEditReminder(reminder2);
 		reminder2El.setEnabled(canEditReminder2);
 		buttonLayout.setVisible(canEditInvitation || canEditReminder1 || canEditReminder2);
 	}

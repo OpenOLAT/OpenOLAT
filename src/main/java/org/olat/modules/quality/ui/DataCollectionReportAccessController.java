@@ -24,7 +24,7 @@ import static org.olat.modules.quality.QualityReportAccessReference.of;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.quality.QualityDataCollection;
-import org.olat.modules.quality.QualitySecurityCallback;
+import org.olat.modules.quality.ui.security.DataCollectionSecurityCallback;
 
 /**
  * 
@@ -34,35 +34,33 @@ import org.olat.modules.quality.QualitySecurityCallback;
  */
 public class DataCollectionReportAccessController extends ReportAccessController {
 
-	private final QualitySecurityCallback secCallback;
-	private QualityDataCollection dataCollection;
+	private DataCollectionSecurityCallback secCallback;
 
 	protected DataCollectionReportAccessController(UserRequest ureq, WindowControl wControl, 
-			QualitySecurityCallback secCallback, QualityDataCollection dataCollection) {
+			DataCollectionSecurityCallback secCallback, QualityDataCollection dataCollection) {
 		super(ureq, wControl, of(dataCollection));
 		this.secCallback = secCallback;
-		this.dataCollection = dataCollection;
 		initForm(ureq);
 	}
 	
-	public void setDataCollection(QualityDataCollection dataCollection, UserRequest ureq) {
-		this.dataCollection = dataCollection;
+	public void onChanged(DataCollectionSecurityCallback secCallback, UserRequest ureq) {
+		this.secCallback = secCallback;
 		initForm(ureq);
 	}
 
 	@Override
 	protected boolean canEditReportAccessOnline() {
-		return secCallback.canEditReportAccessOnline(dataCollection);
+		return secCallback.canEditReportAccessOnline();
 	}
 
 	@Override
 	protected boolean canEditReportAccessEmail() {
-		return secCallback.canEditReportAccessEmail(dataCollection);
+		return secCallback.canEditReportAccessEmail();
 	}
 
 	@Override
 	protected boolean canEditReportMembers() {
-		return secCallback.canEditReportAccessMembers(dataCollection);
+		return secCallback.canEditReportAccessMembers();
 	}
 
 }

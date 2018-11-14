@@ -53,12 +53,12 @@ import org.olat.core.id.Organisation;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.modules.quality.QualitySecurityCallback;
 import org.olat.modules.quality.analysis.AnalysisPresentation;
 import org.olat.modules.quality.analysis.EvaluationFormView;
 import org.olat.modules.quality.analysis.EvaluationFormViewSearchParams;
 import org.olat.modules.quality.analysis.QualityAnalysisService;
 import org.olat.modules.quality.analysis.ui.AnalysisDataModel.AnalysisCols;
+import org.olat.modules.quality.ui.security.MainSecurityCallback;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -76,7 +76,7 @@ public class AnalysisListController extends FormBasicController implements Flexi
 			(f1, f2) -> f2.getLatestDataCollectionFinishedDate().compareTo(f1.getLatestDataCollectionFinishedDate());
 	
 	private final TooledStackedPanel stackPanel;
-	private final QualitySecurityCallback secCallback;
+	private final MainSecurityCallback secCallback;
 	private FlexiTableElement tableEl;
 	private AnalysisDataModel dataModel;
 	
@@ -92,7 +92,7 @@ public class AnalysisListController extends FormBasicController implements Flexi
 	private OrganisationService organisationService;
 	
 	public AnalysisListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			QualitySecurityCallback secCallback) {
+			MainSecurityCallback secCallback) {
 		super(ureq, wControl, "analysis_list");
 		this.stackPanel = stackPanel;
 		stackPanel.addListener(this);

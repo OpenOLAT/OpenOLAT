@@ -48,15 +48,17 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityDataCollectionLight;
 import org.olat.modules.quality.QualityDataCollectionStatus;
-import org.olat.modules.quality.QualitySecurityCallback;
 import org.olat.modules.quality.QualityService;
 import org.olat.modules.quality.ui.event.DataCollectionEvent;
 import org.olat.modules.quality.ui.event.DataCollectionEvent.Action;
+import org.olat.modules.quality.ui.security.DataCollectionSecurityCallback;
+import org.olat.modules.quality.ui.security.QualitySecurityCallbackFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -97,21 +99,24 @@ public class DataCollectionController extends BasicController implements TooledC
 	private DataCollectionStartConfirmationController startConfirmationController;
 	private DataCollectionFinishConfirmationController finishConfirmationController;
 	
-	private final QualitySecurityCallback secCallback;
+	private DataCollectionSecurityCallback secCallback;
 	private QualityDataCollection dataCollection;
+	private List<Organisation> organisations;
 	private QualityDataCollection previousDataCollection;
 	private QualityDataCollection followUpDataCollection;
 	
 	@Autowired
 	private QualityService qualityService;
 
-	protected DataCollectionController(UserRequest ureq, WindowControl wControl, QualitySecurityCallback secCallback,
-			TooledStackedPanel stackPanel, QualityDataCollectionLight dataCollectionLight) {
+	protected DataCollectionController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+			QualityDataCollectionLight dataCollectionLight) {
 		super(ureq, wControl);
-		this.secCallback = secCallback;
 		this.stackPanel = stackPanel;
 		stackPanel.addListener(this);
 		this.dataCollection = qualityService.loadDataCollectionByKey(dataCollectionLight);
+		organisations = qualityService.loadDataCollectionOrganisations(dataCollectionLight);
+		secCallback = QualitySecurityCallbackFactory.createDataCollectionSecurityCallback(
+				ureq.getUserSession().getRoles(), dataCollectionLight, organisations);
 		
 		segmentButtonsCmp = new ButtonGroupComponent("segments");
 		if (secCallback.canViewDataCollectionConfigurations()) {
@@ -131,7 +136,7 @@ public class DataCollectionController extends BasicController implements TooledC
 	}
 	
 	private void addReportButtons() {
-		if (secCallback.canViewReport(dataCollection)) {
+		if (secCallback.canViewReport()) {
 			if (segmentButtonsCmp.getComponent("data.collection.report") == null) {
 				reportLink = LinkFactory.createLink("data.collection.report", getTranslator(), this);
 				segmentButtonsCmp.addButton(reportLink, false);
@@ -154,12 +159,12 @@ public class DataCollectionController extends BasicController implements TooledC
 		if (entries != null && !entries.isEmpty()) {
 			OLATResourceable resource = entries.get(0).getOLATResourceable();
 			if (ORES_REPORT_TYPE.equalsIgnoreCase(resource.getResourceableTypeName())
-					&& secCallback.canViewReport(dataCollection)) {
+					&& secCallback.canViewReport()) {
 				doOpenReport(ureq);
 			}
 		} else if (secCallback.canViewDataCollectionConfigurations()) {
 			doOpenConfiguration(ureq);
-		} else if (secCallback.canViewReport(dataCollection)) {
+		} else if (secCallback.canViewReport()) {
 			doOpenReport(ureq);
 		}
 	}
@@ -182,10 +187,10 @@ public class DataCollectionController extends BasicController implements TooledC
 	}
 
 	private boolean canChangeStatus() {
-		return secCallback.canSetPreparation(dataCollection)
-				|| secCallback.canSetReady(dataCollection)
-				|| secCallback.canSetRunning(dataCollection)
-				|| secCallback.canSetFinished(dataCollection);
+		return secCallback.canSetPreparation()
+				|| secCallback.canSetReady()
+				|| secCallback.canSetRunning()
+				|| secCallback.canSetFinished();
 	}
 
 	private Dropdown buildStatusDrowdown() {
@@ -201,25 +206,25 @@ public class DataCollectionController extends BasicController implements TooledC
 		statusPreparationLink = LinkFactory.createToolLink("data.collection.status.preparation", translate("data.collection.status.preparation"), this);
 		statusPreparationLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_dc_preparation");
 		statusPreparationLink.setElementCssClass("o_labeled o_qual_dc_status_preparation");
-		statusPreparationLink.setVisible(secCallback.canSetPreparation(dataCollection));
+		statusPreparationLink.setVisible(secCallback.canSetPreparation());
 		statusDropdown.addComponent(statusPreparationLink);
 	
 		statusReadyLink = LinkFactory.createToolLink("data.collection.status.ready", translate("data.collection.status.ready"), this);
 		statusReadyLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_dc_ready");
 		statusReadyLink.setElementCssClass("o_labeled o_qual_dc_status_ready");
-		statusReadyLink.setVisible(secCallback.canSetReady(dataCollection));
+		statusReadyLink.setVisible(secCallback.canSetReady());
 		statusDropdown.addComponent(statusReadyLink);
 		
 		statusRunningLink = LinkFactory.createToolLink("data.collection.status.running", translate("data.collection.status.running"), this);
 		statusRunningLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_dc_running");
 		statusRunningLink.setElementCssClass("o_labeled o_qual_dc_status_running");
-		statusRunningLink.setVisible(secCallback.canSetRunning(dataCollection));
+		statusRunningLink.setVisible(secCallback.canSetRunning());
 		statusDropdown.addComponent(statusRunningLink);
 		
 		statusFinishedLink = LinkFactory.createToolLink("data.collection.status.finished", translate("data.collection.status.finished"), this);
 		statusFinishedLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_dc_finished");
 		statusFinishedLink.setElementCssClass("o_labeled o_qual_dc_status_finished");
-		statusFinishedLink.setVisible(secCallback.canSetFinished(dataCollection));
+		statusFinishedLink.setVisible(secCallback.canSetFinished());
 		statusDropdown.addComponent(statusFinishedLink);
 		
 		return statusDropdown;
@@ -236,7 +241,7 @@ public class DataCollectionController extends BasicController implements TooledC
 
 	private void initButtons() {
 		if (deleteLink != null) stackPanel.removeTool(deleteLink, this);
-		if (secCallback.canDeleteDataCollection(dataCollection) ) {
+		if (secCallback.canDeleteDataCollection() ) {
 			deleteLink = LinkFactory.createToolLink("data.collection.delete", translate("data.collection.delete"),
 					this);
 			deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_dc_delete");
@@ -447,18 +452,20 @@ public class DataCollectionController extends BasicController implements TooledC
 	}
 	
 	private void afterDataCollectionUpdated(UserRequest ureq) {
+		secCallback = QualitySecurityCallbackFactory.createDataCollectionSecurityCallback(
+				ureq.getUserSession().getRoles(), dataCollection, organisations);
 		initTools();
 		if (configurationCtrl != null) {
-			configurationCtrl.setDataCollection(dataCollection);
+			configurationCtrl.onChanged(dataCollection, secCallback);
 		}
 		if (participationsCtrl != null) {
-			participationsCtrl.setDataCollection(dataCollection, ureq);
+			participationsCtrl.onChanged(dataCollection, secCallback, ureq);
 		}
 		if (remindersCtrl != null) {
-			remindersCtrl.setDataCollection(dataCollection);
+			remindersCtrl.onChanged(dataCollection, secCallback);
 		}
 		if (reportAccessCtrl != null) {
-			reportAccessCtrl.setDataCollection(dataCollection, ureq);
+			reportAccessCtrl.onChanged(secCallback, ureq);
 		}
 		addReportButtons();
 	}

@@ -26,7 +26,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
-import org.olat.modules.quality.QualitySecurityCallback;
+import org.olat.modules.quality.ui.security.MainSecurityCallback;
 
 /**
  * 
@@ -36,11 +36,11 @@ import org.olat.modules.quality.QualitySecurityCallback;
  */
 public class ExecutorParticipationDataModel extends DefaultFlexiTableDataSourceModel<ExecutorParticipationRow> {
 
-	private final QualitySecurityCallback secCallback;
+	private final MainSecurityCallback secCallback;
 	private final Locale locale;
 
 	public ExecutorParticipationDataModel(FlexiTableDataSourceDelegate<ExecutorParticipationRow> dataSource,
-			FlexiTableColumnModel columnsModel, QualitySecurityCallback secCallback, Locale locale) {
+			FlexiTableColumnModel columnsModel, MainSecurityCallback secCallback, Locale locale) {
 		super(dataSource, columnsModel);
 		this.secCallback = secCallback;
 		this.locale = locale;

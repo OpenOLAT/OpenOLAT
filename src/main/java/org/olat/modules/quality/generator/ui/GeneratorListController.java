@@ -55,13 +55,13 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.ui.BooleanCSSCellRenderer;
-import org.olat.modules.quality.QualitySecurityCallback;
 import org.olat.modules.quality.generator.QualityGenerator;
 import org.olat.modules.quality.generator.QualityGeneratorRef;
 import org.olat.modules.quality.generator.QualityGeneratorSearchParams;
 import org.olat.modules.quality.generator.QualityGeneratorService;
 import org.olat.modules.quality.generator.QualityGeneratorView;
 import org.olat.modules.quality.generator.ui.GeneratorDataModel.GeneratorCols;
+import org.olat.modules.quality.ui.security.MainSecurityCallback;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -86,7 +86,7 @@ public class GeneratorListController extends FormBasicController implements Tool
 	private GeneratorController generatorCtrl;
 	private GeneratorDeleteConfirmationController deleteConfirmationCtrl;
 	
-	private final QualitySecurityCallback secCallback;
+	private final MainSecurityCallback secCallback;
 	private final List<Organisation> organisations;
 	
 	@Autowired
@@ -96,7 +96,7 @@ public class GeneratorListController extends FormBasicController implements Tool
 
 
 	public GeneratorListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			QualitySecurityCallback secCallback) {
+			MainSecurityCallback secCallback) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		this.stackPanel = stackPanel;
 		stackPanel.addListener(this);
@@ -113,11 +113,7 @@ public class GeneratorListController extends FormBasicController implements Tool
 				"o_icon o_icon-lg o_icon_qual_gen_enabled", "o_icon o_icon-lg o_icon_qual_gen_disabled",
 				"generator.enabled.hover", "generator.disabled.hover");
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GeneratorCols.enabled, enabledRenderer));
-		if (secCallback.canEditGenerators() || secCallback.canViewGenerators()) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GeneratorCols.title, CMD_EDIT));
-		} else {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GeneratorCols.title));
-		}
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GeneratorCols.title, CMD_EDIT));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GeneratorCols.providerName));
 		DefaultFlexiColumnModel numDataCollectionsColumn = new DefaultFlexiColumnModel(GeneratorCols.numberDataCollections);
 		numDataCollectionsColumn.setAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
@@ -270,7 +266,7 @@ public class GeneratorListController extends FormBasicController implements Tool
 
 	private void doEditGenerator(UserRequest ureq, QualityGenerator generator) {
 		WindowControl bwControl = addToHistory(ureq, generator, null);
-		generatorCtrl = new GeneratorController(ureq, bwControl, secCallback, stackPanel, generator);
+		generatorCtrl = new GeneratorController(ureq, bwControl, stackPanel, generator);
 		listenTo(generatorCtrl);
 		String title = generator.getTitle();
 		String formattedTitle = StringHelper.containsNonWhitespace(title)
@@ -292,7 +288,7 @@ public class GeneratorListController extends FormBasicController implements Tool
 
 	private void doDeleteGenerator(QualityGenerator generator) {
 		long numberDataCollections = generatorService.getNumberOfDataCollections(generator);
-		if (secCallback.canDeleteGenerator(numberDataCollections)) {
+		if (numberDataCollections == 0) {
 			generatorService.deleteGenerator(generator);
 			stackPanel.popUpToController(this);
 			loadModel();

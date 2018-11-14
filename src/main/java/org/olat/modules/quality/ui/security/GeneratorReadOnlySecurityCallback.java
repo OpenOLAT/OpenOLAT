@@ -17,16 +17,49 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.quality.generator.ui;
-
-import org.olat.core.gui.control.Controller;
+package org.olat.modules.quality.ui.security;
 
 /**
  * 
- * Initial date: 03.11.2018<br>
+ * Initial date: 14 Nov 2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface GeneratorWhiteListController extends Controller {
+class GeneratorReadOnlySecurityCallback implements GeneratorSecurityCallback {
+
+	@Override
+	public boolean canEditGenerator() {
+		return false;
+	}
+
+	@Override
+	public boolean canEditGeneratorForm(long numOfDataCollections) {
+		return false;
+	}
+
+	@Override
+	public boolean canEditReportAccessOnline() {
+		return false;
+	}
+
+	@Override
+	public boolean canEditReportAccessEmail() {
+		return false;
+	}
+
+	@Override
+	public boolean canEditReportAccessMembers() {
+		return false;
+	}
+
+	@Override
+	public boolean canActivateGenerators() {
+		return false;
+	}
+
+	@Override
+	public boolean canDeleteGenerator(long numberDataCollections) {
+		return false;
+	}
 
 }

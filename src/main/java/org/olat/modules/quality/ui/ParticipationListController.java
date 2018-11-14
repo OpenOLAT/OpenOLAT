@@ -56,9 +56,9 @@ import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.quality.QualityContextRef;
 import org.olat.modules.quality.QualityDataCollection;
-import org.olat.modules.quality.QualitySecurityCallback;
 import org.olat.modules.quality.QualityService;
 import org.olat.modules.quality.ui.ParticipationDataModel.ParticipationCols;
+import org.olat.modules.quality.ui.security.DataCollectionSecurityCallback;
 import org.olat.modules.quality.ui.wizard.AddCourseUser_1_ChooseCourseStep;
 import org.olat.modules.quality.ui.wizard.AddCurriculumElementUser_1_ChooseCurriculumElementStep;
 import org.olat.modules.quality.ui.wizard.AddUser_1_ChooseUserStep;
@@ -91,7 +91,7 @@ public class ParticipationListController extends FormBasicController implements 
 	private ParticipationRemoveConfirmationController removeConfirmationCtrl;
 	
 	private final TooledStackedPanel stackPanel;
-	private final QualitySecurityCallback secCallback;
+	private DataCollectionSecurityCallback secCallback;
 	private QualityDataCollection dataCollection;
 	
 	@Autowired
@@ -104,7 +104,7 @@ public class ParticipationListController extends FormBasicController implements 
 	private CurriculumService curriculumService;
 
 	public ParticipationListController(UserRequest ureq, WindowControl windowControl,
-			QualitySecurityCallback secCallback, TooledStackedPanel stackPanel,
+			DataCollectionSecurityCallback secCallback, TooledStackedPanel stackPanel,
 			QualityDataCollection dataCollection) {
 		super(ureq, windowControl, LAYOUT_BAREBONE);
 		this.secCallback = secCallback;
@@ -118,10 +118,11 @@ public class ParticipationListController extends FormBasicController implements 
 		initTable(ureq);
 	}
 	
-	public void setDataCollection(QualityDataCollection dataCollection, UserRequest ureq) {
+	public void onChanged(QualityDataCollection dataCollection, DataCollectionSecurityCallback secCallback, UserRequest ureq) {
 		this.dataCollection = dataCollection;
-//		initTools();
+		this.secCallback = secCallback;
 		initTable(ureq);
+		initTools();
 	}
 
 	private void initTable(UserRequest ureq) {
@@ -139,13 +140,13 @@ public class ParticipationListController extends FormBasicController implements 
 		tableEl = uifactory.addTableElement(getWindowControl(), "participations", dataModel, 25, true, getTranslator(), flc);
 		tableEl.setAndLoadPersistedPreferences(ureq, "quality-participations");
 		tableEl.setEmtpyTableMessageKey("participation.empty.table");
-		if (secCallback.canRevomeParticipation(dataCollection)) {
+		if (secCallback.canRevomeParticipation()) {
 			tableEl.setMultiSelect(true);
 			tableEl.setSelectAllEnable(true);
 		}
 		
 		if (buttons != null) flc.remove(buttons);
-		if (secCallback.canRevomeParticipation(dataCollection)) {
+		if (secCallback.canRevomeParticipation()) {
 			buttons = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 			flc.add("buttons", buttons);
 			buttons.setElementCssClass("o_button_group");
@@ -155,7 +156,10 @@ public class ParticipationListController extends FormBasicController implements 
 
 	@Override
 	public void initTools() {
-		if (secCallback.canAddParticipants(dataCollection)) {
+		stackPanel.removeTool(addCourseUsersLink);
+		stackPanel.removeTool(addCurriculumElementUsersLink);
+		stackPanel.removeTool(addUsersLink);
+		if (secCallback.canAddParticipants()) {
 			addCourseUsersLink = LinkFactory.createToolLink("participation.user.add.course", translate("participation.user.add.course"), this);
 			addCourseUsersLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qual_part_user_add_course");
 			stackPanel.addTool(addCourseUsersLink, Align.right);

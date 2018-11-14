@@ -17,19 +17,44 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.quality.generator.ui;
+package org.olat.modules.quality.ui.security;
 
-import org.olat.core.gui.UserRequest;
-import org.olat.modules.quality.generator.QualityGenerator;
+import org.olat.modules.quality.QualityReminder;
 
 /**
  * 
- * Initial date: 03.11.2018<br>
+ * Initial date: 14 Nov 2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface GeneratorChangedController {
+public interface DataCollectionSecurityCallback {
 	
-	public void onChanged(QualityGenerator generator, UserRequest ureq);
+	public boolean canViewDataCollectionConfigurations();
+	
+	public boolean canUpdateBaseConfiguration();
+	
+	public boolean canSetPreparation();
+	
+	public boolean canSetReady();
+	
+	public boolean canSetRunning();
+	
+	public boolean canSetFinished();
+	
+	public boolean canDeleteDataCollection();
+	
+	public boolean canAddParticipants();
+	
+	public boolean canRevomeParticipation();
+
+	public boolean canEditReminder(QualityReminder reminder);
+	
+	public boolean canEditReportAccessOnline();
+	
+	public boolean canEditReportAccessEmail();
+
+	public boolean canEditReportAccessMembers();
+
+	public boolean canViewReport();
 
 }
