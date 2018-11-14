@@ -33,16 +33,22 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OrganisationDataDeletable;
+import org.olat.basesecurity.OrganisationModule;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.OrganisationRef;
+import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.curriculum.Curriculum;
@@ -138,6 +144,34 @@ public class QualityServiceImpl
 	private OLATResourceManager resourceManager;
 	@Autowired
 	private ReferenceManager referenceManager;
+	@Autowired
+	private OrganisationModule organisationModule;
+	@Autowired
+	private OrganisationService organisationService;
+	@Autowired
+	private BaseSecurityManager securityManager;
+	
+	@Override
+	public List<Organisation> getDefaultOrganisations(Identity identity) {
+		if (!organisationModule.isEnabled()) {
+			Organisation organisation = organisationService.getDefaultOrganisation();
+			return Collections.singletonList(organisation);
+		}
+		
+		Roles roles = securityManager.getRoles(identity, false);
+		List<OrganisationRef> qualityManagerOrgs = roles.getOrganisationsWithRole(OrganisationRoles.qualitymanager);
+		if (!qualityManagerOrgs.isEmpty()) {
+			return qualityManagerOrgs.stream().map(ref -> organisationService.getOrganisation(ref)).collect(Collectors.toList());
+		}
+		
+		List<OrganisationRef> administratorOrgs = roles.getOrganisationsWithRole(OrganisationRoles.administrator);
+		if (!administratorOrgs.isEmpty()) {
+			return administratorOrgs.stream().map(ref -> organisationService.getOrganisation(ref)).collect(Collectors.toList());
+		}
+		
+		Organisation organisation = organisationService.getDefaultOrganisation();
+		return Collections.singletonList(organisation);
+	}
 	
 	@Override
 	public QualityDataCollection createDataCollection(Collection<Organisation> organisations,

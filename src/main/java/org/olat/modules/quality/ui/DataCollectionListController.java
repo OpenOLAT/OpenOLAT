@@ -22,7 +22,6 @@ package org.olat.modules.quality.ui;
 import java.util.Collection;
 import java.util.List;
 
-import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -249,8 +248,7 @@ public class DataCollectionListController extends FormBasicController implements
 	}
 	
 	private void doCreateDataCollection(UserRequest ureq, RepositoryEntry formEntry) {
-		List<Organisation> organisations = organisationService.getOrganisations(getIdentity(),
-				ureq.getUserSession().getRoles(), OrganisationRoles.administrator, OrganisationRoles.qualitymanager);
+		List<Organisation> organisations = qualityService.getDefaultOrganisations(getIdentity());
 		QualityDataCollection dataCollection = qualityService.createDataCollection(organisations, formEntry);
 		doEditDataCollection(ureq, dataCollection);
 	}

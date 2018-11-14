@@ -23,8 +23,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-import org.olat.basesecurity.OrganisationRoles;
-import org.olat.basesecurity.OrganisationService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -55,6 +53,7 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.ui.BooleanCSSCellRenderer;
+import org.olat.modules.quality.QualityService;
 import org.olat.modules.quality.generator.QualityGenerator;
 import org.olat.modules.quality.generator.QualityGeneratorRef;
 import org.olat.modules.quality.generator.QualityGeneratorSearchParams;
@@ -92,8 +91,7 @@ public class GeneratorListController extends FormBasicController implements Tool
 	@Autowired
 	private QualityGeneratorService generatorService;
 	@Autowired
-	private OrganisationService organisationService;
-
+	private QualityService qualityService;
 
 	public GeneratorListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			MainSecurityCallback secCallback) {
@@ -101,8 +99,7 @@ public class GeneratorListController extends FormBasicController implements Tool
 		this.stackPanel = stackPanel;
 		stackPanel.addListener(this);
 		this.secCallback = secCallback;
-		this.organisations = organisationService.getOrganisations(getIdentity(), ureq.getUserSession().getRoles(),
-				OrganisationRoles.administrator, OrganisationRoles.qualitymanager);
+		this.organisations = qualityService.getDefaultOrganisations(getIdentity());
 		initForm(ureq);
 	}
 

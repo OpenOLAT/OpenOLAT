@@ -46,6 +46,14 @@ import org.olat.repository.RepositoryEntry;
  */
 public interface QualityService {
 
+	/**
+	 * Get the default organisations to init new data collections or generators.
+	 *
+	 * @param identity
+	 * @return
+	 */
+	public List<Organisation> getDefaultOrganisations(Identity identity);
+
 	public QualityDataCollection createDataCollection(Collection<Organisation> organisations,
 			RepositoryEntry formEntry);
 	
