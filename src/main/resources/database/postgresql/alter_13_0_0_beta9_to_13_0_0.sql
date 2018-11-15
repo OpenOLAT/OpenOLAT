@@ -26,6 +26,13 @@ alter table o_repositoryentry alter column requirements type varchar(32000);
 alter table o_repositoryentry alter column credits type varchar(32000);
 alter table o_repositoryentry alter column expenditureofwork type varchar(32000);
 
+-- binder
+alter table o_pf_assignment add column p_template bool default false;
+alter table o_pf_assignment add column fk_binder_id bigint;
+alter table o_pf_assignment add constraint pf_assign_binder_idx foreign key (fk_binder_id) references o_pf_binder (id);
+create index idx_pf_assign_binder_idx on o_pf_assignment (fk_binder_id);
+
+alter table o_pf_assignment alter column fk_section_id drop not null;
 
 
 

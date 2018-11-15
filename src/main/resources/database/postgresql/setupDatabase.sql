@@ -1678,11 +1678,13 @@ create table o_pf_assignment (
    p_status varchar(32) default null,
    p_type varchar(32) not null,
    p_version int8 not null default 0,
+   p_template bool default false,
    p_title varchar(255) default null,
    p_summary text,
    p_content text,
    p_storage varchar(255) default null,
-   fk_section_id int8 not null,
+   fk_section_id int8,
+   fk_binder_id int8,
    fk_template_reference_id int8,
    fk_page_id int8,
    fk_assignee_id int8,
@@ -3419,6 +3421,8 @@ create index idx_pf_asection_ident_idx on o_pf_assessment_section (fk_identity_i
 
 alter table o_pf_assignment add constraint pf_assign_section_idx foreign key (fk_section_id) references o_pf_section (id);
 create index idx_pf_assign_section_idx on o_pf_assignment (fk_section_id);
+alter table o_pf_assignment add constraint pf_assign_binder_idx foreign key (fk_binder_id) references o_pf_binder (id);
+create index idx_pf_assign_binder_idx on o_pf_assignment (fk_binder_id);
 alter table o_pf_assignment add constraint pf_assign_ref_assign_idx foreign key (fk_template_reference_id) references o_pf_assignment (id);
 create index idx_pf_assign_ref_assign_idx on o_pf_assignment (fk_template_reference_id);
 alter table o_pf_assignment add constraint pf_assign_page_idx foreign key (fk_page_id) references o_pf_page (id);

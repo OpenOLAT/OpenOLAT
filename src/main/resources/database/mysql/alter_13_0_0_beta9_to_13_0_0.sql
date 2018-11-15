@@ -27,3 +27,9 @@ alter table o_repositoryentry modify credits text(32000);
 alter table o_repositoryentry modify expenditureofwork text(32000);
 
 
+-- binder
+alter table o_pf_assignment add column p_template bit default 0;
+alter table o_pf_assignment add column fk_binder_id bigint;
+alter table o_pf_assignment add constraint pf_assign_binder_idx foreign key (fk_binder_id) references o_pf_binder (id);
+
+alter table o_pf_assignment modify fk_section_id bigint null;
