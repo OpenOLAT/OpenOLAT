@@ -33,6 +33,7 @@
     	}
     	// make sure drake is destroyed after an AJAX call and only one is active at the same time
     	destroyDrakes();
+    	destroyPopovers();
     	registerDrake(editor.drake);
     	return editor;
 	};
@@ -47,6 +48,15 @@
 		this.container = container;
 		this.drake = initDragAndDrop(container);
 	};
+	
+	function destroyPopovers() {
+		jQuery(".o_popover").each(function(index, el) {
+			var popoveredEl = jQuery(el);
+			if(popoveredEl.closest(".o_page_with_side_options_wrapper").length == 0) {
+				popoveredEl.popover('hide');
+			}
+		});
+	}
 
 	function initEdit() {
 		jQuery(".o_page_part").each(function(index, el) {
