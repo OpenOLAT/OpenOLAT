@@ -212,7 +212,7 @@ public class MyPageListController extends AbstractPageListController {
 	protected void doCreateNewPage(UserRequest ureq) {
 		if(newPageCtrl != null) return;
 		
-		newPageCtrl = new PageMetadataEditController(ureq, getWindowControl(), null, true, null, true);
+		newPageCtrl = new PageMetadataEditController(ureq, getWindowControl(), null, true, (Section)null, true);
 		listenTo(newPageCtrl);
 		
 		String title = translate("create.new.page");

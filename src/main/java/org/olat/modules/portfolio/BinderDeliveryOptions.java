@@ -29,6 +29,7 @@ public class BinderDeliveryOptions {
 	
 	private boolean allowNewEntries;
 	private boolean allowDeleteBinder;
+	private boolean allowTemplatesFolder;
 
 	public boolean isAllowNewEntries() {
 		return allowNewEntries;
@@ -46,10 +47,19 @@ public class BinderDeliveryOptions {
 		this.allowDeleteBinder = allowDeleteBinder;
 	}
 
+	public boolean isAllowTemplatesFolder() {
+		return allowTemplatesFolder;
+	}
+
+	public void setAllowTemplatesFolder(boolean allowTemplatesFolder) {
+		this.allowTemplatesFolder = allowTemplatesFolder;
+	}
+
 	public static BinderDeliveryOptions defaultOptions() {
 		BinderDeliveryOptions options = new BinderDeliveryOptions();
 		options.setAllowNewEntries(false);
 		options.setAllowDeleteBinder(false);
+		options.setAllowTemplatesFolder(false);
 		return options;
 	}
 }

@@ -165,7 +165,7 @@ public class PageRunController extends BasicController implements TooledControll
 		this.openInEditMode = openEditMode && page.isEditable() && (lockEntry != null && lockEntry.isSuccess());
 		coordinator.getCoordinator().getEventBus().registerFor(this, getIdentity(), lockOres);
 		
-		assignments = portfolioService.getAssignments(page, null);
+		assignments = portfolioService.getSectionsAssignments(page, null);
 		
 		mainVC = createVelocityContainer("page_content");
 		mainVC.contextPut("pageTitle", page.getTitle());

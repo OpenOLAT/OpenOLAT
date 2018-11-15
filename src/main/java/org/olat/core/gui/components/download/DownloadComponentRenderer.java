@@ -43,14 +43,6 @@ import org.olat.core.util.StringHelper;
  */
 public class DownloadComponentRenderer extends DefaultComponentRenderer {
 
-	/**
-	 * @see org.olat.core.gui.components.ComponentRenderer#render(org.olat.core.gui.render.Renderer,
-	 *      org.olat.core.gui.render.StringOutput,
-	 *      org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.render.URLBuilder,
-	 *      org.olat.core.gui.translator.Translator,
-	 *      org.olat.core.gui.render.RenderResult, java.lang.String[])
-	 */
 	@Override
 	public void render(Renderer renderer, StringOutput sb, Component source,
 			URLBuilder ubu, Translator translator, RenderResult renderResult,
@@ -58,6 +50,9 @@ public class DownloadComponentRenderer extends DefaultComponentRenderer {
 		DownloadComponent comp = (DownloadComponent) source;
 		if (comp.getDownloadMediaResoruce() == null)
 			return;
+		
+		boolean form = args != null && args.length == 1 && "form".equals(args[0]);
+		sb.append("<p class='form-control-static'>", form);
 
 		sb.append("<a id='o_c").append(comp.getDispatchID()).append("' href=\"");
 		if(comp.getFormItem() != null) {
@@ -96,6 +91,7 @@ public class DownloadComponentRenderer extends DefaultComponentRenderer {
 		if (text != null) {
 			sb.append(text);
 		}
-		sb.append("</a>");
+		sb.append("</a>")
+		  .append("</p>", form);
 	}
 }

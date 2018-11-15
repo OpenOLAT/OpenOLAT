@@ -27,6 +27,7 @@ import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.form.flexible.elements.DownloadLink;
 import org.olat.core.gui.media.FileMediaResource;
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 
@@ -107,7 +108,11 @@ public class DownloadComponent extends AbstractComponent {
 	public void setDownloadItem(VFSLeaf downloadItem, boolean forceDownload) {
 		if (downloadItem == null) {
 			mediaResource = null;
+			setLinkCssIconClass(null);
 		} else {
+			String css = CSSHelper.createFiletypeIconCssClassFor(downloadItem.getName());
+			setLinkCssIconClass("o_icon o_icon-fw " + css);
+			
 			VFSMediaResource mResource = new VFSMediaResource(downloadItem);
 			if(forceDownload) {
 				mResource.setDownloadable(forceDownload);
@@ -120,7 +125,11 @@ public class DownloadComponent extends AbstractComponent {
 	public void setDownloadItem(File downloadItem) {
 		if (downloadItem == null) {
 			mediaResource = null;
+			setLinkCssIconClass(null);
 		} else {
+			String css = CSSHelper.createFiletypeIconCssClassFor(downloadItem.getName());
+			setLinkCssIconClass("o_icon o_icon-fw " + css);
+			
 			mediaResource = new FileMediaResource(downloadItem);
 		}
 		setDirty(true);

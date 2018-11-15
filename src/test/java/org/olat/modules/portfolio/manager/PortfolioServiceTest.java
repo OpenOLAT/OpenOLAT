@@ -347,12 +347,12 @@ public class PortfolioServiceTest extends OlatTestCase {
 		Section templateSection0 = portfolioService.getSection(sectionRef0);
 		Section templateSection1 = portfolioService.getSection(sectionRef1);
 		Section templateSection2 = portfolioService.getSection(sectionRef2);
-		Assignment assignment1_1 = portfolioService.addAssignment("1.1 Assignment", "", "", AssignmentType.essay, templateSection1, false, false, false, null);
-		Assignment assignment1_2 = portfolioService.addAssignment("1.2 Assignment", "", "", AssignmentType.essay, templateSection1, false, false, false, null);
-		Assignment assignment2_1 = portfolioService.addAssignment("2.1 Assignment", "", "", AssignmentType.essay, templateSection2, false, false, false, null);
-		Assignment assignment2_2 = portfolioService.addAssignment("2.2 Assignment", "", "", AssignmentType.essay, templateSection2, false, false, false, null);
+		Assignment assignment1_1 = portfolioService.addAssignment("1.1 Assignment", "", "", AssignmentType.essay, false, templateSection1, null, false, false, false, null);
+		Assignment assignment1_2 = portfolioService.addAssignment("1.2 Assignment", "", "", AssignmentType.essay, false, templateSection1, null, false, false, false, null);
+		Assignment assignment2_1 = portfolioService.addAssignment("2.1 Assignment", "", "", AssignmentType.essay, false, templateSection2, null, false, false, false, null);
+		Assignment assignment2_2 = portfolioService.addAssignment("2.2 Assignment", "", "", AssignmentType.essay, false, templateSection2, null, false, false, false, null);
 		dbInstance.commit();
-		List<Assignment> templateAssignments = portfolioService.getAssignments(templateBinder, null);
+		List<Assignment> templateAssignments = portfolioService.getSectionsAssignments(templateBinder, null);
 		Assert.assertEquals(4, templateAssignments.size());
 		
 		// a user take the binder and synched it a first time
@@ -364,7 +364,7 @@ public class PortfolioServiceTest extends OlatTestCase {
 		Assert.assertEquals(binder, synchedBinder.getBinder());
 		
 		//start all assigments
-		List<Assignment> assignments = portfolioService.getAssignments(binder, null);
+		List<Assignment> assignments = portfolioService.getSectionsAssignments(binder, null);
 		Assert.assertEquals(4, assignments.size());
 		for(Assignment assignment:assignments) {
 			portfolioService.startAssignment(assignment.getKey(), id);
@@ -382,10 +382,10 @@ public class PortfolioServiceTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//check the move
-		List<Assignment> templateAssignmentsSection1 = portfolioService.getAssignments(templateSection1, null);
+		List<Assignment> templateAssignmentsSection1 = portfolioService.getSectionsAssignments(templateSection1, null);
 		Assert.assertTrue(templateAssignmentsSection1.contains(assignment1_2));
 		Assert.assertTrue(templateAssignmentsSection1.contains(assignment2_1));
-		List<Assignment> templateAssignmentsSection2 = portfolioService.getAssignments(templateSection2, null);
+		List<Assignment> templateAssignmentsSection2 = portfolioService.getSectionsAssignments(templateSection2, null);
 		Assert.assertTrue(templateAssignmentsSection2.contains(assignment2_2));
 		Assert.assertTrue(templateAssignmentsSection2.contains(assignment1_1));
 		
@@ -438,12 +438,12 @@ public class PortfolioServiceTest extends OlatTestCase {
 		Section templateSection0 = portfolioService.getSection(sectionRef0);
 		Section templateSection1 = portfolioService.getSection(sectionRef1);
 		Section templateSection2 = portfolioService.getSection(sectionRef2);
-		Assignment assignment1_1 = portfolioService.addAssignment("1.1 Assignment", "", "", AssignmentType.essay, templateSection1, false, false, false, null);
-		Assignment assignment1_2 = portfolioService.addAssignment("1.2 Assignment", "", "", AssignmentType.essay, templateSection1, false, false, false, null);
-		Assignment assignment2_1 = portfolioService.addAssignment("2.1 Assignment", "", "", AssignmentType.essay, templateSection2, false, false, false, null);
-		Assignment assignment2_2 = portfolioService.addAssignment("2.2 Assignment", "", "", AssignmentType.essay, templateSection2, false, false, false, null);
+		Assignment assignment1_1 = portfolioService.addAssignment("1.1 Assignment", "", "", AssignmentType.essay, false, templateSection1, null, false, false, false, null);
+		Assignment assignment1_2 = portfolioService.addAssignment("1.2 Assignment", "", "", AssignmentType.essay, false, templateSection1, null, false, false, false, null);
+		Assignment assignment2_1 = portfolioService.addAssignment("2.1 Assignment", "", "", AssignmentType.essay, false, templateSection2, null, false, false, false, null);
+		Assignment assignment2_2 = portfolioService.addAssignment("2.2 Assignment", "", "", AssignmentType.essay, false, templateSection2, null, false, false, false, null);
 		dbInstance.commit();
-		List<Assignment> templateAssignments = portfolioService.getAssignments(templateBinder, null);
+		List<Assignment> templateAssignments = portfolioService.getSectionsAssignments(templateBinder, null);
 		Assert.assertEquals(4, templateAssignments.size());
 		
 		// a user take the binder and synched it a first time
@@ -455,7 +455,7 @@ public class PortfolioServiceTest extends OlatTestCase {
 		Assert.assertEquals(binder, synchedBinder.getBinder());
 		
 		//start all assignments
-		List<Assignment> assignments = portfolioService.getAssignments(binder, null);
+		List<Assignment> assignments = portfolioService.getSectionsAssignments(binder, null);
 		Assert.assertEquals(4, assignments.size());
 		for(Assignment assignment:assignments) {
 			portfolioService.startAssignment(assignment.getKey(), id);
@@ -472,7 +472,7 @@ public class PortfolioServiceTest extends OlatTestCase {
 		dbInstance.commit();
 
 		Section templateSection3 = portfolioService.getSection(sectionRef3);
-		Assignment assignment3_1 = portfolioService.addAssignment("3.1 Assignment", "", "", AssignmentType.essay, templateSection3, false, false, false, null);
+		Assignment assignment3_1 = portfolioService.addAssignment("3.1 Assignment", "", "", AssignmentType.essay, false, templateSection3, null, false, false, false, null);
 		dbInstance.commit();
 		
 		//the author move an assigment
@@ -482,12 +482,12 @@ public class PortfolioServiceTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//check the move
-		List<Assignment> templateAssignmentsSection1 = portfolioService.getAssignments(templateSection1, null);
+		List<Assignment> templateAssignmentsSection1 = portfolioService.getSectionsAssignments(templateSection1, null);
 		Assert.assertTrue(templateAssignmentsSection1.contains(assignment1_2));
-		List<Assignment> templateAssignmentsSection2 = portfolioService.getAssignments(templateSection2, null);
+		List<Assignment> templateAssignmentsSection2 = portfolioService.getSectionsAssignments(templateSection2, null);
 		Assert.assertTrue(templateAssignmentsSection2.contains(assignment2_2));
 		Assert.assertTrue(templateAssignmentsSection2.contains(assignment1_1));
-		List<Assignment> templateAssignmentsSection3 = portfolioService.getAssignments(templateSection3, null);
+		List<Assignment> templateAssignmentsSection3 = portfolioService.getSectionsAssignments(templateSection3, null);
 		Assert.assertTrue(templateAssignmentsSection3.contains(assignment2_1));
 		Assert.assertTrue(templateAssignmentsSection3.contains(assignment3_1));
 		
@@ -553,13 +553,13 @@ public class PortfolioServiceTest extends OlatTestCase {
 		Section templateSection0 = portfolioService.getSection(sectionRef0);
 		Section templateSection1 = portfolioService.getSection(sectionRef1);
 		Section templateSection2 = portfolioService.getSection(sectionRef2);
-		Assignment assignment0_1 = portfolioService.addAssignment("0.1 Assignment", "", "", AssignmentType.essay, templateSection0, false, false, false, null);
-		Assignment assignment1_1 = portfolioService.addAssignment("1.1 Assignment", "", "", AssignmentType.essay, templateSection1, false, false, false, null);
-		Assignment assignment1_2 = portfolioService.addAssignment("1.2 Assignment", "", "", AssignmentType.essay, templateSection1, false, false, false, null);
-		Assignment assignment2_1 = portfolioService.addAssignment("2.1 Assignment", "", "", AssignmentType.essay, templateSection2, false, false, false, null);
-		Assignment assignment2_2 = portfolioService.addAssignment("2.2 Assignment", "", "", AssignmentType.essay, templateSection2, false, false, false, null);
+		Assignment assignment0_1 = portfolioService.addAssignment("0.1 Assignment", "", "", AssignmentType.essay, false, templateSection0, null, false, false, false, null);
+		Assignment assignment1_1 = portfolioService.addAssignment("1.1 Assignment", "", "", AssignmentType.essay, false, templateSection1, null, false, false, false, null);
+		Assignment assignment1_2 = portfolioService.addAssignment("1.2 Assignment", "", "", AssignmentType.essay, false, templateSection1, null, false, false, false, null);
+		Assignment assignment2_1 = portfolioService.addAssignment("2.1 Assignment", "", "", AssignmentType.essay, false, templateSection2, null, false, false, false, null);
+		Assignment assignment2_2 = portfolioService.addAssignment("2.2 Assignment", "", "", AssignmentType.essay, false, templateSection2, null, false, false, false, null);
 		dbInstance.commit();
-		List<Assignment> templateAssignments = portfolioService.getAssignments(templateBinder, null);
+		List<Assignment> templateAssignments = portfolioService.getSectionsAssignments(templateBinder, null);
 		Assert.assertEquals(5, templateAssignments.size());
 		
 		// a user take the binder and synched it a first time
@@ -571,7 +571,7 @@ public class PortfolioServiceTest extends OlatTestCase {
 		Assert.assertEquals(binder, synchedBinder.getBinder());
 		
 		//start all assignments
-		List<Assignment> assignments = portfolioService.getAssignments(binder, null);
+		List<Assignment> assignments = portfolioService.getSectionsAssignments(binder, null);
 		Assert.assertEquals(5, assignments.size());
 		for(Assignment assignment:assignments) {
 			portfolioService.startAssignment(assignment.getKey(), id);
@@ -601,8 +601,8 @@ public class PortfolioServiceTest extends OlatTestCase {
 		dbInstance.commit();
 
 		// add new assignment
-		Assignment assignment3_1 = portfolioService.addAssignment("3.1 Assignment", "", "", AssignmentType.essay, templateSection3, false, false, false, null);
-		Assignment assignment4_1 = portfolioService.addAssignment("4.1 Assignment", "", "", AssignmentType.essay, templateSection4, false, false, false, null);
+		Assignment assignment3_1 = portfolioService.addAssignment("3.1 Assignment", "", "", AssignmentType.essay, false, templateSection3, null, false, false, false, null);
+		Assignment assignment4_1 = portfolioService.addAssignment("4.1 Assignment", "", "", AssignmentType.essay, false, templateSection4, null, false, false, false, null);
 		dbInstance.commit();
 		
 		//the author move some assignments
@@ -623,20 +623,20 @@ public class PortfolioServiceTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		//check the move
-		List<Assignment> templateAssignmentsSection0 = portfolioService.getAssignments(templateSection0, null);
+		List<Assignment> templateAssignmentsSection0 = portfolioService.getSectionsAssignments(templateSection0, null);
 		Assert.assertTrue(templateAssignmentsSection0.contains(assignment0_1));
 		
-		List<Assignment> templateAssignmentsSection1 = portfolioService.getAssignments(templateSection1, null);
+		List<Assignment> templateAssignmentsSection1 = portfolioService.getSectionsAssignments(templateSection1, null);
 		Assert.assertTrue(templateAssignmentsSection1.isEmpty());
-		List<Assignment> templateAssignmentsSection2 = portfolioService.getAssignments(templateSection2, null);
+		List<Assignment> templateAssignmentsSection2 = portfolioService.getSectionsAssignments(templateSection2, null);
 		Assert.assertEquals(1, templateAssignmentsSection2.size());
 		Assert.assertTrue(templateAssignmentsSection2.contains(assignment1_2));
-		List<Assignment> templateAssignmentsSection3 = portfolioService.getAssignments(templateSection3, null);
+		List<Assignment> templateAssignmentsSection3 = portfolioService.getSectionsAssignments(templateSection3, null);
 		Assert.assertEquals(3, templateAssignmentsSection3.size());
 		Assert.assertTrue(templateAssignmentsSection3.contains(assignment1_1));
 		Assert.assertTrue(templateAssignmentsSection3.contains(assignment2_1));
 		Assert.assertTrue(templateAssignmentsSection3.contains(assignment3_1));
-		List<Assignment> templateAssignmentsSection4 = portfolioService.getAssignments(templateSection4, null);
+		List<Assignment> templateAssignmentsSection4 = portfolioService.getSectionsAssignments(templateSection4, null);
 		Assert.assertEquals(2, templateAssignmentsSection4.size());
 		Assert.assertTrue(templateAssignmentsSection4.contains(assignment2_2));
 		Assert.assertTrue(templateAssignmentsSection4.contains(assignment4_1));
@@ -738,14 +738,14 @@ public class PortfolioServiceTest extends OlatTestCase {
 		
 		//make 4 assignments
 		Section templateSection1 = portfolioService.getSection(sectionRef1);
-		Assignment assignment_1_1 = portfolioService.addAssignment("1.1 Assignment", "", "", AssignmentType.essay, templateSection1, false, false, false, null);
-		Assignment assignment_1_2 = portfolioService.addAssignment("1.2 Assignment", "", "", AssignmentType.essay, templateSection1, false, false, false, null);
-		Assignment assignment_1_3 = portfolioService.addAssignment("1.3 Assignment", "", "", AssignmentType.essay, templateSection1, false, false, false, null);
-		Assignment assignment_1_4 = portfolioService.addAssignment("1.4 Assignment", "", "", AssignmentType.essay, templateSection1, false, false, false, null);
-		Assignment assignment_1_5 = portfolioService.addAssignment("1.5 Assignment", "", "", AssignmentType.essay, templateSection1, false, false, false, null);
-		Assignment assignment_1_6 = portfolioService.addAssignment("1.6 Assignment", "", "", AssignmentType.essay, templateSection1, false, false, false, null);
+		Assignment assignment_1_1 = portfolioService.addAssignment("1.1 Assignment", "", "", AssignmentType.essay, false, templateSection1, null, false, false, false, null);
+		Assignment assignment_1_2 = portfolioService.addAssignment("1.2 Assignment", "", "", AssignmentType.essay, false, templateSection1, null, false, false, false, null);
+		Assignment assignment_1_3 = portfolioService.addAssignment("1.3 Assignment", "", "", AssignmentType.essay, false, templateSection1, null, false, false, false, null);
+		Assignment assignment_1_4 = portfolioService.addAssignment("1.4 Assignment", "", "", AssignmentType.essay, false, templateSection1, null, false, false, false, null);
+		Assignment assignment_1_5 = portfolioService.addAssignment("1.5 Assignment", "", "", AssignmentType.essay, false, templateSection1, null, false, false, false, null);
+		Assignment assignment_1_6 = portfolioService.addAssignment("1.6 Assignment", "", "", AssignmentType.essay, false, templateSection1, null, false, false, false, null);
 		dbInstance.commit();
-		List<Assignment> templateAssignments = portfolioService.getAssignments(templateBinder, null);
+		List<Assignment> templateAssignments = portfolioService.getSectionsAssignments(templateBinder, null);
 		Assert.assertEquals(6, templateAssignments.size());
 		
 		// a user take the binder and synched it a first time
@@ -757,7 +757,7 @@ public class PortfolioServiceTest extends OlatTestCase {
 		Assert.assertEquals(binder, synchedBinder.getBinder());
 		
 		//start all assignments
-		List<Assignment> assignments = portfolioService.getAssignments(binder, null);
+		List<Assignment> assignments = portfolioService.getSectionsAssignments(binder, null);
 		Assert.assertEquals(6, assignments.size());
 		for(Assignment assignment:assignments) {
 			portfolioService.startAssignment(assignment.getKey(), id);
@@ -777,14 +777,14 @@ public class PortfolioServiceTest extends OlatTestCase {
 		
 		//ooops, someone deleted the assignment (simulate jump in the numbering of the list)
 		List<Section> sections = portfolioService.getSections(freshBinder);
-		List<Assignment> firstSectionAssignments = portfolioService.getAssignments(sections.get(0), null);
+		List<Assignment> firstSectionAssignments = portfolioService.getSectionsAssignments(sections.get(0), null);
 		dbInstance.getCurrentEntityManager().remove(firstSectionAssignments.get(1));
 		dbInstance.getCurrentEntityManager().remove(firstSectionAssignments.get(2));
 		dbInstance.getCurrentEntityManager().remove(firstSectionAssignments.get(3));
 		dbInstance.getCurrentEntityManager().remove(firstSectionAssignments.get(5));
 		dbInstance.commit();
 
-		List<Assignment> firstSectionDeletedAssignments = portfolioService.getAssignments(sections.get(0), null);
+		List<Assignment> firstSectionDeletedAssignments = portfolioService.getSectionsAssignments(sections.get(0), null);
 		Assert.assertEquals(2, firstSectionDeletedAssignments.size());
 
 		// synched and check the sections order
@@ -793,7 +793,7 @@ public class PortfolioServiceTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(freshBinder3);
 		
-		List<Assignment> firstSectionAssignmentResynched = portfolioService.getAssignments(sections.get(0), null);
+		List<Assignment> firstSectionAssignmentResynched = portfolioService.getSectionsAssignments(sections.get(0), null);
 		List<Assignment> templateAssignmentsSynched= new ArrayList<>();
 		Assert.assertEquals(6, firstSectionAssignmentResynched.size());
 		for(Assignment firstSectionAssignment:firstSectionAssignmentResynched) {
@@ -822,10 +822,10 @@ public class PortfolioServiceTest extends OlatTestCase {
 			
 		//make 4 assignments
 		Section templateSection = portfolioService.getSection(sectionRef);
-		Assignment assignment_1 = portfolioService.addAssignment("1 Assignment", "", "", AssignmentType.essay, templateSection, false, false, false, null);
-		Assignment assignment_2 = portfolioService.addAssignment("2 Assignment", "", "", AssignmentType.essay, templateSection, false, false, false, null);
-		Assignment assignment_3 = portfolioService.addAssignment("3 Assignment", "", "", AssignmentType.essay, templateSection, false, false, false, null);
-		Assignment assignment_4 = portfolioService.addAssignment("3 Assignment", "", "", AssignmentType.essay, templateSection, false, false, false, null);
+		Assignment assignment_1 = portfolioService.addAssignment("1 Assignment", "", "", AssignmentType.essay, false, templateSection, null, false, false, false, null);
+		Assignment assignment_2 = portfolioService.addAssignment("2 Assignment", "", "", AssignmentType.essay, false, templateSection, null, false, false, false, null);
+		Assignment assignment_3 = portfolioService.addAssignment("3 Assignment", "", "", AssignmentType.essay, false, templateSection, null, false, false, false, null);
+		Assignment assignment_4 = portfolioService.addAssignment("3 Assignment", "", "", AssignmentType.essay, false, templateSection, null, false, false, false, null);
 		dbInstance.commitAndCloseSession();
 		
 		boolean ok = portfolioService.deleteAssignment(assignment_3);
@@ -855,12 +855,12 @@ public class PortfolioServiceTest extends OlatTestCase {
 		
 		//make 4 assignments
 		Section templateSection = portfolioService.getSection(sectionRef);
-		Assignment assignment_1 = portfolioService.addAssignment("1 Assignment", "", "", AssignmentType.essay, templateSection, false, false, false, null);
-		Assignment assignment_2 = portfolioService.addAssignment("2 Assignment", "", "", AssignmentType.essay, templateSection, false, false, false, null);
-		Assignment assignment_3 = portfolioService.addAssignment("3 Assignment", "", "", AssignmentType.essay, templateSection, false, false, false, null);
-		Assignment assignment_4 = portfolioService.addAssignment("4 Assignment", "", "", AssignmentType.essay, templateSection, false, false, false, null);
+		Assignment assignment_1 = portfolioService.addAssignment("1 Assignment", "", "", AssignmentType.essay, false, templateSection, null, false, false, false, null);
+		Assignment assignment_2 = portfolioService.addAssignment("2 Assignment", "", "", AssignmentType.essay, false, templateSection, null, false, false, false, null);
+		Assignment assignment_3 = portfolioService.addAssignment("3 Assignment", "", "", AssignmentType.essay, false, templateSection, null, false, false, false, null);
+		Assignment assignment_4 = portfolioService.addAssignment("4 Assignment", "", "", AssignmentType.essay, false, templateSection, null, false, false, false, null);
 		dbInstance.commit();
-		List<Assignment> templateAssignments = portfolioService.getAssignments(templateBinder, null);
+		List<Assignment> templateAssignments = portfolioService.getSectionsAssignments(templateBinder, null);
 		Assert.assertEquals(4, templateAssignments.size());
 		Assert.assertTrue(templateAssignments.contains(assignment_1));
 		Assert.assertTrue(templateAssignments.contains(assignment_2));
@@ -873,7 +873,7 @@ public class PortfolioServiceTest extends OlatTestCase {
 		binder = synchedBinder.getBinder();
 		dbInstance.commitAndCloseSession();
 		
-		List<Assignment> assignments = portfolioService.getAssignments(binder, null);
+		List<Assignment> assignments = portfolioService.getSectionsAssignments(binder, null);
 		portfolioService.startAssignment(assignments.get(0).getKey(), id);
 		portfolioService.startAssignment(assignments.get(1).getKey(), id);
 		portfolioService.startAssignment(assignments.get(2).getKey(), id);
@@ -944,7 +944,7 @@ public class PortfolioServiceTest extends OlatTestCase {
 			
 			Section templateSection = portfolioService.getSection(templateSectionRef);
 			for(int j=0; j<10; j++) {
-				Assignment assignment = portfolioService.addAssignment(i + "_" + j + " Assignment", "", "", AssignmentType.essay, templateSection, false, false, false, null);
+				Assignment assignment = portfolioService.addAssignment(i + "_" + j + " Assignment", "", "", AssignmentType.essay, false, templateSection, null, false, false, false, null);
 				Assert.assertNotNull(assignment);
 			}
 			dbInstance.commit();
@@ -960,7 +960,7 @@ public class PortfolioServiceTest extends OlatTestCase {
 			binder = synchedBinder.getBinder();
 			dbInstance.commitAndCloseSession();
 			
-			List<Assignment> assignments = portfolioService.getAssignments(binder, null);
+			List<Assignment> assignments = portfolioService.getSectionsAssignments(binder, null);
 			for(Assignment assignment:assignments) {
 				Assignment startedAssignment = portfolioService.startAssignment(assignment.getKey(), id);
 				Assert.assertNotNull(startedAssignment);
@@ -1002,10 +1002,10 @@ public class PortfolioServiceTest extends OlatTestCase {
 		
 		//make 2 assignments
 		Section templateSection = portfolioService.getSection(sectionRef);
-		Assignment assignment_1 = portfolioService.addAssignment("1 Assignment", "", "", AssignmentType.essay, templateSection, false, false, false, null);
-		Assignment assignment_2 = portfolioService.addAssignment("2 Assignment", "", "", AssignmentType.essay, templateSection, false, false, false, null);
+		Assignment assignment_1 = portfolioService.addAssignment("1 Assignment", "", "", AssignmentType.essay, false, templateSection, null, false, false, false, null);
+		Assignment assignment_2 = portfolioService.addAssignment("2 Assignment", "", "", AssignmentType.essay, false, templateSection, null, false, false, false, null);
 		dbInstance.commit();
-		List<Assignment> templateAssignments = portfolioService.getAssignments(templateBinder, null);
+		List<Assignment> templateAssignments = portfolioService.getSectionsAssignments(templateBinder, null);
 		Assert.assertEquals(2, templateAssignments.size());
 		
 		// synched and check the sections order
@@ -1014,7 +1014,7 @@ public class PortfolioServiceTest extends OlatTestCase {
 		binder = synchedBinder.getBinder();
 		dbInstance.commitAndCloseSession();
 		
-		List<Assignment> assignments = portfolioService.getAssignments(binder, null);
+		List<Assignment> assignments = portfolioService.getSectionsAssignments(binder, null);
 		Assignment startedAssignment_1 = portfolioService.startAssignment(assignments.get(0).getKey(), id);
 		Assignment startedAssignment_2 = portfolioService.startAssignment(assignments.get(1).getKey(), id);
 		Long startedPageKey_1 = startedAssignment_1.getPage().getKey();
@@ -1153,7 +1153,7 @@ public class PortfolioServiceTest extends OlatTestCase {
 		SectionRef templateSectionRef = portfolioService.appendNewSection("1. section ", "Section 1", null, null, templateBinder);
 		dbInstance.commit();
 		Section templateSection = portfolioService.getSection(templateSectionRef);
-		Assignment assignment = portfolioService.addAssignment("1 Assignment", "", "", AssignmentType.essay, templateSection, false, false, false, null);
+		Assignment assignment = portfolioService.addAssignment("1 Assignment", "", "", AssignmentType.essay, false, templateSection, null, false, false, false, null);
 		Assert.assertNotNull(assignment);
 		dbInstance.commit();
 

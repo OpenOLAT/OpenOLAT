@@ -38,6 +38,7 @@ import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.ui.RepositoryEntrySettingsController;
+import org.olat.repository.ui.settings.ReloadSettingsEvent;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -86,6 +87,8 @@ public class BinderSettingsController extends RepositoryEntrySettingsController 
 		if(deliveryOptionsCtrl == source) {
 			if(event == Event.CANCELLED_EVENT) {
 				doDeliveryOptions(ureq);
+			} else if(event instanceof ReloadSettingsEvent) {
+				fireEvent(ureq, event);
 			}
 		}
 		super.event(ureq, source, event);

@@ -47,6 +47,7 @@ import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.Persistable;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.portfolio.Assignment;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderStatus;
 import org.olat.modules.portfolio.PortfolioElementType;
@@ -122,6 +123,11 @@ public class BinderImpl implements Persistable, ModifiedInfo, CreateInfo, Binder
 			orphanRemoval=true, cascade={CascadeType.REMOVE})
 	@OrderColumn(name="pos")
 	private List<Section> sections;
+	
+	@OneToMany(targetEntity=AssignmentImpl.class, mappedBy="binder", fetch=FetchType.LAZY,
+			orphanRemoval=true, cascade={CascadeType.REMOVE})
+	@OrderColumn(name="pos")
+	private List<Assignment> assignments;
 	
 	
 	@Override
@@ -288,6 +294,17 @@ public class BinderImpl implements Persistable, ModifiedInfo, CreateInfo, Binder
 
 	public void setSections(List<Section> sections) {
 		this.sections = sections;
+	}
+
+	public List<Assignment> getAssignments() {
+		if(assignments == null) {
+			assignments = new ArrayList<>();
+		}
+		return assignments;
+	}
+
+	public void setAssignments(List<Assignment> assignments) {
+		this.assignments = assignments;
 	}
 
 	@Override

@@ -61,7 +61,7 @@ public class AssignmentDAOTest extends OlatTestCase {
 		//create assignment
 		List<Section> sections = portfolioService.getSections(binder);
 		Assignment assignment = assignmentDao.createAssignment("Difficult", "Very difficult", "The difficult content",
-				null, AssignmentType.essay, AssignmentStatus.template, sections.get(0), false, false, false, null);
+				null, AssignmentType.essay, false, AssignmentStatus.template, sections.get(0), null, false, false, false, null);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(assignment);
 		Assert.assertNotNull(assignment.getKey());
@@ -79,7 +79,7 @@ public class AssignmentDAOTest extends OlatTestCase {
 		//create assignment
 		List<Section> sections = portfolioService.getSections(binder);
 		Assignment assignment = assignmentDao.createAssignment("Load assignment", "Load by binder", "The difficult content",
-				null, AssignmentType.essay, AssignmentStatus.template, sections.get(0), false, false, false, null);
+				null, AssignmentType.essay, false, AssignmentStatus.template, sections.get(0), null, false, false, false, null);
 		dbInstance.commitAndCloseSession();
 	
 		//load the assignment
@@ -99,7 +99,7 @@ public class AssignmentDAOTest extends OlatTestCase {
 		//create assignment
 		List<Section> sections = portfolioService.getSections(binder);
 		Assignment assignment = assignmentDao.createAssignment("Load assignment", "Load by binder", "The content unkown search",
-				null, AssignmentType.essay, AssignmentStatus.template, sections.get(0), false, false, false, null);
+				null, AssignmentType.essay, false, AssignmentStatus.template, sections.get(0), null, false, false, false, null);
 		dbInstance.commitAndCloseSession();
 	
 		//search the assignment
@@ -125,7 +125,7 @@ public class AssignmentDAOTest extends OlatTestCase {
 		List<Section> sections = portfolioService.getSections(binder);
 		Section section = sections.get(0);
 		Assignment assignment = assignmentDao.createAssignment("Load assignment", "Load by section", "The another content",
-				null, AssignmentType.essay, AssignmentStatus.template, section, false, false, false, null);
+				null, AssignmentType.essay, false, AssignmentStatus.template, section, null, false, false, false, null);
 		dbInstance.commitAndCloseSession();
 	
 		//load the assignment
@@ -146,7 +146,7 @@ public class AssignmentDAOTest extends OlatTestCase {
 		List<Section> sections = portfolioService.getSections(binder);
 		Section section = sections.get(0);
 		Assignment assignment = assignmentDao.createAssignment("Load assignment", "Load by binder", "The little blabla to search",
-				null, AssignmentType.essay, AssignmentStatus.template, section, false, false, false, null);
+				null, AssignmentType.essay, false, AssignmentStatus.template, section, null, false, false, false, null);
 		dbInstance.commitAndCloseSession();
 	
 		//search the assignment

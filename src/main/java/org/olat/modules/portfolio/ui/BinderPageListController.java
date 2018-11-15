@@ -176,7 +176,7 @@ public class BinderPageListController extends AbstractPageListController {
 			stackPanel.addTool(newSectionLink, Align.right);
 		}
 		
-		if(secCallback.canAddPage(null)) {
+		if(secCallback.canAddPage(null) || secCallback.canInstantianteBinderAssignment()) {
 			newEntryLink = LinkFactory.createToolLink("new.page", translate("create.new.page"), this);
 			newEntryLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
 			newEntryLink.setElementCssClass("o_sel_pf_new_entry");
@@ -277,7 +277,7 @@ public class BinderPageListController extends AbstractPageListController {
 		List<PortfolioElementRow> rows = new ArrayList<>();
 
 		//assignments
-		List<Assignment> assignments = portfolioService.getAssignments(binder, searchString);
+		List<Assignment> assignments = portfolioService.getSectionsAssignments(binder, searchString);
 		Map<Section,List<Assignment>> sectionToAssignmentMap = new HashMap<>();
 		for(Assignment assignment:assignments) {
 			List<Assignment> assignmentList;
@@ -687,6 +687,16 @@ public class BinderPageListController extends AbstractPageListController {
 		};
 		ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createPrintPopupLayout(ctrlCreator);
 		openInNewBrowserWindow(ureq, layoutCtrlr);
+	}
+	
+	protected void doOpenRow(UserRequest ureq, Page page) {
+		List<PortfolioElementRow> rows = model.getObjects();
+		for(PortfolioElementRow row:rows) {
+			if(page.equals(row.getPage())) {
+				doOpenRow(ureq, row, false);
+				break;
+			}
+		}
 	}
 	
 	@Override

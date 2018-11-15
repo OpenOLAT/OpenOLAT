@@ -111,7 +111,7 @@ public class PageMetadataController extends BasicController {
 		super(ureq, wControl);
 		this.page = page;
 		this.secCallback = secCallback;
-		assignments = portfolioService.getAssignments(page, null);
+		assignments = portfolioService.getSectionsAssignments(page, null);
 		if(secCallback.canBookmark() || secCallback.canPageUserInfosStatus()) {
 			pageUserInfos = portfolioService.getPageUserInfos(page, getIdentity(), PageUserStatus.inProcess);
 		}

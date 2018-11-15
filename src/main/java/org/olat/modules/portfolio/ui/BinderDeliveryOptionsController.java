@@ -38,6 +38,7 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderDeliveryOptions;
 import org.olat.modules.portfolio.PortfolioService;
+import org.olat.repository.ui.settings.ReloadSettingsEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -51,6 +52,7 @@ public class BinderDeliveryOptionsController extends FormBasicController impleme
 	private static final String[] onKeys = new String[] { "on" };
 	private static final String[] onValues = new String[] { "" };
 	
+	private MultipleSelectionElement templatesEl;
 	private MultipleSelectionElement newEntriesEl;
 	private MultipleSelectionElement deleteBinderEl;
 	
@@ -89,6 +91,11 @@ public class BinderDeliveryOptionsController extends FormBasicController impleme
 			deleteBinderEl.select(onKeys[0], true);
 		}
 		
+		templatesEl = uifactory.addCheckboxesHorizontal("canTemplates", "allow.templates.folder", formLayout, onKeys, onValues);
+		if(deliveryOptions.isAllowTemplatesFolder()) {
+			templatesEl.select(onKeys[0], true);
+		}
+		
 		FormLayoutContainer buttonsLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsLayout.setRootForm(mainForm);
 		formLayout.add(buttonsLayout);
@@ -122,7 +129,10 @@ public class BinderDeliveryOptionsController extends FormBasicController impleme
 		deliveryOptions.setAllowNewEntries(allowNewEntries);
 		boolean allowDeleteBinder = deleteBinderEl.isAtLeastSelected(1);
 		deliveryOptions.setAllowDeleteBinder(allowDeleteBinder);
+		boolean allowTemplatesFolder = templatesEl.isAtLeastSelected(1);
+		deliveryOptions.setAllowTemplatesFolder(allowTemplatesFolder);
 		portfolioService.setDeliveryOptions(binder.getOlatResource(), deliveryOptions);
+		fireEvent(ureq, new ReloadSettingsEvent());
 	}
 
 	@Override

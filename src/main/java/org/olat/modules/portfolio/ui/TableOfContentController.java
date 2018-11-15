@@ -248,11 +248,11 @@ public class TableOfContentController extends BasicController implements TooledC
 			stackPanel.addTool(newSectionTool, Align.right);
 		}
 		
-		if(secCallback.canAddPage(null)) {
+		if(secCallback.canAddPage(null) || secCallback.canInstantianteBinderAssignment()) {
 			newEntryLink = LinkFactory.createToolLink("new.page", translate("create.new.page"), this);
 			newEntryLink.setIconLeftCSS("o_icon o_icon-lg o_icon-fw o_icon_new_portfolio");
 			newEntryLink.setElementCssClass("o_sel_pf_new_entry");
-			newEntryLink.setVisible(sectionList != null && sectionList.size() > 0);
+			newEntryLink.setVisible(sectionList != null && !sectionList.isEmpty());
 			stackPanel.addTool(newEntryLink, Align.right);
 		}
 		
@@ -260,7 +260,7 @@ public class TableOfContentController extends BasicController implements TooledC
 			newAssignmentLink = LinkFactory.createToolLink("new.assignment", translate("create.new.assignment"), this);
 			newAssignmentLink.setIconLeftCSS("o_icon o_icon-lg o_icon-fw o_icon_new_portfolio");
 			newAssignmentLink.setElementCssClass("o_sel_pf_new_assignment");
-			newAssignmentLink.setVisible(sectionList != null && sectionList.size() > 0);
+			newAssignmentLink.setVisible(sectionList != null && !sectionList.isEmpty());
 			stackPanel.addTool(newAssignmentLink, Align.right);
 		}
 	}
@@ -287,7 +287,7 @@ public class TableOfContentController extends BasicController implements TooledC
 		}
 		
 		//assignments
-		List<Assignment> assignments = portfolioService.getAssignments(binder, null);
+		List<Assignment> assignments = portfolioService.getSectionsAssignments(binder, null);
 		Map<Section,List<Assignment>> sectionToAssignmentMap = new HashMap<>();
 		for(Assignment assignment:assignments) {
 			List<Assignment> assignmentList;
@@ -330,7 +330,7 @@ public class TableOfContentController extends BasicController implements TooledC
 			mainVC.put("create.new.section", newSectionButton);
 		}
 		
-		boolean hasSection = (sectionList != null && sectionList.size() > 0);
+		boolean hasSection = (sectionList != null && !sectionList.isEmpty());
 		if(newEntryLink != null && newEntryLink.isVisible() != hasSection) {
 			newEntryLink.setVisible(hasSection);
 			stackPanel.setDirty(true);
@@ -834,7 +834,7 @@ public class TableOfContentController extends BasicController implements TooledC
 	private void doCreateNewEntry(UserRequest ureq) {
 		if(newPageCtrl != null) return;
 		
-		newPageCtrl = new PageMetadataEditController(ureq, getWindowControl(), binder, false, null, true);
+		newPageCtrl = new PageMetadataEditController(ureq, getWindowControl(), binder, false, (Section)null, true);
 		listenTo(newPageCtrl);
 		
 		String title = translate("create.new.page");
@@ -1036,7 +1036,8 @@ public class TableOfContentController extends BasicController implements TooledC
 		
 		private final Section section;
 		private final Link sectionLink;
-		private Link upSectionLink, downSectionLink;
+		private Link upSectionLink;
+		private Link downSectionLink;
 		private Dropdown editDropdown;
 		private final List<PageRow> pages = new ArrayList<>();
 		private final List<Assignment> assignments;

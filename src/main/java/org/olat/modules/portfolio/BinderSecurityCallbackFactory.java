@@ -39,7 +39,8 @@ public class BinderSecurityCallbackFactory {
 	public static final BinderSecurityCallback getCallbackForOwnedBinder(Binder binder) {
 		Binder template = binder.getTemplate();
 		BinderDeliveryOptions deliveryOptions = getDeliveryOptions(binder);
-		return new BinderSecurityCallbackImpl(true, template != null, deliveryOptions);
+		boolean binderAssignments = hasBinderAssignments(binder);
+		return new BinderSecurityCallbackImpl(true, template != null, binderAssignments, deliveryOptions);
 	}
 	
 	public static final BinderSecurityCallback getCallbackForDeletedBinder() {
@@ -47,7 +48,7 @@ public class BinderSecurityCallbackFactory {
 	}
 	
 	public static final BinderSecurityCallback getCallbackForMyPageList() {
-		return new BinderSecurityCallbackImpl(true, false, null);
+		return new BinderSecurityCallbackImpl(true, false, true, null);
 	}
 	
 	/**
@@ -69,13 +70,13 @@ public class BinderSecurityCallbackFactory {
 	public static final BinderSecurityCallback getCallbackForCoach(Binder binder, List<AccessRights> rights) {
 		Binder template = binder.getTemplate();
 		BinderDeliveryOptions deliveryOptions = getDeliveryOptions(binder);
-		return new BinderSecurityCallbackImpl(rights, template != null, deliveryOptions);
+		return new BinderSecurityCallbackImpl(rights, template != null, false, deliveryOptions);
 	}
 	
 	public static final BinderSecurityCallback getCallbackForCourseCoach(Binder binder, List<AccessRights> rights) {
 		Binder template = binder.getTemplate();
 		BinderDeliveryOptions deliveryOptions = getDeliveryOptions(binder);
-		return new BinderSecurityCallbackForCoach(rights, template != null, deliveryOptions);
+		return new BinderSecurityCallbackForCoach(rights, template != null, false, deliveryOptions);
 	}
 	
 	/**
@@ -96,18 +97,28 @@ public class BinderSecurityCallbackFactory {
 		return deliveryOptions;
 	}
 	
+	private static final boolean hasBinderAssignments(Binder binder) {
+		Binder template = binder.getTemplate();
+		boolean binderAssignments = false;
+		if(template != null) {
+			binderAssignments = CoreSpringFactory.getImpl(PortfolioService.class)
+					.hasBinderAssignmentTemplate(binder);
+		}
+		return binderAssignments;
+	}
+	
 	/**
 	 * If you can see the business group, you can edit and view the binder.
 	 * @return
 	 */
 	public static final BinderSecurityCallback getCallbackForBusinessGroup() {
-		return new BinderSecurityCallbackGroup(true, false, null);
+		return new BinderSecurityCallbackGroup(true, false, false, null);
 	}
 	
 	private static class ReadOnlyBinderSecurityCallback extends BinderSecurityCallbackImpl {
 		
 		public ReadOnlyBinderSecurityCallback() {
-			super(false, false, null);
+			super(false, false, false, null);
 		}
 
 		@Override
@@ -282,12 +293,17 @@ public class BinderSecurityCallbackFactory {
 		public boolean canViewPendingAssignments(Section section) {
 			return true;
 		}
+
+		@Override
+		public boolean canNewBinderAssignment() {
+			return admin;
+		}
 	}
 	
 	private static class BinderSecurityCallbackGroup extends BinderSecurityCallbackImpl {
 		
-		public BinderSecurityCallbackGroup(boolean owner, boolean task, BinderDeliveryOptions deliveryOptions) {
-			super(owner, task, deliveryOptions);
+		public BinderSecurityCallbackGroup(boolean owner, boolean task, boolean binderAssignments, BinderDeliveryOptions deliveryOptions) {
+			super(owner, task, binderAssignments, deliveryOptions);
 		}
 
 		@Override
@@ -298,8 +314,8 @@ public class BinderSecurityCallbackFactory {
 	
 	private static class BinderSecurityCallbackForCoach extends BinderSecurityCallbackImpl {
 
-		public BinderSecurityCallbackForCoach(List<AccessRights> rights, boolean task, BinderDeliveryOptions deliveryOptions) {
-			super(rights, task, deliveryOptions);
+		public BinderSecurityCallbackForCoach(List<AccessRights> rights, boolean task, boolean binderAssignments, BinderDeliveryOptions deliveryOptions) {
+			super(rights, task, binderAssignments, deliveryOptions);
 		}
 
 		@Override
@@ -330,21 +346,24 @@ public class BinderSecurityCallbackFactory {
 		 */
 		private final boolean task;
 		private final boolean owner;
+		private final boolean binderAssignments;
 		private final List<AccessRights> rights;
 		private final BinderDeliveryOptions deliveryOptions;
 		
-		public BinderSecurityCallbackImpl(boolean owner, boolean task, BinderDeliveryOptions deliveryOptions) {
+		public BinderSecurityCallbackImpl(boolean owner, boolean task, boolean binderAssignments, BinderDeliveryOptions deliveryOptions) {
 			this.task = task;
 			this.owner = owner;
 			this.rights = Collections.emptyList();
 			this.deliveryOptions = deliveryOptions;
+			this.binderAssignments = binderAssignments;
 		}
 		
-		public BinderSecurityCallbackImpl(List<AccessRights> rights, boolean task, BinderDeliveryOptions deliveryOptions) {
+		public BinderSecurityCallbackImpl(List<AccessRights> rights, boolean task, boolean binderAssignments, BinderDeliveryOptions deliveryOptions) {
 			this.owner = false;
 			this.task = task;
 			this.rights = rights;
 			this.deliveryOptions = deliveryOptions;
+			this.binderAssignments = binderAssignments;
 		}
 		
 		@Override
@@ -424,8 +443,18 @@ public class BinderSecurityCallbackFactory {
 		}
 
 		@Override
+		public boolean canNewBinderAssignment() {
+			return false;
+		}
+
+		@Override
 		public boolean canInstantiateAssignment() {
 			return owner;
+		}
+
+		@Override
+		public boolean canInstantianteBinderAssignment() {
+			return owner && deliveryOptions != null && deliveryOptions.isAllowTemplatesFolder() && binderAssignments;
 		}
 
 		@Override
@@ -434,8 +463,7 @@ public class BinderSecurityCallbackFactory {
 				return owner && (deliveryOptions == null || deliveryOptions.isAllowNewEntries());
 			}
 			if(owner) {
-				return section != null
-						&& !SectionStatus.isClosed(section)
+				return !SectionStatus.isClosed(section)
 						&& section.getSectionStatus() != SectionStatus.submitted
 						&& (deliveryOptions == null || deliveryOptions.isAllowNewEntries());
 			}
@@ -460,7 +488,7 @@ public class BinderSecurityCallbackFactory {
 		public boolean canEditPageMetadata(Page page, List<Assignment> assignments) {
 			if(owner) {
 				if(task) {
-					return assignments == null || assignments.size() == 0;
+					return assignments == null || assignments.isEmpty();
 				}
 				return true;
 			}
@@ -839,9 +867,19 @@ public class BinderSecurityCallbackFactory {
 		public boolean canNewAssignment() {
 			return false;
 		}
+		
+		@Override
+		public boolean canNewBinderAssignment() {
+			return false;
+		}
 
 		@Override
 		public boolean canInstantiateAssignment() {
+			return false;
+		}
+
+		@Override
+		public boolean canInstantianteBinderAssignment() {
 			return false;
 		}
 

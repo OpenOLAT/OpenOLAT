@@ -43,6 +43,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.portfolio.Assignment;
 import org.olat.modules.portfolio.AssignmentStatus;
 import org.olat.modules.portfolio.AssignmentType;
+import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.Section;
 import org.olat.repository.RepositoryEntry;
@@ -82,6 +83,8 @@ public class AssignmentImpl implements Persistable, ModifiedInfo, CreateInfo, As
 	private String type;
 	@Column(name="p_version", nullable=false, insertable=true, updatable=true)
 	private int version;
+	@Column(name="p_template", nullable=false, insertable=true, updatable=true)
+	private boolean template;
 	
 	@Column(name="p_title", nullable=true, insertable=true, updatable=true)
 	private String title;
@@ -93,9 +96,13 @@ public class AssignmentImpl implements Persistable, ModifiedInfo, CreateInfo, As
 	@Column(name="p_storage", nullable=true, insertable=true, updatable=true)
 	private String storage;
 	
-	@ManyToOne(targetEntity=SectionImpl.class,fetch=FetchType.LAZY,optional=false)
-	@JoinColumn(name="fk_section_id", nullable=false, insertable=true, updatable=true)
+	@ManyToOne(targetEntity=SectionImpl.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_section_id", nullable=true, insertable=true, updatable=true)
 	private Section section;
+	
+	@ManyToOne(targetEntity=BinderImpl.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_binder_id", nullable=true, insertable=true, updatable=true)
+	private Binder binder;
 	
 	@ManyToOne(targetEntity=AssignmentImpl.class,fetch=FetchType.LAZY,optional=true)
 	@JoinColumn(name="fk_template_reference_id", nullable=true, insertable=true, updatable=false)
@@ -184,6 +191,15 @@ public class AssignmentImpl implements Persistable, ModifiedInfo, CreateInfo, As
 		return StringHelper.containsNonWhitespace(type) ? AssignmentType.valueOf(type) : null;
 	}
 
+	@Override
+	public boolean isTemplate() {
+		return template;
+	}
+
+	public void setTemplate(boolean template) {
+		this.template = template;
+	}
+
 	public int getVersion() {
 		return version;
 	}
@@ -219,6 +235,7 @@ public class AssignmentImpl implements Persistable, ModifiedInfo, CreateInfo, As
 		this.content = content;
 	}
 
+	@Override
 	public String getStorage() {
 		return storage;
 	}
@@ -234,6 +251,14 @@ public class AssignmentImpl implements Persistable, ModifiedInfo, CreateInfo, As
 
 	public void setSection(Section section) {
 		this.section = section;
+	}
+
+	public Binder getBinder() {
+		return binder;
+	}
+
+	public void setBinder(Binder binder) {
+		this.binder = binder;
 	}
 
 	@Override

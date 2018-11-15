@@ -126,6 +126,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.security.ExplicitTypePermission;
 
 /**
  * 
@@ -141,6 +142,11 @@ public class PortfolioServiceImpl implements PortfolioService {
 	private static XStream configXstream = XStreamHelper.createXStreamInstance();
 	static {
 		configXstream.alias("deliveryOptions", BinderDeliveryOptions.class);
+		XStream.setupDefaultSecurity(configXstream);
+		Class<?>[] types = new Class[] {
+				BinderDeliveryOptions.class
+		};
+		configXstream.addPermission(new ExplicitTypePermission(types));
 	}
 	
 	@Autowired
@@ -252,7 +258,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 					
 					assignmentDao.createAssignment(transientAssignment.getTitle(), transientAssignment.getSummary(),
 							transientAssignment.getContent(), storage, transientAssignment.getAssignmentType(),
-							transientAssignment.getAssignmentStatus(), section,
+							transientAssignment.isTemplate(), transientAssignment.getAssignmentStatus(), section, null,
 							transientAssignment.isOnlyAutoEvaluation(), transientAssignment.isReviewerSeeAutoEvaluation(),
 							transientAssignment.isAnonymousExternalEvaluation(), transientAssignment.getFormEntry());
 					//copy attachments
@@ -327,14 +333,15 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 	
 	@Override
-	public Assignment addAssignment(String title, String summary, String content, AssignmentType type, Section section,
+	public Assignment addAssignment(String title, String summary, String content, AssignmentType type, boolean template, Section section, Binder binder,
 			boolean onlyAutoEvaluation, boolean reviewerSeeAutoEvaluation, boolean anonymousExternEvaluation, RepositoryEntry formEntry) {
 		File newStorage = portfolioFileStorage.generateAssignmentSubDirectory();
 		String storage = portfolioFileStorage.getRelativePath(newStorage);
 
-		Section reloadedSection = binderDao.loadSectionByKey(section.getKey());
-		return assignmentDao.createAssignment(title, summary, content, storage, type,
-				AssignmentStatus.template, reloadedSection,
+		Binder reloadedBinder = binder == null ? null : binderDao.loadByKey(binder.getKey());
+		Section reloadedSection = section == null ? null : binderDao.loadSectionByKey(section.getKey());
+		return assignmentDao.createAssignment(title, summary, content, storage, type, template,
+				AssignmentStatus.template, reloadedSection, reloadedBinder,
 				onlyAutoEvaluation, reviewerSeeAutoEvaluation, anonymousExternEvaluation, formEntry);
 	}
 
@@ -379,7 +386,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 
 	@Override
-	public List<Assignment> getAssignments(PortfolioElement element, String searchString) {
+	public List<Assignment> getSectionsAssignments(PortfolioElement element, String searchString) {
 		if(element.getType() == PortfolioElementType.binder) {
 			return assignmentDao.loadAssignments((BinderRef)element, searchString);
 		}
@@ -390,6 +397,16 @@ public class PortfolioServiceImpl implements PortfolioService {
 			return assignmentDao.loadAssignments((Page)element, searchString);
 		}
 		return null;
+	}
+
+	@Override
+	public List<Assignment> getBindersAssignmentsTemplates(BinderRef binder) {
+		return assignmentDao.loadBinderAssignmentsTemplates(binder);
+	}
+
+	@Override
+	public boolean hasBinderAssignmentTemplate(BinderRef binder) {
+		return assignmentDao.hasBinderAssignmentTemplate(binder);
 	}
 
 	@Override
@@ -406,13 +423,20 @@ public class PortfolioServiceImpl implements PortfolioService {
 	public boolean deleteAssignment(Assignment assignment) {
 		Assignment reloadedAssignment = assignmentDao.loadAssignmentByKey(assignment.getKey());
 		Section reloadedSection = reloadedAssignment.getSection();
-		boolean removed = false;
+		Binder reloadedBinder = reloadedAssignment.getBinder();
+		boolean removedSection = false;
+		boolean removedBinder = false;
 		if(reloadedSection != null) {
-			removed = ((SectionImpl)reloadedSection).getAssignments().remove(reloadedAssignment);
+			removedSection = ((SectionImpl)reloadedSection).getAssignments().remove(reloadedAssignment);
+		} else if(reloadedBinder != null) {
+			removedBinder = ((BinderImpl)reloadedBinder).getAssignments().remove(reloadedAssignment);
+			
 		}
 		assignmentDao.deleteAssignment(reloadedAssignment);
-		if(removed) {
+		if(removedSection) {
 			binderDao.updateSection(reloadedSection);
+		} else if(removedBinder) {
+			binderDao.updateBinder(reloadedBinder);
 		}
 		return true;
 	}
@@ -440,6 +464,34 @@ public class PortfolioServiceImpl implements PortfolioService {
 				LoggingResourceable.wrap(reloadedAssignment.getSection()),
 				LoggingResourceable.wrap(reloadedAssignment));
 		return reloadedAssignment;
+	}
+	
+	@Override
+	public Page startAssignmentFromTemplate(Long assignmentKey, Identity author, String title, String summary, String imagePath, PageImageAlign align, SectionRef sectionRef) {
+		Page page = null;
+		Section section = binderDao.loadSectionByKey(sectionRef.getKey());
+		Assignment reloadedAssignmentTemplate = assignmentDao.loadAssignmentByKey(assignmentKey);
+		Assignment instanciatedAssignment = assignmentDao
+				.createAssignment(reloadedAssignmentTemplate, AssignmentStatus.inProgress, section, null, false);
+		if (instanciatedAssignment.getPage() == null) {
+			if (instanciatedAssignment.getAssignmentType() == AssignmentType.essay
+					|| instanciatedAssignment.getAssignmentType() == AssignmentType.document) {
+				page = appendNewPage(author, title, summary, null, null, section);
+				instanciatedAssignment = assignmentDao.startEssayAssignment(instanciatedAssignment, page, author);
+			} else if (instanciatedAssignment.getAssignmentType() == AssignmentType.form) {
+				RepositoryEntry formEntry = instanciatedAssignment.getFormEntry();
+				page = appendNewPage(author, instanciatedAssignment.getTitle(), instanciatedAssignment.getSummary(), null, false, null, section);
+				instanciatedAssignment = assignmentDao.startFormAssignment(instanciatedAssignment, page, author);
+				// create the session for the assignee
+				EvaluationFormSurvey survey = loadOrCreateSurvey(page.getBody(), formEntry);
+				loadOrCreateSession(survey, author);
+			}
+		}
+		dbInstance.commit();
+		ThreadLocalUserActivityLogger.log(PortfolioLoggingAction.PORTFOLIO_ASSIGNMENT_STARTED, getClass(),
+				LoggingResourceable.wrap(instanciatedAssignment.getSection()),
+				LoggingResourceable.wrap(instanciatedAssignment));
+		return page;
 	}
 
 	@Override

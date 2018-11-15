@@ -1,0 +1,13 @@
+#if($documents && $documents.size() > 0)
+<table class="table table-condensed table-striped"><tbody>		
+	#foreach ($document in $documents)
+		#set( $fname = $document.getName() )
+		<tr>
+			<td style="width:1%"><i class="o_icon o_icon-fw $r.getFiletypeIconCss($fname)"> </i></td>
+			<td>$r.escapeHtml($fname)</td>
+			<td>$r.formatBytes($document.getSize())</td>
+			<td style="width:1%">$r.render($document.deleteLink)</td>
+		</tr>
+	#end
+</tbody></table>
+#end

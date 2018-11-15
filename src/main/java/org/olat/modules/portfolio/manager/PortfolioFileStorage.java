@@ -28,6 +28,7 @@ import java.util.UUID;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.io.SystemFilenameFilter;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.modules.portfolio.Assignment;
 import org.olat.modules.portfolio.Media;
@@ -145,6 +146,20 @@ public class PortfolioFileStorage implements InitializingBean {
 	public File getAssignmentDirectory(Assignment assignment) {
 		if(StringHelper.containsNonWhitespace(assignment.getStorage())) {
 			return new File(bcrootDirectory, assignment.getStorage());
+		}
+		return null;
+	}
+	
+	/**
+	 * 
+	 * @param assignment The assignment
+	 * @return The first relevant document in the assignment directory or null.
+	 */
+	public File getAssignmentFirstFile(Assignment assignment) {
+		File dir = getAssignmentDirectory(assignment);
+		File[] files = dir.listFiles(new SystemFilenameFilter(true, false));
+		if(files != null && files.length >= 1) {
+			return files[0];
 		}
 		return null;
 	}

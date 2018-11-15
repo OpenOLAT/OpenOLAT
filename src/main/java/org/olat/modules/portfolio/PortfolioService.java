@@ -127,7 +127,7 @@ public interface PortfolioService {
 	 * @param section The section is mandatory
 	 * @return
 	 */
-	public Assignment addAssignment(String title, String summary, String content, AssignmentType type, Section section,
+	public Assignment addAssignment(String title, String summary, String content, AssignmentType type, boolean template, Section section, Binder binder,
 			boolean onlyAutoEvaluation, boolean reviewerSeeAutoEvaluation, boolean anonymousExternEvaluation, RepositoryEntry formEntry);
 	
 	public Section moveUpAssignment(Section section, Assignment assignment);
@@ -147,8 +147,23 @@ public interface PortfolioService {
 	 */
 	public Assignment getAssignment(PageBody body);
 
+	/**
+	 * The list of assignments in each sections of the binder.
+	 * 
+	 * @param binder The binder
+	 * @param searchString An optional search string
+	 * @return A list of assignments
+	 */
+	public List<Assignment> getSectionsAssignments(PortfolioElement binder, String searchString);
 	
-	public List<Assignment> getAssignments(PortfolioElement binder, String searchString);
+	/**
+	 * The list of assignments in the templates folder of the binder.
+	 * @param binder The binder which holds the assignments
+	 * @return A list of assignments
+	 */
+	public List<Assignment> getBindersAssignmentsTemplates(BinderRef binder);
+	
+	public boolean hasBinderAssignmentTemplate(BinderRef binder);
 	
 	public List<Assignment> searchOwnedAssignments(IdentityRef assignee);
 	
@@ -158,12 +173,29 @@ public interface PortfolioService {
 	
 	
 	/**
+	 * Start an assignment (template excluded) and create the page.
 	 * 
-	 * @param assignmentKey
-	 * @param author
-	 * @return
+	 * @param assignmentKey The assignment primary key
+	 * @param author The user which will authored the page
+	 * @return The updated assignment
 	 */
 	public Assignment startAssignment(Long assignmentKey, Identity author);
+	
+	/**
+	 * Start an assignment (template one) and create a copy of the assignment
+	 * linked to the section.
+	 * 
+	 * @param assignmentKey The assignment primary key
+	 * @param author The user which will author the page
+	 * @param title The title of the page
+	 * @param summary The summary of the page
+	 * @param imagePath The path of the image
+	 * @param align Alignment of the image
+	 * @param section The section (mandatory)
+	 * @return The page created for the assignment
+	 */
+	public Page startAssignmentFromTemplate(Long assignmentKey, Identity author,
+			String title, String summary, String imagePath, PageImageAlign align, SectionRef section);
 	
 	/**
 	 * Add a new section at the end of the sections list of the specified binder.

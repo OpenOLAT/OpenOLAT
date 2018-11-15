@@ -52,6 +52,8 @@ public interface Assignment {
 	
 	public AssignmentType getAssignmentType();
 	
+	public boolean isTemplate();
+	
 	public Page getPage();
 	
 	public Identity getAssignee();
@@ -59,9 +61,17 @@ public interface Assignment {
 	/**
 	 * The section is lazily loaded.
 	 * 
-	 * @return
+	 * @return A section if the assignment is hold by a section, null otherwise
 	 */
 	public Section getSection();
+	
+	/**
+	 * The section is lazily loaded.
+	 * 
+	 * @return The binder if the assignment is hold in the template folder of a binder,
+	 * 		null otherwise.
+	 */
+	public Binder getBinder();
 	
 	public Assignment getTemplateReference();
 	

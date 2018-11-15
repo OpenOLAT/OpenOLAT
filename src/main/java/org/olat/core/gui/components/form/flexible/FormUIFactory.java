@@ -94,7 +94,6 @@ import org.olat.core.gui.control.WindowBackOffice;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.themes.Theme;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.ValidationStatus;
@@ -1100,8 +1099,6 @@ public class FormUIFactory {
 		DownloadLinkImpl fte = new DownloadLinkImpl(name);
 		fte.setLinkText(linkTitle);
 		fte.setDownloadItem(file);
-		String css = CSSHelper.createFiletypeIconCssClassFor(file.getName());
-		fte.setIconLeftCSS("o_icon o_icon-fw " + css);
 		setLabelIfNotNull(i18nLabel, fte);
 		if(formLayout != null) {
 			formLayout.add(fte);
@@ -1122,8 +1119,6 @@ public class FormUIFactory {
 		DownloadLinkImpl fte = new DownloadLinkImpl(name);
 		fte.setLinkText(linkTitle);
 		fte.setDownloadItem(file);
-		String css = CSSHelper.createFiletypeIconCssClassFor(file.getName());
-		fte.setIconLeftCSS("o_icon o_icon-fw " + css);
 		setLabelIfNotNull(i18nLabel, fte);
 		if(formLayout != null) {
 			((FlexiTableElementImpl)formLayout).addFormItem(fte);
@@ -1135,8 +1130,6 @@ public class FormUIFactory {
 		DownloadLinkImpl fte = new DownloadLinkImpl(name);
 		fte.setLinkText(linkTitle);
 		fte.setDownloadItem(file);
-		String css = CSSHelper.createFiletypeIconCssClassFor(file.getName());
-		fte.setIconLeftCSS("o_icon o_icon-fw " + css);
 		setLabelIfNotNull(i18nLabel, fte);
 		if(formLayout != null) {
 			((FlexiTableElementImpl)formLayout).addFormItem(fte);

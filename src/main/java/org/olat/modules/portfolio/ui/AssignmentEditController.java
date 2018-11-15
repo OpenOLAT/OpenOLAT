@@ -315,8 +315,8 @@ public class AssignmentEditController extends FormBasicController {
 			deleteLink.setI18nKey("delete");
 		}
 
-		boolean hasFile = files.size() > 0;
-		filesLayout.setVisible(files.size() > 0);
+		boolean hasFile = !files.isEmpty();
+		filesLayout.setVisible(hasFile);
 		filesLayout.showLabel(hasFile);
 		documentUploadEl.showLabel(!hasFile);
 	}
@@ -350,7 +350,7 @@ public class AssignmentEditController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		titleEl.clearError();
 		if(!StringHelper.containsNonWhitespace(titleEl.getValue())) {
@@ -381,7 +381,7 @@ public class AssignmentEditController extends FormBasicController {
 			allOk &= false;
 		}
 
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override
@@ -398,12 +398,12 @@ public class AssignmentEditController extends FormBasicController {
 		Section selectedSection = section;
 		if(sectionsEl != null && sectionsEl.isOneSelected()) {
 			String selectedKey = sectionsEl.getSelectedKey();
-			Long selectedSectionKey = new Long(selectedKey);
+			Long selectedSectionKey = Long.valueOf(selectedKey);
 			selectedSection = portfolioService.getSection(new SectionKeyRef(selectedSectionKey));
 		}
 
 		if(assignment == null) {
-			assignment = portfolioService.addAssignment(title, summary, content, type, selectedSection,
+			assignment = portfolioService.addAssignment(title, summary, content, type, false, selectedSection, null,
 					onlyAutoEvaluation, reviewerCanSeeAutoEvaluation, anonymousExternEvaluation, formEntry);
 		} else {
 			assignment = portfolioService.updateAssignment(assignment, title, summary, content, type,

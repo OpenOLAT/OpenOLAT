@@ -48,6 +48,7 @@ import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderRef;
 import org.olat.modules.portfolio.BinderStatus;
 import org.olat.modules.portfolio.Page;
+import org.olat.modules.portfolio.PortfolioElement;
 import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.SectionRef;
@@ -192,6 +193,9 @@ public class BinderDAO {
 			SectionImpl currentSection = (SectionImpl)templateToSectionsMap.get(templateSection);
 			syncAssignments(templateSection, currentSection);
 		}
+		
+		//sync templates
+		syncAssignments(template, binder);
 
 		//update all sections
 		for(int i=0; i<templateSections.size(); i++) {
@@ -229,7 +233,7 @@ public class BinderDAO {
 				currentSection.getAssignments().remove(i);
 			} else {
 				Assignment refAssignment = currentAssignment.getTemplateReference();
-				if(refAssignment != null
+				if(refAssignment != null && refAssignment.getSection() != null
 						&& !templateAssignments.contains(refAssignment)
 						&& !refAssignment.getSection().equals(templateSection)
 						&& templateToSectionsMap.containsKey(refAssignment.getSection())) {
@@ -262,11 +266,37 @@ public class BinderDAO {
 	
 	private void syncAssignments(SectionImpl templateSection, SectionImpl currentSection) {
 		List<Assignment> templateAssignments = new ArrayList<>(templateSection.getAssignments());
-		
 		List<Assignment> currentAssignments = new ArrayList<>(currentSection.getAssignments());
+		syncAssignmentsList(templateAssignments, currentAssignments, currentSection);
+		for(Assignment templateAssignment:templateAssignments) {
+			if(templateAssignment != null) {
+				assignmentDao.createAssignment(templateAssignment, AssignmentStatus.notStarted, currentSection, null, templateAssignment.isTemplate());
+			}
+		}
+	}
+	
+	private void syncAssignments(BinderImpl templateBinder, BinderImpl currentBinder) {
+		List<Assignment> templateAssignments = new ArrayList<>(templateBinder.getAssignments());
+		List<Assignment> currentAssignments = new ArrayList<>(currentBinder.getAssignments());
+		syncAssignmentsList(templateAssignments, currentAssignments, currentBinder);
+		for(Assignment templateAssignment:templateAssignments) {
+			if(templateAssignment != null) {
+				assignmentDao.createAssignment(templateAssignment, AssignmentStatus.notStarted, null, currentBinder, templateAssignment.isTemplate());
+			}
+		}
+	}
+	
+	/**
+	 * Help method which sync / update but not create the assignments.
+	 * 
+	 * @param templateAssignments A modifiable list of assignments from the template
+	 * @param currentAssignments A modifiable list of assignments from the current object
+	 * @param currentOwner The owner of the assignments, binder or section
+	 */
+	private void syncAssignmentsList(List<Assignment> templateAssignments, List<Assignment> currentAssignments, PortfolioElement currentOwner) {
 		for(Assignment currentAssignment:currentAssignments) {
 			if(currentAssignment == null) {
-				log.error("Missing assignment: " + currentSection.getKey());
+				log.error("Missing assignment: " + currentOwner.getKey());
 				continue;
 			}
 			
@@ -284,12 +314,6 @@ public class BinderDAO {
 
 				AssignmentImpl currentImpl = (AssignmentImpl)currentAssignment;
 				currentAssignment = syncAssignment(refAssignment, currentImpl);
-			}
-		}
-		
-		for(Assignment templateAssignment:templateAssignments) {
-			if(templateAssignment != null) {
-				assignmentDao.createAssignment(templateAssignment, AssignmentStatus.notStarted, currentSection);
 			}
 		}
 	}
