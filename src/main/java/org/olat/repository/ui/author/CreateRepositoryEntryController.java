@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.NewControllerFactory;
+import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.model.OrganisationRefImpl;
@@ -85,6 +86,8 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 	private LicenseService licenseService;
 	@Autowired
 	private LicenseModule licenseModule;
+	@Autowired
+	private OrganisationModule organisationModule;
 	@Autowired
 	private OrganisationService organisationService;
 	@Autowired
@@ -162,7 +165,7 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 		if(!organisationKeys.isEmpty()) {
 			organisationEl.select(organisationKeys.get(0), true);
 		}
-		organisationEl.setVisible(organisationKeys.size() > 1);
+		organisationEl.setVisible(organisationKeys.size() > 1 && organisationModule.isEnabled());
 		
 		FormLayoutContainer buttonContainer = FormLayoutContainer.createButtonLayout("buttonContainer", getTranslator());
 		formLayout.add("buttonContainer", buttonContainer);
@@ -231,7 +234,7 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 		String displayname = displaynameEl.getValue();
 		
 		Organisation organisation;
-		if(organisationEl.isOneSelected()) {
+		if(organisationEl.isVisible() && organisationEl.isOneSelected()) {
 			Long organisationKey = Long.valueOf(organisationEl.getSelectedKey());
 			organisation = organisationService.getOrganisation(new OrganisationRefImpl(organisationKey));
 		} else {

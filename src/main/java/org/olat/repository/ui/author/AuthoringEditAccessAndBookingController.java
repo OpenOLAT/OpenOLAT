@@ -157,7 +157,11 @@ public class AuthoringEditAccessAndBookingController extends FormBasicController
 	}
 	
 	public List<Organisation> getSelectedOrganisations() {
-		List<Organisation> organisations = new ArrayList<>(repositoryEntryOrganisations);
+		if(organisationsEl == null || !organisationsEl.isVisible()) {
+			return repositoryEntryOrganisations;
+		}
+		
+		List<Organisation> organisations = new ArrayList<>();
 
 		Set<String> organisationKeys = organisationsEl.getKeys();
 		Collection<String> selectedOrganisationKeys = organisationsEl.getSelectedKeys();
@@ -350,6 +354,8 @@ public class AuthoringEditAccessAndBookingController extends FormBasicController
 		List<Organisation> organisationList = new ArrayList<>(organisations);
 
 		List<Organisation> reOrganisations = repositoryService.getOrganisations(entry);
+		repositoryEntryOrganisations = new ArrayList<>(reOrganisations);
+		
 		for(Organisation reOrganisation:reOrganisations) {
 			if(reOrganisation != null && !organisationList.contains(reOrganisation)) {
 				organisationList.add(reOrganisation);
@@ -364,7 +370,6 @@ public class AuthoringEditAccessAndBookingController extends FormBasicController
 			keyList.add(organisation.getKey().toString());
 			valueList.add(organisation.getDisplayName());
 		}
-		repositoryEntryOrganisations = new ArrayList<>(reOrganisations.size());
 		organisationsEl = uifactory.addCheckboxesDropdown("organisations", "cif.organisations", formLayout,
 				keyList.toArray(new String[keyList.size()]), valueList.toArray(new String[valueList.size()]),
 				null, null);
@@ -382,7 +387,7 @@ public class AuthoringEditAccessAndBookingController extends FormBasicController
 		
 		if (organisationsEl != null) {
 			organisationsEl.clearError();
-			if(!organisationsEl.isAtLeastSelected(1)) {
+			if(organisationsEl.isVisible() && !organisationsEl.isAtLeastSelected(1)) {
 				organisationsEl.setErrorKey("form.legende.mandatory", null);
 				allOk &= false;
 			}

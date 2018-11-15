@@ -22,6 +22,7 @@ package org.olat.modules.curriculum.ui;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.model.OrganisationRefImpl;
@@ -64,6 +65,8 @@ public class EditCurriculumController extends FormBasicController {
 	
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private OrganisationModule organisationModule;
 	@Autowired
 	private OrganisationService organisationService;
 	
@@ -148,6 +151,7 @@ public class EditCurriculumController extends FormBasicController {
 
 		organisationEl = uifactory.addDropdownSingleselect("curriculum.organisation", formLayout,
 				keyList.toArray(new String[keyList.size()]), valueList.toArray(new String[valueList.size()]));
+		organisationEl.setVisible(organisationModule.isEnabled());
 		if(selectedOrganisationKey != null && keyList.contains(selectedOrganisationKey)) {
 			organisationEl.select(selectedOrganisationKey, true);
 		}
@@ -181,7 +185,7 @@ public class EditCurriculumController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		//create a new one
 		Organisation organisation;
-		if(organisationEl != null && organisationEl.isOneSelected()) {
+		if(organisationEl != null && organisationEl.isVisible() && organisationEl.isOneSelected()) {
 			organisation = organisationService
 					.getOrganisation(new OrganisationRefImpl(Long.valueOf(organisationEl.getSelectedKey())));
 		} else {
