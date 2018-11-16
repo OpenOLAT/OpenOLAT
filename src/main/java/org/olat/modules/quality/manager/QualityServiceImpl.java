@@ -277,6 +277,7 @@ public class QualityServiceImpl
 			QualityDataCollectionStatus previousStatus = dataCollection.getStatus();
 			updatedDataCollection = dataCollectionDao.updateDataCollectionStatus(dataCollection, status);
 			if (QualityDataCollectionStatus.FINISHED.equals(status) && !QualityDataCollectionStatus.FINISHED.equals(previousStatus)) {
+				reportAccessDao.deleteUnappropriated(of(updatedDataCollection));
 				sendReportAccessMails(dataCollection);
 			}
 			log.info("Status of quality data collection updated to " + status + ". " + updatedDataCollection.toString());

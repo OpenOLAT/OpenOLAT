@@ -127,6 +127,38 @@ class QualityReportAccessDAO {
 		}
 		query.executeUpdate();
 	}
+	
+	/**
+	 * Delete unappropriated report accesses. A report access is unappropriated, if
+	 * it has no access and the email should never be sent. Just a little
+	 * optimization.
+	 *
+	 * @param reference
+	 */
+	void deleteUnappropriated(QualityReportAccessReference reference) {
+		if (reference == null) return;
+		
+		QueryBuilder sb = new QueryBuilder(256);
+		sb.append("delete from qualityreportaccess as reportaccess");
+		sb.and().append("reportaccess.online = false");
+		sb.and().append("reportaccess.emailTrigger = '").append(EmailTrigger.never).append("'");
+		if (reference.getDataCollectionRef() != null) {
+			sb.and().append("reportaccess.dataCollection.key = :dataCollectionKey");
+		}
+		if (reference.getGeneratorRef() != null) {
+			sb.and().append("reportaccess.generator.key = :generatorKey");
+		}
+
+		Query query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString());
+		if (reference.getDataCollectionRef() != null) {
+			query.setParameter("dataCollectionKey", reference.getDataCollectionRef().getKey());
+		}
+		if (reference.getGeneratorRef() != null) {
+			query.setParameter("generatorKey", reference.getGeneratorRef().getKey());
+		}
+		query.executeUpdate();
+	}
 
 	List<QualityReportAccess> load(QualityReportAccessSearchParams searchParams) {
 		QueryBuilder sb = new QueryBuilder();
