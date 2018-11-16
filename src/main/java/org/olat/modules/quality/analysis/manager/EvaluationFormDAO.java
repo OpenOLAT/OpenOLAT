@@ -19,6 +19,7 @@
  */
 package org.olat.modules.quality.analysis.manager;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -91,6 +92,7 @@ public class EvaluationFormDAO {
 	private void appendParameters(TypedQuery<EvaluationFormView> query, EvaluationFormViewSearchParams searchParams) {
 		if (searchParams.getOrganisationRefs() != null) {
 			List<Long> organisationKeys = searchParams.getOrganisationRefs().stream().map(OrganisationRef::getKey).collect(Collectors.toList());
+			organisationKeys = !organisationKeys.isEmpty()? organisationKeys: Collections.singletonList(-1l);
 			query.setParameter("organisationKeys", organisationKeys);
 		}
 	}

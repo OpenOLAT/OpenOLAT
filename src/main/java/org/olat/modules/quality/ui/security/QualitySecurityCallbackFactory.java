@@ -20,9 +20,13 @@
 package org.olat.modules.quality.ui.security;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationRoles;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.modules.quality.QualityDataCollectionLight;
@@ -47,7 +51,19 @@ public class QualitySecurityCallbackFactory {
 	public static MainSecurityCallback createMainSecurityCallback(Roles roles, IdentityRef identityRef) {
 		boolean canEdit = roles.isAdministrator() || roles.isQualityManager();
 		boolean canView = canEdit || roles.isPrincipal();
-		return new MainSecurityCallbackImpl(identityRef, canView, canEdit, QUALITY_VIEWER_ROLES);
+		List<OrganisationRef> organisations = getViewOrganisations(roles, canView);
+		return new MainSecurityCallbackImpl(identityRef, canView, canEdit, organisations);
+	}
+	
+	private static List<OrganisationRef> getViewOrganisations(Roles roles, boolean canView) {
+		if (canView) {
+			OrganisationModule organisationModule = CoreSpringFactory.getImpl(OrganisationModule.class);
+			if (organisationModule.isEnabled()) {
+				return roles.getOrganisationsWithRoles(QUALITY_VIEWER_ROLES);
+			}
+			return null; // null = all organisations
+		}
+		return Collections.emptyList(); // empty list = no organisations
 	}
 	
 	public static DataCollectionSecurityCallback createDataCollectionSecurityCallback(Roles roles,
@@ -67,10 +83,15 @@ public class QualitySecurityCallbackFactory {
 	}
 
 	private static boolean isQualityManager(Roles roles, Collection<? extends OrganisationRef> organisationRefs) {
-		for (OrganisationRef organisationRef : organisationRefs) {
-			if (roles.hasSomeRoles(organisationRef, QUALITY_MANAGER_ROLES)) {
-				return true;
+		OrganisationModule organisationModule = CoreSpringFactory.getImpl(OrganisationModule.class);
+		if (organisationModule.isEnabled()) {
+			for (OrganisationRef organisationRef : organisationRefs) {
+				if (roles.hasSomeRoles(organisationRef, QUALITY_MANAGER_ROLES)) {
+					return true;
+				}
 			}
+		} else {
+			return roles.isAdministrator() || roles.isQualityManager();
 		}
 		return false;
 	}

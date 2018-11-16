@@ -86,7 +86,6 @@ public class GeneratorListController extends FormBasicController implements Tool
 	private GeneratorDeleteConfirmationController deleteConfirmationCtrl;
 	
 	private final MainSecurityCallback secCallback;
-	private final List<Organisation> organisations;
 	
 	@Autowired
 	private QualityGeneratorService generatorService;
@@ -99,7 +98,6 @@ public class GeneratorListController extends FormBasicController implements Tool
 		this.stackPanel = stackPanel;
 		stackPanel.addListener(this);
 		this.secCallback = secCallback;
-		this.organisations = qualityService.getDefaultOrganisations(getIdentity());
 		initForm(ureq);
 	}
 
@@ -126,7 +124,7 @@ public class GeneratorListController extends FormBasicController implements Tool
 
 	private void loadModel() {
 		QualityGeneratorSearchParams searchParams = new QualityGeneratorSearchParams();
-		searchParams.setOrganisationRefs(organisations);
+		searchParams.setOrganisationRefs(secCallback.getViewGeneratorOrganisationRefs());
 		List<QualityGeneratorView> generators = generatorService.loadGenerators(searchParams);
 		generators.sort(CREATION_DATE_DESC);
 		List<GeneratorRow> rows = new ArrayList<>(generators.size());
@@ -248,6 +246,7 @@ public class GeneratorListController extends FormBasicController implements Tool
 	}
 
 	private void doCreateGenerator(UserRequest ureq, String providerType, String title) {
+		List<Organisation> organisations = qualityService.getDefaultOrganisations(getIdentity());
 		QualityGenerator generator = generatorService.createGenerator(providerType, organisations);
 		if (StringHelper.containsNonWhitespace(title)) {
 			generator.setTitle(title);

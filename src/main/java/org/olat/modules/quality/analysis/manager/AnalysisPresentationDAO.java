@@ -21,6 +21,7 @@ package org.olat.modules.quality.analysis.manager;
 
 import static java.util.stream.Collectors.toList;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -127,7 +128,7 @@ class AnalysisPresentationDAO {
 	}
 
 	private void appendWhere(QueryBuilder sb, AnalysisPresentationSearchParameter searchParams) {
-		if (searchParams.getOrganisationRefs() != null && !searchParams.getOrganisationRefs().isEmpty()) {
+		if (searchParams.getOrganisationRefs() != null) {
 			sb.and();
 			sb.append("formEntry.key in (");
 			sb.append("select survey.formEntry.key");
@@ -142,8 +143,9 @@ class AnalysisPresentationDAO {
 
 	private void appendParameters(TypedQuery<AnalysisPresentation> query,
 			AnalysisPresentationSearchParameter searchParams) {
-		if (searchParams.getOrganisationRefs() != null && !searchParams.getOrganisationRefs().isEmpty()) {
+		if (searchParams.getOrganisationRefs() != null) {
 			List<Long> keys = searchParams.getOrganisationRefs().stream().map(OrganisationRef::getKey).collect(toList());
+			keys = !keys.isEmpty()? keys: Collections.singletonList(-1l);
 			query.setParameter("organisationKeys", keys);
 		}
 	}

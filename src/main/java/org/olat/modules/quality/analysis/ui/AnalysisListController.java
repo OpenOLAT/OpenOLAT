@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-import org.olat.basesecurity.OrganisationService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -49,7 +48,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.id.Organisation;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
@@ -82,14 +80,11 @@ public class AnalysisListController extends FormBasicController implements Flexi
 	
 	private AnalysisSegmentsController analysisCtrl;
 	
-	private final List<Organisation> organisations;
 	private int counter = 0;
 	private AnalysisPresentation presentation;
 
 	@Autowired
 	private QualityAnalysisService analysisService;
-	@Autowired
-	private OrganisationService organisationService;
 	
 	public AnalysisListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			MainSecurityCallback secCallback) {
@@ -97,8 +92,6 @@ public class AnalysisListController extends FormBasicController implements Flexi
 		this.stackPanel = stackPanel;
 		stackPanel.addListener(this);
 		this.secCallback = secCallback;
-		this.organisations = organisationService.getOrganisations(getIdentity(), ureq.getUserSession().getRoles(),
-				secCallback.getViewAnalysisRoles());
 		initForm(ureq);
 	}
 	
@@ -145,7 +138,7 @@ public class AnalysisListController extends FormBasicController implements Flexi
 	
 	private void loadModel() {
 		EvaluationFormViewSearchParams searchParams = new EvaluationFormViewSearchParams();
-		searchParams.setOrganisationRefs(organisations);
+		searchParams.setOrganisationRefs(secCallback.getViewAnalysisOrganisationRefs());
 		List<EvaluationFormView> forms = analysisService.loadEvaluationForms(searchParams);
 		forms.sort(CREATED_DESC);
 		List<AnalysisRow> rows = new ArrayList<>(forms.size());

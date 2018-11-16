@@ -19,10 +19,8 @@
  */
 package org.olat.modules.quality.ui;
 
-import java.util.Collection;
 import java.util.List;
 
-import org.olat.basesecurity.OrganisationService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -47,7 +45,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Organisation;
-import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Formatter;
@@ -89,8 +86,6 @@ public class DataCollectionListController extends FormBasicController implements
 	
 	@Autowired
 	private QualityService qualityService;
-	@Autowired
-	private OrganisationService organisationService;
 
 	public DataCollectionListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			MainSecurityCallback secCallback) {
@@ -119,9 +114,7 @@ public class DataCollectionListController extends FormBasicController implements
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, DataCollectionCols.creationDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, DataCollectionCols.generatorTitle));
 		
-		Collection<? extends OrganisationRef> organisationRefs = organisationService.getOrganisations(getIdentity(),
-				ureq.getUserSession().getRoles(), secCallback.getViewDataCollectionRoles());
-		DataCollectionDataSource dataSource = new DataCollectionDataSource(getTranslator(), organisationRefs, getIdentity());
+		DataCollectionDataSource dataSource = new DataCollectionDataSource(getTranslator(), secCallback.getViewDataCollectionOrganisationRefs(), getIdentity());
 		dataModel = new DataCollectionDataModel(dataSource, columnsModel, getTranslator(), secCallback);
 		tableEl = uifactory.addTableElement(getWindowControl(), "dataCollections", dataModel, 25, true, getTranslator(), formLayout);
 		tableEl.setElementCssClass("o_qual_dc_list");
