@@ -140,18 +140,37 @@ public class NekoHTMLFilter implements Filter {
 			String elem = localName.toLowerCase();
 			if(toBeSkippedTags.contains(elem)) {
 				collect = false;
-			// add a single whitespace before each block element but only if not there is not already a whitespace there
 			} else {
 				if(pretty) {
+					// format text line breaks for plain text as rendered in HTML
 					if("li".equals(elem)) {
 						content.append("\u00B7 ");
+					} else if("ul".equals(elem)) {
+						// add break before the list start (for correct rendering of first list element)
+						content.append('\n');
 					} else if("br".equals(elem)) {
 						content.append('\n');
+					} else if("p".equals(elem)) {
+						// for p tags: line break before and after
+						content.append('\n');
+					} else if("h2".equals(elem) || "h3".equals(elem) || "h4".equals(elem) || "h5".equals(elem) || "h6".equals(elem)) {
+						// for h tags: line break before and after. For H1 which is usually the start of the page omit the trailing return.
+						content.append("\n\n");
+					}
+					// preserve links
+					if ("a".equals(elem)) {
+						String href = attributes.getValue("href");
+						// write absolute url's only
+						if (href != null && href.startsWith("http")) {							
+							content.append(href);
+							content.append(" ");
+						}
 					}
 				}
 				if("title".equals(elem)) {
 					consumeTitle = true;
 				}
+				// add a single whitespace before each block element but only if there is not already a whitespace 
 				if(blockTags.contains(elem) && content.length() > 0 && content.charAt(content.length() -1) != ' ' ) {
 					consumeBlanck = true;
 				}
@@ -162,7 +181,8 @@ public class NekoHTMLFilter implements Filter {
 		public void characters(char[] chars, int offset, int length) {
 			if(collect) {
 				if(consumeBlanck) {
-					if(content.length() > 0 && content.charAt(content.length() -1) != ' ' && length > 0 && chars[offset] != ' ') { 
+					if(content.length() > 0 && content.charAt(content.length() -1) != ' ' && length > 0 && chars[offset] != ' ' && content.charAt(content.length() -1) != '\n') { 
+						// Add space only if there is not already space and we are not right after a line break
 						content.append(' ');
 					}
 					consumeBlanck = false;
@@ -180,7 +200,8 @@ public class NekoHTMLFilter implements Filter {
 			if(toBeSkippedTags.contains(elem)) {
 				collect = true;
 			} else {
-				if(pretty && ("li".equals(elem) || "p".equals(elem))) {
+				if(pretty && ("li".equals(elem) || "p".equals(elem) || "h1".equals(elem) || "h2".equals(elem) || "h3".equals(elem) || "h4".equals(elem) || "h5".equals(elem) || "h6".equals(elem) )) {
+					// start with new line after paragraph, list item and header elements
 					content.append('\n');
 				}
 				if("title".equals(elem)) {

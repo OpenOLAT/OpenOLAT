@@ -53,6 +53,9 @@ public class NekoHTMLFilterTest{
 	private void t(String input, String result) {
 		Assert.assertEquals(result, filter.filter(input));
 	}
+	private void p(String input, String result) {
+		Assert.assertEquals(result, filter.filter(input, true));
+	}
 	
 	@Test
 	public void escaping() {
@@ -78,22 +81,39 @@ public class NekoHTMLFilterTest{
 	
 	@Test public void testBRAndPReplacement() {
 		t("<br>", "");
+		p("<br>", "\n");
 		t("<p>", "");
+		p("<p>", "\n\n");
 		t("<br >", "");
+		p("<br >", "\n");
 		t("<p >", "");
+		p("<p >", "\n\n");
 		t("<br/>", "");
+		p("<br/>", "\n");
 		t("<p/>", "");
+		p("<p/>", "\n\n");
 		t("<br />", "");
+		p("<br />", "\n");
 		t("<p />", "");
+		p("<p />", "\n\n");
 		t("bla<br>bla", "bla bla");
+		p("bla<br>bla", "bla\nbla");
 		t("bla<p>bla", "bla bla");
+		p("bla<p>bla", "bla\nbla\n");
 		t("bla<br >bla", "bla bla");
+		p("bla<br >bla", "bla\nbla");
 		t("bla<p >bla", "bla bla");
+		p("bla<p >bla", "bla\nbla\n");
 		t("bla<br/>bla", "bla bla");
+		p("bla<br/>bla", "bla\nbla");
 		t("bla<p/>bla", "bla bla");
+		p("bla<p/>bla", "bla\nbla\n");  // invalid html anyway
 		t("bla<br />bla", "bla bla");
+		p("bla<br />bla", "bla\nbla");
 		t("bla<p />bla", "bla bla");
+		p("bla<p />bla", "bla\nbla\n"); // invalid html anyway
 		t("hello<br /> world", "hello world");
+		p("hello<br /> world", "hello\n world");
 	}
 
 	@Test public void testStyleTags() {
@@ -119,11 +139,32 @@ public class NekoHTMLFilterTest{
 	@Test public void testHtmlText() {
 		String htmlText = "<html><head><meta name=\"generator\" content=\"olat-tinymce-1\"><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"></head><body>"
             + "<H1>Test HTML Seite fuer JUnit Test</H1>"
-            + "Dies ist<br />der Test&nbsp;Text"
+            + "Dies ist<br />der Test&nbsp;Text."
+            + "<h2>And now something else</h2>Hello, really."
             + "</body></html>"; // Text = 'Dies ist der Test Text'
-		String text = "Test HTML Seite fuer JUnit Test Dies ist der Test\u00A0Text"; // must include '\u00A0' !!! 19.5.2010/cg
+		String text = "Test HTML Seite fuer JUnit Test Dies ist der Test\u00A0Text. And now something else Hello, really."; // must include '\u00A0' !!! 19.5.2010/cg
 		t(htmlText,text);
+		p(htmlText,"Test HTML Seite fuer JUnit Test\nDies ist\nder Test\u00A0Text.\n\nAnd now something else\nHello, really.");
 	}
+
+	@Test public void testHTMLLinks() {
+		t("<a name=\"gugus\">GO HERE</a>", "GO HERE");
+		p("<a name=\"gugus\">GO HERE</a>", "GO HERE");
+		t("<a href=\"#top\">GO HERE</a>", "GO HERE");
+		p("<a href=\"#top\">GO HERE</a>", "GO HERE");
+		t("<a href=\"javascript:alert('sdf')\">GO HERE</a>", "GO HERE");
+		p("<a href=\"javascript:alert('sdf')\">GO HERE</a>", "GO HERE");
+		t("<a href=\"index.html\">GO HERE</a>", "GO HERE");
+		p("<a href=\"index.html\">GO HERE</a>", "GO HERE");
+		t("<a href=\"/go/here/index.html\">GO HERE</a>", "GO HERE");
+		p("<a href=\"/go/here/index.html\">GO HERE</a>", "GO HERE");
+		t("<a href=\"http://www.openolat.org/go/here/index.html\" title=\\\"super site\\\">GO HERE</a>", "GO HERE");
+		p("<a href=\"http://www.openolat.org/go/here/index.html\" title=\\\"super site\\\">GO HERE</a>", "http://www.openolat.org/go/here/index.html GO HERE");
+		t("<a href=\"https://www.openolat.org/go/here/index.html\" title=\"super site\">GO HERE</a>", "GO HERE");
+		p("<a href=\"https://www.openolat.org/go/here/index.html\" title=\"super site\">GO HERE</a>", "https://www.openolat.org/go/here/index.html GO HERE");
+
+
+	}	
 	
 	@Test
 	public void testHtmlTextAndTitle() {
