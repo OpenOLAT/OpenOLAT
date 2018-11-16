@@ -33,6 +33,9 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumRoles;
+import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationStatus;
@@ -68,6 +71,8 @@ public class QualityReportAccessDAOTest extends OlatTestCase {
 	private QualityService qualityService;
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private CurriculumService curriculumService;
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
 	@Autowired
@@ -235,6 +240,10 @@ public class QualityReportAccessDAOTest extends OlatTestCase {
 		QualityReportAccess raOnline = sut.create(of(dc), QualityReportAccess.Type.TopicIdentity, null);
 		raOnline.setOnline(true);
 		sut.save(raOnline);
+		QualityReportAccess raReportMember = sut.create(of(dc), QualityReportAccess.Type.ReportMember, null);
+		raReportMember.setOnline(false);
+		raReportMember.setEmailTrigger(EmailTrigger.never);
+		sut.save(raReportMember);
 		QualityReportAccess raUnappropriated = sut.create(of(dc), QualityReportAccess.Type.TopicIdentity, null);
 		raUnappropriated.setOnline(false);
 		raUnappropriated.setEmailTrigger(EmailTrigger.never);
@@ -253,7 +262,7 @@ public class QualityReportAccessDAOTest extends OlatTestCase {
 		searchParams.setReference(of(dc));
 		List<QualityReportAccess> accesses = sut.load(searchParams);
 		assertThat(accesses)
-				.containsExactlyInAnyOrder(raOnline, raAlways)
+				.containsExactlyInAnyOrder(raOnline, raAlways, raReportMember)
 				.doesNotContain(raUnappropriated);
 		
 		searchParams.setReference(of(dcOther));
@@ -379,6 +388,7 @@ public class QualityReportAccessDAOTest extends OlatTestCase {
 	public void shouldLoadReceiversForGroupRole() {
 		Identity reportViewerEntry1 = JunitTestHelper.createAndPersistIdentityAsRndUser("course1");
 		Identity reportViewerEntry2 = JunitTestHelper.createAndPersistIdentityAsRndUser("course1");
+		Identity reportViewerElement = JunitTestHelper.createAndPersistIdentityAsRndUser("curriculumElement1");
 		Identity reportViewerOtherRole = JunitTestHelper.createAndPersistIdentityAsRndUser("other-role");
 		Identity reportViewerNoParticipant = JunitTestHelper.createAndPersistIdentityAsRndUser("no-participant");
 		GroupRoles reportViewerRole = GroupRoles.owner;
@@ -403,6 +413,12 @@ public class QualityReportAccessDAOTest extends OlatTestCase {
 		RepositoryEntry entryNoParticipation = JunitTestHelper.createAndPersistRepositoryEntry();
 		repositoryService.addRole(reportViewerNoParticipant, entryNoParticipation, reportViewerRole.name());
 		repositoryService.addRole(executor, entryNoParticipation, executorRole.name());
+		// Report Viewer is member of the curriculum element
+		CurriculumElement element = qualityTestHelper.createCurriculumElement();
+		curriculumService.addMember(element, reportViewerElement, CurriculumRoles.owner);
+		curriculumService.addMember(element, executor, CurriculumRoles.participant);
+		List<EvaluationFormParticipation> participations = qualityService.addParticipations(dc, singletonList(executor));
+		qualityService.createContextBuilder(dc, participations.get(0), element, CurriculumRoles.participant).build();
 		
 		QualityReportAccess reportAccess = qualityService.createReportAccess(of(dc), Type.GroupRoles, reportViewerRole.name());
 		dbInstance.commitAndCloseSession();
@@ -410,7 +426,7 @@ public class QualityReportAccessDAOTest extends OlatTestCase {
 		List<Identity> receivers = sut.loadRecipients(reportAccess);
 		
 		assertThat(receivers)
-				.containsExactlyInAnyOrder(reportViewerEntry1, reportViewerEntry2)
+				.containsExactlyInAnyOrder(reportViewerEntry1, reportViewerEntry2, reportViewerElement)
 				.doesNotContain(reportViewerOtherRole, reportViewerNoParticipant);
 	}
 	

@@ -44,6 +44,8 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumRoles;
+import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationStatus;
@@ -85,6 +87,8 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 	private EvaluationFormManager evaluationFormManager;
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private CurriculumService curriculumService;
 	
 	@Autowired
 	private QualityDataCollectionDAO sut;
@@ -575,7 +579,7 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void shouldFilterDataCollectionsByReportAccessGroupRole() {
+	public void shouldFilterDataCollectionsByReportAccessGroupRoleOfCourses() {
 		Identity reportViewer = JunitTestHelper.createAndPersistIdentityAsRndUser("report-viewer");
 		GroupRoles reportViewerRole = GroupRoles.owner;
 		Identity executor = JunitTestHelper.createAndPersistIdentityAsRndUser("executer");
@@ -639,6 +643,94 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 		dcAccessDenied = qualityService.updateDataCollectionStatus(dcAccessDenied, FINISHED);
 		List<EvaluationFormParticipation> participationsAccessDenied = qualityService.addParticipations(dcAccessDenied, singletonList(executor));
 		qualityService.createContextBuilder(dcAccessDenied, participationsAccessDenied.get(0), entryAccessDenied, executorRole).build();
+		QualityReportAccess raAccessDenied = qualityService.createReportAccess(of(dcAccessDenied), QualityReportAccess.Type.GroupRoles, reportViewerRole.name());
+		raAccessDenied.setOnline(false);
+		qualityService.updateReportAccess(raAccessDenied);
+		dbInstance.commitAndCloseSession();
+		
+		QualityDataCollectionViewSearchParams searchParams = new QualityDataCollectionViewSearchParams();
+		Organisation organisation = qualityTestHelper.createOrganisation();
+		searchParams.setOrgansationRefs(Collections.singletonList(organisation));
+		searchParams.setReportAccessIdentity(reportViewer);
+		List<QualityDataCollectionView> dataCollections = sut.loadDataCollections(TRANSLATOR, searchParams, 0, -1);
+		
+		assertThat(dataCollections)
+				.extracting(QualityDataCollectionView::getKey)
+				.containsExactlyInAnyOrder(dc.getKey())
+				.doesNotContain(
+						dcOtherRole.getKey(),
+						dcNotMember.getKey(),
+						dcNotFinished.getKey(),
+						dcNoAccess.getKey(),
+						dcAccessDenied.getKey()
+						);
+	}
+	
+	@Test
+	public void shouldFilterDataCollectionsByReportAccessGroupRoleOfCurriculumElements() {
+		Identity reportViewer = JunitTestHelper.createAndPersistIdentityAsRndUser("report-viewer");
+		CurriculumRoles reportViewerRole = CurriculumRoles.owner;
+		Identity executor = JunitTestHelper.createAndPersistIdentityAsRndUser("executer");
+		CurriculumRoles executorRole = CurriculumRoles.participant;
+		// Everything fulfilled: Data collection has participant of the curriculum element
+		CurriculumElement element = qualityTestHelper.createCurriculumElement();
+		curriculumService.addMember(element, reportViewer, reportViewerRole);
+		curriculumService.addMember(element, executor, executorRole);
+		QualityDataCollection dc = qualityTestHelper.createDataCollection();
+		dc = qualityService.updateDataCollectionStatus(dc, FINISHED);
+		List<EvaluationFormParticipation> participations = qualityService.addParticipations(dc, singletonList(executor));
+		qualityService.createContextBuilder(dc, participations.get(0), element, executorRole).build();
+		QualityReportAccess ra = qualityService.createReportAccess(of(dc), QualityReportAccess.Type.GroupRoles, reportViewerRole.name());
+		ra.setOnline(true);
+		qualityService.updateReportAccess(ra);
+		// Report viewer has other curriculum element role
+		CurriculumElement elementOtherRole = qualityTestHelper.createCurriculumElement();
+		curriculumService.addMember(elementOtherRole, reportViewer, CurriculumRoles.participant);
+		curriculumService.addMember(elementOtherRole, executor, executorRole);
+		QualityDataCollection dcOtherRole = qualityTestHelper.createDataCollection();
+		dcOtherRole = qualityService.updateDataCollectionStatus(dcOtherRole, FINISHED);
+		List<EvaluationFormParticipation> participationsOtherRole = qualityService.addParticipations(dcOtherRole, singletonList(executor));
+		qualityService.createContextBuilder(dcOtherRole, participationsOtherRole.get(0), elementOtherRole, executorRole).build();
+		QualityReportAccess raOtherRole = qualityService.createReportAccess(of(dcOtherRole), QualityReportAccess.Type.GroupRoles, reportViewerRole.name());
+		raOtherRole.setOnline(true);
+		qualityService.updateReportAccess(raOtherRole);
+		// Report viewer is not member in the curriculum element
+		CurriculumElement elementNotMember = qualityTestHelper.createCurriculumElement();
+		curriculumService.addMember(elementOtherRole, executor, executorRole);
+		QualityDataCollection dcNotMember = qualityTestHelper.createDataCollection();
+		dcNotMember = qualityService.updateDataCollectionStatus(dcNotMember, FINISHED);
+		List<EvaluationFormParticipation> participationsNotMember = qualityService.addParticipations(dcNotMember, singletonList(executor));
+		qualityService.createContextBuilder(dcNotMember, participationsNotMember.get(0), elementNotMember, executorRole).build();
+		QualityReportAccess raNotMember = qualityService.createReportAccess(of(dcNotMember), QualityReportAccess.Type.GroupRoles, reportViewerRole.name());
+		raNotMember.setOnline(true);
+		qualityService.updateReportAccess(raNotMember);
+		// Data collection is not finished
+		CurriculumElement elementNotFinished = qualityTestHelper.createCurriculumElement();
+		curriculumService.addMember(elementNotFinished, reportViewer, reportViewerRole);
+		curriculumService.addMember(elementNotFinished, executor, executorRole);
+		QualityDataCollection dcNotFinished = qualityTestHelper.createDataCollection();
+		dcNotFinished = qualityService.updateDataCollectionStatus(dcNotFinished, QualityDataCollectionStatus.RUNNING);
+		List<EvaluationFormParticipation> participationsNotFinished = qualityService.addParticipations(dcNotFinished, singletonList(executor));
+		qualityService.createContextBuilder(dcNotFinished, participationsNotFinished.get(0), elementNotFinished, executorRole).build();
+		QualityReportAccess raNotFinished = qualityService.createReportAccess(of(dcNotFinished), QualityReportAccess.Type.GroupRoles, reportViewerRole.name());
+		raNotFinished.setOnline(true);
+		qualityService.updateReportAccess(raNotFinished);
+		// Data collection has no report access configured
+		CurriculumElement elementNoAccess = qualityTestHelper.createCurriculumElement();
+		curriculumService.addMember(elementNoAccess, reportViewer, reportViewerRole);
+		curriculumService.addMember(elementNoAccess, executor, executorRole);
+		QualityDataCollection dcNoAccess = qualityTestHelper.createDataCollection();
+		dcNoAccess = qualityService.updateDataCollectionStatus(dcNoAccess, FINISHED);
+		List<EvaluationFormParticipation> participationsNoAccess = qualityService.addParticipations(dcNoAccess, singletonList(executor));
+		qualityService.createContextBuilder(dcNoAccess, participationsNoAccess.get(0), elementNoAccess, executorRole).build();
+		// Report user has access denied
+		CurriculumElement elementAccessDenied = qualityTestHelper.createCurriculumElement();
+		curriculumService.addMember(elementAccessDenied, reportViewer, reportViewerRole);
+		curriculumService.addMember(elementAccessDenied, executor, executorRole);
+		QualityDataCollection dcAccessDenied = qualityTestHelper.createDataCollection();
+		dcAccessDenied = qualityService.updateDataCollectionStatus(dcAccessDenied, FINISHED);
+		List<EvaluationFormParticipation> participationsAccessDenied = qualityService.addParticipations(dcAccessDenied, singletonList(executor));
+		qualityService.createContextBuilder(dcAccessDenied, participationsAccessDenied.get(0), elementAccessDenied, executorRole).build();
 		QualityReportAccess raAccessDenied = qualityService.createReportAccess(of(dcAccessDenied), QualityReportAccess.Type.GroupRoles, reportViewerRole.name());
 		raAccessDenied.setOnline(false);
 		qualityService.updateReportAccess(raAccessDenied);

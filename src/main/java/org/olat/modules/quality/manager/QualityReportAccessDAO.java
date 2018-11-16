@@ -19,8 +19,10 @@
  */
 package org.olat.modules.quality.manager;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 
 import javax.persistence.Query;
@@ -142,6 +144,7 @@ class QualityReportAccessDAO {
 		sb.append("delete from qualityreportaccess as reportaccess");
 		sb.and().append("reportaccess.online = false");
 		sb.and().append("reportaccess.emailTrigger = '").append(EmailTrigger.never).append("'");
+		sb.and().append("reportaccess.type <> '").append(Type.ReportMember).append("'");
 		if (reference.getDataCollectionRef() != null) {
 			sb.and().append("reportaccess.dataCollection.key = :dataCollectionKey");
 		}
@@ -245,10 +248,36 @@ class QualityReportAccessDAO {
 		sb.and().append("membership.role = ra.role");
 		sb.and().append("ra.key = :reportAccessKey");
 		
-		return dbInstance.getCurrentEntityManager()
+		List<Identity> coureseMembers = dbInstance.getCurrentEntityManager()
 					.createQuery(sb.toString(), Identity.class)
 					.setParameter("reportAccessKey", reportAccess.getKey())
 					.getResultList();
+		
+		QueryBuilder sbEle = new QueryBuilder();
+		sbEle.append("select membership.identity");
+		sbEle.append("  from qualityreportaccess as ra");
+		sbEle.append("     , qualitydatacollection as collection");
+		sbEle.append("     , qualitycontext as context");
+		sbEle.append("     , curriculumelement as ele");
+		sbEle.append("     , bgroupmember as membership");
+		sbEle.and().append("ra.dataCollection.key = context.dataCollection.key");
+		sbEle.and().append("ele.key = context.audienceCurriculumElement.key");
+		sbEle.and().append("ele.group.key = membership.group.key");
+		sbEle.and().append("membership.role = ra.role");
+		sbEle.and().append("ra.key = :reportAccessKey");
+		
+		List<Identity> curriculumElementMembers = dbInstance.getCurrentEntityManager()
+					.createQuery(sbEle.toString(), Identity.class)
+					.setParameter("reportAccessKey", reportAccess.getKey())
+					.getResultList();
+		
+		HashSet<Identity> all = new HashSet<>();
+		all.addAll(coureseMembers);
+		all.addAll(curriculumElementMembers);
+		
+		List<Identity> allList = new ArrayList<>();
+		allList.addAll(all);
+		return allList;
 	}
 
 	private List<Identity> loadRecipientsOfTopicIdentity(QualityReportAccess reportAccess) {
