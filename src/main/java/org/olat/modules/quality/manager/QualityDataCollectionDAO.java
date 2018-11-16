@@ -420,19 +420,16 @@ public class QualityDataCollectionDAO {
 			if (searchParams.getDataCollectionRef() != null && searchParams.getDataCollectionRef().getKey() != null) {
 				sb.and().append("collection.key = :collectionKey");
 			}
-			if (hasEntries(searchParams.getOrgansationRefs()) || searchParams.getReportAccessIdentity() != null) {
+			// (searchParams.getOrgansationRefs() == null): show all data collections
+			if (searchParams.getOrgansationRefs() != null) {
 				sb.and().append("(");
-				boolean or = false;
-				if (hasEntries(searchParams.getOrgansationRefs())) {
-					sb.append("collection.key in (");
-					sb.append("select collectionToOrganisation.dataCollection.key");
-					sb.append("  from qualitydatacollectiontoorganisation as collectionToOrganisation");
-					sb.append("  where collectionToOrganisation.organisation.key in :organisationKeys");
-					sb.append(")");
-					or = true;
-				}
+				sb.append("collection.key in (");
+				sb.append("select collectionToOrganisation.dataCollection.key");
+				sb.append("  from qualitydatacollectiontoorganisation as collectionToOrganisation");
+				sb.append("  where collectionToOrganisation.organisation.key in :organisationKeys");
+				sb.append(")");
 				if (searchParams.getReportAccessIdentity() != null) {
-					sb.append(" or ", or);
+					sb.append(" or ");
 					sb.append("exists (");
 					sb.append("select collection.key");
 					sb.append("  from qualityreportaccess ra");
@@ -449,8 +446,7 @@ public class QualityDataCollectionDAO {
 					sb.append("   and collection.status = '").append(QualityDataCollectionStatus.FINISHED).append("'");
 					sb.append("   and membership.identity.key = :reportAccessIdentityKey");
 					sb.append(")");
-					or = true;
-					sb.append(" or ", or);
+					sb.append(" or ");
 					sb.append("exists (");
 					sb.append("select collection.key");
 					sb.append("  from qualityreportaccess as ra");
@@ -466,8 +462,7 @@ public class QualityDataCollectionDAO {
 					sb.append("   and ((ra.role is null) or (participation.status = ra.role))");
 					sb.append("   and participation.executor.key = :reportAccessIdentityKey");
 					sb.append(")");
-					or = true;
-					sb.append(" or ", or);
+					sb.append(" or ");
 					sb.append("exists (");
 					sb.append("select collection.key");
 					sb.append("  from qualityreportaccess as ra");
@@ -477,9 +472,7 @@ public class QualityDataCollectionDAO {
 					sb.append("   and collection.status = '").append(QualityDataCollectionStatus.FINISHED).append("'");
 					sb.append("   and collection.topicIdentity.key = :reportAccessIdentityKey");
 					sb.append(")");
-					or = true;
-					or = true;
-					sb.append(" or ", or);
+					sb.append(" or ");
 					sb.append("exists (");
 					sb.append("select collection.key");
 					sb.append("  from qualityreportaccess as ra");
@@ -491,27 +484,22 @@ public class QualityDataCollectionDAO {
 					sb.append("   and collection.status = '").append(QualityDataCollectionStatus.FINISHED).append("'");
 					sb.append("   and membership.identity.key = :reportAccessIdentityKey");
 					sb.append(")");
-					or = true;
 				}
 				sb.append(")");
 			}
 		}
 	}
 
-	private boolean hasEntries(Collection<?> collection) {
-		return collection != null && !collection.isEmpty();
-	}
-	
 	private void appendParameter(TypedQuery<?> query, QualityDataCollectionViewSearchParams searchParams) {
 		if (searchParams != null) {
 			if (searchParams.getDataCollectionRef() != null && searchParams.getDataCollectionRef().getKey() != null) {
 				query.setParameter("collectionKey", searchParams.getDataCollectionRef().getKey());
 			}
-			if (hasEntries(searchParams.getOrgansationRefs()) || searchParams.getReportAccessIdentity() != null) {
-				if (hasEntries(searchParams.getOrgansationRefs())) {
-					List<Long> organiationKeys = searchParams.getOrgansationRefs().stream().map(OrganisationRef::getKey).collect(toList());
-					query.setParameter("organisationKeys", organiationKeys);
-				}
+			// (searchParams.getOrgansationRefs() == null): show all data collections
+			if (searchParams.getOrgansationRefs() != null) {
+				List<Long> organiationKeys = searchParams.getOrgansationRefs().stream().map(OrganisationRef::getKey).collect(toList());
+				organiationKeys = !organiationKeys.isEmpty() ? organiationKeys : Collections.singletonList(-1l);
+				query.setParameter("organisationKeys", organiationKeys);
 				if (searchParams.getReportAccessIdentity() != null) {
 					query.setParameter("reportAccessIdentityKey", searchParams.getReportAccessIdentity().getKey());
 				}

@@ -227,6 +227,41 @@ public class QualityReportAccessDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void shouldDeleteUnappropriate() {
+		QualityDataCollectionRef dc = qualityTestHelper.createDataCollection();
+		QualityReportAccess raAlways = sut.create(of(dc), QualityReportAccess.Type.TopicIdentity, null);
+		raAlways.setEmailTrigger(EmailTrigger.insufficient);
+		sut.save(raAlways);
+		QualityReportAccess raOnline = sut.create(of(dc), QualityReportAccess.Type.TopicIdentity, null);
+		raOnline.setOnline(true);
+		sut.save(raOnline);
+		QualityReportAccess raUnappropriated = sut.create(of(dc), QualityReportAccess.Type.TopicIdentity, null);
+		raUnappropriated.setOnline(false);
+		raUnappropriated.setEmailTrigger(EmailTrigger.never);
+		sut.save(raUnappropriated);
+		QualityDataCollectionRef dcOther = qualityTestHelper.createDataCollection();
+		QualityReportAccess raUnappropriatedOther = sut.create(of(dcOther), QualityReportAccess.Type.TopicIdentity, null);
+		raUnappropriatedOther.setOnline(false);
+		raUnappropriatedOther.setEmailTrigger(EmailTrigger.never);
+		sut.save(raUnappropriatedOther);
+		dbInstance.commitAndCloseSession();
+		
+		sut.deleteUnappropriated(of(dc));
+		dbInstance.commitAndCloseSession();
+		
+		QualityReportAccessSearchParams searchParams = new QualityReportAccessSearchParams();
+		searchParams.setReference(of(dc));
+		List<QualityReportAccess> accesses = sut.load(searchParams);
+		assertThat(accesses)
+				.containsExactlyInAnyOrder(raOnline, raAlways)
+				.doesNotContain(raUnappropriated);
+		
+		searchParams.setReference(of(dcOther));
+		List<QualityReportAccess> accessesOther = sut.load(searchParams);
+		assertThat(accessesOther).containsExactly(raUnappropriatedOther);
+	}
+	
+	@Test
 	public void shouldFilterByDataCollection() {
 		QualityDataCollectionRef dc = qualityTestHelper.createDataCollection();
 		QualityReportAccess access1 = sut.create(of(dc), QualityReportAccess.Type.TopicIdentity, null);

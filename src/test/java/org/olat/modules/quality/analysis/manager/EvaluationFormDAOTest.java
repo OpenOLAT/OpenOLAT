@@ -258,5 +258,59 @@ public class EvaluationFormDAOTest extends OlatTestCase {
 				.extracting(EvaluationFormView::getNumberDataCollections)
 				.containsExactly(expectedNumberDataCollections);
 	}
+	
+	@Test
+	public void shouldFilterByAllOrganisations() {
+		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry otherFormEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Organisation organisation = organisationService.createOrganisation("", "", null, null, null);
+		List<Organisation> organisations = Collections.singletonList(organisation);
+		Organisation otherOrganisation = organisationService.createOrganisation("", "", null, null, null);
+		List<Organisation> otherOrganisations = Collections.singletonList(otherOrganisation);
+		QualityDataCollection dataCollection1 = qualityService.createDataCollection(organisations, formEntry);
+		qualityTestHelper.updateStatus(dataCollection1, QualityDataCollectionStatus.FINISHED);
+		QualityDataCollection dataCollection2 = qualityService.createDataCollection(organisations, formEntry);
+		qualityTestHelper.updateStatus(dataCollection2, QualityDataCollectionStatus.FINISHED);
+		QualityDataCollection dataCollectionOtherOrganisation = qualityService.createDataCollection(otherOrganisations, formEntry);
+		qualityTestHelper.updateStatus(dataCollectionOtherOrganisation, QualityDataCollectionStatus.FINISHED);
+		QualityDataCollection dataCollectionOtherForm = qualityService.createDataCollection(otherOrganisations, otherFormEntry);
+		qualityTestHelper.updateStatus(dataCollectionOtherForm, QualityDataCollectionStatus.FINISHED);
+		qualityService.createDataCollection(organisations, formEntry);
+		dbInstance.commitAndCloseSession();
+		
+		EvaluationFormViewSearchParams searchParams = new EvaluationFormViewSearchParams();
+		searchParams.setOrganisationRefs(null);
+		List<EvaluationFormView> forms = sut.load(searchParams);
+		
+		assertThat(forms)
+				.extracting(EvaluationFormView::getFormEntry)
+				.containsExactlyInAnyOrder(formEntry, otherFormEntry);
+	}
+	
+	@Test
+	public void shouldFilterByNoOrganisations() {
+		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry otherFormEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Organisation organisation = organisationService.createOrganisation("", "", null, null, null);
+		List<Organisation> organisations = Collections.singletonList(organisation);
+		Organisation otherOrganisation = organisationService.createOrganisation("", "", null, null, null);
+		List<Organisation> otherOrganisations = Collections.singletonList(otherOrganisation);
+		QualityDataCollection dataCollection1 = qualityService.createDataCollection(organisations, formEntry);
+		qualityTestHelper.updateStatus(dataCollection1, QualityDataCollectionStatus.FINISHED);
+		QualityDataCollection dataCollection2 = qualityService.createDataCollection(organisations, formEntry);
+		qualityTestHelper.updateStatus(dataCollection2, QualityDataCollectionStatus.FINISHED);
+		QualityDataCollection dataCollectionOtherOrganisation = qualityService.createDataCollection(otherOrganisations, formEntry);
+		qualityTestHelper.updateStatus(dataCollectionOtherOrganisation, QualityDataCollectionStatus.FINISHED);
+		QualityDataCollection dataCollectionOtherForm = qualityService.createDataCollection(otherOrganisations, otherFormEntry);
+		qualityTestHelper.updateStatus(dataCollectionOtherForm, QualityDataCollectionStatus.FINISHED);
+		qualityService.createDataCollection(organisations, formEntry);
+		dbInstance.commitAndCloseSession();
+		
+		EvaluationFormViewSearchParams searchParams = new EvaluationFormViewSearchParams();
+		searchParams.setOrganisationRefs(Collections.emptyList());
+		List<EvaluationFormView> forms = sut.load(searchParams);
+		
+		assertThat(forms).isEmpty();
+	}
 
 }

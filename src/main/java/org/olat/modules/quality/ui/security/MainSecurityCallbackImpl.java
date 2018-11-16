@@ -19,9 +19,11 @@
  */
 package org.olat.modules.quality.ui.security;
 
+import java.util.List;
+
 import org.olat.basesecurity.IdentityRef;
-import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.id.OrganisationRef;
 import org.olat.modules.quality.QualityDataCollectionViewSearchParams;
 import org.olat.modules.quality.QualityExecutorParticipation;
 import org.olat.modules.quality.QualityExecutorParticipationStatus;
@@ -40,7 +42,7 @@ class MainSecurityCallbackImpl implements MainSecurityCallback {
 
 	private final boolean canView;
 	private final boolean canEdit;
-	private OrganisationRoles[] viewerRoles;
+	private List<OrganisationRef> viewerOrganisationRefs;
 	private final QualityDataCollectionViewSearchParams reportAccessParams;
 	private boolean canViewDataCollections;
 	
@@ -49,13 +51,14 @@ class MainSecurityCallbackImpl implements MainSecurityCallback {
 	@Autowired
 	private QualityService qualityService;
 
-	public MainSecurityCallbackImpl(IdentityRef identityRef, boolean canView, boolean canEdit, OrganisationRoles[] viewerRoles) {
+	public MainSecurityCallbackImpl(IdentityRef identityRef, boolean canView, boolean canEdit, List<OrganisationRef> viewerOrganisationRefs) {
 		this.canView = canView;
 		this.canEdit = canEdit;
-		this.viewerRoles = viewerRoles;
+		this.viewerOrganisationRefs = viewerOrganisationRefs;
 		CoreSpringFactory.autowireObject(this);
 		
 		reportAccessParams = new QualityDataCollectionViewSearchParams();
+		reportAccessParams.setOrgansationRefs(viewerOrganisationRefs);
 		reportAccessParams.setReportAccessIdentity(identityRef);
 	}
 
@@ -85,8 +88,8 @@ class MainSecurityCallbackImpl implements MainSecurityCallback {
 	}
 
 	@Override
-	public OrganisationRoles[] getViewDataCollectionRoles() {
-		return viewerRoles;
+	public List<OrganisationRef> getViewDataCollectionOrganisationRefs() {
+		return viewerOrganisationRefs;
 	}
 
 	@Override
@@ -100,6 +103,11 @@ class MainSecurityCallbackImpl implements MainSecurityCallback {
 	}
 
 	@Override
+	public List<OrganisationRef> getViewGeneratorOrganisationRefs() {
+		return viewerOrganisationRefs;
+	}
+
+	@Override
 	public boolean canCreateGenerators() {
 		return canCreateDataCollections();
 	}
@@ -110,13 +118,13 @@ class MainSecurityCallbackImpl implements MainSecurityCallback {
 	}
 
 	@Override
-	public OrganisationRoles[] getViewAnalysisRoles() {
-		return viewerRoles;
+	public List<OrganisationRef> getViewAnalysisOrganisationRefs() {
+		return viewerOrganisationRefs;
 	}
 
 	@Override
-	public OrganisationRoles[] getViewPresentationRoles() {
-		return viewerRoles;
+	public List<OrganisationRef> getViewPresentationOrganisationRefs() {
+		return viewerOrganisationRefs;
 	}
 
 	@Override

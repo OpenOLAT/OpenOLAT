@@ -19,7 +19,9 @@
  */
 package org.olat.modules.quality.ui.security;
 
-import org.olat.basesecurity.OrganisationRoles;
+import java.util.List;
+
+import org.olat.core.id.OrganisationRef;
 import org.olat.modules.quality.QualityExecutorParticipation;
 import org.olat.modules.quality.analysis.AnalysisPresentation;
 
@@ -37,19 +39,21 @@ public interface MainSecurityCallback {
 
 	public boolean canViewDataCollections();
 	
-	public OrganisationRoles[] getViewDataCollectionRoles();
+	public List<OrganisationRef> getViewDataCollectionOrganisationRefs();
 	
 	public boolean canCreateDataCollections();
 	
 	public boolean canViewGenerators();
 	
+	public List<OrganisationRef> getViewGeneratorOrganisationRefs();
+	
 	public boolean canCreateGenerators();
 
 	public boolean canViewAnalysis();
 	
-	public OrganisationRoles[] getViewAnalysisRoles();
+	public List<OrganisationRef> getViewAnalysisOrganisationRefs();
 	
-	public OrganisationRoles[] getViewPresentationRoles();
+	public List<OrganisationRef> getViewPresentationOrganisationRefs();
 	
 	public boolean canEditPresentations();
 

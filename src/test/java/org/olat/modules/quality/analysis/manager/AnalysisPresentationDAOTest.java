@@ -22,6 +22,7 @@ package org.olat.modules.quality.analysis.manager;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.assertj.core.api.SoftAssertions;
@@ -212,6 +213,65 @@ public class AnalysisPresentationDAOTest extends OlatTestCase {
 		assertThat(presentations)
 				.containsExactlyInAnyOrder(presentation1, presentation2)
 				.doesNotContain(presentationOther);
+	}
+
+	@Test
+	public void shouldFilterByAllOrganisations() {
+		// Create a form with a presentation
+		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		AnalysisPresentation presentation1 = sut.create(formEntry);
+		presentation1 = sut.save(presentation1);
+		Organisation organisation1 = testHelper.createOrganisation();
+		testHelper.createDataCollection(organisation1, formEntry);
+		// Add the form to a data collection of an other organisation to test distinct
+		Organisation organisation2 = testHelper.createOrganisation();
+		testHelper.createDataCollection(organisation2, formEntry);
+		// Create a second presentation of the same form
+		AnalysisPresentation presentation2 = sut.create(formEntry);
+		presentation2 = sut.save(presentation2);
+		// Create a second form with an other organisation
+		RepositoryEntry formEntryOther = JunitTestHelper.createAndPersistRepositoryEntry();
+		AnalysisPresentation presentationOther = sut.create(formEntryOther);
+		presentationOther = sut.save(presentationOther);
+		Organisation organisationOther = testHelper.createOrganisation();
+		testHelper.createDataCollection(organisationOther, formEntryOther);
+		dbInstance.commitAndCloseSession();
+		
+		AnalysisPresentationSearchParameter searchParams = new AnalysisPresentationSearchParameter();
+		searchParams.setOrganisationRefs(null);
+		List<AnalysisPresentation> presentations = sut.load(searchParams);
+		
+		assertThat(presentations)
+				.containsExactlyInAnyOrder(presentation1, presentation2, presentationOther);
+	}
+	
+	@Test
+	public void shouldFilterByNoOrganisations() {
+		// Create a form with a presentation
+		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		AnalysisPresentation presentation1 = sut.create(formEntry);
+		presentation1 = sut.save(presentation1);
+		Organisation organisation1 = testHelper.createOrganisation();
+		testHelper.createDataCollection(organisation1, formEntry);
+		// Add the form to a data collection of an other organisation to test distinct
+		Organisation organisation2 = testHelper.createOrganisation();
+		testHelper.createDataCollection(organisation2, formEntry);
+		// Create a second presentation of the same form
+		AnalysisPresentation presentation2 = sut.create(formEntry);
+		presentation2 = sut.save(presentation2);
+		// Create a second form with an other organisation
+		RepositoryEntry formEntryOther = JunitTestHelper.createAndPersistRepositoryEntry();
+		AnalysisPresentation presentationOther = sut.create(formEntryOther);
+		presentationOther = sut.save(presentationOther);
+		Organisation organisationOther = testHelper.createOrganisation();
+		testHelper.createDataCollection(organisationOther, formEntryOther);
+		dbInstance.commitAndCloseSession();
+		
+		AnalysisPresentationSearchParameter searchParams = new AnalysisPresentationSearchParameter();
+		searchParams.setOrganisationRefs(Collections.emptyList());
+		List<AnalysisPresentation> presentations = sut.load(searchParams);
+		
+		assertThat(presentations).isEmpty();
 	}
 	
 	@Test

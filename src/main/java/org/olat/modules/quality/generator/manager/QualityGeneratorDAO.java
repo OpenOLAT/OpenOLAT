@@ -21,6 +21,7 @@ package org.olat.modules.quality.generator.manager;
 
 import static java.util.stream.Collectors.toList;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -136,7 +137,7 @@ public class QualityGeneratorDAO {
 			if (searchParams.getGeneratorRefs() != null && !searchParams.getGeneratorRefs().isEmpty()) {
 				sb.append(" and generator.key in :generatorKeys");
 			}
-			if (searchParams.getOrganisationRefs() != null && !searchParams.getOrganisationRefs().isEmpty()) {
+			if (searchParams.getOrganisationRefs() != null) {
 				sb.append(" and generator.key in (");
 				sb.append("     select generatorToOrganisation.generator.key");
 				sb.append("       from qualitygeneratortoorganisation as generatorToOrganisation");
@@ -156,8 +157,9 @@ public class QualityGeneratorDAO {
 				List<Long> generatorKeys = searchParams.getGeneratorRefs().stream().map(QualityGeneratorRef::getKey).collect(toList());
 				query.setParameter("generatorKeys", generatorKeys);
 			}
-			if (searchParams.getOrganisationRefs() != null && !searchParams.getOrganisationRefs().isEmpty()) {
+			if (searchParams.getOrganisationRefs() != null) {
 				List<Long> organiationKeys = searchParams.getOrganisationRefs().stream().map(OrganisationRef::getKey).collect(toList());
+				organiationKeys = !organiationKeys.isEmpty()? organiationKeys: Collections.singletonList(-1l);
 				query.setParameter("organisationKeys", organiationKeys);
 			}
 			if (StringHelper.containsNonWhitespace(searchParams.getProviderType())) {

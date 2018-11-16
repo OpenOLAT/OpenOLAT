@@ -21,7 +21,6 @@ package org.olat.modules.quality.manager;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
-import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.olat.modules.quality.QualityDataCollectionStatus.FINISHED;
 import static org.olat.modules.quality.QualityDataCollectionStatus.PREPARATION;
@@ -539,10 +538,40 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 		searchParams.setOrgansationRefs(Collections.singletonList(organisation));
 		List<QualityDataCollectionView> dataCollections = sut.loadDataCollections(TRANSLATOR, searchParams, 0, -1);
 		
-		List<Long> loadedKeys = dataCollections.stream().map(QualityDataCollectionView::getKey).collect(toList());
-		assertThat(loadedKeys)
+		assertThat(dataCollections)
+				.extracting(QualityDataCollectionView::getKey)
 				.containsExactlyInAnyOrder(dataCollection1.getKey(), dataCollection2.getKey())
 				.doesNotContain(otherDataCollection.getKey());
+	}
+	
+	@Test
+	public void shouldFilterDataCollectionsByAllOrganisations() {
+		Organisation organisation = qualityTestHelper.createOrganisation();
+		QualityDataCollection dataCollection1 = qualityTestHelper.createDataCollection(organisation);
+		QualityDataCollection dataCollection2 = qualityTestHelper.createDataCollection(organisation);
+		QualityDataCollection otherDataCollection = qualityTestHelper.createDataCollection();
+		dbInstance.commitAndCloseSession();
+
+		QualityDataCollectionViewSearchParams searchParams = new QualityDataCollectionViewSearchParams();
+		List<QualityDataCollectionView> dataCollections = sut.loadDataCollections(TRANSLATOR, searchParams, 0, -1);
+		
+		assertThat(dataCollections).extracting(QualityDataCollectionView::getKey)
+				.containsExactlyInAnyOrder(dataCollection1.getKey(), dataCollection2.getKey(), otherDataCollection.getKey());
+	}
+	
+	@Test
+	public void shouldFilterDataCollectionsByNoOrganisations() {
+		Organisation organisation = qualityTestHelper.createOrganisation();
+		qualityTestHelper.createDataCollection(organisation);
+		qualityTestHelper.createDataCollection(organisation);
+		qualityTestHelper.createDataCollection();
+		dbInstance.commitAndCloseSession();
+
+		QualityDataCollectionViewSearchParams searchParams = new QualityDataCollectionViewSearchParams();
+		searchParams.setOrgansationRefs(Collections.emptyList());
+		List<QualityDataCollectionView> dataCollections = sut.loadDataCollections(TRANSLATOR, searchParams, 0, -1);
+		
+		assertThat(dataCollections).isEmpty();
 	}
 	
 	@Test
@@ -621,8 +650,8 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 		searchParams.setReportAccessIdentity(reportViewer);
 		List<QualityDataCollectionView> dataCollections = sut.loadDataCollections(TRANSLATOR, searchParams, 0, -1);
 		
-		List<Long> loadedKeys = dataCollections.stream().map(QualityDataCollectionView::getKey).collect(toList());
-		assertThat(loadedKeys)
+		assertThat(dataCollections)
+				.extracting(QualityDataCollectionView::getKey)
 				.containsExactlyInAnyOrder(dc.getKey())
 				.doesNotContain(
 						dcOtherRole.getKey(),
@@ -680,11 +709,12 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		QualityDataCollectionViewSearchParams searchParams = new QualityDataCollectionViewSearchParams();
+		searchParams.setOrgansationRefs(Collections.emptyList());
 		searchParams.setReportAccessIdentity(executor);
 		List<QualityDataCollectionView> dataCollections = sut.loadDataCollections(TRANSLATOR, searchParams, 0, -1);
 		
-		List<Long> loadedKeys = dataCollections.stream().map(QualityDataCollectionView::getKey).collect(toList());
-		assertThat(loadedKeys)
+		assertThat(dataCollections)
+				.extracting(QualityDataCollectionView::getKey)
 				.containsExactlyInAnyOrder(dc.getKey())
 				.doesNotContain(
 						dcSessionNotFinished.getKey(),
@@ -740,11 +770,12 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		QualityDataCollectionViewSearchParams searchParams = new QualityDataCollectionViewSearchParams();
+		searchParams.setOrgansationRefs(Collections.emptyList());
 		searchParams.setReportAccessIdentity(executor);
 		List<QualityDataCollectionView> dataCollections = sut.loadDataCollections(TRANSLATOR, searchParams, 0, -1);
 		
-		List<Long> loadedKeys = dataCollections.stream().map(QualityDataCollectionView::getKey).collect(toList());
-		assertThat(loadedKeys)
+		assertThat(dataCollections)
+				.extracting(QualityDataCollectionView::getKey)
 				.containsExactlyInAnyOrder(
 						dc.getKey(),
 						dcSessionNotFinished.getKey())
@@ -798,11 +829,12 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		QualityDataCollectionViewSearchParams searchParams = new QualityDataCollectionViewSearchParams();
+		searchParams.setOrgansationRefs(Collections.emptyList());
 		searchParams.setReportAccessIdentity(coach);
 		List<QualityDataCollectionView> dataCollections = sut.loadDataCollections(TRANSLATOR, searchParams, 0, -1);
 		
-		List<Long> loadedKeys = dataCollections.stream().map(QualityDataCollectionView::getKey).collect(toList());
-		assertThat(loadedKeys)
+		assertThat(dataCollections)
+				.extracting(QualityDataCollectionView::getKey)
 				.containsExactlyInAnyOrder(
 						dc.getKey())
 				.doesNotContain(
@@ -847,11 +879,12 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		QualityDataCollectionViewSearchParams searchParams = new QualityDataCollectionViewSearchParams();
+		searchParams.setOrgansationRefs(Collections.emptyList());
 		searchParams.setReportAccessIdentity(member);
 		List<QualityDataCollectionView> dataCollections = sut.loadDataCollections(TRANSLATOR, searchParams, 0, -1);
 		
-		List<Long> loadedKeys = dataCollections.stream().map(QualityDataCollectionView::getKey).collect(toList());
-		assertThat(loadedKeys)
+		assertThat(dataCollections)
+				.extracting(QualityDataCollectionView::getKey)
 				.containsExactlyInAnyOrder(
 						dc.getKey())
 				.doesNotContain(

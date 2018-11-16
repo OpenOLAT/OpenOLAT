@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.olat.basesecurity.OrganisationService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -36,7 +35,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.id.Organisation;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -82,8 +80,6 @@ public class QualityHomeController extends BasicController implements Activateab
 	
 	@Autowired
 	private QualityAnalysisService analysisService;
-	@Autowired
-	private OrganisationService organisationService;
 	
 	public QualityHomeController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, MainSecurityCallback secCallback) {
 		super(ureq, wControl);
@@ -93,11 +89,11 @@ public class QualityHomeController extends BasicController implements Activateab
 		this.secCallback = secCallback;
 		
 		mainVC = createVelocityContainer("home");
-		createPanels(ureq);
+		createPanels();
 		putInitialPanel(mainVC);
 	}
 
-	private void createPanels(UserRequest ureq) {
+	private void createPanels() {
 		List<PanelWrapper> wrappers = new ArrayList<>(4);
 		executorParticipationLink = LinkFactory.createLink("goto.executor.participation.link", mainVC, this);
 		executorParticipationLink.setIconRightCSS("o_icon o_icon_start");
@@ -128,7 +124,7 @@ public class QualityHomeController extends BasicController implements Activateab
 		if (secCallback.canViewAnalysis()) {
 			analysisLink = LinkFactory.createLink("goto.analysis.link", mainVC, this);
 			analysisLink.setIconRightCSS("o_icon o_icon_start");
-			analysisPresenatationLinks = getAnalysisPresentationLinks(ureq);
+			analysisPresenatationLinks = getAnalysisPresentationLinks();
 			wrappers.add(new PanelWrapper(translate("goto.analysis.title"),
 					translate("goto.analysis.help"), analysisLink, analysisPresenatationLinks));
 		}
@@ -136,12 +132,10 @@ public class QualityHomeController extends BasicController implements Activateab
 		mainVC.contextPut("panels", wrappers);
 	}
 	
-	private List<Component> getAnalysisPresentationLinks(UserRequest ureq) {
+	private List<Component> getAnalysisPresentationLinks() {
 		int counter = 0;
-		List<Organisation> organisations = organisationService.getOrganisations(getIdentity(),
-				ureq.getUserSession().getRoles(), secCallback.getViewPresentationRoles());
 		AnalysisPresentationSearchParameter searchParams = new AnalysisPresentationSearchParameter();
-		searchParams.setOrganisationRefs(organisations);
+		searchParams.setOrganisationRefs(secCallback.getViewPresentationOrganisationRefs());
 		List<AnalysisPresentation> presentations = analysisService.loadPresentations(searchParams);
 		List<Component> links = new ArrayList<>(presentations.size());
 		for (AnalysisPresentation presentation : presentations) {
@@ -177,7 +171,7 @@ public class QualityHomeController extends BasicController implements Activateab
 			List<ContextEntry> subEntries = entries.subList(1, entries.size());
 			dataCollectionListCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
 			if (dataCollectionLink == null) {
-				createPanels(ureq);
+				createPanels();
 			}
 		} else if (ORES_GENERATORS_TYPE.equalsIgnoreCase(resource.getResourceableTypeName())
 				&& secCallback.canViewGenerators()) {
@@ -219,7 +213,7 @@ public class QualityHomeController extends BasicController implements Activateab
 			doOpenPresentation(ureq, presentation);
 		} else if (stackPanel == source && stackPanel.getLastController() == this && event instanceof PopEvent) {
 			// Recreate panes to refresh the analysis presentations
-			createPanels(ureq);
+			createPanels();
 		}
 	}
 
