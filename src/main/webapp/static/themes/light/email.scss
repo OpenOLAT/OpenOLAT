@@ -22,15 +22,14 @@
 
 	.o_email_content {
 		margin: $o-email-content-margin;
-		padding: $o-email-content-padding;
+		padding-left: $o-email-content-padding-left;
 		
 		h1 {
 			background-color: $o-email-content-h1-bg;
 			color: $o-email-content-h1-color;
-			padding: 20px $o-email-content-padding;
+			padding: 20px 0 20px $o-email-content-padding-left;
 			margin-bottom: 30px;
-			margin-left: -$o-email-content-padding;
-			margin-right: -$o-email-content-padding;
+			margin-left: -$o-email-content-padding-left;
 			font-size: x-large;
 		}
 		
