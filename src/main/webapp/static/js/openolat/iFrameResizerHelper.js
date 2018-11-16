@@ -10,6 +10,8 @@ function registerIFrame(iFrameId) {
 			if (debugIFRH) console.log("iFrame %s registered.", iFrameId);
 			iframe.style.overflow = "hidden";
 			iframe.scrolling = "no";
+			// only needed for IE11 but seams to not brake other browsers
+			iframe.contentDocument.body.scroll = "no";
 		},
 		resizedCallback: function() {
 			OPOL.adjustHeight()
