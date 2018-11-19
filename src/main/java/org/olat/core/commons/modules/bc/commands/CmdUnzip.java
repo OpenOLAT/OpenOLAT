@@ -48,6 +48,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.VFSConstants;
@@ -68,11 +69,12 @@ public class CmdUnzip extends BasicController implements FolderCommand {
 		super(ureq, wControl);
 	}
 	
+	@Override
 	public Controller execute(FolderComponent folderComponent, UserRequest ureq, WindowControl wContr, Translator trans) {
 		this.translator = trans;
 		FileSelection selection = new FileSelection(ureq, folderComponent.getCurrentContainerPath());
 		VFSContainer currentContainer = folderComponent.getCurrentContainer();
-		if (!(currentContainer.canWrite() == VFSConstants.YES))
+		if (currentContainer.canWrite() != VFSConstants.YES)
 			throw new AssertException("Cannot unzip to folder. Writing denied.");
 			
 	  //check if command is executed on a file containing invalid filenames or paths - checks if the resulting folder has a valid name
@@ -81,7 +83,7 @@ public class CmdUnzip extends BasicController implements FolderCommand {
 			return null;
 		}		
 		
-		List<String> lockedFiles = new ArrayList<String>();
+		List<String> lockedFiles = new ArrayList<>();
 		for (String sItem:selection.getFiles()) {
 			VFSItem vfsItem = currentContainer.resolve(sItem);
 			if (vfsItem instanceof VFSLeaf) {
@@ -181,7 +183,19 @@ public class CmdUnzip extends BasicController implements FolderCommand {
 		VFSContainer zipContainer = currentContainer.createChildContainer(sZipContainer);
 		if (zipContainer == null) {
 			if(versioning) {
-				zipContainer =(VFSContainer)currentContainer.resolve(sZipContainer);
+				VFSItem resolvedItem = currentContainer.resolve(sZipContainer);
+				if(resolvedItem instanceof VFSContainer) {
+					zipContainer = (VFSContainer)resolvedItem;
+				} else {
+					String numberedFilename = findContainerName(currentContainer, sZipContainer);
+					if(StringHelper.containsNonWhitespace(numberedFilename)) {
+						zipContainer = currentContainer.createChildContainer(numberedFilename);
+					}
+					if(zipContainer == null) {// we try our best
+						wControl.setError(translator.translate("unzip.alreadyexists", new String[] {sZipContainer}));
+						return false;
+					}
+				}
 			} else {
 				// folder already exists... issue warning
 				wControl.setError(translator.translate("unzip.alreadyexists", new String[] {sZipContainer}));
@@ -211,6 +225,19 @@ public class CmdUnzip extends BasicController implements FolderCommand {
 			}
 		}
 		return true;
+	}
+	
+	private String findContainerName(VFSContainer container, String filename) {
+		String newName = filename;
+		VFSItem newFile = container.resolve(newName);
+		for(int count=1; newFile != null && count < 999 ; count++) {
+			newName = filename + "_" + count;
+		    newFile = container.resolve(newName);
+		}
+		if(newFile == null) {
+			return newName;
+		}
+		return null;
 	}
 
 	@Override
