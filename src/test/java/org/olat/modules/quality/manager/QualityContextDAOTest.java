@@ -21,19 +21,25 @@ package org.olat.modules.quality.manager;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.assertj.core.api.SoftAssertions;
 import org.junit.Before;
 import org.junit.Test;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.id.Identity;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.quality.QualityContext;
 import org.olat.modules.quality.QualityContextRole;
 import org.olat.modules.quality.QualityDataCollection;
+import org.olat.modules.quality.QualityService;
 import org.olat.repository.RepositoryEntry;
+import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -49,6 +55,8 @@ public class QualityContextDAOTest extends OlatTestCase {
 	private DB dbInstance;
 	@Autowired
 	private QualityTestHelper qualityTestHelper;
+	@Autowired
+	private QualityService qualityService;
 	
 	@Autowired
 	private QualityContextDAO sut;
@@ -202,6 +210,7 @@ public class QualityContextDAOTest extends OlatTestCase {
 		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
 		EvaluationFormParticipation evaluationFormParticipation = qualityTestHelper.createParticipation();
 		sut.createContext(dataCollection, evaluationFormParticipation, null, null, null, null);
+		dbInstance.commitAndCloseSession();
 		
 		boolean hasContexts = sut.hasContexts(evaluationFormParticipation);
 
@@ -211,8 +220,67 @@ public class QualityContextDAOTest extends OlatTestCase {
 	@Test
 	public void shouldCheckWhetherParticipationHasNoContexts() {
 		EvaluationFormParticipation evaluationFormParticipation = qualityTestHelper.createParticipation();
+		dbInstance.commitAndCloseSession();
 		
 		boolean hasContexts = sut.hasContexts(evaluationFormParticipation);
+
+		assertThat(hasContexts).isFalse();
+	}
+	
+	@Test
+	public void shouldCheckWhetherRepositoryEntryHasContexts() {
+		Identity executor = JunitTestHelper.createAndPersistIdentityAsRndUser("er");
+		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
+		List<EvaluationFormParticipation> participations = qualityService.addParticipations(dataCollection, Collections.singletonList(executor));
+		RepositoryEntry entry = qualityTestHelper.createRepositoryEntry();
+		qualityService.createContextBuilder(dataCollection, participations.get(0), entry, GroupRoles.owner).build();
+		dbInstance.commitAndCloseSession();
+		
+		boolean hasContexts = sut.hasContexts(entry);
+
+		assertThat(hasContexts).isTrue();
+	}
+
+	@Test
+	public void shouldCheckWhetherRepositoryEntryHasNoContexts() {
+		Identity executor = JunitTestHelper.createAndPersistIdentityAsRndUser("er");
+		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
+		List<EvaluationFormParticipation> participations = qualityService.addParticipations(dataCollection, Collections.singletonList(executor));
+		RepositoryEntry entry = qualityTestHelper.createRepositoryEntry();
+		qualityService.createContextBuilder(dataCollection, participations.get(0), entry, GroupRoles.owner).build();
+		RepositoryEntry entryOther = qualityTestHelper.createRepositoryEntry();
+		dbInstance.commitAndCloseSession();
+		
+		boolean hasContexts = sut.hasContexts(entryOther);
+
+		assertThat(hasContexts).isFalse();
+	}
+	
+	@Test
+	public void shouldCheckWhetherCurriculumElementHasContexts() {
+		Identity executor = JunitTestHelper.createAndPersistIdentityAsRndUser("er");
+		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
+		List<EvaluationFormParticipation> participations = qualityService.addParticipations(dataCollection, Collections.singletonList(executor));
+		CurriculumElement element = qualityTestHelper.createCurriculumElement();
+		qualityService.createContextBuilder(dataCollection, participations.get(0), element, CurriculumRoles.owner).build();
+		dbInstance.commitAndCloseSession();
+		
+		boolean hasContexts = sut.hasContexts(element);
+
+		assertThat(hasContexts).isTrue();
+	}
+
+	@Test
+	public void shouldCheckWhetherCurriculumElementHasNoContexts() {
+		Identity executor = JunitTestHelper.createAndPersistIdentityAsRndUser("er");
+		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
+		List<EvaluationFormParticipation> participations = qualityService.addParticipations(dataCollection, Collections.singletonList(executor));
+		CurriculumElement element = qualityTestHelper.createCurriculumElement();
+		qualityService.createContextBuilder(dataCollection, participations.get(0), element, CurriculumRoles.owner).build();
+		CurriculumElement elementOther = qualityTestHelper.createCurriculumElement();
+		dbInstance.commitAndCloseSession();
+		
+		boolean hasContexts = sut.hasContexts(elementOther);
 
 		assertThat(hasContexts).isFalse();
 	}

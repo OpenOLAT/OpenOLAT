@@ -51,6 +51,7 @@ import org.olat.modules.quality.QualityReportAccess;
 import org.olat.modules.quality.generator.QualityGenerator;
 import org.olat.modules.quality.model.QualityDataCollectionImpl;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
+import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -285,6 +286,20 @@ public class QualityDataCollectionDAO {
 				.createQuery(sb.toString())
 				.setParameter("collectionKey", dataCollectionRef.getKey())
 				.executeUpdate();
+	}
+	
+	boolean hasDataCollection(RepositoryEntryRef entryRef) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select collection.key from qualitydatacollection as collection")
+		  .append(" where collection.topicRepositoryEntry.key=:entryKey");
+		
+		List<Long> keys = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("entryKey", entryRef.getKey())
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return keys != null && !keys.isEmpty() && keys.get(0) != null;
 	}
 	
 	boolean hasDataCollection(OrganisationRef organisation) {

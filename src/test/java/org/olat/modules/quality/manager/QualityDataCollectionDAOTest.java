@@ -288,6 +288,30 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void shouldCheckIfHasARelationToRepositoryEntry() {
+		RepositoryEntry entry = qualityTestHelper.createRepositoryEntry();
+		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
+		dataCollection.setTopicRepositoryEntry(entry);
+		qualityService.updateDataCollection(dataCollection);
+		dbInstance.commitAndCloseSession();
+		
+		boolean hasDataCollection = sut.hasDataCollection(entry);
+		
+		assertThat(hasDataCollection).isTrue();
+	}
+	
+	@Test
+	public void shouldCheckIfHasNoRelationToRepositoryEntry() {
+		RepositoryEntry entry = qualityTestHelper.createRepositoryEntry();
+		qualityTestHelper.createDataCollection();
+		dbInstance.commitAndCloseSession();
+		
+		boolean hasDataCollection = sut.hasDataCollection(entry);
+		
+		assertThat(hasDataCollection).isFalse();
+	}
+	
+	@Test
 	public void shouldCheckIfHasARelationToOrganisation() {
 		Organisation organisation = qualityTestHelper.createOrganisation();
 		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();

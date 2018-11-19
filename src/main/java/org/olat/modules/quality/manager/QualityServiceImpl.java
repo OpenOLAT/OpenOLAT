@@ -94,6 +94,7 @@ import org.olat.modules.quality.QualityService;
 import org.olat.modules.quality.generator.QualityGenerator;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryDataDeletable;
 import org.olat.resource.OLATResourceManager;
 import org.olat.resource.references.Reference;
 import org.olat.resource.references.ReferenceManager;
@@ -108,7 +109,7 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class QualityServiceImpl
-		implements QualityService, OrganisationDataDeletable, CurriculumDataDeletable, SessionStatusHandler {
+		implements QualityService, RepositoryEntryDataDeletable, OrganisationDataDeletable, CurriculumDataDeletable, SessionStatusHandler {
 
 	private static final OLog log = Tracing.createLoggerFor(QualityServiceImpl.class);
 	
@@ -578,9 +579,13 @@ public class QualityServiceImpl
 		return evaluationFormManager.loadParticipations(survey, status);
 	}
 
-	/**
-	 * If the organisation has relations to a context, send a veto.
-	 */
+
+	@Override
+	public boolean deleteRepositoryEntryData(RepositoryEntry re) {
+		return !dataCollectionDao.hasDataCollection(re)
+				&& !contextDao.hasContexts(re);
+	}
+
 	@Override
 	public boolean deleteOrganisationData(Organisation organisation) {
 		return !dataCollectionDao.hasDataCollection(organisation)
