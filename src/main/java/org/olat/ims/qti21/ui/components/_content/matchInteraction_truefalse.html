@@ -46,7 +46,8 @@
 				formDispatchFieldId: '$r.formDispatchFieldId',
 				maxAssociations: $interaction.maxAssociations,
 				leftData: {#foreach($choice1 in $orderedSet1) #if($foreach.count > 1),#end $choice1.identifier:$choice1.matchMax #end},
-				rightData: {#foreach($choice2 in $orderedSet2) #if($foreach.count > 1),#end $choice2.identifier:$choice2.matchMax #end}
+				rightData: {#foreach($choice2 in $orderedSet2) #if($foreach.count > 1),#end $choice2.identifier:$choice2.matchMax #end},
+				unansweredColumn: 'o_match_true_false_unanswered'
 			});
 		});
         </script>
