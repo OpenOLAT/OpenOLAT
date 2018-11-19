@@ -136,8 +136,8 @@ public class QualityUIContextsDataCollectionBuilder extends QualityUIContextsBui
 		return contexts.stream()
 				.map(QualityContext::getRole)
 				.distinct()
-				.filter(Objects::nonNull)
 				.map(this::translateRole)
+				.filter(Objects::nonNull)
 				.collect(Collectors.joining(DELIMITER));
 	}
 	
@@ -146,7 +146,7 @@ public class QualityUIContextsDataCollectionBuilder extends QualityUIContextsBui
 		case owner: return translator.translate("participation.role.owner");
 		case coach: return translator.translate("participation.role.coach");
 		case participant: return translator.translate("participation.role.participant");
-		default: return "";
+		default: return null;
 		}
 	}
 	
