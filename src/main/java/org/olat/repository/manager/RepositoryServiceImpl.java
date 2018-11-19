@@ -79,6 +79,7 @@ import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryAllowToLeaveOptions;
 import org.olat.repository.RepositoryEntryAuthorView;
+import org.olat.repository.RepositoryEntryDataDeletable;
 import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryRelationType;
@@ -556,8 +557,12 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		dbInstance.commit();
 		
 		// has a delete veto?
-		boolean hasVetoRelations = reToGroupDao.hasRelationsInQualityManagement(reloadedEntry);
-		if(hasVetoRelations) {
+		boolean delete = true;
+		Map<String,RepositoryEntryDataDeletable> deleteDelegates = CoreSpringFactory.getBeansOfType(RepositoryEntryDataDeletable.class);
+		for(RepositoryEntryDataDeletable delegate:deleteDelegates.values()) {
+			delete &= delegate.deleteRepositoryEntryData(reloadedEntry);
+		}
+		if(delete) {
 			dbInstance.getCurrentEntityManager().remove(reloadedEntry);
 			if(defaultGroup != null) {
 				groupDao.removeGroup(defaultGroup);
