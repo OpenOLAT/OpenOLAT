@@ -132,7 +132,12 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 				int hour, minute;
 				Date currentDate = jsdcc.getDate();
 				if(currentDate == null) {
-					hour = minute = 0;
+					if(jsdcc.isDefaultTimeAtEndOfDay()) {
+						hour = 23;
+						minute = 59;
+					} else {
+						hour = minute = 0;
+					}
 				} else {
 					Calendar cal = Calendar.getInstance();
 					cal.setTime(currentDate);

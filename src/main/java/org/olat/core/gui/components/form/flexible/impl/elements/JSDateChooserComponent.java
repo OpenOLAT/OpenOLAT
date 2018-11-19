@@ -93,6 +93,10 @@ class JSDateChooserComponent extends FormBaseComponentImpl {
 	public boolean isDateChooserTimeEnabled() {
 		return element.isDateChooserTimeEnabled();
 	}
+	
+	public boolean isDefaultTimeAtEndOfDay() {
+		return element.isDefaultTimeAtEndOfDay();
+	}
 
 	public Translator getElementTranslator() {
 		return element.getTranslator();

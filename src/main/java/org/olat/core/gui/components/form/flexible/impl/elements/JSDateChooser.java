@@ -61,6 +61,7 @@ public class JSDateChooser extends TextElementImpl implements DateChooser {
 
 	private Locale locale;
 	private boolean dateChooserTimeEnabled;
+	private boolean defaultTimeAtEndOfDay;
 	private String forValidDateErrorKey;
 	private boolean checkForValidDate;
 	private int minute;
@@ -236,6 +237,15 @@ public class JSDateChooser extends TextElementImpl implements DateChooser {
 	 */
 	public void setDateChooserTimeEnabled(boolean dateChooserTimeEnabled) {
 		this.dateChooserTimeEnabled = dateChooserTimeEnabled;
+	}
+
+	public boolean isDefaultTimeAtEndOfDay() {
+		return defaultTimeAtEndOfDay;
+	}
+
+	@Override
+	public void setDefaultTimeAtEndOfDay(boolean defaultTimeAtEndOfDay) {
+		this.defaultTimeAtEndOfDay = defaultTimeAtEndOfDay;
 	}
 
 	/* (non-Javadoc)
