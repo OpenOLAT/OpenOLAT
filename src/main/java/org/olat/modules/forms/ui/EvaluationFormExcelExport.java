@@ -50,6 +50,7 @@ import org.olat.modules.forms.model.xml.Choice;
 import org.olat.modules.forms.model.xml.Disclaimer;
 import org.olat.modules.forms.model.xml.FileUpload;
 import org.olat.modules.forms.model.xml.Form;
+import org.olat.modules.forms.model.xml.HTMLParagraph;
 import org.olat.modules.forms.model.xml.HTMLRaw;
 import org.olat.modules.forms.model.xml.MultipleChoice;
 import org.olat.modules.forms.model.xml.Rubric;
@@ -150,6 +151,9 @@ public class EvaluationFormExcelExport {
 			case Title.TYPE:
 				addTitle(workbook, exportSheet, (Title) element);
 				break;
+			case HTMLParagraph.TYPE:
+				addHtmlParagraph(workbook, exportSheet, (HTMLParagraph) element);
+				break;
 			case HTMLRaw.TYPE:
 				addHtmlRaw(workbook, exportSheet, (HTMLRaw) element);
 				break;
@@ -185,6 +189,12 @@ public class EvaluationFormExcelExport {
 
 	private void addTitle(OpenXMLWorkbook workbook, OpenXMLWorksheet exportSheet, Title title) {
 		String content = title.getContent();
+		content = FilterFactory.getHtmlTagAndDescapingFilter().filter(content);
+		exportSheet.newRow().addCell(0, content, workbook.getStyles().getTopAlignStyle());
+	}
+
+	private void addHtmlParagraph(OpenXMLWorkbook workbook, OpenXMLWorksheet exportSheet, HTMLParagraph htmlParagraph) {
+		String content = htmlParagraph.getContent();
 		content = FilterFactory.getHtmlTagAndDescapingFilter().filter(content);
 		exportSheet.newRow().addCell(0, content, workbook.getStyles().getTopAlignStyle());
 	}
