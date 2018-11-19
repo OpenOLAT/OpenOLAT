@@ -254,7 +254,7 @@ public class QualityServiceImpl
 	}
 
 	@Override
-	public void stopDataCollections(Date until) {
+	public void startDataCollection(Date until) {
 		Collection<QualityDataCollection> dataCollections = dataCollectionDao.loadWithPendingStart(until);
 		log.debug("Update status to RUNNING. Number of pending data collections: " + dataCollections.size());
 		for (QualityDataCollection dataCollection: dataCollections) {
@@ -263,7 +263,7 @@ public class QualityServiceImpl
 	}
 
 	@Override
-	public void startDataCollection(Date until) {
+	public void stopDataCollections(Date until) {
 		Collection<QualityDataCollection> dataCollections = dataCollectionDao.loadWithPendingDeadline(until);
 		log.debug("Update status to FINISHED. Number of pending data collections: " + dataCollections.size());
 		for (QualityDataCollection dataCollection: dataCollections) {

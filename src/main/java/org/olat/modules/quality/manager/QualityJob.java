@@ -51,6 +51,7 @@ public class QualityJob extends JobWithDB {
 		QualityService qualityService = CoreSpringFactory.getImpl(QualityService.class);
 		qualityService.startDataCollection(until);
 		qualityService.stopDataCollections(until);
+		DBFactory.getInstance().commitAndCloseSession();
 		qualityService.sendReminders(until);
 	}
 

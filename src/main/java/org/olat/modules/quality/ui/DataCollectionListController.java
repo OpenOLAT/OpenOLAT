@@ -141,6 +141,7 @@ public class DataCollectionListController extends FormBasicController implements
 			Long key = entry.getOLATResourceable().getResourceableId();
 			DataCollectionRow row = dataModel.getObjectByKey(key);
 			if (row == null) {
+				dataModel.clear();
 				dataModel.load(null, null, null, 0, -1);
 				row = dataModel.getObjectByKey(key);
 				if (row != null) {

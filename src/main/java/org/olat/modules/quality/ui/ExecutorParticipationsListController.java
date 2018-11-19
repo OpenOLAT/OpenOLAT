@@ -123,6 +123,7 @@ public class ExecutorParticipationsListController extends FormBasicController im
 			Long key = entry.getOLATResourceable().getResourceableId();
 			ExecutorParticipationRow row = dataModel.getObjectByParticipationKey(key);
 			if (row == null) {
+				dataModel.clear();
 				dataModel.load(null, null, null, 0, -1);
 				row = dataModel.getObjectByParticipationKey(key);
 				if (row != null) {
