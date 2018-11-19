@@ -561,10 +561,14 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 					getWindowControl().getWindowBackOffice().getWindow().getDTabs().updateDTabTitle(reOres, newTitle);
 				}
 			}
-		} else if(event.isChangedToolbar()) {
+		}
+		if(event.isChangedToolbar()) {
 			RepositoryEntry entry = repositoryService.loadByKey(getRepositoryEntry().getKey());
 			refreshRepositoryEntry(entry);
 			initToolsMenu(tools);
+		}
+		if(event.isChangedStatus()) {
+			reloadStatus();
 		}
 		settingsChanged = true;
 	}

@@ -704,7 +704,7 @@ public class PublishProcess {
 		
 		RepositoryEntry entry = accessAndProps.getRepositoryEntry();
 		
-		entry = manager.setAccess(entry, 
+		entry = manager.setAccess(entry,  accessAndProps.getStatus(),
 				accessAndProps.isAllUsers(), accessAndProps.isGuests(), accessAndProps.isBookable(),
 				accessAndProps.getSetting(), accessAndProps.getOrganisations());
 		

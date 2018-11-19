@@ -267,7 +267,7 @@ public class CourseToolbarController extends FormBasicController {
 	        	.fireEventToListenersOf(new CourseConfigEvent(CourseConfigType.calendar, course.getResourceableId()), course);
 		}
 		
-		fireEvent(ureq, new ReloadSettingsEvent(false, true, false));
+		fireEvent(ureq, new ReloadSettingsEvent(false, false, true, false));
 	}
 
 	@Override

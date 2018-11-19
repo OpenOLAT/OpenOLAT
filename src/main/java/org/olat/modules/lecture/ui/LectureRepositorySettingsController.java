@@ -326,7 +326,7 @@ public class LectureRepositorySettingsController extends FormBasicController {
 		lectureConfig = lectureService.updateRepositoryEntryLectureConfiguration(lectureConfig);
 		dbInstance.commit();
 		lectureService.syncCalendars(entry);
-		fireEvent(ureq, new ReloadSettingsEvent(false, true, false));
+		fireEvent(ureq, new ReloadSettingsEvent(false, false, true, false));
 	}
 	
 	@Override

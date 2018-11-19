@@ -273,7 +273,7 @@ public class CourseCreationHelper {
 			
 			CourseAccessAndProperties accessAndProps = courseConfig.getAccessAndProperties();	
 			
-			addedEntry = repositoryManager.setAccess(accessAndProps.getRepositoryEntry(),
+			addedEntry = repositoryManager.setAccess(accessAndProps.getRepositoryEntry(), accessAndProps.getStatus(),
 					 accessAndProps.isAllUsers(), accessAndProps.isGuests(), accessAndProps.isBookable(),
 					 accessAndProps.getSetting(), accessAndProps.getOrganisations());
 			

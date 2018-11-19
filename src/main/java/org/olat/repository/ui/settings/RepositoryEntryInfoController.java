@@ -371,7 +371,7 @@ public class RepositoryEntryInfoController extends FormBasicController {
 			showWarning("repositoryentry.not.existing");
 			fireEvent(ureq, Event.CLOSE_EVENT);
 		} else {
-			fireEvent(ureq, new ReloadSettingsEvent(false, false, true));
+			fireEvent(ureq, new ReloadSettingsEvent(false, false, false, true));
 			MultiUserEvent modifiedEvent = new EntryChangedEvent(repositoryEntry, getIdentity(), Change.modifiedDescription, "authoring");
 			CoordinatorManager.getInstance().getCoordinator().getEventBus()
 				.fireEventToListenersOf(modifiedEvent, RepositoryService.REPOSITORY_EVENT_ORES);

@@ -107,7 +107,7 @@ public class AuthoringEditAccessAndBookingController extends FormBasicController
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		this.entry = entry;
 		embbeded = false;
-		status = false;
+		status = true;
 		initForm(ureq);
 		updateUI();
 	}
@@ -418,7 +418,8 @@ public class AuthoringEditAccessAndBookingController extends FormBasicController
 	public RepositoryEntry commitChanges() {
 		boolean bookable = isBookable();
 		List<Organisation> organisations = getSelectedOrganisations();
-		entry = repositoryManager.setAccess(entry, isAllUsers(), isGuests(), bookable,
+		entry = repositoryManager.setAccess(entry, getEntryStatus(),
+				isAllUsers(), isGuests(), bookable,
 				getSelectedLeaveSetting(), organisations);
 		
 		if(bookable) {

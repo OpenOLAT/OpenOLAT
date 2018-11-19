@@ -33,22 +33,28 @@ public class ReloadSettingsEvent extends Event {
 	public static final String RELOAD_SETTINGS = "reload-settings";
 	
 	private final boolean changedTitle;
+	private final boolean changedStatus;
 	private final boolean changedToolbar;
 	private final boolean changedToolsMenu;
 	
 	public ReloadSettingsEvent() {
-		this(false, false, false);
+		this(false, false, false, false);
 	}
 
-	public ReloadSettingsEvent(boolean changedToolsMenu, boolean changedToolbar, boolean changedTitle) {
+	public ReloadSettingsEvent(boolean changedToolsMenu, boolean changedStatus, boolean changedToolbar, boolean changedTitle) {
 		super(RELOAD_SETTINGS);
 		this.changedTitle = changedTitle;
+		this.changedStatus = changedStatus;
 		this.changedToolbar = changedToolbar;
 		this.changedToolsMenu = changedToolsMenu;
 	}
 
 	public boolean isChangedTitle() {
 		return changedTitle;
+	}
+	
+	public boolean isChangedStatus() {
+		return changedStatus;
 	}
 
 	public boolean isChangedToolsMenu() {

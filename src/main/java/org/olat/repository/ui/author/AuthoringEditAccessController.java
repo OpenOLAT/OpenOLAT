@@ -85,7 +85,7 @@ public class AuthoringEditAccessController extends BasicController {
 		if(accessAndBookingCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				doSaveAccessAndBooking(ureq);
-				fireEvent(ureq, new ReloadSettingsEvent(true, false, false));
+				fireEvent(ureq, new ReloadSettingsEvent(true, true, false, false));
 			} else if(event == Event.CANCELLED_EVENT) {
 				initAccessAndBooking(ureq);
 			}
