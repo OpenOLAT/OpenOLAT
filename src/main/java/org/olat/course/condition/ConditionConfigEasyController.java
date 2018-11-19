@@ -247,6 +247,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		toDate.setExampleKey("form.easy.example.edate", null);
 		toDate.setDateChooserTimeEnabled(true);
 		toDate.setDisplaySize(toDate.getExampleDateString().length());
+		toDate.setDefaultTimeAtEndOfDay(true);
 		dateSubContainer.add(toDate);
 
 		dateSwitch = uifactory.addCheckboxesHorizontal("dateSwitch", null, formLayout, new String[] { "ison" }, new String[] { translate("form.easy.dateSwitch") });

@@ -1,9 +1,11 @@
 (function ($) {
 	$.fn.matchInteraction = function(options) {
+		"use strict";
 		var settings = $.extend({
 			responseIdentifier: null,
 			formDispatchFieldId: null,
 			maxAssociations: 1,
+			unansweredColumn: null,
 			leftData: {},
 			rightData: {},
 			leftMap: {},
@@ -38,11 +40,11 @@
         });
         recalculate(settings);
         updateDisabledStates(settings);
-    };
+    }
     
     function queryInputElements(responseIdentifier) {
         return jQuery('input[name=qtiworks_response_' + responseIdentifier + ']');
-    };
+    }
 
 	function withCheckbox(settings, inputElement, callback) {
 		var directedPair = inputElement.value;
@@ -50,7 +52,7 @@
 		var left = settings.leftMap[splitPair[0]];
 		var right = settings.rightMap[splitPair[1]];
         callback(inputElement, directedPair, left, right);
-    };
+    }
 
     /**
      * Left -> source (set 0)
@@ -76,7 +78,7 @@
                 }
             });
         });
-    };
+    }
 
     /**
      * Left -> source (set 0)
@@ -102,7 +104,7 @@
                 }
             });
         });
-    };
+    }
 
 	function checkMatch(settings, inputElement) {
 		withCheckbox(settings, inputElement, function(inputElement, directedPair, left, right) {
@@ -153,6 +155,35 @@
                 right.matchCount--;
             }
             updateDisabledStates(settings);
+            if(!inputElement.checked && settings.unansweredColumn != null) {
+            	checkUnanswered(settings, inputElement);
+            }
         });
     }
+	
+	function checkUnanswered(settings, inputElement) {
+		var jInputElement = jQuery(inputElement);
+		var inputRightId = jInputElement.attr('value').split(" ")[0];
+		
+		var numOfSelectedBox = 0;
+		var unansweredCheckbox = null;
+		queryInputElements(settings.responseIdentifier).each(function() {
+			withCheckbox(settings, this, function(element, directedPair, left, right) {
+				var jElement = jQuery(element);
+				var elementRightId = jElement.attr('value').split(" ")[0];
+				if(inputRightId === elementRightId) {
+					if(element.checked) {
+						numOfSelectedBox++;
+					} else if(jElement.closest("." + settings.unansweredColumn).length == 1) {
+						unansweredCheckbox = element;
+					}
+				} 
+			});
+		});
+		
+		if(numOfSelectedBox == 0 && unansweredCheckbox != null) {
+			unansweredCheckbox.checked = true;
+		}
+	}
+	
 }( jQuery ));

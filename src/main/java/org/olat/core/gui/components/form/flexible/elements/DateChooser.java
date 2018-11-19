@@ -73,5 +73,12 @@ public interface DateChooser extends TextElement {
 	 * @param dateChooser A date chooser
 	 */
 	public void setDefaultValue(DateChooser dateChooser);
+	
+	/**
+	 * This will set the default time to 23:59 instead of 00:00
+	 * 
+	 * @param endOfDay
+	 */
+	public void setDefaultTimeAtEndOfDay(boolean endOfDay);
 
 }
