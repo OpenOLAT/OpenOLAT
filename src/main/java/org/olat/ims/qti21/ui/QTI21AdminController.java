@@ -88,6 +88,7 @@ public class QTI21AdminController extends FormBasicController {
 		qti12LayoutCont.setRootForm(mainForm);
 		formLayout.add("optionsFor12", qti12LayoutCont);
 		qti12LayoutCont.setFormTitle(translate("admin.12.title"));
+		qti12LayoutCont.setFormDescription(translate("admin.12.description"));
 		
 		createQTI12resourcesEl = uifactory.addCheckboxesHorizontal("create.12.resources", "create.12.resources", qti12LayoutCont,
 				onKeys, onValues);
