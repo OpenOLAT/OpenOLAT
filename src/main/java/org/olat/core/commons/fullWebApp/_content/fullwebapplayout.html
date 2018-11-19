@@ -17,7 +17,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
 ## <!-- IE cache -->
-<script type="text/javascript">
+<script>
 /* <![CDATA[ */ 
 var o_info = new Object();
 o_info.initialPageLoadFinished = false;
@@ -26,6 +26,7 @@ o_info.o_winid = '$o_winid';
 o_info.uriprefix="$r.relWinLink()";
 o_info.bc="$o_bc";
 o_info.businessPath="";
+o_info.startBusinessPath="$startBusinessPath";
 o_info.serverUri="$o_serverUri"
 ## Legacy form-dirty message displayed by o2cl()
 o_info.dirty_form = "$r.escapeDoubleQuotes($r.translate("form.dirty"))";
@@ -53,6 +54,7 @@ function o_start() {
 	## Needed to identify if call like Ext.onRead() makes any sense (often not the case in AJAX mode)
 	o_info.initialPageLoadFinished = true;
 }
+
 function o_mathjax(fct_success) {
 	window.MathJax = {
 		extensions: ["jsMath2jax.js"],
@@ -88,6 +90,17 @@ function o_mathjax(fct_success) {
 $!analytics
 ##
 
+/* ]]> */
+</script>
+<script>
+/* <![CDATA[ */ 
+try{
+	if(o_info.startBusinessPath != null && o_info.startBusinessPath.length > 0
+			&& window.history && !(typeof window.history === "undefined") && window.history.pushState) {
+		window.history.pushState('', document.title, o_info.startBusinessPath);
+		o_info.startBusinessPath = null;
+	}
+} catch(e) { }
 /* ]]> */
 </script>
 ## jQuery libraries

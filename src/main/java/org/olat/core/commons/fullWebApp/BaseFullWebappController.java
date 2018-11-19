@@ -67,7 +67,6 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
-import org.olat.core.gui.control.Reload;
 import org.olat.core.gui.control.ScreenMode;
 import org.olat.core.gui.control.ScreenMode.Mode;
 import org.olat.core.gui.control.VetoableCloseController;
@@ -327,6 +326,9 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		
 		// add page width css. Init empty on login (full page state not persisted)
 		mainVc.contextPut("pageSizeCss", "");
+		
+		// business path set with a full page refresh
+		mainVc.contextPut("startBusinessPath", "");
 
 		Window w = wbo.getWindow();
 
@@ -969,20 +971,19 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 	}
 	
 	@Override
-	public Reload wishReload(UserRequest ureq, boolean erase) {
+	public boolean wishReload(UserRequest ureq, boolean erase) {
 		boolean screen = getScreenMode().wishScreenModeSwitch(erase);
-		String screenBusinessPath = null;
 		if(screen && StringHelper.containsNonWhitespace(getScreenMode().getBusinessPath())) {
-			screenBusinessPath = BusinessControlFactory.getInstance()
+			String businessPath = BusinessControlFactory.getInstance()
 					.getURLFromBusinessPathString(getScreenMode().getBusinessPath());
+			mainVc.getContext().put("startBusinessPath", businessPath);
 		}
 		boolean r = reload != null && reload.booleanValue();
 		if(erase && reload != null) {
 			reload = null;
 		}
 		boolean l = checkAssessmentGuard(ureq, lockMode);
-
-		return new Reload(l || r || screen, screenBusinessPath);
+		return l || r || screen;
 	}
 
 	@Override
@@ -1356,6 +1357,9 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 				currentMsgHolder.setContent(guimsgPanel);
 				currentMsgHolder.setDirty(guimsgPanel.isDirty());
 			}
+		} else if(event == Window.AFTER_INLINE_RENDERING) {
+			// don't make the panel dirty
+			mainVc.getContext().put("startBusinessPath", "");
 		} else if(event instanceof LanguageChangedEvent){
 			LanguageChangedEvent lce = (LanguageChangedEvent)event;
 			UserRequest ureq = lce.getCurrentUreq();

@@ -56,7 +56,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.JSAndCSSAdder;
 import org.olat.core.gui.control.JSAndCSSAdderImpl;
-import org.olat.core.gui.control.Reload;
 import org.olat.core.gui.control.WindowBackOffice;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.DTabs;
@@ -104,7 +103,7 @@ import org.olat.core.util.component.ComponentVisitor;
 public class Window extends AbstractComponent implements CustomCSSDelegate {
 	
 	private static final OLog log = Tracing.createLoggerFor(Window.class);
-	private static final DispatchResult NO_DISPATCHRESULT = new DispatchResult(false, false, Reload.NO_RELOAD);
+	private static final DispatchResult NO_DISPATCHRESULT = new DispatchResult(false, false, false);
 	
 	private static final String LOG_SEPARATOR = "^$^";
 	/**
@@ -395,13 +394,11 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 						// 3.) return to sender...
 						boolean didDispatch = false;
 						boolean forceReload = false;
-						String forceReloadBusinessPath = null;
 						if (validForDispatching) {
 							DispatchResult dispatchResult = doDispatchToComponent(ureq, null);
 							didDispatch = dispatchResult.isDispatch();
 							incTimestamp = dispatchResult.isIncTimestamp();
 							forceReload = dispatchResult.isForceReload();
-							forceReloadBusinessPath = dispatchResult.getReloadBusinessPath();
 							if (isDebugLog) {
 								long durationAfterDoDispatchToComponent = System.currentTimeMillis() - debug_start;
 								log.debug("Perf-Test: Window durationAfterDoDispatchToComponent=" + durationAfterDoDispatchToComponent);
@@ -413,10 +410,7 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 						//-----> if (didDispatch || inlineAfterBackForward) {
 						if (forceReload) {
 							//force RELOAD with a redirect to itself
-							String reRenderUri = forceReloadBusinessPath;
-							if(reRenderUri == null) {
-								reRenderUri = buildURIFor(this, timestampID, null);
-							}
+							String reRenderUri = buildURIFor(this, timestampID, null);
 							Command rmrcom = CommandFactory.createParentRedirectTo(reRenderUri);
 							wbackofficeImpl.sendCommandTo(rmrcom);
 						} else if (didDispatch || !validForDispatching) {
@@ -1223,7 +1217,7 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 		}
 		
 		ChiefController chief = wbackofficeImpl.getChiefController();
-		Reload reload = chief == null ? null : chief.wishReload(ureq, true);
+		boolean reload = chief == null ? null : chief.wishReload(ureq, true);
 		return new DispatchResult(toDispatch, incTimestamp, reload);
 	}
 	
@@ -1334,9 +1328,9 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 class DispatchResult {
 	private final boolean dispatch;
 	private final boolean incTimestamp;
-	private final Reload reload;
+	private final boolean reload;
 	
-	public DispatchResult(boolean dispatch, boolean incTimestamp, Reload reload) {
+	public DispatchResult(boolean dispatch, boolean incTimestamp, boolean reload) {
 		this.dispatch = dispatch;
 		this.incTimestamp = incTimestamp;
 		this.reload = reload;
@@ -1347,11 +1341,7 @@ class DispatchResult {
 	}
 
 	public boolean isForceReload() {
-		return reload != null && reload.isWishReload();
-	}
-	
-	public String getReloadBusinessPath() {
-		return reload == null ? null : reload.getBusinessPath();
+		return reload;
 	}
 
 	public boolean isIncTimestamp() {

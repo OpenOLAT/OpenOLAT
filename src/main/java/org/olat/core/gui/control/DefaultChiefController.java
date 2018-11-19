@@ -51,6 +51,7 @@ public abstract class DefaultChiefController extends DefaultController implement
 	 * Gets the window.
 	 * @return the window
 	 */
+	@Override
 	public Window getWindow() {
 		return window;
 	}
@@ -70,8 +71,8 @@ public abstract class DefaultChiefController extends DefaultController implement
 	}
 
 	@Override
-	public Reload wishReload(UserRequest ureq, boolean erase) {
-		return Reload.NO_RELOAD;
+	public boolean wishReload(UserRequest ureq, boolean erase) {
+		return false;
 	}
 	
 	@Override

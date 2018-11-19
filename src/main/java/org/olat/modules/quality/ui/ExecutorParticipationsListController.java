@@ -200,19 +200,17 @@ public class ExecutorParticipationsListController extends FormBasicController im
 			return;
 		}
 		
-		if(executionCtrl == null || !participation.equals(executionCtrl.getQualityParticipant())) {
-			OLATResourceable ores = OresHelper.createOLATResourceableInstance(ORES_EXECUTION_TYPE,
-					participation.getParticipationRef().getKey());
-			WindowControl bwControl = addToHistory(ureq, ores, null);
-			executionCtrl = new ExecutionController(ureq, bwControl, participation);
-			listenTo(executionCtrl);
-			
-			WindowControl wControl = getWindowControl();
-			ChiefController cc = wControl.getWindowBackOffice().getChiefController();
-			String businessPath = executionCtrl.getWindowControlForDebug().getBusinessControl().getAsString();
-			cc.getScreenMode().setMode(Mode.full, businessPath);
-			wControl.pushToMainArea(executionCtrl.getInitialComponent());
-		}
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance(ORES_EXECUTION_TYPE,
+				participation.getParticipationRef().getKey());
+		WindowControl bwControl = addToHistory(ureq, ores, null);
+		executionCtrl = new ExecutionController(ureq, bwControl, participation);
+		listenTo(executionCtrl);
+		
+		WindowControl wControl = getWindowControl();
+		ChiefController cc = wControl.getWindowBackOffice().getChiefController();
+		String businessPath = executionCtrl.getWindowControlForDebug().getBusinessControl().getAsString();
+		cc.getScreenMode().setMode(Mode.full, businessPath);
+		wControl.pushToMainArea(executionCtrl.getInitialComponent());
 	}
 
 	@Override

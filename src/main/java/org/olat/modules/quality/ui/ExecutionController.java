@@ -62,10 +62,6 @@ public class ExecutionController extends BasicController {
 		initVelocityContainer(ureq);
 		putInitialPanel(mainVC);
 	}
-	
-	public QualityExecutorParticipation getQualityParticipant() {
-		return qualityParticipation;
-	}
 
 	protected void initVelocityContainer(UserRequest ureq) {
 		back = LinkFactory.createLinkBack(mainVC, this);
