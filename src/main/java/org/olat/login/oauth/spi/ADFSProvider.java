@@ -31,6 +31,7 @@ import org.scribe.builder.api.Api;
 import org.scribe.model.Token;
 import org.scribe.oauth.OAuthService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
@@ -44,6 +45,17 @@ public class ADFSProvider implements OAuthSPI {
 	
 	private static final OLog log = Tracing.createLoggerFor(ADFSProvider.class);
 
+	@Value("${adfs.attributename.useridentifyer:employeeNumber}")
+	private String idAttributeName;
+	@Value("${adfs.attributename.firstName:displayNamePrintable}")
+	private String firstNameAttributeName;
+	@Value("${adfs.attributename.lastName:Sn}")
+	private String lastNameAttributeName;
+	@Value("${adfs.attributename.email:mail}")
+	private String emailAttributeName;
+	@Value("${adfs.attributename.institutionalUserIdentifier:SAMAccountName}")
+	private String institutionalUserIdentifierAttributeName;
+	
 	@Autowired
 	private OAuthLoginModule oauthModule;
 	
@@ -104,15 +116,14 @@ public class ADFSProvider implements OAuthSPI {
 		try {
 			JSONWebToken jwt = JSONWebToken.parse(accessToken);
 			JSONObject obj = jwt.getJsonPayload();
-			user.setId(getValue(obj, "employeeNumber"));
-			user.setFirstName(getValue(obj, "displayNamePrintable"));
-			user.setLastName(getValue(obj, "Sn"));
-			user.setEmail(getValue(obj, "mail"));
-			user.setInstitutionalUserIdentifier(getValue(obj, "SAMAccountName"));
+			user.setId(getValue(obj, idAttributeName));
+			user.setFirstName(getValue(obj, firstNameAttributeName));
+			user.setLastName(getValue(obj, lastNameAttributeName));
+			user.setEmail(getValue(obj, emailAttributeName));
+			user.setInstitutionalUserIdentifier(getValue(obj, institutionalUserIdentifierAttributeName));
 			if(!StringHelper.containsNonWhitespace(user.getId())) {
 				user.setId(user.getInstitutionalUserIdentifier());
 			}
-			
 		} catch (JSONException e) {
 			log.error("", e);
 		}
