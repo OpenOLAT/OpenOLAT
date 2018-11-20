@@ -324,6 +324,8 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			initStatus(status);
 			toolbarPanel.addTool(status, Align.left, false);
 		}
+		
+		toolbarPanel.setDirty(true);
 	}
 	
 	protected void reloadStatus() {
@@ -544,6 +546,14 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		//
 	}
 	
+	protected void processClosedUnclosedEvent(UserRequest ureq) {
+		loadRepositoryEntry();
+		reSecurity = repositoryManager.isAllowed(getIdentity(), roles, getRepositoryEntry());
+		loadRights(reSecurity);
+		toolbarPanel.popUpToRootController(ureq);
+		initToolbar();
+	}
+	
 	protected void processReloadSettingsEvent(ReloadSettingsEvent event) {
 		if(event.isChangedTitle()) {
 			RepositoryEntry entry = repositoryService.loadByKey(getRepositoryEntry().getKey());
@@ -611,13 +621,13 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		} else if(deleteLink == source) {
 			doDelete(ureq);
 		} else if(preparationLink == source) {
-			doChangeStatus(RepositoryEntryStatusEnum.preparation);
+			doChangeStatus(ureq, RepositoryEntryStatusEnum.preparation);
 		} else if(reviewLink == source) {
-			doChangeStatus(RepositoryEntryStatusEnum.review);
+			doChangeStatus(ureq, RepositoryEntryStatusEnum.review);
 		} else if(coachPublishLink == source) {
-			doChangeStatus(RepositoryEntryStatusEnum.coachpublished);
+			doChangeStatus(ureq, RepositoryEntryStatusEnum.coachpublished);
 		} else if(publishLink == source) {
-			doChangeStatus(RepositoryEntryStatusEnum.published);
+			doChangeStatus(ureq, RepositoryEntryStatusEnum.published);
 		} else if(closeLink == source) {
 			doConfirmCloseResource(ureq);
 		} else if(source == toolbarPanel) {
@@ -631,7 +641,10 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	
 	protected void processPopEvent(@SuppressWarnings("unused") UserRequest ureq, PopEvent pop) {
 		if(pop.getController() == settingsCtrl && settingsChanged) {
-			refreshRepositoryEntry(repositoryService.loadByKey(getRepositoryEntry().getKey()));
+			RepositoryEntry entry = repositoryService.loadByKey(getRepositoryEntry().getKey());
+			refreshRepositoryEntry(entry);
+			reSecurity = repositoryManager.isAllowed(ureq, entry);
+			loadRights(reSecurity);
 			initToolbar();// add/remove lectures link from the toolbar
 			settingsChanged = false;
 		}
@@ -654,11 +667,16 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			}
 		} else if(settingsCtrl == source) {
 			if(event == Event.CHANGED_EVENT) {
-				
+				//
 			} else if(event == Event.CLOSE_EVENT) {
 				doClose(ureq);
 			} else if(event instanceof ReloadSettingsEvent) {
 				processReloadSettingsEvent((ReloadSettingsEvent)event);
+			} else if(event instanceof ReloadSettingsEvent) {
+				processReloadSettingsEvent((ReloadSettingsEvent)event);
+			} else if (event == RepositoryEntryLifeCycleChangeController.closedEvent
+					|| event == RepositoryEntryLifeCycleChangeController.unclosedEvent) {
+				processClosedUnclosedEvent(ureq);
 			}
 		} else if(detailsCtrl == source) {
 			if(event instanceof LeavingEvent) {
@@ -754,11 +772,16 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		cleanUp();
 	}
 	
-	protected final void doChangeStatus(RepositoryEntryStatusEnum updatedStatus) {
+	protected final void doChangeStatus(UserRequest ureq, RepositoryEntryStatusEnum updatedStatus) {
 		RepositoryEntry entry = getRepositoryEntry();
 		RepositoryEntry reloadedEntry = repositoryManager.setStatus(entry, updatedStatus);
 		refreshRepositoryEntry(reloadedEntry);
+		reSecurity = repositoryManager.isAllowed(ureq, reloadedEntry);
+		loadRights(reSecurity);
 		initToolbar();
+
+		EntryChangedEvent e = new EntryChangedEvent(reloadedEntry, getIdentity(), Change.modifiedAccess, "runtime");
+		ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, RepositoryService.REPOSITORY_EVENT_ORES);
 	}
 	
 	private void doConfirmCloseResource(UserRequest ureq) {
@@ -781,7 +804,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	 * @param ureq
 	 */
 	private void doCloseResource(UserRequest ureq) {
-		doChangeStatus(RepositoryEntryStatusEnum.closed); 
+		doChangeStatus(ureq, RepositoryEntryStatusEnum.closed); 
 		
 		fireEvent(ureq, RepositoryEntryLifeCycleChangeController.closedEvent);
 		EntryChangedEvent e = new EntryChangedEvent(re, getIdentity(), Change.closed, "runtime");

@@ -19,10 +19,12 @@
  */
 package org.olat.repository.ui;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.dropdown.Dropdown;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
@@ -30,10 +32,12 @@ import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.stack.ButtonGroupComponent;
 import org.olat.core.gui.components.stack.TooledController;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
@@ -42,8 +46,13 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
+import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.controllers.EntryChangedEvent;
+import org.olat.repository.controllers.EntryChangedEvent.Change;
 import org.olat.repository.ui.author.AuthoringEditAccessController;
+import org.olat.repository.ui.author.ConfirmCloseController;
 import org.olat.repository.ui.settings.CatalogSettingsController;
 import org.olat.repository.ui.settings.ReloadSettingsEvent;
 import org.olat.repository.ui.settings.RepositoryEntryInfoController;
@@ -63,12 +72,21 @@ public class RepositoryEntrySettingsController extends BasicController implement
 	private Link accessLink;
 	private Link catalogLink;
 	private Link metadataLink;
+	private Dropdown status;
 	protected final StackedPanel mainPanel;
 	protected final TooledStackedPanel stackPanel;
 	protected final ButtonGroupComponent buttonsGroup = new ButtonGroupComponent("settings");
-	 
+
+	private Link preparationLink;
+	private Link reviewLink;
+	private Link coachPublishLink;
+	private Link publishLink;
+	private Link closeLink;
+	
+	private CloseableModalController cmc;
 	private CatalogSettingsController catalogCtrl;
 	private RepositoryEntryInfoController infoCtrl;
+	private ConfirmCloseController confirmCloseCtrl;
 	private AuthoringEditAccessController accessCtrl;
 	private RepositoryEntryMetadataController metadataCtrl;
 	
@@ -76,6 +94,8 @@ public class RepositoryEntrySettingsController extends BasicController implement
 	protected RepositoryEntry entry;
 	private List<OrganisationRef> organisations;
 	
+	@Autowired
+	private RepositoryManager repositoryManager;
 	@Autowired
 	protected RepositoryService repositoryService;
 	
@@ -85,6 +105,11 @@ public class RepositoryEntrySettingsController extends BasicController implement
 		this.stackPanel = stackPanel;
 		this.entry = entry;
 		mainPanel = putInitialPanel(new Panel("empty"));
+		
+		status = new Dropdown("settings.toolbox.status", "cif.status", false, getTranslator());
+		status.setElementCssClass("o_sel_repository_status");
+		status.setIconCSS("o_icon o_icon_edit");
+		initStatus(status);
 	}
 	
 	public List<OrganisationRef> getOrganisations() {
@@ -97,7 +122,40 @@ public class RepositoryEntrySettingsController extends BasicController implement
 	@Override
 	public void initTools() {
 		initSegments();
+		stackPanel.addTool(status, Align.left, false);
 		stackPanel.addTool(buttonsGroup, true);
+	}
+	
+	private void initStatus(Dropdown statusDropdown) {
+		statusDropdown.removeAllComponents();
+		
+		RepositoryEntryStatusEnum entryStatus = entry.getEntryStatus();
+		statusDropdown.setI18nKey("details.label.status");
+		statusDropdown.setElementCssClass("o_repo_tools_status o_with_labeled");
+		statusDropdown.setIconCSS("o_icon o_icon_repo_status_".concat(entryStatus.name()));
+		statusDropdown.setInnerText(translate(entryStatus.i18nKey()));
+		statusDropdown.setInnerCSS("o_labeled o_repo_status_".concat(entryStatus.name()));
+		
+		if(entryStatus == RepositoryEntryStatusEnum.preparation || entryStatus == RepositoryEntryStatusEnum.review
+				|| entryStatus == RepositoryEntryStatusEnum.coachpublished || entryStatus == RepositoryEntryStatusEnum.published
+				|| entryStatus == RepositoryEntryStatusEnum.closed) {
+			preparationLink = initStatus(statusDropdown, RepositoryEntryStatusEnum.preparation, entryStatus);
+			reviewLink = initStatus(statusDropdown, RepositoryEntryStatusEnum.review, entryStatus);
+			coachPublishLink = initStatus(statusDropdown, RepositoryEntryStatusEnum.coachpublished, entryStatus);
+			publishLink = initStatus(statusDropdown, RepositoryEntryStatusEnum.published, entryStatus);
+			closeLink = initStatus(statusDropdown, RepositoryEntryStatusEnum.closed, entryStatus);
+		}
+		
+		stackPanel.setDirty(true);
+	}
+	
+	private Link initStatus(Dropdown statusDropdown, RepositoryEntryStatusEnum entryStatus, RepositoryEntryStatusEnum currentStatus) {
+		Link statusLink = LinkFactory.createToolLink("status.".concat(entryStatus.name()), translate(entryStatus.i18nKey()), this);
+		statusLink.setIconLeftCSS("o_icon o_icon-fw o_icon_repo_status_".concat(entryStatus.name()));
+		statusLink.setElementCssClass("o_labeled o_repo_status_".concat(entryStatus.name()));
+		statusLink.setVisible(entryStatus != currentStatus);
+		statusDropdown.addComponent(statusLink);
+		return statusLink;
 	}
 	
 	protected void initSegments() {
@@ -160,6 +218,16 @@ public class RepositoryEntrySettingsController extends BasicController implement
 		} else if(catalogLink == source) {
 			cleanUp();
 			doOpenCatalog(ureq);
+		} else if(preparationLink == source) {
+			doChangeStatus(ureq, RepositoryEntryStatusEnum.preparation);
+		} else if(reviewLink == source) {
+			doChangeStatus(ureq, RepositoryEntryStatusEnum.review);
+		} else if(coachPublishLink == source) {
+			doChangeStatus(ureq, RepositoryEntryStatusEnum.coachpublished);
+		} else if(publishLink == source) {
+			doChangeStatus(ureq, RepositoryEntryStatusEnum.published);
+		} else if(closeLink == source) {
+			doConfirmCloseResource(ureq);
 		}
 	}
 
@@ -175,6 +243,17 @@ public class RepositoryEntrySettingsController extends BasicController implement
 			} else if(metadataCtrl == source) {
 				doOpenMetadata(ureq);
 			}
+		} else if(confirmCloseCtrl == source) {
+			if(event == Event.CANCELLED_EVENT ) {
+				cmc.deactivate();
+				cleanUp();
+			} else if(event instanceof EntryChangedEvent) {
+				cmc.deactivate();
+				cleanUp();
+				doCloseResource(ureq);
+			}
+		} else if(cmc == source) {
+			cleanUp();
 		} else if(event == Event.CHANGED_EVENT || event instanceof ReloadSettingsEvent) {
 			fireEvent(ureq, event);
 		}
@@ -187,14 +266,18 @@ public class RepositoryEntrySettingsController extends BasicController implement
 	}
 	
 	protected void cleanUp() {
+		removeAsListenerAndDispose(confirmCloseCtrl);
 		removeAsListenerAndDispose(metadataCtrl);
 		removeAsListenerAndDispose(catalogCtrl);
 		removeAsListenerAndDispose(accessCtrl);
 		removeAsListenerAndDispose(infoCtrl);
+		removeAsListenerAndDispose(cmc);
+		confirmCloseCtrl = null;
 		metadataCtrl = null;
 		catalogCtrl = null;
 		accessCtrl = null;
 		infoCtrl = null;
+		cmc = null;
 	}
 	
 	protected void doOpenInfos(UserRequest ureq) {
@@ -231,5 +314,39 @@ public class RepositoryEntrySettingsController extends BasicController implement
 		listenTo(catalogCtrl);
 		mainPanel.setContent(catalogCtrl.getInitialComponent());
 		buttonsGroup.setSelectedButton(catalogLink);
+	}
+	
+	protected final void doChangeStatus(UserRequest ureq, RepositoryEntryStatusEnum updatedStatus) {
+		entry = repositoryManager.setStatus(entry, updatedStatus);
+		initStatus(status);
+		fireEvent(ureq, new ReloadSettingsEvent(true, true, false, false));
+		event(ureq, buttonsGroup.getSelectedButton(), Event.CHANGED_EVENT);
+		
+		EntryChangedEvent e = new EntryChangedEvent(entry, getIdentity(), Change.modifiedAccess, "runtime");
+		ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, RepositoryService.REPOSITORY_EVENT_ORES);
+	}
+	
+	private void doConfirmCloseResource(UserRequest ureq) {
+		List<RepositoryEntry> entryToClose = Collections.singletonList(entry);
+		confirmCloseCtrl = new ConfirmCloseController(ureq, getWindowControl(), entryToClose);
+		listenTo(confirmCloseCtrl);
+		
+		String title = translate("read.only.header", entry.getDisplayname());
+		cmc = new CloseableModalController(getWindowControl(), "close", confirmCloseCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	/**
+	 * Remove close and edit tools, if in edit mode, pop-up-to root
+	 * @param ureq
+	 */
+	private void doCloseResource(UserRequest ureq) {
+		entry = repositoryService.loadByKey(entry.getKey());
+		// the runtime will pop this controller
+
+		fireEvent(ureq, RepositoryEntryLifeCycleChangeController.closedEvent);
+		EntryChangedEvent e = new EntryChangedEvent(entry, getIdentity(), Change.closed, "runtime");
+		ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, RepositoryService.REPOSITORY_EVENT_ORES);
 	}
 }

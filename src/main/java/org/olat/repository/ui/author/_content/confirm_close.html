@@ -1,4 +1,14 @@
 <div class="o_warning">
+	<p>$r.translate("details.close.ressoure.desc")</p>
+	<ul>
+		<li>$r.translate("details.close.ressoure.desc.1")</li>
+		<li>$r.translate("details.close.ressoure.desc.2")</li>
+		<li>$r.translate("details.close.ressoure.desc.3")</li>
+		<li>$r.translate("details.close.ressoure.desc.4")</li>
+	</ul>
+	#if($r.isNotNull($autoCloseDate))
+		<p>$r.translate("details.close.ressoure.auto.desc", $autoCloseDate)</p>
+	#end
 	<i class="o_icon o_icon-lg o_icon_important"> </i> $r.translate("dialog.confirm.close", $numOfMembers)
 </div>
 $r.render("confirm")

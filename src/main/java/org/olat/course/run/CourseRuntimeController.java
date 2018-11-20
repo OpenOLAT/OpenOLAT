@@ -982,15 +982,12 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			if (event == RepositoryEntryLifeCycleChangeController.deletedEvent) {
 				doClose(ureq);
 				cleanUp();	
-			} else if (event == RepositoryEntryLifeCycleChangeController.closedEvent
-					|| event == RepositoryEntryLifeCycleChangeController.unclosedEvent) {
-				processClosedUnclosedEvent(ureq);
 			}
 		} else if (currentToolCtr == source) {
 			if (event == Event.DONE_EVENT) {
 				// special check for editor
 				toolControllerDone(ureq);
-			} 
+			}
 		}  else if(source == leaveDialogBox) {
 			if (event.equals(Event.DONE_EVENT)) {
 				doLeave(ureq);
@@ -1717,12 +1714,9 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		}
 	}
 	
-	private void processClosedUnclosedEvent(UserRequest ureq) {
-		loadRepositoryEntry();
-		reSecurity = repositoryManager.isAllowed(getIdentity(), roles, getRepositoryEntry());
-		loadRights(reSecurity);
-		toolbarPanel.popUpToRootController(ureq);
-		initToolbar();
+	@Override
+	protected void processClosedUnclosedEvent(UserRequest ureq) {
+		super.processClosedUnclosedEvent(ureq);
 		
 		RunMainController runCtrl = getRunMainController();
 		if(runCtrl != null && runCtrl.getCurrentCourseNode() != null) {

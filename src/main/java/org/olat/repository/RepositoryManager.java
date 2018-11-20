@@ -668,14 +668,12 @@ public class RepositoryManager {
 	}
 	
 	
-	public RepositoryEntry setAccess(final RepositoryEntry re, RepositoryEntryStatusEnum status,
-			boolean allUsers, boolean guests, boolean bookable,
+	public RepositoryEntry setAccess(final RepositoryEntry re, boolean allUsers, boolean guests, boolean bookable,
 			RepositoryEntryAllowToLeaveOptions leaveSetting, List<Organisation> organisations) {
 		RepositoryEntry reloadedRe = repositoryEntryDao.loadForUpdate(re);
 		if(reloadedRe == null) {
 			return null;
 		}
-		reloadedRe.setEntryStatus(status);
 		reloadedRe.setAllUsers(allUsers);
 		reloadedRe.setGuests(guests);
 		reloadedRe.setBookable(bookable);
