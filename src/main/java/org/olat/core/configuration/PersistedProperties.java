@@ -27,7 +27,6 @@ package org.olat.core.configuration;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -44,7 +43,6 @@ import javax.crypto.CipherInputStream;
 import javax.crypto.CipherOutputStream;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -231,16 +229,12 @@ public class PersistedProperties extends LogDelegator implements Initializable, 
 				if(secured) {
 					SecretKey key = generateKey("rk6R9pQy7dg3usJk");
 					Cipher cipher = Cipher.getInstance("AES/CTR/NOPADDING");
-					cipher.init(Cipher.DECRYPT_MODE, key, generateIV(cipher), random);
-					is =  new CipherInputStream(is, cipher);	
+					cipher.init(Cipher.DECRYPT_MODE, key, random);
+					is =  new CipherInputStream(is, cipher);
 				}
 				
 				configuredProperties.load(is);
 				is.close();
-			} catch (FileNotFoundException e) {
-				logError("Could not load config file from path::" + configurationPropertiesFile.getAbsolutePath(), e);
-			} catch (IOException e) {
-				logError("Could not load config file from path::" + configurationPropertiesFile.getAbsolutePath(), e);
 			} catch (Exception e) {
 				logError("Could not load config file from path::" + configurationPropertiesFile.getAbsolutePath(), e);
 			}
@@ -487,7 +481,7 @@ public class PersistedProperties extends LogDelegator implements Initializable, 
 				if(secured) {
 					SecretKey key = generateKey("rk6R9pQy7dg3usJk");
 					Cipher cipher = Cipher.getInstance("AES/CTR/NOPADDING");
-		        	cipher.init(Cipher.ENCRYPT_MODE, key, generateIV(cipher), random);
+		        	cipher.init(Cipher.ENCRYPT_MODE, key, random);
 		        	fileStream =  new CipherOutputStream(fileStream, cipher);	
 				}
 				
@@ -498,10 +492,6 @@ public class PersistedProperties extends LogDelegator implements Initializable, 
 				// Notify other cluster nodes about changed configuration
 				PersistedPropertiesChangedEvent changedConfigEvent = new PersistedPropertiesChangedEvent(configuredProperties);
 				coordinatorManager.getCoordinator().getEventBus().fireEventToListenersOf(changedConfigEvent, PROPERTIES_CHANGED_EVENT_CHANNEL);
-			} catch (FileNotFoundException e) {
-				logError("Could not write config file from path::" + configurationPropertiesFile.getAbsolutePath(), e);
-			} catch (IOException e) {
-				logError("Could not write config file from path::" + configurationPropertiesFile.getAbsolutePath(), e);
 			} catch (Exception e) {
 				logError("Could not write config file from path::" + configurationPropertiesFile.getAbsolutePath(), e);
 			} finally {
@@ -559,11 +549,5 @@ public class PersistedProperties extends LogDelegator implements Initializable, 
 		PBEKeySpec keySpec = new PBEKeySpec(passphrase.toCharArray(), salt.getBytes(), iterations, keyLength);
 		SecretKeyFactory keyFactory = SecretKeyFactory.getInstance("PBEWITHSHA256AND128BITAES-CBC-BC");
 		return keyFactory.generateSecret(keySpec);
-	}
-  
-	private static IvParameterSpec generateIV(Cipher cipher) throws Exception {
-		byte [] ivBytes = new byte[cipher.getBlockSize()];
-		random.nextBytes(ivBytes);
-		return new IvParameterSpec(ivBytes);
 	}
 }
