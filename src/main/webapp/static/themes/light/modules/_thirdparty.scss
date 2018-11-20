@@ -108,7 +108,8 @@
  */
  
 .o_slider_wrapper {
-	height:33px;
+	height: 33px;
+	overflow: hidden;
 }
 
 .ui-slider.ui-slider-horizontal.ui-widget-content {
