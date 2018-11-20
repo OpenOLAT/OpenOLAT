@@ -518,7 +518,7 @@ public class RepositoryManager {
 		boolean isAdministrator = false;
 		boolean isLearnRessourceManager = false;
 		
-		final boolean canLaunch;
+		boolean canLaunch = false;
 		RepositoryEntryStatusEnum status = re.getEntryStatus();
 		if (roles.isGuestOnly()) {
 			// allow for guests if access granted for guests
@@ -593,29 +593,31 @@ public class RepositoryManager {
 				isEntryAdmin = true;
 			} else if(isPrincipal) {
 				canLaunch = true;
-			} else if (isAuthor) {
-				// allow for authors if access granted at least for authors
-				if(re.getCanCopy() || re.getCanDownload() || re.getCanReference() ) {
-					canLaunch = status == RepositoryEntryStatusEnum.review
-							|| status == RepositoryEntryStatusEnum.coachpublished
+			} else {
+				if (isAuthor) {
+					// allow for authors if access granted at least for authors
+					if(re.getCanCopy() || re.getCanDownload() || re.getCanReference() ) {
+						canLaunch = status == RepositoryEntryStatusEnum.review
+								|| status == RepositoryEntryStatusEnum.coachpublished
+								|| status == RepositoryEntryStatusEnum.published
+								|| status == RepositoryEntryStatusEnum.closed;
+					} else if(re.isAllUsers() || re.isGuests()) {
+						canLaunch = status == RepositoryEntryStatusEnum.published
+								|| status == RepositoryEntryStatusEnum.closed;
+					}
+				}
+				
+				if(!canLaunch && (isGroupCoach || isCourseCoach || isCurriculumCoach)) {
+					canLaunch = status == RepositoryEntryStatusEnum.coachpublished
 							|| status == RepositoryEntryStatusEnum.published
 							|| status == RepositoryEntryStatusEnum.closed;
-				} else if(re.isAllUsers() || re.isGuests()) {
+				}
+				
+				if(!canLaunch && (re.isAllUsers() || re.isGuests()
+						|| isGroupParticipant  || isCourseParticipant || isCurriculumParticipant)) {
 					canLaunch = status == RepositoryEntryStatusEnum.published
 							|| status == RepositoryEntryStatusEnum.closed;
-				} else {
-					canLaunch = false;
 				}
-			} else if(isGroupCoach || isCourseCoach || isCurriculumCoach) {
-				canLaunch = status == RepositoryEntryStatusEnum.coachpublished
-						|| status == RepositoryEntryStatusEnum.published
-						|| status == RepositoryEntryStatusEnum.closed;
-			} else if(re.isAllUsers() || re.isGuests()
-					|| isGroupParticipant  || isCourseParticipant || isCurriculumParticipant) {
-				canLaunch = status == RepositoryEntryStatusEnum.published
-						|| status == RepositoryEntryStatusEnum.closed;
-			} else {
-				canLaunch = false;
 			}
 		}
 

@@ -226,7 +226,7 @@ public class JunitTestHelper {
 		return identity;
 	}
 	
-	private static void addToDefaultOrganisation(Identity identity, OrganisationRoles role) {
+	public static void addToDefaultOrganisation(Identity identity, OrganisationRoles role) {
 		CoreSpringFactory.getImpl(OrganisationService.class).addMember(identity, role);
 	}
 	

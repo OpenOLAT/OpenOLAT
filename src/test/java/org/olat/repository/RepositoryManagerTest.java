@@ -60,6 +60,7 @@ import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.repository.model.RepositoryEntryMembership;
+import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.test.JunitTestHelper;
@@ -905,6 +906,47 @@ public class RepositoryManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		Assert.assertFalse(repositoryService.isParticipantAllowedToLeave(re));
+	}
+	
+	@Test
+	public void isAllowed_coach() {
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("allowed-re-1");
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		dbInstance.commit();
+		re = repositoryManager.setAccess(re, RepositoryEntryStatusEnum.published, false, false);
+		repositoryEntryRelationDao.addRole(coach, re, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+		
+		Roles roles = Roles.userRoles();
+		RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(coach, roles, re);
+		Assert.assertTrue(reSecurity.canLaunch());
+	}
+	
+	@Test
+	public void isAllowed_coachWithAuthorRoles() {
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndAuthor("allowed-re-1");
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		dbInstance.commit();
+		re = repositoryManager.setAccess(re, RepositoryEntryStatusEnum.published, false, false);
+		repositoryEntryRelationDao.addRole(coach, re, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+		
+		Roles roles = Roles.userRoles();
+		RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(coach, roles, re);
+		Assert.assertTrue(reSecurity.canLaunch());
+	}
+	
+	@Test
+	public void isAllowed_authorRoles() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("allowed-re-1");
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		dbInstance.commit();
+		re = repositoryManager.setAccess(re, RepositoryEntryStatusEnum.published, false, false);
+		dbInstance.commitAndCloseSession();
+		
+		Roles roles = Roles.userRoles();
+		RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(author, roles, re);
+		Assert.assertFalse(reSecurity.canLaunch());
 	}
 	
 	@Test
