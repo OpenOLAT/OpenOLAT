@@ -1682,35 +1682,37 @@ public class GTAManagerImpl implements GTAManager {
 
 	@Override
 	public void log(String step, String operation, Task assignedTask, Identity actor, Identity assessedIdentity, BusinessGroup assessedGroup,
-			CourseEnvironment courseEnv, GTACourseNode cNode) {
+			CourseEnvironment courseEnv, GTACourseNode cNode, Role by) {
 		//log
-		String msg = step + " of " + assignedTask.getTaskName() + ": " + operation;
+		String taskName = StringHelper.containsNonWhitespace(assignedTask.getTaskName()) ? assignedTask.getTaskName() : assignedTask.getKey().toString();
+		String msg = step + " of " + taskName + ": " + operation;
 		if(GTAType.group.name().equals(cNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE))) {
 			log.audit(msg + " to business group: " + assessedGroup.getName(), null);
 			courseEnv.getAuditManager()
-				.appendToUserNodeLog(cNode, actor, assessedGroup, msg);
+				.appendToUserNodeLog(cNode, actor, assessedGroup, msg, by);
 		} else {
 			log.audit(msg, null);
 			courseEnv.getAuditManager()
-				.appendToUserNodeLog(cNode, actor, assessedIdentity, msg);
+				.appendToUserNodeLog(cNode, actor, assessedIdentity, msg, by);
 		}
 	}
 
 	@Override
 	public void log(String step, SubmitEvent event, Task assignedTask, Identity actor, Identity assessedIdentity, BusinessGroup assessedGroup,
-			CourseEnvironment courseEnv, GTACourseNode cNode) {
+			CourseEnvironment courseEnv, GTACourseNode cNode, Role by) {
 		String operation = event.getLogMessage();
 		String file = event.getFilename();
 		//log
-		String msg = step + " of " + assignedTask.getTaskName() + ": " + operation + " " + file;
+		String taskName = StringHelper.containsNonWhitespace(assignedTask.getTaskName()) ? assignedTask.getTaskName() : assignedTask.getKey().toString();
+		String msg = step + " of " + taskName + ": " + operation + " " + file;
 		if(GTAType.group.name().equals(cNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE))) {
 			log.audit(msg + " to business group: " + assessedGroup.getName(), null);
 			courseEnv.getAuditManager()
-				.appendToUserNodeLog(cNode, actor, assessedGroup, msg);
+				.appendToUserNodeLog(cNode, actor, assessedGroup, msg, by);
 		} else {
 			log.audit(msg, null);
 			courseEnv.getAuditManager()
-				.appendToUserNodeLog(cNode, actor, assessedIdentity, msg);
+				.appendToUserNodeLog(cNode, actor, assessedIdentity, msg, by);
 		}
 	}
 	

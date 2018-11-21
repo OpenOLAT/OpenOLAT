@@ -282,7 +282,7 @@ public class DropboxScoringViewController extends BasicController {
 					// log entry for this file
 					Identity coach = ureq.getIdentity();
 					Identity student = userCourseEnv.getIdentityEnvironment().getIdentity();
-					am.appendToUserNodeLog(node, coach, student, "FILE DELETED: " + folderEvent.getFilename());
+					am.appendToUserNodeLog(node, coach, student, "FILE DELETED: " + folderEvent.getFilename(), null);
 				}
 			}
 		} else if (source == returnboxFolderRunController) {
@@ -304,7 +304,7 @@ public class DropboxScoringViewController extends BasicController {
 						}
 					}
 
-					am.appendToUserNodeLog(node, coach, student, "FILE UPLOADED: " + folderEvent.getFilename());
+					am.appendToUserNodeLog(node, coach, student, "FILE UPLOADED: " + folderEvent.getFilename(), null);
 					String toMail = UserManager.getInstance().getUserDisplayEmail(student, ureq.getLocale());
 					
 					OLATResourceable ores = OresHelper.createOLATResourceableInstance(CourseNode.class, Long.valueOf(node.getIdent()));
@@ -324,7 +324,7 @@ public class DropboxScoringViewController extends BasicController {
 					bundle.setContent(subject, body);
 					MailerResult result = CoreSpringFactory.getImpl(MailManager.class).sendMessage(bundle);
 					if(result.getReturnCode() > 0) {
-						am.appendToUserNodeLog(node, coach, student, "MAIL SEND FAILED TO:" + toMail + "; MailReturnCode: " + result.getReturnCode());
+						am.appendToUserNodeLog(node, coach, student, "MAIL SEND FAILED TO:" + toMail + "; MailReturnCode: " + result.getReturnCode(), null);
 						log.warn("Could not send email 'returnbox notification' to " + student + "with email=" + toMail);
 					} else {
 						log.info("Send email 'returnbox notification' to " + student + "with email=" + toMail);

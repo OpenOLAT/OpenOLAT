@@ -367,7 +367,7 @@ public class DropboxController extends BasicController {
 				
 		// log entry for this file
 		UserNodeAuditManager am = userCourseEnv.getCourseEnvironment().getAuditManager();
-		am.appendToUserNodeLog(node, identity, identity, "FILE UPLOADED: " + filename);
+		am.appendToUserNodeLog(node, identity, identity, "FILE UPLOADED: " + filename, null);
 
 		return VelocityHelper.getInstance().evaluateVTL(confirmation, c);
 	}

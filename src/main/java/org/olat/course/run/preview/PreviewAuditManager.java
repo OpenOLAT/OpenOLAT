@@ -29,6 +29,7 @@ import org.olat.core.id.Identity;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.nodes.CourseNode;
 import org.olat.group.BusinessGroup;
+import org.olat.modules.assessment.Role;
 
 /**
  * Initial Date: 08.02.2005
@@ -37,19 +38,12 @@ import org.olat.group.BusinessGroup;
  */
 final class PreviewAuditManager implements UserNodeAuditManager {
 
-	/**
-	 * @see org.olat.course.auditing.AuditManager#hasUserNodeLogs(org.olat.course.nodes.CourseNode)
-	 */
 	@Override
 	public boolean hasUserNodeLogs(CourseNode node) {
 		// no logging in preview
 		return false;
 	}
 
-	/**
-	 * @see org.olat.course.auditing.AuditManager#getUserNodeLog(org.olat.course.nodes.CourseNode,
-	 *      org.olat.core.id.Identity)
-	 */
 	@Override
 	public String getUserNodeLog(CourseNode courseNode, Identity identity) {
 		// no logging in preview
@@ -62,18 +56,13 @@ final class PreviewAuditManager implements UserNodeAuditManager {
 		return null;
 	}
 
-	/**
-	 * @see org.olat.course.auditing.AuditManager#appendToUserNodeLog(org.olat.course.nodes.CourseNode,
-	 *      org.olat.core.id.Identity, org.olat.core.id.Identity,
-	 *      java.lang.String)
-	 */
 	@Override
-	public void appendToUserNodeLog(CourseNode courseNode, Identity identity, Identity assessedIdentity, String logText) {
+	public void appendToUserNodeLog(CourseNode courseNode, Identity identity, Identity assessedIdentity, String logText, Role by) {
 		// no logging in preview
 	}
 
 	@Override
-	public void appendToUserNodeLog(CourseNode courseNode, Identity identity, BusinessGroup assessedGroup, String logText) {
+	public void appendToUserNodeLog(CourseNode courseNode, Identity identity, BusinessGroup assessedGroup, String logText, Role by) {
 		// no logging in preview
 	}
 }

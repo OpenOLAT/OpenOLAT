@@ -67,6 +67,7 @@ import org.olat.course.nodes.gta.ui.component.DescriptionWithTooltipCellRenderer
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
+import org.olat.modules.assessment.Role;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -267,10 +268,11 @@ public class GTAAvailableTaskController extends FormBasicController {
 			showError("task.assignment.error");
 		} else if(response.getStatus() == AssignmentResponse.Status.alreadyAssigned) {
 			showWarning("task.alreadyChosen");
-		} else if(response == null || response.getStatus() == AssignmentResponse.Status.ok) {
+		} else if(response.getStatus() == AssignmentResponse.Status.ok) {
 			showInfo("task.successfully.assigned");
 			fireEvent(ureq, Event.DONE_EVENT);
-			gtaManager.log("Assignment", "task assigned", response.getTask(), getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode);
+			gtaManager.log("Assignment", "task assigned", response.getTask(), getIdentity(),
+					assessedIdentity, assessedGroup, courseEnv, gtaNode, Role.user);
 			doSendConfirmationEmail(response.getTask());
 		}
 	}

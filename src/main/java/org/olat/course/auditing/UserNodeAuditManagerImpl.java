@@ -32,6 +32,7 @@ import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.group.BusinessGroup;
+import org.olat.modules.assessment.Role;
 import org.olat.properties.Property;
 
 /**
@@ -57,14 +58,9 @@ public class UserNodeAuditManagerImpl implements UserNodeAuditManager {
 		cpm = course.getCourseEnvironment().getCoursePropertyManager();
 	}
 	
-	/**
-	 * @see org.olat.course.auditing.AuditManager#appendToUserNodeLog(org.olat.course.nodes.CourseNode,
-	 *      org.olat.core.id.Identity, org.olat.core.id.Identity,
-	 *      java.lang.String)
-	 */
 	@Override
-	public void appendToUserNodeLog(CourseNode courseNode, Identity identity, Identity assessedIdentity, String logText) {
-		String text = formatMessage(identity, logText) ;
+	public void appendToUserNodeLog(CourseNode courseNode, Identity identity, Identity assessedIdentity, String logText, Role by) {
+		String text = formatMessage(identity, logText, by) ;
 		
 		Property logProperty = cpm.findCourseNodeProperty(courseNode, assessedIdentity, null, LOG_IDENTIFYER);
 		if (logProperty == null) {
@@ -79,8 +75,8 @@ public class UserNodeAuditManagerImpl implements UserNodeAuditManager {
 	}
 		
 	@Override
-	public void appendToUserNodeLog(CourseNode courseNode, Identity identity, BusinessGroup assessedGroup, String logText) {
-		String text = formatMessage(identity, logText) ;
+	public void appendToUserNodeLog(CourseNode courseNode, Identity identity, BusinessGroup assessedGroup, String logText, Role by) {
+		String text = formatMessage(identity, logText, by) ;
 		
 		Property logProperty = cpm.findCourseNodeProperty(courseNode, null, assessedGroup, LOG_IDENTIFYER);
 		if (logProperty == null) {
@@ -93,8 +89,8 @@ public class UserNodeAuditManagerImpl implements UserNodeAuditManager {
 			cpm.updateProperty(logProperty);
 		}
 	}
-	
-	private String formatMessage(Identity identity, String logText) {
+
+	private String formatMessage(Identity identity, String logText, Role by) {
 		Date now = new Date();
 		String date;
 		synchronized(sdb) {
@@ -103,8 +99,19 @@ public class UserNodeAuditManagerImpl implements UserNodeAuditManager {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append(LOG_DELIMITER)
 		  .append("Date: ").append(date).append("\n");
-		if(identity != null) {
-			sb.append("Identity: ").append(identity.getKey()).append("\n");
+		if(by == Role.auto) {
+			sb.append("Identity: automatic");
+		} else if(identity != null) {
+			sb.append("Identity: ")
+			  .append(identity.getUser().getFirstName())
+			  .append(" ")
+			  .append(identity.getUser().getLastName())
+			  .append(" (")
+			  .append(identity.getKey()).append(")");
+			if(by == Role.coach) {
+				sb.append(" (coach)");
+			}
+			sb.append("\n");
 		}
 		sb.append(logText).append("\n");
 		return sb.toString();
@@ -112,7 +119,7 @@ public class UserNodeAuditManagerImpl implements UserNodeAuditManager {
 
 	protected String createLimitedLogContent(String logContent, int maxLength) {
 		if (logContent.length() < maxLength) {
-			return logContent.toString();// nothing to limit
+			return logContent;// nothing to limit
 		}
 		// too long => limit it by removing first log entries
 		while (logContent.length() > maxLength) {
@@ -122,19 +129,12 @@ public class UserNodeAuditManagerImpl implements UserNodeAuditManager {
 		return LOG_PREFIX_REMOVED_OLD_LOG_ENTRIES + logContent;
 	}
 
-	/**
-	 * @see org.olat.course.auditing.AuditManager#hasUserNodeLogs(org.olat.course.nodes.CourseNode)
-	 */
 	@Override
 	public boolean hasUserNodeLogs(CourseNode node) {
 		int numOfProperties = cpm.countCourseNodeProperties(node, null, null, LOG_IDENTIFYER);
 		return numOfProperties > 0;
 	}
 
-	/**
-	 * @see org.olat.course.auditing.AuditManager#getUserNodeLog(org.olat.course.nodes.CourseNode,
-	 *      org.olat.core.id.Identity)
-	 */
 	@Override
 	public String getUserNodeLog(CourseNode courseNode, Identity identity) {
 		Property property = cpm.findCourseNodeProperty(courseNode, identity, null, LOG_IDENTIFYER);

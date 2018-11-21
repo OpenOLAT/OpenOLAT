@@ -443,7 +443,7 @@ public class NewCachePersistingAssessmentManager {
 
 		// node log
 		UserNodeAuditManager am = course.getCourseEnvironment().getAuditManager();
-		am.appendToUserNodeLog(courseNode, identity, assessedIdentity, ATTEMPTS + " set to: " + String.valueOf(attempts));
+		am.appendToUserNodeLog(courseNode, identity, assessedIdentity, ATTEMPTS + " set to: " + String.valueOf(attempts), null);
 
 		// notify about changes
 		AssessmentChangedEvent ace = new AssessmentChangedEvent(AssessmentChangedEvent.TYPE_ATTEMPTS_CHANGED, assessedIdentity);
@@ -512,7 +512,7 @@ public class NewCachePersistingAssessmentManager {
 		});
 		// node log
 		UserNodeAuditManager am = course.getCourseEnvironment().getAuditManager();
-		am.appendToUserNodeLog(courseNode, identity, assessedIdentity, COMMENT + " set to: " + comment);
+		am.appendToUserNodeLog(courseNode, identity, assessedIdentity, COMMENT + " set to: " + comment, null);
 
 		// notify about changes
 		AssessmentChangedEvent ace = new AssessmentChangedEvent(AssessmentChangedEvent.TYPE_USER_COMMENT_CHANGED, assessedIdentity);
@@ -901,14 +901,14 @@ public class NewCachePersistingAssessmentManager {
 		
 		// node log
 		UserNodeAuditManager am = course.getCourseEnvironment().getAuditManager();
-		am.appendToUserNodeLog(courseNode, identity, assessedIdentity, SCORE + " set to: " + String.valueOf(scoreEvaluation.getScore()));
+		am.appendToUserNodeLog(courseNode, identity, assessedIdentity, SCORE + " set to: " + String.valueOf(scoreEvaluation.getScore()), null);
 		if(scoreEvaluation.getPassed()!=null) {
-		  am.appendToUserNodeLog(courseNode, identity, assessedIdentity, PASSED + " set to: " + scoreEvaluation.getPassed().toString());
+		  am.appendToUserNodeLog(courseNode, identity, assessedIdentity, PASSED + " set to: " + scoreEvaluation.getPassed().toString(), null);
 		} else {
-			 am.appendToUserNodeLog(courseNode, identity, assessedIdentity, PASSED + " set to \"undefined\"");
+			 am.appendToUserNodeLog(courseNode, identity, assessedIdentity, PASSED + " set to \"undefined\"", null);
 		}
 		if(scoreEvaluation.getAssessmentID()!=null) {
-			am.appendToUserNodeLog(courseNode, assessedIdentity, assessedIdentity, ASSESSMENT_ID + " set to: " + scoreEvaluation.getAssessmentID().toString());
+			am.appendToUserNodeLog(courseNode, assessedIdentity, assessedIdentity, ASSESSMENT_ID + " set to: " + scoreEvaluation.getAssessmentID().toString(), null);
 		}		
 
 		// notify about changes

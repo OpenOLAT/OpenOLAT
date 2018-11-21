@@ -254,7 +254,8 @@ public class GTAParticipantRevisionAndCorrectionsController extends BasicControl
 		if(uploadRevisionsCtrl == source) {
 			if(event instanceof SubmitEvent) {
 				Task aTask = uploadRevisionsCtrl.getAssignedTask();
-				gtaManager.log("Revision", (SubmitEvent)event, aTask, getIdentity(), getIdentity(), assessedGroup, courseEnv, gtaNode);				
+				gtaManager.log("Revision", (SubmitEvent)event, aTask,
+						getIdentity(), getIdentity(), assessedGroup, courseEnv, gtaNode, Role.user);				
 			} else if(event == Event.DONE_EVENT) {
 				fireEvent(ureq, Event.DONE_EVENT);
 			}
@@ -328,7 +329,8 @@ public class GTAParticipantRevisionAndCorrectionsController extends BasicControl
 		
 		int numOfDocs = submittedDocuments == null ? 0 : submittedDocuments.length;
 		assignedTask = gtaManager.submitRevisions(assignedTask, gtaNode, numOfDocs, Role.user);
-		gtaManager.log("Revision", "revision submitted", assignedTask, getIdentity(), getIdentity(), assessedGroup, courseEnv, gtaNode);
+		gtaManager.log("Revision", "revision submitted", assignedTask,
+				getIdentity(), getIdentity(), assessedGroup, courseEnv, gtaNode, Role.user);
 		
 		TaskMultiUserEvent event = new TaskMultiUserEvent(TaskMultiUserEvent.SUBMIT_REVISION,
 				assessedGroup == null ? getIdentity() : null, assessedGroup, getIdentity());

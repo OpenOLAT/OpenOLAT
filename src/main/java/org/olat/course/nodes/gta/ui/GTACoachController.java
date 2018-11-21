@@ -572,7 +572,8 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 		} else if(submitCorrectionsCtrl == source) {
 			if(event instanceof SubmitEvent) {
 				Task assignedTask = submitCorrectionsCtrl.getAssignedTask();
-				gtaManager.log("Corrections", (SubmitEvent)event, assignedTask, getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode);
+				gtaManager.log("Corrections", (SubmitEvent)event, assignedTask,
+						getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode, Role.coach);
 			}
 		} else if(confirmReviewDocumentCtrl == source) {
 			if(DialogBoxUIFactory.isOkEvent(event) || DialogBoxUIFactory.isYesEvent(event)) {
@@ -665,7 +666,7 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 		//go to solution, grading or graded
 		gtaManager.reviewedTask(task, gtaNode);
 		showInfo("coach.documents.successfully.reviewed");
-		gtaManager.log("Review", "documents reviewed", task, getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode);
+		gtaManager.log("Review", "documents reviewed", task, getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode, Role.coach);
 		
 		cleanUpProcess();
 		process(ureq);
@@ -684,7 +685,7 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 	
 	private void doRevisions(UserRequest ureq, Task task) {
 		gtaManager.updateTask(task, TaskProcess.revision, 1, gtaNode, Role.coach);
-		gtaManager.log("Review", "need revision", task, getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode);
+		gtaManager.log("Review", "need revision", task, getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode, Role.coach);
 		
 		cleanUpProcess();
 		process(ureq);
@@ -742,7 +743,7 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 		CoordinatorManager.getInstance().getCoordinator().getEventBus()
 			.fireEventToListenersOf(event, taskListEventResource);
 		
-		gtaManager.log("Collect", "collect documents", task, getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode);
+		gtaManager.log("Collect", "collect documents", task, getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode, Role.coach);
 		
 		cleanUpProcess();
 		process(ureq);
@@ -770,7 +771,8 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 		if(submit == TaskProcess.submit) {
 			task = gtaManager.updateTask(task, submit, gtaNode, Role.coach);
 			
-			gtaManager.log("Back to submission", "revert status of task back to submission", task, getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode);
+			gtaManager.log("Back to submission", "revert status of task back to submission", task,
+					getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode, Role.coach);
 			
 			cleanUpProcess();
 			process(ureq);
@@ -794,7 +796,8 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 	
 	private void doAllowResetTask(UserRequest ureq, Task assignedTask) {
 		gtaManager.allowResetTask(assignedTask, getIdentity(), gtaNode);
-		gtaManager.log("Allow reset task", "Allow the user to reset the task", assignedTask, getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode);
+		gtaManager.log("Allow reset task", "Allow the user to reset the task", assignedTask,
+				getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode, Role.coach);
 		cleanUpProcess();
 		process(ureq);
 		showInfo("info.task.reset.allowed", (String)null);

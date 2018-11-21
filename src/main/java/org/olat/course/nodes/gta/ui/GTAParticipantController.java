@@ -347,7 +347,8 @@ public class GTAParticipantController extends GTAAbstractController implements A
 		CoordinatorManager.getInstance().getCoordinator().getEventBus()
 			.fireEventToListenersOf(event, taskListEventResource);
 		
-		gtaManager.log("Submit", "submit documents", task, getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode);
+		gtaManager.log("Submit", "submit documents", task,
+				getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode, Role.user);
 		
 		cleanUpProcess();
 		process(ureq);
@@ -762,7 +763,8 @@ public class GTAParticipantController extends GTAAbstractController implements A
 			boolean hasUploadDocuments = submitDocCtrl.hasUploadDocuments();
 			if(event instanceof SubmitEvent) {
 				Task assignedTask = submitDocCtrl.getAssignedTask();
-				gtaManager.log("Submit", (SubmitEvent)event, assignedTask, getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode);
+				gtaManager.log("Submit", (SubmitEvent)event, assignedTask,
+						getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode, Role.user);
 			} else if(event == Event.DONE_EVENT) {
 				cleanUpProcess();
 				process(ureq);
