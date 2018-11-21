@@ -31,8 +31,16 @@ import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
+import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.render.ValidationResult;
+import org.olat.modules.ceditor.PageEditorProvider;
+import org.olat.modules.ceditor.ui.AddElementsController;
+import org.olat.modules.ceditor.ui.PageElementTarget;
+import org.olat.modules.ceditor.ui.event.AddElementEvent;
 import org.olat.modules.ceditor.ui.event.ContainerColumnEvent;
 import org.olat.modules.ceditor.ui.event.DropFragmentEvent;
 import org.olat.modules.ceditor.ui.event.EditFragmentEvent;
@@ -45,7 +53,7 @@ import org.olat.modules.ceditor.ui.model.EditorFragment;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class PageEditorComponent extends FormBaseComponentImpl implements ComponentCollection, ComponentEventListener {
+public class PageEditorComponent extends FormBaseComponentImpl implements ComponentCollection, ComponentEventListener, ControllerEventListener {
 	
 	private static final PageEditorComponentRenderer RENDERER = new PageEditorComponentRenderer();
 	
@@ -55,10 +63,17 @@ public class PageEditorComponent extends FormBaseComponentImpl implements Compon
 	private final Link container2Columns;
 	private final Link container3Columns;
 	private final Link container4Columns;
+
+	private final WindowControl wControl;
+	private AddElementsController addElementsCtrl;
+	private CloseableCalloutWindowController callout;
 	
+	private final PageEditorProvider provider;
 	
-	public PageEditorComponent(String name) {
+	public PageEditorComponent(String name, WindowControl wControl, PageEditorProvider provider) {
 		super(name);
+		this.wControl = wControl;
+		this.provider = provider;
 		setDomReplacementWrapperRequired(false);
 
 		container1Column = LinkFactory.createLink("container.col.1", "text.column.1", null, this);
@@ -121,6 +136,8 @@ public class PageEditorComponent extends FormBaseComponentImpl implements Compon
 			doCloseEditFragment();
 		} else if("drop_fragment".equals(cmd)) {
 			processDropFragment(ureq);
+		}  else if("add_to_container".equals(cmd)) {
+			doAddElementsCallout(ureq);
 		} else {
 			EditorFragment editedFragment = editorModel.getEditedFragment();
 			if(editedFragment != null) {
@@ -130,6 +147,32 @@ public class PageEditorComponent extends FormBaseComponentImpl implements Compon
 		}
 	}
 	
+	@Override
+	public void dispatchEvent(UserRequest ureq, Controller source, Event event) {
+		if(addElementsCtrl == source) {
+			callout.deactivate();
+			if(event instanceof AddElementEvent) {
+				fireEvent(ureq, event);
+			}
+			cleanUp();
+		} else if(callout == source) {
+			if(CloseableCalloutWindowController.CLOSE_WINDOW_EVENT == event) {
+				cleanUp();
+			}
+		}
+	}
+	
+	private void cleanUp() {
+		if(addElementsCtrl != null) {
+			addElementsCtrl.removeControllerListener(this);
+			addElementsCtrl = null;
+		}
+		if(callout != null) {
+			callout.removeControllerListener(this);
+			callout = null;
+		}
+	}
+
 	private Link getLink(String cmd, EditorFragment editedFragment) {
 		if("add.element.above".equals(cmd)) {
 			return editedFragment.getAddElementAboveLink();
@@ -176,6 +219,23 @@ public class PageEditorComponent extends FormBaseComponentImpl implements Compon
 			fragment.setEditMode(false);
 		}
 		setDirty(true);
+	}
+	
+	private void doAddElementsCallout(UserRequest ureq) {
+		String cmpId = ureq.getParameter("container");
+		String column = ureq.getParameter("column");
+		EditorFragment referenceFragment = editorModel.getFragmentByCmpId(cmpId);
+		String containerId = referenceFragment.getPageElement().getId();
+		String targetId = "o_ccad_" + containerId + "_" + column;
+		
+		addElementsCtrl = new AddElementsController(ureq, wControl, provider,
+				referenceFragment, PageElementTarget.within, Integer.parseInt(column));
+		addElementsCtrl.addControllerListener(this);
+		
+		callout = new CloseableCalloutWindowController(ureq, wControl, addElementsCtrl.getInitialComponent(),
+				targetId, "Filter", true, "o_sel_flexi_filter_callout");
+		callout.addControllerListener(this);
+		callout.activate();
 	}
 
 	@Override

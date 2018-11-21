@@ -30,14 +30,20 @@ import org.olat.modules.ceditor.ui.model.EditorFragment;
  */
 public class AddElementInfos {
 
+	private final int column;
 	private final PageElementTarget target;
 	private final PageElementHandler handler;
 	private final EditorFragment referenceFragment;
 	
-	public AddElementInfos(EditorFragment referenceFragment, PageElementHandler handler, PageElementTarget target) {
+	public AddElementInfos(EditorFragment referenceFragment, PageElementHandler handler, PageElementTarget target, int column) {
 		this.target = target;
 		this.handler = handler;
+		this.column = column;
 		this.referenceFragment = referenceFragment;
+	}
+	
+	public int getColumn() {
+		return column;
 	}
 
 	public PageElementTarget getTarget() {

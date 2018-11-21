@@ -154,19 +154,23 @@ public abstract class DefaultController implements Controller, ControllerEventLi
 		return getWindowControl();
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.Controller#addControllerListener(org.olat.core.gui.control.ControllerEventListener)
-	 */
 	@Override
 	public void addControllerListener(ControllerEventListener el) {
 		if (listeners == null) {
-			listeners = new ArrayList<ControllerEventListener>();
+			listeners = new ArrayList<>();
 		}
 		if (!listeners.contains(el)) {
 			listeners.add(el);
 		}
 	}
-	
+
+	@Override
+	public void removeControllerListener(ControllerEventListener el) {
+		if(listeners != null) {
+			listeners.remove(el);
+		}
+	}
+
 	public boolean isControllerListeningTo(ControllerEventListener el) {
 		return listeners != null && listeners.contains(el);
 	}

@@ -45,16 +45,29 @@ import org.olat.modules.ceditor.ui.model.EditorFragment;
  */
 public class AddElementsController extends BasicController {
 	
+	private final int containerColumn;
 	private final PageElementTarget target;
 	private final EditorFragment referenceFragment;
 	
 	public AddElementsController(UserRequest ureq, WindowControl wControl, PageEditorProvider provider,
 			EditorFragment referenceFragment, PageElementTarget target) {
 		super(ureq, wControl);
-		
 		this.target = target;
+		containerColumn = -1;
 		this.referenceFragment = referenceFragment;
-		
+		initContainer(provider);
+	}
+	
+	public AddElementsController(UserRequest ureq, WindowControl wControl, PageEditorProvider provider,
+			EditorFragment referenceFragment, PageElementTarget target, int containerColumn) {
+		super(ureq, wControl);
+		this.target = target;
+		this.containerColumn = containerColumn;
+		this.referenceFragment = referenceFragment;
+		initContainer(provider);
+	}
+	
+	private void initContainer(PageEditorProvider provider) {
 		VelocityContainer mainVC = createVelocityContainer("add_elements");
 		
 		List<String> addElements = new ArrayList<>();
@@ -72,7 +85,6 @@ public class AddElementsController extends BasicController {
 		
 		mainVC.contextPut("linkNames", addElements);
 		putInitialPanel(mainVC);
-		
 	}
 
 	@Override
@@ -81,7 +93,7 @@ public class AddElementsController extends BasicController {
 			Link link = (Link)source;
 			if("add.elements".equals(link.getCommand())) {
 				PageElementHandler handler = (PageElementHandler)link.getUserObject();
-				fireEvent(ureq, new AddElementEvent(referenceFragment, handler, target));
+				fireEvent(ureq, new AddElementEvent(referenceFragment, handler, target, containerColumn));
 			}
 		}
 	}

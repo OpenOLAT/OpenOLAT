@@ -149,9 +149,6 @@ public class CollectFileMediaController extends FormBasicController implements P
 		categoriesEl.setElementCssClass("o_sel_ep_tagsinput");
 		categoriesEl.setAllowDuplicates(false);
 		
-		//String source = "Forum";
-		//uifactory.addStaticTextElement("artefact.source", "artefact.source", source, formLayout);
-		
 		Date collectDate = mediaReference == null ? new Date() : mediaReference.getCollectionDate();
 		String date = Formatter.getInstance(getLocale()).formatDate(collectDate);
 		uifactory.addStaticTextElement("artefact.collect.date", "artefact.collect.date", date, formLayout);
@@ -194,9 +191,9 @@ public class CollectFileMediaController extends FormBasicController implements P
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(fileEl == source) {
-			if (this.titleEl.isEmpty()) {
-				this.titleEl.setValue(fileEl.getUploadFileName());
-				this.titleEl.getComponent().setDirty(true);
+			if (titleEl.isEmpty()) {
+				titleEl.setValue(fileEl.getUploadFileName());
+				titleEl.getComponent().setDirty(true);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);

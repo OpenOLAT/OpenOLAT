@@ -34,14 +34,17 @@ public class AddElementEvent extends Event {
 
 	private static final long serialVersionUID = 7073690795238863754L;
 
+	private final int containerColumn;
 	private final PageElementTarget target;
 	private final PageElementHandler handler;
 	private final EditorFragment referenceFragment;
 	
-	public AddElementEvent(EditorFragment referenceFragment, PageElementHandler handler, PageElementTarget target) {
+	public AddElementEvent(EditorFragment referenceFragment, PageElementHandler handler,
+			PageElementTarget target, int containerColumn) {
 		super("pf-add-above-element");
 		this.target = target;
 		this.handler = handler;
+		this.containerColumn = containerColumn;
 		this.referenceFragment = referenceFragment;
 	}
 
@@ -55,5 +58,9 @@ public class AddElementEvent extends Event {
 
 	public EditorFragment getReferenceFragment() {
 		return referenceFragment;
+	}
+	
+	public int getContainerColumn() {
+		return containerColumn;
 	}
 }

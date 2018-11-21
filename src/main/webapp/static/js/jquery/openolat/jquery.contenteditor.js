@@ -51,7 +51,8 @@
 	function initEdit() {
 		jQuery(".o_page_part").each(function(index, el) {
 			jQuery(el).on('click', function(e) {
-				if(jQuery(e.target).closest(".o_popover").length > 0) {
+				if(jQuery(e.target).closest(".o_popover").length > 0
+						|| jQuery(e.target).closest(".o_page_add_in_container").length > 0) {
 					return true;
 				}
 				
@@ -75,7 +76,8 @@
 				} else {
 					var edited = jQuery(e.target).closest(".o_page_fragment_edit").length > 0
 						|| jQuery(e.target).closest(".o_page_side_options").length > 0;
-					var excludedEls = jQuery(e.target).closest(".o_popover").length > 0;
+					var excludedEls = jQuery(e.target).closest(".o_popover").length > 0
+						|| jQuery(e.target).closest(".o_page_add_in_container").length > 0;
 					if(!edited && !excludedEls && jQuery(".o_layered_panel .modal-dialog").length == 0) {
 						o_XHREvent(componentUrl, false, false, 'cid', 'close_edit_fragment');
 					}

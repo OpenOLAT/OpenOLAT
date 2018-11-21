@@ -44,6 +44,8 @@ public interface Controller extends ComponentEventListener, Disposable {
 	 */
 	public void addControllerListener(ControllerEventListener el);
 	
+	public void removeControllerListener(ControllerEventListener el);
+	
 	public boolean isControllerListeningTo(ControllerEventListener el);
 
 	/**

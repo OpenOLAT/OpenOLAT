@@ -104,7 +104,7 @@ public class PageEditorController extends BasicController {
 		}
 		
 		mainVC.contextPut("addElementLinks", addElements);
-		editorCmp = new PageEditorComponent("page_editor");
+		editorCmp = new PageEditorComponent("page_editor", getWindowControl(), provider);
 		editorCmp.addListener(this);
 		mainVC.put("page_editor", editorCmp);
 		
@@ -136,7 +136,8 @@ public class PageEditorController extends BasicController {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				PageElement element = addCtrl.getPageElement();
 				AddElementInfos uobject = addCtrl.getUserObject();
-				EditorFragment fragment = doAddPageElement(ureq, element, uobject.getReferenceFragment(), uobject.getTarget());
+				EditorFragment fragment = doAddPageElement(ureq, element, uobject.getReferenceFragment(),
+						uobject.getTarget(), uobject.getColumn());
 				// close editor right away (file upload etc makes more sense)
 				doSaveElement(ureq, fragment);
 			}
@@ -147,7 +148,8 @@ public class PageEditorController extends BasicController {
 			cleanUp();
 			if(event instanceof AddElementEvent) {
 				AddElementEvent aee = (AddElementEvent)event;
-				doAddElement(ureq, aee.getReferenceFragment(), aee.getHandler(), aee.getTarget());
+				doAddElement(ureq, aee.getReferenceFragment(), aee.getHandler(),
+						aee.getTarget(), aee.getContainerColumn());
 			}
 		} else if(addCalloutCtrl == source) {
 			cleanUp();
@@ -186,7 +188,7 @@ public class PageEditorController extends BasicController {
 			Link link = (Link)source;
 			if("add".equals(link.getCommand())) {
 				PageElementHandler handler = (PageElementHandler)link.getUserObject();
-				doAddElement(ureq, null, handler, PageElementTarget.atTheEnd);
+				doAddElement(ureq, null, handler, PageElementTarget.atTheEnd, -1);
 			}
 		} else if(editorCmp == source) {
 			if(event instanceof EditFragmentEvent) {
@@ -203,6 +205,11 @@ public class PageEditorController extends BasicController {
 			} else if(event instanceof ContainerColumnEvent) {
 				ContainerColumnEvent cce = (ContainerColumnEvent)event;
 				doChangeContainerColumns(ureq, cce.getFragment(), cce.getNumOfColumns());
+			} else if(event instanceof AddElementEvent) {
+				// add element in container
+				AddElementEvent aee = (AddElementEvent)event;
+				doAddElement(ureq, aee.getReferenceFragment(), aee.getHandler(),
+						aee.getTarget(), aee.getContainerColumn());
 			}
 		}
 	}
@@ -305,8 +312,8 @@ public class PageEditorController extends BasicController {
 		listenTo(addCalloutCtrl);
 		addCalloutCtrl.activate();
 	}
-	
-	private void doAddElement(UserRequest ureq, EditorFragment refenceFragment, PageElementHandler handler, PageElementTarget target) {
+
+	private void doAddElement(UserRequest ureq, EditorFragment refenceFragment, PageElementHandler handler, PageElementTarget target, int column) {
 		if(addCtrl != null) return;
 		
 		if(handler instanceof InteractiveAddPageElementHandler) {
@@ -315,7 +322,7 @@ public class PageEditorController extends BasicController {
 			if(addCtrl == null) {
 				showWarning("not.implement");
 			} else {
-				addCtrl.setUserObject(new AddElementInfos(refenceFragment, handler, target));
+				addCtrl.setUserObject(new AddElementInfos(refenceFragment, handler, target, column));
 				listenTo(addCtrl);
 				String title = translate("add." + handler.getType());
 				cmc = new CloseableModalController(getWindowControl(), null, addCtrl.getInitialComponent(), true, title, true);
@@ -324,16 +331,18 @@ public class PageEditorController extends BasicController {
 			}
 		} else if(handler instanceof SimpleAddPageElementHandler) {
 			SimpleAddPageElementHandler simpleHandler = (SimpleAddPageElementHandler)handler;
-			doAddPageElement(ureq, simpleHandler.createPageElement(getLocale()), refenceFragment, target);
+			doAddPageElement(ureq, simpleHandler.createPageElement(getLocale()), refenceFragment, target, column);
 		}
 	}
 	
-	private EditorFragment doAddPageElement(UserRequest ureq, PageElement element, EditorFragment referenceFragment, PageElementTarget target) {
+	private EditorFragment doAddPageElement(UserRequest ureq, PageElement element, EditorFragment referenceFragment,
+			PageElementTarget target, int column) {
 		EditorFragment newFragment = null;
 		if(target == PageElementTarget.atTheEnd) {
 			newFragment = doAddPageElementAtTheEnd(ureq, referenceFragment, element);
+		} else if(target == PageElementTarget.within && column >= 0) {
+			newFragment = doAddPageElementInContainer(ureq, referenceFragment, element, column);
 		} else if(target == PageElementTarget.above || target == PageElementTarget.below) {
-
 			String containerCmpId = editorModel.getContainerOfFragmentCmpId(referenceFragment.getComponentName());
 			if(containerCmpId != null) {
 				PageElement pageElement = provider.appendPageElement(element);
@@ -370,6 +379,20 @@ public class PageEditorController extends BasicController {
 		return newFragment;
 	}
 	
+	private EditorFragment doAddPageElementInContainer(UserRequest ureq, EditorFragment referenceFragment,
+			PageElement element, int column) {
+		
+		PageElement pageElement = provider.appendPageElement(element);
+		EditorFragment fragment = createFragment(ureq, pageElement);
+		editorModel.add(fragment);
+		
+		if(referenceFragment != null && referenceFragment.getEditorPart() instanceof ContainerEditorController) {
+			PageElement updatedElement = ((ContainerEditorController)referenceFragment.getEditorPart())
+					.setElementAt(fragment.getPageElement().getId(), column, null);
+			referenceFragment.setPageElement(updatedElement);
+		}
+		return fragment;
+	}
 
 	private EditorFragment doAddPageElementAtTheEnd(UserRequest ureq, EditorFragment referenceFragment, PageElement element) {
 		PageElement pageElement = provider.appendPageElement(element);

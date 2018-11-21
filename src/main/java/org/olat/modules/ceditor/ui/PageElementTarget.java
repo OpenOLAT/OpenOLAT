@@ -28,6 +28,7 @@ package org.olat.modules.ceditor.ui;
 public enum PageElementTarget {
 	above,
 	below,
-	atTheEnd
+	atTheEnd,
+	within
 
 }

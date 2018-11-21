@@ -28,7 +28,9 @@ import java.util.stream.Collectors;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentCollection;
 import org.olat.core.gui.components.DefaultComponentRenderer;
+import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
@@ -118,7 +120,7 @@ public class PageEditorComponentRenderer extends DefaultComponentRenderer {
 		if(fragment.getPageElement() instanceof ContainerElement) {
 			sb.append(" clearfix'>");
 			ContainerElement container = (ContainerElement)fragment.getPageElement();
-			renderContainer(renderer, sb, cmp, container, elementIdToFragments, ubu, translator, renderResult, args);
+			renderContainer(renderer, sb, cmp, fragment, container, elementIdToFragments, ubu, translator, renderResult, args);
 		} else {
 			sb.append("'>");
 			Component subCmp = fragment.getComponent();
@@ -235,7 +237,7 @@ public class PageEditorComponentRenderer extends DefaultComponentRenderer {
 		if(element instanceof ContainerElement) {
 			sb.append("o_page_container clearfix'>");
 			ContainerElement container = (ContainerElement)element;
-			renderContainer(renderer, sb, cmp, container, elementIdToFragments, ubu, translator, renderResult, args);
+			renderContainer(renderer, sb, cmp, fragment, container, elementIdToFragments, ubu, translator, renderResult, args);
 		} else {
 			sb.append(" o_page_drop", fragment.isDroppable()).append("'>");
 			Component subCmp = fragment.getComponent();
@@ -246,15 +248,27 @@ public class PageEditorComponentRenderer extends DefaultComponentRenderer {
 		sb.append("</div>");
 	}
 	
-	private void renderContainer(Renderer renderer, StringOutput sb, PageEditorComponent cmp, ContainerElement container, Map<String, EditorFragment> elementIdToFragments,
+	private void renderContainer(Renderer renderer, StringOutput sb, PageEditorComponent cmp, EditorFragment cmpFragment, ContainerElement container, Map<String, EditorFragment> elementIdToFragments,
 			URLBuilder ubu, Translator translator, RenderResult renderResult, String[] args) {
-		ContainerSettings settings =  container.getContainerSettings();
+
+		ContainerSettings settings = container.getContainerSettings();
 		List<ContainerColumn> columns = settings.getColumns();
 		int numOfColumns = settings.getNumOfColumns();
 		List<String> cssColumns = ContainerCSSColumns.getCssColumns(numOfColumns);
 		for(int i=0; i<numOfColumns; i++) {
 			sb.append("<div id='occ_").append(container.getId()).append("_").append(i).append("' class='")
 			  .append(cssColumns.get(i)).append(" o_page_container_slot o_page_drop' data-oo-slot='").append(i).append("'>");
+			
+			if(cmpFragment != null) {
+				sb.append("<a id='o_ccad_").append(container.getId()).append("_").append(i).append("' ")
+				  .append("href='#' onclick=\"");// add elements directly in container
+				ubu.buildXHREvent(sb, "", false, true,
+						new NameValuePair(VelocityContainer.COMMAND_ID, "add_to_container"),
+						new NameValuePair("container", cmpFragment.getCmpId()),
+						new NameValuePair("column", Integer.toString(i)));
+				sb.append(" return false;\" class='btn btn-default btn-xs o_page_add_in_container'><i class='o_icon o_icon_add'> </i></a>");
+			}
+			
 			if(columns != null && i < columns.size()) {
 				ContainerColumn column = columns.get(i);
 				for(String elementId:column.getElementIds()) {
