@@ -715,6 +715,11 @@
 	.o_portfolio_entry_done {
 		background-color: $o-portfolio-entry-done-color;
 	}
+	
+	.o_popover, .popover:hover {
+		color: $o-content-text-color;
+		text-decoration: none;
+	}
 }
 
 .o_portfolio_content {

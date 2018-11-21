@@ -33,7 +33,6 @@
     	}
     	// make sure drake is destroyed after an AJAX call and only one is active at the same time
     	destroyDrakes();
-    	destroyPopovers();
     	registerDrake(editor.drake);
     	return editor;
 	};
@@ -48,19 +47,14 @@
 		this.container = container;
 		this.drake = initDragAndDrop(container);
 	};
-	
-	function destroyPopovers() {
-		jQuery(".o_popover").each(function(index, el) {
-			var popoveredEl = jQuery(el);
-			if(popoveredEl.closest(".o_page_with_side_options_wrapper").length == 0) {
-				popoveredEl.popover('hide');
-			}
-		});
-	}
 
 	function initEdit() {
 		jQuery(".o_page_part").each(function(index, el) {
 			jQuery(el).on('click', function(e) {
+				if(jQuery(e.target).closest(".o_popover").length > 0) {
+					return true;
+				}
+				
 				var element = jQuery(el);
 				if(element.parents('.o_page_fragment_edit').length == 0
 						&& jQuery(".o_page_fragment_edit", element).length == 0) {
@@ -81,7 +75,8 @@
 				} else {
 					var edited = jQuery(e.target).closest(".o_page_fragment_edit").length > 0
 						|| jQuery(e.target).closest(".o_page_side_options").length > 0;
-					if(!edited && jQuery(".o_layered_panel .modal-dialog").length == 0) {
+					var excludedEls = jQuery(e.target).closest(".o_popover").length > 0;
+					if(!edited && !excludedEls && jQuery(".o_layered_panel .modal-dialog").length == 0) {
 						o_XHREvent(componentUrl, false, false, 'cid', 'close_edit_fragment');
 					}
 				}

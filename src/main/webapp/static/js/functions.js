@@ -983,23 +983,25 @@ function o_popover(id, contentId, loc) {
 
 function o_popoverWithTitle(id, contentId, title, loc) {
 	if(typeof(loc)==='undefined') loc = 'bottom';
-
-	return jQuery('#' + id).popover({
+	
+	var popover = jQuery('#' + id).popover({
     	placement : loc,
     	html: true,
     	title: title,
     	trigger: 'click',
     	container: 'body',
     	content: function() { return jQuery('#' + contentId).clone().html(); }
-	}).on('shown.bs.popover', function () {
+	});
+	popover.on('shown.bs.popover', function () {
 		var clickListener = function (e) {
-			jQuery('#' + id).popover('destroy');
+			jQuery('#' + id).popover('hide');
 			jQuery('body').unbind('click', clickListener);
 		};
 		setTimeout(function() {
 			jQuery('body').on('click', clickListener);
 		},5);
 	});
+	return popover;
 }
 
 function o_shareLinkPopup(id, text, loc) {
