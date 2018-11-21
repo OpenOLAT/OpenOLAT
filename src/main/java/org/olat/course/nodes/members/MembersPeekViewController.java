@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
@@ -37,6 +38,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
 import org.olat.course.groupsandrights.CourseGroupManager;
+import org.olat.course.nodes.CourseNodeFactory;
+import org.olat.course.nodes.MembersCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroupService;
@@ -109,50 +112,55 @@ public class MembersPeekViewController extends BasicController {
 	protected void readFormData(ModuleConfiguration config) {
 		CourseGroupManager cgm = courseEnv.getCourseGroupManager();
 		
+		boolean withOwners = config.getBooleanSafe(MembersCourseNode.CONFIG_KEY_SHOWOWNER);
+		boolean withCoaches = config.anyTrue(MembersCourseNode.CONFIG_KEY_COACHES_COURSE, MembersCourseNode.CONFIG_KEY_COACHES_ALL)
+				|| config.hasAnyOf(MembersCourseNode.CONFIG_KEY_COACHES_GROUP, MembersCourseNode.CONFIG_KEY_COACHES_AREA, MembersCourseNode.CONFIG_KEY_COACHES_CUR_ELEMENT);
+		boolean withParticipants = config.anyTrue(MembersCourseNode.CONFIG_KEY_PARTICIPANTS_COURSE, MembersCourseNode.CONFIG_KEY_PARTICIPANTS_ALL)
+				|| config.hasAnyOf(MembersCourseNode.CONFIG_KEY_PARTICIPANTS_GROUP, MembersCourseNode.CONFIG_KEY_PARTICIPANTS_AREA, MembersCourseNode.CONFIG_KEY_PARTICIPANTS_CUR_ELEMENT);
+		
 		
 		RepositoryEntry courseRepositoryEntry = courseEnv.getCourseGroupManager().getCourseEntry();
-		List<Identity> owners = MembersHelpers.getOwners(repositoryService, courseRepositoryEntry);
+		List<Identity> owners;
+		if(withOwners) {
+			owners = MembersHelpers.getOwners(repositoryService, courseRepositoryEntry);
+		} else {
+			owners = new ArrayList<>();
+		}
 		
 		List<Identity> coaches = new ArrayList<>();
-		MembersHelpers.addCoaches(config, cgm, businessGroupService, coaches);
+		if(withCoaches) {
+			MembersHelpers.addCoaches(config, cgm, businessGroupService, coaches);
+		}
 		
 		List<Identity> participants = new ArrayList<>();
-		MembersHelpers.addParticipants(config, cgm, businessGroupService, participants);
+		if(withParticipants) {
+			MembersHelpers.addParticipants(config, cgm, businessGroupService, participants);
+		}
 		
-		Set<Long> duplicateCatcher = new HashSet<>();
-		List<Identity> filteredOwners = owners.stream()
-				.filter(ident -> {
-					if (duplicateCatcher.contains(ident.getKey())) {
-						return false;
-					}
-					duplicateCatcher.add(ident.getKey());
-					return true;
-				})
-				.collect(Collectors.toList());
+		MembersCourseNodeConfiguration nodeConfig = (MembersCourseNodeConfiguration)CourseNodeFactory.getInstance().getCourseNodeConfiguration("cmembers");
+		boolean deduplicateList = nodeConfig.isDeduplicateList();
 		
-		List<Identity> filteredCoaches = coaches.stream()
-				.filter(ident -> {
-					if (duplicateCatcher.contains(ident.getKey())) {
-						return false;
-					}
-					duplicateCatcher.add(ident.getKey());
-					return true;
-				})
-				.collect(Collectors.toList());
-		
-		List<Identity> filteredParticipants = participants.stream()
-				.filter(ident -> {
-					if (duplicateCatcher.contains(ident.getKey())) {
-						return false;
-					}
-					duplicateCatcher.add(ident.getKey());
-					return true;
-				})
-				.collect(Collectors.toList());
-		
-		entries.add(new Row(translate("members.owners"), Integer.toString(filteredOwners.size())));
-		entries.add(new Row(translate("members.coaches"), Integer.toString(filteredCoaches.size())));
-		entries.add(new Row(translate("members.participants"), Integer.toString(filteredParticipants.size())));
+		Predicate<Identity> deduplicatCatch = deduplicateList ? new Deduplicate() : new All();
+		if(withOwners) {
+			List<Identity> filteredOwners = owners.stream()
+					.filter(deduplicatCatch)
+					.collect(Collectors.toList());
+			entries.add(new Row(translate("members.owners"), Integer.toString(filteredOwners.size())));
+		}
+
+		if(withCoaches) {
+			List<Identity> filteredCoaches = coaches.stream()
+					.filter(deduplicatCatch)
+					.collect(Collectors.toList());
+			entries.add(new Row(translate("members.coaches"), Integer.toString(filteredCoaches.size())));
+		}
+
+		if(withParticipants) {
+			List<Identity> filteredParticipants = participants.stream()
+					.filter(deduplicatCatch)
+					.collect(Collectors.toList());
+			entries.add(new Row(translate("members.participants"), Integer.toString(filteredParticipants.size())));
+		}
 	}
 
 	@Override
@@ -171,6 +179,27 @@ public class MembersPeekViewController extends BasicController {
 		public Row(String col1, String col2) {
 			this.col1 = col1;
 			this.col2 = col2;
+		}
+	}
+	
+	private static class Deduplicate implements Predicate<Identity> {
+		
+		private final Set<Identity> duplicateCatcher = new HashSet<>();
+
+		@Override
+		public boolean test(Identity t) {
+			if(duplicateCatcher.contains(t)) {
+				return false;
+			}
+			duplicateCatcher.add(t);
+			return true;
+		}	
+	}
+	
+	private static class All implements Predicate<Identity> {
+		@Override
+		public boolean test(Identity t) {
+			return true;
 		}
 	}
 }
