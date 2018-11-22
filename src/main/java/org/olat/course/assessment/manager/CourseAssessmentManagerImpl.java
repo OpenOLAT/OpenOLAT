@@ -86,9 +86,9 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 	
 	public static final String ASSESSMENT_DOCS_DIR = "assessmentdocs";
 	
-	private static final Float FLOAT_ZERO = new Float(0);
-	private static final Double DOUBLE_ZERO = new Double(0);
-	private static final Integer INTEGER_ZERO = new Integer(0);
+	private static final Float FLOAT_ZERO = Float.valueOf(0.0f);
+	private static final Double DOUBLE_ZERO = Double.valueOf(0.0d);
+	private static final Integer INTEGER_ZERO = Integer.valueOf(0);
 	
 	private final CourseGroupManager cgm;
 	private final AssessmentService assessmentService;
@@ -179,7 +179,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 
 		//node log
 		UserNodeAuditManager am = course.getCourseEnvironment().getAuditManager();
-		am.appendToUserNodeLog(courseNode, identity, assessedIdentity, "ATTEMPTS set to: " + String.valueOf(attempts));
+		am.appendToUserNodeLog(courseNode, identity, assessedIdentity, "ATTEMPTS set to: " + String.valueOf(attempts), by);
 
 		// notify about changes
 		AssessmentChangedEvent ace = new AssessmentChangedEvent(AssessmentChangedEvent.TYPE_ATTEMPTS_CHANGED, assessedIdentity);
@@ -202,7 +202,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		
 		// node log
 		UserNodeAuditManager am = course.getCourseEnvironment().getAuditManager();
-		am.appendToUserNodeLog(courseNode, identity, assessedIdentity, "COMMENT set to: " + comment);
+		am.appendToUserNodeLog(courseNode, identity, assessedIdentity, "COMMENT set to: " + comment, null);
 
 		// notify about changes
 		AssessmentChangedEvent ace = new AssessmentChangedEvent(AssessmentChangedEvent.TYPE_USER_COMMENT_CHANGED, assessedIdentity);
@@ -241,7 +241,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 			// node log
 			ICourse course = CourseFactory.loadCourse(cgm.getCourseEntry());
 			UserNodeAuditManager am = course.getCourseEnvironment().getAuditManager();
-			am.appendToUserNodeLog(courseNode, identity, assessedIdentity, "assessment document added: " + filename);
+			am.appendToUserNodeLog(courseNode, identity, assessedIdentity, "assessment document added: " + filename, null);
 			
 			// user activity logging
 			ThreadLocalUserActivityLogger.log(AssessmentLoggingAction.ASSESSMENT_DOCUMENT_ADDED, 
@@ -269,7 +269,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 			// node log
 			ICourse course = CourseFactory.loadCourse(cgm.getCourseEntry());
 			UserNodeAuditManager am = course.getCourseEnvironment().getAuditManager();
-			am.appendToUserNodeLog(courseNode, identity, assessedIdentity, "assessment document removed: " + document.getName());
+			am.appendToUserNodeLog(courseNode, identity, assessedIdentity, "assessment document removed: " + document.getName(), null);
 			
 			// user activity logging
 			ThreadLocalUserActivityLogger.log(AssessmentLoggingAction.ASSESSMENT_DOCUMENT_REMOVED, 
@@ -461,14 +461,14 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		
 		// node log
 		UserNodeAuditManager am = courseEnv.getAuditManager();
-		am.appendToUserNodeLog(courseNode, identity, assessedIdentity,  "score set to: " + String.valueOf(scoreEvaluation.getScore()));
+		am.appendToUserNodeLog(courseNode, identity, assessedIdentity,  "score set to: " + String.valueOf(scoreEvaluation.getScore()), by);
 		if(scoreEvaluation.getPassed()!=null) {
-			am.appendToUserNodeLog(courseNode, identity, assessedIdentity, "passed set to: " + scoreEvaluation.getPassed().toString());
+			am.appendToUserNodeLog(courseNode, identity, assessedIdentity, "passed set to: " + scoreEvaluation.getPassed().toString(), by);
 		} else {
-			am.appendToUserNodeLog(courseNode, identity, assessedIdentity, "passed set to \"undefined\"");
+			am.appendToUserNodeLog(courseNode, identity, assessedIdentity, "passed set to \"undefined\"", by);
 		}
 		if(scoreEvaluation.getAssessmentID()!=null) {
-			am.appendToUserNodeLog(courseNode, assessedIdentity, assessedIdentity, "assessmentId set to: " + scoreEvaluation.getAssessmentID().toString());
+			am.appendToUserNodeLog(courseNode, assessedIdentity, assessedIdentity, "assessmentId set to: " + scoreEvaluation.getAssessmentID().toString(), by);
 		}
 		
 		// notify about changes
@@ -504,7 +504,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		
 		// write only when enabled for this course
 		if (courseEnv.getCourseConfig().isEfficencyStatementEnabled()) {
-			List<AssessmentNodeData> data = new ArrayList<AssessmentNodeData>(50);
+			List<AssessmentNodeData> data = new ArrayList<>(50);
 			AssessmentNodesLastModified lastModifications = new AssessmentNodesLastModified();
 			AssessmentHelper.getAssessmentNodeDataList(0, courseEnv.getRunStructure().getRootNode(),
 					scoreAccounting, userCourseEnv, true, true, true, data, lastModifications);

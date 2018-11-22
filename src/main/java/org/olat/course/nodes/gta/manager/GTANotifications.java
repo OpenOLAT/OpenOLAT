@@ -60,6 +60,7 @@ import org.olat.course.nodes.gta.TaskRevisionDate;
 import org.olat.course.nodes.gta.model.DueDate;
 import org.olat.course.nodes.gta.model.Membership;
 import org.olat.course.nodes.gta.ui.GTARunController;
+import org.olat.course.nodes.gta.ui.events.SubmitEvent;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
@@ -723,6 +724,7 @@ class GTANotifications {
 			if(dueDate != null && dueDate.getDueDate() != null && dueDate.getDueDate().before(new Date())) {
 				int numOfDocs = getNumberOfSubmittedDocuments(assessedIdentity, assessedGroup);
 				task = gtaManager.submitTask(task, gtaNode, numOfDocs, Role.auto);
+				gtaManager.log("Submit", (SubmitEvent)null, task, null, assessedIdentity, assessedGroup, courseEnv, gtaNode, Role.auto);
 				doUpdateAttempts(assessedIdentity, assessedGroup);
 			}
 		}

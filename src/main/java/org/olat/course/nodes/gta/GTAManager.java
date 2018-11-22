@@ -370,9 +370,9 @@ public interface GTAManager {
 	public boolean hasMarks(RepositoryEntry entry, GTACourseNode gtaNode, Identity marker);
 
 	public void log(String step, String operation, Task assignedTask, Identity actor, Identity assessedIdentity, BusinessGroup assessedGroup,
-			CourseEnvironment courseEnv, GTACourseNode cNode);
+			CourseEnvironment courseEnv, GTACourseNode cNode, Role by);
 	
 	public void log(String step, SubmitEvent event, Task assignedTask, Identity actor, Identity assessedIdentity, BusinessGroup assessedGroup,
-			CourseEnvironment courseEnv, GTACourseNode cNode);
+			CourseEnvironment courseEnv, GTACourseNode cNode, Role by);
 
 }

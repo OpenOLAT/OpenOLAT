@@ -34,6 +34,7 @@ import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.modules.assessment.Role;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -93,7 +94,7 @@ public class ConfirmResetTaskController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		task = gtaManager.resetTask(task, gtaNode, courseEnv);
-		gtaManager.log("Reset task", "reset task", task, getIdentity(), getIdentity(), null, courseEnv, gtaNode);
+		gtaManager.log("Reset task", "reset task", task, getIdentity(), getIdentity(), null, courseEnv, gtaNode, Role.coach);
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 
@@ -101,7 +102,7 @@ public class ConfirmResetTaskController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(dontResetButton == source) {
 			task = gtaManager.resetTaskRefused(task, gtaNode);
-			gtaManager.log("Refuse reset task", "refuse reset task", task, getIdentity(), getIdentity(), null, courseEnv, gtaNode);
+			gtaManager.log("Refuse reset task", "refuse reset task", task, getIdentity(), getIdentity(), null, courseEnv, gtaNode, Role.coach);
 			fireEvent(ureq, Event.DONE_EVENT);
 		}
 		super.formInnerEvent(ureq, source, event);

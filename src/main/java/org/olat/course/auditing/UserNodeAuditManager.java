@@ -28,6 +28,7 @@ package org.olat.course.auditing;
 import org.olat.core.id.Identity;
 import org.olat.course.nodes.CourseNode;
 import org.olat.group.BusinessGroup;
+import org.olat.modules.assessment.Role;
 
 /**
  * Description:
@@ -83,9 +84,10 @@ public interface UserNodeAuditManager {
 	 * @param identity The user who initiated the action that triggered the log
 	 *          entry
 	 * @param assessedIdentity The user who is affected by the change
-	 * @param logText
+	 * @param logText The text to log
+	 * @param by The role of the acting user (optional)
 	 */
-	public void appendToUserNodeLog(CourseNode courseNode, Identity identity, Identity assessedIdentity, String logText);
+	public void appendToUserNodeLog(CourseNode courseNode, Identity identity, Identity assessedIdentity, String logText, Role by);
 	
 	/**
 	 * 
@@ -95,6 +97,6 @@ public interface UserNodeAuditManager {
 	 * @param assessedGroup
 	 * @param logText
 	 */
-	public void appendToUserNodeLog(CourseNode courseNode, Identity identity, BusinessGroup assessedGroup, String logText);
+	public void appendToUserNodeLog(CourseNode courseNode, Identity identity, BusinessGroup assessedGroup, String logText, Role by);
 
 }

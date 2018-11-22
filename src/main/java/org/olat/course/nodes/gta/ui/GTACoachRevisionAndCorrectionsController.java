@@ -287,7 +287,8 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController im
 		if(uploadCorrectionsCtrl == source) {
 			if(event instanceof SubmitEvent) {
 				Task aTask = uploadCorrectionsCtrl.getAssignedTask();
-				gtaManager.log("Corrections", (SubmitEvent)event, aTask, getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode);
+				gtaManager.log("Corrections", (SubmitEvent)event, aTask,
+						getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode, Role.coach);
 			}
 		} else if(confirmReturnToRevisionsCtrl == source) {
 			if(event == Event.DONE_EVENT) {
@@ -376,7 +377,8 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController im
 	
 	private void doCollect() {
 		assignedTask = gtaManager.updateTask(assignedTask, TaskProcess.correction, gtaNode, Role.coach);
-		gtaManager.log("Collect revision", "revision collected", assignedTask, getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode);
+		gtaManager.log("Collect revision", "revision collected", assignedTask,
+				getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode, Role.coach);
 
 		ICourse course = CourseFactory.loadCourse(courseEnv.getCourseResourceableId());
 		if(businessGroupTask) {
@@ -397,7 +399,8 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController im
 	
 	private void doReturnToRevisions(Task task) {
 		assignedTask = gtaManager.updateTask(task, TaskProcess.revision, currentIteration + 1, gtaNode, Role.coach);
-		gtaManager.log("Revision", "need another revision", assignedTask, getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode);
+		gtaManager.log("Revision", "need another revision", assignedTask,
+				getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode, Role.coach);
 	}
 	
 	private void doConfirmCloseRevisionProcess(UserRequest ureq) {
@@ -409,6 +412,7 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController im
 	
 	private void doCloseRevisionProcess() {
 		assignedTask = gtaManager.reviewedTask(assignedTask, gtaNode);
-		gtaManager.log("Revision", "close revision", assignedTask, getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode);
+		gtaManager.log("Revision", "close revision", assignedTask,
+				getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode, Role.coach);
 	}
 }
