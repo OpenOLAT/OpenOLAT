@@ -25,9 +25,17 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumCalendars;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementMembership;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.model.CurriculumElementRepositoryEntryViews;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
+import org.olat.repository.RepositoryManager;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +52,8 @@ public class CurriculumServiceTest extends OlatTestCase {
 	private DB dbInstance;
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private RepositoryManager repositoryManager;
 	
 	@Test
 	public void addCurriculumManagers() {
@@ -65,6 +75,36 @@ public class CurriculumServiceTest extends OlatTestCase {
 		Assert.assertTrue(owners.isEmpty());
 	}
 	
-	
+	@Test
+	public void getCurriculumElements() {
+		Curriculum curriculum = curriculumService.createCurriculum("CUR-2", "Curriculum 2", "Curriculum", null);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-rel", "Element for relation", null, null, null, null, CurriculumCalendars.disabled, curriculum);
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-re-auth");
+		RepositoryEntry publishedEntry = JunitTestHelper.createRandomRepositoryEntry(author);
+		RepositoryEntry reviewedEntry = JunitTestHelper.createRandomRepositoryEntry(author);
+		dbInstance.commit();
+		
+		publishedEntry = repositoryManager.setAccess(publishedEntry, RepositoryEntryStatusEnum.published, false, false);
+		reviewedEntry = repositoryManager.setAccess(reviewedEntry, RepositoryEntryStatusEnum.review, false, false);
+		// add the course and a participant to the curriculum
+		curriculumService.addRepositoryEntry(element, publishedEntry, false);
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-re-part");
+		curriculumService.addMember(element, participant, CurriculumRoles.participant);
+		dbInstance.commitAndCloseSession();
 
+		List<CurriculumElementRepositoryEntryViews> myElements = curriculumService.getCurriculumElements(participant, Roles.userRoles(), curriculum);
+		Assert.assertNotNull(myElements);
+		Assert.assertEquals(1, myElements.size());
+		
+		CurriculumElementRepositoryEntryViews myElement = myElements.get(0);
+		Assert.assertEquals(element, myElement.getCurriculumElement());
+		Assert.assertEquals(1, myElement.getEntries().size());
+		Assert.assertEquals(publishedEntry.getKey(), myElement.getEntries().get(0).getKey());
+		
+		CurriculumElementMembership membership = myElement.getCurriculumMembership();
+		Assert.assertTrue(membership.isParticipant());
+		Assert.assertFalse(membership.isCoach());
+		Assert.assertFalse(membership.isRepositoryEntryOwner());
+		Assert.assertFalse(membership.isCurriculumManager());
+	}
 }

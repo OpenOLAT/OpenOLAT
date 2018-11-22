@@ -936,6 +936,10 @@ public class RepositoryManagerTest extends OlatTestCase {
 		Assert.assertTrue(reSecurity.canLaunch());
 	}
 	
+	
+	/**
+	 * Author is not allowed to launch it
+	 */
 	@Test
 	public void isAllowed_authorRoles() {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("allowed-re-1");
@@ -944,10 +948,25 @@ public class RepositoryManagerTest extends OlatTestCase {
 		re = repositoryManager.setAccess(re, RepositoryEntryStatusEnum.published, false, false);
 		dbInstance.commitAndCloseSession();
 		
-		Roles roles = Roles.userRoles();
+		Roles roles = Roles.authorRoles();
 		RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(author, roles, re);
 		Assert.assertFalse(reSecurity.canLaunch());
 	}
+	
+	@Test
+	public void isAllowed_authorRoles_canReference() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("allowed-re-1");
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		dbInstance.commit();
+		re = repositoryManager.setAccess(re, RepositoryEntryStatusEnum.review, false, false);
+		re = repositoryManager.setAccess(re, false, true, false);
+		dbInstance.commitAndCloseSession();
+		
+		Roles roles = Roles.authorRoles();
+		RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(author, roles, re);
+		Assert.assertTrue(reSecurity.canLaunch());
+	}
+	
 	
 	@Test
 	public void leave_simpleRepositoryEnty() {

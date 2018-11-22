@@ -151,6 +151,26 @@ public class OrganisationDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void getMembersIdentity() {
+		Identity member = JunitTestHelper.createAndPersistIdentityAsRndUser("Member-1");
+		String identifier = UUID.randomUUID().toString();
+		Organisation organisation = organisationDao.createAndPersistOrganisation("OpenOLAT EI", identifier, null, null, null);
+		dbInstance.commit();
+		organisationService.addMember(organisation, member, OrganisationRoles.user);
+		dbInstance.commitAndCloseSession();
+		
+		// get users
+		List<Identity> members = organisationDao.getMembersIdentity(organisation, OrganisationRoles.user.name());
+		Assert.assertNotNull(members);
+		Assert.assertEquals(1, members.size());
+		
+		// but there is no managers
+		List<Identity> rolesManagers = organisationDao.getMembersIdentity(organisation, OrganisationRoles.rolesmanager.name());
+		Assert.assertNotNull(rolesManagers);
+		Assert.assertTrue(rolesManagers.isEmpty());
+	}
+	
+	@Test
 	public void getIdentities_organisationIdentifier() {
 		Identity member1 = JunitTestHelper.createAndPersistIdentityAsRndUser("Member-2");
 		Identity member2 = JunitTestHelper.createAndPersistIdentityAsRndUser("Member-3");
@@ -264,6 +284,24 @@ public class OrganisationDAOTest extends OlatTestCase {
 		List<Organisation> organisations = organisationDao.getOrganisations(null);
 		Assert.assertNotNull(organisations);
 		Assert.assertTrue(organisations.isEmpty());
+	}
+	
+	@Test
+	public void getChildren() {
+		String identifier = UUID.randomUUID().toString();
+		Organisation rootOrganisation = organisationDao.createAndPersistOrganisation("Root", identifier, null, null, null);
+		Organisation organisation_1 = organisationDao.createAndPersistOrganisation("Level 1.1", identifier + ".1", null, rootOrganisation, null);
+		Organisation organisation_2 = organisationDao.createAndPersistOrganisation("Level 1.2", identifier + ".2", null, rootOrganisation, null);
+		dbInstance.commitAndCloseSession();
+		Organisation organisation2_1 = organisationDao.createAndPersistOrganisation("Level 1.2.1", identifier, null, organisation_2, null);
+		dbInstance.commitAndCloseSession();
+		
+		// get the children
+		List<Organisation> children = organisationDao.getChildren(rootOrganisation, new OrganisationStatus[] { OrganisationStatus.active });
+		Assert.assertNotNull(children);
+		Assert.assertTrue(children.contains(organisation_1));
+		Assert.assertTrue(children.contains(organisation_2));
+		Assert.assertFalse(children.contains(organisation2_1));
 	}
 	
 	@Test

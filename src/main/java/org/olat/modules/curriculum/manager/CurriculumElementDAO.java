@@ -146,7 +146,7 @@ public class CurriculumElementDAO {
 				.getResultList();
 	}
 	
-	public String getMaterializedPathKeys(CurriculumElement parent, CurriculumElement element) {
+	private String getMaterializedPathKeys(CurriculumElement parent, CurriculumElement element) {
 		if(parent != null) {
 			String parentPathOfKeys = parent.getMaterializedPathKeys();
 			if(parentPathOfKeys == null || "/".equals(parentPathOfKeys)) {
@@ -192,20 +192,6 @@ public class CurriculumElementDAO {
 		}		
 		dbInstance.commit();
 		return elementImpl;
-	}
-	
-	public boolean hasRelations(CurriculumElementRef curriculumElementRef) {
-		StringBuilder sb = new StringBuilder(128);
-		sb.append("select context.key from qualitycontext as context")
-		  .append(" where context.audienceCurriculumElement.key=:curriculumElementKey");
-		
-		List<Long> keys = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Long.class)
-				.setParameter("curriculumElementKey", curriculumElementRef.getKey())
-				.setFirstResult(0)
-				.setMaxResults(1)
-				.getResultList();
-		return keys != null && !keys.isEmpty() && keys.get(0) != null;
 	}
 	
 	public List<CurriculumElement> loadElements(CurriculumRef curriculum, CurriculumElementStatus[] status) {
@@ -635,8 +621,6 @@ public class CurriculumElementDAO {
 				.setParameter("roles", roleList)
 				.getResultList();
 	}
-	
-	
 	
 	public List<CurriculumElementMembership> getMembershipInfos(CurriculumRef curriculum, Collection<CurriculumElement> elements, Identity... identities) {
 		StringBuilder sb = new StringBuilder(256);

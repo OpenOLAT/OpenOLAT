@@ -21,6 +21,7 @@ package org.olat.modules.curriculum.manager;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -33,6 +34,8 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumCalendars;
+import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumImpl;
@@ -236,6 +239,24 @@ public class CurriculumDAOTest extends OlatTestCase {
 		List<Identity> coaches = curriculumDao.getMembersIdentity(curriculum, CurriculumRoles.coach.name());
 		Assert.assertNotNull(coaches);
 		Assert.assertTrue(coaches.isEmpty());
+	}
+	
+	@Test
+	public void getMyCurriculums() {
+		// add a curriculum with a coach in an element
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-manager-1");
+		Curriculum curriculum = curriculumService.createCurriculum("CUR-MY-1", "My Curriculum 1", "Short desc.", null);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-1", "1. Element", new Date(), new Date(), null,
+				null, CurriculumCalendars.disabled, curriculum);
+		dbInstance.commitAndCloseSession();
+		curriculumService.addMember(element, id, CurriculumRoles.participant);
+		dbInstance.commitAndCloseSession();
+		
+		// get my curriculums
+		List<Curriculum> myCurriculums = curriculumDao.getMyCurriculums(id);
+		Assert.assertNotNull(myCurriculums);
+		Assert.assertEquals(1, myCurriculums.size());
+		Assert.assertEquals(curriculum, myCurriculums.get(0));
 	}
 	
 	@Test

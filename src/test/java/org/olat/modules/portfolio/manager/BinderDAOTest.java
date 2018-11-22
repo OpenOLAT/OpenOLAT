@@ -214,7 +214,5 @@ public class BinderDAOTest extends OlatTestCase {
 		Assert.assertEquals(binder.getKey(), stats.getKey());
 		Assert.assertEquals("open", stats.getStatus());
 		Assert.assertEquals("My statistical binder", stats.getTitle());
-		
 	}
-	
 }

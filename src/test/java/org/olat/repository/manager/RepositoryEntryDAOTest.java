@@ -31,11 +31,14 @@ import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
+import org.olat.core.util.CodeHelper;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
+import org.olat.resource.OLATResourceManager;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -57,6 +60,8 @@ public class RepositoryEntryDAOTest extends OlatTestCase {
 	private RepositoryEntryDAO repositoryEntryDao;
 	@Autowired
 	private OrganisationService organisationService;
+	@Autowired
+	private OLATResourceManager resourceManager;
 
 	@Test
 	public void loadByKey() {
@@ -354,6 +359,35 @@ public class RepositoryEntryDAOTest extends OlatTestCase {
 		Assert.assertEquals(0, emptyRes.size());
 	}
 	
+	@Test
+	public void loadRepositoryEntries() {
+		// insert test data
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		RepositoryEntry re = repositoryService.create(null, "Rei Ayanami", "-", "Repository entry DAO Test all", "", null,
+				RepositoryEntryStatusEnum.published, defOrganisation);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(re);
+
+		List<RepositoryEntry> oneEntry = repositoryEntryDao.loadRepositoryEntries(0, 1);
+		Assert.assertNotNull(oneEntry);
+		Assert.assertEquals(1, oneEntry.size());
+	}
 	
-	
+	@Test
+	public void getLastUsedRepositoryEntries() {
+		// insert test data
+		OLATResourceable resourceable = OresHelper.createOLATResourceableInstance("Wiki", new Long(CodeHelper.getForeverUniqueID()));
+		OLATResource resource = resourceManager.createAndPersistOLATResourceInstance(resourceable);
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		RepositoryEntry re = repositoryService.create(null, "Rei Ayanami", "-", "Repository entry DAO Test all", "", resource,
+				RepositoryEntryStatusEnum.published, defOrganisation);
+		dbInstance.commit();
+		repositoryService.setLastUsageNowFor(re);
+		dbInstance.commitAndCloseSession();
+
+		List<RepositoryEntry> lastUsed = repositoryEntryDao.getLastUsedRepositoryEntries("Wiki", 0, 100);
+		Assert.assertNotNull(lastUsed);
+		Assert.assertTrue(lastUsed.size() <= 100);
+		Assert.assertTrue(lastUsed.contains(re));
+	}
 }
