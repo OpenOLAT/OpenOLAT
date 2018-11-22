@@ -72,6 +72,19 @@ public class AddAssignmentDocumentController extends FormBasicController {
 	}
 
 	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = super.validateFormLogic(ureq);
+		
+		fileEl.clearError();
+		if(fileEl.getUploadFile() == null) {
+			fileEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
+		
+		return allOk;
+	}
+
+	@Override
 	protected void doDispose() {
 		//
 	}
@@ -79,5 +92,10 @@ public class AddAssignmentDocumentController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		fireEvent(ureq, Event.DONE_EVENT);
+	}
+
+	@Override
+	protected void formCancelled(UserRequest ureq) {
+		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 }

@@ -19,11 +19,15 @@
  */
 package org.olat.modules.portfolio.ui;
 
+import java.util.List;
+import java.util.Locale;
+
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.modules.portfolio.ui.model.AssignmentTemplateRow;
 
 /**
@@ -35,13 +39,19 @@ import org.olat.modules.portfolio.ui.model.AssignmentTemplateRow;
 public class AssignmentTemplatesDataModel extends DefaultFlexiTableDataModel<AssignmentTemplateRow>
 implements SortableFlexiTableDataModel<AssignmentTemplateRow> {
 	
-	public AssignmentTemplatesDataModel(FlexiTableColumnModel columnModel) {
+	private final Locale locale;
+	
+	public AssignmentTemplatesDataModel(FlexiTableColumnModel columnModel, Locale locale) {
 		super(columnModel);
+		this.locale = locale;
 	}
 
 	@Override
-	public void sort(SortKey sortKey) {
-		//
+	public void sort(SortKey orderBy) {
+		if(orderBy != null) {
+			List<AssignmentTemplateRow> rows = new SortableFlexiTableModelDelegate<>(orderBy, this, locale).sort();
+			super.setObjects(rows);
+		}
 	}
 
 	@Override
@@ -63,7 +73,7 @@ implements SortableFlexiTableDataModel<AssignmentTemplateRow> {
 
 	@Override
 	public DefaultFlexiTableDataModel<AssignmentTemplateRow> createCopyWithEmptyList() {
-		return new AssignmentTemplatesDataModel(getTableColumnModel());
+		return new AssignmentTemplatesDataModel(getTableColumnModel(), locale);
 	}
 	
 	public enum TemplateCols implements FlexiSortableColumnDef {

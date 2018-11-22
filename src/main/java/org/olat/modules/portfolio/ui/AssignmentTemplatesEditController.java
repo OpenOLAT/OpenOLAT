@@ -111,11 +111,13 @@ public class AssignmentTemplatesEditController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TemplateCols.type, new AssignmentTypeCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TemplateCols.name));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TemplateCols.creationDate, new DateFlexiCellRenderer(getLocale())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("delete", translate("delete"), "delete"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit", translate("edit"), "edit"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("delete", translate("delete"), "delete"));
 		
-		tableModel = new AssignmentTemplatesDataModel(columnsModel);
+		tableModel = new AssignmentTemplatesDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 24, false, getTranslator(), formLayout);
+		tableEl.setCustomizeColumns(false);
+		tableEl.setAndLoadPersistedPreferences(ureq, "portfolio-assignments-templates");
 	}
 	
 	private void loadModel() {
@@ -141,6 +143,7 @@ public class AssignmentTemplatesEditController extends FormBasicController {
 			if(event == Event.DONE_EVENT) {
 				loadModel();
 			}
+			cmc.deactivate();
 			cleanUp();
 		} else if (confirmDeleteCtrl == source) {
 			if (DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
@@ -254,7 +257,8 @@ public class AssignmentTemplatesEditController extends FormBasicController {
 	private void doEditAssignment(UserRequest ureq, Assignment assignment) {
 		if(editAssignmentCtrl != null) return;
 		
-		editAssignmentCtrl = new AssignmentEditController(ureq, getWindowControl(), assignment);
+		editAssignmentCtrl = new AssignmentEditController(ureq, getWindowControl(), assignment,
+				AssignmentEditController.templatesTypes, 1);
 		listenTo(editAssignmentCtrl);
 		
 		String title = translate("edit.assignment");

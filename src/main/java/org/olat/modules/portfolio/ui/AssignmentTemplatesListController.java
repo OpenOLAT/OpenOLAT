@@ -112,7 +112,7 @@ public class AssignmentTemplatesListController extends FormBasicController imple
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TemplateCols.creationDate, new DateFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TemplateCols.action));
 
-		tableModel = new AssignmentTemplatesDataModel(columnsModel);
+		tableModel = new AssignmentTemplatesDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 24, false, getTranslator(), formLayout);
 	}
 	
