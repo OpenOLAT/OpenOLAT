@@ -424,18 +424,43 @@ public class PortfolioServiceImpl implements PortfolioService {
 		Assignment reloadedAssignment = assignmentDao.loadAssignmentByKey(assignment.getKey());
 		Section reloadedSection = reloadedAssignment.getSection();
 		Binder reloadedBinder = reloadedAssignment.getBinder();
-		boolean removedSection = false;
-		boolean removedBinder = false;
+
 		if(reloadedSection != null) {
-			removedSection = ((SectionImpl)reloadedSection).getAssignments().remove(reloadedAssignment);
-		} else if(reloadedBinder != null) {
-			removedBinder = ((BinderImpl)reloadedBinder).getAssignments().remove(reloadedAssignment);
-			
-		}
-		assignmentDao.deleteAssignment(reloadedAssignment);
-		if(removedSection) {
+			((SectionImpl)reloadedSection).getAssignments().remove(reloadedAssignment);
+			assignmentDao.deleteAssignment(reloadedAssignment);
 			binderDao.updateSection(reloadedSection);
-		} else if(removedBinder) {
+		} else if(reloadedBinder != null) {
+			Set<Binder> bindersToUpdate = new HashSet<>();
+			List<Assignment> synchedBindersAssignments = assignmentDao.loadAssignmentReferences(reloadedAssignment);
+			for(Assignment synchedAssignment:synchedBindersAssignments) {
+				List<Assignment> instantiatedAssignments = assignmentDao.loadAssignmentReferences(synchedAssignment);
+				Set<Section> sectionsToUpdate = new HashSet<>();
+				for(Assignment instantiatedAssignment:instantiatedAssignments) {
+					if(instantiatedAssignment.getSection() != null) {
+						Section assignmentSection = instantiatedAssignment.getSection();
+						if(((SectionImpl)assignmentSection).getAssignments().remove(instantiatedAssignment)) {
+							sectionsToUpdate.add(assignmentSection);
+						}
+						assignmentDao.deleteAssignment(instantiatedAssignment);
+					}
+				}
+				for(Section section:sectionsToUpdate) {
+					binderDao.updateSection(section);
+				}
+				
+				if(synchedAssignment.getBinder() != null) {
+					Binder synchedBinder = synchedAssignment.getBinder();
+					if(((BinderImpl)synchedBinder).getAssignments().remove(reloadedAssignment)) {
+						bindersToUpdate.add(synchedBinder);
+					}
+					assignmentDao.deleteAssignment(synchedAssignment);
+				}
+			}
+			
+			for(Binder binder:bindersToUpdate) {
+				binderDao.updateBinder(binder);
+			}
+			assignmentDao.deleteAssignment(reloadedAssignment);
 			binderDao.updateBinder(reloadedBinder);
 		}
 		return true;

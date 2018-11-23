@@ -308,8 +308,21 @@ public class AssignmentDAO {
 		return query.getResultList();
 	}
 	
+	public List<Assignment> loadAssignmentReferences(Assignment assignment) {
+		StringBuilder sb = new StringBuilder(512);
+		sb.append("select assignment from pfassignment as assignment")
+		  .append(" left join fetch assignment.section as section")
+		  .append(" left join fetch assignment.page as page")
+		  .append(" left join fetch assignment.formEntry as formEntry")
+		  .append(" where assignment.templateReference.key=:assignmentKey");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Assignment.class)
+				.setParameter("assignmentKey", assignment.getKey())
+				.getResultList();
+	}
+	
 	public List<Assignment> loadAssignments(Page page, String searchString) {
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(512);
 		sb.append("select assignment from pfassignment as assignment")
 		  .append(" inner join fetch assignment.section as section")
 		  .append(" inner join fetch assignment.page as page")
