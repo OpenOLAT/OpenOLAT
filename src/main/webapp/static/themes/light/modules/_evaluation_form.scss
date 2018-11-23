@@ -14,6 +14,11 @@
 			align-self: flex-end;
 		}
 	}
+ 
+	.o_slider_wrapper {
+		height: 33px;
+		overflow: hidden;
+	}
 	
 	.o_slider {
 		margin-bottom: $o-evaluation-slider-margin-bottom;
