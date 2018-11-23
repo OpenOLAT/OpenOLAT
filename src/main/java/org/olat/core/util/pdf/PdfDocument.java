@@ -179,8 +179,12 @@ public class PdfDocument {
     
     public float getStringWidth(String string, float fontSize)
     throws IOException {
-    	string = string.replace('\n', ' ').replace('\r', ' ');
+    	string = cleanString(string);
     	return fontSize * font.getStringWidth(string) / 1000;
+    }
+    
+    public static String cleanString(String string) {
+    	return string.replace('\n', ' ').replace('\r', ' ').replace('\t', ' ');
     }
     
     public void drawLine(float xStart, float yStart, float xEnd, float yEnd, float lineWidth) 

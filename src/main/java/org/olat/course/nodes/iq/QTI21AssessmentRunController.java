@@ -699,13 +699,17 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			finalOptions.setDigitalSignatureMail(config.getBooleanSafe(IQEditController.CONFIG_DIGITAL_SIGNATURE_SEND_MAIL, testOptions.isDigitalSignatureMail()));
 		}
 		
-		Boolean assessmentResultOnFinish = config.getBooleanEntry(IQEditController.CONFIG_KEY_RESULT_ON_FINISH);
-		if(assessmentResultOnFinish != null) {
-			finalOptions.setShowAssessmentResultsOnFinish(assessmentResultOnFinish.booleanValue());
-		}
+		
 		if(!AssessmentInstance.QMD_ENTRY_SUMMARY_COMPACT.equals(config.getStringValue(IQEditController.CONFIG_KEY_SUMMARY))) {
 			//if this setting is set, override the summary
 			finalOptions.setAssessmentResultsOptions(QTI21AssessmentResultsOptions.parseString(config.getStringValue(IQEditController.CONFIG_KEY_SUMMARY, AssessmentInstance.QMD_ENTRY_SUMMARY_COMPACT)));
+		}
+		Boolean assessmentResultOnFinish = config.getBooleanEntry(IQEditController.CONFIG_KEY_RESULT_ON_FINISH);
+		if(assessmentResultOnFinish != null) {
+			finalOptions.setShowAssessmentResultsOnFinish(assessmentResultOnFinish.booleanValue());
+		} else if(finalOptions.getAssessmentResultsOptions() != null
+				&& !finalOptions.getAssessmentResultsOptions().none()) {
+			finalOptions.setShowAssessmentResultsOnFinish(true);
 		}
 		return finalOptions;
 	}
