@@ -23,6 +23,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
 import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledController;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
@@ -63,6 +64,7 @@ public class AnalysisController extends BasicController implements TooledControl
 	private VelocityContainer mainVC;
 	private Controller filterCtrl;
 	private FilterableController filterableCtrl;
+	private BreadcrumbedStackedPanel stackedDetailsPanel;
 	private CloseableModalController cmc;
 	private PresentationController presentationCtrl;
 	private PresentationDeleteConfirmationController presentationDeleteCtrl;
@@ -149,9 +151,9 @@ public class AnalysisController extends BasicController implements TooledControl
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == filterCtrl && event instanceof AnalysisFilterEvent) {
 			AnalysisFilterEvent filterEvent = (AnalysisFilterEvent) event;
-				AnalysisSearchParameter searchParams = filterEvent.getSearchParams();
-				presentation.setSearchParams(searchParams);
-				filterableCtrl.onFilter(ureq, searchParams);
+			AnalysisSearchParameter searchParams = filterEvent.getSearchParams();
+			presentation.setSearchParams(searchParams);
+			filterableCtrl.onFilter(ureq, searchParams);
 		} else if (source == filterableCtrl) {
 			if (event instanceof ReportSegmentEvent) {
 				// Save current segment between analysis segment changes
@@ -218,8 +220,8 @@ public class AnalysisController extends BasicController implements TooledControl
 					presentation.getFormEntry().getDisplayname(), currentReportSegment);
 			break;
 		case HEAT_MAP:
-			filterableCtrl = new HeatMapController(ureq, getWindowControl(), form, availableAttributes,
-					presentation.getHeatMapGrouping(), presentation.getHeatMapInsufficientOnly());
+			filterableCtrl = new HeatMapController(ureq, getWindowControl(), form, availableAttributes, presentation.getHeatMapGrouping(),
+					presentation.getHeatMapInsufficientOnly());
 			break;
 		default:
 			filterableCtrl = new AnalysisReportController(ureq, getWindowControl(), form,
@@ -228,7 +230,10 @@ public class AnalysisController extends BasicController implements TooledControl
 		}
 		listenTo(filterableCtrl);
 		filterableCtrl.onFilter(ureq, presentation.getSearchParams());
-		mainVC.put("presentation", filterableCtrl.getInitialComponent());
+		stackedDetailsPanel = new BreadcrumbedStackedPanel("forms", getTranslator(), filterableCtrl);
+		stackedDetailsPanel.pushController(translate("analysis.details"), filterableCtrl);
+		filterableCtrl.setBreadcrumbPanel(stackedDetailsPanel);
+		mainVC.put("presentation", stackedDetailsPanel);
 		mainVC.setDirty(true);
 	}
 	

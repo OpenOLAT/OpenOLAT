@@ -20,6 +20,7 @@
 package org.olat.modules.quality.analysis.ui;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.stack.BreadcrumbPanelAware;
 import org.olat.core.gui.control.Controller;
 import org.olat.modules.quality.analysis.AnalysisSearchParameter;
 
@@ -29,7 +30,7 @@ import org.olat.modules.quality.analysis.AnalysisSearchParameter;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface FilterableController extends Controller {
+public interface FilterableController extends Controller, BreadcrumbPanelAware {
 	
 	public void onFilter(UserRequest ureq, AnalysisSearchParameter searchParams);
 

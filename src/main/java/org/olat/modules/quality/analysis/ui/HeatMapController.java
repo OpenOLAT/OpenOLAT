@@ -45,6 +45,8 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -58,6 +60,7 @@ import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.forms.model.xml.Slider;
 import org.olat.modules.quality.QualityDataCollection;
+import org.olat.modules.quality.QualityService;
 import org.olat.modules.quality.analysis.AnalysisSearchParameter;
 import org.olat.modules.quality.analysis.AvailableAttributes;
 import org.olat.modules.quality.analysis.GroupBy;
@@ -66,6 +69,7 @@ import org.olat.modules.quality.analysis.GroupedStatistics;
 import org.olat.modules.quality.analysis.MultiGroupBy;
 import org.olat.modules.quality.analysis.MultiKey;
 import org.olat.modules.quality.analysis.QualityAnalysisService;
+import org.olat.modules.quality.ui.DataCollectionReportController;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,12 +82,14 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class HeatMapController extends FormBasicController implements FilterableController {
 
+	private static final String CMD_GROUP_PREFIX = "CLICKED_";
 	private static final String[] EMPTY_ARRAY = {};
 	private static final String[] INSUFFICIENT_KEYS = new String[] {"heatmap.insufficient.select"};
 	private static final Collection<GroupBy> GROUP_BY_TOPICS = Arrays.asList(GroupBy.TOPIC_IDENTITY,
 			GroupBy.TOPIC_ORGANISATION, GroupBy.TOPIC_CURRICULUM, GroupBy.TOPIC_CURRICULUM_ELEMENT,
 			GroupBy.TOPIC_REPOSITORY);
 	
+	private BreadcrumbPanel stackPanel;
 	private FormLayoutContainer groupingCont;
 	private SingleSelection groupEl1;
 	private SingleSelection groupEl2;
@@ -92,6 +98,8 @@ public class HeatMapController extends FormBasicController implements Filterable
 	private HeatMapDataModel dataModel;
 	private FlexiTableElement tableEl;
 	private FormLayoutContainer legendLayout;
+	
+	private Controller detailCtrl;
 	
 	// This list is the master for the sort order of the questions (sliders).
 	private final List<SliderWrapper> sliders;
@@ -116,12 +124,14 @@ public class HeatMapController extends FormBasicController implements Filterable
 	@Autowired
 	private QualityAnalysisService analysisService;
 	@Autowired
+	private QualityService qualityService;
+	@Autowired
 	private OrganisationModule organisationModule;
 	@Autowired
 	private CurriculumModule curriculumModule;
 
-	public HeatMapController(UserRequest ureq, WindowControl wControl, Form evaluationForm,
-			AvailableAttributes availableAttributes, MultiGroupBy multiGroupBy, Boolean insufficientOnly) {
+	public HeatMapController(UserRequest ureq, WindowControl wControl, Form evaluationForm, AvailableAttributes availableAttributes,
+			MultiGroupBy multiGroupBy, Boolean insufficientOnly) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		this.availableAttributes = availableAttributes;
 		this.multiGroupBy = multiGroupBy;
@@ -311,15 +321,17 @@ public class HeatMapController extends FormBasicController implements Filterable
 		}
 	}
 
-	private void updateTable(List<String> groupHeaders, int maxCount) {
+	private void updateTable(List<ColumnConfig> columnConfigs, int maxCount) {
 		int columnIndex = 0;
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		if (groupHeaders.isEmpty()) {
+		if (columnConfigs.isEmpty()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("heatmap.table.title.group", columnIndex++));
 		} else {
-			for (String header : groupHeaders) {
-				DefaultFlexiColumnModel columnModel = new DefaultFlexiColumnModel("heatmap.table.title.blank", columnIndex++);
-				columnModel.setHeaderLabel(header);
+			for (ColumnConfig columnConfig : columnConfigs) {
+				DefaultFlexiColumnModel columnModel = columnConfig.isActionEnabled()
+						? new DefaultFlexiColumnModel(true, "heatmap.table.title.blank", columnIndex++, CMD_GROUP_PREFIX + columnIndex, false, null)
+						: new DefaultFlexiColumnModel("heatmap.table.title.blank", columnIndex++);
+				columnModel.setHeaderLabel(columnConfig.getHeader());
 				columnModel.setAlwaysVisible(true);
 				columnsModel.addFlexiColumnModel(columnModel);
 			}
@@ -353,6 +365,11 @@ public class HeatMapController extends FormBasicController implements Filterable
 	}
 
 	@Override
+	public void setBreadcrumbPanel(BreadcrumbPanel stackPanel) {
+		this.stackPanel = stackPanel;
+	}
+
+	@Override
 	public void onFilter(UserRequest ureq, AnalysisSearchParameter searchParams) {
 		this.searchParams = searchParams;
 		loadHeatMap();
@@ -366,6 +383,15 @@ public class HeatMapController extends FormBasicController implements Filterable
 		} else if (source == insufficientEl) {
 			setInsufficientOnly(ureq);
 			loadHeatMap();
+		} else if (source == tableEl && event instanceof SelectionEvent) {
+			SelectionEvent se = (SelectionEvent)event;
+			String cmd = se.getCommand();
+			HeatMapRow row = dataModel.getObject(se.getIndex());
+			if (cmd.indexOf(CMD_GROUP_PREFIX) > -1) {
+				String cmdIndex = cmd.substring(CMD_GROUP_PREFIX.length());
+				int index = Integer.parseInt(cmdIndex);
+				doShowDetails(ureq, row, index);
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -444,58 +470,58 @@ public class HeatMapController extends FormBasicController implements Filterable
 			rows.removeIf(this::hasNoInsufficientAvgs);
 		}
 		
-		List<String> headers = getHeaders();
+		List<ColumnConfig> columnConfigs = getColumnConfigs();
 		int maxCount = getMaxCount(rows);
-		updateTable(headers, maxCount);
+		updateTable(columnConfigs, maxCount);
 		
 		rows.sort(new GroupNameAlphabeticalComparator());
 		dataModel.setObjects(rows);
 		tableEl.reset(true, true, true);
 	}
 
-	public List<String> getHeaders() {
-		List<String> headers = new ArrayList<>();
+	public List<ColumnConfig> getColumnConfigs() {
+		List<ColumnConfig> columConfigs = new ArrayList<>();
 		if (multiGroupBy.getGroupBy1() != null) {
-			String header1 = getHeader(multiGroupBy.getGroupBy1());
-			headers.add(header1);
+			ColumnConfig columConfig1 = getColumnConfig(multiGroupBy.getGroupBy1());
+			columConfigs.add(columConfig1);
 		}
 		if (multiGroupBy.getGroupBy2() != null) {
-			String header2 = getHeader(multiGroupBy.getGroupBy2());
-			headers.add(header2);
+			ColumnConfig columConfig2 = getColumnConfig(multiGroupBy.getGroupBy2());
+			columConfigs.add(columConfig2);
 		}
 		if (multiGroupBy.getGroupBy3() != null) {
-			String header3 = getHeader(multiGroupBy.getGroupBy3());
-			headers.add(header3);
+			ColumnConfig columConfig3 = getColumnConfig(multiGroupBy.getGroupBy3());
+			columConfigs.add(columConfig3);
 		}
-		return headers;
+		return columConfigs;
 	}
 	
-	private String getHeader(GroupBy groupBy) {
+	private ColumnConfig getColumnConfig(GroupBy groupBy) {
 		switch (groupBy) {
 		case TOPIC_IDENTITY:
-			return translate("heatmap.table.title.identity");
+			return new ColumnConfig(translate("heatmap.table.title.identity"));
 		case TOPIC_ORGANISATION:
-			return translate("heatmap.table.title.organisation");
+			return new ColumnConfig(translate("heatmap.table.title.organisation"));
 		case TOPIC_CURRICULUM:
-			return translate("heatmap.table.title.curriculum");
+			return new ColumnConfig(translate("heatmap.table.title.curriculum"));
 		case TOPIC_CURRICULUM_ELEMENT:
-			return translate("heatmap.table.title.curriculum.element");
+			return new ColumnConfig(translate("heatmap.table.title.curriculum.element"));
 		case TOPIC_REPOSITORY:
-			return translate("heatmap.table.title.repository");
+			return new ColumnConfig(translate("heatmap.table.title.repository"));
 		case CONTEXT_ORGANISATION:
-			return translate("heatmap.table.title.organisation");
+			return new ColumnConfig(translate("heatmap.table.title.organisation"));
 		case CONTEXT_CURRICULUM:
-			return translate("heatmap.table.title.curriculum");
+			return new ColumnConfig(translate("heatmap.table.title.curriculum"));
 		case CONTEXT_CURRICULUM_ELEMENT:
-			return translate("heatmap.table.title.curriculum.element");
+			return new ColumnConfig(translate("heatmap.table.title.curriculum.element"));
 		case CONTEXT_CURRICULUM_ORGANISATION:
-			return translate("heatmap.table.title.curriculum.organisation");
+			return new ColumnConfig(translate("heatmap.table.title.curriculum.organisation"));
 		case CONTEXT_TAXONOMY_LEVEL:
-			return translate("heatmap.table.title.taxonomy.level");
+			return new ColumnConfig(translate("heatmap.table.title.taxonomy.level"));
 		case CONTEXT_LOCATION:
-			return translate("heatmap.table.title.location");
+			return new ColumnConfig(translate("heatmap.table.title.location"));
 		case DATA_COLLECTION:
-			return translate("heatmap.table.title.data.collection");
+			return new ColumnConfig(translate("heatmap.table.title.data.collection"), true);
 		default:
 			return null;
 		}
@@ -771,6 +797,35 @@ public class HeatMapController extends FormBasicController implements Filterable
 		}
 		return Long.valueOf(maxCount).intValue();
 	}
+	
+	private void doShowDetails(UserRequest ureq, HeatMapRow row, int index) {
+		GroupBy groupBy = null;
+		String groupKey = null;
+		if (index == 1) {
+			groupBy = multiGroupBy.getGroupBy1();
+			groupKey = row.getMultiKey().getKey1();
+		} else if (index == 2) {
+			groupBy = multiGroupBy.getGroupBy2();
+			groupKey = row.getMultiKey().getKey2();
+		} else if (index == 3) {
+			groupBy = multiGroupBy.getGroupBy3();
+			groupKey = row.getMultiKey().getKey3();
+		}
+		
+		if (groupBy != null && StringHelper.containsNonWhitespace(groupKey)) {
+			doShowDetails(ureq, groupBy, groupKey);
+		}
+	}
+	
+	private void doShowDetails(UserRequest ureq, GroupBy groupBy, String groupKey) {
+		if (GroupBy.DATA_COLLECTION.equals(groupBy)) {
+			Long key = Long.valueOf(groupKey);
+			QualityDataCollection dataCollection = qualityService.loadDataCollectionByKey(() -> key);
+			detailCtrl = new DataCollectionReportController(ureq, getWindowControl(), dataCollection);
+			listenTo(detailCtrl);
+			stackPanel.pushController(dataCollection.getTitle(), detailCtrl);
+		}
+	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
@@ -810,6 +865,29 @@ public class HeatMapController extends FormBasicController implements Filterable
 
 		public String getLabel() {
 			return label;
+		}
+	}
+	
+	private final static class ColumnConfig {
+		
+		private final String header;
+		private final boolean actionEnabled;
+		
+		private ColumnConfig(String header) {
+			this(header, false);
+		}
+		
+		private ColumnConfig(String header, boolean actionEnabled) {
+			this.header = header;
+			this.actionEnabled = actionEnabled;
+		}
+
+		public String getHeader() {
+			return header;
+		}
+
+		public boolean isActionEnabled() {
+			return actionEnabled;
 		}
 	}
 

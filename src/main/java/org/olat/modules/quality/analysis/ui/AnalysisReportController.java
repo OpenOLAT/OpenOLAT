@@ -21,6 +21,7 @@ package org.olat.modules.quality.analysis.ui;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -64,6 +65,11 @@ public class AnalysisReportController extends BasicController implements Filtera
 		this.currentSegment = currentSegment;
 		mainVC = createVelocityContainer("reporting");
 		putInitialPanel(mainVC);
+	}
+
+	@Override
+	public void setBreadcrumbPanel(BreadcrumbPanel stackPanel) {
+		//
 	}
 
 	@Override
