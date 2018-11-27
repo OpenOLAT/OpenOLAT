@@ -101,8 +101,9 @@ public class CORunController extends BasicController {
 
 		// Adding learning objectives using a consumable panel. Will only be
 		// displayed on the first page
-		Boolean partipsCourseConfigured = moduleConfiguration.getBooleanEntry(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_COURSE);
-		Boolean partipsAllConfigured = moduleConfiguration.getBooleanEntry(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_ALL);
+		Boolean participantsCourseConfigured = moduleConfiguration.getBooleanEntry(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_COURSE);
+		Boolean participantsAllConfigured = moduleConfiguration.getBooleanEntry(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_ALL);
+		Boolean coachesCourseConfigured = moduleConfiguration.getBooleanEntry(COEditController.CONFIG_KEY_EMAILTOCOACHES_COURSE);
 		Boolean coachesAllConfigured = moduleConfiguration.getBooleanEntry(COEditController.CONFIG_KEY_EMAILTOCOACHES_ALL);
 		Boolean ownersConfigured = moduleConfiguration.getBooleanEntry(COEditController.CONFIG_KEY_EMAILTOOWNERS);
 		Stack<ContactList> contactLists = new Stack<ContactList>();
@@ -149,6 +150,7 @@ public class CORunController extends BasicController {
 			ContactList cl = retrieveParticipantsFromAreas(participantAreaKeys);
 			contactLists.push(cl);
 		}
+		
 		if (coachesAllConfigured != null && coachesAllConfigured.booleanValue()) {
 			ContactList cl = retrieveCoachesFromCourse();
 			contactLists.push(cl);
@@ -161,8 +163,12 @@ public class CORunController extends BasicController {
 			contactLists.push(cl);
 			cl = retrieveCoachesFromAreas(grp_keys);
 			contactLists.push(cl);
+		} else if (coachesCourseConfigured != null && coachesCourseConfigured.booleanValue()){
+			ContactList cl = retrieveCoachesFromCourse();
+			contactLists.push(cl);
 		}
-		if (partipsAllConfigured != null && partipsAllConfigured.booleanValue()) {
+		
+		if (participantsAllConfigured != null && participantsAllConfigured.booleanValue()) {
 			ContactList cl = retrieveParticipantsFromCourse();
 			contactLists.push(cl);
 			List<BusinessGroup> groups = cgm.getAllBusinessGroups();
@@ -174,11 +180,11 @@ public class CORunController extends BasicController {
 			contactLists.push(cl);
 			cl = retrieveParticipantsFromAreas(grp_keys);
 			contactLists.push(cl);
-		}
-		if (partipsCourseConfigured != null && partipsCourseConfigured.booleanValue()){
+		} else if (participantsCourseConfigured != null && participantsCourseConfigured.booleanValue()){
 			ContactList cl = retrieveParticipantsFromCourse();
 			contactLists.push(cl);
 		}
+		
 		if (ownersConfigured != null && ownersConfigured){
 			ContactList cl = retrieveOwnersFromCourse();
 			contactLists.push(cl);
@@ -194,7 +200,7 @@ public class CORunController extends BasicController {
 			ContactList cl = retrieveCoachesFromAreas(areaKeys);
 			contactLists.push(cl);
 		}
-		if (partipsAllConfigured != null && partipsAllConfigured.booleanValue()) {
+		if (participantsAllConfigured != null && participantsAllConfigured.booleanValue()) {
 			ContactList cl = retrieveParticipantsFromAreas(areaKeys);
 			contactLists.push(cl);
 		}
