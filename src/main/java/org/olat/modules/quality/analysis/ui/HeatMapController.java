@@ -34,6 +34,7 @@ import java.util.Set;
 import org.olat.basesecurity.IdentityShort;
 import org.olat.basesecurity.OrganisationModule;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -46,6 +47,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
@@ -59,6 +62,7 @@ import org.olat.modules.forms.model.xml.AbstractElement;
 import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.forms.model.xml.Slider;
+import org.olat.modules.forms.ui.EvaluationFormFormatter;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityService;
 import org.olat.modules.quality.analysis.AnalysisSearchParameter;
@@ -329,7 +333,8 @@ public class HeatMapController extends FormBasicController implements Filterable
 		} else {
 			for (ColumnConfig columnConfig : columnConfigs) {
 				DefaultFlexiColumnModel columnModel = columnConfig.isActionEnabled()
-						? new DefaultFlexiColumnModel(true, "heatmap.table.title.blank", columnIndex++, CMD_GROUP_PREFIX + columnIndex, false, null)
+						? new DefaultFlexiColumnModel("heatmap.table.title.blank", columnIndex++, CMD_GROUP_PREFIX + columnIndex,
+								new StaticFlexiCellRenderer(CMD_GROUP_PREFIX + columnIndex, new TextFlexiCellRenderer(EscapeMode.none)))
 						: new DefaultFlexiColumnModel("heatmap.table.title.blank", columnIndex++);
 				columnModel.setHeaderLabel(columnConfig.getHeader());
 				columnModel.setAlwaysVisible(true);
@@ -738,7 +743,13 @@ public class HeatMapController extends FormBasicController implements Filterable
 			List<QualityDataCollection> dataCollections = analysisService.loadDataCollections(getGroupNamesSearchParams());
 			for (QualityDataCollection dataCollection : dataCollections) {
 				String key = dataCollection.getKey().toString();
-				String value = dataCollection.getTitle();
+				String period = EvaluationFormFormatter.period(dataCollection.getStart(), dataCollection.getDeadline(), getLocale());
+				StringBuilder sb = new StringBuilder();
+				sb.append(StringHelper.escapeHtml(dataCollection.getTitle()));
+				if (period != null) {
+					sb.append("<small> (").append(StringHelper.escapeHtml(period)).append(")</small>");
+				}
+				String value = sb.toString();
 				groupNamesDataCollection.put(key, value);
 			}
 		}
