@@ -42,7 +42,7 @@ import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.video.ui.VideoDisplayController;
-import org.olat.modules.video.ui.VideoEvent;
+import org.olat.modules.video.ui.event.VideoEvent;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.util.logging.activity.LoggingResourceable;

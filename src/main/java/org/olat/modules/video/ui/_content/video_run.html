@@ -22,7 +22,7 @@
 		</video>
 
 
-		<script type="text/javascript">
+		<script>
 		// <![CDATA[
 		## using jQuery
 		var mediaElementBaseUrl = BPlayer._mediaElementBaseUrl();
@@ -33,10 +33,21 @@
 			## Set mode:'shim' to force flash usage
 			pluginPath: mediaElementBaseUrl,
 			stretching: 'responsive',
+			alwaysShowControls: $alwaysShowControls,
+			clickToPlayPause: $clickToPlayPause,
 			
 			## Enabled features - should be same order as in player.js. 
 			## Special here is tracks and sourcechooser which are not available in player.js
-			features: ['playpause','current','volume','progress','duration','tracks' #if($useSourceChooser),'sourcechooser'#end ,'speed','fullscreen'],
+			features: ['playpause','current','volume','progress','duration','tracks' #if($useSourceChooser),'sourcechooser'#end ,'speed','fullscreen','markers'],
+			
+			#if($r.isNotEmpty($markers))
+			markers: [#foreach($marker in $markers) #if($foreach.index != 0),#end { 'id' : '${marker.id}', 'color': '${marker.color}', 'time': $marker.time, 'action': '${marker.action}', 'showInTimeline' : ${marker.showInTimeline} } #end],
+            markerColor: '#00FF00',
+            markerWidth: 3,
+            markerCallback: function (media, time, id) {
+            	$r.openJavaScriptCommand('marker'),'currentTime', time, 'markerId', id);
+            },
+            #end
 			
 			## Callback to communicate with the server
 			success: function (mediaElement, domObject, player) {
@@ -83,6 +94,16 @@
 		        jQuery(jQuery('#' + player.id + '.mejs__source-chooser-selector input')[$preferredResolution]).prop("checked", true).trigger("click");
 		        #end
 		        
+		        ## Place the markers holder
+		        var markerCmpId = 'o_c' + '${r.getComponent("markers").getDispatchID()}';
+		        jQuery('#' + player.id + ' .mejs__layers').append('<div id="' + markerCmpId + '"><!-- empty --></div>');
+		        jQuery('#' + markerCmpId).hide();
+		        
+		        ## Not click to play
+		        #if($r.isFalse($clickToPlayPause))
+		        jQuery('#' + player.id + ' .mejs__overlay-play').remove();
+		        #end
+		        
 		        ## Preset the duration without loading the video
 		        jQuery('#' + player.id + ' .mejs__duration').html('$duration');
 		        
@@ -98,6 +119,7 @@
 	#if($showTitleAndDescription && $description)
 	<h1>$title</h1>
 	#end
+
 	#if($authors)
 	<div class="o_author o_block">
 		<span class="text-muted">$r.translateWithPackage("org.olat.repository", "course.made.by")</span> 

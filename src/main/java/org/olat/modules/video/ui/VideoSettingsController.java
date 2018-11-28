@@ -37,6 +37,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.video.ui.marker.VideoMarkerEditController;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -53,8 +54,14 @@ public class VideoSettingsController extends BasicController implements Activate
 	private VideoChapterEditController chapterEditController;
 	private VideoTrackEditController trackEditController;
 	private VideoQualityTableFormController qualityEditController;
+	private VideoMarkerEditController markerEditController;
 
-	private Link metaDataLink, posterEditLink, chapterEditLink, trackEditLink, qualityConfig;
+	private Link metaDataLink;
+	private Link posterEditLink;
+	private Link chapterEditLink;
+	private Link trackEditLink;
+	private Link markerEditLink;
+	private Link qualityConfig;
 
 	private final VelocityContainer mainVC;
 	private final SegmentViewComponent segmentView;
@@ -73,6 +80,8 @@ public class VideoSettingsController extends BasicController implements Activate
 		segmentView.addSegment(posterEditLink, false);
 		chapterEditLink = LinkFactory.createLink("tab.video.chapterConfig", mainVC, this);
 		segmentView.addSegment(chapterEditLink, false);
+		markerEditLink = LinkFactory.createLink("tab.video.markerConfig", mainVC, this);
+		segmentView.addSegment(markerEditLink, false);
 		trackEditLink = LinkFactory.createLink("tab.video.trackConfig", mainVC, this);
 		segmentView.addSegment(trackEditLink, false);
 		qualityConfig = LinkFactory.createLink("tab.video.qualityConfig", mainVC, this);
@@ -107,6 +116,9 @@ public class VideoSettingsController extends BasicController implements Activate
 		} else if("chapters".equalsIgnoreCase(type)) {
 			doOpenChapterConfig(ureq);
 			segmentView.select(chapterEditLink);
+		} else if("markers".equalsIgnoreCase(type)) {
+			doOpenMarkerConfig(ureq);
+			segmentView.select(markerEditLink);
 		}
 	}
 
@@ -119,14 +131,16 @@ public class VideoSettingsController extends BasicController implements Activate
 				Component clickedLink = mainVC.getComponent(segmentCName);
 				if (clickedLink == metaDataLink) {
 					doOpenMetaDataConfig(ureq);
-				} else if (clickedLink == posterEditLink){
+				} else if (clickedLink == posterEditLink) {
 					doOpenPosterConfig(ureq);
-				} else if (clickedLink == trackEditLink){
+				} else if (clickedLink == trackEditLink) {
 					doOpenTrackConfig(ureq);
-				} else if (clickedLink == qualityConfig){
+				} else if (clickedLink == qualityConfig) {
 					doOpenQualityConfig(ureq);
-				} else if (clickedLink == chapterEditLink){
+				} else if (clickedLink == chapterEditLink) {
 					doOpenChapterConfig(ureq);
+				} else if(clickedLink == markerEditLink) {
+					doOpenMarkerConfig(ureq);
 				}
 			}
 		}
@@ -179,7 +193,7 @@ public class VideoSettingsController extends BasicController implements Activate
 	}
 	
 	private void doOpenChapterConfig(UserRequest ureq){
-		if (chapterEditController == null){
+		if (chapterEditController == null) {
 			OLATResourceable ores = OresHelper.createOLATResourceableType("chapters");
 			WindowControl swControl = addToHistory(ureq, ores, null);
 			chapterEditController = new VideoChapterEditController(ureq, swControl, entry);
@@ -189,4 +203,16 @@ public class VideoSettingsController extends BasicController implements Activate
 		}
 		mainVC.put("segmentCmp", chapterEditController.getInitialComponent());
 	} 
+	
+	private void doOpenMarkerConfig(UserRequest ureq) {
+		if (markerEditController == null) {
+			OLATResourceable ores = OresHelper.createOLATResourceableType("markers");
+			WindowControl swControl = addToHistory(ureq, ores, null);
+			markerEditController = new VideoMarkerEditController(ureq, swControl, entry);
+			listenTo(markerEditController);
+		} else {
+			addToHistory(ureq, markerEditController);
+		}
+		mainVC.put("segmentCmp", markerEditController.getInitialComponent());
+	}
 }

@@ -17,50 +17,48 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.video.ui;
+package org.olat.modules.video.ui.marker;
 
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.translator.Translator;
+import org.olat.modules.video.VideoMarker;
 
 /**
- *
- * Initial date: 21.10.2016<br>
- * @author Fabian Kiefer, fabian.kiefer@frentix.com, http://www.frentix.com
+ * 
+ * Initial date: 27 nov. 2018<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class VideoChapterTableModel extends DefaultFlexiTableDataModel<VideoChapterTableRow>{
-
-	private final Translator translator;
+public class VideoMarkersTableModel extends DefaultFlexiTableDataModel<VideoMarker> {
 	
-	public VideoChapterTableModel(FlexiTableColumnModel columnModel, Translator translator) {
+	public VideoMarkersTableModel(FlexiTableColumnModel columnModel) {
 		super(columnModel);
-		this.translator = translator;
-	}
-
-	@Override
-	public VideoChapterTableModel createCopyWithEmptyList() {
-		return new VideoChapterTableModel(getTableColumnModel(), translator);
 	}
 
 	@Override
 	public Object getValueAt(int row, int col) {
-		VideoChapterTableRow chapter = getObject(row);
-		switch(ChapterTableCols.values()[col]) {
-			case chapterName: return chapter.getChapterName();
-			case intervals: return chapter.getIntervals();
-			default: return "";
+		VideoMarker marker = getObject(row);
+		switch(MarkerCols.values()[col]) {
+			case text: return marker.getText();
+			case start: return marker.getBegin();
+			default: return "ERROR";
 		}
 	}
 
-	public enum ChapterTableCols implements FlexiSortableColumnDef {
-		chapterName("video.chapter.chapterName"),
-		intervals("video.chapter.intervals");
+	@Override
+	public DefaultFlexiTableDataModel<VideoMarker> createCopyWithEmptyList() {
+		return new VideoMarkersTableModel(getTableColumnModel());
+	}
 
+	public enum MarkerCols implements FlexiSortableColumnDef {
+		
+		text("marker.table.header.text"),
+		start("marker.table.header.start");
+		
 		private final String i18nKey;
-
-		private ChapterTableCols(String i18nKey) {
+		
+		private MarkerCols(String i18nKey) {
 			this.i18nKey = i18nKey;
 		}
 
@@ -71,17 +69,12 @@ public class VideoChapterTableModel extends DefaultFlexiTableDataModel<VideoChap
 
 		@Override
 		public boolean sortable() {
-			return true;
+			return false;
 		}
 
 		@Override
 		public String sortKey() {
 			return name();
-		}
-		
-		public String i18nKey() {
-			return i18nKey;
-		}
+		}	
 	}
-
 }

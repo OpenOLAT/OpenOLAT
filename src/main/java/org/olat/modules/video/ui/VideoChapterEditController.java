@@ -50,8 +50,8 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.winmgr.JSCommand;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.video.VideoManager;
-import org.olat.modules.video.VideoMeta;
 import org.olat.modules.video.ui.VideoChapterTableModel.ChapterTableCols;
+import org.olat.modules.video.ui.event.VideoEvent;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -99,29 +99,8 @@ public class VideoChapterEditController extends BasicController {
 		listenTo(chaptersEditCtrl);
 		mainVC.put("chapters", chaptersEditCtrl.getInitialComponent());
 
-		initDurationInSeconds();
+		durationInSeconds = VideoHelper.durationInSeconds(entry, videoDisplayCtr);
 		putInitialPanel(mainVC);
-	}
-	
-	private void initDurationInSeconds() {
-		String duration = entry.getExpenditureOfWork();
-		if (!StringHelper.containsNonWhitespace(duration)) {
-			VideoMeta metadata = videoDisplayCtr.getVideoMetadata();
-			if(metadata != null) {
-				duration = metadata.getLength();
-			}
-		}
-		
-		if(StringHelper.containsNonWhitespace(duration)) {
-			try {
-				if(duration.indexOf(':') == duration.lastIndexOf(':')) {
-					duration = "00:" + duration;
-				}
-				durationInSeconds = displayDateFormat.parse(duration).getTime() / 1000;
-			} catch (Exception e) {
-				logWarn("Cannot parse expenditure of work: " + duration, e);
-			}
-		}
 	}
 
 	@Override

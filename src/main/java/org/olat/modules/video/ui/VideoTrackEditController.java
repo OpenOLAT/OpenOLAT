@@ -42,6 +42,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.ui.VideoTracksTableModel.TrackTableCols;
+import org.olat.modules.video.ui.event.TrackUploadEvent;
 import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
 /**

@@ -20,6 +20,7 @@
 package org.olat.modules.video.ui;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +34,7 @@ import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
+import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -47,10 +49,15 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSContainerMapper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.video.VideoManager;
+import org.olat.modules.video.VideoMarker;
+import org.olat.modules.video.VideoMarkers;
 import org.olat.modules.video.VideoMeta;
 import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.VideoTranscoding;
 import org.olat.modules.video.manager.VideoMediaMapper;
+import org.olat.modules.video.ui.event.MarkerMovedEvent;
+import org.olat.modules.video.ui.event.MarkerResizedEvent;
+import org.olat.modules.video.ui.event.VideoEvent;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
@@ -71,15 +78,22 @@ public class VideoDisplayController extends BasicController {
 	private VideoManager videoManager;
 
 	private UserCommentsAndRatingsController commentsAndRatingCtr;
-	private VelocityContainer mainVC;
+	private final VelocityContainer mainVC;
+	private final VelocityContainer markerVC;
+	private final Panel markerPanel = new Panel("markers");
 	
 	// User preferred resolution, stored in GUI prefs
-	private Integer userPreferredResolution = null;
+	private Integer userPreferredResolution;
 	
-	private RepositoryEntry entry;
+	private final RepositoryEntry entry;
 	private String descriptionText;
 	private String mediaRepoBaseUrl;
 	private VideoMeta videoMetadata;
+	private VideoMarkers videoMarkers;
+	private List<Marker> markers = new ArrayList<>();
+	
+	
+	private boolean dragMarkers;
 
 	public VideoDisplayController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, boolean autoWidth) {
 		this(ureq, wControl, entry, false, false, false, true, null, false, autoWidth, null, false);
@@ -98,6 +112,8 @@ public class VideoDisplayController extends BasicController {
 		
 		mainVC = createVelocityContainer("video_run");
 		putInitialPanel(mainVC);
+		mainVC.put("markers", markerPanel);
+		markerVC = createVelocityContainer("video_markers");
 		
 		RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(entry);
 		VFSContainer mediaContainer = handler.getMediaContainer(entry);
@@ -139,6 +155,7 @@ public class VideoDisplayController extends BasicController {
 				mainVC.put("commentsAndRating", commentsAndRatingCtr.getInitialComponent());
 			}
 			mainVC.contextPut("showTitleAndDescription", showTitleAndDescription);
+			mainVC.contextPut("alwaysShowControls", Boolean.FALSE);
 
 			// Finally load the video, transcoded versions and tracks
 			loadVideo(ureq, video);
@@ -149,44 +166,67 @@ public class VideoDisplayController extends BasicController {
 		return videoMetadata;
 	}
 	
+	public String getVideoElementId() {
+		return mainVC.getDispatchID();
+	}
+	
+	public boolean isDragMarkers() {
+		return dragMarkers;
+	}
+
+	public void setDragMarkers(boolean dragMarkers) {
+		this.dragMarkers = dragMarkers;
+	}
+	
+	public void setPosterEnabled(boolean enabled) {
+		mainVC.contextPut("usePoster", Boolean.valueOf(enabled));
+	}
+
 	public void setTimeUpdateListener(boolean enable) {
 		mainVC.contextPut("listenTimeUpdate", enable);
 	}
 	
-	private void initMediaElementJs() {
-		// load mediaelementjs player, speed and sourcechooser pluginss
-		String[] cssPath;
-		String[] jsCodePath;
-		if(Settings.isDebuging()) {
-			cssPath = new String[] {
-					StaticMediaDispatcher.getStaticURI("movie/mediaelementjs/features/source-chooser/source-chooser.css"),
-					StaticMediaDispatcher.getStaticURI("movie/mediaelementjs/features/speed/speed.css"),
-					StaticMediaDispatcher.getStaticURI("movie/mediaelementjs/mediaelementplayer.css")
-				};
-			jsCodePath = new String[] {
-					"movie/mediaelementjs/mediaelement-and-player.js",
-					"movie/mediaelementjs/features/source-chooser/source-chooser.js",
-					"movie/mediaelementjs/features/speed/speed.js"
-				};
-		} else {
-			cssPath = new String[] {
-					StaticMediaDispatcher.getStaticURI("movie/mediaelementjs/features/source-chooser/source-chooser.css"),
-					StaticMediaDispatcher.getStaticURI("movie/mediaelementjs/features/speed/speed.css"),
-					StaticMediaDispatcher.getStaticURI("movie/mediaelementjs/mediaelementplayer.min.css")
-				};
-			jsCodePath = new String[] {
-					"movie/mediaelementjs/mediaelement-and-player.min.js",
-					"movie/mediaelementjs/features/source-chooser/source-chooser.min.js",
-					"movie/mediaelementjs/features/speed/speed.min.js"
-				};
-		}
-		
-		JSAndCSSComponent mediaelementjs = new JSAndCSSComponent("mediaelementjs", jsCodePath ,cssPath);
-		mainVC.put("mediaelementjs", mediaelementjs);
+	/**
+	 *  Settings must be set before rendering the video
+	 * @param clickToPlayPause
+	 */
+	public void setClickToPlayPause(boolean clickToPlayPause) {
+		mainVC.contextPut("clickToPlayPause", Boolean.valueOf(clickToPlayPause));
 	}
 	
-	public String getVideoElementId() {
-		return mainVC.getDispatchID();
+	public void setAlwaysShowControls(boolean alwaysShowControls) {
+		mainVC.contextPut("alwaysShowControls", Boolean.valueOf(alwaysShowControls));
+	}
+	
+	private void initMediaElementJs() {
+		// load mediaelementjs player, speed and sourcechooser plugins
+		List<String> cssPath = new ArrayList<>();
+		cssPath.add(StaticMediaDispatcher.getStaticURI("movie/mediaelementjs/features/source-chooser/source-chooser.css"));
+		cssPath.add(StaticMediaDispatcher.getStaticURI("movie/mediaelementjs/features/speed/speed.css"));
+
+		List<String> jsCodePath = new ArrayList<>();
+		jsCodePath.add("js/jquery/ui/jquery-ui-1.11.4.custom.resize.min.js");
+		jsCodePath.add("js/jquery/ui/jquery-ui-1.11.4.custom.dnd.min.js");
+		
+		if(Settings.isDebuging()) {
+			cssPath.add(StaticMediaDispatcher.getStaticURI("movie/mediaelementjs/mediaelementplayer.css"));
+			
+			jsCodePath.add("movie/mediaelementjs/mediaelement-and-player.js");
+			jsCodePath.add("movie/mediaelementjs/features/source-chooser/source-chooser.js");
+			jsCodePath.add("movie/mediaelementjs/features/speed/speed.js");
+		} else {
+			cssPath.add(StaticMediaDispatcher.getStaticURI("movie/mediaelementjs/mediaelementplayer.min.css"));
+
+			jsCodePath.add("movie/mediaelementjs/mediaelement-and-player.min.js");
+			jsCodePath.add("movie/mediaelementjs/features/source-chooser/source-chooser.min.js");
+			jsCodePath.add("movie/mediaelementjs/features/speed/speed.min.js");
+		}
+		jsCodePath.add("movie/mediaelementjs/features/markers/o_markers.js");
+		
+		JSAndCSSComponent mediaelementjs = new JSAndCSSComponent("mediaelementjs",
+				jsCodePath.toArray(new String[jsCodePath.size()]),
+				cssPath.toArray(new String[cssPath.size()]));
+		mainVC.put("mediaelementjs", mediaelementjs);
 	}
 
 	/**
@@ -280,6 +320,7 @@ public class VideoDisplayController extends BasicController {
 			mainVC.contextPut("masterTitle", masterTitle + masterSize);
 			mainVC.contextPut("videos", readyToPlayVideos);
 			mainVC.contextPut("displayTitles", displayTitles);
+			mainVC.contextPut("clickToPlayPause", Boolean.TRUE);
 			mainVC.contextPut("useSourceChooser", Boolean.valueOf(readyToPlayVideos.size() > 1));
 			mainVC.contextPut(GUIPREF_KEY_PREFERRED_RESOLUTION, preferredAvailableResolution);
 			// Check for null-value posters
@@ -302,8 +343,36 @@ public class VideoDisplayController extends BasicController {
 			if (!StringHelper.containsNonWhitespace(duration)) {
 				duration = "00:00";
 			}
-			mainVC.contextPut("duration", duration);					
+			mainVC.contextPut("duration", duration);
+			
+			//Markers
+			loadMarkers();
 		}
+	}
+	
+	public List<Marker> loadMarkers() {
+		markers.clear();
+		videoMarkers = videoManager.loadMarkers(entry.getOlatResource());
+		if(videoMarkers != null && !videoMarkers.getMarkers().isEmpty()) {
+			List<Marker> vcMarkers = toMarkers(videoMarkers.getMarkers());
+			markers.addAll(vcMarkers);
+		}
+		Collections.sort(markers);
+		mainVC.contextPut("markers", markers);
+		return new ArrayList<>(markers);
+	}
+	
+	public List<Marker> toMarkers(List<VideoMarker> vmarkers) {
+		List<Marker> vcMarkers = new ArrayList<>();
+		if(vmarkers != null && !vmarkers.isEmpty()) {
+			for(VideoMarker marker:vmarkers) {
+				long start = marker.toSeconds();
+				vcMarkers.add(new Marker(marker.getId(), marker.getColor(), start, "start", true, marker));
+				long end = start + marker.getDuration();
+				vcMarkers.add(new Marker(marker.getId(), marker.getColor(), end, "end", false, marker));
+			}
+		}
+		return vcMarkers;
 	}
 
 	@Override
@@ -319,7 +388,6 @@ public class VideoDisplayController extends BasicController {
 				String currentTime = ureq.getHttpReq().getParameter("currentTime");
 				String duration = ureq.getHttpReq().getParameter("duration");
 				String src = ureq.getHttpReq().getParameter("src");
-				//logDebug(cmd + " " + currentTime + " " + duration + " " + src, null);
 				switch(cmd) {
 					case "play":
 						fireEvent(ureq, new VideoEvent(VideoEvent.PLAY, currentTime, duration));
@@ -336,10 +404,71 @@ public class VideoDisplayController extends BasicController {
 					case "timeupdate":
 						fireEvent(ureq, new VideoEvent(VideoEvent.TIMEUPDATE, currentTime, duration));
 						break;
+					case "marker":
+						doMarker(currentTime);
+						break;
 				}
 				updateGUIPreferences(ureq, src);
 			}
+		} else if(markerVC == source) {
+			if("marker_moved".equals(event.getCommand())) {
+				doMarkerMoved(ureq);
+			} else if("marker_resized".equals(event.getCommand())) {
+				doMarkerResized(ureq);
+			}
 		}
+	}
+	
+	private void doMarkerMoved(UserRequest ureq) {
+		String markerId = ureq.getParameter("marker_id");
+		MarkerMovedEvent event = new MarkerMovedEvent(markerId);
+		double top = Double.parseDouble(ureq.getParameter("top"));
+		event.setTop(top);
+		double left = Double.parseDouble(ureq.getParameter("left"));
+		event.setLeft(left);
+		fireEvent(ureq, event);
+	}
+	
+	private void doMarkerResized(UserRequest ureq) {
+		String markerId = ureq.getParameter("marker_id");
+		MarkerResizedEvent event = new MarkerResizedEvent(markerId);
+		double width = Double.parseDouble(ureq.getParameter("width"));
+		event.setWidth(width);
+		double height = Double.parseDouble(ureq.getParameter("height"));
+		event.setHeight(height);
+		fireEvent(ureq, event);
+	}
+	
+	private void doMarker(String currentTime) {
+		double time = Double.parseDouble(currentTime);
+		List<VideoMarker> currentMarkers = new ArrayList<>();
+		if(videoMarkers != null) {
+			for(VideoMarker marker:videoMarkers.getMarkers()) {
+				long start = marker.toSeconds();
+				long end = start + marker.getDuration();
+				if(start <= time && time < end) {
+					currentMarkers.add(marker);
+				}
+			}
+		}
+
+		markerVC.contextPut("markers", currentMarkers);
+		markerVC.contextPut("dragMarkers", Boolean.valueOf(dragMarkers));
+		markerPanel.setContent(markerVC);
+
+
+		/* add mjse__layer
+		QuestionItem questionItem = qpoolService.loadItemById(741408768l);
+		File resourceDirectory = qpoolService.getRootDirectory(questionItem);
+		File resourceFile = qpoolService.getRootFile(questionItem);
+		URI assessmentItemUri = resourceFile.toURI();
+		ResolvedAssessmentItem resolvedAssessmentItem = qtiService
+				.loadAndResolveAssessmentItem(assessmentItemUri, resourceDirectory);
+		AssessmentItemDisplayController ctrl = new AssessmentItemDisplayController(ureq, getWindowControl(),
+				resolvedAssessmentItem, resourceDirectory, resourceFile, new DefaultAssessmentSessionAuditLogger());
+		listenTo(ctrl);
+		markerPanel.setContent(ctrl.getInitialComponent());
+		*/
 	}
 
 	/**
@@ -369,6 +498,54 @@ public class VideoDisplayController extends BasicController {
 					}
 				}
 			}
+		}
+	}
+	
+	public static class Marker implements Comparable<Marker> {
+		
+		private final String id;
+		private final String color;
+		private final long time;
+		private final String action;
+		private final boolean showInTimeline;
+		private final Object userObject;
+		
+		public Marker(String id, String color, long time, String action, boolean showInTimeline, Object userObject) {
+			this.id = id;
+			this.color = color;
+			this.time = time;
+			this.action = action;
+			this.showInTimeline = showInTimeline;
+			this.userObject = userObject;
+		}
+
+		public String getId() {
+			return id;
+		}
+
+		public String getColor() {
+			return color;
+		}
+
+		public long getTime() {
+			return time;
+		}
+
+		public String getAction() {
+			return action;
+		}
+		
+		public boolean isShowInTimeline() {
+			return showInTimeline;
+		}
+		
+		public Object getUserObject() {
+			return userObject;
+		}
+
+		@Override
+		public int compareTo(Marker o) {
+			return Long.compare(time, o.time);
 		}
 	}
 }

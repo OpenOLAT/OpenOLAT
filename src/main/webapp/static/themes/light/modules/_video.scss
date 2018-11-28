@@ -121,10 +121,18 @@
 	}
 }
 
-.o_video_chapter_editor {
+.o_video_chapter_editor, .o_video_marker_editor  {
 	.o_table_wrapper.o_table_flexi .table {
 		margin-top: 0;
 	}
+}
+
+.o_video_marker {
+	position: absolute;
+	background-color: $o-video-marker-bg-color;
+	opacity: 0.85;
+	border-left: 3px solid $o-video-time-marker-default-bg-color;
+	padding: 5px;
 }
 
 /* beautify source chooser plugin, remove radio button */
@@ -235,4 +243,8 @@
 		white-space: nowrap;
 		display: block;
 	}
+}
+
+.mejs__time-marker {
+	background-color: $o-video-time-marker-default-bg-color;
 }

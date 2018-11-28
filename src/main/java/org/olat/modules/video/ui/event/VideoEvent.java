@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.video.ui;
+package org.olat.modules.video.ui.event;
 
 import org.olat.core.gui.control.Event;
 

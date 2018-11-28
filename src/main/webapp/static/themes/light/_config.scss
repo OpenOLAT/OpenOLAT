@@ -583,6 +583,10 @@ $o-qti-textEntryInteraction-filled-color				: $o-qti-userselection-color !defaul
 $o-qti-textEntryInteraction-filled-bg				: $o-qti-userselection-bg !default;
 $o-qti-textEntryInteraction-filled-border-color		: $o-qti-userselection-border-color !default;
 
+/* Video module */
+$o-video-marker-bg-color							: #efefef;
+$o-video-time-marker-default-bg-color				: $brand-info;
+
 /* Lecture module */
 $o-lm-current-bg									: $o-toolbar-bg-color !default;
 $o-lm-current-border-color							: transparent !default; 

@@ -38,6 +38,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.manager.VideoManagerImpl;
+import org.olat.modules.video.ui.event.TrackUploadEvent;
 import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
 

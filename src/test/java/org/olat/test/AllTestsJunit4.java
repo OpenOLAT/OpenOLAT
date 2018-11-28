@@ -266,6 +266,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.taxonomy.manager.TaxonomyCompetenceAuditLogDAOTest.class,
 	org.olat.modules.video.manager.VideoTranscodingDAOTest.class,
 	org.olat.modules.video.manager.VideoMetadataDAOTest.class,
+	org.olat.modules.video.manager.VideoXStreamTest.class,
 	org.olat.modules.webFeed.manager.FeedDAOTest.class,
 	org.olat.modules.webFeed.manager.ItemDAOTest.class,
 	org.olat.modules.webFeed.manager.FeedFileStorgeTest.class,

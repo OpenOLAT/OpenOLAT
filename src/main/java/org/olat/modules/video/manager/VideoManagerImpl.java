@@ -73,11 +73,13 @@ import org.olat.core.util.xml.XStreamHelper;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.modules.video.VideoManager;
+import org.olat.modules.video.VideoMarkers;
 import org.olat.modules.video.VideoMeta;
 import org.olat.modules.video.VideoMetadata;
 import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.VideoTranscoding;
 import org.olat.modules.video.model.TranscodingCount;
+import org.olat.modules.video.model.VideoMarkersImpl;
 import org.olat.modules.video.model.VideoMetaImpl;
 import org.olat.modules.video.model.VideoMetadataImpl;
 import org.olat.modules.video.ui.VideoChapterTableRow;
@@ -108,6 +110,7 @@ public class VideoManagerImpl implements VideoManager {
 	private static final String FILENAME_POSTER_JPG = "poster.jpg";
 	private static final String FILENAME_VIDEO_MP4 = "video.mp4";
 	private static final String FILENAME_CHAPTERS_VTT = "chapters.vtt";
+	private static final String FILENAME_MARKERS_XML = "markers.xml";
 	private static final String FILENAME_VIDEO_METADATA_XML = "video_metadata.xml";
 	private static final String DIRNAME_MASTER = "master";
 	public static final String TRACK = "track_";
@@ -818,12 +821,10 @@ public class VideoManagerImpl implements VideoManager {
 			vttString.append(vttDateFormat.format(chapters.get(i).getEnd())).append(CR);
 			vttString.append(chapters.get(i).getChapterName().replaceAll(CR, " "));
 			vttString.append(CR);
-			}
-		
-		final BufferedOutputStream bos = new BufferedOutputStream(webvtt.getOutputStream(false));
-		FileUtils.save(bos, vttString.toString(), ENCODING);
-		try {
-			bos.close();
+		}
+
+		try(OutputStream bos = new BufferedOutputStream(webvtt.getOutputStream(false))) {
+			FileUtils.save(bos, vttString.toString(), ENCODING);
 		} catch (IOException e) {
 			log.error("chapter.vtt could not be saved for videoResource::" + videoResource, e);
 		}
@@ -845,8 +846,7 @@ public class VideoManagerImpl implements VideoManager {
 		VFSLeaf webvtt = (VFSLeaf) vfsContainer.resolve(FILENAME_CHAPTERS_VTT);
 
 		if (webvtt != null && webvtt.exists()) {
-			try {
-				BufferedReader webvttReader = new BufferedReader(new InputStreamReader(webvtt.getInputStream()));
+			try(BufferedReader webvttReader = new BufferedReader(new InputStreamReader(webvtt.getInputStream()))) {
 				String thisLine, regex = " --> ";
 				
 				while ((thisLine = webvttReader.readLine()) != null) {
@@ -867,8 +867,6 @@ public class VideoManagerImpl implements VideoManager {
 								displayDateFormat.format(begin), begin, end));
 					}
 				}
-				webvttReader.close();
-				
 			} catch (Exception e) {
 				log.error("Unable to load WEBVTT File for resource::" + videoResource,e);
 			}
@@ -876,6 +874,38 @@ public class VideoManagerImpl implements VideoManager {
 		return chapters;
 	}
 	
+	@Override
+	public VideoMarkers loadMarkers(OLATResource videoResource) {
+		VFSContainer vfsContainer = getMasterContainer(videoResource);
+		VFSItem markersItem = vfsContainer.resolve(FILENAME_MARKERS_XML);
+		if(markersItem instanceof VFSLeaf) {
+			VFSLeaf markersLeaf = (VFSLeaf)markersItem;
+			try(InputStream in=markersLeaf.getInputStream()) {
+				return VideoXStream.fromXml(in, VideoMarkers.class);
+			} catch(IOException e) {
+				log.error("", e);
+			}
+		}
+		return new VideoMarkersImpl();
+	}
+
+	@Override
+	public void saveMarkers(VideoMarkers markers, OLATResource videoResource) {
+		VFSContainer vfsContainer = getMasterContainer(videoResource);
+		VFSItem markersItem = vfsContainer.resolve(FILENAME_MARKERS_XML);
+		if(markersItem == null) {
+			markersItem = vfsContainer.createChildLeaf(FILENAME_MARKERS_XML);
+		}
+		if(markersItem instanceof VFSLeaf) {
+			VFSLeaf markersLeaf = (VFSLeaf)markersItem;
+			try(OutputStream out=markersLeaf.getOutputStream(false)) {
+				VideoXStream.toXml(out, markers);
+			} catch(IOException e) {
+				log.error("", e);
+			}
+		}
+	}
+
 	@Override
 	public long getVideoDuration(OLATResource videoResource){
 		VFSContainer masterContainer = getMasterContainer(videoResource);

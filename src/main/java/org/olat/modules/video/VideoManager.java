@@ -348,7 +348,13 @@ public interface VideoManager {
 	 * @param chapters the chapters
 	 * @param olatResource the video resource
 	 */
-	public void saveChapters(List<VideoChapterTableRow> chapters, OLATResource olatResource);	
+	public void saveChapters(List<VideoChapterTableRow> chapters, OLATResource olatResource);
+	
+	
+	public VideoMarkers loadMarkers(OLATResource olatResource);
+	
+	public void saveMarkers(VideoMarkers markers, OLATResource olatResource);
+	
 	
 	/**
 	 * Gets the video duration.
@@ -367,15 +373,7 @@ public interface VideoManager {
 	 * @return the video resolution from olat resource
 	 */
 	public Size getVideoResolutionFromOLATResource (OLATResource videoResource);
-
-//	/**
-//	 * Gets the meta data from olat resource.
-//	 *
-//	 * @param OLATResource videoResource the video resource
-//	 * @return the metadata from videoResource 
-//	 */
-//	public VideoMetadata getMetaDataFromOLATResource(OLATResource videoResource);
-//	
+	
 	/**
 	 * Gets the all video resources metadata.
 	 *

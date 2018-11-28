@@ -17,34 +17,31 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.video.ui;
+package org.olat.modules.video.ui.component;
 
-import org.olat.core.gui.control.Event;
-import org.olat.core.util.vfs.VFSLeaf;
+import java.util.Date;
+
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
+import org.olat.core.gui.render.Renderer;
+import org.olat.core.gui.render.StringOutput;
+import org.olat.core.gui.render.URLBuilder;
+import org.olat.core.gui.translator.Translator;
+import org.olat.modules.video.ui.VideoHelper;
 
 /**
  * 
- * Initial date: 21 sept. 2017<br>
+ * Initial date: 27 nov. 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class TrackUploadEvent extends Event {
+public class VideoTimeCellRenderer implements FlexiCellRenderer {
 
-	private static final long serialVersionUID = -2951558903014424854L;
-	private final String lang;
-	private final VFSLeaf track;
-	
-	public TrackUploadEvent(String lang, VFSLeaf track) {
-		super("track-upload");
-		this.lang = lang;
-		this.track = track;
-	}
-
-	public String getLang() {
-		return lang;
-	}
-
-	public VFSLeaf getTrack() {
-		return track;
+	@Override
+	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
+			URLBuilder ubu, Translator translator) {
+		if(cellValue instanceof Date) {
+			target.append(VideoHelper.formatTime((Date)cellValue));
+		}
 	}
 }
