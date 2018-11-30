@@ -31,6 +31,7 @@ import org.dom4j.Element;
 import org.dom4j.tree.AbstractAttribute;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.openxml.OpenXMLDocument;
+import org.olat.core.util.openxml.OpenXMLDocument.Columns;
 import org.olat.core.util.openxml.OpenXMLDocument.Unit;
 import org.olat.ims.qti.editor.beecom.parser.ItemParser;
 import org.w3c.dom.Node;
@@ -152,7 +153,7 @@ public class Render_choice extends GenericQTIElement {
 		if (kprim) {
 			ri.put(RenderInstructions.KEY_RENDER_CLASS, "kprim");
 			//open a table with 3 columns
-			table = document.appendTable(new Integer[]{9062, 1116, 1116});
+			table = document.appendTable(5000, Columns.valueOf(9062, 1116, 1116));
 			//draw header with +/-
 			Node row = document.createTableRow();
 			Node emptyCell = row.appendChild(document.createTableCell(null, 9062, Unit.dxa));
@@ -169,7 +170,7 @@ public class Render_choice extends GenericQTIElement {
 			ri.put(RenderInstructions.KEY_RENDER_CLASS, "choice");
 			//open a table with 2 columns
 			//{10178, 1116}
-			table = document.appendTable(new Integer[]{8468, 745});
+			table = document.appendTable(5000, Columns.valueOf(8468, 745));
 		}
 		document.pushCursor(table);
 		super.renderOpenXML(document, ri);
