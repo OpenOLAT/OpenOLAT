@@ -31,6 +31,16 @@ public class OpenXMLConstants {
 	
 	public static final int TABLE_FULL_WIDTH_DXA = 11294;
 	
+	/**
+	 * This is a standard full width with some margins
+	 */
 	public static final int TABLE_FULL_WIDTH_PCT = 4858;
+	
+	/**
+	 * This is 100% width, really full width.
+	 */
+	public static final int TABLE_FULL_FULL_WIDTH_PCT = 5000;
+	
+	
 
 }

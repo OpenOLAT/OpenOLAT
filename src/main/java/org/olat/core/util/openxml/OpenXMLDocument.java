@@ -470,8 +470,14 @@ public class OpenXMLDocument {
 		return html.replace("<p/>", "<p></p>");
 	}
 	
-	public Node appendTable(Integer... width) {
-		Element tableEl = createTable(width);
+	/**
+	 * 
+	 * @param tableWidth The table width in pct.
+	 * @param columns Width of the columns
+	 * @return
+	 */
+	public Node appendTable(int tableWidth, Columns columns) {
+		Element tableEl = createTable(tableWidth, columns);
 		return getCursor().appendChild(tableEl);
 	}
 	
@@ -707,12 +713,17 @@ public class OpenXMLDocument {
 		return paragraphEl;
 	}
 	
-	public Element createTable() {
+	/**
+	 * 
+	 * @param widthPct The width of the table in pct (percent of the width (100% = 5000pct))
+	 * @return The table element (w:tbl)
+	 */
+	public Element createTable(int widthPct) {
 		Element tableEl = document.createElement("w:tbl");
 		
 		//preferences table
 		Element tablePrEl = (Element)tableEl.appendChild(document.createElement("w:tblPr"));
-		createWidthEl("w:tblW", 5000, Unit.pct, tablePrEl);
+		createWidthEl("w:tblW", widthPct, Unit.pct, tablePrEl);
 		createWidthEl("w:tblCellSpacing", 22, Unit.dxa, tablePrEl);
 		Node tableCellMarEl = tablePrEl.appendChild(document.createElement("w:tblCellMar"));
 		createWidthEl("w:top", 45, Unit.dxa, tableCellMarEl);
@@ -751,19 +762,22 @@ public class OpenXMLDocument {
 		<w:gridCol w:w="10178" /><w:gridCol w:w="1116" />
 	</w:tblGrid>
 	 */
-	public Element createTable(Integer... width) {
-		Element tableEl = createTable();
+	public Element createTable(int tableWidth, Columns columns) {
+		Element tableEl = createTable(tableWidth);
 		
 		NodeList gridPrefs = tableEl.getElementsByTagName("w:tblGrid");
 		Element tableGridEl = (Element)gridPrefs.item(0);
 		//table grid
-		for(Integer w:width) {
-			createGridCol(w, tableGridEl);
+		if(columns != null && columns.getWidth() != null && columns.getWidth().length > 0) {
+			for(Integer w:columns.getWidth()) {
+				createGridCol(w, tableGridEl);
+			}
 		}
 		
 		return tableEl;
 	}
 /*
+ * For the moment, only w:tr
 <w:tr>
 	<w:trPr>
 		<w:tblCellSpacing w:w="22" w:type="dxa" />
@@ -1792,6 +1806,40 @@ public class OpenXMLDocument {
 		
 		public String runStyleId() {
 			return runStyleId;
+		}
+	}
+	
+	/**
+	 * These are width in twentieths of a point.
+	 */
+	public static class Columns {
+		
+		private Integer[] width;
+		
+		private Columns(Integer[] width) {
+			this.width = width;
+		}
+		
+		public Integer[] getWidth() {
+			return width;
+		}
+		
+		/**
+		 * Return the width in twentieths of a point.
+		 * 
+		 * @param col The column
+		 * @return An integer or null
+		 */
+		public Integer getColumnWidth(int col) {
+			if(width == null || width.length <= col) return null;
+			return width[col];
+		}
+
+		public static Columns valueOf(Integer... width) {
+			if(width == null || width.length == 0 || width[0] == null) {
+				return new Columns(new Integer[0]);
+			}
+			return new Columns(width);
 		}
 	}
 	
