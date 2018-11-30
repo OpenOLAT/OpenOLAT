@@ -28,6 +28,7 @@ import java.util.List;
 
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.openxml.OpenXMLDocument.Border;
+import org.olat.core.util.openxml.OpenXMLDocument.Columns;
 import org.olat.core.util.openxml.OpenXMLDocument.Indent;
 import org.olat.core.util.openxml.OpenXMLDocument.ListParagraph;
 import org.olat.core.util.openxml.OpenXMLDocument.PredefinedStyle;
@@ -61,7 +62,7 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 	protected List<Node> content = new ArrayList<>();
 	protected Deque<StyleStatus> styleStack = new ArrayDeque<>();
 	
-	protected Table currentTable;
+	protected Deque<Table> tableStack = new ArrayDeque<>();
 	protected Element currentParagraph;
 	protected ListParagraph currentListParagraph;
 	protected boolean pNeedNewParagraph = true;
@@ -163,6 +164,7 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 	protected Element addContent(Node element) {
 		if(element == null) return null;
 		
+		Table currentTable = getCurrentTable();
 		if(currentTable != null) {
 			currentTable.getCurrentCell().appendChild(element);
 		} else {
@@ -376,29 +378,39 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 		closeParagraph();
 	}
 	
-	public void startTable() {
-		closeParagraph();
-		currentTable = new Table();
+	public Table getCurrentTable() {
+		if(tableStack.isEmpty()) {
+			return null;
+		}
+		return tableStack.getLast();
 	}
 	
-	public void startTable(Integer... width) {
+	public Table startTable() {
 		closeParagraph();
-		currentTable = new Table(width);
+		tableStack.add(new Table(OpenXMLConstants.TABLE_FULL_FULL_WIDTH_PCT));
+		return tableStack.getLast();
+	}
+	
+	public Table startTable(Columns columns) {
+		closeParagraph();
+		tableStack.add(new Table(OpenXMLConstants.TABLE_FULL_FULL_WIDTH_PCT, columns));
+		return tableStack.getLast();
 	}
 	
 	public void startCurrentTableRow() {
-		currentTable.addRowEl();
+		getCurrentTable().addRowEl();
 	}
 	
 	public Node addCell(int colSpan, int rowSpan) {
-		return currentTable.addCellEl(colSpan, rowSpan);
+		return getCurrentTable().addCellEl(colSpan, rowSpan);
 	}
 	
 	public Node addCell(Element cellEl) {
-		return currentTable.addCellEl(cellEl, 1);
+		return getCurrentTable().addCellEl(cellEl, 1);
 	}
 	
 	public void closeCurrentTableRow() {
+		Table currentTable = getCurrentTable();
 		if(currentTable != null) {
 			currentTable.closeRow();
 		}
@@ -408,10 +420,14 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 	}
 	
 	public void endTable() {
-		if(currentTable != null) {
-			content.add(currentTable.getTableEl());
+		if(!tableStack.isEmpty()) {
+			Table currentTable = tableStack.removeLast();
+			addContent(currentTable.getTableEl());
+			if(!tableStack.isEmpty()) {
+				Element emptyParagraph = factory.createParagraphEl();
+				addContent(emptyParagraph);
+			}
 		}
-		currentTable = null;
 		currentParagraph = null;
 	}
 
@@ -452,7 +468,7 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 		} else if("td".equals(tag) || "th".equals(tag)) {
 			int colspan = OpenXMLUtils.getSpanAttribute("colspan", attributes);
 			int rowspan = OpenXMLUtils.getSpanAttribute("rowspan", attributes);
-			currentTable.addCellEl(colspan, rowspan);
+			getCurrentTable().addCellEl(colspan, rowspan);
 		} else if("ul".equals(tag) || "ol".equals(tag)) {
 			currentListParagraph = factory.createListParagraph();
 		} else if("li".equals(tag)) {
@@ -578,18 +594,24 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 		private Node currentRowEl;
 		private Element currentCellEl;
 		
+		private Columns columns;
 		private Span[] rowSpans = new Span[128];
 		
-		public Table() {
-			tableEl = factory.createTable();
+		public Table(int tableWidth) {
+			tableEl = factory.createTable(tableWidth);
 		}
 		
-		public Table(Integer... width) {
-			tableEl = factory.createTable(width);
+		public Table(int tableWidth, Columns columns) {
+			this.columns = columns;
+			tableEl = factory.createTable(tableWidth, columns);
 		}
 
 		public Element getTableEl() {
 			return tableEl;
+		}
+		
+		public Columns getColumns() {
+			return columns;
 		}
 		
 		public Node addRowEl() {
@@ -600,8 +622,8 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 			}
 			
 			nextCol = 0;
-			currentRowEl = tableEl.getOwnerDocument().createElement("w:tr");	
-			return  tableEl.appendChild(currentRowEl);
+			currentRowEl = factory.createTableRow();
+			return tableEl.appendChild(currentRowEl);
 		}
 		
 		public void closeRow() {
@@ -619,15 +641,22 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 			
 			currentCellEl = currentRowEl.getOwnerDocument().createElement("w:tc");
 			
-			Node prefs = null;
+			Node prefs = currentCellEl.appendChild(currentCellEl.getOwnerDocument().createElement("w:tcPr"));
 			if(colSpan > 1) {
-				prefs = currentCellEl.appendChild(currentCellEl.getOwnerDocument().createElement("w:tcPr"));
 				Element gridSpan = (Element)prefs.appendChild(prefs.getOwnerDocument().createElement("w:gridSpan"));
 				gridSpan.setAttribute("w:val", Integer.toString(colSpan));
+			} else {
+				/*
+				<w:tcPr>
+					<w:tcW w:w="0" w:type="auto" />
+				</w:tcPr>
+				*/
+				Element wCPrefs = (Element)prefs.appendChild(prefs.getOwnerDocument().createElement("w:tcW"));
+				wCPrefs.setAttribute("w:w", "0");
+				wCPrefs.setAttribute("w:type", "auto");
 			}
 			
 			if(rowSpan > 1) {
-				prefs = prefs != null ? prefs : currentCellEl.appendChild(currentCellEl.getOwnerDocument().createElement("w:tcPr"));
 				Element vMerge = (Element)prefs.appendChild(prefs.getOwnerDocument().createElement("w:vMerge"));
 				vMerge.setAttribute("w:val", "restart");
 			}
