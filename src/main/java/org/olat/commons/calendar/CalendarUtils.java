@@ -37,6 +37,7 @@ import java.util.Locale;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 
 import net.fortuna.ical4j.model.DateList;
 import net.fortuna.ical4j.model.Recur;
@@ -47,6 +48,9 @@ public class CalendarUtils {
 	private static final OLog log = Tracing.createLoggerFor(CalendarUtils.class);
 	private static final SimpleDateFormat ical4jFormatter = new SimpleDateFormat("yyyyMMdd");
 	private static final SimpleDateFormat occurenceDateTimeFormat = new SimpleDateFormat("yyyyMMdd'T'HHmmss");
+
+	private static final DateFormat iso8601Date = new SimpleDateFormat("yyyy-MM-dd");
+	private static final DateFormat iso8601DateTime = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 
 	public static String getTimeAsString(Date date, Locale locale) {
 		return DateFormat.getTimeInstance(DateFormat.SHORT, locale).format(date);
@@ -211,6 +215,80 @@ public class CalendarUtils {
 			return toString;
 		} catch (Exception e) {
 			return null;
+		}
+	}
+	
+	/**
+	 * The method will guess if the specified date as string
+	 * is a date alone or a date with time.
+	 * 
+	 * @param d The date as string in ISO 8601 format.
+	 * @return The date object
+	 * @throws ParseException
+	 */
+	public static Date parseISO8601(String d) throws ParseException {
+		Date date;
+		if(StringHelper.containsNonWhitespace(d)) {
+			if(d.indexOf('T') >= 0) {
+				date = parseISO8601Datetime(d);
+			} else {
+				date = parseISO8601Date(d);
+			}
+		} else {
+			date = null;
+		}
+		return date;
+	}
+	
+	/*
+	 * Formats the given date with the ISO 8601 standard also known as 'date'
+	 * See http://www.w3.org/TR/NOTE-datetime.html for more info.
+	 * 
+	 * @param d the date to be formatted
+	 * @return a String with the formatted date
+	 */
+	public static String formatISO8601Date(Date d) {
+		synchronized (iso8601Date) {
+			return iso8601Date.format(d);
+		}
+	}
+	
+	/**
+	 * Parse the given date with the ISO 8601 standard also known as 'date'
+	 * See http://www.w3.org/TR/NOTE-datetime.html for more info.
+	 * 
+	 * @param d the date as string to be parsed
+	 * @return The date
+	 */
+	public static Date parseISO8601Date(String d) throws ParseException {
+		synchronized (iso8601Date) {
+			return iso8601Date.parse(d);
+		}
+	}
+	
+	/**
+	 * Formats the given date with the ISO 8601 standard also known as 'datetime'
+	 * See http://www.w3.org/TR/NOTE-datetime.html for more info.
+	 * 
+	 * @param d the date to be formatted
+	 * @return a String with the formatted date and time
+	 */
+	public static String formatISO8601Datetime(Date d) {
+		synchronized (iso8601DateTime) {
+			return iso8601DateTime.format(d);
+		}
+	}
+	
+	/**
+	 * Parse the given date with the ISO 8601 standard also known as 'datetime'
+	 * See http://www.w3.org/TR/NOTE-datetime.html for more info.
+	 * 
+	 * @param d the date as string to be parsed
+	 * @return The date
+	 */
+	public static Date parseISO8601Datetime(String d) throws ParseException {
+		synchronized (iso8601DateTime) {
+			return iso8601DateTime.parse(d);
 		}
 	}
 	

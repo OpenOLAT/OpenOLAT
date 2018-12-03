@@ -19,11 +19,13 @@
  */
 package org.olat.commons.calendar.ui.components;
 
+import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
 import org.olat.commons.calendar.CalendarManager;
+import org.olat.commons.calendar.CalendarUtils;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.model.KalendarRecurEvent;
 import org.olat.commons.calendar.ui.events.CalendarGUIAddEvent;
@@ -36,6 +38,8 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.ValidationStatus;
 
@@ -47,6 +51,8 @@ import org.olat.core.util.ValidationStatus;
  *
  */
 public class FullCalendarElement extends FormItemImpl {
+	
+	private static final OLog log = Tracing.createLoggerFor(FullCalendarElement.class);
 
 	private final FullCalendarComponent component;
 
@@ -240,16 +246,28 @@ public class FullCalendarElement extends FormItemImpl {
 	}
 	
 	private void doAdd(UserRequest ureq, String start, String end, String allDay) {
-		long startTime = -1;
-		if(StringHelper.isLong(start)) {
-			startTime = Long.parseLong(start);
+		try {
+			boolean allDayEvent = "true".equalsIgnoreCase(allDay);
+			
+			Date startDate = null;
+			if(StringHelper.containsNonWhitespace(start)) {
+				startDate = CalendarUtils.parseISO8601(start);
+			}
+			Date endDate = null;
+			if(StringHelper.containsNonWhitespace(end)) {
+				endDate = CalendarUtils.parseISO8601(end);
+				if(allDayEvent && end.indexOf('T') == -1) {
+					// all day event ended the next day at 00:00:00, OpenOLAT want something which ends the same day
+					Calendar cal = Calendar.getInstance();
+					cal.setTime(endDate);
+					cal.add(Calendar.DATE, -1);
+					endDate = cal.getTime();
+				}
+			}
+			getRootForm().fireFormEvent(ureq, new CalendarGUIAddEvent(this, null, startDate, endDate, allDayEvent));
+		} catch (ParseException e) {
+			log.error("", e);
 		}
-		long endTime = -1;
-		if(StringHelper.isLong(end)) {
-			endTime = Long.parseLong(end);
-		}
-		boolean allDayEvent = "true".equalsIgnoreCase(allDay);
-		getRootForm().fireFormEvent(ureq, new CalendarGUIAddEvent(this, null, new Date(startTime), new Date(endTime), allDayEvent));
 	}
 	
 	private void doSelect(UserRequest ureq, String eventId, String targetDomId) {
