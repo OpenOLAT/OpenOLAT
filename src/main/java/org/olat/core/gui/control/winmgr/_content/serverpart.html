@@ -1,6 +1,6 @@
 ## Set height to 0 to fix IE rendering issue (div would consume some visible space)
 <div style="height:0px">
-<script type="text/javascript">
+<script>
 /* <![CDATA[ */ 
 var stopped = true;
 function initPolling () {
@@ -30,10 +30,28 @@ var timestampLastPoll = new Date().getTime();
 // set timestamp cookie to inform other windows that they are outdated
 var sbtimestamp = new Date().getTime();
 var sbcookie = 'OLAT-UI-TIMESTAMP';
-if (window.opener == null) document.cookie = sbcookie+'='+sbtimestamp+'; path=/; SameSite=strict';
+if (thickCheckStandBy()) {
+	document.cookie = sbcookie+'='+sbtimestamp+'; path=/; SameSite=strict';
+}
 
 ## starts an interval which checks every second whether to send an poll request based on
 ## the pollperiod or not 10 min after the last click the poll process stops
+
+function thickCheckStandBy() {
+	var check = false;
+	try {
+		if (window.opener == null) {
+			check = true;
+		## if the opener is an external location, it will produce an exception
+		} else if(window.opener.location.hostname != document.location.hostname) {
+			check = true;
+		}
+	} catch(e) {
+		if(window.console) console.log(e);
+		check = true;
+	}
+	return check;
+}
 
 function tick () {
 	o_info.poller = jQuery.periodic({period: $pollperiod, decay:1.005, max_period: Number.MAX_VALUE}, function() {
@@ -65,7 +83,7 @@ function tick () {
 		// if window is not a popup window, become a standby window 
 		// in case the cookie timestamp is newer than the own one set while loading
 		// because another window holds the current UI which works
-		if (window.opener == null) {
+		if (thickCheckStandBy()) {
 			var p = sbcookie + "=";
 			var ca = document.cookie.split(';');
 			for(var i=0;i < ca.length;i++) {
