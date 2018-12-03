@@ -1694,7 +1694,7 @@ public class GTAManagerImpl implements GTAManager {
 	public void log(String step, String operation, Task assignedTask, Identity actor, Identity assessedIdentity, BusinessGroup assessedGroup,
 			CourseEnvironment courseEnv, GTACourseNode cNode, Role by) {
 		//log
-		String taskName = StringHelper.containsNonWhitespace(assignedTask.getTaskName()) ? assignedTask.getTaskName() : assignedTask.getKey().toString();
+		String taskName = taskToString(assignedTask);
 		String msg = step + " of " + taskName + ": " + operation;
 		if(GTAType.group.name().equals(cNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE))) {
 			log.audit(msg + " to business group: " + assessedGroup.getName(), null);
@@ -1713,7 +1713,7 @@ public class GTAManagerImpl implements GTAManager {
 		String operation = event.getLogMessage();
 		String file = event.getFilename();
 		//log
-		String taskName = StringHelper.containsNonWhitespace(assignedTask.getTaskName()) ? assignedTask.getTaskName() : assignedTask.getKey().toString();
+		String taskName = taskToString(assignedTask);
 		String msg = step + " of " + taskName + ": " + operation + " " + file;
 		if(GTAType.group.name().equals(cNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE))) {
 			log.audit(msg + " to business group: " + assessedGroup.getName(), null);
@@ -1724,6 +1724,20 @@ public class GTAManagerImpl implements GTAManager {
 			courseEnv.getAuditManager()
 				.appendToUserNodeLog(cNode, actor, assessedIdentity, msg, by);
 		}
+	}
+	
+	private String taskToString(Task assignedTask) {
+		String name;
+		if(assignedTask == null ) {
+			name = "no assignment";
+		} else if(StringHelper.containsNonWhitespace(assignedTask.getTaskName())) {
+			name = assignedTask.getTaskName();
+		} else if(assignedTask.getKey() != null) {
+			name = assignedTask.getKey().toString();
+		} else {
+			name = "no assignment";
+		}
+		return name;	
 	}
 	
 	private interface TaskListSynched {
