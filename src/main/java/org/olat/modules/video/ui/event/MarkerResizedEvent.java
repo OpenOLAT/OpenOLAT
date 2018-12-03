@@ -34,6 +34,8 @@ public class MarkerResizedEvent extends Event {
 	public static final String MARKER_REISZED_EVENT = "marker-resized";
 	
 	private final String markerId;
+	private double top;
+	private double left;
 	private double width;
 	private double height;
 	
@@ -44,6 +46,22 @@ public class MarkerResizedEvent extends Event {
 	
 	public String getMarkerId() {
 		return markerId;
+	}
+
+	public double getTop() {
+		return top;
+	}
+
+	public void setTop(double top) {
+		this.top = top;
+	}
+
+	public double getLeft() {
+		return left;
+	}
+
+	public void setLeft(double left) {
+		this.left = left;
 	}
 
 	public double getWidth() {

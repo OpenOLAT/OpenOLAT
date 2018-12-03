@@ -48,7 +48,7 @@ public class ReloadMarkersCommand extends JSCommand {
 			if(add) {
 				sb.append(",");
 			} else {
-				add = false;
+				add = true;
 			}
 			// [{  'id' : 'marker-id', 'color': 'pink', 'time': 56, 'action': 'none', 'showInTimeline' : true }]
 			sb.append("{'id':'").append(marker.getId()).append("',")

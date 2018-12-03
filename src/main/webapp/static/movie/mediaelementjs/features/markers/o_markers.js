@@ -89,9 +89,14 @@ Object.assign(MediaElementPlayer.prototype, {
 					marker.style.visibility = 'hidden';
 				}
 				if(t.options.markers[i].color == null || t.options.markers[i].color.length == 0) {
-					marker.style.background = t.options.color;
-				} else {
 					marker.style.background = t.options.markers[i].color;
+				} else {
+					var color = t.options.markers[i].color;
+					if(color.indexOf('#') == 0 || color.indexOf('rgb(') == 0 || color.indexOf('rgba(') == 0) {
+						marker.style.background = color;
+					} else {
+						jQuery(marker).addClass(color);
+					}
 				}
 			}
 		}

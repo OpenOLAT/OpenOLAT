@@ -20,7 +20,9 @@
 package org.olat.modules.video;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.configuration.AbstractSpringModule;
@@ -59,6 +61,8 @@ public class VideoModule extends AbstractSpringModule {
 	private boolean enabled;
 	@Value("${video.coursenode.enabled:true}")
 	private boolean coursenodeEnabled;
+	@Value("${video.marker.styles}")
+	private String markersStyles;
 	// transcoding related configuration
 	@Value("${video.transcoding.enabled:false}")
 	private boolean transcodingEnabled;
@@ -152,6 +156,23 @@ public class VideoModule extends AbstractSpringModule {
 		NewControllerFactory.getInstance().addContextEntryControllerCreator(VideoSite.class.getSimpleName(),
 				new SiteContextEntryControllerCreator(VideoSite.class));
 
+	}
+	
+	public List<String> getMarkerStyles() {
+		return stylesToList(markersStyles);
+	}
+	
+	private List<String> stylesToList(String styles) {
+		List<String> styleList = new ArrayList<>();
+		if(StringHelper.containsNonWhitespace(styles)) {
+			String[] styleArr = styles.split("[,]");
+			for(String style:styleArr) {
+				if(StringHelper.containsNonWhitespace(style)) {
+					styleList.add(style);
+				}
+			}
+		}
+		return styleList;
 	}
 
 	/**

@@ -52,7 +52,7 @@ public class VideoXStreamTest {
 			VideoMarkersImpl markers = new VideoMarkersImpl();
 			VideoMarkerImpl marker = new VideoMarkerImpl();
 			marker.setBegin(new Date());
-			marker.setColor("#000000");
+			marker.setStyle("#000000");
 			marker.setDuration(120);
 			marker.setHeight(20.0d);
 			marker.setWidth(22.0d);
@@ -77,7 +77,7 @@ public class VideoXStreamTest {
 			VideoMarker marker = markers.getMarkers().get(0);
 			Assert.assertNotNull(marker);
 			Assert.assertNotNull(marker.getBegin());
-			Assert.assertEquals("#000000", marker.getColor());
+			Assert.assertEquals("#000000", marker.getStyle());
 			Assert.assertEquals(120l, marker.getDuration());
 			Assert.assertEquals(20.0d, marker.getHeight(), 0.00001d);
 			Assert.assertEquals(22.0d, marker.getWidth(), 0.00001d);

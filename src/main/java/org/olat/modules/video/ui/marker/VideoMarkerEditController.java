@@ -37,12 +37,12 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.video.VideoManager;
@@ -54,6 +54,7 @@ import org.olat.modules.video.ui.VideoDisplayController.Marker;
 import org.olat.modules.video.ui.VideoHelper;
 import org.olat.modules.video.ui.VideoSettingsController;
 import org.olat.modules.video.ui.component.SelectTimeCommand;
+import org.olat.modules.video.ui.component.VideoMarkerStyleCellRenderer;
 import org.olat.modules.video.ui.component.VideoMarkerTextCellRenderer;
 import org.olat.modules.video.ui.component.VideoTimeCellRenderer;
 import org.olat.modules.video.ui.event.MarkerMovedEvent;
@@ -74,7 +75,8 @@ import edu.emory.mathcs.backport.java.util.Collections;
 public class VideoMarkerEditController extends BasicController {
 
 	private VideoMarkersController markersCtrl;
-	private VideoDisplayController videoDisplayCtr;
+	private MarkerEditController markerEditCtrl;
+	private VideoDisplayController videoDisplayCtrl;
 	
 	private String currentTimeCode;
 	private long durationInSeconds;
@@ -86,20 +88,26 @@ public class VideoMarkerEditController extends BasicController {
 		this.entry = entry;
 
 		VelocityContainer mainVC = createVelocityContainer("markers_overview");
-		videoDisplayCtr = new VideoDisplayController(ureq, getWindowControl(), entry, false, false, false, false, null, false, false, null, false);
-		videoDisplayCtr.setAlwaysShowControls(true);
-		videoDisplayCtr.setDragMarkers(true);
-		videoDisplayCtr.setPosterEnabled(false);
-		videoDisplayCtr.setClickToPlayPause(false);
-		videoElementId = videoDisplayCtr.getVideoElementId();
-		listenTo(videoDisplayCtr);
-		mainVC.put("video", videoDisplayCtr.getInitialComponent());
+		videoDisplayCtrl = new VideoDisplayController(ureq, getWindowControl(), entry, false, false, false, false, null, false, false, null, false);
+		videoDisplayCtrl.setAlwaysShowControls(true);
+		videoDisplayCtrl.setDragMarkers(true);
+		videoDisplayCtrl.setPosterEnabled(false);
+		videoDisplayCtrl.setClickToPlayPause(false);
+		videoElementId = videoDisplayCtrl.getVideoElementId();
+		durationInSeconds = VideoHelper.durationInSeconds(entry, videoDisplayCtrl);
+		listenTo(videoDisplayCtrl);
+		mainVC.put("video", videoDisplayCtrl.getInitialComponent());
+
+		markerEditCtrl = new MarkerEditController(ureq, getWindowControl(), durationInSeconds);
+		listenTo(markerEditCtrl);
+		Panel editorWrapper = new Panel("markerEditorWrapper");
+		editorWrapper.setContent(markerEditCtrl.getInitialComponent());
+		markerEditCtrl.getInitialComponent().setVisible(false);
+		mainVC.put("markerEditorWrapper", editorWrapper);// wrap the editor to hide/show it without reload the video itself
 		
 		markersCtrl = new VideoMarkersController(ureq, getWindowControl());
 		listenTo(markersCtrl);
 		mainVC.put("markers", markersCtrl.getInitialComponent());
-
-		durationInSeconds = VideoHelper.durationInSeconds(entry, videoDisplayCtr);
 
 		putInitialPanel(mainVC);
 	}
@@ -111,7 +119,7 @@ public class VideoMarkerEditController extends BasicController {
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == videoDisplayCtr) {
+		if (videoDisplayCtrl == source) {
 			if (event instanceof VideoEvent) {
 				VideoEvent videoEvent = (VideoEvent) event;
 				currentTimeCode = videoEvent.getTimeCode();
@@ -123,8 +131,10 @@ public class VideoMarkerEditController extends BasicController {
 					}
 				}
 			} else if(event instanceof MarkerMovedEvent || event instanceof MarkerResizedEvent) {
-				markersCtrl.event(ureq, videoDisplayCtr, event);
+				markersCtrl.event(ureq, videoDisplayCtrl, event);
 			}
+		} else if(markerEditCtrl == source) {
+			markersCtrl.event(ureq, markerEditCtrl, event);
 		}
 	}
 	
@@ -134,8 +144,15 @@ public class VideoMarkerEditController extends BasicController {
 		getWindowControl().getWindowBackOffice().sendCommandTo(selectTime);
 	}
 	
+	private void loadMarker(VideoMarker marker) {
+		if(marker == null) return;
+		
+		String time = String.valueOf(marker.toSeconds());
+		videoDisplayCtrl.loadMarker(time);
+	}
+	
 	private void reloadMarkers() {
-		List<Marker> markers = videoDisplayCtr.loadMarkers();
+		List<Marker> markers = videoDisplayCtrl.loadMarkers();
 		ReloadMarkersCommand reloadMarkers = new ReloadMarkersCommand(videoElementId, markers);
 		getWindowControl().getWindowBackOffice().sendCommandTo(reloadMarkers);
 	}
@@ -150,11 +167,7 @@ public class VideoMarkerEditController extends BasicController {
 		private FormLink addMarkerEl;
 		private FlexiTableElement tableEl;
 		private VideoMarkersTableModel tableModel;
-		
-		private CloseableModalController cmc;
-		private MarkerEditController markerAddCtrl;
-		private MarkerEditController markerEditCtrl;
-		
+
 		private VideoMarkers markers;
 		
 		@Autowired
@@ -162,16 +175,20 @@ public class VideoMarkerEditController extends BasicController {
 		
 		public VideoMarkersController(UserRequest ureq, WindowControl wControl) {
 			super(ureq, wControl, "markers_list", Util.createPackageTranslator(VideoSettingsController.class, ureq.getLocale()));
-			
 			initForm(ureq);
 			loadModel(true);
+		}
+		
+		public VideoMarker getMarkerById(String id) {
+			return markers.getMarkerById(id);
 		}
 
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 			FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MarkerCols.text, "select", new VideoMarkerTextCellRenderer()));
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MarkerCols.start, new VideoTimeCellRenderer()));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MarkerCols.start, "select", new VideoTimeCellRenderer()));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MarkerCols.text, new VideoMarkerTextCellRenderer()));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MarkerCols.style, new VideoMarkerStyleCellRenderer(getTranslator())));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit", translate("edit"), "edit"));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("delete", translate("delete"), "delete"));
 			tableModel = new VideoMarkersTableModel(columnsModel);
@@ -192,37 +209,23 @@ public class VideoMarkerEditController extends BasicController {
 
 		@Override
 		protected void event(UserRequest ureq, Controller source, Event event) {
-			if(videoDisplayCtr == source) {
+			if(videoDisplayCtrl == source) {
 				if(event instanceof MarkerMovedEvent) {
 					doMoveMarker((MarkerMovedEvent)event);
 				} else if(event instanceof MarkerResizedEvent) {
 					doResizeMarker((MarkerResizedEvent)event);
 				}
-			} else if(markerAddCtrl == source) {
-				if(event == Event.DONE_EVENT) {
-					doAddMarker(markerAddCtrl.getMarker());
-				}
-				cmc.deactivate();
-				cleanUp();
 			} else if(markerEditCtrl == source) {
 				if(event == Event.DONE_EVENT) {
-					doEditMarker(markerEditCtrl.getMarker());
+					doSaveMarker(markerEditCtrl.getMarker());
 				}
-				cmc.deactivate();
-				cleanUp();
-			} else if(cmc == source) {
-				cleanUp();
 			}
 			super.event(ureq, source, event);
 		}
-		
-		private void cleanUp() {
-			removeAsListenerAndDispose(markerEditCtrl);
-			removeAsListenerAndDispose(markerAddCtrl);
-			removeAsListenerAndDispose(cmc);
-			markerEditCtrl = null;
-			markerAddCtrl = null;
-			cmc = null;
+
+		@Override
+		protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent fe) {
+			//
 		}
 
 		@Override
@@ -233,19 +236,19 @@ public class VideoMarkerEditController extends BasicController {
 		@Override
 		protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 			if(addMarkerEl == source) {
-				doAddMarker(ureq);
+				doAddMarker();
 			} else if(tableEl == source) {
 				if(event instanceof SelectionEvent) {
 					SelectionEvent se = (SelectionEvent)event;
 					if("edit".equals(se.getCommand())) {
 						VideoMarker row = tableModel.getObject(se.getIndex());
-						doEditMarker(ureq, row);
+						doEditMarker(row);
 					} else if("delete".equals(se.getCommand())) {
 						VideoMarker row = tableModel.getObject(se.getIndex());
 						doDeleteMarker(row);
 					} else if("select".equals(se.getCommand())) {
 						VideoMarker row = tableModel.getObject(se.getIndex());
-						selectTime(row.getBegin());
+						doSelectMarker(row);
 					}
 				}
 			}
@@ -255,11 +258,21 @@ public class VideoMarkerEditController extends BasicController {
 		private void loadModel(boolean reset) {
 			markers = videoManager.loadMarkers(entry.getOlatResource());
 			List<VideoMarker> rows = markers.getMarkers();
+			loadModel(reset, rows);
+		}
+		
+		private void loadModel(boolean reset, List<VideoMarker> rows) {
 			if(rows.size() > 1) {
 				Collections.sort(rows, new VideoMarkerRowComparator());
 			}
 			tableModel.setObjects(rows);
 			tableEl.reset(reset, reset, true);
+		}
+		
+		private void doSelectMarker(VideoMarker marker) {
+			markerEditCtrl.setMarker(marker);
+			markerEditCtrl.getInitialComponent().setVisible(true);
+			selectTime(marker.getBegin());	
 		}
 		
 		private void doMoveMarker(MarkerMovedEvent event) {
@@ -268,70 +281,64 @@ public class VideoMarkerEditController extends BasicController {
 				marker.setTop(event.getTop());
 				marker.setLeft(event.getLeft());
 				videoManager.saveMarkers(markers, entry.getOlatResource());
+				videoDisplayCtrl.loadMarkers();
+				loadModel(false, markers.getMarkers());
 			}
 		}
 		
 		private void doResizeMarker(MarkerResizedEvent event) {
 			VideoMarker marker = markers.getMarkerById(event.getMarkerId());
 			if(marker != null) {
+				marker.setTop(event.getTop());
+				marker.setLeft(event.getLeft());
 				marker.setWidth(event.getWidth());
 				marker.setHeight(event.getHeight());
 				videoManager.saveMarkers(markers, entry.getOlatResource());
+				videoDisplayCtrl.loadMarkers();
+				loadModel(false, markers.getMarkers());
 			}
 		}
 
-		private void doAddMarker(UserRequest ureq) {
-			if(markerAddCtrl != null) return;
-			
-			VideoMarkerImpl row = new VideoMarkerImpl();
-			row.setId(UUID.randomUUID().toString());
-			
+		private void doAddMarker() {
+			VideoMarkerImpl newMarker = new VideoMarkerImpl();
+			newMarker.setId(UUID.randomUUID().toString());
+			newMarker.setDuration(10);
 			if(currentTimeCode != null) {
 				long time = Math.round(Double.parseDouble(currentTimeCode)) * 1000l;
-				row.setBegin(new Date(time));
+				newMarker.setBegin(new Date(time));
 			}
-			markerAddCtrl = new MarkerEditController(ureq, getWindowControl(), row, durationInSeconds); 
-			listenTo(markerAddCtrl);
-	
-			cmc = new CloseableModalController(getWindowControl(), translate("close"), markerAddCtrl.getInitialComponent(), 
-					true, translate("video.marker.title.add"));
-			listenTo(cmc);
-			cmc.activate();
-		}
-		
-		private void doAddMarker(VideoMarker marker) {
-			markers.getMarkers().add(marker);
+			
+			markers.getMarkers().add(newMarker);
 			videoManager.saveMarkers(markers, entry.getOlatResource());
 			loadModel(true);
 			reloadMarkers();
-			selectTime(marker.getBegin());
+			
+			markerEditCtrl.setMarker(newMarker);
+			markerEditCtrl.getInitialComponent().setVisible(true);
 		}
 		
-		private void doEditMarker(UserRequest ureq, VideoMarker row) {
-			if(markerEditCtrl != null) return;
-
-			markerEditCtrl = new MarkerEditController(ureq, getWindowControl(), row, durationInSeconds); 
-			listenTo(markerEditCtrl);
-	
-			cmc = new CloseableModalController(getWindowControl(), translate("close"), markerEditCtrl.getInitialComponent(), 
-					true, translate("video.marker.title.edit"));
-			listenTo(cmc);
-			cmc.activate();
+		private void doEditMarker(VideoMarker row) {
+			markerEditCtrl.setMarker(row);
+			markerEditCtrl.getInitialComponent().setVisible(true);
 		}
 		
-		private void doEditMarker(VideoMarker marker) {
+		private void doSaveMarker(VideoMarker marker) {
 			markers.getMarkers().remove(marker);
 			markers.getMarkers().add(marker);
 			videoManager.saveMarkers(markers, entry.getOlatResource());
-			loadModel(false);
+			loadModel(false, markers.getMarkers());
 			reloadMarkers();
 			selectTime(marker.getBegin());
+			loadMarker(marker);
 		}
 		
 		private void doDeleteMarker(VideoMarker marker) {
 			markers.getMarkers().remove(marker);
 			videoManager.saveMarkers(markers, entry.getOlatResource());
-			loadModel(true);
+			if(markerEditCtrl.getMarker().equals(marker)) {
+				markerEditCtrl.getInitialComponent().setVisible(false);
+			}
+			loadModel(true, markers.getMarkers());
 			reloadMarkers();
 			selectTime(marker.getBegin());
 		}

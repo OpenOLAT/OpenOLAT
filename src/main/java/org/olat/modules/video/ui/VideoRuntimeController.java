@@ -123,7 +123,7 @@ public class VideoRuntimeController extends RepositoryEntryRuntimeController {
 		VideoSettingsController configCtrl = new VideoSettingsController(ureq, swControl, entry);
 		listenTo(configCtrl);
 		videoSettingsCtr = pushController(ureq, translate("tab.video.settings"), configCtrl);
-		setActiveTool(settingsLink);
+		setActiveTool(editorLink);
 		return videoSettingsCtr;
 	}
 	

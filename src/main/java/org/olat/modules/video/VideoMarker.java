@@ -63,9 +63,9 @@ public interface VideoMarker {
 	
 	public void setHeight(double height);
 	
-	public String getColor();
+	public String getStyle();
 	
-	public void setColor(String color);
+	public void setStyle(String style);
 	
 	public long toSeconds();
 

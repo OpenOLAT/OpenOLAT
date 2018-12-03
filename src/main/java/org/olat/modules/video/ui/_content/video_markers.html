@@ -8,8 +8,13 @@ jQuery(function() {
 	var left = ${marker.left} * containerEl.width();
 	var markerEl =jQuery("#marker_${marker.id}")
 		.css('top', top + 'px')
-		.css('left', left + 'px')
-		.css('border-color', '${marker.color}');
+		.css('left', left + 'px');
+	var color = '${marker.style}';
+	if(color.indexOf('#') == 0 || color.indexOf('rgb') == 0 || color.indexOf('rgba') == 0) {
+		markerEl.css('border-color', color);
+	} else {
+		markerEl.addClass(color);
+	}
 	#if($r.isNotNull($marker.width) && ${marker.width} > 0.01)
 		markerEl.width((${marker.width} * containerEl.width()) + 'px')
 	#end
@@ -25,6 +30,8 @@ jQuery(function() {
 				var top = ui.position.top / containerEl.height();
 				var left = ui.position.left / containerEl.width();
 				$r.openJavaScriptCommand('marker_moved'), 'marker_id', '${marker.id}', 'top', top, 'left', left);
+				jQuery("div.o_sel_video_marker_top input").val(Math.round(top * 100));
+				jQuery("div.o_sel_video_marker_left input").val(Math.round(left * 100));
 			}
 		}).resizable({
     		handles: 'all',
@@ -33,7 +40,13 @@ jQuery(function() {
 			stop: function(event, ui) {
 				var width = ui.size.height / containerEl.height();
 				var height = ui.size.width / containerEl.width();
-				$r.openJavaScriptCommand('marker_resized'), 'marker_id', '${marker.id}', 'width', width, 'height', height);
+				var top = ui.position.top / containerEl.height();
+				var left = ui.position.left / containerEl.width();
+				$r.openJavaScriptCommand('marker_resized'), 'marker_id', '${marker.id}', 'top', top, 'left', left, 'width', width, 'height', height);
+				jQuery("div.o_sel_video_marker_width input").val(Math.round(width * 100));
+				jQuery("div.o_sel_video_marker_height input").val(Math.round(width * 100));
+				jQuery("div.o_sel_video_marker_top input").val(Math.round(top * 100));
+				jQuery("div.o_sel_video_marker_left input").val(Math.round(left * 100));
 			}
     	});
 	#end

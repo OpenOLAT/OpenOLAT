@@ -27,9 +27,9 @@ import java.util.TimeZone;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.TextMode;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -37,7 +37,9 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.video.VideoMarker;
+import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.ui.VideoSettingsController;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -50,45 +52,35 @@ public class MarkerEditController extends FormBasicController {
 	private RichTextElement markerTextEl;
 	private TextElement beginEl;
 	private TextElement durationEl;
-	private TextElement colorEl;
+	private SingleSelection styleEl;
 	private TextElement topEl;
 	private TextElement leftEl;
 	private TextElement widthEl;
 	private TextElement heightEl;
 	
-	private final VideoMarker marker;
+	private VideoMarker marker;
 	private final SimpleDateFormat displayDateFormat;
 	private final long videoDurationInSecs;
 	
-	public MarkerEditController(UserRequest ureq, WindowControl wControl, VideoMarker marker, long videoDurationInSecs) {
-		super(ureq, wControl, Util.createPackageTranslator(VideoSettingsController.class, ureq.getLocale()));
-		this.marker = marker;
+	@Autowired
+	private VideoModule videoModule;
+	
+	public MarkerEditController(UserRequest ureq, WindowControl wControl, long videoDurationInSecs) {
+		super(ureq, wControl, "marker_edit", Util.createPackageTranslator(VideoSettingsController.class, ureq.getLocale()));
 		this.videoDurationInSecs = videoDurationInSecs;
 		displayDateFormat = new SimpleDateFormat("HH:mm:ss");
 		displayDateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
-		
 		initForm(ureq);
 	}
 	
 	public VideoMarker getMarker() {
 		return marker;
 	}
-
-	@Override
-	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		String text = marker.getText();
-		markerTextEl = uifactory.addRichTextElementForQTI21Match("text", "video.marker.text", text, 4, -1, null,
-				formLayout, ureq.getUserSession(), getWindowControl());
-		markerTextEl.getEditorConfiguration().disableImageAndMovie();
-		markerTextEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.oneLine);
-		if(!StringHelper.containsNonWhitespace(text)) {
-			markerTextEl.setFocus(true);
-		}
-		markerTextEl.setMandatory(true);
-		markerTextEl.setNotEmptyCheck("chapter.error.notitle");
-		if(!StringHelper.containsNonWhitespace(text)) {
-			markerTextEl.setFocus(true);
-		}
+	
+	public void setMarker(VideoMarker marker) {
+		this.marker = marker;
+		
+		markerTextEl.setValue(marker.getText());
 		
 		String time = null;
 		try {
@@ -96,36 +88,83 @@ public class MarkerEditController extends FormBasicController {
 		} catch (Exception e) {
 			//
 		}
-		beginEl = uifactory.addTextElement("begin","video.marker.begin", 10, time, formLayout);
+		beginEl.setValue(time);
+		String duration = Long.toString(marker.getDuration());
+		durationEl.setValue(duration);
+		String style = marker.getStyle();
+		
+		boolean found = false;
+		for(String key:styleEl.getKeys()) {
+			if(key.equals(style)) {
+				styleEl.select(style, true);
+				found = true;
+			}
+		}
+		if(!found) {
+			styleEl.select(styleEl.getKeys()[0], true);
+		}
+		
+		topEl.setValue(toPercentValue(marker.getTop()));
+		leftEl.setValue(toPercentValue(marker.getLeft()));
+		widthEl.setValue(toPercentValue(marker.getWidth()));
+		heightEl.setValue(toPercentValue(marker.getHeight()));
+		
+		flc.setDirty(true);
+	}
+
+	@Override
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		markerTextEl = uifactory.addRichTextElementForQTI21Match("text", "video.marker.text", "", 4, -1, null,
+				formLayout, ureq.getUserSession(), getWindowControl());
+		markerTextEl.getEditorConfiguration().disableImageAndMovie();
+		markerTextEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.oneLine);
+		markerTextEl.setMandatory(true);
+		markerTextEl.setNotEmptyCheck("chapter.error.notitle");
+		
+		beginEl = uifactory.addTextElement("begin", "video.marker.begin", 10, "", formLayout);
+		inline(beginEl, 5);
 		beginEl.setExampleKey("time.format", null);
 		beginEl.setMandatory(true);
 		
-		String duration = Long.toString(marker.getDuration());
-		durationEl = uifactory.addTextElement("duration", "video.marker.duration", 10, duration, formLayout);
+		durationEl = uifactory.addTextElement("duration", "video.marker.duration", 10, "", formLayout);
+		inline(durationEl, 2);
 		durationEl.setMandatory(true);
+
+		String[] colorKeys = videoModule.getMarkerStyles().toArray(new String[0]);
+		String[] colorValues = new String[colorKeys.length];
+		for(int i=colorKeys.length; i-->0; ) {
+			colorValues[i] = translate("video.marker.style.".concat(colorKeys[i]));
+		}
+		styleEl = uifactory.addDropdownSingleselect("color", "video.marker.color", formLayout, colorKeys, colorValues);
+		styleEl.setDomReplacementWrapperRequired(false);
+		styleEl.getLabelC().setDomReplaceable(false);
 		
-		String color = marker.getColor();
-		colorEl = uifactory.addTextElement("color","video.marker.color", 10, color, formLayout);
-		
-		int topInPercent = (int)Math.round(marker.getTop() * 100.0d);
-		topEl = uifactory.addTextElement("top", "video.marker.top", 3, Integer.toString(topInPercent), formLayout);
+		topEl = uifactory.addTextElement("top", "video.marker.top", 3, "", formLayout);
+		inline(topEl, 1);
 		topEl.setHelpText(translate("video.marker.position.hint"));
-		int leftInPercent = (int)Math.round(marker.getLeft() * 100.0d);
-		leftEl = uifactory.addTextElement("left", "video.marker.left", 3, Integer.toString(leftInPercent), formLayout);
+
+		leftEl = uifactory.addTextElement("left", "video.marker.left", 3, "", formLayout);
+		inline(leftEl, 1);
 		leftEl.setHelpText(translate("video.marker.position.hint"));
 		
-		int widthInPercent = (int)Math.round(marker.getWidth() * 100.0d);
-		widthEl = uifactory.addTextElement("width", "video.marker.width", 3, Integer.toString(widthInPercent), formLayout);
+		widthEl = uifactory.addTextElement("width", "video.marker.width", 3, "", formLayout);
+		inline(widthEl, 1);
 		widthEl.setHelpText(translate("video.marker.size.hint"));
-		int heightInPercent = (int)Math.round(marker.getHeight() * 100.0d);
-		heightEl = uifactory.addTextElement("height", "video.marker.height", 3, Integer.toString(heightInPercent), formLayout);
+		
+		heightEl = uifactory.addTextElement("height", "video.marker.height", 3, "", formLayout);
+		inline(heightEl, 1);
 		heightEl.setHelpText(translate("video.marker.size.hint"));
 
-		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-		formLayout.add(buttonGroupLayout);
-		uifactory.addFormCancelButton("cancel", buttonGroupLayout, ureq, getWindowControl());
-		uifactory.addFormSubmitButton("save", buttonGroupLayout);
+		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
+		uifactory.addFormSubmitButton("save", formLayout);
 	}
+	
+	private void inline(TextElement element, int displaySize) {
+		element.setDisplaySize(displaySize);
+		element.setDomReplacementWrapperRequired(false);
+		element.getLabelC().setDomReplaceable(false);
+	}
+
 
 	@Override
 	protected void doDispose() {
@@ -139,6 +178,12 @@ public class MarkerEditController extends FormBasicController {
 		markerTextEl.clearError();
 		if(!StringHelper.containsNonWhitespace(markerTextEl.getValue())) {
 			markerTextEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
+		
+		styleEl.clearError();
+		if(!styleEl.isOneSelected()) {
+			styleEl.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;
 		}
 		
@@ -184,8 +229,12 @@ public class MarkerEditController extends FormBasicController {
 		} else if(StringHelper.containsNonWhitespace(beginEl.getValue())) {
 			try {
 				Date begin = displayDateFormat.parse(beginEl.getValue());
-				long end = Long.parseLong(durationEl.getValue()) + begin.getTime();
-				if(end < 0 || end > (videoDurationInSecs * 1000l)) {
+				long duration = Long.parseLong(durationEl.getValue());
+				long end = duration + begin.getTime();
+				if(duration == 0) {
+					durationEl.setErrorKey("chapter.error.out.of.range", null);
+					allOk &= false;
+				} else if(end < 1 || end > (videoDurationInSecs * 1000l)) {
 					durationEl.setErrorKey("chapter.error.out.of.range", null);
 					allOk &= false;
 				}
@@ -233,24 +282,31 @@ public class MarkerEditController extends FormBasicController {
 			String beginTime = beginEl.getValue();
 			marker.setBegin(displayDateFormat.parse(beginTime));
 			marker.setDuration(Long.parseLong(durationEl.getValue()));
-			marker.setColor(colorEl.getValue());
-			marker.setTop(Double.parseDouble(topEl.getValue()) / 100.0d);
-			marker.setLeft(Double.parseDouble(leftEl.getValue()) / 100.0d);
-			if(StringHelper.containsNonWhitespace(widthEl.getValue())) {
-				marker.setWidth(Double.parseDouble(widthEl.getValue()) / 100.0d);		
-			} else {
-				marker.setWidth(-1.0d);
-			}
-			if(StringHelper.containsNonWhitespace(heightEl.getValue())) {
-				marker.setHeight(Double.parseDouble(heightEl.getValue()) / 100.0d);		
-			} else {
-				marker.setHeight(-1.0d);
-			}
-			
+			marker.setStyle(styleEl.getSelectedKey());
+			marker.setTop(fromPercent(topEl.getValue()));
+			marker.setLeft(fromPercent(leftEl.getValue()));
+			marker.setWidth(fromPercent(widthEl.getValue()));		
+			marker.setHeight(fromPercent(heightEl.getValue()));		
 			fireEvent(ureq, Event.DONE_EVENT);
 		} catch (ParseException e) {
 			beginEl.setErrorKey("form.legende.mandatory", null);
 			logError("", e);
+		}
+	}
+	
+	private String toPercentValue(double val) {
+		int widthInPercent = (int)Math.round(val * 100.0d);
+		return String.valueOf(widthInPercent);
+	}
+	
+	private double fromPercent(String val) {
+		if(!StringHelper.containsNonWhitespace(val)) return -1.0d;
+		
+		try {
+			return Double.parseDouble(val) / 100.0d;
+		} catch (NumberFormatException e) {
+			logWarn("", e);
+			return 0.0d;
 		}
 	}
 }

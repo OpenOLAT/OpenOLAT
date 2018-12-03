@@ -35,7 +35,9 @@ public class VideoMarkerImpl implements VideoMarker {
 	private String text;
 	private Date begin;
 	private long duration;
-	private String color;
+	private String style;
+	@SuppressWarnings("unused")
+	private String color;// for backwards compatibility
 	
 	private double top;
 	private double left;
@@ -82,13 +84,13 @@ public class VideoMarkerImpl implements VideoMarker {
 	}
 
 	@Override
-	public String getColor() {
-		return color;
+	public String getStyle() {
+		return style;
 	}
 
 	@Override
-	public void setColor(String color) {
-		this.color = color;
+	public void setStyle(String style) {
+		this.style = style;
 	}
 
 	@Override

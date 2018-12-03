@@ -133,6 +133,40 @@
 	opacity: 0.85;
 	border-left: 3px solid $o-video-time-marker-default-bg-color;
 	padding: 5px;
+	
+	&.o_video_marker_gray { 
+		border-left-color: $gray-dark;
+	}
+	&.o_video_marker_blue { 
+		border-left-color: $state-info-border;
+	}
+	&.o_video_marker_green { 
+		border-left-color: $brand-success;
+	}
+	&.o_video_marker_yellow { 
+		border-left-color: $brand-warning;
+	}
+	&.o_video_marker_red {
+		border-left-color: $brand-danger;
+	}
+}
+
+.mejs__time-rail {
+	.o_video_marker_gray { 
+		background: $gray-dark;
+	}
+	.o_video_marker_blue { 
+		background: $state-info-border;
+	}
+	.o_video_marker_green { 
+		background: $brand-success;
+	}
+	.o_video_marker_yellow { 
+		background: $brand-warning;
+	}
+	.o_video_marker_red {
+		background: $brand-danger;
+	}
 }
 
 /* beautify source chooser plugin, remove radio button */

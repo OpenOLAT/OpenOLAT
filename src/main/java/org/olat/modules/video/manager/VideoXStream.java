@@ -49,6 +49,7 @@ public class VideoXStream {
 				VideoMarkers.class, VideoMarkersImpl.class
 		};
 		xstream.addPermission(new ExplicitTypePermission(types));
+		xstream.ignoreUnknownElements();
 
 		xstream.alias("marker", VideoMarkerImpl.class);
 		xstream.alias("markers", VideoMarkers.class);

@@ -42,6 +42,7 @@ public class VideoMarkersTableModel extends DefaultFlexiTableDataModel<VideoMark
 		switch(MarkerCols.values()[col]) {
 			case text: return marker.getText();
 			case start: return marker.getBegin();
+			case style: return marker.getStyle();
 			default: return "ERROR";
 		}
 	}
@@ -54,7 +55,8 @@ public class VideoMarkersTableModel extends DefaultFlexiTableDataModel<VideoMark
 	public enum MarkerCols implements FlexiSortableColumnDef {
 		
 		text("marker.table.header.text"),
-		start("marker.table.header.start");
+		start("marker.table.header.start"),
+		style("marker.table.header.style");
 		
 		private final String i18nKey;
 		

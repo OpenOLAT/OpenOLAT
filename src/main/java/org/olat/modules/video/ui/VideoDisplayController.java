@@ -358,7 +358,7 @@ public class VideoDisplayController extends BasicController {
 			markers.addAll(vcMarkers);
 		}
 		Collections.sort(markers);
-		mainVC.contextPut("markers", markers);
+		mainVC.getContext().put("markers", markers);// make it without dirty=true
 		return new ArrayList<>(markers);
 	}
 	
@@ -367,9 +367,9 @@ public class VideoDisplayController extends BasicController {
 		if(vmarkers != null && !vmarkers.isEmpty()) {
 			for(VideoMarker marker:vmarkers) {
 				long start = marker.toSeconds();
-				vcMarkers.add(new Marker(marker.getId(), marker.getColor(), start, "start", true, marker));
+				vcMarkers.add(new Marker(marker.getId(), marker.getStyle(), start, "start", true, marker));
 				long end = start + marker.getDuration();
-				vcMarkers.add(new Marker(marker.getId(), marker.getColor(), end, "end", false, marker));
+				vcMarkers.add(new Marker(marker.getId(), marker.getStyle(), end, "end", false, marker));
 			}
 		}
 		return vcMarkers;
@@ -405,7 +405,7 @@ public class VideoDisplayController extends BasicController {
 						fireEvent(ureq, new VideoEvent(VideoEvent.TIMEUPDATE, currentTime, duration));
 						break;
 					case "marker":
-						doMarker(currentTime);
+						loadMarker(currentTime);
 						break;
 				}
 				updateGUIPreferences(ureq, src);
@@ -422,24 +422,30 @@ public class VideoDisplayController extends BasicController {
 	private void doMarkerMoved(UserRequest ureq) {
 		String markerId = ureq.getParameter("marker_id");
 		MarkerMovedEvent event = new MarkerMovedEvent(markerId);
-		double top = Double.parseDouble(ureq.getParameter("top"));
-		event.setTop(top);
-		double left = Double.parseDouble(ureq.getParameter("left"));
-		event.setLeft(left);
+		event.setTop(parseDouble(ureq, "top", 0.0d));
+		event.setLeft(parseDouble(ureq, "left", 0.0d));
 		fireEvent(ureq, event);
 	}
 	
 	private void doMarkerResized(UserRequest ureq) {
 		String markerId = ureq.getParameter("marker_id");
 		MarkerResizedEvent event = new MarkerResizedEvent(markerId);
-		double width = Double.parseDouble(ureq.getParameter("width"));
-		event.setWidth(width);
-		double height = Double.parseDouble(ureq.getParameter("height"));
-		event.setHeight(height);
+		event.setTop(parseDouble(ureq, "top", 0.0d));
+		event.setLeft(parseDouble(ureq, "left", 0.0d));
+		event.setWidth(parseDouble(ureq, "width", 10.0d));
+		event.setHeight(parseDouble(ureq, "height", 10.0d));
 		fireEvent(ureq, event);
 	}
 	
-	private void doMarker(String currentTime) {
+	private double parseDouble(UserRequest ureq, String name, double def) {
+		try {
+			return Double.parseDouble(ureq.getParameter(name));
+		} catch (NumberFormatException e) {
+			return def;
+		}
+	}
+	
+	public void loadMarker(String currentTime) {
 		double time = Double.parseDouble(currentTime);
 		List<VideoMarker> currentMarkers = new ArrayList<>();
 		if(videoMarkers != null) {

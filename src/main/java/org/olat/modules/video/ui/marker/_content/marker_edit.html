@@ -1,0 +1,115 @@
+<fieldset class="o_form">
+	<legend>$r.translate("video.marker.legend")</legend>
+	<div class="form-group row clearfix">
+		$r.render("begin_LABEL", $f.getItemId("begin"), "col-sm-2")
+		<div class="col-sm-2 form-inline o_sel_video_start">
+			$r.render("begin", "form")
+			#if($f.hasError("begin"))
+				<span class="o_icon o_icon_error form-control-feedback"></span>
+			#end
+			#if($f.hasError("begin"))
+			<div>$r.render("begin_ERROR")</div>
+			#end
+		</div>
+		$r.render("duration_LABEL", $f.getItemId("duration"), "col-sm-2")
+		<div class="col-sm-2 form-inline o_sel_video_duration">
+			$r.render("duration", "form")
+			#if($f.hasError("duration"))
+				<span class="o_icon o_icon_error form-control-feedback"></span>
+			#end
+			#if($f.hasError("duration"))
+			<div>$r.render("duration_ERROR")</div>
+			#end
+		</div>
+		<label class="control-label col-sm-1" for="o_video_end">$r.translate("video.marker.end")</label>
+		<div class="col-sm-3 form-inline">
+			<input type="text" id="o_video_end" name="o_video_end" class="form-control " size="5" maxlength="10" value="">
+		</div>
+		<script>
+/* <![CDATA[ */
+jQuery(function() {
+	var startEl = jQuery(".o_sel_video_start input");
+	var durationEl = jQuery(".o_sel_video_duration input");
+	var endEl = jQuery("#o_video_end");
+	
+	var parseTimeToSeconds = function(val) {
+		var a = val.split(':'); // split it at the colons
+		return (+a[0]) * 60 * 60 + (+a[1]) * 60 + (+a[2]);
+	}
+	var parseTimeToString = function(val, def) {
+		if(val <= 0) return def;
+		return new Date(val * 1000).toISOString().substr(11, 8);
+	}
+	var updateEndEl = function() {
+		var start = parseTimeToSeconds(startEl.val());
+		var duration = parseInt(durationEl.val());
+		if(start > 0 && duration > 0) {
+			endEl.val(parseTimeToString(start + duration, endEl.val()));
+		}
+	}
+	jQuery(startEl).add(durationEl).on("keyup", updateEndEl);
+	endEl.on("keyup", function(e) {
+		var start = parseTimeToSeconds(startEl.val());
+		var end = parseTimeToSeconds(endEl.val());
+		if(end - start > 0) {
+			durationEl.val((end - start));
+		}
+	});
+	updateEndEl();
+});
+/* ]]> */
+		</script>
+	</div>
+	<div class="form-group row clearfix">
+		$r.render("top_LABEL", $f.getItemId("top"), "col-sm-2")
+		<div class="col-sm-2 form-inline o_sel_video_marker_top">
+			$r.render("top", "form") <span>%</span>
+			#if($f.hasError("top"))
+				<span class="o_icon o_icon_error form-control-feedback"></span>
+			#end
+		</div>
+		$r.render("left_LABEL", $f.getItemId("left"), "col-sm-2")
+		<div class="col-sm-2 form-inline o_sel_video_marker_left">
+			$r.render("left", "form") <span>%</span>
+			#if($f.hasError("left"))
+				<span class="o_icon o_icon_error form-control-feedback"></span>
+			#end
+		</div>
+	</div>
+	<div class="form-group row clearfix">
+		$r.render("width_LABEL", $f.getItemId("width"), "col-sm-2")
+		<div class="col-sm-4 form-inline o_sel_video_marker_width">
+			$r.render("width", "form") <span>%</span>
+			#if($f.hasError("width"))
+				<span class="o_icon o_icon_error form-control-feedback"></span>
+			#end
+		</div>
+		$r.render("height_LABEL", $f.getItemId("height"), "col-sm-2")
+		<div class="col-sm-4 form-inline o_sel_video_marker_height">
+			$r.render("height", "form") <span>%</span>
+			#if($f.hasError("height"))
+				<span class="o_icon o_icon_error form-control-feedback"></span>
+			#end
+		</div>
+	</div>
+	<div class="form-group row clearfix">
+		$r.render("color_LABEL", $f.getItemId("color"), "col-sm-2")
+		<div class="col-sm-10 form-inline">
+			$r.render("color", "form")
+			#if($f.hasError("color"))
+				<span class="o_icon o_icon_error form-control-feedback"></span>
+			#end
+		</div>
+	</div>
+	<div class="form-group clearfix">
+		$r.render("text_LABEL", $f.getItemId("text"))
+		$r.render("text")
+		#if($f.hasError("text"))
+			<span class="o_icon o_icon_error form-control-feedback"></span>
+		#end
+	</div>
+	<div class='o_button_group'>
+		$r.render("cancel")
+		$r.render("save")
+	</div>
+</fieldset>
