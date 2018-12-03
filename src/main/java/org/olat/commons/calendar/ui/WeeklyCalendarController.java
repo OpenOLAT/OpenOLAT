@@ -643,7 +643,7 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), updateCtr.getInitialComponent(), true, title);
 			listenTo(cmc);
 			cmc.activate();
-		} else {
+		} else if(calEvent != null) {
 			Kalendar cal = calEvent.getCalendar();
 			calEvent.setBegin(doMove(calEvent.getBegin(), dayDelta, minuteDelta));
 			calEvent.setEnd(doMove(calEvent.getEnd(), dayDelta, minuteDelta));
@@ -651,6 +651,9 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 				calEvent.setAllDayEvent(allDay.booleanValue());
 			}
 			calendarManager.updateEventFrom(cal, calEvent);
+			calendarEl.getComponent().setDirty(true);
+		} else {
+			showWarning("cal.error.eventDeleted");
 			calendarEl.getComponent().setDirty(true);
 		}
 	}
@@ -664,13 +667,16 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), updateCtr.getInitialComponent(), true, title);
 			listenTo(cmc);
 			cmc.activate();
-		} else {
+		} else if(calEvent != null) {
 			Kalendar cal = calEvent.getCalendar();
 			calEvent.setEnd(doMove(calEvent.getEnd(), 0L, minuteDelta));
 			if(allDay != null && calEvent.isAllDayEvent() != allDay.booleanValue()) {
 				calEvent.setAllDayEvent(allDay.booleanValue());
 			}
 			calendarManager.updateEventFrom(cal, calEvent);
+			calendarEl.getComponent().setDirty(true);
+		} else {
+			showWarning("cal.error.eventDeleted");
 			calendarEl.getComponent().setDirty(true);
 		}
 	}
