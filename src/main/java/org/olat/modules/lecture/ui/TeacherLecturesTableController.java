@@ -20,6 +20,7 @@
 package org.olat.modules.lecture.ui;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
 import javax.xml.transform.TransformerException;
@@ -69,6 +70,7 @@ import org.olat.modules.lecture.RollCallSecurityCallback;
 import org.olat.modules.lecture.model.LectureBlockRow;
 import org.olat.modules.lecture.model.RollCallSecurityCallbackImpl;
 import org.olat.modules.lecture.ui.TeacherOverviewDataModel.TeachCols;
+import org.olat.modules.lecture.ui.component.IdentityComparator;
 import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer;
 import org.olat.modules.lecture.ui.component.YesNoCellRenderer;
 import org.olat.modules.lecture.ui.event.ReopenLectureBlockEvent;
@@ -297,6 +299,9 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 	private void doExportAttendanceList(UserRequest ureq, LectureBlock row) {
 		LectureBlock lectureBlock = lectureService.getLectureBlock(row);
 		List<Identity> participants = lectureService.getParticipants(lectureBlock);
+		if(participants.size() > 1) {
+			Collections.sort(participants, new IdentityComparator(getLocale()));
+		}
 		List<LectureBlockRollCall> rollCalls = lectureService.getRollCalls(row);
 		try {
 			LecturesBlockPDFExport export = new LecturesBlockPDFExport(lectureBlock, authorizedAbsenceEnabled, getTranslator());
@@ -311,6 +316,9 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 	private void doExportAttendanceListForSignature(UserRequest ureq, LectureBlock row) {
 		LectureBlock lectureBlock = lectureService.getLectureBlock(row);
 		List<Identity> participants = lectureService.getParticipants(lectureBlock);
+		if(participants.size() > 1) {
+			Collections.sort(participants, new IdentityComparator(getLocale()));
+		}
 		try {
 			LecturesBlockSignaturePDFExport export = new LecturesBlockSignaturePDFExport(lectureBlock, getTranslator());
 			export.setTeacher(userManager.getUserDisplayName(getIdentity()));
