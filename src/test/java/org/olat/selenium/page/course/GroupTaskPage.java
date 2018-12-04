@@ -103,6 +103,7 @@ public class GroupTaskPage {
 		By saveButtonBy = By.cssSelector(".o_sel_course_gta_upload_form button.btn-primary");
 		browser.findElement(saveButtonBy).click();
 		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
 	
@@ -117,10 +118,16 @@ public class GroupTaskPage {
 		browser.findElement(saveBy).click();
 		OOGraphene.waitBusy(browser);
 		
-		OOGraphene.tinymce(text, browser);
-		By saveAndCloseBy = By.cssSelector("#o_button_saveclose a.btn");
+		By saveAndCloseBy = By.cssSelector(".modal-body #o_button_saveclose a.btn");
+		OOGraphene.waitElement(saveAndCloseBy, browser);
+		
+		OOGraphene.tinymceExec(text, browser);
+
+		By saveAndCloseDirtyBy = By.cssSelector(".modal-body #o_button_saveclose a.btn.o_button_dirty");
+		OOGraphene.waitElement(saveAndCloseDirtyBy, browser);
 		browser.findElement(saveAndCloseBy).click();
 		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
 	

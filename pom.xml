@@ -70,7 +70,7 @@
 		<org.postgresql.version>42.2.1</org.postgresql.version>
 		<org.infinispan.version>8.2.8.Final</org.infinispan.version>
 		<lucene.version>4.8.0</lucene.version>
-		<version.selenium>3.11.0</version.selenium>
+		<version.selenium>3.13.0</version.selenium>
 		<version.drone>2.5.1</version.drone>
 		<activemq.version>5.11.1</activemq.version>
 		<qtiworks.version>1.0.9</qtiworks.version>
@@ -2641,7 +2641,7 @@
 			<dependency>
 				<groupId>org.jboss.arquillian</groupId>
 				<artifactId>arquillian-bom</artifactId>
-				<version>1.4.0.Final</version>
+				<version>1.4.1.Final</version>
 				<scope>import</scope>
 				<type>pom</type>
 			</dependency>
