@@ -129,7 +129,7 @@ $o-cal-color-width : 20px;
 	}
 }
 
-.o_cal_event_managed .fc-event-inner:after {
+.o_cal_event_managed .fc-content:after {
 	margin-right: 2px;
 	float: right;
 	font-family: FontAwesome;
@@ -141,7 +141,7 @@ $o-cal-color-width : 20px;
 	content: $fa-var-lock;
 }
 
-.o_cal_event_not_managed .fc-event-inner:after {
+.o_cal_event_not_managed .fc-content:after {
 	margin-right: 2px;
 	float: right;
 	font-family: FontAwesome;
