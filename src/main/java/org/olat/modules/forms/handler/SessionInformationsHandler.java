@@ -36,6 +36,7 @@ import org.olat.modules.forms.ui.SessionInformationsEditorController;
 import org.olat.modules.forms.ui.model.EvaluationFormExecutionElement;
 import org.olat.modules.forms.ui.model.EvaluationFormResponseController;
 import org.olat.modules.forms.ui.model.EvaluationFormResponseControllerElement;
+import org.olat.modules.forms.ui.model.ExecutionIdentity;
 
 /**
  * 
@@ -83,10 +84,10 @@ public class SessionInformationsHandler implements EvaluationFormElementHandler,
 
 	@Override
 	public EvaluationFormExecutionElement getExecutionElement(UserRequest ureq, WindowControl wControl, Form rootForm,
-			PageElement element) {
+			PageElement element, ExecutionIdentity executionIdentity) {
 		if (element instanceof SessionInformations) {
 			SessionInformations sessionInformations = (SessionInformations) element;
-			EvaluationFormResponseController ctrl = new SessionInformationsController(ureq, wControl, sessionInformations, rootForm);
+			EvaluationFormResponseController ctrl = new SessionInformationsController(ureq, wControl, sessionInformations, rootForm, executionIdentity);
 			return new EvaluationFormResponseControllerElement(ctrl);
 		}
 		return null;

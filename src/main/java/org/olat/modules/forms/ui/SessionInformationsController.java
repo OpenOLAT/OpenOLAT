@@ -41,6 +41,7 @@ import org.olat.modules.forms.model.jpa.EvaluationFormResponses;
 import org.olat.modules.forms.model.xml.SessionInformations;
 import org.olat.modules.forms.model.xml.SessionInformations.InformationType;
 import org.olat.modules.forms.ui.model.EvaluationFormResponseController;
+import org.olat.modules.forms.ui.model.ExecutionIdentity;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -55,6 +56,7 @@ public class SessionInformationsController extends FormBasicController implement
 	private FormLink fillInButton;
 	
 	private final SessionInformations sessionInformations;
+	private final ExecutionIdentity executionIdentity;
 
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
@@ -63,13 +65,15 @@ public class SessionInformationsController extends FormBasicController implement
 			SessionInformations sessionInformations) {
 		super(ureq, wControl, LAYOUT_HORIZONTAL);
 		this.sessionInformations = sessionInformations;
+		this.executionIdentity = new ExecutionIdentity(getIdentity());;
 		initForm(ureq);
 	}
 
 	public SessionInformationsController(UserRequest ureq, WindowControl wControl,
-			SessionInformations sessionInformations, Form rootForm) {
+			SessionInformations sessionInformations, Form rootForm, ExecutionIdentity executionIdentity) {
 		super(ureq, wControl, LAYOUT_HORIZONTAL, null, rootForm);
 		this.sessionInformations = sessionInformations;
+		this.executionIdentity = executionIdentity;
 		initForm(ureq);
 	}
 
@@ -142,7 +146,7 @@ public class SessionInformationsController extends FormBasicController implement
 
 	private String getUserProperty(InformationType informationType) {
 		String propertyName = SessionInformationsUIFactory.getUserProperty(informationType);
-		return getIdentity().getUser().getProperty(propertyName, getLocale());
+		return executionIdentity.getUser().getProperty(propertyName, getLocale());
 	}
 
 	@Override

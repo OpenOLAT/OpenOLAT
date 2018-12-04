@@ -55,6 +55,9 @@
 				<entry key="/tiny/">
 					<ref bean="tinywebbean" />
 				</entry>
+				<entry key="/survey/">
+					<ref bean="evaluationformwebbean" />
+				</entry>
 				<entry key="/podcast/">
 					<ref bean="podcastMediaBean" />
 				</entry>
@@ -183,6 +186,7 @@
 						</property>
 					</bean>
 				</entry>
+				
 			</map>
 		</property>
 	</bean>
@@ -245,6 +249,9 @@
 		
 	<bean id="tinywebbean"
 		class="org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins.olatmovieviewer.TinyDispatcher" />
+		
+	<bean id="evaluationformwebbean"
+		class="org.olat.modules.forms.EvaluationFormDispatcher" />
 
 	<!-- podcast media dispatcher -->
 	<bean id="podcastMediaBean" class="org.olat.modules.webFeed.dispatching.FeedMediaDispatcher">

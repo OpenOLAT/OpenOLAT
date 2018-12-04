@@ -42,6 +42,7 @@ import org.olat.modules.forms.ui.model.EvaluationFormComponentElement;
 import org.olat.modules.forms.ui.model.EvaluationFormComponentReportElement;
 import org.olat.modules.forms.ui.model.EvaluationFormExecutionElement;
 import org.olat.modules.forms.ui.model.EvaluationFormReportElement;
+import org.olat.modules.forms.ui.model.ExecutionIdentity;
 
 /**
  * 
@@ -91,7 +92,7 @@ public class SpacerHandler implements EvaluationFormElementHandler, SimpleAddPag
 
 	@Override
 	public EvaluationFormExecutionElement getExecutionElement(UserRequest ureq, WindowControl wControl, Form rootForm,
-			PageElement element) {
+			PageElement element, ExecutionIdentity executionIdentity) {
 		PageRunElement runElement = getContent(ureq, wControl, element, null);
 		if (runElement != null) {
 			return new EvaluationFormComponentElement(runElement);

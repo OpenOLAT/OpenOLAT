@@ -64,70 +64,74 @@ import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.model.xml.FormXStream;
 import org.olat.modules.forms.ui.model.EvaluationFormExecutionElement;
 import org.olat.modules.forms.ui.model.ExecutionFragment;
+import org.olat.modules.forms.ui.model.ExecutionIdentity;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
  * Initial date: 13.04.2018<br>
+ * 
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
 public class EvaluationFormExecutionController extends FormBasicController implements ValidatingController {
 
 	private static final OLog log = Tracing.createLoggerFor(EvaluationFormExecutionController.class);
-	
+
 	private final Map<String, EvaluationFormElementHandler> handlerMap = new HashMap<>();
 	private final List<ExecutionFragment> fragments = new ArrayList<>();
 	private FormLink saveLink;
 	private FormLink doneLink;
 	private DialogBoxController confirmDoneCtrl;
 	private PageFragmentsElementImpl fragmentsEl;
-	
+
 	private final Form form;
+	private final ExecutionIdentity executionIdentity;
 	private final Component header;
 	private boolean readOnly;
 	private boolean showDoneButton;
-	
+
 	private boolean immediateSave = false;
-	
+
 	private EvaluationFormSession session;
 	private final EvaluationFormResponses responses;
-	
+
 	@Autowired
 	private DB dbInstance;
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
 
 	public EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, EvaluationFormSession session) {
-		this(ureq, wControl, null, session, null, null, false, true);
+		this(ureq, wControl, null, session, null, null, null, false, true);
 	}
-	
+
 	/**
 	 * Optimized to use already loaded responses and form.
-	 * @param formHeader 
+	 * 
+	 * @param formHeader
 	 * 
 	 */
 	public EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, EvaluationFormSession session,
 			EvaluationFormResponses responses, Form form, Component header) {
-		this(ureq, wControl, form, session, responses, header, false, true);
+		this(ureq, wControl, form, session, responses, null, header, false, true);
 	}
-	
+
 	public EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, EvaluationFormSession session,
 			boolean readOnly, boolean showDoneButton) {
-		this(ureq, wControl, null, session, null, null, readOnly, showDoneButton);
+		this(ureq, wControl, null, session, null, null, null, readOnly, showDoneButton);
 	}
-	
-	private EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, Form form,
-			EvaluationFormSession session, EvaluationFormResponses responses, Component header, boolean readOnly,
-			boolean showDoneButton) {
+
+	public EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, Form form,
+			EvaluationFormSession session, EvaluationFormResponses responses, ExecutionIdentity executionIdentity,
+			Component header, boolean readOnly, boolean showDoneButton) {
 		super(ureq, wControl, "execute");
-		
+
 		this.session = session;
 		this.header = header;
 		this.readOnly = readOnly;
 		this.showDoneButton = showDoneButton;
-		
+
 		if (form != null) {
 			this.form = form;
 		} else {
@@ -136,54 +140,60 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 					FileResourceManager.getInstance().getFileResourceRoot(formEntry.getOlatResource()),
 					FileResourceManager.ZIPDIR);
 			File formFile = new File(repositoryDir, FORM_XML_FILE);
-			this.form = (Form)XStreamHelper.readObject(FormXStream.getXStream(), formFile);
+			this.form = (Form) XStreamHelper.readObject(FormXStream.getXStream(), formFile);
 		}
-		
+
 		if (responses != null) {
 			this.responses = responses;
 		} else {
 			SessionFilter filter = SessionFilterFactory.create(session);
 			this.responses = evaluationFormManager.loadResponsesBySessions(filter);
 		}
-		
+
+		if (executionIdentity != null) {
+			this.executionIdentity = executionIdentity;
+		} else {
+			this.executionIdentity = new ExecutionIdentity(getIdentity());
+		}
+
 		initForm(ureq);
 	}
-	
+
 	public EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, File formFile) {
 		super(ureq, wControl, "execute");
 
-		this.form = (Form)XStreamHelper.readObject(FormXStream.getXStream(), formFile);
-		
+		this.form = (Form) XStreamHelper.readObject(FormXStream.getXStream(), formFile);
+
 		this.session = null;
 		this.responses = null;
 		this.header = null;
 		this.readOnly = false;
 		this.showDoneButton = false;
-		
+		this.executionIdentity = new ExecutionIdentity(getIdentity());
+
 		initForm(ureq);
 	}
-	
+
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		AllHandlerPageProvider provider = new AllHandlerPageProvider(form);
-		for(EvaluationFormElementHandler handler: provider.getAvailableHandlers()) {
+		for (EvaluationFormElementHandler handler : provider.getAvailableHandlers()) {
 			handlerMap.put(handler.getType(), handler);
 		}
-		
+
 		fragmentsEl = new PageFragmentsElementImpl("fragments");
 		formLayout.add("fragments", fragmentsEl);
-		
+
 		ajustFromSession();
 		loadElements(ureq);
 		loadResponses();
 		propagateReadOnly();
-		
+
 		if (header != null) {
 			flc.put("header", header);
 		}
-		
-		boolean notAnonymous = session != null
-				&& session.getParticipation() != null
+
+		boolean notAnonymous = session != null && session.getParticipation() != null
 				&& !session.getParticipation().isAnonymous();
 		boolean anonymous = !notAnonymous;
 		flc.contextPut("anonymous", Boolean.valueOf(showDoneButton && anonymous));
@@ -193,11 +203,12 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 		saveLink = uifactory.addFormLink("save.intermediate", "save.intermediate", null, flc, Link.BUTTON);
 		showHideButtons();
 	}
-	
+
 	private void ajustFromSession() {
-		if (session == null) return;
-		
-		if(session.getEvaluationFormSessionStatus() == EvaluationFormSessionStatus.done) {
+		if (session == null)
+			return;
+
+		if (session.getEvaluationFormSessionStatus() == EvaluationFormSessionStatus.done) {
 			readOnly = true;
 			showDoneButton = false;
 		} else {
@@ -205,11 +216,11 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 			if (session.getParticipation() != null) {
 				executor = session.getParticipation().getExecutor();
 			}
-			if (executor != null && !executor.equals(getIdentity())) {
+			if (executor != null && !executor.getKey().equals(executionIdentity.getIdentityKey())) {
 				flc.contextPut("messageNotDone", Boolean.TRUE);
 			}
 		}
-		
+
 	}
 
 	private void loadElements(UserRequest ureq) {
@@ -218,27 +229,29 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 		if (elements.isEmpty()) {
 			flc.contextPut("messageWithoutElements", Boolean.TRUE);
 		}
-		for(AbstractElement element: elements) {
+		for (AbstractElement element : elements) {
 			EvaluationFormElementHandler handler = handlerMap.get(element.getType());
-			if(handler != null) {
-				EvaluationFormExecutionElement executionElement = handler.getExecutionElement(ureq, getWindowControl(), mainForm, element);
+			if (handler != null) {
+				EvaluationFormExecutionElement executionElement = handler.getExecutionElement(ureq, getWindowControl(),
+						mainForm, element, executionIdentity);
 				String cmpId = "cpt-" + CodeHelper.getRAMUniqueID();
 				fragments.add(new ExecutionFragment(handler.getType(), cmpId, executionElement, element));
 			}
 		}
 		fragmentsEl.setFragments(fragments);
 	}
-	
+
 	private void loadResponses() {
-		if (session == null) return;
-		
-		for (ExecutionFragment fragment: fragments) {
+		if (session == null)
+			return;
+
+		for (ExecutionFragment fragment : fragments) {
 			fragment.initResponse(session, responses);
 		}
 	}
-	
+
 	private void propagateReadOnly() {
-		for (ExecutionFragment fragment: fragments) {
+		for (ExecutionFragment fragment : fragments) {
 			fragment.setReadOnly(readOnly);
 		}
 	}
@@ -247,10 +260,10 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 		saveLink.setVisible(!readOnly && session != null);
 		doneLink.setVisible(showDoneButton);
 	}
-	
+
 	@Override
 	protected void doDispose() {
-		for (ExecutionFragment fragment: fragments) {
+		for (ExecutionFragment fragment : fragments) {
 			fragment.dispose();
 		}
 	}
@@ -288,7 +301,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 	@Override
 	public boolean validate(UserRequest ureq, List<ValidationMessage> messages) {
 		areAllResponded(messages);
-		for (ExecutionFragment fragment: fragments) {
+		for (ExecutionFragment fragment : fragments) {
 			fragment.validate(ureq, messages);
 		}
 		return messages.isEmpty();
@@ -296,7 +309,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 
 	private void areAllResponded(List<ValidationMessage> messages) {
 		boolean allResponded = true;
-		for (ExecutionFragment fragment: fragments) {
+		for (ExecutionFragment fragment : fragments) {
 			if (!fragment.hasResponse()) {
 				allResponded &= false;
 			}
@@ -309,7 +322,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 
 	private boolean doSaveResponses() {
 		boolean allSaved = true;
-		for (ExecutionFragment fragment: fragments) {
+		for (ExecutionFragment fragment : fragments) {
 			try {
 				fragment.save(session);
 			} catch (Exception e) {
@@ -319,7 +332,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 		}
 		dbInstance.commit();
 		if (!allSaved) {
-			showError("error.cannot.save");	
+			showError("error.cannot.save");
 		}
 		return allSaved;
 	}

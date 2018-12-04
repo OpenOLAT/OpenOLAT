@@ -217,6 +217,8 @@ public class QualityParticipationDAOTest extends OlatTestCase {
 		
 		QualityExecutorParticipation participation = participations.get(0);
 		assertThat(participation.getParticipationRef()).isNotNull();
+		assertThat(participation.getParticipationIdentifier().getType()).isNotNull();
+		assertThat(participation.getParticipationIdentifier().getKey()).isNotNull();
 		assertThat(participation.getExecutionStatus()).isNotNull();
 		assertThat(participation.getStart()).isNotNull();
 		assertThat(participation.getDeadline()).isNotNull();
@@ -323,6 +325,25 @@ public class QualityParticipationDAOTest extends OlatTestCase {
 		Long[] expectedKeys = createdParticipations.stream().map(EvaluationFormParticipation::getKey)
 				.toArray(Long[]::new);
 		assertThat(loadedKeys).containsExactlyInAnyOrder(expectedKeys);
+	}
+	
+	@Test
+	public void shouldFilterExecutorParticipationsByEvaluationFormParticipation() {
+		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
+		EvaluationFormSurveyRef survey = evaManager.loadSurvey(dataCollection, null);
+		Identity identity1 = JunitTestHelper.createAndPersistIdentityAsRndUser("quality-");
+		Identity identity2 = JunitTestHelper.createAndPersistIdentityAsRndUser("quality-");
+		Identity identity3 = JunitTestHelper.createAndPersistIdentityAsRndUser("quality-");
+		qualityTestHelper.addParticipations(dataCollection, Arrays.asList(identity1, identity2, identity3));
+		EvaluationFormParticipation participation = evaManager.loadParticipationByExecutor(survey, identity1);
+		dbInstance.commitAndCloseSession();
+
+		QualityExecutorParticipationSearchParams searchParams = new QualityExecutorParticipationSearchParams();
+		searchParams.setParticipationRef(participation);
+		List<QualityExecutorParticipation> participations = sut.loadExecutorParticipations(TRANSLATOR, searchParams, 0,
+				-1);
+
+		assertThat(participations.get(0).getParticipationRef().getKey()).isEqualTo(participation.getKey());
 	}
 	
 	@Test

@@ -54,7 +54,7 @@ class EvaluationFormSurveyDAO {
 		survey.setLastModified(survey.getCreationDate());
 		survey.setResName(ores.getResourceableTypeName());
 		survey.setResId(ores.getResourceableId());
-		survey.setResSubident(subIdent);
+		survey.setSubident(subIdent);
 		survey.setFormEntry(formEntry);
 		dbInstance.getCurrentEntityManager().persist(survey);
 		Long seriesKey = previous != null? previous.getSeriesKey(): survey.getKey();

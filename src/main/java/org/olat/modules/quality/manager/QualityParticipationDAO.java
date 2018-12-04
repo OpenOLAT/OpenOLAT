@@ -154,6 +154,7 @@ class QualityParticipationDAO {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select new org.olat.modules.quality.model.QualityExcecutorParticipationImpl(");
 		sb.append("       participation.key as participationKey");
+		sb.append("     , participation.identifier as identifier");
 		sb.append("     , case");
 		sb.append("           when participation.status = '").append(EvaluationFormParticipationStatus.done).append("'");
 		sb.append("           then ").append(QualityExecutorParticipationStatus.PARTICIPATED.getOrder());
@@ -236,6 +237,9 @@ class QualityParticipationDAO {
 		if (searchParam.getDataCollectionRef() != null && searchParam.getDataCollectionRef().getKey() != null) {
 			sb.and().append("collection.key = :dataCollectionKey");
 		}
+		if (searchParam.getParticipationRef() != null && searchParam.getParticipationRef().getKey() != null) {
+			sb.and().append("participation.key = :participationKey");
+		}
 		if (searchParam.getParticipationStatus() != null) {
 			sb.and().append("participation.status = :participationStatus");
 		}
@@ -246,13 +250,16 @@ class QualityParticipationDAO {
 
 	private void appendWhereParameters(TypedQuery<?> query, QualityExecutorParticipationSearchParams searchParam) {
 		if (searchParam.getExecutorRef() != null && searchParam.getExecutorRef().getKey() != null) {
-				query.setParameter("executorKey", searchParam.getExecutorRef().getKey());
+			query.setParameter("executorKey", searchParam.getExecutorRef().getKey());
 		}
 		if (searchParam.getDataCollectionRef() != null && searchParam.getDataCollectionRef().getKey() != null) {
-				query.setParameter("dataCollectionKey", searchParam.getDataCollectionRef().getKey());
+			query.setParameter("dataCollectionKey", searchParam.getDataCollectionRef().getKey());
+		}
+		if (searchParam.getParticipationRef() != null && searchParam.getParticipationRef().getKey() != null) {
+			query.setParameter("participationKey", searchParam.getParticipationRef().getKey());
 		}
 		if (searchParam.getParticipationStatus() != null) {
-				query.setParameter("participationStatus", searchParam.getParticipationStatus());
+			query.setParameter("participationStatus", searchParam.getParticipationStatus());
 		}
 		if (searchParam.getDataCollectionStatus() != null && !searchParam.getDataCollectionStatus().isEmpty()) {
 			query.setParameter("collectionStatus", searchParam.getDataCollectionStatus());

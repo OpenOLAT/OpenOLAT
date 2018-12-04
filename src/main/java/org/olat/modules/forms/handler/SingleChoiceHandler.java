@@ -41,6 +41,7 @@ import org.olat.modules.forms.ui.SingleChoiceEditorController;
 import org.olat.modules.forms.ui.model.EvaluationFormExecutionElement;
 import org.olat.modules.forms.ui.model.EvaluationFormResponseController;
 import org.olat.modules.forms.ui.model.EvaluationFormResponseControllerElement;
+import org.olat.modules.forms.ui.model.ExecutionIdentity;
 
 
 /**
@@ -106,7 +107,7 @@ public class SingleChoiceHandler implements EvaluationFormElementHandler, Simple
 
 	@Override
 	public EvaluationFormExecutionElement getExecutionElement(UserRequest ureq, WindowControl wControl, Form rootForm,
-			PageElement element) {
+			PageElement element, ExecutionIdentity executionIdentity) {
 		if (element instanceof SingleChoice) {
 			SingleChoice singleChoice = (SingleChoice) element;
 			EvaluationFormResponseController ctrl = new SingleChoiceController(ureq, wControl, singleChoice, rootForm);

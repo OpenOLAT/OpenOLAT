@@ -38,6 +38,7 @@ import org.olat.modules.forms.ui.DisclaimerEditorController;
 import org.olat.modules.forms.ui.model.EvaluationFormExecutionElement;
 import org.olat.modules.forms.ui.model.EvaluationFormResponseController;
 import org.olat.modules.forms.ui.model.EvaluationFormResponseControllerElement;
+import org.olat.modules.forms.ui.model.ExecutionIdentity;
 
 /**
  * 
@@ -85,7 +86,7 @@ public class DisclaimerHandler implements EvaluationFormElementHandler, SimpleAd
 
 	@Override
 	public EvaluationFormExecutionElement getExecutionElement(UserRequest ureq, WindowControl wControl, Form rootForm,
-			PageElement element) {
+			PageElement element, ExecutionIdentity executionIdentity) {
 		if (element instanceof Disclaimer) {
 			Disclaimer disclaimer = (Disclaimer) element;
 			EvaluationFormResponseController ctrl = new DisclaimerController(ureq, wControl, disclaimer, rootForm);

@@ -72,7 +72,6 @@ import org.olat.modules.forms.ui.EvaluationFormExecutionController;
 import org.olat.modules.forms.ui.EvaluationFormReportController;
 import org.olat.modules.forms.ui.LegendNameGenerator;
 import org.olat.modules.forms.ui.ReportHelper;
-import org.olat.modules.forms.ui.model.Evaluator;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -374,6 +373,25 @@ public class MultiEvaluationFormController extends BasicController {
 			return StringHelper.containsNonWhitespace(name)? name: "???";
 		}
 		
+	}
+	
+	private final static class Evaluator {
+		
+		private final Identity identity;
+		private String fullName;
+		
+		public Evaluator(Identity identity, String fullName) {
+			this.identity = identity;
+			this.fullName = fullName;
+		}
+
+		public Identity getIdentity() {
+			return identity;
+		}
+
+		public String getFullName() {
+			return fullName;
+		}
 	}
 
 	public static class EvaluatorPanel {

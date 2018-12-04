@@ -22,6 +22,7 @@ package org.olat.modules.quality;
 import java.util.Collection;
 
 import org.olat.basesecurity.IdentityRef;
+import org.olat.modules.forms.EvaluationFormParticipationRef;
 import org.olat.modules.forms.EvaluationFormParticipationStatus;
 
 /**
@@ -34,6 +35,7 @@ public class QualityExecutorParticipationSearchParams {
 	
 	private IdentityRef executorRef;
 	private QualityDataCollectionRef dataCollectionRef;
+	private EvaluationFormParticipationRef participationRef;
 	private EvaluationFormParticipationStatus participationStatus;
 	private Collection<QualityDataCollectionStatus> dataCollectionStatus;
 
@@ -51,6 +53,14 @@ public class QualityExecutorParticipationSearchParams {
 
 	public void setDataCollectionRef(QualityDataCollectionRef dataCollectionRef) {
 		this.dataCollectionRef = dataCollectionRef;
+	}
+
+	public EvaluationFormParticipationRef getParticipationRef() {
+		return participationRef;
+	}
+
+	public void setParticipationRef(EvaluationFormParticipationRef participationRef) {
+		this.participationRef = participationRef;
 	}
 
 	public EvaluationFormParticipationStatus getParticipationStatus() {

@@ -34,6 +34,7 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Persistable;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.repository.RepositoryEntry;
@@ -123,14 +124,32 @@ public class EvaluationFormSurveyImpl implements EvaluationFormSurvey, Persistab
 	public void setResId(Long resId) {
 		this.resId = resId;
 	}
+	
+	@Override
+	public OLATResourceable getOLATResourceable() {
+		return new OLATResourceable() {
+			
+			@Override
+			public String getResourceableTypeName() {
+				return resName;
+			}
+			
+			@Override
+			public Long getResourceableId() {
+				return resId;
+			}
+		};
+	}
 
-	public String getResSubident() {
+	@Override
+	public String getSubident() {
 		return resSubident;
 	}
 
-	public void setResSubident(String resSubident) {
-		this.resSubident = resSubident;
+	public void setSubident(String subident) {
+		this.resSubident = subident;
 	}
+	
 	@Override
 	public RepositoryEntry getFormEntry() {
 		return formEntry;

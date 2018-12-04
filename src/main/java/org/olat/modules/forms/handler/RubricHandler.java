@@ -40,6 +40,7 @@ import org.olat.modules.forms.ui.RubricEditorController;
 import org.olat.modules.forms.ui.model.EvaluationFormExecutionElement;
 import org.olat.modules.forms.ui.model.EvaluationFormResponseController;
 import org.olat.modules.forms.ui.model.EvaluationFormResponseControllerElement;
+import org.olat.modules.forms.ui.model.ExecutionIdentity;
 
 /**
  * 
@@ -101,7 +102,7 @@ public class RubricHandler implements EvaluationFormElementHandler, SimpleAddPag
 
 	@Override
 	public EvaluationFormExecutionElement getExecutionElement(UserRequest ureq, WindowControl wControl, Form rootForm,
-			PageElement element) {
+			PageElement element, ExecutionIdentity executionIdentity) {
 		if (element instanceof Rubric) {
 			Rubric rubric = (Rubric) element;
 			EvaluationFormResponseController ctrl = new RubricController(ureq, wControl, rubric, rootForm);

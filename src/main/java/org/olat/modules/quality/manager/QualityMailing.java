@@ -39,6 +39,7 @@ import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
+import org.olat.modules.forms.EvaluationFormDispatcher;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.RubricRating;
 import org.olat.modules.forms.RubricStatistic;
@@ -140,8 +141,7 @@ class QualityMailing {
 					: translator.translate("reminder.serie.primary");
 			mailBuilder.withSeriePosition(seriePorition);
 			
-			Long participationKey = participation.getParticipationRef().getKey();
-			String url = getParticipationUrl(participationKey);
+			String url = EvaluationFormDispatcher.getExecutionUrl(participation.getParticipationIdentifier());
 			mailBuilder.withUrl(url);
 			
 			String surveyContext = createParticipationContext(participation, locale);
@@ -151,17 +151,6 @@ class QualityMailing {
 		mailBuilder.withInvitation(invitationReminder.getSendDone());
 		
 		return mailBuilder.build();
-	}
-
-	private String getParticipationUrl(Long participationKey) {
-		StringBuilder url = new StringBuilder();
-		url.append(Settings.getServerContextPathURI());
-		url.append("/url/QualitySite/0/quality/0/my/0/");
-		if (participationKey != null) {
-			url.append("execution/");
-			url.append(participationKey);
-		}
-		return url.toString();
 	}
 
 	private String createParticipationContext(QualityExecutorParticipation participation, Locale locale) {
@@ -187,7 +176,6 @@ class QualityMailing {
 		for (Identity recipient : recipients) {
 			sendReportAccessEmail(dataCollection, recipient, rubricStatistics);
 		}
-		
 	}
 	
 	private void sendReportAccessEmail(QualityDataCollection dataCollection, Identity recipient, List<RubricStatistic> rubricStatistics) {

@@ -34,7 +34,6 @@ import org.olat.modules.forms.EvaluationFormParticipationRef;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.ui.EvaluationFormExecutionController;
 import org.olat.modules.quality.QualityExecutorParticipation;
-import org.olat.modules.quality.ui.QualityUIContextsBuilder.UIContexts;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -47,6 +46,7 @@ public class ExecutionController extends BasicController {
 
 	private VelocityContainer mainVC;
 	private Link back;
+	private Controller headerCtrl;
 	private Controller executionCtrl;
 	
 	private final QualityExecutorParticipation qualityParticipation;
@@ -67,12 +67,9 @@ public class ExecutionController extends BasicController {
 		back = LinkFactory.createLinkBack(mainVC, this);
 		mainVC.put("back", back);
 		
-		mainVC.contextPut("title", qualityParticipation.getTitle());
-		UIContexts uiContexts = QualityUIContextsBuilder.builder(qualityParticipation, getLocale())
-				.withAllAttributes()
-				.withAlwaysEvenKeyValues()
-				.build();
-		mainVC.contextPut("contexts", uiContexts.getUiContexts());
+		headerCtrl = new ExecutionHeaderController(ureq, getWindowControl(), qualityParticipation);
+		listenTo(headerCtrl);
+		mainVC.put("header", headerCtrl.getInitialComponent());
 		
 		EvaluationFormSession session = loadOrCreateSession(qualityParticipation.getParticipationRef());
 		executionCtrl = new EvaluationFormExecutionController(ureq, getWindowControl(), session);
@@ -107,7 +104,9 @@ public class ExecutionController extends BasicController {
 	@Override
 	protected void doDispose() {
 		removeAsListenerAndDispose(executionCtrl);
+		removeAsListenerAndDispose(headerCtrl);
 		executionCtrl = null;
+		headerCtrl = null;
 	}
 
 }

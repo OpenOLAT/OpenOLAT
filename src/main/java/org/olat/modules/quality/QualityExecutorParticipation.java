@@ -21,6 +21,7 @@ package org.olat.modules.quality;
 
 import java.util.Date;
 
+import org.olat.modules.forms.EvaluationFormParticipationIdentifier;
 import org.olat.modules.forms.EvaluationFormParticipationRef;
 
 /**
@@ -32,6 +33,8 @@ import org.olat.modules.forms.EvaluationFormParticipationRef;
 public interface QualityExecutorParticipation {
 	
 	public EvaluationFormParticipationRef getParticipationRef();
+	
+	public EvaluationFormParticipationIdentifier getParticipationIdentifier();
 
 	public QualityExecutorParticipationStatus getExecutionStatus();
 	

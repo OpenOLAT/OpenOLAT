@@ -19,48 +19,47 @@
  */
 package org.olat.modules.forms;
 
-import org.olat.core.id.CreateInfo;
-import org.olat.core.id.ModifiedInfo;
+import java.util.List;
+
+import javax.annotation.PostConstruct;
+
 import org.olat.core.id.OLATResourceable;
-import org.olat.repository.RepositoryEntry;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * 
- * Initial date: 29.04.2018<br>
+ * Initial date: 23 Nov 2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface EvaluationFormSurvey extends EvaluationFormSurveyRef, CreateInfo, ModifiedInfo {
-
-	public OLATResourceable getOLATResourceable();
+@Service
+public class EvaluationFormStandaloneProviderFactory {
 	
-	public String getSubident();
-
-	/**
-	 *
-	 * @return the ReositoryEntry of the evaluation form (questionnaire)
-	 */
-	public RepositoryEntry getFormEntry();
-
-	/**
-	 * Get the key of a series. All surveys with the same series key are together one series.
-	 *
-	 * @return the key of the series
-	 */
-	public Long getSeriesKey();
+	@Autowired
+	private List<EvaluationFormStandaloneProvider> providers;
+	private EvaluationFormStandaloneProvider fallbackProvider;
 	
-	/**
-	 * The index in a series. The first element in a series has index 1.
-	 *
-	 * @return the index 
-	 */
-	public Integer getSeriesIndex();
-
-	/**
-	 *
-	 * @return the previous survey in a series.
-	 */
-	public EvaluationFormSurvey getSeriesPrevious();
-
+	@PostConstruct
+	void initProviders() {
+		for (EvaluationFormStandaloneProvider provider: providers) {
+			if (provider.isFallbackProvider()) {
+				fallbackProvider = provider;
+			}
+		}
+	}
+	
+	public EvaluationFormStandaloneProvider getProvider(OLATResourceable ores) {
+		EvaluationFormStandaloneProvider acceptedPovider = null;
+		for (EvaluationFormStandaloneProvider provider: providers) {
+			if (provider.accept(ores)) {
+				acceptedPovider = provider;
+			}
+		}
+		if (acceptedPovider == null) {
+			acceptedPovider = fallbackProvider;
+		}
+		return acceptedPovider;
+	}
 
 }

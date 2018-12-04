@@ -38,6 +38,7 @@ import org.olat.modules.forms.ui.TextInputEditorController;
 import org.olat.modules.forms.ui.model.EvaluationFormExecutionElement;
 import org.olat.modules.forms.ui.model.EvaluationFormResponseController;
 import org.olat.modules.forms.ui.model.EvaluationFormResponseControllerElement;
+import org.olat.modules.forms.ui.model.ExecutionIdentity;
 
 /**
  * 
@@ -92,7 +93,7 @@ public class TextInputHandler implements EvaluationFormElementHandler, SimpleAdd
 
 	@Override
 	public EvaluationFormExecutionElement getExecutionElement(UserRequest ureq, WindowControl wControl, Form rootForm,
-			PageElement element) {
+			PageElement element, ExecutionIdentity executionIdentity) {
 		if (element instanceof TextInput) {
 			TextInput textInput = (TextInput) element;
 			EvaluationFormResponseController ctrl = new TextInputController(ureq, wControl, textInput, rootForm);

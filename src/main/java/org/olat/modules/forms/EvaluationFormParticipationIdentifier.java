@@ -52,5 +52,16 @@ public class EvaluationFormParticipationIdentifier implements Serializable {
 	public String getKey() {
 		return key;
 	}
+
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("EvaluationFormParticipationIdentifier [type=");
+		builder.append(type);
+		builder.append(", key=");
+		builder.append(key);
+		builder.append("]");
+		return builder.toString();
+	}
 	
 }

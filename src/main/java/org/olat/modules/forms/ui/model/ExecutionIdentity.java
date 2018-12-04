@@ -20,32 +20,33 @@
 package org.olat.modules.forms.ui.model;
 
 import org.olat.core.id.Identity;
+import org.olat.core.id.User;
 
 /**
+ * Wrapper around the identity of the executor. This class helps to fill out
+ * surveys with unauthenticated users.
  * 
- * Initial date: 23 déc. 2016<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial date: 21 Nov 2018<br>
+ * 
+ * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class Evaluator {
+public class ExecutionIdentity {
 	
-	private final Identity identity;
-	private String fullName;
+	private final Long identityKey;
+	private final User user;
 	
-	public Evaluator(Identity identity, String fullName) {
-		this.identity = identity;
-		this.fullName = fullName;
+	public ExecutionIdentity(Identity identity) {
+		identityKey = identity.getKey();
+		user = identity.getUser();
+	}
+	
+	public Long getIdentityKey() {
+		return identityKey;
+	}
+	
+	public User getUser() {
+		return user;
 	}
 
-	public Identity getIdentity() {
-		return identity;
-	}
-
-	public String getFullName() {
-		return fullName;
-	}
-
-	public void setFullName(String fullName) {
-		this.fullName = fullName;
-	}
 }

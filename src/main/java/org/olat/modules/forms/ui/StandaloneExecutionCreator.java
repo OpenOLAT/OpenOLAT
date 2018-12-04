@@ -17,25 +17,30 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.forms.handler;
+package org.olat.modules.forms.ui;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.form.flexible.impl.Form;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.modules.ceditor.PageElement;
-import org.olat.modules.ceditor.PageElementHandler;
-import org.olat.modules.forms.ui.model.EvaluationFormExecutionElement;
-import org.olat.modules.forms.ui.model.ExecutionIdentity;
+import org.olat.core.gui.control.creator.ControllerCreator;
+import org.olat.modules.forms.EvaluationFormParticipationIdentifier;
 
 /**
  * 
- * Initial date: 15.04.2018<br>
+ * Initial date: 21 Nov 2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface EvaluationFormElementHandler extends PageElementHandler {
+public class StandaloneExecutionCreator implements ControllerCreator {
 
-	public EvaluationFormExecutionElement getExecutionElement(UserRequest ureq, WindowControl wControl,
-			Form rootForm, PageElement element, ExecutionIdentity executionIdentity);
+	private EvaluationFormParticipationIdentifier identifier;
 
+	public StandaloneExecutionCreator(EvaluationFormParticipationIdentifier identifier) {
+		this.identifier = identifier;
+	}
+
+	@Override
+	public Controller createController(UserRequest ureq, WindowControl wControl) {
+		return new StandaloneExecutionController(ureq, wControl, identifier);
+	}
 }

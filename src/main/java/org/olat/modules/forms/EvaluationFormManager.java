@@ -101,17 +101,7 @@ public interface EvaluationFormManager {
 
 	public EvaluationFormParticipation loadParticipationByExecutor(EvaluationFormSurveyRef surveyRef, IdentityRef executor);
 
-	/**
-	 * Load a participation by an identifier. If the identifier was inserted by
-	 * {@link createParticipation(survey, executor)}, the identifier is only unique
-	 * in combination with the survey. In all other cases the identifier is unique
-	 * across all participations. If more than one participation with the same
-	 * identifier (but other surveys) exists, this method returns null.
-	 *
-	 * @param identifier
-	 * @return the participation or null
-	 */
-	public EvaluationFormParticipationRef loadParticipationByIdentifier(EvaluationFormParticipationIdentifier identifier);
+	public EvaluationFormParticipation loadParticipationByIdentifier(EvaluationFormParticipationIdentifier identifier);
 
 	public EvaluationFormParticipation loadParticipationByIdentifier(EvaluationFormSurveyRef surveyRef,
 			EvaluationFormParticipationIdentifier identifier);

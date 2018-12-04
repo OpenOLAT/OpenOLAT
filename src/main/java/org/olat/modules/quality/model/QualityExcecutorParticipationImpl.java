@@ -21,6 +21,7 @@ package org.olat.modules.quality.model;
 
 import java.util.Date;
 
+import org.olat.modules.forms.EvaluationFormParticipationIdentifier;
 import org.olat.modules.forms.EvaluationFormParticipationRef;
 import org.olat.modules.quality.QualityDataCollectionTopicType;
 import org.olat.modules.quality.QualityExecutorParticipation;
@@ -35,6 +36,7 @@ import org.olat.modules.quality.QualityExecutorParticipationStatus;
 public class QualityExcecutorParticipationImpl implements QualityExecutorParticipation {
 	
 	private final Long participationKey;
+	private final EvaluationFormParticipationIdentifier participationIdentitfer;
 	private final QualityExecutorParticipationStatus executionStatus;
 	private final Date start;
 	private final Date deadline;
@@ -44,11 +46,12 @@ public class QualityExcecutorParticipationImpl implements QualityExecutorPartici
 	private final String topic;
 	private final String previousTitle;
 	
-	public QualityExcecutorParticipationImpl(Long participationKey, Integer executionStatusOrder, Date start,
-			Date deadline, String title, QualityDataCollectionTopicType topicType, String translatedTopicType,
-			String topic, String previousTitle) {
+	public QualityExcecutorParticipationImpl(Long participationKey, EvaluationFormParticipationIdentifier identitfer,
+			Integer executionStatusOrder, Date start, Date deadline, String title,
+			QualityDataCollectionTopicType topicType, String translatedTopicType, String topic, String previousTitle) {
 		super();
 		this.participationKey = participationKey;
+		this.participationIdentitfer = identitfer;
 		this.executionStatus = QualityExecutorParticipationStatus.getEnum(executionStatusOrder);
 		this.start = start;
 		this.deadline = deadline;
@@ -62,6 +65,11 @@ public class QualityExcecutorParticipationImpl implements QualityExecutorPartici
 	@Override
 	public EvaluationFormParticipationRef getParticipationRef() {
 		return () -> participationKey;
+	}
+
+	@Override
+	public EvaluationFormParticipationIdentifier getParticipationIdentifier() {
+		return participationIdentitfer;
 	}
 
 	@Override
