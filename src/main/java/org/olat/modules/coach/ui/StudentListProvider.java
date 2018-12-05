@@ -35,6 +35,8 @@ import org.olat.user.UserManager;
  */
 public class StudentListProvider implements ListProvider {
 	
+	private static final int MAX_ENTRIES = 10;
+	
 	private final StudentsTableDataModel model;
 	private final UserManager userManager;
 	
@@ -42,10 +44,15 @@ public class StudentListProvider implements ListProvider {
 		this.model = model;
 		this.userManager = userManager;
 	}
-
+	
+	@Override
+	public int getMaxEntries() {
+		return MAX_ENTRIES;
+	}
+	
 	@Override
 	public void getResult(String searchValue, ListReceiver receiver) {
-		int maxEntries = 10;
+		int maxEntries = MAX_ENTRIES;
 		boolean hasMore = false;
 		searchValue = searchValue.toLowerCase();
 		for (Iterator<StudentStatEntry> it_res = model.getObjects().iterator(); (hasMore=it_res.hasNext()) && maxEntries > 0;) {

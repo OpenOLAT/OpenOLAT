@@ -71,8 +71,7 @@ public class GroupTaskToCoachPage {
 	
 	public GroupTaskToCoachPage assertSubmittedDocument(String title) {
 		By selectLinkBy = By.xpath("//div[@id='o_step_submit_content']//ul//a//span[contains(text(),'" + title + "')]");
-		List<WebElement> documentLinkEls = browser.findElements(selectLinkBy);
-		Assert.assertFalse(documentLinkEls.isEmpty());
+		OOGraphene.waitElement(selectLinkBy, browser);
 		return this;
 	}
 	
@@ -141,11 +140,10 @@ public class GroupTaskToCoachPage {
 			By collpaseBy = By.xpath("//a[@href='#o_step_grading_content']");
 			browser.findElement(collpaseBy).click();
 			OOGraphene.waitElement(assessmentButtonBy, browser);
-			browser.findElement(assessmentButtonBy).click();
-		} else {
-			buttons.get(0).click();
 		}
+		browser.findElement(assessmentButtonBy).click();
 		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialog(browser);
 		return this;
 	}
 	

@@ -607,7 +607,6 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 		
 		String title = translate("cal.configuration.list");
 		cmc = new CloseableModalController(getWindowControl(), "c", configurationCtrl.getInitialComponent(), true, title);
-		cmc.setContextHelp(getTranslator(), "Calendar");
 		listenTo(cmc);
 		cmc.activate();
 	}

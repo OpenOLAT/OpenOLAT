@@ -114,6 +114,8 @@ public class AutoCompleterController extends BasicController {
 		myContent.contextPut("inputWidth", Integer.valueOf(inputWidth));
 		myContent.contextPut("minChars", Integer.valueOf(minChars));
 		myContent.contextPut("inputValue", "");
+		int limit = provider == null || provider.getMaxEntries() <= 0 ? 5 : provider.getMaxEntries();
+		myContent.contextPut("limit", Integer.valueOf(limit));
 		// Create a mapper for the server responses for a given input
 		mapper = new AutoCompleterMapper(noResults, showDisplayKey, gprovider);
 			

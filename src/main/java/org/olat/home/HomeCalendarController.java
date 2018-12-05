@@ -68,6 +68,7 @@ public class HomeCalendarController extends BasicController implements Activatea
 		List<KalendarRenderWrapper> calendars = homeCalendarManager.getListOfCalendarWrappers(ureq, windowControl);
 		calendarController = new WeeklyCalendarController(ureq, windowControl, calendars,
 				WeeklyCalendarController.CALLER_HOME, callerOres, true);
+		calendarController.setDifferentiateManagedEvent(true);
 		listenTo(calendarController);
 
 		putInitialPanel(calendarController.getInitialComponent());

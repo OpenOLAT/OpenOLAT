@@ -50,6 +50,11 @@ public class TableListProvider implements ListProvider {
 	}
 
 	@Override
+	public int getMaxEntries() {
+		return MAX_TABLE_SEARCH_RESULT_ENTRIES;
+	}
+
+	@Override
 	public void getResult(String searchValue, ListReceiver receiver) {
 		Filter htmlFilter = FilterFactory.getHtmlTagsFilter();
 		Set<String> searchEntries = new TreeSet<String>();

@@ -46,9 +46,11 @@ jQuery(function(){
 	jQuery('#$r.getId("o_autocomplete_input")').typeahead({
 		hint: false,
 		highlight: false,
-		minLength: 3
+		minLength: $minChars,
+		limit: 15
 	},{
-		minLength: 3,
+		minLength: $minChars,
+		limit: 15,
 		displayKey: 'fullName',
 		source: fullNameTypeahead.ttAdapter(),
 		templates: {

@@ -157,6 +157,8 @@ public class FlexiAutoCompleterController extends FormBasicController {
 		layoutCont.contextPut("minChars", Integer.valueOf(minChars));
 		layoutCont.contextPut("flexi", Boolean.TRUE);
 		layoutCont.contextPut("inputValue", "");
+		int limit = gprovider == null || gprovider.getMaxEntries() <= 0 ? 5 : gprovider.getMaxEntries();
+		layoutCont.contextPut("limit", Integer.valueOf(limit));
 		layoutCont.getComponent().addListener(this);
 
 		// Create a mapper for the server responses for a given input

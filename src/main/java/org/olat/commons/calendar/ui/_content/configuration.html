@@ -1,13 +1,14 @@
-#if($r.available("cal.import.type.file") || $r.available("cal.synchronize.type.url"))
 <div class="o_button_group_right">
+	#if($r.available("cal.import.type.file") || $r.available("cal.synchronize.type.url"))
 	<div class="btn-group">
-	#if($r.available("cal.import.type.file"))
-		$r.render("cal.import.type.file")
-	#end
-	#if($r.available("cal.synchronize.type.url"))
-		$r.render("cal.synchronize.type.url")
-	#end
+		#if($r.available("cal.import.type.file"))
+			$r.render("cal.import.type.file")
+		#end
+		#if($r.available("cal.synchronize.type.url"))
+			$r.render("cal.synchronize.type.url")
+		#end
 	</div>
+	#end
+	$r.contextHelpWithWrapper("Calendar")
 </div>
-#end
 $r.render("table")
