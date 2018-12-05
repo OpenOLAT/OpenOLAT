@@ -48,6 +48,32 @@ public class GroupTaskConfigurationPage {
 		return selectTab(configBy);
 	}
 	
+	public GroupTaskConfigurationPage enableAssignment(boolean enable) {
+		return enableStep("task.assignment", enable);
+	}
+	
+	public GroupTaskConfigurationPage enableReview(boolean enable) {
+		return enableStep("review", enable);
+	}
+	
+	public GroupTaskConfigurationPage enableRevision(boolean enable) {
+		return enableStep("revision", enable);
+	}
+	
+	public GroupTaskConfigurationPage enableSolution(boolean enable) {
+		return enableStep("sample", enable);
+	}
+	
+	private GroupTaskConfigurationPage enableStep(String name, boolean enable) {
+		By stepBy = By.xpath("//fieldset[contains(@class,'o_sel_course_gta_steps')]//label[input[@name='" + name + "']]");
+		WebElement labelEl = browser.findElement(stepBy);
+		By checkboxStepBy = By.xpath("//fieldset[contains(@class,'o_sel_course_gta_steps')]//label/input[@name='" + name + "']");
+		WebElement checkboxEl = browser.findElement(checkboxStepBy);
+		OOGraphene.check(labelEl, checkboxEl, Boolean.valueOf(enable));
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
 	public GroupTaskConfigurationPage saveWorkflow() {
 		By saveBy = By.cssSelector(".o_sel_course_gta_save_workflow button.btn-primary");
 		browser.findElement(saveBy).click();
@@ -118,6 +144,15 @@ public class GroupTaskConfigurationPage {
 		//save
 		By saveBy = By.cssSelector(".o_sel_course_gta_upload_task_form button.btn-primary");
 		browser.findElement(saveBy).click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	public GroupTaskConfigurationPage enableAutoAssignment(boolean enable) {
+		//task.assignment.type
+		String type = enable ? "auto" : "manual";
+		By typeBy = By.xpath("//fieldset[contains(@class,'o_sel_course_gta_task_config_form')]//input[@name='task.assignment.type'][@value='" + type + "']");
+		browser.findElement(typeBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}

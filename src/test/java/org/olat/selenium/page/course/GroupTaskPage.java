@@ -103,6 +103,7 @@ public class GroupTaskPage {
 		By saveButtonBy = By.cssSelector(".o_sel_course_gta_upload_form button.btn-primary");
 		browser.findElement(saveButtonBy).click();
 		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
 	
