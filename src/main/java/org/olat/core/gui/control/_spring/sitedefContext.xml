@@ -139,7 +139,7 @@
 	</bean>
 	
 	<bean id="restrictToUserManagerSiteSecurityCallback" class="org.olat.core.gui.control.navigation.callback.SiteSecurityCallbackWithRolesRestriction">
-		<property name="limitToRole" value="usermanager,rolesmanager,principal,administrator,sysadmin"/>
+		<property name="limitToRole" value="usermanager,rolesmanager,principal,administrator"/>
 	</bean>
 	
 	<bean id="restrictToGroupManagerSiteSecurityCallback" class="org.olat.core.gui.control.navigation.callback.SiteSecurityCallbackWithRolesRestriction">
