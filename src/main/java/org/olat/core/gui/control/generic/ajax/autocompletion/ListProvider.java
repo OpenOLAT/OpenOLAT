@@ -37,5 +37,8 @@ package org.olat.core.gui.control.generic.ajax.autocompletion;
  * @author Felix Jost
  */
 public interface ListProvider {
+	
+	public int getMaxEntries();
+	
 	public void getResult(String searchValue, ListReceiver receiver);
 }

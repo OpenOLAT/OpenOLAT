@@ -622,6 +622,12 @@ public class EditLectureBlockController extends FormBasicController {
 	}
 	
 	public class LocationListProvider implements ListProvider {
+		
+		@Override
+		public int getMaxEntries() {
+			return locations.size();
+		}
+
 		@Override
 		public void getResult(String searchValue, ListReceiver receiver) {
 			if(locations != null && locations.size() > 0) {

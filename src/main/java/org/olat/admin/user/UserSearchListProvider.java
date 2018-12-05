@@ -59,6 +59,11 @@ public class UserSearchListProvider implements ListProvider {
 	}
 	
 	@Override
+	public int getMaxEntries() {
+		return MAX_ENTRIES;
+	}
+
+	@Override
 	public void getResult(String searchValue, ListReceiver receiver) {
 		Map<String, String> userProperties = new HashMap<>();
 		// We can only search in mandatory User-Properties due to problems

@@ -67,6 +67,11 @@ public class AssessedIdentityListProvider implements ListProvider {
 	}
 	
 	@Override
+	public int getMaxEntries() {
+		return MAX_ENTRIES;
+	}
+
+	@Override
 	public void getResult(String searchValue, ListReceiver receiver) {
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(courseEntry, subIdent, referenceEntry, assessmentCallback);
 		params.setSearchString(searchValue);

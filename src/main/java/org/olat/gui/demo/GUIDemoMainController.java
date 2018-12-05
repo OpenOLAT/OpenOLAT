@@ -79,6 +79,12 @@ public class GUIDemoMainController extends GenericMainController {
 		if (uobject.equals("guidemo-autocompletion")) {
 			// for a demo of autocompletion, do a user search
 			ListProvider provider = new ListProvider() {
+				
+				@Override
+				public int getMaxEntries() {
+					return 10;
+				}
+
 				public void getResult(String searchValue, ListReceiver receiver) {
 					Map<String, String> userProperties = new HashMap<>();
 					// We can only search in mandatory User-Properties due to problems
