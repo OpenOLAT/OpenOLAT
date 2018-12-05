@@ -974,8 +974,14 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 	public boolean wishReload(UserRequest ureq, boolean erase) {
 		boolean screen = getScreenMode().wishScreenModeSwitch(erase);
 		if(screen && StringHelper.containsNonWhitespace(getScreenMode().getBusinessPath())) {
-			String businessPath = BusinessControlFactory.getInstance()
-					.getURLFromBusinessPathString(getScreenMode().getBusinessPath());
+			String businessPath;
+			if(ureq.getUserSession().isAuthenticated()) {
+				businessPath = BusinessControlFactory.getInstance()
+						.getAuthenticatedURLFromBusinessPathString(getScreenMode().getBusinessPath());
+			} else {
+				businessPath = BusinessControlFactory.getInstance()
+						.getURLFromBusinessPathString(getScreenMode().getBusinessPath());
+			}
 			mainVc.getContext().put("startBusinessPath", businessPath);
 		}
 		boolean r = reload != null && reload.booleanValue();

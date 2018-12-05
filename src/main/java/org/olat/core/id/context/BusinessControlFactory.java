@@ -537,6 +537,14 @@ public class BusinessControlFactory {
 	}
 	
 	public String getURLFromBusinessPathString(String bPathString){
+		return getURLFromBusinessPathString("url", bPathString);
+	}
+	
+	public String getAuthenticatedURLFromBusinessPathString(String bPathString){
+		return getURLFromBusinessPathString("auth", bPathString);
+	}
+	
+	private String getURLFromBusinessPathString(String dispatcherPath, String bPathString) {
 		if(!StringHelper.containsNonWhitespace(bPathString)) {
 			return null;
 		}
@@ -546,7 +554,11 @@ public class BusinessControlFactory {
 			List<ContextEntry> ceList = bCF.createCEListFromString(bPathString);
 			String busPath = getBusinessPathAsURIFromCEList(ceList); 
 			
-			return Settings.getServerContextPathURI()+"/url/"+busPath;
+			StringBuilder sb = new StringBuilder(64);
+			sb.append(Settings.getServerContextPathURI())
+			  .append("/").append(dispatcherPath).append("/")
+			  .append(busPath);
+			return sb.toString();
 		} catch(Exception e) {
 			log.error("Error with business path: " + bPathString, e);
 			return null;
