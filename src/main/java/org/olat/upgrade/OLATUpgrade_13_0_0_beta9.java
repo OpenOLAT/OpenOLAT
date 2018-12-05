@@ -109,7 +109,7 @@ public class OLATUpgrade_13_0_0_beta9 extends OLATUpgrade {
 	
 	private void migrateBookableFlag(Long entrykey) {
 		RepositoryEntry entry = repositoryService.loadByKey(entrykey);
-		if(!entry.isBookable() && entry.isAllUsers()) {
+		if(entry != null && !entry.isBookable() && entry.isAllUsers()) {
 			OLATResource resource = entry.getOlatResource();
 			// need at least one "not deleted" offer
 			boolean bookable = acService.isResourceAccessControled(resource, null);
