@@ -81,6 +81,7 @@ public class FullCalendarComponentRenderer extends DefaultComponentRenderer {
 		
 		String amFormatted = DateFormat.getTimeInstance(DateFormat.SHORT, fcC.getTranslator().getLocale()).format(calRef.getTime());
 		boolean ampm = amFormatted.contains("AM") || amFormatted.contains("PM");
+		String timeFormat = ampm ? "h(:mm) a" : "H.mm";
 		
 		sb.append("<script type='text/javascript'>\n")
 		  .append("/* <![CDATA[ */ \n")
@@ -106,8 +107,8 @@ public class FullCalendarComponentRenderer extends DefaultComponentRenderer {
 		  .append("   dayNames: ").append(getDayLong(translator)).append(",\n")
 		  .append("   dayNamesShort: ").append(getDayShort(translator)).append(",\n")
 		  .append("   allDayText:'").append(translator.translate("cal.form.allday")).append("',\n")
-		  .append("   axisFormat:'").append(ampm ? "h(:mm)tt" : "H.mm").append("',\n")
-		  .append("   timeFormat:'").append(ampm ? "h(:mm)tt" : "H.mm").append("',\n")
+		  .append("   axisFormat:'").append(timeFormat).append("',\n")
+		  .append("   timeFormat:'").append(timeFormat).append("',\n")
 		  .append("   views: {\n")
 		  .append("     month: {\n")
 		  .append("       titleFormat: 'MMMM YYYY',\n")
@@ -116,12 +117,12 @@ public class FullCalendarComponentRenderer extends DefaultComponentRenderer {
 		  .append("     week: {\n")
 		  .append("       titleFormat: ").append("'D MMM. YYYY'").append(",\n")
 		  .append("       columnHeaderFormat: ").append(firstMonth ? "'ddd M/D'" : "'ddd D.M.'").append(",\n")
-		  .append("       slotLabelFormat: '").append(ampm ? "h(:mm)tt" : "H.mm").append("',\n")
+		  .append("       slotLabelFormat: '").append(timeFormat).append("',\n")
 		  .append("     },\n")
 		  .append("     day: {\n")
 		  .append("       titleFormat: ").append(firstMonth ? "'dddd, MMM D, YYYY'" : "'dddd, D. MMM YYYY'").append(",\n")
 		  .append("       columnHeaderFormat: ").append(firstMonth ? "'dddd M/D'" : "'dddd D.M.'").append(",\n")
-		  .append("       slotLabelFormat: '").append(ampm ? "h(:mm)tt" : "H.mm").append("',\n")
+		  .append("       slotLabelFormat: '").append(timeFormat).append("',\n")
 		  .append("     },\n")
 		  .append("   },\n")
 		  .append("   timezone: false,\n")
