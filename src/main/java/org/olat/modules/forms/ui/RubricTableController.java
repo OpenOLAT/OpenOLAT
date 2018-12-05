@@ -82,9 +82,11 @@ public class RubricTableController extends FormBasicController {
 		if (!rubric.getSliderType().equals(SliderType.continuous)) {
 			ScaleType scaleType = rubric.getScaleType();
 			for (int step = 1; step <= rubric.getSteps(); step++) {
-				String label = rubric.getStepLabels().get(step -1).getLabel();
 				double stepValue = scaleType.getStepValue(rubric.getSteps(), step);
 				String header = EvaluationFormFormatter.formatZeroOrOneDecimals(stepValue);
+				String label = rubric.getStepLabels() != null && ! rubric.getStepLabels().isEmpty()
+						? rubric.getStepLabels().get(step -1).getLabel()
+						: null;
 				if (StringHelper.containsNonWhitespace(label)) {
 					legendLabels.add(new LegendEntry(header, label));
 				}
