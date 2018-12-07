@@ -67,6 +67,7 @@ public class OrganisationAdminConfigrationController extends FormBasicController
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormDescription("admin.description");
+		setFormContextHelp("Modules: Organisations");
 		
 		String[] onValues = new String[] { translate("on") };
 		enableEl = uifactory.addCheckboxesHorizontal("organisation.admin.enabled", formLayout, onKeys, onValues);
