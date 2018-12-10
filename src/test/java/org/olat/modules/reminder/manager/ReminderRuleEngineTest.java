@@ -58,6 +58,7 @@ import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.reminder.ReminderRule;
 import org.olat.modules.reminder.model.ReminderRuleImpl;
+import org.olat.modules.reminder.rule.BeforeDateRuleSPI;
 import org.olat.modules.reminder.rule.CourseEnrollmentDateRuleSPI;
 import org.olat.modules.reminder.rule.DateRuleSPI;
 import org.olat.modules.reminder.rule.InitialCourseLaunchRuleSPI;
@@ -127,6 +128,35 @@ public class ReminderRuleEngineTest extends OlatTestCase {
 		futureRule.setType(DateRuleSPI.class.getSimpleName());
 		futureRule.setOperator(DateRuleSPI.AFTER);
 		cal.add(Calendar.DATE, 4);
+		futureRule.setRightOperand(Formatter.formatDatetime(cal.getTime()));
+		ruleFutureList.add(futureRule);
+		
+		boolean futureEval = ruleEngine.evaluateDateRule(ruleFutureList);
+		Assert.assertFalse(futureEval);
+	}
+	
+	@Test
+	public void beforeDateRule() {
+		Calendar cal = Calendar.getInstance();
+		
+		//check rule with date in the future
+		List<ReminderRule> rulePastList = new ArrayList<>();
+		ReminderRuleImpl pastRule = new ReminderRuleImpl();
+		pastRule.setType(BeforeDateRuleSPI.class.getSimpleName());
+		pastRule.setOperator(BeforeDateRuleSPI.BEFORE);
+		cal.add(Calendar.HOUR_OF_DAY, 2);
+		pastRule.setRightOperand(Formatter.formatDatetime(cal.getTime()));
+		rulePastList.add(pastRule);
+
+		boolean pastEval = ruleEngine.evaluateDateRule(rulePastList);
+		Assert.assertTrue(pastEval);
+		
+		//check rule with date in the pase
+		List<ReminderRule> ruleFutureList = new ArrayList<>();
+		ReminderRuleImpl futureRule = new ReminderRuleImpl();
+		futureRule.setType(BeforeDateRuleSPI.class.getSimpleName());
+		futureRule.setOperator(BeforeDateRuleSPI.BEFORE);
+		cal.add(Calendar.DATE, -4);
 		futureRule.setRightOperand(Formatter.formatDatetime(cal.getTime()));
 		ruleFutureList.add(futureRule);
 		

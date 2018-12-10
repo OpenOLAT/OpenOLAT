@@ -73,6 +73,14 @@ public class ItemBodyResultFormItem extends AssessmentObjectFormItem {
 	public void setShowSolution(boolean showSolution) {
 		component.setShowSolution(showSolution);
 	}
+	
+	public boolean isReport() {
+		return component.isReport();
+	}
+	
+	public void setReport(boolean report) {
+		component.setReport(report);
+	}
 
 	@Override
 	public ItemBodyResultComponent getComponent() {

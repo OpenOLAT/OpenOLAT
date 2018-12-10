@@ -340,7 +340,7 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 		//render VelocityContainer to StringOutPut
 		Renderer renderer = Renderer.getInstance(mainVC, translator, ubu, new RenderResult(), new DefaultGlobalSettings());
 		try(StringOutput sb = new StringOutput(32000);
-				VelocityRenderDecorator vrdec = new VelocityRenderDecorator(renderer, mainVC, sb)) {
+			VelocityRenderDecorator vrdec = new VelocityRenderDecorator(renderer, mainVC, sb)) {
 			mainVC.contextPut("r", vrdec);
 			renderer.render(sb, mainVC, null);
 			return sb.toString();

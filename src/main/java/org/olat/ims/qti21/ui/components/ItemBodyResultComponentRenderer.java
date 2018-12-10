@@ -53,11 +53,12 @@ public class ItemBodyResultComponentRenderer extends AssessmentObjectComponentRe
 		if(cmp.isShowSolution()) {
 			assessmentRenderer.setSolutionAllowed(true);
 			assessmentRenderer.setSolutionMode(true);
+			assessmentRenderer.setReport(cmp.isReport());
 		} else {
 			assessmentRenderer.setReviewMode(true);
 		}
 		
-		assessmentItem.getItemBody().getBlocks().forEach((block)
+		assessmentItem.getItemBody().getBlocks().forEach(block
 				-> renderBlock(assessmentRenderer, sb, cmp, resolvedAssessmentItem, itemSessionState, block, ubu, translator));
 	}
 

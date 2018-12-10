@@ -41,6 +41,7 @@ import org.olat.modules.reminder.RuleSPI;
 import org.olat.modules.reminder.model.ReminderRules;
 import org.olat.modules.reminder.rule.BusinessGroupRoleRuleSPI;
 import org.olat.modules.reminder.rule.DateRuleSPI;
+import org.olat.modules.reminder.rule.BeforeDateRuleSPI;
 import org.olat.modules.reminder.rule.RepositoryEntryRoleRuleSPI;
 import org.olat.modules.reminder.rule.UserPropertyRuleSPI;
 import org.olat.repository.RepositoryEntry;
@@ -60,6 +61,7 @@ public class ReminderRuleEngine {
 	
 	private static final OLog log = Tracing.createLoggerFor(ReminderRuleEngine.class);
 	
+	public static final String BEFORE_DATE_RULE_TYPE = BeforeDateRuleSPI.class.getSimpleName();
 	public static final String DATE_RULE_TYPE = DateRuleSPI.class.getSimpleName();
 	public static final String USER_PROP_RULE_TYPE = UserPropertyRuleSPI.class.getSimpleName();
 	public static final String REPO_ROLE_RULE_TYPE = RepositoryEntryRoleRuleSPI.class.getSimpleName();
@@ -67,6 +69,8 @@ public class ReminderRuleEngine {
 
 	@Autowired
 	private DateRuleSPI dateRuleSpi;
+	@Autowired
+	private BeforeDateRuleSPI beforeDateRuleSpi;
 	@Autowired
 	private UserPropertyRuleSPI userPropertyRuleSpi;
 	
@@ -130,6 +134,10 @@ public class ReminderRuleEngine {
 			ReminderRule rule = ruleIt.next();
 			if(DATE_RULE_TYPE.equals(rule.getType())) {
 				allOk &= dateRuleSpi.evaluate(rule);
+				ruleIt.remove();
+			}
+			if(BEFORE_DATE_RULE_TYPE.equals(rule.getType())) {
+				allOk &= beforeDateRuleSpi.evaluate(rule);
 				ruleIt.remove();
 			}
 		}
