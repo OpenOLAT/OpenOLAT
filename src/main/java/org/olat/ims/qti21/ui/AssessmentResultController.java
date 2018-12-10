@@ -435,6 +435,7 @@ public class AssessmentResultController extends FormBasicController {
 			String solutionId = "solutionItem" + count++;
 			ItemBodyResultFormItem formItem = new ItemBodyResultFormItem(solutionId, resolvedAssessmentItem);
 			formItem.setShowSolution(true);
+			formItem.setReport(true);
 			initInteractionResultFormItem(formItem, sessionState);
 			layoutCont.add(solutionId, formItem);
 			solutionFormItem = formItem;

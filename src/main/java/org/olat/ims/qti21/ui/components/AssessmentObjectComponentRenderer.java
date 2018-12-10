@@ -1248,6 +1248,9 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		boolean ended = component.isItemSessionEnded(itemSessionState, renderer.isSolutionMode());
 		int expectedLines = interaction.getExpectedLines() == null ? 6 : interaction.getExpectedLines().intValue();
 		if(ended) {
+			if(renderer.isSolutionMode() && renderer.isReport()) {
+				expectedLines = 1;// resized textarea for solution in reports
+			}
 			sb.append("<div id='oo_").append(responseUniqueId).append("' style='min-height:").append(expectedLines * 1.5).append("em;' class='form-control textarea_disabled o_disabled o_form_element_disabled");
 		} else {
 			sb.append("<textarea id='oo_").append(responseUniqueId).append("' name='qtiworks_response_").append(responseUniqueId).append("'");
