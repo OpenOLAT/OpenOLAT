@@ -47,7 +47,6 @@ public class PackageTranslator implements Translator {
 	
 	private static final OLog log = Tracing.createLoggerFor(PackageTranslator.class);
 	
-	private final boolean fallBack;
 	private Translator fallBackTranslator;
 	private final String packageName;
 	private Locale locale;
@@ -56,11 +55,27 @@ public class PackageTranslator implements Translator {
 	private transient I18nManager i18nManager;
 	
 
-	private PackageTranslator(String packageName, Locale locale, boolean fallBack, Translator fallBackTranslator) {
+	/**
+	 * default with fallback mode
+	 * 
+	 * @param packageName only the package use "class.getPackage().getName()" for it!
+	 * @param locale
+	 */
+	public PackageTranslator(String packageName, Locale locale) {
+		this(packageName, locale, null);
+	}
+	
+	public PackageTranslator(String packageName, Locale locale, Translator fallBackTranslator) {
 		this.locale = locale;
 		this.packageName = packageName;
-		this.fallBackTranslator = fallBackTranslator;
-		this.fallBack = fallBack;
+		if(fallBackTranslator != null
+				&& packageName.equals(fallBackTranslator.getPackageName())
+				&& fallBackTranslator instanceof PackageTranslator) {
+			this.fallBackTranslator = ((PackageTranslator)fallBackTranslator).fallBackTranslator;
+		} else {
+			this.fallBackTranslator = fallBackTranslator;
+		}
+
 		i18nManager = CoreSpringFactory.getImpl(I18nManager.class);
 		i18nModule = CoreSpringFactory.getImpl(I18nModule.class);
 	}
@@ -69,15 +84,6 @@ public class PackageTranslator implements Translator {
 		i18nManager = CoreSpringFactory.getImpl(I18nManager.class);
 		i18nModule = CoreSpringFactory.getImpl(I18nModule.class);
 		return this;
-	}
-
-	/**
-	 * @param packageName
-	 * @param locale
-	 * @param fallBack
-	 */
-	private PackageTranslator(String packageName, Locale locale, boolean fallBack) {
-		this(packageName, locale, fallBack, null);
 	}
 	
 	/**
@@ -88,51 +94,11 @@ public class PackageTranslator implements Translator {
 	 * @param fallback
 	 * @return
 	 */
-	public static Translator cascadeTranslators(PackageTranslator main, Translator fallback){
+	public static Translator cascadeTranslators(PackageTranslator main, Translator fallback) {
+		if(main.packageName.equals(fallback.getPackageName()) && fallback instanceof PackageTranslator) {
+			fallback = ((PackageTranslator)fallback).fallBackTranslator;
+		}
 		return new PackageTranslator(main.packageName, main.locale, fallback);
-	}
-	
-	/**
-	 * recursively cascade with all fallbacks up to maxDeep levels
-	 * @param main
-	 * @param fallback
-	 * @return
-	 */
-	public Translator cascadeTranslatorsWithAllFallback(PackageTranslator main, Translator fallback){
-		if (this.fallBackTranslator instanceof PackageTranslator && main.fallBackTranslator != fallback && this.fallBackTranslator != fallback){
-			PackageTranslator tempTrans = (PackageTranslator) this.fallBackTranslator;
-			PackageTranslator oldPos = this;
-			int maxDeep = 4;
-			while (tempTrans != null && maxDeep > 0) {
-				oldPos = tempTrans;
-				tempTrans = (PackageTranslator) tempTrans.fallBackTranslator;
-				maxDeep--;
-			}
-			if (fallback != oldPos.fallBackTranslator && oldPos != oldPos.fallBackTranslator) {
-				oldPos.fallBackTranslator = fallback;
-			}
-			return main;
-		} 
-		return cascadeTranslators(main, fallback);		
-	}
-
-	/**
-	 * @param packageName only the package use "class.getPackage().getName()" for it!
-	 * @param locale
-	 * @param fallBackTranslator
-	 */
-	public PackageTranslator(String packageName, Locale locale, Translator fallBackTranslator) {
-		this(packageName, locale, false, fallBackTranslator);
-	}
-
-	/**
-	 * default with fallback mode
-	 * 
-	 * @param packageName only the package use "class.getPackage().getName()" for it!
-	 * @param locale
-	 */
-	public PackageTranslator(String packageName, Locale locale) {
-		this(packageName, locale, true);
 	}
 
 	/**
@@ -203,9 +169,11 @@ public class PackageTranslator implements Translator {
 		String val = i18nManager.getLocalizedString(packageName, key, args, locale, overlayEnabled, fallBackToDefaultLocale);
 		if (val == null) {
 			// if not found, try the fallBackTranslator
-			if (fallBackTranslator != null && recursionLevel < 10) {
-				val = fallBackTranslator.translate(key, args, recursionLevel+1, fallBackToDefaultLocale);
-			} else if (fallBack) { // both fallback and fallbacktranslator does not
+			if (fallBackTranslator != null) {
+				if(recursionLevel < 10) {
+					val = fallBackTranslator.translate(key, args, recursionLevel+1, fallBackToDefaultLocale);
+				}
+			} else { // both fallback and fallbacktranslator does not
 				// make sense; latest translator in chain should
 				// fallback to application fallback.
 				val = i18nManager.getLocalizedString(i18nModule.getApplicationFallbackBundle(), key, args, locale, overlayEnabled, fallBackToDefaultLocale);
@@ -227,8 +195,7 @@ public class PackageTranslator implements Translator {
 
 		StringBuilder sb = new StringBuilder(150);
 		sb.append(NO_TRANSLATION_ERROR_PREFIX).append(key)
-		  .append(": in ").append(packageName)
-		  .append(" (fallback:").append(fallBack);
+		  .append(": in ").append(packageName);
 
 		String babel;
 		if (fallBackTranslator instanceof PackageTranslator) {
@@ -248,9 +215,7 @@ public class PackageTranslator implements Translator {
 		return sb.toString();
 	}
 
-	/**
-	 * @see org.olat.core.gui.translator.Translator#getLocale()
-	 */
+	@Override
 	public Locale getLocale() {
 		return this.locale;
 	}
@@ -280,11 +245,34 @@ public class PackageTranslator implements Translator {
 	
 	@Override
 	public String toString(){		
-		return "PackageTranslator for package: " + packageName + " is fallback: " + fallBack + " next child if any: \n " + ((this.fallBackTranslator != null && this.fallBackTranslator == this) ? "recurse itself !" : this.fallBackTranslator);
+		return "PackageTranslator for package: " + packageName + " is fallback: " + (fallBackTranslator == null) + " next child if any: \n " + ((fallBackTranslator != null && fallBackTranslator == this) ? "recurse itself !" : fallBackTranslator);
 	}
 	
 	public boolean isStacked(){
 		return this.fallBackTranslator != null;
 	}
+
+	@Override
+	public int hashCode() {
+		return locale.hashCode() + packageName.hashCode()
+			+ (fallBackTranslator == null ? -14 : fallBackTranslator.hashCode());
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj) {
+			return true;
+		}
+		if(obj instanceof PackageTranslator) {
+			PackageTranslator translator = (PackageTranslator)obj;
+			return locale.equals(translator.locale)
+					&& packageName.equals(translator.packageName)
+					&& ((fallBackTranslator == null && translator.fallBackTranslator == null)
+							|| (fallBackTranslator != null && fallBackTranslator.equals(translator.fallBackTranslator)));
+		}
+		return false;
+	}
+	
+	
 	
 }

@@ -37,6 +37,8 @@ public interface Translator {
 	 * A key that can't be translated should start with this error
 	 */
 	public static final String NO_TRANSLATION_ERROR_PREFIX = "no translation::::";
+	
+	public String getPackageName();
 
 	/**
 	 * @param key

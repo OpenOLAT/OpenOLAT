@@ -33,6 +33,11 @@ import org.olat.core.gui.translator.Translator;
 public class TranslatorMock implements Translator {
 
 	@Override
+	public String getPackageName() {
+		return "";
+	}
+
+	@Override
 	public String translate(String key) {
 		return "";
 	}

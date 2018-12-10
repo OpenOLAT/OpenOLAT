@@ -49,6 +49,11 @@ public class KeyTranslator implements Translator {
 	public void setLocale(Locale locale) {
 		this.locale = locale;
 	}
+	
+	@Override
+	public String getPackageName() {
+		return "";
+	}
 
 	@Override
 	public String translate(String key) {

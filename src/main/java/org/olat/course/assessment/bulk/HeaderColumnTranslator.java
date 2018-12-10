@@ -85,4 +85,9 @@ public class HeaderColumnTranslator implements Translator {
 	public void setLocale(Locale locale) {
 		origTranslator.setLocale(locale);
 	}
+
+	@Override
+	public String getPackageName() {
+		return origTranslator.getPackageName();
+	}
 }
