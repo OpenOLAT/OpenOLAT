@@ -796,12 +796,40 @@ function o_openPopUp(url, windowname, width, height, menubar) {
 }
 
 function b_handleFileUploadFormChange(fileInputElement, fakeInputElement, saveButton) {
+
+	fileInputElement.setCustomValidity('');
+
+	if (fileInputElement.hasAttribute('data-max-size')) {
+		// check if the file selected does satisfy the max-size constraint
+		var maxSize = fileInputElement.getAttribute('data-max-size');
+		if (maxSize) {
+			var fileSize = formInputFileSize(fileInputElement);
+			if (fileSize > maxSize) {
+				// show a validation error message, reset the fileInputElement and stop processing
+				// to prevent unneeded uploads of potentially really big files
+				var trans = jQuery(document).ooTranslator().getTranslator(o_info.locale, 'org.olat.modules.forms.ui');
+				var msgLimitExceeded = trans.translate('file.upload.error.limit.exeeded');
+				var msgUploadLimit = trans.translate('file.upload.limit');
+				var maxSizeFormatted;
+				if(maxSize < 250 * 1024) {
+					maxSizeFormatted = (maxSize / 1024).toFixed(1) + " KB";
+				} else if(maxSize < 250 * 1024 * 1024) {
+					maxSizeFormatted = (maxSize / 1024 / 1024).toFixed(1) + " MB";
+				} else {
+					maxSizeFormatted = (maxSize / 1024 / 1024 / 1024).toFixed(1) + " GB";
+				}
+				fileInputElement.setCustomValidity(msgLimitExceeded
+						+ " (" + msgUploadLimit + ": " + maxSizeFormatted + ")");
+			}
+		}
+	}
+
 	// file upload forms are rendered transparent and have a fake input field that is rendered.
 	// on change events of the real input field this method is triggered to display the file 
 	// path in the fake input field. See the code for more info on this
 	var fileName = fileInputElement.value;
 	// remove unix path
-	slashPos = fileName.lastIndexOf('/');
+	var slashPos = fileName.lastIndexOf('/');
 	if (slashPos != -1) {
 		fileName=fileName.substring(slashPos + 1); 
 	}
@@ -823,6 +851,30 @@ function b_handleFileUploadFormChange(fileInputElement, fakeInputElement, saveBu
 			elements[i+1].focus();
 		}
 	}
+}
+
+// Return the file size of the selected file in bytes. Returns -1 when API is not working or
+// no file was selected.
+function formInputFileSize(fileInputElement) {
+	try {
+		if (!window.FileReader) {
+			// file API is not supported do proceed as if the file satisfies the constraint
+			return -1;
+		}
+		if (!fileInputElement || !fileInputElement.files) {
+			// missing input element parameter or element is not a file input
+			return -1;
+		}
+		var file = fileInputElement.files[0];
+		if (!file) {
+			// no file selected!
+			return -1;
+		}
+		return file.size;
+	} catch (e) {
+		o_logerr('form input file size check failed: ' + e);
+	}
+	return -1;
 }
 
 // goto node must be in global scope to support content that has been opened in a new window 
@@ -1166,13 +1218,29 @@ function o_ffEvent(formNam, dispIdField, dispId, eventIdField, eventInt){
 	eventIdEl.value=eventInt;
 	// manually execute onsubmit method - calling submit itself does not trigger onsubmit event!
 	var form = jQuery('#' + formNam);
-	var enctype = form.attr('enctype');
-	if(enctype && enctype.indexOf("multipart") == 0) {
-		o_XHRSubmitMultipart(formNam);
-	} else if (document.forms[formNam].onsubmit()) {
-		document.forms[formNam].submit();
+	var formValid = true;
+	jQuery('#' + formNam + ' input[type=file]')
+		.filter(function(index, element) {return !element.checkValidity()})
+		.each(function(index, element) {
+			var valErrorElementId = element.getAttribute('id') + "_validation_error";
+			var valErrorElement = document.getElementById(valErrorElementId);
+			if (!valErrorElement) {
+				valErrorElement = document.createElement('div');
+				valErrorElement.setAttribute('class','o_error');
+				valErrorElement.setAttribute('id', valErrorElementId);
+				element.parentNode.parentNode.appendChild(valErrorElement);
+			}
+			valErrorElement.innerHTML = element.validationMessage;
+			formValid = false;
+		});
+	if (formValid) {
+		var enctype = form.attr('enctype');
+		if(enctype && enctype.indexOf("multipart") == 0) {
+			o_XHRSubmitMultipart(formNam);
+		} else if (document.forms[formNam].onsubmit()) {
+			document.forms[formNam].submit();
+		}
 	}
-	
 	dispIdEl.value = defDispId;
 	eventIdEl.value = defEventId;
 }

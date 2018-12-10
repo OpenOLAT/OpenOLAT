@@ -102,6 +102,9 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 				 sb.append(id); // name for form labeling
 				 sb.append("\" id=\"");
 				 sb.append(id); // id to make dirty button work
+				 if (fileElem.getMaxUploadSizeKB() != FileElement.UPLOAD_UNLIMITED) {
+					 sb.append("\" data-max-size=\"").append(fileElem.getMaxUploadSizeKB() * 1024l);
+				 }
 				 sb.append("\" class='form-control o_realchooser ").append(" o_chooser_with_delete", showDeleteButton).append("' ");
 				 // Add on* event handlers
 				 StringBuilder eventHandlers = FormJSHelper.getRawJSFor(fileElem.getRootForm(), id, fileElem.getAction());
