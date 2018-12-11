@@ -1186,27 +1186,32 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 	}
 	
 	private void recordOutcomeVariable(AssessmentTestSession candidateSession, OutcomeVariable outcomeVariable, Map<Identifier,String> outcomes) {
-		Identifier identifier = outcomeVariable.getIdentifier();
-		Value computedValue = outcomeVariable.getComputedValue();
-
-		if (QtiConstants.VARIABLE_DURATION_IDENTIFIER.equals(identifier)) {
-			log.audit(candidateSession.getKey() + " :: " + outcomeVariable.getIdentifier() + " - " + stringifyQtiValue(computedValue));
-		} else if (QTI21Constants.SCORE_IDENTIFIER.equals(identifier)) {
-			if (computedValue instanceof NumberValue) {
-				double score = ((NumberValue) computedValue).doubleValue();
-				candidateSession.setScore(new BigDecimal(score));
-			}
-		} else if (QTI21Constants.PASS_IDENTIFIER.equals(identifier)) {
-			if (computedValue instanceof BooleanValue) {
-				boolean pass = ((BooleanValue) computedValue).booleanValue();
-				candidateSession.setPassed(pass);
-			}
+		if(outcomeVariable.getCardinality() == null) {
+			log.error("Error outcome variable without cardinlaity: " + outcomeVariable, null);
+			return;
 		}
 		
+		Identifier identifier = outcomeVariable.getIdentifier();
 		try {
+			Value computedValue = outcomeVariable.getComputedValue();
+			if (QtiConstants.VARIABLE_DURATION_IDENTIFIER.equals(identifier)) {
+				log.audit(candidateSession.getKey() + " :: " + outcomeVariable.getIdentifier() + " - " + stringifyQtiValue(computedValue));
+			} else if (QTI21Constants.SCORE_IDENTIFIER.equals(identifier)) {
+				if (computedValue instanceof NumberValue) {
+					double score = ((NumberValue) computedValue).doubleValue();
+					candidateSession.setScore(new BigDecimal(score));
+				}
+			} else if (QTI21Constants.PASS_IDENTIFIER.equals(identifier)) {
+				if (computedValue instanceof BooleanValue) {
+					boolean pass = ((BooleanValue) computedValue).booleanValue();
+					candidateSession.setPassed(pass);
+				}
+			}
+			
 			outcomes.put(identifier, stringifyQtiValue(computedValue));
 		} catch (Exception e) {
-			log.error("", e);
+			log.error("Error recording outcome variable: " + identifier, e);
+			log.error("Error recording outcome variable: " + outcomeVariable, null);
 		}
 	}
     
