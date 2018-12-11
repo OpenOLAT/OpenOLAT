@@ -160,6 +160,7 @@ public class UsermanagerUserSearchController extends BasicController implements 
 		if(showTitle) {
 			VelocityContainer userSearchVC = createVelocityContainer("usermanagerUsersearch");
 			userSearchVC.put("usersearch", tableCtr.getInitialComponent());
+			putInitialPanel(userSearchVC);
 		} else {
 			putInitialPanel(tableCtr.getInitialComponent());
 		}
