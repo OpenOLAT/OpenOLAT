@@ -1584,6 +1584,9 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 			String newCredentials = Encoder.encrypt(password, currentSalt, algorithm);
 			if(newCredentials.equals(authentication.getCredential())) {
 				//same credentials
+				if(BaseSecurityModule.getDefaultAuthProviderIdentifier().equals(authentication.getProvider())) {
+					authentication = updateAuthentication(authentication);
+				}
 				return authentication;
 			}
 		}
