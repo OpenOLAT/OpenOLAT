@@ -1,1 +1,6 @@
-<div id="o_qti_run">$r.render("qtirun")</div>
+<div id="o_qti_run">
+	#if($r.available("timer"))
+		$r.render("timer")
+	#end
+	$r.render("qtirun")
+</div>

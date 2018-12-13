@@ -41,14 +41,12 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.media.MediaResource;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.vfs.LocalImpl;
 import org.olat.core.util.vfs.VFSContainer;
@@ -66,22 +64,11 @@ import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.AssessmentItemBuilderFactory;
 import org.olat.ims.qti21.model.xml.AssessmentItemMetadata;
 import org.olat.ims.qti21.model.xml.ManifestBuilder;
 import org.olat.ims.qti21.model.xml.ManifestMetadataBuilder;
-import org.olat.ims.qti21.model.xml.interactions.DrawingAssessmentItemBuilder;
-import org.olat.ims.qti21.model.xml.interactions.EssayAssessmentItemBuilder;
-import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
-import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.EntryType;
-import org.olat.ims.qti21.model.xml.interactions.HotspotAssessmentItemBuilder;
-import org.olat.ims.qti21.model.xml.interactions.HottextAssessmentItemBuilder;
-import org.olat.ims.qti21.model.xml.interactions.KPrimAssessmentItemBuilder;
-import org.olat.ims.qti21.model.xml.interactions.MatchAssessmentItemBuilder;
-import org.olat.ims.qti21.model.xml.interactions.MultipleChoiceAssessmentItemBuilder;
-import org.olat.ims.qti21.model.xml.interactions.SingleChoiceAssessmentItemBuilder;
-import org.olat.ims.qti21.model.xml.interactions.UploadAssessmentItemBuilder;
 import org.olat.ims.qti21.questionimport.AssessmentItemAndMetadata;
-import org.olat.ims.qti21.ui.editor.AssessmentTestComposerController;
 import org.olat.ims.resources.IMSEntityResolver;
 import org.olat.imscp.xml.manifest.ResourceType;
 import org.olat.modules.qpool.ExportFormatOptions;
@@ -342,25 +329,7 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 	
 
 	public QuestionItem createItem(Identity identity, QTI21QuestionType type, String title, Locale locale) {
-		AssessmentItemBuilder itemBuilder = null;
-		Translator translator = Util.createPackageTranslator(AssessmentTestComposerController.class, locale);
-		switch(type) {
-			case sc: itemBuilder = new SingleChoiceAssessmentItemBuilder(translator.translate("new.sc"), translator.translate("new.answer"), qtiService.qtiSerializer()); break;
-			case mc: itemBuilder = new MultipleChoiceAssessmentItemBuilder(translator.translate("new.mc"), translator.translate("new.answer"), qtiService.qtiSerializer()); break;
-			case kprim: itemBuilder = new KPrimAssessmentItemBuilder(translator.translate("new.kprim"), translator.translate("new.answer"), qtiService.qtiSerializer()); break;
-			case match: itemBuilder = new MatchAssessmentItemBuilder(translator.translate("new.match"), QTI21Constants.CSS_MATCH_MATRIX, qtiService.qtiSerializer()); break;
-			case matchdraganddrop: itemBuilder = new MatchAssessmentItemBuilder(translator.translate("new.match"), QTI21Constants.CSS_MATCH_DRAG_AND_DROP, qtiService.qtiSerializer()); break;
-			case matchtruefalse: itemBuilder = new MatchAssessmentItemBuilder(translator.translate("new.match"), QTI21Constants.CSS_MATCH_TRUE_FALSE,
-					translator.translate("match.unanswered"), translator.translate("match.true"), translator.translate("match.false"), qtiService.qtiSerializer()); break;
-			case fib: itemBuilder = new FIBAssessmentItemBuilder(translator.translate("new.fib"), EntryType.text, qtiService.qtiSerializer()); break;
-			case numerical: itemBuilder = new FIBAssessmentItemBuilder(translator.translate("new.fib.numerical"), EntryType.numerical, qtiService.qtiSerializer()); break;
-			case essay: itemBuilder = new EssayAssessmentItemBuilder(translator.translate("new.essay"), qtiService.qtiSerializer()); break;
-			case upload: itemBuilder = new UploadAssessmentItemBuilder(translator.translate("new.upload"), qtiService.qtiSerializer()); break;
-			case drawing: itemBuilder = new DrawingAssessmentItemBuilder(translator.translate("new.drawing"), qtiService.qtiSerializer()); break;
-			case hotspot: itemBuilder = new HotspotAssessmentItemBuilder(translator.translate("new.hotspot"), qtiService.qtiSerializer()); break;
-			case hottext: itemBuilder = new HottextAssessmentItemBuilder(translator.translate("new.hottext"), translator.translate("new.hottext.start"), translator.translate("new.hottext.text"), qtiService.qtiSerializer()); break;
-			default: return null;
-		}
+		AssessmentItemBuilder itemBuilder = AssessmentItemBuilderFactory.get(type, locale);
 
 		AssessmentItem assessmentItem = itemBuilder.getAssessmentItem();
 		assessmentItem.setLabel(title);

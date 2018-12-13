@@ -355,6 +355,17 @@ public interface VideoManager {
 	
 	public void saveMarkers(VideoMarkers markers, OLATResource olatResource);
 	
+	public VideoQuestions loadQuestions(OLATResource videoResource);
+
+	public void saveQuestions(VideoQuestions questions, OLATResource videoResource);
+	
+
+	public File getAssessmentDirectory(OLATResource videoResource);
+	
+	public File getQuestionDirectory(OLATResource videoResource, VideoQuestion question);
+	
+	public VFSContainer getQuestionContainer(OLATResource videoResource, VideoQuestion question);
+	
 	
 	/**
 	 * Gets the video duration.

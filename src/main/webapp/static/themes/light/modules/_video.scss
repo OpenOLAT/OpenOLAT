@@ -151,6 +151,56 @@
 	}
 }
 
+.o_video_question {
+
+	&.mejs__overlay {
+		width: 100%;
+		height: 100%;
+	}
+
+	#itemBody, .modalFeedback {
+		background-color: white;
+		opacity: 1.0;
+	}
+	
+	.o_assessmentitem_wrapper .o_qti_item_body {
+		min-height: 50px;
+	}
+	
+	#o_qti_assessment_test_timer {
+		border: none;
+		padding: 5px;
+		margin: 0;
+	}
+	
+	#o_qti_progress .progress {
+		height: 10px;
+	}
+	
+	#o_qti_container {
+		background-color: white;
+		padding: 5px;
+		border-radius: $border-radius-small;
+	}
+	
+	.o_sel_additional_feedback {
+		float: left;
+		font-size: 26px;
+		
+		.o_icon_passed {
+			color: $brand-success;
+		}
+		.o_icon_failed {
+			color: $brand-danger;
+		}
+	}
+}
+
+.o_video_question.o_zoomed_question #o_qti_container {
+    zoom: 0.5;
+    -moz-transform: scale(0.5);
+}
+
 .mejs__time-rail {
 	.o_video_marker_gray { 
 		background: $gray-dark;

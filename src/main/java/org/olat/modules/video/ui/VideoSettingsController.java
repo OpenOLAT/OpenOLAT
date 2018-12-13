@@ -38,6 +38,7 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.video.ui.marker.VideoMarkerEditController;
+import org.olat.modules.video.ui.question.VideoQuestionEditController;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -55,6 +56,7 @@ public class VideoSettingsController extends BasicController implements Activate
 	private VideoTrackEditController trackEditController;
 	private VideoQualityTableFormController qualityEditController;
 	private VideoMarkerEditController markerEditController;
+	private VideoQuestionEditController questionEditController;
 
 	private Link metaDataLink;
 	private Link posterEditLink;
@@ -62,6 +64,7 @@ public class VideoSettingsController extends BasicController implements Activate
 	private Link trackEditLink;
 	private Link markerEditLink;
 	private Link qualityConfig;
+	private Link questionEditLink;
 
 	private final VelocityContainer mainVC;
 	private final SegmentViewComponent segmentView;
@@ -82,6 +85,9 @@ public class VideoSettingsController extends BasicController implements Activate
 		segmentView.addSegment(chapterEditLink, false);
 		markerEditLink = LinkFactory.createLink("tab.video.markerConfig", mainVC, this);
 		segmentView.addSegment(markerEditLink, false);
+		questionEditLink = LinkFactory.createLink("tab.video.questionConfig", mainVC, this);
+		segmentView.addSegment(questionEditLink, false);
+		
 		trackEditLink = LinkFactory.createLink("tab.video.trackConfig", mainVC, this);
 		segmentView.addSegment(trackEditLink, false);
 		qualityConfig = LinkFactory.createLink("tab.video.qualityConfig", mainVC, this);
@@ -119,6 +125,9 @@ public class VideoSettingsController extends BasicController implements Activate
 		} else if("markers".equalsIgnoreCase(type)) {
 			doOpenMarkerConfig(ureq);
 			segmentView.select(markerEditLink);
+		} else if("questions".equalsIgnoreCase(type)) {
+			doOpenQuestionConfig(ureq);
+			segmentView.select(questionEditLink);
 		}
 	}
 
@@ -141,6 +150,8 @@ public class VideoSettingsController extends BasicController implements Activate
 					doOpenChapterConfig(ureq);
 				} else if(clickedLink == markerEditLink) {
 					doOpenMarkerConfig(ureq);
+				} else if(clickedLink == questionEditLink) {
+					doOpenQuestionConfig(ureq);
 				}
 			}
 		}
@@ -214,5 +225,17 @@ public class VideoSettingsController extends BasicController implements Activate
 			addToHistory(ureq, markerEditController);
 		}
 		mainVC.put("segmentCmp", markerEditController.getInitialComponent());
+	}
+	
+	private void doOpenQuestionConfig(UserRequest ureq) {
+		if (questionEditController == null) {
+			OLATResourceable ores = OresHelper.createOLATResourceableType("questions");
+			WindowControl swControl = addToHistory(ureq, ores, null);
+			questionEditController = new VideoQuestionEditController(ureq, swControl, entry);
+			listenTo(questionEditController);
+		} else {
+			addToHistory(ureq, questionEditController);
+		}
+		mainVC.put("segmentCmp", questionEditController.getInitialComponent());
 	}
 }

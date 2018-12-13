@@ -19,11 +19,15 @@
  */
 package org.olat.ims.qti21.ui.components;
 
+import static org.olat.ims.qti21.ui.QTIWorksAssessmentItemEvent.Event.back;
 import static org.olat.ims.qti21.ui.QTIWorksAssessmentItemEvent.Event.close;
 import static org.olat.ims.qti21.ui.QTIWorksAssessmentItemEvent.Event.exit;
+import static org.olat.ims.qti21.ui.QTIWorksAssessmentItemEvent.Event.next;
 import static org.olat.ims.qti21.ui.QTIWorksAssessmentItemEvent.Event.resethard;
 import static org.olat.ims.qti21.ui.QTIWorksAssessmentItemEvent.Event.resetsoft;
+import static org.olat.ims.qti21.ui.QTIWorksAssessmentItemEvent.Event.skip;
 import static org.olat.ims.qti21.ui.QTIWorksAssessmentItemEvent.Event.solution;
+import static org.olat.ims.qti21.ui.QTIWorksAssessmentItemEvent.Event.timesUp;
 import static org.olat.ims.qti21.ui.QTIWorksAssessmentItemEvent.Event.tmpResponse;
 
 import org.olat.core.gui.UserRequest;
@@ -37,6 +41,8 @@ import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 import uk.ac.ed.ph.jqtiplus.running.ItemSessionController;
 
 /**
+ * 
+ * 
  * 
  * Initial date: 11.12.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
@@ -54,6 +60,38 @@ public class AssessmentItemFormItem extends AssessmentObjectFormItem {
 	@Override
 	public AssessmentItemComponent getComponent() {
 		return component;
+	}
+	
+	public boolean isEnableBack() {
+		return component.isEnableBack();
+	}
+
+	public void setEnableBack(boolean enable) {
+		component.setEnableBack(enable);
+	}
+
+	public boolean isEnableResetHard() {
+		return component.isEnableResetHard();
+	}
+
+	public void setEnableResetHard(boolean enable) {
+		component.setEnableResetHard(enable);
+	}
+	
+	public boolean isEnableResetSoft() {
+		return component.isEnableResetSoft();
+	}
+
+	public void setEnableResetSoft(boolean enable) {
+		component.setEnableResetSoft(enable);
+	}
+
+	public boolean isEnableSkip() {
+		return component.isEnableSkip();
+	}
+
+	public void setEnableSkip(boolean enable) {
+		component.setEnableSkip(enable);
 	}
 	
 	public ResolvedAssessmentItem getResolvedAssessmentItem() {
@@ -112,6 +150,18 @@ public class AssessmentItemFormItem extends AssessmentObjectFormItem {
 					}
 					case exit:
 						event = new QTIWorksAssessmentItemEvent(exit, this);
+						break;
+					case back:
+						event = new QTIWorksAssessmentItemEvent(back, this);
+						break;
+					case skip:
+						event = new QTIWorksAssessmentItemEvent(skip, this);
+						break;
+					case next:
+						event = new QTIWorksAssessmentItemEvent(next, this);
+						break;
+					case timesUp:
+						event = new QTIWorksAssessmentItemEvent(timesUp, this);
 						break;
 					default:
 						event = null;	

@@ -49,8 +49,6 @@ public class VideoMarkersImpl implements VideoMarkers {
 	public void setMarkers(List<VideoMarker> markers) {
 		this.markers = markers;
 	}
-	
-	
 
 	@Override
 	public VideoMarker getMarkerById(String id) {

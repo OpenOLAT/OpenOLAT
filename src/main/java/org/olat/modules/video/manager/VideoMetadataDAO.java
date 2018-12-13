@@ -63,11 +63,7 @@ public class VideoMetadataDAO {
 				.createQuery(sb.toString(),VideoMetaImpl.class)
 				.setParameter("videoresource", videoResource)
 				.getResultList();
-		if (metadata.size() > 0) {
-			return metadata.get(0);
-		} else {
-			return null;
-		}
+		return metadata.isEmpty() ? null :  metadata.get(0);
 	}
 	
 	/**
@@ -95,11 +91,10 @@ public class VideoMetadataDAO {
 		sb.append("select v from ").append(RepositoryEntry.class.getName()).append(" v ")
 		  .append(" inner join fetch v.olatResource as ores")
 		  .append(" where ores.resName = :type");
-		List<RepositoryEntry> result = dbInstance.getCurrentEntityManager()
+		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), RepositoryEntry.class)
 				.setParameter("type",typename)
 				.getResultList();
-		return result;
 	}
 	
 	/**

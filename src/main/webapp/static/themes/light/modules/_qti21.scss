@@ -301,6 +301,13 @@ img.o_hotspot_responsive[usemap] {
 		background-color: darken($o-box-error-bg, 25%);
 	}
 	
+	&.o_15_seconds {
+		background-color: $o-box-warning-bg;
+	}
+	&.o_panic {
+		background-color: $o-box-error-bg;
+	}
+	
 	.o_qti_times_up {
 		padding-left: 2em;
 		font-weight: bold;
@@ -696,45 +703,50 @@ body>li.o_assessmentitem_order_item  {
 	margin-bottom: $padding-large-horizontal;
 	padding: $padding-small-vertical $padding-small-horizontal;
 	
-	button {
+	button, a {
 		margin-bottom: 0;
 	}
 	
 	/* button icons */
 	.o_sel_assessment_item_submit span:before { 
-		@include o-make-icon(); 
-		content: $fa-var-check; 
+		@include o-make-icon();
+		content: $fa-var-check;
 		padding-right: 0.5em
 	}
 	.o_sel_next_question span:after { 
-		@include o-make-icon(); 
-		content: $fa-var-chevron-right; 
+		@include o-make-icon();
+		content: $fa-var-chevron-right;
 		padding-left: 0.5em
 	}
 	.o_sel_question_menu span:before { 
-		@include o-make-icon(); 
-		content: $fa-var-bars; 
+		@include o-make-icon();
+		content: $fa-var-bars;
 		padding-right: 0.5em
 	}
 	.o_sel_end_testpart span:before { 
-		@include o-make-icon(); 
-		content: $fa-var-check; 
+		@include o-make-icon();
+		content: $fa-var-check;
 		padding-right: 0.5em
 	}
 	.o_sel_back_test_feedback span:before { 
-		@include o-make-icon(); 
-		content: $fa-var-chevron-left; 
+		@include o-make-icon();
+		content: $fa-var-chevron-left;
 		padding-right: 0.5em
 	}
 	.o_sel_show_solution span:before { 
-		@include o-make-icon(); 
-		content: $fa-var-info; 
+		@include o-make-icon();
+		content: $fa-var-info;
 		padding-right: 0.5em
 	}
 	.o_sel_solution_hide span:before { 
-		@include o-make-icon(); 
-		content: $fa-var-info; 
+		@include o-make-icon();
+		content: $fa-var-info;
 		padding-right: 0.5em
+	}
+	
+	.o_sel_skip_question span:before, .o_sel_back_question span:before, .o_sel_retry_question span:before {
+		padding-right: 0.5em;
+		margin-bottom: 0;
 	}
 }
 

@@ -242,6 +242,9 @@ public interface QTI21Service {
 
 	public AssessmentTestSession reloadAssessmentTestSession(AssessmentTestSession session);
 	
+	public AssessmentTestSession getResumableAssessmentItemsSession(Identity identity, String anonymousIdentifier,
+			RepositoryEntry entry, String subIdent, RepositoryEntry testEntry, boolean authorMode);
+	
 	/**
 	 * 
 	 * @param session The assessment test session to update
@@ -280,6 +283,8 @@ public interface QTI21Service {
 	public List<AssessmentTestSession> getRunningAssessmentTestSession(RepositoryEntry entry, String subIdent, RepositoryEntry testEntry);
 	
 	public TestSessionState loadTestSessionState(AssessmentTestSession session);
+	
+	public ItemSessionState loadItemSessionState(AssessmentTestSession session, AssessmentItemSession itemSession);
 
 	public AssessmentTestMarks createMarks(Identity identity, RepositoryEntry entry, String subIdent, RepositoryEntry testEntry, String marks);
 	
@@ -339,6 +344,13 @@ public interface QTI21Service {
 	 */
 	public List<AssessmentTestSession> getAssessmentTestSessions(RepositoryEntryRef courseEntry, String subIdent, RepositoryEntry testEntry);
 	
+	/**
+	 * 
+	 * @param candidateSession The candidate session
+	 * @param parentParts The parent sections (optional)
+	 * @param assessmentItemIdentifier The assessment item identifier 
+	 * @return The item session (persistent if the candidate session is persitable, in memory if not)
+	 */
 	public AssessmentItemSession getOrCreateAssessmentItemSession(AssessmentTestSession candidateSession, ParentPartItemRefs parentParts, String assessmentItemIdentifier);
 
 	public AssessmentItemSession getAssessmentItemSession(AssessmentItemSessionRef candidateSession);
@@ -445,11 +457,13 @@ public interface QTI21Service {
 
 	public void recordItemAssessmentResult(AssessmentTestSession candidateSession, AssessmentResult assessmentResult, AssessmentSessionAuditLogger candidateAuditLogger);
 	
-	public CandidateEvent recordCandidateItemEvent(AssessmentTestSession candidateSession, RepositoryEntryRef testEntry, RepositoryEntryRef entry,
-			CandidateItemEventType itemEventType, ItemSessionState itemSessionState, NotificationRecorder notificationRecorder);
+	public CandidateEvent recordCandidateItemEvent(AssessmentTestSession candidateSession, AssessmentItemSession itemSession,
+			RepositoryEntryRef testEntry, RepositoryEntryRef entry, CandidateItemEventType itemEventType,
+			ItemSessionState itemSessionState, NotificationRecorder notificationRecorder);
 	
-	public CandidateEvent recordCandidateItemEvent(AssessmentTestSession candidateSession, RepositoryEntryRef testEntry, RepositoryEntryRef entry,
-            CandidateItemEventType itemEventType, ItemSessionState itemSessionState);
+	public CandidateEvent recordCandidateItemEvent(AssessmentTestSession candidateSession, AssessmentItemSession itemSession,
+			RepositoryEntryRef testEntry, RepositoryEntryRef entry, CandidateItemEventType itemEventType,
+			ItemSessionState itemSessionState);
 	
 	/**
 	 * 

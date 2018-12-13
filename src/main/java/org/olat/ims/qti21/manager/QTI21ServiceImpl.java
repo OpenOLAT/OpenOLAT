@@ -95,6 +95,7 @@ import org.olat.ims.qti21.manager.audit.AssessmentSessionAuditFileLog;
 import org.olat.ims.qti21.manager.audit.AssessmentSessionAuditOLog;
 import org.olat.ims.qti21.model.DigitalSignatureOptions;
 import org.olat.ims.qti21.model.DigitalSignatureValidation;
+import org.olat.ims.qti21.model.InMemoryAssessmentItemSession;
 import org.olat.ims.qti21.model.InMemoryAssessmentTestMarks;
 import org.olat.ims.qti21.model.InMemoryAssessmentTestSession;
 import org.olat.ims.qti21.model.ParentPartItemRefs;
@@ -118,6 +119,7 @@ import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.security.ExplicitTypePermission;
 
 import uk.ac.ed.ph.jqtiplus.JqtiExtensionManager;
 import uk.ac.ed.ph.jqtiplus.JqtiExtensionPackage;
@@ -181,6 +183,12 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 	
 	private static XStream configXstream = XStreamHelper.createXStreamInstance();
 	static {
+		XStream.setupDefaultSecurity(configXstream);
+		Class<?>[] types = new Class[] {
+				QTI21DeliveryOptions.class, QTI21AssessmentResultsOptions.class
+		};
+		configXstream.addPermission(new ExplicitTypePermission(types));
+		
 		configXstream.alias("deliveryOptions", QTI21DeliveryOptions.class);
 		configXstream.alias("assessmentResultsOptions", QTI21AssessmentResultsOptions.class);
 	}
@@ -516,7 +524,7 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 			session = null;
 		} else {
 			File sessionFile = getTestSessionStateFile(session);
-			if(sessionFile == null || !sessionFile.exists()) {
+			if(!sessionFile.exists()) {
 				session = null;
 			}
 		}
@@ -524,11 +532,19 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 	}
 	
 	@Override
+	public AssessmentTestSession getResumableAssessmentItemsSession(Identity identity, String anonymousIdentifier,
+			RepositoryEntry entry, String subIdent, RepositoryEntry testEntry, boolean authorMode) {
+		AssessmentTestSession session = testSessionDao.getLastTestSession(testEntry, entry, subIdent, identity, anonymousIdentifier, authorMode);
+		if(session == null || session.isExploded() || session.getFinishTime() != null || session.getTerminationTime() != null) {
+			session = null;
+		}
+		return session;
+	}
+
+	@Override
 	public AssessmentTestSession reloadAssessmentTestSession(AssessmentTestSession session) {
 		return testSessionDao.loadByKey(session.getKey());
 	}
-	
-	
 
 	@Override
 	public AssessmentTestSession recalculateAssessmentTestSessionScores(Long sessionKey) {
@@ -601,18 +617,33 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 	
     private Document loadStateDocument(AssessmentTestSession candidateSession) {
         File sessionFile = getTestSessionStateFile(candidateSession);
+        return loadStateDocument(sessionFile);
+    }
+    
+    @Override
+	public ItemSessionState loadItemSessionState(AssessmentTestSession session, AssessmentItemSession itemSession) {
+        Document document = loadStateDocument(session, itemSession);
+        return document == null ? null: ItemSessionStateXmlMarshaller.unmarshal(document.getDocumentElement());
+	}
+    
+    private Document loadStateDocument(AssessmentTestSession candidateSession, AssessmentItemSession itemSession) {
+        File sessionFile = getItemSessionStateFile(candidateSession, itemSession);
+        return loadStateDocument(sessionFile);
+    }
+    
+    private Document loadStateDocument(File sessionFile) {
         if(sessionFile.exists()) {
 	        try {
 		        DocumentBuilder documentBuilder = XmlFactories.newDocumentBuilder();
 	            return documentBuilder.parse(sessionFile);
 	        } catch (final Exception e) {
-	        		return loadFilteredStateDocument(sessionFile);
+	        	return loadFilteredStateDocument(sessionFile);
 	        }
         }
         return null;
     }
-    
-    private Document loadFilteredStateDocument(File sessionFile) {
+
+	private Document loadFilteredStateDocument(File sessionFile) {
     		try(InputStream in = new FileInputStream(sessionFile)) {
     			String xmlContent = IOUtils.toString(in, "UTF-8");
     			String filteredContent = FilterFactory.getXMLValidEntityFilter().filter(xmlContent);
@@ -643,9 +674,14 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 
 	@Override
 	public AssessmentItemSession getOrCreateAssessmentItemSession(AssessmentTestSession assessmentTestSession, ParentPartItemRefs parentParts, String assessmentItemIdentifier) {
-		AssessmentItemSession itemSession = itemSessionDao.getAssessmentItemSession(assessmentTestSession, assessmentItemIdentifier);
-		if(itemSession == null) {
-			itemSession = itemSessionDao.createAndPersistAssessmentItemSession(assessmentTestSession, parentParts, assessmentItemIdentifier);
+		AssessmentItemSession itemSession;
+		if(assessmentTestSession instanceof Persistable) {
+			itemSession = itemSessionDao.getAssessmentItemSession(assessmentTestSession, assessmentItemIdentifier);
+			if(itemSession == null) {
+				itemSession = itemSessionDao.createAndPersistAssessmentItemSession(assessmentTestSession, parentParts, assessmentItemIdentifier);
+			}
+		} else {
+			itemSession = new InMemoryAssessmentItemSession(assessmentTestSession, assessmentItemIdentifier);
 		}
 		return itemSession;
 	}
@@ -697,8 +733,8 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 
 	@Override
 	public void recordTestAssessmentResponses(AssessmentItemSession itemSession, Collection<AssessmentResponse> responses) {
-		testResponseDao.save(responses);
 		if(itemSession instanceof Persistable) {
+			testResponseDao.save(responses);
 			itemSessionDao.merge(itemSession);
 		}
 	}
@@ -983,7 +1019,7 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 
 		AssessmentTestSession reloadedSession = testSessionDao.loadByKey(session.getKey());
 
-		//update the XMl test session state
+		//update the XML test session state
 		TestSessionState testSessionState = loadTestSessionState(reloadedSession);
 		testSessionState.setEndTime(null);
 		testSessionState.setExitTime(null);
@@ -1242,7 +1278,8 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
             throw new OLATRuntimeException("Unexpected", e);
         }
     }
-    
+
+	@Override
     public File getAssessmentResultFile(final AssessmentTestSession candidateSession) {
     	File myStore = testSessionDao.getSessionStorage(candidateSession);
         return new File(myStore, "assessmentResult.xml");
@@ -1292,18 +1329,22 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 	}
 	
     @Override
-	public CandidateEvent recordCandidateItemEvent(AssessmentTestSession candidateSession, RepositoryEntryRef testEntry, RepositoryEntryRef entry,
-			CandidateItemEventType itemEventType, ItemSessionState itemSessionState) {
-		return recordCandidateItemEvent(candidateSession, testEntry, entry, itemEventType, itemSessionState, null);
+	public CandidateEvent recordCandidateItemEvent(AssessmentTestSession candidateSession,AssessmentItemSession itemSession,
+			RepositoryEntryRef testEntry, RepositoryEntryRef entry, CandidateItemEventType itemEventType,
+			ItemSessionState itemSessionState) {
+		return recordCandidateItemEvent(candidateSession, itemSession, testEntry, entry, itemEventType, itemSessionState, null);
 	}
 		
 	@Override
-	public CandidateEvent recordCandidateItemEvent(AssessmentTestSession candidateSession, RepositoryEntryRef testEntry,
-			RepositoryEntryRef entry, CandidateItemEventType itemEventType, ItemSessionState itemSessionState,
-			NotificationRecorder notificationRecorder) {
+	public CandidateEvent recordCandidateItemEvent(AssessmentTestSession candidateSession, AssessmentItemSession itemSession,
+			RepositoryEntryRef testEntry, RepositoryEntryRef entry, CandidateItemEventType itemEventType,
+			ItemSessionState itemSessionState, NotificationRecorder notificationRecorder) {
 
 		CandidateEvent event = new CandidateEvent(candidateSession, testEntry, entry);
 		event.setItemEventType(itemEventType);
+		if(itemSession instanceof Persistable) {
+			storeItemSessionState(itemSession, event, itemSessionState);
+		}
 		return event;
 	}
 	
@@ -1324,16 +1365,16 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 		}
 	}
 
-	public void storeItemSessionState(CandidateEvent candidateEvent, ItemSessionState itemSessionState) {
+	public void storeItemSessionState(AssessmentItemSession itemSession, CandidateEvent candidateEvent, ItemSessionState itemSessionState) {
         Document stateDocument = ItemSessionStateXmlMarshaller.marshal(itemSessionState);
-        File sessionFile = getItemSessionStateFile(candidateEvent);
+        File sessionFile = getItemSessionStateFile(candidateEvent.getCandidateSession(), itemSession);
         storeStateDocument(stateDocument, sessionFile);
     }
     
-	private File getItemSessionStateFile(CandidateEvent candidateEvent) {
-		AssessmentTestSession candidateSession = candidateEvent.getCandidateSession();
+	private File getItemSessionStateFile(AssessmentTestSession candidateSession, AssessmentItemSession itemSession) {
 		File myStore = testSessionDao.getSessionStorage(candidateSession);
-		return new File(myStore, "itemSessionState.xml");
+		String filename = "itemSessionState_" + itemSession.getKey() + ".xml";
+		return new File(myStore, filename);
 	}
     
 	private void storeStateDocument(Document stateXml, File sessionFile) {
@@ -1367,15 +1408,16 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 
 	@Override
 	public void recordItemAssessmentResult(AssessmentTestSession candidateSession, AssessmentResult assessmentResult, AssessmentSessionAuditLogger auditLogger) {
+		if(candidateSession.getFinishTime() == null) {
+			storeAssessmentResultFile(candidateSession, assessmentResult);
+		}
+		
 		//preserve the order
 		Map<Identifier,String> outcomes = new LinkedHashMap<>();
-
 		for (final ItemResult itemResult:assessmentResult.getItemResults()) {
 			for (final ItemVariable itemVariable : itemResult.getItemVariables()) {
 	            if (itemVariable instanceof OutcomeVariable) {
-					if (itemVariable instanceof OutcomeVariable) {
-						recordOutcomeVariable(candidateSession, (OutcomeVariable)itemVariable, outcomes);
-					}
+					recordOutcomeVariable(candidateSession, (OutcomeVariable)itemVariable, outcomes);
 	            }
 			}
 		}
@@ -1384,8 +1426,6 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 			auditLogger.logCandidateOutcomes(candidateSession, outcomes);
 		}
 	}
-	
-	
 
 	@Override
 	public File getSubmissionDirectory(AssessmentTestSession candidateSession) {

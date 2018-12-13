@@ -95,7 +95,7 @@ import org.olat.ims.qti21.ui.ResponseInput.Base64Input;
 import org.olat.ims.qti21.ui.ResponseInput.FileInput;
 import org.olat.ims.qti21.ui.ResponseInput.StringInput;
 import org.olat.ims.qti21.ui.components.AssessmentTestFormItem;
-import org.olat.ims.qti21.ui.components.AssessmentTimerFormItem;
+import org.olat.ims.qti21.ui.components.AssessmentTestTimerFormItem;
 import org.olat.ims.qti21.ui.components.AssessmentTreeFormItem;
 import org.olat.ims.qti21.ui.event.RetrieveAssessmentTestSessionEvent;
 import org.olat.modules.assessment.AssessmentEntry;
@@ -1783,7 +1783,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 
 		private AssessmentTestFormItem qtiEl;
 		private AssessmentTreeFormItem qtiTreeEl;
-		private AssessmentTimerFormItem timerEl;
+		private AssessmentTestTimerFormItem timerEl;
 		private ProgressBarItem scoreProgress, questionProgress;
 		private FormLink endTestPartButton, closeTestButton, cancelTestButton, suspendTestButton, closeResultsButton;
 		
@@ -1816,7 +1816,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			qtiEl.setResolvedAssessmentTest(resolvedAssessmentTest);
 			formLayout.add("qtirun", qtiEl);
 			
-			timerEl = new AssessmentTimerFormItem("timer", qtiWorksStatus, qtiEl);
+			timerEl = new AssessmentTestTimerFormItem("timer", qtiWorksStatus, qtiEl);
 			formLayout.add("timer", timerEl);
 			
 			boolean showMenuTree = deliveryOptions.isShowMenu();

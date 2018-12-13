@@ -77,11 +77,14 @@ import org.olat.modules.video.VideoMarkers;
 import org.olat.modules.video.VideoMeta;
 import org.olat.modules.video.VideoMetadata;
 import org.olat.modules.video.VideoModule;
+import org.olat.modules.video.VideoQuestion;
+import org.olat.modules.video.VideoQuestions;
 import org.olat.modules.video.VideoTranscoding;
 import org.olat.modules.video.model.TranscodingCount;
 import org.olat.modules.video.model.VideoMarkersImpl;
 import org.olat.modules.video.model.VideoMetaImpl;
 import org.olat.modules.video.model.VideoMetadataImpl;
+import org.olat.modules.video.model.VideoQuestionsImpl;
 import org.olat.modules.video.ui.VideoChapterTableRow;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
@@ -111,8 +114,12 @@ public class VideoManagerImpl implements VideoManager {
 	private static final String FILENAME_VIDEO_MP4 = "video.mp4";
 	private static final String FILENAME_CHAPTERS_VTT = "chapters.vtt";
 	private static final String FILENAME_MARKERS_XML = "markers.xml";
+	private static final String FILENAME_QUESTIONS_XML = "questions.xml";
 	private static final String FILENAME_VIDEO_METADATA_XML = "video_metadata.xml";
+	
 	private static final String DIRNAME_MASTER = "master";
+	private static final String DIRNAME_QUESTIONS = "qti21";
+	
 	public static final String TRACK = "track_";
 
 	
@@ -143,8 +150,7 @@ public class VideoManagerImpl implements VideoManager {
 	 */
 	@Override
 	public VFSLeaf getPosterframe(OLATResource videoResource) {
-		VFSLeaf posterFrame = resolveFromMasterContainer(videoResource, FILENAME_POSTER_JPG);
-		return posterFrame;
+		return resolveFromMasterContainer(videoResource, FILENAME_POSTER_JPG);
 	}
 
 	/**
@@ -196,16 +202,6 @@ public class VideoManagerImpl implements VideoManager {
 		}
 	}
 
-//	/**
-//	 * add a subtitle-track to the videoresource
-//	 */
-//	@Override
-//	public void addTrack(OLATResource videoResource, String lang, VFSLeaf trackFile){
-//		VideoMetadata metaData = readVideoMetadataFile(videoResource);
-//		metaData.addTrack(lang, trackFile.getName());
-//		writeVideoMetadataFile(metaData, videoResource);
-//	}
-
 	/**
 	 * get a specific subtitle-track of the videoresource
 	 */
@@ -237,14 +233,9 @@ public class VideoManagerImpl implements VideoManager {
 		VFSContainer vfsContainer = getMasterContainer(videoResource);
 		for (VFSItem item : vfsContainer.getItems(new VFSItemSuffixFilter(new String[]{FILETYPE_SRT}))) {
 			String itemname = item.getName();
-			String key = itemname.substring(itemname.indexOf("_") + 1, itemname.indexOf("."));
+			String key = itemname.substring(itemname.indexOf('_') + 1, itemname.indexOf('.'));
 			tracks.put(key, resolveFromMasterContainer(videoResource, itemname));
 		}
-//		VideoMetadata metaData = readVideoMetadataFile(videoResource);
-//		for(Entry<String, String> trackEntry : metaData.getAllTracks().entrySet()){
-//		for(Entry<String, String> trackEntry : alltracks.entrySet()){
-//			tracks.put(trackEntry.getKey(), resolveFromMasterContainer(videoResource, trackEntry.getValue()));
-//		}
 		return tracks;
 	}
 	
@@ -559,8 +550,7 @@ public class VideoManagerImpl implements VideoManager {
 	public String getDisplayTitleForResolution(int resolution, Translator translator) {
 		int[] resolutions = videoModule.getTranscodingResolutions();
 		boolean knownResolution = IntStream.of(resolutions).anyMatch(x -> x == resolution);
-		String title = (knownResolution ? translator.translate("quality.resolution." + resolution) : resolution + "p");
-		return title;
+		return (knownResolution ? translator.translate("quality.resolution." + resolution) : resolution + "p");
 	}
 	
 	@Override
@@ -573,25 +563,20 @@ public class VideoManagerImpl implements VideoManager {
 	@Override
 	public VFSContainer getMasterContainer(OLATResource videoResource) {
 		VFSContainer baseContainer =  FileResourceManager.getInstance().getFileResourceRootImpl(videoResource);
-		VFSContainer masterContainer = VFSManager.resolveOrCreateContainerFromPath(baseContainer, DIRNAME_MASTER);
-		return masterContainer;
+		return VFSManager.resolveOrCreateContainerFromPath(baseContainer, DIRNAME_MASTER);
 	}
-
 	
 	@Override
 	public VFSContainer getTranscodingContainer(OLATResource videoResource) {
 		VFSContainer baseContainer = videoModule.getTranscodingBaseContainer();
-		VFSContainer resourceTranscodingContainer = VFSManager.getOrCreateContainer(baseContainer,
-				String.valueOf(videoResource.getResourceableId()));
-		return resourceTranscodingContainer;
+		return VFSManager.getOrCreateContainer(baseContainer, String.valueOf(videoResource.getResourceableId()));
 	}
 	
 	
 	@Override
 	public VFSLeaf getMasterVideoFile(OLATResource videoResource) {
 		VFSContainer masterContainer = getMasterContainer(videoResource);
-		VFSLeaf videoFile = (VFSLeaf) masterContainer.resolve(FILENAME_VIDEO_MP4);
-		return videoFile;
+		return (VFSLeaf) masterContainer.resolve(FILENAME_VIDEO_MP4);
 	}
 	
 	@Override
@@ -603,15 +588,12 @@ public class VideoManagerImpl implements VideoManager {
 		RepositoryEntryImportExport importExport = new RepositoryEntryImportExport(repoEntry, repoentryContainer.getBasefile());
 		importExport.exportDoExportProperties();
 		// 2) package everything in resource folder to streaming zip resource
-		VideoExportMediaResource exportResource = new VideoExportMediaResource(baseContainer, repoEntry.getDisplayname());
-		return exportResource;
+		return new VideoExportMediaResource(baseContainer, repoEntry.getDisplayname());
 	}
 
 	@Override
 	public void validateVideoExportArchive(File file,  ResourceEvaluation eval) {
-		ZipFile zipFile;
-		try {
-			zipFile = new ZipFile(file);
+		try(ZipFile zipFile = new ZipFile(file)) {
 			ZipEntry repoMetadataEntry = zipFile.getEntry(DIRNAME_REPOENTRY + "/" + RepositoryEntryImportExport.PROPERTIES_FILE);
 			RepositoryEntryImport repoMetadata = null;
 			if (repoMetadataEntry != null) {
@@ -622,8 +604,6 @@ public class VideoManagerImpl implements VideoManager {
 					eval.setDisplayname(repoMetadata.getDisplayname());
 				}
 			}
-			
-			zipFile.close();
 		} catch (Exception e) {
 			log.error("Error while checking for video resource archive", e);
 		}
@@ -747,7 +727,7 @@ public class VideoManagerImpl implements VideoManager {
 	public boolean deleteVideoTranscodings(OLATResource videoResource) {
 		videoTranscodingDao.deleteVideoTranscodings(videoResource);
 		VFSStatus deleteStatus = getTranscodingContainer(videoResource).delete();
-		return (deleteStatus == VFSConstants.YES ? true : false);
+		return deleteStatus == VFSConstants.YES;
 	}
 	
 	@Override
@@ -808,7 +788,7 @@ public class VideoManagerImpl implements VideoManager {
 			webvtt = vfsContainer.createChildLeaf(FILENAME_CHAPTERS_VTT);
 		}		
 
-		if (chapters.size() == 0){
+		if (chapters.isEmpty()){
 			webvtt.delete();
 			return;
 		}
@@ -847,7 +827,8 @@ public class VideoManagerImpl implements VideoManager {
 
 		if (webvtt != null && webvtt.exists()) {
 			try(BufferedReader webvttReader = new BufferedReader(new InputStreamReader(webvtt.getInputStream()))) {
-				String thisLine, regex = " --> ";
+				String thisLine;
+				String regex = " --> ";
 				
 				while ((thisLine = webvttReader.readLine()) != null) {
 					if (thisLine.contains(regex)) {
@@ -904,6 +885,80 @@ public class VideoManagerImpl implements VideoManager {
 				log.error("", e);
 			}
 		}
+	}
+	
+	@Override
+	public VideoQuestions loadQuestions(OLATResource videoResource) {
+		VFSContainer vfsContainer = getMasterContainer(videoResource);
+		VFSItem questionsItem = vfsContainer.resolve(FILENAME_QUESTIONS_XML);
+		if(questionsItem instanceof VFSLeaf) {
+			VFSLeaf questionsLeaf = (VFSLeaf)questionsItem;
+			try(InputStream in=questionsLeaf.getInputStream()) {
+				return VideoXStream.fromXml(in, VideoQuestions.class);
+			} catch(IOException e) {
+				log.error("", e);
+			}
+		}
+		return new VideoQuestionsImpl();
+	}
+
+	@Override
+	public void saveQuestions(VideoQuestions questions, OLATResource videoResource) {
+		VFSContainer vfsContainer = getMasterContainer(videoResource);
+		VFSItem questionsItem = vfsContainer.resolve(FILENAME_QUESTIONS_XML);
+		if(questionsItem == null) {
+			questionsItem = vfsContainer.createChildLeaf(FILENAME_QUESTIONS_XML);
+		}
+		if(questionsItem instanceof VFSLeaf) {
+			VFSLeaf questionsLeaf = (VFSLeaf)questionsItem;
+			try(OutputStream out=questionsLeaf.getOutputStream(false)) {
+				VideoXStream.toXml(out, questions);
+			} catch(IOException e) {
+				log.error("", e);
+			}
+		}
+	}
+
+	@Override
+	public File getAssessmentDirectory(OLATResource videoResource) {
+		File baseDir =  FileResourceManager.getInstance().getFileResourceRoot(videoResource);
+		File assessmentDir = new File(baseDir, DIRNAME_QUESTIONS);
+		if(!assessmentDir.exists()) {
+			assessmentDir.mkdirs();
+		}
+		return assessmentDir;
+	}
+	
+	@Override
+	public File getQuestionDirectory(OLATResource videoResource, VideoQuestion question) {
+		File baseDir = getAssessmentDirectory(videoResource);
+		File questionDir = new File(baseDir, question.getQuestionRootPath());
+		if(!questionDir.exists()) {
+			questionDir.mkdirs();
+		}
+		return questionDir;
+	}
+
+	@Override
+	public VFSContainer getQuestionContainer(OLATResource videoResource, VideoQuestion question) {
+		VFSContainer videoContainer = FileResourceManager.getInstance().getFileResourceRootImpl(videoResource);
+		VFSItem item = videoContainer.resolve(DIRNAME_QUESTIONS);
+		if(item == null) {
+			item = videoContainer.createChildContainer(DIRNAME_QUESTIONS);
+		}
+		
+		if(item instanceof VFSContainer) {
+			VFSContainer container = (VFSContainer)item;
+			VFSItem questionContainer = container.resolve(question.getQuestionRootPath());
+			if(questionContainer == null) {
+				questionContainer = container.createChildContainer(question.getQuestionRootPath());
+			}
+			
+			if(questionContainer instanceof VFSContainer) {
+				return (VFSContainer)questionContainer;
+			}
+		}
+		return null;
 	}
 
 	@Override

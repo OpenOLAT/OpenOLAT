@@ -47,7 +47,7 @@ import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
 public abstract class AssessmentObjectFormItem extends FormItemImpl implements FormItemCollection {
 
 	private final FormSubmit submitButton;
-	private Map<String,FormItem> components = new HashMap<String,FormItem>();
+	private Map<String,FormItem> components = new HashMap<>();
 	
 	public AssessmentObjectFormItem(String name, FormSubmit submitButton) {
 		super(name);
@@ -116,7 +116,7 @@ public abstract class AssessmentObjectFormItem extends FormItemImpl implements F
 	}
 	
 	protected Map<Identifier, StringResponseData> extractStringResponseData() {
-        final Map<Identifier, StringResponseData> responseMap = new HashMap<Identifier, StringResponseData>();
+        final Map<Identifier, StringResponseData> responseMap = new HashMap<>();
 
         final Set<String> parameterNames = getRootForm().getRequestParameterSet();
         for (final String name : parameterNames) {
@@ -140,7 +140,7 @@ public abstract class AssessmentObjectFormItem extends FormItemImpl implements F
     }
 	
 	protected Map<Identifier, MultipartFileInfos> extractFileResponseData() {
-		Map<Identifier, MultipartFileInfos> fileResponseMap = new HashMap<Identifier, MultipartFileInfos>();
+		Map<Identifier, MultipartFileInfos> fileResponseMap = new HashMap<>();
 
 		Set<String> parameterNames = new HashSet<>(getRootForm().getRequestMultipartFilesSet());
 		parameterNames.addAll(getRootForm().getRequestParameterSet());

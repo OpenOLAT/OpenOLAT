@@ -27,9 +27,13 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.id.Persistable;
 import org.olat.ims.qti21.AssessmentSessionAuditLogger;
+import org.olat.ims.qti21.QTI21DeliveryOptions;
+import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.manager.audit.DefaultAssessmentSessionAuditLogger;
 import org.olat.ims.qti21.ui.AssessmentItemDisplayController;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 
@@ -47,14 +51,18 @@ public class AssessmentItemPreviewSolutionController extends BasicController {
 	
 	private AssessmentItemDisplayController displayCtrl;
 	
-	private final AssessmentSessionAuditLogger candidateAuditLogger = new PreviewAuditLogger();
+	private final AssessmentSessionAuditLogger candidateAuditLogger = new DefaultAssessmentSessionAuditLogger();
+	
+	@Autowired
+	private QTI21Service qtiService;
 	
 	public AssessmentItemPreviewSolutionController(UserRequest ureq, WindowControl wControl,
 			ResolvedAssessmentItem resolvedAssessmentItem, File rootDirectory, File itemFile) {
 		super(ureq, wControl);
 		
 		displayCtrl = new AssessmentItemDisplayController(ureq, getWindowControl(),
-				resolvedAssessmentItem, rootDirectory, itemFile, candidateAuditLogger);
+				resolvedAssessmentItem, rootDirectory, itemFile,
+				QTI21DeliveryOptions.defaultSettings(), candidateAuditLogger);
 		if(!displayCtrl.isExploded()) {
 			displayCtrl.requestSolution(ureq);
 		}
@@ -67,6 +75,9 @@ public class AssessmentItemPreviewSolutionController extends BasicController {
 	@Override
 	protected void doDispose() {
 		mainVC.removeListener(this);
+		if(displayCtrl != null && displayCtrl.getCandidateSession() instanceof Persistable) {
+			qtiService.deleteAssessmentTestSession(displayCtrl.getCandidateSession());
+		}
 	}
 	
 	@Override
@@ -74,7 +85,4 @@ public class AssessmentItemPreviewSolutionController extends BasicController {
 		//
 	}
 	
-	public class PreviewAuditLogger extends DefaultAssessmentSessionAuditLogger {
-		
-	}
 }

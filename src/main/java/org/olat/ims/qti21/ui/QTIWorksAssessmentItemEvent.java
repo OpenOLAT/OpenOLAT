@@ -48,7 +48,11 @@ public class QTIWorksAssessmentItemEvent extends FormEvent {
 		solution("solution", "solution"),
 		resetsoft("reset-soft","reset-soft"),
 		resethard("reset-hard","reset-hard"),
-		exit("exit", "exit");
+		exit("exit", "exit"),
+		back("back", "back"),
+		skip("skip", "skip"),
+		next("next", "next"),
+		timesUp("times-up", "times-up");
 		
 		private final String path;
 		private final String event;

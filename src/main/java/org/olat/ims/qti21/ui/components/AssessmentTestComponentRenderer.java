@@ -203,14 +203,6 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		sb.append("</div>");
 	}
 	
-	private void renderControl(StringOutput sb, AssessmentTestComponent component, String title, boolean primary, String cssClass, NameValuePair... pairs) {
-		Form form = component.getQtiItem().getRootForm();
-		String dispatchId = component.getQtiItem().getFormDispatchId();
-		sb.append("<button type='button' ")
-		  .onClickKeyEnter(FormJSHelper.getXHRFnCallFor(form, dispatchId, 1, true, true, pairs))
-		  .append(" class='btn ").append("btn-primary ", "btn-default ", primary).append(cssClass).append("'").append("><span>").append(title).append("</span></button>");
-	}
-	
 	private void renderTestItem(AssessmentRenderer renderer, StringOutput sb, AssessmentTestComponent component,
 			TestPlanNodeKey itemRefKey, URLBuilder ubu, Translator translator, RenderingRequest options) {
 		final TestSessionController testSessionController = component.getTestSessionController();

@@ -31,21 +31,21 @@ import org.olat.ims.qti21.ui.AssessmentTestDisplayController.QtiWorksStatus;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessmentTimerComponent extends FormBaseComponentImpl {
+public class AssessmentTestTimerComponent extends FormBaseComponentImpl {
 
-	private static final AssessmentTimerComponentRenderer RENDERER = new AssessmentTimerComponentRenderer();
+	private static final AssessmentTestTimerComponentRenderer RENDERER = new AssessmentTestTimerComponentRenderer();
 	
-	private AssessmentTimerFormItem item;
+	private AssessmentTestTimerFormItem item;
 	
 	private final QtiWorksStatus qtiWorksStatus;
 	
-	public AssessmentTimerComponent(String name, QtiWorksStatus qtiWorksStatus, AssessmentTimerFormItem item) {
+	public AssessmentTestTimerComponent(String name, QtiWorksStatus qtiWorksStatus, AssessmentTestTimerFormItem item) {
 		super(name);
 		this.item = item;
 		this.qtiWorksStatus = qtiWorksStatus;
 	}
 	
-	public AssessmentTimerFormItem getFormItem() {
+	public AssessmentTestTimerFormItem getFormItem() {
 		return item;
 	}
 

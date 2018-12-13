@@ -35,16 +35,16 @@ import org.olat.ims.qti21.ui.AssessmentTestDisplayController.QtiWorksStatus;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessmentTimerComponentRenderer extends DefaultComponentRenderer {
+public class AssessmentTestTimerComponentRenderer extends DefaultComponentRenderer {
 
 	@Override
 	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
 		
-		AssessmentTimerComponent cmp = (AssessmentTimerComponent)source;
+		AssessmentTestTimerComponent cmp = (AssessmentTestTimerComponent)source;
 		QtiWorksStatus qtiWorksStatus = cmp.getQtiWorksStatus();
 		if(qtiWorksStatus.isAssessmentTestTimeLimit() && !qtiWorksStatus.isEnded()) {
-			AssessmentTimerFormItem atf = cmp.getFormItem();
+			AssessmentTestTimerFormItem atf = cmp.getFormItem();
 			AssessmentObjectFormItem qtiRun = atf.getQtiRun();
 			Form form = atf.getRootForm();
 
@@ -66,7 +66,7 @@ public class AssessmentTimerComponentRenderer extends DefaultComponentRenderer {
 			  .append("  jQuery('#o_qti_assessment_test_timer').qtiTimer({\n")
 			  .append("    testDuration:").append(qtiWorksStatus.getAssessmentTestDuration()).append(",\n")
 			  .append("    availableTime:").append(qtiWorksStatus.getAssessmentTestMaximumTimeLimits()).append(",\n")
-			  .append("    formName: '").append(form.getFormName()).append("',\n")//forn name
+			  .append("    formName: '").append(form.getFormName()).append("',\n")//form name
 			  .append("    dispIdField: '").append(form.getDispatchFieldId()).append("',\n")//form dispatch id
 			  .append("    dispId: '").append(qtiRun.getFormDispatchId()).append("',\n")//item id
 			  .append("    eventIdField: '").append(form.getEventFieldId()).append("'\n") // form eventFieldId

@@ -44,11 +44,53 @@ public class AssessmentItemComponent extends AssessmentObjectComponent {
 	private final AssessmentItemFormItem qtiItem;
 	private final Map<String,Interaction> responseIdentifiersMap = new HashMap<>();
 	
+	private boolean enableBack;
+	private boolean enableResetHard;
+	private boolean enableResetSoft;
+	private boolean enableSkip;
+	
 	public AssessmentItemComponent(String name, AssessmentItemFormItem qtiItem) {
 		super(name);
 		this.qtiItem = qtiItem;
 	}
 	
+	public boolean isEnableBack() {
+		return enableBack;
+	}
+
+	public void setEnableBack(boolean enableBack) {
+		this.enableBack = enableBack;
+	}
+
+	public boolean isEnableResetHard() {
+		return enableResetHard;
+	}
+
+	public void setEnableResetHard(boolean enableResetHard) {
+		this.enableResetHard = enableResetHard;
+	}
+
+	public boolean isEnableResetSoft() {
+		return enableResetSoft;
+	}
+
+	public void setEnableResetSoft(boolean enableResetSoft) {
+		this.enableResetSoft = enableResetSoft;
+	}
+
+	public boolean isEnableSkip() {
+		return enableSkip;
+	}
+
+	public void setEnableSkip(boolean enableSkip) {
+		this.enableSkip = enableSkip;
+	}
+	
+	@Override
+	public boolean isSilentlyDynamicalCmp() {
+		return true;
+	}
+
 	@Override
 	public String relativePathTo(ResolvedAssessmentItem item) {
 		return "";

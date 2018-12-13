@@ -23,7 +23,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.FormUIFactory;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
@@ -58,6 +57,7 @@ import org.olat.fileresource.types.VideoFileResource;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.ui.VideoDisplayController;
+import org.olat.modules.video.ui.VideoDisplayOptions;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
@@ -71,11 +71,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author dfakae, dirk.furrer@frentix.com, http://www.frentix.com
  *
  */
-public class VideoEditController  extends ActivateableTabbableDefaultController implements ControllerEventListener {
+public class VideoEditController extends ActivateableTabbableDefaultController implements ControllerEventListener {
 
 	public static final String PANE_TAB_VIDEOCONFIG = "pane.tab.videoconfig";
 	private static final String PANE_TAB_ACCESSIBILITY = "pane.tab.accessibility";
-	final static String[] paneKeys = { PANE_TAB_VIDEOCONFIG, PANE_TAB_ACCESSIBILITY };
+	private final static String[] paneKeys = { PANE_TAB_VIDEOCONFIG, PANE_TAB_ACCESSIBILITY };
 
 	public static final String NLS_ERROR_VIDEOREPOENTRYMISSING = "error.videorepoentrymissing";
 	private static final String NLS_CONDITION_ACCESSIBILITY_TITLE = "condition.accessibility.title";
@@ -93,26 +93,23 @@ public class VideoEditController  extends ActivateableTabbableDefaultController 
 	private static final String VC_CHOSENVIDEO = "chosenvideo";
 	private static final String NLS_NO_VIDEO_CHOSEN = "no.video.chosen";
 
-	protected FormUIFactory uifactory = FormUIFactory.getInstance();
-
+	private Link previewLink;
+	private Link chooseVideoButton;
+	private Link changeVideoButton;
+	
 	private Panel main;
+	private TabbedPane myTabbedPane;
 	private VelocityContainer videoConfigurationVc;
 
 	private ModuleConfiguration config;
 	private final VideoCourseNode videoNode;
 	private RepositoryEntry repositoryEntry;
 
-	private VideoOptionsForm videoOptionsCtrl;
-	private ReferencableEntriesSearchController searchController;
-
-	private Link previewLink;
-	private Link chooseVideoButton;
-	private Link changeVideoButton;
-
-	private ConditionEditController accessibilityCondContr;
-	private Controller previewCtr;
-	private TabbedPane myTabbedPane;
 	private CloseableModalController cmc;
+	private VideoDisplayController previewCtrl;
+	private VideoOptionsForm videoOptionsCtrl;
+	private ConditionEditController accessibilityCondContr;
+	private ReferencableEntriesSearchController searchController;
 
 	public VideoEditController(VideoCourseNode videoNode, UserRequest ureq, WindowControl wControl, ICourse course, UserCourseEnvironment euce) {
 		super(ureq, wControl);
@@ -157,7 +154,6 @@ public class VideoEditController  extends ActivateableTabbableDefaultController 
 			videoConfigurationVc.contextPut(VC_CHOSENVIDEO, translate(NLS_NO_VIDEO_CHOSEN));
 		}
 
-
 		// Accessibility precondition
 		Condition accessCondition = videoNode.getPreConditionAccess();
 		accessibilityCondContr = new ConditionEditController(ureq, getWindowControl(), euce,
@@ -188,69 +184,20 @@ public class VideoEditController  extends ActivateableTabbableDefaultController 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == chooseVideoButton || source == changeVideoButton) {
-			removeAsListenerAndDispose(searchController);
-			searchController = new ReferencableEntriesSearchController(getWindowControl(), ureq, new String[] {VideoFileResource.TYPE_NAME}, translate(NLS_COMMAND_CHOOSEVIDEO), true, false, false, false);
-			listenTo(searchController);
-
-			removeAsListenerAndDispose(cmc);
-			cmc = new CloseableModalController(
-					getWindowControl(), translate("close"), searchController.getInitialComponent(), true, translate(NLS_COMMAND_CHOOSEVIDEO)
-			);
-			listenTo(cmc);
-			cmc.activate();
-		} else if(source == previewLink){
-			VideoDisplayController previewController = null;
-			switch(config.getStringValue(VideoEditController.CONFIG_KEY_DESCRIPTION_SELECT)){
-
-			case "resourceDescription":
-					previewController = new VideoDisplayController(ureq, getWindowControl(), repositoryEntry, config.getBooleanSafe(VideoEditController.CONFIG_KEY_AUTOPLAY), config.getBooleanSafe(VideoEditController.CONFIG_KEY_COMMENTS), config.getBooleanSafe(VideoEditController.CONFIG_KEY_RATING), true,
-							"", false,false, "", true);
-					break;
-			case "customDescription":
-					previewController = new VideoDisplayController(ureq, getWindowControl(), repositoryEntry, config.getBooleanSafe(VideoEditController.CONFIG_KEY_AUTOPLAY), config.getBooleanSafe(VideoEditController.CONFIG_KEY_COMMENTS), config.getBooleanSafe(VideoEditController.CONFIG_KEY_RATING), true,
-							"", true,false, config.getStringValue(VideoEditController.CONFIG_KEY_DESCRIPTION_CUSTOMTEXT), true);
-					break;
-			case "none":
-					previewController = new VideoDisplayController(ureq, getWindowControl(), repositoryEntry, config.getBooleanSafe(VideoEditController.CONFIG_KEY_AUTOPLAY), config.getBooleanSafe(VideoEditController.CONFIG_KEY_COMMENTS), config.getBooleanSafe(VideoEditController.CONFIG_KEY_RATING), true,
-							"", true,false, "", true);
-					break;
-			}
-			cmc = new CloseableModalController(
-					getWindowControl(), translate("close"), previewController.getInitialComponent(), true, translate(NLS_COMMAND_CHOOSEVIDEO)
-			);
-			listenTo(cmc);
-			cmc.activate();
+			doSearch(ureq);
+		} else if(source == previewLink) {
+			doPreview(ureq);
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest urequest, Controller source, Event event) {
 		if (source == searchController) {
 			if (event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED) {
 				// -> close closeable modal controller
+				doSelectResource(urequest, searchController.getSelectedEntry());
 				cmc.deactivate();
-				repositoryEntry = searchController.getSelectedEntry();
-				if (repositoryEntry != null) {
-					setVideoReference(repositoryEntry, config);
-					videoConfigurationVc.contextPut("showPreviewButton", Boolean.TRUE);
-					String displayname = StringHelper.escapeHtml(repositoryEntry.getDisplayname());
-					previewLink = LinkFactory.createCustomLink("command.preview", "command.preview", displayname, Link.NONTRANSLATED, videoConfigurationVc, this);
-					previewLink.setIconLeftCSS("o_icon o_icon-fw o_icon_preview");
-					previewLink.setTitle(getTranslator().translate("command.preview"));
-					// fire event so the updated config is saved by the editormaincontroller
-					fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
-
-					videoConfigurationVc.contextPut("showOptions", Boolean.TRUE);
-					
-					removeAsListenerAndDispose(videoOptionsCtrl);
-					videoOptionsCtrl = new VideoOptionsForm(urequest, getWindowControl(), repositoryEntry, config);
-					videoConfigurationVc.put("videoOptions", videoOptionsCtrl.getInitialComponent());
-					listenTo(videoOptionsCtrl);
-				}
+				cleanUp();
 			}
 		} else if (source == accessibilityCondContr) {
 			if (event == Event.CHANGED_EVENT) {
@@ -258,19 +205,88 @@ public class VideoEditController  extends ActivateableTabbableDefaultController 
 				videoNode.setPreConditionAccess(cond);
 				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
+		} else if(cmc == source) {
+			cleanUp();
 		}
 
 		if (event == NodeEditController.NODECONFIG_CHANGED_EVENT){
 			fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
 		}
 	}
+	
 	@Override
 	protected void doDispose() {
-		//child controllers registered with listenTo() get disposed in BasicController
-		if (previewCtr != null) {
-			previewCtr.dispose();
-			previewCtr = null;
+		//
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(searchController);
+		removeAsListenerAndDispose(previewCtrl);
+		removeAsListenerAndDispose(cmc);
+		searchController = null;
+		previewCtrl = null;
+		cmc = null;
+	}
+	
+	private void doSearch(UserRequest ureq) {
+		removeAsListenerAndDispose(cmc);
+		removeAsListenerAndDispose(searchController);
+		
+		searchController = new ReferencableEntriesSearchController(getWindowControl(), ureq, new String[] {VideoFileResource.TYPE_NAME}, translate(NLS_COMMAND_CHOOSEVIDEO), true, false, false, false);
+		listenTo(searchController);
+
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), searchController.getInitialComponent(), true, translate(NLS_COMMAND_CHOOSEVIDEO));
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doSelectResource(UserRequest ureq, RepositoryEntry entry) {
+		repositoryEntry = entry;
+		if (repositoryEntry != null) {
+			setVideoReference(repositoryEntry, config);
+			videoConfigurationVc.contextPut("showPreviewButton", Boolean.TRUE);
+			String displayname = StringHelper.escapeHtml(repositoryEntry.getDisplayname());
+			previewLink = LinkFactory.createCustomLink("command.preview", "command.preview", displayname, Link.NONTRANSLATED, videoConfigurationVc, this);
+			previewLink.setIconLeftCSS("o_icon o_icon-fw o_icon_preview");
+			previewLink.setTitle(getTranslator().translate("command.preview"));
+			// fire event so the updated config is saved by the editormaincontroller
+			fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
+
+			videoConfigurationVc.contextPut("showOptions", Boolean.TRUE);
+			
+			removeAsListenerAndDispose(videoOptionsCtrl);
+			videoOptionsCtrl = new VideoOptionsForm(ureq, getWindowControl(), repositoryEntry, config);
+			videoConfigurationVc.put("videoOptions", videoOptionsCtrl.getInitialComponent());
+			listenTo(videoOptionsCtrl);
 		}
+	}
+	
+	private void doPreview(UserRequest ureq) {
+		removeAsListenerAndDispose(cmc);
+		removeAsListenerAndDispose(previewCtrl);
+		
+		boolean autoplay = config.getBooleanSafe(VideoEditController.CONFIG_KEY_AUTOPLAY);
+		boolean showRating = config.getBooleanSafe(VideoEditController.CONFIG_KEY_RATING);
+		boolean showComments = config.getBooleanSafe(VideoEditController.CONFIG_KEY_COMMENTS);
+		
+		VideoDisplayOptions options = VideoDisplayOptions.valueOf(autoplay, showComments, showRating, true, false, false, "", true, true);
+		switch(config.getStringValue(VideoEditController.CONFIG_KEY_DESCRIPTION_SELECT)) {
+			case "resourceDescription": break;
+			case "customDescription":
+				options.setCustomDescription(true);
+				options.setDescriptionText(config.getStringValue(VideoEditController.CONFIG_KEY_DESCRIPTION_CUSTOMTEXT));
+				break;
+			case "none":
+				options.setCustomDescription(true);
+				options.setDescriptionText("");
+				break;
+		}
+
+		previewCtrl = new VideoDisplayController(ureq, getWindowControl(), repositoryEntry, null, null, options);
+		listenTo(previewCtrl);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), previewCtrl.getInitialComponent(), true, translate(NLS_COMMAND_CHOOSEVIDEO));
+		listenTo(cmc);
+		cmc.activate();
 	}
 
 	public static RepositoryEntry getVideoReference(ModuleConfiguration config, boolean strict) {

@@ -168,7 +168,8 @@ public class VideoListingController extends FormBasicController implements Activ
 		RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(ureq, videoEntry);
 		if (reSecurity.canLaunch()) {// no booking implemented for video
 			boolean readOnly = videoEntry.getEntryStatus().decommissioned();
-			VideoDisplayController videoDisplayCtr = new VideoDisplayController(ureq, getWindowControl(), videoEntry, true, true, true, true, null, false, true, null, readOnly);
+			VideoDisplayOptions options = VideoDisplayOptions.valueOf(true, true, true, true, false, true, null, false, readOnly);
+			VideoDisplayController videoDisplayCtr = new VideoDisplayController(ureq, getWindowControl(), videoEntry, null, null, options);
 			listenTo(videoDisplayCtr);
 			toolbarPanel.pushController(videoEntry.getDisplayname(), videoDisplayCtr);
 			// Update launch counter

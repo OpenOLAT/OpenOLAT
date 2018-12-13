@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.Locale;
 
 import org.olat.ims.qti21.AssessmentTestSession;
+import org.olat.ims.qti21.OutcomesAssessmentItemListener;
 import org.olat.ims.qti21.OutcomesListener;
 
 /**
@@ -31,7 +32,12 @@ import org.olat.ims.qti21.OutcomesListener;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class InMemoryOutcomeListener implements OutcomesListener {
+public class InMemoryOutcomeListener implements OutcomesListener, OutcomesAssessmentItemListener {
+
+	@Override
+	public void outcomes(AssessmentTestSession candidateSession, Float score, Boolean pass) {
+		//
+	}
 
 	@Override
 	public void decorateConfirmation(AssessmentTestSession candidateSession, DigitalSignatureOptions options, Date timestamp, Locale locale) {

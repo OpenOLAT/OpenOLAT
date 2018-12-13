@@ -1,0 +1,17 @@
+<div class="mejs__overlay o_video_question"> ##o_zoomed_question
+	$r.render("question")
+</div>
+<script>
+/* <![CDATA[ */
+jQuery(function() {
+	var player = jQuery('#o_so_vid${videoElementId}').data('player');
+	player.pause();
+	#if($r.isFalse($authorMode))
+	jQuery(player.controls).hide();
+	jQuery('#' + player.id + ' .mejs__overlay-play')
+		.hide()
+		.css("width", "0%");
+	#end
+});
+/* ]]> */
+</script>

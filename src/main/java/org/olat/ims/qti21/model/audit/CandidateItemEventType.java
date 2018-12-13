@@ -76,6 +76,22 @@ public enum CandidateItemEventType {
      * (This closes the session if it hasn't already been closed)
      */
     SOLUTION,
+    
+    /**
+     * Exits the item because time limit 
+     */
+    EXIT_DUE_TIME_LIMIT,
+    
+    /**
+     * In the case of several independent items
+     */
+    NEXT,
+    
+    /**
+     * In the case of several independent items
+     */
+    BACK,
+    
 
     /**
      * Candidate has ended (closed) the current session

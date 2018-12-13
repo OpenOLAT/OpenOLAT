@@ -51,6 +51,7 @@ import org.olat.modules.video.VideoMarkers;
 import org.olat.modules.video.model.VideoMarkerImpl;
 import org.olat.modules.video.ui.VideoDisplayController;
 import org.olat.modules.video.ui.VideoDisplayController.Marker;
+import org.olat.modules.video.ui.VideoDisplayOptions;
 import org.olat.modules.video.ui.VideoHelper;
 import org.olat.modules.video.ui.VideoSettingsController;
 import org.olat.modules.video.ui.component.SelectTimeCommand;
@@ -88,11 +89,15 @@ public class VideoMarkerEditController extends BasicController {
 		this.entry = entry;
 
 		VelocityContainer mainVC = createVelocityContainer("markers_overview");
-		videoDisplayCtrl = new VideoDisplayController(ureq, getWindowControl(), entry, false, false, false, false, null, false, false, null, false);
-		videoDisplayCtrl.setAlwaysShowControls(true);
-		videoDisplayCtrl.setDragMarkers(true);
-		videoDisplayCtrl.setPosterEnabled(false);
-		videoDisplayCtrl.setClickToPlayPause(false);
+		VideoDisplayOptions displayOptions = VideoDisplayOptions.disabled();
+		displayOptions.setDragAnnotations(true);
+		displayOptions.setShowAnnotations(true);
+		displayOptions.setShowQuestions(false);
+		displayOptions.setShowPoster(false);
+		displayOptions.setAlwaysShowControls(true);
+		displayOptions.setClickToPlayPause(false);
+		displayOptions.setAuthorMode(true);
+		videoDisplayCtrl = new VideoDisplayController(ureq, getWindowControl(), entry, null, null, displayOptions);
 		videoElementId = videoDisplayCtrl.getVideoElementId();
 		durationInSeconds = VideoHelper.durationInSeconds(entry, videoDisplayCtrl);
 		listenTo(videoDisplayCtrl);
@@ -144,11 +149,11 @@ public class VideoMarkerEditController extends BasicController {
 		getWindowControl().getWindowBackOffice().sendCommandTo(selectTime);
 	}
 	
-	private void loadMarker(VideoMarker marker) {
+	private void loadMarker(UserRequest ureq, VideoMarker marker) {
 		if(marker == null) return;
 		
 		String time = String.valueOf(marker.toSeconds());
-		videoDisplayCtrl.loadMarker(time);
+		videoDisplayCtrl.loadMarker(ureq, time, null);
 	}
 	
 	private void reloadMarkers() {
@@ -217,7 +222,7 @@ public class VideoMarkerEditController extends BasicController {
 				}
 			} else if(markerEditCtrl == source) {
 				if(event == Event.DONE_EVENT) {
-					doSaveMarker(markerEditCtrl.getMarker());
+					doSaveMarker(ureq, markerEditCtrl.getMarker());
 				}
 			}
 			super.event(ureq, source, event);
@@ -322,20 +327,20 @@ public class VideoMarkerEditController extends BasicController {
 			markerEditCtrl.getInitialComponent().setVisible(true);
 		}
 		
-		private void doSaveMarker(VideoMarker marker) {
+		private void doSaveMarker(UserRequest ureq, VideoMarker marker) {
 			markers.getMarkers().remove(marker);
 			markers.getMarkers().add(marker);
 			videoManager.saveMarkers(markers, entry.getOlatResource());
 			loadModel(false, markers.getMarkers());
 			reloadMarkers();
 			selectTime(marker.getBegin());
-			loadMarker(marker);
+			loadMarker(ureq, marker);
 		}
 		
 		private void doDeleteMarker(VideoMarker marker) {
 			markers.getMarkers().remove(marker);
 			videoManager.saveMarkers(markers, entry.getOlatResource());
-			if(markerEditCtrl.getMarker().equals(marker)) {
+			if(markerEditCtrl != null && markerEditCtrl.getMarker().equals(marker)) {
 				markerEditCtrl.getInitialComponent().setVisible(false);
 			}
 			loadModel(true, markers.getMarkers());

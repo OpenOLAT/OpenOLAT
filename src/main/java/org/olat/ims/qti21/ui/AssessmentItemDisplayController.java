@@ -20,9 +20,11 @@
 package org.olat.ims.qti21.ui;
 
 import java.io.File;
+import java.math.BigDecimal;
 import java.net.URI;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -35,26 +37,35 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
+import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSFormItem;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.Util;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.fileresource.types.ImsQTI21Resource.PathResourceLocator;
+import org.olat.ims.qti21.AssessmentItemSession;
 import org.olat.ims.qti21.AssessmentResponse;
 import org.olat.ims.qti21.AssessmentSessionAuditLogger;
 import org.olat.ims.qti21.AssessmentTestSession;
+import org.olat.ims.qti21.OutcomesAssessmentItemListener;
+import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21Service;
-import org.olat.ims.qti21.model.audit.AssessmentResponseData;
+import org.olat.ims.qti21.manager.ResponseFormater;
+import org.olat.ims.qti21.model.InMemoryOutcomeListener;
+import org.olat.ims.qti21.model.ResponseLegality;
 import org.olat.ims.qti21.model.audit.CandidateEvent;
 import org.olat.ims.qti21.model.audit.CandidateExceptionReason;
 import org.olat.ims.qti21.model.audit.CandidateItemEventType;
 import org.olat.ims.qti21.ui.ResponseInput.Base64Input;
 import org.olat.ims.qti21.ui.ResponseInput.FileInput;
 import org.olat.ims.qti21.ui.ResponseInput.StringInput;
+import org.olat.ims.qti21.ui.components.AssessmentCountDownFormItem;
 import org.olat.ims.qti21.ui.components.AssessmentItemFormItem;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.repository.RepositoryEntry;
@@ -63,6 +74,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import uk.ac.ed.ph.jqtiplus.JqtiPlus;
 import uk.ac.ed.ph.jqtiplus.exception.QtiCandidateStateException;
 import uk.ac.ed.ph.jqtiplus.node.result.AssessmentResult;
+import uk.ac.ed.ph.jqtiplus.node.result.ItemResult;
+import uk.ac.ed.ph.jqtiplus.node.result.ItemVariable;
+import uk.ac.ed.ph.jqtiplus.node.result.OutcomeVariable;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
 import uk.ac.ed.ph.jqtiplus.notification.NotificationLevel;
 import uk.ac.ed.ph.jqtiplus.notification.NotificationRecorder;
@@ -77,6 +91,11 @@ import uk.ac.ed.ph.jqtiplus.types.FileResponseData;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
 import uk.ac.ed.ph.jqtiplus.types.ResponseData;
 import uk.ac.ed.ph.jqtiplus.types.StringResponseData;
+import uk.ac.ed.ph.jqtiplus.value.BooleanValue;
+import uk.ac.ed.ph.jqtiplus.value.FloatValue;
+import uk.ac.ed.ph.jqtiplus.value.IntegerValue;
+import uk.ac.ed.ph.jqtiplus.value.NumberValue;
+import uk.ac.ed.ph.jqtiplus.value.Value;
 import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
 
 /**
@@ -87,16 +106,16 @@ import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
  */
 public class AssessmentItemDisplayController extends BasicController implements CandidateSessionContext {
 	
-	private final VelocityContainer mainVC;
-	private QtiWorksController qtiWorksCtrl;
+	protected final VelocityContainer mainVC;
+	protected QtiWorksController qtiWorksCtrl;
 	
-	private ItemSessionController itemSessionController;
+	protected ItemSessionController itemSessionController;
 	
 	private final String mapperUri;
 	private final File fUnzippedDirRoot;
 	private final File itemFileRef;
 	private final QTI21DeliveryOptions deliveryOptions;
-	private final ResolvedAssessmentItem resolvedAssessmentItem;
+	protected final ResolvedAssessmentItem resolvedAssessmentItem;
 	
 	/* This directory will be deleted at the disposal of the controller */
 	private File submissionDirToDispose;
@@ -104,12 +123,15 @@ public class AssessmentItemDisplayController extends BasicController implements 
 	private CandidateEvent lastEvent;
 	private Date currentRequestTimestamp;
 	private RepositoryEntry entry;
-	private AssessmentTestSession candidateSession;
+	private RepositoryEntry testEntry;
+	protected AssessmentItemSession itemSession;
+	protected AssessmentTestSession candidateSession;
 	
+	protected final OutcomesAssessmentItemListener outcomesListener;
 	private final AssessmentSessionAuditLogger candidateAuditLogger;
 
 	@Autowired
-	private QTI21Service qtiService;
+	protected QTI21Service qtiService;
 	
 	/**
 	 * OPen in memory session
@@ -121,14 +143,16 @@ public class AssessmentItemDisplayController extends BasicController implements 
 	 * @param itemFileRef
 	 */
 	public AssessmentItemDisplayController(UserRequest ureq, WindowControl wControl, ResolvedAssessmentItem resolvedAssessmentItem,
-			File fUnzippedDirRoot, File itemFileRef, AssessmentSessionAuditLogger candidateAuditLogger) {
+			File fUnzippedDirRoot, File itemFileRef, QTI21DeliveryOptions deliveryOptions,
+			AssessmentSessionAuditLogger candidateAuditLogger) {
 		super(ureq, wControl);
 		
 		this.itemFileRef = itemFileRef;
 		this.fUnzippedDirRoot = fUnzippedDirRoot;
 		this.resolvedAssessmentItem = resolvedAssessmentItem;
 		this.candidateAuditLogger = candidateAuditLogger;
-		deliveryOptions = QTI21DeliveryOptions.defaultSettings();
+		this.deliveryOptions = deliveryOptions;
+		outcomesListener = new InMemoryOutcomeListener();
 		currentRequestTimestamp = ureq.getRequestTimestamp();
 		candidateSession = qtiService.createInMemoryAssessmentTestSession(getIdentity());
 		submissionDirToDispose = qtiService.getSubmissionDirectory(candidateSession);
@@ -149,14 +173,15 @@ public class AssessmentItemDisplayController extends BasicController implements 
 	
 	public AssessmentItemDisplayController(UserRequest ureq, WindowControl wControl,
 			ResolvedAssessmentItem resolvedAssessmentItem, AssessmentItemRef itemRef, File fUnzippedDirRoot,
-			AssessmentSessionAuditLogger candidateAuditLogger) {
+			QTI21DeliveryOptions deliveryOptions, AssessmentSessionAuditLogger candidateAuditLogger) {
 		super(ureq, wControl);
 		
 		this.itemFileRef = new File(fUnzippedDirRoot, itemRef.getHref().toString());
 		this.fUnzippedDirRoot = fUnzippedDirRoot;
 		this.resolvedAssessmentItem = resolvedAssessmentItem;
 		this.candidateAuditLogger = candidateAuditLogger;
-		deliveryOptions = QTI21DeliveryOptions.defaultSettings();
+		this.deliveryOptions = deliveryOptions;
+		outcomesListener = new InMemoryOutcomeListener();
 		currentRequestTimestamp = ureq.getRequestTimestamp();
 		candidateSession = qtiService.createInMemoryAssessmentTestSession(getIdentity());
 		submissionDirToDispose = qtiService.getSubmissionDirectory(candidateSession);
@@ -176,19 +201,25 @@ public class AssessmentItemDisplayController extends BasicController implements 
 	}
 	
 	public AssessmentItemDisplayController(UserRequest ureq, WindowControl wControl,
-			RepositoryEntry testEntry, AssessmentEntry assessmentEntry, boolean authorMode,
-			ResolvedAssessmentItem resolvedAssessmentItem, AssessmentItemRef itemRef,
-			File fUnzippedDirRoot, File itemFile,
-			AssessmentSessionAuditLogger candidateAuditLogger) {
-		super(ureq, wControl);
+			RepositoryEntry entry, String subIdent, RepositoryEntry testEntry, AssessmentEntry assessmentEntry, boolean authorMode,
+			ResolvedAssessmentItem resolvedAssessmentItem,  File fUnzippedDirRoot, File itemFile,
+			QTI21DeliveryOptions deliveryOptions, OutcomesAssessmentItemListener outcomesListener, AssessmentSessionAuditLogger candidateAuditLogger) {
+		super(ureq, wControl, Util.createPackageTranslator(AssessmentItemDisplayController.class, ureq.getLocale()));
 		
+		this.entry = entry;
+		this.testEntry = testEntry;
 		this.itemFileRef = itemFile;
 		this.fUnzippedDirRoot = fUnzippedDirRoot;
 		this.resolvedAssessmentItem = resolvedAssessmentItem;
 		this.candidateAuditLogger = candidateAuditLogger;
-		deliveryOptions = QTI21DeliveryOptions.defaultSettings();
+		this.deliveryOptions = deliveryOptions;
+		this.outcomesListener = outcomesListener;
 		currentRequestTimestamp = ureq.getRequestTimestamp();
-		candidateSession = qtiService.createAssessmentTestSession(getIdentity(), null, assessmentEntry, testEntry, itemRef.getIdentifier().toString(), testEntry, authorMode);
+		candidateSession = initOrResumeAssessmentTestSession(entry, subIdent, testEntry, assessmentEntry, authorMode);
+		String assessmentItemIdentifier = resolvedAssessmentItem.getRootNodeLookup()
+        		.extractIfSuccessful().getIdentifier();
+		itemSession = qtiService.getOrCreateAssessmentItemSession(candidateSession, null, assessmentItemIdentifier);
+		
 		File submissionDir = qtiService.getSubmissionDirectory(candidateSession);
 		mapperUri = registerCacheableMapper(ureq, UUID.randomUUID().toString(), new ResourcesMapper(itemFileRef.toURI(), submissionDir));
 		
@@ -203,6 +234,11 @@ public class AssessmentItemDisplayController extends BasicController implements 
 			initQtiWorks(ureq);
 		}
 		putInitialPanel(mainVC);
+	}
+	
+	protected AssessmentTestSession initOrResumeAssessmentTestSession(RepositoryEntry courseEntry, String subIdent, RepositoryEntry referenceEntry,
+			AssessmentEntry assessmentEntry, boolean authorMode) {
+		return qtiService.createAssessmentTestSession(getIdentity(), null, assessmentEntry, courseEntry, subIdent, referenceEntry, authorMode);
 	}
 	
 	private void initQtiWorks(UserRequest ureq) {
@@ -293,8 +329,10 @@ public class AssessmentItemDisplayController extends BasicController implements 
 				exitSession(ureq);
 				break;
 			case resetsoft:
+				handleResetSoft(ureq);
 				break;
 			case resethard:
+				handleResetHard(ureq);
 				break;
 			case source:
 				logError("QtiWorks event source not implemented", null);
@@ -311,17 +349,30 @@ public class AssessmentItemDisplayController extends BasicController implements 
 			case result:
 				logError("QtiWorks event result not implemented", null);
 				break;
+			case back:
+				next(ureq, qe);
+				break;
+			case skip:
+				next(ureq, qe);
+				break;
+			case next:
+				next(ureq, qe);
+				break;
+			case timesUp:
+				next(ureq, qe);
+				break;
+				
 		}
 	}
 	
-	private ItemSessionController enterSession(UserRequest ureq /*, final UserTestSession candidateSession */) {
+	protected ItemSessionController enterSession(UserRequest ureq) {
         /* Set up listener to record any notifications */
         final NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
 
         /* Create fresh JQTI+ state Object and try to create controller */
         itemSessionController = createNewItemSessionStateAndController(notificationRecorder);
         if (itemSessionController == null) {
-        		logError("Cannot create item session controller for:" + itemFileRef, null);
+        	logError("Cannot create item session controller for:" + itemFileRef, null);
             return null;
         }
 
@@ -329,16 +380,23 @@ public class AssessmentItemDisplayController extends BasicController implements 
         final ItemSessionState itemSessionState = itemSessionController.getItemSessionState();
         try {
             final Date timestamp = ureq.getRequestTimestamp();
-            itemSessionController.initialize(timestamp);
-            itemSessionController.performTemplateProcessing(timestamp);
-            itemSessionController.enterItem(timestamp);
+            if(!itemSessionState.isEntered()) {
+            	itemSessionController.initialize(timestamp);
+            	itemSessionController.performTemplateProcessing(timestamp);
+            	itemSessionController.enterItem(timestamp);
+            } else if (!itemSessionState.isEnded() && itemSessionState.isSuspended()) {
+            	itemSessionController.unsuspendItemSession(timestamp);
+            } else if(itemSessionState.isEnded()) {
+            	itemSessionState.setEndTime(null);
+            	itemSessionState.setExitTime(null);
+            }
         }  catch (final RuntimeException e) {
-        		logError("", e);
+        	logError("", e);
             return null;
         }
 
         /* Record and log entry event */
-        final CandidateEvent candidateEvent = qtiService.recordCandidateItemEvent(candidateSession, null, entry,
+        final CandidateEvent candidateEvent = qtiService.recordCandidateItemEvent(candidateSession, itemSession, testEntry, entry,
         		CandidateItemEventType.ENTER, itemSessionState, notificationRecorder);
         candidateAuditLogger.logCandidateEvent(candidateEvent);
         lastEvent = candidateEvent;
@@ -348,7 +406,7 @@ public class AssessmentItemDisplayController extends BasicController implements 
 
         /* Handle immediate end of session */
         if (itemSessionState.isEnded()) {
-            qtiService.finishItemSession(candidateSession, assessmentResult, ureq.getRequestTimestamp());
+            finishCandidateSession(assessmentResult, ureq.getRequestTimestamp());
         }
 
         return itemSessionController;
@@ -362,7 +420,7 @@ public class AssessmentItemDisplayController extends BasicController implements 
         }
 
         /* Create fresh state for session */
-        final ItemSessionState itemSessionState = new ItemSessionState();
+        ItemSessionState itemSessionState = loadItemSessionState();
 
         /* Create config for ItemSessionController */
         final ItemSessionControllerSettings itemSessionControllerSettings = new ItemSessionControllerSettings();
@@ -378,9 +436,12 @@ public class AssessmentItemDisplayController extends BasicController implements 
         return result;
     }
     
+    protected ItemSessionState loadItemSessionState() {
+    	return new ItemSessionState();
+    }
+    
     public ItemProcessingMap getItemProcessingMap() {
         return new ItemProcessingInitializer(resolvedAssessmentItem, true).initialize();
-
     }
     
 	public int computeTemplateProcessingLimit() {
@@ -391,6 +452,73 @@ public class AssessmentItemDisplayController extends BasicController implements 
 		}
 		final int requestedLimitIntValue = requestedLimit.intValue();
 		return requestedLimitIntValue > 0 ? requestedLimitIntValue : JqtiPlus.DEFAULT_TEMPLATE_PROCESSING_LIMIT;
+	}
+	
+	public void handleResetSoft(UserRequest ureq) {
+        /* Retrieve current JQTI state and set up JQTI controller */
+        final NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
+        final ItemSessionState itemSessionState = itemSessionController.getItemSessionState();
+
+        /* Make sure caller may reset the session */
+        if (!itemSessionState.isEnded() && !deliveryOptions.isEnableAssessmentItemResetSoft()) {
+            return;
+        } else if (itemSessionState.isEnded() && !deliveryOptions.isEnableAssessmentItemResetSoft()) {
+            return;
+        }
+
+        /* Update state */
+        final Date timestamp = ureq.getRequestTimestamp();
+        try {
+            itemSessionController.resetItemSessionSoft(timestamp, true);
+        }  catch (final QtiCandidateStateException e) {
+            candidateAuditLogger.logAndThrowCandidateException(candidateSession, itemSessionState.isEnded() ? CandidateExceptionReason.SOFT_RESET_SESSION_WHEN_ENDED_FORBIDDEN : CandidateExceptionReason.SOFT_RESET_SESSION_WHEN_INTERACTING_FORBIDDEN, e);
+            return;
+        } catch (final RuntimeException e) {
+			logError("", e);
+            return;
+        }
+
+        /* Record and log event */
+        final CandidateEvent candidateEvent = qtiService.recordCandidateItemEvent(candidateSession, itemSession,
+        		testEntry, entry, CandidateItemEventType.RESET, itemSessionState, notificationRecorder);
+        candidateAuditLogger.logCandidateEvent(candidateEvent);
+
+        /* Record current result state, or close session */
+        updateSessionFinishedStatus(ureq);
+	}
+	
+	public void handleResetHard(UserRequest ureq) {
+        /* Retrieve current JQTI state and set up JQTI controller */
+        final NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
+        final ItemSessionState itemSessionState = itemSessionController.getItemSessionState();
+
+        if (!itemSessionState.isEnded() && !deliveryOptions.isEnableAssessmentItemResetHard()) {
+            candidateAuditLogger.logAndThrowCandidateException(candidateSession, CandidateExceptionReason.HARD_RESET_SESSION_WHEN_INTERACTING_FORBIDDEN, null);
+            return;
+        } else if (itemSessionState.isEnded() && !deliveryOptions.isEnableAssessmentItemResetHard()) {
+            candidateAuditLogger.logAndThrowCandidateException(candidateSession, CandidateExceptionReason.HARD_RESET_SESSION_WHEN_ENDED_FORBIDDEN, null);
+            return;
+        }
+
+        /* Update state */
+        final Date timestamp = ureq.getRequestTimestamp();
+        try {
+            itemSessionController.resetItemSessionHard(timestamp, true);
+        }  catch (final QtiCandidateStateException e) {
+            candidateAuditLogger.logAndThrowCandidateException(candidateSession, itemSessionState.isEnded() ? CandidateExceptionReason.HARD_RESET_SESSION_WHEN_ENDED_FORBIDDEN : CandidateExceptionReason.HARD_RESET_SESSION_WHEN_INTERACTING_FORBIDDEN, e);
+            return;
+        }  catch (final RuntimeException e) {
+        	logError("", e);
+            return;
+        }
+
+        /* Record and log event */
+        final CandidateEvent candidateEvent = qtiService.recordCandidateItemEvent(candidateSession, itemSession, testEntry, entry,
+                CandidateItemEventType.REINIT, itemSessionState, notificationRecorder);
+        candidateAuditLogger.logCandidateEvent(candidateEvent);
+
+        /* Record current result state, or close session */
+        updateSessionFinishedStatus(ureq);	
 	}
 	
 	public void handleTemporaryResponses(UserRequest ureq, Map<Identifier, ResponseInput> stringResponseMap) {
@@ -444,7 +572,7 @@ public class AssessmentItemDisplayController extends BasicController implements 
 		final CandidateItemEventType eventType = allResponsesBound ?
 				(allResponsesValid ? CandidateItemEventType.ATTEMPT_VALID : CandidateItemEventType.RESPONSE_INVALID)
 				: CandidateItemEventType.RESPONSE_BAD;
-		final CandidateEvent candidateEvent = qtiService.recordCandidateItemEvent(candidateSession, null, entry,
+		final CandidateEvent candidateEvent = qtiService.recordCandidateItemEvent(candidateSession, itemSession, testEntry, entry,
 	                eventType, itemSessionState, notificationRecorder);
 		candidateAuditLogger.logCandidateEvent(candidateEvent, assessmentResponseDataMap);
 		lastEvent = candidateEvent;
@@ -468,20 +596,26 @@ public class AssessmentItemDisplayController extends BasicController implements 
 		 * NB: The following doesn't test for duplicate keys in the two maps. I'm not sure
 		 * it's worth the effort.
 		 */
+		final Map<Identifier,File> fileSubmissionMap = new HashMap<>();
 		final Map<Identifier, ResponseData> responseDataMap = new HashMap<>();
-		//final Map<Identifier, CandidateFileSubmission> fileSubmissionMap = new HashMap<>();
-		final Map<Identifier, AssessmentResponse> assessmentResponseDataMap = new HashMap<>();
-
-		if (stringResponseMap!=null) {
+		if (stringResponseMap != null) {
 			for (final Entry<Identifier, ResponseInput> stringResponseEntry : stringResponseMap.entrySet()) {
 				Identifier identifier = stringResponseEntry.getKey();
 				ResponseInput responseData = stringResponseEntry.getValue();
 				if(responseData instanceof StringInput) {
 					responseDataMap.put(identifier, new StringResponseData(((StringInput)responseData).getResponseData()));
 				} else if(responseData instanceof Base64Input) {
-					//TODO
+					//only used from drawing interaction
+					Base64Input fileInput = (Base64Input)responseData;
+					String filename = "submitted_image.png";
+					File storedFile = qtiService.importFileSubmission(candidateSession, filename, fileInput.getResponseData());
+                    responseDataMap.put(identifier, new FileResponseData(storedFile, fileInput.getContentType(), storedFile.getName()));
+                    fileSubmissionMap.put(identifier, storedFile);
 				} else if(responseData instanceof FileInput) {
-					
+					FileInput fileInput = (FileInput)responseData;
+					File storedFile = qtiService.importFileSubmission(candidateSession, fileInput.getMultipartFileInfos());
+                    responseDataMap.put(identifier, new FileResponseData(storedFile, fileInput.getContentType(), storedFile.getName()));
+                    fileSubmissionMap.put(identifier, storedFile);
 				}
 			}
 		}
@@ -491,14 +625,49 @@ public class AssessmentItemDisplayController extends BasicController implements 
                 final Identifier identifier = fileResponseEntry.getKey();
                 final FileInput multipartFile = (FileInput)fileResponseEntry.getValue();
                 if (!multipartFile.isEmpty()) {
-                    //final CandidateFileSubmission fileSubmission = candidateUploadService.importFileSubmission(candidateSession, multipartFile);
-                	File storedFile = qtiService.importFileSubmission(candidateSession, multipartFile.getMultipartFileInfos());
+                    File storedFile = qtiService.importFileSubmission(candidateSession, multipartFile.getMultipartFileInfos());
                 	final FileResponseData fileResponseData = new FileResponseData(storedFile, multipartFile.getContentType(), multipartFile.getFileName());
                     responseDataMap.put(identifier, fileResponseData);
-    				assessmentResponseDataMap.put(identifier, new AssessmentResponseData(identifier, fileResponseData));
-                    //fileSubmissionMap.put(identifier, fileSubmission);
+                    fileSubmissionMap.put(identifier, storedFile);
                 }
             }
+        }
+        
+        String assessmentItemIdentifier = resolvedAssessmentItem.getRootNodeLookup()
+        		.extractIfSuccessful().getIdentifier();
+		itemSession = qtiService
+				.getOrCreateAssessmentItemSession(candidateSession, null, assessmentItemIdentifier);
+        
+        Map<Identifier, AssessmentResponse> candidateResponseMap = qtiService.getAssessmentResponses(itemSession);
+        for (Entry<Identifier, ResponseData> responseEntry : responseDataMap.entrySet()) {
+            Identifier responseIdentifier = responseEntry.getKey();
+            ResponseData responseData = responseEntry.getValue();
+            AssessmentResponse candidateItemResponse;
+            if(candidateResponseMap.containsKey(responseIdentifier)) {
+            	candidateItemResponse = candidateResponseMap.get(responseIdentifier);
+            } else {
+            	candidateItemResponse = qtiService
+            		.createAssessmentResponse(candidateSession, itemSession, responseIdentifier.toString(), ResponseLegality.VALID, responseData.getType());
+            }
+		
+            switch (responseData.getType()) {
+                case STRING: {
+                	List<String> data = ((StringResponseData) responseData).getResponseData();
+                	String stringuifiedResponse = ResponseFormater.format(data);
+                    candidateItemResponse.setStringuifiedResponse(stringuifiedResponse);
+                    break;
+                }
+                case FILE: {
+                	if(fileSubmissionMap.get(responseIdentifier) != null) {
+                		File storedFile = fileSubmissionMap.get(responseIdentifier);
+                		candidateItemResponse.setStringuifiedResponse(storedFile.getName());
+                	}
+                    break;
+                }
+                default:
+                    throw new OLATRuntimeException("Unexpected switch case: " + responseData.getType());
+            }
+            candidateResponseMap.put(responseIdentifier, candidateItemResponse);
         }
 
 		/* Submit comment (if provided)
@@ -514,12 +683,13 @@ public class AssessmentItemDisplayController extends BasicController implements 
 				return;
 			} catch (final RuntimeException e) {
 				logError("", e);
-				return; //handleExplosion(e, candidateSession);
+				return;
 			}
 		}
 
 		/* Attempt to bind responses */
-		boolean allResponsesValid = false, allResponsesBound = false;
+		boolean allResponsesValid = false;
+		boolean allResponsesBound = false;
 		try {
 			itemSessionController.bindResponses(timestamp, responseDataMap);
 
@@ -546,28 +716,66 @@ public class AssessmentItemDisplayController extends BasicController implements 
 			return;
 		} catch (final RuntimeException e) {
 			logError("", e);
-			return;// handleExplosion(e, candidateSession);
+			return;
 		}
 
 		/* Record resulting attempt and event */
 		final CandidateItemEventType eventType = allResponsesBound ?
 				(allResponsesValid ? CandidateItemEventType.ATTEMPT_VALID : CandidateItemEventType.RESPONSE_INVALID)
 				: CandidateItemEventType.RESPONSE_BAD;
-		final CandidateEvent candidateEvent = qtiService.recordCandidateItemEvent(candidateSession, null, entry,
+		final CandidateEvent candidateEvent = qtiService.recordCandidateItemEvent(candidateSession, itemSession, testEntry, entry,
 	                eventType, itemSessionState, notificationRecorder);
-		candidateAuditLogger.logCandidateEvent(candidateEvent, assessmentResponseDataMap);
+		candidateAuditLogger.logCandidateEvent(candidateEvent, candidateResponseMap);
 		lastEvent = candidateEvent;
-
+		
 		/* Record current result state, or finish session */
-		updateSessionFinishedStatus(ureq);
+		AssessmentResult assessmentResult = updateSessionFinishedStatus(ureq);
+		ItemResult itemResult = assessmentResult.getItemResult(assessmentItemIdentifier);
+		collectOutcomeVariablesForItemSession(itemResult);
+        /* Persist CandidateResponse entities */
+        qtiService.recordTestAssessmentResponses(itemSession, candidateResponseMap.values());
 	}
 	
-    private AssessmentTestSession updateSessionFinishedStatus(UserRequest ureq) {
+	private void collectOutcomeVariablesForItemSession(ItemResult resultNode) {
+		BigDecimal score = null;
+		Boolean pass = null;
+
+		for (final ItemVariable itemVariable : resultNode.getItemVariables()) {
+			if (itemVariable instanceof OutcomeVariable) {
+				OutcomeVariable outcomeVariable = (OutcomeVariable) itemVariable;
+				Identifier identifier = outcomeVariable.getIdentifier();
+				if (QTI21Constants.SCORE_IDENTIFIER.equals(identifier)) {
+					Value value = itemVariable.getComputedValue();
+					if (value instanceof FloatValue) {
+						score = new BigDecimal(
+								((FloatValue) value).doubleValue());
+					} else if (value instanceof IntegerValue) {
+						score = new BigDecimal(
+								((IntegerValue) value).intValue());
+					}
+				} else if (QTI21Constants.PASS_IDENTIFIER.equals(identifier)) {
+					Value value = itemVariable.getComputedValue();
+					if (value instanceof BooleanValue) {
+						pass = ((BooleanValue) value).booleanValue();
+					}
+				}
+			}
+		}
+
+		if (score != null) {
+			itemSession.setScore(score);
+		}
+		if (pass != null) {
+			itemSession.setPassed(pass);
+		}
+	}
+	
+    protected AssessmentResult updateSessionFinishedStatus(UserRequest ureq) {
         /* Record current result state and maybe close session */
         final ItemSessionState itemSessionState = itemSessionController.getItemSessionState();
         final AssessmentResult assessmentResult = computeAndRecordItemAssessmentResult(ureq);
         if (itemSessionState.isEnded()) {
-            qtiService.finishItemSession(candidateSession, assessmentResult, null);
+            finishCandidateSession(assessmentResult, ureq.getRequestTimestamp());
         }
         else {
             if (candidateSession != null && candidateSession.getFinishTime() != null) {
@@ -576,14 +784,43 @@ public class AssessmentItemDisplayController extends BasicController implements 
                 candidateSession = qtiService.updateAssessmentTestSession(candidateSession);
             }
         }
-        return candidateSession;
+        return assessmentResult;
     }
     
     public AssessmentResult computeAndRecordItemAssessmentResult(UserRequest ureq) {
         final AssessmentResult assessmentResult = computeItemAssessmentResult(ureq);
         qtiService.recordItemAssessmentResult(candidateSession, assessmentResult, candidateAuditLogger);
+        
+        ItemResult itemResult = assessmentResult.getItemResult(resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful().getIdentifier());
+		processOutcomeVariables(itemResult);
+        
         return assessmentResult;
     }
+    
+	private void processOutcomeVariables(ItemResult itemResult) {
+		Float score = null;
+		Boolean pass = null;
+
+		for (final ItemVariable itemVariable : itemResult.getItemVariables()) {
+			if (itemVariable instanceof OutcomeVariable) {
+				OutcomeVariable outcomeVariable = (OutcomeVariable) itemVariable;
+				Identifier identifier = outcomeVariable.getIdentifier();
+				if (QTI21Constants.SCORE_IDENTIFIER.equals(identifier)) {
+					Value value = itemVariable.getComputedValue();
+					if (value instanceof NumberValue) {
+						score = (float) ((NumberValue) value).doubleValue();
+					}
+				} else if (QTI21Constants.PASS_IDENTIFIER.equals(identifier)) {
+					Value value = itemVariable.getComputedValue();
+					if (value instanceof BooleanValue) {
+						pass = ((BooleanValue) value).booleanValue();
+					}
+				}
+			}
+		}
+
+		outcomesListener.outcomes(candidateSession, score, pass);
+	}
     
     public AssessmentResult computeItemAssessmentResult(UserRequest ureq) {
     	String baseUrl = "http://localhost:8080/olat";
@@ -621,38 +858,74 @@ public class AssessmentItemDisplayController extends BasicController implements 
                 return;
             } catch (final RuntimeException e) {
             	logError("", e);
-                return;// handleExplosion(e, candidateSession);
+                return;
             }
         }
 
         /* Record current result state, and maybe close session */
         final AssessmentResult assessmentResult = computeAndRecordItemAssessmentResult(ureq);
         if (isClosingSession) {
-            qtiService.finishItemSession(candidateSession, assessmentResult, timestamp);
+            finishCandidateSession(assessmentResult, timestamp);
         }
 
         /* Record and log event */
-        final CandidateEvent candidateEvent = qtiService.recordCandidateItemEvent(candidateSession, null, entry,
+        final CandidateEvent candidateEvent = qtiService.recordCandidateItemEvent(candidateSession, itemSession, testEntry, entry,
         		CandidateItemEventType.SOLUTION, itemSessionState);
         candidateAuditLogger.logCandidateEvent(candidateEvent);
         lastEvent = candidateEvent;
     }
     
+	private void next(UserRequest ureq, QTIWorksAssessmentItemEvent event) {
+		NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
+		ItemSessionState itemSessionState = itemSessionController.getItemSessionState();
+		
+		/* Check this is allowed in current state */
+        if (itemSessionState.isEnded()) {
+    		fireEvent(ureq, event);
+        	return;
+        }
+        
+        /* Update state */
+        final Date timestamp = ureq.getRequestTimestamp();
+        try {
+            itemSessionController.endItem(timestamp);
+        } catch (QtiCandidateStateException e) {
+        	String msg = itemSessionState.isEnded() ? "END_SESSION_WHEN_ALREADY_ENDED" : "END_SESSION_WHEN_INTERACTING_FORBIDDEN";
+        	logError(msg, e);
+            candidateAuditLogger.logAndThrowCandidateException(candidateSession, itemSessionState.isEnded() ? CandidateExceptionReason.END_SESSION_WHEN_ALREADY_ENDED : CandidateExceptionReason.END_SESSION_WHEN_INTERACTING_FORBIDDEN, null);
+            return;
+        } catch (final RuntimeException e) {
+        	logError("", e);
+            return;
+        }
+        
+        /* Record current result state */
+        computeAndRecordItemAssessmentResult(ureq);
+        
+        CandidateItemEventType eventType = CandidateItemEventType.NEXT;
+        if(event.getEvent() == QTIWorksAssessmentItemEvent.Event.timesUp) {
+        	eventType = CandidateItemEventType.EXIT_DUE_TIME_LIMIT;
+        }
+
+        /* Record and log event */
+        final CandidateEvent candidateEvent = qtiService.recordCandidateItemEvent(candidateSession, itemSession, testEntry, entry,
+        		eventType, itemSessionState, notificationRecorder);
+        candidateAuditLogger.logCandidateEvent(candidateEvent);
+        lastEvent = candidateEvent;
+
+		fireEvent(ureq, event);
+	}
+    
 	public void endSession(UserRequest ureq) {
-        NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
-        //final ItemSessionController itemSessionController = candidateDataService.createItemSessionController(mostRecentEvent, notificationRecorder);
-        ItemSessionState itemSessionState = itemSessionController.getItemSessionState();
+		NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
+		ItemSessionState itemSessionState = itemSessionController.getItemSessionState();
 
         /* Check this is allowed in current state */
-        
         if (itemSessionState.isEnded()) {
         	logError("END_SESSION_WHEN_ALREADY_ENDED", null);
             candidateAuditLogger.logAndThrowCandidateException(candidateSession, CandidateExceptionReason.END_SESSION_WHEN_ALREADY_ENDED, null);
             return;
-        } /* else if (!itemDeliverySettings.isAllowEnd()) {
-            candidateAuditLogger.logAndThrowCandidateException(candidateSession, CandidateExceptionReason.END_SESSION_WHEN_INTERACTING_FORBIDDEN);
-            return null;
-        }*/
+        }
 
         /* Update state */
         final Date timestamp = ureq.getRequestTimestamp();
@@ -663,23 +936,22 @@ public class AssessmentItemDisplayController extends BasicController implements 
         	logError(msg, e);
             candidateAuditLogger.logAndThrowCandidateException(candidateSession, itemSessionState.isEnded() ? CandidateExceptionReason.END_SESSION_WHEN_ALREADY_ENDED : CandidateExceptionReason.END_SESSION_WHEN_INTERACTING_FORBIDDEN, null);
             return;
-        }
-        catch (final RuntimeException e) {
+        } catch (final RuntimeException e) {
         	logError("", e);
-            return; //handleExplosion(e, candidateSession);
+            return;
         }
 
         /* Record current result state */
         final AssessmentResult assessmentResult = computeAndRecordItemAssessmentResult(ureq);
 
         /* Record and log event */
-        final CandidateEvent candidateEvent = qtiService.recordCandidateItemEvent(candidateSession, null, entry,
+        final CandidateEvent candidateEvent = qtiService.recordCandidateItemEvent(candidateSession, itemSession, testEntry, entry,
                 CandidateItemEventType.END, itemSessionState, notificationRecorder);
         candidateAuditLogger.logCandidateEvent(candidateEvent);
         lastEvent = candidateEvent;
 
         /* Close session */
-        qtiService.finishItemSession(candidateSession, assessmentResult, timestamp);
+        finishCandidateSession(assessmentResult, timestamp);
     }
 	
 	public void exitSession(UserRequest ureq) {
@@ -692,10 +964,10 @@ public class AssessmentItemDisplayController extends BasicController implements 
 		        itemSessionController.endItem(currentTimestamp);
 		    } catch (final RuntimeException e) {
 		    	logError("", e);
-		        return;// handleExplosion(e, candidateSession);
+		        return;
 		    }
 		    final AssessmentResult assessmentResult = computeAndRecordItemAssessmentResult(ureq);
-		    qtiService.finishItemSession(candidateSession, assessmentResult, currentTimestamp);
+		    finishCandidateSession(assessmentResult, currentTimestamp);
 		}
 		
 		/* Update session entity */
@@ -703,10 +975,14 @@ public class AssessmentItemDisplayController extends BasicController implements 
 		candidateSession = qtiService.updateAssessmentTestSession(candidateSession);
 		
 		/* Record and log event */
-		final CandidateEvent candidateEvent = qtiService.recordCandidateItemEvent(candidateSession, null, entry,
+		final CandidateEvent candidateEvent = qtiService.recordCandidateItemEvent(candidateSession, itemSession, testEntry, entry,
 					CandidateItemEventType.EXIT, itemSessionState);
 		lastEvent = candidateEvent;
 		candidateAuditLogger.logCandidateEvent(candidateEvent);
+	}
+	
+	protected void finishCandidateSession(AssessmentResult assessmentResult, final Date currentTimestamp) {
+		candidateSession = qtiService.finishItemSession(candidateSession, assessmentResult, currentTimestamp);
 	}
 	
 	/**
@@ -716,15 +992,25 @@ public class AssessmentItemDisplayController extends BasicController implements 
 	 * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
 	 *
 	 */
-	private class QtiWorksController extends AbstractQtiWorksController {
+	protected class QtiWorksController extends AbstractQtiWorksController {
 		
 		private AssessmentItemFormItem qtiEl;
+		private AssessmentCountDownFormItem timerEl;
 		private final String filename;
 		
 		public QtiWorksController(UserRequest ureq, WindowControl wControl, String filename) {
 			super(ureq, wControl, "ff_run");
 			this.filename = filename;
 			initForm(ureq);
+		}
+		
+		public void setTimeLimit(long seconds) {
+			if(seconds > 0) {
+				timerEl.setTimerInSeconds(seconds);
+				timerEl.setEnabled(true);
+			} else {
+				timerEl.setEnabled(false);
+			}
 		}
 
 		@Override
@@ -733,6 +1019,10 @@ public class AssessmentItemDisplayController extends BasicController implements 
 
 			FormSubmit submit = uifactory.addFormSubmitButton("submit", formLayout);
 			qtiEl = new AssessmentItemFormItem("qtirun", submit);
+			qtiEl.setEnableBack(deliveryOptions.isEnableAssessmentItemBack());
+			qtiEl.setEnableResetHard(deliveryOptions.isEnableAssessmentItemResetHard());
+			qtiEl.setEnableResetSoft(deliveryOptions.isEnableAssessmentItemResetSoft());
+			qtiEl.setEnableSkip(deliveryOptions.isEnableAssessmentItemSkip());
 			formLayout.add("qtirun", qtiEl);
 
 			ResourceLocator fileResourceLocator = new PathResourceLocator(fUnzippedDirRoot.toPath());
@@ -746,6 +1036,16 @@ public class AssessmentItemDisplayController extends BasicController implements 
 			qtiEl.setAssessmentObjectUri(manifestPath.toURI());
 			qtiEl.setCandidateSessionContext(AssessmentItemDisplayController.this);
 			qtiEl.setMapperUri(mapperUri);
+			
+			timerEl = new AssessmentCountDownFormItem("timer", qtiEl);
+			timerEl.setEnabled(false);
+			formLayout.add("timer", timerEl);
+			
+			String[] jss = new String[] {
+					"js/jquery/qti/jquery.qtiCountDown.js"
+			};
+			JSAndCSSFormItem js = new JSAndCSSFormItem("js", jss);
+			formLayout.add("js", js);
 		}
 		
 		@Override
@@ -765,6 +1065,13 @@ public class AssessmentItemDisplayController extends BasicController implements 
 					QTIWorksAssessmentItemEvent qwaie = (QTIWorksAssessmentItemEvent)event;
 					if(qwaie.getEvent() == QTIWorksAssessmentItemEvent.Event.tmpResponse) {
 						processTemporaryResponse(ureq);
+					} else if(qwaie.getEvent() == QTIWorksAssessmentItemEvent.Event.timesUp) {
+						timerEl.setAlreadyEnded(true);
+						fireEvent(ureq, event);
+					} else if(qwaie.getEvent() == QTIWorksAssessmentItemEvent.Event.resethard
+							|| qwaie.getEvent() == QTIWorksAssessmentItemEvent.Event.resetsoft) {
+						timerEl.setAlreadyEnded(false);
+						fireEvent(ureq, event);
 					} else {
 						fireEvent(ureq, event);
 					}

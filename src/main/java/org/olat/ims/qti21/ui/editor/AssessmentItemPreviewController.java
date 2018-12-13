@@ -32,16 +32,21 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.id.Persistable;
 import org.olat.core.util.Util;
 import org.olat.ims.qti21.AssessmentResponse;
 import org.olat.ims.qti21.AssessmentSessionAuditLogger;
 import org.olat.ims.qti21.AssessmentTestSession;
+import org.olat.ims.qti21.QTI21DeliveryOptions;
+import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.manager.audit.DefaultAssessmentSessionAuditLogger;
+import org.olat.ims.qti21.model.InMemoryOutcomeListener;
 import org.olat.ims.qti21.model.audit.CandidateEvent;
 import org.olat.ims.qti21.ui.AssessmentItemDisplayController;
 import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.repository.RepositoryEntry;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
@@ -63,6 +68,8 @@ public class AssessmentItemPreviewController extends BasicController {
 	private final VelocityContainer mainVC;
 	private final AssessmentSessionAuditLogger candidateAuditLogger = new PreviewAuditLogger();
 	
+	@Autowired
+	private QTI21Service qtiService;
 
 	private AssessmentItemPreviewController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -91,7 +98,8 @@ public class AssessmentItemPreviewController extends BasicController {
 		this(ureq, wControl);
 
 		displayCtrl = new AssessmentItemDisplayController(ureq, getWindowControl(),
-				resolvedAssessmentItem, rootDirectory, itemFile, candidateAuditLogger);
+				resolvedAssessmentItem, rootDirectory, itemFile,
+				QTI21DeliveryOptions.defaultSettings(), candidateAuditLogger);
 		listenTo(displayCtrl);
 		mainVC.put("display", displayCtrl.getInitialComponent());
 	}
@@ -102,9 +110,11 @@ public class AssessmentItemPreviewController extends BasicController {
 			File rootDirectory, File itemFile) {
 		this(ureq, wControl);
 
+		String subIdent = itemRef.getIdentifier().toString();
 		displayCtrl = new AssessmentItemDisplayController(ureq, getWindowControl(),
-				testEntry, assessmentEntry, true, resolvedAssessmentItem, itemRef,
-				rootDirectory, itemFile, candidateAuditLogger);
+				testEntry, subIdent, testEntry, assessmentEntry, true, resolvedAssessmentItem, 
+				rootDirectory, itemFile, QTI21DeliveryOptions.defaultSettings(),
+				new InMemoryOutcomeListener(), candidateAuditLogger);
 		listenTo(displayCtrl);
 		mainVC.put("display", displayCtrl.getInitialComponent());
 	}
@@ -112,6 +122,9 @@ public class AssessmentItemPreviewController extends BasicController {
 	@Override
 	protected void doDispose() {
 		mainVC.removeListener(this);
+		if(displayCtrl != null && displayCtrl.getCandidateSession() instanceof Persistable) {
+			qtiService.deleteAssessmentTestSession(displayCtrl.getCandidateSession());
+		}
 	}
 
 	@Override

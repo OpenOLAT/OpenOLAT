@@ -26,8 +26,12 @@ import java.io.OutputStream;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.modules.video.VideoMarker;
 import org.olat.modules.video.VideoMarkers;
+import org.olat.modules.video.VideoQuestion;
+import org.olat.modules.video.VideoQuestions;
 import org.olat.modules.video.model.VideoMarkerImpl;
 import org.olat.modules.video.model.VideoMarkersImpl;
+import org.olat.modules.video.model.VideoQuestionImpl;
+import org.olat.modules.video.model.VideoQuestionsImpl;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.security.ExplicitTypePermission;
@@ -45,14 +49,17 @@ public class VideoXStream {
 	static {
 		XStream.setupDefaultSecurity(xstream);
 		Class<?>[] types = new Class[] {
-				VideoMarker.class, VideoMarkerImpl.class,
-				VideoMarkers.class, VideoMarkersImpl.class
+				VideoMarker.class, VideoMarkerImpl.class, VideoMarkers.class, VideoMarkersImpl.class,
+				VideoQuestion.class, VideoQuestionImpl.class, VideoQuestions.class, VideoQuestionsImpl.class
 		};
 		xstream.addPermission(new ExplicitTypePermission(types));
 		xstream.ignoreUnknownElements();
 
 		xstream.alias("marker", VideoMarkerImpl.class);
 		xstream.alias("markers", VideoMarkers.class);
+
+		xstream.alias("question", VideoQuestionImpl.class);
+		xstream.alias("questions", VideoQuestions.class);
 	}
 	
 	public static void toXml(OutputStream out, Object obj) {

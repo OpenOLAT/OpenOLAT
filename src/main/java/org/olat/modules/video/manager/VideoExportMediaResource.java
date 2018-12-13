@@ -118,24 +118,22 @@ public class VideoExportMediaResource implements MediaResource {
 				public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
 					Path relativeFile = unzipPath.relativize(file);
 					String names = relativeFile.toString();
-					
-					if(!attrs.isDirectory()) {
-						// add everything that belongs to resource to zip
-						zout.putNextEntry(new ZipEntry(names));							
-						
-						try(InputStream in=Files.newInputStream(file)) {
-							FileUtils.copy(in, zout);
-						} catch (Exception e) {
-							log.error("Error during copy of video resource export", e);
-						}
-						
-						zout.closeEntry();
-					}
+					zout.putNextEntry(new ZipEntry(names));							
+					zip(file, zout);
+					zout.closeEntry();
 					return FileVisitResult.CONTINUE;
 				}
 			});
 		} catch (Exception e) {
 			log.error("Unknown error while video resource export", e);
+		}
+	}
+	
+	private final void zip(Path file, ZipOutputStream zout) {
+		try(InputStream in=Files.newInputStream(file)) {
+			FileUtils.copy(in, zout);
+		} catch (Exception e) {
+			log.error("Error during copy of video resource export", e);
 		}
 	}
 

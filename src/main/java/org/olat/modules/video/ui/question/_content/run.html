@@ -1,0 +1,7 @@
+<div id="o_qti_container">$r.render("qtirun")
+#if($r.isTrue($enableCompletion))
+<div id="o_qti_progress">
+	<div class="progress" style="width: 100%;"><div class="progress-bar" style="width: ${completion}%;" title="${completion}%"></div></div>
+</div>
+#end
+</div>

@@ -87,7 +87,10 @@ public class VideoChapterEditController extends BasicController {
 
 		VelocityContainer mainVC = createVelocityContainer("video_chapter_editor");
 		//video preview
-		videoDisplayCtr = new VideoDisplayController(ureq, getWindowControl(), entry, false, false, false, false, null, false, false, null, false);
+		VideoDisplayOptions displayOptions = VideoDisplayOptions.disabled();
+		displayOptions.setAlwaysShowControls(true);
+		displayOptions.setAuthorMode(true);
+		videoDisplayCtr = new VideoDisplayController(ureq, getWindowControl(), entry, null, null, displayOptions);
 		videoDisplayCtr.setTimeUpdateListener(true);
 		listenTo(videoDisplayCtr);	
 		videoDisplayCtr.reloadVideo(ureq);

@@ -134,13 +134,13 @@ public class VideoMarkerImpl implements VideoMarker {
 	}
 
 	@Override
-	public int hashCode() {
-		return id == null ? 27649 : id.hashCode();
+	public long toSeconds() {
+		return begin == null ? 0 : begin.getTime() / 1000l;
 	}
 
 	@Override
-	public long toSeconds() {
-		return begin == null ? 0 : begin.getTime() / 1000l;
+	public int hashCode() {
+		return id == null ? 27649 : id.hashCode();
 	}
 
 	@Override

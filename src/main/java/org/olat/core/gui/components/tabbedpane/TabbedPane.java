@@ -168,6 +168,18 @@ public class TabbedPane extends Container implements Activateable2 {
 		return tabPanes.size() - 1;
 	}
 	
+	public int addTab(int pos, String displayName, Controller controller) {
+		TabPane tab = new TabPane(displayName, controller);
+		tabPanes.add(pos, tab);
+		if (selectedPane == -1) {
+			selectedPane = 0; // if no pane has been selected, select the first one
+			super.put("atp", tab.getComponent()); 
+		} else if(selectedPane == pos) {
+			super.put("atp", tab.getComponent());
+		}
+		return pos;
+	}
+	
 	public boolean containsTab(Component component) {
 		boolean found = false;
 		for(int i=tabPanes.size(); i-->0; ) {

@@ -21,6 +21,7 @@ package org.olat.ims.qti21.model;
 
 import java.util.List;
 
+import org.olat.core.util.StringHelper;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.modules.qpool.QuestionType;
 
@@ -253,5 +254,21 @@ public enum QTI21QuestionType {
 		
 		List<String> cssClasses = interaction.getClassAttr();
 		return cssClasses != null && cssClasses.size() > 0 && cssClasses.contains(cssClass);
+	}
+	
+	/**
+	 * 
+	 * @param val The value to identify
+	 * @return The question type if recognize or unkown
+	 */
+	public static final QTI21QuestionType safeValueOf(String val) {
+		if(StringHelper.containsNonWhitespace(val)) {
+			for(QTI21QuestionType type:values()) {
+				if(type.name().equals(val)) {
+					return type;
+				}
+			}
+		}
+		return QTI21QuestionType.unkown;
 	}
 }

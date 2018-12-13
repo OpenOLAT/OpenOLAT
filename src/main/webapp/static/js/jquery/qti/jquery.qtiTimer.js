@@ -43,7 +43,7 @@
     	if(jQuery('#o_qti_run').length > 0) {
     		o_ffXHREvent(settings.formName, settings.dispIdField, settings.dispId, settings.eventIdField, '2', false, false, false, 'cid', 'timesUp');
     	}
-    };
+    }
     
     function displayRemainingTime(wrapperId, availableTime, remainingTime) {
     	var available = formatRemainingTime(availableTime);
@@ -60,7 +60,7 @@
     	} else if(remainingTime < 10 * 60 * 1000) {
     		addClass(wrapperId, "o_10_minutes");
     	} 
-    };
+    }
     
     function addClass(wrappedId, warningClass) {
     	var wrapperEl = jQuery('#' + wrappedId);

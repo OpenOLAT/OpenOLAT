@@ -57,6 +57,11 @@ public class QTI21DeliveryOptions {
 	
 	private Boolean showAssessmentResultsOnFinish;
 	
+	private boolean enableAssessmentItemBack;
+	private boolean enableAssessmentItemResetHard;
+	private boolean enableAssessmentItemResetSoft;
+	private boolean enableAssessmentItemSkip;
+	
 	private TestType testType;
 	private ShowResultsOnFinish showResultsOnFinish;
 	private QTI21AssessmentResultsOptions assessmentResultsOptions;
@@ -228,6 +233,64 @@ public class QTI21DeliveryOptions {
 	public void setTestType(TestType testType) {
 		this.testType = testType;
 	}
+	
+	/**
+	 * This feature is only available for assessment item display, not test
+	 * 
+	 * @return if back button will shown after an answer
+	 */
+	public boolean isEnableAssessmentItemBack() {
+		return enableAssessmentItemBack;
+	}
+
+	/**
+	 * This feature is only available for assessment item display, not test
+	 * 
+	 * @param enableAssessmentItemBack
+	 */
+	public void setEnableAssessmentItemBack(boolean enableAssessmentItemBack) {
+		this.enableAssessmentItemBack = enableAssessmentItemBack;
+	}
+
+	/**
+	 * This feature is only available for assessment item display, not test
+	 * 
+	 * @return if a retry button will shown after an answer
+	 */
+	public boolean isEnableAssessmentItemResetSoft() {
+		return enableAssessmentItemResetSoft;
+	}
+
+	public void setEnableAssessmentItemResetSoft(boolean enable) {
+		enableAssessmentItemResetSoft = enable;
+	}
+	
+	/**
+	 * This feature is only available for assessment item display, not test
+	 * 
+	 * @return if a retry button will shown after an answer (hard
+	 * 		mean random and shuffled answers will be recalculated)
+	 */
+	public boolean isEnableAssessmentItemResetHard() {
+		return enableAssessmentItemResetHard;
+	}
+
+	public void setEnableAssessmentItemResetHard(boolean enableAssessmentItemResetHard) {
+		this.enableAssessmentItemResetHard = enableAssessmentItemResetHard;
+	}
+
+	/**
+	 * This feature is only available for assessment item display, not test
+	 * 
+	 * @return if skip button will shown after an answer
+	 */
+	public boolean isEnableAssessmentItemSkip() {
+		return enableAssessmentItemSkip;
+	}
+
+	public void setEnableAssessmentItemSkip(boolean enable) {
+		this.enableAssessmentItemSkip = enable;
+	}
 
 	public static final QTI21DeliveryOptions defaultSettings() {
 		QTI21DeliveryOptions defaultSettings = new QTI21DeliveryOptions();
@@ -246,6 +309,10 @@ public class QTI21DeliveryOptions {
 		defaultSettings.maxAttempts = 0;
 		defaultSettings.digitalSignature = false;
 		defaultSettings.digitalSignatureMail = false;
+		defaultSettings.enableAssessmentItemBack = false;
+		defaultSettings.enableAssessmentItemResetSoft = false;
+		defaultSettings.enableAssessmentItemResetHard = false;
+		defaultSettings.enableAssessmentItemSkip = false;
 		defaultSettings.assessmentResultsOptions = QTI21AssessmentResultsOptions.noOptions();
 		defaultSettings.showAssessmentResultsOnFinish = Boolean.FALSE;
 		return defaultSettings;
@@ -269,6 +336,10 @@ public class QTI21DeliveryOptions {
 		defaultSettings.digitalSignature = false;
 		defaultSettings.digitalSignatureMail = false;
 		defaultSettings.testType = TestType.formative;
+		defaultSettings.enableAssessmentItemBack = false;
+		defaultSettings.enableAssessmentItemResetSoft = false;
+		defaultSettings.enableAssessmentItemResetHard = false;
+		defaultSettings.enableAssessmentItemSkip = false;
 		defaultSettings.assessmentResultsOptions = QTI21AssessmentResultsOptions.allOptions();
 		defaultSettings.showAssessmentResultsOnFinish = Boolean.TRUE;
 		return defaultSettings;
@@ -292,6 +363,10 @@ public class QTI21DeliveryOptions {
 		defaultSettings.digitalSignature = false;
 		defaultSettings.digitalSignatureMail = false;
 		defaultSettings.testType = TestType.summative;
+		defaultSettings.enableAssessmentItemBack = false;
+		defaultSettings.enableAssessmentItemResetSoft = false;
+		defaultSettings.enableAssessmentItemResetHard = false;
+		defaultSettings.enableAssessmentItemSkip = false;
 		defaultSettings.assessmentResultsOptions = QTI21AssessmentResultsOptions.noOptions();
 		defaultSettings.showAssessmentResultsOnFinish = Boolean.FALSE;
 		return defaultSettings;
@@ -318,6 +393,10 @@ public class QTI21DeliveryOptions {
 		clone.assessmentResultsOptions = getAssessmentResultsOptions().clone();
 		clone.showAssessmentResultsOnFinish = showAssessmentResultsOnFinish;
 		clone.testType = testType;
+		clone.enableAssessmentItemBack = enableAssessmentItemBack;
+		clone.enableAssessmentItemResetSoft = enableAssessmentItemResetSoft;
+		clone.enableAssessmentItemResetHard = enableAssessmentItemResetHard;
+		clone.enableAssessmentItemSkip = enableAssessmentItemSkip;
 		return clone;
 	}
 	
