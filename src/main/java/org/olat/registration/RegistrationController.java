@@ -89,16 +89,18 @@ public class RegistrationController extends BasicController implements Activatea
 
 	private static final String SEPARATOR = "____________________________________________________________________\n";
 
-	private VelocityContainer myContent;	
 	private Panel regarea;
 	private Link loginButton;
+	private VelocityContainer myContent;	
+	
 	private WizardInfoController wizInfoController;
 	private DisclaimerController disclaimerController;
 	private EmailSendingForm emailSendForm;
 	private RegistrationForm2 registrationForm;
 	private LanguageChooserController langChooserController;
-	private String uniqueRegistrationKey;
+	
 	private TemporaryKey tempKey;
+	private String uniqueRegistrationKey;
 	
 	@Autowired
 	private I18nModule i18nModule;
@@ -118,7 +120,7 @@ public class RegistrationController extends BasicController implements Activatea
 	private RegistrationManager registrationManager;
 
 	/**
-	 * Controller implementing registration work flow.
+	 * Controller implementing registration workflow.
 	 * @param ureq
 	 * @param wControl
 	 */
@@ -162,13 +164,7 @@ public class RegistrationController extends BasicController implements Activatea
 			// no temporary key is given, we assume step 1. If this is the case, we
 			// render in a modal dialog, no need to add the 3cols layout controller
 			// wrapper
-			//fxdiff FXOLAT-113: business path in DMZ
-			if(i18nModule.getEnabledLanguageKeys().size() == 1) {
-				wizInfoController.setCurStep(2);
-				createEmailForm(ureq);
-			} else {
-				createLanguageForm(ureq, wControl);
-			}
+			displayLanguageChooserStep(ureq);
 			putInitialPanel(myContent);
 		} else {
 			// we check if given key is a valid temporary key
@@ -177,49 +173,9 @@ public class RegistrationController extends BasicController implements Activatea
 			if (tempKey == null) {
 				// error, there should be an entry
 				showError("regkey.missingentry");
-				//fxdiff FXOLAT-113: business path in DMZ
-				if(i18nModule.getEnabledLanguageKeys().size() == 1) {
-					wizInfoController.setCurStep(2);
-					createEmailForm(ureq);
-				} else {
-					createLanguageForm(ureq, wControl);
-				}
+				displayLanguageChooserStep(ureq);
 			} else {
-				wizInfoController.setCurStep(3);
-				myContent.contextPut("pwdhelp", translate("pwdhelp"));
-				myContent.contextPut("loginhelp", translate("loginhelp"));
-				myContent.contextPut("text", translate("step3.reg.text"));
-				myContent.contextPut("email", tempKey.getEmailAddress());
-
-				Map<String,String> userAttrs = new HashMap<String,String>();
-				userAttrs.put("email", tempKey.getEmailAddress());
-				
-				if(registrationModule.getUsernamePresetBean() != null) {
-					UserNameCreationInterceptor interceptor = registrationModule.getUsernamePresetBean();
-					String proposedUsername = interceptor.getUsernameFor(userAttrs);
-					if(proposedUsername == null) {
-						if(interceptor.allowChangeOfUsername()) {
-							createRegForm2(ureq, null, false, false);
-						} else {
-							myContent = setErrorPage("reg.error.no_username", wControl);
-						}
-					} else {
-						Identity identity = securityManager.findIdentityByName(proposedUsername);
-						if(identity != null) {
-							if(interceptor.allowChangeOfUsername()) {
-								createRegForm2(ureq, proposedUsername, true, false);
-							} else {
-								myContent = setErrorPage("reg.error.user_in_use", wControl);
-							}
-						} else if (interceptor.allowChangeOfUsername()) {
-							createRegForm2(ureq, proposedUsername, false, false);
-						} else {
-							createRegForm2(ureq, proposedUsername, false, true);
-						}
-					}
-				} else {
-					createRegForm2(ureq, null, false, false);
-				}
+				displayRegistrationForm2(ureq);
 			}
 			// load view in layout
 			LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), null, myContent, null);
@@ -254,21 +210,9 @@ public class RegistrationController extends BasicController implements Activatea
 		regarea.setContent(langChooserController.getInitialComponent());
 	}
 
-	/**
-	 * just needed for creating EmailForm
-	 */
-	private void createEmailForm(UserRequest ureq) {
-		removeAsListenerAndDispose(emailSendForm);
-		emailSendForm = new EmailSendingForm(ureq, getWindowControl());
-		listenTo(emailSendForm);
-		
-		myContent.contextPut("text", translate("step1.reg.text"));
-		regarea.setContent(emailSendForm.getInitialComponent());
-	}
-
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		if(entries == null || entries.isEmpty()) return;
+		//
 	}
 
 	@Override
@@ -279,86 +223,29 @@ public class RegistrationController extends BasicController implements Activatea
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
-		if (source == emailSendForm) {
+		if (source == langChooserController) {
+			if (event == Event.DONE_EVENT) {
+				displayDisclaimer(ureq);
+				ureq.getUserSession().removeEntry(LocaleNegotiator.NEGOTIATED_LOCALE);
+			} else if (event == Event.CANCELLED_EVENT) {
+				cancel(ureq);
+			} else if (event instanceof LanguageChangedEvent) {
+				LanguageChangedEvent lcev = (LanguageChangedEvent)event;
+				setLocale(lcev.getNewLocale(), true);
+				myContent.contextPut("text", translate("select.language.description"));
+			}
+		} else if (source == disclaimerController) {
+			if (event == Event.DONE_EVENT) {
+				// finalize the registration by creating the user
+				displayEmailForm(ureq);
+			} else if (event == Event.CANCELLED_EVENT) {
+				cancel(ureq);
+			}
+		} else if (source == emailSendForm) {
 			if (event == Event.DONE_EVENT) { // form
-				// validation
-				// was ok
-				wizInfoController.setCurStep(2);
-				// Email requested for tempkey
-				//save the fields somewhere
-				String email = emailSendForm.getEmailAddress();
-				myContent.contextPut("email", email);
-				myContent.contextPut("text", translate("step2.reg.text", email));
-				//ef.setVisible(false);
-				regarea.setVisible(false);
-				// get remote address
-				String ip = ureq.getHttpReq().getRemoteAddr();
-				String serverpath = Settings.getServerContextPathURI();
-				String today = DateFormat.getDateInstance(DateFormat.LONG, ureq.getLocale()).format(new Date());
-				String[] whereFromAttrs = new String[]{
-					serverpath, today, ip
-				};
-
-				boolean isMailSent = false;
-				if (registrationManager.isRegistrationPending(email) || UserManager.getInstance().isEmailAllowed(email)) {
-					TemporaryKey tk = null;
-					if (userModule.isEmailUnique()) {
-						tk = registrationManager.loadTemporaryKeyByEmail(email);
-					}
-					if (tk == null) {
-						tk = registrationManager.loadOrCreateTemporaryKeyByEmail(email, ip,
-								RegistrationManager.REGISTRATION, registrationModule.getValidUntilHoursGui());
-					}
-					myContent.contextPut("regKey", tk.getRegistrationKey());
-					
-					String link = serverpath + "/dmz/registration/index.html?key=" + tk.getRegistrationKey() + "&language=" + i18nModule.getLocaleKey(ureq.getLocale());
-					String[] bodyAttrs = new String[]{
-						serverpath,										//0
-						tk.getRegistrationKey(),						//1
-						i18nModule.getLocaleKey(ureq.getLocale()),		//2
-						"<a href=\"" + link + "\">" + link + "</a>"		//3
-					};
-					
-					String body = translate("reg.body", bodyAttrs);
-					boolean htmlBody = StringHelper.isHtml(body);
-					if(!htmlBody) {
-						body += SEPARATOR + translate("reg.wherefrom", whereFromAttrs);
-					}
-					
-					try {
-						MailBundle bundle = new MailBundle();
-						bundle.setTo(email);
-						bundle.setContent(translate("reg.subject"), body);
-						MailerResult result = mailManager.sendExternMessage(bundle, null, htmlBody);
-						if (result.isSuccessful()) {
-							isMailSent = true;
-						}
-					} catch (Exception e) {
-						// nothing to do, emailSent flag is false, errors will be reported to user
-					}
-				} else {
-					// if users with this email address exists, they are informed.
-					List<Identity> identities = UserManager.getInstance().findIdentitiesByEmail(Collections.singletonList(email));
-					for (Identity identity: identities) {
-						String body = translate("login.body", identity.getName()) + SEPARATOR + translate("reg.wherefrom", whereFromAttrs);
-						try {
-							MailBundle bundle = new MailBundle();
-							bundle.setTo(email);
-							bundle.setContent(translate("login.subject"), body);
-							MailerResult result = mailManager.sendExternMessage(bundle, null, true);
-							if (result.isSuccessful()) {
-								isMailSent = true;
-							}
-						} catch (Exception e) {
-							// nothing to do, emailSent flag is false, errors will be reported to user
-						}
-					}
-				}
+				boolean isMailSent = processEmail(ureq);
 				if (isMailSent) {
 					showInfo("email.sent");
 				} else {
@@ -367,54 +254,182 @@ public class RegistrationController extends BasicController implements Activatea
 			} else if (event == Event.CANCELLED_EVENT) {
 				fireEvent(ureq, Event.CANCELLED_EVENT);
 			}
-		} else if (source == langChooserController) {
-			if (event == Event.DONE_EVENT) {
-				wizInfoController.setCurStep(2);
-				createEmailForm(ureq);
-				ureq.getUserSession().removeEntry(LocaleNegotiator.NEGOTIATED_LOCALE);
-			} else if (event == Event.CANCELLED_EVENT) {
-				ureq.getDispatchResult().setResultingMediaResource(new RedirectMediaResource(Settings.getServerContextPathURI()));
-			} else if (event instanceof LanguageChangedEvent) {
-				LanguageChangedEvent lcev = (LanguageChangedEvent)event;
-				setLocale(lcev.getNewLocale(), true);
-				myContent.contextPut("text", translate("select.language.description"));
-			}
-		} else if (source == registrationForm) {
+		}  else if (source == registrationForm) {
 			// Userdata entered
 			if (event == Event.DONE_EVENT) {
-				String lang = registrationForm.getLangKey();
-				// change language if different then current language
-				if (! lang.equals(i18nModule.getLocaleKey(ureq.getLocale()))) {
-					Locale loc = i18nManager.getLocaleOrDefault(lang);
-					ureq.getUserSession().setLocale(loc);
-					getTranslator().setLocale(loc);					
-				}
-
-				
-				wizInfoController.setCurStep(4);
-				myContent.contextPut("pwdhelp", "");
-				myContent.contextPut("loginhelp", "");
-				myContent.contextPut("text", translate("step4.reg.text"));
-				
-				removeAsListenerAndDispose(disclaimerController);
-				disclaimerController = new DisclaimerController(ureq, getWindowControl());
-				listenTo(disclaimerController);
-				
-				regarea.setContent(disclaimerController.getInitialComponent());
-			} else if (event == Event.CANCELLED_EVENT) {
-				ureq.getDispatchResult().setResultingMediaResource(new RedirectMediaResource(Settings.getServerContextPathURI()));
-			}
-		} else if (source == disclaimerController) {
-			if (event == Event.DONE_EVENT) {
-				// finalize the registration by creating the user
 				Identity persitedIdentity = createNewUserAfterRegistration();
-				// display step5
-				displayFinalStep(persitedIdentity);
+				if(persitedIdentity == null) {
+					cancel(ureq);
+				} else {
+					displayFinalStep(persitedIdentity);
+				}
 			} else if (event == Event.CANCELLED_EVENT) {
-				ureq.getDispatchResult().setResultingMediaResource(new RedirectMediaResource(Settings.getServerContextPathURI()));
+				cancel(ureq);
+			}
+		} 
+	}
+	
+	private void cancel(UserRequest ureq) {
+		ureq.getDispatchResult().setResultingMediaResource(new RedirectMediaResource(Settings.getServerContextPathURI()));
+	}
+	
+	/**
+	 * Display the language chooser or jump to the email form if
+	 * not needed.
+	 * 
+	 * @param ureq The user request
+	 */
+	private void displayLanguageChooserStep(UserRequest ureq) {
+		if(i18nModule.getEnabledLanguageKeys().size() == 1) {
+			displayDisclaimer(ureq);
+		} else {
+			createLanguageForm(ureq, getWindowControl());
+		}
+	}
+	
+	/**
+	 * Display the disclaimer if enabled, else jump to the
+	 * email form.
+	 * 
+	 * @param ureq The user request
+	 */
+	private void displayDisclaimer(UserRequest ureq) {
+		if(registrationModule.isDisclaimerEnabled()) {
+			wizInfoController.setCurStep(2);
+			myContent.contextPut("pwdhelp", "");
+			myContent.contextPut("loginhelp", "");
+			myContent.contextPut("text", translate("step4.reg.text"));
+			
+			removeAsListenerAndDispose(disclaimerController);
+			disclaimerController = new DisclaimerController(ureq, getWindowControl());
+			listenTo(disclaimerController);
+			
+			regarea.setContent(disclaimerController.getInitialComponent());
+		} else {
+			displayEmailForm(ureq);
+		}
+	}
+	
+	private void displayEmailForm(UserRequest ureq) {
+		wizInfoController.setCurStep(3);
+
+		removeAsListenerAndDispose(emailSendForm);
+		emailSendForm = new EmailSendingForm(ureq, getWindowControl());
+		listenTo(emailSendForm);
+		
+		myContent.contextPut("text", translate("step1.reg.text"));
+		regarea.setContent(emailSendForm.getInitialComponent());
+	}
+	
+	private boolean processEmail(UserRequest ureq) {
+		// validation
+		// was ok
+		wizInfoController.setCurStep(3);
+		// Email requested for tempkey
+		//save the fields somewhere
+		String email = emailSendForm.getEmailAddress();
+		myContent.contextPut("email", email);
+		myContent.contextPut("text", translate("step2.reg.text", email));
+		regarea.setVisible(false);
+		// get remote address
+		String ip = ureq.getHttpReq().getRemoteAddr();
+		String serverpath = Settings.getServerContextPathURI();
+		String today = DateFormat.getDateInstance(DateFormat.LONG, ureq.getLocale()).format(new Date());
+		String[] whereFromAttrs = new String[]{
+			serverpath, today, ip
+		};
+
+		boolean isMailSent = false;
+		if (registrationManager.isRegistrationPending(email) || userManager.isEmailAllowed(email)) {
+			TemporaryKey tk = null;
+			if (userModule.isEmailUnique()) {
+				tk = registrationManager.loadTemporaryKeyByEmail(email);
+			}
+			if (tk == null) {
+				tk = registrationManager.loadOrCreateTemporaryKeyByEmail(email, ip,
+						RegistrationManager.REGISTRATION, registrationModule.getValidUntilHoursGui());
+			}
+			myContent.contextPut("regKey", tk.getRegistrationKey());
+			
+			String link = serverpath + "/dmz/registration/index.html?key=" + tk.getRegistrationKey() + "&language=" + i18nModule.getLocaleKey(ureq.getLocale());
+			String[] bodyAttrs = new String[]{
+				serverpath,										//0
+				tk.getRegistrationKey(),						//1
+				i18nModule.getLocaleKey(ureq.getLocale()),		//2
+				"<a href=\"" + link + "\">" + link + "</a>"		//3
+			};
+			
+			String body = translate("reg.body", bodyAttrs);
+			boolean htmlBody = StringHelper.isHtml(body);
+			if(!htmlBody) {
+				body += SEPARATOR + translate("reg.wherefrom", whereFromAttrs);
+			}
+			sendMessage(email, translate("reg.subject"), body);
+		} else {
+			// if users with this email address exists, they are informed.
+			List<Identity> identities = userManager.findIdentitiesByEmail(Collections.singletonList(email));
+			for (Identity identity: identities) {
+				String subject = translate("login.subject");
+				String body = translate("login.body", identity.getName()) + SEPARATOR + translate("reg.wherefrom", whereFromAttrs);
+				sendMessage(email, subject, body);
 			}
 		}
+		return isMailSent;
+	}
+	
+	private boolean sendMessage(String email, String subject, String body) {
+		boolean isMailSent = false;
+		
+		try {
+			MailBundle bundle = new MailBundle();
+			bundle.setTo(email);
+			bundle.setContent(subject, body);
+			boolean htmlBody = StringHelper.isHtml(body);
+			MailerResult result = mailManager.sendExternMessage(bundle, null, htmlBody);
+			if (result.isSuccessful()) {
+				isMailSent = true;
+			}
+		} catch (Exception e) {
+			// nothing to do, emailSent flag is false, errors will be reported to user
+		}
+		
+		return isMailSent;
+	}
+	
+	private void displayRegistrationForm2(UserRequest ureq) {
+		wizInfoController.setCurStep(4);
+		myContent.contextPut("pwdhelp", translate("pwdhelp"));
+		myContent.contextPut("loginhelp", translate("loginhelp"));
+		myContent.contextPut("text", translate("step3.reg.text"));
+		myContent.contextPut("email", tempKey.getEmailAddress());
 
+		Map<String,String> userAttrs = new HashMap<>();
+		userAttrs.put("email", tempKey.getEmailAddress());
+		
+		if(registrationModule.getUsernamePresetBean() != null) {
+			UserNameCreationInterceptor interceptor = registrationModule.getUsernamePresetBean();
+			String proposedUsername = interceptor.getUsernameFor(userAttrs);
+			if(proposedUsername == null) {
+				if(interceptor.allowChangeOfUsername()) {
+					createRegForm2(ureq, null, false, false);
+				} else {
+					myContent = setErrorPage("reg.error.no_username", getWindowControl());
+				}
+			} else {
+				Identity identity = securityManager.findIdentityByName(proposedUsername);
+				if(identity != null) {
+					if(interceptor.allowChangeOfUsername()) {
+						createRegForm2(ureq, proposedUsername, true, false);
+					} else {
+						myContent = setErrorPage("reg.error.user_in_use", getWindowControl());
+					}
+				} else {
+					createRegForm2(ureq, proposedUsername, false, !interceptor.allowChangeOfUsername());
+				}
+			}
+		} else {
+			createRegForm2(ureq, null, false, false);
+		}
 	}
 
 	/**
@@ -439,7 +454,7 @@ public class RegistrationController extends BasicController implements Activatea
 		// show last screen
 		VelocityContainer finishVC = createVelocityContainer("finish");
 		
-		List<UserPropertyHandler> userPropertyHandlers = UserManager.getInstance().getUserPropertyHandlersFor(RegistrationForm2.USERPROPERTIES_FORM_IDENTIFIER, false);
+		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(RegistrationForm2.USERPROPERTIES_FORM_IDENTIFIER, false);
 		finishVC.contextPut("userPropertyHandlers", userPropertyHandlers);
 		finishVC.contextPut("user", persitedIdentity.getUser());
 		finishVC.contextPut("locale", getLocale());
@@ -461,8 +476,7 @@ public class RegistrationController extends BasicController implements Activatea
 	 */
 	private Identity createNewUserAfterRegistration() {
 		// create user with mandatory fields from registration-form
-		UserManager um = UserManager.getInstance();
-		User volatileUser = um.createUser(registrationForm.getFirstName(), registrationForm.getLastName(), tempKey.getEmailAddress());
+		User volatileUser = userManager.createUser(registrationForm.getFirstName(), registrationForm.getLastName(), tempKey.getEmailAddress());
 		// set user configured language
 		Preferences preferences = volatileUser.getPreferences();
 
@@ -477,7 +491,7 @@ public class RegistrationController extends BasicController implements Activatea
 			return null;
 		} else {
 			// update other user properties from form
-			List<UserPropertyHandler> userPropertyHandlers = um.getUserPropertyHandlersFor(RegistrationForm2.USERPROPERTIES_FORM_IDENTIFIER, false);
+			List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(RegistrationForm2.USERPROPERTIES_FORM_IDENTIFIER, false);
 			User persistedUser = persistedIdentity.getUser();
 			
 			//add eventually static value
@@ -501,7 +515,7 @@ public class RegistrationController extends BasicController implements Activatea
 				userPropertyHandler.updateUserFromFormItem(persistedUser, fi);
 			}
 			// persist changes in db
-			um.updateUserFromIdentity(persistedIdentity);
+			userManager.updateUserFromIdentity(persistedIdentity);
 			// send notification mail to sys admin
 			String notiEmail = CoreSpringFactory.getImpl(RegistrationModule.class).getRegistrationNotificationEmail();
 			if (notiEmail != null) {

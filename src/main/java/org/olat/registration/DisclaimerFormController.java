@@ -51,8 +51,10 @@ public class DisclaimerFormController extends FormBasicController {
 	private static final String ACKNOWLEDGE_CHECKBOX_NAME = "acknowledge_checkbox";
 	private static final String ADDITIONAL_CHECKBOX_NAME = "additional_checkbox";
 	private static final String ADDITIONAL_CHECKBOX_2_NAME = "additional_checkbox_2";
+	
 	protected MultipleSelectionElement acceptCheckbox;
-	protected MultipleSelectionElement additionalCheckbox, additionalCheckbox2;
+	protected MultipleSelectionElement additionalCheckbox;
+	protected MultipleSelectionElement additionalCheckbox2;
 	private boolean readOnly;
 
 	@Autowired
@@ -118,9 +120,10 @@ public class DisclaimerFormController extends FormBasicController {
 			final FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
 			formLayout.add(buttonLayout);
 			buttonLayout.setElementCssClass("o_sel_disclaimer_buttons");
-			uifactory.addFormSubmitButton(DCL_ACCEPT, NLS_DISCLAIMER_OK, buttonLayout);
+
 			FormCancel cancelButton = uifactory.addFormCancelButton(NLS_DISCLAIMER_NOK, buttonLayout, ureq, getWindowControl());	
 			cancelButton.setI18nKey(NLS_DISCLAIMER_NOK);
+			uifactory.addFormSubmitButton(DCL_ACCEPT, NLS_DISCLAIMER_OK, buttonLayout);
 		}
 	}
 }

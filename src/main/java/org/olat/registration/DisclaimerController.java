@@ -99,7 +99,7 @@ public class DisclaimerController extends BasicController {
 		listenTo(disclaimerFormController);
 		
 		main = createVelocityContainer("disclaimer");
-		main.put("dclform", this.disclaimerFormController.getInitialComponent());
+		main.put("dclform", disclaimerFormController.getInitialComponent());
 		
 		// add optinal download link, see class comments in DisclaimerFormController
 		// Add the additional link to the form (depending on the configuration)
@@ -108,38 +108,35 @@ public class DisclaimerController extends BasicController {
 			disclaimerDir.mkdirs();
 			VFSContainer disclaimerContainer = new LocalFolderImpl(disclaimerDir);
 			String i18nIfiedFilename = translate("disclaimer.filedownloadurl");
-			this.downloadFile = (VFSLeaf)disclaimerContainer.resolve(i18nIfiedFilename);
-			if (this.downloadFile != null) {
-				this.downloadLink = LinkFactory.createLink("disclaimer.additionallinktext", main, this);
-				this.downloadLink.setTarget("_blank");
+			downloadFile = (VFSLeaf)disclaimerContainer.resolve(i18nIfiedFilename);
+			if (downloadFile != null) {
+				downloadLink = LinkFactory.createLink("disclaimer.additionallinktext", main, this);
+				downloadLink.setTarget("_blank");
 				
 				if (i18nIfiedFilename.toLowerCase().endsWith(".pdf")) {
-					this.downloadLink.setIconLeftCSS("o_icon o_icon-fw o_filetype_pdf");
+					downloadLink.setIconLeftCSS("o_icon o_icon-fw o_filetype_pdf");
 				} else if (i18nIfiedFilename.toLowerCase().endsWith(".html") || i18nIfiedFilename.toLowerCase().endsWith(".htm")) {
-					this.downloadLink.setIconLeftCSS("o_icon o_icon-fw o_filetype_html");
+					downloadLink.setIconLeftCSS("o_icon o_icon-fw o_filetype_html");
 				} else if (i18nIfiedFilename.toLowerCase().endsWith(".doc")) {
-					this.downloadLink.setIconLeftCSS("o_icon o_icon-fw o_filetype_doc");
+					downloadLink.setIconLeftCSS("o_icon o_icon-fw o_filetype_doc");
 				}
 			}
 		}
 		putInitialPanel(main);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		if (source == this.downloadLink) {
-			ureq.getDispatchResult().setResultingMediaResource(new VFSMediaResource(this.downloadFile));
+		if (source == downloadLink) {
+			ureq.getDispatchResult().setResultingMediaResource(new VFSMediaResource(downloadFile));
 			// Prevent "do not press reload" message.
-			this.downloadLink.setDirty(false);
+			downloadLink.setDirty(false);
 		}
 	}
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == this.disclaimerFormController) {
+		if (source == disclaimerFormController) {
 			if (event == Event.CANCELLED_EVENT) {
 				fireEvent(ureq, Event.CANCELLED_EVENT);
 			} else if (event == Event.DONE_EVENT) {
@@ -175,10 +172,6 @@ public class DisclaimerController extends BasicController {
 		main.put("dclform", this.disclaimerFormController.getInitialComponent());
 	}
 	
-	/**
-	 * 
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
 	@Override
 	protected void doDispose() {
 		//

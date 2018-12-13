@@ -25,7 +25,6 @@
 
 package org.olat.registration;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -35,29 +34,25 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.mail.MailHelper;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- *  description of first registration form for email-address
+ *  Simple form to get an email address.
  * 
  * @author Sabina Jeger
  */
 public class EmailSendingForm extends FormBasicController {
 	
 	private TextElement mail;
-	private final RegistrationManager registrationManager;
+	
+	@Autowired
+	private RegistrationManager registrationManager;
 	
 	public EmailSendingForm(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		
-		registrationManager = CoreSpringFactory.getImpl(RegistrationManager.class);
-		
 		initForm(ureq);
 	}
 
-	/**
-	 * Initialize the form
-	 */
-	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		mail = uifactory.addTextElement("mail", "email.address", 255, "", formLayout);
@@ -66,8 +61,8 @@ public class EmailSendingForm extends FormBasicController {
 		// Button layout
 		final FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
 		formLayout.add(buttonLayout);
-		uifactory.addFormSubmitButton("submit.speichernUndweiter", buttonLayout);
 		uifactory.addFormCancelButton("submit.cancel", buttonLayout, ureq, getWindowControl());
+		uifactory.addFormSubmitButton("submit.speichernUndweiter", buttonLayout);
 	}
 
 	protected String getEmailAddress() {
@@ -76,7 +71,7 @@ public class EmailSendingForm extends FormBasicController {
 	
 	@Override
 	public boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		if (mail.isEmpty("email.address.maynotbeempty")) {
 			allOk &= false;
@@ -93,9 +88,10 @@ public class EmailSendingForm extends FormBasicController {
 			allOk &= valid;
 		}
 
-		return allOk && super.validateFormLogic(ureq);
+		return allOk;
 	}
 
+	@Override
 	protected void formOK(UserRequest ureq) {
 		fireEvent(ureq, Event.DONE_EVENT);
 	}

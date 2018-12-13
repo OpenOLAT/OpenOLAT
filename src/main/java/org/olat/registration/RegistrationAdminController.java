@@ -23,7 +23,6 @@ package org.olat.registration;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.ValidationError;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -42,6 +41,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.user.UserPropertiesConfig;
 import org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Admin panel to configure the registration settings: should link appear on the login page...
@@ -64,24 +64,23 @@ public class RegistrationAdminController extends FormBasicController {
 	private FormLayoutContainer staticPropContainer;
 	
 	private static final String[] enableRegistrationKeys = new String[]{ "on" };
-	private static final String[] enableRegistrationValues = new String[1];
-	private String[] propertyKeys, propertyValues;
+	private String[] propertyKeys;
+	private String[] propertyValues;
 	
-	private final RegistrationModule registrationModule;
-	private final RegistrationManager registrationManager;
-	private final UserPropertiesConfig userPropertiesConfig;
+	@Autowired
+	private RegistrationModule registrationModule;
+	@Autowired
+	private RegistrationManager registrationManager;
+	@Autowired
+	private UserPropertiesConfig userPropertiesConfig;
 	private final Translator userPropTranslator;
 	
 	public RegistrationAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "admin");
 		
-		registrationModule = CoreSpringFactory.getImpl(RegistrationModule.class);
-		registrationManager = CoreSpringFactory.getImpl(RegistrationManager.class);
-		userPropertiesConfig = CoreSpringFactory.getImpl(UserPropertiesConfig.class);
 		//decorate the translator
 		userPropTranslator = userPropertiesConfig.getTranslator(getTranslator());
 
-		enableRegistrationValues[0] = translate("admin.enableRegistration.on");
 		
 		List<UserPropertyHandler> allPropertyHandlers = userPropertiesConfig.getAllUserPropertyHandlers();
 		List<UserPropertyHandler> propertyHandlers = new ArrayList<>(allPropertyHandlers.size());
@@ -106,6 +105,7 @@ public class RegistrationAdminController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		String[] enableRegistrationValues = new String[] { translate("admin.enableRegistration.on") };
 
 		//settings
 		FormLayoutContainer settingsContainer = FormLayoutContainer.createDefaultFormLayout("settings", getTranslator());

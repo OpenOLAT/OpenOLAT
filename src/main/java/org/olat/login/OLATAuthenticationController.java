@@ -149,6 +149,7 @@ public class OLATAuthenticationController extends AuthenticationController imple
 		
 		subController = new RegistrationController(ureq, getWindowControl());
 		listenTo(subController);
+		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), subController.getInitialComponent());
 		listenTo(cmc);
 		cmc.activate();
