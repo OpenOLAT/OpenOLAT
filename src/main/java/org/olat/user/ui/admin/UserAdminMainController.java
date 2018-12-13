@@ -335,10 +335,10 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 				return createUserSearchController(ureq, bwControl, SearchIdentityParams.withBusinesGroups());
 			case "userswithoutemail":
 				List<Identity> usersWithoutEmail = userManager.findVisibleIdentitiesWithoutEmail();
-				return new UsermanagerUserSearchController(ureq, bwControl, content, usersWithoutEmail, true, true);
+				return new UsermanagerUserSearchController(ureq, bwControl, content, usersWithoutEmail, true, false);
 			case "usersemailduplicates":
 				List<Identity> usersEmailDuplicates = userManager.findVisibleIdentitiesWithEmailDuplicates();
-				return new UsermanagerUserSearchController(ureq, bwControl, content, usersEmailDuplicates, true, true);
+				return new UsermanagerUserSearchController(ureq, bwControl, content, usersEmailDuplicates, true, false);
 			default: return null;		
 		}
 	}
