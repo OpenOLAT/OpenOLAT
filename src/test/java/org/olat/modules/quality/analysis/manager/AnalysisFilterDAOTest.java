@@ -38,6 +38,7 @@ import java.util.UUID;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
@@ -50,6 +51,7 @@ import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.quality.QualityContextBuilder;
+import org.olat.modules.quality.QualityContextRole;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityDataCollectionStatus;
 import org.olat.modules.quality.QualityService;
@@ -565,6 +567,31 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		assertThat(keys)
 				.doesNotContainNull()
 				.containsExactlyInAnyOrder(entry1.getKey(), entry2.getKey());
+	}
+	
+	@Test
+	public void shouldLoadDistinctContextRoles() {
+		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry course = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity executor1 = JunitTestHelper.createAndPersistIdentityAsUser("1");
+		Identity executor2 = JunitTestHelper.createAndPersistIdentityAsUser("2");
+		Identity executor3 = JunitTestHelper.createAndPersistIdentityAsUser("3");
+		Organisation dcOrganisation = qualityTestHelper.createOrganisation();
+		QualityDataCollection dc1 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participations1 = qualityService.addParticipations(dc1, asList(executor1, executor2, executor3));
+		qualityService.createContextBuilder(dc1, participations1.get(0), course, GroupRoles.coach).build();
+		qualityService.createContextBuilder(dc1, participations1.get(1), course, GroupRoles.coach).build();
+		qualityService.createContextBuilder(dc1, participations1.get(2)).build();
+		finish(asList(dc1));
+		dbInstance.commitAndCloseSession();
+		
+		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
+		List<QualityContextRole> roles = sut.loadContextRoles(searchParams);
+		
+		assertThat(roles)
+				.doesNotContainNull()
+				.containsExactlyInAnyOrder(QualityContextRole.coach, QualityContextRole.none)
+				.doesNotContain(QualityContextRole.participant, QualityContextRole.owner);
 	}
 	
 	@Test
@@ -1271,6 +1298,38 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		
 		long expected = asList(dc1, dc2, dcOther).size();
 		assertThat(count).isEqualTo(expected);
+	}
+	
+	@Test
+	public void shouldFilterByContextRole() {
+		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry course = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity executor = JunitTestHelper.createAndPersistIdentityAsUser("1");
+		Organisation dcOrganisation = qualityTestHelper.createOrganisation();
+		// Participation as coach
+		QualityDataCollection dc1 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participations1 = qualityService.addParticipations(dc1, Collections.singletonList(executor));
+		qualityService.createContextBuilder(dc1, participations1.get(0), course, GroupRoles.coach).build();
+		// Participation as coach again
+		QualityDataCollection dc2 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participations2 = qualityService.addParticipations(dc2, Collections.singletonList(executor));
+		qualityService.createContextBuilder(dc2, participations2.get(0), course, GroupRoles.coach).build();
+		// Participation as owner
+		QualityDataCollection dcOther = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participationsOther = qualityService.addParticipations(dcOther, Collections.singletonList(executor));
+		qualityService.createContextBuilder(dcOther, participationsOther.get(0), course, GroupRoles.owner).build();
+		// Data collection without participation
+		QualityDataCollection dcNull = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		finish(asList(dc1, dc2, dcOther, dcNull));
+		dbInstance.commitAndCloseSession();
+		
+		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
+		searchParams.setContextRoles(asList(QualityContextRole.coach));
+		List<QualityDataCollection> collections = sut.loadDataCollection(searchParams);
+		
+		assertThat(collections)
+				.containsExactlyInAnyOrder(dc1, dc2)
+				.doesNotContain(dcOther);
 	}
 	
 	@Test

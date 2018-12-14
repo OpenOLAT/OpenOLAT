@@ -36,6 +36,7 @@ import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumRef;
+import org.olat.modules.quality.QualityContextRole;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityDataCollectionLight;
 import org.olat.modules.quality.QualityDataCollectionStatus;
@@ -271,7 +272,20 @@ public class AnalysisFilterDAO {
 		return query.getResultList();
 	}
 	
-	public List<QualityDataCollection> loadDataCollection(AnalysisSearchParameter searchParams) {
+	List<QualityContextRole> loadContextRoles(AnalysisSearchParameter searchParams) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select distinct context.role");
+		appendFrom(sb, searchParams);
+		appendWhere(sb, searchParams);
+		sb.and().append("context.role is not null");
+		
+		TypedQuery<QualityContextRole> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), QualityContextRole.class);
+		appendParameters(query, searchParams);
+		return query.getResultList();
+	}
+	
+	List<QualityDataCollection> loadDataCollection(AnalysisSearchParameter searchParams) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select distinct collection");
 		appendFrom(sb, searchParams);
@@ -521,6 +535,9 @@ public class AnalysisFilterDAO {
 		if (searchParams.getSeriesIndexes() != null && !searchParams.getSeriesIndexes().isEmpty()) {
 			sb.and().append("survey.seriesIndex in :seriesIndexes");
 		}
+		if (searchParams.getContextRoles() != null && !searchParams.getContextRoles().isEmpty()) {
+			sb.and().append("context.role in :contextRoles");
+		}
 		if (searchParams.isWithUserInfosOnly()) {
 			sb.and();
 			sb.append("(");
@@ -606,6 +623,9 @@ public class AnalysisFilterDAO {
 		}
 		if (searchParams.getSeriesIndexes() != null && !searchParams.getSeriesIndexes().isEmpty()) {
 			query.setParameter("seriesIndexes", searchParams.getSeriesIndexes());
+		}
+		if (searchParams.getContextRoles() != null && !searchParams.getContextRoles().isEmpty()) {
+			query.setParameter("contextRoles", searchParams.getContextRoles());
 		}
 	}
 

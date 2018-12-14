@@ -28,6 +28,7 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.OrganisationRef;
 import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumRef;
+import org.olat.modules.quality.QualityContextRole;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.model.RepositoryEntryRefImpl;
@@ -55,6 +56,7 @@ public class AnalysisSearchParameter {
 	private List<? extends OrganisationRef> contextCurriculumOrganisationRefs;
 	private List<? extends TaxonomyLevelRef> contextTaxonomyLevelRefs;
 	private Collection<Integer> seriesIndexes;
+	private Collection<QualityContextRole> contextRoles;
 	private boolean withUserInfosOnly;
 
 	public RepositoryEntryRef getFormEntryRef() {
@@ -178,6 +180,14 @@ public class AnalysisSearchParameter {
 		return seriesIndexes;
 	}
 
+	public Collection<QualityContextRole> getContextRoles() {
+		return contextRoles;
+	}
+
+	public void setContextRoles(Collection<QualityContextRole> contextRoles) {
+		this.contextRoles = contextRoles;
+	}
+
 	public void setSeriesIndexes(Collection<Integer> seriesIndexes) {
 		this.seriesIndexes = seriesIndexes;
 	}
@@ -224,6 +234,9 @@ public class AnalysisSearchParameter {
 				: null;
 		clone.seriesIndexes = this.seriesIndexes != null
 				? new ArrayList<>(this.seriesIndexes)
+				: null;
+		clone.contextRoles = this.contextRoles != null
+				? new ArrayList<>(this.contextRoles)
 				: null;
 		clone.withUserInfosOnly = this.withUserInfosOnly;
 		return clone;

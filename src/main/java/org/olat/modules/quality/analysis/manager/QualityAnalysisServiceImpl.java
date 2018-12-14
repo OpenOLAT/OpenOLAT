@@ -40,6 +40,7 @@ import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.RubricRating;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.model.xml.Rubric;
+import org.olat.modules.quality.QualityContextRole;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.analysis.AnalysisPresentation;
 import org.olat.modules.quality.analysis.AnalysisPresentationRef;
@@ -240,6 +241,11 @@ public class QualityAnalysisServiceImpl implements QualityAnalysisService {
 			levels.removeIf(e -> isUnused(e.getMaterializedPathKeys(), pathes));
 		}	
 		return levels;
+	}
+	
+	@Override
+	public List<QualityContextRole> loadContextRoles(AnalysisSearchParameter searchParams) {
+		return filterDao.loadContextRoles(searchParams);
 	}
 
 	@Override

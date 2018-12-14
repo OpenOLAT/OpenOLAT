@@ -57,6 +57,7 @@ import org.olat.modules.curriculum.ui.CurriculumTreeModel;
 import org.olat.modules.forms.model.xml.AbstractElement;
 import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.model.xml.SessionInformations;
+import org.olat.modules.quality.QualityContextRole;
 import org.olat.modules.quality.analysis.AnalysisSearchParameter;
 import org.olat.modules.quality.analysis.AvailableAttributes;
 import org.olat.modules.quality.analysis.QualityAnalysisService;
@@ -95,6 +96,7 @@ public class FilterController extends FormBasicController {
 	private MultipleSelectionElement contextTaxonomyLevelEl;
 	private MultipleSelectionElement contextLocationEl;
 	private MultipleSelectionElement seriesIndexEl;
+	private MultipleSelectionElement contextRoleEl;
 	private MultipleSelectionElement withUserInformationsEl;
 
 	private final AnalysisSearchParameter searchParams;
@@ -176,6 +178,9 @@ public class FilterController extends FormBasicController {
 
 		seriesIndexEl = uifactory.addCheckboxesDropdown("filter.series.index", formLayout);
 		seriesIndexEl.addActionListener(FormEvent.ONCLICK);
+		
+		contextRoleEl = uifactory.addCheckboxesDropdown("filter.context.role", formLayout);
+		contextRoleEl.addActionListener(FormEvent.ONCLICK);
 
 		withUserInformationsEl = uifactory.addCheckboxesVertical("filter.with.user.informations.label", formLayout,
 				WITH_USER_INFOS_KEYS, translateAll(getTranslator(), WITH_USER_INFOS_KEYS), 1);
@@ -198,6 +203,7 @@ public class FilterController extends FormBasicController {
 		setContextTaxonomyLevelValues();
 		setContextLocationValues();
 		setSeriesIndexValues();
+		setContextRoleValues();
 	}
 
 	private void setTopicIdentityValues() {
@@ -465,6 +471,34 @@ public class FilterController extends FormBasicController {
 		}
 	}
 
+	private void setContextRoleValues() {
+		Collection<String> selectedKeys = contextRoleEl.getSelectedKeys();
+
+		AnalysisSearchParameter clonedSearchParams = searchParams.clone();
+		clonedSearchParams.setContextRoles(null);
+		List<QualityContextRole> roles = analysisService.loadContextRoles(clonedSearchParams);
+		KeyValues kv = new KeyValues();
+		for (QualityContextRole role: QualityContextRole.values()) {
+			if (roles.contains(role)) {
+				kv.add(entry(role.name(), translateRole(role)));
+			}
+		}
+		contextRoleEl.setKeysAndValues(kv.keys(), kv.values());
+		for (String key : selectedKeys) {
+			contextRoleEl.select(key, true);
+		}
+	}
+
+	private String translateRole(QualityContextRole role) {
+		switch (role) {
+		case owner: return getTranslator().translate("filter.context.role.owner");
+		case coach: return getTranslator().translate("filter.context.role.coach");
+		case participant: return getTranslator().translate("filter.context.role.participant");
+		case none: return getTranslator().translate("filter.context.role.none");
+		default: return role.toString();
+		}
+	}
+
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == dateRangeFromEl) {
@@ -495,6 +529,8 @@ public class FilterController extends FormBasicController {
 			doFiltered(ureq);
 		} else if (source == seriesIndexEl) {
 			doFiltered(ureq);
+		} else if (source == contextRoleEl) {
+			doFiltered(ureq);
 		} else if (source == withUserInformationsEl) {
 			doFiltered(ureq);
 		}
@@ -522,6 +558,7 @@ public class FilterController extends FormBasicController {
 		getSearchParamContextTaxonomyLevels();
 		getSearchParamContextLocations();
 		getSearchParamSeriesIndex();
+		getSearchParamContextRole();
 		getSearchParamWithUserInfosOnly();
 	}
 
@@ -664,6 +701,17 @@ public class FilterController extends FormBasicController {
 			searchParams.setSeriesIndexes(seriesIndexes);
 		} else {
 			searchParams.setSeriesIndexes(null);
+		}
+	}
+	
+	private void getSearchParamContextRole() {
+		if (contextRoleEl.isVisible() && contextRoleEl.isAtLeastSelected(1)) {
+			Collection<QualityContextRole> roles = contextRoleEl.getSelectedKeys().stream()
+					.map(QualityContextRole::valueOf)
+					.collect(toList());
+			searchParams.setContextRoles(roles);
+		} else {
+			searchParams.setContextRoles(null);
 		}
 	}
 
