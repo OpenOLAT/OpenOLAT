@@ -67,6 +67,8 @@ public class RegistrationModule extends AbstractSpringModule {
 	private Integer validUntilHoursGui;
 	@Value("${registration.valid.hours.rest}")
 	private Integer validUntilHoursRest;
+	@Value("${registration.organisation.key:default}")
+	private String selfRegistrationOrganisationKey;
 	
 	@Value("${registration.enableNotificationEmail}")
 	private boolean registrationNotificationEmailEnabled;
@@ -240,6 +242,15 @@ public class RegistrationModule extends AbstractSpringModule {
 		return additionaLinkText;
 	}
 
+	public String getSelfRegistrationOrganisationKey() {
+		return selfRegistrationOrganisationKey;
+	}
+	
+	public void setselfRegistrationOrganisationKey(String key) {
+		selfRegistrationOrganisationKey = key;
+		setStringProperty("registration.organisation.key", key, true);
+	}
+	
 	@Override
 	public void init() {
 		//registration enabled/disabled
@@ -258,6 +269,11 @@ public class RegistrationModule extends AbstractSpringModule {
 		String loginEnabledObj = getStringPropertyValue("registration.login.enabled", true);
 		if(StringHelper.containsNonWhitespace(loginEnabledObj)) {
 			selfRegistrationLoginEnabled = "true".equals(loginEnabledObj);
+		}
+
+		String organisationObj = getStringPropertyValue("registration.organisation.key", false);
+		if(StringHelper.containsNonWhitespace(organisationObj)) {
+			selfRegistrationOrganisationKey = organisationObj;
 		}
 		
 		int validUntilHoursGuiInt = getIntPropertyValue("registration.valid.hours.gui");

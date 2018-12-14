@@ -44,11 +44,15 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
+import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.OLog;
@@ -101,6 +105,21 @@ public class RegistrationManager implements UserDataDeletable, UserDataExportabl
 	private PropertyManager propertyManager;
 	@Autowired
 	private RegistrationModule registrationModule;
+	@Autowired
+	private OrganisationService organisationService;
+	
+	public Organisation getOrganisationForRegistration() {
+		String key = registrationModule.getSelfRegistrationOrganisationKey();
+		
+		Organisation organisation = null;
+		if(StringHelper.containsNonWhitespace(key) && !"default".equals(key) && StringHelper.isLong(key)) {
+			organisation = organisationService.getOrganisation(new OrganisationRefImpl(Long.valueOf(key)));
+		}
+		if(organisation == null) {
+			organisation = organisationService.getDefaultOrganisation();
+		}
+		return organisation;
+	}
 
 
 	public boolean validateEmailUsername(String email) {
@@ -165,17 +184,24 @@ public class RegistrationManager implements UserDataDeletable, UserDataExportabl
 	}
 
 	/**
-	 * creates a new user and identity with the data of the temporary key (email) and other
-	 * supplied user data (within myUser)
+	 * Creates a new user and identity with the data of the temporary key (email) and other
+	 * supplied user data (within myUser). The user will be added to the default organisation
+	 * and an other one if this is configured as such.
 	 * 
 	 * @param login Login name
 	 * @param pwd Password
-	 * @param myUser Not yet persisted user object
+	 * @param user Not yet persisted user object
 	 * @param tk Temporary key
 	 * @return the newly created subject or null
 	 */
-	public Identity createNewUserAndIdentityFromTemporaryKey(String login, String pwd, User myUser, TemporaryKey tk) {
-		Identity identity = securityManager.createAndPersistIdentityAndUserWithDefaultProviderAndUserGroup(login, null, pwd, myUser, null);
+	public Identity createNewUserAndIdentityFromTemporaryKey(String login, String pwd, User user, TemporaryKey tk) {
+		Organisation organisation = getOrganisationForRegistration();
+		Identity identity = securityManager
+				.createAndPersistIdentityAndUserWithDefaultProviderAndUserGroup(login, null, pwd, user, organisation);
+		if(!OrganisationService.DEFAULT_ORGANISATION_IDENTIFIER.equals(organisation.getIdentifier())) {
+			Organisation defOrganisation = organisationService.getDefaultOrganisation();
+			organisationService.addMember(defOrganisation, identity, OrganisationRoles.user);
+		}
 		if (identity == null) {
 			return null;
 		}
@@ -348,15 +374,10 @@ public class RegistrationManager implements UserDataDeletable, UserDataExportabl
 	 * @return the found temporary key or null if none is found
 	 */
 	public List<TemporaryKey> loadTemporaryKeyByAction(String action) {
-		List<TemporaryKey> tks = dbInstance.getCurrentEntityManager()
+		return dbInstance.getCurrentEntityManager()
 				.createNamedQuery("loadTemporaryKeyByRegAction", TemporaryKey.class)
 				.setParameter("action", action)
 				.getResultList();
-		if (tks.size() > 0) {
-			return tks;
-		} else {
-			return null;
-		}
 	}
 
 	/**
@@ -408,14 +429,12 @@ public class RegistrationManager implements UserDataDeletable, UserDataExportabl
 		
 		RegistrationManager rm = CoreSpringFactory.getImpl(RegistrationManager.class);
 		List<TemporaryKey> tk = rm.loadTemporaryKeyByAction(RegistrationManager.EMAIL_CHANGE);
-		if (tk != null) {
-			for (TemporaryKey temporaryKey : tk) {
-				XStream xml = XStreamHelper.createXStreamInstance();
-				@SuppressWarnings("unchecked")
-				Map<String, String> mails = (Map<String, String>) xml.fromXML(temporaryKey.getEmailAddress());
-				if (emailAddress.equalsIgnoreCase(mails.get("changedEMail"))) {
-					return true;
-				}
+		for (TemporaryKey temporaryKey : tk) {
+			XStream xml = XStreamHelper.createXStreamInstance();
+			@SuppressWarnings("unchecked")
+			Map<String, String> mails = (Map<String, String>) xml.fromXML(temporaryKey.getEmailAddress());
+			if (emailAddress.equalsIgnoreCase(mails.get("changedEMail"))) {
+				return true;
 			}
 		}
 		return isRegistrationPending(emailAddress);
@@ -423,11 +442,9 @@ public class RegistrationManager implements UserDataDeletable, UserDataExportabl
 
 	public boolean isRegistrationPending(String emailAddress) {
 		List<TemporaryKey> temporaryKeys = loadTemporaryKeyByAction(RegistrationManager.REGISTRATION);
-		if (temporaryKeys != null) {
-			for (TemporaryKey temporaryKey : temporaryKeys) {
-				if (emailAddress.equalsIgnoreCase(temporaryKey.getEmailAddress())) {
-					return true;
-				}
+		for (TemporaryKey temporaryKey : temporaryKeys) {
+			if (emailAddress.equalsIgnoreCase(temporaryKey.getEmailAddress())) {
+				return true;
 			}
 		}
 		return false;

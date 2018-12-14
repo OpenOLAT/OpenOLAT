@@ -23,6 +23,8 @@ package org.olat.registration;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.basesecurity.OrganisationService;
+import org.olat.basesecurity.OrganisationStatus;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.ValidationError;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -37,6 +39,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
+import org.olat.core.id.Organisation;
 import org.olat.core.util.StringHelper;
 import org.olat.user.UserPropertiesConfig;
 import org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler;
@@ -49,7 +52,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class RegistrationAdminController extends FormBasicController {
-	
+
+	private SingleSelection organisationsEl;
 	private MultipleSelectionElement registrationElement;
 	private MultipleSelectionElement registrationLinkElement;
 	private MultipleSelectionElement registrationLoginElement;
@@ -71,6 +75,8 @@ public class RegistrationAdminController extends FormBasicController {
 	private RegistrationModule registrationModule;
 	@Autowired
 	private RegistrationManager registrationManager;
+	@Autowired
+	private OrganisationService organisationService;
 	@Autowired
 	private UserPropertiesConfig userPropertiesConfig;
 	private final Translator userPropTranslator;
@@ -124,6 +130,8 @@ public class RegistrationAdminController extends FormBasicController {
 		registrationLinkElement = uifactory.addCheckboxesHorizontal("enable.registration.link", "admin.enableRegistrationLink", settingsContainer, enableRegistrationKeys, enableRegistrationValues);
 		registrationLinkElement.addActionListener(FormEvent.ONCHANGE);
 		registrationLinkElement.select("on", registrationModule.isSelfRegistrationLinkEnabled());
+		
+		initOrganisationsEl(settingsContainer);
 		
 		validUntilGuiEl = uifactory.addTextElement("admin.registration.valid.until.gui", 20, registrationModule.getValidUntilHoursGui().toString(), settingsContainer);
 		validUntilGuiEl.setMandatory(true);
@@ -183,6 +191,27 @@ public class RegistrationAdminController extends FormBasicController {
 		updateUI();	
 	}
 	
+	private void initOrganisationsEl(FormLayoutContainer formLayout) {
+		List<Organisation> organisations = organisationService.getOrganisations(OrganisationStatus.notDelete());
+		Organisation registrationOrg = registrationManager.getOrganisationForRegistration();
+		String registrationOrgKey = registrationOrg.getKey().toString();
+		
+		String[] theKeys = new String[organisations.size()];
+		String[] theValues = new String[organisations.size()];
+		for(int i=organisations.size(); i-->0; ) {
+			Organisation organisation = organisations.get(i);
+			theKeys[i] = organisation.getKey().toString();
+			theValues[i] = organisation.getDisplayName();
+		}
+		organisationsEl = uifactory.addDropdownSingleselect("organisations", "admin.registrationOrganisation", formLayout, theKeys, theValues);
+		for(int i=theKeys.length; i-->0; ) {
+			if(theKeys[i].equals(registrationOrgKey)) {
+				organisationsEl.select(theKeys[i], true);
+				break;
+			}
+		}
+	}
+	
 	@Override
 	protected void doDispose() {
 		//
@@ -212,6 +241,7 @@ public class RegistrationAdminController extends FormBasicController {
 		boolean  enableMain = registrationElement.isSelected(0);
 		registrationLinkElement.setEnabled(enableMain);
 		registrationLoginElement.setEnabled(enableMain);
+		organisationsEl.setEnabled(enableMain);
 		
 		boolean example = enableMain && registrationLinkElement.isSelected(0);
 		exampleElement.setVisible(example);
@@ -229,7 +259,7 @@ public class RegistrationAdminController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		allOk &= validateInteger(validUntilGuiEl, 1);
 		allOk &= validateInteger(validUntilRestEl, 1);
@@ -265,8 +295,14 @@ public class RegistrationAdminController extends FormBasicController {
 				}
 			}
 		}
+		
+		organisationsEl.clearError();
+		if(organisationsEl.isEnabled() && !organisationsEl.isOneSelected()) {
+			organisationsEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
 
-		return allOk && super.validateFormLogic(ureq);
+		return allOk;
 	}
 	
 	private boolean validateInteger(TextElement el, int min) {
@@ -296,6 +332,10 @@ public class RegistrationAdminController extends FormBasicController {
 		registrationModule.setSelfRegistrationEnabled(registrationElement.isSelected(0));
 		registrationModule.setSelfRegistrationLinkEnabled(registrationLinkElement.isSelected(0));
 		registrationModule.setSelfRegistrationLoginEnabled(registrationLoginElement.isSelected(0));
+		
+		if(organisationsEl.isOneSelected()) {
+			registrationModule.setselfRegistrationOrganisationKey(organisationsEl.getSelectedKey());
+		}
 		
 		Integer validUntilHoursGui = Integer.parseInt(validUntilGuiEl.getValue());
 		registrationModule.setValidUntilHoursGui(validUntilHoursGui);
