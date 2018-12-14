@@ -58,10 +58,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author Sabina Jeger
  */
 public class RegistrationForm2 extends FormBasicController {
-	static final String USERPROPERTIES_FORM_IDENTIFIER = RegistrationForm2.class.getCanonicalName();
+	public static final String USERPROPERTIES_FORM_IDENTIFIER = RegistrationForm2.class.getCanonicalName();
+	
 	private String languageKey;
 	private List<UserPropertyHandler> userPropertyHandlers;
-	private Map <String,FormItem>propFormItems;
+	private final Map<String,FormItem> propFormItems = new HashMap<>();
 	
 	private SingleSelection lang;
 	private TextElement username;
@@ -72,13 +73,13 @@ public class RegistrationForm2 extends FormBasicController {
 	private final String proposedUsername;
 	private final boolean userInUse;
 	private final boolean usernameReadonly;
-	
-	private FormLayoutContainer buttonLayout;
 
 	@Autowired
 	private UserModule userModule;
 	@Autowired
 	private I18nManager i18nManager;
+	@Autowired
+	private UserManager userManager;
 	@Autowired
 	private BaseSecurity securityManager;
 	
@@ -95,7 +96,6 @@ public class RegistrationForm2 extends FormBasicController {
 		this.userInUse = userInUse;
 		this.usernameReadonly = usernameReadonly;
 
-		propFormItems = new HashMap<>();
 		initForm(ureq);
 	}
 	
@@ -157,21 +157,16 @@ public class RegistrationForm2 extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("title.register");
 		// first the configured user properties
-		UserManager um = UserManager.getInstance();
-		userPropertyHandlers = um.getUserPropertyHandlersFor(USERPROPERTIES_FORM_IDENTIFIER, false);
+		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USERPROPERTIES_FORM_IDENTIFIER, false);
 		
-		Translator tr = Util.createPackageTranslator(
-				UserPropertyHandler.class,
-				getLocale(), getTranslator()
-		);
+		Translator tr = Util.createPackageTranslator(UserPropertyHandler.class, getLocale(), getTranslator());
 		
 		// Add all available user fields to this form
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			if (userPropertyHandler == null) continue;
 			
-			FormItem fi = userPropertyHandler.addFormItem(
-					getLocale(), null, USERPROPERTIES_FORM_IDENTIFIER, false, formLayout
-			);
+			FormItem fi = userPropertyHandler
+					.addFormItem(getLocale(), null, USERPROPERTIES_FORM_IDENTIFIER, false, formLayout);
 			fi.setTranslator(tr);
 			propFormItems.put(userPropertyHandler.getName(), fi);
 		}
@@ -182,8 +177,7 @@ public class RegistrationForm2 extends FormBasicController {
 		lang = uifactory.addDropdownSingleselect("user.language", formLayout,
 				StringHelper.getMapKeysAsStringArray(languages),
 				StringHelper.getMapValuesAsStringArray(languages),
-				null
-		); 
+				null); 
 		lang.select(languageKey, true);
 		
 		uifactory.addSpacerElement("loginstuff", formLayout, true);
@@ -209,8 +203,9 @@ public class RegistrationForm2 extends FormBasicController {
 		newpass2.setAutocomplete("new-password");
 	
 		// Button layout
-		buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
+		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
 		formLayout.add(buttonLayout);
+		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 		uifactory.addFormSubmitButton("submit.speichernUndweiter", buttonLayout);
 			
 	}
@@ -257,11 +252,15 @@ public class RegistrationForm2 extends FormBasicController {
 		}
 		return true;
 	}
-	
-	
+
 	@Override
 	protected void formOK(UserRequest ureq) {
 		fireEvent (ureq, Event.DONE_EVENT);
+	}
+
+	@Override
+	protected void formCancelled(UserRequest ureq) {
+		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 
 	@Override

@@ -692,6 +692,7 @@
 				<!--  RegistrationForm2 is used in the self registration process -->
 				<entry key="org.olat.registration.RegistrationForm2">
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
+						<property name="description" value="Registration form for self-registrated users" />
 						<property name="propertyHandlers">
 							<list>
 								<!--
@@ -707,6 +708,19 @@
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
 							</set>
+						</property>
+					</bean>
+				</entry>
+				
+				<!--  RegistrationForm2 is used in the self registration process -->
+				<entry key="org.olat.registration.RegistrationAdditionalForm">
+					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
+						<property name="description" value="Additional registration form for self-registrated users (if empty, the step doesn't appear)" />
+						<property name="propertyHandlers">
+							<list />
+						</property>
+						<property name="mandatoryProperties">
+							<set />
 						</property>
 					</bean>
 				</entry>

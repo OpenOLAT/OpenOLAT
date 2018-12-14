@@ -26,6 +26,7 @@
 package org.olat.registration;
 
 import java.text.DateFormat;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -97,10 +98,13 @@ public class RegistrationController extends BasicController implements Activatea
 	private DisclaimerController disclaimerController;
 	private EmailSendingForm emailSendForm;
 	private RegistrationForm2 registrationForm;
+	private RegistrationAdditionalForm registrationAdditionalForm;
 	private LanguageChooserController langChooserController;
 	
 	private TemporaryKey tempKey;
 	private String uniqueRegistrationKey;
+	private final int numOfSteps;
+	private final boolean additionalRegistrationForm;
 	
 	@Autowired
 	private I18nModule i18nModule;
@@ -133,6 +137,8 @@ public class RegistrationController extends BasicController implements Activatea
 			LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), null, msg.getInitialComponent(), null);
 			listenTo(layoutCtr);
 			putInitialPanel(layoutCtr.getInitialComponent());
+			numOfSteps = 0;
+			additionalRegistrationForm = false;
 			return;
 		}
 		// override language when not the same as in ureq and add fallback to
@@ -152,9 +158,13 @@ public class RegistrationController extends BasicController implements Activatea
 			setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));			
 		}
 		
+		additionalRegistrationForm = !userManager
+				.getUserPropertyHandlersFor(RegistrationAdditionalForm.USERPROPERTIES_FORM_IDENTIFIER, false).isEmpty();
+		numOfSteps = additionalRegistrationForm ? 6 : 5;
+		
 		//construct content
 		myContent = createVelocityContainer("reg");
-		wizInfoController = new WizardInfoController(ureq, 5);
+		wizInfoController = new WizardInfoController(ureq, numOfSteps);
 		listenTo(wizInfoController);
 		myContent.put("regwizard", wizInfoController.getInitialComponent());
 		regarea = new Panel("regarea");
@@ -175,7 +185,7 @@ public class RegistrationController extends BasicController implements Activatea
 				showError("regkey.missingentry");
 				displayLanguageChooserStep(ureq);
 			} else {
-				displayRegistrationForm2(ureq);
+				displayRegistrationForm(ureq);
 			}
 			// load view in layout
 			LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), null, myContent, null);
@@ -194,12 +204,6 @@ public class RegistrationController extends BasicController implements Activatea
 		VelocityContainer errorContainer = createVelocityContainer("error");
 		errorContainer.contextPut("errorMsg", error);
 		return errorContainer;
-	}
-	
-	private void createRegForm2(UserRequest ureq, String proposedUsername, boolean userInUse, boolean usernameReadonly) {
-		registrationForm = new RegistrationForm2(ureq, getWindowControl(), i18nModule.getLocaleKey(getLocale()), proposedUsername, userInUse, usernameReadonly);
-		listenTo(registrationForm);
-		regarea.setContent(registrationForm.getInitialComponent());
 	}
 	
 	private void createLanguageForm(UserRequest ureq, WindowControl wControl) {
@@ -225,12 +229,12 @@ public class RegistrationController extends BasicController implements Activatea
 
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
-		if (source == langChooserController) {
+		if (event == Event.CANCELLED_EVENT) {
+			cancel(ureq);
+		} else if (source == langChooserController) {
 			if (event == Event.DONE_EVENT) {
 				displayDisclaimer(ureq);
 				ureq.getUserSession().removeEntry(LocaleNegotiator.NEGOTIATED_LOCALE);
-			} else if (event == Event.CANCELLED_EVENT) {
-				cancel(ureq);
 			} else if (event instanceof LanguageChangedEvent) {
 				LanguageChangedEvent lcev = (LanguageChangedEvent)event;
 				setLocale(lcev.getNewLocale(), true);
@@ -240,8 +244,6 @@ public class RegistrationController extends BasicController implements Activatea
 			if (event == Event.DONE_EVENT) {
 				// finalize the registration by creating the user
 				displayEmailForm(ureq);
-			} else if (event == Event.CANCELLED_EVENT) {
-				cancel(ureq);
 			}
 		} else if (source == emailSendForm) {
 			if (event == Event.DONE_EVENT) { // form
@@ -251,11 +253,22 @@ public class RegistrationController extends BasicController implements Activatea
 				} else {
 					showError("email.notsent");
 				}
-			} else if (event == Event.CANCELLED_EVENT) {
-				fireEvent(ureq, Event.CANCELLED_EVENT);
 			}
 		}  else if (source == registrationForm) {
 			// Userdata entered
+			if (event == Event.DONE_EVENT) {
+				if(additionalRegistrationForm) {
+					displayRegistrationAdditionalForm(ureq);
+				} else {
+					Identity persitedIdentity = createNewUserAfterRegistration();
+					if(persitedIdentity == null) {
+						cancel(ureq);
+					} else {
+						displayFinalStep(persitedIdentity);
+					}
+				}
+			}
+		} else if(source == registrationAdditionalForm) {
 			if (event == Event.DONE_EVENT) {
 				Identity persitedIdentity = createNewUserAfterRegistration();
 				if(persitedIdentity == null) {
@@ -263,10 +276,8 @@ public class RegistrationController extends BasicController implements Activatea
 				} else {
 					displayFinalStep(persitedIdentity);
 				}
-			} else if (event == Event.CANCELLED_EVENT) {
-				cancel(ureq);
 			}
-		} 
+		}
 	}
 	
 	private void cancel(UserRequest ureq) {
@@ -396,7 +407,7 @@ public class RegistrationController extends BasicController implements Activatea
 		return isMailSent;
 	}
 	
-	private void displayRegistrationForm2(UserRequest ureq) {
+	private void displayRegistrationForm(UserRequest ureq) {
 		wizInfoController.setCurStep(4);
 		myContent.contextPut("pwdhelp", translate("pwdhelp"));
 		myContent.contextPut("loginhelp", translate("loginhelp"));
@@ -431,6 +442,27 @@ public class RegistrationController extends BasicController implements Activatea
 			createRegForm2(ureq, null, false, false);
 		}
 	}
+	
+	private void createRegForm2(UserRequest ureq, String proposedUsername, boolean userInUse, boolean usernameReadonly) {
+		registrationForm = new RegistrationForm2(ureq, getWindowControl(), i18nModule.getLocaleKey(getLocale()), proposedUsername, userInUse, usernameReadonly);
+		listenTo(registrationForm);
+		regarea.setContent(registrationForm.getInitialComponent());
+	}
+	
+	private void displayRegistrationAdditionalForm(UserRequest ureq) {
+		wizInfoController.setCurStep(5);
+		myContent.contextPut("pwdhelp", "");
+		myContent.contextPut("loginhelp", "");
+		myContent.contextPut("text", translate("step.add.reg.text"));
+		myContent.contextPut("email", tempKey.getEmailAddress());
+
+		Map<String,String> userAttrs = new HashMap<>();
+		userAttrs.put("email", tempKey.getEmailAddress());
+		
+		registrationAdditionalForm = new RegistrationAdditionalForm(ureq, getWindowControl());
+		listenTo(registrationAdditionalForm);
+		regarea.setContent(registrationAdditionalForm.getInitialComponent());
+	}
 
 	/**
 	 * OO-92
@@ -444,18 +476,22 @@ public class RegistrationController extends BasicController implements Activatea
 	 */
 	private void displayFinalStep(Identity persitedIdentity){
 		// set wizard step to 5
-		wizInfoController.setCurStep(5);
+		wizInfoController.setCurStep(numOfSteps);
 		
 		// hide the text we don't need anymore 
 		myContent.contextPut("pwdhelp", "");
 		myContent.contextPut("loginhelp", "");
 		myContent.contextPut("text", "");
 		
-		// show last screen
-		VelocityContainer finishVC = createVelocityContainer("finish");
-		
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(RegistrationForm2.USERPROPERTIES_FORM_IDENTIFIER, false);
-		finishVC.contextPut("userPropertyHandlers", userPropertyHandlers);
+		List<UserPropertyHandler> aggregatedUserPropertyHandlers = new ArrayList<>(userPropertyHandlers);
+		if(registrationAdditionalForm != null) {
+			List<UserPropertyHandler> addUserPropertyHandlers = userManager.getUserPropertyHandlersFor(RegistrationAdditionalForm.USERPROPERTIES_FORM_IDENTIFIER, false);
+			aggregatedUserPropertyHandlers.addAll(addUserPropertyHandlers);
+		}
+
+		VelocityContainer finishVC = createVelocityContainer("finish");
+		finishVC.contextPut("userPropertyHandlers", aggregatedUserPropertyHandlers);
 		finishVC.contextPut("user", persitedIdentity.getUser());
 		finishVC.contextPut("locale", getLocale());
 		finishVC.contextPut("username", registrationForm.getLogin());
@@ -491,7 +527,6 @@ public class RegistrationController extends BasicController implements Activatea
 			return null;
 		} else {
 			// update other user properties from form
-			List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(RegistrationForm2.USERPROPERTIES_FORM_IDENTIFIER, false);
 			User persistedUser = persistedIdentity.getUser();
 			
 			//add eventually static value
@@ -510,10 +545,22 @@ public class RegistrationController extends BasicController implements Activatea
 				}
 			}
 
+			// add value of registration form
+			List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(RegistrationForm2.USERPROPERTIES_FORM_IDENTIFIER, false);
 			for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 				FormItem fi = registrationForm.getPropFormItem(userPropertyHandler.getName());
 				userPropertyHandler.updateUserFromFormItem(persistedUser, fi);
 			}
+			
+			// add value of additional registration form
+			if(registrationAdditionalForm != null) {
+				List<UserPropertyHandler> addUserPropertyHandlers = userManager.getUserPropertyHandlersFor(RegistrationAdditionalForm.USERPROPERTIES_FORM_IDENTIFIER, false);
+				for (UserPropertyHandler userPropertyHandler : addUserPropertyHandlers) {
+					FormItem fi = registrationAdditionalForm.getPropFormItem(userPropertyHandler.getName());
+					userPropertyHandler.updateUserFromFormItem(persistedUser, fi);
+				}
+			}
+			
 			// persist changes in db
 			userManager.updateUserFromIdentity(persistedIdentity);
 			// send notification mail to sys admin
