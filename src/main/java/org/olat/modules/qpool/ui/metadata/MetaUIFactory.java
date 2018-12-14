@@ -130,14 +130,14 @@ public class MetaUIFactory {
 				try {
 					double value = Integer.parseInt(val);
 					if(min > value) {
-						el.setErrorKey("error.wrongFloat", null);
+						el.setErrorKey("error.wrongInteger", null);
 						allOk = false;
 					} else if(max < value) {
-						el.setErrorKey("error.wrongFloat", null);
+						el.setErrorKey("error.wrongInteger", null);
 						allOk = false;
 					}
 				} catch (NumberFormatException e) {
-					el.setErrorKey("error.wrongFloat", null);
+					el.setErrorKey("error.wrongInteger", null);
 					allOk = false;
 				}
 			}

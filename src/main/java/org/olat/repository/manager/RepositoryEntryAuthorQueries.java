@@ -95,6 +95,7 @@ public class RepositoryEntryAuthorQueries {
 		if(maxResults > 0) {
 			query.setMaxResults(maxResults);
 		}
+		
 		List<Object[]> objects =  query.getResultList();
 		List<RepositoryEntryAuthorView> views = new ArrayList<>(objects.size());
 		for(Object[] object:objects) {
@@ -334,8 +335,8 @@ public class RepositoryEntryAuthorQueries {
 	
 	private boolean appendAccessSubSelect(QueryBuilder sb, SearchAuthorRepositoryEntryViewParams params) {
 		if(params.isOwnedResourcesOnly()) {
-			sb.append(" v.key in (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
-			  .append("    where rel.group.key=membership.group.key and membership.identity.key=:identityKey")
+			sb.append(" exists (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
+			  .append("    where rel.entry.key=v.key and rel.group.key=membership.group.key and membership.identity.key=:identityKey")
 			  .append("      and membership.role='").append(GroupRoles.owner.name()).append("'")
 			  .append(" )");
 			if(params.isDeleted()) {
@@ -346,38 +347,31 @@ public class RepositoryEntryAuthorQueries {
 		} else {
 			Roles roles = params.getRoles();
 			if(roles == null) {
-				sb.append(" v.key in (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
-				  .append("     where rel.group.key=membership.group.key and membership.identity.key=:identityKey")
+				sb.append(" exists (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
+				  .append("     where rel.group.key=membership.group.key and rel.entry.key=v.key and membership.identity.key=:identityKey")
 				  .append("     and membership.role not ").in(OrganisationRoles.guest, OrganisationRoles.invitee, GroupRoles.waiting)
 				  .append(") and (v.allUsers=true or v.bookable=true) and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed());
 			} else if(params.isDeleted() && (roles.isAdministrator() || roles.isLearnResourceManager())) {
-				sb.append(" v.key in (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
-				  .append("     where rel.group.key=membership.group.key and membership.identity.key=:identityKey")
+				sb.append(" exists (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
+				  .append("     where rel.group.key=membership.group.key and rel.entry.key=v.key and membership.identity.key=:identityKey")
 				  .append("     and membership.role ").in(OrganisationRoles.administrator, OrganisationRoles.principal, OrganisationRoles.learnresourcemanager, GroupRoles.owner)
 				  .append(") and v.status ").in(RepositoryEntryStatusEnum.trash);
 			} else {
-				sb.append("(")
-				  // or owner, principal, learn resource manager and administrator which can see all
-				  .append(" v.key in (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
-				  .append("     where rel.group.key=membership.group.key and membership.identity.key=:identityKey")
-				  .append("     and membership.role ").in(OrganisationRoles.administrator, OrganisationRoles.principal, OrganisationRoles.learnresourcemanager, GroupRoles.owner)
-				  .append("     and v.status ").in(RepositoryEntryStatusEnum.preparationToClosed())
-				  .append(")")
-				  .append(" or v.key in (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
-				  .append("     where rel.group.key=membership.group.key and membership.identity.key=:identityKey")
-				  .append("     and membership.role not ").in(OrganisationRoles.invitee, OrganisationRoles.guest, GroupRoles.waiting)
-				  .append("     and (v.allUsers=true or v.bookable=true) and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed())
-				  .append(")");
-	
+				sb.append(" exists (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
+				  .append("   where rel.group.key=membership.group.key and rel.entry.key=v.key and membership.identity.key=:identityKey")
+				  .append("   and (")
+				  // owner, principal, learn resource manager and administrator which can see all
+				  .append("     ( membership.role ").in(OrganisationRoles.administrator, OrganisationRoles.principal, OrganisationRoles.learnresourcemanager, GroupRoles.owner)
+				  .append("       and v.status ").in(RepositoryEntryStatusEnum.preparationToClosed()).append(" )")
+				  // standard users
+				  .append("     or ( membership.role not ").in(OrganisationRoles.invitee, OrganisationRoles.guest, GroupRoles.waiting)
+				  .append("       and (v.allUsers=true or v.bookable=true) and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed()).append(" )");
+				  
 				if(roles.isAuthor()) {
-					sb.append(" or v.key in (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
-					  .append("     where rel.group.key=membership.group.key and membership.identity.key=:identityKey")
-					  .append("     and membership.role ='").append(OrganisationRoles.author).append("')")
-					  .append("     and v.status ").in(RepositoryEntryStatusEnum.reviewToClosed())
-					  .append("     and (v.canCopy=true or v.canReference=true or v.canDownload=true)")
-					  .append("");// End or of author
+					sb.append(" or ( membership.role ='").append(OrganisationRoles.author).append("'")
+					  .append("   and v.status ").in(RepositoryEntryStatusEnum.reviewToClosed()).append(" and (v.canCopy=true or v.canReference=true or v.canDownload=true)").append(" )");
 				}
-				sb.append(")");
+				sb.append(" ))");
 			}
 		}
 		return true;
