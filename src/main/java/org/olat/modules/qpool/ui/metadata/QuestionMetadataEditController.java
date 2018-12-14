@@ -190,12 +190,13 @@ public class QuestionMetadataEditController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		allOk &= validateBigDecimal(difficultyEl, 0.0d, 1.0d, true);
 		allOk &= validateBigDecimal(stdevDifficultyEl, 0.0d, 1.0d, true);
 		allOk &= validateBigDecimal(differentiationEl, -1.0d, 1.0d, true);
 		allOk &= validateInteger(numAnswerAltEl, 0, Integer.MAX_VALUE, true);
-		return allOk && super.validateFormLogic(ureq);
+		allOk &= validateInteger(usageEl, 0, Integer.MAX_VALUE, true);
+		return allOk;
 	}
 	
 	@Override
