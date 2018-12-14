@@ -56,7 +56,7 @@ public class TextInputLegendTextDataSource implements LegendTextDataSource {
 
 	@Override
 	public List<SessionText> getResponses() {
-		return getResponses(getPaginMax());
+		return getResponses(getLimitMax());
 	}
 
 	public List<SessionText> getResponses(Limit limit) {
@@ -71,14 +71,14 @@ public class TextInputLegendTextDataSource implements LegendTextDataSource {
 	}
 	
 	public Long getResponsesCount() {
-		return getResponsesCount(getPaginMax());
+		return getResponsesCount(getLimitMax());
 	}
 	
 	public Long getResponsesCount(Limit limit) {
 		return reportDAO.getResponsesCount(responseIdentifier, filter, limit);
 	}
 
-	private Limit getPaginMax() {
+	private Limit getLimitMax() {
 		return Limit.max(evaluationFormsModule.getReportMaxSessions());
 	}
 

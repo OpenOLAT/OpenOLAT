@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.modules.forms.EvaluationFormResponse;
+import org.olat.modules.forms.EvaluationFormsModule;
 import org.olat.modules.forms.Limit;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.manager.EvaluationFormReportDAO;
@@ -39,17 +40,38 @@ public class RawResponsesDataSource implements ResponseDataSource {
 	private final SessionFilter filter;
 	
 	private EvaluationFormReportDAO reportDAO;
+	private EvaluationFormsModule evaluationFormsModule;
 	
 	public RawResponsesDataSource(String responseIdentifier, SessionFilter filter) {
 		super();
 		this.responseIdentifier = responseIdentifier;
 		this.filter = filter;
 		this.reportDAO = CoreSpringFactory.getImpl(EvaluationFormReportDAO.class);
+		this.evaluationFormsModule = CoreSpringFactory.getImpl(EvaluationFormsModule.class);
 	}
 
 	@Override
-	public List<EvaluationFormResponse> getResponses() {
+	public List<EvaluationFormResponse> getAllResponses() {
 		return reportDAO.getResponses(responseIdentifier, filter, Limit.all());
+	}
+
+	@Override
+	public List<EvaluationFormResponse> getLimitedResponses() {
+		return reportDAO.getResponses(responseIdentifier, filter, getLimitMax());
+	}
+
+	@Override
+	public Long getAllResponsesCount() {
+		return reportDAO.getResponsesCount(responseIdentifier, filter, Limit.all());
+	}
+
+	@Override
+	public Long getLimitedResponsesCount() {
+		return reportDAO.getResponsesCount(responseIdentifier, filter, getLimitMax());
+	}
+	
+	private Limit getLimitMax() {
+		return Limit.max(evaluationFormsModule.getReportMaxSessions());
 	}
 
 }

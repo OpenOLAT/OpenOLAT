@@ -1,5 +1,14 @@
+#if($r.available("file.upload.download.link"))
+	#if($r.isNotNull($downloadInfo))
+		$downloadInfo 
+	#end
+	$r.render("file.upload.download.link")
+#end
+#if($r.isNotNull($noText)) 
+	$noText
+#end
 #foreach($wrapper in $wrappers)
-<div class="o_clearfix o_block_large o_evaluation_fileupload">
+<div class="o_clearfix o_evaluation_fileupload">
 	<div class="o_evaluation_legend" style="border-left: 3px solid $wrapper.color">
 		<h6>$r.escapeHtml($wrapper.evaluator)</h6>
 	</div>

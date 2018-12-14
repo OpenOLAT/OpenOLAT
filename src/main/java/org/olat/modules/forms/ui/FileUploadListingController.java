@@ -19,6 +19,7 @@
  */
 package org.olat.modules.forms.ui;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,6 +27,8 @@ import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -35,6 +38,7 @@ import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaMapper;
+import org.olat.fileresource.ZippedDirectoryMediaResource;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormResponse;
 import org.olat.modules.forms.EvaluationFormSession;
@@ -50,7 +54,10 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class FileUploadListingController extends BasicController {
 
+
 	private final VelocityContainer mainVC;
+	private Link downloadLink;
+	
 	private final ResponseDataSource dataSource;
 	private final ReportHelper reportHelper;
 	
@@ -64,6 +71,18 @@ public class FileUploadListingController extends BasicController {
 		this.reportHelper = reportHelper;
 		
 		mainVC = createVelocityContainer("file_upload_listing");
+		
+		Long showCount = dataSource.getLimitedResponsesCount();
+		if (showCount > 0) {
+			Long showAll = dataSource.getAllResponsesCount();
+			if (showAll > showCount) {
+				mainVC.contextPut("downloadInfo", translate("file.upload.download.info", new String[] { showCount.toString(), showAll.toString() }));
+			}
+			downloadLink = LinkFactory.createLink("file.upload.download.link", mainVC, this);
+		} else {
+			mainVC.contextPut("noText", translate("file.upload.no.text"));
+		}
+		
 		List<FileUploadListingWrapper> wrappers = createWrappers(ureq);
 		mainVC.contextPut("wrappers", wrappers);
 		putInitialPanel(mainVC);
@@ -71,7 +90,7 @@ public class FileUploadListingController extends BasicController {
 	
 	private List<FileUploadListingWrapper> createWrappers(UserRequest ureq) {
 		List<FileUploadListingWrapper> wrappers = new ArrayList<>();
-		List<EvaluationFormResponse> responses = dataSource.getResponses();
+		List<EvaluationFormResponse> responses = dataSource.getLimitedResponses();
 		for (EvaluationFormResponse response: responses) {
 			FileUploadListingWrapper wrapper = createWrapper(ureq, response);
 			wrappers.add(wrapper);
@@ -109,7 +128,18 @@ public class FileUploadListingController extends BasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		//
+		if (source == downloadLink) {
+			doExport(ureq);
+		}
+	}
+	
+	private void doExport(UserRequest ureq) {
+		List<EvaluationFormResponse> responses = dataSource.getAllResponses();
+		File tmpDir = evaluationFormManager.createTmpDir();
+		evaluationFormManager.copyFilesTo(responses, tmpDir);
+		String name = "survey_files";
+		ZippedDirectoryMediaResource zipResource = new ZippedDirectoryMediaResource(name, tmpDir);
+		ureq.getDispatchResult().setResultingMediaResource(zipResource);
 	}
 
 	@Override

@@ -34,6 +34,9 @@ import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFileImpl;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.CodeHelper;
+import org.olat.core.util.FileUtils;
+import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.springframework.stereotype.Service;
 
@@ -50,6 +53,8 @@ class EvaluationFormStorage {
 	
 	private static final String EVALUATION_FORMS_DIRECTORY = "evaluation_form";
 	private static final String RESPONSES_DIRECTORY = "responses";
+	private static final String TMP_DIRECTORY = "evaluation_form_tmp";
+
 	
 	private Path bcrootDirectory;
 	private Path rootDirectory;
@@ -65,6 +70,19 @@ class EvaluationFormStorage {
 		} catch (Exception e) {
 			log.error("Creation of evaluation forms responses directory failed! Path: " + responsesDirectory, e);
 		}
+	}
+	
+	File createTmpDir() {
+		return getTmpDir().resolve(CodeHelper.getUniqueID()).toFile();
+	}
+
+	void deleteTmpDirs() {
+		FileUtils.deleteDirsAndFiles(getTmpDir().toFile(), true, false);
+		log.info("Evaluation form tmp dir cleaned: " + getTmpDir().toString());
+	}
+
+	private Path getTmpDir() {
+		return Paths.get(WebappHelper.getTmpDir(), TMP_DIRECTORY);
 	}
 
 	Path getResponsesRoot() {
@@ -92,6 +110,11 @@ class EvaluationFormStorage {
 	
 	VFSLeaf resolve(Path relativePath) {
 		return new OlatRootFileImpl("/" + relativePath.toString(), null);
+	}
+
+	void copyTo(Path relativePath, File targetDir) {
+		File file = getAbsolutePath(relativePath).toFile();
+		FileUtils.copyFileToDir(file, targetDir, "copy evaluation form upload file");
 	}
 
 	void delete(Path relativePath) {

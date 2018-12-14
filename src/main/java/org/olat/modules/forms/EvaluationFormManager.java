@@ -22,6 +22,7 @@ package org.olat.modules.forms;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.List;
 
 import org.olat.basesecurity.IdentityRef;
@@ -173,6 +174,12 @@ public interface EvaluationFormManager {
 	public File loadResponseFile(EvaluationFormResponse response);
 
 	public VFSLeaf loadResponseLeaf(EvaluationFormResponse response);
+	
+	public File createTmpDir();
+	
+	public void deleteTmpDirs();
+	
+	public void copyFilesTo(Collection<EvaluationFormResponse> responses, File targetDir);
 
 	public void deleteResponse(EvaluationFormResponse response);
 

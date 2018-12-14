@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -366,6 +367,25 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 		if (response == null || response.getFileResponse() == null) return null;
 		
 		return evaluationFormStorage.resolve(response.getFileResponse());
+	}
+	
+	@Override
+	public File createTmpDir() {
+		return evaluationFormStorage.createTmpDir();
+	}
+	
+	@Override
+	public void deleteTmpDirs() {
+		evaluationFormStorage.deleteTmpDirs();
+	}
+	
+	@Override
+	public void copyFilesTo(Collection<EvaluationFormResponse> responses, File targetDir) {
+		if (targetDir == null) return;
+		
+		for (EvaluationFormResponse response: responses) {
+			evaluationFormStorage.copyTo(response.getFileResponse(), targetDir);
+		}
 	}
 
 	@Override

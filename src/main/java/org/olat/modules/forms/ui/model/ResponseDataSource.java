@@ -31,6 +31,12 @@ import org.olat.modules.forms.EvaluationFormResponse;
  */
 public interface ResponseDataSource {
 	
-	public List<EvaluationFormResponse> getResponses();
+	public List<EvaluationFormResponse> getAllResponses();
+	
+	public List<EvaluationFormResponse> getLimitedResponses();
+	
+	public Long getAllResponsesCount();
+	
+	public Long getLimitedResponsesCount();
 
 }

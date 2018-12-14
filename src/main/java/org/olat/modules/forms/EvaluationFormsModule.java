@@ -50,6 +50,8 @@ public class EvaluationFormsModule extends AbstractSpringModule implements Confi
 	public static final String FORMS_ENABLED = "forms.enabled";
 	
 	@Autowired
+	private EvaluationFormManager evaluationFormMAnager;
+	@Autowired
 	private EvaluationFormHandler formHandler;
 	
 	@Value("${forms.enabled:true}")
@@ -75,6 +77,8 @@ public class EvaluationFormsModule extends AbstractSpringModule implements Confi
 		}
 		
 		initFileUploadLimit();
+		
+		evaluationFormMAnager.deleteTmpDirs();
 
 		RepositoryHandlerFactory.registerHandler(formHandler, 40);
 	}
