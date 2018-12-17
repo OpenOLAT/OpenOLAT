@@ -76,6 +76,24 @@ div.b_scrollblock {
 		background: lighten($bgcolor,5%);
 		border: 1px solid $bgcolor;
 	}
+	
+	@media print {
+		td, th { 
+			-webkit-print-color-adjust: exact;
+			color-adjust: exact;
+			background: $bgcolor !important;
+		}
+		thead td, th {
+			-webkit-print-color-adjust: exact;
+			color-adjust: exact;
+			background: darken($bgcolor,10%) !important;
+		}	
+		tbody tr:nth-child(even) td {
+			-webkit-print-color-adjust: exact;
+			color-adjust: exact;
+			background: lighten($bgcolor,5%)  !important;		
+		}
+	}
 }
 
 /* nice table formatting */
