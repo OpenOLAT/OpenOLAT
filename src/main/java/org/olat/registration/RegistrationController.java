@@ -37,7 +37,6 @@ import java.util.Map;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.chiefcontrollers.LanguageChangedEvent;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.dispatcher.DispatcherModule;
@@ -122,6 +121,8 @@ public class RegistrationController extends BasicController implements Activatea
 	private RegistrationModule registrationModule;
 	@Autowired
 	private RegistrationManager registrationManager;
+	@Autowired
+	private UserPropertiesConfig userPropertiesConfig;
 
 	/**
 	 * Controller implementing registration workflow.
@@ -495,7 +496,14 @@ public class RegistrationController extends BasicController implements Activatea
 		finishVC.contextPut("user", persitedIdentity.getUser());
 		finishVC.contextPut("locale", getLocale());
 		finishVC.contextPut("username", registrationForm.getLogin());
-		finishVC.contextPut("text", getTranslator().translate("step5.reg.text", new String[]{ registrationForm.getLogin() }));
+		
+		boolean pending = persitedIdentity.getStatus().equals(Identity.STATUS_PENDING);
+		if(pending) {
+			finishVC.contextPut("text", translate("step5.reg.pending", new String[]{ registrationForm.getLogin() }));
+		} else {
+			finishVC.contextPut("text", translate("step5.reg.text", new String[]{ registrationForm.getLogin() }));
+		}
+		finishVC.contextPut("pending", Boolean.valueOf(pending));
 		loginButton = LinkFactory.createButton("form.login", finishVC, this);
 		loginButton.setCustomEnabledLinkCSS("btn btn-primary");
 		loginButton.setUserObject(persitedIdentity);
@@ -530,7 +538,6 @@ public class RegistrationController extends BasicController implements Activatea
 			User persistedUser = persistedIdentity.getUser();
 			
 			//add eventually static value
-			UserPropertiesConfig userPropertiesConfig = CoreSpringFactory.getImpl(UserPropertiesConfig.class);
 			if(registrationModule.isStaticPropertyMappingEnabled()) {
 				String propertyName = registrationModule.getStaticPropertyMappingName();
 				String propertyValue = registrationModule.getStaticPropertyMappingValue();
@@ -564,7 +571,7 @@ public class RegistrationController extends BasicController implements Activatea
 			// persist changes in db
 			userManager.updateUserFromIdentity(persistedIdentity);
 			// send notification mail to sys admin
-			String notiEmail = CoreSpringFactory.getImpl(RegistrationModule.class).getRegistrationNotificationEmail();
+			String notiEmail = registrationModule.getRegistrationNotificationEmail();
 			if (notiEmail != null) {
 				registrationManager.sendNewUserNotificationMessage(notiEmail, persistedIdentity);
 			}

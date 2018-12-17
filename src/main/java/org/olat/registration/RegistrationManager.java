@@ -47,7 +47,6 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.model.OrganisationRefImpl;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
@@ -88,6 +87,11 @@ import com.thoughtworks.xstream.XStream;
 public class RegistrationManager implements UserDataDeletable, UserDataExportable {
 	
 	private static final OLog log = Tracing.createLoggerFor(RegistrationManager.class);
+	
+	private static final XStream xmlXStream = XStreamHelper.createXStreamInstance();
+	static {
+		XStream.setupDefaultSecurity(xmlXStream);
+	}
 
 	private static final int VALID_UNTIL_30_DAYS = 30*24;
 
@@ -97,6 +101,8 @@ public class RegistrationManager implements UserDataDeletable, UserDataExportabl
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private I18nModule i18nModule;
 	@Autowired
 	private MailManager mailManager;
 	@Autowired
@@ -204,14 +210,53 @@ public class RegistrationManager implements UserDataDeletable, UserDataExportabl
 		}
 		if (identity == null) {
 			return null;
+		} else if(pending(identity)) {
+			identity = securityManager.saveIdentityStatus(identity, Identity.STATUS_PENDING, identity);
 		}
 		deleteTemporaryKey(tk);
 		return identity;
 	}
+	
+	private boolean pending(Identity identity) {
+		boolean pending = false;
+		RegistrationPendingStatus status = registrationModule.getRegistrationPendingStatus();
+		if(status == RegistrationPendingStatus.pending) {
+			pending = true;
+		} else if(status == RegistrationPendingStatus.pendingMatchingProperties) {
+			User user = identity.getUser();
+			@SuppressWarnings("static-access")
+			Locale locale = i18nModule.getDefaultLocale();
+			pending |= matchProperty(user, registrationModule.getRegistrationPendingPropertyName1(), registrationModule.getRegistrationPendingPropertyValue1(), locale);
+			pending |= matchProperty(user, registrationModule.getRegistrationPendingPropertyName2(), registrationModule.getRegistrationPendingPropertyValue2(), locale);
+			pending |= matchProperty(user, registrationModule.getRegistrationPendingPropertyName3(), registrationModule.getRegistrationPendingPropertyValue3(), locale);
+			pending |= matchProperty(user, registrationModule.getRegistrationPendingPropertyName4(), registrationModule.getRegistrationPendingPropertyValue4(), locale);
+			pending |= matchProperty(user, registrationModule.getRegistrationPendingPropertyName5(), registrationModule.getRegistrationPendingPropertyValue5(), locale);
+		}
+		return pending;
+	}
+	
+	private boolean matchProperty(User user, String propName, String propValue, Locale locale) {
+		boolean match = false;
+		
+		if(StringHelper.containsNonWhitespace(propName) && StringHelper.containsNonWhitespace(propValue)) {
+			String val = user.getProperty(propName, locale);
+			
+			if(propValue.equalsIgnoreCase(val)) {
+				match = true;
+			} else if(UserConstants.EMAIL.equals(propName) || UserConstants.INSTITUTIONALEMAIL.equals(propName)) {
+				String valLow = val.toLowerCase();
+				String propValueLow = propValue.toLowerCase();
+				match = valLow.contains(propValueLow);
+			}
+		}
+		
+		return match;
+	}
 
 	/**
-	 * Send a notification messaged to the given notification email address about the registratoin of 
+	 * Send a notification messaged to the given notification email address about the registration of 
 	 * the given new identity.
+	 * 
 	 * @param notificationMailAddress Email address who should be notified. MUST NOT BE NULL
 	 * @param newIdentity The newly registered Identity
 	 */
@@ -219,9 +264,15 @@ public class RegistrationManager implements UserDataDeletable, UserDataExportabl
 		Address from;
 		Address[] to;
 		try {
-			// fxdiff: change from/replyto, see FXOLAT-74
 			from = new InternetAddress(WebappHelper.getMailConfig("mailReplyTo"));
-			to = new Address[] { new InternetAddress(notificationMailAddress)};
+			String[] notificationMailAddressArr = notificationMailAddress.split("[,]");
+			List<Address> toList = new ArrayList<>();
+			for(int i=notificationMailAddressArr.length; i-->0; ) {
+				if(StringHelper.containsNonWhitespace(notificationMailAddressArr[i])) {
+					toList.add(new InternetAddress(notificationMailAddressArr[i]));
+				}
+			}
+			to = toList.toArray(new Address[toList.size()]);
 		} catch (AddressException e) {
 			log.error("Could not send registration notification message, bad mail address", e);
 			return;
@@ -427,12 +478,9 @@ public class RegistrationManager implements UserDataDeletable, UserDataExportabl
 	public boolean isEmailReserved(String emailAddress) {
 		if (!StringHelper.containsNonWhitespace(emailAddress)) return false;
 		
-		RegistrationManager rm = CoreSpringFactory.getImpl(RegistrationManager.class);
-		List<TemporaryKey> tk = rm.loadTemporaryKeyByAction(RegistrationManager.EMAIL_CHANGE);
+		List<TemporaryKey> tk = loadTemporaryKeyByAction(RegistrationManager.EMAIL_CHANGE);
 		for (TemporaryKey temporaryKey : tk) {
-			XStream xml = XStreamHelper.createXStreamInstance();
-			@SuppressWarnings("unchecked")
-			Map<String, String> mails = (Map<String, String>) xml.fromXML(temporaryKey.getEmailAddress());
+			Map<String, String> mails = readTemporaryValue(temporaryKey.getEmailAddress());
 			if (emailAddress.equalsIgnoreCase(mails.get("changedEMail"))) {
 				return true;
 			}
@@ -497,6 +545,11 @@ public class RegistrationManager implements UserDataDeletable, UserDataExportabl
 	 */
 	public void revokeConfirmedDisclaimer(Identity identity) {
 		propertyManager.deleteProperties(identity, null, null, "user", "dislaimer_accepted");		
+	}
+	
+	@SuppressWarnings("unchecked")
+	public Map<String, String> readTemporaryValue(String value) {
+		return (Map<String, String>)xmlXStream.fromXML(value);
 	}
 
 	private String createRegistrationKey(String email, String ip) {

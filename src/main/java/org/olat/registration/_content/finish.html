@@ -8,7 +8,7 @@
     	<div class="panel-heading">
       		<h4 class="panel-title">$r.translate("step5.reg.yourdata")</h4>
       	</div>
-      	<div class="panel-body">
+      	<div class="panel-body #if($r.isTrue($pending)) o_important #end">
       		<p>$text</p>
       	</div>
 		<table class="table table-bordered">
@@ -25,6 +25,8 @@
 		</table>
 	</div>
 </div>
+#if($r.isFalse($pending))
 <div class="o_button_group">
 	$r.render("loginhref")
 </div>
+#end

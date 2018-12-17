@@ -38,18 +38,20 @@ import org.olat.basesecurity.IdentityRef;
  */
 public interface Identity extends CreateInfo, IdentityRef, Persistable {
 
-	// status = 1..99    User with this status are visibale (e.g. user search)
-	//          100..199 User with this status are invisibale (e.g. user search)
+	// status = 1..99    User with this status are visible (e.g. user search)
+	//          100..199 User with this status are invisible (e.g. user search)
 	/** Identity has a permanent olat user account and will be never listen in user-deletion process. */
-	public static Integer STATUS_PERMANENT = 1;
+	public static final Integer STATUS_PERMANENT = 1;
 	/** Identity has access to olat-system. */ 
-	public static Integer STATUS_ACTIV     = 2;
+	public static final Integer STATUS_ACTIV = 2;
 	/** Limit for visible identities, all identities with status < LIMIT will be listed in search etc. */
-	public static Integer STATUS_VISIBLE_LIMIT = 100;
+	public static final Integer STATUS_VISIBLE_LIMIT = 100;
 	/** Identity can not login and will not be listed (only on login-denied list). */
-	public static Integer STATUS_LOGIN_DENIED = 101;
+	public static final Integer STATUS_LOGIN_DENIED = 101;
+	/** Identity can not login and will not be listed (only on pending list). */
+	public static final Integer STATUS_PENDING = 102;
 	/** Identity is deleted and has no access to olat-system and is not visible (except administrators). */
-	public static Integer STATUS_DELETED   = 199;
+	public static final Integer STATUS_DELETED   = 199;
 	
     /**
      * @return The username, (login name, nickname..)

@@ -74,6 +74,28 @@ public class RegistrationModule extends AbstractSpringModule {
 	private boolean registrationNotificationEmailEnabled;
 	@Value("${registration.notificationEmail}")
 	private String registrationNotificationEmail;
+	@Value("${registration.pending.status:active}")
+	private String registrationPendingStatus;
+	@Value("${registration.pending.property.name1:}")
+	private String registrationPendingPropertyName1;
+	@Value("${registration.pending.property.value1:}")
+	private String registrationPendingPropertyValue1;
+	@Value("${registration.pending.property.name2:}")
+	private String registrationPendingPropertyName2;
+	@Value("${registration.pending.property.value2:}")
+	private String registrationPendingPropertyValue2;
+	@Value("${registration.pending.property.name3:}")
+	private String registrationPendingPropertyName3;
+	@Value("${registration.pending.property.value3:}")
+	private String registrationPendingPropertyValue3;
+	@Value("${registration.pending.property.name4:}")
+	private String registrationPendingPropertyName4;
+	@Value("${registration.pending.property.value4:}")
+	private String registrationPendingPropertyValue4;
+	@Value("${registration.pending.property.name5:}")
+	private String registrationPendingPropertyName5;
+	@Value("${registration.pending.property.value5:}")
+	private String registrationPendingPropertyValue5;
 	
 	@Value("${registration.staticPropertyMapping:false}")
 	private boolean staticPropertyMappingEnabled;
@@ -213,6 +235,30 @@ public class RegistrationModule extends AbstractSpringModule {
 	public String getRegistrationNotificationEmail() {
 		return registrationNotificationEmail;
 	}
+	
+	public void setRegistrationNotificationEmail(String email) {
+		registrationNotificationEmail = email;
+		setStringProperty("registration.notificationEmail", email, true);
+	}
+	
+	public boolean isRegistrationNotificationEmailEnabled() {
+		return registrationNotificationEmailEnabled;
+	}
+	
+	public void setRegistrationNotificationEmailEnabled(boolean enabled) {
+		String enabledStr = enabled ? "true" : "false";
+		registrationNotificationEmailEnabled = enabled;
+		setStringProperty("registration.enableNotificationEmail", enabledStr, true);
+	}
+	
+	public RegistrationPendingStatus getRegistrationPendingStatus() {
+		return RegistrationPendingStatus.valueOf(registrationPendingStatus);
+	}
+	
+	public void setRegistrationPendingStatus(RegistrationPendingStatus status) {
+		this.registrationPendingStatus = status.name();
+		setStringProperty("registration.pending.status", status.name(), true);	
+	}
 
 	/**
 	 * @return true to force acceptance of disclaimer on first login; true to skip disclaimer
@@ -251,6 +297,81 @@ public class RegistrationModule extends AbstractSpringModule {
 		setStringProperty("registration.organisation.key", key, true);
 	}
 	
+	public String getRegistrationPendingPropertyName1() {
+		return registrationPendingPropertyName1;
+	}
+
+	public void setRegistrationPendingProperty1(String propertyName, String propertyValue) {
+		this.registrationPendingPropertyName1 = propertyName;
+		this.registrationPendingPropertyValue1 = propertyValue;
+		setStringProperty("registration.pending.property.name1", propertyName, false);
+		setStringProperty("registration.pending.property.value1", propertyValue, true);
+	}
+
+	public String getRegistrationPendingPropertyValue1() {
+		return registrationPendingPropertyValue1;
+	}
+
+	public String getRegistrationPendingPropertyName2() {
+		return registrationPendingPropertyName2;
+	}
+
+	public void setRegistrationPendingProperty2(String propertyName, String propertyValue) {
+		this.registrationPendingPropertyName2 = propertyName;
+		this.registrationPendingPropertyValue2 = propertyValue;
+		setStringProperty("registration.pending.property.name2", propertyName, false);
+		setStringProperty("registration.pending.property.value2", propertyValue, true);
+	}
+
+	public String getRegistrationPendingPropertyValue2() {
+		return registrationPendingPropertyValue2;
+	}
+
+	public String getRegistrationPendingPropertyName3() {
+		return registrationPendingPropertyName3;
+	}
+
+	public void setRegistrationPendingProperty3(String propertyName, String propertyValue) {
+		this.registrationPendingPropertyName3 = propertyName;
+		this.registrationPendingPropertyValue3 = propertyValue;
+		setStringProperty("registration.pending.property.name3", propertyName, false);
+		setStringProperty("registration.pending.property.value3", propertyValue, true);
+	}
+
+	public String getRegistrationPendingPropertyValue3() {
+		return registrationPendingPropertyValue3;
+	}
+
+	public String getRegistrationPendingPropertyName4() {
+		return registrationPendingPropertyName4;
+	}
+
+	public void setRegistrationPendingProperty4(String propertyName, String propertyValue) {
+		this.registrationPendingPropertyName4 = propertyName;
+		this.registrationPendingPropertyValue4 = propertyValue;
+		setStringProperty("registration.pending.property.name4", propertyName, false);
+		setStringProperty("registration.pending.property.value4", propertyValue, true);
+	}
+
+	public String getRegistrationPendingPropertyValue4() {
+		return registrationPendingPropertyValue4;
+	}
+
+	public String getRegistrationPendingPropertyName5() {
+		return registrationPendingPropertyName5;
+	}
+
+	public void setRegistrationPendingProperty5(String propertyName, String propertyValue) {
+		this.registrationPendingPropertyName5 = propertyName;
+		this.registrationPendingPropertyValue5 = propertyValue;
+		setStringProperty("registration.pending.property.name5", propertyName, false);
+		setStringProperty("registration.pending.property.value5", propertyValue, true);
+	}
+
+	public String getRegistrationPendingPropertyValue5() {
+		return registrationPendingPropertyValue5;
+	}
+
 	@Override
 	public void init() {
 		//registration enabled/disabled
@@ -269,6 +390,56 @@ public class RegistrationModule extends AbstractSpringModule {
 		String loginEnabledObj = getStringPropertyValue("registration.login.enabled", true);
 		if(StringHelper.containsNonWhitespace(loginEnabledObj)) {
 			selfRegistrationLoginEnabled = "true".equals(loginEnabledObj);
+		}
+		
+		String enableNotificationEmailObj = getStringPropertyValue("registration.enableNotificationEmail", true);
+		if(StringHelper.containsNonWhitespace(enableNotificationEmailObj)) {
+			registrationNotificationEmailEnabled = "true".equals(enableNotificationEmailObj);
+		}
+		
+		String notificationEmailObj = getStringPropertyValue("registration.notificationEmail", true);
+		if(StringHelper.containsNonWhitespace(notificationEmailObj)) {
+			registrationNotificationEmail = notificationEmailObj;
+		}
+	
+		String pendingPropName1Obj = getStringPropertyValue("registration.pending.property.name1", true);
+		String pendingPropValue1Obj = getStringPropertyValue("registration.pending.property.value1", true);
+		if(StringHelper.containsNonWhitespace(pendingPropName1Obj) && StringHelper.containsNonWhitespace(pendingPropValue1Obj)) {
+			registrationPendingPropertyName1 = pendingPropName1Obj;
+			registrationPendingPropertyValue1 = pendingPropValue1Obj;
+		}
+		
+		String pendingPropName2Obj = getStringPropertyValue("registration.pending.property.name2", true);
+		String pendingPropValue2Obj = getStringPropertyValue("registration.pending.property.value2", true);
+		if(StringHelper.containsNonWhitespace(pendingPropName2Obj) && StringHelper.containsNonWhitespace(pendingPropValue2Obj)) {
+			registrationPendingPropertyName2 = pendingPropName2Obj;
+			registrationPendingPropertyValue2 = pendingPropValue2Obj;
+		}
+		
+		String pendingPropName3Obj = getStringPropertyValue("registration.pending.property.name3", true);
+		String pendingPropValue3Obj = getStringPropertyValue("registration.pending.property.value3", true);
+		if(StringHelper.containsNonWhitespace(pendingPropName3Obj) && StringHelper.containsNonWhitespace(pendingPropValue3Obj)) {
+			registrationPendingPropertyName3 = pendingPropName3Obj;
+			registrationPendingPropertyValue3 = pendingPropValue3Obj;
+		}
+
+		String pendingPropName4Obj = getStringPropertyValue("registration.pending.property.name4", true);
+		String pendingPropValue4Obj = getStringPropertyValue("registration.pending.property.value4", true);
+		if(StringHelper.containsNonWhitespace(pendingPropName4Obj) && StringHelper.containsNonWhitespace(pendingPropValue4Obj)) {
+			registrationPendingPropertyName4 = pendingPropName4Obj;
+			registrationPendingPropertyValue4 = pendingPropValue4Obj;
+		}
+		
+		String pendingPropName5Obj = getStringPropertyValue("registration.pending.property.name5", true);
+		String pendingPropValue5Obj = getStringPropertyValue("registration.pending.property.value5", true);
+		if(StringHelper.containsNonWhitespace(pendingPropName5Obj) && StringHelper.containsNonWhitespace(pendingPropValue5Obj)) {
+			registrationPendingPropertyName5 = pendingPropName5Obj;
+			registrationPendingPropertyValue5 = pendingPropValue5Obj;
+		}
+		
+		String pendingStatusObj = getStringPropertyValue("registration.pending.status", true);
+		if(StringHelper.containsNonWhitespace(pendingStatusObj)) {
+			registrationPendingStatus = pendingStatusObj;
 		}
 
 		String organisationObj = getStringPropertyValue("registration.organisation.key", false);
