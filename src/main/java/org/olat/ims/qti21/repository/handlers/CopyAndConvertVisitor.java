@@ -50,9 +50,9 @@ import org.olat.core.util.WebappHelper;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.fileresource.types.ImsQTI21Resource.PathResourceLocator;
 import org.olat.ims.qti21.QTI21Service;
+import org.olat.ims.qti21.model.xml.AssessmentItemChecker;
 import org.olat.ims.qti21.model.xml.BadRessourceHelper;
 import org.olat.ims.qti21.model.xml.Onyx38ToQtiWorksHandler;
-import org.olat.ims.qti21.model.xml.AssessmentItemChecker;
 import org.olat.ims.qti21.model.xml.OnyxToQtiWorksHandler;
 import org.olat.ims.qti21.model.xml.QTI21ExplorerHandler;
 import org.olat.ims.qti21.model.xml.QTI21Infos;
@@ -108,17 +108,17 @@ class CopyAndConvertVisitor extends SimpleFileVisitor<Path> {
 	public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
     throws IOException {
 		Path relativeFile = source.relativize(file);
-        final Path destFile = Paths.get(destDir.toString(), relativeFile.toString());
-        if(filter.matches(file)) {
-        	String filename = file.getFileName().toString();
-        	if(filename.startsWith(".")) {
-        		//ignore
-        	} else if(filename != null && filename.endsWith("xml") && !filename.equals("imsmanifest.xml")) {
-        		convertXmlFile(file, destFile);
-        	} else {
-        		Files.copy(file, destFile, StandardCopyOption.REPLACE_EXISTING);
-        	}
-        }
+		final Path destFile = Paths.get(destDir.toString(), relativeFile.toString());
+		if(filter.matches(file)) {
+			String filename = file.getFileName().toString();
+			if(filename.startsWith(".")) {
+				//ignore
+			} else if(filename.endsWith("xml") && !filename.equals("imsmanifest.xml")) {
+				convertXmlFile(file, destFile);
+			} else {
+				Files.copy(file, destFile, StandardCopyOption.REPLACE_EXISTING);
+			}
+		}
         return FileVisitResult.CONTINUE;
 	}
  
@@ -127,7 +127,7 @@ class CopyAndConvertVisitor extends SimpleFileVisitor<Path> {
 	throws IOException {
 		Path relativeDir = source.relativize(dir);
         final Path dirToCreate = Paths.get(destDir.toString(), relativeDir.toString());
-        if(Files.notExists(dirToCreate)){
+        if(!dirToCreate.toFile().exists()) {
         	Files.createDirectory(dirToCreate);
         }
         return FileVisitResult.CONTINUE;
@@ -149,18 +149,12 @@ class CopyAndConvertVisitor extends SimpleFileVisitor<Path> {
 				fileInfos.setVersion(infos.getVersion());
 			}
 			if(onyx38Family(fileInfos)) {
-				validated = convertXmlFile(inputFile, outputFile, fileInfos.getType(), new HandlerProvider() {
-					@Override
-					public DefaultHandler2 create(XMLStreamWriter xtw) {
-						return new Onyx38ToQtiWorksHandler(xtw);
-					}
+				validated = convertXmlFile(inputFile, outputFile, fileInfos.getType(), xtw -> {
+					return new Onyx38ToQtiWorksHandler(xtw);
 				});
 			} else if(onyxWebFamily(fileInfos)) {
-				validated = convertXmlFile(inputFile, outputFile, fileInfos.getType(), new HandlerProvider() {
-					@Override
-					public DefaultHandler2 create(XMLStreamWriter xtw) {
-						return new OnyxToQtiWorksHandler(xtw, infos);
-					}
+				validated = convertXmlFile(inputFile, outputFile, fileInfos.getType(), xtw -> {
+					return new OnyxToQtiWorksHandler(xtw, infos);
 				});
 				
 				if(validated && fileInfos.getType() == InputType.assessmentItem) {
@@ -179,14 +173,14 @@ class CopyAndConvertVisitor extends SimpleFileVisitor<Path> {
 	
 	private boolean onyx38Family(QTI21Infos fileInfos) {
 		if(fileInfos == null || fileInfos.getEditor() == null) return false;
-		String version = infos.getVersion();
-		return "Onyx Editor".equals(infos.getEditor()) && version != null &&
+		String version = fileInfos.getVersion();
+		return "Onyx Editor".equals(fileInfos.getEditor()) && version != null &&
 				(version.startsWith("2.") || version.startsWith("3."));
 	}
 	
 	private boolean onyxWebFamily(QTI21Infos fileInfos) {
 		if(fileInfos == null || fileInfos.getEditor() == null) return false;
-		return "ONYX Editor".equals(infos.getEditor());
+		return "ONYX Editor".equals(fileInfos.getEditor());
 	}
 	
 	private QTI21Infos scanFile(Path inputFile) {
@@ -215,6 +209,9 @@ class CopyAndConvertVisitor extends SimpleFileVisitor<Path> {
 			
 			boolean valid = validate(tmpFile.toPath(), type, true);
 			if(valid) {
+				if(!outputFile.getParent().toFile().exists()) {
+					outputFile.getParent().toFile().mkdirs();
+				}
 				Files.copy(tmpFile.toPath(), outputFile, StandardCopyOption.REPLACE_EXISTING);
 			}
 			return valid;

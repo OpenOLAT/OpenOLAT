@@ -62,6 +62,8 @@ public class QTI21Module extends AbstractSpringModule {
 	private String digitalSignatureCertificatePassword;
 	@Value("${qti21.correction.workflow:anonymous}")
 	private String correctionWorkflow;
+	@Value("${qti21.import.encoding.fallback:}")
+	private String importEncodingFallback;
 	
 	@Autowired
 	public QTI21Module(CoordinatorManager coordinatorManager) {
@@ -170,6 +172,10 @@ public class QTI21Module extends AbstractSpringModule {
 		setStringProperty("qti21.digital.signature.certificate.password", digitalSignatureCertificatePassword, true);
 	}
 	
+	public String getImportEncodingFallback() {
+		return importEncodingFallback;
+	}
+
 	public enum CorrectionWorkflow {
 		anonymous,
 		named

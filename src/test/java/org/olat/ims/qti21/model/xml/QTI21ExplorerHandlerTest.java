@@ -57,6 +57,7 @@ public class QTI21ExplorerHandlerTest {
                 { "resources/onyx/extended-text-b-3-7.xml", "Onyx Editor", "3.7.2" },
                 { "resources/onyx/extended-text-c-3-7.xml", "Onyx Editor", "3.7.2" },
                 { "resources/onyx/extended-text-e-3-7.xml", "Onyx Editor", "3.7.2" },
+                { "resources/onyx/paragraphs-rec.xml", "Onyx Editor", "3.8.1" },
                 { "resources/onyx/imsmanifest-5-1.xml", "ONYX Editor", "5.10.3" },
                 { "resources/onyx/imsmanifest-test-5-11.xml", "ONYX Editor", "5.11.1a" },
                 { "resources/openolat/essay3c2454b4c4dbd64347ea9df54cd.xml", "OpenOLAT", "11.3a" },

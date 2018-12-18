@@ -85,7 +85,8 @@ public class Onyx38ToQtiWorksAssessementItemsTest {
                 { "extended-text-c-3-7.xml" },
                 { "extended-text-3-7.xml" },
                 { "text-entry-3-8.xml" },
-                { "extended-text-d-3-7.xml" }
+                { "extended-text-d-3-7.xml" },
+                { "paragraphs-rec.xml" }
         });
     }
     

@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<assessmentItem
+	xmlns="http://www.imsglobal.org/xsd/imsqti_v2p1"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqti_v2p1 http://www.imsglobal.org/xsd/qti/qtiv2p1/imsqti_v2p1p1.xsd http://www.w3.org/1998/Math/MathML http://www.w3.org/Math/XMLSchema/mathml2/mathml2.xsd"
+	identifier="id260dc4c6-5a55-4c2c-b90b-e32f28e2f4db" title="Rechnung"
+	adaptive="false" timeDependent="false">
+	<responseDeclaration
+		identifier="id7e187f0f-409b-414e-99d2-49ba0110e62d"
+		cardinality="single" baseType="float">
+		<correctResponse>
+			<value>0.99948</value>
+		</correctResponse>
+	</responseDeclaration>
+	<outcomeDeclaration identifier="SCORE"
+		cardinality="single" baseType="float">
+		<defaultValue>
+			<value>0</value>
+		</defaultValue>
+	</outcomeDeclaration>
+	<outcomeDeclaration identifier="MAXSCORE"
+		cardinality="single" baseType="float">
+		<defaultValue>
+			<value>1</value>
+		</defaultValue>
+	</outcomeDeclaration>
+	<outcomeDeclaration identifier="FEEDBACKBASIC"
+		cardinality="single" baseType="identifier" view="testConstructor">
+		<defaultValue>
+			<value>empty</value>
+		</defaultValue>
+	</outcomeDeclaration>
+	<itemBody>
+		<p>
+			<p>
+				<p>
+					<p>
+						Do some calculation with 6
+						<sub>3</sub>
+						to make some funny result.
+					</p>
+					<p>
+						Der Normalfaktor beträgt f =  
+						<textEntryInteraction
+							responseIdentifier="id7e187f0f-409b-414e-99d2-49ba0110e62d" />
+					</p>
+				</p>
+			</p>
+		</p>
+	</itemBody>
+	<responseProcessing>
+		<responseCondition>
+			<responseIf>
+				<equal toleranceMode="absolute" tolerance="0.00005 0.00005"
+					includeLowerBound="true" includeUpperBound="true">
+					<variable
+						identifier="id7e187f0f-409b-414e-99d2-49ba0110e62d" />
+					<correct
+						identifier="id7e187f0f-409b-414e-99d2-49ba0110e62d" />
+				</equal>
+				<setOutcomeValue identifier="SCORE">
+					<sum>
+						<variable identifier="SCORE" />
+						<baseValue baseType="float">1</baseValue>
+					</sum>
+				</setOutcomeValue>
+			</responseIf>
+		</responseCondition>
+		<responseCondition>
+			<responseIf>
+				<not>
+					<isNull>
+						<variable
+							identifier="id7e187f0f-409b-414e-99d2-49ba0110e62d" />
+					</isNull>
+				</not>
+				<setOutcomeValue identifier="FEEDBACKBASIC">
+					<baseValue baseType="identifier">incorrect</baseValue>
+				</setOutcomeValue>
+			</responseIf>
+		</responseCondition>
+		<responseCondition>
+			<responseIf>
+				<and>
+					<not>
+						<match>
+							<variable identifier="FEEDBACKBASIC" />
+							<baseValue baseType="identifier">empty</baseValue>
+						</match>
+					</not>
+					<equal toleranceMode="exact">
+						<variable identifier="SCORE" />
+						<variable identifier="MAXSCORE" />
+					</equal>
+				</and>
+				<setOutcomeValue identifier="FEEDBACKBASIC">
+					<baseValue baseType="identifier">correct</baseValue>
+				</setOutcomeValue>
+			</responseIf>
+		</responseCondition>
+	</responseProcessing>
+</assessmentItem>

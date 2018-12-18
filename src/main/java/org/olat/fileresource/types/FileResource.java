@@ -27,6 +27,8 @@ package org.olat.fileresource.types;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -34,6 +36,11 @@ import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.spi.FileSystemProvider;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLog;
@@ -124,6 +131,63 @@ public class FileResource implements OLATResourceable {
 			fPath = file.toPath();
 		}
 		return fPath;
+	}
+	
+	public static Path getResource(File file, String filename, String fallbackEncoding)
+	throws IOException {
+		if(!StringHelper.containsNonWhitespace(filename)) {
+			filename = file.getName();
+		}
+		
+		if(!StringHelper.containsNonWhitespace(fallbackEncoding)) {
+			return getResource(file, filename);
+		}
+		
+		Path fPath = null;
+		if(file.isDirectory()) {
+			fPath = file.toPath();
+		} else if(filename != null && filename.toLowerCase().endsWith(".zip")) {
+			//perhaps find root folder and return it
+			Map<String,String> env = new HashMap<>();
+			if(isEncodingOk(file, "UTF-8")) {
+				env.put("encoding", "UTF-8");
+			} else if(isEncodingOk(file, fallbackEncoding)) {
+				env.put("encoding", fallbackEncoding);
+			}
+			
+			fPath = newFileSystem(file.toPath(), env).getPath("/");
+			RootSearcher rootSearcher = searchRootDirectory(fPath);
+			if(rootSearcher.foundRoot()) {
+				Path rootPath = rootSearcher.getRoot();
+				fPath = fPath.resolve(rootPath);
+			}
+		} else {
+			fPath = file.toPath();
+		}
+		return fPath;
+	}
+	
+	private static FileSystem newFileSystem(Path path, Map<String,String> env) throws IOException {
+		for (FileSystemProvider provider: FileSystemProvider.installedProviders()) {
+            try {
+                return provider.newFileSystem(path, env);
+            } catch (UnsupportedOperationException uoe) {
+            	//
+            }
+        }
+		return null;
+	}
+	
+	private static boolean isEncodingOk(File file, String encoding) {
+		boolean ok = false;
+		try(ZipFile zFile = new ZipFile(file, Charset.forName(encoding))) {
+			zFile.stream().forEach(ZipEntry::toString);
+			ok = true;
+		} catch (IOException | IllegalArgumentException e) {
+			//this is what we check
+		}
+		
+		return ok;
 	}
 	
 	protected static  RootSearcher searchRootDirectory(Path fPath)

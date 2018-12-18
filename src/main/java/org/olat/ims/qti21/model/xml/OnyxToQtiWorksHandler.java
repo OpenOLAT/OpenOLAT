@@ -134,7 +134,9 @@ public class OnyxToQtiWorksHandler extends DefaultHandler2 {
 				writeImgElementAttributes(attributes);
 			} else if("customOperator".equals(qName)) {
 				writeCustomOperatorAttributes(attributes);
-			} else {
+			} else if("mapTolResponse".equals(qName)) {
+				writeMapTo1ResponseElement(attributes);
+			}  else {
 				int numOfAttributes = attributes.getLength();
 				for(int i=0;i<numOfAttributes; i++) {
 					String attrQName = attributes.getQName(i);
@@ -197,6 +199,10 @@ public class OnyxToQtiWorksHandler extends DefaultHandler2 {
 		for(int i=0;i<numOfAttributes; i++) {
 			String attrQName = attributes.getQName(i);
 			String attrValue = attributes.getValue(i);
+			if("xsi:schemaLocation".equals(attrQName)) {
+				attrValue = attrValue.replace("http://www.w3.org/1998/Math/MathML http://www.w3.org/Math/XMLSchema/mathml2/mathml2.xsd", "");
+			}
+			
 			xtw.writeAttribute(attrQName, attrValue);
 			if("toolName".equals(attrQName)) {
 				hasToolName = true;
@@ -210,6 +216,19 @@ public class OnyxToQtiWorksHandler extends DefaultHandler2 {
 		}
 		if(!hasEditor && infos != null && StringHelper.containsNonWhitespace(infos.getVersion())) {
 			xtw.writeAttribute("toolVersion", infos.getVersion());
+		}
+	}
+	
+	private void writeMapTo1ResponseElement(Attributes attributes)
+	throws XMLStreamException {
+		xtw.writeStartElement("mapResponse");
+		int numOfAttributes = attributes.getLength();
+		for(int i=0;i<numOfAttributes; i++) {
+			String attrQName = attributes.getQName(i);
+			if(!"tolerance".equals(attrQName) && !"toleranceMode".equals(attrQName) && !"xmlns".equals(attrQName)) {
+				String attrValue = attributes.getValue(i);
+				xtw.writeAttribute(attrQName, attrValue);
+			}
 		}
 	}
 	
@@ -268,7 +287,7 @@ public class OnyxToQtiWorksHandler extends DefaultHandler2 {
 	private boolean latexDollarOpen = false;
 	
 	private void processLatexDollar(String text)
-	throws XMLStreamException, SAXException {
+	throws XMLStreamException {
 		for(int i=100; i-->0; ) {
 		
 			int index = text.indexOf("$$");
@@ -297,7 +316,7 @@ public class OnyxToQtiWorksHandler extends DefaultHandler2 {
 	}
 	
 	private void processLatexParenthesis(String text)
-	throws XMLStreamException, SAXException {
+	throws XMLStreamException {
 		for(int i=100; i-->0; ) {
 		
 			int indexOpen = text.indexOf("\\(");
