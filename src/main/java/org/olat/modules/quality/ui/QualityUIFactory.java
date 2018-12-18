@@ -211,9 +211,18 @@ public class QualityUIFactory {
 		for (int i = elements.size(); i-->0; ) {
 			CurriculumElement element = elements.get(i);
 			keys[i] = Long.toString(element.getKey());
-			values[i] = computeIntendentionForCurriculumElement(element, new StringBuilder()).append(element.getDisplayName()).toString();
+			values[i] = getCurriculumElementValue(element);
 		}
 		return new KeysValues(keys, values);
+	}
+
+	private static String getCurriculumElementValue(CurriculumElement element) {
+		StringBuilder sb = computeIntendentionForCurriculumElement(element, new StringBuilder());
+		if (StringHelper.containsNonWhitespace(element.getIdentifier())) {
+			sb.append(element.getIdentifier()).append(": ");
+		}
+		sb.append(element.getDisplayName());
+		return sb.toString();
 	}
 	
 	private static void curriculumElementTreeToList(List<CurriculumElement> elements, INode node) {
