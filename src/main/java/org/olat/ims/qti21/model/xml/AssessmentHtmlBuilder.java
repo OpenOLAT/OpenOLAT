@@ -135,8 +135,10 @@ public class AssessmentHtmlBuilder {
 		content = content.replace(" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"", "");
 		content = content.replace("xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"", "");
 		content = content.replace("\n   xmlns=\"http://www.imsglobal.org/xsd/imsqti_v2p1\"", "");
+		content = content.replace(" xmlns=\"http://www.imsglobal.org/xsd/imsqti_v2p1\"", "");
 		content = content.replace("xmlns=\"http://www.imsglobal.org/xsd/imsqti_v2p1\"", "");
 		content = content.replace("\n   xsi:schemaLocation=\"http://www.imsglobal.org/xsd/imsqti_v2p1 http://www.imsglobal.org/xsd/imsqti_v2p1.xsd\"", "");
+		content = content.replace(" xsi:schemaLocation=\"http://www.imsglobal.org/xsd/imsqti_v2p1 http://www.imsglobal.org/xsd/imsqti_v2p1.xsd\"", "");
 		content = content.replace("xsi:schemaLocation=\"http://www.imsglobal.org/xsd/imsqti_v2p1 http://www.imsglobal.org/xsd/imsqti_v2p1.xsd\"", "");
 		return content.trim();
 	}

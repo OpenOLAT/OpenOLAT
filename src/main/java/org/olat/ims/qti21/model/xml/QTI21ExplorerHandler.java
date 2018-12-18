@@ -28,6 +28,11 @@ import org.xml.sax.SAXException;
 import org.xml.sax.ext.DefaultHandler2;
 
 /**
+ * The handler search the version and the editor in a comment
+ * at the beginning of the file, in the VCARD of imsmanifest,
+ * it will react to some non-standard features like mapTolResponse or
+ * some HTML code erros like <p> in <p>.
+ * 
  * 
  * Initial date: 1 févr. 2017<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
@@ -39,6 +44,7 @@ public class QTI21ExplorerHandler extends DefaultHandler2 {
 	private static final String PRODID_MARKER = "PRODID:";
 	
 	private StringBuilder collector;
+	private int pLevel = -1;
 	private final QTI21Infos infos = new QTI21Infos();
 	
 	public QTI21Infos getInfos() {
@@ -49,7 +55,7 @@ public class QTI21ExplorerHandler extends DefaultHandler2 {
 	public void comment(char[] ch, int start, int length)
 	throws SAXException {
 		String comment = new String(ch, start, length);
-		if(comment != null && comment.contains("Onyx Editor")) {
+		if(comment.contains("Onyx Editor")) {
 			infos.setEditor("Onyx Editor");
 			int versionIndex = comment.indexOf(VERSION_MARKER);
 			if(versionIndex > 0) {
@@ -73,6 +79,17 @@ public class QTI21ExplorerHandler extends DefaultHandler2 {
 			collector = new StringBuilder();
 		} else if("entity".equals(qName)) {
 			collector = new StringBuilder();
+		} else if("mapTolResponse".equals(qName)) {
+			if(!StringHelper.containsNonWhitespace(infos.getEditor())) {
+				infos.setEditor("Onyx Editor");
+				infos.setVersion("3.8.1");
+			}
+		} else if("p".equals(qName)) {
+			pLevel++;
+			if(pLevel == 1 && !StringHelper.containsNonWhitespace(infos.getEditor())) {
+				infos.setEditor("Onyx Editor");
+				infos.setVersion("3.8.1");
+			}
 		}
 	}
 	
@@ -121,6 +138,8 @@ public class QTI21ExplorerHandler extends DefaultHandler2 {
 			}
 			
 			collector = null;
+		} else if("p".equals(qName)) {
+			pLevel--;
 		}
 	}
 }

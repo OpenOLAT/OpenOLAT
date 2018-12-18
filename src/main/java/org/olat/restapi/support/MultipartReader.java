@@ -54,7 +54,7 @@ public class MultipartReader {
 	private final void servlet31(HttpServletRequest request) {
 		try {
 			for(Part part:request.getParts()) {
-				if(part.getContentType() != null) {
+				if(part.getContentType() != null && (StringHelper.containsNonWhitespace(part.getSubmittedFileName()) || !part.getContentType().startsWith("text/plain"))) {
 					contentType = part.getContentType();
 					filename = part.getSubmittedFileName();
 					if(filename != null) {
