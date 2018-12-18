@@ -19,6 +19,8 @@
  */
 package org.olat.ims.qti21.model.xml;
 
+import java.util.List;
+
 import org.xml.sax.SAXParseException;
 
 import uk.ac.ed.ph.jqtiplus.provision.BadResourceException;
@@ -93,6 +95,13 @@ public class BadRessourceHelper {
         				int columnNumber = saxex.getColumnNumber();
         				String msg = saxex.getMessage();
     	        		out.append("Fatal: " + lineNumber + ":" + columnNumber + " :: " + msg + "\n");
+        			}
+        		}
+        		
+        		if(result.getUnsupportedSchemaNamespaces() != null) {
+        			List<String> unsupportedSchemaNamespaces = result.getUnsupportedSchemaNamespaces();
+        			for(String unsupportedSchemaNamespace : unsupportedSchemaNamespaces) {
+    	        		out.append("Error unsupported namespace: " + unsupportedSchemaNamespace + "\n");
         			}
         		}
         	}

@@ -62,6 +62,7 @@ import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.ims.qti.editor.QTIEditorPackage;
 import org.olat.ims.qti.fileresource.TestFileResource;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
+import org.olat.ims.qti21.QTI21Module;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.manager.AssessmentTestSessionDAO;
 import org.olat.ims.qti21.model.IdentifierGenerator;
@@ -108,6 +109,8 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private QTI21Module qtiModule;
 	@Autowired
 	private QTI21Service qtiService;
 	@Autowired
@@ -296,7 +299,8 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 	
 	private boolean copyResource(File file, String filename, File targetDirectory) {
 		try {
-			Path path = FileResource.getResource(file, filename);
+			String fallbackEncoding = qtiModule.getImportEncodingFallback();
+			Path path = FileResource.getResource(file, filename, fallbackEncoding);
 			if(path == null) {
 				return false;
 			}
