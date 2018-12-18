@@ -32,6 +32,7 @@ import org.olat.core.id.Organisation;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
+import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
@@ -217,6 +218,11 @@ public class QualityAnalysisServiceImpl implements QualityAnalysisService {
 			elementsOfCurriculums.removeIf(e -> isUnused(e.getMaterializedPathKeys(), pathes));
 		}
 		return elementsOfCurriculums;
+	}
+	
+	@Override
+	public List<CurriculumElementType> loadContextCurriculumElementTypes(AnalysisSearchParameter searchParams) {
+		return filterDao.loadContextCurriculumElementsTypes(searchParams);
 	}
 
 	@Override

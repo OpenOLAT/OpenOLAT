@@ -36,6 +36,7 @@ public class AvailableAttributes {
 	private final boolean contextExecutorOrganisation;
 	private final boolean contextCurriculum;
 	private final boolean contextCurriculumElement;
+	private final boolean contextCurriculumElementType;
 	private final boolean contextCurriculumOrganisation;
 	private final boolean contextTaxonomyLevel;
 	private final boolean seriesIndex;
@@ -44,8 +45,8 @@ public class AvailableAttributes {
 	public AvailableAttributes(boolean topicIdentity, boolean topicRepository, boolean topicOrganisation,
 			boolean topicCurriculum, boolean topicCurriculumElement, Boolean contextLocation,
 			boolean contextExecutorOrganisation, boolean contextCurriculum, boolean contextCurriculumElement,
-			boolean contextCurriculumOrganisation, boolean contextTaxonomyLevel, boolean seriesIndex,
-			boolean dataCollection) {
+			boolean contextCurriculumElementType, boolean contextCurriculumOrganisation, boolean contextTaxonomyLevel,
+			boolean seriesIndex, boolean dataCollection) {
 		this.topicIdentity = topicIdentity;
 		this.topicRepository = topicRepository;
 		this.topicOrganisation = topicOrganisation;
@@ -55,6 +56,7 @@ public class AvailableAttributes {
 		this.contextExecutorOrganisation = contextExecutorOrganisation;
 		this.contextCurriculum = contextCurriculum;
 		this.contextCurriculumElement = contextCurriculumElement;
+		this.contextCurriculumElementType = contextCurriculumElementType;
 		this.contextCurriculumOrganisation = contextCurriculumOrganisation;
 		this.contextTaxonomyLevel = contextTaxonomyLevel;
 		this.seriesIndex = seriesIndex;
@@ -95,6 +97,10 @@ public class AvailableAttributes {
 
 	public boolean isContextCurriculumElement() {
 		return contextCurriculumElement;
+	}
+
+	public boolean isContextCurriculumElementType() {
+		return contextCurriculumElementType;
 	}
 
 	public boolean isContextCurriculumOrganisation() {

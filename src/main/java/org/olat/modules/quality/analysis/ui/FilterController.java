@@ -51,6 +51,8 @@ import org.olat.core.id.OrganisationRef;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
+import org.olat.modules.curriculum.CurriculumElementType;
+import org.olat.modules.curriculum.CurriculumElementTypeRef;
 import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.ui.CurriculumTreeModel;
@@ -92,6 +94,7 @@ public class FilterController extends FormBasicController {
 	private MultipleSelectionElement contextExecutorOrganisationEl;
 	private MultipleSelectionElement contextCurriculumEl;
 	private MultipleSelectionElement contextCurriculumElementEl;
+	private MultipleSelectionElement contextCurriculumElementTypeEl;
 	private MultipleSelectionElement contextCurriculumOrganisationEl;
 	private MultipleSelectionElement contextTaxonomyLevelEl;
 	private MultipleSelectionElement contextLocationEl;
@@ -167,6 +170,9 @@ public class FilterController extends FormBasicController {
 		contextCurriculumElementEl = uifactory.addCheckboxesDropdown("filter.context.curriculum.elements", formLayout);
 		contextCurriculumElementEl.addActionListener(FormEvent.ONCLICK);
 
+		contextCurriculumElementTypeEl = uifactory.addCheckboxesDropdown("filter.context.curriculum.element.types", formLayout);
+		contextCurriculumElementTypeEl.addActionListener(FormEvent.ONCLICK);
+
 		contextCurriculumOrganisationEl = uifactory.addCheckboxesDropdown("filter.context.curriculum.organisations", formLayout);
 		contextCurriculumOrganisationEl.addActionListener(FormEvent.ONCLICK);
 
@@ -199,6 +205,7 @@ public class FilterController extends FormBasicController {
 		setContextExecutorOrganisationValues();
 		setContextCurriculumValues();
 		setContextCurriculumElementValues();
+		setContextCurriculumElementTypeValues();
 		setContextCurriculumOrganisationValues();
 		setContextTaxonomyLevelValues();
 		setContextLocationValues();
@@ -263,7 +270,7 @@ public class FilterController extends FormBasicController {
 
 	private void setTopicCurriculumElementValues() {
 		if (!availableAttributes.isTopicCurriculumElement() || !curriculumModule.isEnabled()) {
-			contextCurriculumElementEl.setVisible(false);
+			topicCurriculumElementEl.setVisible(false);
 			return;
 		}
 
@@ -330,7 +337,6 @@ public class FilterController extends FormBasicController {
 
 		AnalysisSearchParameter curriculumSearchParams = searchParams.clone();
 		curriculumSearchParams.setContextCurriculumRefs(null);
-		curriculumSearchParams.setContextCurriculumElementRefs(null);
 		List<Curriculum> curriculums = analysisService.loadContextCurriculums(curriculumSearchParams);
 		KeysValues keysValues = QualityUIFactory.getCurriculumKeysValues(curriculums, null);
 		contextCurriculumEl.setKeysAndValues(keysValues.getKeys(), keysValues.getValues());
@@ -345,7 +351,7 @@ public class FilterController extends FormBasicController {
 			return;
 		}
 
-		Collection<String> selectedKeys = contextCurriculumEl.getSelectedKeys();
+		Collection<String> selectedKeys = contextCurriculumElementEl.getSelectedKeys();
 
 		AnalysisSearchParameter curriculumElementSearchParams = searchParams.clone();
 		Collection<String> curriculumKeys = contextCurriculumEl.isAtLeastSelected(1)
@@ -367,6 +373,32 @@ public class FilterController extends FormBasicController {
 		}
 	}
 
+	private void setContextCurriculumElementTypeValues() {
+		if (!availableAttributes.isContextCurriculumElementType() || !curriculumModule.isEnabled()) {
+			contextCurriculumElementTypeEl.setVisible(false);
+			return;
+		}
+
+		Collection<String> selectedKeys = contextCurriculumElementTypeEl.getSelectedKeys();
+
+		AnalysisSearchParameter clonedSearchParams = searchParams.clone();
+		Collection<String> curriculumKeys = contextCurriculumEl.isAtLeastSelected(1)
+				? contextCurriculumEl.getSelectedKeys()
+				: contextCurriculumEl.getKeys();
+		List<? extends CurriculumRef> curriculumRefs = curriculumKeys.stream()
+				.map(key -> QualityUIFactory.getCurriculumRef(key)).collect(toList());
+		clonedSearchParams.setContextCurriculumRefs(curriculumRefs);
+		clonedSearchParams.setContextCurriculumElementTypeRefs(null);
+		List<CurriculumElementType> curriculumElementTypes = analysisService
+				.loadContextCurriculumElementTypes(clonedSearchParams);
+
+		KeysValues keysValues = QualityUIFactory.getCurriculumElementTypeKeysValues(curriculumElementTypes);
+		contextCurriculumElementTypeEl.setKeysAndValues(keysValues.getKeys(), keysValues.getValues());
+		for (String key : selectedKeys) {
+			contextCurriculumElementEl.select(key, true);
+		}
+	}
+
 	private void setContextCurriculumOrganisationValues() {
 		if (!availableAttributes.isContextCurriculumOrganisation() || !organisationModule.isEnabled()
 				|| !curriculumModule.isEnabled()) {
@@ -380,6 +412,7 @@ public class FilterController extends FormBasicController {
 		searchParamsClone.setContextCurriculumOrganisationRefs(null);
 		searchParamsClone.setContextCurriculumRefs(null);
 		searchParamsClone.setContextCurriculumElementRefs(null);
+		searchParamsClone.setContextCurriculumElementTypeRefs(null);
 		List<Organisation> organisations = analysisService.loadContextCurriculumOrganisations(searchParamsClone, true);
 		OrganisationTreeModel organisationModel = new OrganisationTreeModel();
 		organisationModel.loadTreeModel(organisations);
@@ -521,6 +554,8 @@ public class FilterController extends FormBasicController {
 			doFiltered(ureq);
 		} else if (source == contextCurriculumElementEl) {
 			doFiltered(ureq);
+		} else if (source == contextCurriculumElementTypeEl) {
+			doFiltered(ureq);
 		} else if (source == contextCurriculumOrganisationEl) {
 			doFiltered(ureq);
 		} else if (source == contextTaxonomyLevelEl) {
@@ -554,6 +589,7 @@ public class FilterController extends FormBasicController {
 		getSearchParamContextExecutorOrganisations();
 		getSearchParamContextCurriculums();
 		getSearchParamContextCurriculumElements();
+		getSearchParamContextCurriculumElementTypes();
 		getSearchParamContextCurriculumOrganisations();
 		getSearchParamContextTaxonomyLevels();
 		getSearchParamContextLocations();
@@ -662,6 +698,16 @@ public class FilterController extends FormBasicController {
 			searchParams.setContextCurriculumElementRefs(curriculumElementRefs);
 		} else {
 			searchParams.setContextCurriculumElementRefs(null);
+		}
+	}
+	
+	private void getSearchParamContextCurriculumElementTypes() {
+		if (contextCurriculumElementTypeEl.isVisible() && contextCurriculumElementTypeEl.isAtLeastSelected(1)) {
+			List<CurriculumElementTypeRef> curriculumElementTypeRefs = contextCurriculumElementTypeEl.getSelectedKeys().stream()
+					.map(key -> QualityUIFactory.getCurriculumElementTypeRef(key)).collect(toList());
+			searchParams.setContextCurriculumElementTypeRefs(curriculumElementTypeRefs);
+		} else {
+			searchParams.setContextCurriculumElementTypeRefs(null);
 		}
 	}
 	
