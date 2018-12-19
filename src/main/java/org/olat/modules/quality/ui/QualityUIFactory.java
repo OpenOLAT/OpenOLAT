@@ -54,9 +54,12 @@ import org.olat.core.util.nodes.INode;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
+import org.olat.modules.curriculum.CurriculumElementType;
+import org.olat.modules.curriculum.CurriculumElementTypeRef;
 import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
+import org.olat.modules.curriculum.model.CurriculumElementTypeRefImpl;
 import org.olat.modules.curriculum.model.CurriculumRefImpl;
 import org.olat.modules.curriculum.ui.CurriculumTreeModel;
 import org.olat.modules.quality.QualityDataCollectionTopicType;
@@ -257,6 +260,29 @@ public class QualityUIFactory {
 			try {
 				Long key = Long.valueOf(curriculumElementKey);
 				return new CurriculumElementRefImpl(key);
+			} catch (Exception e) {
+				//
+			}
+		}
+		return null;
+	}
+	
+	public static KeysValues getCurriculumElementTypeKeysValues(List<CurriculumElementType> types) {
+		String[] keys = new String[types.size()];
+		String[] values = new String[types.size()];
+		for (int i = types.size(); i-->0; ) {
+			CurriculumElementType type = types.get(i);
+			keys[i] = Long.toString(type.getKey());
+			values[i] = type.getDisplayName();
+		}
+		return new KeysValues(keys, values);
+	}
+	
+	public static CurriculumElementTypeRef getCurriculumElementTypeRef(String typeKey) {
+		if (StringHelper.containsNonWhitespace(typeKey)) {
+			try {
+				Long key = Long.valueOf(typeKey);
+				return new CurriculumElementTypeRefImpl(key);
 			} catch (Exception e) {
 				//
 			}

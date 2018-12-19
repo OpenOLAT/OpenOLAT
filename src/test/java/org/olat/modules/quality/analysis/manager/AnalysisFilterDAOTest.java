@@ -22,6 +22,7 @@ package org.olat.modules.quality.analysis.manager;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.olat.modules.curriculum.CurriculumCalendars.disabled;
 import static org.olat.modules.quality.analysis.GroupBy.CONTEXT_CURRICULUM;
 import static org.olat.modules.quality.analysis.GroupBy.CONTEXT_ORGANISATION;
 import static org.olat.modules.quality.analysis.GroupBy.CONTEXT_TAXONOMY_LEVEL;
@@ -46,6 +47,7 @@ import org.olat.core.id.Organisation;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
@@ -210,6 +212,7 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		assertThat(attributes.isContextExecutorOrganisation()).isFalse();
 		assertThat(attributes.isContextCurriculum()).isFalse();
 		assertThat(attributes.isContextCurriculumElement()).isFalse();
+		assertThat(attributes.isContextCurriculumElementType()).isFalse();
 		assertThat(attributes.isContextCurriculumOrganisation()).isFalse();
 		assertThat(attributes.isContextTaxonomyLevel()).isFalse();
 		assertThat(attributes.isSeriesIndex()).isFalse();
@@ -357,6 +360,27 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		AvailableAttributes attributes = sut.getAvailableAttributes(searchParams);
 		
 		assertThat(attributes.isContextCurriculumElement()).isTrue();
+	}
+
+	@Test
+	public void shouldGetAvailableAttributeForContextCurriculumElementType() {
+		QualityDataCollection dataCollection = createFinishedDataCollection();
+		Identity executor = JunitTestHelper.createAndPersistIdentityAsRndUser("");
+		CurriculumElement element = qualityTestHelper.createCurriculumElement();
+		CurriculumElementType type = curriculumService.createCurriculumElementType("t", "s", null, null);
+		element.setType(type);
+		element = curriculumService.updateCurriculumElement(element);
+		List<EvaluationFormParticipation> participations = qualityService.addParticipations(dataCollection,
+				singletonList(executor));
+		qualityService.createContextBuilder(dataCollection, participations.get(0))
+				.addCurriculumElement(element)
+				.build();
+		dbInstance.commitAndCloseSession();
+		
+		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
+		AvailableAttributes attributes = sut.getAvailableAttributes(searchParams);
+		
+		assertThat(attributes.isContextCurriculumElementType()).isTrue();
 	}
 
 	@Test
@@ -766,6 +790,45 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		
 		assertThat(filtered)
 			.containsExactlyInAnyOrder(element1.getCurriculum().getKey(), element2.getCurriculum().getKey())
+			.doesNotContainNull();
+	}
+
+	@Test
+	public void shouldLoadDistinctContextCurriculumElementTypes() {
+		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity executor = JunitTestHelper.createAndPersistIdentityAsUser("");
+		Organisation dcOrganisation = qualityTestHelper.createOrganisation();
+		CurriculumElementType type1 = curriculumService.createCurriculumElementType("a", "b", null, null);
+		CurriculumElementType type2 = curriculumService.createCurriculumElementType("a", "b", null, null);
+		Curriculum curriculum = qualityTestHelper.createCurriculum();
+		CurriculumElement element1 = curriculumService.createCurriculumElement("", "", null, null, null, type1, disabled, curriculum);
+		CurriculumElement element2 = curriculumService.createCurriculumElement("", "", null, null, null, type2, disabled, curriculum);;
+		// Participation with curriculum element of type1
+		QualityDataCollection dc1 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participations1 = qualityService.addParticipations(dc1, Collections.singletonList(executor));
+		QualityContextBuilder contextBuilder1 = qualityService.createContextBuilder(dc1, participations1.get(0));
+		contextBuilder1.addCurriculumElement(element1).build();
+		// Participation with curriculum element of type2
+		QualityDataCollection dc2 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participations2 = qualityService.addParticipations(dc2, Collections.singletonList(executor));
+		QualityContextBuilder contextBuilder2 = qualityService.createContextBuilder(dc2, participations2.get(0));
+		contextBuilder2.addCurriculumElement(element2).build();
+		// Second participation with curriculum element of type1 (to test distinct)
+		QualityDataCollection dcDistinct = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participationsDistinct = qualityService.addParticipations(dcDistinct, Collections.singletonList(executor));
+		QualityContextBuilder contextBuilderDistinct = qualityService.createContextBuilder(dcDistinct, participationsDistinct.get(0));
+		contextBuilderDistinct.addCurriculumElement(element1).build();
+		// Participation without curriculum (to test no nulls)
+		QualityDataCollection dcNull = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		qualityService.addParticipations(dcNull, Collections.singletonList(executor));
+		finish(asList(dc1, dc2, dcDistinct, dcNull));
+		dbInstance.commitAndCloseSession();
+		
+		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
+		List<CurriculumElementType> filtered = sut.loadContextCurriculumElementsTypes(searchParams);
+		
+		assertThat(filtered)
+			.containsExactlyInAnyOrder(type1, type2)
 			.doesNotContainNull();
 	}
 	
@@ -1456,6 +1519,53 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		
 		long expected = asList(element1, element2, subElement).size();
 		assertThat(count).isEqualTo(expected);
+	}
+	
+	@Test
+	public void shouldFilterByContextCurriculumElementTypes() {
+		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity executor = JunitTestHelper.createAndPersistIdentityAsUser("");
+		Organisation dcOrganisation = qualityTestHelper.createOrganisation();
+		CurriculumElementType type = curriculumService.createCurriculumElementType("a", "b", null, null);
+		CurriculumElementType typeOther = curriculumService.createCurriculumElementType("y", "z", null, null);
+		Curriculum curriculum = qualityTestHelper.createCurriculum();
+		CurriculumElement element1 = curriculumService.createCurriculumElement("", "", null, null, null, type, disabled, curriculum);
+		CurriculumElement element2 = curriculumService.createCurriculumElement("", "", null, null, null, type, disabled, curriculum);;
+		CurriculumElement elementNull = curriculumService.createCurriculumElement("", "", null, null, null, null, disabled, curriculum);
+		CurriculumElement elementOther = curriculumService.createCurriculumElement("", "", null, null, null, typeOther, disabled, curriculum);
+		// Participation with curriculum element of type
+		QualityDataCollection dc1 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participations1 = qualityService.addParticipations(dc1, Collections.singletonList(executor));
+		QualityContextBuilder contextBuilder1 = qualityService.createContextBuilder(dc1, participations1.get(0));
+		contextBuilder1.addCurriculumElement(element1).build();
+		// Participation with another curriculum element of type
+		QualityDataCollection dc2 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participations2 = qualityService.addParticipations(dc2, Collections.singletonList(executor));
+		QualityContextBuilder contextBuilder2 = qualityService.createContextBuilder(dc2, participations2.get(0));
+		contextBuilder2.addCurriculumElement(element2).build();
+		// Participation with other curriculum element  of other type
+		QualityDataCollection dcOther = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participationsOther = qualityService.addParticipations(dcOther, Collections.singletonList(executor));
+		QualityContextBuilder contextBuilderOther = qualityService.createContextBuilder(dcOther, participationsOther.get(0));
+		contextBuilderOther.addCurriculumElement(elementOther).build();
+		// Participation with curriculum element without type
+		QualityDataCollection dcTypeNull = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participationsTypeNull = qualityService.addParticipations(dcTypeNull, Collections.singletonList(executor));
+		QualityContextBuilder contextBuilderTypeNull = qualityService.createContextBuilder(dcTypeNull, participationsTypeNull.get(0));
+		contextBuilderTypeNull.addCurriculumElement(elementNull).build();
+		// Participation without curriculum
+		QualityDataCollection dcNull = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		qualityService.addParticipations(dcNull, Collections.singletonList(executor));
+		finish(asList(dc1, dc2, dcTypeNull, dcNull, dcOther));
+		dbInstance.commitAndCloseSession();
+		
+		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
+		searchParams.setContextCurriculumElementTypeRefs(asList(type));
+		List<QualityDataCollection> dataCollections = sut.loadDataCollection(searchParams);
+		
+		assertThat(dataCollections)
+				.containsExactlyInAnyOrder(dc1, dc2)
+				.doesNotContain(dcTypeNull, dcNull, dcOther);
 	}
 	
 	@Test

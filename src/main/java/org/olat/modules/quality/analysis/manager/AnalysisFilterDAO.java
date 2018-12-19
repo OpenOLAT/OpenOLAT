@@ -35,6 +35,8 @@ import org.olat.core.id.OrganisationRef;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
+import org.olat.modules.curriculum.CurriculumElementType;
+import org.olat.modules.curriculum.CurriculumElementTypeRef;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.quality.QualityContextRole;
 import org.olat.modules.quality.QualityDataCollection;
@@ -74,6 +76,7 @@ public class AnalysisFilterDAO {
 		sb.append("     , count(contextToOrganisation.organisation.key) > 0");
 		sb.append("     , count(contextCurriculum.key) > 0");
 		sb.append("     , count(contextCurriculumElement.key) > 0");
+		sb.append("     , count(contextCurriculumElement.type.key) > 0");
 		sb.append("     , count(contextCurriculumOrganisation.key) > 0");
 		sb.append("     , count(contextToTaxonomyLevel.taxonomyLevel.key) > 0");
 		sb.append("     , CASE WHEN max(survey.seriesIndex) is not null THEN max(survey.seriesIndex) ELSE 0 END >= 2");
@@ -190,6 +193,19 @@ public class AnalysisFilterDAO {
 		
 		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Long.class);
+		appendParameters(query, searchParams);
+		return query.getResultList();
+	}
+
+	List<CurriculumElementType> loadContextCurriculumElementsTypes(AnalysisSearchParameter searchParams) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select distinct contextCurriculumElement.type");
+		appendFrom(sb, searchParams);
+		appendWhere(sb, searchParams);
+		sb.and().append("contextCurriculumElement.type is not null");
+		
+		TypedQuery<CurriculumElementType> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), CurriculumElementType.class);
 		appendParameters(query, searchParams);
 		return query.getResultList();
 	}
@@ -502,6 +518,9 @@ public class AnalysisFilterDAO {
 				}
 			}
 		}
+		if (searchParams.getContextCurriculumElementTypeRefs() != null && !searchParams.getContextCurriculumElementTypeRefs().isEmpty()) {
+			sb.and().append("contextCurriculumElement.type.key in :contextCurriculumElementTypeKeys");
+		}
 		if (searchParams.getContextCurriculumOrganisationRefs() != null && !searchParams.getContextCurriculumOrganisationRefs().isEmpty()) {
 			// load the organisations and all children
 			sb.and();
@@ -604,6 +623,10 @@ public class AnalysisFilterDAO {
 				String value = new StringBuilder(32).append("%/").append(key).append("/%").toString();
 				query.setParameter(parameter, value);
 			}
+		}
+		if (searchParams.getContextCurriculumElementTypeRefs() != null && !searchParams.getContextCurriculumElementTypeRefs().isEmpty()) {
+			List<Long> keys = searchParams.getContextCurriculumElementTypeRefs().stream().map(CurriculumElementTypeRef::getKey).collect(toList());
+			query.setParameter("contextCurriculumElementTypeKeys", keys);
 		}
 		if (searchParams.getContextCurriculumOrganisationRefs() != null && !searchParams.getContextCurriculumOrganisationRefs().isEmpty()) {
 			for (int i = 0; i < searchParams.getContextCurriculumOrganisationRefs().size(); i++) {

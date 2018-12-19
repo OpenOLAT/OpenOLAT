@@ -26,6 +26,7 @@ import org.olat.basesecurity.IdentityShort;
 import org.olat.core.id.Organisation;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.quality.QualityContextRole;
@@ -76,6 +77,8 @@ public interface QualityAnalysisService {
 	public List<Curriculum> loadContextCurriculums(AnalysisSearchParameter searchParams);
 
 	public List<CurriculumElement> loadContextCurriculumElements(AnalysisSearchParameter searchParams, boolean withParents);
+	
+	public List<CurriculumElementType> loadContextCurriculumElementTypes(AnalysisSearchParameter searchParams);
 	
 	public List<Organisation> loadContextCurriculumOrganisations(AnalysisSearchParameter searchParams, boolean withParents);
 
