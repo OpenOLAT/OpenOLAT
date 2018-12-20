@@ -31,7 +31,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -50,11 +49,12 @@ import org.olat.search.service.indexer.IndexCronGenerator;
 */
 public class SearchAdminController extends BasicController {
 
-	VelocityContainer myContent;
-	private SearchAdminForm searchAdminForm;
+	private final Link stopIndexingButton;
+	private final Link startIndexingButton;
+	private final Link refreshIndexingButton;
+	private final VelocityContainer myContent;
 	
-	Panel main;
-	private Link stopIndexingButton, startIndexingButton, refreshIndexingButton;
+	private SearchAdminForm searchAdminForm;
 	
 	/**
 	 * @param ureq
@@ -63,7 +63,6 @@ public class SearchAdminController extends BasicController {
 	public SearchAdminController(UserRequest ureq, WindowControl wControl) { 
 		super(ureq,wControl);	
 		
-		main = new Panel("searchmain");
 		myContent = createVelocityContainer("index");
 		startIndexingButton = LinkFactory.createButtonSmall("button.startindexing", myContent, this);
 		stopIndexingButton = LinkFactory.createButtonSmall("button.stopindexing", myContent, this);
@@ -81,9 +80,7 @@ public class SearchAdminController extends BasicController {
 		searchAdminForm = new SearchAdminForm(ureq, wControl);
 		listenTo(searchAdminForm);
 		
-		searchAdminForm.setIndexInterval(
-				SearchServiceFactory.getService().getIndexInterval()
-		);
+		searchAdminForm.setIndexInterval(SearchServiceFactory.getService().getIndexInterval());
 		
 		SearchModule searchModule = (SearchModule)CoreSpringFactory.getBean("searchModule");
 		searchAdminForm.setFileBlackList(searchModule.getCustomFileBlackList());
@@ -92,22 +89,20 @@ public class SearchAdminController extends BasicController {
 		searchAdminForm.setPdfFileEnabled(searchModule.getPdfFileEnabled());
 	
 		myContent.put("searchAdminForm", searchAdminForm.getInitialComponent());
-		main.setContent(myContent);
 		
 		LogRealTimeViewerController logViewController = new LogRealTimeViewerController(ureq, wControl, "org.olat.search", Level.DEBUG, true);
 		listenTo(logViewController);
 		myContent.put("logViewController", logViewController.getInitialComponent());
 
-		putInitialPanel(main);
+		putInitialPanel(myContent);
 	}
 
+	@Override
 	protected void doDispose() {		
 		//
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == startIndexingButton) {
 			doStartIndexer();
@@ -119,25 +114,24 @@ public class SearchAdminController extends BasicController {
 			doRefresh();
 		}
 	}
-	
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
+
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == searchAdminForm) {
 			if (event == Event.DONE_EVENT) {
 				SearchServiceFactory.getService().setIndexInterval(searchAdminForm.getIndexInterval());
-				
 				SearchModule searchModule = (SearchModule)CoreSpringFactory.getBean("searchModule");
 				searchModule.setCustomFileBlackList(searchAdminForm.getFileBlackList());
 				searchModule.setExcelFileEnabled(searchAdminForm.isExcelFileEnabled());
 				searchModule.setPptFileEnabled(searchAdminForm.isPptFileEnabled());
 				searchModule.setPdfFileEnabled(searchAdminForm.isPdfFileEnabled());
-				return;
 			}
 		}
 	}
 	
+	/**
+	 * Refresh the Lucene's readers
+	 */
 	private void doRefresh() {
 		if(SearchServiceFactory.getService().refresh()) {
 			showInfo("refreshed");

@@ -142,6 +142,11 @@ public class SearchResultsImpl implements SearchResults {
 		this.numberOfIndexDocuments = numberOfIndexDocuments;
 	}
 
+	@Override
+	public Exception getException() {
+		return null;
+	}
+
 	/**
 	 * @return  Number of search-index-elements. 
 	 */

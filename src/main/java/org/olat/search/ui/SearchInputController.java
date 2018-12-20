@@ -472,7 +472,9 @@ public class SearchInputController extends FormBasicController implements Generi
 			SearchResults searchResults = searchClient.doSearch(query, condQueries,
 					getIdentity(), ureq.getUserSession().getRoles(), getLocale(), firstResult, maxReturns, true);
 
-			if(searchResults == null) {
+			if(searchResults != null && searchResults.getException() instanceof ParseException) {
+				getWindowControl().setWarning(translate("invalid.search.query"));
+			} else if(searchResults == null || searchResults.getException() != null) {
 				getWindowControl().setWarning(translate("search.service.unexpected.error"));
 			} else if (firstResult == 0 && searchResults.size() == 0 && StringHelper.containsNonWhitespace(query) && !query.endsWith(FUZZY_SEARCH)) {
 				// result-list was empty => first try to find word via spell-checker
@@ -488,7 +490,7 @@ public class SearchInputController extends FormBasicController implements Generi
 				}
 			}
 			
-			if(firstResult == 0 && searchResults != null && searchResults.getList().isEmpty()) {
+			if(firstResult == 0 && searchResults != null && searchResults.getException() == null && searchResults.getList().isEmpty()) {
 				showInfo("found.no.result.try.fuzzy.search");
 			}
 			return searchResults;

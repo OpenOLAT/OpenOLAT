@@ -312,6 +312,9 @@ public class SearchServiceImpl implements SearchService, GenericEventListener {
 			futureResults = searchExecutor.submit(run);
 			SearchResults results = futureResults.get(searchModuleConfig.getSearchTimeout(), TimeUnit.SECONDS);
 			queryCount++;
+			if(results != null && results.getException() instanceof IllegalStateException) {
+				refresh();
+			}
 			return results;
 		} catch (InterruptedException | TimeoutException e) {
 			cancelSearch(futureResults);
@@ -344,10 +347,13 @@ public class SearchServiceImpl implements SearchService, GenericEventListener {
 				results = new ArrayList<>(1);
 			}
 			return results;
+		} catch (NullPointerException e) {
+			// something happens during execution of the query and the error will be there logged
+			return new ArrayList<>(1);
 		} catch (TimeoutException e) {
 			cancelSearch(futureResults);
 			log.error("", e);
-			return null;
+			return new ArrayList<>(1);
 		} catch (Exception e) {
 			log.error("", e);
 			return new ArrayList<>(1);
@@ -362,6 +368,9 @@ public class SearchServiceImpl implements SearchService, GenericEventListener {
 			GetDocumentByCallable run = new GetDocumentByCallable(queryString, this);
 			futureResults = searchExecutor.submit(run);
 			return futureResults.get(searchModuleConfig.getSearchTimeout(), TimeUnit.SECONDS);
+		} catch (NullPointerException e) {
+			// something happens during execution of the query and the error will be there logged
+			return null;
 		} catch (TimeoutException e) {
 			cancelSearch(futureResults);
 			log.error("", e);
@@ -556,23 +565,26 @@ public class SearchServiceImpl implements SearchService, GenericEventListener {
 
 		@Override
 		protected void decRef(IndexSearcher reference) throws IOException {
-			reference.getIndexReader().decRef();
+			if(reference != null) {
+				reference.getIndexReader().decRef();
+			}
 		}
 
 		@Override
 		protected IndexSearcher refreshIfNeeded(IndexSearcher referenceToRefresh)
 		throws IOException {
-		    final OOMultiReader r = (OOMultiReader)referenceToRefresh.getIndexReader();
-		    final IndexReader newReader = DirectoryReader.openIfChanged(r.getReader());
-		    final IndexReader newPermReader = DirectoryReader.openIfChanged(r.getPermanentReader());
-		    
 		    IndexSearcher searcher;
 		    if(refresh.getAndSet(false)) {
 		    	searcher = getSearcher(factory);
-		    } else if (newReader == null && newPermReader == null) {
-		    	searcher = null;
 		    } else {
-		    	searcher = getSearcher(factory);
+		    	final OOMultiReader r = (OOMultiReader)referenceToRefresh.getIndexReader();
+		    	final IndexReader newReader = DirectoryReader.openIfChanged(r.getReader());
+		    	final IndexReader newPermReader = DirectoryReader.openIfChanged(r.getPermanentReader());  
+		    	if (newReader == null && newPermReader == null) {
+		    		searcher = null;
+		    	} else {
+			    	searcher = getSearcher(factory);
+			    }
 		    }
 		    return searcher;
 		}

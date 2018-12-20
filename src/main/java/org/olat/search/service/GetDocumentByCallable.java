@@ -44,12 +44,21 @@ class GetDocumentByCallable implements Callable<Document> {
 	
 	private static final OLog log = Tracing.createLoggerFor(GetDocumentByCallable.class);
 	
+	/**
+	 * To prevent flooding the logs with errors during a re-index
+	 */
+	private static int countEx = 0;
+	
 	private final String resourceUrl;
 	private final SearchServiceImpl searchService;
 	
 	public GetDocumentByCallable(String resourceUrl,  SearchServiceImpl searchService) {
 		this.resourceUrl = resourceUrl;
 		this.searchService = searchService;
+	}
+	
+	public static int incrementEx() {
+		return countEx++;
 	}
 	
 	@Override
@@ -79,6 +88,12 @@ class GetDocumentByCallable implements Callable<Document> {
 						doc = searcher.doc(docs.scoreDocs[i].doc);
 					}
 				}
+			}
+		} catch(IllegalStateException ise) {
+			if(incrementEx() % 500 == 0) {
+				log.error("", ise);
+			} else {
+				log.warn("", ise);
 			}
 		} catch (Exception naex) {
 			log.error("", naex);

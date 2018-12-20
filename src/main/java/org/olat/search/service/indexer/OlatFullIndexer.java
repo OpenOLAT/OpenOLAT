@@ -55,17 +55,14 @@ import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 import org.apache.lucene.index.LogDocMergePolicy;
 import org.apache.lucene.index.LogMergePolicy;
-import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.coordinate.CoordinatorManager;
-import org.olat.search.QueryException;
 import org.olat.search.SearchModule;
 import org.olat.search.SearchService;
-import org.olat.search.ServiceNotAvailableException;
 import org.olat.search.model.OlatDocument;
 import org.olat.search.service.SearchResourceContext;
 
@@ -240,6 +237,8 @@ public class OlatFullIndexer {
 				indexerWriterExecutor = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS, queue, indexWriterThreadFactory);
 			}
 			
+			searchService.refresh();// make sure all is up-to-date
+			
 			File tempIndexDir = new File(tempIndexPath);
 			Directory tmpIndexPath = FSDirectory.open(new File(tempIndexDir, "main").toPath());
 			indexWriter = new IndexWriter(tmpIndexPath, newIndexWriterConfig());// analyzer, true, IndexWriter.MAX_TERM_LENGTH.UNLIMITED);
@@ -341,14 +340,6 @@ public class OlatFullIndexer {
 			log.info("quit indexing run.");
 		} catch (NullPointerException nex) {
 			// no logging available (shut down)=> do nothing
-		}
-	}
-	
-	public Document getDocument(String businessPath) {
-		try {
-			return searchService.doSearch(businessPath);
-		} catch (ServiceNotAvailableException | ParseException | QueryException e) {
-			return null;
 		}
 	}
 	
