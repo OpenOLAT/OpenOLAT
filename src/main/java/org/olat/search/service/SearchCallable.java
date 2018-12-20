@@ -33,6 +33,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.search.EmptySearchResults;
 import org.olat.search.SearchResults;
 import org.olat.search.ServiceNotAvailableException;
 import org.olat.search.service.searcher.SearchResultsImpl;
@@ -104,10 +105,10 @@ class SearchCallable implements Callable<SearchResults> {
 			
 			return searchResult;
 		} catch(ParseException pex) {
-			throw pex;
+			return new EmptySearchResults(pex);
 		} catch (Exception naex) {
 			log.error("", naex);
-			return null;
+			return new EmptySearchResults(naex);
 		} finally {
 			searchService.releaseIndexSearcher(searcher);
 			DBFactory.getInstance().commitAndCloseSession();

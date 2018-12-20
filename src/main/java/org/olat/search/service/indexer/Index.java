@@ -59,10 +59,6 @@ public class Index {
 
 	/**
 	 * 
-	 * @param indexPath       Absolute directory path of search index.
-	 * @param tempIndexPath   Absolute directory path of temporary index.
-	 * @param restartInterval Restart interval of full-index in milliseconds.
-	 * @param indexInterval   Sleeping time in milliseconds between adding documents to index.
 	 */
 	public Index(SearchModule searchModule, SearchService searchService, SearchSpellChecker spellChecker, MainIndexer mainIndexer,
 			LifeFullIndexer lifeIndexer, CoordinatorManager coordinatorManager) {

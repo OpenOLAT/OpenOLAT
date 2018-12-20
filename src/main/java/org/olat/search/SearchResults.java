@@ -54,4 +54,6 @@ public interface SearchResults extends Serializable {
 	 */
 	public int getTotalDocs();
 	
+	public Exception getException();
+	
 }

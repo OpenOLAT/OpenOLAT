@@ -36,9 +36,15 @@ import org.olat.search.model.ResultDocument;
 public class EmptySearchResults implements SearchResults {
 
 	private static final long serialVersionUID = 9056000658199264982L;
-
-	protected EmptySearchResults() {
+	
+	private Exception exception;
+	
+	public EmptySearchResults() {
 		//
+	}
+	
+	public EmptySearchResults(Exception exception) {
+		this.exception = exception;
 	}
 	
 	@Override
@@ -64,5 +70,10 @@ public class EmptySearchResults implements SearchResults {
 	@Override
 	public int getTotalDocs() {
 		return 0;
+	}
+
+	@Override
+	public Exception getException() {
+		return exception;
 	}
 }
