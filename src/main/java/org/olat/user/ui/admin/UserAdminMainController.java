@@ -311,6 +311,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 			case "authorgroup": return createUserSearchController(ureq, bwControl, OrganisationRoles.author);
 			case "usergroup": return createUserSearchController(ureq, bwControl, OrganisationRoles.user);
 			case "anonymousgroup": return createUserSearchController(ureq, bwControl, OrganisationRoles.guest);
+			case "pendinggroup": return createUserSearchController(ureq, bwControl, Identity.STATUS_PENDING);
 			case "logondeniedgroup": return createUserSearchController(ureq, bwControl, Identity.STATUS_LOGIN_DENIED);
 			case "deletedusers": return createDeletedUserController(ureq, bwControl);
 			case "created.lastweek": return createUserSearchControllerAfterDate(ureq, bwControl, Calendar.DAY_OF_MONTH, -7);
@@ -563,6 +564,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		}
 		
 		appendNode("menu.noauthentication", "menu.noauthentication.alt", "noauthentication", "o_sel_useradmin_noauthentication", accessNode);
+		appendNode("menu.pendinggroup", "menu.pendinggroup.alt", "pendinggroup", "o_sel_useradmin_pendinggroup", accessNode);
 		appendNode("menu.logondeniedgroup", "menu.logondeniedgroup.alt", "logondeniedgroup", "o_sel_useradmin_logondeniedgroup", accessNode);
 		appendNode("menu.deletedusers", "menu.deletedusers.alt", "deletedusers", "o_sel_useradmin_deletedusers", accessNode);
 	}

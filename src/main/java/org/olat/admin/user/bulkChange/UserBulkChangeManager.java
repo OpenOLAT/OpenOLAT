@@ -214,12 +214,11 @@ public class UserBulkChangeManager implements InitializingBean {
 
 			// set status
 			if (userBulkChanges.getStatus() != null) {
-				Integer status = userBulkChanges.getStatus();
-
-				int oldStatus = identity.getStatus();
-				String oldStatusText = (oldStatus == Identity.STATUS_PERMANENT ? "permanent" : (oldStatus == Identity.STATUS_ACTIV ? "active" : (oldStatus == Identity.STATUS_LOGIN_DENIED ? "login_denied" : (oldStatus == Identity.STATUS_DELETED ? "deleted" : "unknown"))));
-				String newStatusText = (status == Identity.STATUS_PERMANENT ? "permanent" : (status == Identity.STATUS_ACTIV ? "active" : (status == Identity.STATUS_LOGIN_DENIED ? "login_denied" : (status == Identity.STATUS_DELETED ? "deleted" : "unknown"))));
-				if(oldStatus != status && status == Identity.STATUS_LOGIN_DENIED && userBulkChanges.isSendLoginDeniedEmail()) {
+				Integer status = userBulkChanges.getStatus();	
+				String newStatusText = getStatusText(status);
+				Integer oldStatus = identity.getStatus();
+				String oldStatusText = getStatusText(oldStatus);
+				if(!oldStatus.equals(status) && Identity.STATUS_LOGIN_DENIED.equals(status) && userBulkChanges.isSendLoginDeniedEmail()) {
 					sendLoginDeniedEmail(identity);
 				}
 				identity = securityManager.saveIdentityStatus(identity, status, actingIdentity);
@@ -268,6 +267,24 @@ public class UserBulkChangeManager implements InitializingBean {
 			businessGroupService.updateMemberships(actingIdentity, changes, mailing);
 			dbInstance.commit();
 		}
+	}
+	
+	public String getStatusText(Integer status) {
+		String text;
+		if(Identity.STATUS_PERMANENT.equals(status)) {
+			text = "permanent";
+		} else if(Identity.STATUS_ACTIV.equals(status)) {
+			text = "active";
+		} else if(Identity.STATUS_LOGIN_DENIED.equals(status)) {
+			text = "login_denied";
+		} else if(Identity.STATUS_DELETED.equals(status)) {
+			text = "deleted";
+		} else if(Identity.STATUS_PENDING.equals(status)) {
+			text = "pending";
+		} else {
+			text = "unknown";
+		}
+		return text;
 	}
 	
 	public void sendLoginDeniedEmail(Identity identity) {

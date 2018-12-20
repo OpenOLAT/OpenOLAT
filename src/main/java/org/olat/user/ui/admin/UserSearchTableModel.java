@@ -47,6 +47,7 @@ public class UserSearchTableModel extends DefaultFlexiTableDataSourceModel<Ident
 				case username: return userRow.getIdentityName();
 				case creationDate: return userRow.getCreationDate();
 				case lastLogin: return userRow.getLastLogin();
+				case status: return userRow.getStatus();
 				default: return null;
 			}
 		} else if(col < TeacherRollCallController.CHECKBOX_OFFSET) {
@@ -66,7 +67,8 @@ public class UserSearchTableModel extends DefaultFlexiTableDataSourceModel<Ident
 		username("table.identity.name"),
 		creationDate("table.identity.creationdate"),
 		lastLogin("table.identity.lastlogin"),
-		action("table.header.action");
+		action("table.header.action"),
+		status("table.identity.status");
 		
 		private final String i18nKey;
 		

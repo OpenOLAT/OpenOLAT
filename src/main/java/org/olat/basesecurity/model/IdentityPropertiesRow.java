@@ -35,19 +35,26 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  */
 public class IdentityPropertiesRow extends UserPropertiesRow {
 	
+	private final Integer status;
 	private final Date lastLogin;
 	private final Date creationDate;
 	
 	public IdentityPropertiesRow(Identity identity, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		super(identity, userPropertyHandlers, locale);
+		status = identity.getStatus();
 		lastLogin = identity.getLastLogin();
 		creationDate = identity.getCreationDate();
 	}
 	
-	public IdentityPropertiesRow(Long identityKey, String identityName, Date creationDate, Date lastLogin, String[] identityProps) {
+	public IdentityPropertiesRow(Long identityKey, String identityName, Date creationDate, Date lastLogin, Integer status, String[] identityProps) {
 		super(identityKey, identityName, identityProps);
+		this.status = status;
 		this.creationDate = creationDate;
 		this.lastLogin = lastLogin;	
+	}
+	
+	public Integer getStatus() {
+		return status;
 	}
 
 	public Date getCreationDate() {

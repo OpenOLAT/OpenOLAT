@@ -90,7 +90,8 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 		  .append(" ident.id as ident_id,")
 		  .append(" ident.name as ident_name,")
 		  .append(" ident.creationDate as ident_cDate,")
-		  .append(" ident.lastLogin as ident_lDate,");
+		  .append(" ident.lastLogin as ident_lDate,")
+		  .append(" ident.status as ident_Status,");
 		writeUserProperties("user", sb, userPropertyHandlers);
 		sb.append(" user.key as ident_user_id")
 		  .append(" from ").append(IdentityImpl.class.getCanonicalName()).append(" as ident ")
@@ -114,13 +115,14 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 			String identityName = (String)rawStat[pos++];
 			Date creationDate = (Date)rawStat[pos++];
 			Date lastLogin = (Date)rawStat[pos++];
+			Integer status = (Integer)rawStat[pos++];
 
 			String[] userProperties = new String[numOfProperties];
 			for(int i=0; i<numOfProperties; i++) {
 				userProperties[i] = (String)rawStat[pos++];
 			}
 
-			rows.add(new IdentityPropertiesRow(identityKey, identityName, creationDate, lastLogin, userProperties));
+			rows.add(new IdentityPropertiesRow(identityKey, identityName, creationDate, lastLogin, status, userProperties));
 		}
 		return rows;
 	}
@@ -155,7 +157,8 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 		return params.getLogin() != null || params.hasUserProperties() || params.hasIdentityKeys()
 				|| params.getCreatedAfter() != null	|| params.getCreatedBefore() != null
 				|| params.getUserLoginAfter() != null || params.getUserLoginBefore() != null
-				|| params.hasAuthProviders() || params.getStatus() != null || params.getManaged() != null
+				|| params.hasAuthProviders() || params.getManaged() != null
+				|| params.getStatus() != null || (params.getExactStatusList() != null && !params.getExactStatusList().isEmpty())
 				|| params.hasRoles() || params.hasExcludedRoles() || params.isAuthorAndCoAuthor()
 				|| params.getRepositoryEntryRole() != null || params.getBusinessGroupRole() != null
 				|| params.hasOrganisations() || params.hasOrganisationParents();
@@ -249,7 +252,10 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 			}	
 		}
 		
-		if (params.getStatus() != null) {
+		if (params.getExactStatusList() != null && !params.getExactStatusList().isEmpty()) {
+			needsAnd = checkAnd(sb, needsAnd);
+			sb.append(" ident.status in (:statusList)");
+		} else if (params.getStatus() != null) {
 			if (params.getStatus().equals(Identity.STATUS_VISIBLE_LIMIT)) {
 				// search for all status smaller than visible limit 
 				needsAnd = checkAnd(sb, needsAnd);
@@ -520,7 +526,9 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 			dbq.setParameter("lastloginBefore", params.getUserLoginBefore(), TemporalType.TIMESTAMP);
 		}
 		
-		if (params.getStatus() != null) {
+		if(params.getExactStatusList() != null && !params.getExactStatusList().isEmpty()) {
+			dbq.setParameter("statusList", params.getExactStatusList());
+		} else if (params.getStatus() != null) {
 			dbq.setParameter("status", params.getStatus());
 		}
 	}

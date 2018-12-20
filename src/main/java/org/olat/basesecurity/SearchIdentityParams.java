@@ -51,6 +51,7 @@ public class SearchIdentityParams {
 	private Date userLoginAfter;
 	private Date userLoginBefore;
 	private Integer status;
+	private List<Integer> exactStatusList;
 	private Collection<Long> identityKeys;
 	private Boolean managed;
 	private boolean withoutBusinessGroup;
@@ -300,6 +301,19 @@ public class SearchIdentityParams {
 		this.status = status;
 	}
 	
+	public List<Integer> getExactStatusList() {
+		return exactStatusList;
+	}
+
+	/**
+	 * These status will override the one set with setStatus()
+	 * 
+	 * @param statusList A lsit of status
+	 */
+	public void setExactStatusList(List<Integer> statusList) {
+		this.exactStatusList = statusList;
+	}
+
 	public boolean hasIdentityKeys() {
 		return identityKeys != null && !identityKeys.isEmpty();
 	}

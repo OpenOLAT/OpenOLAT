@@ -567,6 +567,12 @@ $fa-css-prefix: "o_icon" !default;
 .o_yellow_led:before { content: $fa-var-circle; color: $brand-warning; }
 .o_red_led:before { content: $fa-var-circle; color: $brand-danger; }
 
+/* user */
+.o_icon_identity_permanent:before { content: $fa-var-lock; }
+.o_icon_identity_pending:before { content: $fa-var-clock-o; }
+.o_icon_identity_login_denied:before { content: $fa-var-ban; }
+.o_icon_identity_deleted:before { content: $fa-var-trash; }
+
 /* Access control icons */
 .o_ac_token_icon:before { content: $fa-var-key;}
 .o_ac_free_icon:before { content: $fa-var-gift;}

@@ -145,11 +145,13 @@ public class SystemRolesAndRightsController extends FormBasicController {
 		statusKeys = new ArrayList<>(4);
 		statusKeys.add(Integer.toString(Identity.STATUS_ACTIV));
 		statusKeys.add(Integer.toString(Identity.STATUS_PERMANENT));
+		statusKeys.add(Integer.toString(Identity.STATUS_PENDING));
 		statusKeys.add(Integer.toString(Identity.STATUS_LOGIN_DENIED));
 
 		statusValues = new ArrayList<>(4);
 		statusValues.add(translate("rightsForm.status.activ"));
 		statusValues.add(translate("rightsForm.status.permanent"));
+		statusValues.add(translate("rightsForm.status.pending"));
 		statusValues.add(translate("rightsForm.status.login_denied"));
 		
 		if (editedIdentity.getStatus() != null && editedIdentity.getStatus().equals(Identity.STATUS_DELETED)) {
@@ -483,14 +485,13 @@ public class SystemRolesAndRightsController extends FormBasicController {
 		}
 		
 		if ((admin || BaseSecurityModule.USERMANAGER_CAN_MANAGE_STATUS.booleanValue()) &&  !editedIdentity.getStatus().equals(getStatus()) ) {			
-			int oldStatus = editedIdentity.getStatus();
-			String oldStatusText = (oldStatus == Identity.STATUS_PERMANENT ? "permanent" : (oldStatus == Identity.STATUS_ACTIV ? "active" : (oldStatus == Identity.STATUS_LOGIN_DENIED ? "login_denied" : (oldStatus == Identity.STATUS_DELETED ? "deleted" : "unknown"))));
-			int newStatus = getStatus();
-			String newStatusText = (newStatus == Identity.STATUS_PERMANENT ? "permanent" : (newStatus == Identity.STATUS_ACTIV ? "active" : (newStatus == Identity.STATUS_LOGIN_DENIED ? "login_denied"	 : (newStatus == Identity.STATUS_DELETED ? "deleted" : "unknown"))));
-			if(oldStatus != newStatus && newStatus == Identity.STATUS_LOGIN_DENIED && getSendLoginDeniedEmail()) {
+			Integer oldStatus = editedIdentity.getStatus();
+			String oldStatusText = userBulkChangeManager.getStatusText(oldStatus);
+			Integer newStatus = getStatus();
+			String newStatusText = userBulkChangeManager.getStatusText(newStatus);
+			if(!oldStatus.equals(newStatus) && Identity.STATUS_LOGIN_DENIED.equals(newStatus) && getSendLoginDeniedEmail()) {
 				userBulkChangeManager.sendLoginDeniedEmail(editedIdentity);
 			}
-			
 			editedIdentity = securityManager.saveIdentityStatus(editedIdentity, newStatus, getIdentity());
 			logAudit("User::" + getIdentity().getKey() + " changed account status for user::" + editedIdentity.getKey() + " from::" + oldStatusText + " to::" + newStatusText, null);
 		}
