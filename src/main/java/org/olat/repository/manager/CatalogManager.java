@@ -737,6 +737,11 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 		if(image instanceof VFSLeaf) {
 			return (VFSLeaf)image;
 		}
+		imageName = entry.getKey() + ".gif";
+		image = catalogResourceHome.resolve(imageName);
+		if(image instanceof VFSLeaf) {
+			return (VFSLeaf)image;
+		}
 		return null;
 	}
 	
@@ -778,6 +783,9 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 				ok = VFSManager.copyContent(newImageFile, repoImage);
 			} else if("png".equals(extension)) {
 				VFSLeaf repoImage = catalogResourceHome.createChildLeaf(re.getKey() + ".png");
+				ok = VFSManager.copyContent(newImageFile, repoImage);
+			} else if("gif".equals(extension)) {
+				VFSLeaf repoImage = catalogResourceHome.createChildLeaf(re.getKey() + ".gif");
 				ok = VFSManager.copyContent(newImageFile, repoImage);
 			} else {
 				//scale to default and png
