@@ -33,6 +33,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
@@ -170,6 +171,12 @@ public class UserListController extends FormBasicController implements Activatea
 				if("select".equals(cmd)) {
 					selectStudent(ureq, selectedRow);
 				}
+			} else if(event instanceof FlexiTableSearchEvent) {
+				FlexiTableSearchEvent ftse = (FlexiTableSearchEvent)event;
+				String searchString = ftse.getSearch();
+				model.search(searchString);
+				tableEl.reset();
+				tableEl.reloadData();
 			}
 		} 
 		super.formInnerEvent(ureq, source, event);
@@ -187,7 +194,7 @@ public class UserListController extends FormBasicController implements Activatea
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(event == Event.BACK_EVENT) {
 			reloadModel();
-			initialPanel.popContent();;
+			initialPanel.popContent();
 			removeAsListenerAndDispose(studentCtrl);
 			studentCtrl = null;
 			addToHistory(ureq);
@@ -207,7 +214,12 @@ public class UserListController extends FormBasicController implements Activatea
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		//do nothing
 	}
-	
+
+	@Override
+	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent fe) {
+		//
+	}
+
 	protected void selectUniqueStudent(UserRequest ureq) {
 		if(model.getRowCount() > 0) {
 			StudentStatEntry studentStat = model.getObject(0);

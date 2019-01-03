@@ -294,9 +294,8 @@ i.mce-ico.mce-i-help:before {
 /*
  * Overwrite some class of typehead needed by the flexi table
  */
-div.o_table_search span.twitter-typeahead {
-	display: table-cell;
-	padding-top: 3px;
+div.o_table_search>span.twitter-typeahead {
+	padding-top: 5px;
 }
 
 //tags input
