@@ -1,4 +1,5 @@
 (function ( $ ) {
+	"use strict";
 	$.fn.ooRadarChart = function(options) {
 		var settings = $.extend({
 			w: 600,				//Width of the circle
@@ -144,12 +145,23 @@
 		/////////////////////////////////////////////////////////
 		///////////// Draw the radar chart blobs ////////////////
 		/////////////////////////////////////////////////////////
+		
+		var axisToIndex = function(d) {
+			var i = 0;
+			for(var a=cfg.axis.length; a-->0; ) {
+				if(cfg.axis[a] == d.axis) {
+					i = a;
+					break;
+				}
+			}
+			return i;
+		}
     	
 		//The radial line function
 		var radarLine = d3.lineRadial()
 			.curve(d3.curveCardinalClosed)
-			.radius(function(d) { return rScale(d.value); })
-			.angle(function(d,i) {	return i*angleSlice; });
+			.radius(function(d) {  return rScale(d.value); })
+			.angle(function(d,i) { return axisToIndex(d) * angleSlice; });
 
 		if(cfg.roundStrokes) {
 			radarLine.curve(d3.curveCardinalClosed)
@@ -198,13 +210,18 @@
 
 		//Append the circles
 		blobWrapper.selectAll(".radarCircle")
-			.data(function(d,i) { return d; })
+			.data(function(d,i) {
+				for(var k=d.length; k-->0; ) {
+					d[k].dset = i;
+				}
+				return d;
+			})
 			.enter().append("circle")
 			.attr("class", "radarCircle")
 			.attr("r", cfg.dotRadius)
-			.attr("cx", function(d,i){ return rScale(d.value) * Math.cos(angleSlice*i - Math.PI/2); })
-			.attr("cy", function(d,i){ return rScale(d.value) * Math.sin(angleSlice*i - Math.PI/2); })
-			.style("fill", function(d,i,j) { return cfg.color(j); })
+			.attr("cx", function(d,i){ return rScale(d.value) * Math.cos(angleSlice * axisToIndex(d) - Math.PI/2); })
+			.attr("cy", function(d,i){ return rScale(d.value) * Math.sin(angleSlice * axisToIndex(d) - Math.PI/2); })
+			.style("fill", function(d,i,j) { return cfg.color(d.dset); })
 			.style("fill-opacity", 0.8);
 
 		/////////////////////////////////////////////////////////
@@ -223,13 +240,13 @@
 			.enter().append("circle")
 			.attr("class", "radarInvisibleCircle")
 			.attr("r", cfg.dotRadius*1.5)
-			.attr("cx", function(d,i){ return rScale(d.value) * Math.cos(angleSlice*i - Math.PI/2); })
-			.attr("cy", function(d,i){ return rScale(d.value) * Math.sin(angleSlice*i - Math.PI/2); })
+			.attr("cx", function(d,i){ return rScale(d.value) * Math.cos(angleSlice * axisToIndex(d) - Math.PI/2); })
+			.attr("cy", function(d,i){ return rScale(d.value) * Math.sin(angleSlice * axisToIndex(d) - Math.PI/2); })
 			.style("fill", "none")
 			.style("pointer-events", "all")
 			.on("mouseover", function(d,i) {
-				newX =  parseFloat(d3.select(this).attr('cx')) - 10;
-				newY =  parseFloat(d3.select(this).attr('cy')) - 10;
+				var newX =  parseFloat(d3.select(this).attr('cx')) - 10;
+				var newY =  parseFloat(d3.select(this).attr('cy')) - 10;
 			
 				tooltip
 					.attr('x', newX)
