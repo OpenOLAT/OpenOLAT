@@ -962,14 +962,14 @@ public class QuestionListController extends AbstractItemListController implement
 				boolean editable = true;
 				if(getSource().askEditable()) {
 					Object editableCtx = runContext.get("editable");
-					editable = (editableCtx instanceof Boolean) ? ((Boolean)editableCtx).booleanValue() : false;
+					editable = editableCtx instanceof Boolean && ((Boolean)editableCtx).booleanValue();
 				}
-				qpoolService.index(importItems);
 				int postImported = getSource().postImport(importItems, editable);
 				if(postImported > 0) {
 					getItemsTable().reset();
 				}
-			
+				dbInstance.commit();
+				qpoolService.index(importItems);
 				return StepsMainRunController.DONE_MODIFIED;
 			}
 		};

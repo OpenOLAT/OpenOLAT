@@ -140,7 +140,7 @@ public class WikiMainController extends BasicController implements CloneableCont
 	private VFSContainer wikiContainer;
 	private OLATResourceable ores;
 	private VelocityContainer articleContent, navigationContent, discussionContent, editContent, content,
-			versioningContent, mediaMgntContent, imageDisplay;
+			versioningContent, imageDisplay;
 	private ForumController forumController;
 	private WikiEditArticleForm wikiEditForm;
 	private WikiMarkupComponent wikiArticleComp, wikiVersionDisplayComp;
@@ -149,7 +149,7 @@ public class WikiMainController extends BasicController implements CloneableCont
 	private WikiFileUploadController wikiUploadFileCtr;
 	private HistoryTableDateModel versioningTableModel;
 	private DialogBoxController removePageDialogCtr, archiveWikiDialogCtr;
-	private List<ChangeInfo> diffs = new ArrayList<ChangeInfo>(2);
+	private List<ChangeInfo> diffs = new ArrayList<>(2);
 	private SubscriptionContext subsContext;
 	private LockResult lockEntry;
 	private Link archiveLink, closePreviewButton, createLink, toMainPageLink, a2zLink, changesLink, editMenuButton,
@@ -162,6 +162,7 @@ public class WikiMainController extends BasicController implements CloneableCont
 	private WikiArticleSearchForm createArticleForm;
 	private CloseableCalloutWindowController calloutCtrl;
 	private CloseableModalController cmc;
+	private CloseableModalController mediaCmc;
 	private StackedPanel mainPanel;
 
 	private Dropdown wikiMenuDropdown, navigationDropdown, breadcrumpDropdown;
@@ -767,7 +768,7 @@ public class WikiMainController extends BasicController implements CloneableCont
 		mediaTableCtr.addMultiSelectAction(ACTION_DELETE_MEDIAS, ACTION_DELETE_MEDIAS);
 
 		List<VFSItem> filelist = wiki.getMediaFileListWithMetadata();
-		Map<String, MediaFileElement> files = new HashMap<String, MediaFileElement>();
+		Map<String, MediaFileElement> files = new HashMap<>();
 		for (Iterator<VFSItem> iter = filelist.iterator(); iter.hasNext();) {
 			VFSLeaf elem = (VFSLeaf) iter.next();
 			if (elem.getName().endsWith(METADATA_SUFFIX)) { // *.metadata files
@@ -799,7 +800,7 @@ public class WikiMainController extends BasicController implements CloneableCont
 			}
 		}
 
-		mediaFilesTableModel = new MediaFilesTableModel(new ArrayList<MediaFileElement>(files.values()),
+		mediaFilesTableModel = new MediaFilesTableModel(new ArrayList<>(files.values()),
 				getTranslator());
 		mediaFilesTableModel.addColumnDescriptors(mediaTableCtr);
 		mediaTableCtr.setTableDataModel(mediaFilesTableModel);
@@ -913,7 +914,7 @@ public class WikiMainController extends BasicController implements CloneableCont
 			if (event.getCommand().equals(Table.COMMANDLINK_ROWACTION_CLICKED)) {
 				TableEvent te = (TableEvent) event;
 				if (te.getActionId().equals(ACTION_DELETE_MEDIA)) {
-					List<MediaFileElement> list = new ArrayList<MediaFileElement>(1);
+					List<MediaFileElement> list = new ArrayList<>(1);
 					list.add(mediaFilesTableModel.getObject(te.getRowId()));
 					deleteMediaFile(list, ureq);
 				} else if (te.getActionId().equals(ACTION_SHOW_MEDIA)) {
@@ -924,11 +925,11 @@ public class WikiMainController extends BasicController implements CloneableCont
 						imageDisplay.contextPut("mediaElement", element);
 						imageDisplay.contextPut("imageUri", wikiArticleComp.getImageBaseUri());
 
-						removeAsListenerAndDispose(cmc);
-						cmc = new CloseableModalController(getWindowControl(), translate("close"), imageDisplay);
-						listenTo(cmc);
+						removeAsListenerAndDispose(mediaCmc);
+						mediaCmc = new CloseableModalController(getWindowControl(), translate("close"), imageDisplay);
+						listenTo(mediaCmc);
 
-						cmc.activate();
+						mediaCmc.activate();
 					} else {
 						deliverMediaFile(ureq, element.getFilename());
 					}
@@ -1028,16 +1029,22 @@ public class WikiMainController extends BasicController implements CloneableCont
 			if (wantClose) {
 				tabs.setSelectedPane(ureq, 0);
 				doReleaseEditLock();
-				return;
 			}
+		} else if(mediaCmc == source) {
+			removeAsListenerAndDispose(mediaCmc);
+			mediaCmc = null;
+		} else if(cmc == source) {
+			cleanUp();
 		}
 	}
 
 	private void cleanUp() {
 		removeAsListenerAndDispose(cmc);
+		removeAsListenerAndDispose(mediaTableCtr);
 		removeAsListenerAndDispose(wikiUploadFileCtr);
 
 		cmc = null;
+		mediaTableCtr = null;
 		wikiUploadFileCtr = null;
 	}
 
@@ -1134,16 +1141,13 @@ public class WikiMainController extends BasicController implements CloneableCont
 	}
 
 	private void doManageMedias(UserRequest ureq, Wiki wiki) {
-		if (wiki.getMediaFileListWithMetadata().size() > 0) {
-			mediaMgntContent = createVelocityContainer("media");
+		if (!wiki.getMediaFileListWithMetadata().isEmpty()) {
 			refreshTableDataModel(ureq, wiki);
-			mediaMgntContent.put("mediaMgmtTable", mediaTableCtr.getInitialComponent());
-
 			removeAsListenerAndDispose(cmc);
-			cmc = new CloseableModalController(getWindowControl(), translate("close"), mediaMgntContent, true,
+			
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), mediaTableCtr.getInitialComponent(), true,
 					translate("manage.media"));
 			listenTo(cmc);
-
 			cmc.activate();
 		}
 	}
