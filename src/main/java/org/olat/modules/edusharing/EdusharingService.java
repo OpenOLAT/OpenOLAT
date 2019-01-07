@@ -34,8 +34,6 @@ import org.olat.core.id.OLATResourceable;
  */
 public interface EdusharingService {
 
-	void test(Identity identity);
-	
 	/**
 	 * Get the configuration values used to register OpenOLAT as an edu-sharing application.
 	 *

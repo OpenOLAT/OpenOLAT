@@ -29,8 +29,6 @@ import org.olat.core.id.Identity;
  */
 public interface EdusharingClient {
 
-	void test(Identity identity);
-
 	public EdusharingProperties getRepoConfig();
 
 	public String createTicket(Identity identity) throws EdusharingException;

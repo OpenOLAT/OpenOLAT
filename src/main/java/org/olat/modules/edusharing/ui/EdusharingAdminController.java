@@ -50,6 +50,7 @@ import org.olat.modules.edusharing.EdusharingModule;
 import org.olat.modules.edusharing.EdusharingProperties;
 import org.olat.modules.edusharing.EdusharingSecurityService;
 import org.olat.modules.edusharing.EdusharingService;
+import org.olat.modules.edusharing.Ticket;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -239,7 +240,16 @@ public class EdusharingAdminController extends FormBasicController {
 	}
 	
 	private void doTest() {
-		edusharingService.test(getIdentity());
-	}
+		try {
+			Ticket ticket = edusharingService.createTicket(getIdentity());
+			if (ticket != null) {
+				showInfo("admin.test.successful");
+				return;
+			}
+		} catch (Exception e) {
+			log.error("", e);
+		}
+		showInfo("admin.test.unsuccessful");
+	 }
 
 }

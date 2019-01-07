@@ -21,7 +21,6 @@ package org.olat.modules.edusharing.manager;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import javax.ws.rs.core.UriBuilder;
 import javax.xml.ws.BindingProvider;
@@ -32,7 +31,6 @@ import javax.xml.ws.handler.PortInfo;
 import org.edu_sharing.webservices.authbyapp.AuthByApp;
 import org.edu_sharing.webservices.authbyapp.AuthByAppService;
 import org.edu_sharing.webservices.authbyapp.AuthenticationException;
-import org.edu_sharing.webservices.authentication.AuthenticationException_Exception;
 import org.edu_sharing.webservices.authentication.AuthenticationResult;
 import org.edu_sharing.webservices.types.KeyValue;
 import org.edu_sharing.webservices.usage2.Usage2;
@@ -60,31 +58,6 @@ class EdusharingSoapClient {
 	
 	@Autowired
 	private EdusharingModule edusharingModule;
-
-	void test(Identity identity)  {
-		log.info("Test started");
-		try {
-			tryCreateUsage(identity);
-			tryTest(identity);
-		} catch (Exception e) {
-			log.error("", e);
-		}
-		log.info("Test finished");
-	}
-
-	private void tryCreateUsage(Identity identity) throws Usage2Exception_Exception {
-		CreateUsageParameter params = new CreateUsageParameter(
-				UUID.randomUUID().toString(),
-				"ccrep://OpenOLAT/633e6c18-7780-4d1a-bdf5-8bcce1acc50a", // KISS
-				identity.getName(),
-				UUID.randomUUID().toString()
-				);
-		createUsage(params);
-	}
-
-	private void tryTest(Identity identity) throws AuthenticationException_Exception, AuthenticationException {
-		createTicket(identity);
-	}
 
 	String createTicket(Identity identity) throws AuthenticationException {
 		return authenticate(identity).getTicket();

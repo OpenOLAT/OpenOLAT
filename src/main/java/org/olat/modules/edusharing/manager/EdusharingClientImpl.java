@@ -48,12 +48,6 @@ public class EdusharingClientImpl implements EdusharingClient {
 	private EdusharingSoapClient soapClient;
 
 	@Override
-	public void test(Identity identity) {
-		soapClient.test(identity);
-		
-	}
-
-	@Override
 	public EdusharingProperties getRepoConfig() throws EdusharingException {
 		return httpClient.getMetadata();
 	}

@@ -77,11 +77,6 @@ public class EdusharingServiceImpl implements EdusharingService {
 	private EdusharingSecurityService securityService;
 
 	@Override
-	public void test(Identity identity) {
-		client.test(identity);
-	}
-
-	@Override
 	public Properties getConfigForRegistration() {
 		Properties props = new Properties();
 		String appId = edusharingModule.getAppId();
