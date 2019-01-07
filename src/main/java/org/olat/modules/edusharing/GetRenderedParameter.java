@@ -38,7 +38,7 @@ public class GetRenderedParameter {
 	private final String signed;
 	private final String signature;
 	private final String timestamp;
-	private final String encryptedUsername;
+	private final String encryptedUserIdentifier;
 	private final String displayMode;
 	private String width;
 	private String height;
@@ -46,7 +46,7 @@ public class GetRenderedParameter {
 
 	public GetRenderedParameter(String appId, String repoId, String nodeId, String resourceId, String courseId,
 			String version, String locale, String language, String signed, String signature, String timestamp,
-			String encryptedUsername, String displayMode) {
+			String encryptedUserIdentifier, String displayMode) {
 		this.appId = appId;
 		this.repoId = repoId;
 		this.nodeId = nodeId;
@@ -58,7 +58,7 @@ public class GetRenderedParameter {
 		this.signed = signed;
 		this.signature = signature;
 		this.timestamp = timestamp;
-		this.encryptedUsername = encryptedUsername;
+		this.encryptedUserIdentifier = encryptedUserIdentifier;
 		this.displayMode = displayMode;
 	}
 
@@ -106,8 +106,8 @@ public class GetRenderedParameter {
 		return timestamp;
 	}
 
-	public String getEncryptedUsername() {
-		return encryptedUsername;
+	public String getEncryptedUserIdentifier() {
+		return encryptedUserIdentifier;
 	}
 
 	public String getDisplayMode() {
