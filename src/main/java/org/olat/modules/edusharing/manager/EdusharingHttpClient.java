@@ -122,7 +122,7 @@ class EdusharingHttpClient {
 		sb.append("&signed=").append(parameter.getSigned());
 		sb.append("&sig=").append(StringHelper.urlEncodeUTF8(parameter.getSignature()));
 		sb.append("&ts=").append(parameter.getTimestamp());
-		sb.append("&u=").append(StringHelper.urlEncodeUTF8(parameter.getEncryptedUsername()));
+		sb.append("&u=").append(StringHelper.urlEncodeUTF8(parameter.getEncryptedUserIdentifier()));
 		sb.append("&display=").append(parameter.getDisplayMode()); // inline / dynamic / window
 		if (StringHelper.containsNonWhitespace(parameter.getWidth())) {
 			sb.append("&width=").append(parameter.getWidth());

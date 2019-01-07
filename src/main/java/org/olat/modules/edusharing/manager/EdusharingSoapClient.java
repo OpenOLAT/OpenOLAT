@@ -37,7 +37,6 @@ import org.edu_sharing.webservices.usage2.Usage2;
 import org.edu_sharing.webservices.usage2.Usage2Exception_Exception;
 import org.edu_sharing.webservices.usage2.Usage2Service;
 import org.olat.core.id.Identity;
-import org.olat.core.id.User;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.edusharing.CreateUsageParameter;
@@ -59,6 +58,8 @@ class EdusharingSoapClient {
 	
 	@Autowired
 	private EdusharingModule edusharingModule;
+	@Autowired
+	private EdusharingUserFactory userFactory;
 
 	String createTicket(Identity identity) throws AuthenticationException {
 		return authenticate(identity).getTicket();
@@ -66,7 +67,7 @@ class EdusharingSoapClient {
 
 	private AuthenticationResult authenticate(Identity identity) throws AuthenticationException {
 		AuthByApp service = getAuthByAppService();
-		List<KeyValue> ssoData = getSSOData(identity);
+		List<KeyValue> ssoData = userFactory.getSSOData(identity);
 		AuthenticationResult result = service.authenticateByTrustedApp(edusharingModule.getAppId(), ssoData);
 		if (log.isDebug()) {
 			String logResult = new StringBuilder()
@@ -80,50 +81,6 @@ class EdusharingSoapClient {
 			log.debug("edu-sharing " + logResult);
 		}
 		return result;
-	}
-	
-	/**
-	 * Key are configured in edu-sharing configuration: edu-sharing-sso-context.xml
-	 *
-	 * @return
-	 */
-	private List<KeyValue> getSSOData(Identity identity) {
-		List<KeyValue> ssoData = new ArrayList<>();
-		
-		// mandatory
-		KeyValue userId = new KeyValue();
-		userId.setKey(edusharingModule.getAuthKeyUseriId());
-		userId.setValue(identity.getName());
-		ssoData.add(userId);
-		
-		// optional
-		User user = identity.getUser();
-		KeyValue lastname = new KeyValue();
-		lastname.setKey(edusharingModule.getAuthKeyLastname());
-		lastname.setValue(user.getLastName());
-		ssoData.add(lastname);
-		
-		KeyValue firstname = new KeyValue();
-		firstname.setKey(edusharingModule.getAuthKeyFirstname());
-		firstname.setValue(user.getFirstName());
-		ssoData.add(firstname);
-
-		KeyValue email = new KeyValue();
-		email.setKey(edusharingModule.getAuthKeyEmail());
-		email.setValue(user.getEmail());
-		ssoData.add(email);
-
-		KeyValue affiliationId = new KeyValue();
-		affiliationId.setKey("affiliation");
-		affiliationId.setValue(edusharingModule.getAuthAffiliationId());
-		ssoData.add(affiliationId);
-
-		KeyValue affiliationName = new KeyValue();
-		affiliationName.setKey("affiliationname");
-		affiliationName.setValue(edusharingModule.getAuthAffiliationName());
-		ssoData.add(affiliationName);
-		
-		return ssoData;
 	}
 	
 	boolean valdateTicket(String ticket) throws AuthenticationException {

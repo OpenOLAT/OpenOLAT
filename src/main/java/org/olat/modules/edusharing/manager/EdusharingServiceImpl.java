@@ -75,6 +75,8 @@ public class EdusharingServiceImpl implements EdusharingService {
 	private EdusharingConversionService conversionService;
 	@Autowired
 	private EdusharingSecurityService securityService;
+	@Autowired
+	private EdusharingUserFactory userFactory;
 
 	@Override
 	public Properties getConfigForRegistration() {
@@ -162,7 +164,8 @@ public class EdusharingServiceImpl implements EdusharingService {
 		NodeIdentifier nodeIdentifier = conversionService.toNodeIdentifier(usage.getObjectUrl());
 		String courseId = conversionService.toEdusharingCourseId(usage.getOlatResourceable());
 		EdusharingSignature signature = securityService.createSignature();
-		String encryptedUsername = securityService.encrypt(edusharingModule.getRepoPublicKey(), viewer.getName());
+		String userIdentifier = userFactory.getUserIdentifier(viewer);
+		String encryptedUserIdentifier = securityService.encrypt(edusharingModule.getRepoPublicKey(), userIdentifier);
 		
 		GetRenderedParameter parameter = new GetRenderedParameter(
 				signature.getAppId(), 
@@ -176,7 +179,7 @@ public class EdusharingServiceImpl implements EdusharingService {
 				signature.getSigned(),
 				signature.getSignature(),
 				signature.getTimeStamp(),
-				encryptedUsername,
+				encryptedUserIdentifier,
 				"inline");
 		parameter.setWidth(widthChecked);
 		parameter.setHeight(heightChecked);
@@ -193,7 +196,8 @@ public class EdusharingServiceImpl implements EdusharingService {
 		NodeIdentifier nodeIdentifier = conversionService.toNodeIdentifier(usage.getObjectUrl());
 		String courseId = conversionService.toEdusharingCourseId(usage.getOlatResourceable());
 		EdusharingSignature signature = securityService.createSignature();
-		String encryptedUsername = securityService.encrypt(edusharingModule.getRepoPublicKey(), viewer.getName());
+		String userIdentifier = userFactory.getUserIdentifier(viewer);
+		String encryptedUserIdentifier = securityService.encrypt(edusharingModule.getRepoPublicKey(), userIdentifier);
 		String encryptedTicket = securityService.encrypt(edusharingModule.getRepoPublicKey(), ticket.getTooken());
 		
 		GetRenderedParameter parameter = new GetRenderedParameter(
@@ -208,7 +212,7 @@ public class EdusharingServiceImpl implements EdusharingService {
 				signature.getSigned(),
 				signature.getSignature(),
 				signature.getTimeStamp(),
-				encryptedUsername,
+				encryptedUserIdentifier,
 				"window");
 		parameter.setEncryptedTicket(encryptedTicket);
 		return client.getRenderUrl(parameter);
@@ -221,7 +225,7 @@ public class EdusharingServiceImpl implements EdusharingService {
 		CreateUsageParameter parameter = new CreateUsageParameter(
 				element.getIdentifier(),
 				element.getObjectUrl(),
-				identity.getName(),
+				userFactory.getUserIdentifier(identity),
 				conversionService.toEdusharingCourseId(ores)
 				);
 		client.createUsage(parameter);
@@ -248,7 +252,7 @@ public class EdusharingServiceImpl implements EdusharingService {
 		DeleteUsageParameter parameter = new DeleteUsageParameter(
 				usage.getIdentifier(),
 				usage.getObjectUrl(),
-				identity.getName(),
+				userFactory.getUserIdentifier(identity),
 				conversionService.toEdusharingCourseId(usage.getOlatResourceable())
 				);
 		client.deleteUsage(parameter);
