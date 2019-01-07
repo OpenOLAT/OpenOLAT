@@ -26,6 +26,7 @@
 
 package org.olat.core.util.vfs;
 
+import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
 
 
@@ -56,61 +57,43 @@ public abstract class AbstractVirtualContainer implements VFSContainer {
 	public AbstractVirtualContainer() {
 		this.name = null;
 	}
-	
-	/**
-	 * @see org.olat.core.util.vfs.VFSItem#canDelete()
-	 */
+
+	@Override
 	public VFSStatus canDelete() {
 		return VFSConstants.NO;
 	}
-	
-	/**
-	 * @see org.olat.core.util.vfs.VFSItem#canRename()
-	 */
+
+	@Override
 	public VFSStatus canRename() {
 		return VFSConstants.NO;
 	}
-	
 
-	/**
-	 * @see org.olat.core.util.vfs.VFSItem#canCopy()
-	 */
+	@Override
 	public VFSStatus canCopy() {
 		return VFSConstants.NO;
 	}
 
-	/**
-	 * @see org.olat.core.util.vfs.VFSContainer#copyFrom(org.olat.core.util.vfs.VFSItem)
-	 */
+	@Override
 	public VFSStatus copyFrom(VFSItem vfsItem) {
 		return VFSConstants.ERROR_FAILED;
 	}
-	
-	/**
-	 * @see org.olat.core.util.vfs.VFSItem#getName()
-	 */
+
+	@Override
 	public String getName() {
 		return name;
 	}
-	
-	/**
-	 * @see org.olat.core.util.vfs.VFSItem#getLastModified()
-	 */
+
+	@Override
 	public long getLastModified() {
 		return VFSConstants.UNDEFINED;
 	}
-	
-	/**
-	 * @see org.olat.core.util.vfs.VFSItem#rename(java.lang.String)
-	 */
+
+	@Override
 	public VFSStatus rename(String newname) {
 		throw new RuntimeException("unsupported");
 	}
 
-
-	/**
-	 * @see org.olat.core.util.vfs.VFSItem#delete()
-	 */
+	@Override
 	public VFSStatus delete() {
 		throw new RuntimeException("unsupported");
 	}
@@ -120,30 +103,32 @@ public abstract class AbstractVirtualContainer implements VFSContainer {
 		throw new RuntimeException("unsupported");
 	}
 
-	/**
-	 * @see org.olat.core.util.vfs.VFSContainer#createChildContainer(java.lang.String)
-	 */
-	public VFSContainer createChildContainer(String name) {
+	@Override
+	public VFSContainer createChildContainer(String child) {
 		return null;
 	}
 
-	/**
-	 * @see org.olat.core.util.vfs.VFSContainer#createChildLeaf(java.lang.String)
-	 */
-	public VFSLeaf createChildLeaf(String name) {
+	@Override
+	public VFSLeaf createChildLeaf(String child) {
 		return null;
 	}
 
-	/**
-	 * @see org.olat.core.util.vfs.VFSContainer#setDefaultItemFilter(org.olat.core.util.vfs.filters.VFSItemFilter)
-	 */
+	@Override
+	public VFSStatus canMeta() {
+		return VFSConstants.NO;
+	}
+
+	@Override
+	public MetaInfo getMetaInfo() {
+		return null;
+	}
+
+	@Override
 	public void setDefaultItemFilter(VFSItemFilter defaultFilter) {
 		this.defaultFilter = defaultFilter;
 	}
 
-	/**
-	 * @see org.olat.core.util.vfs.VFSContainer#getDefaultItemFilter()
-	 */
+	@Override
 	public VFSItemFilter getDefaultItemFilter() {
 		return this.defaultFilter;
 	}

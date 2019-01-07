@@ -50,15 +50,13 @@ public interface MetaInfo {
 
 	/**
 	 * Delete all associated meta info including sub files/directories
-	 * 
-	 * @param meta
 	 */
 	public void deleteAll();
 
 	/**
-	 * Copy values from froMeta into this object except name.
+	 * Copy values from froMeta into this object except name, download count and UUID.
 	 * 
-	 * @param fromMeta
+	 * @param fromMeta the metadata to copy from
 	 */
 	public void copyValues(MetaInfo fromMeta);
 
@@ -83,18 +81,6 @@ public interface MetaInfo {
 	 * @return name of the initial author (OLAT user name)
 	 */
 	public String getAuthor();
-	
-	/**
-	 * @return The display name of the user formatted as HTML
-	 */
-	public String getHTMLFormattedAuthor();
-
-	/**
-	 * Returns the identity of the initial author (the same identity is used in {@link MetaInfo#getAuthor()}.
-	 * 
-	 * @return The identity of the initial author.
-	 */
-	public Identity getAuthorIdentity();
 	
 	public Long getAuthorIdentityKey();
 	
@@ -173,12 +159,6 @@ public interface MetaInfo {
 	 * @return formatted representation of size of file
 	 */
 	public String getFormattedSize();
-
-	/**
-	 * @param string
-	 */
-	@Deprecated
-	public void setAuthor(String username);
 	
 	public void setAuthor(Identity identy);
 

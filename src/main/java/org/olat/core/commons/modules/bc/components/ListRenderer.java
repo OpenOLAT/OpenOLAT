@@ -37,7 +37,6 @@ import org.olat.core.commons.modules.bc.FolderLicenseHandler;
 import org.olat.core.commons.modules.bc.FolderManager;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.commons.modules.bc.meta.MetaInfoFactory;
-import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.commons.services.license.License;
 import org.olat.core.commons.services.license.LicenseHandler;
 import org.olat.core.commons.services.license.LicenseModule;
@@ -48,7 +47,6 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.gui.util.CSSHelper;
-import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
@@ -125,7 +123,7 @@ public class ListRenderer {
 
 		List<VFSItem> children = fc.getCurrentContainerChildren();
 		// folder empty?
-		if (children.size() == 0) {
+		if (children.isEmpty()) {
 			sb.append("<div class=\"o_bc_empty\"><i class='o_icon o_icon_warn'></i> ")
 			  .append(translator.translate("NoFiles"))
 			  .append("</div>");
@@ -203,9 +201,7 @@ public class ListRenderer {
 			}
 		}
 		boolean canVersion = versions != null && !versions.getRevisions().isEmpty();
-		
-		boolean canAddToEPortfolio = FolderConfig.isEPortfolioAddEnabled();
-		
+
 		VFSLeaf leaf = null;
 		if (child instanceof VFSLeaf) {
 			leaf = (VFSLeaf)child;
@@ -213,8 +209,8 @@ public class ListRenderer {
 		boolean isContainer = (leaf == null); // if not a leaf, it must be a container...
 		
 		MetaInfo metaInfo = null;
-		if(child instanceof MetaTagged) {
-			metaInfo = ((MetaTagged)child).getMetaInfo();
+		if(child.canMeta() == VFSConstants.YES) {
+			metaInfo = child.getMetaInfo();
 		}
 		
 		boolean lockedForUser = lockManager.isLockedForMe(child, fc.getIdentityEnvironnement().getIdentity(), fc.getIdentityEnvironnement().getRoles());
@@ -430,9 +426,6 @@ public class ListRenderer {
 							|| nameLowerCase.endsWith(".csv	")));
 			if(isEditable) actionCount++;
 
-			boolean canEP = canAddToEPortfolio && !isContainer;
-			if (canEP) actionCount++;
-			
 			boolean canMetaData = canMetaInfo(child);
 			if (canMetaData) actionCount++;
 
@@ -469,19 +462,7 @@ public class ListRenderer {
 					ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, false, false, new NameValuePair(PARAM_VERID, pos))
 					   .append("><i class=\"o_icon o_icon-fw o_icon_version\"></i> ").append(StringHelper.escapeHtml(translator.translate("versions"))).append("</a></li>");
 				}
-	
-				// eportfolio collect action
-				// get a link for adding a file to ePortfolio, if file-owner is the current user
-				if (canEP) {
-					if (metaInfo != null) {
-						Identity author = metaInfo.getAuthorIdentity();
-						if (author != null && fc.getIdentityEnvironnement().getIdentity().getKey().equals(author.getKey())) {
-							sb.append("<li><a ");
-							ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, false, false, new NameValuePair(PARAM_EPORT, pos))
-							   .append("><i class=\"o_icon o_icon-fw o_icon_eportfolio_add\"></i> ").append(StringHelper.escapeHtml(translator.translate("eportfolio"))).append("</a></li>");
-						}
-					}
-				}
+
 				sb.append("</ul></div>")
 				  .append("<script type='text/javascript'>")
 			      .append("/* <![CDATA[ */")

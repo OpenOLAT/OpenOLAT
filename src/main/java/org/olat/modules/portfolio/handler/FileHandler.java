@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
-import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
@@ -35,6 +34,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -111,12 +111,9 @@ public class FileHandler extends AbstractMediaHandler implements InteractiveAddP
 		if(StringHelper.containsNonWhitespace(storagePath)) {
 			VFSContainer storageContainer = fileStorage.getMediaContainer(media);
 			VFSItem item = storageContainer.resolve(media.getRootFilename());
-			if(item instanceof VFSLeaf) {
-				VFSLeaf leaf = (VFSLeaf)item;
-				if(leaf instanceof MetaTagged) {
-					MetaInfo metaInfo = ((MetaTagged)leaf).getMetaInfo();
-					thumbnail = metaInfo.getThumbnail(size.getHeight(), size.getWidth(), true);
-				}
+			if(item instanceof VFSLeaf && item.canMeta() == VFSConstants.YES) {
+				MetaInfo metaInfo = item.getMetaInfo();
+				thumbnail = metaInfo.getThumbnail(size.getHeight(), size.getWidth(), true);
 			}
 		}
 		
@@ -132,8 +129,8 @@ public class FileHandler extends AbstractMediaHandler implements InteractiveAddP
 	public MediaInformations getInformations(Object mediaObject) {
 		String title = null;
 		String description = null;
-		if (mediaObject instanceof MetaTagged) {
-			MetaInfo meta = ((MetaTagged)mediaObject).getMetaInfo();
+		if (mediaObject instanceof VFSItem && ((VFSItem)mediaObject).canMeta() == VFSConstants.YES) {
+			MetaInfo meta = ((VFSItem)mediaObject).getMetaInfo();
 			title = meta.getTitle();
 			description = meta.getComment();
 		}

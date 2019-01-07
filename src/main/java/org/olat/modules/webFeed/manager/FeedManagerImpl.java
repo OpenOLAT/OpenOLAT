@@ -32,7 +32,6 @@ import org.olat.admin.quota.QuotaConstants;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
@@ -57,6 +56,7 @@ import org.olat.core.util.coordinate.SyncerCallback;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
+import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -259,9 +259,7 @@ public class FeedManagerImpl extends FeedManager {
 			reloaded.setExternalFeedUrl(null);
 		}
 		reloaded.setLastModified(new Date());
-		Feed updated = feedDAO.updateFeed(reloaded);
-
-		return updated;
+		return feedDAO.updateFeed(reloaded);
 	}
 
 	@Override
@@ -656,8 +654,8 @@ public class FeedManagerImpl extends FeedManager {
 			VFSItem item =feedFileStorage.getOrCreateFeedMediaContainer(feed);
 			item = item.resolve(fileName);
 			if (thumbnailSize != null && thumbnailSize.getHeight() > 0 && thumbnailSize.getWidth() > 0
-					&& item instanceof MetaTagged) {
-				item = ((MetaTagged) item).getMetaInfo().getThumbnail(thumbnailSize.getWidth(),
+					&& item.canMeta() == VFSConstants.YES) {
+				item = item.getMetaInfo().getThumbnail(thumbnailSize.getWidth(),
 						thumbnailSize.getHeight(), false);
 			}
 			if (item instanceof VFSLeaf) {

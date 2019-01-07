@@ -21,6 +21,7 @@ package org.olat.core.util.vfs.version;
 
 import java.io.InputStream;
 
+import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 
@@ -47,6 +48,7 @@ public class RevisionFileImpl implements VFSRevision {
 	private VFSContainer container;
 	private String revisionNr;
 	private String filename;
+	private MetaInfo metadata;
 
 	/**
 	 * Only for the VersionsFileManager or XStream
@@ -81,6 +83,7 @@ public class RevisionFileImpl implements VFSRevision {
 		this.container = container;
 	}
 
+	@Override
 	public String getAuthor() {
 		return author;
 	}
@@ -97,6 +100,7 @@ public class RevisionFileImpl implements VFSRevision {
 		this.filename = filename;
 	}
 
+	@Override
 	public String getComment() {
 		return comment;
 	}
@@ -105,16 +109,19 @@ public class RevisionFileImpl implements VFSRevision {
 		this.comment = comment;
 	}
 
+	@Override
 	public long getSize() {
 		VFSLeaf f = getFile();
 		return f == null ? -1l : f.getSize();
 	}
 
+	@Override
 	public InputStream getInputStream() {
 		VFSLeaf f = getFile();
 		return f == null ? null : f.getInputStream();
 	}
 
+	@Override
 	public long getLastModified() {
 		return lastModified;
 	}
@@ -123,6 +130,7 @@ public class RevisionFileImpl implements VFSRevision {
 		this.lastModified = lastModified;
 	}
 
+	@Override
 	public String getName() {
 		if (name == null || name.length() == 0) { return getFilename(); }
 		return name;
@@ -132,6 +140,15 @@ public class RevisionFileImpl implements VFSRevision {
 		this.name = name;
 	}
 
+	public MetaInfo getMetadata() {
+		return metadata;
+	}
+
+	public void setMetadata(MetaInfo metadata) {
+		this.metadata = metadata;
+	}
+
+	@Override
 	public String getRevisionNr() {
 		return revisionNr;
 	}
@@ -140,10 +157,12 @@ public class RevisionFileImpl implements VFSRevision {
 		this.revisionNr = revisionNr;
 	}
 
+	@Override
 	public int hashCode() {
 		return filename == null ? 26592 : filename.hashCode();
 	}
 
+	@Override
 	public boolean equals(Object obj) {
 		if (this == obj) { return true; }
 		if (obj instanceof RevisionFileImpl) {

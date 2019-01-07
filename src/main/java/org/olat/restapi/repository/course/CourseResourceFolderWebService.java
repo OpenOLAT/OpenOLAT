@@ -48,7 +48,6 @@ import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
-import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
@@ -56,6 +55,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.WebappHelper;
+import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -370,8 +370,8 @@ public class CourseResourceFolderWebService {
 			newFile = container.createChildContainer(filename);
 		}
 
-		if(newFile instanceof MetaTagged && ((MetaTagged)newFile).getMetaInfo() != null) {
-			MetaInfo infos = ((MetaTagged)newFile).getMetaInfo();
+		if(newFile.canMeta() == VFSConstants.YES ) {
+			MetaInfo infos = newFile.getMetaInfo();
 			infos.setAuthor(ureq.getIdentity());
 			infos.write();
 		}

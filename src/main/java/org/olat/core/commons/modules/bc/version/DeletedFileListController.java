@@ -30,7 +30,6 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.olat.basesecurity.BaseSecurityModule;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.commands.FolderCommand;
 import org.olat.core.commons.modules.bc.commands.FolderCommandStatus;
 import org.olat.core.gui.UserRequest;
@@ -60,6 +59,7 @@ import org.olat.core.util.vfs.version.VFSRevision;
 import org.olat.core.util.vfs.version.Versions;
 import org.olat.core.util.vfs.version.VersionsManager;
 import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -91,16 +91,20 @@ public class DeletedFileListController extends BasicController {
 	private DialogBoxController dialogCtr;
 
 	private boolean isAdmin;
+	
+	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private VersionsManager versionsManager;
+	@Autowired
+	private BaseSecurityModule securityModule;
 	
 	public DeletedFileListController(UserRequest ureq, WindowControl wControl, VFSContainer container) {
 		super(ureq, wControl);
 		this.container = container;
-		deletedFiles = VersionsManager.getInstance().getDeletedFiles(container);
-		userManager = CoreSpringFactory.getImpl(UserManager.class);
+		deletedFiles = versionsManager.getDeletedFiles(container);
 		
-		isAdmin = CoreSpringFactory.getImpl(BaseSecurityModule.class)
-				.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
+		isAdmin = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 
 		TableGuiConfiguration summaryTableConfig = new TableGuiConfiguration();
 		summaryTableConfig.setDownloadOffered(false);
@@ -136,7 +140,7 @@ public class DeletedFileListController extends BasicController {
 	}
 	
 	private void loadModel(UserRequest ureq) {
-		Collection<String> names = new HashSet<String>();
+		Collection<String> names = new HashSet<>();
 		for(Versions deletedFile:deletedFiles) {
 			if(deletedFile.getCreator() != null && !"-".equals(deletedFile.getCreator())) {
 				names.add(deletedFile.getCreator());
@@ -178,7 +182,7 @@ public class DeletedFileListController extends BasicController {
 					ureq.getDispatchResult().setResultingMediaResource(resource);
 				} else if (CMD_RESTORE.equals(tEvent.getActionId())) {
 					VFSRevision version = getLastRevision(deletedFiles.get(row));
-					if (VersionsManager.getInstance().restore(container, version)) {
+					if (versionsManager.restore(container, version)) {
 						status = FolderCommandStatus.STATUS_SUCCESS;
 						fireEvent(ureq, FolderCommand.FOLDERCOMMAND_FINISHED);
 					} else {
@@ -195,7 +199,7 @@ public class DeletedFileListController extends BasicController {
 					List<VFSRevision> selectedRevisions = getSelectedRevisions(tEvent.getSelection());
 					boolean allOk = true;
 					for (VFSRevision revision : selectedRevisions) {
-						allOk &= VersionsManager.getInstance().restore(container, revision);
+						allOk &= versionsManager.restore(container, revision);
 					}
 					if (allOk) {
 						status = FolderCommandStatus.STATUS_SUCCESS;
@@ -218,7 +222,7 @@ public class DeletedFileListController extends BasicController {
 			if (DialogBoxUIFactory.isYesEvent(event)) {	
 				@SuppressWarnings("unchecked")
 				List<Versions> versionsToDelete =  (List<Versions>)dialogCtr.getUserObject();
-				VersionsManager.getInstance().deleteVersions(versionsToDelete);
+				versionsManager.deleteVersions(container, versionsToDelete);
 				status = FolderCommandStatus.STATUS_SUCCESS;
 				fireEvent(ureq, FolderCommand.FOLDERCOMMAND_FINISHED);
 			}
@@ -241,7 +245,7 @@ public class DeletedFileListController extends BasicController {
 	}
 	
 	protected List<Versions> getSelectedVersions(BitSet objectMarkers) {
-		List<Versions> results = new ArrayList<Versions>();
+		List<Versions> results = new ArrayList<>();
 		for (int i = objectMarkers.nextSetBit(0); i >= 0; i = objectMarkers.nextSetBit(i + 1)) {
 			if (i >= 0 && i < deletedFiles.size()) {
 				results.add(deletedFiles.get(i));
@@ -251,7 +255,7 @@ public class DeletedFileListController extends BasicController {
 	}
 
 	protected List<VFSRevision> getSelectedRevisions(BitSet objectMarkers) {
-		List<VFSRevision> results = new ArrayList<VFSRevision>();
+		List<VFSRevision> results = new ArrayList<>();
 		for (int i = objectMarkers.nextSetBit(0); i >= 0; i = objectMarkers.nextSetBit(i + 1)) {
 			if (i >= 0 && i < deletedFiles.size()) {
 				VFSRevision elem = getLastRevision(deletedFiles.get(i));

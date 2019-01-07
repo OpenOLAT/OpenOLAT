@@ -31,7 +31,6 @@ import java.util.Set;
 
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
-import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.commons.services.notifications.Publisher;
 import org.olat.core.commons.services.notifications.Subscriber;
 import org.olat.core.commons.services.notifications.model.SubscriptionListItem;
@@ -43,6 +42,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.io.SystemFileFilter;
 import org.olat.core.util.io.SystemFilenameFilter;
+import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.course.CourseFactory;
@@ -826,14 +826,13 @@ class GTANotifications {
 	private String getAuthor(File file, VFSContainer container) {
 		String author = null;
 		VFSItem item = container.resolve(file.getName());
-		if(item instanceof MetaTagged) {
-			MetaInfo info = ((MetaTagged)item).getMetaInfo();
-			if(info != null) {
-				String username = info.getAuthor();
-				if(username != null) {
-					author = userManager.getUserDisplayName(username);
-				}		
-			}
+		if(item.canMeta() == VFSConstants.YES) {
+			MetaInfo info = item.getMetaInfo();
+			Long identityKey = info.getAuthorIdentityKey();
+			if(identityKey != null) {
+				author = userManager.getUserDisplayName(identityKey);
+			}		
+
 		}
 		return author == null ? "" : author;
 	}

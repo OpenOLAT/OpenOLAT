@@ -28,7 +28,6 @@ import java.text.DateFormat;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderLicenseHandler;
 import org.olat.core.commons.services.license.License;
 import org.olat.core.commons.services.license.LicenseModule;
@@ -56,7 +55,6 @@ import org.olat.core.id.Roles;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.vfs.OlatRelPathImpl;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -187,7 +185,7 @@ public class MetaInfoFormController extends FormBasicController {
 		}
 		setFormContextHelp("Folders#_metadata");
 		
-		MetaInfo meta = item instanceof OlatRelPathImpl ? metaInfoFactory.createMetaInfoFor((OlatRelPathImpl)item) : null;
+		MetaInfo meta = item == null ? null : item.getMetaInfo();
 
 		// title
 		String titleVal = (meta != null ? meta.getTitle() : null);
@@ -331,8 +329,8 @@ public class MetaInfoFormController extends FormBasicController {
 			}
 			
 			// username
-			String author = StringHelper.escapeHtml(meta == null ? "" : meta.getHTMLFormattedAuthor());
-			uifactory.addStaticTextElement("mf.author", author, formLayout);
+			String author = userManager.getUserDisplayName(meta == null ? null : meta.getAuthorIdentityKey());
+			uifactory.addStaticTextElement("mf.author", StringHelper.escapeHtml(author), formLayout);
 
 			// filesize
 			uifactory.addStaticTextElement("mf.size", StringHelper.escapeHtml(sizeText), formLayout);
@@ -492,8 +490,7 @@ public class MetaInfoFormController extends FormBasicController {
 			}
 		}
 		
-		MetaInfo meta = item instanceof OlatRelPathImpl ? 
-				CoreSpringFactory.getImpl(MetaInfoFactory.class).createMetaInfoFor((OlatRelPathImpl)item) : null;
+		MetaInfo meta = item == null ? null : item.getMetaInfo();
 		if(meta == null) {
 			return null;
 		}

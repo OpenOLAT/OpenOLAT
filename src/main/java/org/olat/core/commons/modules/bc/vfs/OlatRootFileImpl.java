@@ -51,24 +51,21 @@ public class OlatRootFileImpl extends LocalFileImpl implements OlatRelPathImpl, 
 		this.fileRelPath = fileRelPath;
 	}
 
-	/**
-	 * @see org.olat.core.util.vfs.OlatRelPathImpl#getRelPath()
-	 */
+	@Override
 	public String getRelPath() {
 		return fileRelPath;
 	}
 
-	/**
-	 * @see org.olat.core.commons.modules.bc.meta.tagged.MetaTagged#getMetaInfo()
-	 */
+	@Override
 	public MetaInfo getMetaInfo() {
-		return CoreSpringFactory.getImpl(MetaInfoFactory.class).createMetaInfoFor(this);
+		return CoreSpringFactory.getImpl(MetaInfoFactory.class).createMetaInfoFor(getBasefile());
 	}
 	
 	@Override
 	public String toString() {
-		if (getMetaInfo() != null && StringHelper.containsNonWhitespace(getMetaInfo().getTitle())) {
-			return getMetaInfo().getTitle();
+		MetaInfo meta = getMetaInfo();
+		if (meta != null && StringHelper.containsNonWhitespace(meta.getTitle())) {
+			return meta.getTitle();
 		} else {
 			return getName();
 		}

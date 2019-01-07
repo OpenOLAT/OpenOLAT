@@ -44,6 +44,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.vfs.version.OrphanVersion;
 import org.olat.core.util.vfs.version.VFSRevision;
 import org.olat.core.util.vfs.version.VersionsManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -54,14 +55,16 @@ import org.olat.core.util.vfs.version.VersionsManager;
  * Initial Date:  5 mai 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-//fxdiff FXOLAT-127: file versions maintenance tool
 public class OrphanVersionsController extends BasicController {
 	
 	private static final String CMD_DELETE = "delete";
-	private final static DecimalFormat sizeFormat = new DecimalFormat("#0.#", new DecimalFormatSymbols(Locale.ENGLISH));
+	private static final DecimalFormat sizeFormat = new DecimalFormat("#0.#", new DecimalFormatSymbols(Locale.ENGLISH));
 	
 	private TableController tableCtr;
 	private final List<OrphanVersion> orphans;
+	
+	@Autowired
+	private VersionsManager versionsManager;
 
 	public OrphanVersionsController(UserRequest ureq, WindowControl wControl, List<OrphanVersion> orphans) {
 		super(ureq, wControl);
@@ -106,7 +109,7 @@ public class OrphanVersionsController extends BasicController {
 				int rowid = te.getRowId();
 				OrphanVersion orphan = (OrphanVersion) tableCtr.getTableDataModel().getObject(rowid);
 				if (actionid.equals(CMD_DELETE)) {
-					VersionsManager.getInstance().delete(orphan);
+					versionsManager.delete(orphan);
 					orphans.remove(orphan);
 					tableCtr.modelChanged();
 				}
@@ -116,12 +119,12 @@ public class OrphanVersionsController extends BasicController {
 				BitSet selectedOrphans = tmse.getSelection();
 				String actionid = tmse.getAction();
 				if (CMD_DELETE.equals(actionid)) {
-					List<OrphanVersion> toRemove = new ArrayList<OrphanVersion>();
+					List<OrphanVersion> toRemove = new ArrayList<>();
 					for (int i=selectedOrphans.nextSetBit(0); i >= 0; i=selectedOrphans.nextSetBit(i+1)) {
 						int rowCount = tableCtr.getTableDataModel().getRowCount();
 						if(i >= 0 && i < rowCount) {
 							OrphanVersion orphan = (OrphanVersion)tableCtr.getTableDataModel().getObject(i);
-							VersionsManager.getInstance().delete(orphan);
+							versionsManager.delete(orphan);
 							toRemove.add(orphan);
 						}
 					}

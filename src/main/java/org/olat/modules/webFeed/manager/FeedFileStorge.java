@@ -27,8 +27,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.core.commons.modules.bc.meta.MetaInfo;
-import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.services.image.ImageService;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
@@ -538,12 +536,6 @@ public class FeedFileStorge {
 		if (feedMediaContainer != null) {
 			for (VFSItem fileItem : feedMediaContainer.getItems()) {
 				if (!fileItem.getName().startsWith(".")) {
-					if(fileItem instanceof MetaTagged) {
-						MetaInfo info = ((MetaTagged)fileItem).getMetaInfo();
-						if(info != null) {
-							info.clearThumbnails();
-						}
-					}
 					fileItem.delete();
 				}
 			}
@@ -587,7 +579,7 @@ public class FeedFileStorge {
 		VFSContainer mediaDir = getOrCreateItemMediaContainer(item);
 		if (mediaDir != null && enclosure != null) {
 			VFSLeaf mediaFile = (VFSLeaf) mediaDir.resolve(enclosure.getFileName());
-			if (mediaFile != null && mediaFile instanceof LocalFileImpl) {
+			if (mediaFile instanceof LocalFileImpl) {
 				file = ((LocalFileImpl) mediaFile).getBasefile();
 			}
 		}

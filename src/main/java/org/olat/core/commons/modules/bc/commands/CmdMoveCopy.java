@@ -32,8 +32,6 @@ import java.util.List;
 import org.olat.core.commons.modules.bc.FileSelection;
 import org.olat.core.commons.modules.bc.FolderEvent;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
-import org.olat.core.commons.modules.bc.meta.MetaInfo;
-import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
@@ -172,12 +170,9 @@ public class CmdMoveCopy extends DefaultController implements FolderCommand {
 		
 		boolean targetIsRelPath = (target instanceof OlatRelPathImpl);
 		for (VFSItem vfsSource:sources) {
-			if (targetIsRelPath && (target instanceof OlatRelPathImpl) && (vfsSource instanceof MetaTagged)) {
+			if (targetIsRelPath && (target instanceof OlatRelPathImpl) && (vfsSource.canMeta() == VFSConstants.YES)) {
 				// copy the metainfo first
-				MetaInfo meta = ((MetaTagged)vfsSource).getMetaInfo();
-				if(meta != null) {
-					meta.moveCopyToDir((OlatRelPathImpl)target, move);
-				}
+				vfsSource.getMetaInfo().moveCopyToDir((OlatRelPathImpl)target, move);
 			}
 			
 			VFSItem targetFile = target.resolve(vfsSource.getName());
@@ -238,7 +233,7 @@ public class CmdMoveCopy extends DefaultController implements FolderCommand {
 	private List<VFSItem> getSanityCheckedSourceItems(VFSContainer target, UserRequest ureq) {
 		// collect all source files first
 		
-		List<VFSItem> sources = new ArrayList<VFSItem>();
+		List<VFSItem> sources = new ArrayList<>();
 		for (String sourceRelPath:fileSelection.getFiles()) {
 			VFSItem vfsSource = folderComponent.getCurrentContainer().resolve(sourceRelPath);
 			if (vfsSource == null) {
@@ -279,7 +274,6 @@ public class CmdMoveCopy extends DefaultController implements FolderCommand {
 		getWindowControl().setError(translator.translate(errorMessageKey));
 		status = FolderCommandStatus.STATUS_FAILED;
 		fireEvent(ureq, FOLDERCOMMAND_FINISHED);
-		return;
 	}
 	
 	@Override

@@ -26,6 +26,7 @@
 
 package org.olat.core.util.vfs;
 
+import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 
 
@@ -122,6 +123,16 @@ public interface VFSItem {
 	 * @return true if a child can be added at all(only files and folder cab be copied to). the operation may still fail because e.g. of quota limitation.
 	 */
 	public VFSStatus canWrite();
+	
+	/**
+	 * @return true if the file has or can save some metadata informations
+	 */
+	public VFSStatus canMeta();
+	
+	/**
+	 * @return The metadata if the item can metadata or null if not
+	 */
+	public MetaInfo getMetaInfo();
 	
 	/**
 	 * Get the local security callback for this item.

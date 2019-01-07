@@ -124,7 +124,7 @@ public class InfoMessageFrontendManagerImpl implements InfoMessageFrontendManage
 		for(String path:paths) {
 			VFSItem item = ressourceContainer.resolve(path);
 			if(item instanceof VFSLeaf) {
-				((VFSLeaf)item).delete();
+				((VFSLeaf)item).deleteSilently();
 			}
 		}
 	}
@@ -166,8 +166,30 @@ public class InfoMessageFrontendManagerImpl implements InfoMessageFrontendManage
 		return resourceFile;
 	}
 	
+	private VFSContainer getResourceContainer(OLATResourceable ores) {
+		VFSContainer root = getStoragePath();
+		String type = ores.getResourceableTypeName().toLowerCase();
+		VFSItem typePath = root.resolve(type);
+		if(typePath == null) {
+			typePath = root.createChildContainer(type);
+		}
+		String id = ores.getResourceableId().toString();
+		if(typePath instanceof VFSContainer) {
+			VFSContainer typeContainer = (VFSContainer)typePath;
+			VFSItem resourceItem = typeContainer.resolve(id);
+			if(resourceItem == null) {
+				resourceItem = typeContainer.createChildContainer(id);
+			}
+			
+			if(resourceItem instanceof VFSContainer) {
+				return (VFSContainer)resourceItem;
+			}
+		}
+		return null;
+	}
+	
     private OlatRootFolderImpl getStoragePath() {
-    		return new OlatRootFolderImpl("/infomessages/", null);
+    	return new OlatRootFolderImpl("/infomessages/", null);
 	}
 
 	@Override
@@ -176,7 +198,7 @@ public class InfoMessageFrontendManagerImpl implements InfoMessageFrontendManage
 		
 		boolean send = false;
 		if(tos != null && !tos.isEmpty()) {
-			Set<Long> identityKeySet = new HashSet<Long>();
+			Set<Long> identityKeySet = new HashSet<>();
 			ContactList contactList = new ContactList("Infos");
 			for(Identity to:tos) {
 				if(identityKeySet.contains(to.getKey())) continue;
@@ -265,9 +287,19 @@ public class InfoMessageFrontendManagerImpl implements InfoMessageFrontendManage
 		}			
 		String resName = group.getResourceableTypeName();
 		Long resId = group.getResourceableId();
-		SubscriptionContext subscriptionContext =  new SubscriptionContext(resName, resId, "");
+		SubscriptionContext subscriptionContext = new SubscriptionContext(resName, resId, "");
 		infoSubscriptionManager.deleteSubscriptionContext(subscriptionContext);
 		deleteAttachments(pathToDelete);
+		// make sure all meta and version informations are deleted and the main directory
+		deleteStorage(group);
+	}
+
+	@Override
+	public void deleteStorage(OLATResourceable ores) {
+		VFSContainer resourceContainer = getResourceContainer(ores);
+		if(resourceContainer != null) {
+			resourceContainer.deleteSilently();
+		}
 	}
 
 	@Override

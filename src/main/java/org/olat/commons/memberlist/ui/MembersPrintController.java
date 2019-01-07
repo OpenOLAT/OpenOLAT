@@ -33,7 +33,6 @@ import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.commons.memberlist.model.CurriculumElementInfos;
 import org.olat.commons.memberlist.model.CurriculumMemberInfos;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
-import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -49,6 +48,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.Util;
+import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.course.nodes.members.Member;
@@ -192,8 +192,8 @@ public class MembersPrintController extends BasicController {
 					Long key = Long.parseLong(idKey);
 					String username = userManager.getUsername(key);
 					VFSLeaf portrait = portraitManager.getLargestVFSPortrait(username);
-					if(portrait instanceof MetaTagged) {
-						MetaInfo meta = ((MetaTagged)portrait).getMetaInfo();
+					if(portrait.canMeta() == VFSConstants.YES) {
+						MetaInfo meta = portrait.getMetaInfo();
 						portrait = meta.getThumbnail(300, 300, false);
 					}
 					

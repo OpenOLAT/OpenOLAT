@@ -41,7 +41,6 @@ import org.apache.velocity.context.Context;
 import org.olat.admin.quota.QuotaConstants;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
-import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.commons.modules.bc.vfs.OlatNamedContainerImpl;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.services.notifications.NotificationsManager;
@@ -71,6 +70,7 @@ import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
+import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.callbacks.FullAccessWithQuotaCallback;
@@ -230,9 +230,6 @@ public class DropboxController extends BasicController {
 		return quotaManager.getUploadLimitKB(dropboxQuota.getQuotaKB(),dropboxQuota.getUlLimitKB(),dropboxContainer);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == fileChooserController) {
@@ -259,12 +256,10 @@ public class DropboxController extends BasicController {
 					return;
 				}
 				
-				if(fOut instanceof MetaTagged) {
-					MetaInfo info = ((MetaTagged)fOut).getMetaInfo();
-					if(info != null) {
-						info.setAuthor(ureq.getIdentity());
-						info.write();
-					}
+				if(fOut.canMeta() == VFSConstants.YES) {
+					MetaInfo info = fOut.getMetaInfo();
+					info.setAuthor(ureq.getIdentity());
+					info.write();
 				}
 					
 				if (success) {
@@ -285,10 +280,10 @@ public class DropboxController extends BasicController {
 						bundle.setContent(translate("conf.mail.subject"), confirmation);
 						MailerResult result = CoreSpringFactory.getImpl(MailManager.class).sendMessage(bundle);
 						if(result.getFailedIdentites().size() > 0) {
-							List<Identity> disabledIdentities = new ArrayList<Identity>();
+							List<Identity> disabledIdentities = new ArrayList<>();
 							disabledIdentities = result.getFailedIdentites();
 							//show error that message can not be sent
-							ArrayList<String> myButtons = new ArrayList<String>();
+							ArrayList<String> myButtons = new ArrayList<>();
 							myButtons.add(translate("back"));
 							String title = MailHelper.getTitleForFailedUsersError(ureq.getLocale());
 							String message = MailHelper.getMessageForFailedUsersError(ureq.getLocale(), disabledIdentities);
@@ -301,7 +296,7 @@ public class DropboxController extends BasicController {
 							sendMailError = true;
 						} else if(result.getReturnCode() > 0) {
 							//show error that message can not be sent
-							ArrayList<String> myButtons = new ArrayList<String>();
+							ArrayList<String> myButtons = new ArrayList<>();
 							myButtons.add(translate("back"));
 							DialogBoxController noUsersErrorCtr = null;
 							String message = translate("conf.mail.error");

@@ -25,7 +25,6 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
-import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.commons.modules.singlepage.SinglePageController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -49,6 +48,7 @@ import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.io.SystemFileFilter;
+import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.course.nodes.gta.ui.component.DownloadDocumentMapper;
@@ -129,8 +129,8 @@ public class DirectoryController extends BasicController implements Activateable
 			if(documentsContainer != null) {
 				VFSItem item = documentsContainer.resolve(document.getName());
 				lastModified = format.formatDateAndTime(new Date(item.getLastModified()));
-				if(item instanceof MetaTagged) {
-					MetaInfo metaInfo = ((MetaTagged)item).getMetaInfo();
+				if(item.canMeta() == VFSConstants.YES) {
+					MetaInfo metaInfo = item.getMetaInfo();
 					if(metaInfo != null && metaInfo.getAuthorIdentityKey() != null) {
 						uploadedBy = userManager.getUserDisplayName(metaInfo.getAuthorIdentityKey());
 					}

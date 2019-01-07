@@ -466,7 +466,7 @@ public class VFSManager {
 		String absPath = "";
 		VFSItem tmpItem = item;		
 		// Check for merged containers to fix problems with named containers, see OLAT-3848
-		List<NamedContainerImpl> namedRootChilds = new ArrayList<NamedContainerImpl>();
+		List<NamedContainerImpl> namedRootChilds = new ArrayList<>();
 		for (VFSItem rootItem : rootContainer.getItems()) {
 			if (rootItem instanceof NamedContainerImpl) {
 				namedRootChilds.add((NamedContainerImpl) rootItem);

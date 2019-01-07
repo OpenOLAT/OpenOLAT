@@ -29,23 +29,20 @@ import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
-import org.olat.core.commons.modules.bc.meta.MetaInfoFactory;
 import org.olat.core.commons.modules.bc.meta.MetaInfoFileImpl;
-import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.commons.services.webdav.manager.VFSResource;
 import org.olat.core.commons.services.webdav.servlets.WebResource;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.util.vfs.LocalImpl;
-import org.olat.core.util.vfs.OlatRelPathImpl;
+import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLockManager;
+import org.springframework.stereotype.Service;
 
-
+@Service("vfsLockManager")
 public class VFSLockManagerImpl implements VFSLockManager {
-	
-	private MetaInfoFactory metaInfoFactory;
 
     /**
      * Repository of the locks put on single resources.
@@ -53,7 +50,7 @@ public class VFSLockManagerImpl implements VFSLockManager {
      * Key : path <br>
      * Value : LockInfo
      */
-    private Map<File,LockInfo> fileLocks = new ConcurrentHashMap<File,LockInfo>();
+    private Map<File,LockInfo> fileLocks = new ConcurrentHashMap<>();
 
     /**
      * Repository of the lock-null resources.
@@ -63,7 +60,7 @@ public class VFSLockManagerImpl implements VFSLockManager {
      * collection. Each element of the Vector is the path associated with
      * the lock-null resource.
      */
-    private Map<String,Vector<String>> lockNullResources = new ConcurrentHashMap<String,Vector<String>>();
+    private Map<String,Vector<String>> lockNullResources = new ConcurrentHashMap<>();
 
 
     /**
@@ -72,15 +69,7 @@ public class VFSLockManagerImpl implements VFSLockManager {
      * Key : path <br>
      * Value : LockInfo
      */
-    private Vector<LockInfo> collectionLocks = new Vector<LockInfo>();
-    
-    /**
-     * [used by Spring]
-     * @param metaInfoFactory
-     */
-	public void setMetaInfoFactory(MetaInfoFactory metaInfoFactory) {
-		this.metaInfoFactory = metaInfoFactory;
-	}
+    private Vector<LockInfo> collectionLocks = new Vector<>();
 
 	@Override
 	public boolean isLocked(VFSItem item) {
@@ -134,18 +123,16 @@ public class VFSLockManagerImpl implements VFSLockManager {
 	
 	private MetaInfoFileImpl getMetaInfo(VFSItem item) {
 		MetaInfo info = null;
-		if (item instanceof OlatRelPathImpl) {
-			info = metaInfoFactory.createMetaInfoFor((OlatRelPathImpl)item);
-		} else if (item instanceof MetaTagged) {
-			info = ((MetaTagged) item).getMetaInfo();
+		if (item != null && item.canMeta() == VFSConstants.YES) {
+			info = item.getMetaInfo();
 		}
 		return (MetaInfoFileImpl)info;
 	}
 	
     @Override
 	public boolean lock(VFSItem item, Identity identity, Roles roles) {
-		if (item instanceof MetaTagged) {
-			MetaInfoFileImpl info = (MetaInfoFileImpl)((MetaTagged) item).getMetaInfo();
+		if (item != null && item.canMeta() == VFSConstants.YES) {
+			MetaInfoFileImpl info = (MetaInfoFileImpl)item.getMetaInfo();
 			info.setLockedBy(identity.getKey());
 			info.setLockedDate(new Date());
 			info.setLocked(true);
@@ -171,8 +158,8 @@ public class VFSLockManagerImpl implements VFSLockManager {
      */
 	@Override
 	public boolean unlock(VFSItem item, Identity identity, Roles roles) {
-		if (item instanceof MetaTagged) {
-			MetaInfoFileImpl info = (MetaInfoFileImpl)((MetaTagged) item).getMetaInfo();
+		if (item != null && item.canMeta() == VFSConstants.YES) {
+			MetaInfoFileImpl info = (MetaInfoFileImpl)item.getMetaInfo();
 			if(info == null) return false;
 			
 			info.setLockedBy(null);

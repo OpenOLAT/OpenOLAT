@@ -35,7 +35,6 @@ import java.util.Locale;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
-import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.services.image.ImageService;
 import org.olat.core.commons.services.image.Size;
@@ -48,6 +47,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.io.SystemFilenameFilter;
+import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -305,8 +305,8 @@ public class DisplayPortraitManager implements UserDataDeletable, UserDataExport
 		}
 		
 		VFSLeaf vfsPortrait = getLargestVFSPortrait(username);
-		if(vfsPortrait instanceof MetaTagged) {
-			((MetaTagged)vfsPortrait).getMetaInfo().clearThumbnails();
+		if(vfsPortrait.canMeta() == VFSConstants.YES) {
+			vfsPortrait.getMetaInfo().clearThumbnails();
 		}
 	}
 

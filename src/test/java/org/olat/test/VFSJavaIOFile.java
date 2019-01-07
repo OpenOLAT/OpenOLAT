@@ -29,6 +29,7 @@ import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.util.vfs.JavaIOItem;
 import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
@@ -132,6 +133,16 @@ public class VFSJavaIOFile implements VFSLeaf, JavaIOItem {
 	@Override
 	public void setLocalSecurityCallback(VFSSecurityCallback secCallback) {
 		//
+	}
+
+	@Override
+	public VFSStatus canMeta() {
+		return VFSConstants.NO;
+	}
+
+	@Override
+	public MetaInfo getMetaInfo() {
+		return null;
 	}
 
 	@Override

@@ -68,7 +68,7 @@ public class VersionManagerTest extends OlatTestCase {
 	private static Identity id1, id2;
 	
 	@Autowired
-	private VersionsFileManager versionManager;
+	private VersionsFileManager versionsManager;
 	@Autowired
 	private SimpleVersionConfig versioningConfigurator;
 	
@@ -121,7 +121,7 @@ public class VersionManagerTest extends OlatTestCase {
 		OutputStream out = file.getOutputStream(false);
 		InputStream in = VersionManagerTest.class.getResourceAsStream("test.txt");
 		int byteCopied = IOUtils.copy(in, out);
-		IOUtils.closeQuietly(in);
+		in.close();
 		assertFalse(byteCopied == 0);
 		assertTrue(file instanceof Versionable);
 		
@@ -129,24 +129,24 @@ public class VersionManagerTest extends OlatTestCase {
 		Versionable versionedFile1 = (Versionable)file;
 		InputStream in1 = new ByteArrayInputStream("Hello version 1".getBytes());
 		versionedFile1.getVersions().addVersion(id2, "Version 1", in1);
-		IOUtils.closeQuietly(in1);
+		in1.close();
 		
 		//save a second version
 		Versionable versionedFile2 = (Versionable)file;
 		InputStream in2 = new ByteArrayInputStream("Hello version 2".getBytes());
 		versionedFile2.getVersions().addVersion(id2, "Version 2", in2);
-		IOUtils.closeQuietly(in2);
+		in2.close();
 		
 		//save a third version
 		Versionable versionedFile3 = (Versionable)file;
 		InputStream in3 = new ByteArrayInputStream("Hello version 3".getBytes());
 		versionedFile3.getVersions().addVersion(id2, "Version 3", in3);
-		IOUtils.closeQuietly(in3);
+		in3.close();
 
 		//make the checks
 		VFSItem retrievedFile = rootTest.resolve(filename);
 		assertTrue(retrievedFile instanceof Versionable);
-		Versions versions = VersionsFileManager.getInstance().createVersionsFor((VFSLeaf)retrievedFile);	
+		Versions versions = versionsManager.createVersionsFor((VFSLeaf)retrievedFile);	
 		List<VFSRevision> revisions = versions.getRevisions();
 		assertNotNull(revisions);
 		assertEquals(3, revisions.size());
@@ -178,7 +178,7 @@ public class VersionManagerTest extends OlatTestCase {
 		OutputStream out = file.getOutputStream(false);
 		InputStream in = VersionManagerTest.class.getResourceAsStream("test.txt");
 		int byteCopied = IOUtils.copy(in, out);
-		IOUtils.closeQuietly(in);
+		in.close();
 		assertFalse(byteCopied == 0);
 		assertTrue(file instanceof Versionable);
 		
@@ -187,11 +187,11 @@ public class VersionManagerTest extends OlatTestCase {
 			Versionable versionedFile = (Versionable)file;
 			InputStream inv = new ByteArrayInputStream(("Hello version " + i).getBytes());
 			versionedFile.getVersions().addVersion(id2, "Version " + (1 +i), inv);
-			IOUtils.closeQuietly(inv);
+			inv.close();
 		}
 
 		VFSItem retrievedFile = rootTest.resolve(filename);
-		Versions versions = VersionsFileManager.getInstance().createVersionsFor((VFSLeaf)retrievedFile);	
+		Versions versions = versionsManager.createVersionsFor((VFSLeaf)retrievedFile);	
 		List<VFSRevision> revisions = versions.getRevisions();
 		assertNotNull(revisions);
 		assertEquals(3, revisions.size());
@@ -215,7 +215,7 @@ public class VersionManagerTest extends OlatTestCase {
 		OutputStream out = file.getOutputStream(false);
 		InputStream in = VersionManagerTest.class.getResourceAsStream("test.txt");
 		int byteCopied = IOUtils.copy(in, out);
-		IOUtils.closeQuietly(in);
+		in.close();
 		assertFalse(byteCopied == 0);
 		assertTrue(file instanceof Versionable);
 		
@@ -224,11 +224,11 @@ public class VersionManagerTest extends OlatTestCase {
 			Versionable versionedFile = (Versionable)file;
 			InputStream inv = new ByteArrayInputStream(("Hello version " + i).getBytes());
 			versionedFile.getVersions().addVersion(id2, "Version " + (1 +i), inv);
-			IOUtils.closeQuietly(inv);
+			inv.close();
 		}
 
 		VFSItem retrievedFile = rootTest.resolve(filename);
-		Versions versions = VersionsFileManager.getInstance().createVersionsFor((VFSLeaf)retrievedFile);	
+		Versions versions = versionsManager.createVersionsFor((VFSLeaf)retrievedFile);	
 		List<VFSRevision> revisions = versions.getRevisions();
 		assertNotNull(revisions);
 		assertTrue(revisions.isEmpty());
@@ -242,7 +242,7 @@ public class VersionManagerTest extends OlatTestCase {
 		OutputStream out = file.getOutputStream(false);
 		InputStream in = VersionManagerTest.class.getResourceAsStream("test.txt");
 		int byteCopied = IOUtils.copy(in, out);
-		IOUtils.closeQuietly(in);
+		in.close();
 		assertFalse(byteCopied == 0);
 		assertTrue(file instanceof Versionable);
 		
@@ -251,20 +251,20 @@ public class VersionManagerTest extends OlatTestCase {
 		Versionable versionedFile = (Versionable)file;
 		InputStream in1 = VersionManagerTest.class.getResourceAsStream("test.txt");
 		versionedFile.getVersions().addVersion(id2, "Version 1", in1);
-		IOUtils.closeQuietly(in1);
+		in1.close();
 		
 		//save a second version
 		InputStream in2 = VersionManagerTest.class.getResourceAsStream("test.txt");
 		versionedFile.getVersions().addVersion(id2, "Version 2", in2);
-		IOUtils.closeQuietly(in2);
+		in2.close();
 		
 		//save a third version
 		InputStream in3 = VersionManagerTest.class.getResourceAsStream("test.txt");
 		versionedFile.getVersions().addVersion(id2, "Version 3", in2);
-		IOUtils.closeQuietly(in3);
+		in3.close();
 		
 		//check if there is only one backup file
-		VFSContainer versionContainer = versionManager.getCanonicalVersionFolder(file.getParentContainer(), false);
+		VFSContainer versionContainer = versionsManager.getCanonicalVersionFolder(file.getParentContainer(), false);
 		Assert.assertNotNull(versionContainer);
 		List<VFSItem> items = versionContainer.getItems(new SystemItemFilter());
 		Assert.assertNotNull(items);
@@ -294,7 +294,7 @@ public class VersionManagerTest extends OlatTestCase {
 		OutputStream out = file.getOutputStream(false);
 		InputStream in = VersionManagerTest.class.getResourceAsStream("test.txt");
 		int byteCopied = IOUtils.copy(in, out);
-		IOUtils.closeQuietly(in);
+		in.close();
 		assertFalse(byteCopied == 0);
 		assertTrue(file instanceof Versionable);
 		
@@ -302,20 +302,20 @@ public class VersionManagerTest extends OlatTestCase {
 		Versionable versionedFile = (Versionable)file;
 		InputStream in1 = VersionManagerTest.class.getResourceAsStream("test.txt");
 		versionedFile.getVersions().addVersion(id2, "Version 1", in1);
-		IOUtils.closeQuietly(in1);
+		in1.close();
 		
 		//save a second version
 		InputStream in2 = VersionManagerTest.class.getResourceAsStream("test.txt");
 		versionedFile.getVersions().addVersion(id2, "Version 2", in2);
-		IOUtils.closeQuietly(in2);
+		in2.close();
 		
 		//save a third version
 		InputStream in3 = VersionManagerTest.class.getResourceAsStream("test.txt");
 		versionedFile.getVersions().addVersion(id2, "Version 3", in2);
-		IOUtils.closeQuietly(in3);
+		in3.close();
 		
 		//delete revisions
-		versionManager.deleteRevisions(versionedFile, versionedFile.getVersions().getRevisions().subList(0, 2));
+		versionsManager.deleteRevisions(versionedFile, versionedFile.getVersions().getRevisions().subList(0, 2));
 		
 		//check number of versions
 		VFSItem reloadFile = rootTest.resolve(filename);
@@ -334,7 +334,7 @@ public class VersionManagerTest extends OlatTestCase {
 		Assert.assertTrue(revision2File.exists());
 		
 		//check if there is only one backup file
-		VFSContainer versionContainer = versionManager.getCanonicalVersionFolder(file.getParentContainer(), false);
+		VFSContainer versionContainer = versionsManager.getCanonicalVersionFolder(file.getParentContainer(), false);
 		Assert.assertNotNull(versionContainer);
 		List<VFSItem> items = versionContainer.getItems(new SystemItemFilter());
 		Assert.assertNotNull(items);
@@ -358,7 +358,7 @@ public class VersionManagerTest extends OlatTestCase {
 		OutputStream out = file.getOutputStream(false);
 		InputStream in = new ByteArrayInputStream("Hello original".getBytes());
 		int byteCopied = IOUtils.copy(in, out);
-		IOUtils.closeQuietly(in);
+		in.close();
 		assertFalse(byteCopied == 0);
 		assertTrue(file instanceof Versionable);
 		
@@ -366,38 +366,38 @@ public class VersionManagerTest extends OlatTestCase {
 		Versionable versionedFile = (Versionable)file;
 		InputStream in1 = new ByteArrayInputStream("Hello version 1".getBytes());
 		versionedFile.getVersions().addVersion(id2, "Version 1", in1);
-		IOUtils.closeQuietly(in1);
+		in1.close();
 		
 		//save a second version
 		InputStream in2 = new ByteArrayInputStream("Hello version 2".getBytes());
 		versionedFile.getVersions().addVersion(id2, "Version 2", in2);
-		IOUtils.closeQuietly(in2);
+		in2.close();
 		
 		//save a third version
 		InputStream in3 = new ByteArrayInputStream("Hello version 3".getBytes());
 		versionedFile.getVersions().addVersion(id2, "Version 3", in3);
-		IOUtils.closeQuietly(in3);
+		in3.close();
 		
 		//save a fourth version
 		InputStream in4 = new ByteArrayInputStream("Hello version 4".getBytes());
 		versionedFile.getVersions().addVersion(id2, "Version 4", in4);
-		IOUtils.closeQuietly(in4);
+		in4.close();
 		
 		//save a fourth version
 		InputStream in5 = new ByteArrayInputStream("Hello version 5".getBytes());
 		versionedFile.getVersions().addVersion(id2, "Version 5", in5);
-		IOUtils.closeQuietly(in5);
+		in5.close();
 		
 		//delete a specific
 		VFSRevision rev3 = versionedFile.getVersions().getRevisions().get(3);
 		RevisionFileImpl toDeleteVersionImpl = (RevisionFileImpl)rev3;
-		VFSContainer versionContainerAlt = versionManager.getCanonicalVersionFolder(rootTest, false);
+		VFSContainer versionContainerAlt = versionsManager.getCanonicalVersionFolder(rootTest, false);
 		VFSItem itemToDelete = versionContainerAlt.resolve(toDeleteVersionImpl.getFilename());
 		itemToDelete.deleteSilently();
 		
 		//delete revisions
 		List<VFSRevision> toDelete = new ArrayList<>(versionedFile.getVersions().getRevisions().subList(0, 3));
-		versionManager.deleteRevisions(versionedFile, toDelete);
+		versionsManager.deleteRevisions(versionedFile, toDelete);
 		
 		//check number of versions
 		VFSItem reloadFile = rootTest.resolve(filename);
@@ -411,7 +411,7 @@ public class VersionManagerTest extends OlatTestCase {
 		Assert.assertEquals("Version 5", reloadedVersionedFile.getVersions().getComment());
 		
 		//check if there is only one backup file
-		VFSContainer versionContainer = versionManager.getCanonicalVersionFolder(file.getParentContainer(), false);
+		VFSContainer versionContainer = versionsManager.getCanonicalVersionFolder(file.getParentContainer(), false);
 		Assert.assertNotNull(versionContainer);
 		List<VFSItem> items = versionContainer.getItems(new SystemItemFilter());
 		Assert.assertNotNull(items);
@@ -427,7 +427,7 @@ public class VersionManagerTest extends OlatTestCase {
 		OutputStream out = file.getOutputStream(false);
 		InputStream in = VersionManagerTest.class.getResourceAsStream("test.txt");
 		int byteCopied = IOUtils.copy(in, out);
-		IOUtils.closeQuietly(in);
+		in.close();
 		assertFalse(byteCopied == 0);
 		assertTrue(file instanceof Versionable);
 		assertTrue(file instanceof MetaTagged);
@@ -443,25 +443,25 @@ public class VersionManagerTest extends OlatTestCase {
 		Versionable versionedFile1 = (Versionable)file;
 		InputStream in1 = new ByteArrayInputStream("Hello version 1".getBytes());
 		versionedFile1.getVersions().addVersion(id2, "Version 1", in1);
-		IOUtils.closeQuietly(in1);
+		in1.close();
 		
 		//save a second version -> id1
 		Versionable versionedFile2 = (Versionable)file;
 		InputStream in2 = new ByteArrayInputStream("Hello version 2".getBytes());
 		versionedFile2.getVersions().addVersion(id1, "Version 2", in2);
-		IOUtils.closeQuietly(in2);
+		in2.close();
 		
 		//save a third version -> id2
 		Versionable versionedFile3 = (Versionable)file;
 		InputStream in3 = new ByteArrayInputStream("Hello version 3".getBytes());
 		versionedFile3.getVersions().addVersion(id2, "Version 3", in3);
-		IOUtils.closeQuietly(in3);
+		in3.close();
 		
 		
 		//make the checks
 		VFSItem retrievedFile = rootTest.resolve(filename);
 		assertTrue(retrievedFile instanceof Versionable);
-		Versions versions = versionManager.createVersionsFor((VFSLeaf)retrievedFile);	
+		Versions versions = versionsManager.createVersionsFor((VFSLeaf)retrievedFile);	
 		List<VFSRevision> revisions = versions.getRevisions();
 		assertNotNull(revisions);
 		assertEquals(3, revisions.size());
@@ -488,7 +488,7 @@ public class VersionManagerTest extends OlatTestCase {
 		OutputStream out = file.getOutputStream(false);
 		InputStream in = VersionManagerTest.class.getResourceAsStream("test.txt");
 		int byteCopied = IOUtils.copy(in, out);
-		IOUtils.closeQuietly(in);
+		in.close();
 		assertFalse(byteCopied == 0);
 		assertTrue(file instanceof Versionable);
 		assertTrue(file instanceof MetaTagged);
@@ -504,13 +504,13 @@ public class VersionManagerTest extends OlatTestCase {
 		Versionable versionedFile1 = (Versionable)file;
 		InputStream in1 = new ByteArrayInputStream("Hello version 1".getBytes());
 		versionedFile1.getVersions().addVersion(id2, "Version 1", in1);
-		IOUtils.closeQuietly(in1);
+		in1.close();
 		
 		//save a second version -> id1
 		Versionable versionedFile2 = (Versionable)file;
 		InputStream in2 = new ByteArrayInputStream("Hello version 2".getBytes());
 		versionedFile2.getVersions().addVersion(id1, "Version 2", in2);
-		IOUtils.closeQuietly(in2);
+		in2.close();
 		
 		//move the file
 		VFSLeaf retrievedLeaf = (VFSLeaf)rootTest.resolve(filename);
@@ -519,15 +519,15 @@ public class VersionManagerTest extends OlatTestCase {
 		OutputStream copyOutput = copyFile.getOutputStream(false);
 		InputStream copyInput = retrievedLeaf.getInputStream();
 		IOUtils.copy(copyInput, copyOutput);
-		IOUtils.closeQuietly(copyOutput);
-		IOUtils.closeQuietly(copyInput);
+		copyOutput.close();
+		copyInput.close();
 		//move the revisions
-		VersionsManager.getInstance().move(retrievedLeaf, copyFile, id2);
+		versionsManager.move(retrievedLeaf, copyFile, id2);
 		
 		//check if the revisions are moved
 		VFSLeaf retirevedCopyFile = (VFSLeaf)rootTest.resolve(copyFilename);
 		assertTrue(retirevedCopyFile instanceof Versionable);
-		Versions versions = VersionsFileManager.getInstance().createVersionsFor(retirevedCopyFile);	
+		Versions versions = versionsManager.createVersionsFor(retirevedCopyFile);	
 		List<VFSRevision> revisions = versions.getRevisions();
 		assertNotNull(revisions);
 		assertEquals(2, revisions.size());
@@ -556,7 +556,7 @@ public class VersionManagerTest extends OlatTestCase {
 		OutputStream out = file.getOutputStream(false);
 		InputStream in = VersionManagerTest.class.getResourceAsStream("test.txt");
 		int byteCopied = IOUtils.copy(in, out);
-		IOUtils.closeQuietly(in);
+		in.close();
 		assertFalse(byteCopied == 0);
 		assertTrue(file instanceof Versionable);
 		assertTrue(file instanceof MetaTagged);
@@ -572,13 +572,13 @@ public class VersionManagerTest extends OlatTestCase {
 		Versionable versionedFile1 = (Versionable)file;
 		InputStream in1 = new ByteArrayInputStream("Hello version 1".getBytes());
 		versionedFile1.getVersions().addVersion(id2, "Version 1", in1);
-		IOUtils.closeQuietly(in1);
+		in1.close();
 		
 		//save a second version of file A -> id1
 		Versionable versionedFile2 = (Versionable)file;
 		InputStream in2 = new ByteArrayInputStream("Hello version 2".getBytes());
 		versionedFile2.getVersions().addVersion(id1, "Version 2", in2);
-		IOUtils.closeQuietly(in2);
+		in2.close();
 		
 		//move the file A -> file B
 		VFSLeaf retrievedLeaf = (VFSLeaf)rootTest.resolve(filename);
@@ -587,10 +587,10 @@ public class VersionManagerTest extends OlatTestCase {
 		OutputStream copyOutput = copyFile.getOutputStream(false);
 		InputStream copyInput = retrievedLeaf.getInputStream();
 		IOUtils.copy(copyInput, copyOutput);
-		IOUtils.closeQuietly(copyOutput);
-		IOUtils.closeQuietly(copyInput);
+		copyOutput.close();
+		copyInput.close();
 		//move the revisions
-		VersionsManager.getInstance().move(retrievedLeaf, copyFile, id2);
+		versionsManager.move(retrievedLeaf, copyFile, id2);
 		
 		//move the file B -> file A
 		VFSLeaf retrievedCopyLeaf = (VFSLeaf)rootTest.resolve(copyFilename);
@@ -598,16 +598,16 @@ public class VersionManagerTest extends OlatTestCase {
 		OutputStream originalOutput = originalFile.getOutputStream(false);
 		InputStream retrievedCopyInput = retrievedCopyLeaf.getInputStream();
 		IOUtils.copy(retrievedCopyInput, originalOutput);
-		IOUtils.closeQuietly(originalOutput);
-		IOUtils.closeQuietly(retrievedCopyInput);
+		originalOutput.close();
+		retrievedCopyInput.close();
 		//move the revisions
-		VersionsManager.getInstance().move(retrievedCopyLeaf, originalFile, id2);
+		versionsManager.move(retrievedCopyLeaf, originalFile, id2);
 		
 		
 		//check if the revisions are moved
 		VFSLeaf retirevedOriginalFile = (VFSLeaf)rootTest.resolve(filename);
 		assertTrue(retirevedOriginalFile instanceof Versionable);
-		Versions versions = VersionsFileManager.getInstance().createVersionsFor(retirevedOriginalFile);	
+		Versions versions = versionsManager.createVersionsFor(retirevedOriginalFile);	
 		List<VFSRevision> revisions = versions.getRevisions();
 		assertNotNull(revisions);
 		assertEquals(2, revisions.size());

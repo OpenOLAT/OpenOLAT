@@ -19,6 +19,7 @@
  */
 package org.olat.core.util.vfs.version;
 
+import org.olat.core.configuration.ConfigOnOff;
 import org.olat.core.util.vfs.VFSContainer;
 
 /**
@@ -31,7 +32,7 @@ import org.olat.core.util.vfs.VFSContainer;
  *
  * @author srosse
  */
-public interface FolderVersioningConfigurator {
+public interface FolderVersioningConfigurator extends ConfigOnOff {
 	
 	/**
 	 * The absolut limit for this instance

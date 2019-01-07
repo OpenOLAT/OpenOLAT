@@ -46,8 +46,6 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
-import org.olat.core.commons.modules.bc.meta.MetaInfo;
-import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.commons.services.image.ImageService;
@@ -177,14 +175,8 @@ public class RepositoryManager {
 	}
 
 	public void deleteImage(RepositoryEntry re) {
-		VFSLeaf imgFile =  getImage(re);
+		VFSLeaf imgFile = getImage(re);
 		if (imgFile != null) {
-			if(imgFile instanceof MetaTagged) {
-				MetaInfo info = ((MetaTagged)imgFile).getMetaInfo();
-				if(info != null) {
-					info.clearThumbnails();
-				}
-			}
 			imgFile.delete();
 		}
 	}
@@ -207,12 +199,6 @@ public class RepositoryManager {
 	public boolean setImage(VFSLeaf newImageFile, RepositoryEntry re) {
 		VFSLeaf currentImage = getImage(re);
 		if(currentImage != null) {
-			if(currentImage instanceof MetaTagged) {
-				MetaInfo info = ((MetaTagged)currentImage).getMetaInfo();
-				if(info != null) {
-					info.clearThumbnails();
-				}
-			}
 			currentImage.delete();
 		}
 

@@ -34,7 +34,6 @@ import java.util.Vector;
 import org.jdom.Element;
 import org.jdom.input.JDOMParseException;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.manager.BasicManager;
 import org.olat.modules.scorm.ISettingsHandler;
 import org.olat.modules.scorm.contentpackaging.NavigationViewer;
 import org.olat.modules.scorm.server.sequence.SequenceManager;
@@ -45,7 +44,7 @@ import uk.ac.reload.moonunit.contentpackaging.CP_Core;
  * Initial Date: 13.06.2005 <br>
  * @author guido
  */
-public class ScormManager extends BasicManager {
+public class ScormManager {
 	/**
 	 * The package name Note - this should not really be static - this assumes
 	 * you're only ever going to have one package open at a time.

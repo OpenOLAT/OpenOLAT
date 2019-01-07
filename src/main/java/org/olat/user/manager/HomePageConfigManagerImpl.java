@@ -28,15 +28,18 @@ package org.olat.user.manager;
 import java.io.File;
 
 import org.olat.core.commons.modules.bc.FolderConfig;
+import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.CodeHelper;
-import org.olat.core.util.FileUtils;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.user.HomePageConfig;
 import org.olat.user.HomePageConfigManager;
 import org.springframework.stereotype.Service;
+
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.security.ExplicitTypePermission;
 
 /**
  * 
@@ -47,6 +50,15 @@ import org.springframework.stereotype.Service;
 public class HomePageConfigManagerImpl implements HomePageConfigManager {
 
 	private static final OLog log = Tracing.createLoggerFor(HomePageConfigManagerImpl.class);
+	
+	private static XStream homeConfigXStream = XStreamHelper.createXStreamInstance();
+	static {
+		XStream.setupDefaultSecurity(homeConfigXStream);
+		Class<?>[] types = new Class[] {
+				HomePageConfig.class
+		};
+		homeConfigXStream.addPermission(new ExplicitTypePermission(types));
+	}
 
 	/**
 	 * 
@@ -63,15 +75,12 @@ public class HomePageConfigManagerImpl implements HomePageConfigManager {
 		} else {
 			// file exists, load it with XStream, resolve version
 			try {
-				Object tmp = XStreamHelper.readObject(configFile);
+				Object tmp = homeConfigXStream.fromXML(configFile);
 				if (tmp instanceof HomePageConfig) {
-					retVal = (HomePageConfig) tmp;
-					retVal.resolveVersionIssues();
-					if (!retVal.hasResourceableId()) {
-						retVal.setResourceableId(Long.valueOf(CodeHelper.getForeverUniqueID()));
+					retVal = (HomePageConfig)tmp;
+					if(retVal.resolveVersionIssues()) {
+						saveConfigTo(userName, retVal);
 					}
-					configFile = null;
-					saveConfigTo(userName, retVal);
 				}
 			} catch (Exception e) {
 				log.error("Error while loading homepage config from path::" + configFile.getAbsolutePath() + ", fallback to default configuration",
@@ -91,10 +100,8 @@ public class HomePageConfigManagerImpl implements HomePageConfigManager {
 	 * @return
 	 */
 	private HomePageConfig loadAndSaveDefaults(String userName) {
-		HomePageConfig retVal;
-		retVal = new HomePageConfig();
+		HomePageConfig retVal = new HomePageConfig();
 		retVal.initDefaults();
-		retVal.setResourceableId(new Long(CodeHelper.getForeverUniqueID()));
 		saveConfigTo(userName, retVal);
 		return retVal;
 	}
@@ -105,9 +112,8 @@ public class HomePageConfigManagerImpl implements HomePageConfigManager {
 	 */
 	@Override
 	public void saveConfigTo(String userName, HomePageConfig homePageConfig) {
-	    homePageConfig.setUserName(userName);
 		File configFile = getConfigFile(userName);
-		XStreamHelper.writeObject(configFile, homePageConfig);
+		XStreamHelper.writeObject(homeConfigXStream, configFile, homePageConfig);
 	}
 
 	/**
@@ -142,10 +148,12 @@ public class HomePageConfigManagerImpl implements HomePageConfigManager {
 	 */
 	@Override
 	public void deleteUserData(Identity identity, String newDeletedUserName) {
-		String pathHomePage = FolderConfig.getCanonicalRoot() + FolderConfig.getUserHomePage(identity.getName());
+		String home = FolderConfig.getUserHomePage(identity.getName());
+		String pathHomePage = FolderConfig.getCanonicalRoot() + home;
 		File userHomePage = new File(pathHomePage);
 		if(userHomePage.exists()) {
-			FileUtils.deleteDirsAndFiles(userHomePage, true, true);
+			VFSContainer homeContainer = new OlatRootFolderImpl(home, null);
+			homeContainer.deleteSilently();
 		}
 		log.audit("Homepage-config file and homepage-dir deleted for identity=" + identity);
 	}

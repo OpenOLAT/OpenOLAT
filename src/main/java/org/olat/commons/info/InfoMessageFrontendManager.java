@@ -71,6 +71,8 @@ public interface InfoMessageFrontendManager {
 	
 	public void deleteAttachments(Collection<String> paths);
 	
+	public void deleteStorage(OLATResourceable ores);
+	
 	public void deleteInfoMessage(InfoMessage infoMessage);
 	
 	public void updateInfoMessagesOfIdentity(BusinessGroupRef businessGroup, IdentityRef identity);

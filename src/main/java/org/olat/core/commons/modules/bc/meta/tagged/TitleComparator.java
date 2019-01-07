@@ -54,7 +54,7 @@ public class TitleComparator implements Comparator<VFSItem> {
 		if(result == 0) {
 			long l1 = i1.getLastModified();
 			long l2 = i2.getLastModified();
-			result = l1<l2 ? -1 : (l1==l2 ? 0 : 1);
+			result = Long.compare(l1, l2);
 		}
 		return result;
 	}

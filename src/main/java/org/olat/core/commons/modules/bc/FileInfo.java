@@ -29,7 +29,6 @@ package org.olat.core.commons.modules.bc;
 import java.util.Date;
 
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
-import org.olat.core.id.Identity;
 
 /**
  * Initial Date:  11.02.2005 <br>
@@ -54,8 +53,8 @@ public class FileInfo {
 	/**
 	 * @return the author
 	 */
-	public Identity getAuthor() {
-		return (metaInfo != null ? metaInfo.getAuthorIdentity() : null);
+	public Long getAuthorIdentityKey() {
+		return metaInfo == null ? null : metaInfo.getAuthorIdentityKey();
 	}
 
 	/**

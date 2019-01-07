@@ -25,7 +25,6 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
-import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
@@ -38,6 +37,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSManager;
@@ -171,8 +171,8 @@ public class EditSolutionController extends FormBasicController {
 				Files.move(upload, newFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
 				VFSItem uploadedItem = solutionContainer.resolve(filename);
-				if(uploadedItem instanceof MetaTagged) {
-					MetaInfo metaInfo = ((MetaTagged)uploadedItem).getMetaInfo();
+				if(uploadedItem.canMeta() == VFSConstants.YES) {
+					MetaInfo metaInfo = uploadedItem.getMetaInfo();
 					metaInfo.setAuthor(ureq.getIdentity());
 					metaInfo.write();
 				}

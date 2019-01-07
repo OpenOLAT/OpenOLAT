@@ -37,7 +37,6 @@ import org.olat.core.commons.modules.bc.commands.FolderCommandHelper;
 import org.olat.core.commons.modules.bc.commands.FolderCommandStatus;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
-import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -69,6 +68,7 @@ import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailModule;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.vfs.LocalFileImpl;
+import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -98,8 +98,6 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 	private final DecimalFormat formatMb = new DecimalFormat("0.00");
 
 	private int status = FolderCommandStatus.STATUS_SUCCESS;
-	private List<VFSLeaf> files;
-	private FileSelection selection;
 	private List<File> attachments;
 	private final boolean allowAttachments;
 	private List<IdentityWrapper> toValues = new ArrayList<>();
@@ -189,7 +187,7 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 		if (status == FolderCommandStatus.STATUS_FAILED) {
 			return null;
 		}
-		selection = new FileSelection(ureq, folderComponent.getCurrentContainerPath());
+		FileSelection selection = new FileSelection(ureq, folderComponent.getCurrentContainerPath());
 		status = FolderCommandHelper.sanityCheck3(wControl, folderComponent, selection);
 		if (status == FolderCommandStatus.STATUS_FAILED) {
 			return null;
@@ -218,9 +216,7 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 		return this;
 	}
 
-	protected void setFiles(VFSContainer rootContainer, List<VFSLeaf> leafs) {
-		this.files = leafs;
-
+	protected void setFiles(VFSContainer rootContainer, List<VFSLeaf> files) {
 		StringBuilder subjectSb = new StringBuilder();
 		if (StringHelper.containsNonWhitespace(subjectElement.getValue())) {
 			subjectSb.append(subjectElement.getValue()).append('\n').append('\n');
@@ -234,8 +230,8 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 		long fileSize = 0l;
 		for (VFSLeaf file : files) {
 			MetaInfo infos = null;
-			if (file instanceof MetaTagged) {
-				infos = ((MetaTagged) file).getMetaInfo();
+			if (file.canMeta() == VFSConstants.YES) {
+				infos = file.getMetaInfo();
 			}
 			// subject
 			appendToSubject(file, infos, subjectSb);
@@ -326,7 +322,7 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 			if (StringHelper.containsNonWhitespace(url)) {
 				appendMetadata("mf.url", url, sb);
 			}
-			String author = infos.getHTMLFormattedAuthor();
+			String author = userManager.getUserDisplayName(infos.getAuthorIdentityKey());
 			if (StringHelper.containsNonWhitespace(author)) {
 				appendMetadata("mf.author", author, sb);
 			}

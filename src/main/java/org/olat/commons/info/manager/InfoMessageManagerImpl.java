@@ -122,7 +122,7 @@ public class InfoMessageManagerImpl implements InfoMessageManager {
 				.createQuery(sb.toString(), InfoMessage.class)
 				.setParameter("key", key)
 				.getResultList();
-		if (infoMessages.size() == 0) {
+		if (infoMessages.isEmpty()) {
 			return null;
 		}
 		return infoMessages.get(0);
@@ -222,7 +222,7 @@ public class InfoMessageManagerImpl implements InfoMessageManager {
 		if (url.startsWith("ROOT")) {
 			url = url.substring(4, url.length());
 		}
-		List<String> tokens = new ArrayList<String>();
+		List<String> tokens = new ArrayList<>();
 		for(StringTokenizer tokenizer = new StringTokenizer(url, "[]"); tokenizer.hasMoreTokens(); ) {
 			String token = tokenizer.nextToken();
 			if(!tokens.contains(token)) {

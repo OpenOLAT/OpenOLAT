@@ -34,7 +34,6 @@ import org.olat.core.commons.modules.bc.FolderLoggingAction;
 import org.olat.core.commons.modules.bc.FolderManager;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
-import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -45,6 +44,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.activity.CoreLoggingResourceable;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
@@ -80,9 +80,8 @@ public class CmdServeResource implements FolderCommand {
 		ureq.getDispatchResult().setResultingMediaResource(mr);
 		
 		// update download counter
-		if (vfsitem instanceof MetaTagged) {
-			MetaTagged itemWithMeta = (MetaTagged) vfsitem;
-			MetaInfo meta = itemWithMeta.getMetaInfo();
+		if (vfsitem.canMeta() == VFSConstants.YES) {
+			MetaInfo meta = vfsitem.getMetaInfo();
 			meta.increaseDownloadCount();
 			meta.write();
 		}

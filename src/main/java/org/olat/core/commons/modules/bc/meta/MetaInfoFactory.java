@@ -56,17 +56,27 @@ public class MetaInfoFactory {
 	}
 
 	public MetaInfo createMetaInfoFor(OlatRelPathImpl path) {
-		File originFile = getOriginFile(path);
-		if(originFile == null) {
+		File file = getOriginFile(path);
+		return createMetaInfoFor(file);
+	}
+	
+	public MetaInfo createMetaInfoFor(File file) {
+		if(file == null) {
 			return null;
 		}
-		String canonicalMetaPath = getCanonicalMetaPath(originFile, path);
+		String canonicalMetaPath = getCanonicalMetaPath(file, false);
 		if (canonicalMetaPath == null) {
 			return null;
 		}
 		
 		File metaFile = new File(canonicalMetaPath);
-		MetaInfoFileImpl meta = new MetaInfoFileImpl(canonicalMetaPath, metaFile, originFile);
+		MetaInfoFileImpl meta = new MetaInfoFileImpl(metaFile, file);
+		meta.setThumbnailService(thumbnailService);
+		return meta;
+	}
+	
+	public MetaInfo createMetaShadowInfoFor(File metaFile) {
+		MetaInfoFileImpl meta = new MetaInfoFileImpl(metaFile);
 		meta.setThumbnailService(thumbnailService);
 		return meta;
 	}
@@ -79,24 +89,36 @@ public class MetaInfoFactory {
 		}
 	}
 	
-	protected static String getCanonicalMetaPath(OlatRelPathImpl olatRelPathImpl) {
-		File f = getOriginFile(olatRelPathImpl);
-		return getCanonicalMetaPath(f, olatRelPathImpl);
+	public void deleteMetaFile(File file) {
+		String metaPath = getCanonicalMetaPath(file, true);
+		File metaFile = new File(metaPath);
+		new MetaInfoFileImpl(metaFile).delete();
 	}
 	
-	private static String getCanonicalMetaPath(File originFile, OlatRelPathImpl olatRelPathImpl) {
+	protected static String getCanonicalMetaPath(OlatRelPathImpl olatRelPathImpl) {
+		File f = getOriginFile(olatRelPathImpl);
+		return getCanonicalMetaPath(f, false);
+	}
+	
+	protected static String getCanonicalMetaPath(File originFile, boolean lenient) {
 		String canonicalMetaPath;
-		if (originFile == null || !originFile.exists()) {
+		if (originFile == null || (!lenient && !originFile.exists())) {
 			canonicalMetaPath = null;
-		} else if (originFile.isDirectory()) {
-			canonicalMetaPath = FolderConfig.getCanonicalMetaRoot() + olatRelPathImpl.getRelPath() + "/.xml";
 		} else {
-			canonicalMetaPath = FolderConfig.getCanonicalMetaRoot() + olatRelPathImpl.getRelPath() + ".xml";
+			String relPath = FolderConfig.getCanonicalRootPath().relativize(originFile.toPath()).toString();
+			StringBuilder metaSb = new StringBuilder(128);
+			metaSb.append(FolderConfig.getCanonicalMetaRoot()).append("/").append(relPath);
+			if (originFile.isDirectory()) {
+				metaSb.append("/.xml");
+			} else {
+				metaSb.append(".xml");
+			}
+			canonicalMetaPath = metaSb.toString();
 		}
 		return canonicalMetaPath;
 	}
 	
-	protected static File getOriginFile(OlatRelPathImpl olatRelPathImpl) {
+	private static File getOriginFile(OlatRelPathImpl olatRelPathImpl) {
 		return new File(FolderConfig.getCanonicalRoot() + olatRelPathImpl.getRelPath());
 	}
 	
@@ -107,11 +129,11 @@ public class MetaInfoFactory {
 	 * @return the license or null if no license is stored in the MetaInfo
 	 */
 	public License getLicense(MetaInfo meta) {
-		LicenseService licenseService = CoreSpringFactory.getImpl(LicenseService.class);
 		License license = null;
 		boolean hasLicense = meta != null && StringHelper.containsNonWhitespace(meta.getLicenseTypeName());
 		if (hasLicense) { 
 			String licenseTypeName = meta.getLicenseTypeName();
+			LicenseService licenseService = CoreSpringFactory.getImpl(LicenseService.class);
 			LicenseType licenseType = licenseService.loadLicenseTypeByName(licenseTypeName);
 			if (licenseType == null) {
 				licenseType = licenseService.createLicenseType(licenseTypeName);
@@ -136,9 +158,9 @@ public class MetaInfoFactory {
 	 */
 	public License getOrCreateLicense(MetaInfo meta, Identity itentity) {
 		LicenseHandler licenseHandler = CoreSpringFactory.getImpl(FolderLicenseHandler.class);
-		LicenseService licenseService = CoreSpringFactory.getImpl(LicenseService.class);
 		License license = getLicense(meta);
 		if (license == null) {
+			LicenseService licenseService = CoreSpringFactory.getImpl(LicenseService.class);
 			license = licenseService.createDefaultLicense(licenseHandler, itentity);
 		}
 		return license;

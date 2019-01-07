@@ -28,7 +28,6 @@ import java.util.Collections;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderLicenseHandler;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
-import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.commons.services.license.License;
 import org.olat.core.commons.services.license.LicenseModule;
 import org.olat.core.commons.services.license.LicenseService;
@@ -85,7 +84,7 @@ public class VFSResourceRoot implements WebResourceRoot  {
 		VFSItem item = resolveFile(name);
 		if (item == null) {
 			// try to resolve parent in case the item does not yet exist
-			int lastSlash = name.lastIndexOf("/");
+			int lastSlash = name.lastIndexOf('/');
 			if (lastSlash > 0) {
 				String containerName = name.substring(0, lastSlash);
 				item = resolveFile(containerName);
@@ -108,21 +107,13 @@ public class VFSResourceRoot implements WebResourceRoot  {
 	@Override
 	public boolean canRename(String name) {
 		VFSItem item = resolveFile(name);
-		if (item != null && VFSConstants.YES.equals(item.canRename())) {
-			return true;
-		} else {
-			return false;
-		}
+		return item != null && VFSConstants.YES.equals(item.canRename());
 	}	
 
 	@Override
 	public boolean canDelete(String path) {
 		VFSItem item = resolveFile(path);
-		if (item != null && VFSConstants.YES.equals(item.canDelete())) {
-			return true;
-		} else {
-			return false;
-		}
+		return item != null && VFSConstants.YES.equals(item.canDelete());
 	}
 
 	@Override
@@ -183,9 +174,9 @@ public class VFSResourceRoot implements WebResourceRoot  {
 				//versioning
 				if(childLeaf instanceof Versionable && ((Versionable)childLeaf).getVersions().isVersioned()) {
 					if(childLeaf.getSize() == 0) {
-						VersionsManager.getInstance().createVersionsFor(childLeaf, true);
+						CoreSpringFactory.getImpl(VersionsManager.class).createVersionsFor(childLeaf, true);
 					} else {
-						VersionsManager.getInstance().addToRevisions((Versionable)childLeaf, identity, "");
+						CoreSpringFactory.getImpl(VersionsManager.class).addToRevisions((Versionable)childLeaf, identity, "");
 					}
 				}
 			} else {
@@ -230,8 +221,8 @@ public class VFSResourceRoot implements WebResourceRoot  {
 			}
 		}
 		
-		if(childLeaf instanceof MetaTagged && identity != null) {
-			MetaInfo infos = ((MetaTagged)childLeaf).getMetaInfo();
+		if(identity != null && childLeaf.canMeta() == VFSConstants.YES) {
+			MetaInfo infos = childLeaf.getMetaInfo();
 			if(infos != null && !infos.hasAuthorIdentity()) {
 				infos.setAuthor(identity);
 				addLicense(infos, identity);
@@ -245,7 +236,7 @@ public class VFSResourceRoot implements WebResourceRoot  {
 			if(vfsResource.getItem() instanceof Versionable
 					&& ((Versionable)vfsResource.getItem()).getVersions().isVersioned()) {
 				VFSLeaf currentVersion = (VFSLeaf)vfsResource.getItem();
-				VersionsManager.getInstance().move(currentVersion, childLeaf, identity);
+				CoreSpringFactory.getImpl(VersionsManager.class).move(currentVersion, childLeaf, identity);
 			}
 		}
 		

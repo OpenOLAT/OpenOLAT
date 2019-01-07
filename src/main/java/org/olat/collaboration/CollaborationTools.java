@@ -646,28 +646,28 @@ public class CollaborationTools implements Serializable {
 		/*
 		 * delete the forum, if existing
 		 */
-		ForumManager fom = CoreSpringFactory.getImpl(ForumManager.class);
 		Property forumKeyProperty = npm.findProperty(null, null, PROP_CAT_BG_COLLABTOOLS, KEY_FORUM);
 		if (forumKeyProperty != null) {
 			// if there was a forum, delete it
 			Long forumKey = forumKeyProperty.getLongValue();
 			if (forumKey == null) throw new AssertException("property had no longValue, prop:" + forumKeyProperty);
-			fom.deleteForum(forumKey);
+			CoreSpringFactory.getImpl(ForumManager.class).deleteForum(forumKey);
 		}
 		/*
 		 * delete the folder, if existing
 		 */
 		OlatRootFolderImpl vfsContainer = new OlatRootFolderImpl(getFolderRelPath(), null);
-		File fFolderRoot = vfsContainer.getBasefile();
-		if (fFolderRoot.exists()) {
-			FileUtils.deleteDirsAndFiles(fFolderRoot, true, true);
+		if (vfsContainer.exists()) {
+			vfsContainer.deleteSilently();
 		}
 		
 		/*
 		 * delete the wiki if existing
 		 */
 		VFSContainer rootContainer = WikiManager.getInstance().getWikiRootContainer(ores);
-		if(rootContainer != null) rootContainer.delete();
+		if(rootContainer != null) {
+			rootContainer.deleteSilently();
+		}
 		
 		/*
 		 * Delete calendar if exists
@@ -692,9 +692,8 @@ public class CollaborationTools implements Serializable {
 		 */
 		OpenMeetingsModule omModule = CoreSpringFactory.getImpl(OpenMeetingsModule.class);
 		if(omModule.isEnabled()) {
-			OpenMeetingsManager omManager = CoreSpringFactory.getImpl(OpenMeetingsManager.class);
 			try {
-				omManager.deleteAll(ores, null, null);
+				CoreSpringFactory.getImpl(OpenMeetingsManager.class).deleteAll(ores, null, null);
 			} catch (OpenMeetingsException e) {
 				log.error("A room could not be deleted for group: " + ores, e);
 			}

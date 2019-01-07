@@ -12,7 +12,6 @@
 
 	<bean id="coreSpringFactory" class="org.olat.core.CoreSpringFactory" />
 	
-	<import resource="classpath:/org/olat/core/util/vfs/version/_spring/versioningCorecontext.xml"/>
 	<import resource="classpath:/org/olat/core/util/_spring/utilCorecontext.xml"/>
 	<import resource="classpath:/org/olat/core/util/i18n/devtools/_spring/devtoolsCorecontext.xml"/>
 	<import resource="classpath:/org/olat/core/util/event/_spring/frameworkStartedEventCorecontext.xml"/>

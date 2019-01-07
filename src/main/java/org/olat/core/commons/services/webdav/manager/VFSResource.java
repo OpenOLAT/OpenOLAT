@@ -26,12 +26,12 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Date;
 
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
-import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.commons.services.webdav.servlets.ConcurrentDateFormat;
 import org.olat.core.commons.services.webdav.servlets.WebResource;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.JavaIOItem;
+import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -150,9 +150,8 @@ public class VFSResource implements WebResource {
 	@Override
 	public void increaseDownloadCount() {
 		try {
-			if (item instanceof VFSLeaf && item instanceof MetaTagged) {
-				MetaTagged itemWithMeta = (MetaTagged) item;
-				MetaInfo meta = itemWithMeta.getMetaInfo();
+			if (item instanceof VFSLeaf && item.canMeta() == VFSConstants.YES) {
+				MetaInfo meta = item.getMetaInfo();
 				meta.increaseDownloadCount();
 				meta.write();
 			}

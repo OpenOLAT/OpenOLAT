@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.olat.basesecurity.BaseSecurity;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.notifications.ui.NotificationNewsController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -94,6 +96,24 @@ public class NotificationHelper {
 			}
 		}
 		return subToSubInfo;
+	}
+	
+
+	public static String getFormatedName(Long identityKey) {
+		String formattedName;
+		if (identityKey == null) {
+			Translator trans = Util.createPackageTranslator(NotificationNewsController.class, I18nManager.getInstance().getLocaleOrDefault(null));
+			return trans.translate("user.unknown");
+		} else {
+			// Optimize: use from cache to not re-calculate user properties over and over again
+			formattedName = userPropertiesCache.get(identityKey);
+			if (formattedName != null) {
+				return formattedName;
+			}
+		}
+		
+		Identity identity = CoreSpringFactory.getImpl(BaseSecurity.class).loadIdentityByKey(identityKey);
+		return getFormatedName(identity);
 	}
 	
 	/**

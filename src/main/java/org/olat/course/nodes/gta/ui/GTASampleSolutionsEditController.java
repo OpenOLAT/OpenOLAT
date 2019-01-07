@@ -26,7 +26,6 @@ import java.util.List;
 import org.olat.core.commons.editor.htmleditor.HTMLEditorController;
 import org.olat.core.commons.editor.htmleditor.WysiwygFactory;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
-import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -46,6 +45,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -138,9 +138,9 @@ public class GTASampleSolutionsEditController extends FormBasicController {
 			String author = null;
 			
 			VFSItem item = solutionContainer.resolve(filename);
-			if(item instanceof MetaTagged) {
-				MetaInfo metaInfo = ((MetaTagged)item).getMetaInfo();
-				if(metaInfo != null && metaInfo.getAuthorIdentityKey() != null) {
+			if(item.canMeta() == VFSConstants.YES) {
+				MetaInfo metaInfo = item.getMetaInfo();
+				if(metaInfo.getAuthorIdentityKey() != null) {
 					author = userManager.getUserDisplayName(metaInfo.getAuthorIdentityKey());
 				}
 			}
@@ -294,11 +294,9 @@ public class GTASampleSolutionsEditController extends FormBasicController {
 			documentName = VFSManager.rename(solutionContainer, documentName);
 			item = solutionContainer.createChildLeaf(documentName);
 		}
-		if(item instanceof MetaTagged) {
-			MetaInfo metaInfo = ((MetaTagged)item).getMetaInfo();
-			if(metaInfo != null ) {
-				metaInfo.setAuthor(getIdentity());
-			}
+		if(item.canMeta() == VFSConstants.YES) {
+			MetaInfo metaInfo = item.getMetaInfo();
+			metaInfo.setAuthor(getIdentity());
 			metaInfo.write();
 		}
 

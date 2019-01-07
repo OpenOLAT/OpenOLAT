@@ -40,8 +40,6 @@ import org.olat.basesecurity.SecurityGroupMembershipImpl;
 import org.olat.basesecurity.manager.SecurityGroupDAO;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
-import org.olat.core.commons.modules.bc.meta.MetaInfo;
-import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.services.image.ImageService;
@@ -56,6 +54,7 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.MultiUserEvent;
 import org.olat.core.util.resource.Resourceable;
 import org.olat.core.util.vfs.LocalFolderImpl;
+import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -748,11 +747,8 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 	public void deleteImage(CatalogEntryRef entry) {
 		VFSLeaf imgFile =  getImage(entry);
 		if (imgFile != null) {
-			if(imgFile instanceof MetaTagged) {
-				MetaInfo info = ((MetaTagged)imgFile).getMetaInfo();
-				if(info != null) {
-					info.clearThumbnails();
-				}
+			if(imgFile.canMeta() == VFSConstants.YES) {
+				imgFile.getMetaInfo().clearThumbnails();
 			}
 			imgFile.delete();
 		}
@@ -761,11 +757,8 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 	public boolean setImage(VFSLeaf newImageFile, CatalogEntryRef re) {
 		VFSLeaf currentImage = getImage(re);
 		if(currentImage != null) {
-			if(currentImage instanceof MetaTagged) {
-				MetaInfo info = ((MetaTagged)currentImage).getMetaInfo();
-				if(info != null) {
-					info.clearThumbnails();
-				}
+			if(currentImage.canMeta() == VFSConstants.YES) {
+				currentImage.getMetaInfo().clearThumbnails();
 			}
 			currentImage.delete();
 		}

@@ -44,6 +44,7 @@ public class MetaTitleComparator implements Comparator<MetaInfo> {
 		this.collator = Collator.getInstance(locale);
 	}
 
+	@Override
 	public int compare(MetaInfo m1, MetaInfo m2) {
 		if(m1 == null) return -1;
 		if(m2 == null) return 1;

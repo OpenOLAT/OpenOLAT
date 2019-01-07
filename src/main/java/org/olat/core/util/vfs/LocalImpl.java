@@ -27,13 +27,15 @@
 package org.olat.core.util.vfs;
 
 import java.io.File;
+import java.nio.file.Path;
 
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.modules.bc.FolderConfig;
+import org.olat.core.commons.modules.bc.meta.MetaInfo;
+import org.olat.core.commons.modules.bc.meta.MetaInfoFactory;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 
 /**
- * Description:<br>
- * TODO: Felix Jost Class Description for LocalImpl
- * 
  * <P>
  * Initial Date:  23.06.2005 <br>
  *
@@ -53,23 +55,17 @@ public abstract class LocalImpl implements VFSItem, JavaIOItem {
 		this.parentContainer = parent;
 	}
 
-	/**
-	 * @see org.olat.core.util.vfs.VFSItem#getParentContainer()
-	 */
+	@Override
 	public VFSContainer getParentContainer() {
 		return parentContainer;
 	}
 
-	/**
-	 * @see org.olat.core.util.vfs.VFSItem#setParentContainer(org.olat.core.util.vfs.VFSContainer)
-	 */
+	@Override
 	public void setParentContainer(VFSContainer parentContainer) {
 		this.parentContainer = parentContainer;
 	}
-	
-	/**
-	 * @see org.olat.core.util.vfs.VFSItem#canDelete()
-	 */
+
+	@Override
 	public VFSStatus canDelete() {
 		VFSContainer inheritingContainer = VFSManager.findInheritingSecurityCallbackContainer(this);
 		if (inheritingContainer != null && !inheritingContainer.getLocalSecurityCallback().canDelete())
@@ -77,9 +73,7 @@ public abstract class LocalImpl implements VFSItem, JavaIOItem {
 		return (basefile.canWrite() ? VFSConstants.YES : VFSConstants.NO);
 	}
 
-	/**
-	 * @see org.olat.core.util.vfs.VFSContainer#canCopy()
-	 */
+	@Override
 	public VFSStatus canCopy() {
 		VFSContainer inheritingContainer = VFSManager.findInheritingSecurityCallbackContainer(this);
 		if (inheritingContainer != null && !inheritingContainer.getLocalSecurityCallback().canCopy())
@@ -87,9 +81,7 @@ public abstract class LocalImpl implements VFSItem, JavaIOItem {
 		return VFSConstants.YES;
 	}
 
-	/**
-	 * @see org.olat.core.util.vfs.VFSItem#canRename()
-	 */
+	@Override
 	public VFSStatus canRename() {
 		VFSContainer inheritingContainer = VFSManager.findInheritingSecurityCallbackContainer(this);
 		if (inheritingContainer != null && !inheritingContainer.getLocalSecurityCallback().canWrite())
@@ -97,10 +89,7 @@ public abstract class LocalImpl implements VFSItem, JavaIOItem {
 		return VFSConstants.YES;
 	}
 
-
-	/**
-	 * @see org.olat.core.util.vfs.VFSItem#canWrite()
-	 */
+	@Override
 	public VFSStatus canWrite() {
 		return VFSConstants.NO;
 	}
@@ -110,9 +99,7 @@ public abstract class LocalImpl implements VFSItem, JavaIOItem {
 		return basefile != null && basefile.exists();
 	}
 
-	/**
-	 * @see org.olat.core.util.vfs.VFSItem#getName()
-	 */
+	@Override
 	public String getName() {
 		return basefile.getName();
 	}
@@ -124,6 +111,7 @@ public abstract class LocalImpl implements VFSItem, JavaIOItem {
 	 * 
 	 * @return the current base file
 	 */
+	@Override
 	public File getBasefile() {
 		return basefile;
 	}
@@ -138,42 +126,41 @@ public abstract class LocalImpl implements VFSItem, JavaIOItem {
 	}
 	
 	/**
-	 * @return lmd
+	 * @return The last modified of the file
 	 */
+	@Override
 	public long getLastModified() {
 		long lm = basefile.lastModified();
 		// file returns zero -> we return -1 (see interface docu)
 		return lm == 0L? VFSConstants.UNDEFINED : lm;
 	}
 	
-	/**
-	 * @see org.olat.core.util.vfs.VFSItem#rename(java.lang.String)
-	 */
-	public abstract VFSStatus rename(String newname);
+	@Override
+	public VFSStatus canMeta() {
+		File bFile = getBasefile();
+		Path bcRoot = FolderConfig.getCanonicalRootPath();
+		return bFile.toPath().startsWith(bcRoot) ? VFSConstants.YES : VFSConstants.NO;
+	}
 
+	@Override
+	public MetaInfo getMetaInfo() {
+		if(canMeta() == VFSConstants.YES) {
+			return CoreSpringFactory.getImpl(MetaInfoFactory.class).createMetaInfoFor(getBasefile());
+		}
+		return null;
+	}
 
-	/**
-	 * @see org.olat.core.util.vfs.VFSItem#delete()
-	 */
-	public abstract VFSStatus delete();
-
-	/**
-	 * @see org.olat.core.util.vfs.VFSItem#setSecurityCallback(org.olat.core.util.vfs.callbacks.VFSSecurityCallback)
-	 */
+	@Override
 	public void setLocalSecurityCallback(VFSSecurityCallback securityCallback) {
 		this.securityCallback = securityCallback;
 	}
 
-	/**
-	 * @see org.olat.core.util.vfs.VFSItem#getLocalSecurityCallback()
-	 */
+	@Override
 	public VFSSecurityCallback getLocalSecurityCallback() {
 		return securityCallback;
 	}
 
-	/**
-	 * @see org.olat.core.util.vfs.VFSItem#isSame(org.olat.core.util.vfs.VFSItem)
-	 */
+	@Override
 	public boolean isSame(VFSItem vfsItem) {
 		if (!(vfsItem instanceof LocalImpl)) return false;
 		return getBasefile().equals(((LocalImpl)vfsItem).getBasefile());

@@ -576,9 +576,8 @@ public class UserManagerImpl extends UserManager implements UserDataDeletable, U
 		
 		String roles = ((IdentityImpl)identity).getDeletedRoles();
 		boolean isAdministrativeUser = roles != null && (roles.contains("admins") || roles.contains("authors")
-				|| roles.contains("groupmanagers") || roles.contains("poolsmanager")
+				|| roles.contains("groupmanagers") || roles.contains("poolsmanager") || roles.contains("usermanagers")
 				|| roles.contains("owners") || roles.contains(GroupRoles.owner.name())
-				|| roles.contains("usermanagers") || roles.contains("poolsmanager")
 				|| roles.contains(OrganisationRoles.administrator.name()) || roles.contains(OrganisationRoles.author.name())
 				|| roles.contains(OrganisationRoles.curriculummanager.name()) || roles.contains(OrganisationRoles.groupmanager.name())
 				|| roles.contains(OrganisationRoles.learnresourcemanager.name()) || roles.contains(OrganisationRoles.poolmanager.name())

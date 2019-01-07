@@ -30,7 +30,6 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
-import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
@@ -38,6 +37,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.io.SystemFileFilter;
+import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -374,11 +374,9 @@ public class ConvertToGTACourseNode {
 	private void convertMetada(VFSContainer source, VFSContainer target, String name, TaskDefinition taskDef, Solution solDef) {
 		VFSItem sourceItem = source.resolve(name);
 		VFSItem targetItem = target.resolve(name);
-		if(sourceItem instanceof MetaTagged && targetItem instanceof MetaTagged) {
-			MetaTagged taggedSource = (MetaTagged)sourceItem;
-			MetaInfo metaSource = taggedSource.getMetaInfo();
-			MetaTagged taggedTarget = (MetaTagged)targetItem;
-			MetaInfo metaTarget = taggedTarget.getMetaInfo();
+		if(sourceItem.canMeta() == VFSConstants.YES && targetItem.canMeta() == VFSConstants.YES) {
+			MetaInfo metaSource = sourceItem.getMetaInfo();
+			MetaInfo metaTarget = targetItem.getMetaInfo();
 			
 			if(metaSource != null) {
 				if(taskDef != null) {
@@ -388,10 +386,8 @@ public class ConvertToGTACourseNode {
 					taskDef.setDescription(metaSource.getComment());
 				}
 				
-				if(solDef != null) {
-					if(StringHelper.containsNonWhitespace(metaSource.getTitle())) {
-						solDef.setTitle(metaSource.getTitle());
-					}
+				if(solDef != null && StringHelper.containsNonWhitespace(metaSource.getTitle())) {
+					solDef.setTitle(metaSource.getTitle());
 				}
 				
 				if(metaTarget != null) {

@@ -27,10 +27,12 @@
 package org.olat.core.util.vfs;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -85,17 +87,12 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 			throw new AssertException("Cannot create directory of LocalFolderImpl with reason (exists= ): "+alreadyExists+" && created= "+succesfullCreated+") path: " + folderfile.getAbsolutePath());
 		}
 	}
-	
-	/**
-	 * @see org.olat.core.util.vfs.VFSContainer#getItems()
-	 */
+
+	@Override
 	public List<VFSItem> getItems() {
 		return getItems(null);
 	}
 
-	/**
-	 * @see org.olat.core.util.vfs.VFSContainer#getItems(org.olat.core.util.vfs.filters.VFSItemFilter)
-	 */
 	@Override
 	public List<VFSItem> getItems(VFSItemFilter filter) {
 		File aFolder = getBasefile();
@@ -107,7 +104,7 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 			children = new File[0];
 		}
 		int len = children.length;
-		List<VFSItem> res = new ArrayList<VFSItem>(len);
+		List<VFSItem> res = new ArrayList<>(len);
 
 		for (int i = 0; i < len; i++) {
 			File af = children[i];
@@ -119,28 +116,20 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 			} else {
 				item = new LocalFileImpl(af, this);
 			}
-			if (defaultFilter == null){
-				if (filter == null) res.add(item);
-				else if (filter.accept(item)) res.add(item);
-				
-			} else if (defaultFilter.accept(item)){
-				if (filter == null ) res.add(item);
-				else if (filter.accept(item) ) res.add(item);
+			if ((defaultFilter == null || defaultFilter.accept(item))
+					&& (filter == null || filter.accept(item))) {
+				res.add(item);
 			}
 		}
 		return res;
 	}
 
-	/**
-	 * @see org.olat.core.util.vfs.VFSContainer#setDefaultItemFilter(org.olat.core.util.vfs.filters.VFSItemFilter)
-	 */
+	@Override
 	public void setDefaultItemFilter(VFSItemFilter defaultFilter){
 		this.defaultFilter = defaultFilter;
 	}
-	
-	/**
-	 * @see org.olat.core.util.vfs.VFSContainer#copyFrom(org.olat.core.util.vfs.VFSItem)
-	 */
+
+	@Override
 	public VFSStatus copyFrom(VFSItem source) {
 		return copyFrom(source, true);
 	}
@@ -218,14 +207,12 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 		return VFSConstants.YES;
 	}
 
-	/**
-	 * @see org.olat.core.util.vfs.VFSItem#rename(java.lang.String)
-	 */
+	@Override
 	public VFSStatus rename(String newname) {
 		File f = getBasefile();
 		File par = f.getParentFile();
 		File nf = new File(par, newname);
-		VersionsManager.getInstance().rename(this, newname);
+		CoreSpringFactory.getImpl(VersionsManager.class).rename(this, newname);
 		boolean ren = f.renameTo(nf);
 		if (ren) {
 			// f.renameTo() does NOT modify the path contained in the object f!!
@@ -237,70 +224,79 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 		} else {
 			return VFSConstants.NO;
 		}
-		// FIXME notify children that a parent has been renamed?
 	}
 
-	/**
-	 * @see org.olat.core.util.vfs.VFSItem#delete()
-	 */
+	@Override
 	public VFSStatus delete() {
-		if(!getBasefile().exists()){
+		if(!getBasefile().exists()) {
 			return VFSConstants.YES;  // already non-existent
 		}
 		// we must empty the folders and subfolders first
-		for (Iterator<VFSItem> it_chd = getItems().iterator(); it_chd.hasNext();) {
-			it_chd.next().delete(); // TODO status
+		List<VFSItem> children = getItems();
+		for (VFSItem child:children) {
+			child.delete();
 		}
 		
-		VersionsManager.getInstance().delete(this, false);
+		VersionsManager versionsManager = CoreSpringFactory.getImpl(VersionsManager.class);
+		if(versionsManager.isEnabled()) {
+			versionsManager.delete(this, false);
+		}
+		// Versioning makes a copy of the metadata, delete metadata after it
+		if(canMeta() == VFSConstants.YES) {
+			getMetaInfo().deleteAll();
+		}
 
 		// now delete the directory itself
-		boolean del = getBasefile().delete();
-		return del ? VFSConstants.YES : VFSConstants.NO;
+		return deleteBasefile();
 	}
-	
-	
 
 	@Override
 	public VFSStatus deleteSilently() {
-		if(!getBasefile().exists()){
+		if(!getBasefile().exists()) {
 			return VFSConstants.YES;  // already non-existent
 		}
 		// we must empty the folders and subfolders first
-		for (Iterator<VFSItem> it_chd = getItems().iterator(); it_chd.hasNext();) {
-			it_chd.next().deleteSilently(); // TODO status
+		List<VFSItem> children = getItems();
+		for (VFSItem child:children) {
+			child.deleteSilently(); 
 		}
 		
-		VersionsManager.getInstance().delete(this, true);
-
+		if(canMeta() == VFSConstants.YES) {
+			getMetaInfo().deleteAll();
+		}
+		CoreSpringFactory.getImpl(VersionsManager.class).delete(this, true);
 		// now delete the directory itself
-		boolean del = getBasefile().delete();
-		return del ? VFSConstants.YES : VFSConstants.NO;
+		return deleteBasefile();
 	}
-
-	/**
-	 * @see org.olat.core.util.vfs.VFSItem#resolveFile(java.lang.String)
-	 */
+	
+	private VFSStatus deleteBasefile() {
+		VFSStatus status = VFSConstants.NO;
+		try {
+			Files.delete(getBasefile().toPath());
+			status = VFSConstants.YES;
+		} catch(IOException e) {
+			log.error("Cannot delete base file: " + this, e);
+		}
+		return status;
+	}
+	
+	@Override
 	public VFSItem resolve(String path) {
 		VFSItem resolved = VFSManager.resolveFile(this, path);
 		// set default filter on resolved file if it is a container
-		if (resolved != null && resolved instanceof VFSContainer) {
+		if (resolved instanceof VFSContainer) {
 			VFSContainer resolvedContainer = (VFSContainer) resolved;
 			resolvedContainer.setDefaultItemFilter(defaultFilter);
 		}
 		return resolved;
 	}
 	
-	/**
-	 * @see java.lang.Object#toString()
-	 */
+	@Override
 	public String toString() {
 		return "LFolder [base="+getBasefile()+"] ";
 	}
 
-	/**
-	 * @see org.olat.core.util.vfs.VFSContainer#createChildContainer(java.lang.String)
-	 */
+	@Override
 	public VFSContainer createChildContainer(String name) {
 		File fNewFile = new File(getBasefile(), name);
 		if (!fNewFile.mkdir()) return null;
@@ -309,9 +305,7 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 		return locFI;
 	}
 
-	/**
-	 * @see org.olat.core.util.vfs.VFSContainer#createChildLeaf(java.lang.String)
-	 */
+	@Override
 	public VFSLeaf createChildLeaf(String name) {
 		File fNewFile = new File(getBasefile(), name);
 		try {
@@ -329,12 +323,8 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 		return new LocalFileImpl(fNewFile, this);
 	}
 
-	/**
-	 * @see org.olat.core.util.vfs.VFSContainer#getDefaultItemFilter()
-	 */
+	@Override
 	public VFSItemFilter getDefaultItemFilter() {
 		return defaultFilter;
 	}
-	
 }
-

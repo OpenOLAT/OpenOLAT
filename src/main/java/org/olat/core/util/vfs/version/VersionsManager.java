@@ -22,6 +22,7 @@ package org.olat.core.util.vfs.version;
 import java.io.InputStream;
 import java.util.List;
 
+import org.olat.core.configuration.ConfigOnOff;
 import org.olat.core.id.Identity;
 import org.olat.core.util.async.ProgressDelegate;
 import org.olat.core.util.vfs.VFSContainer;
@@ -38,21 +39,15 @@ import org.olat.core.util.vfs.VFSLeaf;
  * 
  * @author srosse
  */
-public abstract class VersionsManager {
+public interface VersionsManager extends ConfigOnOff {
 
-	protected static VersionsManager INSTANCE;
-
-	public static VersionsManager getInstance() {
-		return INSTANCE;
-	}
-	
 	/**
 	 * Get or create the versions datas of this file
 	 * 
 	 * @param a file
 	 * @return
 	 */
-	public abstract Versions createVersionsFor(VFSLeaf leaf);
+	public Versions createVersionsFor(VFSLeaf leaf);
 	
 	/**
 	 * Get or create the versions datas of this file
@@ -61,7 +56,7 @@ public abstract class VersionsManager {
 	 * @param force the creation of the file
 	 * @return
 	 */
-	public abstract Versions createVersionsFor(VFSLeaf leaf, boolean force);
+	public Versions createVersionsFor(VFSLeaf leaf, boolean force);
 
 	/**
 	 * Return the list of deleted files in this container.
@@ -69,7 +64,7 @@ public abstract class VersionsManager {
 	 * @param container
 	 * @return
 	 */
-	public abstract List<Versions> getDeletedFiles(VFSContainer container);
+	public List<Versions> getDeletedFiles(VFSContainer container);
 
 	/**
 	 * Only used internally
@@ -77,7 +72,7 @@ public abstract class VersionsManager {
 	 * @param versions
 	 * @return
 	 */
-	public abstract String getNextRevisionNr(Versions versions);
+	public String getNextRevisionNr(Versions versions);
 
 	/**
 	 * Add a new version of the file. The current version will be saved and
@@ -89,7 +84,7 @@ public abstract class VersionsManager {
 	 * @param newVersion
 	 * @return
 	 */
-	public abstract boolean addVersion(Versionable currentVersion, Identity author, String comment, InputStream newVersion);
+	public boolean addVersion(Versionable currentVersion, Identity author, String comment, InputStream newVersion);
 
 	/**
 	 * Add a new revision to the files. The method check the number of revisions against the absolute
@@ -99,7 +94,7 @@ public abstract class VersionsManager {
 	 * @param comment
 	 * @return
 	 */
-	public abstract boolean addToRevisions(Versionable currentVersion, Identity author, String comment);
+	public boolean addToRevisions(Versionable currentVersion, Identity author, String comment);
 	
 	/**
 	 * Move a versioned file to the target container
@@ -108,7 +103,7 @@ public abstract class VersionsManager {
 	 * @param target container
 	 * @return
 	 */
-	public abstract boolean move(Versionable currentVersion, VFSContainer container);
+	public boolean move(Versionable currentVersion, VFSContainer container);
 	
 	/**
 	 * Move a versioned file to an other (WebDAV only!!!)
@@ -117,7 +112,7 @@ public abstract class VersionsManager {
 	 * @param oldVersion
 	 * @return
 	 */
-	public abstract boolean move(VFSLeaf currentFile, VFSLeaf targetFile, Identity author);
+	public boolean move(VFSLeaf currentFile, VFSLeaf targetFile, Identity author);
 
 	/**
 	 * Restore a versioned file to the selected revision. The current version is
@@ -127,7 +122,7 @@ public abstract class VersionsManager {
 	 * @param version
 	 * @return
 	 */
-	public abstract boolean restore(Versionable currentVersion, VFSRevision version, String comment);
+	public boolean restore(Versionable currentVersion, VFSRevision version, String comment);
 
 	/**
 	 * Restore a revision in the target container, usefull to restore deleted
@@ -137,7 +132,7 @@ public abstract class VersionsManager {
 	 * @param selected revision
 	 * @return
 	 */
-	public abstract boolean restore(VFSContainer container, VFSRevision revision);
+	public boolean restore(VFSContainer container, VFSRevision revision);
 
 	/**
 	 * Delete a list of revisions from a file
@@ -146,14 +141,14 @@ public abstract class VersionsManager {
 	 * @param revisionsToDelete
 	 * @return
 	 */
-	public abstract boolean deleteRevisions(Versionable currentVersion, List<VFSRevision> revisionsToDelete);
+	public boolean deleteRevisions(Versionable currentVersion, List<VFSRevision> revisionsToDelete);
 	
 	/**
 	 * Delete and remove from versioning a list of deleted versions (files)
 	 * @param versions
 	 * @return
 	 */
-	public abstract boolean deleteVersions(List<Versions> versions);
+	public boolean deleteVersions(VFSContainer container, List<Versions> versions);
 
 	/**
 	 * Delete a full container
@@ -163,7 +158,7 @@ public abstract class VersionsManager {
 	 *          in the list of deleted files)
 	 * @return
 	 */
-	public abstract boolean delete(VFSItem item, boolean force);
+	public boolean delete(VFSItem item, boolean force);
 
 	/**
 	 * Rename a file and propagate the change to the version.
@@ -172,28 +167,28 @@ public abstract class VersionsManager {
 	 * @param newname
 	 * @return
 	 */
-	public abstract boolean rename(VFSItem item, String newname);
+	public boolean rename(VFSItem item, String newname);
 	
 	/**
 	 * @return The list of orphans
 	 */
-	public abstract List<OrphanVersion> orphans();
+	public List<OrphanVersion> orphans();
 	
 	/**
 	 * @param orphan
 	 * @return
 	 */
-	public abstract boolean delete(OrphanVersion orphan);
+	public boolean delete(OrphanVersion orphan);
 	
 	/**
 	 * Delete the orphans
 	 * @return
 	 */
-	public abstract boolean deleteOrphans(ProgressDelegate progress);
+	public boolean deleteOrphans(ProgressDelegate progress);
 	
 	
-	public abstract void pruneHistory(long historyLength, ProgressDelegate progress);
+	public void pruneHistory(long historyLength, ProgressDelegate progress);
 
 	
-	public abstract int countDirectories();
+	public int countDirectories();
 }

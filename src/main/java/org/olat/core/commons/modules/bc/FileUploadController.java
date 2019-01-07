@@ -41,7 +41,6 @@ import java.util.regex.Pattern;
 
 import org.olat.core.commons.modules.bc.commands.FolderCommandStatus;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
-import org.olat.core.commons.modules.bc.meta.MetaInfoFactory;
 import org.olat.core.commons.modules.bc.meta.MetaInfoFormController;
 import org.olat.core.commons.modules.bc.version.RevisionListController;
 import org.olat.core.commons.modules.bc.version.VersionCommentController;
@@ -76,6 +75,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.ValidationStatus;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.LocalImpl;
+import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -152,8 +152,6 @@ public class FileUploadController extends FormBasicController {
 	private ImageService imageHelper;
 	@Autowired
 	private VFSLockManager vfsLockManager;
-	@Autowired
-	private MetaInfoFactory metaInfoFactory;
 
 	private String subfolderPath;
 	private TextElement targetSubPath ;
@@ -732,10 +730,9 @@ public class FileUploadController extends FormBasicController {
 	 * Internal helper to finish the upload and add metadata
 	 */
 	private void finishSuccessfullUpload(String filePath, VFSItem item, UserRequest ureq) {
-		if (item instanceof OlatRootFileImpl) {
-			OlatRootFileImpl relPathItem = (OlatRootFileImpl) item;
+		if (item instanceof VFSLeaf && item.canMeta() == VFSConstants.YES) {
 			// create meta data
-			MetaInfo meta = metaInfoFactory.createMetaInfoFor(relPathItem);
+			MetaInfo meta = item.getMetaInfo();
 			if (metaDataCtr != null) {
 				meta = metaDataCtr.getMetaInfo(meta);
 			}

@@ -31,9 +31,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -74,10 +77,8 @@ public class LocalFileImpl extends LocalImpl implements VFSLeaf, Versionable {
 	protected LocalFileImpl(File file, VFSContainer parentContainer) {
 		super(file, parentContainer);
 	}
-	
-	/**
-	 * @see org.olat.core.util.vfs.VFSLeaf#getInputStream()
-	 */
+
+	@Override
 	public InputStream getInputStream() {
 		BufferedInputStream bis = null;
 		try {
@@ -87,17 +88,13 @@ public class LocalFileImpl extends LocalImpl implements VFSLeaf, Versionable {
 		}
 		return bis;
 	}
-	
-	/**
-	 * @see org.olat.core.util.vfs.VFSLeaf#getSize()
-	 */
+
+	@Override
 	public long getSize() {
 		return getBasefile().length();
 	}
 
-	/**
-	 * @see org.olat.core.util.vfs.VFSLeaf#getOutputStream(boolean)
-	 */
+	@Override
 	public OutputStream getOutputStream(boolean append) {
 		OutputStream os = null;
 		try {
@@ -107,18 +104,16 @@ public class LocalFileImpl extends LocalImpl implements VFSLeaf, Versionable {
 		}
 		return os;
 	}
-	
-	
+
+	@Override
 	public Versions getVersions() {
 		if(versions == null) {
-			versions = VersionsManager.getInstance().createVersionsFor(this);
+			versions = CoreSpringFactory.getImpl(VersionsManager.class).createVersionsFor(this);
 		}
 		return versions;
 	}
 
-	/**
-	 * @see org.olat.core.util.vfs.VFSItem#rename(java.lang.String)
-	 */
+	@Override
 	public VFSStatus rename(String newname) {
 		File f = getBasefile();
 		if(!f.exists()) {
@@ -128,8 +123,8 @@ public class LocalFileImpl extends LocalImpl implements VFSLeaf, Versionable {
 		File par = f.getParentFile();
 		File nf = new File(par, newname);
 		if(getVersions().isVersioned()) {
-			//rename the versions;
-			VersionsManager.getInstance().rename(this, newname);
+			//rename the versions
+			CoreSpringFactory.getImpl(VersionsManager.class).rename(this, newname);
 		}
 		boolean ren = f.renameTo(nf);
 		if (ren) {
@@ -144,25 +139,39 @@ public class LocalFileImpl extends LocalImpl implements VFSLeaf, Versionable {
 		}
 	}
 
-
-	/**
-	 * @see org.olat.core.util.vfs.VFSItem#delete()
-	 */
+	@Override
 	public VFSStatus delete() {
 		if(getVersions().isVersioned()) {
-			VersionsManager.getInstance().delete(this, false);
+			CoreSpringFactory.getImpl(VersionsManager.class).delete(this, false);
 		}
-		return getBasefile().delete() ? VFSConstants.YES : VFSConstants.NO;
+		// Versioning makes a copy of the metadata, delete metadata after it
+		if(canMeta() == VFSConstants.YES) {
+			getMetaInfo().delete();
+		}
+		return deleteBasefile();
 	}
 	
 	@Override
 	public VFSStatus deleteSilently() {
-		return getBasefile().delete() ? VFSConstants.YES : VFSConstants.NO;
+		if(canMeta() == VFSConstants.YES) {
+			getMetaInfo().delete();
+		}
+		CoreSpringFactory.getImpl(VersionsManager.class).delete(this, true);
+		return deleteBasefile();
+	}
+	
+	private VFSStatus deleteBasefile() {
+		VFSStatus status = VFSConstants.NO;
+		try {
+			Files.delete(getBasefile().toPath());
+			status = VFSConstants.YES;
+		} catch(IOException e) {
+			log.error("Cannot delete base file: " + this, e);
+		}
+		return status;
 	}
 
-	/**
-	 * @see org.olat.core.util.vfs.VFSItem#resolveFile(java.lang.String)
-	 */
+	@Override
 	public VFSItem resolve(String path) {
 		path = VFSManager.sanitizePath(path);
 		if (path.equals("/")) return this;
@@ -174,13 +183,9 @@ public class LocalFileImpl extends LocalImpl implements VFSLeaf, Versionable {
 		}
 	}
 	
-	/**
-	 * @see java.lang.Object#toString()
-	 */
+	@Override
 	public String toString() {
 		return "LFile [file="+getBasefile()+"] ";
 	}
-	
-
 }
 

@@ -46,7 +46,6 @@ import org.olat.core.commons.services.notifications.model.SubscriptionListItem;
 import org.olat.core.commons.services.notifications.model.TitleItem;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.gui.util.CSSHelper;
-import org.olat.core.id.Identity;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -124,10 +123,10 @@ public class FolderNotificationsHandler implements NotificationsHandler {
 						}
 						iconCssClass = metaInfo.getIconCssClass();
 					}
-					Identity ident = fi.getAuthor();
+					Long identityKey = fi.getAuthorIdentityKey();
 					Date modDate = fi.getLastModified();
 
-					String desc = translator.translate("notifications.entry", new String[] { title, NotificationHelper.getFormatedName(ident) });
+					String desc = translator.translate("notifications.entry", new String[] { title, NotificationHelper.getFormatedName(identityKey) });
 					String urlToSend = null;
 					String businessPath = null;
 					if(p.getBusinessPath() != null) {

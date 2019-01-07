@@ -26,6 +26,9 @@
 
 package org.olat.core.commons.modules.bc;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.version.FolderVersioningConfigurator;
 
@@ -38,7 +41,7 @@ public class FolderConfig {
 
 	// briefcase configuration default parameters
 	/** LIMITULKB_DEFAULT configuration default value */
-	private static final long LIMITULKB_DEFAULT = 20 * 1024;
+	private static final long LIMITULKB_DEFAULT = 20 * 1024l;
 	/** QUOTAKB_DEFAULT configuration default value */
 	private static final int QUOTAKB_DEFAULT = 20 * 1024;
 	/** FOLDERROOT_DEFAULT configuration default value */
@@ -76,7 +79,6 @@ public class FolderConfig {
 	private static String userHomePages = USERHOMEPAGES_DEFAULT;
 	private static String repositoryHome = REPOSITORY_DEFAULT;
 	private static String resourcesHome = RESOURCES_DEFAULT;
-	private static boolean ePortfolioAddEnabled;
 
 	/** CONFIG_KEY_FOLDERPATH configuration key */
 	public static final String CONFIG_KEY_FOLDERPATH = "folderpath";
@@ -165,6 +167,10 @@ public class FolderConfig {
 	 */
 	public static String getCanonicalRoot() {
 		return folderRoot;
+	}
+	
+	public static Path getCanonicalRootPath() {
+		return Paths.get(folderRoot);
 	}
 
 	/**
@@ -343,20 +349,5 @@ public class FolderConfig {
 			return false;
 		}
 		return versioningConfigurator.versionEnabled(container);
-	}
-
-	
-	/**
-	 * @return true if the file-artefact and eportfolio is enabled
-	 */
-	public static boolean isEPortfolioAddEnabled() {
-		return ePortfolioAddEnabled;
-	}
-
-	/**
-	 * @param ePortfolioAddEnabled The ePortfolioAddEnabled to set.
-	 */
-	public static void setEPortfolioAddEnabled(boolean ePortfolioAddEnabled) {
-		FolderConfig.ePortfolioAddEnabled = ePortfolioAddEnabled;
 	}
 }

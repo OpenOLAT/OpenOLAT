@@ -27,11 +27,9 @@
 package org.olat.core.commons.modules.bc.commands;
 
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderEvent;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
-import org.olat.core.commons.modules.bc.meta.MetaInfoFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -42,7 +40,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.FileUtils;
-import org.olat.core.util.vfs.OlatRelPathImpl;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -61,11 +58,9 @@ public class CmdCreateFolder extends FormBasicController implements FolderComman
 	private String folderName;
 	private String target;
 	private TextElement textElement;
-	private final MetaInfoFactory metaInfoFactory;
   
 	public CmdCreateFolder(UserRequest ureq, WindowControl wControl) {			
 		super(ureq, wControl);
-		metaInfoFactory = CoreSpringFactory.getImpl(MetaInfoFactory.class);
 	}
 
 	/**
@@ -134,9 +129,9 @@ public class CmdCreateFolder extends FormBasicController implements FolderComman
 		String name = textElement.getValue();	
 		VFSContainer currentContainer = folderComponent.getCurrentContainer();
 		VFSItem item = currentContainer.createChildContainer(name);
-		if (item instanceof OlatRelPathImpl) {
+		if (item instanceof VFSContainer && item.canMeta() == VFSConstants.YES) {
 			// update meta data
-			MetaInfo meta = metaInfoFactory.createMetaInfoFor((OlatRelPathImpl)item);
+			MetaInfo meta = item.getMetaInfo();
 			meta.setAuthor(ureq.getIdentity());
 			meta.write();
 			status = FolderCommandStatus.STATUS_FAILED;

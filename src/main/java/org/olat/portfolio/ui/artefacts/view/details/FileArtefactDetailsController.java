@@ -19,12 +19,8 @@
  */
 package org.olat.portfolio.ui.artefacts.view.details;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
-import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
-import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.download.DownloadComponent;
@@ -40,6 +36,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
@@ -98,8 +95,8 @@ public class FileArtefactDetailsController extends BasicController {
 		vC.put("download", downlC);	
 		vC.contextPut("filename", fArtefact.getFilename());
 		
-		if(file instanceof MetaTagged) {
-			MetaInfo meta = ((MetaTagged)file).getMetaInfo();
+		if(file.canMeta() == VFSConstants.YES) {
+			MetaInfo meta = file.getMetaInfo();
 			vC.contextPut("meta", meta);
 			// show a preview thumbnail if possible
 			if (meta.isThumbnailAvailable()) {
@@ -108,11 +105,8 @@ public class FileArtefactDetailsController extends BasicController {
 					mr = new VFSMediaResource(thumb);
 				}
 				if(mr != null) {
-					String thumbMapper = registerMapper(ureq, new Mapper() {
-						@Override
-						public MediaResource handle(String relPath, HttpServletRequest request) {
-							return mr;
-						}
+					String thumbMapper = registerMapper(ureq, (relPath, request) -> {
+						return mr;
 					});					
 					vC.contextPut("thumbMapper", thumbMapper);
 				}

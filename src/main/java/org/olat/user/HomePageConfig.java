@@ -28,9 +28,7 @@ package org.olat.user;
 import java.util.Hashtable;
 import java.util.Map;
 
-import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.UserConstants;
-import org.olat.core.logging.AssertException;
 
 /**
  * Description: <br>
@@ -55,38 +53,35 @@ import org.olat.core.logging.AssertException;
  * Initial Date: July 15, 2005 <br>
  * @author Alexander Schneider
  */
-public class HomePageConfig implements OLATResourceable{
+public class HomePageConfig {
 
+	private static final int CURRENTVERSION = 4;
+	
+	public static final String KEY_RESOURCEABLEID = "RESOURCEABLEID";
+	
+	public static final String KEY_USERNAME = "USERNAME";
 
-	transient private final static int CURRENTVERSION = 4;
-	
-	transient private final static String RESOURCEABLETYPENAME = "HOMEPAGECONFIG";
-	
-	transient public final static String KEY_RESOURCEABLEID = "RESOURCEABLEID";
-	
-	transient public final static String KEY_USERNAME = "USERNAME";
-
-	transient public static final String KEY_TEXTABOUTME = "TEXTABOUTME";
+	public static final String KEY_TEXTABOUTME = "TEXTABOUTME";
 	
 	// use the user property names defined in UserConstants instead!
 	@Deprecated
-	transient public final static String KEY_EMAIL = "EMAIL";
+	public static final String KEY_EMAIL = "EMAIL";
 	@Deprecated
-	transient public final static String KEY_GENDER = "GENDER";
+	public static final String KEY_GENDER = "GENDER";
 	@Deprecated
-	transient public final static String KEY_BIRTHDAY = "BIRTHDAY";
+	public static final String KEY_BIRTHDAY = "BIRTHDAY";
 	@Deprecated
-	transient public final static String KEY_TELMOBILE = "TELMOBILE";
+	public static final String KEY_TELMOBILE = "TELMOBILE";
 	@Deprecated
-	transient public static final String KEY_TELPRIVATE = "TELPRIVATE";
+	public static final String KEY_TELPRIVATE = "TELPRIVATE";
 	@Deprecated
-	transient public static final String KEY_TELOFFICE = "TELOFFICE";
+	public static final String KEY_TELOFFICE = "TELOFFICE";
 	@Deprecated
-	transient public static final String KEY_ADDRESS = "ADDRESS";
+	public static final String KEY_ADDRESS = "ADDRESS";
 	@Deprecated
-	transient public static final String KEY_INSTITIUTIONALNAME = "INSTITUTIONALNAME";
+	public static final String KEY_INSTITIUTIONALNAME = "INSTITUTIONALNAME";
 	@Deprecated
-	transient public static final String KEY_INSTITUTIONEMAIL = "INSTITUTIONEMAIL";
+	public static final String KEY_INSTITUTIONEMAIL = "INSTITUTIONEMAIL";
 
 	/**
 	 * config file version from file
@@ -141,16 +136,19 @@ public class HomePageConfig implements OLATResourceable{
 	 * <b>&gt;&gt;convert the existing entries </b></li>
 	 * </ul>
 	 */
-	public void resolveVersionIssues() {
+	public boolean resolveVersionIssues() {
+		boolean changed = false;
 		if (version < CURRENTVERSION) {
 			// from version 1 -> 2
 			if (version == 1) {
 			    configuration.put(KEY_USERNAME, "");
 				this.version = 2;
+				changed = true;
 			}
 			if (version == 2){
 				configuration.put(KEY_RESOURCEABLEID, "");
 			    this.version = 3;
+				changed = true;
 			}
 			if (version == 3){
 				configuration.put(KEY_RESOURCEABLEID, "");
@@ -181,6 +179,7 @@ public class HomePageConfig implements OLATResourceable{
 			    setEnabled(UserConstants.REGION, addressEnabled);
 			    setEnabled(UserConstants.COUNTRY, addressEnabled);
 			    configuration.remove("ADDRESS");
+				changed = true;
 			}
 
 			/*
@@ -188,9 +187,8 @@ public class HomePageConfig implements OLATResourceable{
 			 * CURRENTVERSION !! leave this!
 			 */
 			this.version = CURRENTVERSION;
-		} else if (version > CURRENTVERSION) {
-			// this is an error
 		}
+		return changed;
 	}
 	
 	/**
@@ -199,7 +197,7 @@ public class HomePageConfig implements OLATResourceable{
 	 * @param enabled true: enable visibility; false, disable
 	 */
 	public void setEnabled(String propertyName, boolean enabled) {
-		configuration.put(propertyName, new Boolean(enabled));
+		configuration.put(propertyName, Boolean.valueOf(enabled));
 	}
 	
 	/**
@@ -212,47 +210,6 @@ public class HomePageConfig implements OLATResourceable{
 		if (bool == null) return false;
 		else return bool.booleanValue();
 	}
-
-	/**
-	 * 
-	 * @param id
-	 */
-	public void setResourceableId(Long id){
-	    configuration.put(KEY_RESOURCEABLEID, id);
-	}
-	
-    /**
-     * @return id
-     * 
-     */
-    public Long getResourceableId() {
-        Long id = (Long) configuration.get(KEY_RESOURCEABLEID);
-        return id;
-    }
-    
-    /**
-     * @return typeName
-     */
-    public String getResourceableTypeName() {
-        return RESOURCEABLETYPENAME;
-    }
-	
-	/**
-	 * 
-	 * @param userName
-	 */
-	public void setUserName(String userName){
-	   configuration.put(KEY_USERNAME, userName); 
-	}
-	
-	/**
-	 * @return text about me
-	 */
-	public String getUserName() {
-		String userName = (String) configuration.get(KEY_USERNAME);
-		if (userName.equals("")) throw new AssertException("No username defined in " + HomePageConfigManager.HOMEPAGECONFIG_XML);
-		return userName;
-	}	
 	
 	/**
 	 * 
@@ -268,13 +225,4 @@ public class HomePageConfig implements OLATResourceable{
 	public String getTextAboutMe() {
 		return (String) configuration.get(KEY_TEXTABOUTME);
 	}
-
-    /**
-     * @return boolean
-     */
-    public boolean hasResourceableId() {
-        return !"".equals(configuration.get(KEY_RESOURCEABLEID));
-    }
-	
-	
 }

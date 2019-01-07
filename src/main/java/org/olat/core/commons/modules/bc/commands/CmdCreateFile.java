@@ -32,7 +32,6 @@ import org.olat.core.commons.modules.bc.FolderEvent;
 import org.olat.core.commons.modules.bc.FolderLicenseHandler;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
-import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.commons.services.license.License;
 import org.olat.core.commons.services.license.LicenseModule;
 import org.olat.core.commons.services.license.LicenseService;
@@ -192,8 +191,8 @@ public class CmdCreateFile extends FormBasicController implements FolderCommand 
 			status = FolderCommandStatus.STATUS_FAILED;
 			notifyFinished(ureq);
 		} else {
-			if(item instanceof MetaTagged) {
-				MetaInfo meta = ((MetaTagged)item).getMetaInfo();
+			if(item.canMeta() == VFSConstants.YES) {
+				MetaInfo meta = item.getMetaInfo();
 				meta.setAuthor(ureq.getIdentity());
 				if (licenseModule.isEnabled(licenseHandler)) {
 					License license = licenseService.createDefaultLicense(licenseHandler, getIdentity());

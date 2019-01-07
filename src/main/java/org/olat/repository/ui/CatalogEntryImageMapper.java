@@ -23,10 +23,10 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
-import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
+import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -59,14 +59,12 @@ public class CatalogEntryImageMapper implements Mapper {
 
 		MediaResource resource = null;
 		if(image instanceof  VFSLeaf) {
-			if(image instanceof MetaTagged) {
-				MetaInfo info = ((MetaTagged) image).getMetaInfo();
-				if(info != null) {
-					VFSLeaf thumbnail = info.getThumbnail(180, 180, true);
-					if(thumbnail != null) {
-						resource = new VFSMediaResource(thumbnail);
-					}
-				}	
+			if(image.canMeta() == VFSConstants.YES) {
+				MetaInfo info = image.getMetaInfo();
+				VFSLeaf thumbnail = info.getThumbnail(180, 180, true);
+				if(thumbnail != null) {
+					resource = new VFSMediaResource(thumbnail);
+				}
 			}
 			
 			if(resource == null) {

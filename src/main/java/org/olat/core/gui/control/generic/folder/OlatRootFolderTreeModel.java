@@ -126,21 +126,13 @@ public class OlatRootFolderTreeModel extends GenericTreeModel {
 			} else {
 				node.setTitle(meta.getName());
 			}
-		} else {
-			// TODO:GW log warning that
-			// "metadate couldn't be loaded for folder relpath: " +
-			// folder.getRelPath();
 		}
 		node.setUserObject(item.getRelPath());
 		return node;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.tree.GenericTreeModel#getRootNode()
-	 */
 	@Override
 	public OlatRootFolderTreeNode getRootNode() {
 		return (OlatRootFolderTreeNode) super.getRootNode();
 	}
-
 }

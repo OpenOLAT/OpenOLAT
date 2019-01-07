@@ -45,7 +45,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.folder.FolderHelper;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.vfs.OlatRelPathImpl;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSLockManager;
@@ -128,8 +127,7 @@ public class MetaInfoController extends FormBasicController {
 		// filename
 		uifactory.addStaticTextElement("mf.filename", item.getName(), formLayout);
 
-		MetaInfo meta = item == null ? null :
-			CoreSpringFactory.getImpl(MetaInfoFactory.class).createMetaInfoFor((OlatRelPathImpl) item);
+		MetaInfo meta = item == null ? null : item.getMetaInfo();
 
 		// title
 		String titleVal = StringHelper.escapeHtml(meta != null ? meta.getTitle() : null);
@@ -258,7 +256,7 @@ public class MetaInfoController extends FormBasicController {
 			uifactory.addStaticTextElement("mf.lockedBy", lockedDetails, formLayout);
 			
 			// username
-			String author = StringHelper.escapeHtml(meta.getHTMLFormattedAuthor());
+			String author = StringHelper.escapeHtml(userManager.getUserDisplayName(meta.getAuthorIdentityKey()));
 			uifactory.addStaticTextElement("mf.author", author, formLayout);
 
 			// filesize

@@ -26,18 +26,18 @@
 
 package org.olat.core.commons.modules.bc.meta;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
+import java.io.Serializable;
 import java.io.StringReader;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -48,8 +48,6 @@ import java.util.UUID;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.dom4j.Document;
-import org.dom4j.Element;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.thumbnail.CannotGenerateThumbnailException;
@@ -67,8 +65,6 @@ import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.OlatRelPathImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.xml.XMLParser;
-import org.olat.user.UserManager;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXParseException;
@@ -86,23 +82,35 @@ import org.xml.sax.helpers.DefaultHandler;
  * in a file with ".xml" appended to its filename.
  * 
  */
-public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
-	private static OLog log = Tracing.createLoggerFor(MetaInfoFileImpl.class);
-  private static SAXParser saxParser;
-  static {
-  	try {
-  		saxParser = SAXParserFactory.newInstance().newSAXParser();
-  	} catch(Exception ex) {
-  		log.error("", ex);
-  	}
-  }
+public class MetaInfoFileImpl implements MetaInfo, Serializable {
+
+	private static final long serialVersionUID = -3521950840094823106L;
+	private static final OLog log = Tracing.createLoggerFor(MetaInfoFileImpl.class);
+  
+	private static transient SAXParser saxParser;
+	static {
+		try {
+			saxParser = SAXParserFactory.newInstance().newSAXParser();
+		} catch(Exception ex) {
+			log.error("", ex);
+		}
+	}
 	
 	// meta data
 	private String uuid;
-	private Long authorIdentKey = null;
-	private Long lockedByIdentKey = null;
+	private Long authorIdentKey;
+	private Long lockedByIdentKey;
 	private String comment = "";
-	private String title, publisher, creator, source, city, pages, language, url, pubMonth, pubYear;
+	private String title;
+	private String publisher;
+	private String creator;
+	private String source;
+	private String city;
+	private String pages;
+	private String language;
+	private String url;
+	private String pubMonth;
+	private String pubYear;
 	private String licenseTypeKey;
 	private String licenseTypeName;
 	private String licenseText;
@@ -117,7 +125,7 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 	
 	private boolean cannotGenerateThumbnail = false;
 	private List<Thumbnail> thumbnails = new ArrayList<>();
-	private ThumbnailService thumbnailService;
+	private transient ThumbnailService thumbnailService;
 	
 
 	// make it a factory
@@ -130,13 +138,12 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 		parseSAX(metaFile);
 	}
 	
-	protected MetaInfoFileImpl(String canonicalMetaPath, File metaFile, File originFile) { 
+	protected MetaInfoFileImpl(File metaFile, File originFile) { 
 		this.metaFile = metaFile;
 		this.originFile = originFile;
 		// set
 		if (!parseSAX(metaFile)) {
-			String metaDirPath = canonicalMetaPath.substring(0, canonicalMetaPath.lastIndexOf('/'));
-			new File(metaDirPath).mkdirs();
+			metaFile.getParentFile().mkdirs();
 			if(uuid == null) {
 				generateUUID();
 			}
@@ -187,7 +194,7 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 		if (move) FileUtils.moveFileToDir(fSource, fTarget);
 		else {
 			//copy
-			 Map<String,String> pathToUuid = new HashMap<>();
+			Map<String,String> pathToUuid = new HashMap<>();
 			File mTarget = new File(fTarget, fSource.getName());
 			collectUUIDRec(mTarget, pathToUuid);
 			
@@ -263,21 +270,21 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 	 */
 	@Override
 	public void copyValues(MetaInfo fromMeta) {
-		this.setAuthor(fromMeta.getAuthor());
-		this.setComment(fromMeta.getComment());
-		this.setCity(fromMeta.getCity());
-		this.setCreator(fromMeta.getCreator());
-		this.setLanguage(fromMeta.getLanguage());
-		this.setPages(fromMeta.getPages());
-		this.setPublicationDate(fromMeta.getPublicationDate()[1], fromMeta.getPublicationDate()[0]);
-		this.setPublisher(fromMeta.getPublisher());
-		this.setSource(fromMeta.getSource());
-		this.setTitle(fromMeta.getTitle());
-		this.setUrl(fromMeta.getUrl());
-		this.setLicenseTypeKey(fromMeta.getLicenseTypeKey());
-		this.setLicenseTypeName(fromMeta.getLicenseTypeName());
-		this.setLicensor(fromMeta.getLicensor());
-		this.setLicenseText(fromMeta.getLicenseText());
+		setAuthorIdentKey(fromMeta.getAuthorIdentityKey());
+		setComment(fromMeta.getComment());
+		setCity(fromMeta.getCity());
+		setCreator(fromMeta.getCreator());
+		setLanguage(fromMeta.getLanguage());
+		setPages(fromMeta.getPages());
+		setPublicationDate(fromMeta.getPublicationDate()[1], fromMeta.getPublicationDate()[0]);
+		setPublisher(fromMeta.getPublisher());
+		setSource(fromMeta.getSource());
+		setTitle(fromMeta.getTitle());
+		setUrl(fromMeta.getUrl());
+		setLicenseTypeKey(fromMeta.getLicenseTypeKey());
+		setLicenseTypeName(fromMeta.getLicenseTypeName());
+		setLicensor(fromMeta.getLicensor());
+		setLicenseText(fromMeta.getLicenseText());
 	}
 
 	public boolean isLocked() {
@@ -387,13 +394,25 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 	@Override
 	public boolean delete() {
 		if (metaFile == null) return false;
+		
 		for(Thumbnail thumbnail:thumbnails) {
 			File file = thumbnail.getThumbnailFile();
 			if(file != null && file.exists()) {
-				file.delete();
+				try {
+					Files.delete(file.toPath());
+				} catch (IOException e) {
+					log.error("Cannot delete thumbnail", e);
+				}
 			}
 		}
-		return metaFile.delete();
+		
+		boolean deleted = false;
+		try {
+			deleted = Files.deleteIfExists(metaFile.toPath());
+		} catch (IOException e) {
+			log.error("Cannot delete metadata file", e);
+		}
+		return deleted;
 	}
 	
 	/**
@@ -408,9 +427,9 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 
 		try(InputStream in = new FileInputStream(fMeta)) {
 			//the performance gain of the SAX Parser over the DOM Parser allow
-			//this to be synchronized (factory 5 to 10 quicker)
+			//this to be synchronized (factor 5 to 10 quicker)
 			synchronized(saxParser) {
-				saxParser.parse(in, this);
+				saxParser.parse(in, new MetaHandler());
 				if(uuid == null) {
 					generateUUID();
 					write();
@@ -437,11 +456,11 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 		if(original == null) return false;
 		
 		String filtered = FilterFactory.getXMLValidCharacterFilter().filter(original);
-		if(original != null && !original.equals(filtered)) {
+		if(!original.equals(filtered)) {
 			try {
 				synchronized(saxParser) {
 					InputSource in = new InputSource(new StringReader(filtered));
-					saxParser.parse(in, this);
+					saxParser.parse(in, new MetaHandler());
 				}
 				write();//update with the new filtered write method
 				return true;
@@ -450,93 +469,6 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 			}
 		}
 		return false;
-	}
-	
-	/**
-	 * Parse XML from file with SAX and fill-in MetaInfo attributes.
-	 * @param fMeta
-	 */
-	@Deprecated
-	public boolean parseXMLdom(File fMeta) {
-		if (fMeta == null || !fMeta.exists()) return false;
-		InputStream is;
-		try {	
-			is = new BufferedInputStream(new FileInputStream(fMeta)); 
-		} catch (FileNotFoundException e) {	
-			return false;	
-		}
-		
-		try {
-			XMLParser xmlp = new XMLParser();
-			Document doc = xmlp.parse(is, false);
-			if (doc == null) return false;
-			
-			// extract data from XML
-			Element root = doc.getRootElement();
-			Element n;
-			n = root.element("author");
-			if (n == null) {
-				authorIdentKey = null;
-			} else {
-				if (n.getText().length() == 0 ) {
-					authorIdentKey = null;
-				} else {
-					try {
-						authorIdentKey = Long.valueOf(n.getText());
-					} catch (NumberFormatException nEx) {
-						authorIdentKey = null;
-					}
-				}
-			}
-			n = root.element("comment");
-			comment = (n != null) ? n.getText() : "";
-			Element lockEl = root.element("lock");
-			if(lockEl != null) {
-				locked = "true".equals(lockEl.attribute("locked").getValue());
-				try {
-					lockedByIdentKey = new Long(n.getText());
-				} catch (NumberFormatException nEx) {
-					lockedByIdentKey = null;
-				}
-			}
-			n = root.element("title");
-			title = (n != null) ? n.getText() : "";
-			n = root.element("publisher");
-			publisher = (n != null) ? n.getText() : "";
-			n = root.element("source");
-			source = (n != null) ? n.getText() : "";
-			n = root.element("creator");
-			creator = (n != null) ? n.getText() : "";
-			n = root.element("city");
-			city = (n != null) ? n.getText() : "";
-			n = root.element("pages");
-			pages = (n != null) ? n.getText() : "";
-			n = root.element("language");
-			language = (n != null) ? n.getText() : "";
-			n = root.element("url");
-			url = (n != null) ? n.getText() : "";
-			n = root.element("licenseTypeKey");
-			licenseTypeKey = (n != null) ? n.getText() : "";
-			n = root.element("licenseName");
-			licenseTypeName = (n != null) ? n.getText() : "";
-			n = root.element("licenseText");
-			licenseText = (n != null) ? n.getText() : "";
-			n = root.element("licensor");
-			licensor = (n != null) ? n.getText() : "";
-			n = root.element("downloadCount");
-			downloadCount = (n != null) ? Integer.valueOf(n.getText()) : 0;
-			n = root.element("publicationDate");
-			if (n != null) {
-				Element m = n.element("month");
-				pubMonth = (m != null) ? m.getText() : "";
-				 m = n.element("year");
-				pubYear = (m != null) ? m.getText() : "";
-			}
-			return true;
-		} catch (Exception ex) {
-			log.warn("Corrupted metadata file: " + fMeta);
-			return false;
-		}
 	}
 	
 	/* ------------------------- Getters ------------------------------ */
@@ -567,6 +499,10 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 		return uuid;
 	}
 	
+	public void setUUID(String uuid) {
+		this.uuid = uuid;
+	}
+	
 	public void generateUUID() {
 		uuid = UUID.randomUUID().toString().replace("-", "");
 	}
@@ -577,31 +513,8 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 	}
 
 	@Override
-	public Identity getAuthorIdentity() {
-		if (authorIdentKey == null) {
-			return null;
-		} else {
-			return CoreSpringFactory.getImpl(BaseSecurity.class).loadIdentityByKey(authorIdentKey);
-		}
-	}
-
-	@Override
 	public boolean hasAuthorIdentity() {
 		return (authorIdentKey != null);
-	}
-
-	@Override
-	public String getHTMLFormattedAuthor() {
-		if (authorIdentKey == null) {
-			return "-";
-		} else {
-			String fullName = UserManager.getInstance().getUserDisplayName(authorIdentKey);
-			if (fullName == null) {
-				log.warn("Found no identity with key='" + authorIdentKey + "'");
-				return "-";
-			}
-			return fullName; 
-		}	
 	}
 	
 	@Override
@@ -630,17 +543,6 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 	
 	@Override
 	public String getFormattedSize() { return Formatter.formatBytes(getSize()); }
-
-	@Override
-	public void setAuthor(String username) { 
-		Identity identity = CoreSpringFactory.getImpl(BaseSecurity.class).findIdentityByName(username);
-		if (identity == null) {
-			log.warn("Found no idenitiy with username='" + username + "'");
-			authorIdentKey = null;
-			return;
-		}
-		authorIdentKey = identity.getKey(); 
-	}
 
 	@Override
 	public void setAuthor(Identity identity) {
@@ -809,8 +711,10 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 		if(cannotGenerateThumbnail) return false;
 		
 		VFSLeaf originLeaf = new LocalFileImpl(originFile);
-		if (thumbnailService != null) return  thumbnailService.isThumbnailPossible(originLeaf);
-		return false;
+		if(thumbnailService == null) {
+			thumbnailService = CoreSpringFactory.getImpl(ThumbnailService.class);
+		}
+		return thumbnailService.isThumbnailPossible(originLeaf);
 	}
 	
 	@Override
@@ -832,7 +736,11 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 		for(Thumbnail thumbnail:thumbnails) {
 			File thumbnailFile = thumbnail.getThumbnailFile();
 			if(thumbnailFile != null && thumbnailFile.exists()) {
-				thumbnailFile.delete();
+				try {
+					Files.delete(thumbnailFile.toPath());
+				} catch (IOException e) {
+					log.error("Cannot delete thumbnail", e);
+				}
 			}
 		}
 		thumbnails.clear();
@@ -841,10 +749,9 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 
 	private Thumbnail getThumbnailInfo(int maxWidth, int maxHeight, boolean fill) {
 		for(Thumbnail thumbnail:thumbnails) {
-			if(maxHeight == thumbnail.getMaxHeight() && maxWidth == thumbnail.getMaxWidth()) {
-				if(thumbnail.exists()) {
-					return thumbnail;
-				}
+			if(maxHeight == thumbnail.getMaxHeight() && maxWidth == thumbnail.getMaxWidth()
+					&& thumbnail.exists()) {
+				return thumbnail;
 			}
 		}
 
@@ -863,6 +770,9 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 		
 		VFSLeaf thumbnailLeaf = new LocalFileImpl(thumbnailFile);
 		VFSLeaf originLeaf = new LocalFileImpl(originFile);
+		if(thumbnailService == null) {
+			thumbnailService = CoreSpringFactory.getImpl(ThumbnailService.class);
+		}
 		if(thumbnailService != null &&thumbnailService.isThumbnailPossible(thumbnailLeaf)) {
 			try {
 				if(thumbnails.isEmpty()) {
@@ -914,117 +824,20 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 
 	@Override
 	public void increaseDownloadCount() {
-		this.downloadCount++;
+		downloadCount++;
 	}
 
 	@Override
 	public int getDownloadCount() {
 		return downloadCount;
 	}
+	
+	public void setDownloadCount(int count) {
+		downloadCount = count;
+	}
 
 	public void setAuthorIdentKey(Long authorIdentKey) {
 		this.authorIdentKey = authorIdentKey;
-	}
-	
-	private StringBuilder current;
-	
-	////////////////////////////////////
-	// SAX Handler for max. performance
-	////////////////////////////////////
-	
-	@Override
-	public final void startElement(String uri, String localName, String qName, Attributes attributes) {
-		if("meta".equals(qName)) {
-			uuid = attributes.getValue("uuid");
-		} else if ("lock".equals(qName)) {
-			locked ="true".equals(attributes.getValue("locked"));
-			String date = attributes.getValue("date");
-			if (date != null && date.length() > 0) {
-				lockedDate = new Date(Long.parseLong(date));
-			}
-		} else if ("thumbnails".equals(qName)) {
-			String valueStr = attributes.getValue("cannotGenerateThumbnail");
-			if(StringHelper.containsNonWhitespace(valueStr)) {
-				cannotGenerateThumbnail = new Boolean(valueStr);
-			}
-		}	else if ("thumbnail".equals(qName)) {
-			Thumbnail thumbnail = new Thumbnail();
-			thumbnail.setMaxHeight(Integer.parseInt(attributes.getValue("maxHeight")));
-			thumbnail.setMaxWidth(Integer.parseInt(attributes.getValue("maxWidth")));
-			thumbnail.setFinalHeight(Integer.parseInt(attributes.getValue("finalHeight")));
-			thumbnail.setFinalWidth(Integer.parseInt(attributes.getValue("finalWidth")));
-			thumbnail.setFill("true".equals(attributes.getValue("fill")));
-			thumbnails.add(thumbnail);
-		}
-	}
-	
-	@Override
-	public final void characters(char[] ch, int start, int length) {
-		if(length == 0) return;
-		if(current == null) {
-			current = new StringBuilder();
-		}
-		current.append(ch, start, length);
-	}
-
-	@Override
-	public final void endElement(String uri, String localName, String qName) {
-		if(current == null) return;
-		
-		if("comment".equals(qName)) {
-			comment = current.toString();
-		} else if ("author".equals(qName)) {
-			try {
-				authorIdentKey = Long.valueOf(current.toString());
-			} catch (NumberFormatException nEx) {
-				//nothing to say
-			}
-		} else if ("lock".equals(qName)) {
-			try {
-				lockedByIdentKey = new Long(current.toString());
-			} catch (NumberFormatException nEx) {
-				//nothing to say
-			}
-		} else if ("title".equals(qName)) {
-			title = current.toString();
-		} else if ("publisher".equals(qName)) {
-			publisher = current.toString();
-		} else if ("source".equals(qName)) {
-			source = current.toString();
-		} else if ("city".equals(qName)) {
-			city = current.toString();
-		} else if ("pages".equals(qName)) {
-			pages = current.toString();
-		} else if ("language".equals(qName)) {
-			language = current.toString();
-		} else if ("downloadCount".equals(qName)) {
-			try {
-				downloadCount = Integer.valueOf(current.toString());
-			} catch (NumberFormatException nEx) {
-				//nothing to say
-			}
-		} else if ("month".equals(qName)) {
-			pubMonth = current.toString();
-		} else if ("year".equals(qName)) {
-			pubYear = current.toString();
-		} else if (qName.equals("creator")) {
-			this.creator = current.toString();
-		} else if (qName.equals("url")) {
-			this.url = current.toString();
-		} else if (qName.equals("licenseTypeKey")) {
-			this.licenseTypeKey = current.toString();
-		} else if (qName.equals("licenseTypeName")) {
-			this.licenseTypeName = current.toString();
-		} else if (qName.equals("licenseText")) {
-			this.licenseText = current.toString();
-		} else if (qName.equals("licensor")) {
-			this.licensor = current.toString();
-		} else if (qName.equals("thumbnail")) {
-			String finalName = current.toString();
-			File thumbnailFile = new File(metaFile.getParentFile(), finalName);
-			thumbnails.get(thumbnails.size() - 1).setThumbnailFile(thumbnailFile);
-		}
-		current = null;
 	}
 
 	@Override
@@ -1045,7 +858,111 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 		}
 	}
 	
-	public static class Thumbnail {
+	private class MetaHandler extends DefaultHandler {
+
+		private StringBuilder current;
+		
+		@Override
+		public final void startElement(String uri, String localName, String qName, Attributes attributes) {
+			if("meta".equals(qName)) {
+				uuid = attributes.getValue("uuid");
+			} else if ("lock".equals(qName)) {
+				locked ="true".equals(attributes.getValue("locked"));
+				String date = attributes.getValue("date");
+				if (date != null && date.length() > 0) {
+					lockedDate = new Date(Long.parseLong(date));
+				}
+			} else if ("thumbnails".equals(qName)) {
+				String valueStr = attributes.getValue("cannotGenerateThumbnail");
+				if(StringHelper.containsNonWhitespace(valueStr)) {
+					cannotGenerateThumbnail = Boolean.valueOf(valueStr);
+				}
+			}	else if ("thumbnail".equals(qName)) {
+				Thumbnail thumbnail = new Thumbnail();
+				thumbnail.setMaxHeight(Integer.parseInt(attributes.getValue("maxHeight")));
+				thumbnail.setMaxWidth(Integer.parseInt(attributes.getValue("maxWidth")));
+				thumbnail.setFinalHeight(Integer.parseInt(attributes.getValue("finalHeight")));
+				thumbnail.setFinalWidth(Integer.parseInt(attributes.getValue("finalWidth")));
+				thumbnail.setFill("true".equals(attributes.getValue("fill")));
+				thumbnails.add(thumbnail);
+			}
+		}
+		
+		@Override
+		public final void characters(char[] ch, int start, int length) {
+			if(length == 0) return;
+			if(current == null) {
+				current = new StringBuilder();
+			}
+			current.append(ch, start, length);
+		}
+
+		@Override
+		public final void endElement(String uri, String localName, String qName) {
+			if(current == null) return;
+			
+			if("comment".equals(qName)) {
+				comment = current.toString();
+			} else if ("author".equals(qName)) {
+				try {
+					authorIdentKey = Long.valueOf(current.toString());
+				} catch (NumberFormatException nEx) {
+					//nothing to say
+				}
+			} else if ("lock".equals(qName)) {
+				try {
+					lockedByIdentKey = Long.valueOf(current.toString());
+				} catch (NumberFormatException nEx) {
+					//nothing to say
+				}
+			} else if ("title".equals(qName)) {
+				title = current.toString();
+			} else if ("publisher".equals(qName)) {
+				publisher = current.toString();
+			} else if ("source".equals(qName)) {
+				source = current.toString();
+			} else if ("city".equals(qName)) {
+				city = current.toString();
+			} else if ("pages".equals(qName)) {
+				pages = current.toString();
+			} else if ("language".equals(qName)) {
+				language = current.toString();
+			} else if ("downloadCount".equals(qName)) {
+				try {
+					downloadCount = Integer.valueOf(current.toString());
+				} catch (NumberFormatException nEx) {
+					//nothing to say
+				}
+			} else if ("month".equals(qName)) {
+				pubMonth = current.toString();
+			} else if ("year".equals(qName)) {
+				pubYear = current.toString();
+			} else if (qName.equals("creator")) {
+				creator = current.toString();
+			} else if (qName.equals("url")) {
+				url = current.toString();
+			} else if (qName.equals("licenseTypeKey")) {
+				licenseTypeKey = current.toString();
+			} else if (qName.equals("licenseTypeName")) {
+				licenseTypeName = current.toString();
+			} else if (qName.equals("licenseText")) {
+				licenseText = current.toString();
+			} else if (qName.equals("licensor")) {
+				licensor = current.toString();
+			} else if (qName.equals("thumbnail")) {
+				String finalName = current.toString();
+				File thumbnailFile = new File(metaFile.getParentFile(), finalName);
+				thumbnails.get(thumbnails.size() - 1).setThumbnailFile(thumbnailFile);
+			}
+			current = null;
+		}
+		
+	}
+	
+	public static class Thumbnail implements Serializable {
+
+		private static final long serialVersionUID = 29491661959555446L;
+		
 		private int maxWidth;
 		private int maxHeight;
 		private int finalWidth;
@@ -1102,7 +1019,7 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 		}
 		
 		public boolean exists() {
-			return thumbnailFile == null ? false : thumbnailFile.exists();
+			return thumbnailFile != null && thumbnailFile.exists();
 		}
 	}
 }

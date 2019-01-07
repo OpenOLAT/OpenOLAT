@@ -33,7 +33,6 @@ import org.olat.core.commons.modules.bc.FileSelection;
 import org.olat.core.commons.modules.bc.FolderEvent;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
-import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -174,12 +173,10 @@ public class CmdZip extends FormBasicController implements FolderCommand {
 			status = FolderCommandStatus.STATUS_FAILED;
 			fireEvent(ureq, FOLDERCOMMAND_FINISHED);
 		} else {
-			if(zipFile instanceof MetaTagged) {
-				MetaInfo info = ((MetaTagged)zipFile).getMetaInfo();
-				if(info != null) {
-					info.setAuthor(ureq.getIdentity());
-					info.write();
-				}
+			if(zipFile.canMeta() == VFSConstants.YES) {
+				MetaInfo info = zipFile.getMetaInfo();
+				info.setAuthor(ureq.getIdentity());
+				info.write();
 			}
 			
 			fireEvent(ureq, new FolderEvent(FolderEvent.ZIP_EVENT, selection.renderAsHtml()));				

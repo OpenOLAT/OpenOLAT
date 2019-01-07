@@ -28,13 +28,13 @@ package org.olat.core.commons.modules.bc.commands;
 
 import org.olat.core.commons.modules.bc.components.FolderComponent;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
-import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSMediaResource;
@@ -59,8 +59,8 @@ public class CmdServeThumbnailResource implements FolderCommand {
 			vfsfile = (VFSLeaf)FolderCommandHelper.tryDoubleDecoding(ureq, folderComponent);
 		}
 		
-		if(vfsfile instanceof MetaTagged) {
-			MetaInfo info = ((MetaTagged)vfsfile).getMetaInfo();
+		if(vfsfile.canMeta() == VFSConstants.YES) {
+			MetaInfo info = vfsfile.getMetaInfo();
 			if(info != null && info.isThumbnailAvailable()) {
 				VFSLeaf thumbnail = info.getThumbnail(200, 200, false);
 				if(thumbnail != null) {

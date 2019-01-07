@@ -28,6 +28,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSManager;
 
@@ -46,18 +47,18 @@ public class CmdDeletedFiles extends BasicController implements FolderCommand {
 
 	private int status = FolderCommandStatus.STATUS_SUCCESS;
 	private DeletedFileListController deletedFileListCtr;
-	private VFSContainer currentContainer;
 	
 	public CmdDeletedFiles(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl);
+		super(ureq, wControl, Util.createPackageTranslator(DeletedFileListController.class, ureq.getLocale()));
 	}
 
+	@Override
 	public Controller execute(FolderComponent folderComponent, UserRequest ureq, WindowControl wControl, Translator translator) {
 		if(deletedFileListCtr != null) {
 			removeAsListenerAndDispose(deletedFileListCtr);
 		}
 
-		currentContainer = folderComponent.getCurrentContainer();
+		VFSContainer currentContainer = folderComponent.getCurrentContainer();
 		if(!VFSManager.exists(currentContainer)) {
 			status = FolderCommandStatus.STATUS_FAILED;
 			getWindowControl().setError(translator.translate("FileDoesNotExist"));
@@ -80,16 +81,18 @@ public class CmdDeletedFiles extends BasicController implements FolderCommand {
 		//
 	}
 
+	@Override
 	public int getStatus() {
 		return status;
 	}
 
+	@Override
 	public boolean runsModal() {
 		return false;
 	}
 
 	@Override
 	public String getModalTitle() {
-		return null;
+		return translate("version.deletedFiles");
 	}
 }

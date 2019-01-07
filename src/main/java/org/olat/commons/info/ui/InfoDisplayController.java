@@ -35,7 +35,6 @@ import org.olat.commons.info.InfoMessage;
 import org.olat.commons.info.InfoMessageFrontendManager;
 import org.olat.commons.info.manager.MailFormatter;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
-import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.date.DateComponentFactory;
@@ -72,6 +71,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.course.nodes.info.InfoCourseNodeConfiguration;
@@ -96,14 +96,14 @@ public class InfoDisplayController extends FormBasicController {
 	private FormLink newInfoLink;
 	private FormLink oldMsgsLink;
 	private FormLink newMsgsLink;
-	private final List<FormLink> editLinks = new ArrayList<FormLink>();
-	private final List<FormLink> deleteLinks = new ArrayList<FormLink>();
+	private final List<FormLink> editLinks = new ArrayList<>();
+	private final List<FormLink> deleteLinks = new ArrayList<>();
 	private StepsMainRunController newInfoWizard;
 	private DialogBoxController confirmDelete;
 	private InfoEditController editController;
 	private CloseableModalController editDialogBox;
 	
-	private final List<Long> previousDisplayKeys = new ArrayList<Long>();
+	private final List<Long> previousDisplayKeys = new ArrayList<>();
 	private final InfoSecurityCallback secCallback;
 	private final OLATResourceable ores;
 	private final String resSubPath;
@@ -537,8 +537,8 @@ public class InfoDisplayController extends FormBasicController {
 				try {
 					Long infoKey = Long.valueOf(Long.parseLong(query[1]));
 					VFSLeaf attachment = infoKeyToAttachment.get(infoKey);
-					if(attachment != null) {
-						MetaInfo meta = ((MetaTagged)attachment).getMetaInfo();
+					if(attachment != null && attachment.canMeta() == VFSConstants.YES) {
+						MetaInfo meta = attachment.getMetaInfo();
 						if (meta.getUUID().equals(query[2])) {
 							if (meta.isThumbnailAvailable()) {
 								VFSLeaf thumb = meta.getThumbnail(200, 200, false);

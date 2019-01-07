@@ -82,24 +82,7 @@ public class PersonalFolderManager extends BriefcaseWebDAVProvider implements Us
 	 */
 	@Override
 	public void deleteUserData(Identity identity, String newDeletedUserName) {
-		new OlatRootFolderImpl(getRootPathFor(identity), null).deleteSilently();
+		new OlatRootFolderImpl(getRootPathFor(identity), null).deleteSilently();// will delete meta and version informations
 		log.audit("Personal-folder deleted for identity=" + identity.getKey());
-		
-		String userHome =  FolderConfig.getUserHomes().substring(1);
-		File metaHomeDir = new File(FolderConfig.getCanonicalMetaRoot(), userHome);
-		File metaHomeUserDir = new File(metaHomeDir, identity.getName());
-		if(metaHomeUserDir.exists()) {
-			// the meta-data under home/<USER> can be deleted and must not be renamed
-			FileUtils.deleteDirsAndFiles(metaHomeUserDir, true, true); 			
-			log.audit("User-Deletion: Delete meta-data homes directory for identity=" + identity.getKey() + " directory=" + metaHomeUserDir.getAbsolutePath());
-		}
-
-		File versionHomeDir = new File(FolderConfig.getCanonicalVersionRoot(), userHome);
-		File versionHomeUserDir = new File(versionHomeDir, identity.getName());
-		if(versionHomeUserDir.exists()) {
-			// the meta-data under home/<USER> can be deleted and must not be renamed
-			FileUtils.deleteDirsAndFiles(versionHomeUserDir, true, true); 			
-			log.audit("User-Deletion: Delete meta-data homes directory for identity=" + identity.getKey() + " directory=" + metaHomeUserDir.getAbsolutePath());
-		}
 	}
 }

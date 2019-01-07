@@ -22,9 +22,7 @@ package org.olat.portfolio.model.artefacts;
 
 import org.apache.lucene.document.Document;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
-import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFileImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
@@ -32,6 +30,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
@@ -59,29 +58,11 @@ public class FileArtefactHandler extends EPAbstractHandler<FileArtefact> {
 	
 	private static final OLog log = Tracing.createLoggerFor(FileArtefactHandler.class);
 
-	/**
-	 * @see org.olat.portfolio.EPAbstractHandler#setEnabled(boolean)
-	 */
-	@Override
-	public void setEnabled(boolean enabled) {
-		super.setEnabled(enabled);
-
-		// en-/disable ePortfolio collecting link in folder component
-		// needs to stay here in olat3-context, as olatcore's folder-comp. doesn't
-		// know about ePortfolio itself!
-		FolderConfig.setEPortfolioAddEnabled(enabled);
-	}
-
 	@Override
 	public FileArtefact createArtefact() {
-		FileArtefact artefact = new FileArtefact();
-		return artefact;
+		return new FileArtefact();
 	}
 
-	/**
-	 * @see org.olat.portfolio.EPAbstractHandler#prefillArtefactAccordingToSource(org.olat.portfolio.model.artefacts.AbstractArtefact,
-	 *      java.lang.Object)
-	 */
 	@Override
 	public void prefillArtefactAccordingToSource(AbstractArtefact artefact, Object source) {
 		super.prefillArtefactAccordingToSource(artefact, source);
@@ -90,8 +71,8 @@ public class FileArtefactHandler extends EPAbstractHandler<FileArtefact> {
 			((FileArtefact) artefact).setFilename(fileSource.getName());
 			
 			MetaInfo meta = null;
-			if(fileSource instanceof MetaTagged) {
-				meta = ((MetaTagged)fileSource).getMetaInfo();
+			if(fileSource.canMeta() == VFSConstants.YES) {
+				meta = fileSource.getMetaInfo();
 			}
 
 			if (meta != null && StringHelper.containsNonWhitespace(meta.getTitle())) {
@@ -172,7 +153,7 @@ public class FileArtefactHandler extends EPAbstractHandler<FileArtefact> {
 		String filename = fileArtefact.getFilename();
 		
 		VFSItem file = ePFManager.getArtefactContainer(artefact).resolve(filename);
-		if (file != null && file instanceof VFSLeaf) {
+		if (file instanceof VFSLeaf) {
 			try {
 				FileDocumentFactory docFactory = CoreSpringFactory.getImpl(FileDocumentFactory.class);
 				if (docFactory.isFileSupported((VFSLeaf)file)) {

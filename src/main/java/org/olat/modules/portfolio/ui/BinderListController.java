@@ -29,7 +29,6 @@ import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
-import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.dispatcher.mapper.Mapper;
@@ -74,6 +73,7 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.course.nodes.PortfolioCourseNode;
@@ -804,8 +804,8 @@ public class BinderListController extends FormBasicController
 				for(BinderRow prow:rows) {
 					if(key.equals(prow.getKey())) {
 						VFSLeaf image = prow.getBackgroundImage();
-						if(image instanceof MetaTagged) {
-							MetaInfo info = ((MetaTagged)image).getMetaInfo();
+						if(image.canMeta() == VFSConstants.YES) {
+							MetaInfo info = image.getMetaInfo();
 							VFSLeaf thumbnail = info.getThumbnail(BACKGROUND_SIZE.getWidth(), BACKGROUND_SIZE.getHeight(), true);
 							if(thumbnail != null) {
 								image = thumbnail;

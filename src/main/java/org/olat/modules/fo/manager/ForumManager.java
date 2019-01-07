@@ -246,8 +246,8 @@ public class ForumManager {
 	/**
 	 * Return the title of a message of the forum.
 	 */
-	public int countMessagesByForumID(Long forum_id) {
-		return countMessagesByForumID(forum_id, false);
+	public int countMessagesByForumID(Long forumId) {
+		return countMessagesByForumID(forumId, false);
 	}
 	
 	public List<MessagePeekview> getPeekviewMessages(Forum forum, int maxResults) {
@@ -975,12 +975,12 @@ public class ForumManager {
 
 	private void deleteMessageContainer(Long forumKey, Long messageKey) {
 		VFSContainer mContainer = getMessageContainer(forumKey, messageKey);
-		mContainer.delete();
+		mContainer.deleteSilently();
 	}
 
 	private void deleteForumContainer(Long forumKey) {
 		VFSContainer fContainer = getForumContainer(forumKey);
-		fContainer.delete();
+		fContainer.deleteSilently();
 	}
 
 	public VFSContainer getForumContainer(Long forumKey) {

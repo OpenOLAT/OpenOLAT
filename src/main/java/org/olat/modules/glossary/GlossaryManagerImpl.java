@@ -241,7 +241,6 @@ public class GlossaryManagerImpl implements GlossaryManager {
 				// event so that the course can take care of this rather than having it
 				// here hardcoded
 				OLATResource courseResource = ref.getSource();
-				//ICourse course = CourseFactory.loadCourse(courseResource);
 				ICourse course = CourseFactory.openCourseEditSession(courseResource.getResourceableId());
 				CourseConfig cc = course.getCourseEnvironment().getCourseConfig();
 				cc.setGlossarySoftKey(null);

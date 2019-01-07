@@ -34,7 +34,6 @@ import org.olat.core.commons.modules.bc.FileSelection;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
-import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
@@ -201,8 +200,8 @@ public class CmdUnzip extends BasicController implements FolderCommand {
 				wControl.setError(translator.translate("unzip.alreadyexists", new String[] {sZipContainer}));
 				return false;
 			}
-		} else if (zipContainer instanceof MetaTagged) {
-			MetaInfo info = ((MetaTagged)zipContainer).getMetaInfo();
+		} else if (zipContainer.canMeta() == VFSConstants.YES) {
+			MetaInfo info = zipContainer.getMetaInfo();
 			if(info != null && ureq.getIdentity() != null) {
 				info.setAuthor(ureq.getIdentity());
 				info.write();

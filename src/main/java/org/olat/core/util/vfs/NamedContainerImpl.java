@@ -28,13 +28,11 @@ package org.olat.core.util.vfs;
 
 import java.util.List;
 
+import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
 
 /**
- * Description:<br>
- * TODO: Felix Jost Class Description for VirtualContainerImpl
- * 
  * <P>
  * Initial Date:  23.06.2005 <br>
  *
@@ -67,75 +65,52 @@ public class NamedContainerImpl extends AbstractVirtualContainer {
 		this.delegate = delegate;
 	}
 	
-	/**
-	 * @see org.olat.core.util.vfs.VFSItem#getParent()
-	 */
+	@Override
 	public VFSContainer getParentContainer() {
 		return getDelegate().getParentContainer();
 	}
-	
-	/**
-	 * @see org.olat.core.util.vfs.VFSItem#setParentContainer(org.olat.core.util.vfs.VFSContainer)
-	 */
+
+	@Override
 	public void setParentContainer(VFSContainer parentContainer) {
 		getDelegate().setParentContainer(parentContainer);
 	}
-	
-	/**
-	 * @see org.olat.core.util.vfs.VFSContainer#getItems()
-	 */
+
+	@Override
 	public List<VFSItem> getItems() {
-		//FIXME:fj:b add as listener to "change ownergroup" event, so that the access may be denied, if ownergroup of repoitem has changed.
 		return getDelegate().getItems();
 	}
-	
-	/**
-	 * @see org.olat.core.util.vfs.VFSContainer#getItems(org.olat.core.util.vfs.filters.VFSItemFilter)
-	 */
+
+	@Override
 	public List<VFSItem> getItems(VFSItemFilter filter) {
 		return getDelegate().getItems(filter);
 	}
-	
-	/**
-	 * @see org.olat.core.util.vfs.VFSContainer#copyFrom(org.olat.core.util.vfs.VFSItem)
-	 */
+
+	@Override
 	public VFSStatus copyFrom(VFSItem source) {
 		return getDelegate().copyFrom(source);
 	}
 
-
-	/**
-	 * @see org.olat.core.util.vfs.VFSContainer#canWrite()
-	 */
+	@Override
 	public VFSStatus canWrite() {
 		return getDelegate().canWrite();
 	}
 
-	/**
-	 * @see org.olat.core.util.vfs.VFSContainer#canCopy()
-	 */
+	@Override
 	public VFSStatus canCopy() {
 		return getDelegate().canCopy();
 	}
 
-	/**
-	 * @see org.olat.core.util.vfs.VFSItem#rename(java.lang.String)
-	 */
+	@Override
 	public VFSStatus rename(String newname) {
 		throw new RuntimeException("unsupported");
 	}
 
-
-	/**
-	 * @see org.olat.core.util.vfs.VFSItem#delete()
-	 */
+	@Override
 	public VFSStatus delete() {
 		return getDelegate().delete();
 	}
 
-	/**
-	 * @see org.olat.core.util.vfs.VFSItem#getLastModified()
-	 */
+	@Override
 	public long getLastModified() {
 		return getDelegate().getLastModified();
 	}
@@ -152,64 +127,59 @@ public class NamedContainerImpl extends AbstractVirtualContainer {
 	 * was embedded in a named container. Thus, the isSame() method on the
 	 * root element of the resolved item is not the same as this object.
 	 */
+	@Override
 	public VFSItem resolve(String path) {
 		path = VFSManager.sanitizePath(path);
 		if (path.equals("/")) return this;
 		return getDelegate().resolve(path);
 	}
-	
-	/**
-	 * @see org.olat.core.util.vfs.VFSContainer#createChildContainer(java.lang.String)
-	 */
+
+	@Override
 	public VFSContainer createChildContainer(String name) {
 		return getDelegate().createChildContainer(name);
 	}
-	
-	/**
-	 * @see org.olat.core.util.vfs.VFSContainer#createChildLeaf(java.lang.String)
-	 */
+
+	@Override
 	public VFSLeaf createChildLeaf(String name) {
 		return getDelegate().createChildLeaf(name);
 	}
-	
-	/**
-	 * @see java.lang.Object#toString()
-	 */
-	public String toString() {
-		return "NamedContainer "+getName()+ "-> "+getDelegate().toString();
+
+	@Override
+	public VFSStatus canMeta() {
+		return getDelegate().canMeta();
 	}
 
-	/**
-	 * @see org.olat.core.util.vfs.VFSItem#getLocalSecurityCallback()
-	 */
+	@Override
+	public MetaInfo getMetaInfo() {
+		return getDelegate().getMetaInfo();
+	}
+
+	@Override
+	public String toString() {
+		return "NamedContainer " + getName() + "-> " + getDelegate().toString();
+	}
+
+	@Override
 	public VFSSecurityCallback getLocalSecurityCallback() {
 		return getDelegate().getLocalSecurityCallback();
 	}
 
-	/**
-	 * @see org.olat.core.util.vfs.VFSItem#setLocalSecurityCallback(org.olat.core.util.vfs.callbacks.VFSSecurityCallback)
-	 */
+	@Override
 	public void setLocalSecurityCallback(VFSSecurityCallback secCallback) {
 		getDelegate().setLocalSecurityCallback(secCallback);
 	}
 
-	/**
-	 * @see org.olat.core.util.vfs.VFSItem#isSame(org.olat.core.util.vfs.VFSItem)
-	 */
+	@Override
 	public boolean isSame(VFSItem vfsItem) {
 		return getDelegate().isSame(vfsItem);
 	}
 
-	/**
-	 * @see org.olat.core.util.vfs.VFSContainer#setDefaultItemFilter(org.olat.core.util.vfs.filters.VFSItemFilter)
-	 */
+	@Override
 	public void setDefaultItemFilter(VFSItemFilter defaultFilter) {
 		getDelegate().setDefaultItemFilter(defaultFilter);
 	}
 
-	/**
-	 * @see org.olat.core.util.vfs.VFSContainer#getDefaultItemFilter()
-	 */
+	@Override
 	public VFSItemFilter getDefaultItemFilter() {
 		return getDelegate().getDefaultItemFilter();
 	}

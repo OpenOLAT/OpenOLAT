@@ -48,6 +48,7 @@ import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarNotificationManager;
 import org.olat.commons.calendar.manager.ImportToCalendarManager;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
+import org.olat.commons.info.InfoMessageFrontendManager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.modules.bc.FolderConfig;
@@ -377,6 +378,8 @@ public class CourseFactory {
 		CoreSpringFactory.getImpl(InstantMessagingService.class).deleteMessages(res);
 		//delete tasks
 		CoreSpringFactory.getImpl(GTAManager.class).deleteAllTaskLists(entry);
+		//delete the storage folder of info messages attachments
+		CoreSpringFactory.getImpl(InfoMessageFrontendManager.class).deleteStorage(course);
 
 		// cleanup cache
 		removeFromCache(res.getResourceableId());

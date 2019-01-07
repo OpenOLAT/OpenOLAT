@@ -75,6 +75,11 @@ public class SimpleVersionConfig extends AbstractSpringModule implements Generic
 	}
 
 	@Override
+	public boolean isEnabled() {
+		return maxNumberOfVersions > 0;
+	}
+
+	@Override
 	public void init() {
 		String maxNumberOfVersionsObj = getStringPropertyValue(MAX_NUMBER_OF_VERSIONS, true);
 		if(StringHelper.containsNonWhitespace(maxNumberOfVersionsObj)) {
@@ -117,6 +122,7 @@ public class SimpleVersionConfig extends AbstractSpringModule implements Generic
 		return getVersionAllowed() ;
 	}
 
+	@Override
 	public boolean versionEnabled(VFSContainer container) {
 		int versionsAllowed = getVersionAllowed();
 		if(versionsAllowed == 0) {
@@ -134,8 +140,8 @@ public class SimpleVersionConfig extends AbstractSpringModule implements Generic
 			try {
 				LocalFolderImpl folderImpl = (LocalFolderImpl)container;
 				String path = folderImpl.getBasefile().getCanonicalPath();
-				List<String> excludedRoots = getExcludedRoots();
-				for(String excludedRoot:excludedRoots) {
+				List<String> exRoots = getExcludedRoots();
+				for(String excludedRoot:exRoots) {
 					if(path.startsWith(excludedRoot)) {
 						return false;
 					}
@@ -151,15 +157,14 @@ public class SimpleVersionConfig extends AbstractSpringModule implements Generic
 				}
 				return getVersionAllowed() != 0;
 			} catch (IOException e) {
-				//fail silently;
+				//fail silently
 			}
 		}
 		return false;
 	}
 	
 	private int getVersionAllowed() {
-		int max = getMaxNumberOfVersionsProperty();
-		return max;
+		return getMaxNumberOfVersionsProperty();
 	}
 	
 	private String getCourseRoot() {
@@ -172,7 +177,7 @@ public class SimpleVersionConfig extends AbstractSpringModule implements Generic
 	
 	private List<String> getExcludedRoots() {
 		if(excludedRoots == null) {
-			excludedRoots = new ArrayList<String>();
+			excludedRoots = new ArrayList<>();
 			excludedRoots.add(FolderConfig.getCanonicalTmpDir());
 			String bcroot = FolderConfig.getCanonicalRoot();
 			excludedRoots.add(bcroot + "/forum");

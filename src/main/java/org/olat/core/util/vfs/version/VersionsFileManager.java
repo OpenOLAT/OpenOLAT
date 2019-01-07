@@ -39,16 +39,19 @@ import java.util.zip.Adler32;
 import java.util.zip.Checksum;
 
 import org.apache.commons.io.FileUtils;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
+import org.olat.core.commons.modules.bc.meta.MetaInfoFactory;
+import org.olat.core.commons.modules.bc.meta.MetaInfoFileImpl;
 import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
-import org.olat.core.configuration.Initializable;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.async.ProgressDelegate;
+import org.olat.core.util.vfs.JavaIOItem;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.LocalImpl;
@@ -64,8 +67,11 @@ import org.olat.core.util.vfs.filters.SystemItemFilter;
 import org.olat.core.util.vfs.filters.VFSItemSuffixFilter;
 import org.olat.core.util.vfs.filters.VFSLeafFilter;
 import org.olat.core.util.xml.XStreamHelper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.security.ExplicitTypePermission;
 
 /**
  * 
@@ -80,36 +86,45 @@ import com.thoughtworks.xstream.XStream;
  *
  * @author srosse
  */
-public class VersionsFileManager extends VersionsManager implements Initializable {
+@Service("versionsManager")
+public class VersionsFileManager implements VersionsManager {
 	private static final OLog log = Tracing.createLoggerFor(VersionsFileManager.class);
 
 	private static final Versions NOT_VERSIONED = new NotVersioned();
 	private static final Pattern TAG_PATTERN = Pattern.compile("\\s*[<>]\\s*");
 	private static XStream mystream;
-	
+	static {
+		mystream = XStreamHelper.createXStreamInstance();
+		XStream.setupDefaultSecurity(mystream);
+		Class<?>[] types = new Class[] {
+				VersionsFileImpl.class, Versions.class, RevisionFileImpl.class, VFSRevision.class,
+				MetaInfoFileImpl.class, MetaInfoFileImpl.Thumbnail.class
+			};
+		mystream.addPermission(new ExplicitTypePermission(types));
+		
+		mystream.alias("versions", VersionsFileImpl.class);
+		mystream.alias("revision", RevisionFileImpl.class);
+		mystream.omitField(VersionsFileImpl.class, "currentVersion");
+		mystream.omitField(VersionsFileImpl.class, "versionFile");
+		mystream.omitField(RevisionFileImpl.class, "current");
+		mystream.omitField(RevisionFileImpl.class, "container");
+		mystream.omitField(RevisionFileImpl.class, "file");
+		
+		mystream.alias("metadata", MetaInfoFileImpl.class);
+		mystream.alias("thumbnail", MetaInfoFileImpl.Thumbnail.class);
+	}
 
 	private File rootFolder;
 	private File rootVersionFolder;
 	private VFSContainer rootVersionsContainer;
 	
+	@Autowired
 	private FolderVersioningConfigurator versioningConfigurator;
 
-	/**
-	 * [spring]
-	 */
-	private VersionsFileManager() {
-		INSTANCE = this;
+	@Override
+	public boolean isEnabled() {
+		return versioningConfigurator.isEnabled();
 	}
-	
-	/**
-	 * [used by Spring]
-	 * @param versioningConfigurator
-	 */
-	public void setVersioningConfigurator(FolderVersioningConfigurator versioningConfigurator) {
-		this.versioningConfigurator = versioningConfigurator;
-	}
-
-
 
 	@Override
 	public Versions createVersionsFor(VFSLeaf leaf) {
@@ -118,23 +133,20 @@ public class VersionsFileManager extends VersionsManager implements Initializabl
 	
 	@Override
 	public Versions createVersionsFor(VFSLeaf leaf, boolean force) {
-		if (!(leaf instanceof Versionable)) {
-			return NOT_VERSIONED;
-		} else if (isVersionFile(leaf)) {
+		if (!(leaf instanceof Versionable) || isVersionFile(leaf)) {
 			return NOT_VERSIONED;
 		}
 
-		Versions versions = readVersions(leaf, false);
-		return versions;
+		return readVersions(leaf, false);
 	}
 
 	@Override
 	public List<Versions> getDeletedFiles(VFSContainer container) {
-		List<Versions> deletedRevisions = new ArrayList<Versions>();
+		List<Versions> deletedRevisions = new ArrayList<>();
 
 		VFSContainer versionContainer = getCanonicalVersionFolder(container, false);
 		if (versionContainer != null) {
-			Set<String> currentNames = new HashSet<String>();
+			Set<String> currentNames = new HashSet<>();
 			for (VFSItem item : container.getItems(new VFSLeafFilter())) {
 				currentNames.add(item.getName() + ".xml");
 			}
@@ -369,9 +381,11 @@ public class VersionsFileManager extends VersionsManager implements Initializabl
 	public boolean restore(VFSContainer container, VFSRevision revision) {
 		String filename = revision.getName();
 		VFSItem restoredItem = container.resolve(filename);
+		boolean restoreDeletedFile = restoredItem == null;
 		if (restoredItem == null) {
 			restoredItem = container.createChildLeaf(filename);
 		}
+		
 		if (restoredItem instanceof VFSLeaf) {
 			VFSLeaf restoredLeaf = (VFSLeaf) restoredItem;
 			InputStream inStream = revision.getInputStream();
@@ -381,6 +395,27 @@ public class VersionsFileManager extends VersionsManager implements Initializabl
 				if (versions instanceof VersionsFileImpl) {
 					versions.getRevisions().remove(revision);
 					((VersionsFileImpl) versions).setRevisionNr(getNextRevisionNr(versions));
+					if (revision instanceof RevisionFileImpl) {
+						VFSLeaf fileToDelete = ((RevisionFileImpl)revision).getFile();
+						if(fileToDelete != null) {
+							fileToDelete.deleteSilently();
+						}
+					}
+				}
+				if (restoreDeletedFile && revision instanceof RevisionFileImpl) {
+					MetaInfo versionedMetadata = ((RevisionFileImpl)revision).getMetadata();
+					MetaInfoFileImpl metadata = (MetaInfoFileImpl)restoredItem.getMetaInfo();
+					if(versionedMetadata != null && metadata != null) {
+						metadata.copyValues(versionedMetadata);
+						// make sure the restored file is not locked
+						metadata.setLocked(false);
+						metadata.setLockedBy(null);
+						metadata.setLockedDate(null);
+						// restore last values
+						metadata.setUUID(versionedMetadata.getUUID());
+						metadata.setDownloadCount(versionedMetadata.getDownloadCount());
+						metadata.write();
+					}
 				}
 				XStreamHelper.writeObject(mystream, versionFile, versions);
 				return true;
@@ -395,7 +430,7 @@ public class VersionsFileManager extends VersionsManager implements Initializabl
 		Versions versions = readVersions(currentFile, true);
 		List<VFSRevision> allVersions = versions.getRevisions();
 
-		Map<String,VFSLeaf> filenamesToDelete = new HashMap<String,VFSLeaf>(allVersions.size());
+		Map<String,VFSLeaf> filenamesToDelete = new HashMap<>(allVersions.size());
 		for (VFSRevision versionToDelete : versionsToDelete) {
 			RevisionFileImpl versionImpl = (RevisionFileImpl) versionToDelete;
 			for (Iterator<VFSRevision> allVersionIt = allVersions.iterator(); allVersionIt.hasNext();) {
@@ -422,7 +457,7 @@ public class VersionsFileManager extends VersionsManager implements Initializabl
 				filenamesToDelete.remove(revFile.getName());
 			}
 		}
-		if(missingFiles.size() > 0) {
+		if(!missingFiles.isEmpty()) {
 			allVersions.removeAll(missingFiles);
 		}
 		
@@ -439,7 +474,7 @@ public class VersionsFileManager extends VersionsManager implements Initializabl
 	}
 
 	@Override
-	public boolean deleteVersions(List<Versions> versions) {
+	public boolean deleteVersions(VFSContainer container, List<Versions> versions) {
 		for(Versions versionToDelete:versions) {
 			if(versionToDelete instanceof VersionsFileImpl) {
 				VersionsFileImpl versionsImpl = (VersionsFileImpl)versionToDelete;
@@ -453,6 +488,17 @@ public class VersionsFileManager extends VersionsManager implements Initializabl
 					VFSLeaf fileToDelete = versionImpl.getFile();
 					if (fileToDelete != null) {
 						fileToDelete.deleteSilently();
+					}
+					
+					String originFilename = versionImpl.getName();
+					// delete
+					if(container.canMeta().equals(VFSConstants.YES) && container instanceof JavaIOItem) {
+						//if original was completely deleted, delete metadata too
+						File dir = ((JavaIOItem)container).getBasefile();
+						File file = new File(dir, originFilename);
+						if(!file.exists()) {
+							CoreSpringFactory.getImpl(MetaInfoFactory.class).deleteMetaFile(file);
+						}
 					}
 				}
 			}
@@ -513,11 +559,7 @@ public class VersionsFileManager extends VersionsManager implements Initializabl
 			return true;
 		}
 		//OpenOffice database lock
-		if(name.endsWith(".odb.lck")) {
-			return true;
-		}
-		
-		return false;
+		return name.endsWith(".odb.lck");
 	}
 	
 	/**
@@ -566,9 +608,6 @@ public class VersionsFileManager extends VersionsManager implements Initializabl
 		return false;
 	}
 
-	/**
-	 * @see org.olat.core.util.vfs.version.VersionsManager#addToRevisions(org.olat.core.util.vfs.version.Versionable, org.olat.core.id.Identity, java.lang.String)
-	 */
 	@Override
 	public boolean addToRevisions(Versionable currentVersion, Identity identity, String comment) {
 		int maxNumOfVersions = versioningConfigurator.getMaxNumOfVersionsAllowed();
@@ -601,8 +640,10 @@ public class VersionsFileManager extends VersionsManager implements Initializabl
 		String versionNr = getNextRevisionNr(versions);
 		String currentAuthor = versions.getAuthor();
 		long lastModifiedDate = 0;
-		if (currentFile instanceof MetaTagged) {
-			MetaInfo metaInfo = ((MetaTagged) currentFile).getMetaInfo();
+		
+		MetaInfo metaInfo = null;
+		if (currentFile.canMeta() == VFSConstants.YES) {
+			metaInfo = currentFile.getMetaInfo();
 			if(metaInfo != null) {
 				metaInfo.clearThumbnails();
 				if(currentAuthor == null) { 
@@ -626,6 +667,7 @@ public class VersionsFileManager extends VersionsManager implements Initializabl
 		newRevision.setComment(versions.getComment());
 		newRevision.setAuthor(currentAuthor);
 		newRevision.setLastModified(lastModifiedDate);
+		newRevision.setMetadata(metaInfo);
 
 		if (versions.getRevisions().isEmpty() && currentVersion instanceof MetaTagged) {
 			MetaTagged metaTagged = (MetaTagged) currentVersion;
@@ -685,6 +727,7 @@ public class VersionsFileManager extends VersionsManager implements Initializabl
 		return same;
 	}
 
+	@Override
 	public String getNextRevisionNr(Versions versions) {
 		int maxNumber = 0;
 		for (VFSRevision version : versions.getRevisions()) {
@@ -975,7 +1018,7 @@ public class VersionsFileManager extends VersionsManager implements Initializabl
 
 	@Override
 	public List<OrphanVersion> orphans() {
-		List<OrphanVersion> orphans = new ArrayList<OrphanVersion>();
+		List<OrphanVersion> orphans = new ArrayList<>();
 		VFSContainer versionsContainer = getRootVersionsContainer();
 		crawlForOrphans(versionsContainer, orphans);
 		return orphans;
@@ -1020,8 +1063,7 @@ public class VersionsFileManager extends VersionsManager implements Initializabl
 	private Versions isOrphan(VFSLeaf potentialOrphan) {
 		try {
 			if(potentialOrphan.exists()) {
-				VersionsFileImpl versions = (VersionsFileImpl) XStreamHelper.readObject(mystream, potentialOrphan);
-				return versions;
+				return (VersionsFileImpl) XStreamHelper.readObject(mystream, potentialOrphan);
 			}
 			return null;
 		} catch (Exception e) {
@@ -1036,20 +1078,5 @@ public class VersionsFileManager extends VersionsManager implements Initializabl
 		}
 		
 		return new File(getCanonicalRoot(), path);
-	}
-
-	/**
-	 * 
-	 * @see org.olat.core.configuration.Initializable#init()
-	 */
-	public void init() {
-			mystream = XStreamHelper.createXStreamInstance();
-			mystream.alias("versions", VersionsFileImpl.class);
-			mystream.alias("revision", RevisionFileImpl.class);
-			mystream.omitField(VersionsFileImpl.class, "currentVersion");
-			mystream.omitField(VersionsFileImpl.class, "versionFile");
-			mystream.omitField(RevisionFileImpl.class, "current");
-			mystream.omitField(RevisionFileImpl.class, "container");
-			mystream.omitField(RevisionFileImpl.class, "file");
 	}
 }

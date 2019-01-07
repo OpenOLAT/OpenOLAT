@@ -52,7 +52,7 @@ public class OlatRootFolderImpl extends LocalFolderImpl implements OlatRelPathIm
 	}
 
 	/**
-	 * Wrapp all LocalImpls to OlatRootImpls
+	 * Wrap all LocalImpls to OlatRootImpls
 	 *
 	 * @see org.olat.core.util.vfs.VFSContainer#createChildContainer(java.lang.String)
 	 */
@@ -64,7 +64,7 @@ public class OlatRootFolderImpl extends LocalFolderImpl implements OlatRelPathIm
 	}
 
 	/**
-	 * Wrapp all LocalImpls to OlatRootImpls
+	 * Wrap all LocalImpls to OlatRootImpls
 	 *
 	 * @see org.olat.core.util.vfs.VFSContainer#createChildLeaf(java.lang.String)
 	 */
@@ -76,19 +76,18 @@ public class OlatRootFolderImpl extends LocalFolderImpl implements OlatRelPathIm
 	}
 
 	/**
-	 * Wrapp all LocalImpls to OlatRootImpls
+	 * Wrap all LocalImpls to OlatRootImpls
 	 *
 	 * @see org.olat.core.util.vfs.VFSContainer#getItems()
 	 */
+	@Override
 	public List<VFSItem> getItems() {
 		List<VFSItem> items = super.getItems();
 		items = wrapItems(items);
 		return items;
 	}
 
-	/**
-	 * @see org.olat.core.util.vfs.LocalFolderImpl#getItems(org.olat.core.util.vfs.filters.VFSItemFilter)
-	 */
+	@Override
 	public List<VFSItem> getItems(VFSItemFilter filter) {
 		List<VFSItem> items = super.getItems(filter);
 		items = wrapItems(items);
@@ -100,8 +99,8 @@ public class OlatRootFolderImpl extends LocalFolderImpl implements OlatRelPathIm
 	 * @return
 	 */
 	private List<VFSItem> wrapItems(List<VFSItem> items) {
-		List<VFSItem> wrappedItems = new ArrayList<VFSItem>(items.size());
-		// now wrapp all LocalImpls to OlatRootImpls...
+		List<VFSItem> wrappedItems = new ArrayList<>(items.size());
+		// now wrap all LocalImpls to OlatRootImpls...
 		for (VFSItem item : items) {
 			if (item instanceof LocalFolderImpl) {
 				wrappedItems.add(new OlatRootFolderImpl(folderRelPath + "/" + item.getName(), this));
@@ -111,19 +110,15 @@ public class OlatRootFolderImpl extends LocalFolderImpl implements OlatRelPathIm
 		}
 		return wrappedItems;
 	}
-	
-	/**
-	 * @see org.olat.core.util.vfs.OlatRelPathImpl#getRelPath()
-	 */
+
+	@Override
 	public String getRelPath() {
 		return folderRelPath;
 	}
 
-	/**
-	 * @see org.olat.core.commons.modules.bc.meta.tagged.MetaTagged#getMetaInfo()
-	 */
+	@Override
 	public MetaInfo getMetaInfo() {
-		return CoreSpringFactory.getImpl(MetaInfoFactory.class).createMetaInfoFor(this);
+		return CoreSpringFactory.getImpl(MetaInfoFactory.class).createMetaInfoFor(getBasefile());
 	}
 	
 }

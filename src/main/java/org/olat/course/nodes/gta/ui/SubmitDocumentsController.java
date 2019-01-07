@@ -32,7 +32,6 @@ import java.util.List;
 import org.olat.core.commons.editor.htmleditor.HTMLEditorController;
 import org.olat.core.commons.editor.htmleditor.WysiwygFactory;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
-import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.commons.modules.singlepage.SinglePageController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -57,6 +56,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.io.SystemFileFilter;
+import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSManager;
@@ -180,8 +180,8 @@ class SubmitDocumentsController extends FormBasicController {
 			String filename = document.getName();
 			String uploadedBy = null;
 			VFSItem item = documentsContainer.resolve(filename);
-			if(item instanceof MetaTagged) {
-				MetaInfo metaInfo = ((MetaTagged)item).getMetaInfo();
+			if(item.canMeta() == VFSConstants.YES) {
+				MetaInfo metaInfo = item.getMetaInfo();
 				if(metaInfo != null && metaInfo.getAuthorIdentityKey() != null) {
 					uploadedBy = userManager.getUserDisplayName(metaInfo.getAuthorIdentityKey());
 				}
@@ -413,8 +413,8 @@ class SubmitDocumentsController extends FormBasicController {
 			Files.move(file.toPath(), documentPath, StandardCopyOption.REPLACE_EXISTING);
 			
 			VFSItem downloadedFile = documentsContainer.resolve(filename);
-			if(downloadedFile instanceof MetaTagged) {
-				MetaInfo  metadata = ((MetaTagged)downloadedFile).getMetaInfo();
+			if(downloadedFile != null && downloadedFile.canMeta() == VFSConstants.YES) {
+				MetaInfo  metadata = downloadedFile.getMetaInfo();
 				metadata.setAuthor(ureq.getIdentity());
 				metadata.write();
 			}
@@ -471,8 +471,8 @@ class SubmitDocumentsController extends FormBasicController {
 			}
 			// add missing identity in meta info
 			item = documentsContainer.resolve(documentName);
-			if(item instanceof MetaTagged) {
-				MetaInfo  metadata = ((MetaTagged)item).getMetaInfo();
+			if(item != null && item.canMeta() == VFSConstants.YES) {
+				MetaInfo  metadata = item.getMetaInfo();
 				metadata.setAuthor(ureq.getIdentity());
 				metadata.write();
 			}				

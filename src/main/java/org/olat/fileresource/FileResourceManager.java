@@ -32,7 +32,6 @@ import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.manager.BasicManager;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -46,7 +45,7 @@ import org.olat.fileresource.types.FileResource;
  * 
  * @author Mike Stock
  */
-public class FileResourceManager extends BasicManager {
+public class FileResourceManager {
 
 	public static final String ZIPDIR = "_unzipped_";
 	private static FileResourceManager INSTANCE;
@@ -70,8 +69,8 @@ public class FileResourceManager extends BasicManager {
 	 */
 	public void deleteFileResource(OLATResourceable res) {
 		// delete resources
-		File fResourceFileroot = getFileResourceRoot(res);
-		FileUtils.deleteDirsAndFiles(fResourceFileroot, true, true);
+		VFSContainer rootContainer = getFileResourceRootImpl(res);
+		rootContainer.deleteSilently();// will delete versions and metadata
 	}
 
 	/**

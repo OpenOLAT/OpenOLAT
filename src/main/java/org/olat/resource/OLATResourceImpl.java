@@ -42,7 +42,7 @@ public class OLATResourceImpl extends PersistentObject implements OLATResource {
 	/** for mysql, need always to provide a type and a key to allow a composite index, so 0 is
 	 * a reserved key meaning "no key"
 	 */
-	public static final Long NULLVALUE = new Long(0);
+	public static final Long NULLVALUE = Long.valueOf(0l);
 
 	private String resName;
 	private Long resId;

@@ -30,7 +30,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.olat.core.commons.modules.bc.FileSelection;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
-import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -41,6 +40,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.ZipUtil;
+import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 
@@ -54,21 +54,18 @@ public class CmdDownloadZip implements FolderCommand {
 	
 	private static final OLog log = Tracing.createLoggerFor(CmdDownloadZip.class);
 
-	private FileSelection selection;
-	private VFSContainer currentContainer;
 	private int status = FolderCommandStatus.STATUS_SUCCESS;
 
-	
 	@Override
 	public Controller execute(FolderComponent folderComponent, UserRequest ureq, WindowControl wControl, Translator trans) {
-		currentContainer = folderComponent.getCurrentContainer();
+		VFSContainer currentContainer = folderComponent.getCurrentContainer();
 
 		status = FolderCommandHelper.sanityCheck(wControl, folderComponent);
 		if(status == FolderCommandStatus.STATUS_FAILED) {
 			return null;
 		}
 	
-		selection = new FileSelection(ureq, folderComponent.getCurrentContainerPath());
+		FileSelection selection = new FileSelection(ureq, folderComponent.getCurrentContainerPath());
 		status = FolderCommandHelper.sanityCheck3(wControl, folderComponent, selection);
 		if(status == FolderCommandStatus.STATUS_FAILED) {
 			return null;
@@ -168,9 +165,8 @@ public class CmdDownloadZip implements FolderCommand {
 					if (item != null) {
 						vfsFiles.add(item);
 						// update download counter
-						if (item instanceof MetaTagged) {
-							MetaTagged itemWithMeta = (MetaTagged) item;
-							MetaInfo meta = itemWithMeta.getMetaInfo();
+						if (item.canMeta() == VFSConstants.YES) {
+							MetaInfo meta = item.getMetaInfo();
 							meta.increaseDownloadCount();
 							meta.write();
 						}

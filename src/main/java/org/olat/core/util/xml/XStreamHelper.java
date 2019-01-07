@@ -389,13 +389,10 @@ public class XStreamHelper {
 	 *            the object to be serialized
 	 */
 	public static void writeObject(XStream xStream, File file, Object obj) {
-		try {
-			writeObject(xStream, new FileOutputStream(file), obj);
+		try(OutputStream out=new FileOutputStream(file)) {
+			writeObject(xStream, out, obj);
 		} catch (Exception e) {
-			throw new OLATRuntimeException(
-					XStreamHelper.class,
-					"Could not write object to file: " + file.getAbsolutePath(),
-					e);
+			throw new OLATRuntimeException(XStreamHelper.class, "Could not write object to file: " + file.getAbsolutePath(), e);
 		}
 	}
 
@@ -411,18 +408,14 @@ public class XStreamHelper {
 	 *            the object to be serialized
 	 */
 	public static void writeObject(XStream xStream, OutputStream os, Object obj) {
-		try {
-			OutputStreamWriter osw = new OutputStreamWriter(os, ENCODING);
+		try(OutputStreamWriter osw = new OutputStreamWriter(os, ENCODING)) {
 			String data = xStream.toXML(obj);
 			data = "<?xml version=\"1.0\" encoding=\"" + ENCODING + "\"?>\n"
 					+ data; // give a decent header with the encoding used
 			osw.write(data);
-			osw.close();
+			osw.flush();
 		} catch (Exception e) {
-			throw new OLATRuntimeException(XStreamHelper.class,
-					"Could not write object to stream.", e);
-		} finally {
-			FileUtils.closeSafely(os);
+			throw new OLATRuntimeException(XStreamHelper.class, "Could not write object to stream.", e);
 		}
 	}
 }

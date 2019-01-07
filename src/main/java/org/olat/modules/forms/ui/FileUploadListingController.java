@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
-import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -36,6 +35,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaMapper;
 import org.olat.fileresource.ZippedDirectoryMediaResource;
@@ -112,13 +112,12 @@ public class FileUploadListingController extends BasicController {
 			filesize = Formatter.formatBytes((leaf).getSize());
 			mapperUri = registerCacheableMapper(ureq, "file-upload-" + CodeHelper.getRAMUniqueID() + "-" + leaf.getLastModified(), new VFSMediaMapper(leaf));
 			iconCss = CSSHelper.createFiletypeIconCssClassFor(leaf.getName());
-			if (leaf instanceof MetaTagged) {
-				MetaTagged metaTaggedLeaf = (MetaTagged) leaf;
-				MetaInfo meta = metaTaggedLeaf.getMetaInfo();
+			if (leaf.canMeta() == VFSConstants.YES) {
+				MetaInfo meta = leaf.getMetaInfo();
 				if (meta != null && meta.isThumbnailAvailable()) {
 					VFSLeaf thumb = meta.getThumbnail(200, 200, false);
 					if (thumb != null) {
-						thumbUri = registerCacheableMapper(ureq, "file-upload-thumb" + CodeHelper.getRAMUniqueID() + "-" + leaf.getLastModified(), new VFSMediaMapper(thumb));;
+						thumbUri = registerCacheableMapper(ureq, "file-upload-thumb" + CodeHelper.getRAMUniqueID() + "-" + leaf.getLastModified(), new VFSMediaMapper(thumb));
 					}
 				}
 			}

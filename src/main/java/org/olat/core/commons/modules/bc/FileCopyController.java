@@ -30,7 +30,6 @@ import org.olat.core.commons.modules.bc.commands.FolderCommand;
 import org.olat.core.commons.modules.bc.commands.FolderCommandStatus;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
-import org.olat.core.commons.modules.bc.meta.MetaInfoFactory;
 import org.olat.core.commons.modules.bc.version.RevisionListController;
 import org.olat.core.commons.modules.bc.version.VersionCommentController;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFileImpl;
@@ -49,6 +48,7 @@ import org.olat.core.logging.activity.CoreLoggingResourceable;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Util;
+import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -301,10 +301,8 @@ public class FileCopyController extends LinkChooserController {
 	private void finishSuccessfullUpload(String fileName, UserRequest ureq) {
 		VFSContainer currentContainer  = folderComponent.getCurrentContainer();
 		VFSItem item = currentContainer.resolve(fileName);
-		if (item instanceof OlatRootFileImpl) {
-			OlatRootFileImpl relPathItem = (OlatRootFileImpl) item;
-			// create meta data
-			MetaInfo meta = CoreSpringFactory.getImpl(MetaInfoFactory.class).createMetaInfoFor(relPathItem);
+		if (item instanceof VFSLeaf && item.canMeta() == VFSConstants.YES) {
+			MetaInfo meta = item.getMetaInfo();
 			meta.setAuthor(ureq.getIdentity());
 			meta.clearThumbnails();//if overwrite an older file
 			meta.write();
