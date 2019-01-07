@@ -26,14 +26,11 @@
 
 package org.olat.core.util.vfs;
 
-import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
+import org.olat.core.util.vfs.meta.MetaInfo;
 
 
 /**
- * Description:<br>
- * TODO: Felix Jost Class Description for VFSItem
- * 
  * <P>
  * Initial Date:  23.06.2005 <br>
  *
@@ -65,6 +62,15 @@ public interface VFSItem {
 	 * @param parentContainer
 	 */
 	public void setParentContainer(VFSContainer parentContainer);
+	
+	/**
+	 * The relative path is normalized the following way: if the file is not in
+	 * "bcroot" the returned path is null, the path starts always with "/", directories
+	 * doesn't have a leading "/".
+	 * 
+	 * @return The relative path to "bcroot" or null if the file is not located in "bcroot". 
+	 */
+	public String getRelPath();
 
 	/**
 	 * @param newname e.g test.txt or myfolder (no path prepended)

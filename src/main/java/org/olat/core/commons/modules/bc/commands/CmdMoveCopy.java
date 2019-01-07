@@ -47,7 +47,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.folder.FolderTreeModel;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
-import org.olat.core.util.vfs.OlatRelPathImpl;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -168,11 +167,11 @@ public class CmdMoveCopy extends DefaultController implements FolderCommand {
 		List<VFSItem> sources = getSanityCheckedSourceItems(target, ureq);
 		if (sources == null) return;
 		
-		boolean targetIsRelPath = (target instanceof OlatRelPathImpl);
+		boolean targetIsRelPath = (target.getRelPath() != null);
 		for (VFSItem vfsSource:sources) {
-			if (targetIsRelPath && (target instanceof OlatRelPathImpl) && (vfsSource.canMeta() == VFSConstants.YES)) {
+			if (targetIsRelPath && (vfsSource.canMeta() == VFSConstants.YES)) {
 				// copy the metainfo first
-				vfsSource.getMetaInfo().moveCopyToDir((OlatRelPathImpl)target, move);
+				vfsSource.getMetaInfo().moveCopyToDir(target, move);
 			}
 			
 			VFSItem targetFile = target.resolve(vfsSource.getName());

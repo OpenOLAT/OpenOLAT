@@ -25,7 +25,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.olat.NewControllerFactory;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.configuration.ConfigOnOff;
@@ -33,6 +32,7 @@ import org.olat.core.id.context.SiteContextEntryControllerCreator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.modules.qpool.manager.review.ProcesslessDecisionProvider;
 import org.olat.modules.qpool.site.QuestionPoolSite;
 import org.olat.modules.taxonomy.Taxonomy;
@@ -252,14 +252,14 @@ public class QuestionPoolModule extends AbstractSpringModule implements ConfigOn
 	
 	public VFSContainer getRootContainer() {
 		if(rootContainer == null) {
-			rootContainer = new OlatRootFolderImpl(File.separator + DIRECTORY, null);
+			rootContainer = VFSManager.olatRootContainer(File.separator + DIRECTORY, null);
 		}
 		return rootContainer;
 	}
 	
 	public VFSContainer getInfoPageContainer() {
 		String path = "/" + DIRECTORY + "/" + INFOS_PAGE_DIRECTORY;
-		return new OlatRootFolderImpl(path, null);
+		return VFSManager.olatRootContainer(path, null);
 	}
 
 	public List<QPoolSPI> getQuestionPoolProviders() {

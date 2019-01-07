@@ -27,7 +27,6 @@
 package org.olat.core.commons.modules.bc.commands;
 
 import org.olat.core.commons.modules.bc.components.FolderComponent;
-import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -39,6 +38,7 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
+import org.olat.core.util.vfs.meta.MetaInfo;
 
 public class CmdServeThumbnailResource implements FolderCommand {
 	

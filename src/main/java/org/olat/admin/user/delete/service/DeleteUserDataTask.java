@@ -28,13 +28,14 @@ import java.io.File;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.services.taskexecutor.LowPriorityRunnable;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.vfs.LocalFolderImpl;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.PersistingCourseImpl;
@@ -183,7 +184,7 @@ public class DeleteUserDataTask implements LowPriorityRunnable {
 	 * @return e.g. olatdata\bcroot\course\
 	 */
 	private File getCoursesBaseContainer() {
-		OlatRootFolderImpl courseRootContainer = new OlatRootFolderImpl(File.separator + PersistingCourseImpl.COURSE_ROOT_DIR_NAME + File.separator, null);
+		LocalFolderImpl courseRootContainer = VFSManager.olatRootContainer(File.separator + PersistingCourseImpl.COURSE_ROOT_DIR_NAME + File.separator, null);
 		return courseRootContainer.getBasefile(); 
 	}
 }

@@ -19,7 +19,6 @@
  */
 package org.olat.core.commons.modules.bc.commands;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
 import org.olat.core.commons.modules.bc.components.ListRenderer;
 import org.olat.core.commons.modules.bc.version.RevisionListController;
@@ -34,6 +33,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLockManager;
 import org.olat.core.util.vfs.version.Versionable;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -55,11 +55,11 @@ public class CmdViewRevisions extends BasicController implements FolderCommand {
 	private RevisionListController revisionListCtr;
 	private VFSItem currentItem;
 	
-	private final VFSLockManager vfsLockManager;
+	@Autowired
+	private VFSLockManager vfsLockManager;
 
 	public CmdViewRevisions(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		vfsLockManager = CoreSpringFactory.getImpl(VFSLockManager.class);
 	}
 
 	public Controller execute(FolderComponent folderComponent, UserRequest ureq, WindowControl wControl, Translator translator) {
@@ -123,10 +123,7 @@ public class CmdViewRevisions extends BasicController implements FolderCommand {
 	// nothing to do here
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == revisionListCtr) {
 			if (event == Event.DONE_EVENT) {

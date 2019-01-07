@@ -34,8 +34,6 @@ import org.apache.velocity.context.Context;
 import org.olat.admin.quota.QuotaConstants;
 import org.olat.core.commons.modules.bc.FolderEvent;
 import org.olat.core.commons.modules.bc.FolderRunController;
-import org.olat.core.commons.modules.bc.vfs.OlatNamedContainerImpl;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -68,8 +66,11 @@ import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailNotificationEditController;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
+import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.callbacks.FullAccessWithQuotaCallback;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.course.ICourse;
@@ -283,11 +284,11 @@ public class TACourseNodeEditController extends ActivateableTabbableDefaultContr
 			// check if there are already assigned tasks
 			CoursePropertyManager cpm = PersistingCoursePropertyManager.getInstance(course);
 			List<Property> assignedProps = cpm.listCourseNodeProperties(node, null, null, TaskController.PROP_ASSIGNED);
-			if (assignedProps.size() == 0) {
+			if (assignedProps.isEmpty()) {
 				// no task assigned
 				String relPath = TACourseNode.getTaskFolderPathRelToFolderRoot(course, node);
-				OlatRootFolderImpl rootFolder = new OlatRootFolderImpl(relPath, null);
-				OlatNamedContainerImpl namedFolder = new OlatNamedContainerImpl(translate("taskfolder"), rootFolder);
+				VFSContainer rootFolder = VFSManager.olatRootContainer(relPath, null);
+				VFSContainer namedFolder = new NamedContainerImpl(translate("taskfolder"), rootFolder);
 				namedFolder.setLocalSecurityCallback(getTaskFolderSecCallback(relPath));
 				frc = new FolderRunController(namedFolder, false, ureq, getWindowControl());
 				//listenTo(frc);
@@ -302,7 +303,7 @@ public class TACourseNodeEditController extends ActivateableTabbableDefaultContr
 			}
 		} else if (source == vfButton) {
 			// switch to new dialog
-			OlatNamedContainerImpl namedContainer = TACourseNode.getNodeFolderContainer(node, course.getCourseEnvironment());
+			VFSContainer namedContainer = TACourseNode.getNodeFolderContainer(node, course.getCourseEnvironment());
 			Quota quota = quotaManager.getCustomQuota(namedContainer.getRelPath());
 			if (quota == null) {
 				Quota defQuota = quotaManager.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_NODES);
@@ -316,7 +317,7 @@ public class TACourseNodeEditController extends ActivateableTabbableDefaultContr
 			cmc.activate();
 		} else if (source == editScoringConfigButton){
 			scoringController.setDisplayOnly(false);
-			editScoring.contextPut("isOverwriting", new Boolean(true));
+			editScoring.contextPut("isOverwriting", Boolean.valueOf(true));
 		} 
 	}
 
@@ -401,8 +402,8 @@ public class TACourseNodeEditController extends ActivateableTabbableDefaultContr
 			if (DialogBoxUIFactory.isOkEvent(event)) {
 				// ok: open task folder
 				String relPath = TACourseNode.getTaskFolderPathRelToFolderRoot(course, node);
-				OlatRootFolderImpl rootFolder = new OlatRootFolderImpl(relPath, null);
-				OlatNamedContainerImpl namedFolder = new OlatNamedContainerImpl(translate("taskfolder"), rootFolder);
+				VFSContainer rootFolder = VFSManager.olatRootContainer(relPath, null);
+				VFSContainer namedFolder = new NamedContainerImpl(translate("taskfolder"), rootFolder);
 				namedFolder.setLocalSecurityCallback(getTaskFolderSecCallback(relPath));
 				frc = new FolderRunController(namedFolder, false, urequest, getWindowControl());
 				listenTo(frc);

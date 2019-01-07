@@ -40,11 +40,9 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.olat.core.commons.modules.bc.commands.FolderCommandStatus;
-import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.commons.modules.bc.meta.MetaInfoFormController;
 import org.olat.core.commons.modules.bc.version.RevisionListController;
 import org.olat.core.commons.modules.bc.version.VersionCommentController;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFileImpl;
 import org.olat.core.commons.services.image.ImageService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -81,6 +79,7 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSLockManager;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.vfs.meta.MetaInfo;
 import org.olat.core.util.vfs.version.Versionable;
 import org.olat.core.util.vfs.version.Versions;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -519,10 +518,7 @@ public class FileUploadController extends FormBasicController {
 	}
 	
 	private int getMaxNumOfRevisionsOfExistingVFSItem() {
-		String relPath = null;
-		if(existingVFSItem instanceof OlatRootFileImpl) {
-			relPath = ((OlatRootFileImpl)existingVFSItem).getRelPath();
-		}
+		String relPath = existingVFSItem.getRelPath();
 		return FolderConfig.versionsAllowed(relPath);
 	}
 	

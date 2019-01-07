@@ -40,7 +40,6 @@ import java.util.Locale;
 import java.util.UUID;
 
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
@@ -76,6 +75,7 @@ import org.olat.core.util.resource.OLATResourceableJustBeforeDeletedEvent;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.CorruptedCourseException;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
@@ -538,7 +538,7 @@ public class CourseHandler implements RepositoryHandler {
 	public VFSContainer getMediaContainer(RepositoryEntry repoEntry) {
 		OLATResource resource = repoEntry.getOlatResource();
 		String relPath = File.separator + PersistingCourseImpl.COURSE_ROOT_DIR_NAME + File.separator + resource.getResourceableId();
-		VFSContainer rootFolder = new OlatRootFolderImpl(relPath, null);
+		VFSContainer rootFolder = VFSManager.olatRootContainer(relPath, null);
 		VFSItem item = rootFolder.resolve("media");
 		VFSContainer mediaContainer;
 		if(item == null) {

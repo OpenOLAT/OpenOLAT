@@ -40,14 +40,14 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.modules.bc.meta.MetaInfo;
-import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.id.Identity;
+import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.filters.SystemItemFilter;
+import org.olat.core.util.vfs.meta.MetaInfo;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -115,7 +115,7 @@ public class VersionManagerTest extends OlatTestCase {
 	@Test
 	public void testVersionManager() throws IOException {
 		//create a file
-		OlatRootFolderImpl rootTest = new OlatRootFolderImpl("/test", null);
+		VFSContainer rootTest = VFSManager.olatRootContainer("/test", null);
 		String filename = getRandomName();
 		VFSLeaf file = rootTest.createChildLeaf(filename);
 		OutputStream out = file.getOutputStream(false);
@@ -172,7 +172,7 @@ public class VersionManagerTest extends OlatTestCase {
 		waitForCondition(new SetMaxNumberOfVersions(versioningConfigurator, 3l), 2000);
 		
 		//create a file
-		OlatRootFolderImpl rootTest = new OlatRootFolderImpl("/test_" + UUID.randomUUID(), null);
+		VFSContainer rootTest = VFSManager.olatRootContainer("/test_" + UUID.randomUUID(), null);
 		String filename = getRandomName();
 		VFSLeaf file = rootTest.createChildLeaf(filename);
 		OutputStream out = file.getOutputStream(false);
@@ -209,7 +209,7 @@ public class VersionManagerTest extends OlatTestCase {
 		waitForCondition(new SetMaxNumberOfVersions(versioningConfigurator,  0l), 2000);
 		
 		//create a file
-		OlatRootFolderImpl rootTest = new OlatRootFolderImpl("/test_" + UUID.randomUUID(), null);
+		VFSContainer rootTest = VFSManager.olatRootContainer("/test_" + UUID.randomUUID(), null);
 		String filename = getRandomName();
 		VFSLeaf file = rootTest.createChildLeaf(filename);
 		OutputStream out = file.getOutputStream(false);
@@ -236,7 +236,7 @@ public class VersionManagerTest extends OlatTestCase {
 	
 	@Test
 	public void testVersionChecksum() throws IOException {
-		OlatRootFolderImpl rootTest = new OlatRootFolderImpl("/ver-" + UUID.randomUUID(), null);
+		VFSContainer rootTest = VFSManager.olatRootContainer("/ver-" + UUID.randomUUID(), null);
 		String filename = getRandomName();
 		VFSLeaf file = rootTest.createChildLeaf(filename);
 		OutputStream out = file.getOutputStream(false);
@@ -288,7 +288,7 @@ public class VersionManagerTest extends OlatTestCase {
 	 */
 	@Test
 	public void testDeleteRevisions_withSameFile() throws IOException {
-		OlatRootFolderImpl rootTest = new OlatRootFolderImpl("/ver-" + UUID.randomUUID(), null);
+		VFSContainer rootTest = VFSManager.olatRootContainer("/ver-" + UUID.randomUUID(), null);
 		String filename = getRandomName();
 		VFSLeaf file = rootTest.createChildLeaf(filename);
 		OutputStream out = file.getOutputStream(false);
@@ -352,7 +352,7 @@ public class VersionManagerTest extends OlatTestCase {
 	 */
 	@Test
 	public void testDeleteRevisions_withMissingRevisionFile() throws IOException {
-		OlatRootFolderImpl rootTest = new OlatRootFolderImpl("/ver-" + UUID.randomUUID(), null);
+		VFSContainer rootTest = VFSManager.olatRootContainer("/ver-" + UUID.randomUUID(), null);
 		String filename = getRandomName();
 		VFSLeaf file = rootTest.createChildLeaf(filename);
 		OutputStream out = file.getOutputStream(false);
@@ -421,7 +421,7 @@ public class VersionManagerTest extends OlatTestCase {
 	@Test
 	public void testAuthorsAndCreators() throws IOException {
 		//create a file
-		OlatRootFolderImpl rootTest = new OlatRootFolderImpl("/test2", null);
+		VFSContainer rootTest = VFSManager.olatRootContainer("/test2", null);
 		String filename = getRandomName();
 		VFSLeaf file = rootTest.createChildLeaf(filename);
 		OutputStream out = file.getOutputStream(false);
@@ -430,11 +430,10 @@ public class VersionManagerTest extends OlatTestCase {
 		in.close();
 		assertFalse(byteCopied == 0);
 		assertTrue(file instanceof Versionable);
-		assertTrue(file instanceof MetaTagged);
+		assertEquals(VFSConstants.YES, file.canMeta());
 		
 		//set the author
-		MetaTagged metaTagged = (MetaTagged)file;
-		MetaInfo metaInfo = metaTagged.getMetaInfo();
+		MetaInfo metaInfo = file.getMetaInfo();
 		metaInfo.setAuthor(id1);
 		metaInfo.setCreator(id1.getName());
 		metaInfo.write();
@@ -456,17 +455,16 @@ public class VersionManagerTest extends OlatTestCase {
 		InputStream in3 = new ByteArrayInputStream("Hello version 3".getBytes());
 		versionedFile3.getVersions().addVersion(id2, "Version 3", in3);
 		in3.close();
-		
-		
+
 		//make the checks
 		VFSItem retrievedFile = rootTest.resolve(filename);
 		assertTrue(retrievedFile instanceof Versionable);
+		assertTrue(retrievedFile instanceof VFSLeaf);
 		Versions versions = versionsManager.createVersionsFor((VFSLeaf)retrievedFile);	
 		List<VFSRevision> revisions = versions.getRevisions();
 		assertNotNull(revisions);
 		assertEquals(3, revisions.size());
-		assertTrue(retrievedFile instanceof MetaTagged);
-		
+		assertEquals(VFSConstants.YES, retrievedFile.canMeta());
 		
 		VFSRevision revision0 = revisions.get(0);
 		//we don't set an author for the original file
@@ -482,7 +480,7 @@ public class VersionManagerTest extends OlatTestCase {
 	@Test
 	public void testMove() throws IOException {
 		//create a file
-		OlatRootFolderImpl rootTest = new OlatRootFolderImpl("/test2", null);
+		VFSContainer rootTest = VFSManager.olatRootContainer("/test2", null);
 		String filename = getRandomName();
 		VFSLeaf file = rootTest.createChildLeaf(filename);
 		OutputStream out = file.getOutputStream(false);
@@ -491,11 +489,10 @@ public class VersionManagerTest extends OlatTestCase {
 		in.close();
 		assertFalse(byteCopied == 0);
 		assertTrue(file instanceof Versionable);
-		assertTrue(file instanceof MetaTagged);
+		assertEquals(VFSConstants.YES, file.canMeta());
 		
 		//set the author
-		MetaTagged metaTagged = (MetaTagged)file;
-		MetaInfo metaInfo = metaTagged.getMetaInfo();
+		MetaInfo metaInfo = file.getMetaInfo();
 		metaInfo.setAuthor(id1);
 		metaInfo.setCreator(id1.getName());
 		metaInfo.write();
@@ -550,7 +547,7 @@ public class VersionManagerTest extends OlatTestCase {
 	@Test
 	public void testCircleMove() throws IOException {
 		//create a file A
-		OlatRootFolderImpl rootTest = new OlatRootFolderImpl("/test2", null);
+		VFSContainer rootTest = VFSManager.olatRootContainer("/test2", null);
 		String filename = getRandomName();
 		VFSLeaf file = rootTest.createChildLeaf(filename);
 		OutputStream out = file.getOutputStream(false);
@@ -559,11 +556,10 @@ public class VersionManagerTest extends OlatTestCase {
 		in.close();
 		assertFalse(byteCopied == 0);
 		assertTrue(file instanceof Versionable);
-		assertTrue(file instanceof MetaTagged);
+		assertEquals(VFSConstants.YES, file.canMeta());
 		
 		//set the author
-		MetaTagged metaTagged = (MetaTagged)file;
-		MetaInfo metaInfo = metaTagged.getMetaInfo();
+		MetaInfo metaInfo = file.getMetaInfo();
 		metaInfo.setAuthor(id1);
 		metaInfo.setCreator(id1.getName());
 		metaInfo.write();

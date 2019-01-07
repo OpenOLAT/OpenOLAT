@@ -45,13 +45,13 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.commons.io.IOUtils;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.ICourse;
 import org.olat.course.condition.interpreter.ConditionExpression;
 import org.olat.course.editor.NodeEditController;
@@ -1378,7 +1378,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 			reader = new MultipartReader(request);
 			String filename = reader.getValue("filename", "task");
 			String taskFolderPath = TACourseNode.getTaskFolderPathRelToFolderRoot(course, node);
-			OlatRootFolderImpl taskFolder = new OlatRootFolderImpl(taskFolderPath, null);
+			VFSContainer taskFolder = VFSManager.olatRootContainer(taskFolderPath, null);
 			VFSLeaf singleFile = (VFSLeaf) taskFolder.resolve("/" + filename);
 			if (singleFile == null) {
 				singleFile = taskFolder.createChildLeaf("/" + filename);

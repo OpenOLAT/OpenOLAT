@@ -29,10 +29,8 @@ import org.olat.core.commons.controllers.linkchooser.URLChoosenEvent;
 import org.olat.core.commons.modules.bc.commands.FolderCommand;
 import org.olat.core.commons.modules.bc.commands.FolderCommandStatus;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
-import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.commons.modules.bc.version.RevisionListController;
 import org.olat.core.commons.modules.bc.version.VersionCommentController;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFileImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -54,13 +52,11 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSLockManager;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.vfs.meta.MetaInfo;
 import org.olat.core.util.vfs.version.Versionable;
 import org.olat.core.util.vfs.version.Versions;
 
 /**
- * 
- * Description:<br>
- * TODO: srosse Class Description for FileCopyController
  * 
  * <P>
  * Initial Date:  18 mars 2011 <br>
@@ -136,10 +132,7 @@ public class FileCopyController extends LinkChooserController {
 				if (buttonClickedEvent.getPosition() == 0) { //ok
 					if (existingVFSItem instanceof Versionable && ((Versionable)existingVFSItem).getVersions().isVersioned()) {
 						//new version
-						String relPath = null;
-						if(existingVFSItem instanceof OlatRootFileImpl) {
-							relPath = ((OlatRootFileImpl)existingVFSItem).getRelPath();
-						}
+						String relPath = existingVFSItem.getRelPath();
 						int maxNumOfRevisions = FolderConfig.versionsAllowed(relPath);
 						if(maxNumOfRevisions == 0) {
 							//someone play with the configuration
@@ -153,7 +146,7 @@ public class FileCopyController extends LinkChooserController {
 							
 							removeAsListenerAndDispose(commentVersionCtr);
 							
-							boolean locked = vfsLockManager.isLocked(existingVFSItem);
+							boolean locked = vfsLockManager.isLocked(existingVFSItem, null);
 							commentVersionCtr = new VersionCommentController(ureq,getWindowControl(), locked, true);
 							listenTo(commentVersionCtr);
 							
@@ -165,7 +158,7 @@ public class FileCopyController extends LinkChooserController {
 						}
 					} else {
 						//if the file is locked, ask for unlocking it
-						if(vfsLockManager.isLocked(existingVFSItem)) {
+						if(vfsLockManager.isLocked(existingVFSItem, null)) {
 							
 							removeAsListenerAndDispose(unlockCtr);
 							unlockCtr = new VersionCommentController(ureq,getWindowControl(), true, false);
@@ -328,10 +321,7 @@ public class FileCopyController extends LinkChooserController {
 		} else if (existingVFSItem instanceof Versionable && ((Versionable)existingVFSItem).getVersions().isVersioned()) {
 			Versionable versionable = (Versionable)existingVFSItem;
 			Versions versions = versionable.getVersions();
-			String relPath = null;
-			if(existingVFSItem instanceof OlatRootFileImpl) {
-				relPath = ((OlatRootFileImpl)existingVFSItem).getRelPath();
-			}
+			String relPath = existingVFSItem.getRelPath();
 			int maxNumOfRevisions = FolderConfig.versionsAllowed(relPath);
 			if(maxNumOfRevisions == 0) {
 				//it's possible if someone change the configuration

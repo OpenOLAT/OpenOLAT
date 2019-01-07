@@ -42,7 +42,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.apache.commons.codec.binary.Base64;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
@@ -58,9 +57,11 @@ import org.olat.core.util.PathUtils;
 import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.filters.VFSItemSuffixFilter;
 import org.olat.core.util.vfs.filters.VFSLeafFilter;
 import org.olat.course.CourseModule;
@@ -707,14 +708,14 @@ public class WikiManager {
 	 * @param ores
 	 * @return
 	 */
-	public OlatRootFolderImpl getWikiRootContainer(OLATResourceable ores) {
+	public LocalFolderImpl getWikiRootContainer(OLATResourceable ores) {
 		// Check if Resource is a BusinessGroup, because BusinessGroup-wiki's are stored at a different place
 		if(log.isDebug()){
 			log.debug("calculating wiki root container with ores id: "+ores.getResourceableId()+" and resourcable type name: "+ores.getResourceableTypeName(), null);
 		}
 		if (isGroupContextWiki(ores)) {
 			// Group Wiki
-			return new OlatRootFolderImpl(getGroupWikiRelPath(ores), null);
+			return VFSManager.olatRootContainer(getGroupWikiRelPath(ores), null);
 		} else {
 			// Repository Wiki
 			return getFileResourceManager().getFileResourceRootImpl(ores);
@@ -735,14 +736,14 @@ public class WikiManager {
 	 * @param ores 
 	 * @return
 	 */
-	public OlatRootFolderImpl getMediaFolder(OLATResourceable ores) {
+	public LocalFolderImpl getMediaFolder(OLATResourceable ores) {
 		// Check if Resource is a BusinessGroup, because BusinessGroup-wiki's are stored at a different place
 		if (isGroupContextWiki(ores)) {
 			// Group Wiki
-			return new OlatRootFolderImpl(getGroupWikiRelPath(ores) + "/" + WikiContainer.MEDIA_FOLDER_NAME, null);
+			return VFSManager.olatRootContainer(getGroupWikiRelPath(ores) + "/" + WikiContainer.MEDIA_FOLDER_NAME, null);
 		} else {
 			// Repository Wiki	
-		  return new OlatRootFolderImpl("/repository/" + ores.getResourceableId() + "/" + WikiContainer.MEDIA_FOLDER_NAME,	null);
+			return VFSManager.olatRootContainer("/repository/" + ores.getResourceableId() + "/" + WikiContainer.MEDIA_FOLDER_NAME,	null);
 		}
 	}
 	

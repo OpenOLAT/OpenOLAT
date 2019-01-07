@@ -31,13 +31,13 @@ import java.util.UUID;
 import javax.annotation.PostConstruct;
 
 import org.olat.core.commons.modules.bc.FolderConfig;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFileImpl;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
 import org.springframework.stereotype.Service;
 
 /**
@@ -109,7 +109,7 @@ class EvaluationFormStorage {
 	}
 	
 	VFSLeaf resolve(Path relativePath) {
-		return new OlatRootFileImpl("/" + relativePath.toString(), null);
+		return VFSManager.olatRootLeaf("/" + relativePath.toString());
 	}
 
 	void copyTo(Path relativePath, File targetDir) {

@@ -28,7 +28,7 @@ package org.olat.core.commons.modules.bc;
 
 import java.util.Date;
 
-import org.olat.core.commons.modules.bc.meta.MetaInfo;
+import org.olat.core.util.vfs.meta.MetaInfo;
 
 /**
  * Initial Date:  11.02.2005 <br>

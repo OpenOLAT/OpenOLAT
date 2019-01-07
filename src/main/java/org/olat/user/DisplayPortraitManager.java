@@ -35,7 +35,6 @@ import java.util.Locale;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.services.image.ImageService;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.gui.media.FileMediaResource;
@@ -47,10 +46,12 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.io.SystemFilenameFilter;
+import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.user.manager.ManifestBuilder;
 
 /**
@@ -359,8 +360,8 @@ public class DisplayPortraitManager implements UserDataDeletable, UserDataExport
 		return portraitDir;
 	}
 	
-	public OlatRootFolderImpl getPortraitFolder(String identityName) {
-		OlatRootFolderImpl folder = new OlatRootFolderImpl(FolderConfig.getUserHomePage(identityName) + "/portrait", null); 
+	public LocalFolderImpl getPortraitFolder(String identityName) {
+		LocalFolderImpl folder = VFSManager.olatRootContainer(FolderConfig.getUserHomePage(identityName) + "/portrait", null); 
 		if(!folder.exists()) {
 			folder.getBasefile().mkdirs();
 		}

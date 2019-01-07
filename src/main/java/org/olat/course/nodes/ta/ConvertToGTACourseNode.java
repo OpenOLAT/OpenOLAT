@@ -29,8 +29,6 @@ import java.util.Map;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
-import org.olat.core.commons.modules.bc.meta.MetaInfo;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
@@ -42,6 +40,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.vfs.meta.MetaInfo;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentManager;
@@ -128,7 +127,7 @@ public class ConvertToGTACourseNode {
 	
 	private void convertTasks(TaskList taskList, TACourseNode sourceNode, GTACourseNode gtaNode, ICourse course) {
 		File taskFolder = new File(FolderConfig.getCanonicalRoot(), TACourseNode.getTaskFolderPathRelToFolderRoot(course, sourceNode));
-		OlatRootFolderImpl taskContainer = new OlatRootFolderImpl(TACourseNode.getTaskFolderPathRelToFolderRoot(course, sourceNode), null);
+		VFSContainer taskContainer = VFSManager.olatRootContainer(TACourseNode.getTaskFolderPathRelToFolderRoot(course, sourceNode), null);
 		
 		CourseEnvironment courseEnv = course.getCourseEnvironment();
 		File gtaskDirectory = gtaManager.getTasksDirectory(courseEnv, gtaNode);
@@ -163,7 +162,7 @@ public class ConvertToGTACourseNode {
 	
 	private void convertDropbox(TaskList taskList, TACourseNode sourceNode, GTACourseNode gtaNode, CourseEnvironment courseEnv) {
 		String dropbox = DropboxController.getDropboxPathRelToFolderRoot(courseEnv, sourceNode);
-		OlatRootFolderImpl dropboxContainer = new OlatRootFolderImpl(dropbox, null);
+		VFSContainer dropboxContainer = VFSManager.olatRootContainer(dropbox, null);
 		for(VFSItem userDropbox:dropboxContainer.getItems()) {
 			if(userDropbox instanceof VFSContainer) {
 				VFSContainer userDropContainer = (VFSContainer)userDropbox;
@@ -192,7 +191,7 @@ public class ConvertToGTACourseNode {
 	
 	private void convertReturnbox(TaskList taskList, TACourseNode sourceNode, GTACourseNode gtaNode, CourseEnvironment courseEnv) {
 		String returnbox = ReturnboxController.getReturnboxPathRelToFolderRoot(courseEnv, sourceNode);
-		OlatRootFolderImpl returnContainer = new OlatRootFolderImpl(returnbox, null);
+		VFSContainer returnContainer = VFSManager.olatRootContainer(returnbox, null);
 		for(VFSItem item:returnContainer.getItems()) {
 			if(item instanceof VFSContainer) {
 				VFSContainer userContainer = (VFSContainer)item;
@@ -287,7 +286,7 @@ public class ConvertToGTACourseNode {
 	private void copySolutions(TACourseNode sourceNode, GTACourseNode gtaNode, CourseEnvironment courseEnv) {
 		ModuleConfiguration gtaConfig = gtaNode.getModuleConfiguration();
 		String solutionPath = SolutionController.getSolutionPathRelToFolderRoot(courseEnv, sourceNode);
-		OlatRootFolderImpl solutionContainer = new OlatRootFolderImpl(solutionPath, null);
+		VFSContainer solutionContainer = VFSManager.olatRootContainer(solutionPath, null);
 		VFSContainer solutionDirectory = gtaManager.getSolutionsContainer(courseEnv, gtaNode);
 		SolutionList solutionList = new SolutionList();
 		

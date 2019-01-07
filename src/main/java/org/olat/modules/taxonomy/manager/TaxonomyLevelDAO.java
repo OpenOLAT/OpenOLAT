@@ -31,11 +31,11 @@ import javax.persistence.LockModeType;
 import javax.persistence.TypedQuery;
 
 import org.olat.core.commons.modules.bc.FolderConfig;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelManagedFlag;
@@ -438,7 +438,7 @@ public class TaxonomyLevelDAO implements InitializingBean {
 			path = "/" + path;
 		}
 		path = "/" + TaxonomyService.DIRECTORY + path;
-		return new OlatRootFolderImpl(path, null);
+		return VFSManager.olatRootContainer(path, null);
 	}
 	
 	public String createLevelStorage(Taxonomy taxonomy, TaxonomyLevel level) {
@@ -447,8 +447,7 @@ public class TaxonomyLevelDAO implements InitializingBean {
 		storage.mkdirs();
 		
 		Path relativePath = rootDirectory.toPath().relativize(storage.toPath());
-		String relativePathString = relativePath.toString();
-		return relativePathString;
+		return relativePath.toString();
 	}
 	
 	private static class PathMaterializedPathLengthComparator implements Comparator<TaxonomyLevel> {

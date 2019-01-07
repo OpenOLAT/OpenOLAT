@@ -37,7 +37,6 @@ import java.util.StringTokenizer;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.basesecurity.manager.SecurityGroupDAO;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -52,6 +51,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.ProjectBrokerCourseNode;
 import org.olat.course.nodes.projectbroker.ProjectBrokerDropboxController;
@@ -448,7 +448,7 @@ public class ProjectBrokerManagerImpl implements ProjectBrokerManager {
 	@Override
 	public void saveAttachedFile(Project project, String fileName, VFSLeaf uploadedItem, CourseEnvironment courseEnv, CourseNode cNode) {
 		log.debug("saveAttachedFile file-name=" + uploadedItem.getName());
-		OlatRootFolderImpl uploadVFSContainer = new OlatRootFolderImpl(getAttamchmentRelativeRootPath(project,courseEnv,cNode), null);
+		VFSContainer uploadVFSContainer = VFSManager.olatRootContainer(getAttamchmentRelativeRootPath(project,courseEnv,cNode), null);
 		log.debug("saveAttachedFile uploadVFSContainer.relPath=" + uploadVFSContainer.getRelPath());
 		// only one attachment, delete other file 
 		for (Iterator<VFSItem> iterator = uploadVFSContainer.getItems().iterator(); iterator.hasNext();) {
@@ -499,19 +499,19 @@ public class ProjectBrokerManagerImpl implements ProjectBrokerManager {
 	}
 
 	private void deleteAllAttachmentFilesOfProject(Project project, CourseEnvironment courseEnv, CourseNode cNode) {
-		VFSContainer attachmentDir = new OlatRootFolderImpl(getAttamchmentRelativeRootPath(project,courseEnv,cNode), null);
+		VFSContainer attachmentDir = VFSManager.olatRootContainer(getAttamchmentRelativeRootPath(project,courseEnv,cNode), null);
 		attachmentDir.delete();
 		log.debug("deleteAllAttachmentFilesOfProject path=" + attachmentDir);
 	}
 	
 	private void deleteAllDropboxFilesOfProject(Project project, CourseEnvironment courseEnv, CourseNode cNode) {
-		VFSContainer dropboxDir = new OlatRootFolderImpl(ProjectBrokerDropboxController.getDropboxBasePathForProject(project,courseEnv,cNode), null);
+		VFSContainer dropboxDir = VFSManager.olatRootContainer(ProjectBrokerDropboxController.getDropboxBasePathForProject(project,courseEnv,cNode), null);
 		dropboxDir.delete();
 		log.debug("deleteAllDropboxFilesOfProject path=" + dropboxDir);
 	}
 	
 	private void deleteAllReturnboxFilesOfProject(Project project, CourseEnvironment courseEnv, CourseNode cNode) {
-		VFSContainer returnboxDir = new OlatRootFolderImpl(ProjectBrokerReturnboxController.getReturnboxBasePathForProject(project,courseEnv,cNode), null);
+		VFSContainer returnboxDir = VFSManager.olatRootContainer(ProjectBrokerReturnboxController.getReturnboxBasePathForProject(project,courseEnv,cNode), null);
 		returnboxDir.delete();
 		log.debug("deleteAllReturnboxFilesOfProject path=" + returnboxDir);
 	}
@@ -639,7 +639,7 @@ public class ProjectBrokerManagerImpl implements ProjectBrokerManager {
 
 	@Override
 	public List<Project> getProjectsOf(Identity identity, Long projectBrokerId) {
-		List<Project> myProjects = new ArrayList<Project>();
+		List<Project> myProjects = new ArrayList<>();
 		List<Project> allProjects = getProjectListBy(projectBrokerId);
 		//TODO: for better performance should be done with sql query instead of a loop
 		for (Iterator<Project> iterator = allProjects.iterator(); iterator.hasNext();) {
@@ -658,7 +658,7 @@ public class ProjectBrokerManagerImpl implements ProjectBrokerManager {
 
 	@Override
 	public List<Project> getCoachedProjectsOf(Identity identity, Long projectBrokerId) {
-		List<Project> myProjects = new ArrayList<Project>();
+		List<Project> myProjects = new ArrayList<>();
 		List<Project> allProjects = getProjectListBy(projectBrokerId);
 		//TODO: for better performance should be done with sql query instead of a loop
 		for (Iterator<Project> iterator = allProjects.iterator(); iterator.hasNext();) {

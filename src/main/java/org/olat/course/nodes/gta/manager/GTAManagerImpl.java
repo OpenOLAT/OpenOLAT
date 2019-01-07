@@ -41,7 +41,6 @@ import org.hibernate.LazyInitializationException;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.modules.bc.FolderConfig;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.PublisherData;
@@ -513,7 +512,7 @@ public class GTAManagerImpl implements GTAManager {
 	}
 
 	private VFSContainer getContainer(CourseEnvironment courseEnv, String folderName, GTACourseNode cNode) {
-		OlatRootFolderImpl courseContainer = courseEnv.getCourseBaseContainer();
+		VFSContainer courseContainer = courseEnv.getCourseBaseContainer();
 		VFSContainer nodesContainer = VFSManager.getOrCreateContainer(courseContainer, "gtasks");
 		VFSContainer nodeContainer = VFSManager.getOrCreateContainer(nodesContainer, cNode.getIdent());
 		return VFSManager.getOrCreateContainer(nodeContainer, folderName);

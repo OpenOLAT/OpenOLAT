@@ -40,8 +40,6 @@ import java.util.zip.ZipOutputStream;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
-import org.olat.core.commons.modules.bc.vfs.OlatNamedContainerImpl;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
@@ -65,6 +63,8 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.io.ShieldOutputStream;
+import org.olat.core.util.vfs.NamedContainerImpl;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.ICourse;
@@ -837,11 +837,11 @@ public class TACourseNode extends GenericCourseNode implements PersistentAssessa
 	public boolean archiveNodeData(Locale locale, ICourse course, ArchiveOptions options, ZipOutputStream exportStream, String charset) {
 		boolean dataFound = false;
 		String dropboxPath = DropboxController.getDropboxPathRelToFolderRoot(course.getCourseEnvironment(), this);
-		OlatRootFolderImpl dropboxDir = new OlatRootFolderImpl(dropboxPath, null);
+		VFSContainer dropboxDir = VFSManager.olatRootContainer(dropboxPath, null);
 		String solutionsPath = TACourseNode.getFoldernodesPathRelToFolderBase(course.getCourseEnvironment()) + "/" + this.getIdent();
-		OlatRootFolderImpl solutionDir = new OlatRootFolderImpl(solutionsPath, null);
+		VFSContainer solutionDir = VFSManager.olatRootContainer(solutionsPath, null);
 		String returnboxPath = ReturnboxController.getReturnboxPathRelToFolderRoot(course.getCourseEnvironment(), this);
-		OlatRootFolderImpl returnboxDir = new OlatRootFolderImpl(returnboxPath, null);
+		VFSContainer returnboxDir = VFSManager.olatRootContainer(returnboxPath, null);
 		
 		Boolean hasTask = (Boolean) getModuleConfiguration().get(TACourseNode.CONF_TASK_ENABLED);
 		
@@ -894,7 +894,7 @@ public class TACourseNode extends GenericCourseNode implements PersistentAssessa
 			
 			// copy only the choosen task to user taskfolder, loop over all users
 			String taskfolderPath = TACourseNode.getTaskFolderPathRelToFolderRoot(course.getCourseEnvironment(),this);
-			OlatRootFolderImpl taskfolderDir = new OlatRootFolderImpl(taskfolderPath, null);
+			VFSContainer taskfolderDir = VFSManager.olatRootContainer(taskfolderPath, null);
 			for(Identity identity:users) {
 				// check if user already chose a task
 				String assignedTask = TaskController.getAssignedTask(identity, course.getCourseEnvironment(), this);
@@ -1050,10 +1050,10 @@ public class TACourseNode extends GenericCourseNode implements PersistentAssessa
 		return retVal;
 	}
 
-	public static OlatNamedContainerImpl getNodeFolderContainer(TACourseNode node, CourseEnvironment courseEnvironment) {
+	public static NamedContainerImpl getNodeFolderContainer(TACourseNode node, CourseEnvironment courseEnvironment) {
 		String path = getFoldernodePathRelToFolderBase(courseEnvironment, node);
-		OlatRootFolderImpl rootFolder = new OlatRootFolderImpl(path, null);
-		return new OlatNamedContainerImpl(TACourseNode.SOLUTION_FOLDER_NAME, rootFolder);
+		VFSContainer rootFolder = VFSManager.olatRootContainer(path, null);
+		return new NamedContainerImpl(TACourseNode.SOLUTION_FOLDER_NAME, rootFolder);
 	}
 
 	/**

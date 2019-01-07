@@ -32,8 +32,6 @@ import java.util.UUID;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFileImpl;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.taskexecutor.LongRunnable;
@@ -202,9 +200,9 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable, Sequ
 
 	private void cleanup() {
 		if(StringHelper.containsNonWhitespace(datas.getDataBackupFile())) {
-			OlatRootFileImpl backupFile = new OlatRootFileImpl(datas.getDataBackupFile(), null);
+			File backupFile = VFSManager.olatRootFile(datas.getDataBackupFile());
 			if(backupFile.exists()) {
-				File dir = backupFile.getBasefile().getParentFile();
+				File dir = backupFile.getParentFile();
 				if(dir != null && dir.exists()) {
 					FileUtils.deleteDirsAndFiles(dir, true, true);
 				}
@@ -321,11 +319,11 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable, Sequ
 		
 		if(hasReturnFiles) {
 			try {
-				OlatRootFileImpl returnFilesZipped = new OlatRootFileImpl(datas.getReturnFiles(), null);
+				File returnFilesZipped = VFSManager.olatRootFile(datas.getReturnFiles());
 				String tmp = FolderConfig.getCanonicalTmpDir();
 				unzipped = new File(tmp, UUID.randomUUID().toString() + File.separatorChar);
 				unzipped.mkdirs();
-				ZipUtil.unzip(returnFilesZipped.getBasefile(), unzipped);
+				ZipUtil.unzip(returnFilesZipped, unzipped);
 			} catch (Exception e) {
 				log.error("Cannot unzip the return files during bulk assessment", e);
 			}
@@ -495,7 +493,7 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable, Sequ
 			returnContainer = gtaManager.getCorrectionContainer(courseEnv, (GTACourseNode)courseNode, identity);
 		} else {
 			String returnPath = ReturnboxController.getReturnboxPathRelToFolderRoot(uce.getCourseEnvironment(), courseNode);
-			OlatRootFolderImpl rootFolder = new OlatRootFolderImpl(returnPath, null);
+			VFSContainer rootFolder = VFSManager.olatRootContainer(returnPath, null);
 			VFSItem assessedItem = rootFolder.resolve(identity.getName());
 			if(assessedItem == null) {
 				returnContainer = rootFolder.createChildContainer(identity.getName());

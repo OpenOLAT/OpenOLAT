@@ -22,8 +22,8 @@ package org.olat.core.util.vfs;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
+import org.olat.core.util.vfs.meta.MetaInfo;
 
 /**
  * <h3>Description:</h3>
@@ -119,7 +119,12 @@ public class NamedLeaf implements VFSLeaf {
 	@Override
 	public String getName() {
 		// use the name of the wrapper
-		return this.name;
+		return name;
+	}
+
+	@Override
+	public String getRelPath() {
+		return delegate.getRelPath();
 	}
 
 	@Override

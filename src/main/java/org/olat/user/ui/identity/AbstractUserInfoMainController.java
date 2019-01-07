@@ -29,8 +29,6 @@ import org.olat.commons.calendar.ui.WeeklyCalendarController;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.FolderRunController;
-import org.olat.core.commons.modules.bc.vfs.OlatNamedContainerImpl;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -39,6 +37,9 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.vfs.NamedContainerImpl;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.callbacks.ReadOnlyCallback;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.modules.co.ContactFormController;
@@ -139,8 +140,8 @@ public abstract class AbstractUserInfoMainController extends BasicController {
 		String chosenUserFolderRelPath = FolderConfig.getUserHome(chosenIdentity.getName()) + "/public";
 		
 		String fullName = userManager.getUserDisplayName(chosenIdentity);
-		OlatRootFolderImpl rootFolder = new OlatRootFolderImpl(chosenUserFolderRelPath, null);
-		OlatNamedContainerImpl namedFolder = new OlatNamedContainerImpl(fullName, rootFolder);
+		VFSContainer rootFolder = VFSManager.olatRootContainer(chosenUserFolderRelPath, null);
+		VFSContainer namedFolder = new NamedContainerImpl(fullName, rootFolder);
 		
 		//decided in plenum to have read only view in the personal visiting card, even for admin
 		VFSSecurityCallback secCallback = new ReadOnlyCallback();

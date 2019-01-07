@@ -42,8 +42,6 @@ import org.olat.commons.calendar.ui.WeeklyCalendarController;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderRunController;
-import org.olat.core.commons.modules.bc.vfs.OlatNamedContainerImpl;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
@@ -70,10 +68,12 @@ import org.olat.core.util.coordinate.SyncerExecutor;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.core.util.vfs.LocalFolderImpl;
+import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.course.CorruptedCourseException;
 import org.olat.course.CourseFactory;
@@ -391,8 +391,8 @@ public class CollaborationTools implements Serializable {
 		// do not use a global translator since in the fututre a collaborationtools
 		// may be shared among users
 		Translator trans = Util.createPackageTranslator(this.getClass(), ureq.getLocale());
-		OlatRootFolderImpl rootContainer = getSecuredFolder(businessGroup, subsContext, ureq.getIdentity(), isAdmin);
-		OlatNamedContainerImpl namedContainer = new OlatNamedContainerImpl(trans.translate("folder"), rootContainer);
+		VFSContainer rootContainer = getSecuredFolder(businessGroup, subsContext, ureq.getIdentity(), isAdmin);
+		VFSContainer namedContainer = new NamedContainerImpl(trans.translate("folder"), rootContainer);
 		return new FolderRunController(namedContainer, true, true, true, ureq, wControl);
 	}
 	
@@ -400,7 +400,7 @@ public class CollaborationTools implements Serializable {
 	 * Return the root VFS container with security callback set
 	 * @return
 	 */
-	public OlatRootFolderImpl getSecuredFolder(BusinessGroup businessGroup, SubscriptionContext subsContext,
+	public VFSContainer getSecuredFolder(BusinessGroup businessGroup, SubscriptionContext subsContext,
 			Identity identity, boolean isBusinessGroupAdmin) {
 		if(!isToolEnabled(CollaborationTools.TOOL_FOLDER)) {
 			return null;
@@ -422,7 +422,7 @@ public class CollaborationTools implements Serializable {
 
 		String relPath = getFolderRelPath();
 		VFSSecurityCallback secCallback = new CollabSecCallback(writeAccess, relPath, subsContext);
-		OlatRootFolderImpl rootContainer = new OlatRootFolderImpl(relPath, null);
+		VFSContainer rootContainer = VFSManager.olatRootContainer(relPath, null);
 		rootContainer.setLocalSecurityCallback(secCallback);
 		return rootContainer;
 	}
@@ -656,7 +656,7 @@ public class CollaborationTools implements Serializable {
 		/*
 		 * delete the folder, if existing
 		 */
-		OlatRootFolderImpl vfsContainer = new OlatRootFolderImpl(getFolderRelPath(), null);
+		VFSContainer vfsContainer = VFSManager.olatRootContainer(getFolderRelPath(), null);
 		if (vfsContainer.exists()) {
 			vfsContainer.deleteSilently();
 		}
@@ -1037,7 +1037,7 @@ public class CollaborationTools implements Serializable {
 	}
 
 	private void archiveFolder(String archiveFilePath) {
-		OlatRootFolderImpl folderContainer = new OlatRootFolderImpl(getFolderRelPath(), null);
+		LocalFolderImpl folderContainer = VFSManager.olatRootContainer(getFolderRelPath(), null);
 		File fFolderRoot = folderContainer.getBasefile();
 		if (fFolderRoot.exists()) {
 			String zipFileName = "del_folder_" + ores.getResourceableId() + ".zip";

@@ -20,10 +20,11 @@
 package org.olat.search.service.indexer.identity;
 
 import org.olat.core.commons.modules.bc.FolderConfig;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.search.service.SearchResourceContext;
 import org.olat.search.service.indexer.FolderIndexer;
 import org.olat.search.service.indexer.FolderIndexerAccess;
@@ -42,25 +43,18 @@ public class PublicFolderIndexer extends FolderIndexer {
 	public static final String TYPE = "type.identity.publicfolder";
 	public static final OLATResourceable BUSINESS_CONTROL_TYPE = OresHelper.createOLATResourceableTypeWithoutCheck("userfolder");
 
-	/**
-	 * @see org.olat.search.service.indexer.Indexer#getSupportedTypeName()
-	 */
 	@Override
 	public String getSupportedTypeName() {
 		return Identity.class.getSimpleName();
 	}
 
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#supportsDownload()
-	 */
 	@Override
 	public void doIndex(SearchResourceContext parentResourceContext, Object parentObject, OlatFullIndexer indexWriter) {
-
 		try {
 			// get public folder for user
 			Identity identity = (Identity) parentObject;
-			OlatRootFolderImpl rootContainer = new OlatRootFolderImpl(FolderConfig.getUserHome(identity.getName()) + "/public", null);
-			if (!rootContainer.getBasefile().exists()) return;
+			VFSContainer rootContainer = VFSManager.olatRootContainer(FolderConfig.getUserHome(identity.getName()) + "/public", null);
+			if (!rootContainer.exists()) return;
 			// build new resource context
 			SearchResourceContext searchResourceContext = new SearchResourceContext(parentResourceContext);
 			searchResourceContext.setParentContextName(identity.getName());
@@ -73,6 +67,5 @@ public class PublicFolderIndexer extends FolderIndexer {
 							ex);
 		}
 		if (isLogDebugEnabled()) logDebug("PublicFolder finished for user::" + parentObject.toString());
-
 	}
 }

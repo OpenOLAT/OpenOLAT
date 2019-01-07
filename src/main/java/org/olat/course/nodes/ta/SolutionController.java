@@ -26,8 +26,6 @@
 package org.olat.course.nodes.ta;
 
 import org.olat.core.commons.modules.bc.FolderRunController;
-import org.olat.core.commons.modules.bc.vfs.OlatNamedContainerImpl;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.notifications.ui.ContextualSubscriptionController;
 import org.olat.core.gui.UserRequest;
@@ -36,6 +34,9 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.vfs.NamedContainerImpl;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.callbacks.ReadOnlyCallback;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.TACourseNode;
@@ -70,8 +71,8 @@ public class SolutionController extends BasicController {
 		
 		// returnbox display
 		String solutionPath = SolutionController.getSolutionPathRelToFolderRoot(courseEnv, node);
-		OlatRootFolderImpl rootFolder = new OlatRootFolderImpl(solutionPath, null);
-		OlatNamedContainerImpl namedContainer = new OlatNamedContainerImpl("solutions", rootFolder); 
+		VFSContainer rootFolder = VFSManager.olatRootContainer(solutionPath, null);
+		VFSContainer namedContainer = new NamedContainerImpl("solutions", rootFolder); 
 		namedContainer.setLocalSecurityCallback(new ReadOnlyCallback());
 		solutionFolderRunController = new FolderRunController(namedContainer, false, ureq, wControl);
 		solutionFolderRunController.addControllerListener(this);
@@ -87,8 +88,7 @@ public class SolutionController extends BasicController {
 		}
 		putInitialPanel(myContent);
 	}
-	
-	
+
 	/**
 	 * Returnbox path relative to folder root.
 	 * @param courseEnv
@@ -99,18 +99,11 @@ public class SolutionController extends BasicController {
 		return courseEnv.getCourseBaseContainer().getRelPath() + "/" + TACourseNode.SOLUTION_FOLDER_NAME + "/" + cNode.getIdent();
 	}
 	
-	
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-
+		//
 	}
-		
-	/**
-	 * 
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
+
 	@Override
 	protected void doDispose() {
 		//

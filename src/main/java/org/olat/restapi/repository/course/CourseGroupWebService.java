@@ -42,12 +42,13 @@ import org.olat.admin.quota.QuotaConstants;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.restapi.VFSWebServiceSecurityCallback;
 import org.olat.core.util.vfs.restapi.VFSWebservice;
 import org.olat.group.BusinessGroup;
@@ -128,7 +129,7 @@ public class CourseGroupWebService {
 		}
 		SubscriptionContext subsContext = null;
 		VFSWebServiceSecurityCallback secCallback = new VFSWebServiceSecurityCallback(true, true, true, folderQuota, subsContext);
-		OlatRootFolderImpl rootContainer = new OlatRootFolderImpl(relPath, null);
+		VFSContainer rootContainer = VFSManager.olatRootContainer(relPath, null);
 		rootContainer.setLocalSecurityCallback(secCallback);
 		return new VFSWebservice(rootContainer);
 	}

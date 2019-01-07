@@ -22,8 +22,6 @@ package org.olat.portfolio.model.artefacts;
 
 import org.apache.lucene.document.Document;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.modules.bc.meta.MetaInfo;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFileImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -34,6 +32,7 @@ import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.vfs.meta.MetaInfo;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.portfolio.EPAbstractHandler;
@@ -85,7 +84,7 @@ public class FileArtefactHandler extends EPAbstractHandler<FileArtefact> {
 			}
 			artefact.setSignature(60);
 
-			String path = ((OlatRootFileImpl) fileSource).getRelPath();
+			String path = fileSource.getRelPath();
 			String[] pathElements = path.split("/");
 
 			String finalBusinessPath = null;

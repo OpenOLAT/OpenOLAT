@@ -49,6 +49,8 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSLockManager;
 import org.olat.core.util.vfs.lock.LockInfo;
+import org.olat.core.util.vfs.meta.MetaInfo;
+import org.olat.core.util.vfs.meta.MetaInfoFactory;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 

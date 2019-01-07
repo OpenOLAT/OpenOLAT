@@ -32,7 +32,6 @@ import org.olat.admin.quota.QuotaConstants;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;
@@ -54,6 +53,7 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.coordinate.SyncerCallback;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
 import org.olat.core.util.vfs.VFSConstants;
@@ -963,7 +963,7 @@ public class FeedManagerImpl extends FeedManager {
 
 	@Override
 	public Quota getQuota(OLATResourceable feed) {
-		OlatRootFolderImpl container = feedFileStorage.getResourceContainer(feed);
+		LocalFolderImpl container = feedFileStorage.getResourceContainer(feed);
 
 		Quota quota = quotaManager.getCustomQuota(container.getRelPath());
 		if (quota == null) {

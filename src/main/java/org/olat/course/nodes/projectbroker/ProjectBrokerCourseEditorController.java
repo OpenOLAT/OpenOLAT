@@ -31,8 +31,6 @@ import org.olat.admin.securitygroup.gui.IdentitiesRemoveEvent;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.modules.bc.FolderRunController;
-import org.olat.core.commons.modules.bc.vfs.OlatNamedContainerImpl;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -51,8 +49,11 @@ import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultCon
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.core.util.mail.MailTemplate;
+import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -249,10 +250,6 @@ public class ProjectBrokerCourseEditorController extends ActivateableTabbableDef
 		} 
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest urequest, Controller source, Event event) {
 		if (source == projectBrokerConditionController) {
@@ -264,8 +261,8 @@ public class ProjectBrokerCourseEditorController extends ActivateableTabbableDef
 			if (DialogBoxUIFactory.isOkEvent(event)) {
 				// ok: open task folder
 				String relPath = TACourseNode.getTaskFolderPathRelToFolderRoot(CourseFactory.loadCourse(courseId), node);
-				OlatRootFolderImpl rootFolder = new OlatRootFolderImpl(relPath, null);
-				OlatNamedContainerImpl namedFolder = new OlatNamedContainerImpl(translate("taskfolder"), rootFolder);
+				VFSContainer rootFolder = VFSManager.olatRootContainer(relPath, null);
+				VFSContainer namedFolder = new NamedContainerImpl(translate("taskfolder"), rootFolder);
 
 				Quota folderQuota = quotaManager.getCustomQuota(relPath);
 				if (folderQuota == null) {
@@ -291,8 +288,7 @@ public class ProjectBrokerCourseEditorController extends ActivateableTabbableDef
 			if (event == Event.CANCELLED_EVENT) {
 				if (hasLogEntries) {
 					scoringController.setDisplayOnly(true);}
-				editScoring.contextPut("isOverwriting", Boolean.FALSE);
-				return;				
+				editScoring.contextPut("isOverwriting", Boolean.FALSE);			
 			} else if (event == Event.DONE_EVENT){
 				scoringController.updateModuleConfiguration(config);
 				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);

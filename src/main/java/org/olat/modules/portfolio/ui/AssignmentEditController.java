@@ -28,7 +28,6 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -55,6 +54,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.core.util.vfs.filters.SystemItemFilter;
 import org.olat.modules.forms.handler.EvaluationFormResource;
@@ -552,7 +552,7 @@ public class AssignmentEditController extends FormBasicController {
 			// files got stored in an extra tempFolder, to use the same
 			// fileUploader multiple times
 			if(tempUploadFolder == null) {
-				tempUploadFolder = new OlatRootFolderImpl(File.separator + "tmp/" + CodeHelper.getGlobalForeverUniqueID() + "/", null);
+				tempUploadFolder = VFSManager.olatRootContainer(File.separator + "tmp/" + CodeHelper.getGlobalForeverUniqueID() + "/", null);
 			}
 			documentUploadEl.moveUploadFileTo(tempUploadFolder);
 			documentUploadEl.showError(false);

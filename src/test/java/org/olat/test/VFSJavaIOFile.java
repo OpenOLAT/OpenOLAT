@@ -24,15 +24,17 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Path;
 
+import org.olat.core.commons.modules.bc.FolderConfig;
+import org.olat.core.util.vfs.JavaIOItem;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.commons.modules.bc.meta.MetaInfo;
-import org.olat.core.util.vfs.JavaIOItem;
 import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
+import org.olat.core.util.vfs.meta.MetaInfo;
 
 /**
  * An implementation of the VFSLEaf for a pure java.io.File with
@@ -78,6 +80,17 @@ public class VFSJavaIOFile implements VFSLeaf, JavaIOItem {
 	@Override
 	public void setParentContainer(VFSContainer parentContainer) {
 		//
+	}
+	
+	@Override
+	public String getRelPath() {
+		Path bFile = getBasefile().toPath();
+		Path bcRoot = FolderConfig.getCanonicalRootPath();
+		if(bFile.startsWith(bcRoot)) {
+			String relPath = bcRoot.relativize(bFile).toString();
+			return "/" + relPath;
+		}
+		return null;
 	}
 
 	@Override

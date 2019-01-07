@@ -22,7 +22,7 @@
 * This file has been modified by the OpenOLAT community. Changes are licensed
 * under the Apache 2.0 license as the original file.
 */
-package org.olat.core.commons.modules.bc.meta;
+package org.olat.core.util.vfs.meta;
 
 import java.io.File;
 
@@ -38,24 +38,20 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.vfs.OlatRelPathImpl;
+import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSManager;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-
+@Service("metaInfoFactory")
 public class MetaInfoFactory {
 	
 	private static final OLog log = Tracing.createLoggerFor(MetaInfoFactory.class);
 	
+	@Autowired
 	private ThumbnailService thumbnailService;
-	
-	/**
-	 * [spring]
-	 * @param thumbnailService
-	 */
-	public void setThumbnailService(ThumbnailService thumbnailService) {
-		this.thumbnailService = thumbnailService;
-	}
 
-	public MetaInfo createMetaInfoFor(OlatRelPathImpl path) {
+	public MetaInfo createMetaInfoFor(VFSItem path) {
 		File file = getOriginFile(path);
 		return createMetaInfoFor(file);
 	}
@@ -95,7 +91,7 @@ public class MetaInfoFactory {
 		new MetaInfoFileImpl(metaFile).delete();
 	}
 	
-	protected static String getCanonicalMetaPath(OlatRelPathImpl olatRelPathImpl) {
+	protected static String getCanonicalMetaPath(VFSItem olatRelPathImpl) {
 		File f = getOriginFile(olatRelPathImpl);
 		return getCanonicalMetaPath(f, false);
 	}
@@ -118,8 +114,10 @@ public class MetaInfoFactory {
 		return canonicalMetaPath;
 	}
 	
-	private static File getOriginFile(OlatRelPathImpl olatRelPathImpl) {
-		return new File(FolderConfig.getCanonicalRoot() + olatRelPathImpl.getRelPath());
+	private static File getOriginFile(VFSItem olatRelPathImpl) {
+		String relPath = olatRelPathImpl.getRelPath();
+		if(relPath == null) return null;
+		return VFSManager.olatRootFile(relPath);
 	}
 	
 	/**

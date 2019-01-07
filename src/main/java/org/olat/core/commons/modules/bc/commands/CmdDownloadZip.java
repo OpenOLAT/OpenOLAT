@@ -29,7 +29,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.olat.core.commons.modules.bc.FileSelection;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
-import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -43,6 +42,7 @@ import org.olat.core.util.ZipUtil;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.meta.MetaInfo;
 
 /**
  * 

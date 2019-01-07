@@ -38,8 +38,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import org.apache.commons.io.IOUtils;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFileImpl;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
@@ -54,7 +52,9 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
+import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalImpl;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
@@ -77,10 +77,10 @@ public class DataStepForm extends StepFormBasicController {
 	private FileElement returnFileEl;
 	private SingleSelection delimiter;
 
-	private OlatRootFileImpl targetArchive;
+	private VFSLeaf targetArchive;
 	private BulkAssessmentDatas savedDatas;
 	private final AssessableCourseNode courseNode;
-	private OlatRootFolderImpl bulkAssessmentTmpDir;
+	private VFSContainer bulkAssessmentTmpDir;
 
 	public DataStepForm(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form rootForm) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
@@ -116,14 +116,11 @@ public class DataStepForm extends StepFormBasicController {
 
 		String dataVal = "";
 		if(savedDatas != null && StringHelper.containsNonWhitespace(savedDatas.getDataBackupFile())) {
-			OlatRootFileImpl file = new OlatRootFileImpl(savedDatas.getDataBackupFile(), null);
-			InputStream in = file.getInputStream();
-			try {
+			VFSLeaf file = VFSManager.olatRootLeaf(savedDatas.getDataBackupFile());
+			try(InputStream in = file.getInputStream()) {
 				dataVal = IOUtils.toString(in, "UTF-8");
 			} catch (IOException e) {
 				logError("", e);
-			} finally {
-				IOUtils.closeQuietly(in);
 			}
 		}
 
@@ -150,13 +147,13 @@ public class DataStepForm extends StepFormBasicController {
 		// return files only when configured
 		if(settings.isHasReturnFiles()) {
 			returnFileEl = uifactory.addFileElement(getWindowControl(), "returnfiles", "return.files", formLayout);
-			Set<String> mimes = new HashSet<String>();
+			Set<String> mimes = new HashSet<>();
 			mimes.add(WebappHelper.getMimeType("file.zip"));
 			returnFileEl.limitToMimeType(mimes, "return.mime", null);
 			if(savedDatas != null && StringHelper.containsNonWhitespace(savedDatas.getReturnFiles())) {
-				targetArchive = new OlatRootFileImpl(savedDatas.getReturnFiles(), null);
+				targetArchive = VFSManager.olatRootLeaf(savedDatas.getReturnFiles());
 				if(targetArchive.exists()) {
-					returnFileEl.setInitialFile(targetArchive.getBasefile());
+					returnFileEl.setInitialFile(((LocalFileImpl)targetArchive).getBasefile());
 				}
 			}
 		}
@@ -182,7 +179,7 @@ public class DataStepForm extends StepFormBasicController {
 		}
 
 		if(bulkAssessmentTmpDir == null) {
-			OlatRootFolderImpl bulkAssessmentDir = new OlatRootFolderImpl("/bulkassessment/", null);
+			VFSContainer bulkAssessmentDir = VFSManager.olatRootContainer("/bulkassessment/", null);
 			bulkAssessmentTmpDir = bulkAssessmentDir.createChildContainer(UUID.randomUUID().toString());
 		}
 
@@ -202,7 +199,7 @@ public class DataStepForm extends StepFormBasicController {
 		String[] lines = idata.split("\r?\n");
 		int numOfLines = lines.length;
 
-		List<String[]> rows = new ArrayList<String[]>(numOfLines);
+		List<String[]> rows = new ArrayList<>(numOfLines);
 
 		String d;
 		if (delimiter.getSelectedKey().startsWith("t")) {
@@ -226,28 +223,25 @@ public class DataStepForm extends StepFormBasicController {
 	 * @param val
 	 * @param datas
 	 */
-	private void backupInputDatas(String val, BulkAssessmentDatas datas, OlatRootFolderImpl tmpDir) {
-		OlatRootFileImpl inputFile = null;
+	private void backupInputDatas(String val, BulkAssessmentDatas datas, VFSContainer tmpDir) {
+		VFSLeaf inputFile = null;
 		if(StringHelper.containsNonWhitespace(datas.getDataBackupFile())) {
-			inputFile = new OlatRootFileImpl(datas.getDataBackupFile(), null);
+			inputFile = VFSManager.olatRootLeaf(datas.getDataBackupFile());
 		}
 		if(inputFile == null) {
 			String inputFilename = UUID.randomUUID().toString() + ".csv";
 			inputFile = tmpDir.createChildLeaf(inputFilename);
 		}
-		OutputStream out = inputFile.getOutputStream(false);
 
-		try {
+		try(OutputStream out = inputFile.getOutputStream(false)) {
 			IOUtils.write(val, out, "UTF-8");
 			datas.setDataBackupFile(inputFile.getRelPath());
 		} catch (IOException e) {
 			logError("", e);
-		} finally {
-			IOUtils.closeQuietly(out);
 		}
 	}
 
-	private void processReturnFiles(BulkAssessmentDatas datas, List<BulkAssessmentRow> rows, OlatRootFolderImpl tmpDir) {
+	private void processReturnFiles(BulkAssessmentDatas datas, List<BulkAssessmentRow> rows, VFSContainer tmpDir) {
 		File uploadedFile = returnFileEl.getUploadFile();
 		if(uploadedFile == null) {
 			File initialFile = returnFileEl.getInitialFile();

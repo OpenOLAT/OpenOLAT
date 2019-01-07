@@ -22,7 +22,6 @@ package org.olat.ims.cp.ui;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.vfs.AbstractVirtualContainer;
 import org.olat.core.util.vfs.LocalFolderImpl;
@@ -52,7 +51,7 @@ public class VFSRootCPContainer extends AbstractVirtualContainer implements VFSC
 
 	private VFSSecurityCallback secCallback;
 
-	private final List<VFSItem> roots = new ArrayList<VFSItem>();
+	private final List<VFSItem> roots = new ArrayList<>();
 	
 	public VFSRootCPContainer(String name, ContentPackage cp, VFSContainer rootContainer, Translator translator) {
 		super(name);
@@ -79,14 +78,9 @@ public class VFSRootCPContainer extends AbstractVirtualContainer implements VFSC
 	}
 	
 	private VFSContainer cloneContainer(VFSContainer container) {
-		if(container instanceof OlatRootFolderImpl) {
-			OlatRootFolderImpl folder = (OlatRootFolderImpl)container;
-			return new OlatRootFolderImpl(folder.getRelPath(), folder.getParentContainer());
-		} else if(container instanceof LocalFolderImpl) {
+		if(container instanceof LocalFolderImpl) {
 			LocalFolderImpl folder = (LocalFolderImpl)container;
-			LocalFolderImpl clone = new LocalFolderImpl(folder.getBasefile());
-			clone.setParentContainer(folder.getParentContainer());
-			return clone;
+			return new LocalFolderImpl(folder.getBasefile(), folder.getParentContainer());
 		}
 		return null;
 	}
@@ -109,6 +103,11 @@ public class VFSRootCPContainer extends AbstractVirtualContainer implements VFSC
 		return false;
 	}
 	
+	@Override
+	public String getRelPath() {
+		return rootContainer.getRelPath();
+	}
+
 	@Override
 	public VFSItem resolve(String path) {
 		// 1) try to resolve directly from root (HTML editor instance)

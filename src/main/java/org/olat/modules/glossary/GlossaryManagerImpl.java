@@ -26,7 +26,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.lucene.document.Document;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.modules.glossary.GlossaryItemManager;
 import org.olat.core.gui.media.CleanupAfterDeliveryFileMediaResource;
 import org.olat.core.gui.media.MediaResource;
@@ -39,6 +38,7 @@ import org.olat.core.util.ZipUtil;
 import org.olat.core.util.filter.Filter;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.vfs.LocalFileImpl;
+import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -88,8 +88,8 @@ public class GlossaryManagerImpl implements GlossaryManager {
 	 * @return
 	 */
 	@Override
-	public OlatRootFolderImpl getGlossaryRootFolder(OLATResourceable res) {
-		OlatRootFolderImpl resRoot = FileResourceManager.getInstance().getFileResourceRootImpl(res);
+	public LocalFolderImpl getGlossaryRootFolder(OLATResourceable res) {
+		LocalFolderImpl resRoot = FileResourceManager.getInstance().getFileResourceRootImpl(res);
 		if (resRoot == null) return null;
 		VFSItem glossaryRoot = resRoot.resolve(INTERNAL_FOLDER_NAME);
 		if (glossaryRoot == null) {
@@ -108,7 +108,7 @@ public class GlossaryManagerImpl implements GlossaryManager {
 			}
 			glossaryRoot = resRoot.resolve(INTERNAL_FOLDER_NAME);
 		}
-		return (OlatRootFolderImpl) glossaryRoot;
+		return (LocalFolderImpl) glossaryRoot;
 	}
 	
 	/**

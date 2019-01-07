@@ -51,15 +51,16 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.core.util.vfs.restapi.VFSWebServiceSecurityCallback;
 import org.olat.core.util.vfs.restapi.VFSWebservice;
@@ -565,7 +566,7 @@ public class LearningGroupWebService {
 		}
 		SubscriptionContext subsContext = null;
 		VFSSecurityCallback secCallback = new VFSWebServiceSecurityCallback(true, true, true, folderQuota, subsContext);
-		OlatRootFolderImpl rootContainer = new OlatRootFolderImpl(relPath, null);
+		LocalFolderImpl rootContainer = VFSManager.olatRootContainer(relPath, null);
 		rootContainer.setLocalSecurityCallback(secCallback);
 		return new VFSWebservice(rootContainer);
 	}

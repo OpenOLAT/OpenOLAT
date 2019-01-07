@@ -29,8 +29,9 @@ package org.olat.search.service.indexer.group;
 import java.io.IOException;
 
 import org.olat.collaboration.CollaborationManager;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.logging.AssertException;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.group.BusinessGroup;
 import org.olat.group.ui.run.BusinessGroupMainRunController;
 import org.olat.search.service.SearchResourceContext;
@@ -65,7 +66,7 @@ public class GroupFolderIndexer extends FolderIndexer{
 			throw new AssertException("businessObj must be BusinessGroup");
 		BusinessGroup businessGroup = (BusinessGroup)businessObj;
 		String path = collaborationManager.getFolderRelPath(businessGroup);
-		OlatRootFolderImpl rootContainer = new OlatRootFolderImpl(path, null);
+		VFSContainer rootContainer = VFSManager.olatRootContainer(path, null);
 		SearchResourceContext forumSearchResourceContext = new SearchResourceContext(parentResourceContext);
 		forumSearchResourceContext.setBusinessControlFor(BusinessGroupMainRunController.ORES_TOOLFOLDER);
 		forumSearchResourceContext.setDocumentType(TYPE);

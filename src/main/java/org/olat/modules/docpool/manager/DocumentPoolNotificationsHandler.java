@@ -26,7 +26,6 @@ import java.util.Locale;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.modules.bc.FileInfo;
 import org.olat.core.commons.modules.bc.FolderManager;
-import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.commons.services.notifications.NotificationHelper;
 import org.olat.core.commons.services.notifications.NotificationsHandler;
 import org.olat.core.commons.services.notifications.NotificationsManager;
@@ -48,8 +47,8 @@ import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.tree.TreeVisitor;
-import org.olat.core.util.vfs.OlatRelPathImpl;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.meta.MetaInfo;
 import org.olat.modules.docpool.DocumentPoolModule;
 import org.olat.modules.docpool.ui.DocumentPoolMainController;
 import org.olat.modules.taxonomy.Taxonomy;
@@ -144,7 +143,7 @@ public class DocumentPoolNotificationsHandler implements NotificationsHandler {
 	}
 	
 	private void createSubscriptionInfo(VFSContainer container, String prefixBusinessPath, Date compareDate, SubscriptionInfo si, Publisher p, Translator translator) {
-		List<FileInfo> fInfos = FolderManager.getFileInfos(((OlatRelPathImpl)container).getRelPath(), compareDate);
+		List<FileInfo> fInfos = FolderManager.getFileInfos(container.getRelPath(), compareDate);
 		for (FileInfo infos:fInfos) {
 			String title = infos.getRelPath();
 			

@@ -32,8 +32,6 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.FolderRunController;
-import org.olat.core.commons.modules.bc.vfs.OlatNamedContainerImpl;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -105,7 +103,7 @@ public class BCCourseNodeRunController extends BasicController implements Activa
 		VFSContainer target = null;
 		VFSSecurityCallback scallback;
 		if(courseNode.getModuleConfiguration().getBooleanSafe(BCCourseNodeEditController.CONFIG_AUTO_FOLDER)) {
-			OlatNamedContainerImpl directory = BCCourseNode.getNodeFolderContainer(courseNode, courseEnv);
+			NamedContainerImpl directory = BCCourseNode.getNodeFolderContainer(courseNode, courseEnv);
 			boolean isAdministrator = userCourseEnv.isAdmin();
 			scallback = new FolderNodeCallback(directory.getRelPath(), ne, isAdministrator, isGuestOnly, nodefolderSubContext);
 			target = directory;
@@ -173,20 +171,20 @@ public class BCCourseNodeRunController extends BasicController implements Activa
 				}
 			}
 	
-			OlatNamedContainerImpl olatNamed;
+			VFSContainer olatNamed;
 			if(!courseNode.isSharedFolder()){
 				String realPath = VFSManager.getRealPath(target);
 				String relPath = StringUtils.difference(FolderConfig.getCanonicalRoot(), realPath);
 	
-				OlatRootFolderImpl olatRel = new OlatRootFolderImpl(relPath, null);
-				olatNamed = new OlatNamedContainerImpl(target.getName(), olatRel);
+				VFSContainer olatRel = VFSManager.olatRootContainer(relPath, null);
+				olatNamed = new NamedContainerImpl(target.getName(), olatRel);
 				olatNamed.setLocalSecurityCallback(scallback);
 			}else{
 				String realPath = VFSManager.getRealPath(((NamedContainerImpl)target).getDelegate());
 				String relPath = StringUtils.difference(FolderConfig.getCanonicalRoot(), realPath);
 	
-				OlatRootFolderImpl olatRel = new OlatRootFolderImpl(relPath, null);
-				olatNamed = new OlatNamedContainerImpl(target.getName(), olatRel);
+				VFSContainer olatRel = VFSManager.olatRootContainer(relPath, null);
+				olatNamed = new NamedContainerImpl(target.getName(), olatRel);
 				olatNamed.setLocalSecurityCallback(scallback);
 			}
 	

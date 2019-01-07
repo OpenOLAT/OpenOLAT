@@ -32,7 +32,6 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.GroupRoles;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
@@ -139,7 +138,7 @@ public class PFManagerTest extends OlatTestCase {
 		
 		Path relPath = Paths.get(PFManager.FILENAME_PARTICIPANTFOLDER, pfNode.getIdent(),
 				pfManager.getIdFolderName(initialAuthor), PFManager.FILENAME_DROPBOX); 
-		OlatRootFolderImpl baseContainer = courseEnv.getCourseBaseContainer();
+		VFSContainer baseContainer = courseEnv.getCourseBaseContainer();
 		VFSContainer dropboxContainer = VFSManager.resolveOrCreateContainerFromPath(baseContainer, relPath.toString());
 		
 		//check
@@ -178,7 +177,7 @@ public class PFManagerTest extends OlatTestCase {
 		for (Identity identity : identities) {
 			Path relPath = Paths.get(PFManager.FILENAME_PARTICIPANTFOLDER, pfNode.getIdent(),
 					pfManager.getIdFolderName(identity), PFManager.FILENAME_RETURNBOX); 
-			OlatRootFolderImpl baseContainer = courseEnv.getCourseBaseContainer();
+			VFSContainer baseContainer = courseEnv.getCourseBaseContainer();
 			VFSContainer returnboxContainer = VFSManager.resolveOrCreateContainerFromPath(baseContainer, relPath.toString());
 			Assert.assertTrue("textfile3".equals(returnboxContainer.getItems().get(0).getName())); 
 		}

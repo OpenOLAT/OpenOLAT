@@ -21,7 +21,6 @@ package org.olat.modules.glossary;
 
 import java.util.Properties;
 
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.modules.glossary.GlossaryItemManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -31,6 +30,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -46,7 +46,7 @@ public class GlossaryRegisterSettingsController extends FormBasicController {
 
 	private OLATResource olatresource;
 	private MultipleSelectionElement regOnOff;
-	private OlatRootFolderImpl glossaryFolder;
+	private LocalFolderImpl glossaryFolder;
 	
 	@Autowired
 	private GlossaryManager glossaryManager;

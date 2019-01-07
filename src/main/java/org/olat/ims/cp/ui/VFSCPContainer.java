@@ -93,6 +93,11 @@ public class VFSCPContainer extends AbstractVirtualContainer implements VFSConta
 	}
 
 	@Override
+	public String getRelPath() {
+		return null;
+	}
+
+	@Override
 	public List<VFSItem> getItems() {
 		return getItems(cp, treeModel, rootNodeId);
 	}
@@ -102,7 +107,7 @@ public class VFSCPContainer extends AbstractVirtualContainer implements VFSConta
 		
 		CPManager cpMgm =CPManager.getInstance();
 
-		List<VFSItem> items = new ArrayList<VFSItem>();
+		List<VFSItem> items = new ArrayList<>();
 		for(TreeNode node:nodes) {
 			try {
 				String nid = node.getIdent();

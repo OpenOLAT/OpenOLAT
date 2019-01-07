@@ -29,7 +29,6 @@ package org.olat.core.commons.modules.bc.commands;
 
 import org.olat.core.commons.modules.bc.FolderEvent;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
-import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -43,6 +42,7 @@ import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.meta.MetaInfo;
 
 /**
  * A panel with a FolderComponent and a CreateFolderForm.

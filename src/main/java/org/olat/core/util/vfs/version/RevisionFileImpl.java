@@ -21,9 +21,9 @@ package org.olat.core.util.vfs.version;
 
 import java.io.InputStream;
 
-import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.meta.MetaInfo;
 
 /**
  * 

@@ -31,8 +31,6 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.commons.modules.bc.FolderConfig;
-import org.olat.core.commons.modules.bc.vfs.OlatNamedContainerImpl;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
@@ -46,8 +44,10 @@ import org.olat.core.id.Organisation;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.filters.SystemItemFilter;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
@@ -200,10 +200,10 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 	 * @param courseEnv
 	 * @return
 	 */
-	public static OlatNamedContainerImpl getNodeFolderContainer(BCCourseNode node, CourseEnvironment courseEnv) {
+	public static NamedContainerImpl getNodeFolderContainer(BCCourseNode node, CourseEnvironment courseEnv) {
 		String path = getFoldernodePathRelToFolderBase(courseEnv, node);
-		OlatRootFolderImpl rootFolder = new OlatRootFolderImpl(path, null);
-		return new OlatNamedContainerImpl(node.getShortTitle(), rootFolder);
+		VFSContainer rootFolder = VFSManager.olatRootContainer(path, null);
+		return new NamedContainerImpl(node.getShortTitle(), rootFolder);
 	}
 
 	@Override

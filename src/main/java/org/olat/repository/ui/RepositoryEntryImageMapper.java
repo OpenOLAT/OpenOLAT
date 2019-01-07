@@ -24,7 +24,6 @@ import java.io.File;
 import javax.servlet.http.HttpServletRequest;
 
 import org.olat.core.commons.modules.bc.FolderConfig;
-import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.util.vfs.LocalFolderImpl;
@@ -33,6 +32,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
+import org.olat.core.util.vfs.meta.MetaInfo;
 
 /**
  * 

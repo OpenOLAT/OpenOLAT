@@ -20,9 +20,9 @@
 
 package org.olat.core.gui.control.generic.folder;
 
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.gui.components.tree.GenericTreeNode;
-import org.olat.core.util.vfs.OlatRelPathImpl;
+import org.olat.core.util.vfs.LocalFolderImpl;
+import org.olat.core.util.vfs.VFSItem;
 
 /**
  * 
@@ -34,10 +34,10 @@ import org.olat.core.util.vfs.OlatRelPathImpl;
 public class OlatRootFolderTreeNode extends GenericTreeNode {
 	
 	private boolean loaded = false;
-	private final OlatRelPathImpl item;
+	private final VFSItem item;
 	private final OlatRootFolderTreeModel model; 
 	
-	public OlatRootFolderTreeNode(OlatRelPathImpl item, OlatRootFolderTreeModel model) {
+	public OlatRootFolderTreeNode(VFSItem item, OlatRootFolderTreeModel model) {
 		super();
 		this.item = item;
 		this.model = model;
@@ -46,8 +46,8 @@ public class OlatRootFolderTreeNode extends GenericTreeNode {
 	@Override
 	public int getChildCount() {
 		int count = super.getChildCount();
-		if(count == 0 && !loaded && item instanceof OlatRootFolderImpl) {
-			model.makeChildren(this, (OlatRootFolderImpl)item);
+		if(count == 0 && !loaded && item instanceof LocalFolderImpl) {
+			model.makeChildren(this, (LocalFolderImpl)item);
 			loaded = true;
 			count = super.getChildCount();
 		}

@@ -23,7 +23,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -38,6 +37,7 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaMapper;
+import org.olat.core.util.vfs.meta.MetaInfo;
 import org.olat.fileresource.ZippedDirectoryMediaResource;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormResponse;

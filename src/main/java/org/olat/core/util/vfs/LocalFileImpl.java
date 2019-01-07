@@ -35,8 +35,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -92,6 +94,17 @@ public class LocalFileImpl extends LocalImpl implements VFSLeaf, Versionable {
 	@Override
 	public long getSize() {
 		return getBasefile().length();
+	}
+
+	@Override
+	public String getRelPath() {
+		Path bFile = getBasefile().toPath();
+		Path bcRoot = FolderConfig.getCanonicalRootPath();
+		if(bFile.startsWith(bcRoot)) {
+			String relPath = bcRoot.relativize(bFile).toString();
+			return "/" + relPath;
+		}
+		return null;
 	}
 
 	@Override

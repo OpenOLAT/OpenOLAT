@@ -22,9 +22,9 @@ package org.olat.modules.glossary;
 import java.io.File;
 
 import org.apache.lucene.document.Document;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.fileresource.types.GlossaryResource;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
@@ -46,7 +46,7 @@ public interface GlossaryManager {
 	public static final String INTERNAL_FOLDER_NAME = "_glossary_";
 
 	
-	public OlatRootFolderImpl getGlossaryRootFolder(OLATResourceable res);
+	public LocalFolderImpl getGlossaryRootFolder(OLATResourceable res);
 	
 	public Document getIndexerDocument(RepositoryEntry repositoryEntry, SearchResourceContext searchResourceContext);
 	

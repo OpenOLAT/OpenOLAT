@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.commons.modules.bc.meta.tagged;
+package org.olat.core.commons.modules.bc.comparators;
 
 import java.text.Collator;
 import java.util.Comparator;

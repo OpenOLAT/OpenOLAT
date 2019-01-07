@@ -252,6 +252,7 @@ public class CourseEditorPageFragment {
 		OOGraphene.scrollTo(saveButton, browser);
 		browser.findElement(saveButton).click();
 		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogDisappears(browser);
 
 		return this;
 	}

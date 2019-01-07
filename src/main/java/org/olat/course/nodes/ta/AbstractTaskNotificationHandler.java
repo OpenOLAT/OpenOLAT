@@ -33,7 +33,6 @@ import java.util.Locale;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.commons.modules.bc.FileInfo;
 import org.olat.core.commons.modules.bc.FolderManager;
-import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.commons.services.notifications.NotificationHelper;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.Publisher;
@@ -54,6 +53,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.vfs.meta.MetaInfo;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 

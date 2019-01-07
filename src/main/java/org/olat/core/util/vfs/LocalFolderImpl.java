@@ -29,10 +29,12 @@ package org.olat.core.util.vfs;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -54,7 +56,7 @@ import org.olat.core.util.vfs.version.VersionsManager;
 public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 	private static final OLog log = Tracing.createLoggerFor(LocalFolderImpl.class);
 
-	private VFSItemFilter defaultFilter=null;
+	private VFSItemFilter defaultFilter;
 	
 	/**
 	 * @param folderfile
@@ -75,10 +77,10 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 	/**
 	 * @param folderfile
 	 */
-	protected LocalFolderImpl(File folderfile, VFSContainer parent) {
+	public LocalFolderImpl(File folderfile, VFSContainer parent) {
 		super(folderfile, parent);
 		boolean alreadyExists = folderfile.exists();
-		boolean succesfullCreated = alreadyExists ? true : folderfile.mkdirs();
+		boolean succesfullCreated = alreadyExists || folderfile.mkdirs();
 		//check against concurrent creation of the folder, mkdirs return false if the directory exists
 		if (!alreadyExists && !succesfullCreated && folderfile.exists()) {
 			succesfullCreated = true;
@@ -289,6 +291,26 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 			resolvedContainer.setDefaultItemFilter(defaultFilter);
 		}
 		return resolved;
+	}
+
+	@Override
+	public String getRelPath() {
+		Path bFile = getBasefile().toPath();
+		Path bcRoot = FolderConfig.getCanonicalRootPath();
+		
+		String relPath;
+		if(bFile.startsWith(bcRoot)) {
+			relPath = bcRoot.relativize(bFile).toString();
+			if(relPath.endsWith("/")) {
+				relPath = relPath.substring(0, relPath.length() - 1);
+			}
+			if(!relPath.startsWith("/")) {
+				relPath = "/".concat(relPath);
+			}
+		} else {
+			relPath = null;
+		}
+		return relPath;
 	}
 	
 	@Override

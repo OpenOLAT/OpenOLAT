@@ -25,7 +25,6 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -335,7 +334,7 @@ public class OLATUpgrade_12_3_0 extends OLATUpgrade {
 	public Long getFileSize(Long forumKey) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("/forum/").append(forumKey).append("/");
-		OlatRootFolderImpl forumContainer = new OlatRootFolderImpl(sb.toString(), null);
+		VFSContainer forumContainer = VFSManager.olatRootContainer(sb.toString(), null);
 		if(forumContainer.exists() && !forumContainer.getItems().isEmpty()) {
 			VFSItem vl = forumContainer.getItems().get(0);
 			if(vl instanceof VFSLeaf) {
@@ -359,7 +358,7 @@ public class OLATUpgrade_12_3_0 extends OLATUpgrade {
 		boolean allOk = true;
 		if (!uhd.getBooleanDataValue(MOVE_DOC_POOL_INFOS_PAGE)) {
 			String path = "/" + TaxonomyService.DIRECTORY + "/" + DocumentPoolModule.INFOS_PAGE_DIRECTORY;
-			VFSContainer taxonomyContainer =  new OlatRootFolderImpl(path, null);
+			VFSContainer taxonomyContainer =  VFSManager.olatRootContainer(path, null);
 			VFSContainer documentPoolContainer = documentPoolModule.getInfoPageContainer();
 			if(taxonomyContainer.exists()
 					&& documentPoolContainer.getItems(new VFSLeafButSystemFilter()).isEmpty()

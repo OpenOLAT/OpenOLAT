@@ -42,7 +42,6 @@ import org.olat.commons.info.InfoMessageFrontendManager;
 import org.olat.commons.info.InfoMessageManager;
 import org.olat.commons.info.InfoSubscriptionManager;
 import org.olat.commons.info.model.InfoMessageImpl;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -57,9 +56,11 @@ import org.olat.core.util.mail.MailContext;
 import org.olat.core.util.mail.MailContextImpl;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailerResult;
+import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupRef;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -188,8 +189,8 @@ public class InfoMessageFrontendManagerImpl implements InfoMessageFrontendManage
 		return null;
 	}
 	
-    private OlatRootFolderImpl getStoragePath() {
-    	return new OlatRootFolderImpl("/infomessages/", null);
+    private LocalFolderImpl getStoragePath() {
+    	return VFSManager.olatRootContainer("/infomessages/", null);
 	}
 
 	@Override

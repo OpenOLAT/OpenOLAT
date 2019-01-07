@@ -23,12 +23,12 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.basesecurity.IdentityRef;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.nodes.dialog.DialogElement;
 import org.olat.course.nodes.dialog.DialogElementsManager;
 import org.olat.course.nodes.dialog.model.DialogElementImpl;
@@ -143,7 +143,7 @@ public class DialogElementsManagerImpl implements DialogElementsManager {
 		StringBuilder sb = new StringBuilder();
 		sb.append("/forum/").append(forum.getKey()).append("/");
 		String pathToForumDir = sb.toString();
-		return new OlatRootFolderImpl(pathToForumDir, null);
+		return VFSManager.olatRootContainer(pathToForumDir, null);
 	}
 
 	@Override

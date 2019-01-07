@@ -28,9 +28,9 @@ package org.olat.core.util.vfs;
 
 import java.util.List;
 
-import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
+import org.olat.core.util.vfs.meta.MetaInfo;
 
 /**
  * <P>
@@ -103,6 +103,11 @@ public class NamedContainerImpl extends AbstractVirtualContainer {
 	@Override
 	public VFSStatus rename(String newname) {
 		throw new RuntimeException("unsupported");
+	}
+
+	@Override
+	public String getRelPath() {
+		return getDelegate().getRelPath();
 	}
 
 	@Override

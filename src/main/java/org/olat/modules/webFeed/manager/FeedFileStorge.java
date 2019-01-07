@@ -27,7 +27,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.services.image.ImageService;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.id.OLATResourceable;
@@ -37,6 +36,7 @@ import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.LocalFileImpl;
+import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -116,7 +116,7 @@ public class FeedFileStorge {
 	 * @param ores
 	 * @return
 	 */
-	public OlatRootFolderImpl getResourceContainer(OLATResourceable ores) {
+	public LocalFolderImpl getResourceContainer(OLATResourceable ores) {
 		return fileResourceManager.getFileResourceRootImpl(ores);
 	}
 

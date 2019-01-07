@@ -96,6 +96,11 @@ public class VirtualContainer extends AbstractVirtualContainer {
 	}
 
 	@Override
+	public String getRelPath() {
+		return null;
+	}
+
+	@Override
 	public VFSItem resolve(String path) {
 		if(path != null && path.length() > 1 && path.startsWith("/")) {
 			String childName = VFSManager.extractChild(path);

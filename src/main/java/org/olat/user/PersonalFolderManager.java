@@ -30,11 +30,11 @@ import java.util.Locale;
 
 import org.olat.core.commons.modules.bc.BriefcaseWebDAVProvider;
 import org.olat.core.commons.modules.bc.FolderConfig;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.user.manager.ManifestBuilder;
 
 /**
@@ -82,7 +82,7 @@ public class PersonalFolderManager extends BriefcaseWebDAVProvider implements Us
 	 */
 	@Override
 	public void deleteUserData(Identity identity, String newDeletedUserName) {
-		new OlatRootFolderImpl(getRootPathFor(identity), null).deleteSilently();// will delete meta and version informations
+		VFSManager.olatRootContainer(getRootPathFor(identity), null).deleteSilently();// will delete meta and version informations
 		log.audit("Personal-folder deleted for identity=" + identity.getKey());
 	}
 }

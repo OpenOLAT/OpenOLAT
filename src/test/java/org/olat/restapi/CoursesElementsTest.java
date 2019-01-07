@@ -53,9 +53,10 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.gui.components.tree.TreeNode;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.BCCourseNode;
@@ -763,7 +764,7 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		HttpResponse taskFileCode = conn.execute(taskFileMethod);
 		assertEquals(200, taskFileCode.getStatusLine().getStatusCode());
 		String taskFolderPath = TACourseNode.getTaskFolderPathRelToFolderRoot(realCourse, childNode);
-		OlatRootFolderImpl taskFolder = new OlatRootFolderImpl(taskFolderPath, null);
+		VFSContainer taskFolder = VFSManager.olatRootContainer(taskFolderPath, null);
 		VFSLeaf singleFile = (VFSLeaf) taskFolder.resolve("/" + "singlepage.html");
 		assertNotNull(singleFile);
 	}

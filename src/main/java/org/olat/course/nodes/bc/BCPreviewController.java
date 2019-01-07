@@ -26,7 +26,6 @@
 package org.olat.course.nodes.bc;
 
 import org.olat.core.commons.modules.bc.FolderRunController;
-import org.olat.core.commons.modules.bc.vfs.OlatNamedContainerImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -36,6 +35,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.Quota;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.callbacks.ReadOnlyCallback;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.course.nodes.BCCourseNode;
@@ -63,7 +63,7 @@ public class BCPreviewController extends DefaultController {
 		super(wControl);		
 		trans = Util.createPackageTranslator(BCPreviewController.class, ureq.getLocale());
 		previewVC = new VelocityContainer("bcPreviewVC", VELOCITY_ROOT + "/preview.html", trans, this);
-		OlatNamedContainerImpl namedContainer = BCCourseNode.getNodeFolderContainer(node, courseEnv);
+		VFSContainer namedContainer = BCCourseNode.getNodeFolderContainer(node, courseEnv);
 		namedContainer.setLocalSecurityCallback(new ReadOnlyCallback());
 		FolderRunController folder = new FolderRunController(namedContainer, false, ureq, getWindowControl());
 		previewVC.put("folder", folder.getInitialComponent());

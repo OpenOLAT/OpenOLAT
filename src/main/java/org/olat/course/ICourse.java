@@ -27,9 +27,9 @@ package org.olat.course;
 
 import java.io.File;
 
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.export.CourseEnvironmentMapper;
@@ -82,7 +82,7 @@ public interface ICourse extends OLATResourceable {
 	 * (E.g. "/course/123/")
 	 * @return the container to files for this course
 	 */
-	public OlatRootFolderImpl getCourseBaseContainer();
+	public LocalFolderImpl getCourseBaseContainer();
 	
 	/**
 	 * Return the container to the coursefolder of this course. (E.g.
@@ -112,7 +112,7 @@ public interface ICourse extends OLATResourceable {
 	 */
 	public VFSContainer getCourseFolderContainer(IdentityEnvironment identityEnv);
 	
-	public OlatRootFolderImpl getCourseExportDataDir();
+	public LocalFolderImpl getCourseExportDataDir();
 
 	/**
 	 * @return The course title. This is the display name of the course repository entry

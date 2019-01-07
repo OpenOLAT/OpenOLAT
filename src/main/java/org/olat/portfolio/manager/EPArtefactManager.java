@@ -35,7 +35,6 @@ import java.util.UUID;
 import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.IdentityRef;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.tagging.manager.TaggingManager;
 import org.olat.core.commons.services.tagging.model.Tag;
@@ -183,7 +182,7 @@ public class EPArtefactManager extends BasicManager {
 	}
 	
 	protected VFSContainer getArtefactsTempContainer(Identity ident){
-		VFSContainer artRoot = new OlatRootFolderImpl(File.separator + "tmp", null);
+		VFSContainer artRoot = VFSManager.olatRootContainer(File.separator + "tmp", null);
 		VFSItem tmpI = artRoot.resolve("portfolio");
 		if (tmpI == null) {
 			tmpI = artRoot.createChildContainer("portfolio");
@@ -193,16 +192,14 @@ public class EPArtefactManager extends BasicManager {
 			userTmp = ((VFSContainer) tmpI).createChildContainer(ident.getName());
 		}
 		String idFolder = UUID.randomUUID().toString();
-		VFSContainer thisTmp = ((VFSContainer) userTmp).createChildContainer(idFolder);
-		return thisTmp;
+		return ((VFSContainer) userTmp).createChildContainer(idFolder);
 	}
 
 	protected List<String> getArtefactTags(AbstractArtefact artefact) {
 		// wrap concrete artefact as abstract-artefact to get the correct resName for the tag
 		if (artefact.getKey() == null ) return null;
 		OLATResourceable artefactOres = OresHelper.createOLATResourceableInstance(AbstractArtefact.class, artefact.getKey());
-		List<String> tags = taggingManager.getTagsAsString(null, artefactOres, null, null);
-		return tags;
+		return taggingManager.getTagsAsString(null, artefactOres, null, null);
 	}
 
 	protected void setArtefactTag(Identity identity, AbstractArtefact artefact, String tag) {
@@ -216,8 +213,8 @@ public class EPArtefactManager extends BasicManager {
 		// wrap concrete artefact as abstract-artefact to get the correct resName for the tag
 		OLATResourceable artefactOres = OresHelper.createOLATResourceableInstance(AbstractArtefact.class, artefact.getKey());
 		List<Tag> oldTags = taggingManager.loadTagsForResource(artefactOres, null, null);
-		List<String> oldTagStrings = new ArrayList<String>();
-		List<String> tagsToAdd = new ArrayList<String>(tags.size());
+		List<String> oldTagStrings = new ArrayList<>();
+		List<String> tagsToAdd = new ArrayList<>(tags.size());
 		tagsToAdd.addAll(tags);
 		if (oldTags != null) { // there might be no tags yet
 			for (Tag oTag : oldTags) {
@@ -369,7 +366,7 @@ public class EPArtefactManager extends BasicManager {
 	private void filterArtefactsByTags(List<AbstractArtefact> artefacts, EPFilterSettings filterSettings, Set<String> cloud) {
 		List<String> tags = filterSettings.getTagFilter();
 		// either search for artefacts with given tags, or such with no one!
-		List<AbstractArtefact> toRemove = new ArrayList<AbstractArtefact>();
+		List<AbstractArtefact> toRemove = new ArrayList<>();
 		if (tags != null && tags.size() != 0) {
 			// TODO: epf: RH: fix needed, as long as tags with uppercase initial are
 			// allowed!
@@ -394,7 +391,7 @@ public class EPArtefactManager extends BasicManager {
 
 	private void filterArtefactsByType(List<AbstractArtefact> artefacts, List<String> type) {
 		if (type != null && type.size() != 0) {
-			List<AbstractArtefact> toRemove = new ArrayList<AbstractArtefact>();
+			List<AbstractArtefact> toRemove = new ArrayList<>();
 			for (AbstractArtefact artefact : artefacts) {
 				if (!type.contains(artefact.getResourceableTypeName())) {
 					toRemove.add(artefact);
@@ -429,7 +426,7 @@ public class EPArtefactManager extends BasicManager {
 				cal.set(Calendar.MINUTE, 59);
 				cal.set(Calendar.SECOND, 59);
 				endDate = cal.getTime();
-				List<AbstractArtefact> toRemove = new ArrayList<AbstractArtefact>();
+				List<AbstractArtefact> toRemove = new ArrayList<>();
 				for (AbstractArtefact artefact : artefacts) {
 					Date creationDate = artefact.getCreationDate();
 					if (!(creationDate.before(endDate) && creationDate.after(startDate))) {
@@ -443,7 +440,7 @@ public class EPArtefactManager extends BasicManager {
 
 	private void filterArtefactsByString(List<AbstractArtefact> artefacts, String textFilter) {
 		if (StringHelper.containsNonWhitespace(textFilter)) {
-			List<AbstractArtefact> toRemove = new ArrayList<AbstractArtefact>();
+			List<AbstractArtefact> toRemove = new ArrayList<>();
 			for (AbstractArtefact artefact : artefacts) {
 				String textCompare = artefact.getTitle() + artefact.getDescription() + artefact.getFulltextContent();
 				if (!textCompare.toLowerCase().contains(textFilter.toLowerCase())) {

@@ -21,6 +21,8 @@ package org.olat.core.commons.modules.bc.vfs;
 
 import java.util.Comparator;
 
+import org.olat.core.util.vfs.VFSLeaf;
+
 /**
  * <p>
  * Ordering OlatRootFileImpls by their download count descendingly
@@ -28,11 +30,10 @@ import java.util.Comparator;
  * Initial Date:  Sep 16, 2009 <br>
  * @author gwassmann, gwassmann@frentix.com, www.frentix.com
  */
-public class DescendingDownloadCountComparator implements Comparator<OlatRootFileImpl> {
-	/**
-	 * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
-	 */
-	public int compare(OlatRootFileImpl o1, OlatRootFileImpl o2) {
+public class DescendingDownloadCountComparator implements Comparator<VFSLeaf> {
+	
+	@Override
+	public int compare(VFSLeaf o1, VFSLeaf o2) {
 		int d1 = o1.getMetaInfo().getDownloadCount();
 		int d2 = o2.getMetaInfo().getDownloadCount();
 		return d1 > d2 ? -1 : 1;

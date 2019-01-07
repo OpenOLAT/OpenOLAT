@@ -32,7 +32,6 @@ import java.util.List;
 import java.util.Random;
 
 import org.olat.core.commons.modules.bc.FolderConfig;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -56,8 +55,10 @@ import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.TACourseNode;
@@ -450,11 +451,7 @@ public class TaskController extends BasicController {
 		return isDeselectable;
 	}
 
-		
-	/**
-	 * 
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
+	@Override
 	protected void doDispose() {
 		//
 	}
@@ -466,7 +463,7 @@ public class TaskController extends BasicController {
 	 * @param command
 	 */
 	private boolean doFileDelivery(UserRequest ureq, String taskFile) {
-		OlatRootFolderImpl forumContainer = new OlatRootFolderImpl(TACourseNode.getTaskFolderPathRelToFolderRoot(courseEnv, node), null);
+		VFSContainer forumContainer = VFSManager.olatRootContainer(TACourseNode.getTaskFolderPathRelToFolderRoot(courseEnv, node), null);
 		VFSItem item = forumContainer.resolve(taskFile);
 		if (item instanceof VFSLeaf) {
 			VFSLeaf leaf = (VFSLeaf)item;

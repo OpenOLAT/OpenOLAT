@@ -22,7 +22,6 @@ package org.olat.core.util.vfs.version;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -41,10 +40,6 @@ import java.util.zip.Checksum;
 import org.apache.commons.io.FileUtils;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
-import org.olat.core.commons.modules.bc.meta.MetaInfo;
-import org.olat.core.commons.modules.bc.meta.MetaInfoFactory;
-import org.olat.core.commons.modules.bc.meta.MetaInfoFileImpl;
-import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -57,7 +52,6 @@ import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.LocalImpl;
 import org.olat.core.util.vfs.MergeSource;
 import org.olat.core.util.vfs.NamedContainerImpl;
-import org.olat.core.util.vfs.OlatRelPathImpl;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -66,6 +60,9 @@ import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.filters.SystemItemFilter;
 import org.olat.core.util.vfs.filters.VFSItemSuffixFilter;
 import org.olat.core.util.vfs.filters.VFSLeafFilter;
+import org.olat.core.util.vfs.meta.MetaInfo;
+import org.olat.core.util.vfs.meta.MetaInfoFactory;
+import org.olat.core.util.vfs.meta.MetaInfoFileImpl;
 import org.olat.core.util.xml.XStreamHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -669,9 +666,11 @@ public class VersionsFileManager implements VersionsManager {
 		newRevision.setLastModified(lastModifiedDate);
 		newRevision.setMetadata(metaInfo);
 
-		if (versions.getRevisions().isEmpty() && currentVersion instanceof MetaTagged) {
-			MetaTagged metaTagged = (MetaTagged) currentVersion;
-			versions.setCreator(metaTagged.getMetaInfo().getAuthor());
+		if (versions.getRevisions().isEmpty() && currentVersion instanceof VFSItem) {
+			MetaInfo currentMeta = ((VFSItem)currentVersion).getMetaInfo();
+			if(currentMeta != null) {
+				versions.setCreator(currentMeta.getAuthor());
+			}
 		}
 
 		if (sameFile || VFSManager.copyContent(currentFile, versionContainer.createChildLeaf(uuid))) {
@@ -811,28 +810,13 @@ public class VersionsFileManager implements VersionsManager {
 	}
 
 	private String getRelPath(VFSItem item) {
-		String relPath = null;
 		if (item instanceof NamedContainerImpl) {
 			item = ((NamedContainerImpl)item).getDelegate();
 		}
 		if (item instanceof MergeSource) {
 			item = ((MergeSource)item).getRootWriteContainer();
 		}
-		if (item instanceof OlatRelPathImpl) {
-			relPath = ((OlatRelPathImpl) item).getRelPath();
-		} else if (item instanceof LocalImpl) {
-			LocalImpl impl = (LocalImpl) item;
-			String absolutPath = impl.getBasefile().getAbsolutePath();
-			if (absolutPath.startsWith(getCanonicalRoot())) {
-				relPath = absolutPath.substring(getCanonicalRoot().length());
-			}
-			
-			Path path = impl.getBasefile().toPath();
-			Path relativePath = getCanonicalRootFile().toPath().relativize(path);
-			String relPath2 = "/" + relativePath.toString();
-			log.debug(relPath + " :: " + relPath2);
-		}
-		return relPath;
+		return item.getRelPath();
 	}
 
 	private boolean isVersionFile(VFSItem item) {
@@ -860,9 +844,10 @@ public class VersionsFileManager implements VersionsManager {
 			LocalImpl localImpl = (LocalImpl) item;
 			return localImpl.getBasefile();
 		}
-		if (item instanceof OlatRelPathImpl) {
-			OlatRelPathImpl relPath = (OlatRelPathImpl) item;
-			return new File(getCanonicalRoot(), relPath.getRelPath());
+		
+		String relPath = item.getRelPath();
+		if (relPath != null) {
+			return VFSManager.olatRootFile(relPath);
 		}
 		return null;
 	}

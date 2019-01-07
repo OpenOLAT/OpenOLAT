@@ -38,12 +38,12 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.modules.bc.FolderConfig;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.nodes.CheckListCourseNode;
 import org.olat.course.nodes.cl.CheckboxManager;
 import org.olat.course.nodes.cl.model.AssessedIdentity;
@@ -553,7 +553,7 @@ public class CheckboxManagerImpl implements CheckboxManager {
 	@Override
 	public VFSContainer getFileContainer(CourseEnvironment courseEnv, CheckListCourseNode cNode) {
 		String path = courseEnv.getCourseBaseContainer().getRelPath() + "/" + CheckListCourseNode.FOLDER_NAME + "/" + cNode.getIdent();
-		return new OlatRootFolderImpl(path, null);
+		return VFSManager.olatRootContainer(path, null);
 	}
 
 	@Override

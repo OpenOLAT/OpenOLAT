@@ -32,7 +32,6 @@ import java.util.Locale;
 import java.util.zip.ZipOutputStream;
 
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
@@ -354,23 +353,4 @@ public class DialogCourseNode extends AbstractAccessableCourseNode {
 		preConditionReader.setConditionId("reader");
 		this.preConditionReader = preConditionReader;
 	}
-
-	/**
-	 * to save content
-	 * 
-	 * @param forumKey
-	 * @return
-	 */
-	private OlatRootFolderImpl getForumContainer(Long forumKey) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("/forum/");
-		sb.append(forumKey);
-		sb.append("/");
-		String pathToForumDir = sb.toString();
-		OlatRootFolderImpl forumContainer = new OlatRootFolderImpl(pathToForumDir, null);
-		File baseFile = forumContainer.getBasefile();
-		baseFile.mkdirs();
-		return forumContainer;
-	}
-
 }

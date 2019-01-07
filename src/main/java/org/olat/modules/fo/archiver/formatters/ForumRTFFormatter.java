@@ -41,7 +41,6 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.AssertException;
@@ -54,10 +53,10 @@ import org.olat.core.util.ZipUtil;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.vfs.LocalFileImpl;
-import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.modules.fo.archiver.MessageNode;
 import org.olat.modules.fo.manager.ForumManager;
 
@@ -428,7 +427,7 @@ public class ForumRTFFormatter extends ForumFormatter {
 	 * @return
 	 */
 	private List<String> addImagesToVFSContainer(MessageNode messageNode, VFSContainer imageContainer) {
-		List<String> fileNameList = new ArrayList<String>();
+		List<String> fileNameList = new ArrayList<>();
 		String iconPath = null;
 		if(messageNode.isClosed() && messageNode.isSticky()) {
 			iconPath = getImagePath("fo_sticky_closed");
@@ -451,7 +450,6 @@ public class ForumRTFFormatter extends ForumFormatter {
 	}
 	
 	/**
-	 * TODO: LD: to clarify whether there it a better way to get the image path?
 	 * Gets the image path.
 	 * @param val
 	 * @return the path of the static icon image.
@@ -467,10 +465,8 @@ public class ForumRTFFormatter extends ForumFormatter {
 	private VFSContainer makeTempVFSContainer() {		
 		Long forumKey = getForumKey();
 		String dateStamp = String.valueOf(System.currentTimeMillis());
-    //TODO: (LD) could this filename regarded as unique or use System.nanoTime() instead?
 		String fileName = "forum" + forumKey.toString() + "_" + dateStamp; 
-		LocalFolderImpl tempFolder =  new OlatRootFolderImpl("/tmp/" + fileName, null);
-		return tempFolder;
+		return VFSManager.olatRootContainer("/tmp/" + fileName, null);
 	}
 	
 	/**

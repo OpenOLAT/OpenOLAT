@@ -27,8 +27,6 @@ package org.olat.modules.sharedfolder;
 
 import java.io.File;
 
-import org.olat.core.commons.modules.bc.vfs.OlatNamedContainerImpl;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.webdav.servlets.RequestUtil;
 import org.olat.core.gui.media.CleanupAfterDeliveryFileMediaResource;
@@ -37,6 +35,8 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.vfs.LocalFileImpl;
+import org.olat.core.util.vfs.LocalFolderImpl;
+import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.SharedFolderFileResource;
@@ -79,12 +79,12 @@ public class SharedFolderManager {
 		if(urlCompliant) {
 			name = RequestUtil.normalizeFilename(name);
 		}
-		OlatRootFolderImpl folder = getSharedFolder(re.getOlatResource());
-		return folder == null ? null : new OlatNamedContainerImpl(name, folder);
+		VFSContainer folder = getSharedFolder(re.getOlatResource());
+		return folder == null ? null : new NamedContainerImpl(name, folder);
 	}
 
-	public OlatRootFolderImpl getSharedFolder(OLATResourceable res) {
-		OlatRootFolderImpl rootFolderImpl = (OlatRootFolderImpl)FileResourceManager.getInstance().getFileResourceRootImpl(res).resolve(SharedFolderManager.FOLDER_NAME);
+	public LocalFolderImpl getSharedFolder(OLATResourceable res) {
+		LocalFolderImpl rootFolderImpl = (LocalFolderImpl)FileResourceManager.getInstance().getFileResourceRootImpl(res).resolve(SharedFolderManager.FOLDER_NAME);
 		if (rootFolderImpl != null) {
 			rootFolderImpl.setLocalSecurityCallback(new SharedFolderSecurityCallback(rootFolderImpl.getRelPath()));
 		}

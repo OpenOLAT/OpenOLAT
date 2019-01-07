@@ -55,7 +55,6 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.modules.bc.FolderModule;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.PublisherData;
@@ -1128,7 +1127,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	}
 	
 	public VFSContainer getCertificateTemplatesRootContainer() {
-		return new OlatRootFolderImpl(File.separator + "certificates" + File.separator + "templates", null);
+		return VFSManager.olatRootContainer(File.separator + "certificates" + File.separator + "templates", null);
 	}
 	
 	public File getCertificateRoot() {
@@ -1149,7 +1148,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	}
 	
 	public VFSContainer getCertificateRootContainer() {
-		return new OlatRootFolderImpl(File.separator + "certificates" + File.separator + "users", null);
+		return VFSManager.olatRootContainer(File.separator + "certificates" + File.separator + "users", null);
 	}
 
 	@Override

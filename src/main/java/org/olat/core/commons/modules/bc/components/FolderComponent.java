@@ -38,7 +38,7 @@ import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.commons.modules.bc.FolderLoggingAction;
 import org.olat.core.commons.modules.bc.FolderRunController;
 import org.olat.core.commons.modules.bc.commands.FolderCommandFactory;
-import org.olat.core.commons.modules.bc.meta.tagged.LockComparator;
+import org.olat.core.commons.modules.bc.comparators.LockComparator;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;

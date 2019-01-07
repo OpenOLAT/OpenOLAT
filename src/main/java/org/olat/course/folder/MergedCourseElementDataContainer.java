@@ -24,7 +24,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.olat.admin.quota.QuotaConstants;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.webdav.servlets.RequestUtil;
 import org.olat.core.gui.components.tree.TreeNode;
@@ -324,7 +323,7 @@ public class MergedCourseElementDataContainer extends MergeSource {
 		if(StringHelper.containsNonWhitespace(subpath)){
 			if(bcNode.isSharedFolder()){
 				// grab any shared folder that is configured
-				OlatRootFolderImpl sharedFolder = null;
+				VFSContainer sharedFolder = null;
 				String sfSoftkey = course.getCourseConfig().getSharedFolderSoftkey();
 				if (StringHelper.containsNonWhitespace(sfSoftkey) && !CourseConfig.VALUE_EMPTY_SHAREDFOLDER_SOFTKEY.equals(sfSoftkey)) {
 					RepositoryManager rm = RepositoryManager.getInstance();
@@ -356,7 +355,7 @@ public class MergedCourseElementDataContainer extends MergeSource {
 		
 		if(bcNode.getModuleConfiguration().getBooleanSafe(BCCourseNodeEditController.CONFIG_AUTO_FOLDER)){
 			String path = BCCourseNode.getFoldernodePathRelToFolderBase(course.getCourseEnvironment(), bcNode);
-			rootFolder = new OlatRootFolderImpl(path, null);
+			rootFolder = VFSManager.olatRootContainer(path, null);
 			if(nodeEval != null) {
 				SubscriptionContext subContext = CourseModule.createSubscriptionContext(course.getCourseEnvironment(), bcNode);
 				rootFolder.setLocalSecurityCallback(new FolderNodeCallback(path, nodeEval, isOlatAdmin, false, subContext));

@@ -29,10 +29,10 @@ import java.util.UUID;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.modules.bc.FolderConfig;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.model.TaxonomyImpl;
@@ -145,7 +145,7 @@ public class TaxonomyDAO implements InitializingBean{
 			path = "/" + path;
 		}
 		path = "/" + TaxonomyService.DIRECTORY + path;
-		return new OlatRootFolderImpl(path, null);
+		return VFSManager.olatRootContainer(path, null);
 	}
 	
 	public VFSContainer getLostAndFoundDirectoryLibrary(Taxonomy taxonomy) {
@@ -154,6 +154,6 @@ public class TaxonomyDAO implements InitializingBean{
 			path = "/" + path;
 		}
 		path = "/" + TaxonomyService.DIRECTORY + path;
-		return new OlatRootFolderImpl(path, null);
+		return VFSManager.olatRootContainer(path, null);
 	}
 }

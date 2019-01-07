@@ -40,9 +40,6 @@ import org.apache.velocity.VelocityContext;
 import org.apache.velocity.context.Context;
 import org.olat.admin.quota.QuotaConstants;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.modules.bc.meta.MetaInfo;
-import org.olat.core.commons.modules.bc.vfs.OlatNamedContainerImpl;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.notifications.ui.ContextualSubscriptionController;
@@ -68,12 +65,16 @@ import org.olat.core.util.mail.MailContextImpl;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailerResult;
+import org.olat.core.util.vfs.LocalFolderImpl;
+import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.callbacks.FullAccessWithQuotaCallback;
+import org.olat.core.util.vfs.meta.MetaInfo;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
@@ -184,7 +185,7 @@ public class DropboxController extends BasicController {
 	 * @return Dropbox of an identity
 	 */
 	protected VFSContainer getDropBox(Identity identity) {
-		OlatRootFolderImpl dropBox = new OlatRootFolderImpl(getRelativeDropBoxFilePath(identity), null);
+		LocalFolderImpl dropBox = VFSManager.olatRootContainer(getRelativeDropBoxFilePath(identity), null);
 		if (!dropBox.getBasefile().exists()) dropBox.getBasefile().mkdirs();
 		return dropBox;
 	}
@@ -223,8 +224,8 @@ public class DropboxController extends BasicController {
 		if (dropboxQuota == null) {
 			dropboxQuota = quotaManager.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_NODES);
 		}
-		OlatRootFolderImpl rootFolder = new OlatRootFolderImpl( getRelativeDropBoxFilePath(getIdentity()), null);
-		VFSContainer dropboxContainer = new OlatNamedContainerImpl(getIdentity().getName(), rootFolder);
+		VFSContainer rootFolder = VFSManager.olatRootContainer(getRelativeDropBoxFilePath(getIdentity()), null);
+		VFSContainer dropboxContainer = new NamedContainerImpl(getIdentity().getName(), rootFolder);
 		FullAccessWithQuotaCallback secCallback = new FullAccessWithQuotaCallback(dropboxQuota);
 		rootFolder.setLocalSecurityCallback(secCallback);
 		return quotaManager.getUploadLimitKB(dropboxQuota.getQuotaKB(),dropboxQuota.getUlLimitKB(),dropboxContainer);

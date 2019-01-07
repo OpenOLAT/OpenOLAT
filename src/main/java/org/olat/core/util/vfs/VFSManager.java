@@ -37,8 +37,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.commons.modules.bc.FolderConfig;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFileImpl;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
@@ -47,7 +45,28 @@ import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.core.util.vfs.util.ContainerAndFile;
 
 public class VFSManager {
+	
 	private static final OLog log = Tracing.createLoggerFor(VFSManager.class);
+	
+	public static LocalFileImpl olatRootLeaf(String fileRelPath) {
+		File file = new File(FolderConfig.getCanonicalRoot() + fileRelPath);
+		return new LocalFileImpl(file, null);
+	}
+	
+	public static LocalFolderImpl olatRootContainer(String fileRelPath, VFSContainer parentContainer) {
+		File file = new File(FolderConfig.getCanonicalRoot() + fileRelPath);
+		return new LocalFolderImpl(file, parentContainer);
+	}
+	
+	public static File olatRootDirectory(String fileRelPath) {
+		File file = new File(FolderConfig.getCanonicalRoot() + fileRelPath);
+		return new LocalFolderImpl(file, null).getBasefile();
+	}
+	
+	public static File olatRootFile(String fileRelPath) {
+		File file = new File(FolderConfig.getCanonicalRoot() + fileRelPath);
+		return new LocalFileImpl(file, null).getBasefile();
+	}
 	
 	/**
 	 * Make sure we always have a path that starts with a "/".
@@ -146,25 +165,12 @@ public class VFSManager {
 			LocalFolderImpl l = (LocalFolderImpl) rootContainer;
 			File t = new File (l.getBasefile().getAbsolutePath(), childName);
 			if (t.exists()) {
-				String bcroot = FolderConfig.getCanonicalRoot();
-				String fsPath = t.getAbsolutePath();
 				if (t.isDirectory()) {
-					VFSContainer subContainer;
-					if (fsPath.startsWith(bcroot)) {
-						fsPath = fsPath.substring(bcroot.length(), fsPath.length());
-						subContainer = new OlatRootFolderImpl(fsPath, rootContainer);
-					} else {
-						subContainer = new LocalFolderImpl (t, rootContainer);
-					}
+					VFSContainer subContainer = new LocalFolderImpl (t, rootContainer);
 					String subPath = path.substring(childName.length() + 1);
 					return resolveFile(subContainer, subPath);
 				} else {
-					if (fsPath.startsWith(bcroot)) {
-						fsPath = fsPath.replace(bcroot,"");
-						return new OlatRootFileImpl(fsPath, rootContainer);
-					} else {
-						return new LocalFileImpl(t, rootContainer);
-					}
+					return new LocalFileImpl(t, rootContainer);
 				}
 			} else {
 				return null;
@@ -605,8 +611,8 @@ public class VFSManager {
 					return findWritableRootFolderForRecursion(rootDir, relFilePath, recursionLevel);
 				}
 				//very< special case for share folder in merged source
-				if(item instanceof OlatRootFolderImpl && "_sharedfolder_".equals(item.getName())) {
-					rootDir = (OlatRootFolderImpl)item;
+				if(item instanceof LocalFolderImpl && "_sharedfolder_".equals(item.getName())) {
+					rootDir = (LocalFolderImpl)item;
 					relFilePath = relFilePath.substring(stop);
 					return findWritableRootFolderForRecursion(rootDir, relFilePath, recursionLevel);
 				}

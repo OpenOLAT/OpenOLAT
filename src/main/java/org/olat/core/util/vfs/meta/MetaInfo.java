@@ -22,12 +22,12 @@
 * This file has been modified by the OpenOLAT community. Changes are licensed
 * under the Apache 2.0 license as the original file.
 */
-package org.olat.core.commons.modules.bc.meta;
+package org.olat.core.util.vfs.meta;
 
 import java.util.Date;
 
 import org.olat.core.id.Identity;
-import org.olat.core.util.vfs.OlatRelPathImpl;
+import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 
 public interface MetaInfo {
@@ -46,7 +46,7 @@ public interface MetaInfo {
 	 * @param targetDir
 	 * @param move
 	 */
-	public void moveCopyToDir(OlatRelPathImpl target, boolean move);
+	public void moveCopyToDir(VFSItem target, boolean move);
 
 	/**
 	 * Delete all associated meta info including sub files/directories

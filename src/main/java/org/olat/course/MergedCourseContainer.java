@@ -22,7 +22,6 @@ package org.olat.course;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -131,7 +130,7 @@ public class MergedCourseContainer extends MergeSource {
 					GroupRoles.owner.name())) {
 				OLATResource sharedResource = repositoryService.loadRepositoryEntryResourceBySoftKey(sfSoftkey);
 				if (sharedResource != null) {
-					OlatRootFolderImpl sharedFolder = SharedFolderManager.getInstance().getSharedFolder(sharedResource);
+					VFSContainer sharedFolder = SharedFolderManager.getInstance().getSharedFolder(sharedResource);
 					if (sharedFolder != null) {
 						if(courseConfig.isSharedFolderReadOnlyMount() || courseReadOnly) {
 							sharedFolder.setLocalSecurityCallback(new ReadOnlyCallback());

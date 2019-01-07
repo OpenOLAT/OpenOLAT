@@ -31,7 +31,6 @@ import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -51,8 +50,10 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.projectbroker.datamodel.CustomField;
@@ -271,10 +272,7 @@ public class ProjectDetailsDisplayController extends BasicController {
 		}
 	}
 
-	/**
-	 * 
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
+	@Override
 	protected void doDispose() {
 		// child controller sposed by basic controller
 		if (lock != null) {
@@ -289,7 +287,7 @@ public class ProjectDetailsDisplayController extends BasicController {
 		// very old fancy code
 		// Mapper is cleaned up automatically by basic controller
 
-		OlatRootFolderImpl rootFolder = new OlatRootFolderImpl(projectBrokerManager.getAttamchmentRelativeRootPath(project,courseEnv,cNode),null);
+		VFSContainer rootFolder = VFSManager.olatRootContainer(projectBrokerManager.getAttamchmentRelativeRootPath(project,courseEnv,cNode),null);
 		VFSItem item = rootFolder.resolve(project.getAttachmentFileName());
 		if(item instanceof VFSLeaf) {
 			VFSLeaf attachment = (VFSLeaf)item;

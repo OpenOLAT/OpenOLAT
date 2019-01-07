@@ -44,7 +44,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.modules.bc.FolderConfig;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
@@ -55,6 +54,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSLockManager;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.lock.LockInfo;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -146,7 +146,7 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		
 		//create a file
 		String publicPath = FolderConfig.getUserHomes() + "/" + user.getName() + "/public";
-		VFSContainer vfsPublic = new OlatRootFolderImpl(publicPath, null);
+		VFSContainer vfsPublic = VFSManager.olatRootContainer(publicPath, null);
 		createFile(vfsPublic, "test_head.txt");
 		
 		//head file
@@ -196,7 +196,7 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 
 		//create a file
 		String publicPath = FolderConfig.getUserHomes() + "/" + user.getName() + "/public";
-		VFSContainer vfsPublic = new OlatRootFolderImpl(publicPath, null);
+		VFSContainer vfsPublic = VFSManager.olatRootContainer(publicPath, null);
 		Assert.assertTrue(vfsPublic.exists());
 
 		
@@ -230,7 +230,7 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 
 		//create a file
 		String publicPath = FolderConfig.getUserHomes() + "/" + user.getName() + "/public";
-		VFSContainer vfsPublic = new OlatRootFolderImpl(publicPath, null);
+		VFSContainer vfsPublic = VFSManager.olatRootContainer(publicPath, null);
 		createFile(vfsPublic, "test.txt");
 		VFSContainer subPublic = vfsPublic.createChildContainer("moveto");
 
@@ -264,7 +264,7 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 
 		//create a file
 		String publicPath = FolderConfig.getUserHomes() + "/" + user.getName() + "/public";
-		VFSContainer vfsPublic = new OlatRootFolderImpl(publicPath, null);
+		VFSContainer vfsPublic = VFSManager.olatRootContainer(publicPath, null);
 		createFile(vfsPublic, "test.txt");
 		VFSContainer subPublic = vfsPublic.createChildContainer("copyto");
 
@@ -510,7 +510,7 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 
 		//create a file
 		String publicPath = FolderConfig.getUserHomes() + "/" + user.getName() + "/public";
-		VFSContainer vfsPublic = new OlatRootFolderImpl(publicPath, null);
+		VFSContainer vfsPublic = VFSManager.olatRootContainer(publicPath, null);
 		VFSItem item = createFile(vfsPublic, "test.txt");
 		
 		//lock the item with WebDAV
@@ -568,12 +568,12 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 
 		//create a file
 		String publicPath1 = FolderConfig.getUserHomes() + "/" + user1.getName() + "/public";
-		VFSContainer vfsPublic1 = new OlatRootFolderImpl(publicPath1, null);
+		VFSContainer vfsPublic1 = VFSManager.olatRootContainer(publicPath1, null);
 		VFSItem item1 = createFile(vfsPublic1, "test.txt");
 		Assert.assertNotNull(item1);
 		
 		String publicPath2 = FolderConfig.getUserHomes() + "/" + user2.getName() + "/public";
-		VFSContainer vfsPublic2 = new OlatRootFolderImpl(publicPath2, null);
+		VFSContainer vfsPublic2 = VFSManager.olatRootContainer(publicPath2, null);
 		VFSItem item2 = createFile(vfsPublic2, "test.txt");
 		Assert.assertNotNull(item2);
 		
@@ -613,7 +613,7 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		
 		//create a file
 		String publicPath = FolderConfig.getUserHomes() + "/" + user.getName() + "/public";
-		VFSContainer vfsPublic = new OlatRootFolderImpl(publicPath, null);
+		VFSContainer vfsPublic = VFSManager.olatRootContainer(publicPath, null);
 		createFile(vfsPublic, "testDelete.txt");
 		
 		//check

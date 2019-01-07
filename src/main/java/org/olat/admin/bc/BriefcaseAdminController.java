@@ -21,9 +21,7 @@ package org.olat.admin.bc;
 
 import java.io.File;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
-import org.olat.core.commons.modules.bc.meta.MetaInfoFactory;
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -34,6 +32,8 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.vfs.meta.MetaInfoFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -44,14 +44,13 @@ import org.olat.core.gui.control.WindowControl;
 public class BriefcaseAdminController extends FormBasicController {
 	
 	private FormLink thumbnailReset;
-	private final TaskExecutorManager taskExecutor;
-	private final MetaInfoFactory metaInfoFactory;
+	@Autowired
+	private TaskExecutorManager taskExecutor;
+	@Autowired
+	private MetaInfoFactory metaInfoFactory;
 
 	public BriefcaseAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "bc_admin");
-		
-		taskExecutor = CoreSpringFactory.getImpl(TaskExecutorManager.class);
-		metaInfoFactory = CoreSpringFactory.getImpl(MetaInfoFactory.class);
 		
 		initForm(ureq);
 	}

@@ -23,12 +23,12 @@ import java.io.File;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.configuration.ConfigOnOff;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.modules.docpool.site.DocumentPoolContextEntryControllerCreator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -150,6 +150,6 @@ public class DocumentPoolModule extends AbstractSpringModule implements ConfigOn
 	
 	public VFSContainer getInfoPageContainer() {
 		String path = "/" + DIRECTORY + "/" + INFOS_PAGE_DIRECTORY;
-		return new OlatRootFolderImpl(path, null);
+		return VFSManager.olatRootContainer(path, null);
 	}
 }

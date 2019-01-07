@@ -21,7 +21,6 @@ package org.olat.ims.cp.ui;
 
 import java.util.List;
 
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -35,6 +34,7 @@ import org.olat.core.gui.control.generic.iframe.DeliveryOptionsConfigurationCont
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.QuotaManager;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.ims.cp.CPManager;
@@ -130,7 +130,7 @@ public class CPSettingsController extends RepositoryEntrySettingsController {
 	private void doOpenQuota(UserRequest ureq) {
 		if (quotaManager.hasQuotaEditRights(ureq.getIdentity(), roles, getOrganisations())) {
 			OLATResource resource = entry.getOlatResource();
-			OlatRootFolderImpl cpRoot = FileResourceManager.getInstance().unzipContainerResource(resource);
+			LocalFolderImpl cpRoot = FileResourceManager.getInstance().unzipContainerResource(resource);
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Quota"), null);
 			quotaCtrl = quotaManager.getQuotaEditorInstance(ureq, addToHistory(ureq, swControl), cpRoot.getRelPath(), true, false);
 			listenTo(quotaCtrl);

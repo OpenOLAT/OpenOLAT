@@ -38,7 +38,6 @@ import java.util.stream.Collectors;
 
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -47,6 +46,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
+import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -103,7 +103,7 @@ public class PFManager {
 	 */
 	public VFSContainer resolveDropFolder(CourseEnvironment courseEnv, PFCourseNode pfNode, Identity identity) {
 		Path relPath = Paths.get(FILENAME_PARTICIPANTFOLDER, pfNode.getIdent(), getIdFolderName(identity), FILENAME_DROPBOX); 
-		OlatRootFolderImpl baseContainer = courseEnv.getCourseBaseContainer();
+		VFSContainer baseContainer = courseEnv.getCourseBaseContainer();
 		VFSItem dropboxContainer = baseContainer.resolve(relPath.toString());
 		return dropboxContainer instanceof VFSContainer ? (VFSContainer)dropboxContainer : null;
 	}
@@ -118,7 +118,7 @@ public class PFManager {
 	 */
 	private VFSContainer resolveOrCreateDropFolder(CourseEnvironment courseEnv, PFCourseNode pfNode, Identity identity) {
 		Path relPath = Paths.get(FILENAME_PARTICIPANTFOLDER, pfNode.getIdent(), getIdFolderName(identity), FILENAME_DROPBOX); 
-		OlatRootFolderImpl baseContainer = courseEnv.getCourseBaseContainer();
+		VFSContainer baseContainer = courseEnv.getCourseBaseContainer();
 		return VFSManager.resolveOrCreateContainerFromPath(baseContainer, relPath.toString());
 	}
 
@@ -132,7 +132,7 @@ public class PFManager {
 	 */
 	private VFSContainer resolveOrCreateReturnFolder(CourseEnvironment courseEnv, PFCourseNode pfNode, Identity identity) {
 		Path relPath = Paths.get(FILENAME_PARTICIPANTFOLDER, pfNode.getIdent(), getIdFolderName(identity), FILENAME_RETURNBOX); 
-		OlatRootFolderImpl baseContainer = courseEnv.getCourseBaseContainer();
+		VFSContainer baseContainer = courseEnv.getCourseBaseContainer();
 		return VFSManager.resolveOrCreateContainerFromPath(baseContainer, relPath.toString());
 	}
 
@@ -169,7 +169,7 @@ public class PFManager {
 	private Date getLastUpdated(CourseEnvironment courseEnv, PFCourseNode pfNode, Identity identity, String fileName) {
 		Date latest = null;
 		List<Long> lastUpdated = new ArrayList<>();
-		OlatRootFolderImpl baseContainer = courseEnv.getCourseBaseContainer();
+		LocalFolderImpl baseContainer = courseEnv.getCourseBaseContainer();
 		Path path = Paths.get(baseContainer.getBasefile().toPath().toString(), FILENAME_PARTICIPANTFOLDER,
 				pfNode.getIdent(), getIdFolderName(identity), fileName);
 		try {
@@ -313,7 +313,7 @@ public class PFManager {
 		SubscriptionContext subsContext = CourseModule.createSubscriptionContext(courseEnv, pfNode);
 		String path = courseEnv.getCourseBaseContainer().getRelPath() + "/" + FILENAME_PARTICIPANTFOLDER;
 		String quotaPath = path + "/" + pfNode.getIdent();
-		VFSContainer courseElementBaseContainer = new OlatRootFolderImpl(path, null);
+		VFSContainer courseElementBaseContainer = VFSManager.olatRootContainer(path, null);
 		VirtualContainer namedCourseFolder = new VirtualContainer(identity.getName());
 		Path relPath = Paths.get(pfNode.getIdent(), getIdFolderName(identity));
 		VFSContainer userBaseContainer = VFSManager.resolveOrCreateContainerFromPath(courseElementBaseContainer, relPath.toString());		
@@ -354,7 +354,7 @@ public class PFManager {
 		String courseContainerRelPath = courseEnv.getCourseBaseContainer().getRelPath();
 		String path = courseContainerRelPath + "/" + FILENAME_PARTICIPANTFOLDER;
 		String quotaPath = path + "/" + pfNode.getIdent();
-		VFSContainer courseElementBaseContainer = new OlatRootFolderImpl(path, null);
+		VFSContainer courseElementBaseContainer = VFSManager.olatRootContainer(path, null);
 		VirtualContainer namedCourseFolder = new VirtualContainer(translator.translate("participant.folder"));
 		for (Identity participant : participants) {
 			Path relPath = Paths.get(pfNode.getIdent(), getIdFolderName(participant));
@@ -405,7 +405,7 @@ public class PFManager {
 		
 		String path = courseEnv.getCourseBaseContainer().getRelPath() + "/" + FILENAME_PARTICIPANTFOLDER;
 		String quotaPath = path + "/" + pfNode.getIdent();
-		VFSContainer courseElementBaseContainer = new OlatRootFolderImpl(path, null);
+		VFSContainer courseElementBaseContainer = VFSManager.olatRootContainer(path, null);
 		VirtualContainer namedCourseFolder = new VirtualContainer(translator.translate("participant.folder"));
 		for (Identity participant : participants) {
 			Path relPath = Paths.get(pfNode.getIdent(), getIdFolderName(participant));
@@ -450,7 +450,7 @@ public class PFManager {
 		
 		String path = courseEnv.getCourseBaseContainer().getRelPath() + "/" + FILENAME_PARTICIPANTFOLDER;
 		String quotaPath = path + "/" + pfNode.getIdent();
-		VFSContainer courseElementBaseContainer = new OlatRootFolderImpl(path, null);
+		VFSContainer courseElementBaseContainer = VFSManager.olatRootContainer(path, null);
 
 		Path relPath = Paths.get(pfNode.getIdent(), getIdFolderName(identity));
 		

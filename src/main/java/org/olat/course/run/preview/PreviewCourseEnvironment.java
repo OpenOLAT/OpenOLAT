@@ -27,7 +27,7 @@ package org.olat.course.run.preview;
 
 import java.util.Date;
 
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
+import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.Structure;
 import org.olat.course.assessment.AssessmentManager;
@@ -46,7 +46,7 @@ import org.olat.repository.RepositoryEntry;
 final class PreviewCourseEnvironment implements CourseEnvironment {
 	private final String title;
 	private final Structure runStructure;
-	private final OlatRootFolderImpl courseBaseContainer;
+	private final LocalFolderImpl courseBaseContainer;
 	private final VFSContainer courseFolderContainer;
 	private final CoursePropertyManager cpm;
 	private final CourseGroupManager cgm;
@@ -57,7 +57,7 @@ final class PreviewCourseEnvironment implements CourseEnvironment {
 	private CourseConfig courseConfig;
 
 	PreviewCourseEnvironment(String title, Structure runStructure, Date simulatedDateTime, VFSContainer courseFolderContainer,
-			OlatRootFolderImpl courseBaseContainer, Long courseResourceableID, CoursePropertyManager cpm, CourseGroupManager cgm,
+			LocalFolderImpl courseBaseContainer, Long courseResourceableID, CoursePropertyManager cpm, CourseGroupManager cgm,
 			UserNodeAuditManager auditman, AssessmentManager am, CourseConfig courseConfig) {
 		super();
 		this.title = title;
@@ -73,9 +73,6 @@ final class PreviewCourseEnvironment implements CourseEnvironment {
 		this.courseConfig = courseConfig.clone();
 	}
 
-	/**
-	 * @see org.olat.course.run.environment.CourseEnvironment#getCurrentTimeMillis()
-	 */
 	@Override
 	public long getCurrentTimeMillis() {
 		return simulatedDateTime;
@@ -91,80 +88,59 @@ final class PreviewCourseEnvironment implements CourseEnvironment {
 		return true;
 	}
 
-	/**
-	 * @see org.olat.course.run.environment.CourseEnvironment#getCourseGroupManager()
-	 */
 	@Override
 	public CourseGroupManager getCourseGroupManager() {
 		return cgm;
 	}
 
-	/**
-	 * @see org.olat.course.run.environment.CourseEnvironment#getCourseResourceableId()
-	 */
+	@Override
 	public Long getCourseResourceableId() {
 		//since OLAT 6.0.x: needed for SinglePage and hence for STCourseNode
 		//introduced dependancy through iFrame refactoring of SinglePage and CP
 		return resourceablId;
 	}
 
-	/**
-	 * @see org.olat.course.run.environment.CourseEnvironment#getCoursePropertyManager()
-	 */
+	@Override
 	public CoursePropertyManager getCoursePropertyManager() {
 		return cpm;
 	}
 
-	/**
-	 * @see org.olat.course.run.environment.CourseEnvironment#getAssessmentManager()
-	 */
+	@Override
 	public AssessmentManager getAssessmentManager() {
 		return am;
 	}
 
-	/**
-	 * @see org.olat.course.run.environment.CourseEnvironment#getAuditManager()
-	 */
+	@Override
 	public UserNodeAuditManager getAuditManager() {
 		return auditman;
 	}
 
-	/**
-	 * @see org.olat.course.run.environment.CourseEnvironment#getRunStructure()
-	 */
+	@Override
 	public Structure getRunStructure() {
 		return runStructure;
 	}
 
-	/**
-	 * @see org.olat.course.run.environment.CourseEnvironment#getCourseTitle()
-	 */
+	@Override
 	public String getCourseTitle() {
 		return title;
 	}
 
+	@Override
 	public CourseConfig getCourseConfig() {
 		return courseConfig;
 	}
 
-	/**
-	 * @see org.olat.course.run.environment.CourseEnvironment#setCourseConfig()
-	 */
 	public void setCourseConfig(CourseConfig cc) {
 		courseConfig = (cc == null ? null : cc.clone());
 	}
 
-	/**
-	 * @see org.olat.course.run.environment.CourseEnvironment#getCourseFolderContainer()
-	 */
+	@Override
 	public VFSContainer getCourseFolderContainer() {
 		return courseFolderContainer;
 	}
 
-	/**
-	 * @see org.olat.course.run.environment.CourseEnvironment#getCourseBaseContainer()
-	 */
-	public OlatRootFolderImpl getCourseBaseContainer() {
+	@Override
+	public LocalFolderImpl getCourseBaseContainer() {
 		return courseBaseContainer;
 	}
 

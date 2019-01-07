@@ -32,10 +32,11 @@ import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.vfs.LocalFolderImpl;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
 import org.olat.ims.qti21.model.jpa.AssessmentTestSessionImpl;
@@ -179,7 +180,7 @@ public class AssessmentTestSessionDAO {
 	 * @return
 	 */
 	public File getSessionStorage(AssessmentTestSession session) {
-		OlatRootFolderImpl rootContainer = getQtiSerializationPath();
+		LocalFolderImpl rootContainer = getQtiSerializationPath();
 		File directory = new File(rootContainer.getBasefile(), session.getStorage());
 		if(!directory.exists()) {
 			directory.mkdirs();
@@ -229,12 +230,11 @@ public class AssessmentTestSessionDAO {
 		storage.mkdirs();
 		
 		Path relativePath = rootDir.toPath().relativize(storage.toPath());
-		String relativePathString = relativePath.toString();
-		return relativePathString;
+		return relativePath.toString();
 	}
 	
-    private OlatRootFolderImpl getQtiSerializationPath() {
-    	return new OlatRootFolderImpl("/qtiassessment/", null);
+    private LocalFolderImpl getQtiSerializationPath() {
+    	return VFSManager.olatRootContainer("/qtiassessment/", null);
 	}
     
 	public AssessmentTestSession loadByKey(Long testSessionKey) {

@@ -26,8 +26,8 @@
 
 package org.olat.core.util.vfs;
 
-import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
+import org.olat.core.util.vfs.meta.MetaInfo;
 
 
 /**

@@ -68,8 +68,6 @@ import org.olat.basesecurity.OrganisationService;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
-import org.olat.core.commons.modules.bc.vfs.OlatNamedContainerImpl;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -84,10 +82,12 @@ import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.tree.TreeVisitor;
 import org.olat.core.util.tree.Visitor;
+import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.LocalImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.BCCourseNode;
@@ -186,7 +186,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		dbInstance.intermediateCommit();
 		
 		id3 = JunitTestHelper.createAndPersistIdentityAsUser("user-rest-three");
-		OlatRootFolderImpl id3HomeFolder = new OlatRootFolderImpl(FolderConfig.getUserHome(id3.getName()), null);
+		VFSContainer id3HomeFolder = VFSManager.olatRootContainer(FolderConfig.getUserHome(id3.getName()), null);
 		VFSContainer id3PublicFolder = (VFSContainer)id3HomeFolder.resolve("public");
 		if(id3PublicFolder == null) {
 			id3PublicFolder = id3HomeFolder.createChildContainer("public");
@@ -244,7 +244,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		//add some folder tool
 		CollaborationTools g2CTSMngr = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(g2);
 		g2CTSMngr.setToolEnabled(CollaborationTools.TOOL_FOLDER, true);
-		OlatRootFolderImpl g2Folder = new OlatRootFolderImpl(g2CTSMngr.getFolderRelPath(), null);
+		LocalFolderImpl g2Folder = VFSManager.olatRootContainer(g2CTSMngr.getFolderRelPath(), null);
 		g2Folder.getBasefile().mkdirs();
 		VFSItem groupPortrait = g2Folder.resolve("portrait.jpg");
 		if(groupPortrait == null) {
@@ -278,7 +278,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 				} else if (node instanceof BCCourseNode) {
 					if(demoBCCourseNode == null) {
 						demoBCCourseNode = (BCCourseNode)node;
-						OlatNamedContainerImpl container = BCCourseNode.getNodeFolderContainer(demoBCCourseNode, demoCourse.getCourseEnvironment());
+						VFSContainer container = BCCourseNode.getNodeFolderContainer(demoBCCourseNode, demoCourse.getCourseEnvironment());
 						VFSItem example = container.resolve("singlepage.html");
 						if(example == null) {
 							try(InputStream htmlUrl = UserMgmtTest.class.getResourceAsStream("singlepage.html")) {

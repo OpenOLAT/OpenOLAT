@@ -30,7 +30,6 @@ import java.io.Serializable;
 
 import org.olat.admin.quota.QuotaConstants;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
@@ -42,9 +41,11 @@ import org.olat.core.util.FileUtils;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.tree.TreeVisitor;
 import org.olat.core.util.tree.Visitor;
+import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.callbacks.FullAccessWithLazyQuotaCallback;
 import org.olat.core.util.vfs.callbacks.FullAccessWithQuotaCallback;
 import org.olat.core.util.vfs.version.Versionable;
@@ -98,7 +99,7 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 	private CourseEditorTreeModel editorTreeModel;
 	private CourseConfig courseConfig;
 	private final CourseEnvironmentImpl courseEnvironment;
-	private OlatRootFolderImpl courseRootContainer;
+	private LocalFolderImpl courseRootContainer;
 	private String courseTitle = null;
 	/** courseTitleSyncObj is a final Object only used for synchronizing the courseTitle getter - see OLAT-5654 */
 	private final Object courseTitleSyncObj = new Object();
@@ -139,41 +140,30 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 		courseEnvironment = new CourseEnvironmentImpl(this, courseEntry);
 	}
 	
-
-	/**
-	 * @see org.olat.course.ICourse#getRunStructure()
-	 */
+	@Override
 	public Structure getRunStructure() {
 		return runStructure;
 	}
 
-	/**
-	 * @see org.olat.course.ICourse#getEditorTreeModel()
-	 */
+	@Override
 	public CourseEditorTreeModel getEditorTreeModel() {
 		return editorTreeModel;
 	}
 
-	/**
-	 * @see org.olat.course.ICourse#getCourseBasePath()
-	 */
 	@Override
-	public OlatRootFolderImpl getCourseBaseContainer() {
+	public LocalFolderImpl getCourseBaseContainer() {
 		return courseRootContainer;
 	}
 	
 	@Override
-	public OlatRootFolderImpl getCourseExportDataDir() {
-		OlatRootFolderImpl vfsExportDir = (OlatRootFolderImpl)getCourseBaseContainer().resolve(ICourse.EXPORTED_DATA_FOLDERNAME);
+	public LocalFolderImpl getCourseExportDataDir() {
+		LocalFolderImpl vfsExportDir = (LocalFolderImpl)getCourseBaseContainer().resolve(ICourse.EXPORTED_DATA_FOLDERNAME);
 		if (vfsExportDir == null) {
-			vfsExportDir = getCourseBaseContainer().createChildContainer(ICourse.EXPORTED_DATA_FOLDERNAME);
+			vfsExportDir = (LocalFolderImpl)getCourseBaseContainer().createChildContainer(ICourse.EXPORTED_DATA_FOLDERNAME);
 		}
 		return vfsExportDir;
 	}
 
-	/**
-	 * @see org.olat.course.ICourse#getCourseFolderPath()
-	 */
 	@Override
 	public VFSContainer getCourseFolderContainer() {
 		// add local course folder's children as read/write source and any sharedfolder as subfolder
@@ -231,15 +221,15 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 	private void prepareFilesystem() {
 		// generate course base path
 		String relPath = File.separator + COURSE_ROOT_DIR_NAME + File.separator + getResourceableId().longValue();
-		courseRootContainer = new OlatRootFolderImpl(relPath, null);
+		courseRootContainer = VFSManager.olatRootContainer(relPath, null);
 		File fBasePath = courseRootContainer.getBasefile();
 		if (!fBasePath.exists() && !fBasePath.mkdirs())
 			throw new OLATRuntimeException(this.getClass(), "Could not create course base path:" + courseRootContainer, null);
 	}
 
-	protected OlatRootFolderImpl getIsolatedCourseFolder() {
+	protected LocalFolderImpl getIsolatedCourseFolder() {
 		// create local course folder
-		OlatRootFolderImpl isolatedCourseFolder = new OlatRootFolderImpl(courseRootContainer.getRelPath() + File.separator + COURSEFOLDER, null);
+		LocalFolderImpl isolatedCourseFolder = VFSManager.olatRootContainer(courseRootContainer.getRelPath() + File.separator + COURSEFOLDER, null);
 		// generate course folder
 		File fCourseFolder = isolatedCourseFolder.getBasefile();
 		if (!fCourseFolder.exists() && !fCourseFolder.mkdirs()) {
@@ -254,8 +244,7 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 	
 	protected File getIsolatedCourseBaseFolder() {
 		// create local course folder
-		OlatRootFolderImpl isolatedCourseFolder = new OlatRootFolderImpl(courseRootContainer.getRelPath() + File.separator + COURSEFOLDER, null);
-		return isolatedCourseFolder.getBasefile();
+		return VFSManager.olatRootDirectory(courseRootContainer.getRelPath() + File.separator + COURSEFOLDER);
 	}
 	
 	/**

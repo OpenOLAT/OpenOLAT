@@ -30,6 +30,9 @@ import org.olat.core.commons.services.license.License;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.license.LicenseType;
 import org.olat.core.commons.services.license.manager.LicenseCleaner;
+import org.olat.core.util.vfs.meta.MetaInfo;
+import org.olat.core.util.vfs.meta.MetaInfoFactory;
+import org.olat.core.util.vfs.meta.MetaInfoFileImpl;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 

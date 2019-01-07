@@ -49,7 +49,6 @@ import javax.imageio.ImageIO;
 import org.apache.commons.io.FilenameUtils;
 import org.jcodec.api.FrameGrab;
 import org.jcodec.common.FileChannelWrapper;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.services.image.Crop;
 import org.olat.core.commons.services.image.ImageService;
 import org.olat.core.commons.services.image.Size;
@@ -582,7 +581,7 @@ public class VideoManagerImpl implements VideoManager {
 	@Override
 	public VideoExportMediaResource getVideoExportMediaResource(RepositoryEntry repoEntry) {
 		OLATResource videoResource = repoEntry.getOlatResource();
-		OlatRootFolderImpl baseContainer= FileResourceManager.getInstance().getFileResourceRootImpl(videoResource);
+		LocalFolderImpl baseContainer= FileResourceManager.getInstance().getFileResourceRootImpl(videoResource);
 		// 1) dump repo entry metadata to resource folder
 		LocalFolderImpl repoentryContainer = (LocalFolderImpl)VFSManager.resolveOrCreateContainerFromPath(baseContainer, DIRNAME_REPOENTRY); 
 		RepositoryEntryImportExport importExport = new RepositoryEntryImportExport(repoEntry, repoentryContainer.getBasefile());

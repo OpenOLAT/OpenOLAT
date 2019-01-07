@@ -21,7 +21,6 @@ package org.olat.modules.webFeed.ui;
 
 import java.util.List;
 
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -34,6 +33,7 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.QuotaManager;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.ui.RepositoryEntrySettingsController;
@@ -108,7 +108,7 @@ public class FeedSettingsController extends RepositoryEntrySettingsController {
 
 	private void doOpenQuota(UserRequest ureq) {
 		if (quotaManager.hasQuotaEditRights(ureq.getIdentity(), roles, getOrganisations())) {
-			OlatRootFolderImpl feedRoot = FileResourceManager.getInstance().getFileResourceRootImpl(entry.getOlatResource());
+			VFSContainer feedRoot = FileResourceManager.getInstance().getFileResourceRootImpl(entry.getOlatResource());
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Quota"), null);
 			quotaCtrl = quotaManager.getQuotaEditorInstance(ureq, addToHistory(ureq, swControl), feedRoot.getRelPath(), true, false);
 			mainPanel.setContent(quotaCtrl.getInitialComponent());

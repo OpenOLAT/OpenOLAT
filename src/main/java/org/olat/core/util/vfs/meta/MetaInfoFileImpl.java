@@ -24,7 +24,7 @@
 * <p>
 */ 
 
-package org.olat.core.commons.modules.bc.meta;
+package org.olat.core.util.vfs.meta;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -62,8 +62,8 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.vfs.LocalFileImpl;
-import org.olat.core.util.vfs.OlatRelPathImpl;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -178,7 +178,7 @@ public class MetaInfoFileImpl implements MetaInfo, Serializable {
 	 * @param move
 	 */
 	@Override
-	public void moveCopyToDir(OlatRelPathImpl target, boolean move) {
+	public void moveCopyToDir(VFSItem target, boolean move) {
 		File fSource = metaFile;
 		File fTarget = new File(MetaInfoFactory.getCanonicalMetaPath(target));
 		if (isDirectory()) { // move/copy whole meta directory

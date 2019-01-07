@@ -27,7 +27,6 @@ package org.olat.course.nodes.bc;
 
 import org.olat.admin.quota.QuotaConstants;
 import org.olat.core.commons.modules.bc.FolderRunController;
-import org.olat.core.commons.modules.bc.vfs.OlatNamedContainerImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -40,6 +39,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
+import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
 import org.olat.core.util.vfs.VFSContainer;
@@ -150,7 +150,7 @@ public class BCCourseNodeEditController extends ActivateableTabbableDefaultContr
 	private void doOpenFolder(UserRequest ureq) {
 		VFSContainer namedContainer = null;
 		if(bcNode.getModuleConfiguration().getBooleanSafe(CONFIG_AUTO_FOLDER)){
-			OlatNamedContainerImpl directory = BCCourseNode.getNodeFolderContainer(bcNode, course.getCourseEnvironment());
+			NamedContainerImpl directory = BCCourseNode.getNodeFolderContainer(bcNode, course.getCourseEnvironment());
 			directory.setLocalSecurityCallback(getSecurityCallbackWithQuota(directory.getRelPath()));
 			namedContainer = directory;
 		} else {

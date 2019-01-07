@@ -42,7 +42,6 @@ import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.modules.bc.FolderConfig;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.services.mark.MarkingService;
@@ -60,6 +59,7 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.login.LoginModule;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.ForumChangedEvent;
@@ -984,7 +984,7 @@ public class ForumManager {
 	}
 
 	public VFSContainer getForumContainer(Long forumKey) {
-		OlatRootFolderImpl fContainer = new OlatRootFolderImpl("/forum", null);
+		VFSContainer fContainer = VFSManager.olatRootContainer("/forum", null);
 		VFSItem forumContainer = fContainer.resolve(forumKey.toString());
 		if(forumContainer == null) {
 			return fContainer.createChildContainer(forumKey.toString());

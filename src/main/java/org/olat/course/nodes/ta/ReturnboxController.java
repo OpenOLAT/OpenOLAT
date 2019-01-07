@@ -29,8 +29,6 @@ import java.io.File;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderRunController;
-import org.olat.core.commons.modules.bc.vfs.OlatNamedContainerImpl;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.notifications.ui.ContextualSubscriptionController;
 import org.olat.core.gui.UserRequest;
@@ -41,6 +39,9 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.vfs.NamedContainerImpl;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.callbacks.ReadOnlyCallback;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
@@ -93,9 +94,9 @@ public class ReturnboxController extends BasicController {
 	protected void initReturnbox(UserRequest ureq, WindowControl wControl, CourseNode node, UserCourseEnvironment userCourseEnv, boolean previewMode) {
 		// returnbox display
 		myContent = createVelocityContainer("returnbox");
-		OlatRootFolderImpl rootFolder = new OlatRootFolderImpl(getReturnboxPathFor(userCourseEnv.getCourseEnvironment(), node, ureq.getIdentity()) , null);
+		VFSContainer rootFolder = VFSManager.olatRootContainer(getReturnboxPathFor(userCourseEnv.getCourseEnvironment(), node, ureq.getIdentity()) , null);
 		String fullName = StringHelper.escapeHtml(userManager.getUserDisplayName(getIdentity()));
-		OlatNamedContainerImpl namedContainer = new OlatNamedContainerImpl(fullName, rootFolder);
+		VFSContainer namedContainer = new NamedContainerImpl(fullName, rootFolder);
 		namedContainer.setLocalSecurityCallback(new ReadOnlyCallback());
 		returnboxFolderRunController = new FolderRunController(namedContainer, false, ureq, wControl);
 		returnboxFolderRunController.addControllerListener(this);
@@ -130,9 +131,7 @@ public class ReturnboxController extends BasicController {
 		return courseEnv.getCourseBaseContainer().getRelPath() + File.separator + RETURNBOX_DIR_NAME + File.separator + cNode.getIdent();
 	}
 	
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == myContent) {
       if (event.getCommand().equals("cc")) {
@@ -141,10 +140,8 @@ public class ReturnboxController extends BasicController {
 			}
 		}
 	}
-	/**
-	 * 
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
+	
+	@Override
 	protected void doDispose() {
 		//
 	}

@@ -3651,7 +3651,7 @@ alter table o_cur_element_type_to_type add constraint cur_type_to_sub_type_idx f
 alter table o_cur_element_to_tax_level add constraint cur_el_rel_to_cur_el_idx foreign key (fk_cur_element) references o_cur_curriculum_element (id);
 alter table o_cur_element_to_tax_level add constraint cur_el_to_tax_level_idx foreign key (fk_taxonomy_level) references o_tax_taxonomy_level (id);
 
---edu-sharing
+-- edu-sharing
 create index idx_es_usage_ident_idx on o_es_usage (e_identifier);
 create index idx_es_usage_ores_idx on o_eva_form_survey (e_resid, e_resname);
 

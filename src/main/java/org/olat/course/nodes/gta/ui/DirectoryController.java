@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.commons.modules.singlepage.SinglePageController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -51,6 +50,7 @@ import org.olat.core.util.io.SystemFileFilter;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.meta.MetaInfo;
 import org.olat.course.nodes.gta.ui.component.DownloadDocumentMapper;
 import org.olat.fileresource.ZippedDirectoryMediaResource;
 import org.olat.user.UserManager;

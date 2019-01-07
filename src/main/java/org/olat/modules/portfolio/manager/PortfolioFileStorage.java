@@ -26,10 +26,10 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.olat.core.commons.modules.bc.FolderConfig;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.io.SystemFilenameFilter;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.modules.portfolio.Assignment;
 import org.olat.modules.portfolio.Media;
 import org.olat.modules.portfolio.MediaLight;
@@ -140,7 +140,7 @@ public class PortfolioFileStorage implements InitializingBean {
 				|| !StringHelper.containsNonWhitespace(assignment.getStorage())) {
 			return null;
 		}
-		return new OlatRootFolderImpl("/" + assignment.getStorage(), null);
+		return VFSManager.olatRootContainer("/" + assignment.getStorage(), null);
 	}
 	
 	public File getAssignmentDirectory(Assignment assignment) {
@@ -169,7 +169,7 @@ public class PortfolioFileStorage implements InitializingBean {
 	}
 	
 	public VFSContainer getMediaContainer(MediaLight media) {
-		return new OlatRootFolderImpl("/" + media.getStoragePath(), null);
+		return VFSManager.olatRootContainer("/" + media.getStoragePath(), null);
 	}
 	
 	public File generateMediaSubDirectory(Media media) {

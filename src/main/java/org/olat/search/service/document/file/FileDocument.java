@@ -29,11 +29,11 @@ import java.io.IOException;
 import java.util.Calendar;
 import java.util.Date;
 
-import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.meta.MetaInfo;
 import org.olat.search.model.OlatDocument;
 import org.olat.search.service.SearchResourceContext;
 import org.olat.search.service.SimpleDublinCoreMetadataFieldsProvider;

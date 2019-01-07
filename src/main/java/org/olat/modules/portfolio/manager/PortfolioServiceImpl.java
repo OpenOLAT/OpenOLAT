@@ -37,7 +37,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.manager.GroupDAO;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFileImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -50,6 +49,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -894,7 +894,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 	public VFSLeaf getPosterImageLeaf(BinderLight binder) {
 		String imagePath = binder.getImagePath();
 		if(StringHelper.containsNonWhitespace(imagePath)) {
-			OlatRootFileImpl leaf = new OlatRootFileImpl("/" + imagePath, null);
+			VFSLeaf leaf = VFSManager.olatRootLeaf("/" + imagePath);
 			if(leaf.exists()) {
 				return leaf;
 			}

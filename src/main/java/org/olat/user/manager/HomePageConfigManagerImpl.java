@@ -28,11 +28,11 @@ package org.olat.user.manager;
 import java.io.File;
 
 import org.olat.core.commons.modules.bc.FolderConfig;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.user.HomePageConfig;
 import org.olat.user.HomePageConfigManager;
@@ -152,7 +152,7 @@ public class HomePageConfigManagerImpl implements HomePageConfigManager {
 		String pathHomePage = FolderConfig.getCanonicalRoot() + home;
 		File userHomePage = new File(pathHomePage);
 		if(userHomePage.exists()) {
-			VFSContainer homeContainer = new OlatRootFolderImpl(home, null);
+			VFSContainer homeContainer = VFSManager.olatRootContainer(home, null);
 			homeContainer.deleteSilently();
 		}
 		log.audit("Homepage-config file and homepage-dir deleted for identity=" + identity);

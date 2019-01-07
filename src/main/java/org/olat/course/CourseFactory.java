@@ -52,7 +52,6 @@ import org.olat.commons.info.InfoMessageFrontendManager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.modules.bc.FolderConfig;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.Publisher;
@@ -92,6 +91,7 @@ import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.tree.TreeVisitor;
 import org.olat.core.util.tree.Visitor;
+import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
 import org.olat.core.util.vfs.VFSConstants;
@@ -888,7 +888,7 @@ public class CourseFactory {
 	 */
 	public static VFSContainer getCourseBaseContainer(Long resourceableId) {
 		String relPath = "/course/" + resourceableId.longValue();
-		OlatRootFolderImpl courseRootContainer = new OlatRootFolderImpl(relPath, null);
+		LocalFolderImpl courseRootContainer = VFSManager.olatRootContainer(relPath, null);
 		File fBasePath = courseRootContainer.getBasefile();
 		if (!fBasePath.exists())
 			throw new OLATRuntimeException(PersistingCourseImpl.class, "Could not resolve course base path:" + courseRootContainer, null);

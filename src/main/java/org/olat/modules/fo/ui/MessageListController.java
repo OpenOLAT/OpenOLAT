@@ -31,7 +31,6 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
-import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkResourceStat;
@@ -81,6 +80,7 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.core.util.vfs.filters.VFSItemMetaFilter;
+import org.olat.core.util.vfs.meta.MetaInfo;
 import org.olat.course.nodes.FOCourseNode;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.ForumCallback;

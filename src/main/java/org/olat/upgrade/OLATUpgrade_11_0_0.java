@@ -46,7 +46,6 @@ import java.util.function.Function;
 import org.olat.admin.user.imp.TransientIdentity;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -63,6 +62,8 @@ import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.tree.TreeVisitor;
 import org.olat.core.util.tree.Visitor;
+import org.olat.core.util.vfs.LocalFolderImpl;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.CorruptedCourseException;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
@@ -489,12 +490,12 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 				nodeAssessmentMap.put(key, nodeAssessment);
 				
 				String dropbox = DropboxController.getDropboxPathRelToFolderRoot(course.getCourseEnvironment(), tNode) + File.separator + assessedIdentity.getName();
-				OlatRootFolderImpl dropBox = new OlatRootFolderImpl(dropbox, null);
+				LocalFolderImpl dropBox = VFSManager.olatRootContainer(dropbox, null);
 				if (dropBox.getBasefile().exists() && dropBox.getBasefile().listFiles(SystemFileFilter.FILES_ONLY).length > 0) {
 					nodeAssessment.setAssessmentStatus(AssessmentEntryStatus.inProgress);
 				} else {
 					String returnbox = ReturnboxController.getReturnboxPathRelToFolderRoot(course.getCourseEnvironment(), tNode) + File.separator + assessedIdentity.getName();
-					OlatRootFolderImpl returnBox = new OlatRootFolderImpl(returnbox, null);
+					LocalFolderImpl returnBox = VFSManager.olatRootContainer(returnbox, null);
 					if (returnBox.getBasefile().exists() && returnBox.getBasefile().listFiles(SystemFileFilter.FILES_ONLY).length > 0) {
 						nodeAssessment.setAssessmentStatus(AssessmentEntryStatus.inProgress);
 					}
@@ -999,11 +1000,11 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 		}
 		if(assessmentStatus == null) {
 			String dropbox = DropboxController.getDropboxPathRelToFolderRoot(course.getCourseEnvironment(), tNode) + File.separator + assessedIdentity.getName();
-			OlatRootFolderImpl dropBox = new OlatRootFolderImpl(dropbox, null);
+			LocalFolderImpl dropBox = VFSManager.olatRootContainer(dropbox, null);
 			boolean hasDropped = (dropBox.getBasefile().exists() && dropBox.getBasefile().listFiles(SystemFileFilter.FILES_ONLY).length > 0);
 			
 			String returnbox = ReturnboxController.getReturnboxPathRelToFolderRoot(course.getCourseEnvironment(), tNode) + File.separator + assessedIdentity.getName();
-			OlatRootFolderImpl returnBox = new OlatRootFolderImpl(returnbox, null);
+			LocalFolderImpl returnBox = VFSManager.olatRootContainer(returnbox, null);
 			boolean hasReturned = (returnBox.getBasefile().exists() && returnBox.getBasefile().listFiles(SystemFileFilter.FILES_ONLY).length > 0);
 			
 			if(hasReturned || hasDropped) {

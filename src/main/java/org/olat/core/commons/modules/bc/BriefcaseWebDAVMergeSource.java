@@ -22,14 +22,15 @@ package org.olat.core.commons.modules.bc;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.modules.bc.vfs.OlatNamedContainerImpl;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.util.vfs.MergeSource;
+import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.callbacks.FullAccessWithQuotaCallback;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
@@ -95,19 +96,19 @@ public class BriefcaseWebDAVMergeSource  extends MergeSource {
 		super.init();
 		// mount /public
 		String rootPath = PersonalFolderManager.getRootPathFor(identity);
-		OlatRootFolderImpl vfsPublic = new OlatRootFolderImpl(rootPath + "/public", this);
+		VFSContainer vfsPublic = VFSManager.olatRootContainer(rootPath + "/public", this);
 		//vfsPublic.getBasefile().mkdirs(); // lazy initialize folders
 		// we do a little trick here and wrap it again in a NamedContainerImpl so
 		// it doesn't show up as a OlatRootFolderImpl to prevent it from editing its MetaData
-		OlatNamedContainerImpl vfsNamedPublic = new OlatNamedContainerImpl("public", vfsPublic);
+		VFSContainer vfsNamedPublic = new NamedContainerImpl("public", vfsPublic);
 		addContainer(vfsNamedPublic);
 		
 		// mount /private
-		OlatRootFolderImpl vfsPrivate = new OlatRootFolderImpl(rootPath + "/private", this);
+		VFSContainer vfsPrivate = VFSManager.olatRootContainer(rootPath + "/private", this);
 		//vfsPrivate.getBasefile().mkdirs(); // lazy initialize folders
 		// we do a little trick here and wrap it again in a NamedContainerImpl so
 		// it doesn't show up as a OlatRootFolderImpl to prevent it from editing its MetaData
-		OlatNamedContainerImpl vfsNamedPrivate = new OlatNamedContainerImpl("private", vfsPrivate);
+		VFSContainer vfsNamedPrivate = new NamedContainerImpl("private", vfsPrivate);
 		addContainer(vfsNamedPrivate);
 		
 		init = true;

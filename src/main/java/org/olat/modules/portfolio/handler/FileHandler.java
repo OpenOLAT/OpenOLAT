@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
@@ -39,6 +38,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.vfs.meta.MetaInfo;
 import org.olat.modules.ceditor.InteractiveAddPageElementHandler;
 import org.olat.modules.ceditor.PageElementAddController;
 import org.olat.modules.portfolio.Media;

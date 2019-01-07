@@ -47,7 +47,6 @@ import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.BriefcaseWebDAVProvider;
 import org.olat.core.commons.modules.bc.FolderConfig;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.Subscriber;
 import org.olat.core.id.Identity;
@@ -56,6 +55,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.tree.Visitor;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.callbacks.ReadOnlyCallback;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.core.util.vfs.restapi.VFSWebservice;
@@ -100,7 +100,7 @@ public class UserFoldersWebService {
 		} else {
 			//only public
 			String chosenUserFolderRelPath = FolderConfig.getUserHome(identity.getName()) + "/" + "public";
-			OlatRootFolderImpl rootFolder = new OlatRootFolderImpl(chosenUserFolderRelPath, null);
+			VFSContainer rootFolder = VFSManager.olatRootContainer(chosenUserFolderRelPath, null);
 			VFSSecurityCallback secCallback = new ReadOnlyCallback();
 			rootFolder.setLocalSecurityCallback(secCallback);
 			return new VFSWebservice(rootFolder);

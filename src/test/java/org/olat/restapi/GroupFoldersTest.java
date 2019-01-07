@@ -55,7 +55,6 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -67,6 +66,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.manager.BusinessGroupRelationDAO;
@@ -193,7 +193,7 @@ public class GroupFoldersTest extends OlatJerseyTestCase {
 		//create some sub folders
 		CollaborationTools collabTools1 = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(g1);
 		String folderRelPath = collabTools1.getFolderRelPath();
-		OlatRootFolderImpl folder = new OlatRootFolderImpl(folderRelPath, null);
+		VFSContainer folder = VFSManager.olatRootContainer(folderRelPath, null);
 		VFSContainer newFolder1 = folder.createChildContainer("New folder 1");
 		if(newFolder1 == null) {
 			newFolder1 = (VFSContainer)folder.resolve("New folder 1");
@@ -258,7 +258,7 @@ public class GroupFoldersTest extends OlatJerseyTestCase {
 		//create some sub folders and copy file
 		CollaborationTools collabTools2 = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(g2);
 		String folderRelPath = collabTools2.getFolderRelPath();
-		OlatRootFolderImpl folder = new OlatRootFolderImpl(folderRelPath, null);
+		VFSContainer folder = VFSManager.olatRootContainer(folderRelPath, null);
 		VFSContainer newFolder1 = folder.createChildContainer("New folder 2");
 		if(newFolder1 == null) {
 			newFolder1 = (VFSContainer)folder.resolve("New folder 2");
@@ -290,7 +290,7 @@ public class GroupFoldersTest extends OlatJerseyTestCase {
 		//create some sub folders and copy file
 		CollaborationTools collabTools2 = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(g2);
 		String folderRelPath = collabTools2.getFolderRelPath();
-		OlatRootFolderImpl folder = new OlatRootFolderImpl(folderRelPath, null);
+		VFSContainer folder = VFSManager.olatRootContainer(folderRelPath, null);
 		VFSContainer newFolder1 = folder.createChildContainer("Metadata folder");
 		if(newFolder1 == null) {
 			newFolder1 = (VFSContainer)folder.resolve("Metadata folder");

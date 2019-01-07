@@ -28,7 +28,6 @@ import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.dispatcher.mapper.Mapper;
@@ -76,6 +75,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
+import org.olat.core.util.vfs.meta.MetaInfo;
 import org.olat.course.nodes.PortfolioCourseNode;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderConfiguration;

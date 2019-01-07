@@ -29,7 +29,6 @@ package org.olat.core.commons.modules.bc.commands;
 import java.util.Collections;
 import java.util.List;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.commons.editor.htmleditor.HTMLEditorController;
 import org.olat.core.commons.editor.htmleditor.WysiwygFactory;
@@ -56,6 +55,7 @@ import org.olat.core.util.vfs.VFSLockManager;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.core.util.vfs.util.ContainerAndFile;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class CmdEditContent extends BasicController implements FolderCommand {
 
@@ -67,16 +67,15 @@ public class CmdEditContent extends BasicController implements FolderCommand {
 
 	private VersionCommentController unlockCtr;
 	private CloseableModalController unlockDialogBox;
-	private final VFSLockManager vfsLockManager;
+	
+	@Autowired
+	private VFSLockManager vfsLockManager;
 	
 	protected CmdEditContent(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		vfsLockManager = CoreSpringFactory.getImpl(VFSLockManager.class);
 	}
 
-	/**
-	 * @see org.olat.modules.bc.commands.FolderCommand#execute(org.olat.modules.bc.components.FolderComponent, org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl, org.olat.core.gui.translator.Translator)
-	 */
+	@Override
 	public Controller execute(FolderComponent folderComponent, UserRequest ureq, WindowControl wControl, Translator translator) {
 		this.folderComponent = folderComponent;
 		String pos = ureq.getParameter(ListRenderer.PARAM_CONTENTEDITID);
@@ -176,16 +175,12 @@ public class CmdEditContent extends BasicController implements FolderCommand {
 		return currentItem.getName();
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		// nothing to do here
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == editorc) {
 			if (event == Event.DONE_EVENT) {

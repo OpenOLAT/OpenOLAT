@@ -50,7 +50,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.core.commons.modules.bc.vfs.OlatNamedContainerImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSContainer;
@@ -180,7 +179,7 @@ public class CoursesFoldersTest extends OlatJerseyTestCase {
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
 
-		OlatNamedContainerImpl folder = BCCourseNode.getNodeFolderContainer((BCCourseNode)bcNode, course1.getCourseEnvironment());
+		VFSContainer folder = BCCourseNode.getNodeFolderContainer((BCCourseNode)bcNode, course1.getCourseEnvironment());
 		VFSItem item = folder.resolve(file.getName());
 		assertNotNull(item);
 	}
@@ -194,7 +193,7 @@ public class CoursesFoldersTest extends OlatJerseyTestCase {
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		
-		OlatNamedContainerImpl folder = BCCourseNode.getNodeFolderContainer((BCCourseNode)bcNode, course1.getCourseEnvironment());
+		VFSContainer folder = BCCourseNode.getNodeFolderContainer((BCCourseNode)bcNode, course1.getCourseEnvironment());
 		VFSItem item = folder.resolve("RootFolder");
 		assertNotNull(item);
 		assertTrue(item instanceof VFSContainer);
@@ -209,7 +208,7 @@ public class CoursesFoldersTest extends OlatJerseyTestCase {
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		
-		OlatNamedContainerImpl folder = BCCourseNode.getNodeFolderContainer((BCCourseNode)bcNode, course1.getCourseEnvironment());
+		VFSContainer folder = BCCourseNode.getNodeFolderContainer((BCCourseNode)bcNode, course1.getCourseEnvironment());
 		VFSItem item = folder.resolve("NewFolder1");
 		assertNotNull(item);
 		assertTrue(item instanceof VFSContainer);
@@ -223,7 +222,7 @@ public class CoursesFoldersTest extends OlatJerseyTestCase {
 	@Test
 	public void deleteFolder() throws IOException, URISyntaxException {
 		//add some folders
-		OlatNamedContainerImpl folder = BCCourseNode.getNodeFolderContainer((BCCourseNode)bcNode, course1.getCourseEnvironment());
+		VFSContainer folder = BCCourseNode.getNodeFolderContainer((BCCourseNode)bcNode, course1.getCourseEnvironment());
 		VFSItem item = folder.resolve("FolderToDelete");
 		if(item == null) {
 			folder.createChildContainer("FolderToDelete");

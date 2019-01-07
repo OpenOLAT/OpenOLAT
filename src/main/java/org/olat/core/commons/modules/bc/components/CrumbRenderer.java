@@ -53,9 +53,7 @@ public class CrumbRenderer {
 	 * @return	HTML fragment of briefcase path
 	 */
 	public final void render(FolderComponent fc, StringOutput sb, URLBuilder ubu, boolean iframePostEnabled) {
-		try {
-			StringOutput pathLink = new StringOutput();
-			
+		try(StringOutput pathLink = new StringOutput()) {
 			// append toplevel node
 			sb.append("<ol class='breadcrumb'><li><a ");
 			ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, false, true)

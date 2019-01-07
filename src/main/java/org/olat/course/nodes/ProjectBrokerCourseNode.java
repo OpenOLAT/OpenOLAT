@@ -44,7 +44,6 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
@@ -72,6 +71,7 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.vfs.LocalFileImpl;
+import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -906,7 +906,7 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Persis
 			// create a hashmap with the project configuration and insert the
 			// project data
 			File projectFile = new File(projectFolder, project.getKey() + ".xml");
-			HashMap<String, Object> projectData = new HashMap<String, Object>();
+			HashMap<String, Object> projectData = new HashMap<>();
 			projectData.put("title", project.getTitle());
 			projectData.put("description", project.getDescription());
 			projectData.put("customFieldSize", project.getCustomFieldSize());
@@ -923,7 +923,7 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Persis
 			// writeout the project data
 			XStreamHelper.writeObject(xstream, projectFile, projectData);
 			// add attachment file
-			OlatRootFolderImpl rootFolder = new OlatRootFolderImpl(projectBrokerManager.getAttamchmentRelativeRootPath(project, course.getCourseEnvironment(), this), null);
+			LocalFolderImpl rootFolder = VFSManager.olatRootContainer(projectBrokerManager.getAttamchmentRelativeRootPath(project, course.getCourseEnvironment(), this), null);
 			VFSItem item = rootFolder.resolve(project.getAttachmentFileName());
 			if (item instanceof VFSLeaf) {
 				VFSLeaf itemLeaf = (VFSLeaf) item;
@@ -949,9 +949,9 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Persis
 	public boolean archiveNodeData(Locale locale, ICourse course, ArchiveOptions options, ZipOutputStream exportStream, String charset) {
 		boolean dataFound = false;
 		String dropboxPath = DropboxController.getDropboxPathRelToFolderRoot(course.getCourseEnvironment(),this);
-		OlatRootFolderImpl dropboxDir = new OlatRootFolderImpl(dropboxPath, null);
+		VFSContainer dropboxDir = VFSManager.olatRootContainer(dropboxPath, null);
 		String returnboxPath = ReturnboxController.getReturnboxPathRelToFolderRoot(course.getCourseEnvironment(),this);
-		OlatRootFolderImpl returnboxDir = new OlatRootFolderImpl(returnboxPath, null);
+		VFSContainer returnboxDir = VFSManager.olatRootContainer(returnboxPath, null);
 		if (!dropboxDir.exists() && !returnboxDir.exists()) {
 			return false;
 		}
@@ -1127,7 +1127,7 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Persis
 				projectGroupManager.setDeselectionAllowed(newProject, project.getProjectGroup().isAllowToLeave());
 				projectBrokerManager.updateProject(newProject);
 				// attachment file
-				OlatRootFolderImpl rootFolder = new OlatRootFolderImpl(projectBrokerManager.getAttamchmentRelativeRootPath(project, sourceCourse.getCourseEnvironment(), this), null);
+				VFSContainer rootFolder = VFSManager.olatRootContainer(projectBrokerManager.getAttamchmentRelativeRootPath(project, sourceCourse.getCourseEnvironment(), this), null);
 				VFSItem item = rootFolder.resolve(project.getAttachmentFileName());
 				if (item instanceof VFSLeaf) {
 					projectBrokerManager.saveAttachedFile(newProject, project.getAttachmentFileName(), (VFSLeaf) item, course.getCourseEnvironment(), this);
@@ -1189,7 +1189,7 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Persis
 				projectBrokerManager.updateProject(newProject);
 
 				// attachment file
-				OlatRootFolderImpl rootFolder = new OlatRootFolderImpl(projectBrokerManager.getAttamchmentRelativeRootPath(project, course.getCourseEnvironment(), this), null);
+				VFSContainer rootFolder = VFSManager.olatRootContainer(projectBrokerManager.getAttamchmentRelativeRootPath(project, course.getCourseEnvironment(), this), null);
 				VFSItem item = rootFolder.resolve(project.getAttachmentFileName());
 				if (item instanceof VFSLeaf) {
 					projectBrokerManager.saveAttachedFile(newProject, project.getAttachmentFileName(), (VFSLeaf) item, course.getCourseEnvironment(), copyInstance);

@@ -57,7 +57,6 @@ import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.PublisherData;
@@ -336,7 +335,7 @@ public class NotificationsTest extends OlatJerseyTestCase {
 		PublisherData folderPdata = new PublisherData("FolderModule", relPath, businessPath);
 		notificationManager.subscribe(id, folderSubContext, folderPdata);
 		//add a file
-		OlatRootFolderImpl folder = tools.getSecuredFolder(group, folderSubContext, id, true);
+		VFSContainer folder = tools.getSecuredFolder(group, folderSubContext, id, true);
 		String filename = addFile(folder);
 		
 		//mark as published

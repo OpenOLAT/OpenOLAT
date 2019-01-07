@@ -30,7 +30,7 @@ import java.io.IOException;
 
 import org.apache.lucene.document.Document;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
+import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.search.service.SearchResourceContext;
@@ -81,7 +81,7 @@ public abstract class LeafIndexer extends AbstractHierarchicalIndexer {
 		VFSContainer parentContainer = leaf.getParentContainer();
 		while (parentContainer.getParentContainer() != null) {
 			String name = parentContainer.getName();
-			if (parentContainer instanceof OlatRootFolderImpl && name.equals("coursefolder")) {
+			if (parentContainer instanceof LocalFolderImpl && name.equals("coursefolder")) {
 				// don't add the coursefolder to the path, the path is relative to the course folder
 				break;
 			}

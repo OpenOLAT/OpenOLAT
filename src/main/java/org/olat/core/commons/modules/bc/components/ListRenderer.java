@@ -35,8 +35,6 @@ import org.olat.core.commons.modules.bc.FileSelection;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.FolderLicenseHandler;
 import org.olat.core.commons.modules.bc.FolderManager;
-import org.olat.core.commons.modules.bc.meta.MetaInfo;
-import org.olat.core.commons.modules.bc.meta.MetaInfoFactory;
 import org.olat.core.commons.services.license.License;
 import org.olat.core.commons.services.license.LicenseHandler;
 import org.olat.core.commons.services.license.LicenseModule;
@@ -61,6 +59,8 @@ import org.olat.core.util.vfs.VFSLockManager;
 import org.olat.core.util.vfs.VirtualContainer;
 import org.olat.core.util.vfs.filters.SystemItemFilter;
 import org.olat.core.util.vfs.lock.LockInfo;
+import org.olat.core.util.vfs.meta.MetaInfo;
+import org.olat.core.util.vfs.meta.MetaInfoFactory;
 import org.olat.core.util.vfs.version.Versionable;
 import org.olat.core.util.vfs.version.Versions;
 import org.olat.user.UserManager;
@@ -213,7 +213,7 @@ public class ListRenderer {
 			metaInfo = child.getMetaInfo();
 		}
 		
-		boolean lockedForUser = lockManager.isLockedForMe(child, fc.getIdentityEnvironnement().getIdentity(), fc.getIdentityEnvironnement().getRoles());
+		boolean lockedForUser = lockManager.isLockedForMe(child, metaInfo, fc.getIdentityEnvironnement().getIdentity(), fc.getIdentityEnvironnement().getRoles());
 		
 		String name = child.getName();
 		boolean xssErrors = StringHelper.xssScanForErrors(name);
@@ -391,7 +391,7 @@ public class ListRenderer {
 		}
 		
 		//locked
-		boolean locked = lockManager.isLocked(child);
+		boolean locked = lockManager.isLocked(child, metaInfo);
 		if(locked) {
 			LockInfo lock = lockManager.getLock(child);
 			sb.append("<i class=\"o_icon o_icon_locked\" title=\"");

@@ -73,7 +73,6 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.core.util.vfs.OlatRelPathImpl;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
 import org.olat.core.util.vfs.VFSContainer;
@@ -282,9 +281,9 @@ public class FolderRunController extends BasicController implements Activateable
 		if (secCallback != null) {
 			subsContext = secCallback.getSubscriptionContext();
 			// if null, then no subscription is desired
-			if (subsContext != null && (rootContainer instanceof OlatRelPathImpl)) {
+			String data = rootContainer.getRelPath();
+			if (subsContext != null && data != null) {
 				String businessPath = wControl.getBusinessControl().getAsString();
-				String data = ((OlatRelPathImpl)rootContainer).getRelPath();
 				PublisherData pdata = new PublisherData(OresHelper.calculateTypeName(FolderModule.class), data, businessPath);
 				csController = new ContextualSubscriptionController(ureq, getWindowControl(), subsContext, pdata);
 				folderContainer.put("subscription", csController.getInitialComponent());

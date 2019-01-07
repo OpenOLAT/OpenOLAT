@@ -77,6 +77,11 @@ public class VFSMediaFilesContainer extends AbstractVirtualContainer implements 
 	}
 	
 	@Override
+	public String getRelPath() {
+		return rootContainer.getRelPath();
+	}
+
+	@Override
 	public VFSContainer getParentContainer() {
 		return null;
 	}

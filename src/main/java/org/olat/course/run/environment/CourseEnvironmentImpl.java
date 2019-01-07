@@ -25,8 +25,8 @@
 
 package org.olat.course.run.environment;
 
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.logging.AssertException;
+import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.PersistingCourseImpl;
 import org.olat.course.Structure;
@@ -171,7 +171,7 @@ public class CourseEnvironmentImpl implements CourseEnvironment {
 	}
 
 	@Override
-	public OlatRootFolderImpl getCourseBaseContainer() {
+	public LocalFolderImpl getCourseBaseContainer() {
 		return course.getCourseBaseContainer();
 	}
 }

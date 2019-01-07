@@ -26,7 +26,7 @@
 
 package org.olat.core.commons.modules.bc.components;
 
-import java.util.Iterator;
+import java.util.List;
 
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.FolderRunController;
@@ -66,9 +66,6 @@ public class FolderComponentRenderer extends DefaultComponentRenderer {
 		crumbRenderer = new CrumbRenderer();
 	}
 
-	/**
-	 * @see org.olat.core.gui.render.ui.ComponentRenderer#render(org.olat.core.gui.render.Renderer, org.olat.core.gui.render.StringOutput, org.olat.core.gui.components.Component, org.olat.core.gui.render.URLBuilder, org.olat.core.gui.translator.Translator, org.olat.core.gui.render.RenderResult, java.lang.String[])
-	 */
 	@Override
 	public void render(Renderer renderer, StringOutput target, Component source, URLBuilder ubu, Translator translator, RenderResult renderResult, String[] args) {
 		FolderComponent fc = (FolderComponent) source;
@@ -100,8 +97,9 @@ public class FolderComponentRenderer extends DefaultComponentRenderer {
 		boolean canDelete = false;
 		boolean canVersion = FolderConfig.versionsEnabled(fc.getCurrentContainer());
 		boolean canMail = fc.isCanMail();
-		for (Iterator<VFSItem> iter = fc.getCurrentContainerChildren().iterator(); iter.hasNext();) {
-			VFSItem child = iter.next();
+		
+		List<VFSItem> children = fc.getCurrentContainerChildren();
+		for (VFSItem child:children) {
 			if (child.canDelete() == VFSConstants.YES) {
 				canDelete = true;
 				break;
@@ -180,7 +178,7 @@ public class FolderComponentRenderer extends DefaultComponentRenderer {
 		target.append("<div class='o_table_wrapper'>");
 		listRenderer.render(fc, target, ubu, translator, iframePostEnabled);
 
-		if (fc.getCurrentContainerChildren().size() > 0) {
+		if (!children.isEmpty()) {
 			target.append("<div class='o_table_footer'>")
 			      .append("<div class=\"o_table_checkall input-sm\">")
 			      .append("<label class='checkbox-inline'><a href=\"#\" onclick=\"javascript:b_briefcase_toggleCheck('").append(formName).append("', true)\">")

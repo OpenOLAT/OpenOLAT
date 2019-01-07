@@ -111,6 +111,9 @@ public class SimpleVersionConfig extends AbstractSpringModule implements Generic
 
 	@Override
 	public int versionAllowed(String relPath) {
+		if(relPath == null) {
+			return 0;
+		}
 		if(StringHelper.containsNonWhitespace(relPath)) {
 			if(relPath.startsWith("/tmp/")//no versioning in tmp
 					|| relPath.startsWith("/scorm/")//there is already a versioning in assessment tool

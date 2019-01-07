@@ -22,6 +22,7 @@ package org.olat.core.util.vfs;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.util.vfs.lock.LockInfo;
+import org.olat.core.util.vfs.meta.MetaInfo;
 
 /**
  * The manager which locks / unlokcs the files
@@ -39,13 +40,33 @@ public interface VFSLockManager {
 	public boolean isLocked(VFSItem item);
 	
 	/**
+	 * This method is used as an optimization of the isLocked() to prevent
+	 * loading several times the same metadata in a list.
+	 * 
+	 * @param item The file to check
+	 * @param loadedInfo The up-to-date meta info
+	 * @return
+	 */
+	public boolean isLocked(VFSItem item, MetaInfo loadedInfo);
+	
+	/**
 	 * 
 	 * @param item
 	 * @param me
 	 * @param roles
-	 * @return True if there is a lock owned by someone else, or there is a WebDAV lock on the item
+	 * @return true if there is a lock owned by someone else, or there is a WebDAV lock on the item
 	 */
 	public boolean isLockedForMe(VFSItem item, Identity me, Roles roles);
+	
+	/**
+	 * 
+	 * @param item
+	 * @param loadedInfo
+	 * @param me
+	 * @param roles
+	 * @return true if there is a lock owned by someone else, or there is a WebDAV lock on the item
+	 */
+	public boolean isLockedForMe(VFSItem item, MetaInfo loadedInfo, Identity me, Roles roles);
 	
 	public LockInfo getLock(VFSItem item);
 	

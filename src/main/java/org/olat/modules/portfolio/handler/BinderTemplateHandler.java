@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.util.Locale;
 
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
@@ -46,6 +45,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
+import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.fileresource.FileResourceManager;
@@ -128,7 +128,7 @@ public class BinderTemplateHandler implements RepositoryHandler {
 		try {
 			//create resource
 			OLATResource resource = portfolioService.createBinderTemplateResource();
-			OlatRootFolderImpl fResourceRootContainer = FileResourceManager.getInstance().getFileResourceRootImpl(resource);
+			LocalFolderImpl fResourceRootContainer = FileResourceManager.getInstance().getFileResourceRootImpl(resource);
 			File fResourceFileroot = fResourceRootContainer.getBasefile();
 			File zipRoot = new File(fResourceFileroot, FileResourceManager.ZIPDIR);
 			FileResource.copyResource(file, filename, zipRoot);

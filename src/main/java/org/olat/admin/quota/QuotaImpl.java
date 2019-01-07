@@ -25,8 +25,8 @@
 
 package org.olat.admin.quota;
 
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.util.vfs.Quota;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSManager;
 
 
@@ -78,7 +78,7 @@ public class QuotaImpl implements Quota {
 		if (quotaInKB == Quota.UNLIMITED) {
 			remainingQuotaKB = quotaInKB;
 		} else {
-			OlatRootFolderImpl container = new OlatRootFolderImpl(path, null);
+			VFSContainer container = VFSManager.olatRootContainer(path, null);
 			long actualUsage = VFSManager.getUsageKB(container);
 			if (quotaInKB - actualUsage < 0) {
 				remainingQuotaKB = 0l;
@@ -86,6 +86,6 @@ public class QuotaImpl implements Quota {
 				remainingQuotaKB = quotaInKB - actualUsage;
 			}
 		}
-		return new Long(remainingQuotaKB);
+		return Long.valueOf(remainingQuotaKB);
 	}
 }

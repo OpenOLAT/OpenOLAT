@@ -34,8 +34,6 @@ import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.FolderEvent;
 import org.olat.core.commons.modules.bc.FolderRunController;
 import org.olat.core.commons.modules.bc.commands.FolderCommand;
-import org.olat.core.commons.modules.bc.vfs.OlatNamedContainerImpl;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.notifications.ui.ContextualSubscriptionController;
 import org.olat.core.gui.UserRequest;
@@ -67,8 +65,11 @@ import org.olat.core.util.mail.MailContextImpl;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.callbacks.ReadOnlyCallback;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.course.auditing.UserNodeAuditManager;
@@ -183,9 +184,9 @@ public class DropboxScoringViewController extends BasicController {
 			myContent.contextPut("hasNotification", Boolean.FALSE);
 		}
 		
-		OlatRootFolderImpl rootDropbox = new OlatRootFolderImpl(getDropboxFilePath(assesseeName), null);
+		VFSContainer rootDropbox = VFSManager.olatRootContainer(getDropboxFilePath(assesseeName), null);
 		rootDropbox.setLocalSecurityCallback( getDropboxVfsSecurityCallback());
-		OlatNamedContainerImpl namedDropbox = new OlatNamedContainerImpl(assesseeFullName, rootDropbox);
+		VFSContainer namedDropbox = new NamedContainerImpl(assesseeFullName, rootDropbox);
 		namedDropbox.setLocalSecurityCallback(getDropboxVfsSecurityCallback());
 	
 		dropboxFolderRunController = new FolderRunController(namedDropbox, false, ureq, getWindowControl());
@@ -195,10 +196,10 @@ public class DropboxScoringViewController extends BasicController {
 
 		Identity assessedIdentity = userCourseEnv.getIdentityEnvironment().getIdentity();
 		// returnbox display
-		OlatRootFolderImpl rootReturnbox = new OlatRootFolderImpl(getReturnboxFilePath(assesseeName), null);
+		VFSContainer rootReturnbox = VFSManager.olatRootContainer(getReturnboxFilePath(assesseeName), null);
 		VFSSecurityCallback secCallback = getReturnboxVfsSecurityCallback(rootReturnbox.getRelPath(), assessedIdentity);
 		rootReturnbox.setLocalSecurityCallback(secCallback);
-		OlatNamedContainerImpl namedReturnbox = new OlatNamedContainerImpl(assesseeFullName, rootReturnbox);
+		VFSContainer namedReturnbox = new NamedContainerImpl(assesseeFullName, rootReturnbox);
 		namedReturnbox.setLocalSecurityCallback(secCallback);
 
 		returnboxFolderRunController = new FolderRunController(namedReturnbox, false, ureq, getWindowControl());

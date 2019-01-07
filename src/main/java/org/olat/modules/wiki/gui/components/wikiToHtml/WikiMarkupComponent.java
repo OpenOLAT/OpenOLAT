@@ -33,7 +33,6 @@ import org.jamwiki.Environment;
 import org.jamwiki.parser.ParserInput;
 import org.jamwiki.parser.jflex.JFlexParser;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
@@ -45,6 +44,7 @@ import org.olat.core.gui.control.JSAndCSSAdder;
 import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
+import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSContainerMapper;
 import org.olat.core.util.vfs.VFSManager;
@@ -79,7 +79,7 @@ public class WikiMarkupComponent extends AbstractComponent implements Disposable
 		this.minHeight = Math.max(minHeight, 15);
 		
 		//configure wiki parser
-		OlatRootFolderImpl tempFolder =  new OlatRootFolderImpl("/tmp", null);
+		LocalFolderImpl tempFolder =  VFSManager.olatRootContainer("/tmp", null);
 		Environment.setValue(Environment.PROP_BASE_FILE_DIR, tempFolder.getBasefile().getAbsolutePath());
 		Environment.setValue(Environment.PROP_DB_TYPE, "org.olat.core.gui.components.wikiToHtml.OlatWikiDataHandler");
 	}
@@ -170,8 +170,8 @@ public class WikiMarkupComponent extends AbstractComponent implements Disposable
 		return this.imageBaseUri;
 	}
 
+	@Override
 	public String getExtendedDebugInfo() {
-
 		// see velocitycontainer on how to implement
 		return null;
 	}
@@ -184,10 +184,7 @@ public class WikiMarkupComponent extends AbstractComponent implements Disposable
 		return parser;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.Component#validate(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.render.ValidationResult)
-	 */
+	@Override
 	public void validate(UserRequest ureq, ValidationResult vr) {
 		super.validate(ureq, vr);
 		JSAndCSSAdder jsa = vr.getJsAndCSSAdder();

@@ -31,7 +31,6 @@ import java.util.Locale;
 import org.olat.admin.quota.QuotaConstants;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
@@ -52,6 +51,7 @@ import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.callbacks.FullAccessWithQuotaCallback;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.course.assessment.AssessmentMode;
@@ -226,7 +226,7 @@ public class ImsCPHandler extends FileHandler {
 	@Override
 	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbar) {
 		// only unzips, if not already unzipped
-		OlatRootFolderImpl cpRoot = FileResourceManager.getInstance().unzipContainerResource(re.getOlatResource());
+		VFSContainer cpRoot = FileResourceManager.getInstance().unzipContainerResource(re.getOlatResource());
 
 		QuotaManager quotaManager = CoreSpringFactory.getImpl(QuotaManager.class);
 		Quota quota = quotaManager.getCustomQuota(cpRoot.getRelPath());

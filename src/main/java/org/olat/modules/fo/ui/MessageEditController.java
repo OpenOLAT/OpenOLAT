@@ -32,7 +32,6 @@ import javax.persistence.PersistenceException;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.IdentityShort;
 import org.olat.core.commons.modules.bc.FolderConfig;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.gui.UserRequest;
@@ -66,6 +65,7 @@ import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.filters.VFSItemMetaFilter;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.ForumCallback;
@@ -628,7 +628,7 @@ public class MessageEditController extends FormBasicController {
 
 	private List<VFSItem> getTempFolderFileList() {
 		if (tempUploadFolder == null) {
-			tempUploadFolder = new OlatRootFolderImpl(File.separator + "tmp/" + CodeHelper.getGlobalForeverUniqueID() + "/", null);
+			tempUploadFolder = VFSManager.olatRootContainer(File.separator + "tmp/" + CodeHelper.getGlobalForeverUniqueID() + "/", null);
 		}		
 		return tempUploadFolder.getItems(exclFilter);
 	}

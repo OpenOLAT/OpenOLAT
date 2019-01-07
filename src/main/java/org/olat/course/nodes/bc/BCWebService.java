@@ -46,7 +46,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.modules.bc.vfs.OlatNamedContainerImpl;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.Subscriber;
 import org.olat.core.gui.UserRequest;
@@ -376,7 +375,7 @@ public class BCWebService extends AbstractCourseNodeWebService {
 	}
 	
 	public static FolderVO createFolderVO(IdentityEnvironment ienv, ICourse course, BCCourseNode bcNode, Collection<String> subscribed) {
-		OlatNamedContainerImpl container = getSecurisedNodeFolderContainer(bcNode, course.getCourseEnvironment(), ienv);
+		VFSContainer container = getSecurisedNodeFolderContainer(bcNode, course.getCourseEnvironment(), ienv);
 		VFSSecurityCallback secCallback = container.getLocalSecurityCallback();
 		
 		FolderVO folderVo = new FolderVO();
@@ -396,14 +395,14 @@ public class BCWebService extends AbstractCourseNodeWebService {
 		return folderVo;
 	}
 	
-	public static OlatNamedContainerImpl getSecurisedNodeFolderContainer(BCCourseNode node, CourseEnvironment courseEnv, IdentityEnvironment ienv) {
+	private static VFSContainer getSecurisedNodeFolderContainer(BCCourseNode node, CourseEnvironment courseEnv, IdentityEnvironment ienv) {
 		RepositoryEntry entry = courseEnv.getCourseGroupManager().getCourseEntry();
 		RepositoryEntrySecurity reSecurity = CoreSpringFactory.getImpl(RepositoryManager.class).isAllowed(ienv.getIdentity(), ienv.getRoles(), entry);
 		
 		UserCourseEnvironmentImpl uce = new UserCourseEnvironmentImpl(ienv, courseEnv);
 		NodeEvaluation ne = node.eval(uce.getConditionInterpreter(), new TreeEvaluation(), new VisibleTreeFilter());
 
-		OlatNamedContainerImpl container = BCCourseNode.getNodeFolderContainer(node, courseEnv);
+		VFSContainer container = BCCourseNode.getNodeFolderContainer(node, courseEnv);
 		VFSSecurityCallback secCallback = new FolderNodeCallback(container.getRelPath(), ne, reSecurity.isEntryAdmin(), ienv.getRoles().isGuestOnly(), null);
 		container.setLocalSecurityCallback(secCallback);
 		return container;
