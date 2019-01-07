@@ -81,7 +81,8 @@
 		<regexp name="olatInternalURL"
 			value="javascript:parent\.gotonode\(\d+\)" />
 		<regexp name="onsiteURL"
-			value="([\p{L}\p{N}\p{Zs}/\.\?=&amp;\-~_])+" />
+			value="([\p{L}\p{N}\p{Zs}/\.\?=&amp;\-~_]|ccrep:)+" />
+<!-- 		value="([\p{L}\p{N}\p{Zs}/\.\?=&amp;\-~_])+" /> -->
 		
 		<regexp name="offsiteURL"
 			value="(\s)*(http(s?)://|mailto:)[A-Za-z0-9]+[~a-zA-Z0-9-_\.@#$%&amp;;&Agrave;;&Aacute;&Acirc;&Atilde;&Auml;&Egrave;&Eacute;&Ecirc;&Euml;&Igrave;&Iacute;&Icirc;&Iuml;&Ograve;&Oacute;&Ocirc;&Otilde;&Ouml;&Ugrave;&Uacute;&Ucirc;&Uuml;&agrave;&aacute;&acirc;&atilde;&auml;&egrave;&eacute;&ecirc;&euml;&igrave;&iacute;&icirc;&iuml;&ograve;&oacute;&ocirc;&ouml;&ugrave;&uacute;&ucirc;&uuml;;:,\?=/\+!]*(\s)*" />
@@ -354,6 +355,53 @@
 				<literal value="colgroup" />
 			</literal-list>
 		</attribute>
+		
+		<!-- edu-sharing data attributes -->
+		<attribute name="data-es_identifier">
+			<regexp-list>
+				<regexp value="[a-zA-Z0-9_\-\:]+"/>
+			</regexp-list>
+		</attribute>
+		<attribute name="data-es_objecturl">
+			<regexp-list>
+				<regexp value="[a-zA-Z0-9_\-\:\/]+"/>
+			</regexp-list>
+		</attribute>
+		<attribute name="data-es_version">
+			<regexp-list>
+				<regexp value="[a-zA-Z0-9_\-\:\.]+"/>
+			</regexp-list>
+		</attribute>
+		<attribute name="data-es_version_current">
+			<regexp-list>
+				<regexp value="[a-zA-Z0-9_\-\:\.]+"/>
+			</regexp-list>
+		</attribute>
+		<attribute name="data-es_mimetype">
+			<regexp-list>
+				<regexp value="[a-zA-Z0-9_\-\:\/]+"/>
+			</regexp-list>
+		</attribute>
+		<attribute name="data-es_mediatype">
+			<regexp-list>
+				<regexp value="[a-zA-Z0-9_\-\:]+"/>
+			</regexp-list>
+		</attribute>
+		<attribute name="data-es_width">
+			<regexp-list>
+				<regexp value="[0-9]+"/>
+			</regexp-list>
+		</attribute>
+		<attribute name="data-es_height">
+			<regexp-list>
+				<regexp value="[0-9]+"/>
+			</regexp-list>
+		</attribute>
+		<attribute name="data-es_first_edit">
+			<regexp-list>
+				<regexp value="true|false"/>
+			</regexp-list>
+		</attribute>
 
 	</common-attributes>
 
@@ -475,6 +523,17 @@
 					<literal value="nofollow" />
 				</literal-list>
 			</attribute>
+			
+			<!-- edu-sharing data attributes -->
+			<attribute name="data-es_identifier" />
+			<attribute name="data-es_objecturl" />
+			<attribute name="data-es_version" />
+			<attribute name="data-es_version_current" />
+			<attribute name="data-es_mimetype" />
+			<attribute name="data-es_mediatype" />
+			<attribute name="data-es_width" />
+			<attribute name="data-es_height" />
+			<attribute name="data-es_first_edit" />
 		</tag>
 
 		<!--  List tags
@@ -523,6 +582,17 @@
 					<regexp name="number" />
 				</regexp-list>
 			</attribute>
+			
+			<!-- edu-sharing data attributes -->
+			<attribute name="data-es_identifier" />
+			<attribute name="data-es_objecturl" />
+			<attribute name="data-es_version" />
+			<attribute name="data-es_version_current" />
+			<attribute name="data-es_mimetype" />
+			<attribute name="data-es_mediatype" />
+			<attribute name="data-es_width" />
+			<attribute name="data-es_height" />
+			<attribute name="data-es_first_edit" />
 		</tag>
 
 

@@ -105,16 +105,19 @@ public class RichTextElementImpl extends AbstractTextElement implements
 	}
 	
 	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.elements.AbstractTextElement#getValue()
-	 * The returned value is XSS save and
-	 * does not contain executable JavaScript code. If you want to get the raw
-	 * user data use the getRawValue() method.
+	 * The returned value is XSS save and does not contain executable JavaScript
+	 * code. Further all value filter of the configuration are applied. If you want
+	 * to get the raw user data, use the getRawValue() method.
 	 */
 	@Override
 	public String getValue() {
 		String val = getRawValue();
 		Filter xssFilter = FilterFactory.getXSSFilter(val.length() + 1);
-		return xssFilter.filter(val);
+		val = xssFilter.filter(val);
+		for (Filter filter : configuration.getValueFilters()) {
+			val = filter.filter(val);
+		}
+		return val;
 	}
 	
 	@Override

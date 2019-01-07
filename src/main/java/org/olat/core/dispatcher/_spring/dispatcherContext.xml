@@ -58,6 +58,9 @@
 				<entry key="/survey/">
 					<ref bean="evaluationformwebbean" />
 				</entry>
+				<entry key="/edusharing/">
+					<ref bean="edusharingwebbean" />
+				</entry>
 				<entry key="/podcast/">
 					<ref bean="podcastMediaBean" />
 				</entry>
@@ -252,6 +255,9 @@
 		
 	<bean id="evaluationformwebbean"
 		class="org.olat.modules.forms.EvaluationFormDispatcher" />
+
+	<bean id="edusharingwebbean"
+		class="org.olat.modules.edusharing.EdusharingDispatcher" />
 
 	<!-- podcast media dispatcher -->
 	<bean id="podcastMediaBean" class="org.olat.modules.webFeed.dispatching.FeedMediaDispatcher">

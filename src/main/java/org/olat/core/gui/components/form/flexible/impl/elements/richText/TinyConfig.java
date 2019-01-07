@@ -202,6 +202,27 @@ public class TinyConfig {
 		return disableFeature("olatmatheditor");
 	}
 	
+	public TinyConfig enableEdusharing() {
+		return enableFeature("olatedusharing")
+				.endableButton("olatedusharing");
+	}
+
+	public TinyConfig disableEdusharing() {
+		return disableFeature("olatedusharing")
+				.disableButtons("olatedusharing");
+	}
+	
+	public TinyConfig endableButton(String button) {
+		TinyConfig config = this;
+		
+		if (!tool1.contains(button)) {
+			String clonedTools =  tool1 + " " + button;
+			config = new TinyConfig(plugins, menu, clonedTools);
+		}
+		
+		return config;
+	}
+	
 	public TinyConfig disableButtons(String button) {
 		TinyConfig config = this;
 		if(tool1.contains(button)) {

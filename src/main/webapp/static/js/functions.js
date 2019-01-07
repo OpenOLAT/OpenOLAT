@@ -506,7 +506,7 @@ function o_ainvoke(r) {
 	o_info.inainvoke = true;
 	var cmdcnt = r["cmdcnt"];
 	if (cmdcnt > 0) {
-		// let everybody know dom replacement has finished
+		// let everybody know dom replacement has started
 		jQuery(document).trigger("oo.dom.replacement.before");
 
 		b_changedDomEl = new Array();
@@ -971,7 +971,7 @@ OPOL.adjustHeight = function() {
 			jQuery('#o_main_center').css({'min-height' : contentHeight + "px"});
 		}
 	} catch (e) {
-		if(window.console)	console.log(e);			
+		if(window.console)	console.log(e);
 	}
 };
 
@@ -2092,4 +2092,134 @@ var BDebugger = {
 		}
 	}
 }
- 
+
+var OOEdusharing = {
+		
+	start: function() {
+		var url = o_info.uriprefix.replace("auth", "edusharing") + "enabled";
+		jQuery.ajax({
+			type: "GET",
+			url: url,
+			dataType : 'text',
+			success : function(){
+				jQuery(document).on("oo.dom.replacement.after", OOEdusharing.render);
+				OOEdusharing.enableMetadataToggler();
+			},
+			error : function(XMLHttpRequest, textStatus, errorThrown) {
+				// Unbind. Not needed as long this method is only triggered on document ready.
+			}
+		})
+	},
+		
+	replaceWithSpinner: function(node, width, height) {
+		var spinnerHtml = "<div style='";
+		if (width > 0) {
+			spinnerHtml += "width:" + width + "px;";
+		}
+		if (height > 0) {
+			spinnerHtml += "height:" + height + "px;";
+		}
+		spinnerHtml += "'>";
+		spinnerHtml += "<div class='edusharing_spinner_inner'><div class='edusharing_spinner1'></div></div>";
+		spinnerHtml += "<div class='edusharing_spinner_inner'><div class='edusharing_spinner2'></div></div>";
+		spinnerHtml += "<div class='edusharing_spinner_inner'><div class='edusharing_spinner3'></div></div>";
+		spinnerHtml += "</div>";
+		
+		var spinner = jQuery(spinnerHtml);
+		node.before(spinner);
+		node.remove();
+		return spinner;
+	},
+	
+	replaceGoTo: function(html, identifier) {
+		var url = o_info.uriprefix.replace("auth", "edusharing") + "goto?identifier=" + identifier;
+		html = html.replace("{{{LMS_INLINE_HELPER_SCRIPT}}}", url)
+		return html;
+	},
+	
+	replaceWithRendered: function(node, identifier, width, height, style) {
+		var url = o_info.uriprefix.replace("auth", "edusharing") + "render?identifier=" + identifier;
+		if (width > 0) {
+			url = url + "&width=" + width;
+		}
+		if (height) {
+			url = url + "&height=" + height;
+		}
+		
+		var containerHtml = "<div class='o_edusharing_container'";
+		if (typeof style != 'undefined') {
+			containerHtml += " style='" + style + "'";
+		}
+		containerHtml += "</div>";
+		var container = jQuery(containerHtml);
+		
+		jQuery.ajax({
+			type: "GET",
+			url: url,
+			dataType : 'html',
+			success : function(data){
+				var goToData = OOEdusharing.replaceGoTo(data, identifier);
+				var esNode = container.append(goToData);
+				node.replaceWith(esNode);
+			},
+			error : function(XMLHttpRequest, textStatus, errorThrown) {
+				node.replaceWith("<div class='o_warning'>edu-sharing not available</div>");
+			}
+		})
+	},
+		
+	replace: function(node) {
+		var identifier = node.data("es_identifier");
+		var width = node.attr("width");
+		var height = node.attr("height");
+		var style = node.attr("style");
+		
+		var spinner = OOEdusharing.replaceWithSpinner(node, width, height);
+		OOEdusharing.replaceWithRendered(spinner, identifier, width, height, style);
+	},
+	
+	/**
+	 * Replace the edu-sharing nodes with the real resources from the edu-sharing rendering service.
+	 */
+	render: function() {
+		var esNodes = jQuery("[data-es_identifier]");
+		if (esNodes.length > 0) {
+			esNodes.each(function() {
+				var node = jQuery( this );
+				OOEdusharing.replace(node);
+			});
+		}
+	},
+	
+	/**
+	 * Toggle edu-sharing metadata.
+	 * see https://github.com/edu-sharing/plugin-moodle/blob/master/filter/edusharing/amd/src/edu.js
+	 */
+	enableMetadataToggler: function() {
+		jQuery(document).click(function (e) {
+			if (jQuery(e.target).closest(".edusharing_metadata").length) {
+				//clicked inside ".edusharing_metadata" - do nothing
+			} else if (jQuery(e.target).closest(".edusharing_metadata_toggle_button").length) {
+				jQuery(".edusharing_metadata").hide();
+				toggle_button = jQuery(e.target);
+				metadata = toggle_button.parent().find(".edusharing_metadata");
+				if (metadata.hasClass('open')) {
+					metadata.toggleClass('open');
+					metadata.hide();
+				} else {
+					jQuery(".edusharing_metadata").removeClass('open');
+					metadata.toggleClass('open');
+					metadata.show();
+				}
+			} else {
+				jQuery(".edusharing_metadata").hide();
+				jQuery(".edusharing_metadata").removeClass('open');
+			}
+		});
+	}
+}
+
+jQuery( document ).ready(function() {
+	OOEdusharing.start();
+});
+

@@ -1,0 +1,141 @@
+
+
+/**
+* see https://github.com/edu-sharing/plugin-moodle/blob/master/filter/edusharing/styles.css
+*/
+
+/**
+ * @copyright  metaVentis GmbH — http://metaventis.com
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
+.eduContainer {
+	width: 180px;
+	color: rgba(0, 0, 0, 0.0); /*do not change*/
+}
+
+.edusharing_spinner_inner {
+	width: 30px;
+	height: 50px;
+	display: inline-block;
+}
+.edusharing_spinner1 {
+	background: url($o-images-path + "edusharing/hex1.svg" );
+	background-repeat: no-repeat;
+	background-position: center;
+	background-size: 50px;
+	width: 50px;
+	height: 50px;
+	-webkit-animation: spin 2s infinite ease-in;
+	-moz-animation: spin 2s infinite ease-in;
+	-ms-animation: spin 2s infinite ease-in;
+	-o-animation: spin 2s infinite ease-in;
+	animation: spin 2s infinite ease-in;
+	-webkit-animation-delay: 0.1s;
+	-moz-animation-delay: 0.1s;
+	animation-delay: 0.1s;
+}
+
+.edusharing_spinner2 {
+	background: url($o-images-path + "edusharing/hex2.svg" );
+	background-repeat: no-repeat;
+	background-position: center;
+	background-size: 50px;
+	width: 50px;
+	height: 50px;
+	-webkit-animation: spin 2s infinite ease-in;
+	-moz-animation: spin 2s infinite ease-in;
+	-ms-animation: spin 2s infinite ease-in;
+	-o-animation: spin 2s infinite ease-in;
+	animation: spin 2s infinite ease-in;
+	-webkit-animation-delay: 0.25s;
+	-moz-animation-delay: 0.25s;
+	animation-delay: 0.25s;
+}
+
+.edusharing_spinner3 {
+	background: url($o-images-path + "edusharing/hex3.svg" );
+	background-repeat: no-repeat;
+	background-position: center;
+	background-size: 50px;
+	width: 50px;
+	height: 50px;
+	-webkit-animation: spin 2s infinite ease-in;
+	-moz-animation: spin 2s infinite ease-in;
+	-ms-animation: spin 2s infinite ease-in;
+	-o-animation: spin 2s infinite ease-in;
+	animation: spin 2s infinite ease-in;
+	-webkit-animation-delay: 0.5s;
+	-moz-animation-delay: 0.5s;
+	animation-delay: 0.5s;
+}
+
+@-webkit-keyframes spin {
+	0% {
+		transform: scale(1);
+	}
+
+	50% {
+		transform: scale(0.5);
+	}
+
+	100% {
+		transform: scale(1);
+	}
+}
+
+@-moz-keyframes spin {
+	0% {
+		transform: scale(1);
+	}
+
+	50% {
+		transform: scale(0.5);
+	}
+
+	100% {
+		transform: scale(1);
+	}
+}
+
+@-ms-keyframes spin {
+	0% {
+		transform: scale(1);
+	}
+
+	50% {
+		transform: scale(0.5);
+	}
+
+	100% {
+		transform: scale(1);
+	}
+}
+
+@-o-keyframes spin {
+	0% {
+		transform: scale(1);
+	}
+
+	50% {
+		transform: scale(0.5);
+	}
+
+	100% {
+		transform: scale(1);
+	}
+}
+
+@keyframes spin {
+	0% {
+		transform: scale(1);
+	}
+
+	50% {
+		transform: scale(0.5) rotate(90deg);
+	}
+
+	100% {
+		transform: scale(1);
+	}
+}

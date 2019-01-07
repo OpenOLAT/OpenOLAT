@@ -19,6 +19,8 @@
  */
 package org.olat.core.util.filter.impl;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -281,6 +283,23 @@ public class XSSFilterTest {
 		t("<figure class=\"image\"><img src=\"bla.png\" /><figcaption>gugs</figcaption></figure>", "<figure class=\"image\"><img src=\"bla.png\" /><figcaption>gugs</figcaption></figure>");
 	}
 	
+	@Test
+	public void test_edusharing() {
+		String html = "<img src=\"/olat/edusharing/preview?objectUrl=ccrep://OpenOLAT/d5130470-14b4-4ad4-88b7-dfb3ebe943da&version=1.0\" data-es_identifier=\"2083dbe64f00b07232b11608ec0842fc\" data-es_objecturl=\"ccrep://OpenOLAT/d5130470-14b4-4ad4-88b7-dfb3ebe943da\" data-es_version=\"1.0\" data-es_version_current=\"1.0\" data-es_mediatype='i23' data-es_mimetype=\"image/png\" data-es_width=\"1000\" data-es_height=\"446\" data-es_first_edit=\"false\" class=\"edusharing\" alt=\"Bildschirmfoto 2018-11-07 um 16.09.49.png\" title=\"Bildschirmfoto 2018-11-07 um 16.09.49.png\" width=\"1000\" height=\"446\">";
+		
+		// t() did not work, because antisamy changed the order of the attributes
+		String filtered = vFilter.filter(html);
+		assertThat(filtered).contains("src");
+		assertThat(filtered).contains("width");
+		assertThat(filtered).contains("height");
+		assertThat(filtered).contains("es_identifier");
+		assertThat(filtered).contains("es_objecturl");
+		assertThat(filtered).contains("es_version");
+		assertThat(filtered).contains("es_mimetype");
+		assertThat(filtered).contains("es_mediatype");
+		assertThat(filtered).contains("es_width");
+		assertThat(filtered).contains("es_height");
+	}
 
 	@Test
 	public void test_big_tiny_output(){

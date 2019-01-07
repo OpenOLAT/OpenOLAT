@@ -50,6 +50,7 @@ import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.CourseModule;
+import org.olat.modules.edusharing.EdusharingProvider;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryManager;
@@ -158,6 +159,8 @@ public class RepositoryEntryInfoController extends FormBasicController {
 		description.setEnabled(!RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.description));
 		description.getEditorConfiguration().setFileBrowserUploadRelPath("media");
 		description.getEditorConfiguration().setPathInStatusBar(false);
+		EdusharingProvider provider = new RepositoryEdusharingProvider(repositoryEntry);
+		description.getEditorConfiguration().enableEdusharing(getIdentity(), provider);
 
 		if(CourseModule.getCourseTypeName().equals(repositoryEntry.getOlatResource().getResourceableTypeName())) {
 			initCourse(formLayout, usess);

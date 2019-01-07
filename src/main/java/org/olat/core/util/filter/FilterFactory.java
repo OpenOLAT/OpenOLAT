@@ -24,11 +24,11 @@ import org.olat.core.util.filter.impl.AddBaseURLToMediaRelativeURLFilter;
 import org.olat.core.util.filter.impl.ConditionalHTMLCommentsFilter;
 import org.olat.core.util.filter.impl.NekoHTMLFilter;
 import org.olat.core.util.filter.impl.OWASPAntiSamyXSSFilter;
+import org.olat.core.util.filter.impl.OWASPAntiSamyXSSFilter.Variant;
 import org.olat.core.util.filter.impl.SimpleHTMLTagsFilter;
 import org.olat.core.util.filter.impl.SmileysCssToDataUriFilter;
 import org.olat.core.util.filter.impl.XMLValidCharacterFilter;
 import org.olat.core.util.filter.impl.XMLValidEntityFilter;
-import org.olat.core.util.filter.impl.OWASPAntiSamyXSSFilter.Variant;
 
 /**
  * Description:<br>

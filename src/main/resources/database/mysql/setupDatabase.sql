@@ -2623,6 +2623,24 @@ create table o_cur_element_to_tax_level (
   primary key (id)
 );
 
+-- edu-sharing
+create table o_es_usage (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   e_identifier varchar(64) not null,
+   e_resname varchar(50) not null,
+   e_resid bigint not null,
+   e_object_url varchar(255) not null,
+   e_version varchar(64),
+   e_mime_type varchar(128),
+   e_media_type varchar(128),
+   e_width varchar(8),
+   e_height varchar(8),
+   fk_identity bigint not null,
+   primary key (id)
+);
+
 
 -- user view
 create view o_bs_identity_short_v as (
@@ -3006,6 +3024,7 @@ alter table o_cur_curriculum ENGINE = InnoDB;
 alter table o_cur_curriculum_element ENGINE = InnoDB;
 alter table o_cur_element_type_to_type ENGINE = InnoDB;
 alter table o_cur_element_to_tax_level ENGINE = InnoDB;
+alter table o_es_usage ENGINE = InnoDB;
 
 -- rating
 alter table o_userrating add constraint FKF26C8375236F20X foreign key (creator_id) references o_bs_identity (id);
@@ -3631,6 +3650,10 @@ alter table o_cur_element_type_to_type add constraint cur_type_to_sub_type_idx f
 
 alter table o_cur_element_to_tax_level add constraint cur_el_rel_to_cur_el_idx foreign key (fk_cur_element) references o_cur_curriculum_element (id);
 alter table o_cur_element_to_tax_level add constraint cur_el_to_tax_level_idx foreign key (fk_taxonomy_level) references o_tax_taxonomy_level (id);
+
+--edu-sharing
+create index idx_es_usage_ident_idx on o_es_usage (e_identifier);
+create index idx_es_usage_ores_idx on o_eva_form_survey (e_resid, e_resname);
 
 -- o_logging_table
 create index log_target_resid_idx on o_loggingtable(targetresid);

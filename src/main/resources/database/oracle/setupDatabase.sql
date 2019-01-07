@@ -2703,6 +2703,24 @@ create table o_cur_element_to_tax_level (
   primary key (id)
 );
 
+-- edu-sharing
+create table o_es_usage (
+   id number(20) generated always as identity,
+   creationdate date not null,
+   lastmodified date not null,
+   e_identifier varchar2(64) not null,
+   e_resname varchar2(50) not null,
+   e_resid number(20) not null,
+   e_object_url varchar2(255) not null,
+   e_version varchar2(64),
+   e_mime_type varchar2(128),
+   e_media_type varchar2(128),
+   e_width varchar2(8),
+   e_height varchar2(8),
+   fk_identity number(20) not null,
+   primary key (id)
+);
+
 -- user view
 create view o_bs_identity_short_v as (
    select
@@ -3823,6 +3841,10 @@ alter table o_cur_element_to_tax_level add constraint cur_el_rel_to_cur_el_idx f
 create index idx_cur_el_rel_to_cur_el_idx on o_cur_element_to_tax_level (fk_cur_element);
 alter table o_cur_element_to_tax_level add constraint cur_el_to_tax_level_idx foreign key (fk_taxonomy_level) references o_tax_taxonomy_level (id);
 create index idx_cur_el_to_tax_level_idx on o_cur_element_to_tax_level (fk_taxonomy_level);
+
+-- edu-sharing
+create index idx_es_usage_ident_idx on o_es_usage (e_identifier);
+create index idx_es_usage_ores_idx on o_eva_form_survey (e_resid, e_resname);
 
 -- o_logging_table
 create index log_target_resid_idx on o_loggingtable(targetresid);

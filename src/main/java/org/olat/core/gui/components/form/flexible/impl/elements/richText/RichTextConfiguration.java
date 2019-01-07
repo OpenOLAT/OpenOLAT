@@ -21,6 +21,7 @@ package org.olat.core.gui.components.form.flexible.impl.elements.richText;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -41,6 +42,7 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.themes.Theme;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
+import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
@@ -48,11 +50,15 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
+import org.olat.core.util.filter.Filter;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSContainerMapper;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.modules.edusharing.EdusharingFilter;
+import org.olat.modules.edusharing.EdusharingModule;
+import org.olat.modules.edusharing.EdusharingProvider;
 
 /**
  * Description:<br>
@@ -168,6 +174,8 @@ public class RichTextConfiguration implements Disposable {
 	
 	private List<TextMode> textModes = Collections.singletonList(TextMode.formatted);
 	private RichTextConfigurationDelegate additionalConfiguration;
+	
+	private Collection<Filter> valueFilters = new ArrayList<>(1);
 	
 	public RichTextConfiguration(Locale locale) {
 		this.locale = locale;
@@ -881,6 +889,23 @@ public class RichTextConfiguration implements Disposable {
 		tinyConfig = tinyConfig.enableQTITools(textEntry, numericalInput, hottext);
 		setQuotedConfigValue("custom_elements", "~textentryinteraction,~hottext");
 		setQuotedConfigValue(EXTENDED_VALID_ELEMENTS, "script[src|type|defer],textentryinteraction[*],hottext[*]");
+	}
+	
+	public void enableEdusharing(Identity identity, EdusharingProvider provider) {
+		EdusharingModule edusharingModule = CoreSpringFactory.getImpl(EdusharingModule.class);
+		if (edusharingModule.isEnabled()) {
+			tinyConfig = tinyConfig.enableEdusharing();
+			EdusharingFilter filter = new EdusharingFilter(identity, provider);
+			addValueFilter(filter);
+		}
+	}
+	
+	public void addValueFilter(Filter filter) {
+		valueFilters.add(filter);
+	}
+	
+	Collection<Filter> getValueFilters() {
+		return valueFilters;
 	}
 
 	/**

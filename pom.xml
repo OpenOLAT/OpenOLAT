@@ -9,9 +9,9 @@
 	<name>OpenOLAT LMS</name>
 	<url>https://www.openolat.com</url>
 	<description>
-  Welcome to the OpenOLAT (Open Online Learning And Training) Developer Project Site.  This site
+  Welcome to the OpenOLAT (Open Online Learning And Training) Developer Project Site. This site
   contains materials chiefly of concern to developers (e.g., unit testing and SCA output etc.)
-  and is rebuilt periodically on a regular basis.  The site structure is divided between
+  and is rebuilt periodically on a regular basis. The site structure is divided between
   project information (e.g., infrastructure, mailing lists, repositories etc.) and reports
   (e.g., unit testing, SCAs etc.)
   </description>
@@ -294,6 +294,13 @@
 											<removeIncluded>false</removeIncluded>
 											<includes>
 												<include>${basedir}/target/jquery/tinymce4/tinymce/plugins/quotespliter/plugin.min.js</include>
+											</includes>
+										</aggregation>
+										<aggregation>
+											<output>${basedir}/src/main/webapp/static/js/tinymce4/tinymce/plugins/olatedusharing/plugin.min.js</output>
+											<removeIncluded>false</removeIncluded>
+											<includes>
+												<include>${basedir}/target/jquery/tinymce4/tinymce/plugins/olatedusharing/plugin.min.js</include>
 											</includes>
 										</aggregation>
 										<aggregation>
@@ -1848,6 +1855,11 @@
 			<groupId>org.openolat</groupId>
 			<artifactId>viterows</artifactId>
 			<version>9.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.openolat</groupId>
+			<artifactId>edusharingws</artifactId>
+			<version>4.1.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.poi</groupId>
