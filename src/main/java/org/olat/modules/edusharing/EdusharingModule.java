@@ -69,6 +69,19 @@ public class EdusharingModule extends AbstractSpringModule implements ConfigOnOf
 	// public key of the edu-sharing (home) repository.
 	private PublicKey repoPublicKey;
 	private String repoPublicKeyString;
+	
+	@Value("${edusharing.auth.key.userid:userid}")
+	private String authKeyUseriId;
+	@Value("${edusharing.auth.key.lastname:lastname}")
+	private String authKeyLastname;
+	@Value("${edusharing.auth.key.firstname:firstname}")
+	private String authKeyFirstname;
+	@Value("${edusharing.auth.key.email:email}")
+	private String authKeyEmail;
+	@Value("${edusharing.auth.affiliation.id}")
+	private String authAffiliationId;
+	@Value("${edusharing.auth.affiliation.name}")
+	private String authAffiliationName;
 
 	@Autowired
 	private EdusharingSecurityService edusharingSignature;
@@ -213,6 +226,30 @@ public class EdusharingModule extends AbstractSpringModule implements ConfigOnOf
 		this.repoPublicKey = null;
 		this.repoPublicKeyString = repoPublicKeyString;
 		setStringProperty(EDUSHARING_REPO_PUBLIC_KEY, repoPublicKeyString, true);
+	}
+
+	public String getAuthKeyUseriId() {
+		return authKeyUseriId;
+	}
+
+	public String getAuthKeyLastname() {
+		return authKeyLastname;
+	}
+
+	public String getAuthKeyFirstname() {
+		return authKeyFirstname;
+	}
+
+	public String getAuthKeyEmail() {
+		return authKeyEmail;
+	}
+
+	public String getAuthAffiliationId() {
+		return authAffiliationId;
+	}
+
+	public String getAuthAffiliationName() {
+		return authAffiliationName;
 	}
 	
 }

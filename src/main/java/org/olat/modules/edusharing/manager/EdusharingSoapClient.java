@@ -37,6 +37,7 @@ import org.edu_sharing.webservices.usage2.Usage2;
 import org.edu_sharing.webservices.usage2.Usage2Exception_Exception;
 import org.edu_sharing.webservices.usage2.Usage2Service;
 import org.olat.core.id.Identity;
+import org.olat.core.id.User;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.edusharing.CreateUsageParameter;
@@ -91,16 +92,37 @@ class EdusharingSoapClient {
 		
 		// mandatory
 		KeyValue userId = new KeyValue();
-		userId.setKey("userid");
+		userId.setKey(edusharingModule.getAuthKeyUseriId());
 		userId.setValue(identity.getName());
 		ssoData.add(userId);
 		
 		// optional
+		User user = identity.getUser();
+		KeyValue lastname = new KeyValue();
+		lastname.setKey(edusharingModule.getAuthKeyLastname());
+		lastname.setValue(user.getLastName());
+		ssoData.add(lastname);
+		
+		KeyValue firstname = new KeyValue();
+		firstname.setKey(edusharingModule.getAuthKeyFirstname());
+		firstname.setValue(user.getFirstName());
+		ssoData.add(firstname);
+
 		KeyValue email = new KeyValue();
-		email.setKey("email");
-		email.setValue(identity.getUser().getEmail());
+		email.setKey(edusharingModule.getAuthKeyEmail());
+		email.setValue(user.getEmail());
 		ssoData.add(email);
 
+		KeyValue affiliationId = new KeyValue();
+		affiliationId.setKey("affiliation");
+		affiliationId.setValue(edusharingModule.getAuthAffiliationId());
+		ssoData.add(affiliationId);
+
+		KeyValue affiliationName = new KeyValue();
+		affiliationName.setKey("affiliationname");
+		affiliationName.setValue(edusharingModule.getAuthAffiliationName());
+		ssoData.add(affiliationName);
+		
 		return ssoData;
 	}
 	
