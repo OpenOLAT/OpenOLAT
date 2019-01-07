@@ -27,11 +27,20 @@ package org.olat.modules.edusharing;
  */
 public class UsageMetadata {
 	
+	private String courseId;
 	private String fullname;
 	private String shortname;
 	private String summary;
 	private String categorieId;
 	private String categorieName;
+
+	public String getCourseId() {
+		return courseId;
+	}
+
+	public void setCourseId(String courseId) {
+		this.courseId = courseId;
+	}
 
 	public String getFullname() {
 		return fullname;

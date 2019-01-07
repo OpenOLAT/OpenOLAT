@@ -46,6 +46,7 @@ public class RepositoryEdusharingProvider implements EdusharingProvider {
 	@Override
 	public UsageMetadata getUsageMetadata() {
 		UsageMetadata metadata = new UsageMetadata();
+		metadata.setCourseId(repositoryEntry.getKey().toString());
 		metadata.setFullname(repositoryEntry.getDisplayname());
 		return metadata;
 	}
