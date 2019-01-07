@@ -118,7 +118,9 @@ public class EdusharingAdminController extends FormBasicController {
 		ticketValidEl = uifactory.addTextElement("admin.ticket.valid", 20, Integer.toString(ticketValidSeconds), formLayout);
 		ticketValidEl.setMandatory(true);
 		
-		String soapPublicKey = edusharingSignature.getPublicKey(edusharingModule.getSoapKeys());
+		String soapPublicKey = edusharingModule.getSoapKeys() != null
+				? edusharingSignature.getPublicKey(edusharingModule.getSoapKeys())
+				: null;
 		soapPublicKeyEl = uifactory.addTextAreaElement("admin.soap.key.public", 8, 72, soapPublicKey, formLayout);
 		soapPublicKeyEl.setMandatory(true);
 		soapPublicKeyEl.setEnabled(false);
