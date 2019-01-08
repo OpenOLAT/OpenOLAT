@@ -56,4 +56,11 @@ public interface EdusharingUsage extends ModifiedInfo, CreateInfo {
 	
 	public OLATResourceable getOlatResourceable();
 	
+	/**
+	 * Identifies the usage distinctly inside an OLATResourceable.
+	 *
+	 * @return
+	 */
+	public String getSubPath();
+	
 }

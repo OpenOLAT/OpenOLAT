@@ -33,14 +33,21 @@ import org.olat.repository.RepositoryEntry;
 public class RepositoryEdusharingProvider implements EdusharingProvider {
 
 	private final RepositoryEntry repositoryEntry;
+	private final String subPath;
 
-	public RepositoryEdusharingProvider(RepositoryEntry repositoryEntry) {
+	public RepositoryEdusharingProvider(RepositoryEntry repositoryEntry, String subPath) {
 		this.repositoryEntry = repositoryEntry;
+		this.subPath = subPath;
 	}
 
 	@Override
 	public OLATResourceable getOlatResourceable() {
 		return repositoryEntry;
+	}
+
+	@Override
+	public String getSubPath() {
+		return subPath;
 	}
 
 	@Override

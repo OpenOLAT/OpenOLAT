@@ -60,6 +60,7 @@ public class EdusharingUsageDAOTest extends OlatTestCase {
 	@Test
 	public void shouldCreateUsage() {
 		OLATResource ores = JunitTestHelper.createRandomResource();
+		String subPath = random();
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("es");
 		String identifier = random();
 		String objectUrl = random();
@@ -75,12 +76,15 @@ public class EdusharingUsageDAOTest extends OlatTestCase {
 		element.setWidth(width);
 		element.setHight(hight);
 		
-		EdusharingUsage usage = sut.create(identity, element, ores);
+		EdusharingUsage usage = sut.create(identity, element, ores, subPath);
 		dbInstance.commitAndCloseSession();
 		
 		assertThat(usage).isNotNull();
 		assertThat(usage.getCreationDate()).isNotNull();
 		assertThat(usage.getLastModified()).isNotNull();
+		assertThat(usage.getOlatResourceable().getResourceableTypeName()).isEqualTo(ores.getResourceableTypeName());
+		assertThat(usage.getOlatResourceable().getResourceableId()).isEqualTo(ores.getResourceableId());
+		assertThat(usage.getSubPath()).isEqualTo(subPath);
 		assertThat(usage.getIdentifier()).isEqualTo(identifier);
 		assertThat(usage.getObjectUrl()).isEqualTo(objectUrl);
 		assertThat(usage.getVersion()).isEqualTo(version);
@@ -108,15 +112,16 @@ public class EdusharingUsageDAOTest extends OlatTestCase {
 	@Test
 	public void shouldLoadByResourceable() {
 		OLATResource ores = JunitTestHelper.createRandomResource();
+		String subPath = random();
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("es");
 		EdusharingHtmlElement element = new EdusharingHtmlElement(random(), random());
-		EdusharingUsage usage1 = sut.create(identity, element, ores);
-		EdusharingUsage usage2 = sut.create(identity, element, ores);
+		EdusharingUsage usage1 = sut.create(identity, element, ores, subPath);
+		EdusharingUsage usage2 = sut.create(identity, element, ores, subPath);
 		OLATResource oresOther = JunitTestHelper.createRandomResource();
-		EdusharingUsage usageOther = sut.create(identity, element, oresOther);
+		EdusharingUsage usageOther = sut.create(identity, element, oresOther, subPath);
 		dbInstance.commitAndCloseSession();
 		
-		List<EdusharingUsage> usages = sut.loadByResoureable(ores);
+		List<EdusharingUsage> usages = sut.loadByResoureable(ores, subPath);
 		
 		assertThat(usages)
 				.containsExactlyInAnyOrder(usage1, usage2)

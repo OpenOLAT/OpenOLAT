@@ -34,6 +34,12 @@ public interface EdusharingProvider {
 	 * @return the ores where the edu-sharing element was used. Mandatory.
 	 */
 	public OLATResourceable getOlatResourceable();
+
+	/**
+	 * 
+	 * @return Locates the usage distinctly inside an OLATResourceable.
+	 */
+	public String getSubPath();
 	
 	/** 
 	 * The metadata are transmitted to edu-sharing when a edu-sharing resource is embedded.

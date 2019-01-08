@@ -6,6 +6,7 @@ create table o_es_usage (
    e_identifier varchar(64) not null,
    e_resname varchar(50) not null,
    e_resid bigint not null,
+   e_sub_path varchar(256),
    e_object_url varchar(255) not null,
    e_version varchar(64),
    e_mime_type varchar(128),

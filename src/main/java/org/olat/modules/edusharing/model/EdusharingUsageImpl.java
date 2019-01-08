@@ -70,6 +70,8 @@ public class EdusharingUsageImpl implements EdusharingUsage, Persistable {
 	private String resName;
 	@Column(name="e_resid", nullable=false, insertable=true, updatable=false)
 	private Long resId;
+	@Column(name="e_sub_path", nullable=true, insertable=true, updatable=false)
+	private String subPath;
 	@Column(name="e_object_url", nullable=false, insertable=true, updatable=false)
 	private String objectUrl;
 	@Column(name="e_version", nullable=true, insertable=true, updatable=true)
@@ -135,6 +137,15 @@ public class EdusharingUsageImpl implements EdusharingUsage, Persistable {
 	@Override
 	public OLATResourceable getOlatResourceable() {
 		return OresHelper.createOLATResourceableInstance(resName, resId);
+	}
+
+	@Override
+	public String getSubPath() {
+		return subPath;
+	}
+
+	public void setSubPath(String subPath) {
+		this.subPath = subPath;
 	}
 
 	@Override

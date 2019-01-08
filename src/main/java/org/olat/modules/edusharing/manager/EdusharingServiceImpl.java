@@ -229,7 +229,7 @@ public class EdusharingServiceImpl implements EdusharingService {
 				conversionService.toEdusharingCourseId(ores)
 				);
 		client.createUsage(parameter);
-		EdusharingUsage usage = usageDao.create(identity, element, ores);
+		EdusharingUsage usage = usageDao.create(identity, element, ores, provider.getSubPath());
 		
 		log.debug("edu-sharing filter usage created for identifier: "+ element.getIdentifier() + ", resType="
 				+ ores.getResourceableTypeName() + ", resId=" + ores.getResourceableId());
@@ -242,8 +242,8 @@ public class EdusharingServiceImpl implements EdusharingService {
 	}
 
 	@Override
-	public List<EdusharingUsage> loadUsages(OLATResourceable ores) {
-		return usageDao.loadByResoureable(ores);
+	public List<EdusharingUsage> loadUsages(OLATResourceable ores, String subPath) {
+		return usageDao.loadByResoureable(ores, subPath);
 	}
 
 	@Override

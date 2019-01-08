@@ -159,7 +159,7 @@ public class RepositoryEntryInfoController extends FormBasicController {
 		description.setEnabled(!RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.description));
 		description.getEditorConfiguration().setFileBrowserUploadRelPath("media");
 		description.getEditorConfiguration().setPathInStatusBar(false);
-		EdusharingProvider provider = new RepositoryEdusharingProvider(repositoryEntry);
+		EdusharingProvider provider = new RepositoryEdusharingProvider(repositoryEntry, "repository-info");
 		description.getEditorConfiguration().enableEdusharing(getIdentity(), provider);
 
 		if(CourseModule.getCourseTypeName().equals(repositoryEntry.getOlatResource().getResourceableTypeName())) {

@@ -70,7 +70,7 @@ public interface EdusharingService {
 	
 	public EdusharingUsage loadUsageByIdentifier(String identifier);
 
-	public List<EdusharingUsage> loadUsages(OLATResourceable ores);
+	public List<EdusharingUsage> loadUsages(OLATResourceable ores, String subPath);
 
 	public void deleteUsage(Identity identity, String identifier) throws EdusharingException;
 

@@ -22,6 +22,8 @@ package org.olat.modules.edusharing.manager;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.TypedQuery;
+
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
@@ -44,14 +46,19 @@ class EdusharingUsageDAO {
 	
 	@Autowired
 	private DB dbInstance;
-
+	
 	EdusharingUsage create(Identity identity, EdusharingHtmlElement element, OLATResourceable ores) {
+		return create(identity, element, ores, null);
+	}
+
+	EdusharingUsage create(Identity identity, EdusharingHtmlElement element, OLATResourceable ores, String subPath) {
 		EdusharingUsageImpl usage = new EdusharingUsageImpl();
 		usage.setCreationDate(new Date());
 		usage.setLastModified(usage.getCreationDate());
 		usage.setIdentifier(element.getIdentifier());
 		usage.setResName(ores.getResourceableTypeName());
 		usage.setResId(ores.getResourceableId());
+		usage.setSubPath(subPath);
 		usage.setObjectUrl(element.getObjectUrl());
 		usage.setVersion(element.getVersion());
 		usage.setMimeType(element.getMimeType());
@@ -78,7 +85,7 @@ class EdusharingUsageDAO {
 		return !usages.isEmpty()? usages.get(0): null;
 	}
 
-	public List<EdusharingUsage> loadByResoureable(OLATResourceable ores) {
+	public List<EdusharingUsage> loadByResoureable(OLATResourceable ores, String subPath) {
 		if (ores == null) return null;
 		
 		QueryBuilder sb = new QueryBuilder();
@@ -86,12 +93,18 @@ class EdusharingUsageDAO {
 		sb.append("  from edusharingusage as usage");
 		sb.and().append("usage.resName = :resName");
 		sb.and().append("usage.resId = :resId");
+		if (StringHelper.containsNonWhitespace(subPath)) {
+			sb.and().append("usage.subPath = :subPath");
+		}
 		
-		return dbInstance.getCurrentEntityManager()
+		TypedQuery<EdusharingUsage> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), EdusharingUsage.class)
 				.setParameter("resName", ores.getResourceableTypeName())
-				.setParameter("resId", ores.getResourceableId())
-				.getResultList();
+				.setParameter("resId", ores.getResourceableId());
+		if (StringHelper.containsNonWhitespace(subPath)) {
+			query.setParameter("subPath", subPath);
+		}
+		return query.getResultList();
 	}
 
 	void delete(String identifier) {
