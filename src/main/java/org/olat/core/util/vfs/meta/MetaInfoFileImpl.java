@@ -166,9 +166,11 @@ public class MetaInfoFileImpl implements MetaInfo, Serializable {
 		// rename meta info file name
 		if (isDirectory()) { // rename the directory, which is the parent of the actual ".xml" file
 			File metaFileDirectory = metaFile.getParentFile();
-			metaFileDirectory.renameTo(new File(metaFileDirectory.getParentFile(), newName));
-		} else { // rename the file
-			metaFile.renameTo(new File(metaFile.getParentFile(), newName + ".xml"));
+			if(!metaFileDirectory.renameTo(new File(metaFileDirectory.getParentFile(), newName))) {
+				log.error("Cannot rename meta directory: " + this, null);
+			}
+		} else if(!metaFile.renameTo(new File(metaFile.getParentFile(), newName + ".xml"))) { // rename the file
+			log.error("Cannot rename meta file: " + this, null);
 		}
 	}
 	
@@ -191,8 +193,9 @@ public class MetaInfoFileImpl implements MetaInfo, Serializable {
 			}
 		}
 		
-		if (move) FileUtils.moveFileToDir(fSource, fTarget);
-		else {
+		if (move) {
+			FileUtils.moveFileToDir(fSource, fTarget);
+		} else {
 			//copy
 			Map<String,String> pathToUuid = new HashMap<>();
 			File mTarget = new File(fTarget, fSource.getName());
@@ -200,7 +203,7 @@ public class MetaInfoFileImpl implements MetaInfo, Serializable {
 			
 			if(FileUtils.copyFileToDir(fSource, fTarget, "copy metadata")) {
 				File endTarget = new File(fTarget, fSource.getName());
-				generateUUIDRec(endTarget, pathToUuid);
+				postMetaCopy(endTarget, pathToUuid);
 			}
 		}
 	}
@@ -223,7 +226,7 @@ public class MetaInfoFileImpl implements MetaInfo, Serializable {
 		}
 	}
 
-	private void generateUUIDRec(File endTarget, Map<String,String> pathToUuid) {
+	private void postMetaCopy(File endTarget, Map<String,String> pathToUuid) {
 		if(!endTarget.exists()) {
 			return;
 		}
@@ -231,7 +234,7 @@ public class MetaInfoFileImpl implements MetaInfo, Serializable {
 		try {
 			if(endTarget.isDirectory()) {
 				for(File subEndTarget:endTarget.listFiles(new XmlFilter())) {
-					generateUUIDRec(subEndTarget, pathToUuid);
+					postMetaCopy(subEndTarget, pathToUuid);
 				}
 			} else {
 				MetaInfoFileImpl copyMeta = new MetaInfoFileImpl();
@@ -239,11 +242,11 @@ public class MetaInfoFileImpl implements MetaInfo, Serializable {
 				if (copyMeta.parseSAX(endTarget)) {
 					String tempUuid = pathToUuid.get(endTarget.getCanonicalPath());
 					if(StringHelper.containsNonWhitespace(tempUuid)) {
-						copyMeta.uuid =tempUuid;
+						copyMeta.uuid = tempUuid;
 					} else {
 						copyMeta.generateUUID();
 					}
-					copyMeta.write();
+					copyMeta.clearThumbnails();//clear write the meta
 				}
 			}
 		} catch (IOException e) {

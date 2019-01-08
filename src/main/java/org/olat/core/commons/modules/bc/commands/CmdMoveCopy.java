@@ -90,7 +90,7 @@ public class CmdMoveCopy extends DefaultController implements FolderCommand {
 		main.contextPut("fileselection", fileSelection);
 		
 		//check if command is executed on a file list containing invalid filenames or paths
-		if(fileSelection.getInvalidFileNames().size()>0) {		
+		if(!fileSelection.getInvalidFileNames().isEmpty()) {		
 			main.contextPut("invalidFileNames", fileSelection.getInvalidFileNames());
 		}		
 
@@ -135,10 +135,10 @@ public class CmdMoveCopy extends DefaultController implements FolderCommand {
 
 	public String getTarget() {
 		FolderTreeModel ftm = (FolderTreeModel) selTree.getTreeModel();
-		String selectedPath = ftm.getSelectedPath(selTree.getSelectedNode());
-		return selectedPath;
+		return ftm.getSelectedPath(selTree.getSelectedNode());
 	}
 
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(cancelButton == source) {
 			status = FolderCommandStatus.STATUS_CANCELED;
@@ -167,13 +167,7 @@ public class CmdMoveCopy extends DefaultController implements FolderCommand {
 		List<VFSItem> sources = getSanityCheckedSourceItems(target, ureq);
 		if (sources == null) return;
 		
-		boolean targetIsRelPath = (target.getRelPath() != null);
 		for (VFSItem vfsSource:sources) {
-			if (targetIsRelPath && (vfsSource.canMeta() == VFSConstants.YES)) {
-				// copy the metainfo first
-				vfsSource.getMetaInfo().moveCopyToDir(target, move);
-			}
-			
 			VFSItem targetFile = target.resolve(vfsSource.getName());
 			if(vfsSource instanceof VFSLeaf && targetFile != null && targetFile instanceof Versionable
 					&& ((Versionable)targetFile).getVersions().isVersioned()) {

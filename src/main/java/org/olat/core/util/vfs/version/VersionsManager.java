@@ -106,6 +106,15 @@ public interface VersionsManager extends ConfigOnOff {
 	public boolean move(Versionable currentVersion, VFSContainer container);
 	
 	/**
+	 * Copy a versioned file to the target container
+	 * 
+	 * @param currentVersion
+	 * @param target container
+	 * @return
+	 */
+	public boolean copy(Versionable currentVersion, VFSContainer container);
+	
+	/**
 	 * Move a versioned file to an other (WebDAV only!!!)
 	 * 
 	 * @param currentVersion

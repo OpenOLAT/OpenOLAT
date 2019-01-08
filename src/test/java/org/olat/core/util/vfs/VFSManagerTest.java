@@ -28,16 +28,15 @@ package org.olat.core.util.vfs;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.olat.test.OlatTestCase;
 
 /**
+ * 
  * <P>
  * Initial Date:  16.06.2009 <br>
  * @author patrickb
  */
-@RunWith(JUnit4.class)
-public class VFSManagerTest{
+public class VFSManagerTest extends OlatTestCase {
 
 	/**
 	 * Test method for {@link org.olat.core.util.vfs.VFSManager#sanitizePath(java.lang.String)}.

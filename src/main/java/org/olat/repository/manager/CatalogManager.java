@@ -773,13 +773,13 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 		try {
 			if("jpeg".equals(extension) || "jpg".equals(extension)) {
 				VFSLeaf repoImage = catalogResourceHome.createChildLeaf(re.getKey() + ".jpg");
-				ok = VFSManager.copyContent(newImageFile, repoImage);
+				ok = VFSManager.copyContent(newImageFile, repoImage, false);
 			} else if("png".equals(extension)) {
 				VFSLeaf repoImage = catalogResourceHome.createChildLeaf(re.getKey() + ".png");
-				ok = VFSManager.copyContent(newImageFile, repoImage);
+				ok = VFSManager.copyContent(newImageFile, repoImage, false);
 			} else if("gif".equals(extension)) {
 				VFSLeaf repoImage = catalogResourceHome.createChildLeaf(re.getKey() + ".gif");
-				ok = VFSManager.copyContent(newImageFile, repoImage);
+				ok = VFSManager.copyContent(newImageFile, repoImage, false);
 			} else {
 				//scale to default and png
 				VFSLeaf repoImage = catalogResourceHome.createChildLeaf(re.getKey() + ".png");

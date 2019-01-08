@@ -38,10 +38,12 @@ import org.olat.core.util.vfs.VFSContainer;
  */
 public class NotVersioned implements Versions {
 
+	@Override
 	public boolean isVersioned() {
 		return false;
 	}
 
+	@Override
 	public List<VFSRevision> getRevisions() {
 		return Collections.emptyList();
 	}
@@ -51,30 +53,42 @@ public class NotVersioned implements Versions {
 		return "";
 	}
 
+	@Override
 	public String getCreator() {
 		return "";
 	}
 
+	@Override
 	public String getComment() {
 		return "";
 	}
 
+	@Override
 	public String getRevisionNr() {
 		return "";
 	}
 
+	@Override
 	public boolean addVersion(Identity identity, String comment, InputStream newVersion) {
 		return false;
 	}
 
+	@Override
 	public boolean move(VFSContainer container) {
 		return false;
 	}
 
+	@Override
+	public boolean copy(VFSContainer container) {
+		return false;
+	}
+
+	@Override
 	public boolean delete(Identity identity, List<VFSRevision> versionsToDelete) {
 		return false;
 	}
 
+	@Override
 	public boolean restore(Identity identity, VFSRevision version, String comment) {
 		return false;
 	}

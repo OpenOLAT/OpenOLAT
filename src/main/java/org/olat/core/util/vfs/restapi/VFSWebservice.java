@@ -55,6 +55,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.VFSConstants;
@@ -411,11 +412,9 @@ public class VFSWebservice {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 
-		try {
-			OutputStream out = newFile.getOutputStream(false);
-			IOUtils.copy(file, out);
-			IOUtils.closeQuietly(out);
-			IOUtils.closeQuietly(file);
+		try(OutputStream out = newFile.getOutputStream(false)) {
+			FileUtils.cpio(file, out, "Copy");
+			FileUtils.closeSafely(file);
 			return Response.ok(createFileVO(newFile, uriInfo)).build();
 		} catch (IOException e) {
 			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();

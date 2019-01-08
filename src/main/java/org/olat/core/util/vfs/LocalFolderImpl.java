@@ -28,6 +28,7 @@ package org.olat.core.util.vfs;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -144,8 +145,9 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 	 * @return
 	 */
 	private VFSStatus copyFrom(VFSItem source, boolean checkQuota) {
-
-		if (source.canCopy() != VFSConstants.YES) throw new RuntimeException("cannot copy from");
+		if (source.canCopy() != VFSConstants.YES) {
+			return VFSConstants.NO_SECURITY_DENIED;
+		}
 		
 		String sourcename = source.getName();
 		File basefile = getBasefile();
@@ -166,10 +168,7 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 			// and let the children copy
 
 			// create the folder
-			File outdir = new File(basefile, sourcename);
-			outdir.mkdir();
-			LocalFolderImpl rootcopyfolder = new LocalFolderImpl(outdir, this);
-
+			LocalFolderImpl rootcopyfolder = new LocalFolderImpl(new File(basefile, sourcename), this);
 			List<VFSItem> children = sourcecontainer.getItems();
 			for (VFSItem chd:children) {
 				VFSStatus status = rootcopyfolder.copyFrom(chd, false);
@@ -185,17 +184,24 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 					return VFSConstants.ERROR_QUOTA_EXCEEDED;
 			}
 			
-			try {
-				FileUtils.bcopy(s.getInputStream(), new File(basefile, sourcename), "VFScopyFrom");
+			File fTarget = new File(basefile, sourcename);
+			try(InputStream in=s.getInputStream()) {
+				FileUtils.bcopy(in, fTarget, "VFScopyFrom");
 			} catch (Exception e) {
 				return VFSConstants.ERROR_FAILED;
 			}
 			
 			if(s instanceof Versionable && ((Versionable)s).getVersions().isVersioned()) {
-				((Versionable)s).getVersions().move(this);
+				((Versionable)s).getVersions().copy(this);
 			}
-
-		} else throw new RuntimeException("neither a leaf nor a container!");
+			
+			boolean copyMetaData = source.canMeta() == VFSConstants.YES && canMeta() == VFSConstants.YES;
+			if(copyMetaData) {
+				source.getMetaInfo().moveCopyToDir(this, false);
+			}
+		} else {
+			throw new RuntimeException("neither a leaf nor a container!");
+		}
 		return VFSConstants.SUCCESS;
 	}
 

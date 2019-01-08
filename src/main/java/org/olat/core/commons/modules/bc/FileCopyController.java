@@ -22,7 +22,6 @@ package org.olat.core.commons.modules.bc;
 
 import static java.util.Arrays.asList;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.controllers.linkchooser.FileLinkChooserController;
 import org.olat.core.commons.controllers.linkchooser.LinkChooserController;
 import org.olat.core.commons.controllers.linkchooser.URLChoosenEvent;
@@ -46,15 +45,14 @@ import org.olat.core.logging.activity.CoreLoggingResourceable;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Util;
-import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSLockManager;
 import org.olat.core.util.vfs.VFSManager;
-import org.olat.core.util.vfs.meta.MetaInfo;
 import org.olat.core.util.vfs.version.Versionable;
 import org.olat.core.util.vfs.version.Versions;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -79,13 +77,13 @@ public class FileCopyController extends LinkChooserController {
 	private VFSLeaf existingVFSItem;
 	private String renamedFilename;
 	
-	private final VFSLockManager vfsLockManager;
+	@Autowired
+	private VFSLockManager vfsLockManager;
 	
 	public FileCopyController(UserRequest ureq, WindowControl wControl, VFSContainer rootDir,
 			FolderComponent folderComponent) {
 		super(ureq, wControl, rootDir, null, null, null, false, "", null, true);
 		this.folderComponent = folderComponent;
-		vfsLockManager = CoreSpringFactory.getImpl(VFSLockManager.class);
 	}
 	
 	@Override
@@ -287,21 +285,12 @@ public class FileCopyController extends LinkChooserController {
 	}
 	
 	private void finishUpload(UserRequest ureq) {
-		VFSManager.copyContent(sourceLeaf, newFile);
+		VFSManager.copyContent(sourceLeaf, newFile, true);
 		finishSuccessfullUpload(newFile.getName(), ureq);
 	}
 	
 	private void finishSuccessfullUpload(String fileName, UserRequest ureq) {
-		VFSContainer currentContainer  = folderComponent.getCurrentContainer();
-		VFSItem item = currentContainer.resolve(fileName);
-		if (item instanceof VFSLeaf && item.canMeta() == VFSConstants.YES) {
-			MetaInfo meta = item.getMetaInfo();
-			meta.setAuthor(ureq.getIdentity());
-			meta.clearThumbnails();//if overwrite an older file
-			meta.write();
-		}
 		ThreadLocalUserActivityLogger.log(FolderLoggingAction.FILE_COPIED, getClass(), CoreLoggingResourceable.wrapUploadFile(fileName));
-
 		// Notify listeners about upload
 		fireEvent(ureq, new FolderEvent(FolderEvent.NEW_FILE_EVENT, newFile.getName()));
 		fireEvent(ureq, FolderCommand.FOLDERCOMMAND_FINISHED);

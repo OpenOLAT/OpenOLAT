@@ -175,7 +175,7 @@ public class ConvertToGTACourseNode {
 					for(VFSItem dropppedItem:userDropContainer.getItems()) {
 						if(dropppedItem instanceof VFSLeaf) {
 							VFSLeaf submittedDocument = sumbitContainer.createChildLeaf(dropppedItem.getName());
-							VFSManager.copyContent((VFSLeaf)dropppedItem, submittedDocument);
+							VFSManager.copyContent((VFSLeaf)dropppedItem, submittedDocument, true);
 							convertMetada(userDropContainer, sumbitContainer, dropppedItem.getName(), null, null);
 							dropped = true;
 						}
@@ -204,7 +204,7 @@ public class ConvertToGTACourseNode {
 					for(VFSItem returnedItem:userContainer.getItems()) {
 						if(returnedItem instanceof VFSLeaf) {
 							VFSLeaf correctionDocument = correctionContainer.createChildLeaf(returnedItem.getName());
-							VFSManager.copyContent((VFSLeaf)returnedItem, correctionDocument);
+							VFSManager.copyContent((VFSLeaf)returnedItem, correctionDocument, true);
 							convertMetada(userContainer, correctionContainer, returnedItem.getName(), null, null);
 							returned = true;
 						}
@@ -293,7 +293,7 @@ public class ConvertToGTACourseNode {
 		for(VFSItem solution:solutionContainer.getItems()) {
 			if(solution instanceof VFSLeaf) {
 				VFSLeaf solutionDocument = solutionDirectory.createChildLeaf(solution.getName());
-				VFSManager.copyContent((VFSLeaf)solution, solutionDocument);
+				VFSManager.copyContent((VFSLeaf)solution, solutionDocument, true);
 				
 				Solution solDef = new Solution();
 				convertMetada(solutionContainer, solutionDirectory, solution.getName(), null, solDef);

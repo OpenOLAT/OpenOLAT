@@ -90,6 +90,12 @@ public class VersionsFileImpl implements Versions {
 		return CoreSpringFactory.getImpl(VersionsManager.class).move(getCurrentVersion(), container);
 	}
 
+	@Override
+	public boolean copy(VFSContainer container) {
+		return CoreSpringFactory.getImpl(VersionsManager.class).copy(getCurrentVersion(), container);
+	}
+
+	@Override
 	public boolean restore(Identity identity, VFSRevision version, String comments) {
 		return CoreSpringFactory.getImpl(VersionsManager.class).restore(getCurrentVersion(), version, comments);
 	}

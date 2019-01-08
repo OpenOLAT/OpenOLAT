@@ -29,9 +29,9 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.test.OlatTestCase;
-import org.olat.test.VFSJavaIOFile;
 
 /**
  * Test the low memory text extractor for OpenXML (Microsoft Office XML)
@@ -46,7 +46,7 @@ public class OfficeDocumentTest extends OlatTestCase {
 		URL docUrl = OfficeDocumentTest.class.getResource("Test_word_indexing.docx");
 		Assert.assertNotNull(docUrl);
 		
-		VFSLeaf doc = new VFSJavaIOFile(new File(docUrl.toURI()));
+		VFSLeaf doc = new LocalFileImpl(new File(docUrl.toURI()));
 		WordOOXMLDocument document = new WordOOXMLDocument();
 		FileContent content =	document.readContent(doc);
 		Assert.assertNotNull(content);
@@ -82,7 +82,7 @@ public class OfficeDocumentTest extends OlatTestCase {
 		URL docUrl = OfficeDocumentTest.class.getResource("Test_word_indexing.doc");
 		Assert.assertNotNull(docUrl);
 		
-		VFSLeaf doc = new VFSJavaIOFile(new File(docUrl.toURI()));
+		VFSLeaf doc = new LocalFileImpl(new File(docUrl.toURI()));
 		WordDocument document = new WordDocument();
 		FileContent content =	document.readContent(doc);
 		Assert.assertNotNull(content);
@@ -96,7 +96,7 @@ public class OfficeDocumentTest extends OlatTestCase {
 		URL docUrl = OfficeDocumentTest.class.getResource("Test_excel_indexing.xlsx");
 		Assert.assertNotNull(docUrl);
 
-		VFSLeaf doc = new VFSJavaIOFile(new File(docUrl.toURI()));
+		VFSLeaf doc = new LocalFileImpl(new File(docUrl.toURI()));
 		ExcelOOXMLDocument document = new ExcelOOXMLDocument();
 		FileContent content =	document.readContent(doc);
 		Assert.assertNotNull(content);
@@ -110,7 +110,7 @@ public class OfficeDocumentTest extends OlatTestCase {
 		URL docUrl = OfficeDocumentTest.class.getResource("Test_excel_indexing.xls");
 		Assert.assertNotNull(docUrl);
 
-		VFSLeaf doc = new VFSJavaIOFile(new File(docUrl.toURI()));
+		VFSLeaf doc = new LocalFileImpl(new File(docUrl.toURI()));
 		ExcelDocument document = new ExcelDocument();
 		FileContent content =	document.readContent(doc);
 		Assert.assertNotNull(content);
@@ -124,7 +124,7 @@ public class OfficeDocumentTest extends OlatTestCase {
 		URL docUrl = OfficeDocumentTest.class.getResource("Test_ppt_indexing.pptx");
 		Assert.assertNotNull(docUrl);
 
-		VFSLeaf doc = new VFSJavaIOFile(new File(docUrl.toURI()));
+		VFSLeaf doc = new LocalFileImpl(new File(docUrl.toURI()));
 		PowerPointOOXMLDocument document = new PowerPointOOXMLDocument();
 		FileContent content =	document.readContent(doc);
 		Assert.assertNotNull(content);
@@ -159,7 +159,7 @@ public class OfficeDocumentTest extends OlatTestCase {
 		URL docUrl = OfficeDocumentTest.class.getResource("Test_ppt_indexing.ppt");
 		Assert.assertNotNull(docUrl);
 
-		VFSLeaf doc = new VFSJavaIOFile(new File(docUrl.toURI()));
+		VFSLeaf doc = new LocalFileImpl(new File(docUrl.toURI()));
 		PowerPointDocument document = new PowerPointDocument();
 		FileContent content =	document.readContent(doc);
 		Assert.assertNotNull(content);

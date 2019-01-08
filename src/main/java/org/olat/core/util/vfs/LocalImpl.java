@@ -137,9 +137,12 @@ public abstract class LocalImpl implements VFSItem, JavaIOItem {
 	
 	@Override
 	public VFSStatus canMeta() {
-		File bFile = getBasefile();
+		Path bFile = getBasefile().toPath();
 		Path bcRoot = FolderConfig.getCanonicalRootPath();
-		return bFile.toPath().startsWith(bcRoot) ? VFSConstants.YES : VFSConstants.NO;
+		return bFile.startsWith(bcRoot)
+				&& !bFile.startsWith(FolderConfig.getCanonicalMetaRootPath())
+				&& !bFile.startsWith(FolderConfig.getCanonicalVersionRootPath())
+				? VFSConstants.YES : VFSConstants.NO;
 	}
 
 	@Override

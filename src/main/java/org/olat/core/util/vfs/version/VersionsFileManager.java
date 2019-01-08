@@ -46,6 +46,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.async.ProgressDelegate;
+import org.olat.core.util.io.ShieldInputStream;
 import org.olat.core.util.vfs.JavaIOItem;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
@@ -241,10 +242,10 @@ public class VersionsFileManager implements VersionsManager {
 		VFSLeaf currentFile = (VFSLeaf) currentVersion;
 		if (addToRevisions(currentVersion, identity, comment)) {
 			// copy the content of the new file to the old
-			boolean closeInputStream = !(newFile instanceof net.sf.jazzlib.ZipInputStream || newFile instanceof java.util.zip.ZipInputStream);
-			if (VFSManager.copyContent(newFile, currentFile, closeInputStream)) {
-				return true;
+			if(newFile instanceof net.sf.jazzlib.ZipInputStream || newFile instanceof java.util.zip.ZipInputStream) {
+				newFile = new ShieldInputStream(newFile);
 			}
+			return VFSManager.copyContent(newFile, currentFile);
 		} else {
 			log.error("Cannot create a version of this file: " + currentVersion);
 		}
@@ -328,6 +329,16 @@ public class VersionsFileManager implements VersionsManager {
 		}
 		return false;
 	}
+	
+	@Override
+	public boolean copy(Versionable currentVersion, VFSContainer container) {
+		VFSLeaf currentFile = (VFSLeaf) currentVersion;
+		VFSLeaf fVersions = getCanonicalVersionXmlFile(currentFile, true);
+		Versions versions = readVersions(currentFile, fVersions);
+
+		VFSContainer versionContainer = getCanonicalVersionFolder(container, true);
+		return copy(versionContainer, fVersions, versions);
+	}
 
 	@Override
 	public boolean move(Versionable currentVersion, VFSContainer container) {
@@ -336,21 +347,25 @@ public class VersionsFileManager implements VersionsManager {
 		Versions versions = readVersions(currentFile, fVersions);
 
 		VFSContainer versionContainer = getCanonicalVersionFolder(container, true);
-
-		boolean allOk = VFSConstants.YES.equals(versionContainer.copyFrom(fVersions));
-		for (VFSRevision revision : versions.getRevisions()) {
-			RevisionFileImpl revisionImpl = (RevisionFileImpl) revision;
-			VFSLeaf revisionFile = revisionImpl.getFile();
-			if (revisionFile != null) {
-				allOk &= VFSConstants.YES.equals(versionContainer.copyFrom(revisionFile));
-			}
-		}
+		boolean allOk = copy(versionContainer, fVersions, versions);
 
 		allOk &= VFSConstants.YES.equals(fVersions.delete());
 		for (VFSRevision revision : versions.getRevisions()) {
 			VFSLeaf revisionFile = ((RevisionFileImpl) revision).getFile();
 			if (revisionFile != null) {
 				allOk &= VFSConstants.YES.equals(revisionFile.delete());
+			}
+		}
+		return allOk;
+	}
+	
+	private boolean copy(VFSContainer versionContainer, VFSLeaf fVersions, Versions versions) {
+		boolean allOk = VFSConstants.YES.equals(versionContainer.copyFrom(fVersions));
+		for (VFSRevision revision : versions.getRevisions()) {
+			RevisionFileImpl revisionImpl = (RevisionFileImpl) revision;
+			VFSLeaf revisionFile = revisionImpl.getFile();
+			if (revisionFile != null) {
+				allOk &= VFSConstants.YES.equals(versionContainer.copyFrom(revisionFile));
 			}
 		}
 		return allOk;
@@ -673,7 +688,7 @@ public class VersionsFileManager implements VersionsManager {
 			}
 		}
 
-		if (sameFile || VFSManager.copyContent(currentFile, versionContainer.createChildLeaf(uuid))) {
+		if (sameFile || VFSManager.copyContent(currentFile, versionContainer.createChildLeaf(uuid), false)) {
 			if (identity != null) {
 				versions.setAuthor(identity.getName());
 			}

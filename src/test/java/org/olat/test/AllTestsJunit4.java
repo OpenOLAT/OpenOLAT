@@ -50,6 +50,7 @@ import org.junit.runners.Suite;
 	org.olat.core.gui.components.table.TableMultiSelectEventTest.class,
 	org.olat.core.gui.components.table.SorterTest.class,
 	org.olat.core.commons.chiefcontrollers.ChiefControllerMessageEventTest.class,
+	org.olat.core.util.vfs.VFSTest.class,
 	org.olat.core.util.vfs.VFSManagerTest.class,
 	org.olat.core.util.filter.impl.XSSFilterTest.class,
 	org.olat.core.util.filter.impl.AddBaseURLToMediaRelativeURLFilterTest.class,

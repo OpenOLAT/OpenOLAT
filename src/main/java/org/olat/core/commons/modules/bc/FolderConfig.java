@@ -273,11 +273,19 @@ public class FolderConfig {
 		return getCanonicalRoot() + META_DIR;
 	}
 	
+	public static Path getCanonicalMetaRootPath() {
+		return Paths.get(getCanonicalRoot(), META_DIR);
+	}
+	
 	/**
 	 * @return the canonical path to the version root directory
 	 */
 	public static String getCanonicalVersionRoot() {
 		return getCanonicalRoot() + VERSION_DIR;
+	}
+	
+	public static Path getCanonicalVersionRootPath() {
+		return Paths.get(getCanonicalRoot(), VERSION_DIR);
 	}
 
 	/**

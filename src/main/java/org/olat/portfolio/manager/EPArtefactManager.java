@@ -287,7 +287,7 @@ public class EPArtefactManager extends BasicManager {
 					if (artData == null) {
 						artData = container.createChildLeaf(ARTEFACT_CONTENT_FILENAME);
 					} 
-					VFSManager.copyContent(new ByteArrayInputStream(fullText.getBytes()), artData, true);
+					VFSManager.copyContent(new ByteArrayInputStream(fullText.getBytes()), artData);
 					artefact.setFulltextContent(ARTEFACT_FULLTEXT_ON_FS);
 					dbInstance.updateObject(artefact);
 				} catch (Exception e) {

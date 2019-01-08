@@ -169,7 +169,7 @@ public class RepositoryManager {
 		VFSContainer repositoryHome = new LocalFolderImpl(new File(FolderConfig.getCanonicalRepositoryHome()));
 		VFSLeaf newImage = repositoryHome.createChildLeaf(target.getResourceableId() + "." + sourceImageSuffix);
 		if (newImage != null) {
-			return VFSManager.copyContent(srcFile, newImage);
+			return VFSManager.copyContent(srcFile, newImage, false);
 		}
 		return false;
 	}
@@ -218,7 +218,7 @@ public class RepositoryManager {
 		if(targetExtension.equals(".png") || targetExtension.equals(".jpg")) {
 			Size newImageSize = imageHelper.getSize(newImageFile, extension);
 			if(newImageSize != null && newImageSize.getWidth() <= PICTURE_WIDTH && newImageSize.getHeight() <= PICTURE_HEIGHT) {
-				return VFSManager.copyContent(newImageFile, repoImage);
+				return VFSManager.copyContent(newImageFile, repoImage, false);
 			}
 		}
 

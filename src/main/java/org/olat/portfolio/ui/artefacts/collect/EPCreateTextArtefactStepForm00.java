@@ -115,7 +115,7 @@ public class EPCreateTextArtefactStepForm00 extends StepFormBasicController {
 			// save fulltext to temp-file
 			String fulltext = content.getValue();
 			VFSLeaf contFile = (VFSLeaf) vfsTemp.resolve(EPArtefactManager.ARTEFACT_CONTENT_FILENAME);
-			VFSManager.copyContent(new ByteArrayInputStream(fulltext.getBytes()), contFile, true);
+			VFSManager.copyContent(new ByteArrayInputStream(fulltext.getBytes()), contFile);
 
 			addToRunContext("artefact", artefact);
 			addToRunContext("tempArtFolder", vfsTemp);

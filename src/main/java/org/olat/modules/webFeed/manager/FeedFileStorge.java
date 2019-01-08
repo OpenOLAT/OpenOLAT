@@ -499,7 +499,7 @@ public class FeedFileStorge {
 		if (feedMediaContainer != null) {
 			deleteFeedMedia(feed);
 			if (media != null) {
-				VFSManager.copyContent(media, feedMediaContainer.createChildLeaf(media.getName()));
+				VFSManager.copyContent(media, feedMediaContainer.createChildLeaf(media.getName()), true);
 				saveFileName = media.getName();
 			}
 		}

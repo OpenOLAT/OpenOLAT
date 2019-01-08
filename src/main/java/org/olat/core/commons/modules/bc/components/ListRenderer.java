@@ -196,8 +196,9 @@ public class ListRenderer {
 		Versions versions = null;
 		if(canContainerVersion && child instanceof Versionable) {
 			Versionable versionable = (Versionable)child;
-			if(versionable.getVersions().isVersioned()) {
-				versions = versionable.getVersions();
+			Versions possibleVersions = versionable.getVersions();
+			if(possibleVersions.isVersioned()) {
+				versions = possibleVersions;
 			}
 		}
 		boolean canVersion = versions != null && !versions.getRevisions().isEmpty();

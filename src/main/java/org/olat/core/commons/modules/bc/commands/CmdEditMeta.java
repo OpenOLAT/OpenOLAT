@@ -159,7 +159,6 @@ public class CmdEditMeta extends BasicController implements FolderCommand {
 						getWindowControl().setError(translator.translate("TargetNameAlreadyUsed"));
 						status = FolderCommandStatus.STATUS_FAILED;
 					} else {
-						meta.rename(fileName);
 						if(VFSConstants.NO.equals(currentItem.rename(fileName))) {
 							getWindowControl().setError(translator.translate("FileRenameFailed", new String[]{fileName}));
 							status = FolderCommandStatus.STATUS_FAILED;

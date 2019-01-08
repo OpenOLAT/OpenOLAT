@@ -78,9 +78,16 @@ public interface Versions {
 	/**
 	 * move the file
 	 * @param container
-	 * @return
+	 * @return true if successful
 	 */
 	public boolean move(VFSContainer container);
+	
+	/**
+	 * Copy the file
+	 * @param container
+	 * @return true if successful
+	 */
+	public boolean copy(VFSContainer container);
 
 	/**
 	 * restore the file to the revision given as parameter

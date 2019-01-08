@@ -48,6 +48,13 @@ public class VFSManager {
 	
 	private static final OLog log = Tracing.createLoggerFor(VFSManager.class);
 	
+	/**
+	 * The method create an instance of VFSLeaf
+	 * but doesn't create the file.
+	 * 
+	 * @param fileRelPath The relative path to bcroot.
+	 * @return An instance of VFSLeaf
+	 */
 	public static LocalFileImpl olatRootLeaf(String fileRelPath) {
 		File file = new File(FolderConfig.getCanonicalRoot() + fileRelPath);
 		return new LocalFileImpl(file, null);
@@ -553,12 +560,8 @@ public class VFSManager {
 			buffer.append(targetA[i] + "/");
 		}
 		buffer.deleteCharAt(buffer.length() - 1);
-		String path = buffer.toString();
-
-		String trimmed = path; // selectedPath.substring(1);
-		return trimmed;
+		return buffer.toString();
 	}
-
 
 	/**
 	 * This method takes a VFSContainer and a relative path to a file that exists
@@ -697,40 +700,26 @@ public class VFSManager {
 	/**
 	 * Copies the content of the source to the target leaf.
 	 * 
-	 * @param source
-	 * @param target
+	 * @param source The source file
+	 * @param target The target file
+	 * @param withMetadata true if the metadata must be copied too
 	 * @return True on success, false on failure
 	 */
-	public static boolean copyContent(VFSLeaf source, VFSLeaf target) {
+	public static boolean copyContent(VFSLeaf source, VFSLeaf target, boolean withMetadata) {
 		boolean successful;
 		if (source != null && target != null) {
-			InputStream in = new BufferedInputStream(source.getInputStream());
-			OutputStream out = new BufferedOutputStream(target.getOutputStream(false));
-			// write the input to the output
-			try {
-				byte[] buf = new byte[FileUtils.BSIZE];
-				int i = 0;
-        while ((i = in.read(buf)) != -1) {
-            out.write(buf, 0, i);
-        }
+			try(InputStream in = new BufferedInputStream(source.getInputStream());
+				OutputStream out = new BufferedOutputStream(target.getOutputStream(false))) {
+				FileUtils.cpio(in, out, "Copy content");
 				successful = true;
-			} catch (IOException e) {
-				// something went wrong.
-				successful = false;
+			} catch(IOException e) {
 				log.error("Error while copying content from source: " + source.getName() + " to target: " + target.getName(), e);
-			} finally {
-				// Close streams
-				try {
-					if (out != null) {
-						out.flush();
-						out.close();
-					}
-					if (in != null) {
-						in.close();
-					}
-				} catch (IOException ex) {
-					log.error("Error while closing/cleaning up in- and output streams", ex);
-				}
+				successful = false;
+			}
+			
+			if(withMetadata && source.canMeta() == VFSConstants.YES && target.canMeta() == VFSConstants.YES) {
+				VFSContainer parentTargetContainer = target.getParentContainer();
+				source.getMetaInfo().moveCopyToDir(parentTargetContainer, false);
 			}
 		} else {
 			// source or target is null
@@ -741,10 +730,12 @@ public class VFSManager {
 	}
 	
 	/**
-	 * Copy the content of the source container to the target container.
-	 * @param source
-	 * @param target
-	 * @return
+	 * Copy the content of the source container to the target container without
+	 * versions or metadata.
+	 * 
+	 * @param source The source container
+	 * @param target the target container
+	 * @return true if successful
 	 */
 	public static boolean copyContent(VFSContainer source, VFSContainer target) {
 		if(!source.exists()) {
@@ -760,12 +751,10 @@ public class VFSManager {
 		if(target instanceof NamedContainerImpl) {
 			target = ((NamedContainerImpl)target).getDelegate();
 		}
-
+		
 		if(source instanceof LocalImpl && target instanceof LocalImpl) {
-			LocalImpl localSource = (LocalImpl)source;
-			LocalImpl localTarget = (LocalImpl)target;
-			File localSourceFile = localSource.getBasefile();
-			File localTargetFile = localTarget.getBasefile();
+			File localSourceFile = ((LocalImpl)source).getBasefile();
+			File localTargetFile = ((LocalImpl)target).getBasefile();
 			return FileUtils.copyDirContentsToDir(localSourceFile, localTargetFile, false, "VFScopyDir");
 		}
 		return false;
@@ -779,13 +768,13 @@ public class VFSManager {
 	 */
 	public static boolean copyContent(File source, VFSLeaf target) {
 		try(InputStream inStream = new FileInputStream(source)) {
-			return copyContent(inStream, target, true);
+			return copyContent(inStream, target);
 		} catch(IOException ex) {
 			log.error("", ex);
 			return false;
 		}
 	}
-	
+
 	/**
 	 * Copies the stream to the target leaf.
 	 * 
@@ -794,47 +783,17 @@ public class VFSManager {
 	 * @return True on success, false on failure
 	 */
 	public static boolean copyContent(InputStream inStream, VFSLeaf target) {
-		return copyContent(inStream, target, true);
-	}
-	
-	/**
-	 * Copies the stream to the target leaf.
-	 * 
-	 * @param source
-	 * @param target
-	 * @param closeInput set to false if it's a ZipInputStream
-	 * @return True on success, false on failure
-	 */
-	public static boolean copyContent(InputStream inStream, VFSLeaf target, boolean closeInput) {
 		boolean successful;
 		if (inStream != null && target != null) {
-			InputStream in = new BufferedInputStream(inStream);
-			OutputStream out = new BufferedOutputStream(target.getOutputStream(false));
 			// write the input to the output
-			try {
-				byte[] buf = new byte[FileUtils.BSIZE];
-				int i = 0;
-        while ((i = in.read(buf)) != -1) {
-            out.write(buf, 0, i);
-        }
+			try(InputStream in = new BufferedInputStream(inStream);
+					OutputStream out = new BufferedOutputStream(target.getOutputStream(false))) {
+				FileUtils.cpio(in, out, "");
 				successful = true;
 			} catch (IOException e) {
 				// something went wrong.
 				successful = false;
 				log.error("Error while copying content from source: " + inStream + " to target: " + target.getName(), e);
-			} finally {
-				// Close streams
-				try {
-					if (out != null) {
-						out.flush();
-						out.close();
-					}
-					if (closeInput && in != null) {
-						in.close();
-					}
-				} catch (IOException ex) {
-					log.error("Error while closing/cleaning up in- and output streams", ex);
-				}
 			}
 		} else {
 			// source or target is null
@@ -853,8 +812,7 @@ public class VFSManager {
 	public static String rename(VFSContainer container, String filename) {
 		String newName = filename;
 		VFSItem newFile = container.resolve(newName);
-		for(int count=0; newFile != null && count < 999 ; ) {
-			count++;
+		for(int count=1; newFile != null && count < 999 ; count++) {
 			newName = FileUtils.appendNumberAtTheEndOfFilename(filename, count);
 		    newFile = container.resolve(newName);
 		}

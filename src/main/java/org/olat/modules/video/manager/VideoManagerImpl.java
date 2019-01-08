@@ -159,7 +159,7 @@ public class VideoManagerImpl implements VideoManager {
 	public void setPosterframe(OLATResource videoResource, VFSLeaf posterframe){
 		VFSContainer masterContainer = getMasterContainer(videoResource);
 		VFSLeaf newPoster = VFSManager.resolveOrCreateLeafFromPath(masterContainer, FILENAME_POSTER_JPG);
-		VFSManager.copyContent(posterframe, newPoster);
+		VFSManager.copyContent(posterframe, newPoster, false);
 		
 		// Update also repository entry image, use new posterframe
 		VFSLeaf posterImage = (VFSLeaf)masterContainer.resolve(FILENAME_POSTER_JPG);
@@ -615,7 +615,7 @@ public class VideoManagerImpl implements VideoManager {
 		// 1) copy master video to final destination with standard name
 		VFSContainer masterContainer = getMasterContainer(videoResource);
 		VFSLeaf targetFile = VFSManager.resolveOrCreateLeafFromPath(masterContainer, FILENAME_VIDEO_MP4);
-		VFSManager.copyContent(masterVideo, targetFile);
+		VFSManager.copyContent(masterVideo, targetFile, false);
 		masterVideo.delete();
 
 		// calculate video duration

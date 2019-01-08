@@ -96,7 +96,7 @@ public class CPFile extends DefaultElement implements CPNode {
 		VFSContainer parentContainer = file.getParentContainer();
 		String newName = VFSManager.similarButNonExistingName(parentContainer, file.getName());
 		VFSLeaf leafCopy = parentContainer.createChildLeaf(newName);
-		VFSManager.copyContent(file, leafCopy);
+		VFSManager.copyContent(file, leafCopy, true);
 		copy.setFile(leafCopy);
 		copy.setHref(calculateHref(leafCopy));
 		return copy;

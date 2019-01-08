@@ -44,7 +44,6 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
-import org.olat.core.util.FileUtils;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
@@ -121,9 +120,9 @@ public class SharedFolderHandler implements RepositoryHandler {
 	public RepositoryEntry copy(Identity author, RepositoryEntry source, RepositoryEntry target) {
 		OLATResource sourceResource = source.getOlatResource();
 		OLATResource targetResource = target.getOlatResource();
-		File sourceFileroot = FileResourceManager.getInstance().getFileResourceRootImpl(sourceResource).getBasefile();
-		File targetFileroot = FileResourceManager.getInstance().getFileResourceRootImpl(targetResource).getBasefile();
-		FileUtils.copyDirContentsToDir(sourceFileroot, targetFileroot, false, "copy");
+		VFSContainer sourceContainer = FileResourceManager.getInstance().getFileResourceRootImpl(sourceResource);
+		VFSContainer targetContainer = FileResourceManager.getInstance().getFileResourceRootImpl(targetResource);
+		targetContainer.copyFrom(sourceContainer);
 		return target;
 	}
 

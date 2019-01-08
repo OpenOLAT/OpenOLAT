@@ -31,9 +31,6 @@ package org.olat.core.util.vfs.version;
  */
 public interface Versionable {
 
-	/**
-	 * @return @see org.olat.core.util.vfs.version.Versions
-	 */
 	public Versions getVersions();
 
 }

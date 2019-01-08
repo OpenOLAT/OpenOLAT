@@ -131,7 +131,7 @@ public class ImsCPHandler extends FileHandler {
 		RepositoryEntry re = CoreSpringFactory.getImpl(RepositoryService.class).create(initialAuthor, null, "", displayname, description,
 				resource, RepositoryEntryStatusEnum.preparation, organisation);
 		
-		File fResourceFileroot = FileResourceManager.getInstance().getFileResourceRootImpl(resource).getBasefile();
+		File fResourceFileroot = FileResourceManager.getInstance().getFileResourceRoot(resource);
 		File zipRoot = new File(fResourceFileroot, FileResourceManager.ZIPDIR);
 		FileResource.copyResource(file, filename, zipRoot);
 		CPOfflineReadableManager.getInstance().makeCPOfflineReadable(cpResource, displayname);
@@ -146,10 +146,10 @@ public class ImsCPHandler extends FileHandler {
 		OLATResource sourceResource = source.getOlatResource();
 		OLATResource targetResource = target.getOlatResource();
 		
-		File sourceFileroot = FileResourceManager.getInstance().getFileResourceRootImpl(sourceResource).getBasefile();
+		File sourceFileroot = FileResourceManager.getInstance().getFileResourceRoot(sourceResource);
 		File zipRoot = new File(sourceFileroot, FileResourceManager.ZIPDIR);
 		
-		File targetFileroot = FileResourceManager.getInstance().getFileResourceRootImpl(targetResource).getBasefile();
+		File targetFileroot = FileResourceManager.getInstance().getFileResourceRoot(targetResource);
 		FileUtils.copyFileToDir(zipRoot, targetFileroot, "add file resource");
 		
 		//copy packaging info

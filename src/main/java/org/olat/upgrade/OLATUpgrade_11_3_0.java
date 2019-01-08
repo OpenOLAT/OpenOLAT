@@ -131,7 +131,7 @@ public class OLATUpgrade_11_3_0 extends OLATUpgrade {
 						//check if modified track file already exists
 						if (masterContainer.resolve(path) == null) {
 							VFSLeaf target = masterContainer.createChildLeaf(path);
-							VFSManager.copyContent((VFSLeaf) item, target);
+							VFSManager.copyContent((VFSLeaf) item, target, false);
 						}
 					}
 				}

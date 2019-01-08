@@ -139,6 +139,9 @@ public class LocalFileImpl extends LocalImpl implements VFSLeaf, Versionable {
 			//rename the versions
 			CoreSpringFactory.getImpl(VersionsManager.class).rename(this, newname);
 		}
+		if(canMeta() == VFSConstants.YES) {
+			getMetaInfo().rename(newname);
+		}
 		boolean ren = f.renameTo(nf);
 		if (ren) {
 			// f.renameTo() does NOT modify the path contained in the object f!!
