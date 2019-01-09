@@ -177,6 +177,9 @@ class SubmitDocumentsController extends FormBasicController {
 	
 	private void updateModel() {
 		File[] documents = documentsDir.listFiles(new SystemFileFilter(true, false));
+		if(documents == null) {
+			documents = new File[0];
+		}
 		List<SubmittedSolution> docList = new ArrayList<>(documents.length);
 		for(File document:documents) {
 			String filename = document.getName();
