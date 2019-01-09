@@ -140,7 +140,7 @@ public class MembersPeekViewController extends BasicController {
 		MembersCourseNodeConfiguration nodeConfig = (MembersCourseNodeConfiguration)CourseNodeFactory.getInstance().getCourseNodeConfiguration("cmembers");
 		boolean deduplicateList = nodeConfig.isDeduplicateList();
 		
-		Predicate<Identity> deduplicatCatch = deduplicateList ? new Deduplicate() : new All();
+		Predicate<Identity> deduplicatCatch = new Deduplicate();
 		if(withOwners) {
 			List<Identity> filteredOwners = owners.stream()
 					.filter(deduplicatCatch)
@@ -149,6 +149,9 @@ public class MembersPeekViewController extends BasicController {
 		}
 
 		if(withCoaches) {
+			if(!deduplicateList) {
+				deduplicatCatch = new Deduplicate();
+			}
 			List<Identity> filteredCoaches = coaches.stream()
 					.filter(deduplicatCatch)
 					.collect(Collectors.toList());
@@ -156,6 +159,9 @@ public class MembersPeekViewController extends BasicController {
 		}
 
 		if(withParticipants) {
+			if(!deduplicateList) {
+				deduplicatCatch = new Deduplicate();
+			}
 			List<Identity> filteredParticipants = participants.stream()
 					.filter(deduplicatCatch)
 					.collect(Collectors.toList());
@@ -194,12 +200,5 @@ public class MembersPeekViewController extends BasicController {
 			duplicateCatcher.add(t);
 			return true;
 		}	
-	}
-	
-	private static class All implements Predicate<Identity> {
-		@Override
-		public boolean test(Identity t) {
-			return true;
-		}
 	}
 }
