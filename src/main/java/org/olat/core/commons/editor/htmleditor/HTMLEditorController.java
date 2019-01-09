@@ -19,7 +19,9 @@
  */
 package org.olat.core.commons.editor.htmleditor;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Date;
 
 import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
@@ -454,10 +456,17 @@ public class HTMLEditorController extends FormBasicController {
 		
 		// save the file
 		if(versionsEnabled && fileLeaf instanceof Versionable && ((Versionable)fileLeaf).getVersions().isVersioned()) {
-			InputStream inStream = FileUtils.getInputStream(fileContent.toString(), charSet);
-			((Versionable)fileLeaf).getVersions().addVersion(getIdentity(), "", inStream);
+			try(InputStream inStream = FileUtils.getInputStream(fileContent.toString(), charSet)) {
+				((Versionable)fileLeaf).getVersions().addVersion(getIdentity(), "", inStream);
+			} catch(IOException e) {
+				logError("", e);
+			}
 		} else {
-			FileUtils.save(fileLeaf.getOutputStream(false), fileContent.toString(), charSet);
+			try(OutputStream out=fileLeaf.getOutputStream(false)) {
+				FileUtils.save(out, fileContent.toString(), charSet);
+			} catch(IOException e) {
+				logError("", e);
+			}
 		}
 		
 		// Update last modified date in view

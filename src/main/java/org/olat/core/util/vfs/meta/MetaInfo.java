@@ -227,6 +227,10 @@ public interface MetaInfo {
 	 * @return True upon success.
 	 */
 	public boolean write();
+	
+	public byte[] readBinary();
+	
+	public void writeBinary(byte[] data);
 
 	/**
 	 * Increases the download count by one.

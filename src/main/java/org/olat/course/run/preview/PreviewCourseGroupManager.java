@@ -373,8 +373,7 @@ final class PreviewCourseGroupManager implements CourseGroupManager {
 	}
 
 	@Override
-	public void exportCourseBusinessGroups(File fExportDirectory, CourseEnvironmentMapper env,
-			boolean runtimeDatas, boolean backwardsCompatible) {
+	public void exportCourseBusinessGroups(File fExportDirectory, CourseEnvironmentMapper env, boolean runtimeDatas) {
 		throw new AssertException("unsupported");
 	}
 

@@ -42,7 +42,6 @@ import org.olat.ims.cp.ContentPackage;
  * Initial Date:  5 mai 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-//fxdiff FXOLAT-125: virtual file system for CP
 public class VFSCPNamedContainerItem extends NamedLeaf implements VFSContainer {
 	
 	private final CPTreeDataModel treeModel;
@@ -59,8 +58,7 @@ public class VFSCPNamedContainerItem extends NamedLeaf implements VFSContainer {
 
 	@Override
 	public VFSItem resolve(String path) {
-		VFSItem resolved = VFSManager.resolveFile(this, path);
-		return resolved;
+		return VFSManager.resolveFile(this, path);
 	}
 
 	@Override
@@ -75,6 +73,11 @@ public class VFSCPNamedContainerItem extends NamedLeaf implements VFSContainer {
 
 	@Override
 	public VFSStatus copyFrom(VFSItem source) {
+		return VFSConstants.NO;
+	}
+
+	@Override
+	public VFSStatus copyContentOf(VFSContainer container) {
 		return VFSConstants.NO;
 	}
 

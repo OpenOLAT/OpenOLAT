@@ -318,7 +318,7 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 	}
 
 	@Override
-	public MediaResource getAsMediaResource(OLATResourceable res, boolean backwardsCompatible) {
+	public MediaResource getAsMediaResource(OLATResourceable res) {
 		return new QTI21AssessmentTestMediaResource(res);
 	}
 	

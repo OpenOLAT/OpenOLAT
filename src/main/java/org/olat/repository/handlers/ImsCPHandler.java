@@ -40,6 +40,7 @@ import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.media.ZippedDirectoryMediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -57,7 +58,6 @@ import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.fileresource.FileResourceManager;
-import org.olat.fileresource.ZippedDirectoryMediaResource;
 import org.olat.fileresource.types.FileResource;
 import org.olat.fileresource.types.ImsCPFileResource;
 import org.olat.fileresource.types.ResourceEvaluation;
@@ -163,7 +163,7 @@ public class ImsCPHandler extends FileHandler {
 	}
 
 	@Override
-	public MediaResource getAsMediaResource(OLATResourceable res, boolean backwardsCompatible) {
+	public MediaResource getAsMediaResource(OLATResourceable res) {
 		File unzippedDir = FileResourceManager.getInstance().unzipFileResource(res);
 		String displayName = CoreSpringFactory.getImpl(RepositoryManager.class)
 				.lookupDisplayNameByOLATResourceableId(res.getResourceableId());

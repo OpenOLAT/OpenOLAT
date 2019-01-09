@@ -20,7 +20,6 @@
 package org.olat.modules.fo.ui;
 
 import java.io.File;
-import java.io.IOException;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -56,7 +55,6 @@ import org.olat.core.logging.AssertException;
 import org.olat.core.logging.DBRuntimeException;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.CodeHelper;
-import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
@@ -691,12 +689,9 @@ public class MessageEditController extends FormBasicController {
 			for (VFSItem file : tmpFList) {
 				VFSLeaf leaf = (VFSLeaf) file;
 				try {
-					FileUtils.bcopy(
-							leaf.getInputStream(),
-							msgContainer.createChildLeaf(leaf.getName()).getOutputStream(false),
-							"forumSaveUploadedFile"
-					);
-				} catch (IOException e) {
+					VFSLeaf targetFile = msgContainer.createChildLeaf(leaf.getName());
+					VFSManager.copyContent(leaf, targetFile, false);
+				} catch (Exception e) {
 					removeTempUploadedFiles();
 					throw new RuntimeException ("I/O error saving uploaded file:" + msgContainer + "/" + leaf.getName());
 				}

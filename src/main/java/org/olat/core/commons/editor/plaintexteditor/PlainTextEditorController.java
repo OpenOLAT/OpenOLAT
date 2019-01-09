@@ -25,7 +25,9 @@
 */ 
 package org.olat.core.commons.editor.plaintexteditor;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.gui.UserRequest;
@@ -103,17 +105,23 @@ public class PlainTextEditorController extends BasicController {
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		
 		if (source == tf && event == Event.DONE_EVENT) {
-				if (!readOnly) {
-					if((!newFile) && vfsfile instanceof Versionable && ((Versionable)vfsfile).getVersions().isVersioned()) {
-						InputStream inStream = FileUtils.getInputStream(tf.getTextValue(), encoding);
+			if (!readOnly) {
+				if((!newFile) && vfsfile instanceof Versionable && ((Versionable)vfsfile).getVersions().isVersioned()) {
+					try(InputStream inStream = FileUtils.getInputStream(tf.getTextValue(), encoding)) {
 						((Versionable)vfsfile).getVersions().addVersion(ureq.getIdentity(), "", inStream);
-					} else {
-						FileUtils.save(vfsfile.getOutputStream(false), tf.getTextValue(), encoding);
+					} catch(IOException e) {
+						logError("", e);
+					}
+				} else {
+					try(OutputStream out=vfsfile.getOutputStream(false)) {
+						FileUtils.save(out, tf.getTextValue(), encoding);
+					} catch(IOException e) {
+						logError("", e);
 					}
 				}
-				fireEvent(ureq, Event.DONE_EVENT);
+			}
+			fireEvent(ureq, Event.DONE_EVENT);
 		}
 	}
 	

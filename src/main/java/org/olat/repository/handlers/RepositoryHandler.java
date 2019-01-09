@@ -192,10 +192,10 @@ public interface RepositoryHandler {
 	
 	/**
 	 * Called if a user downloads a Resourceable that this handler can handle.
-	 * @param res
+	 * @param res The OLAT resource
 	 * @return MediaResource delivering resourceable.
 	 */
-	public MediaResource getAsMediaResource(OLATResourceable res, boolean backwardsCompatible);
+	public MediaResource getAsMediaResource(OLATResourceable res);
 	
 	/**
 	 * Called if the repository entry referencing the given Resourceable will be deleted

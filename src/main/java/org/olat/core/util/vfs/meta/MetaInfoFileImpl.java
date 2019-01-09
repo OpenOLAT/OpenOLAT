@@ -27,6 +27,8 @@
 package org.olat.core.util.vfs.meta;
 
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
@@ -124,7 +126,7 @@ public class MetaInfoFileImpl implements MetaInfo, Serializable {
 	private File metaFile = null;
 	
 	private boolean cannotGenerateThumbnail = false;
-	private List<Thumbnail> thumbnails = new ArrayList<>();
+	private final List<Thumbnail> thumbnails = new ArrayList<>();
 	private transient ThumbnailService thumbnailService;
 	
 
@@ -417,7 +419,39 @@ public class MetaInfoFileImpl implements MetaInfo, Serializable {
 		}
 		return deleted;
 	}
-	
+
+	@Override
+	public byte[] readBinary() {
+		byte[] content = null;
+		try(InputStream in = new FileInputStream(metaFile);
+				ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+			FileUtils.cpio(in, out, "");
+			content = out.toByteArray();
+		} catch(IOException e) {
+			log.error("", e);
+		}
+		return content;
+	}
+
+	@Override
+	public void writeBinary(byte[] data) {
+		if(data == null || data.length == 0) return;
+		
+		try(InputStream in = new ByteArrayInputStream(data)) {
+			synchronized(saxParser) {
+				MetaInfoFileImpl tmp = new MetaInfoFileImpl();
+				tmp.metaFile = metaFile;
+				saxParser.parse(in, new MetaHandler(tmp));
+				copyValues(tmp);
+				// restore last values
+				setDownloadCount(tmp.getDownloadCount());
+				write();
+			}
+		} catch(Exception e) {
+			log.error("", e);
+		}
+	}
+
 	/**
 	 * The parser is synchronized. Normally for such small files, this is
 	 * the quicker way. Creation of a SAXParser is really time consuming.
@@ -432,7 +466,7 @@ public class MetaInfoFileImpl implements MetaInfo, Serializable {
 			//the performance gain of the SAX Parser over the DOM Parser allow
 			//this to be synchronized (factor 5 to 10 quicker)
 			synchronized(saxParser) {
-				saxParser.parse(in, new MetaHandler());
+				saxParser.parse(in, new MetaHandler(this));
 				if(uuid == null) {
 					generateUUID();
 					write();
@@ -463,7 +497,7 @@ public class MetaInfoFileImpl implements MetaInfo, Serializable {
 			try {
 				synchronized(saxParser) {
 					InputSource in = new InputSource(new StringReader(filtered));
-					saxParser.parse(in, new MetaHandler());
+					saxParser.parse(in, new MetaHandler(this));
 				}
 				write();//update with the new filtered write method
 				return true;
@@ -861,24 +895,29 @@ public class MetaInfoFileImpl implements MetaInfo, Serializable {
 		}
 	}
 	
-	private class MetaHandler extends DefaultHandler {
+	private static class MetaHandler extends DefaultHandler {
 
 		private StringBuilder current;
+		private final MetaInfoFileImpl meta;
+		
+		public MetaHandler(MetaInfoFileImpl meta) {
+			this.meta = meta;
+		}
 		
 		@Override
 		public final void startElement(String uri, String localName, String qName, Attributes attributes) {
 			if("meta".equals(qName)) {
-				uuid = attributes.getValue("uuid");
+				 meta.setUUID(attributes.getValue("uuid"));
 			} else if ("lock".equals(qName)) {
-				locked ="true".equals(attributes.getValue("locked"));
+				meta.setLocked("true".equals(attributes.getValue("locked")));
 				String date = attributes.getValue("date");
 				if (date != null && date.length() > 0) {
-					lockedDate = new Date(Long.parseLong(date));
+					meta.setLockedDate(new Date(Long.parseLong(date)));
 				}
 			} else if ("thumbnails".equals(qName)) {
 				String valueStr = attributes.getValue("cannotGenerateThumbnail");
 				if(StringHelper.containsNonWhitespace(valueStr)) {
-					cannotGenerateThumbnail = Boolean.valueOf(valueStr);
+					meta.cannotGenerateThumbnail = Boolean.valueOf(valueStr);
 				}
 			}	else if ("thumbnail".equals(qName)) {
 				Thumbnail thumbnail = new Thumbnail();
@@ -887,7 +926,7 @@ public class MetaInfoFileImpl implements MetaInfo, Serializable {
 				thumbnail.setFinalHeight(Integer.parseInt(attributes.getValue("finalHeight")));
 				thumbnail.setFinalWidth(Integer.parseInt(attributes.getValue("finalWidth")));
 				thumbnail.setFill("true".equals(attributes.getValue("fill")));
-				thumbnails.add(thumbnail);
+				meta.thumbnails.add(thumbnail);
 			}
 		}
 		
@@ -905,57 +944,57 @@ public class MetaInfoFileImpl implements MetaInfo, Serializable {
 			if(current == null) return;
 			
 			if("comment".equals(qName)) {
-				comment = current.toString();
+				meta.comment = current.toString();
 			} else if ("author".equals(qName)) {
 				try {
-					authorIdentKey = Long.valueOf(current.toString());
+					meta.authorIdentKey = Long.valueOf(current.toString());
 				} catch (NumberFormatException nEx) {
 					//nothing to say
 				}
 			} else if ("lock".equals(qName)) {
 				try {
-					lockedByIdentKey = Long.valueOf(current.toString());
+					meta.lockedByIdentKey = Long.valueOf(current.toString());
 				} catch (NumberFormatException nEx) {
 					//nothing to say
 				}
 			} else if ("title".equals(qName)) {
-				title = current.toString();
+				meta.title = current.toString();
 			} else if ("publisher".equals(qName)) {
-				publisher = current.toString();
+				meta.publisher = current.toString();
 			} else if ("source".equals(qName)) {
-				source = current.toString();
+				meta.source = current.toString();
 			} else if ("city".equals(qName)) {
-				city = current.toString();
+				meta.city = current.toString();
 			} else if ("pages".equals(qName)) {
-				pages = current.toString();
+				meta.pages = current.toString();
 			} else if ("language".equals(qName)) {
-				language = current.toString();
+				meta.language = current.toString();
 			} else if ("downloadCount".equals(qName)) {
 				try {
-					downloadCount = Integer.valueOf(current.toString());
+					meta.downloadCount = Integer.valueOf(current.toString());
 				} catch (NumberFormatException nEx) {
 					//nothing to say
 				}
 			} else if ("month".equals(qName)) {
-				pubMonth = current.toString();
+				meta.pubMonth = current.toString();
 			} else if ("year".equals(qName)) {
-				pubYear = current.toString();
+				meta.pubYear = current.toString();
 			} else if (qName.equals("creator")) {
-				creator = current.toString();
+				meta.creator = current.toString();
 			} else if (qName.equals("url")) {
-				url = current.toString();
+				meta.url = current.toString();
 			} else if (qName.equals("licenseTypeKey")) {
-				licenseTypeKey = current.toString();
+				meta.licenseTypeKey = current.toString();
 			} else if (qName.equals("licenseTypeName")) {
-				licenseTypeName = current.toString();
+				meta.licenseTypeName = current.toString();
 			} else if (qName.equals("licenseText")) {
-				licenseText = current.toString();
+				meta.licenseText = current.toString();
 			} else if (qName.equals("licensor")) {
-				licensor = current.toString();
+				meta.licensor = current.toString();
 			} else if (qName.equals("thumbnail")) {
 				String finalName = current.toString();
-				File thumbnailFile = new File(metaFile.getParentFile(), finalName);
-				thumbnails.get(thumbnails.size() - 1).setThumbnailFile(thumbnailFile);
+				File thumbnailFile = new File(meta.metaFile.getParentFile(), finalName);
+				meta.thumbnails.get(meta.thumbnails.size() - 1).setThumbnailFile(thumbnailFile);
 			}
 			current = null;
 		}

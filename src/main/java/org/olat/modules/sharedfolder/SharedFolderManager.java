@@ -29,12 +29,9 @@ import java.io.File;
 
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.webdav.servlets.RequestUtil;
-import org.olat.core.gui.media.CleanupAfterDeliveryFileMediaResource;
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.media.ZippedContainerMediaResource;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.util.WebappHelper;
-import org.olat.core.util.ZipUtil;
-import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.VFSContainer;
@@ -93,14 +90,10 @@ public class SharedFolderManager {
 
 	public MediaResource getAsMediaResource(OLATResourceable res) {
 		String exportFileName = res.getResourceableId() + ".zip";
-		File fExportZIP = new File(WebappHelper.getTmpDir(), exportFileName);
 		VFSContainer sharedFolder = getSharedFolder(res);
-		
 		// do intermediate commit to avoid transaction timeout
 		DBFactory.getInstance().intermediateCommit();
-
-		ZipUtil.zip(sharedFolder.getItems(), new LocalFileImpl(fExportZIP), false);
-		return new CleanupAfterDeliveryFileMediaResource(fExportZIP);
+		return new ZippedContainerMediaResource(exportFileName, sharedFolder);
 	}
 
 	public boolean exportSharedFolder(String sharedFolderSoftkey, File exportedDataDir) {

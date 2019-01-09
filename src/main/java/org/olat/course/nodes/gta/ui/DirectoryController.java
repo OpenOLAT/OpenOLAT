@@ -39,6 +39,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.media.FileMediaResource;
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.media.ZippedDirectoryMediaResource;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
@@ -52,7 +53,6 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.meta.MetaInfo;
 import org.olat.course.nodes.gta.ui.component.DownloadDocumentMapper;
-import org.olat.fileresource.ZippedDirectoryMediaResource;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 

@@ -28,8 +28,8 @@ import java.util.List;
  */
 public class BusinessGroupEnvironment {
 
-	private final List<BGAreaReference> areas = new ArrayList<BGAreaReference>();
-	private final List<BusinessGroupReference> groups = new ArrayList<BusinessGroupReference>();
+	private final List<BGAreaReference> areas = new ArrayList<>();
+	private final List<BusinessGroupReference> groups = new ArrayList<>();
 	
 	public List<BGAreaReference> getAreas() {
 		return areas;

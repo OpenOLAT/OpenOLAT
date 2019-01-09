@@ -549,7 +549,7 @@ public class RepositoryEntryWebService {
 		try {
 			lockResult = typeToDownload.acquireLock(ores, identity);
 			if (lockResult == null || (lockResult.isSuccess() && !isAlreadyLocked)) {
-				MediaResource mr = typeToDownload.getAsMediaResource(ores, false);
+				MediaResource mr = typeToDownload.getAsMediaResource(ores);
 				if (mr != null) {
 					repositoryService.incrementDownloadCounter(entry);
 					InputStream in = mr.getInputStream();

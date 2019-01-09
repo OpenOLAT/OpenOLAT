@@ -22,7 +22,12 @@ package org.olat.core.commons.modules.bc.meta;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.UUID;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
@@ -30,6 +35,14 @@ import org.olat.core.commons.services.license.License;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.license.LicenseType;
 import org.olat.core.commons.services.license.manager.LicenseCleaner;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
+import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.vfs.VFSTest;
 import org.olat.core.util.vfs.meta.MetaInfo;
 import org.olat.core.util.vfs.meta.MetaInfoFactory;
 import org.olat.core.util.vfs.meta.MetaInfoFileImpl;
@@ -43,6 +56,9 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class MetaInfoFactoryTest extends OlatTestCase {
+	
+	private static final OLog log = Tracing.createLoggerFor(MetaInfoFactoryTest.class);
+	private static final String VFS_META_DIR = "/vfsmetatest";
 	
 	@Autowired
 	private DB dbInstance;
@@ -103,5 +119,40 @@ public class MetaInfoFactoryTest extends OlatTestCase {
 		LicenseType createdLicenseType = licenseService.loadLicenseTypeByName(name);
 		assertThat(createdLicenseType).isNotNull();
 	}
+	
+	@Test
+	public void readWriteBinary() {
+		String filename = UUID.randomUUID() + ".txt";
+		VFSContainer testContainer = VFSManager.olatRootContainer(VFS_META_DIR, null);
+		VFSLeaf leaf = testContainer.createChildLeaf(filename);
+		Assert.assertEquals(VFSConstants.YES, leaf.canMeta());
+		prepareFile(leaf);
+		
+		MetaInfo metaInfo = leaf.getMetaInfo();
+		metaInfo.setComment("A little comment");
+		metaInfo.write();
+		
+		byte[] binaryData = metaInfo.readBinary();
+		Assert.assertNotNull(binaryData);
+		Assert.assertTrue(binaryData.length > 0);
+		
+		
+		String secondFilename = UUID.randomUUID() + ".txt";
+		VFSLeaf secondLeaf = testContainer.createChildLeaf(secondFilename);
+		prepareFile(secondLeaf);
 
+		MetaInfo secondMetaInfo = leaf.getMetaInfo();
+		secondMetaInfo.writeBinary(binaryData);
+		String comment = secondMetaInfo.getComment();
+		Assert.assertEquals("A little comment", comment);
+	}
+	
+	private void prepareFile(VFSLeaf file) {
+		try(OutputStream out = file.getOutputStream(false);
+				InputStream in = VFSTest.class.getResourceAsStream("test.txt")) {
+			FileUtils.cpio(in, out, "");
+		} catch(IOException e) {
+			log.error("", e);
+		}
+	}
 }

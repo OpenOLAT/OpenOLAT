@@ -20,6 +20,8 @@
 package org.olat.modules.portfolio.ui;
 
 import java.io.File;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -477,10 +479,11 @@ public class AssignmentEditController extends FormBasicController {
 		if (container != null) {
 			List<VFSItem> tmpFList = tempUploadFolder.getItems(new SystemItemFilter());
 			for (VFSItem file : tmpFList) {
-				try {
-					VFSLeaf leaf = (VFSLeaf) file;
-					VFSLeaf storedFile = container.createChildLeaf(leaf.getName());
-					FileUtils.bcopy(leaf.getInputStream(), storedFile.getOutputStream(false), "");
+				VFSLeaf leaf = (VFSLeaf) file;
+				VFSLeaf storedFile = container.createChildLeaf(leaf.getName());
+				try(InputStream in=leaf.getInputStream();
+						OutputStream out=storedFile.getOutputStream(false)) {
+					FileUtils.cpio(in, out, "");
 				} catch (Exception e) {
 					logError("", e);
 				}

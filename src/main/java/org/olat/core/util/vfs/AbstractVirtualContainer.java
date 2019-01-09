@@ -31,9 +31,6 @@ import org.olat.core.util.vfs.meta.MetaInfo;
 
 
 /**
- * Description:<br>
- * TODO: Felix Jost Class Description for VirtualContainer
- * 
  * <P>
  * Initial Date:  23.06.2005 <br>
  *
@@ -42,7 +39,7 @@ import org.olat.core.util.vfs.meta.MetaInfo;
 public abstract class AbstractVirtualContainer implements VFSContainer {
 
 	private final String name;
-	protected VFSItemFilter defaultFilter=null;
+	protected VFSItemFilter defaultFilter;
 
 	/**
 	 * @param name
@@ -79,6 +76,11 @@ public abstract class AbstractVirtualContainer implements VFSContainer {
 	}
 
 	@Override
+	public VFSStatus copyContentOf(VFSContainer container) {
+		return VFSConstants.NO;
+	}
+
+	@Override
 	public String getName() {
 		return name;
 	}
@@ -90,17 +92,17 @@ public abstract class AbstractVirtualContainer implements VFSContainer {
 
 	@Override
 	public VFSStatus rename(String newname) {
-		throw new RuntimeException("unsupported");
+		return VFSConstants.NO;
 	}
 
 	@Override
 	public VFSStatus delete() {
-		throw new RuntimeException("unsupported");
+		return VFSConstants.NO;
 	}
 
 	@Override
 	public VFSStatus deleteSilently() {
-		throw new RuntimeException("unsupported");
+		return VFSConstants.NO;
 	}
 
 	@Override
@@ -132,6 +134,5 @@ public abstract class AbstractVirtualContainer implements VFSContainer {
 	public VFSItemFilter getDefaultItemFilter() {
 		return this.defaultFilter;
 	}
-
 }
 

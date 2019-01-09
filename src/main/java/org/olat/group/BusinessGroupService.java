@@ -618,8 +618,8 @@ public interface BusinessGroupService {
 	 * @param groups
 	 * @param fExportFile
 	 */
-	public void exportGroups(List<BusinessGroup> groups, List<BGArea> areas, File fExportFile, BusinessGroupEnvironment env,
-			boolean runtimeDatas, boolean backwardsCompatible);
+	public void exportGroups(List<BusinessGroup> groups, List<BGArea> areas, File fExportFile,
+			boolean runtimeDatas);
 
 	/**
 	 * Import previously exported group definitions.

@@ -144,8 +144,6 @@ public class CmdZip extends FormBasicController implements FolderCommand {
 
 	/**
 	 * Creates a zipFile by using ZipUtil and fires Event.DONE_EVENT if successful.
-	 * 
-	 * @see org.olat.core.commons.modules.bc.commands.AbstractCreateItemForm#formOK(org.olat.core.gui.UserRequest)
 	 */
 	@Override
 	protected void formOK(UserRequest ureq) {
@@ -155,7 +153,7 @@ public class CmdZip extends FormBasicController implements FolderCommand {
 		}
 
 		VFSItem zipFile = currentContainer.createChildLeaf(name);
-		if (zipFile == null) {
+		if (!(zipFile instanceof VFSLeaf)) {
 			fireEvent(ureq, Event.FAILED_EVENT);
 			return;				
 		}

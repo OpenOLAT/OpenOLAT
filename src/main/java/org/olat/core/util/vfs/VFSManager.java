@@ -60,6 +60,11 @@ public class VFSManager {
 		return new LocalFileImpl(file, null);
 	}
 	
+	public static LocalFolderImpl olatRootContainer(String fileRelPath) {
+		File file = new File(FolderConfig.getCanonicalRoot() + fileRelPath);
+		return new LocalFolderImpl(file, null);
+	}
+	
 	public static LocalFolderImpl olatRootContainer(String fileRelPath, VFSContainer parentContainer) {
 		File file = new File(FolderConfig.getCanonicalRoot() + fileRelPath);
 		return new LocalFolderImpl(file, parentContainer);
@@ -794,6 +799,26 @@ public class VFSManager {
 				// something went wrong.
 				successful = false;
 				log.error("Error while copying content from source: " + inStream + " to target: " + target.getName(), e);
+			}
+		} else {
+			// source or target is null
+			successful = false;
+			if (log.isDebug()) log.debug("Either the source or the target is null. Content of leaf cannot be copied.");
+		}
+		return successful;
+	}
+	
+	public static boolean copyContent(VFSLeaf source, OutputStream outStream) {
+		boolean successful;
+		if (outStream != null && source != null) {
+			// write the input to the output
+			try(InputStream in = source.getInputStream()) {
+				FileUtils.cpio(in, outStream, "");
+				successful = true;
+			} catch (IOException e) {
+				// something went wrong.
+				successful = false;
+				log.error("Error while copying content from source: " + source + " to target stream.", e);
 			}
 		} else {
 			// source or target is null

@@ -108,7 +108,7 @@ public class CmdUnzip extends BasicController implements FolderCommand {
 			boolean fileNotExist = false;
 			for (String sItem:selection.getFiles()) {
 				currentVfsItem = currentContainer.resolve(sItem);
-				if (currentVfsItem != null && (currentVfsItem instanceof VFSLeaf)) {
+				if (currentVfsItem instanceof VFSLeaf) {
 					if (!doUnzip((VFSLeaf)currentVfsItem, currentContainer, ureq, wContr)) {
 						status = FolderCommandStatus.STATUS_FAILED;
 						break;

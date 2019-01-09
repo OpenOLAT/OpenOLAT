@@ -191,7 +191,7 @@ public class WebDocumentHandler extends FileHandler {
 	}
 
 	@Override
-	public MediaResource getAsMediaResource(OLATResourceable res, boolean backwardsCompatible) {
+	public MediaResource getAsMediaResource(OLATResourceable res) {
 		return FileResourceManager.getInstance().getAsDownloadeableMediaResource(res);
 	}
 

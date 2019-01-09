@@ -19,9 +19,10 @@
  */
 package org.olat.core.commons.modules.bc.commands;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.zip.ZipOutputStream;
 
@@ -42,6 +43,8 @@ import org.olat.core.util.ZipUtil;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.meta.MetaInfo;
 
 /**
@@ -156,6 +159,23 @@ public class CmdDownloadZip implements FolderCommand {
 			hres.setHeader("Content-Disposition","attachment; filename*=UTF-8''" + urlEncodedLabel);			
 			hres.setHeader("Content-Description", urlEncodedLabel);
 			
+			if(selectedFiles.size() == 1 && selectedFiles.get(0).toLowerCase().endsWith(".zip")) {
+				VFSItem singleItem = currentContainer.resolve(selectedFiles.get(0));
+				if(singleItem instanceof VFSLeaf) {
+					try(OutputStream out = hres.getOutputStream()) {
+						VFSManager.copyContent((VFSLeaf)singleItem, out);
+					} catch(IOException e) {
+						log.error("", e);
+					}
+				} else {
+					prepareZip(hres, selectedFiles);
+				}
+			} else {
+				prepareZip(hres, selectedFiles);
+			}
+		}
+		
+		private void prepareZip(HttpServletResponse hres, List<String> selectedFiles) {
 			try(ZipOutputStream zout = new ZipOutputStream(hres.getOutputStream())) {
 				zout.setLevel(9);
 				
@@ -173,9 +193,8 @@ public class CmdDownloadZip implements FolderCommand {
 					}
 				}
 				
-				boolean success = true;
-				for (Iterator<VFSItem> iter = vfsFiles.iterator(); success && iter.hasNext();) {
-					success = ZipUtil.addToZip(iter.next(), "", zout);
+				for (VFSItem item:vfsFiles) {
+					ZipUtil.addToZip(item, "", zout);
 				}
 				zout.flush();
 			} catch (Exception e) {

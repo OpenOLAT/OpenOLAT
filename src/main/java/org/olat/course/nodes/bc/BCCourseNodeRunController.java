@@ -103,7 +103,7 @@ public class BCCourseNodeRunController extends BasicController implements Activa
 		VFSContainer target = null;
 		VFSSecurityCallback scallback;
 		if(courseNode.getModuleConfiguration().getBooleanSafe(BCCourseNodeEditController.CONFIG_AUTO_FOLDER)) {
-			NamedContainerImpl directory = BCCourseNode.getNodeFolderContainer(courseNode, courseEnv);
+			VFSContainer directory = BCCourseNode.getNodeFolderContainer(courseNode, courseEnv);
 			boolean isAdministrator = userCourseEnv.isAdmin();
 			scallback = new FolderNodeCallback(directory.getRelPath(), ne, isAdministrator, isGuestOnly, nodefolderSubContext);
 			target = directory;

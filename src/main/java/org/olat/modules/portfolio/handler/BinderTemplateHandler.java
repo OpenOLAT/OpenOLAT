@@ -215,7 +215,7 @@ public class BinderTemplateHandler implements RepositoryHandler {
 	 * @see org.olat.repository.handlers.RepositoryHandler#getAsMediaResource(org.olat.core.id.OLATResourceable)
 	 */
 	@Override
-	public MediaResource getAsMediaResource(OLATResourceable res, boolean backwardsCompatible) {
+	public MediaResource getAsMediaResource(OLATResourceable res) {
 		RepositoryEntry templateEntry = RepositoryManager.getInstance().lookupRepositoryEntry(res, true);
 		Binder template = CoreSpringFactory.getImpl(PortfolioService.class)
 				.getBinderByResource(templateEntry.getOlatResource());

@@ -46,9 +46,7 @@ public class DownloadeableMediaResource extends FileMediaResource {
 		super(theFile, true);
 	}
 	
-	/**
-	 * @see org.olat.core.gui.media.MediaResource#getContentType()
-	 */
+	@Override
 	public String getContentType() {
 		return "application/octet-stream";
 	}

@@ -209,27 +209,33 @@ public class MergeSource extends AbstractVirtualContainer {
 		return newContainer;
 	}
 
-	/**
-	 * @see org.olat.core.util.vfs.VFSContainer#createChildLeaf(java.lang.String)
-	 */
 	@Override
 	public VFSLeaf createChildLeaf(String name) {
 		if (canWrite() != VFSConstants.YES) return null;
 		return rootWriteContainer.createChildLeaf(name);
 	}
 
-	/**
-	 * @see org.olat.core.util.vfs.VFSContainer#copyFrom(org.olat.core.util.vfs.VFSItem)
-	 */
 	@Override
 	public VFSStatus copyFrom(VFSItem source) {
-		if (canWrite() != VFSConstants.YES) throw new AssertException("Cannot create child container in merge source if not writable.");
+		if (canWrite() != VFSConstants.YES) {
+			throw new AssertException("Cannot create child container in merge source if not writable.");
+		}
 		return rootWriteContainer.copyFrom(source);
 	}
-	
-	/**
-	 * @see org.olat.core.util.vfs.VFSItem#resolveFile(java.lang.String)
-	 */
+
+	@Override
+	public VFSStatus copyContentOf(VFSContainer container) {
+		if (canWrite() != VFSConstants.YES) {
+			throw new AssertException("Cannot create child container in merge source if not writable.");
+		}
+		
+		VFSStatus status = null;
+		for(VFSItem item:container.getItems()) {
+			status = rootWriteContainer.copyFrom(item);
+		}
+		return status;
+	}
+
 	@Override
 	public VFSItem resolve(String path) {
 		path = VFSManager.sanitizePath(path);

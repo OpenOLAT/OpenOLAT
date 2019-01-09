@@ -21,7 +21,6 @@ package org.olat.modules.qpool.manager;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -119,7 +118,7 @@ public abstract class AbstractQPoolServiceProvider implements QPoolSPI {
 
 	@Override
 	public List<QuestionItem> importItems(Identity owner, Locale defaultLocale, String filename, File file) {
-		List<QuestionItem> items = new ArrayList<QuestionItem>();
+		List<QuestionItem> items = new ArrayList<>();
 		QuestionItem item = importItem(owner, defaultLocale, filename, file);
 		if(item != null) {
 			items.add(item);
@@ -132,18 +131,11 @@ public abstract class AbstractQPoolServiceProvider implements QPoolSPI {
 		VFSContainer itemDir = getFileStorage().getContainer(dir);
 
 		VFSLeaf leaf = itemDir.createChildLeaf(filename);
-		OutputStream out = leaf.getOutputStream(false);
-		InputStream in = null;
-		try {
-			in = new FileInputStream(file);
+		try(OutputStream out = leaf.getOutputStream(false);
+				InputStream in = new FileInputStream(file)) {
 			IOUtils.copy(in, out);
-		} catch (FileNotFoundException e) {
-			log.error("", e);
 		} catch (IOException e) {
 			log.error("", e);
-		} finally {
-			IOUtils.closeQuietly(in);
-			IOUtils.closeQuietly(out);
 		}
 		
 		String language = defaultLocale.getLanguage();
@@ -168,9 +160,7 @@ public abstract class AbstractQPoolServiceProvider implements QPoolSPI {
 	}
 	
 	private void exportFile(VFSLeaf leaf, ZipOutputStream zout) {
-		InputStream in = null;
-		try {
-			in = leaf.getInputStream();
+		try(InputStream in = leaf.getInputStream()) {
 			if(in != null) {
 				zout.putNextEntry(new ZipEntry(leaf.getName()));
 				IOUtils.copy(in, zout);
@@ -178,8 +168,6 @@ public abstract class AbstractQPoolServiceProvider implements QPoolSPI {
 			}
 		} catch (IOException e) {
 			log.error("", e);
-		} finally {
-			IOUtils.closeQuietly(in);
 		}
 	}
 

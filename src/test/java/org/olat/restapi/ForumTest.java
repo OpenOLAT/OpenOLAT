@@ -35,6 +35,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -301,12 +302,12 @@ public class ForumTest extends OlatJerseyTestCase {
 	@Test
 	public void testGetAttachment() throws IOException, URISyntaxException {
 		//set a attachment
-		VFSLeaf attachment = null;
 		VFSContainer container = forumManager.getMessageContainer(m1.getForum().getKey(), m1.getKey());
-		try(InputStream portraitIn = CoursesElementsTest.class.getResourceAsStream("portrait.jpg")) {
+		VFSLeaf attachment = container.createChildLeaf(UUID.randomUUID().toString().replace("-", "") + ".jpg");
+		try(InputStream portraitIn = CoursesElementsTest.class.getResourceAsStream("portrait.jpg");
+				OutputStream out=attachment.getOutputStream(false)) {
 			assertNotNull(portraitIn);
-			attachment = container.createChildLeaf(UUID.randomUUID().toString().replace("-", "") + ".jpg");
-			FileUtils.bcopy(portraitIn, attachment.getOutputStream(false), "");
+			FileUtils.cpio(portraitIn, out, "");
 		} catch(IOException e) {
 			Assert.fail();
 			log.error("", e);

@@ -20,13 +20,9 @@
 package org.olat.course.export;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
 
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
@@ -40,8 +36,8 @@ import org.olat.group.model.BusinessGroupReference;
  */
 public class CourseEnvironmentMapper {
 
-	private final List<BGAreaReference> areas = new ArrayList<BGAreaReference>();
-	private final List<BusinessGroupReference> groups = new ArrayList<BusinessGroupReference>();
+	private final List<BGAreaReference> areas = new ArrayList<>();
+	private final List<BusinessGroupReference> groups = new ArrayList<>();
 	private final Map<String,Map<String,String>> mapUniqueKeys = new HashMap<>();
 	
 	private Identity author;
@@ -89,43 +85,10 @@ public class CourseEnvironmentMapper {
 		groups.addAll(env.getGroups());
 	}
 	
-	public void avoidDuplicateNames() {
-		Set<String> names = new HashSet<String>();
-		for(BusinessGroupReference ref:getGroups()) {
-			if(names.contains(ref.getName())) {
-				String newName = generateName(ref.getName(), names);
-				names.add(newName);
-				ref.setName(newName);
-			} else {
-				names.add(ref.getName());
-			}
-		}
-		names.clear();
-		for(BGAreaReference ref:getAreas()) {
-			if(names.contains(ref.getName())) {
-				String newName = generateName(ref.getName(), names);
-				names.add(newName);
-				ref.setName(newName);
-			} else {
-				names.add(ref.getName());
-			}
-		}
-	}
-	
-	private String generateName(String name, Collection<String> names) {
-		for(int i=1; i<100; i++) {
-			String newName = name + "_" + i;
-			if(!names.contains(newName)) {
-				return newName;
-			}
-		}
-		return name + "_" + UUID.randomUUID().toString();
-	}
-	
 	public List<Long> toGroupKeyFromOriginalNames(String groupNames) {
 		if(!StringHelper.containsNonWhitespace(groupNames)) return null;
 		String[] groupNameArr = groupNames.split(",");
-		List<Long> groupKeyList = new ArrayList<Long>();
+		List<Long> groupKeyList = new ArrayList<>();
 		for(String groupName:groupNameArr) {
 			groupName = groupName.trim();
 			for(BusinessGroupReference group:groups) {
@@ -140,7 +103,7 @@ public class CourseEnvironmentMapper {
 	
 	public List<Long> toGroupKeyFromOriginalKeys(List<Long> originalKeys) {
 		if(originalKeys == null || originalKeys.isEmpty()) return null;
-		List<Long> groupKeyList = new ArrayList<Long>();
+		List<Long> groupKeyList = new ArrayList<>();
 		for(Long originalKey:originalKeys) {
 			for(BusinessGroupReference group:groups) {
 				if(originalKey.equals(group.getOriginalKey())) {
@@ -167,7 +130,7 @@ public class CourseEnvironmentMapper {
 	public List<Long> toAreaKeyFromOriginalNames(String areaNames) {
 		if(!StringHelper.containsNonWhitespace(areaNames)) return null;
 		String[] areaNameArr = areaNames.split(",");
-		List<Long> areaKeyList = new ArrayList<Long>();
+		List<Long> areaKeyList = new ArrayList<>();
 		for(String areaName:areaNameArr) {
 			areaName = areaName.trim();
 			for(BGAreaReference area:areas) {
@@ -182,7 +145,7 @@ public class CourseEnvironmentMapper {
 	
 	public List<Long> toAreaKeyFromOriginalKeys(List<Long> originalKeys) {
 		if(originalKeys == null || originalKeys.isEmpty()) return null;
-		List<Long> areaKeyList = new ArrayList<Long>();
+		List<Long> areaKeyList = new ArrayList<>();
 		for(Long originalKey:originalKeys) {
 			for(BGAreaReference area:areas) {
 				if(originalKey.equals(area.getOriginalKey())) {

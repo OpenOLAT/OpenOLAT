@@ -44,7 +44,6 @@ import org.olat.ims.cp.ContentPackage;
  * Initial Date:  4 mai 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-//fxdiff FXOLAT-125: virtual file system for CP
 public class VFSRootCPContainer extends AbstractVirtualContainer implements VFSContainer {
 	
 	private VFSContainer rootContainer;

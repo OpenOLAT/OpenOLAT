@@ -609,11 +609,12 @@ public class FileUploadController extends FormBasicController {
 			boolean success = false;
 			try(InputStream in = new FileInputStream(uploadedFile);
 					BufferedOutputStream out = new BufferedOutputStream(newFile.getOutputStream(false)))  {
-				success = FileUtils.copy(in, out);					
-				uploadedFile.delete();
+				FileUtils.cpio(in, out, "");
+				success = true;
 			} catch (IOException e) {
 				success = false;
-			}
+			}				
+			FileUtils.deleteFile(uploadedFile);
 			
 			if (success) {
 				boolean locked = vfsLockManager.isLockedForMe(existingVFSItem, getIdentity(), ureq.getUserSession().getRoles());
@@ -692,11 +693,11 @@ public class FileUploadController extends FormBasicController {
 		} else {
 			try(InputStream in = new FileInputStream(uploadedFile);
 				OutputStream out = newFile.getOutputStream(false)) {
-				FileUtils.bcopy(in, out, "uploadTmpFileToDestFile");
-				uploadedFile.delete();
+				FileUtils.cpio(in, out, "uploadTmpFileToDestFile");
 			} catch (IOException e) {
 				success = false;
 			}
+			FileUtils.deleteFile(uploadedFile);
 		}
 		
 		if (success) {

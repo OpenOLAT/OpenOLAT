@@ -45,9 +45,9 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
-import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.modules.forms.handler.EvaluationFormResource;
 import org.olat.modules.portfolio.Assignment;
 import org.olat.modules.portfolio.AssignmentType;
@@ -225,7 +225,7 @@ public class AssignmentTemplatesEditController extends FormBasicController {
 		if (container != null) {
 			try(InputStream in = new FileInputStream(uploadedFile)) {
 				VFSLeaf storedFile = container.createChildLeaf(uploadedFileName);
-				FileUtils.bcopy(in, storedFile.getOutputStream(false), "");
+				VFSManager.copyContent(in, storedFile);
 			} catch (Exception e) {
 				logError("", e);
 			}

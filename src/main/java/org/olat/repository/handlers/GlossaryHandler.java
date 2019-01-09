@@ -213,7 +213,7 @@ public class GlossaryHandler implements RepositoryHandler {
 	}
 
 	@Override
-	public MediaResource getAsMediaResource(OLATResourceable res, boolean backwardsCompatible) {
+	public MediaResource getAsMediaResource(OLATResourceable res) {
 		return CoreSpringFactory.getImpl(GlossaryManager.class).getAsMediaResource(res);
 	}
 

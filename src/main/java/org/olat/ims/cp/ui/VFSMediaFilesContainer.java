@@ -38,7 +38,6 @@ import org.olat.core.util.vfs.filters.VFSItemFilter;
  * Initial Date:  4 mai 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-//fxdiff FXOLAT-125: virtual file system for CP
 public class VFSMediaFilesContainer extends AbstractVirtualContainer implements VFSContainer {
 	
 	private final VFSContainer rootContainer;

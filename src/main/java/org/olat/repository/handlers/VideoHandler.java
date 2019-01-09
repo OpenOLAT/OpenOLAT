@@ -146,7 +146,7 @@ public class VideoHandler extends FileHandler {
 	}
 
 	@Override
-	public MediaResource getAsMediaResource(OLATResourceable res, boolean backwardsCompatible) {
+	public MediaResource getAsMediaResource(OLATResourceable res) {
 		RepositoryManager repoManager = CoreSpringFactory.getImpl(RepositoryManager.class);
 		RepositoryEntry repoEntry = repoManager.lookupRepositoryEntry(res, false);
 		if (repoEntry == null) {

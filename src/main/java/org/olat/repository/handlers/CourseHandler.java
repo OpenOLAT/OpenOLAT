@@ -27,8 +27,8 @@ package org.olat.repository.handlers;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -262,18 +262,15 @@ public class CourseHandler implements RepositoryHandler {
 		boolean doUpdateTitle = true;
 		File repoConfigXml = new File(fImportBaseDirectory, "repo.xml");
 		if (repoConfigXml.exists()) {
-			RepositoryEntryImport importConfig;
-			try {
-				importConfig = RepositoryEntryImportExport.getConfiguration(new FileInputStream(repoConfigXml));
-				if(importConfig != null) {
-					if (displayname.equals(importConfig.getDisplayname())) {					
-						// do not update if title was not modified during import
-						// user does not expect to have an updated title and there is a chance
-						// the root node title is not the same as the course title
-						doUpdateTitle = false;
-					}
+			try(InputStream inRepoConfig=new FileInputStream(repoConfigXml)) {
+				RepositoryEntryImport importConfig = RepositoryEntryImportExport.getConfiguration(inRepoConfig);
+				if(importConfig != null && displayname.equals(importConfig.getDisplayname())) {					
+					// do not update if title was not modified during import
+					// user does not expect to have an updated title and there is a chance
+					// the root node title is not the same as the course title
+					doUpdateTitle = false;
 				}
-			} catch (FileNotFoundException e) {
+			} catch (IOException e) {
 				// ignore
 			}
 		}
@@ -331,7 +328,7 @@ public class CourseHandler implements RepositoryHandler {
 		VFSContainer sfContainer = sfm.getSharedFolder(resource);
 		File fExportedFile = importExport.importGetExportedFile();
 		if (fExportedFile.exists()) {
-			ZipUtil.unzip(new LocalFileImpl(fExportedFile), sfContainer);
+			ZipUtil.unzipNonStrict(fExportedFile, sfContainer, owner, false);
 		} else {
 			log.warn("The actual contents of the shared folder were not found in the export.");
 		}
@@ -442,7 +439,7 @@ public class CourseHandler implements RepositoryHandler {
 			
 		File fExportDir = new File(WebappHelper.getTmpDir(), UUID.randomUUID().toString());
 		fExportDir.mkdirs();
-		sourceCgm.exportCourseBusinessGroups(fExportDir, env, false, false);
+		sourceCgm.exportCourseBusinessGroups(fExportDir, env, false);
 
 		ICourse course = CourseFactory.loadCourse(target);
 		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
@@ -526,11 +523,11 @@ public class CourseHandler implements RepositoryHandler {
 	}
 
 	@Override
-	public MediaResource getAsMediaResource(OLATResourceable res, boolean backwardsCompatible) {
+	public MediaResource getAsMediaResource(OLATResourceable res) {
 		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(res, true);
 		String exportFileName = StringHelper.transformDisplayNameToFileSystemName(re.getDisplayname()) + ".zip";
 		File fExportZIP = new File(WebappHelper.getTmpDir(), exportFileName);
-		CourseFactory.exportCourseToZIP(res, fExportZIP, false, backwardsCompatible);
+		CourseFactory.exportCourseToZIP(res, fExportZIP, false);
 		return new CleanupAfterDeliveryFileMediaResource(fExportZIP);
 	}
 	

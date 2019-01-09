@@ -91,6 +91,11 @@ public class NamedContainerImpl extends AbstractVirtualContainer {
 	}
 
 	@Override
+	public VFSStatus copyContentOf(VFSContainer container) {
+		return getDelegate().copyContentOf(container);
+	}
+
+	@Override
 	public VFSStatus canWrite() {
 		return getDelegate().canWrite();
 	}
@@ -102,7 +107,7 @@ public class NamedContainerImpl extends AbstractVirtualContainer {
 
 	@Override
 	public VFSStatus rename(String newname) {
-		throw new RuntimeException("unsupported");
+		return VFSConstants.NO;
 	}
 
 	@Override

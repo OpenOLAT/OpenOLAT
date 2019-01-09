@@ -41,10 +41,8 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.Stack;
 import java.util.StringTokenizer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -56,6 +54,8 @@ import org.olat.core.id.Roles;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.io.ShieldInputStream;
+import org.olat.core.util.io.ShieldOutputStream;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.LocalImpl;
@@ -64,6 +64,8 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSLockManager;
+import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.vfs.filters.SystemItemFilter;
 import org.olat.core.util.vfs.meta.MetaInfo;
 import org.olat.core.util.vfs.version.Versionable;
 
@@ -88,8 +90,8 @@ public class ZipUtil {
 	 * @return	True if successfull, false otherwise
 	 */
 	public static boolean unzip(File zipFile, File targetDir) {
-		try {
-			xxunzip(new FileInputStream(zipFile), targetDir.getAbsolutePath());
+		try(InputStream in=new FileInputStream(zipFile)) {
+			xxunzip(in, targetDir.getAbsolutePath());
 			return true;
 		} catch (IOException e) {
 			log.error("I/O failure while unzipping "+zipFile.getAbsolutePath()+" to "+targetDir.getAbsolutePath());
@@ -107,8 +109,8 @@ public class ZipUtil {
 		
 		if (targetDir instanceof LocalFolderImpl) {
 			String outdir = ((LocalFolderImpl) targetDir).getBasefile().getAbsolutePath();
-			try {
-				xxunzip(zipLeaf.getInputStream(), outdir);
+			try(InputStream in=zipLeaf.getInputStream()) {
+				xxunzip(in, outdir);
 				return true;
 			} catch (IOException e) {
 				log.error("I/O failure while unzipping "+zipLeaf.getName()+" to "+outdir);
@@ -255,11 +257,25 @@ public class ZipUtil {
 	 * @return	True if successfull, false otherwise
 	 */
 	public static boolean unzipNonStrict(VFSLeaf zipLeaf, VFSContainer targetDir, Identity identity, boolean versioning) {
-		InputStream in = zipLeaf.getInputStream();
-		boolean unzipped = unzipNonStrict(in, targetDir, identity, versioning);
-		FileUtils.closeSafely(in);
+		boolean unzipped = false;
+		try(InputStream in = zipLeaf.getInputStream()) {
+			unzipped = unzipNonStrict(in, targetDir, identity, versioning);
+		} catch(IOException e) {
+			log.error("", e);
+		}
 		return unzipped;
-	}	
+	}
+	
+	public static boolean unzipNonStrict(File zipFile, VFSContainer targetDir, Identity identity, boolean versioning) {
+		boolean unzipped = false;
+		try(InputStream in = new FileInputStream(zipFile);
+				InputStream bin = new BufferedInputStream(in, FileUtils.BSIZE)) {
+			unzipped = unzipNonStrict(bin, targetDir, identity, versioning);
+		} catch(IOException e) {
+			log.error("", e);
+		}
+		return unzipped;
+	}
 	
 	/**
 	 * Unzip with jazzlib
@@ -301,41 +317,28 @@ public class ZipUtil {
 							name = name.substring(dirSepIndex + 1);
 						}
 						
+						byte[] extra = oEntr.getExtra();
 						if(versioning) {
 							VFSLeaf newEntry = (VFSLeaf)createIn.resolve(name);
 							if(newEntry == null) {
 								newEntry = createIn.createChildLeaf(name);
-								OutputStream out = newEntry.getOutputStream(false);
-								if (!FileUtils.copy(oZip, out)) return false;
-								FileUtils.closeSafely(out);
+								if (!VFSManager.copyContent(new ShieldInputStream(oZip), newEntry)) {
+									return false;
+								}
 							} else if (newEntry instanceof Versionable) {
 								Versionable versionable = (Versionable)newEntry;
 								if(versionable.getVersions().isVersioned()) {
 									versionable.getVersions().addVersion(identity, "", oZip);
 								}
 							}
-							if(identity != null && newEntry.canMeta() == VFSConstants.YES) {
-								MetaInfo info = newEntry.getMetaInfo();
-								if(info != null) {
-									info.setAuthor(identity);
-									info.write();
-								}
-							}
-							
+							unzipMetadata(identity, extra, newEntry);
 						} else {
 							VFSLeaf newEntry = createIn.createChildLeaf(name);
 							if (newEntry != null) {
-								OutputStream out = newEntry.getOutputStream(false);
-								if (!FileUtils.copy(oZip, out)) return false;
-								FileUtils.closeSafely(out);
-							
-								if(identity != null && newEntry.canMeta() == VFSConstants.YES) {
-									MetaInfo info = newEntry.getMetaInfo();
-									if(info != null) {
-										info.setAuthor(identity);
-										info.write();
-									}
+								if (!VFSManager.copyContent(new ShieldInputStream(oZip), newEntry)) {
+									return false;
 								}
+								unzipMetadata(identity, extra, newEntry);
 							}
 						}
 					}
@@ -348,6 +351,24 @@ public class ZipUtil {
 		}
 		return true;
 	} // unzip
+	
+	private static void unzipMetadata(Identity identity, byte[] extra, VFSLeaf newEntry) {
+		if(newEntry.canMeta() != VFSConstants.YES
+				|| ((extra == null || extra.length == 0) && identity == null)) {
+			return;
+		}
+		
+		MetaInfo info = newEntry.getMetaInfo();
+		if(info == null) {
+			return;
+		}
+		if(extra != null) {
+			info.writeBinary(extra);
+		} else {
+			info.setAuthor(identity);
+			info.write();
+		}
+	}
 	
 	/**
 	 * Check if a file in the zip is already in the path
@@ -529,10 +550,11 @@ public class ZipUtil {
 		if (target.exists()) return false;
 		List<VFSItem> vfsFiles = new ArrayList<>();
 		LocalFolderImpl vfsRoot = new LocalFolderImpl(root);
-		for (Iterator<String> iter = files.iterator(); iter.hasNext();) {
-			String fileName = iter.next();
+		for (String fileName: files) {
 			VFSItem item = vfsRoot.resolve(fileName);
-			if (item == null) return false;
+			if (item == null) {
+				return false;
+			}
 			vfsFiles.add(item);
 		}
 		return zip(vfsFiles, new LocalFileImpl(target), compress);
@@ -550,7 +572,46 @@ public class ZipUtil {
 	 */
 	public static boolean zip(Set<String> files, File root, File target) {
 		return zip(files, root, target, true);
-	} // zip
+	}
+	
+	/**
+	 * Zip the content of the VFS container. The name
+	 * of the container is NOT the root of the ZIP file.
+	 * 
+	 * @param container The container to zip
+	 * @param outputFile The output ZIP file
+	 * @return true if successful
+	 */
+	public static boolean zip(VFSContainer container, File outputFile) {
+		try(OutputStream out = new FileOutputStream(outputFile)) {
+			zip(container, out);
+			return true;
+		} catch(IOException e) {
+			log.error("", e);
+			return false;
+		}
+	}
+
+	/**
+	 * Zip the content of the VFS container. The name
+	 * of the container is NOT the root of the ZIP file.
+	 * 
+	 * @param container the container to zip
+	 * @param out The output stream
+	 * @return true if successful
+	 */
+	public static boolean zip(VFSContainer container, OutputStream out) {
+		try(ZipOutputStream zipOut = new ZipOutputStream(new BufferedOutputStream(out, FileUtils.BSIZE))) {
+			List<VFSItem> items=container.getItems(new SystemItemFilter());
+			for(VFSItem item:items) {
+				addToZip(item, "", zipOut);
+			}
+			return true;
+		} catch(IOException e) {
+			log.error("", e);
+			return false;
+		}
+	}
 	
 	public static boolean zip(List<VFSItem> vfsFiles, VFSLeaf target, boolean compress) {
 		boolean success = true;
@@ -560,36 +621,13 @@ public class ZipUtil {
 			zname = ((LocalImpl)target).getBasefile().getAbsolutePath();
 		}
 
-		
-		OutputStream out = target.getOutputStream(false);
-		
-
-		if (out == null) {
-			throw new OLATRuntimeException(ZipUtil.class, "Error getting output stream for file: " + zname, null);
-		}
-		
-		long s = System.currentTimeMillis();
-		
-		ZipOutputStream zipOut = new ZipOutputStream(new BufferedOutputStream(out, FileUtils.BSIZE));
-		
-		if (vfsFiles.isEmpty()) {
-			try {
-				zipOut.close();
-			} catch (IOException e) {
-				//
+		try(OutputStream out = target.getOutputStream(false);
+				ZipOutputStream zipOut = new ZipOutputStream(new BufferedOutputStream(out, FileUtils.BSIZE))) {
+			zipOut.setLevel(compress?9:0);
+			for (VFSItem item:vfsFiles) {
+				success = addToZip(item, "", zipOut);
 			}
-			return true;
-		}
-
-		zipOut.setLevel(compress?9:0);
-		for (Iterator<VFSItem> iter = vfsFiles.iterator(); success && iter.hasNext();) {
-			success = addToZip(iter.next(), "", zipOut);
-		}
-		
-		try {
 			zipOut.flush();
-			zipOut.close();
-			log.info("zipped ("+(compress?"compress":"store")+") "+zname+" t="+Long.toString(System.currentTimeMillis()-s));
 		} catch (IOException e) {
 			throw new OLATRuntimeException(ZipUtil.class, "I/O error closing file: " + zname, null);
 		}
@@ -598,40 +636,33 @@ public class ZipUtil {
 	}
 	
 	public static boolean addToZip(VFSItem vfsItem, String currentPath, ZipOutputStream out) {
-
 		boolean success = true;
-		InputStream in = null;
-
-		byte[] buffer = new byte[FileUtils.BSIZE];
-
 		try {
 			// The separator / is the separator defined by the ZIP standard
 			String itemName = currentPath.length() == 0 ?
 					vfsItem.getName() : currentPath + "/" + vfsItem.getName();
 					
 			if (vfsItem instanceof VFSContainer) {
-				
 				out.putNextEntry(new ZipEntry(itemName + "/"));
 				out.closeEntry();
 				
 				List<VFSItem> items = ((VFSContainer)vfsItem).getItems();
-				for (Iterator<VFSItem> iter = items.iterator(); iter.hasNext();) {
-					if (!addToZip(iter.next(), itemName, out)) {
+				for (VFSItem item:items) {
+					if (!addToZip(item, itemName, out)) {
 						success = false;
 						break;
 					}
 				}
 				
 			} else {
-				
-				out.putNextEntry(new ZipEntry(itemName));
-				in = ((VFSLeaf)vfsItem).getInputStream();
-				
-				int c;
-				while ((c = in.read(buffer, 0, buffer.length)) != -1) {
-					out.write(buffer, 0, c);
+				VFSLeaf leaf = (VFSLeaf)vfsItem;
+				ZipEntry entry = new ZipEntry(itemName);
+				if(leaf.canMeta() == VFSConstants.YES) {
+					byte[] metadata = leaf.getMetaInfo().readBinary();
+					entry.setExtra(metadata);
 				}
-				
+				out.putNextEntry(entry);
+				VFSManager.copyContent(leaf, new ShieldOutputStream(out));
 				out.closeEntry();
 			}
 		} catch (IOException ioe) {
@@ -641,8 +672,6 @@ public class ZipUtil {
 			}
 			log.error("I/O error while adding "+name+" to zip:"+ioe);
 			return false;
-		} finally {
-			FileUtils.closeSafely(in);
 		}
 		return success;
 	}
@@ -770,71 +799,38 @@ public class ZipUtil {
 	}
 	
 	/**
-	 * Unzip files from VFSLeaf into VFSContainer and do NOTHING ELSE!!!
-	 * See OLAT-6213
-	 * 
-	 * @param src, VFSLeaf input data
-	 * @param target, outout VFSContainer
-	 */
-	public static boolean xxunzip (VFSLeaf src, VFSContainer dst) {
-		if (dst instanceof LocalImpl) {
-			try {
-				xxunzip (src.getInputStream(), ((LocalImpl)dst).getBasefile().getAbsolutePath());
-				return true;				
-			} catch (IOException e) {
-				String s = ((LocalImpl)src).getBasefile().getAbsolutePath();
-				String d = ((LocalImpl)dst).getBasefile().getAbsolutePath();
-				log.error("I/O error unzipping "+s+" to "+d);
-				return false;
-			}
-		} 
-		return false;
-	}
-	/**
 	 * Unzip files from stream into target dir and do NOTHING ELSE!!!
 	 * See OLAT-6213
 	 * 
 	 * @param is, stream from zip archive
 	 * @param outdir, path to output directory, relative to cwd or absolute
 	 */
-	private static void xxunzip (InputStream is, String outdir) throws IOException {
-
-		byte[] buffer = new byte[FileUtils.BSIZE];
-
+	private static void xxunzip(InputStream is, String outdir) throws IOException {
 		try(ZipInputStream zis = new ZipInputStream (new BufferedInputStream(is))) {
 			ZipEntry entry;
 			while ((entry = zis.getNextEntry()) != null) {
-
 				File of = new File(outdir, entry.getName());
-
 				if (entry.isDirectory()) {
 					of.mkdirs();
-					continue;
 				} else {
-					File xx = new File (of.getParent());
-					if (!xx.exists()) {
-						Stack<String> todo = new Stack<>();
-						do {
-							todo.push (xx.getAbsolutePath());
-							xx = new File (xx.getParent());
-						} while (!xx.exists());
-						while(todo.size()>0) {
-							xx = new File (todo.pop());
-							if (!xx.exists()) {
-								xx.mkdirs();
-							}
-						}
+					File parent = of.getParentFile();
+					if (!parent.exists()) {
+						parent.mkdirs();
 					}
+					xxunzipcpio(zis, of);
 				}
-
-				BufferedOutputStream bos = new BufferedOutputStream (new FileOutputStream(of), buffer.length);
-				FileUtils.cpio(new BufferedInputStream(zis), bos, "unzip:"+entry.getName());
-
-				bos.flush();
-				bos.close();
 			}
 		} catch (IllegalArgumentException e) {
 			//problem with chars in entry name likely
+		}
+	}
+	
+	private static void xxunzipcpio(ZipInputStream zis, File of) {
+		try(BufferedOutputStream bos = new BufferedOutputStream (new FileOutputStream(of), FileUtils.BSIZE)) {
+			FileUtils.cpio(new BufferedInputStream(zis), bos, "unzip:" + of.getName());
+			bos.flush();
+		} catch(IOException e) {
+			log.error("", e);
 		}
 	}
 }

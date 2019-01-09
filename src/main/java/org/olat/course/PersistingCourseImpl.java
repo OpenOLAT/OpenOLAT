@@ -38,6 +38,7 @@ import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.ZipUtil;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.tree.TreeVisitor;
 import org.olat.core.util.tree.Visitor;
@@ -247,6 +248,11 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 		return VFSManager.olatRootDirectory(courseRootContainer.getRelPath() + File.separator + COURSEFOLDER);
 	}
 	
+	protected VFSContainer getIsolatedCourseBaseContainer() {
+		// create local course folder
+		return VFSManager.olatRootContainer(courseRootContainer.getRelPath() + File.separator + COURSEFOLDER, null);
+	}
+	
 	/**
 	 * Save the run structure to disk, persist to the xml file
 	 */
@@ -270,8 +276,7 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 	 * <p>
 	 */
 	@Override
-	public void exportToFilesystem(OLATResource originalCourseResource, File exportDirectory,
-			boolean runtimeDatas, boolean backwardsCompatible) {
+	public void exportToFilesystem(OLATResource originalCourseResource, File exportDirectory, boolean runtimeDatas) {
 		long s = System.currentTimeMillis();
 		log.info("exportToFilesystem: exporting course "+this+" to "+exportDirectory+"...");
 		File fCourseBase = getCourseBaseContainer().getBasefile();
@@ -284,34 +289,21 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 		
 		//export business groups
 		CourseEnvironmentMapper envMapper = getCourseEnvironment().getCourseGroupManager().getBusinessGroupEnvironment();
-		if(backwardsCompatible) {
-			//prevents duplicate names
-			envMapper.avoidDuplicateNames();
-		}
-	
-		getCourseEnvironment().getCourseGroupManager().exportCourseBusinessGroups(fExportedDataDir, envMapper, runtimeDatas, backwardsCompatible);
-		if(backwardsCompatible) {
-			XStream xstream = CourseXStreamAliases.getReadCourseXStream();
 
-			Structure exportedStructure = (Structure)XStreamHelper.readObject(xstream, new File(fCourseBase, RUNSTRUCTURE_XML));
-			visit(new NodePostExportVisitor(envMapper, backwardsCompatible), exportedStructure.getRootNode());
-			XStreamHelper.writeObject(xstream, new File(exportDirectory, RUNSTRUCTURE_XML), exportedStructure);
-			
-			CourseEditorTreeModel exportedEditorModel = (CourseEditorTreeModel)XStreamHelper.readObject(xstream, new File(fCourseBase, EDITORTREEMODEL_XML));
-			visit(new NodePostExportVisitor(envMapper, backwardsCompatible), exportedEditorModel.getRootNode());
-			XStreamHelper.writeObject(xstream, new File(exportDirectory, EDITORTREEMODEL_XML), exportedEditorModel);
-		} else {
-			// export editor structure
-			FileUtils.copyFileToDir(new File(fCourseBase, EDITORTREEMODEL_XML), exportDirectory, "course export exitortreemodel");
-			// export run structure
-			FileUtils.copyFileToDir(new File(fCourseBase, RUNSTRUCTURE_XML), exportDirectory, "course export runstructure");
-		}
-		
+		getCourseEnvironment().getCourseGroupManager().exportCourseBusinessGroups(fExportedDataDir, envMapper, runtimeDatas);
+		// export editor structure
+		FileUtils.copyFileToDir(new File(fCourseBase, EDITORTREEMODEL_XML), exportDirectory, "course export exitortreemodel");
+		// export run structure
+		FileUtils.copyFileToDir(new File(fCourseBase, RUNSTRUCTURE_XML), exportDirectory, "course export runstructure");
+
 		// export layout and media folder
 		FileUtils.copyDirToDir(new File(fCourseBase, "layout"), exportDirectory, "course export layout folder");
 		FileUtils.copyDirToDir(new File(fCourseBase, "media"), exportDirectory, "course export media folder");
 		// export course folder
-		FileUtils.copyDirToDir(getIsolatedCourseBaseFolder(), exportDirectory, "course export folder");
+		File fExportedCoursefolderZip = new File(exportDirectory, "oocoursefolder.zip");
+		File courseFolder = getIsolatedCourseBaseFolder();
+		ZipUtil.zipAll(courseFolder, fExportedCoursefolderZip);
+
 		// export any node data
 		log.info("exportToFilesystem: exporting course "+this+": exporting all nodes...");
 		Visitor visitor = new NodeExportVisitor(fExportedDataDir, this);

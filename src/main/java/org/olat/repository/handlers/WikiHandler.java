@@ -233,7 +233,7 @@ public class WikiHandler implements RepositoryHandler {
 	}
 
 	@Override
-	public MediaResource getAsMediaResource(OLATResourceable res, boolean backwardsCompatible) {
+	public MediaResource getAsMediaResource(OLATResourceable res) {
 		VFSContainer rootContainer = FileResourceManager.getInstance().getFileResourceRootImpl(res);
 		VFSLeaf wikiZip = WikiToZipUtils.getWikiAsZip(rootContainer);
 		return new VFSMediaResource(wikiZip);

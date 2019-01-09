@@ -1037,7 +1037,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		try {			
 		  lockResult = typeToDownload.acquireLock(ores, ureq.getIdentity());
 		  if(lockResult == null || (lockResult !=null && lockResult.isSuccess() && !isAlreadyLocked)) {
-		    MediaResource mr = typeToDownload.getAsMediaResource(ores, false);
+		    MediaResource mr = typeToDownload.getAsMediaResource(ores);
 		    if(mr!=null) {
 		      repositoryService.incrementDownloadCounter(entry);
 		      ureq.getDispatchResult().setResultingMediaResource(mr);

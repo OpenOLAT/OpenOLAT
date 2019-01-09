@@ -70,8 +70,7 @@ public interface ICourse extends OLATResourceable {
 	 * @param backwardsCompatible Export in a format compatible with older OpenOLAT version
 	 * @param foldersToCleanup Can add there folders which need to be clean up after the export
 	 */
-	public void exportToFilesystem(OLATResource originalCourseResource, File exportDirectory,
-			boolean runtimeDatas, boolean backwardsCompatible);
+	public void exportToFilesystem(OLATResource originalCourseResource, File exportDirectory, boolean runtimeDatas);
 	
 	public void postCopy(CourseEnvironmentMapper envMapper, ICourse sourceCourse);
 	

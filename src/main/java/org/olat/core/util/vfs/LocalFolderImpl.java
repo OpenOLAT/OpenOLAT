@@ -40,6 +40,7 @@ import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.vfs.filters.SystemItemFilter;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
 import org.olat.core.util.vfs.version.Versionable;
 import org.olat.core.util.vfs.version.VersionsManager;
@@ -137,6 +138,15 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 		return copyFrom(source, true);
 	}
 	
+	@Override
+	public VFSStatus copyContentOf(VFSContainer container) {
+		VFSStatus status = VFSConstants.YES;
+		for(VFSItem item:container.getItems(new SystemItemFilter())) {
+			status = copyFrom(item, true);
+		}
+		return status;
+	}
+
 	/**
 	 * Internal copy from, preventing quota checks on subfolders.
 	 * 
@@ -205,9 +215,7 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 		return VFSConstants.SUCCESS;
 	}
 
-	/**
-	 * @see org.olat.core.util.vfs.VFSItem#canWrite()
-	 */
+	@Override
 	public VFSStatus canWrite() {
 		VFSContainer inheritingContainer = VFSManager.findInheritingSecurityCallbackContainer(this);
 		if (inheritingContainer != null && !inheritingContainer.getLocalSecurityCallback().canWrite())

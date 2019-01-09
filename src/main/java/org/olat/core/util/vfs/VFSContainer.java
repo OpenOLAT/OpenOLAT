@@ -31,8 +31,6 @@ import java.util.List;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
 
 /**
- * Description:<br>
- * TODO: Felix Jost Class Description for VFSContainer
  * 
  * <P>
  * Initial Date:  23.06.2005 <br>
@@ -65,6 +63,13 @@ public interface VFSContainer extends VFSItem {
 	 * @return the status
 	 */
 	public VFSStatus copyFrom(VFSItem source);
+	
+	/**
+	 * 
+	 * @param container
+	 * @return
+	 */
+	public VFSStatus copyContentOf(VFSContainer container);
 
 	/**
 	 * Create a new child container (of same type) if possible.

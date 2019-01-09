@@ -1786,10 +1786,9 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 	}
 
 	@Override
-	public void exportGroups(List<BusinessGroup> groups, List<BGArea> areas, File fExportFile,
-			BusinessGroupEnvironment env, boolean runtimeDatas, boolean backwardsCompatible) {
+	public void exportGroups(List<BusinessGroup> groups, List<BGArea> areas, File fExportFile, boolean runtimeDatas) {
 		BusinessGroupImportExport exporter = new BusinessGroupImportExport(dbInstance, areaManager, this, groupModule);
-		exporter.exportGroups(groups, areas, fExportFile, env, runtimeDatas, backwardsCompatible);
+		exporter.exportGroups(groups, areas, fExportFile, runtimeDatas);
 	}
 
 	@Override

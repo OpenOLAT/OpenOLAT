@@ -46,7 +46,6 @@ import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.vfs.VFSContainer;
-import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ResourceEvaluation;
@@ -68,7 +67,6 @@ import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.RepositoryEntrySecurity;
-import org.olat.repository.ui.RepositoryEntryRuntimeController.RuntimeControllerCreator;
 import org.olat.resource.OLATResource;
 import org.olat.resource.references.ReferenceManager;
 
@@ -211,7 +209,7 @@ public class PortfolioHandler implements RepositoryHandler {
 	 * @see org.olat.repository.handlers.RepositoryHandler#getAsMediaResource(org.olat.core.id.OLATResourceable)
 	 */
 	@Override
-	public MediaResource getAsMediaResource(OLATResourceable res, boolean backwardsCompatible) {
+	public MediaResource getAsMediaResource(OLATResourceable res) {
 		MediaResource mr = null;
 
 		EPFrontendManager ePFMgr = CoreSpringFactory.getImpl(EPFrontendManager.class);
@@ -233,19 +231,15 @@ public class PortfolioHandler implements RepositoryHandler {
 	@Override
 	public MainLayoutController createLaunchController(RepositoryEntry re, RepositoryEntrySecurity reSecurity, UserRequest ureq, WindowControl wControl) {
 		return new EPTemplateRuntimeController(ureq, wControl, re, reSecurity,
-			new RuntimeControllerCreator() {
-				@Override
-				public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel,
-						RepositoryEntry entry, RepositoryEntrySecurity security, AssessmentMode assessmentMode) {
-					EPFrontendManager ePFMgr = CoreSpringFactory.getImpl(EPFrontendManager.class);
-					PortfolioStructureMap map = (PortfolioStructureMap)ePFMgr
-						.loadPortfolioStructure(entry.getOlatResource());
-					CoreSpringFactory.getImpl(UserCourseInformationsManager.class)
-						.updateUserCourseInformations(entry.getOlatResource(), uureq.getIdentity());
-					EPSecurityCallback secCallback = EPSecurityCallbackFactory.getSecurityCallback(uureq, map, ePFMgr);
-					return new EPMapViewController(uureq, wwControl, map, false, false, secCallback);
-				}
-			});
+				(uureq, wwControl, toolbarPanel, entry, security, assessmentMode) -> {
+			EPFrontendManager ePFMgr = CoreSpringFactory.getImpl(EPFrontendManager.class);
+			PortfolioStructureMap map = (PortfolioStructureMap)ePFMgr
+				.loadPortfolioStructure(entry.getOlatResource());
+			CoreSpringFactory.getImpl(UserCourseInformationsManager.class)
+				.updateUserCourseInformations(entry.getOlatResource(), uureq.getIdentity());
+			EPSecurityCallback secCallback = EPSecurityCallbackFactory.getSecurityCallback(uureq, map, ePFMgr);
+			return new EPMapViewController(uureq, wwControl, map, false, false, secCallback);
+		});
 	}
 
 	@Override

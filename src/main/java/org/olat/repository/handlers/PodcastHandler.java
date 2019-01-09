@@ -150,7 +150,7 @@ public class PodcastHandler implements RepositoryHandler {
 	}
 
 	@Override
-	public MediaResource getAsMediaResource(OLATResourceable res, boolean backwardsCompatible) {
+	public MediaResource getAsMediaResource(OLATResourceable res) {
 		FeedManager manager = FeedManager.getInstance();
 		return manager.getFeedArchiveMediaResource(res);
 	}

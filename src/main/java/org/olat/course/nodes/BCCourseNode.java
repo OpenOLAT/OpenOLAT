@@ -44,6 +44,7 @@ import org.olat.core.id.Organisation;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.ZipUtil;
 import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -126,12 +127,6 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 		return new NodeRunConstructionResult(titledCtrl);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.GenericCourseNode#createPeekViewRunController(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl,
-	 *      org.olat.course.run.userview.UserCourseEnvironment,
-	 *      org.olat.course.run.userview.NodeEvaluation)
-	 */
 	@Override
 	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
 			NodeEvaluation ne) {
@@ -160,13 +155,7 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 			return super.createPeekViewRunController(ureq, wControl, userCourseEnv, ne);
 		}
 	}
-	
-	/**
-	 * @see org.olat.course.nodes.GenericCourseNode#createPreviewController(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl,
-	 *      org.olat.course.run.userview.UserCourseEnvironment,
-	 *      org.olat.course.run.userview.NodeEvaluation)
-	 */
+
 	@Override
 	public Controller createPreviewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
 		return new BCPreviewController(ureq, wControl, this, userCourseEnv.getCourseEnvironment(), ne);
@@ -200,7 +189,7 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 	 * @param courseEnv
 	 * @return
 	 */
-	public static NamedContainerImpl getNodeFolderContainer(BCCourseNode node, CourseEnvironment courseEnv) {
+	public static VFSContainer getNodeFolderContainer(BCCourseNode node, CourseEnvironment courseEnv) {
 		String path = getFoldernodePathRelToFolderBase(courseEnv, node);
 		VFSContainer rootFolder = VFSManager.olatRootContainer(path, null);
 		return new NamedContainerImpl(node.getShortTitle(), rootFolder);
@@ -210,21 +199,30 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 	public void exportNode(File exportDirectory, ICourse course) {
 		// this is the node folder, a folder with the node's ID, so we can just copy
 		// the contents over to the export folder
-		File fFolderNodeData = new File(FolderConfig.getCanonicalRoot() + getFoldernodePathRelToFolderBase(course.getCourseEnvironment(), this));
-		File fNodeExportDir = new File(exportDirectory, this.getIdent());
+		VFSContainer nodeContainer = VFSManager
+				.olatRootContainer(getFoldernodePathRelToFolderBase(course.getCourseEnvironment(), this), null);
+		File fNodeExportDir = new File(exportDirectory, getIdent());
 		fNodeExportDir.mkdirs();
-		FileUtils.copyDirContentsToDir(fFolderNodeData, fNodeExportDir, false, "export course node");
+		File outputFile = new File(fNodeExportDir, "oonode.zip");
+		ZipUtil.zip(nodeContainer, outputFile);
 	}
 
 	@Override
 	public void importNode(File importDirectory, ICourse course, Identity owner, Organisation organisation, Locale locale, boolean withReferences) {
 		// the export has copies the files under the node's ID
-		File fFolderNodeData = new File(importDirectory, this.getIdent());
-		// the whole folder can be moved back to the root direcotry of foldernodes
-		// of this course
-		File fFolderNodeDir = new File(FolderConfig.getCanonicalRoot() + getFoldernodePathRelToFolderBase(course.getCourseEnvironment(), this));
-		fFolderNodeDir.mkdirs();
-		FileUtils.copyDirContentsToDir(fFolderNodeData, fFolderNodeDir, true, "import course node");
+		File fFolderNodeData = new File(importDirectory, getIdent());
+		File fFolderNodeZip = new File(fFolderNodeData, "oonode.zip");
+		if(fFolderNodeZip.exists()) {
+			VFSContainer nodeContainer = VFSManager
+					.olatRootContainer(getFoldernodePathRelToFolderBase(course.getCourseEnvironment(), this), null);
+			ZipUtil.unzipNonStrict(fFolderNodeZip, nodeContainer, owner, false);
+		} else {
+			// the whole folder can be moved back to the root direcotry of foldernodes
+			// of this course
+			File fFolderNodeDir = new File(FolderConfig.getCanonicalRoot() + getFoldernodePathRelToFolderBase(course.getCourseEnvironment(), this));
+			fFolderNodeDir.mkdirs();
+			FileUtils.copyDirContentsToDir(fFolderNodeData, fFolderNodeDir, true, "import course node");
+		}
 	}
 
 	@Override
@@ -237,10 +235,6 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 		return node;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.GenericCourseNode#calcAccessAndVisibility(org.olat.course.condition.interpreter.ConditionInterpreter,
-	 *      org.olat.course.run.userview.NodeEvaluation)
-	 */
 	@Override
 	protected void calcAccessAndVisibility(ConditionInterpreter ci, NodeEvaluation nodeEval) {
 

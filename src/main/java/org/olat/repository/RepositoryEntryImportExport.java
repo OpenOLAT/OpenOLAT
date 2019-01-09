@@ -218,23 +218,19 @@ public class RepositoryEntryImportExport {
 	public boolean exportDoExportContent() {
 		// export resource
 		RepositoryHandler rh = RepositoryHandlerFactory.getInstance().getRepositoryHandler(re);
-		MediaResource mr = rh.getAsMediaResource(re.getOlatResource(), false);
-		
-		FileOutputStream fOut = null;
-		try {
-			fOut = new FileOutputStream(new File(baseDirectory, CONTENT_FILE));
-			InputStream in = mr.getInputStream();
+		MediaResource mr = rh.getAsMediaResource(re.getOlatResource());
+		try(FileOutputStream fOut = new FileOutputStream(new File(baseDirectory, CONTENT_FILE));
+				InputStream in = mr.getInputStream()) {
 			if(in == null) {
 				HttpServletResponse hres = new HttpServletResponseOutputStream(fOut);
 				mr.prepare(hres);	
 			} else {
-				IOUtils.copy(mr.getInputStream(), fOut);
+				IOUtils.copy(in, fOut);
 			}
 			fOut.flush();
 		} catch (IOException fnfe) {
 			return false;
 		} finally {
-			IOUtils.closeQuietly(fOut);
 			mr.release();
 		}
 		return true;

@@ -327,7 +327,7 @@ public class CourseWebService {
 		try {
 			lockResult = typeToDownload.acquireLock(ores, identity);
 			if (lockResult == null || (lockResult.isSuccess() && !isAlreadyLocked)) {
-				MediaResource mr = typeToDownload.getAsMediaResource(ores, false);
+				MediaResource mr = typeToDownload.getAsMediaResource(ores);
 				if (mr != null) {
 					repositoryService.incrementDownloadCounter(re);
 					return Response.ok(mr.getInputStream()).cacheControl(cc).build(); // success

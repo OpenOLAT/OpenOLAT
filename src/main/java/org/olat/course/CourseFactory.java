@@ -449,7 +449,8 @@ public class CourseFactory {
 	public static OLATResourceable copyCourse(OLATResourceable sourceRes, OLATResource targetRes) {
 		PersistingCourseImpl sourceCourse = (PersistingCourseImpl)loadCourse(sourceRes);
 		PersistingCourseImpl targetCourse = new PersistingCourseImpl(targetRes);
-		File fTargetCourseBasePath = targetCourse.getCourseBaseContainer().getBasefile();
+		LocalFolderImpl fTargetCourseBaseContainer = targetCourse.getCourseBaseContainer();
+		File fTargetCourseBasePath = fTargetCourseBaseContainer.getBasefile();
 
 		//close connection before file copy
 		DBFactory.getInstance().commitAndCloseSession();
@@ -465,13 +466,20 @@ public class CourseFactory {
 			targetCourse.saveEditorTreeModel();
 
 			// copy course folder
-			File fSourceCourseFolder = sourceCourse.getIsolatedCourseBaseFolder();
-			if (fSourceCourseFolder.exists()) FileUtils.copyDirToDir(fSourceCourseFolder, fTargetCourseBasePath, false, "copy course folder");
+			VFSContainer sourceCourseContainer = sourceCourse.getIsolatedCourseBaseContainer();
+			if (sourceCourseContainer.exists()) {
+				targetCourse.getIsolatedCourseBaseContainer()
+					.copyContentOf(sourceCourseContainer);
+			}
 
 			// copy folder nodes directories
-			File fSourceFoldernodesFolder = new File(FolderConfig.getCanonicalRoot()
-					+ BCCourseNode.getFoldernodesPathRelToFolderBase(sourceCourse.getCourseEnvironment()));
-			if (fSourceFoldernodesFolder.exists()) FileUtils.copyDirToDir(fSourceFoldernodesFolder, fTargetCourseBasePath, false, "copy folder nodes directories");
+			VFSContainer sourceFoldernodesContainer = VFSManager
+					.olatRootContainer(BCCourseNode.getFoldernodesPathRelToFolderBase(sourceCourse.getCourseEnvironment()));
+			if (sourceFoldernodesContainer.exists()) {
+				VFSContainer targetFoldernodesContainer = VFSManager
+						.olatRootContainer(BCCourseNode.getFoldernodesPathRelToFolderBase(targetCourse.getCourseEnvironment()));
+				targetFoldernodesContainer.copyContentOf(sourceFoldernodesContainer);
+			}
 
 			// copy task folder directories
 			File fSourceTaskfoldernodesFolder = new File(FolderConfig.getCanonicalRoot()
@@ -509,7 +517,7 @@ public class CourseFactory {
 	 * @param fTargetZIP
 	 * @return true if successfully exported, false otherwise.
 	 */
-	public static void exportCourseToZIP(OLATResourceable sourceRes, File fTargetZIP, boolean runtimeDatas, boolean backwardsCompatible) {
+	public static void exportCourseToZIP(OLATResourceable sourceRes, File fTargetZIP, boolean runtimeDatas) {
 		PersistingCourseImpl sourceCourse = (PersistingCourseImpl) loadCourse(sourceRes);
 
 		// add files to ZIP
@@ -518,7 +526,7 @@ public class CourseFactory {
 		log.info("Export folder: " + fExportDir);
 		synchronized (sourceCourse) { //o_clusterNOK - cannot be solved with doInSync since could take too long (leads to error: "Lock wait timeout exceeded")
 			OLATResource courseResource = sourceCourse.getCourseEnvironment().getCourseGroupManager().getCourseResource();
-			sourceCourse.exportToFilesystem(courseResource, fExportDir, runtimeDatas, backwardsCompatible);
+			sourceCourse.exportToFilesystem(courseResource, fExportDir, runtimeDatas);
 			Set<String> fileSet = new HashSet<>();
 			String[] files = fExportDir.list();
 			for (int i = 0; i < files.length; i++) {
@@ -545,7 +553,8 @@ public class CourseFactory {
 		courseConfigMgr.deleteConfigOf(newCourse);
 
 		// Unzip course strucure in new course
-		File fCanonicalCourseBasePath = newCourse.getCourseBaseContainer().getBasefile();
+		LocalFolderImpl courseBaseContainer = newCourse.getCourseBaseContainer();
+		File fCanonicalCourseBasePath = courseBaseContainer.getBasefile();
 		if (ZipUtil.unzip(zipFile, fCanonicalCourseBasePath)) {
 			// Load course strucure now
 			try {
@@ -554,6 +563,13 @@ public class CourseFactory {
 				//newCourse is not in cache yet, so we cannot call setCourseConfig()
 				newCourse.setCourseConfig(cc);
 				loadedCourses.put(newCourse.getResourceableId(), newCourse);
+				
+				//course folder
+				File courseFolderZip = new File(fCanonicalCourseBasePath, "oocoursefolder.zip");
+				if(courseFolderZip.exists()) {
+					ZipUtil.unzipNonStrict(courseFolderZip, courseBaseContainer, null, false);
+					FileUtils.deleteFile(courseFolderZip);
+				}
 				return newCourse;
 			} catch (AssertException ae) {
 				// ok failed, cleanup below

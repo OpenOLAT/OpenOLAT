@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.fileresource;
+package org.olat.core.gui.media;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,8 +32,6 @@ import java.util.zip.ZipOutputStream;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.olat.core.gui.media.MediaResource;
-import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
