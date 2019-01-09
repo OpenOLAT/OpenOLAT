@@ -2137,7 +2137,7 @@ var OOEdusharing = {
 		return html;
 	},
 	
-	replaceWithRendered: function(node, identifier, width, height, style) {
+	replaceWithRendered: function(node, identifier, width, height, style, showLicense, showInfos) {
 		var url = o_info.uriprefix.replace("auth", "edusharing") + "render?identifier=" + identifier;
 		if (width > 0) {
 			url = url + "&width=" + width;
@@ -2146,11 +2146,20 @@ var OOEdusharing = {
 			url = url + "&height=" + height;
 		}
 		
-		var containerHtml = "<div class='o_edusharing_container'";
+		var containerHtml = "<div class='o_edusharing_container";
+		if ('hide' === showLicense) {
+			containerHtml += " o_hide_license";
+		}
+		if ('hide' === showInfos) {
+			containerHtml += " o_hide_infos";
+		}
+		containerHtml += "'";
+		
 		if (typeof style != 'undefined') {
 			containerHtml += " style='" + style + "'";
 		}
 		containerHtml += "</div>";
+		
 		var container = jQuery(containerHtml);
 		
 		jQuery.ajax({
@@ -2173,9 +2182,11 @@ var OOEdusharing = {
 		var width = node.attr("width");
 		var height = node.attr("height");
 		var style = node.attr("style");
+		var showLicense = node.data("es_show_license");
+		var showInfos = node.data("es_show_infos");
 		
 		var spinner = OOEdusharing.replaceWithSpinner(node, width, height);
-		OOEdusharing.replaceWithRendered(spinner, identifier, width, height, style);
+		OOEdusharing.replaceWithRendered(spinner, identifier, width, height, style, showLicense, showInfos);
 	},
 	
 	/**

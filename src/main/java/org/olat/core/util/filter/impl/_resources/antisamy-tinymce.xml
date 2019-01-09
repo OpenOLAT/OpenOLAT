@@ -397,6 +397,16 @@
 				<regexp value="[0-9]+"/>
 			</regexp-list>
 		</attribute>
+		<attribute name="data-es_show_license">
+			<regexp-list>
+				<regexp value="show|hide"/>
+			</regexp-list>
+		</attribute>
+		<attribute name="data-es_show_infos">
+			<regexp-list>
+				<regexp value="show|hide"/>
+			</regexp-list>
+		</attribute>
 		<attribute name="data-es_first_edit">
 			<regexp-list>
 				<regexp value="true|false"/>
@@ -533,6 +543,8 @@
 			<attribute name="data-es_mediatype" />
 			<attribute name="data-es_width" />
 			<attribute name="data-es_height" />
+			<attribute name="data-es_show_license" />
+			<attribute name="data-es_show_infos" />
 			<attribute name="data-es_first_edit" />
 		</tag>
 
@@ -592,6 +604,8 @@
 			<attribute name="data-es_mediatype" />
 			<attribute name="data-es_width" />
 			<attribute name="data-es_height" />
+			<attribute name="data-es_show_license" />
+			<attribute name="data-es_show_infos" />
 			<attribute name="data-es_first_edit" />
 		</tag>
 

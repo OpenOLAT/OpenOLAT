@@ -1,13 +1,17 @@
-
+.o_edusharing_container.o_hide_license {
+	.license {
+		display: none;
+	}
+}
+.o_edusharing_container.o_hide_infos {
+	.edusharing_metadata_wrapper {
+		display: none;
+	}
+}
 
 /**
 * see https://github.com/edu-sharing/plugin-moodle/blob/master/filter/edusharing/styles.css
 */
-
-/**
- * @copyright  metaVentis GmbH — http://metaventis.com
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
 
 .eduContainer {
 	width: 180px;

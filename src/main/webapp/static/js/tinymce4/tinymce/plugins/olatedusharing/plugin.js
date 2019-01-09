@@ -123,6 +123,8 @@
 					node.dataset.es_height = params.window_height;
 				}
 				node.dataset.es_first_edit = true;
+				node.dataset.es_show_license = 'show';
+				node.dataset.es_show_infos = 'show';
 
 				params.esFloat = 'left';
 				setAttributes(node, params);
@@ -142,6 +144,8 @@
 					node.dataset.es_version = node.dataset.es_version_current;
 				}
 				node.dataset.es_float = params.esFloat;
+				node.dataset.es_show_license = params.esShowLicense;
+				node.dataset.es_show_infos = params.esShowInfos;
 				
 				editor.execCommand('mceRepaint')
 			}
@@ -210,6 +214,8 @@
 					window_height : node.getAttribute('height'),
 					title : node.getAttribute('title'),
 					esFloat: node.dataset.es_float,
+					esShowLicense: node.dataset.es_show_license,
+					esShowInfos: node.dataset.es_show_infos,
 					window_versionshow: node.dataset.es_version == 0? "latest": "current",
 					mimetype: node.dataset.es_mimetype
 				};
@@ -239,6 +245,26 @@
 								],
 								value: params.window_versionshow,
 								hidden: versionDisabled
+							},
+							{ 
+								name: 'esShowLicense',
+								type: 'listbox',
+								label: translator().translate('tiny.config.license.label'), 
+								'values': [
+									{text: translator().translate('tiny.config.license.show'), value: 'show'},
+									{text: translator().translate('tiny.config.license.hide'), value: 'hide'}
+								],
+								value: params.esShowLicense
+							},
+							{ 
+								name: 'esShowInfos',
+								type: 'listbox',
+								label: translator().translate('tiny.config.infos.label'), 
+								'values': [
+									{text: translator().translate('tiny.config.infos.show'), value: 'show'},
+									{text: translator().translate('tiny.config.infos.hide'), value: 'hide'}
+								],
+								value: params.esShowInfos
 							},
 							{ 
 								name: 'esFloat',
