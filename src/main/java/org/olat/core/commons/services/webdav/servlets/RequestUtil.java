@@ -502,7 +502,8 @@ public final class RequestUtil {
     			default: sb.append(ch);
     		}
     	}
-    	return Normalizer.normalize(sb, Normalizer.Form.NFC);
+    	String normalized = Normalizer.normalize(sb, Normalizer.Form.NFC);
+    	return normalized.trim();
     }
 }
 
