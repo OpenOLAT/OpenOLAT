@@ -32,6 +32,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.nodes.gta.model.TaskDefinition;
+import org.olat.modules.edusharing.VFSEdusharingProvider;
+import org.olat.repository.ui.settings.LazyRepositoryEdusharingProvider;
 
 /**
  * 
@@ -48,13 +50,15 @@ public class EditHTMLTaskController extends FormBasicController {
 	private final VFSContainer taskContainer;
 	
 	private final String filenameToReplace;
+	private final Long repositoryEntryKey;
 	
 	public EditHTMLTaskController(UserRequest ureq, WindowControl wControl,
-			TaskDefinition task, VFSContainer taskContainer) {
+			TaskDefinition task, VFSContainer taskContainer, Long repositoryEntryKey) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
 		this.task = task;
 		this.filenameToReplace = task != null ? task.getFilename() : null;
 		this.taskContainer = taskContainer;
+		this.repositoryEntryKey = repositoryEntryKey;
 		initForm(ureq);
 	}
 	
@@ -78,7 +82,8 @@ public class EditHTMLTaskController extends FormBasicController {
 		String description = task.getDescription() == null ? "" : task.getDescription();
 		descriptionEl = uifactory.addTextAreaElement("descr", "task.description", 2048, 10, -1, true, false, description, formLayout);
 
-		contentEditor = new HTMLEditorController(ureq, getWindowControl(), taskContainer, task.getFilename(), null, "media", true, false, false, mainForm);
+		VFSEdusharingProvider edusharingProvider = new LazyRepositoryEdusharingProvider(repositoryEntryKey);
+		contentEditor = new HTMLEditorController(ureq, getWindowControl(), taskContainer, task.getFilename(), null, "media", true, false, false, edusharingProvider , mainForm);
 		contentEditor.getRichTextConfiguration().disableMedia();
 		contentEditor.getRichTextConfiguration().setAllowCustomMediaFactory(false);
 		listenTo(contentEditor);

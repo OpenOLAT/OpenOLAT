@@ -96,12 +96,14 @@ import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.edusharing.EdusharingService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.repository.model.RepositoryEntryLifecycle;
+import org.olat.repository.ui.settings.LazyRepositoryEdusharingProvider;
 import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -129,6 +131,8 @@ public class GTAManagerImpl implements GTAManager {
 	private BGAreaManager areaManager;
 	@Autowired
 	private AssessmentService assessmentService;
+	@Autowired
+	private EdusharingService edusharingService;
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
@@ -224,6 +228,7 @@ public class GTAManagerImpl implements GTAManager {
 				if(deleteFile) {
 					VFSContainer tasksContainer = getTasksContainer(courseEnv, cNode);
 					VFSItem item = tasksContainer.resolve(removedTask.getFilename());
+					deleteEdusharingUsages(courseEnv, item);
 					if(item != null) {
 						item.delete();
 					}
@@ -232,6 +237,13 @@ public class GTAManagerImpl implements GTAManager {
 			}
 		});
 		
+	}
+	
+	private void deleteEdusharingUsages(CourseEnvironment courseEnv, VFSItem item) {
+		Long repositoryEntryKey = courseEnv.getCourseGroupManager().getCourseEntry().getKey();
+		LazyRepositoryEdusharingProvider edusharingProvider = new LazyRepositoryEdusharingProvider(repositoryEntryKey);
+		edusharingProvider.setSubPath(item);
+		edusharingService.deleteUsages(edusharingProvider);
 	}
 
 	@Override

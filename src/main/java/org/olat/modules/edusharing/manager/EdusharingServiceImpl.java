@@ -257,6 +257,11 @@ public class EdusharingServiceImpl implements EdusharingService {
 
 		deleteUsage(usage, userIdentifier);
 	}
+
+	@Override
+	public void deleteUsages(EdusharingProvider edusharingProvider) {
+		deleteUsages(edusharingProvider.getOlatResourceable(), edusharingProvider.getSubPath());
+	}
 	
 	@Override
 	public void deleteUsages(OLATResourceable ores, String subPath) throws EdusharingException {
@@ -267,6 +272,14 @@ public class EdusharingServiceImpl implements EdusharingService {
 	}
 
 	private void deleteUsage(EdusharingUsage usage, String userIdentifier) {
+		try {
+			tryDeleteUsage(usage, userIdentifier);
+		} catch (Exception e) {
+			log.warn("edu-sharing usage deleted failed for identifier: " + usage.getIdentifier());
+		}
+	}
+
+	private void tryDeleteUsage(EdusharingUsage usage, String userIdentifier) {
 		DeleteUsageParameter parameter = new DeleteUsageParameter(
 				usage.getIdentifier(),
 				usage.getObjectUrl(),

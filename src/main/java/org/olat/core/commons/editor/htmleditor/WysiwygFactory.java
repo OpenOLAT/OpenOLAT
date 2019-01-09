@@ -84,6 +84,13 @@ public class WysiwygFactory {
 		return new HTMLEditorController(ureq, wControl, rootDir, filePath,
 				null, mediaPath, editorCheckEnabled, versions, null);
 	}
+	
+	public static HTMLEditorController createWysiwygController(UserRequest ureq, WindowControl wControl,
+			VFSContainer rootDir, String filePath, String mediaPath, boolean editorCheckEnabled, boolean versions,
+			VFSEdusharingProvider edusharingProvider) {
+		return new HTMLEditorController(ureq, wControl, rootDir, filePath, null, mediaPath, editorCheckEnabled,
+				versions, edusharingProvider);
+	}
 
 	/**
 	 * Factory method to create a file based HTML editor instance that uses

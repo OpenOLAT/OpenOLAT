@@ -152,11 +152,12 @@ public class HTMLEditorController extends FormBasicController {
 	}
 	
 	
-	public HTMLEditorController(UserRequest ureq, WindowControl wControl, VFSContainer baseContainer, String relFilePath,
-			CustomLinkTreeModel customLinkTreeModel, String mediaPath, boolean editorCheckEnabled, boolean versions, boolean withButtons, Form rootForm) {
+	public HTMLEditorController(UserRequest ureq, WindowControl wControl, VFSContainer baseContainer,
+			String relFilePath, CustomLinkTreeModel customLinkTreeModel, String mediaPath, boolean editorCheckEnabled,
+			boolean versions, boolean withButtons, VFSEdusharingProvider edusharingProvider, Form rootForm) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "htmleditor", rootForm);
 		// set some basic variables
-		initEditorForm(baseContainer, relFilePath, customLinkTreeModel, mediaPath, editorCheckEnabled, versions, withButtons, null);
+		initEditorForm(baseContainer, relFilePath, customLinkTreeModel, mediaPath, editorCheckEnabled, versions, withButtons, edusharingProvider);
 		initForm(ureq);
 	}
 	

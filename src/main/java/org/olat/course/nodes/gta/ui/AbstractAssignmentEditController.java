@@ -66,6 +66,8 @@ import org.olat.course.nodes.gta.model.TaskDefinition;
 import org.olat.course.nodes.gta.ui.TaskDefinitionTableModel.TDCols;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.edusharing.VFSEdusharingProvider;
+import org.olat.repository.ui.settings.LazyRepositoryEdusharingProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -94,6 +96,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController {
 	protected final GTACourseNode gtaNode;
 	protected final CourseEnvironment courseEnv;
 	protected final ModuleConfiguration config;
+	private final Long courseRepoKey;
 	
 	private int linkCounter = 0;
 	
@@ -111,6 +114,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController {
 		this.courseEnv = courseEnv;
 		tasksFolder = gtaManager.getTasksDirectory(courseEnv, gtaNode);
 		tasksContainer = gtaManager.getTasksContainer(courseEnv, gtaNode);
+		courseRepoKey = courseEnv.getCourseGroupManager().getCourseEntry().getKey();
 		initForm(ureq);
 	}
 
@@ -325,8 +329,9 @@ abstract class AbstractAssignmentEditController extends FormBasicController {
 			tasksContainer.createChildLeaf(documentName);
 		}
 
+		VFSEdusharingProvider edusharingProvider = new LazyRepositoryEdusharingProvider(courseRepoKey);
 		newTaskEditorCtrl = WysiwygFactory.createWysiwygController(ureq, getWindowControl(),
-				tasksContainer, documentName, "media", true, true);
+				tasksContainer, documentName, "media", true, true, edusharingProvider);
 		newTaskEditorCtrl.getRichTextConfiguration().disableMedia();
 		newTaskEditorCtrl.getRichTextConfiguration().setAllowCustomMediaFactory(false);
 		newTaskEditorCtrl.setNewFile(true);
@@ -343,7 +348,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController {
 		if(htmlDocument == null || !(htmlDocument instanceof VFSLeaf)) {
 			showError("error.missing.file");
 		} else {
-			editTaskEditorCtrl = new EditHTMLTaskController(ureq, getWindowControl(), taskDef, tasksContainer);
+			editTaskEditorCtrl = new EditHTMLTaskController(ureq, getWindowControl(), taskDef, tasksContainer, courseRepoKey );
 			listenTo(editTaskEditorCtrl);
 			
 			cmc = new CloseableModalController(getWindowControl(), "close", editTaskEditorCtrl.getInitialComponent());
