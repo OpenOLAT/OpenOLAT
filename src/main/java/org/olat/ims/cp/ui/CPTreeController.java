@@ -58,6 +58,7 @@ import org.olat.ims.cp.ContentPackage;
 import org.olat.ims.cp.objects.CPItem;
 import org.olat.ims.cp.objects.CPOrganization;
 import org.olat.ims.cp.objects.CPResource;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * The left-hand side of the cp editor shows the document tree with some edit
@@ -84,6 +85,9 @@ public class CPTreeController extends BasicController {
 	private CPTreeDataModel treeModel;
 
 	private CPPage currentPage;
+	
+	@Autowired
+	private CPManager cpManager;
 
 	protected CPTreeController(UserRequest ureq, WindowControl control, ContentPackage cp) {
 		super(ureq, control);
@@ -91,8 +95,7 @@ public class CPTreeController extends BasicController {
 
 		this.cp = cp;
 		
-		CPManager cpMgm = CPManager.getInstance();
-		treeModel = cpMgm.getTreeDataModel(cp);
+		treeModel = cpManager.getTreeDataModel(cp);
 		treeCtr = new MenuTree("cp");
 		treeCtr.setTreeModel(treeModel);
 		treeCtr.setDragEnabled(true);
@@ -164,10 +167,9 @@ public class CPTreeController extends BasicController {
 		if (identifier.equals("")) {
 			// no page selected
 		} else {
-			CPManager cpMgm = CPManager.getInstance();
 			treeModel.removePath();
-			cpMgm.removeElement(cp, identifier, deleteResource);
-			cpMgm.writeToFile(cp);
+			cpManager.removeElement(cp, identifier, deleteResource);
+			cpManager.writeToFile(cp);
 			updateTree();
 		}
 	}
@@ -185,9 +187,8 @@ public class CPTreeController extends BasicController {
 	private String copyPage(CPPage page) {
 		String newIdentifier = null;
 		if (page != null) {
-			CPManager cpMgm = CPManager.getInstance();
-			newIdentifier = cpMgm.copyElement(cp, page.getIdentifier());
-			cpMgm.writeToFile(cp);
+			newIdentifier = cpManager.copyElement(cp, page.getIdentifier());
+			cpManager.writeToFile(cp);
 			updateTree();
 		}
 		return newIdentifier;
@@ -199,7 +200,7 @@ public class CPTreeController extends BasicController {
 	 * @return
 	 */
 	protected String addNewHTMLPage() {
-		String newId = CPManager.getInstance().addBlankPage(cp, translate("cptreecontroller.newpage.title"), currentPage.getIdentifier());
+		String newId = cpManager.addBlankPage(cp, translate("cptreecontroller.newpage.title"), currentPage.getIdentifier());
 		CPPage newPage = new CPPage(newId, cp);
 		// Create an html file
 		VFSContainer root = cp.getRootDir();
@@ -216,18 +217,17 @@ public class CPTreeController extends BasicController {
 	 * @return
 	 */
 	protected String addPage(CPPage page) {
-		CPManager cpMgm = CPManager.getInstance();
 		String newNodeID = "";
 
 		if (currentPage.getIdentifier().equals("")) {
-			newNodeID = cpMgm.addBlankPage(cp, page.getTitle());
+			newNodeID = cpManager.addBlankPage(cp, page.getTitle());
 		} else {
 			// adds new page as child of currentPage
-			newNodeID = cpMgm.addBlankPage(cp, page.getTitle(), currentPage.getIdentifier());
+			newNodeID = cpManager.addBlankPage(cp, page.getTitle(), currentPage.getIdentifier());
 		}
 		setCurrentPage(new CPPage(newNodeID, cp));
 
-		cpMgm.writeToFile(cp);
+		cpManager.writeToFile(cp);
 		updateTree();
 		return newNodeID;
 	}
@@ -237,9 +237,8 @@ public class CPTreeController extends BasicController {
 	 */
 	protected void updatePage(CPPage page) {
 		setCurrentPage(page);
-		CPManager cpMgm = CPManager.getInstance();
-		cpMgm.updatePage(cp, page);
-		cpMgm.writeToFile(cp);
+		cpManager.updatePage(cp, page);
+		cpManager.writeToFile(cp);
 		updateTree();
 		selectTreeNodeByCPPage(page);
 	}
@@ -296,12 +295,11 @@ public class CPTreeController extends BasicController {
 	private String getCurrentPageInfoStringHTML() {
 		// test if currentPage links to resource, which is used (linked) somewhere
 		// else in the manifest
-		CPManager cpMgm = CPManager.getInstance();
-		DefaultElement ele = cpMgm.getElementByIdentifier(cp, currentPage.getIdRef());
+		DefaultElement ele = cpManager.getElementByIdentifier(cp, currentPage.getIdRef());
 		boolean single = false;
 		if (ele instanceof CPResource) {
 			CPResource res = (CPResource) ele;
-			single = cpMgm.isSingleUsedResource(res, cp);
+			single = cpManager.isSingleUsedResource(res, cp);
 		}
 
 		StringBuilder b = new StringBuilder();
@@ -425,10 +423,9 @@ public class CPTreeController extends BasicController {
 		String droppedNodeIdent = treeModel.getIdentifierForNodeID(droppedNodeId);
 		String targetNodeIdent = treeModel.getIdentifierForNodeID(targetNodeId);
 
-		CPManager cpMgm = CPManager.getInstance();
 		if(asChild) {
-			cpMgm.moveElement(cp, droppedNodeIdent, targetNodeIdent, 0);
-			cpMgm.writeToFile(cp);
+			cpManager.moveElement(cp, droppedNodeIdent, targetNodeIdent, 0);
+			cpManager.writeToFile(cp);
 		} else if(targetNode.getParent() == null) {
 			//root -> do nothing
 		} else {
@@ -447,8 +444,8 @@ public class CPTreeController extends BasicController {
 			}
 			
 			String parentTargetNodeIdent = treeModel.getIdentifierForNodeID(parentTargetNode.getIdent());
-			cpMgm.moveElement(cp, droppedNodeIdent, parentTargetNodeIdent, index + 1);
-			cpMgm.writeToFile(cp);	
+			cpManager.moveElement(cp, droppedNodeIdent, parentTargetNodeIdent, index + 1);
+			cpManager.writeToFile(cp);	
 		}
 		selectTreeNodeById(droppedNodeIdent);
 		
@@ -463,7 +460,7 @@ public class CPTreeController extends BasicController {
 	 * @return The identifier of the current page's parent
 	 */
 	private String getParentIdentifier() {
-		DefaultElement currentElem = CPManager.getInstance().getElementByIdentifier(cp, currentPage.getIdentifier());
+		DefaultElement currentElem = cpManager.getElementByIdentifier(cp, currentPage.getIdentifier());
 
 		// Get the parent node to be displayed after deletion.
 		String parentIdentifier = null;

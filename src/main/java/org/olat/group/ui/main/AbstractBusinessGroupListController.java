@@ -772,7 +772,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 						for(String enabledTool:configuration.getToolsToEnable()) {
 							tools.setToolEnabled(enabledTool, true);
 							if(CollaborationTools.TOOL_FOLDER.equals(enabledTool)) {
-								tools.saveFolderAccess(new Long(configuration.getFolderAccess()));
+								tools.saveFolderAccess(Long.valueOf(configuration.getFolderAccess()));
 								
 								Quota quota = configuration.getQuota();
 								if(quota != null) {

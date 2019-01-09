@@ -29,12 +29,13 @@ package org.olat.ims.cp;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
-import java.util.logging.Logger;
 
 import org.dom4j.Element;
 import org.dom4j.tree.DefaultDocument;
 import org.dom4j.tree.DefaultElement;
 import org.olat.core.logging.OLATRuntimeException;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.ims.cp.objects.CPDependency;
 import org.olat.ims.cp.objects.CPFile;
@@ -58,6 +59,8 @@ import org.olat.modules.wiki.WikiToCPExport;
  * @author Sergio Trentini
  */
 public class CPCore {
+	
+	private static final OLog log = Tracing.createLoggerFor(CPCore.class);
 
 	/**
 	 * The CP Manifest name
@@ -518,7 +521,6 @@ public class CPCore {
 				CPResource res = (CPResource) resElement;
 				return res.getFullHref();
 			} else {
-				Logger log = Logger.getLogger(this.getClass().getName());
 				log.info("method: getPageByItemID(" + id + ") :  invalid manifest.. identifierred of <item> must point to a <resource>-element");
 				return null;
 			}

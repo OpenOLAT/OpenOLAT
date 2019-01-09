@@ -8,11 +8,8 @@
   http://www.springframework.org/schema/context 
   http://www.springframework.org/schema/context/spring-context.xsd">
   
-	<context:component-scan base-package="org.olat.ims.lti,org.olat.ims.qti,org.olat.ims.qti21,uk.ac.ed.ph.jqtiplus" />
+	<context:component-scan base-package="org.olat.ims.lti,org.olat.ims.qti,org.olat.ims.qti21,org.olat.ims.cp,uk.ac.ed.ph.jqtiplus" />
 
-
-	<bean id="org.olat.ims.cp.CPManager" class="org.olat.ims.cp.CPManagerImpl"/> 
-	
 	<!-- QTI 2.1 admin. panel -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
 		<property name="order" value="8209" />

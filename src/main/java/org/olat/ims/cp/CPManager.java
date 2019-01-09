@@ -29,7 +29,6 @@ package org.olat.ims.cp;
 import org.dom4j.tree.DefaultDocument;
 import org.dom4j.tree.DefaultElement;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.manager.BasicManager;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.ims.cp.objects.CPOrganization;
@@ -47,17 +46,13 @@ import org.olat.ims.cp.ui.CPPage;
  * 
  * @author sergio
  */
-public abstract class CPManager extends BasicManager {
-	protected static CPManager INSTANCE;
+public interface CPManager {
 
-	public static CPManager getInstance() {
-		return INSTANCE;
-	}
 	
-	public abstract CPPackageConfig getCPPackageConfig(OLATResourceable ores);
+	public CPPackageConfig getCPPackageConfig(OLATResourceable ores);
 	
 	
-	public abstract void setCPPackageConfig(OLATResourceable ores, CPPackageConfig config);
+	public void setCPPackageConfig(OLATResourceable ores, CPPackageConfig config);
 
 	/**
 	 * Generates a new Instance of ContentPackage and loads the xmlmanifest
@@ -65,7 +60,7 @@ public abstract class CPManager extends BasicManager {
 	 * @param directory
 	 * @return
 	 */
-	public abstract ContentPackage load(VFSContainer directory, OLATResourceable ores);
+	public ContentPackage load(VFSContainer directory, OLATResourceable ores);
 
 	/**
 	 * creates a new, empty ContentPackage
@@ -73,7 +68,7 @@ public abstract class CPManager extends BasicManager {
 	 * @param ores
 	 * @return the newly created CP
 	 */
-	public abstract ContentPackage createNewCP(OLATResourceable ores, String initalPageTitle);
+	public ContentPackage createNewCP(OLATResourceable ores, String initalPageTitle);
 
 	/**
 	 * Determines if the given Resource is referenced / linked only by one
@@ -85,14 +80,14 @@ public abstract class CPManager extends BasicManager {
 	 * @return if given Resource is only used by one item-element, this returns
 	 *         true
 	 */
-	public abstract boolean isSingleUsedResource(CPResource res, ContentPackage cp);
+	public boolean isSingleUsedResource(CPResource res, ContentPackage cp);
 
 	/**
 	 * Adds a blank new <item> to the end of the organization
 	 * 
 	 * @return
 	 */
-	public abstract String addBlankPage(ContentPackage cp, String title);
+	public String addBlankPage(ContentPackage cp, String title);
 
 	/**
 	 * Adds a blank new <item> as a child of the node with given id
@@ -100,7 +95,7 @@ public abstract class CPManager extends BasicManager {
 	 * @param parentNodeID
 	 * @return
 	 */
-	public abstract String addBlankPage(ContentPackage cp, String title, String parentNodeID);
+	public String addBlankPage(ContentPackage cp, String title, String parentNodeID);
 
 	/**
 	 * updates the according elements in the datastructure
@@ -108,7 +103,7 @@ public abstract class CPManager extends BasicManager {
 	 * @param cp
 	 * @param page
 	 */
-	public abstract void updatePage(ContentPackage cp, CPPage page);
+	public void updatePage(ContentPackage cp, CPPage page);
 
 	/**
 	 * 
@@ -116,7 +111,7 @@ public abstract class CPManager extends BasicManager {
 	 * @param newElement
 	 * @return
 	 */
-	public abstract boolean addElement(ContentPackage cp, DefaultElement newElement);
+	public boolean addElement(ContentPackage cp, DefaultElement newElement);
 
 	/**
 	 * Adds a new Element to the manifest. the new Element is inserted as a child
@@ -129,7 +124,7 @@ public abstract class CPManager extends BasicManager {
 	 * @param position: the new position of the moved element, can be null!
 	 * @return true if successfully added
 	 */
-	public abstract boolean addElement(ContentPackage cp, DefaultElement newElement, String parentIdentifier, int position);
+	public boolean addElement(ContentPackage cp, DefaultElement newElement, String parentIdentifier, int position);
 
 	/**
 	 * adds a element to the manifest. Element is inserted after the Element with
@@ -140,7 +135,7 @@ public abstract class CPManager extends BasicManager {
 	 * @param identifier the identifier of the previous element
 	 * @return true if successfully added
 	 */
-	public abstract boolean addElementAfter(ContentPackage cp, DefaultElement newElement, String identifier);
+	public boolean addElementAfter(ContentPackage cp, DefaultElement newElement, String identifier);
 
 	/**
 	 * removes a element from the manifest. If deleting an <item>, all referenced
@@ -148,7 +143,7 @@ public abstract class CPManager extends BasicManager {
 	 * 
 	 * @return
 	 */
-	public abstract void removeElement(ContentPackage cp, String identifier, boolean deleteResource);
+	public void removeElement(ContentPackage cp, String identifier, boolean deleteResource);
 
 	/**
 	 * Moves a Element(with id "sourceID") in cp. Inserts it into (as child)
@@ -158,7 +153,7 @@ public abstract class CPManager extends BasicManager {
 	 * @param sourceID
 	 * @param targetID
 	 */
-	public abstract void moveElement(ContentPackage cp, String nodeID, String newParentID, int position);
+	public void moveElement(ContentPackage cp, String nodeID, String newParentID, int position);
 
 	/**
 	 * duplicates the element with id "sourceID" and inserts it right after the
@@ -169,14 +164,14 @@ public abstract class CPManager extends BasicManager {
 	 * 
 	 * @return String the identifier of the newly generated element
 	 */
-	public abstract String copyElement(ContentPackage cp, String sourceID);
+	public String copyElement(ContentPackage cp, String sourceID);
 
 	/**
 	 * Returns the DefaultDocument of the ContentPackage cp
 	 * 
 	 * @return the xml Document of the cp
 	 */
-	public abstract DefaultDocument getDocument(ContentPackage cp);
+	public DefaultDocument getDocument(ContentPackage cp);
 
 	/**
 	 * returns the title of an item with given id. if element with id is not found
@@ -186,7 +181,7 @@ public abstract class CPManager extends BasicManager {
 	 * @param itemID
 	 * @return the title of the <item>
 	 */
-	public abstract String getItemTitle(ContentPackage cp, String itemID);
+	public String getItemTitle(ContentPackage cp, String itemID);
 
 	/**
 	 * Returns the CPTreeDataModel which is needed by the TreeController
@@ -196,7 +191,7 @@ public abstract class CPManager extends BasicManager {
 	 * @param cp
 	 * @return
 	 */
-	public abstract CPTreeDataModel getTreeDataModel(ContentPackage cp);
+	public CPTreeDataModel getTreeDataModel(ContentPackage cp);
 
 	/**
 	 * Returns the top most <organization> element (if there are more than one)
@@ -204,7 +199,7 @@ public abstract class CPManager extends BasicManager {
 	 * @param cp
 	 * @return
 	 */
-	public abstract CPOrganization getFirstOrganizationInManifest(ContentPackage cp);
+	public CPOrganization getFirstOrganizationInManifest(ContentPackage cp);
 
 	/**
 	 * Returns the first (topmost) resource to display
@@ -212,7 +207,7 @@ public abstract class CPManager extends BasicManager {
 	 * @param cp
 	 * @return
 	 */
-	public abstract CPPage getFirstPageToDisplay(ContentPackage cp);
+	public CPPage getFirstPageToDisplay(ContentPackage cp);
 
 	/**
 	 * 
@@ -220,14 +215,14 @@ public abstract class CPManager extends BasicManager {
 	 * @param itemIDentifier
 	 * @return
 	 */
-	public abstract String getPageByItemId(ContentPackage cp, String itemIDentifier);
+	public String getPageByItemId(ContentPackage cp, String itemIDentifier);
 
 	/**
 	 * writes the ContentPackage-tree to the manifest-xml-file
 	 * 
 	 * @param cp
 	 */
-	public abstract void writeToFile(ContentPackage cp);
+	public void writeToFile(ContentPackage cp);
 
 	/**
 	 * Writes the cp to a zip file.
@@ -235,7 +230,7 @@ public abstract class CPManager extends BasicManager {
 	 * @param cp
 	 * @return The VFS zip archive
 	 */
-	public abstract VFSLeaf writeToZip(ContentPackage cp);
+	public VFSLeaf writeToZip(ContentPackage cp);
 
 	/**
 	 * this is case-sensitive!
@@ -244,6 +239,6 @@ public abstract class CPManager extends BasicManager {
 	 * @return an Element by its IDENTIFIER attribute starting at the manifests
 	 *         root element. This will do a deep recursive search
 	 */
-	public abstract DefaultElement getElementByIdentifier(ContentPackage cp, String identifier);
+	public DefaultElement getElementByIdentifier(ContentPackage cp, String identifier);
 
 }

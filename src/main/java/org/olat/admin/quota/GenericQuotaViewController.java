@@ -84,13 +84,21 @@ public class GenericQuotaViewController extends BasicController {
 	private void initMyContent() {
 		myContent = createVelocityContainer("edit");
 		myContent.contextPut("notEnoughPrivilege", Boolean.FALSE);
-		myContent.contextPut("users", quotaManager.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_USERS));
-		myContent.contextPut("powerusers", quotaManager.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_POWER));
-		myContent.contextPut("groups", quotaManager.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_GROUPS));
-		myContent.contextPut("repository", quotaManager.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_REPO));
-		myContent.contextPut("coursefolder", quotaManager.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_COURSE));
-		myContent.contextPut("nodefolder", quotaManager.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_NODES));
-		myContent.contextPut("feeds", quotaManager.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_FEEDS));
+		
+		String defQuotaIdent = quotaManager.getDefaultQuotaIdentifier(currentQuota);
+		initDefaultQuota("users", QuotaConstants.IDENTIFIER_DEFAULT_USERS, defQuotaIdent);
+		initDefaultQuota("powerusers", QuotaConstants.IDENTIFIER_DEFAULT_POWER, defQuotaIdent);
+		initDefaultQuota("groups", QuotaConstants.IDENTIFIER_DEFAULT_GROUPS, defQuotaIdent);
+		initDefaultQuota("repository", QuotaConstants.IDENTIFIER_DEFAULT_REPO, defQuotaIdent);
+		initDefaultQuota("coursefolder", QuotaConstants.IDENTIFIER_DEFAULT_COURSE, defQuotaIdent);
+		initDefaultQuota("nodefolder", QuotaConstants.IDENTIFIER_DEFAULT_NODES, defQuotaIdent);
+		initDefaultQuota("pfNodefolder", QuotaConstants.IDENTIFIER_DEFAULT_PFNODES, defQuotaIdent);
+		initDefaultQuota("feeds", QuotaConstants.IDENTIFIER_DEFAULT_FEEDS, defQuotaIdent);
+	}
+	
+	private void initDefaultQuota(String key, String identifier, String defaultIdentifier) {
+		myContent.contextPut(key, quotaManager.getDefaultQuota(identifier));
+		myContent.contextPut(key.concat("Def"), identifier.equals(defaultIdentifier));
 	}
 	
 	private void initQuotaForm(UserRequest ureq, Quota quota) {

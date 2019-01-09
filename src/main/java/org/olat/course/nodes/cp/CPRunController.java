@@ -64,6 +64,7 @@ import org.olat.modules.cp.CPUIFactory;
 import org.olat.modules.cp.TreeNodeEvent;
 import org.olat.repository.RepositoryEntry;
 import org.olat.util.logging.activity.LoggingResourceable;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description: <BR/>Run controller for content packaging course nodes <P/>
@@ -91,6 +92,8 @@ public class CPRunController extends BasicController implements ControllerEventL
 	private boolean preview;
 	private OLATResourceable courseResource;
 
+	@Autowired
+	private CPManager cpManager;
 	
 	/**
 	 * Use this constructor to launch a CP via Repository reference key set in the
@@ -194,7 +197,7 @@ public class CPRunController extends BasicController implements ControllerEventL
 			}
 			
 			if(deliveryOptions != null && deliveryOptions.getInherit() != null && deliveryOptions.getInherit().booleanValue()) {
-				CPPackageConfig packageConfig = CPManager.getInstance().getCPPackageConfig(re.getOlatResource());
+				CPPackageConfig packageConfig = cpManager.getCPPackageConfig(re.getOlatResource());
 				if(packageConfig != null && packageConfig.getDeliveryOptions() != null) {
 					deliveryOptions = packageConfig.getDeliveryOptions();
 				}

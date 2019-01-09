@@ -184,4 +184,6 @@ public interface QuotaManager {
 	 *         allowed to launch quota editor
 	 */
 	public boolean hasQuotaEditRights(Identity identity, Roles roles, List<OrganisationRef> owners);
+	
+	public String getDefaultQuotaIdentifier(Quota quota);
 }

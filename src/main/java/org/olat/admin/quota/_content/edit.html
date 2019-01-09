@@ -21,49 +21,49 @@
 	</fieldset>	
 #end
 <div class="panel panel-default">
-	<div class="panel-heading">$r.translate("qd.title")</div>
+	<div class="panel-heading"><h5>$r.translate("qd.title")</h5></div>
 	<table class="o_table table">
 		<thead>
 			<tr><th>$r.translate("qd.title")</th><th>$r.translate("qf.quota")</th><th>$r.translate("qf.limit")</th></tr>
 		</thead>
 		<tbody>
 			#set ($userQuotaBytes = $users.getQuotaKB() * 1000)
-			<tr><td>$r.translate("qd.users")</td><td>$r.formatBytes($userQuotaBytes) ($users.getQuotaKB())</td>
+			<tr class='#if($r.isTrue($usersDef))info#end'><td>$r.translate("qd.users")</td><td>$r.formatBytes($userQuotaBytes) ($users.getQuotaKB())</td>
 			#set ($userUlLimitBytes = $users.getUlLimitKB() * 1000)
 			<td>$r.formatBytes($userUlLimitBytes) ($users.getUlLimitKB())</td></tr>
 		
 			#set ($poweruserQuotaBytes = $powerusers.getQuotaKB() * 1000)
-			<tr><td>$r.translate("qd.powerusers")</td><td>$r.formatBytes($poweruserQuotaBytes) ($powerusers.getQuotaKB())</td>
+			<tr class='#if($r.isTrue($powerusersDef))info#end'><td>$r.translate("qd.powerusers")</td><td>$r.formatBytes($poweruserQuotaBytes) ($powerusers.getQuotaKB())</td>
 			#set ($poweruserUlLimitBytes = $powerusers.getUlLimitKB() * 1000)
 			<td>$r.formatBytes($poweruserUlLimitBytes) ($powerusers.getUlLimitKB())</td></tr>
 
 			#set ($groupsQuotaBytes = $groups.getQuotaKB() * 1000)
-			<tr><td>$r.translate("qd.groups")</td><td>$r.formatBytes($groupsQuotaBytes) ($groups.getQuotaKB())</td>
+			<tr class='#if($r.isTrue($groupsDef))info#end'><td>$r.translate("qd.groups")</td><td>$r.formatBytes($groupsQuotaBytes) ($groups.getQuotaKB())</td>
 			#set ($groupsUlLimitBytes = $groups.getUlLimitKB() * 1000)
 			<td>$r.formatBytes($groupsUlLimitBytes) ($groups.getUlLimitKB())</td></tr>
 
 			#set ($repositoryQuotaBytes = $repository.getQuotaKB() * 1000)
-			<tr><td>$r.translate("qd.repository")</td><td>$r.formatBytes($repositoryQuotaBytes) ($repository.getQuotaKB())</td>
+			<tr class='#if($r.isTrue($repositoryDef))info#end'><td>$r.translate("qd.repository")</td><td>$r.formatBytes($repositoryQuotaBytes) ($repository.getQuotaKB())</td>
 			#set ($repositoryUlLimitBytes = $repository.getUlLimitKB() * 1000)
 			<td>$r.formatBytes($repositoryUlLimitBytes) ($repository.getUlLimitKB())</td></tr>
 
 			#set ($coursefolderQuotaBytes = $coursefolder.getQuotaKB() * 1000)
-			<tr><td>$r.translate("qd.coursefolder")</td><td>$r.formatBytes($coursefolderQuotaBytes) ($coursefolder.getQuotaKB())</td>
+			<tr class='#if($r.isTrue($coursefolderDef))info#end'><td>$r.translate("qd.coursefolder")</td><td>$r.formatBytes($coursefolderQuotaBytes) ($coursefolder.getQuotaKB())</td>
 			#set ($coursefolderUlLimitBytes = $coursefolder.getUlLimitKB() * 1000)
 			<td>$r.formatBytes($coursefolderUlLimitBytes) ($coursefolder.getUlLimitKB())</td></tr>
 
 			#set ($nodefolderQuotaBytes = $nodefolder.getQuotaKB() * 1000)
-			<tr><td>$r.translate("qd.nodefolder")</td><td>$r.formatBytes($nodefolderQuotaBytes) ($nodefolder.getQuotaKB())</td>
+			<tr class='#if($r.isTrue($nodefolderDef))info#end'><td>$r.translate("qd.nodefolder")</td><td>$r.formatBytes($nodefolderQuotaBytes) ($nodefolder.getQuotaKB())</td>
 			#set ($nodefolderUlLimitBytes = $nodefolder.getUlLimitKB() * 1000)
 			<td>$r.formatBytes($nodefolderUlLimitBytes) ($nodefolder.getUlLimitKB())</td></tr>
 			
 			#set ($pfNodefolderQuotaBytes = $pfNodefolder.getQuotaKB() * 1000)
-			<tr><td>$r.translate("qd.pfnodefolder")</td><td>$r.formatBytes($pfNodefolderQuotaBytes) ($pfNodefolder.getQuotaKB())</td>
+			<tr class='#if($r.isTrue($pfNodefolderDef))info#end'><td>$r.translate("qd.pfnodefolder")</td><td>$r.formatBytes($pfNodefolderQuotaBytes) ($pfNodefolder.getQuotaKB())</td>
 			#set ($pfNodefolderUlLimitBytes = $pfNodefolder.getUlLimitKB() * 1000)
 			<td>$r.formatBytes($pfNodefolderUlLimitBytes) ($pfNodefolder.getUlLimitKB())</td></tr>
 
 			#set ($feedsQuotaBytes = $feeds.getQuotaKB() * 1000)
-			<tr><td>$r.translate("qd.feeds")</td><td>$r.formatBytes($feedsQuotaBytes) ($feeds.getQuotaKB())</td>
+			<tr class='#if($r.isTrue($feedsDef))info#end'><td>$r.translate("qd.feeds")</td><td>$r.formatBytes($feedsQuotaBytes) ($feeds.getQuotaKB())</td>
 			#set ($feedsUlLimitBytes = $feeds.getUlLimitKB() * 1000)
 			<td>$r.formatBytes($feedsUlLimitBytes) ($feeds.getUlLimitKB())</td></tr>
 		</tbody>

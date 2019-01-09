@@ -46,6 +46,7 @@ import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLATSecurityException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
@@ -92,6 +93,14 @@ public class QuotaManagerImpl implements QuotaManager, InitializingBean {
 
 	@Override
 	public Quota createQuota(String path, Long quotaKB, Long ulLimitKB) {
+		if(quotaKB == null && ulLimitKB == null) {
+			String defaultIdentifier = getDefaultQuotaIdentifier(path);
+			Quota defQuota = getDefaultQuota(defaultIdentifier);
+			if(defQuota != null) {
+				quotaKB = defQuota.getQuotaKB();
+				ulLimitKB = defQuota.getUlLimitKB();
+			}
+		}
 		return new QuotaImpl(path, quotaKB, ulLimitKB);
 	}
 
@@ -507,5 +516,54 @@ public class QuotaManagerImpl implements QuotaManager, InitializingBean {
 				|| roles.hasRole(organisationOwnerships, OrganisationRoles.rolesmanager)
 				|| roles.hasRole(organisationOwnerships, OrganisationRoles.usermanager)
 				|| roles.hasRole(organisationOwnerships, OrganisationRoles.learnresourcemanager);
+	}
+	
+	@Override
+	public String getDefaultQuotaIdentifier(Quota quota) {
+		if(quota == null) return QuotaConstants.IDENTIFIER_DEFAULT;
+		String path = quota.getPath();
+		return getDefaultQuotaIdentifier(path);
+	}
+
+	private String getDefaultQuotaIdentifier(String path) {
+		String identifier = QuotaConstants.IDENTIFIER_DEFAULT;
+		if(path.startsWith(QuotaConstants.IDENTIFIER_DEFAULT)) {
+			identifier = path;
+		} else if(path.startsWith("/cts/folders/BusinessGroup/")) {
+			identifier = QuotaConstants.IDENTIFIER_DEFAULT_GROUPS;
+		} else if(path.startsWith("/repository/")) {
+			if(path.indexOf("/_unzipped_") >= 0 || path.indexOf("/_sharedfolder_") >= 0) {
+				identifier = QuotaConstants.IDENTIFIER_DEFAULT_REPO;
+			} else if(endWithLong(path)) {
+				identifier = QuotaConstants.IDENTIFIER_DEFAULT_FEEDS;
+			} else {
+				identifier = QuotaConstants.IDENTIFIER_DEFAULT_REPO;
+			}
+		} else if(path.startsWith("/course/")) {
+			if(path.indexOf("/foldernodes/") >= 0) {
+				identifier = QuotaConstants.IDENTIFIER_DEFAULT_NODES;
+			} else if(path.indexOf("/coursefolder") >= 0) {
+				identifier = QuotaConstants.IDENTIFIER_DEFAULT_COURSE;
+			} else if(path.indexOf("/participantfolder/") >= 0) {
+				identifier = QuotaConstants.IDENTIFIER_DEFAULT_PFNODES;
+			} else if(path.indexOf("/returnboxes/") >= 0) {
+				identifier = QuotaConstants.IDENTIFIER_DEFAULT_POWER;
+			} else {
+				identifier = QuotaConstants.IDENTIFIER_DEFAULT_COURSE;
+			}
+		} else if(path.startsWith("/homes/")) {
+			identifier = QuotaConstants.IDENTIFIER_DEFAULT_USERS;
+		}
+		return identifier;
+	}
+	
+	private boolean endWithLong(String path) {
+		boolean ok = false;
+		int index = path.lastIndexOf('/');
+		if(index > 0) {
+			String lastToken = path.substring(index + 1, path.length());
+			ok = StringHelper.isLong(lastToken);
+		}
+		return ok;
 	}
 }

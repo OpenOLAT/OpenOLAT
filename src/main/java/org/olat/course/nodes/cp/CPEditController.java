@@ -120,6 +120,8 @@ public class CPEditController extends ActivateableTabbableDefaultController impl
 	private final BreadcrumbPanel stackPanel;
 	
 	@Autowired
+	private CPManager cpManager;
+	@Autowired
 	private RepositoryService repositoryService;
 
 	/**
@@ -161,7 +163,7 @@ public class CPEditController extends ActivateableTabbableDefaultController impl
 				previewLink.setIconLeftCSS("o_icon o_icon-fw o_icon_preview");
 				previewLink.setTitle(getTranslator().translate("command.preview"));
 				
-				CPPackageConfig cpConfig = CPManager.getInstance().getCPPackageConfig(re.getOlatResource());
+				CPPackageConfig cpConfig = cpManager.getCPPackageConfig(re.getOlatResource());
 				parentConfig = (cpConfig == null ? null : cpConfig.getDeliveryOptions());
 			}
 		} else {
@@ -255,7 +257,7 @@ public class CPEditController extends ActivateableTabbableDefaultController impl
 					// fire event so the updated config is saved by the editormaincontroller
 					fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
 					
-					CPPackageConfig cpConfig = CPManager.getInstance().getCPPackageConfig(re.getOlatResource());
+					CPPackageConfig cpConfig = cpManager.getCPPackageConfig(re.getOlatResource());
 					if(cpConfig != null && cpConfig.getDeliveryOptions() != null) {
 						deliveryOptionsCtrl.setParentDeliveryOptions(cpConfig.getDeliveryOptions());
 					}

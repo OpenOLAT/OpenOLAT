@@ -52,7 +52,6 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.ims.cp.CPManager;
-import org.olat.ims.cp.CPManagerImpl;
 import org.olat.ims.cp.ContentPackage;
 import org.olat.modules.cp.CPUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,6 +72,8 @@ public class CPContentController extends BasicController {
 	private StackedPanel mainPanel;
 	
 	@Autowired
+	private CPManager cpManager;
+	@Autowired
 	private HelpModule helpModule;
 
 	protected CPContentController(UserRequest ureq, WindowControl control, ContentPackage cp) {
@@ -80,7 +81,7 @@ public class CPContentController extends BasicController {
 
 		this.cp = cp;
 		
-		CPPackageConfig packageConfig = CPManager.getInstance().getCPPackageConfig(cp.getResourcable());
+		CPPackageConfig packageConfig = cpManager.getCPPackageConfig(cp.getResourcable());
 		if(packageConfig != null) {
 			deliveryOptions = packageConfig.getDeliveryOptions();
 		}
@@ -99,8 +100,7 @@ public class CPContentController extends BasicController {
 	protected void init(UserRequest ureq) {
 		mainPanel = putInitialPanel(new SimpleStackedPanel("cpContent"));
 
-		CPManagerImpl cpMgm = (CPManagerImpl) CPManager.getInstance();
-		currentPage = cpMgm.getFirstPageToDisplay(cp);
+		currentPage = cpManager.getFirstPageToDisplay(cp);
 		displayPage(ureq, currentPage.getIdentifier());
 	}
 	
@@ -131,11 +131,9 @@ public class CPContentController extends BasicController {
 	 * @param nodeID
 	 */
 	protected void displayPage(UserRequest ureq, String nodeID) {
-		CPManager cpMgm = CPManager.getInstance();
-
 		currentPage = new CPPage(nodeID, cp);
 
-		String filePath = cpMgm.getPageByItemId(cp, currentPage.getIdentifier());
+		String filePath = cpManager.getPageByItemId(cp, currentPage.getIdentifier());
 		logInfo("I display the page with id: " + currentPage.getIdentifier(), null);
 
 		VFSItem f = cp.getRootDir().resolve(filePath);

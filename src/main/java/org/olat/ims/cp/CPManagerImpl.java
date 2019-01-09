@@ -29,6 +29,7 @@ package org.olat.ims.cp;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -57,6 +58,7 @@ import org.olat.ims.cp.ui.CPPackageConfig;
 import org.olat.ims.cp.ui.CPPage;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.springframework.stereotype.Service;
 
 import com.thoughtworks.xstream.XStream;
 
@@ -70,7 +72,8 @@ import com.thoughtworks.xstream.XStream;
  * 
  * @author Sergio Trentini
  */
-public class CPManagerImpl extends CPManager {
+@Service("org.olat.ims.cp.CPManager")
+public class CPManagerImpl implements CPManager {
 	
 	private static final OLog log = Tracing.createLoggerFor(CPManagerImpl.class);
 
@@ -80,13 +83,6 @@ public class CPManagerImpl extends CPManager {
 	static {
 		configXstream.alias("packageConfig", CPPackageConfig.class);
 		configXstream.alias("deliveryOptions", DeliveryOptions.class);
-	}
-	
-	/**
-	 * [spring]
-	 */
-	private CPManagerImpl() {
-		INSTANCE = this;
 	}
 
 	@Override
@@ -127,33 +123,28 @@ public class CPManagerImpl extends CPManager {
 
 	@Override
 	public ContentPackage load(VFSContainer directory, OLATResourceable ores) {
-		XMLParser parser = new XMLParser();
 		ContentPackage cp;
-
-		VFSLeaf file = (VFSLeaf) directory.resolve("imsmanifest.xml");
-
-		if (file != null) {
-			try {
-				DefaultDocument doc = (DefaultDocument) parser.parse(file.getInputStream(), false);
+		VFSItem file = directory.resolve("imsmanifest.xml");
+		if (file instanceof VFSLeaf) {
+			try(InputStream in = ((VFSLeaf)file).getInputStream()) {
+				XMLParser parser = new XMLParser();
+				DefaultDocument doc = (DefaultDocument) parser.parse(in, false);
 				cp = new ContentPackage(doc, directory, ores);
 				// If a wiki is imported or a new cp created, set a unique orga
 				// identifier.
-				if (cp.getLastError() == null) {
-					if (cp.isOLATContentPackage() && CPCore.OLAT_ORGANIZATION_IDENTIFIER.equals(cp.getFirstOrganizationInManifest().getIdentifier())) {
-						setUniqueOrgaIdentifier(cp);
-					}
+				if (cp.getLastError() == null && cp.isOLATContentPackage()
+						&& CPCore.OLAT_ORGANIZATION_IDENTIFIER.equals(cp.getFirstOrganizationInManifest().getIdentifier())) {
+					setUniqueOrgaIdentifier(cp);
 				}
-
-			} catch (OLATRuntimeException e) {
+			} catch (IOException | OLATRuntimeException e) {
 				cp = new ContentPackage(null, directory, ores);
-				logError("Reading imsmanifest failed. Dir: " + directory.getName() + ". Ores: " + ores.getResourceableId(), e);
+				log.error("Reading imsmanifest failed. Dir: " + directory.getName() + ". Ores: " + ores.getResourceableId(), e);
 				cp.setLastError("Exception reading XML for IMS CP: invalid xml-file ( " + directory.getName() + ")");
 			}
-
 		} else {
 			cp = new ContentPackage(null, directory, ores);
 			cp.setLastError("Exception reading XML for IMS CP: IMS-Manifest not found in " + directory.getName());
-			logError("IMS manifiest xml couldn't be found in dir " + directory.getName() + ". Ores: " + ores.getResourceableId(), null);
+			log.error("IMS manifiest xml couldn't be found in dir " + directory.getName() + ". Ores: " + ores.getResourceableId(), null);
 			throw new OLATRuntimeException(CPManagerImpl.class, "The imsmanifest.xml file was not found.", new IOException());
 		}
 		return cp;
@@ -164,8 +155,11 @@ public class CPManagerImpl extends CPManager {
 		// copy template cp to new repo-location
 		if (copyTemplCP(ores)) {
 			File cpRoot = FileResourceManager.getInstance().unzipFileResource(ores);
-			logDebug("createNewCP: cpRoot=" + cpRoot);
-			logDebug("createNewCP: cpRoot.getAbsolutePath()=" + cpRoot.getAbsolutePath());
+			if(log.isDebug()) {
+				log.debug("createNewCP: cpRoot=" + cpRoot);
+				log.debug("createNewCP: cpRoot.getAbsolutePath()=" + cpRoot.getAbsolutePath());
+			}
+			
 			LocalFolderImpl vfsWrapper = new LocalFolderImpl(cpRoot);
 			ContentPackage cp = load(vfsWrapper, ores);
 
@@ -186,7 +180,7 @@ public class CPManagerImpl extends CPManager {
 			return cp;
 
 		} else {
-			logError("CP couldn't be created. Error when copying template. Ores: " + ores.getResourceableId(), null);
+			log.error("CP couldn't be created. Error when copying template. Ores: " + ores.getResourceableId(), null);
 			throw new OLATRuntimeException("ERROR while creating new empty cp. an error occured while trying to copy template CP", null);
 		}
 	}
@@ -354,10 +348,10 @@ public class CPManagerImpl extends CPManager {
 			if (f.exists() && root.exists()) {
 				FileUtils.copyFileToDir(f, root, "copy imscp template");
 			} else {
-				logError("cp template was not copied. Source:  " + url + " Target: " + root.getAbsolutePath(), null);
+				log.error("cp template was not copied. Source:  " + url + " Target: " + root.getAbsolutePath(), null);
 			}
 		} catch (URISyntaxException e) {
-			logError("Bad url syntax when copying cp template. url: " + url + " Ores:" + ores.getResourceableId(), null);
+			log.error("Bad url syntax when copying cp template. url: " + url + " Ores:" + ores.getResourceableId(), null);
 			return false;
 		}
 

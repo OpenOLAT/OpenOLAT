@@ -26,14 +26,14 @@
 
 package org.olat.ims.cp.ui;
 
-import java.util.logging.Logger;
-
 import org.dom4j.tree.DefaultElement;
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.ims.cp.CPManager;
-import org.olat.ims.cp.CPManagerImpl;
 import org.olat.ims.cp.ContentPackage;
 import org.olat.ims.cp.objects.CPItem;
 import org.olat.ims.cp.objects.CPMetadata;
@@ -49,6 +49,8 @@ import org.olat.ims.cp.objects.CPResource;
  * @author Sergio Trentini
  */
 public class CPPage {
+	
+	private static final OLog log = Tracing.createLoggerFor(CPPage.class);
 
 	private String identifier;
 	private String idRef;
@@ -57,18 +59,17 @@ public class CPPage {
 	private VFSLeaf pageFile;
 	private ContentPackage cp;
 	private CPMetadata metadata;
-	private Logger log;
+	private final CPManager cpManager;
 	private boolean cpRoot; // if this page represents the <organization> element
 
 	// of the manifest
 
 	public CPPage(String identifier, String title, ContentPackage cp) {
 		this.identifier = identifier;
+		cpManager = CoreSpringFactory.getImpl(CPManager.class);
 		this.title = title;
 		this.cp = cp;
 		this.rootDir = cp.getRootDir();
-
-		this.log = Logger.getLogger(CPPage.class.getName());
 	}
 
 	/**
@@ -77,10 +78,9 @@ public class CPPage {
 	 * @param cp
 	 */
 	public CPPage(String identifier, ContentPackage cp) {
-		this.log = Logger.getLogger(CPPage.class.getName());
 		this.identifier = identifier;
-		CPManagerImpl cpMgm = (CPManagerImpl) CPManager.getInstance();
-		DefaultElement ele = cpMgm.getElementByIdentifier(cp, identifier);
+		cpManager = CoreSpringFactory.getImpl(CPManager.class);
+		DefaultElement ele = cpManager.getElementByIdentifier(cp, identifier);
 		if (ele instanceof CPItem) {
 			CPItem pageItem = (CPItem) ele;
 			this.cpRoot = false;
@@ -90,7 +90,7 @@ public class CPPage {
 			this.metadata = pageItem.getMetadata();
 			if (metadata != null) metadata.setTitle(title);
 			this.cp = cp;
-			String filePath = cpMgm.getPageByItemId(cp, identifier);
+			String filePath = cpManager.getPageByItemId(cp, identifier);
 			if (filePath != null && filePath != "") {
 				LocalFileImpl f = (LocalFileImpl) cp.getRootDir().resolve(filePath);
 				this.pageFile = f;
@@ -143,8 +143,7 @@ public class CPPage {
 
 	protected CPResource getResource() {
 		CPResource resource = null;
-		CPManager mgr = CPManager.getInstance();
-		DefaultElement resElement = mgr.getElementByIdentifier(cp, idRef);
+		DefaultElement resElement = cpManager.getElementByIdentifier(cp, idRef);
 		if (resElement instanceof CPResource) {
 			resource = (CPResource)resElement;
 		}

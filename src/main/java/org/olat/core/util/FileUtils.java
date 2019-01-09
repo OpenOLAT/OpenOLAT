@@ -83,6 +83,11 @@ public class FileUtils {
 	private static final char[] FILE_NAME_ACCEPTED_CHARS = { '\u0228', '\u0196', '\u0252', '\u0220', '\u0246', '\u0214', ' '};
 	// known metadata files
 	private static final List<String> META_FILENAMES = Arrays.asList(".DS_Store",".CVS",".nfs",".sass-cache",".hg", ".git");
+	
+	static {
+		Arrays.sort(FILE_NAME_FORBIDDEN_CHARS);
+		Arrays.sort(FILE_NAME_ACCEPTED_CHARS);
+	}
 
 	/**
 	 * @param sourceFile
@@ -797,9 +802,7 @@ public class FileUtils {
 		if(filename==null) {
 			return false;
 		}
-		Arrays.sort(FILE_NAME_FORBIDDEN_CHARS);
-		Arrays.sort(FILE_NAME_ACCEPTED_CHARS);
-		
+
 		for(int i=0; i<filename.length(); i++) {
 			char character = filename.charAt(i);
 			if(Arrays.binarySearch(FILE_NAME_ACCEPTED_CHARS, character)>=0) {

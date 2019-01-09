@@ -27,12 +27,8 @@
 package org.olat.core.util.vfs;
 
 /**
- * Description:<br>
- * TODO: HP_Besitzer Class Description for QuotaImpl
- * 
  * <P>
- * Initial Date:  13.06.2006 <br>
- * @author HP_Besitzer
+ * Initial Date:  13.06.2006
  */
 public interface Quota {
 

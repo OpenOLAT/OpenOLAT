@@ -44,6 +44,7 @@ import org.olat.ims.cp.ContentPackage;
 import org.olat.ims.cp.objects.CPItem;
 import org.olat.ims.cp.objects.CPOrganization;
 import org.olat.test.OlatTestCase;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * The test class for the CPManager and its implementation.
@@ -58,19 +59,20 @@ public class CPManagerTest extends OlatTestCase {
 	private static final String ITEM_ID = "this_is_a_great_inital_item_identifier";
 	private static final String PAGE_TITLE = "fancy page";
 	private static final OLog log = Tracing.createLoggerFor(CPManagerTest.class);
-	private CPManager mgr = null;
+	
+	@Autowired
+	private CPManager cpManager;
+	
 	private ContentPackage cp;
 
 	@Before
 	public void setUp() {
 		// create some users with user manager
-		mgr = CPManager.getInstance();
 		try {
 			log.info("setUp start ------------------------");
-
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance(
 					this.getClass(), Long.valueOf((long) (Math.random()*100000)));
-			cp = mgr.createNewCP(ores, PAGE_TITLE);
+			cp = cpManager.createNewCP(ores, PAGE_TITLE);
 			assertNotNull("crated cp is null, check filesystem where the temp cp's are created.", cp);
 
 		} catch (Exception e) {
@@ -85,7 +87,7 @@ public class CPManagerTest extends OlatTestCase {
 	
 	@Test
 	public void testLoad() {
-		ContentPackage relodedCP = mgr.load(cp.getRootDir(), cp.getResourcable());
+		ContentPackage relodedCP = cpManager.load(cp.getRootDir(), cp.getResourcable());
 		assertNotNull(relodedCP);
 		CPOrganization orga = relodedCP.getFirstOrganizationInManifest();
 		assertNotNull(orga);
@@ -96,38 +98,38 @@ public class CPManagerTest extends OlatTestCase {
 	@Test
 	public void testAddBlankPage() {
 		final String pageTitle = "the blank page";
-		String ident = mgr.addBlankPage(cp, pageTitle);
+		String ident = cpManager.addBlankPage(cp, pageTitle);
 		assertNotNull(ident);	
 	}
 
 	public void testAddElementAfter() {
 		CPItem newItem = new CPItem();
-		mgr.addElementAfter(cp, newItem, ITEM_ID);
+		cpManager.addElementAfter(cp, newItem, ITEM_ID);
 		assertTrue("The new item wasn't inserted at the second position.", newItem.getPosition() == 1);
 	}
 
 	@Test
 	public void testGetItemTitle() {
-		String title = mgr.getItemTitle(cp, ITEM_ID);
+		String title = cpManager.getItemTitle(cp, ITEM_ID);
 		assertNotNull(title);
 		assertEquals(PAGE_TITLE, title);
 	}
 
 	@Test
 	public void testGetPageByItemId() {
-		String href = mgr.getPageByItemId(cp, ITEM_ID);
+		String href = cpManager.getPageByItemId(cp, ITEM_ID);
 		VFSItem file = cp.getRootDir().resolve(href);
 		assertNotNull("The file path doesn't lead to a file.", file);
 	}
 	
 	@Test
 	public void testWriteToFile() {
-		mgr.writeToFile(cp); // Throws exception on failure
+		cpManager.writeToFile(cp); // Throws exception on failure
 	}
 	
 	@Test
 	public void testWriteToZip() {
-		VFSLeaf zip = mgr.writeToZip(cp);
+		VFSLeaf zip = cpManager.writeToZip(cp);
 		Assert.assertNotNull("The zip file wasn't created properly", zip);
 		Assert.assertTrue("The zip file cannot be empty", zip.getSize() > 0);
 	}

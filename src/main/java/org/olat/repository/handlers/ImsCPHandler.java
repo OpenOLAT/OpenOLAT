@@ -55,7 +55,6 @@ import org.olat.core.util.vfs.QuotaManager;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.callbacks.FullAccessWithQuotaCallback;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
-import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.FileResource;
@@ -73,7 +72,6 @@ import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.RepositoryEntrySecurity;
-import org.olat.repository.ui.RepositoryEntryRuntimeController.RuntimeControllerCreator;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 
@@ -103,7 +101,7 @@ public class ImsCPHandler extends FileHandler {
 
 		Translator translator = Util.createPackageTranslator(CPContentController.class, locale);
 		String initialPageTitle = translator.translate("cptreecontroller.newpage.title");
-		CPManager.getInstance().createNewCP(resource, initialPageTitle);
+		CoreSpringFactory.getImpl(CPManager.class).createNewCP(resource, initialPageTitle);
 		return re;
 	}
 	
@@ -142,7 +140,7 @@ public class ImsCPHandler extends FileHandler {
 	
 	@Override
 	public RepositoryEntry copy(Identity author, RepositoryEntry source, RepositoryEntry target) {
-		final CPManager cpManager = CPManager.getInstance();
+		final CPManager cpManager = CoreSpringFactory.getImpl(CPManager.class);
 		OLATResource sourceResource = source.getOlatResource();
 		OLATResource targetResource = target.getOlatResource();
 		
@@ -200,27 +198,23 @@ public class ImsCPHandler extends FileHandler {
 		OLATResource res = re.getOlatResource();
 		File cpRoot = FileResourceManager.getInstance().unzipFileResource(res);
 		final LocalFolderImpl vfsWrapper = new LocalFolderImpl(cpRoot);
-		CPPackageConfig packageConfig = CPManager.getInstance().getCPPackageConfig(res);
+		CPPackageConfig packageConfig = CoreSpringFactory.getImpl(CPManager.class).getCPPackageConfig(res);
 		final DeliveryOptions deliveryOptions = (packageConfig == null ? null : packageConfig.getDeliveryOptions());
 		return new CPRuntimeController(ureq, wControl, re, reSecurity,
-				new RuntimeControllerCreator() {
-					@Override
-					public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel,
-							RepositoryEntry entry, RepositoryEntrySecurity security, AssessmentMode assessmentMode) {
-						boolean activateFirstPage = true;
-						String initialUri = null;
+				(uureq, wwControl, toolbarPanel, entry, security, assessmentMode) -> {
+			boolean activateFirstPage = true;
+			String initialUri = null;
 
-						CoreSpringFactory.getImpl(UserCourseInformationsManager.class)
-							.updateUserCourseInformations(entry.getOlatResource(), uureq.getIdentity());
-						
-						CPDisplayController cpCtr = new CPDisplayController(uureq, wwControl, vfsWrapper, true, true, activateFirstPage, true, deliveryOptions,
-								initialUri, entry.getOlatResource(), "", false);
-						LayoutMain3ColsController ctr = new LayoutMain3ColsController(uureq, wwControl, cpCtr.getMenuComponent(), cpCtr.getInitialComponent(), vfsWrapper.getName());
-						ctr.addDisposableChildController(cpCtr);
-						ctr.addActivateableDelegate(cpCtr);
-						return ctr;
-					}
-			});
+			CoreSpringFactory.getImpl(UserCourseInformationsManager.class)
+				.updateUserCourseInformations(entry.getOlatResource(), uureq.getIdentity());
+			
+			CPDisplayController cpCtr = new CPDisplayController(uureq, wwControl, vfsWrapper, true, true, activateFirstPage, true, deliveryOptions,
+					initialUri, entry.getOlatResource(), "", false);
+			LayoutMain3ColsController ctr = new LayoutMain3ColsController(uureq, wwControl, cpCtr.getMenuComponent(), cpCtr.getInitialComponent(), vfsWrapper.getName());
+			ctr.addDisposableChildController(cpCtr);
+			ctr.addActivateableDelegate(cpCtr);
+			return ctr;
+		});
 	}
 
 	@Override

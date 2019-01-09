@@ -29,6 +29,7 @@ import java.io.File;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.control.Controller;
@@ -220,7 +221,8 @@ public class CPCourseNode extends AbstractAccessableCourseNode {
 					RepositoryEntry re = getReferencedRepositoryEntry();
 					// Check if delivery options are set for repo entry, if not create default
 					if(re != null) {
-						reConfig = CPManager.getInstance().getCPPackageConfig(re.getOlatResource());						
+						CPManager cpManager = CoreSpringFactory.getImpl(CPManager.class);
+						reConfig = cpManager.getCPPackageConfig(re.getOlatResource());						
 						if(reConfig == null) {
 							reConfig = new CPPackageConfig();
 						}
@@ -231,7 +233,7 @@ public class CPCourseNode extends AbstractAccessableCourseNode {
 							reConfig.setDeliveryOptions(repoDeliveryOptions);
 							repoDeliveryOptions.setContentEncoding(contentEncoding);
 							repoDeliveryOptions.setJavascriptEncoding(jsEncoding);						
-							CPManager.getInstance().setCPPackageConfig(re.getOlatResource(), reConfig);
+							cpManager.setCPPackageConfig(re.getOlatResource(), reConfig);
 						} else {
 							// see if we have any different settings than the repo. if so, don't use inherit mode
 							if(contentEncoding != repoDeliveryOptions.getContentEncoding() || jsEncoding != repoDeliveryOptions.getJavascriptEncoding()) {

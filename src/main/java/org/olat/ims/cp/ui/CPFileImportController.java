@@ -52,6 +52,7 @@ import org.olat.core.util.vfs.filters.VFSItemExcludePrefixFilter;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
 import org.olat.ims.cp.CPManager;
 import org.olat.ims.cp.ContentPackage;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * File import controller. Supported files: - html - zip (including folders and
@@ -75,11 +76,10 @@ public class CPFileImportController extends FormBasicController {
 	private CPPage currentPage;
 	private CPPage pageToBeSelected = null;
 	private boolean isSingleFile;
+	
+	@Autowired
+	private CPManager cpManager;
 
-	/**
-	 * @param ureq
-	 * @param control
-	 */
 	public CPFileImportController(UserRequest ureq, WindowControl control, ContentPackage cp, CPPage currentPage) {
 		super(ureq, control);
 		this.cp = cp;
@@ -180,7 +180,7 @@ public class CPFileImportController extends FormBasicController {
 			ZipUtil.unzip(archive, unzipDir);
 			// add items of unzipDir to tree
 			pageToBeSelected = addItem(unzipDir, currentPage.getIdentifier(), true);
-			CPManager.getInstance().writeToFile(cp);
+			cpManager.writeToFile(cp);
 
 		} else {
 			// Single file
@@ -191,7 +191,7 @@ public class CPFileImportController extends FormBasicController {
 			// move item to root folder
 			root.copyFrom(uploadedItem);
 			pageToBeSelected = addItem(uploadedItem, currentPage.getIdentifier(), false);
-			CPManager.getInstance().writeToFile(cp);
+			cpManager.writeToFile(cp);
 		}
 	}
 
@@ -215,8 +215,6 @@ public class CPFileImportController extends FormBasicController {
 	 * @param parentId
 	 */
 	private CPPage addItem(VFSItem item, String parentId, boolean isRoot) {
-		CPManager cpMgr = CPManager.getInstance();
-
 		// Make an item in the menu tree only if the item is a container that
 		// contains any items to be added or its type is selected in the form.
 		// Upload any files in case they are referenced to.
@@ -235,13 +233,13 @@ public class CPFileImportController extends FormBasicController {
 		if (isSingleFile || item instanceof VFSLeaf && isToBeAdded((VFSLeaf) item, menuItemTypes) || item instanceof VFSContainer
 				&& containsItemsToAdd((VFSContainer) item, menuItemTypes)) {
 			// Create the menu item
-			String newId = cpMgr.addBlankPage(cp, item.getName(), parentId);
+			String newId = cpManager.addBlankPage(cp, item.getName(), parentId);
 			newPage = new CPPage(newId, cp);
 			if (item instanceof VFSLeaf) {
 				VFSLeaf leaf = (VFSLeaf) item;
 				newPage.setFile(leaf);
 			}
-			cpMgr.updatePage(cp, newPage);
+			cpManager.updatePage(cp, newPage);
 		}
 
 		// Add any sub items
