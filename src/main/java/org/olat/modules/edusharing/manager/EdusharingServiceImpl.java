@@ -51,6 +51,8 @@ import org.olat.modules.edusharing.NodeIdentifier;
 import org.olat.modules.edusharing.Ticket;
 import org.olat.modules.edusharing.model.EdusharingErrorResponse;
 import org.olat.modules.edusharing.model.TicketImpl;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryDataDeletable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -61,7 +63,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class EdusharingServiceImpl implements EdusharingService {
+public class EdusharingServiceImpl implements EdusharingService, RepositoryEntryDataDeletable {
 	
 	private static final OLog log = Tracing.createLoggerFor(EdusharingServiceImpl.class);
 	
@@ -259,6 +261,11 @@ public class EdusharingServiceImpl implements EdusharingService {
 	}
 
 	@Override
+	public boolean deleteRepositoryEntryData(RepositoryEntry re) {
+		deleteUsages(re, null);
+		return true;
+	}
+	@Override
 	public void deleteUsages(EdusharingProvider edusharingProvider) {
 		deleteUsages(edusharingProvider.getOlatResourceable(), edusharingProvider.getSubPath());
 	}
@@ -291,4 +298,5 @@ public class EdusharingServiceImpl implements EdusharingService {
 		
 		usageDao.delete(usage.getIdentifier());
 	}
+
 }
