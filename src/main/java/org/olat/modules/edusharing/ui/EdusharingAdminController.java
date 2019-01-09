@@ -76,6 +76,7 @@ public class EdusharingAdminController extends FormBasicController {
 	private FormLink importMetadataLink;
 	private FormLink testLink;
 	
+	private DialogBoxController confirmEnableCtrl;
 	private DialogBoxController confirmGenerateCtrl;
 	
 	private KeyPair soapKeys;
@@ -101,6 +102,7 @@ public class EdusharingAdminController extends FormBasicController {
 		if (edusharingModule.isEnabled()) {
 			enabledEl.select(ENABLED_KEYS[0], true);
 		}
+		enabledEl.addActionListener(FormEvent.ONCHANGE);
 		
 		String url = edusharingModule.getBaseUrl();
 		urlEl = uifactory.addTextElement("admin.url", 128, url, formLayout);
@@ -146,7 +148,9 @@ public class EdusharingAdminController extends FormBasicController {
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == generateKeysLink) {
+		if (source == enabledEl && enabledEl.isAtLeastSelected(1)) {
+			doConfirmEnable(ureq);
+		} else if (source == generateKeysLink) {
 			doConfirmGenerateKeys(ureq);
 		}if (source == importMetadataLink) {
 			doImportMetadataKeys();
@@ -158,7 +162,10 @@ public class EdusharingAdminController extends FormBasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (confirmGenerateCtrl == source) {
+		if (confirmEnableCtrl == source) {
+			boolean confirmed = DialogBoxUIFactory.isYesEvent(event);
+			doEnable(confirmed);
+		} else if (confirmGenerateCtrl == source) {
 			if (DialogBoxUIFactory.isYesEvent(event)) {
 				doGenerateKeys();
 			}
@@ -210,6 +217,16 @@ public class EdusharingAdminController extends FormBasicController {
 	@Override
 	protected void doDispose() {
 		//
+	}
+	
+	private void doConfirmEnable(UserRequest ureq) {
+		String title = translate("admin.enable.confirm.title");
+		String message = translate("admin.enable.confirm.message");
+		confirmEnableCtrl = activateYesNoDialog(ureq, title, message, confirmEnableCtrl);
+	}
+	
+	private void doEnable(boolean confirmed) {
+		enabledEl.select(ENABLED_KEYS[0], confirmed);
 	}
 	
 	private void doConfirmGenerateKeys(UserRequest ureq) {
