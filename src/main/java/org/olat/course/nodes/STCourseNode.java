@@ -135,8 +135,7 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Calcul
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, UserCourseEnvironment euce) {
 		updateModuleConfigDefaults(false);
 		// only the precondition "access" can be configured till now
-		STCourseNodeEditController childTabCntrllr = new STCourseNodeEditController(ureq, wControl, this, course.getCourseFolderContainer(),
-				course.getEditorTreeModel(), euce);
+		STCourseNodeEditController childTabCntrllr = new STCourseNodeEditController(ureq, wControl, this, course, euce);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
 		NodeEditController nodeEditController = new NodeEditController(ureq, wControl, course.getEditorTreeModel(), course, chosenNode, euce, childTabCntrllr);
 		// special case: listen to st edit controller, must be informed when the short title is being modified
@@ -145,12 +144,6 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Calcul
 
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#createNodeRunConstructionResult(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl,
-	 *      org.olat.course.run.userview.UserCourseEnvironment,
-	 *      org.olat.course.run.userview.NodeEvaluation)
-	 */
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			final UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
@@ -171,9 +164,10 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Calcul
 			}
 			DeliveryOptions deliveryOptions = (DeliveryOptions)getModuleConfiguration().get(SPEditController.CONFIG_KEY_DELIVERYOPTIONS);
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance(CourseModule.class, userCourseEnv.getCourseEnvironment().getCourseResourceableId());
+			Long courseRepoKey = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry().getKey();
 			SinglePageController spCtr = new SinglePageController(ureq, wControl, userCourseEnv.getCourseEnvironment().getCourseFolderContainer(),
 					relPath, allowRelativeLinks.booleanValue(), null, ores, deliveryOptions,
-					userCourseEnv.getCourseEnvironment().isPreview());
+					userCourseEnv.getCourseEnvironment().isPreview(), courseRepoKey);
 			// check if user is allowed to edit the page in the run view
 			CourseGroupManager cgm = userCourseEnv.getCourseEnvironment().getCourseGroupManager();
 			boolean hasEditRights = userCourseEnv.isAdmin() || cgm.hasRight(ureq.getIdentity(),CourseRights.RIGHT_COURSEEDITOR)

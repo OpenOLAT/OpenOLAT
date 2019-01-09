@@ -19,6 +19,7 @@
  */
 package org.olat.modules.edusharing.manager;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -86,7 +87,7 @@ class EdusharingUsageDAO {
 	}
 
 	public List<EdusharingUsage> loadByResoureable(OLATResourceable ores, String subPath) {
-		if (ores == null) return null;
+		if (ores == null) return new ArrayList<>(0);
 		
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select usage");

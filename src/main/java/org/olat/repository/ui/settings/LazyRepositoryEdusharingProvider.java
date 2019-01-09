@@ -19,30 +19,53 @@
  */
 package org.olat.repository.ui.settings;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.vfs.VFSItem;
 import org.olat.modules.edusharing.EdusharingProvider;
 import org.olat.modules.edusharing.UsageMetadata;
+import org.olat.modules.edusharing.VFSEdusharingProvider;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryManager;
 
 /**
  * 
- * Initial date: 11 Dec 2018<br>
+ * Initial date: 8 Jan 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class RepositoryEdusharingProvider implements EdusharingProvider {
+public class LazyRepositoryEdusharingProvider implements VFSEdusharingProvider {
+	
+	private final Long repositoryEntryKey;
+	private String subPath;
+	private EdusharingProvider edusharingProvider;
+	
+	public LazyRepositoryEdusharingProvider(Long repositoryEntryKey) {
+		this(repositoryEntryKey, null);
+	}
 
-	private final RepositoryEntry repositoryEntry;
-	private final String subPath;
-
-	public RepositoryEdusharingProvider(RepositoryEntry repositoryEntry, String subPath) {
-		this.repositoryEntry = repositoryEntry;
+	public LazyRepositoryEdusharingProvider(Long repositoryEntryKey, String subPath) {
+		this.repositoryEntryKey = repositoryEntryKey;
 		this.subPath = subPath;
+	}
+
+	private EdusharingProvider getEdusharingProvider() {
+		if (edusharingProvider == null) {
+			RepositoryManager repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
+			RepositoryEntry repositoryEntry = repositoryManager.lookupRepositoryEntry(repositoryEntryKey);
+			edusharingProvider = new RepositoryEdusharingProvider(repositoryEntry, null);
+		}
+		return edusharingProvider;
+	}
+
+	@Override
+	public void setSubPath(VFSItem item) {
+		this.subPath = "file-meta-uuid-" + item.getMetaInfo().getUUID();
 	}
 
 	@Override
 	public OLATResourceable getOlatResourceable() {
-		return repositoryEntry;
+		return getEdusharingProvider().getOlatResourceable();
 	}
 
 	@Override
@@ -52,11 +75,7 @@ public class RepositoryEdusharingProvider implements EdusharingProvider {
 
 	@Override
 	public UsageMetadata getUsageMetadata() {
-		UsageMetadata metadata = new UsageMetadata();
-		metadata.setCourseId(repositoryEntry.getKey().toString());
-		metadata.setFullname(repositoryEntry.getDisplayname());
-		metadata.setShortname(repositoryEntry.getExternalRef());
-		return metadata;
+		return getEdusharingProvider().getUsageMetadata();
 	}
 
 }

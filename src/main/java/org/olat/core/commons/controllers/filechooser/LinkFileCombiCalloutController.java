@@ -48,6 +48,7 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.filters.SystemItemFilter;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
+import org.olat.modules.edusharing.VFSEdusharingProvider;
 
 
 /**
@@ -84,6 +85,7 @@ public class LinkFileCombiCalloutController extends BasicController {
 	private boolean editable = true;
 	private boolean relFilPathIsProposal;
 	private boolean allowEditorRelativeLinks;
+	private final VFSEdusharingProvider edusharingProvider;
 
 	/**
 	 * 
@@ -107,15 +109,19 @@ public class LinkFileCombiCalloutController extends BasicController {
 	 * @param customLinkTreeModel
 	 *            The custom link tree model or NULL if no link tree model used
 	 *            in HTML editor
+	 * @param edusharingProviderm
+	 *            Enable content from edu-sharing with this provider
 	 */
 	
-	public LinkFileCombiCalloutController(UserRequest ureq, WindowControl wControl, VFSContainer baseContainer, String relFilePath,
-			boolean relFilPathIsProposal, boolean allowEditorRelativeLinks, boolean allowRemove, CustomLinkTreeModel customLinkTreeModel) {
+	public LinkFileCombiCalloutController(UserRequest ureq, WindowControl wControl, VFSContainer baseContainer,
+			String relFilePath, boolean relFilPathIsProposal, boolean allowEditorRelativeLinks, boolean allowRemove,
+			CustomLinkTreeModel customLinkTreeModel, VFSEdusharingProvider edusharingProvider) {
 		super(ureq, wControl);
 		this.baseContainer = baseContainer;
 		this.relFilPathIsProposal = relFilPathIsProposal;
 		this.allowEditorRelativeLinks = allowEditorRelativeLinks;
 		this.customLinkTreeModel = customLinkTreeModel;
+		this.edusharingProvider = edusharingProvider;
 		
 		// Main container for everything
 		contentVC = createVelocityContainer("combiFileCallout");
@@ -263,8 +269,9 @@ public class LinkFileCombiCalloutController extends BasicController {
 			editorRelPath = file.getName();
 		}
 		// Open HTML editor in dialog
-		Controller wysiwygCtr = WysiwygFactory.createWysiwygControllerWithInternalLink(ureq, getWindowControl(), editorBaseContainer, editorRelPath, true, customLinkTreeModel);
-		displayModal(wysiwygCtr);			
+		HTMLEditorController wysiwygCtr = WysiwygFactory.createWysiwygControllerWithInternalLink(ureq,
+				getWindowControl(), editorBaseContainer, editorRelPath, true, customLinkTreeModel, edusharingProvider);
+		displayModal(wysiwygCtr);
 	}
 	
 	private void doOpenCallout(UserRequest ureq) {

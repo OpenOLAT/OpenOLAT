@@ -87,6 +87,7 @@ public class SPRunController extends BasicController implements Activateable2 {
 	
 	private final boolean hasEditRights;
 	private CustomLinkTreeModel linkTreeModel;
+	private Long repoKey;
 
 	private final UserCourseEnvironment userCourseEnv;
 	
@@ -106,6 +107,7 @@ public class SPRunController extends BasicController implements Activateable2 {
 		this.courseNode = courseNode;
 		this.config = courseNode.getModuleConfiguration();
 		this.userCourseEnv = userCourseEnv;
+		this.repoKey = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry().getKey();
 				
 		addLoggingResourceable(LoggingResourceable.wrap(courseNode));
 
@@ -181,7 +183,7 @@ public class SPRunController extends BasicController implements Activateable2 {
 
 		DeliveryOptions deliveryOptions = (DeliveryOptions)config.get(SPEditController.CONFIG_KEY_DELIVERYOPTIONS);
 		spCtr = new SinglePageController(ureq, getWindowControl(), courseFolderContainer, fileName,
-				allowRelativeLinks, null, ores, deliveryOptions, userCourseEnv.getCourseEnvironment().isPreview());
+				allowRelativeLinks, null, ores, deliveryOptions, userCourseEnv.getCourseEnvironment().isPreview(), repoKey);
 		spCtr.setAllowDownload(true);
 		
 		// only for inline integration: register for controller event to forward a olatcmd to the course,
@@ -198,8 +200,10 @@ public class SPRunController extends BasicController implements Activateable2 {
 
 		// create clone wrapper layout
 		CloneLayoutControllerCreatorCallback clccc = new CloneLayoutControllerCreatorCallback() {
+			@Override
 			public ControllerCreator createLayoutControllerCreator(UserRequest uureq, final ControllerCreator contentControllerCreator) {
 				return BaseFullWebappPopupLayoutFactory.createAuthMinimalPopupLayout(uureq, new ControllerCreator() {
+					@Override
 					public Controller createController(UserRequest lureq, WindowControl lwControl) {
 						// Wrap in column layout, popup window needs a layout controller
 						Controller ctr = contentControllerCreator.createController(lureq, lwControl);
@@ -236,6 +240,7 @@ public class SPRunController extends BasicController implements Activateable2 {
 	 * 
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
 	 */
+	@Override
 	protected void doDispose() {
 		//child controller registered with listenTo gets disposed in BasicController
 	}

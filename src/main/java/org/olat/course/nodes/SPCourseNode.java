@@ -71,10 +71,6 @@ public class SPCourseNode extends AbstractAccessableCourseNode {
 		updateModuleConfigDefaults(true);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#createEditController(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl, org.olat.course.ICourse)
-	 */
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, UserCourseEnvironment euce) {
 		updateModuleConfigDefaults(false);
@@ -86,12 +82,6 @@ public class SPCourseNode extends AbstractAccessableCourseNode {
 		return nodeEditController;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#createNodeRunConstructionResult(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl,
-	 *      org.olat.course.run.userview.UserCourseEnvironment,
-	 *      org.olat.course.run.userview.NodeEvaluation)
-	 */
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
@@ -103,12 +93,7 @@ public class SPCourseNode extends AbstractAccessableCourseNode {
 	}
 
 	
-	/**
-	 * @see org.olat.course.nodes.GenericCourseNode#createPeekViewRunController(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl,
-	 *      org.olat.course.run.userview.UserCourseEnvironment,
-	 *      org.olat.course.run.userview.NodeEvaluation)
-	 */
+	@Override
 	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
 		if (ne.isAtLeastOneAccessible()) {
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance(CourseModule.class, userCourseEnv.getCourseEnvironment().getCourseResourceableId());
@@ -121,12 +106,7 @@ public class SPCourseNode extends AbstractAccessableCourseNode {
 	}
 
 	
-	/**
-	 * @see org.olat.course.nodes.GenericCourseNode#createPreviewController(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl,
-	 *      org.olat.course.run.userview.UserCourseEnvironment,
-	 *      org.olat.course.run.userview.NodeEvaluation)
-	 */
+	@Override
 	public Controller createPreviewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
 		return createNodeRunConstructionResult(ureq, wControl, userCourseEnv, ne, null).getRunController();
 	}
@@ -136,12 +116,11 @@ public class SPCourseNode extends AbstractAccessableCourseNode {
 		return CourseNode.DISPLAY_OPTS_CONTENT;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#isConfigValid()
-	 */
-	public StatusDescription isConfigValid() {/*
-																						 * first check the one click cache
-																						 */
+	@Override
+	public StatusDescription isConfigValid() {
+		/*
+		 * first check the one click cache
+		 */
 		if (oneClickStatusCache != null) { return oneClickStatusCache[0]; }
 
 		String file = (String) getModuleConfiguration().get(SPEditController.CONFIG_KEY_FILE);
@@ -163,9 +142,7 @@ public class SPCourseNode extends AbstractAccessableCourseNode {
 
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#isConfigValid(org.olat.course.run.userview.UserCourseEnvironment)
-	 */
+	@Override
 	public StatusDescription[] isConfigValid(CourseEditorEnv cev) {
 		oneClickStatusCache = null;
 		// only here we know which translator to take for translating condition
@@ -176,16 +153,12 @@ public class SPCourseNode extends AbstractAccessableCourseNode {
 		return oneClickStatusCache;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#getReferencedRepositoryEntry()
-	 */
+	@Override
 	public RepositoryEntry getReferencedRepositoryEntry() {
 		return null;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#needsReferenceToARepositoryEntry()
-	 */
+	@Override
 	public boolean needsReferenceToARepositoryEntry() {
 		return false;
 	}
@@ -198,6 +171,7 @@ public class SPCourseNode extends AbstractAccessableCourseNode {
 	 *          from previous node configuration version, set default to maintain
 	 *          previous behaviour
 	 */
+	@Override
 	public void updateModuleConfigDefaults(boolean isNewNode) {
 		ModuleConfiguration config = getModuleConfiguration();
 		if (isNewNode) {
@@ -230,4 +204,5 @@ public class SPCourseNode extends AbstractAccessableCourseNode {
 			//there was a version 3 but all keys new in this version have been removed
 		}
 	}
+	
 }

@@ -132,7 +132,6 @@
 			}
 			
 			function onConfigEdited(e) {
-				console.log(e.data);
 				var params = e.data;
 				var node = editor.selection.getNode();
 				setAttributes(node, params);

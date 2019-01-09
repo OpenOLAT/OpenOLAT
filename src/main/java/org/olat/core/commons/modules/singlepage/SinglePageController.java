@@ -58,6 +58,8 @@ import org.olat.core.logging.activity.CourseLoggingAction;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.modules.edusharing.VFSEdusharingProvider;
+import org.olat.repository.ui.settings.LazyRepositoryEdusharingProvider;
 
 /**
  * Description:<BR>
@@ -95,6 +97,7 @@ public class SinglePageController extends BasicController implements CloneableCo
 	private boolean g_allowRelativeLinks;
 	private VFSContainer g_rootContainer;
 	private VFSContainer g_new_rootContainer;
+	private Long courseRepoKey;
 	
 	/**
 	 * 
@@ -110,7 +113,7 @@ public class SinglePageController extends BasicController implements CloneableCo
 	public SinglePageController(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer, String fileName,
 			boolean allowRelativeLinks) {
 		//default behavior is to show the home link in a single page
-		this(ureq, wControl, rootContainer, fileName, allowRelativeLinks, null, null, null, false);
+		this(ureq, wControl, rootContainer, fileName, allowRelativeLinks, null, null, null, false, null);
 	}
 
 	 /**
@@ -132,11 +135,16 @@ public class SinglePageController extends BasicController implements CloneableCo
 	  * navigating in /folder/ and subfolders of this folder is allowed
 	  * @param showHomeLink true enables the home link icon and link which is added to the SP, false removes icon and link.
 	  * 
-	  * 
 	  */
 	public SinglePageController(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer, String fileName,
 			boolean allowRelativeLinks, String frameId, OLATResourceable contextResourcable, DeliveryOptions config,
 			boolean randomizeMapper) {
+		this(ureq, wControl, rootContainer, fileName, allowRelativeLinks, frameId, contextResourcable, config, randomizeMapper, null);
+	}
+	
+	public SinglePageController(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer, String fileName,
+			boolean allowRelativeLinks, String frameId, OLATResourceable contextResourcable, DeliveryOptions config,
+			boolean randomizeMapper, Long courseRepoKey) {
 		super(ureq, wControl);
 		
 		SimpleStackedPanel mainP = new SimpleStackedPanel("iframemain");
@@ -151,6 +159,7 @@ public class SinglePageController extends BasicController implements CloneableCo
 		this.g_rootContainer = rootContainer;
 		this.frameId = frameId;
 		this.randomizeMapper = randomizeMapper;
+		this.courseRepoKey = courseRepoKey;
 		boolean jumpIn = false;
 		
 		// strip beginning slash
@@ -228,9 +237,6 @@ public class SinglePageController extends BasicController implements CloneableCo
 		}
 	}
 	
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == idc) {
@@ -256,9 +262,6 @@ public class SinglePageController extends BasicController implements CloneableCo
 		}
 	}
 	
-	/** 
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == editLink && event.getCommand().equals(COMMAND_EDIT)) {
@@ -266,11 +269,12 @@ public class SinglePageController extends BasicController implements CloneableCo
 			if (g_curURI == null || g_new_rootContainer == null || g_new_rootContainer.resolve(g_curURI) == null) {
 					showError("error.pagenotfound");
 			} else {
+				VFSEdusharingProvider edusharingProvider = courseRepoKey != null? new LazyRepositoryEdusharingProvider(courseRepoKey): null;
 				if (customLinkTreeModel == null) {
-					htmlEditorController = WysiwygFactory.createWysiwygController(ureq, getWindowControl(), g_new_rootContainer, g_curURI, true, true);
+					htmlEditorController = WysiwygFactory.createWysiwygController(ureq, getWindowControl(), g_new_rootContainer, g_curURI, true, true, edusharingProvider);
 				} else {
 					htmlEditorController = WysiwygFactory.createWysiwygControllerWithInternalLink(ureq, getWindowControl(), g_new_rootContainer,
-							g_curURI, true, customLinkTreeModel);
+							g_curURI, true, customLinkTreeModel, edusharingProvider );
 				}
 				listenTo(htmlEditorController);
 				mainPanel.setContent(htmlEditorController.getInitialComponent());
@@ -282,9 +286,6 @@ public class SinglePageController extends BasicController implements CloneableCo
 		this.g_curURI = uri;
 	}
 	
-	/** 
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
 	@Override
 	protected void doDispose() {
 		// NOTE: do not deregister this mapper here: the url pointing to this mapper is opened in a new browser window
@@ -302,12 +303,9 @@ public class SinglePageController extends BasicController implements CloneableCo
 		this.customLinkTreeModel = customLinkTreeModel;
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.generic.clone.CloneableController#cloneController(org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
-	 */
 	@Override
 	public Controller cloneController(UserRequest ureq, WindowControl control) {
-		return new SinglePageController(ureq, control, g_rootContainer, g_fileName, g_allowRelativeLinks, frameId, null, deliveryOptions, randomizeMapper);
+		return new SinglePageController(ureq, control, g_rootContainer, g_fileName, g_allowRelativeLinks, frameId, null, deliveryOptions, randomizeMapper, courseRepoKey);
 	}
 
 	@Override

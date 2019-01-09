@@ -88,13 +88,6 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 	public static final Event NODECONFIG_CHANGED_EVENT = new Event("nodeconfigchanged");
 	private static final String[] paneKeys = { PANE_TAB_VISIBILITY, PANE_TAB_GENERAL };
 
-	/**
-	 * @param ureq
-	 * @param editorModel
-	 * @param course
-	 * @param luNode
-	 * @param groupMgr
-	 */
 	public NodeEditController(UserRequest ureq, WindowControl wControl, CourseEditorTreeModel editorModel, ICourse course, CourseNode luNode,
 			UserCourseEnvironment euce, TabbableController childTabsController) {
 		super(ureq,wControl);
@@ -106,10 +99,10 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 		/*
 		 * the direct child tabs.
 		 */
-		this.childTabsCntrllr = childTabsController;		
+		this.childTabsCntrllr = childTabsController;
 		listenTo(childTabsCntrllr);
 		
-		// description and metadata component		
+		// description and metadata component
 		descriptionVc = createVelocityContainer("nodeedit");
 		descriptionVc.setDomReplacementWrapperRequired(false); // we provide our own DOM replacement ID
 		Long repoKey = RepositoryManager.getInstance().lookupRepositoryEntryKey(course, true);
@@ -127,11 +120,11 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 		
 		putInitialPanel(descriptionVc);
 
-		nodeConfigController = new NodeConfigFormController(ureq, wControl, luNode);
+		nodeConfigController = new NodeConfigFormController(ureq, wControl, luNode, repoKey);
 		listenTo(nodeConfigController);
 		descriptionVc.put("nodeConfigForm", nodeConfigController.getInitialComponent());
 		
-		// Visibility and no-access explanation component		
+		// Visibility and no-access explanation component
 		visibilityVc = createVelocityContainer("visibilityedit");
 
 		// Visibility precondition
@@ -144,24 +137,16 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 
 		// No-Access-Explanation
 		String noAccessExplanation = luNode.getNoAccessExplanation();
-		noAccessContr = new NoAccessExplEditController(ureq, getWindowControl(), noAccessExplanation);		
+		noAccessContr = new NoAccessExplEditController(ureq, getWindowControl(), noAccessExplanation);
 		listenTo(noAccessContr);
 		visibilityVc.put("noAccessExplanationComp", noAccessContr.getInitialComponent());
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		// Don't do anything.
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest urequest, Controller source, Event event) {
 		
@@ -215,9 +200,6 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 		return descriptionVc;
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
 	@Override
 	protected void doDispose() {
 		//child controllers registered with listenTo() get disposed in BasicController	
@@ -233,6 +215,7 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 		return myTabbedPane;
 	}
 
+	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		myTabbedPane = tabbedPane;		
 		tabbedPane.addTab(translate(PANE_TAB_GENERAL), descriptionVc);
@@ -242,9 +225,6 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController#getChildren()
-	 */
 	@Override
 	protected ActivateableTabbableDefaultController[] getChildren() {
 		if (childTabsCntrllr != null && childTabsCntrllr instanceof ActivateableTabbableDefaultController) {

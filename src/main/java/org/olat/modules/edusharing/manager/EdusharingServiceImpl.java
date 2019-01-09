@@ -231,7 +231,7 @@ public class EdusharingServiceImpl implements EdusharingService {
 		client.createUsage(parameter);
 		EdusharingUsage usage = usageDao.create(identity, element, ores, provider.getSubPath());
 		
-		log.debug("edu-sharing filter usage created for identifier: "+ element.getIdentifier() + ", resType="
+		log.debug("edu-sharing usage created for identifier: "+ element.getIdentifier() + ", resType="
 				+ ores.getResourceableTypeName() + ", resId=" + ores.getResourceableId());
 		return usage;
 	}
@@ -249,15 +249,33 @@ public class EdusharingServiceImpl implements EdusharingService {
 	@Override
 	public void deleteUsage(Identity identity, String identifier) throws EdusharingException {
 		EdusharingUsage usage = usageDao.loadByIdentifier(identifier);
+		if (usage == null) return;
+		
+		String userIdentifier = identity != null
+				? userFactory.getUserIdentifier(identity)
+				: null;
+
+		deleteUsage(usage, userIdentifier);
+	}
+	
+	@Override
+	public void deleteUsages(OLATResourceable ores, String subPath) throws EdusharingException {
+		List<EdusharingUsage> usages = usageDao.loadByResoureable(ores, subPath);
+		for (EdusharingUsage usage : usages) {
+			deleteUsage(usage, null);
+		}
+	}
+
+	private void deleteUsage(EdusharingUsage usage, String userIdentifier) {
 		DeleteUsageParameter parameter = new DeleteUsageParameter(
 				usage.getIdentifier(),
 				usage.getObjectUrl(),
-				userFactory.getUserIdentifier(identity),
+				userIdentifier,
 				conversionService.toEdusharingCourseId(usage.getOlatResourceable())
 				);
 		client.deleteUsage(parameter);
-		log.debug("edu-sharing filter usage deleted for identifier: " + identifier);
+		log.debug("edu-sharing usage deleted for identifier: " + usage.getIdentifier());
 		
-		usageDao.delete(identifier);
+		usageDao.delete(usage.getIdentifier());
 	}
 }

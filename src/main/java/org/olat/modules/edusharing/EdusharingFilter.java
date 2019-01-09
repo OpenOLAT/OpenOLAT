@@ -58,7 +58,7 @@ public class EdusharingFilter implements Filter {
 		this.provider = provider;
 		CoreSpringFactory.autowireObject(this);
 	}
-
+	
 	@Override
 	public String filter(String original) {
 		if (edusharingModule.isEnabled()) {

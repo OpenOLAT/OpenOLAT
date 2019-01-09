@@ -2189,6 +2189,44 @@ var OOEdusharing = {
 				OOEdusharing.replace(node);
 			});
 		}
+		// Handle inside internal iFrames as well
+		var iFrames = jQuery(".o_iframe_rel");
+		if (iFrames.length > 0) {
+			iFrames.each(function() {
+				var iFrame = jQuery( this );
+				iFrame.on('load', function(){
+					iFrame.contents().on('click', OOEdusharing.toggleMetadata);
+					var iFrameEsNodes = iFrame.contents().find("[data-es_identifier]");
+					if (iFrameEsNodes.length > 0) {
+						iFrameEsNodes.each(function() {
+							var iFrameEsNode = jQuery( this );
+							OOEdusharing.replace(iFrameEsNode);
+						});
+					}
+				});
+			});
+		}
+	},
+	
+	toggleMetadata: function (e) {
+		if (jQuery(e.target).closest(".edusharing_metadata").length) {
+			//clicked inside ".edusharing_metadata" - do nothing
+		} else if (jQuery(e.target).closest(".edusharing_metadata_toggle_button").length) {
+			jQuery(".edusharing_metadata").hide();
+			toggle_button = jQuery(e.target);
+			metadata = toggle_button.parent().find(".edusharing_metadata");
+			if (metadata.hasClass('open')) {
+				metadata.toggleClass('open');
+				metadata.hide();
+			} else {
+				jQuery(".edusharing_metadata").removeClass('open');
+				metadata.toggleClass('open');
+				metadata.show();
+			}
+		} else {
+			jQuery(".edusharing_metadata").hide();
+			jQuery(".edusharing_metadata").removeClass('open');
+		}
 	},
 	
 	/**
@@ -2196,26 +2234,7 @@ var OOEdusharing = {
 	 * see https://github.com/edu-sharing/plugin-moodle/blob/master/filter/edusharing/amd/src/edu.js
 	 */
 	enableMetadataToggler: function() {
-		jQuery(document).click(function (e) {
-			if (jQuery(e.target).closest(".edusharing_metadata").length) {
-				//clicked inside ".edusharing_metadata" - do nothing
-			} else if (jQuery(e.target).closest(".edusharing_metadata_toggle_button").length) {
-				jQuery(".edusharing_metadata").hide();
-				toggle_button = jQuery(e.target);
-				metadata = toggle_button.parent().find(".edusharing_metadata");
-				if (metadata.hasClass('open')) {
-					metadata.toggleClass('open');
-					metadata.hide();
-				} else {
-					jQuery(".edusharing_metadata").removeClass('open');
-					metadata.toggleClass('open');
-					metadata.show();
-				}
-			} else {
-				jQuery(".edusharing_metadata").hide();
-				jQuery(".edusharing_metadata").removeClass('open');
-			}
-		});
+		jQuery(document).click(OOEdusharing.toggleMetadata);
 	}
 }
 

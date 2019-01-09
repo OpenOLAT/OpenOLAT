@@ -33,6 +33,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.CourseNode;
+import org.olat.modules.edusharing.EdusharingProvider;
+import org.olat.repository.ui.settings.LazyRepositoryEdusharingProvider;
 
 /**
  * Provides a FlexiForm that lets the user configure details for a course node.
@@ -81,6 +83,9 @@ public class NodeConfigFormController extends FormBasicController {
 	 * Selection fot the options title
 	 */
 	private SingleSelection displayOptions;
+
+	private Long repositoryEntryKey;
+	private String nodeIdent;
 	
 	/**
 	 * Initializes this controller.
@@ -88,14 +93,17 @@ public class NodeConfigFormController extends FormBasicController {
 	 * @param ureq The user request.
 	 * @param wControl The window control.
 	 * @param courseNode The course node this controller will access.
+	 * @param repoKey 
 	 * @param withCancel Decides whether to show a <i>cancel</i> button.
 	 */
-	public NodeConfigFormController(UserRequest ureq, WindowControl wControl, CourseNode courseNode) {
+	public NodeConfigFormController(UserRequest ureq, WindowControl wControl, CourseNode courseNode, Long repoKey) {
 		super(ureq, wControl, FormBasicController.LAYOUT_DEFAULT);
 		menuTitle = Formatter.truncate(courseNode.getShortTitle(), SHORT_TITLE_MAX_LENGTH);
 		displayTitle = courseNode.getLongTitle();
 		learningObjectives = courseNode.getLearningObjectives();
 		displayOption = courseNode.getDisplayOption();
+		nodeIdent = courseNode.getIdent();
+		repositoryEntryKey = repoKey;
 		initForm(ureq);
 	}
 	
@@ -153,6 +161,8 @@ public class NodeConfigFormController extends FormBasicController {
 		// add the learning objectives rich text input element
 		objectives = uifactory.addRichTextElementForStringData("nodeConfigForm.learningobjectives", "nodeConfigForm.learningobjectives", (learningObjectives==null?"":learningObjectives), 10, -1, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
 		objectives.setMaxLength(4000);
+		EdusharingProvider provider = new LazyRepositoryEdusharingProvider(repositoryEntryKey, "course-learning-objectives-" + nodeIdent);
+		objectives.getEditorConfiguration().enableEdusharing(getIdentity(), provider);
 		
 		String[] values = new String[]{
 				translate("nodeConfigForm.short_title_desc_content"),

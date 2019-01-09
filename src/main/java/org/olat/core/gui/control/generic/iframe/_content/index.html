@@ -7,7 +7,7 @@
 	#if ($isAbsoluteURI)
 		<iframe name="$frameId" id="$frameId" src="${currentURI}" frameborder="0" title="$r.translateInAttribute("iframe.content")" height="$iframeHeight" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
 	#else
-		<iframe name="$frameId" id="$frameId" src="${baseURI}/${currentURI}" frameborder="0" height="$iframeHeight" style="min-height:${iframeHeight}px" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
+		<iframe name="$frameId" class="o_iframe_rel" id="$frameId" src="${baseURI}/${currentURI}" frameborder="0" height="$iframeHeight" style="min-height:${iframeHeight}px" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
 	#end
 	
 	#if($adjustAutoHeight)

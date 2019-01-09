@@ -52,6 +52,9 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.course.tree.CourseInternalLinkTreeModel;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.edusharing.VFSEdusharingProvider;
+import org.olat.repository.RepositoryManager;
+import org.olat.repository.ui.settings.LazyRepositoryEdusharingProvider;
 
 /**
  * Description:<BR/>
@@ -128,9 +131,11 @@ public class SPEditController extends ActivateableTabbableDefaultController impl
 			relFilPathIsProposal = true;
 		}
 		// File create/select controller
+		Long repoKey = RepositoryManager.getInstance().lookupRepositoryEntryKey(course, true);
+		VFSEdusharingProvider edusharingProvider = new LazyRepositoryEdusharingProvider(repoKey);
 		combiLinkCtr = new LinkFileCombiCalloutController(ureq, wControl, courseFolderBaseContainer,
 				relFilePath, relFilPathIsProposal, allowRelativeLinks, false,
-				new CourseInternalLinkTreeModel(course.getEditorTreeModel()));
+				new CourseInternalLinkTreeModel(course.getEditorTreeModel()), edusharingProvider);
 		combiLinkCtr.setEditable(hasEditRights(relFilePath));
 		listenTo(combiLinkCtr);
 		myContent.put("combiCtr", combiLinkCtr.getInitialComponent());		
@@ -158,6 +163,7 @@ public class SPEditController extends ActivateableTabbableDefaultController impl
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
@@ -233,14 +239,17 @@ public class SPEditController extends ActivateableTabbableDefaultController impl
 	 * 
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
 	 */
+	@Override
 	protected void doDispose() {
 		//child controllers registered with listenTo() get disposed in BasicController
 	}
 
+	@Override
 	public String[] getPaneKeys() {
 		return paneKeys;
 	}
 
+	@Override
 	public TabbedPane getTabbedPane() {
 		return myTabbedPane;
 	}

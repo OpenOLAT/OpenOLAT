@@ -892,12 +892,23 @@ public class RichTextConfiguration implements Disposable {
 	}
 	
 	public void enableEdusharing(Identity identity, EdusharingProvider provider) {
+		if (identity == null || provider == null) return;
+		
 		EdusharingModule edusharingModule = CoreSpringFactory.getImpl(EdusharingModule.class);
 		if (edusharingModule.isEnabled()) {
 			tinyConfig = tinyConfig.enableEdusharing();
 			EdusharingFilter filter = new EdusharingFilter(identity, provider);
 			addValueFilter(filter);
 		}
+	}
+	
+	public EdusharingFilter getEdusharingFilter() {
+		for (Filter filter : valueFilters) {
+			if (filter instanceof EdusharingFilter) {
+				return (EdusharingFilter) filter;
+			}
+		}
+		return null;
 	}
 	
 	public void addValueFilter(Filter filter) {

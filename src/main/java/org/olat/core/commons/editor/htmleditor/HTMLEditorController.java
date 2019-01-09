@@ -56,6 +56,8 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.version.Versionable;
+import org.olat.modules.edusharing.EdusharingFilter;
+import org.olat.modules.edusharing.VFSEdusharingProvider;
 import org.olat.user.UserManager;
 
 /**
@@ -116,6 +118,7 @@ public class HTMLEditorController extends FormBasicController {
 	private boolean versionsEnabled = true;
 	private boolean buttonsEnabled = true;
 	private String fileToLargeError = null;
+	private VFSEdusharingProvider edusharingProvider;
 	private Object userObject;
 
 	/**
@@ -137,12 +140,14 @@ public class HTMLEditorController extends FormBasicController {
 	 *            true: check if file has been created with another tool and
 	 *            warn user about potential data loss; false: ignore other
 	 *            authoring tools
+	 * @param edusharingProvider 
 	 * @return Controller with internal-link selector
 	 */
-	public HTMLEditorController(UserRequest ureq, WindowControl wControl, VFSContainer baseContainer, String relFilePath,
-			CustomLinkTreeModel customLinkTreeModel, String mediaPath, boolean editorCheckEnabled, boolean versions) {
+	public HTMLEditorController(UserRequest ureq, WindowControl wControl, VFSContainer baseContainer,
+			String relFilePath, CustomLinkTreeModel customLinkTreeModel, String mediaPath, boolean editorCheckEnabled,
+			boolean versions, VFSEdusharingProvider edusharingProvider) {
 		super(ureq, wControl, "htmleditor");
-		initEditorForm(baseContainer, relFilePath, customLinkTreeModel, mediaPath, editorCheckEnabled, versions, true);
+		initEditorForm(baseContainer, relFilePath, customLinkTreeModel, mediaPath, editorCheckEnabled, versions, true, edusharingProvider);
 		initForm(ureq);
 	}
 	
@@ -151,13 +156,13 @@ public class HTMLEditorController extends FormBasicController {
 			CustomLinkTreeModel customLinkTreeModel, String mediaPath, boolean editorCheckEnabled, boolean versions, boolean withButtons, Form rootForm) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "htmleditor", rootForm);
 		// set some basic variables
-		initEditorForm(baseContainer, relFilePath, customLinkTreeModel, mediaPath, editorCheckEnabled, versions, withButtons);
+		initEditorForm(baseContainer, relFilePath, customLinkTreeModel, mediaPath, editorCheckEnabled, versions, withButtons, null);
 		initForm(ureq);
 	}
 	
-	private void initEditorForm(VFSContainer bContainer, String relFilePath,
-			CustomLinkTreeModel linkTreeModel, String mPath,
-			boolean editorCheck, boolean versions, boolean withButtons) {
+	private void initEditorForm(VFSContainer bContainer, String relFilePath, CustomLinkTreeModel linkTreeModel,
+			String mPath, boolean editorCheck, boolean versions, boolean withButtons,
+			VFSEdusharingProvider edusharingProvider) {
 		
 		this.baseContainer = bContainer;
 		this.fileRelPath = relFilePath;
@@ -203,6 +208,10 @@ public class HTMLEditorController extends FormBasicController {
 		}
 		// Parse the content of the page
 		this.body = parsePage(fileLeaf);
+		if (edusharingProvider != null) {
+			this.edusharingProvider = edusharingProvider;
+			this.edusharingProvider.setSubPath(fileLeaf);
+		}
 	}
 	
 	public Object getUserObject() {
@@ -285,6 +294,7 @@ public class HTMLEditorController extends FormBasicController {
 			if(StringHelper.containsNonWhitespace(mediaPath)) {
 				editorConfiguration.setFileBrowserUploadRelPath(mediaPath);
 			}
+			editorConfiguration.enableEdusharing(getIdentity(), edusharingProvider);
 
 			// The buttons
 			if(buttonsEnabled) {
@@ -425,6 +435,11 @@ public class HTMLEditorController extends FormBasicController {
 		// No XSS checks, are done in the HTML editor - users can upload illegal
 		// stuff, JS needs to be enabled for users
 		String content = htmlElement.getRawValue();
+		// Filter here because it is raw value
+		EdusharingFilter edusharingFilter = htmlElement.getEditorConfiguration().getEdusharingFilter();
+		if (edusharingFilter != null) {
+			content = edusharingFilter.filter(content);
+		}
 		// If preface was null -> append own head and save it in utf-8. Preface
 		// is the header that was in the file when we opened the file
 		StringBuilder fileContent = new StringBuilder();

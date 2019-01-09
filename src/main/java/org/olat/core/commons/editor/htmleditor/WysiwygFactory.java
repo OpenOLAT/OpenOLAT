@@ -32,6 +32,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.modules.edusharing.VFSEdusharingProvider;
 
 /**
  * Description: The WYSIWYGFactory provides a full-fledged WYSIWYG HTML editor
@@ -65,18 +66,23 @@ public class WysiwygFactory {
 	 *            the userActivity Logger if used
 	 * @return
 	 */
-	public static HTMLEditorController createWysiwygController(
-			UserRequest ureq, WindowControl wControl, VFSContainer rootDir,
-			String filePath, boolean editorCheckEnabled, boolean versions) {
-		return new HTMLEditorController(ureq, wControl, rootDir, filePath,
-				null, null, editorCheckEnabled, versions);
+	public static HTMLEditorController createWysiwygController(UserRequest ureq, WindowControl wControl,
+			VFSContainer rootDir, String filePath, boolean editorCheckEnabled, boolean versions) {
+		return createWysiwygController(ureq, wControl, rootDir, filePath, editorCheckEnabled, versions, null);
+	}
+	
+	public static HTMLEditorController createWysiwygController(UserRequest ureq, WindowControl wControl,
+			VFSContainer rootDir, String filePath, boolean editorCheckEnabled, boolean versions,
+			VFSEdusharingProvider edusharingProvider) {
+		return new HTMLEditorController(ureq, wControl, rootDir, filePath, null, null, editorCheckEnabled, versions,
+				edusharingProvider);
 	}
 	
 	public static HTMLEditorController createWysiwygController(
 			UserRequest ureq, WindowControl wControl, VFSContainer rootDir,
 			String filePath, String mediaPath, boolean editorCheckEnabled, boolean versions) {
 		return new HTMLEditorController(ureq, wControl, rootDir, filePath,
-				null, mediaPath, editorCheckEnabled, versions);
+				null, mediaPath, editorCheckEnabled, versions, null);
 	}
 
 	/**
@@ -107,8 +113,15 @@ public class WysiwygFactory {
 			UserRequest ureq, WindowControl wControl, VFSContainer baseContainer,
 			String relFilePath, boolean editorCheckEnabled,
 			CustomLinkTreeModel customLinkTreeModel) {
+		return createWysiwygControllerWithInternalLink(ureq, wControl, baseContainer, relFilePath, editorCheckEnabled, customLinkTreeModel, null);
+	}
+	
+	public static HTMLEditorController createWysiwygControllerWithInternalLink(
+			UserRequest ureq, WindowControl wControl, VFSContainer baseContainer,
+			String relFilePath, boolean editorCheckEnabled,
+			CustomLinkTreeModel customLinkTreeModel, VFSEdusharingProvider edusharingProvider) {
 		return new HTMLEditorController(ureq, wControl, baseContainer, relFilePath,
-				customLinkTreeModel, null, editorCheckEnabled, true);
+				customLinkTreeModel, null, editorCheckEnabled, true, edusharingProvider);
 	}
 
 	/**

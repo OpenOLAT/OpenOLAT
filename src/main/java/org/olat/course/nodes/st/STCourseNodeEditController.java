@@ -46,6 +46,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.ConditionEditController;
@@ -60,6 +61,9 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.course.tree.CourseInternalLinkTreeModel;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.edusharing.VFSEdusharingProvider;
+import org.olat.repository.RepositoryManager;
+import org.olat.repository.ui.settings.LazyRepositoryEdusharingProvider;
 
 /**
  * Description:<BR/> Edit controller for a course node of type structure <P/>
@@ -130,24 +134,15 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 	
 	private TabbedPane myTabbedPane;
 	private CourseEditorTreeModel editorModel;
+	private final Long repoKey;
 
-
-	/**
-	 * @param ureq
-	 * @param wControl
-	 * @param stNode
-	 * @param courseFolderPath
-	 * @param groupMgr
-	 * @param editorModel
-	 */
-	public STCourseNodeEditController(UserRequest ureq, WindowControl wControl, STCourseNode stNode, VFSContainer courseFolderContainer,
-			CourseEditorTreeModel editorModel, UserCourseEnvironment euce) {
+	public STCourseNodeEditController(UserRequest ureq, WindowControl wControl, STCourseNode stNode, ICourse course, UserCourseEnvironment euce) {
 		super(ureq, wControl);
-
 		this.stNode = stNode;
-		this.courseFolderContainer = courseFolderContainer;
+		this.courseFolderContainer = course.getCourseFolderContainer();
 		this.euce = euce;
-		this.editorModel = editorModel;
+		this.editorModel = course.getEditorTreeModel();
+		this.repoKey = RepositoryManager.getInstance().lookupRepositoryEntryKey(course, true);
 
 		Translator fallback = Util.createPackageTranslator(Condition.class, getLocale());
 		Translator newTranslator = Util.createPackageTranslator(STCourseNodeEditController.class, getLocale(), fallback);
@@ -243,10 +238,7 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 		score.contextPut("isExpertMode", Boolean.TRUE);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == activateEasyModeButton) {
 			initScoreEasyForm(ureq);
@@ -276,10 +268,6 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 		return null;
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source instanceof NodeEditController) {
@@ -397,9 +385,10 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 			relFilPathIsProposal = true;
 		}
 		// File create/select controller
+		VFSEdusharingProvider edusharingProvider = new LazyRepositoryEdusharingProvider(repoKey);
 		combiLinkCtr = new LinkFileCombiCalloutController(ureq, getWindowControl(), courseFolderContainer,
 				relFilePath, relFilPathIsProposal, allowRelativeLinks, false,
-				new CourseInternalLinkTreeModel(editorModel) );
+				new CourseInternalLinkTreeModel(editorModel), edusharingProvider);
 		listenTo(combiLinkCtr);
 		configvc.put("combiCtr", combiLinkCtr.getInitialComponent());		
 		configvc.contextPut("editorEnabled", combiLinkCtr.isEditorEnabled());
@@ -446,6 +435,7 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 	/**
 	 * @see org.olat.core.gui.control.generic.tabbable.TabbableDefaultController#addTabs(org.olat.core.gui.components.TabbedPane)
 	 */
+	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		myTabbedPane = tabbedPane;
 		tabbedPane.addTab(translate(PANE_TAB_ACCESSIBILITY), accessibilityCondContr.getWrappedDefaultAccessConditionVC(translate("condition.accessibility.title")));
@@ -462,6 +452,7 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
 	 */
+	@Override
 	protected void doDispose() {
     //child controllers registered with listenTo() get disposed in BasicController
 	}
@@ -474,10 +465,12 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 		return (String) mc.get(CONFIG_KEY_FILE);
 	}
 
+	@Override
 	public String[] getPaneKeys() {
 		return paneKeys;
 	}
 
+	@Override
 	public TabbedPane getTabbedPane() {
 		return myTabbedPane;
 	}
