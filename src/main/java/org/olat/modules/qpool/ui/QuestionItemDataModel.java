@@ -22,6 +22,7 @@ package org.olat.modules.qpool.ui;
 import java.text.DecimalFormat;
 import java.util.List;
 
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataSourceModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
@@ -55,6 +56,14 @@ public class QuestionItemDataModel extends DefaultFlexiTableDataSourceModel<Item
 		return null;
 	}
 	
+	public boolean ensureLoaded(int row, FlexiTableElement tableEl) {
+		if(isRowLoaded(row) ) {
+			return true;
+		}
+		tableEl.preloadPageOfObjectIndex(row - 1);
+		return isRowLoaded(row);
+	}
+
 	@Override
 	public QuestionItemDataModel createCopyWithEmptyList() {
 		return new QuestionItemDataModel(getTableColumnModel(), getSourceDelegate(), translator);

@@ -260,11 +260,11 @@ public class GTAParticipantController extends GTAAbstractController implements A
 		File documentsDir;
 		VFSContainer documentsContainer;
 		if(GTAType.group.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))) {
-			documentsDir = gtaManager.getSubmitDirectory(courseEnv, gtaNode, assessedGroup);
 			documentsContainer = gtaManager.getSubmitContainer(courseEnv, gtaNode, assessedGroup);
+			documentsDir = gtaManager.getSubmitDirectory(courseEnv, gtaNode, assessedGroup);
 		} else {
-			documentsDir = gtaManager.getSubmitDirectory(courseEnv, gtaNode, getIdentity());
 			documentsContainer = gtaManager.getSubmitContainer(courseEnv, gtaNode, getIdentity());
+			documentsDir = gtaManager.getSubmitDirectory(courseEnv, gtaNode, getIdentity());
 		}
 		
 		DueDate dueDate = getSubmissionDueDate(task);
