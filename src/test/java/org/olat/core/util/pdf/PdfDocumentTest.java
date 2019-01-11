@@ -19,8 +19,10 @@
  */
 package org.olat.core.util.pdf;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Locale;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -44,7 +46,9 @@ public class PdfDocumentTest {
                 { "Hello\nworld", "Hello world" },
                 { "Hello\r\nworld", "Hello  world" },
                 { "Hello\tworld", "Hello world" },
-                { "Hello\n\tworld", "Hello  world" }
+                { "Hello\n\tworld", "Hello  world" },
+                { "Hello\n\tworld\u00A0", "Hello  world " },
+                { "Hello \u3044", "Hello \u3044" }
         });
     }
     
@@ -60,5 +64,16 @@ public class PdfDocumentTest {
 	public void cleanString() {
 		String val = PdfDocument.cleanString(string);
 		Assert.assertEquals(cleanedString, val);
+	}
+	
+	/**
+	 * check if the 
+	 * @throws IOException
+	 */
+	@Test
+	public void getStringWidth() throws IOException {
+		PdfDocument doc = new PdfDocument(Locale.ENGLISH);
+		float width = doc.getStringWidth(string, 12f);
+		Assert.assertTrue(width > 0.0f);
 	}
 }
