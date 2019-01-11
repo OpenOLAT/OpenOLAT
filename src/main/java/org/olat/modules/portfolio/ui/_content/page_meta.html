@@ -74,7 +74,7 @@
 	<div class="o_page_assignment o_togglebox_wrapper o_block">
 		<a href="#page_assignment_${assignment.key}" id="o_toggler_${assignment.key}" data-toggle="collapse" data-target="#page_assignment_${assignment.key}" class="o_opener o_in" onclick="jQuery(this).toggleClass('o_in'); return false;"><i class="o_icon o_icon-fw o_icon-lg"></i></a>
 		<span class="o_page_assignement_info">
-			<i class="o_icon o_icon_assignment o_icon-fw"> </i>
+			<i class="o_icon o_icon_assignment o_icon-fw" title="$r.translate("status.assignment")"> </i>
 			<div class="o_block_inline_right"><strong>$r.translate("meta.page.assignment")</strong></div> 
 			<div class="o_block_inline_left"><strong>$r.translate("meta.page.assignment.type"):</strong> $r.translate("assignment.type.${assignment.type}")</div>
 		</span>
@@ -111,7 +111,7 @@
 	#else
 	<div class="o_page_assignment o_block" style="position: relative; left: 1em;">
 		<span class="o_page_assignement_info">
-			<i class="o_icon o_icon_assignment o_icon-fw"> </i>
+			<i class="o_icon o_icon_assignment o_icon-fw" title="$r.translate("status.assignment")"> </i>
 			<div class="o_block_inline_right"><strong>$r.translate("meta.page.assignment")</strong></div> 
 			<div class="o_block_inline_left"><strong>$r.translate("meta.page.assignment.type"):</strong> $r.translate("assignment.type.${assignment.type}")</div>
 		</span>

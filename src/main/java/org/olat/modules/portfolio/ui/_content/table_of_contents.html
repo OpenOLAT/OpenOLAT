@@ -55,7 +55,7 @@
 				#if($r.isNotEmpty(${section.getAssignments()}))
 				<ul class="list-unstyled o_portfolio_toc_assignments">
 					#foreach($assignment in $section.assignments)
-						<li><i class="o_icon o_icon_assignment o_icon-fw"> </i> $r.escapeHtml($assignment.title)</li>
+						<li><i class="o_icon o_icon_assignment o_icon-fw" title="$r.translate("status.assignment")"> </i> $r.escapeHtml($assignment.title)</li>
 					#end
 				</ul>
 				#end	
@@ -103,6 +103,7 @@
 		<div class="o_block_inline_left o_small">
 			<span>$r.translate("page.sections"):</span>
 			<ul class="list-unstyled">
+				<li><i class="o_icon o_icon_assignment o_icon-fw"> </i> $r.translate("status.assignment")</li>
 				<li><i class="o_icon o_icon_pf_section_draft o_icon-fw"> </i> $r.translate("status.not.started")</li>
 				<li><i class="o_icon o_icon_pf_section_progress o_icon-fw"> </i> $r.translate("status.in.progress")</li>
 				<li><i class="o_icon o_icon_pf_section_submitted o_icon-fw"> </i> $r.translate("status.submitted")</li>
