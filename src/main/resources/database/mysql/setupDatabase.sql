@@ -3654,7 +3654,7 @@ alter table o_cur_element_to_tax_level add constraint cur_el_to_tax_level_idx fo
 
 -- edu-sharing
 create index idx_es_usage_ident_idx on o_es_usage (e_identifier);
-create index idx_es_usage_ores_idx on o_eva_form_survey (e_resid, e_resname);
+create index idx_es_usage_ores_idx on o_es_usage (e_resid, e_resname);
 
 -- o_logging_table
 create index log_target_resid_idx on o_loggingtable(targetresid);

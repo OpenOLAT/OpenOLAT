@@ -20,4 +20,4 @@ create table o_es_usage (
 alter table o_es_usage ENGINE = InnoDB;
 
 create index idx_es_usage_ident_idx on o_es_usage (e_identifier);
-create index idx_es_usage_ores_idx on o_eva_form_survey (e_resid, e_resname);
+create index idx_es_usage_ores_idx on o_es_usage (e_resid, e_resname);
