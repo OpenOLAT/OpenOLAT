@@ -22,6 +22,7 @@ package org.olat.core.util.pdf;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
@@ -179,12 +180,33 @@ public class PdfDocument {
     
     public float getStringWidth(String string, float fontSize)
     throws IOException {
-    	string = cleanString(string);
-    	return fontSize * font.getStringWidth(string) / 1000;
+    	if(string == null || string.length() == 0) return 0.0f;
+    	
+    	try {
+			string = cleanString(string);
+			return fontSize * font.getStringWidth(string) / 1000;
+		} catch (IllegalArgumentException e) {
+			log.error("", e);
+			return getStringEstimatedWidth(string.length(), fontSize);
+		}
+    }
+    
+    /**
+     * This method calculated the width of a string based on its length.
+     * 
+     * @param length The length of the string
+     * @param fontSize The font size
+     * @return A width
+     * @throws IOException
+     */
+    public float getStringEstimatedWidth(int length, float fontSize) throws IOException {
+    	char[] onlyA = new char[length];
+    	Arrays.fill(onlyA, 'A');
+    	return fontSize * font.getStringWidth(String.valueOf(onlyA)) / 1000.0f;
     }
     
     public static String cleanString(String string) {
-    	return string.replace('\n', ' ').replace('\r', ' ').replace('\t', ' ');
+    	return string.replace('\n', ' ').replace('\r', ' ').replace('\t', ' ').replace('\u00A0', ' ');
     }
     
     public void drawLine(float xStart, float yStart, float xEnd, float yEnd, float lineWidth) 
