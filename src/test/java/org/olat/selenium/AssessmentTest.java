@@ -1082,7 +1082,7 @@ public class AssessmentTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void taskWithIndividuScoreAndRevision(@InitialPage LoginPage authorLoginPage,
+	public void taskWithIndividualScoreAndRevision(@InitialPage LoginPage authorLoginPage,
 			@Drone @User WebDriver ryomouBrowser)
 	throws IOException, URISyntaxException {
 						
@@ -1410,7 +1410,7 @@ public class AssessmentTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void taskWithIndividuScoreNoRevision(@InitialPage LoginPage authorLoginPage,
+	public void taskWithIndividualScoreNoRevision(@InitialPage LoginPage authorLoginPage,
 			@Drone @User WebDriver ryomouBrowser)
 	throws IOException, URISyntaxException {
 						

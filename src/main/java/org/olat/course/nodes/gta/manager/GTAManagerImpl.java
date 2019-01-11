@@ -1126,6 +1126,20 @@ public class GTAManagerImpl implements GTAManager {
 	}
 
 	@Override
+	public Task persistTask(Task task) {
+		if(task.getKey() == null) {
+			if(task.getCreationDate() == null) {
+				((TaskImpl)task).setCreationDate(new Date());
+				((TaskImpl)task).setLastModified(task.getCreationDate());
+			} else {
+				((TaskImpl)task).setLastModified(new Date());
+			}
+			dbInstance.getCurrentEntityManager().persist(task);
+		}
+		return task;
+	}
+
+	@Override
 	public Task createAndPersistTask(String taskName, TaskList taskList, TaskProcess status,
 			BusinessGroup assessedGroup, Identity assessedIdentity, GTACourseNode cNode) {
 		Task task = createTask(taskName, taskList, status, assessedGroup, assessedIdentity, cNode);

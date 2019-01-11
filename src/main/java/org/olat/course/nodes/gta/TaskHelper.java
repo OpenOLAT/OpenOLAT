@@ -43,7 +43,7 @@ import org.olat.user.UserManager;
  */
 public class TaskHelper {
 	
-	private final static DecimalFormat formatFileSize = new DecimalFormat("#0.#", new DecimalFormatSymbols(Locale.ENGLISH));
+	private static final DecimalFormat formatFileSize = new DecimalFormat("#0.#", new DecimalFormatSymbols(Locale.ENGLISH));
 	
 	public static String format(double value) {
 		synchronized(formatFileSize) {

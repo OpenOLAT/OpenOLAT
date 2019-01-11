@@ -102,6 +102,8 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 	public static final String CONFIG_KEY_INFOTEXT_USER = "infoTextUser";
 	/** configuration: infotext for coach */
 	public static final String CONFIG_KEY_INFOTEXT_COACH = "nfoTextCoach";
+	/** configuration: infotext for coach */
+	public static final String CONFIG_KEY_OPTIONAL = "cnOptional";
 
 	/**
 	 * Constructor for a course building block of type manual score
@@ -119,8 +121,8 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 	 */
 	public static void initDefaultConfig(ModuleConfiguration moduleConfiguration) {
 		moduleConfiguration.set(CONFIG_KEY_HAS_SCORE_FIELD, Boolean.FALSE);
-		moduleConfiguration.set(CONFIG_KEY_SCORE_MIN, new Float(0));
-		moduleConfiguration.set(CONFIG_KEY_SCORE_MAX, new Float(0));
+		moduleConfiguration.set(CONFIG_KEY_SCORE_MIN, Float.valueOf(0));
+		moduleConfiguration.set(CONFIG_KEY_SCORE_MAX, Float.valueOf(0));
 		moduleConfiguration.set(CONFIG_KEY_HAS_PASSED_FIELD, Boolean.TRUE);
 		// no preset for passed cut value -> manual setting of passed
 		moduleConfiguration.set(CONFIG_KEY_HAS_COMMENT_FIELD, Boolean.TRUE);

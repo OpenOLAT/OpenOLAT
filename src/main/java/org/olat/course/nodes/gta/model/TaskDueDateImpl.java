@@ -149,6 +149,10 @@ public class TaskDueDateImpl implements TaskDueDate, CreateInfo, Persistable, Mo
 	@JoinColumn(name="fk_allow_reset_identity", nullable=true, insertable=true, updatable=false)
 	private Identity allowResetIdentity;
 	
+	public TaskDueDateImpl() {
+		//
+	}
+	
 	@Override
 	public Long getKey() {
 		return key;

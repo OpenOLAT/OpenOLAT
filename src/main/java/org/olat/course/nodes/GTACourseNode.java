@@ -132,6 +132,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Persi
 	public static final String GTASK_SAMPLE_SOLUTION = "grouptask.solution";
 	public static final String GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER = "grouptask.solution.visible.after";
 	public static final String GTASK_SAMPLE_SOLUTION_VISIBLE_ALL = "grouptask.solution.visible.all";
+	
 	public static final String GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER_RELATIVE = "grouptask.solution.visible.after.relative";
 	public static final String GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER_RELATIVE_TO = "grouptask.solution.visible.after.relative.to";
 	public static final String GTASK_GRADING = "grouptask.grading";
@@ -214,8 +215,8 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Persi
 			config.setStringValue(GTACourseNode.GTASK_SAMPLING, GTACourseNode.GTASK_SAMPLING_REUSE);
 			//configure grading
 			config.set(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD, Boolean.FALSE);
-			config.set(MSCourseNode.CONFIG_KEY_SCORE_MIN, new Float(0));
-			config.set(MSCourseNode.CONFIG_KEY_SCORE_MAX, new Float(0));
+			config.set(MSCourseNode.CONFIG_KEY_SCORE_MIN, Float.valueOf(0.0f));
+			config.set(MSCourseNode.CONFIG_KEY_SCORE_MAX, Float.valueOf(0.0f));
 			config.set(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD, Boolean.TRUE);
 			config.set(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD, Boolean.TRUE);
 		}
@@ -332,7 +333,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Persi
 			}
 			
 			List<IdentityRef> participants = gtaManager.getDuplicatedMemberships(this);
-			if(participants.size() > 0) {
+			if(!participants.isEmpty()) {
 				UserManager um = CoreSpringFactory.getImpl(UserManager.class);
 				StringBuilder sb = new StringBuilder();
 				for(IdentityRef participant:participants) {
@@ -745,6 +746,10 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Persi
 	@Override
 	public boolean isAssessedBusinessGroups() {
 		return GTAType.group.name().equals(getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE));
+	}
+	
+	public boolean isOptional() {
+		return getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_OPTIONAL);
 	}
 
 	@Override

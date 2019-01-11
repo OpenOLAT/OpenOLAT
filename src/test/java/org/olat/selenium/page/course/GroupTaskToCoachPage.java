@@ -141,7 +141,8 @@ public class GroupTaskToCoachPage {
 			browser.findElement(collpaseBy).click();
 			OOGraphene.waitElement(assessmentButtonBy, browser);
 		}
-		browser.findElement(assessmentButtonBy).click();
+		
+		OOGraphene.click(assessmentButtonBy, browser);
 		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialog(browser);
 		return this;

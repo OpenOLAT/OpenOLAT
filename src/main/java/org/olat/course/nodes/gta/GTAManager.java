@@ -273,6 +273,14 @@ public interface GTAManager {
 	
 	public Task createAndPersistTask(String taskName, TaskList taskList, TaskProcess status, BusinessGroup assessedGroup, Identity assessedIdentity, GTACourseNode cNode);
 	
+	/**
+	 * If a temporary transient task created for coaching purpose need to be persisted,
+	 * 
+	 * @param task The transient task
+	 * @return The persisted task
+	 */
+	public Task persistTask(Task task);
+	
 	public Task nextStep(Task task, GTACourseNode cNode, Role by);
 	
 	

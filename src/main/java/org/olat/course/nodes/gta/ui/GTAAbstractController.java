@@ -98,8 +98,6 @@ public abstract class GTAAbstractController extends BasicController implements G
 	
 	protected GTAStepPreferences stepPreferences;
 	
-	private ContextualSubscriptionController contextualSubscriptionCtr;
-	
 	private DueDate assignmentDueDate;
 	private DueDate submissionDueDate;
 	private DueDate solutionDueDate;
@@ -193,16 +191,17 @@ public abstract class GTAAbstractController extends BasicController implements G
 		}
 		
 		if (withSubscription && subsContext != null) {
-			contextualSubscriptionCtr = new ContextualSubscriptionController(ureq, getWindowControl(), subsContext, publisherData);
+			ContextualSubscriptionController contextualSubscriptionCtr = new ContextualSubscriptionController(ureq, getWindowControl(), subsContext, publisherData);
 			listenTo(contextualSubscriptionCtr);
 			mainVC.put("contextualSubscription", contextualSubscriptionCtr.getInitialComponent());
 		}
 		
+		boolean optional = gtaNode.isOptional();
 		boolean assignment = config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT);
 		mainVC.contextPut("assignmentEnabled", assignment);
 		if(assignment) {
 			task = stepAssignment(ureq, task);
-		} else if(task == null) {
+		} else if(task == null && !optional) {
 			TaskProcess firstStep = gtaManager.firstStep(gtaNode);
 			task = gtaManager.createTask(null, taskList, firstStep, assessedGroup, assessedIdentity, gtaNode);
 		}
@@ -267,28 +266,28 @@ public abstract class GTAAbstractController extends BasicController implements G
 		
 		boolean assignment = Boolean.TRUE.equals(stepPreferences.getAssignement())
 				|| TaskProcess.assignment.equals(status) || TaskProcess.assignment.equals(previousStatus);
-		mainVC.contextPut("collapse_assignement", new Boolean(assignment));
+		mainVC.contextPut("collapse_assignement", Boolean.valueOf(assignment));
 		
 		boolean submit = Boolean.TRUE.equals(stepPreferences.getSubmit())
 				|| TaskProcess.submit.equals(status) || TaskProcess.submit.equals(previousStatus);
-		mainVC.contextPut("collapse_submit", new Boolean(submit));
+		mainVC.contextPut("collapse_submit", Boolean.valueOf(submit));
 		
 		boolean reviewAndCorrection = Boolean.TRUE.equals(stepPreferences.getReviewAndCorrection())
 				|| TaskProcess.review.equals(status) || TaskProcess.review.equals(previousStatus);
-		mainVC.contextPut("collapse_reviewAndCorrection", new Boolean(reviewAndCorrection));
+		mainVC.contextPut("collapse_reviewAndCorrection", Boolean.valueOf(reviewAndCorrection));
 		
 		boolean revision = Boolean.TRUE.equals(stepPreferences.getRevision())
 				|| TaskProcess.revision.equals(status) || TaskProcess.revision.equals(previousStatus)
 				|| TaskProcess.correction.equals(status) || TaskProcess.correction.equals(previousStatus);
-		mainVC.contextPut("collapse_revision", new Boolean(revision));
+		mainVC.contextPut("collapse_revision", Boolean.valueOf(revision));
 		
 		boolean solution = Boolean.TRUE.equals(stepPreferences.getSolution())
 				|| TaskProcess.solution.equals(status) || TaskProcess.solution.equals(previousStatus);
-		mainVC.contextPut("collapse_solution", new Boolean(solution));
+		mainVC.contextPut("collapse_solution", Boolean.valueOf(solution));
 		
 		boolean grading = Boolean.TRUE.equals(stepPreferences.getGrading())
 				|| TaskProcess.grading.equals(status) || TaskProcess.grading.equals(previousStatus);
-		mainVC.contextPut("collapse_grading", new Boolean(grading));
+		mainVC.contextPut("collapse_grading", Boolean.valueOf(grading));
 	}
 	
 	protected Task stepAssignment(@SuppressWarnings("unused") UserRequest ureq, Task assignedTask) {
@@ -299,7 +298,7 @@ public abstract class GTAAbstractController extends BasicController implements G
 				String dateAsString = formatDueDate(dueDate, true);
 				mainVC.contextPut("assignmentDueDate", dateAsString);
 				mainVC.contextRemove("assignmentDueDateMsg");
-				
+				// need an instantiated to go further (import for optional tasks)
 				if(assignedTask != null && StringHelper.containsNonWhitespace(assignedTask.getTaskName())
 						&& assignedTask.getTaskStatus() == TaskProcess.assignment && date.compareTo(new Date()) < 0) {
 					//push to the next step if the task is blocked in assignment (it's a security)
@@ -359,7 +358,7 @@ public abstract class GTAAbstractController extends BasicController implements G
 				String dateAsString = formatDueDate(dueDate, true);
 				mainVC.contextPut("submitDueDate", dateAsString);
 				mainVC.contextRemove("submitDueDateMsg");
-				
+				// need an instantiated to go further (import for optional tasks)
 				if(assignedTask != null && assignedTask.getTaskStatus() == TaskProcess.submit
 						&& date.compareTo(new Date()) < 0) {
 					//push to the next step
@@ -406,11 +405,12 @@ public abstract class GTAAbstractController extends BasicController implements G
 	}
 	
 	protected Task stepRevision(@SuppressWarnings("unused")UserRequest ureq, Task assignedTask) {
+		// need an instantiated to go further (import for optional tasks)
 		if(assignedTask != null && assignedTask.getRevisionsDueDate() != null) {
 			Date date =  assignedTask.getRevisionsDueDate();
 			String dateAsString = formatDueDate(new DueDate(false, date), false);
 			mainVC.contextPut("revisionDueDate", dateAsString);	
-			if(assignedTask != null && assignedTask.getTaskStatus() == TaskProcess.revision
+			if(assignedTask.getTaskStatus() == TaskProcess.revision
 					&& date.compareTo(new Date()) < 0) {
 				//push to the next step
 				int numOfDocs = getNumberOfRevisionDocuments(assignedTask);

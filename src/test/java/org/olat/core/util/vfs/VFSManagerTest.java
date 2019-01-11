@@ -28,7 +28,6 @@ package org.olat.core.util.vfs;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
-import org.olat.test.OlatTestCase;
 
 /**
  * 
@@ -36,7 +35,7 @@ import org.olat.test.OlatTestCase;
  * Initial Date:  16.06.2009 <br>
  * @author patrickb
  */
-public class VFSManagerTest extends OlatTestCase {
+public class VFSManagerTest {
 
 	/**
 	 * Test method for {@link org.olat.core.util.vfs.VFSManager#sanitizePath(java.lang.String)}.

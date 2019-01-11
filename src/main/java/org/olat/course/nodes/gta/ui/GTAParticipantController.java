@@ -80,9 +80,16 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class GTAParticipantController extends GTAAbstractController implements Activateable2 {
 	
-	private Link submitButton, openGroupButton, changeGroupLink, resetTaskButton;
+	private Link submitButton;
+	private Link openGroupButton;
+	private Link changeGroupLink;
+	private Link resetTaskButton;
+	private Link optionalTaskButton;
 
 	private CloseableModalController cmc;
+	private DirectoryController solutionsCtrl;
+	private DirectoryController correctionsCtrl;
+	private DirectoryController submittedDocCtrl;
 	private MSCourseNodeRunController gradingCtrl;
 	private SubmitDocumentsController submitDocCtrl;
 	private DialogBoxController confirmSubmitDialog;
@@ -92,9 +99,10 @@ public class GTAParticipantController extends GTAAbstractController implements A
 	private CloseableCalloutWindowController chooserCalloutCtrl;
 	private BusinessGroupChooserController businessGroupChooserCtrl;
 	private GTAParticipantRevisionAndCorrectionsController revisionDocumentsCtrl;
-	private DirectoryController submittedDocCtrl, correctionsCtrl, solutionsCtrl;
+	private ConfirmOptionalTaskAssignmentController confirmOptionalAssignmentCtrl;
 
 	private List<BusinessGroup> myGroups;
+	private boolean optionalTaskRefused = false;
 	
 	@Autowired
 	private MailManager mailManager;
@@ -126,7 +134,7 @@ public class GTAParticipantController extends GTAAbstractController implements A
 		} else {
 			//this is a group task
 			myGroups = gtaManager.getParticipatingBusinessGroups(getIdentity(), gtaNode);
-			if(myGroups.size() == 0) {
+			if(myGroups.isEmpty()) {
 				//show error
 				mainVC.contextPut("noGroupError", Boolean.TRUE);
 			} else if(myGroups.size() == 1) {
@@ -156,6 +164,11 @@ public class GTAParticipantController extends GTAAbstractController implements A
 				stepPreferences.setAssignement(Boolean.TRUE);
 			}
 			
+			boolean optional = gtaNode.isOptional();
+			if(optional) {
+				mainVC.contextPut("assignmentOptional", Boolean.TRUE);
+			}
+			
 			//assignment open?
 			DueDate dueDate = getAssignementDueDate(assignedTask);
 			if(dueDate != null && dueDate.getDueDate() != null && dueDate.getDueDate().compareTo(new Date()) < 0) {
@@ -169,24 +182,14 @@ public class GTAParticipantController extends GTAAbstractController implements A
 				//assignment auto or manual
 				String assignmentType = config.getStringValue(GTACourseNode.GTASK_ASSIGNEMENT_TYPE);
 				if(GTACourseNode.GTASK_ASSIGNEMENT_TYPE_AUTO.equals(assignmentType)) {
-					
-					AssignmentResponse response;
-					if(GTAType.group.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))) {
-						response = gtaManager.assignTaskAutomatically(taskList, assessedGroup, courseEnv, gtaNode);
-					} else {
-						response = gtaManager.assignTaskAutomatically(taskList, assessedIdentity, courseEnv, gtaNode);
-					}
-					
-					if(response == null || response.getStatus() == AssignmentResponse.Status.error) {
-						showError("task.assignment.error");
-					} else if(response == null || response.getStatus() == AssignmentResponse.Status.noMoreTasks) {
-						showError("error.nomoretasks");
-					} else if(response == null || response.getStatus() == AssignmentResponse.Status.ok) {
-						if(response != null) {
-							assignedTask = response.getTask();
+					if(optionalTaskRefused) {
+						if(optionalTaskButton == null) {
+							optionalTaskButton = LinkFactory.createCustomLink("run.accept.optional", "accept.optional", "run.accept.optional", Link.BUTTON, mainVC, this);
 						}
-						showInfo("task.successfully.assigned");
-						showAssignedTask(ureq, assignedTask);
+					} else if(optional) {
+						doConfirmOptionalAssignment(ureq, assignedTask);
+					} else {
+						assignedTask = assignTaskAutomatically(ureq, assignedTask);
 					}
 				} else if(GTACourseNode.GTASK_ASSIGNEMENT_TYPE_MANUAL.equals(assignmentType)) {
 					availableTaskCtrl = new GTAAvailableTaskController(ureq, getWindowControl(), availableTasks,
@@ -197,6 +200,35 @@ public class GTAParticipantController extends GTAAbstractController implements A
 			}	
 		} else {
 			mainVC.contextPut("assignmentCssClass", "o_done");
+			showAssignedTask(ureq, assignedTask);
+		}
+		return assignedTask;
+	}
+	
+	private void doConfirmOptionalAssignment(UserRequest ureq, Task assignedTask) {
+		confirmOptionalAssignmentCtrl = new ConfirmOptionalTaskAssignmentController(ureq, getWindowControl(), assignedTask);
+		listenTo(confirmOptionalAssignmentCtrl);
+		String title = translate("participant.confirm.option.task.title");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmOptionalAssignmentCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private Task assignTaskAutomatically(UserRequest ureq, Task assignedTask) {
+		AssignmentResponse response;
+		if(GTAType.group.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))) {
+			response = gtaManager.assignTaskAutomatically(taskList, assessedGroup, courseEnv, gtaNode);
+		} else {
+			response = gtaManager.assignTaskAutomatically(taskList, assessedIdentity, courseEnv, gtaNode);
+		}
+		
+		if(response == null || response.getStatus() == AssignmentResponse.Status.error) {
+			showError("task.assignment.error");
+		} else if(response.getStatus() == AssignmentResponse.Status.noMoreTasks) {
+			showError("error.nomoretasks");
+		} else if(response.getStatus() == AssignmentResponse.Status.ok) {
+			assignedTask = response.getTask();
+			showInfo("task.successfully.assigned");
 			showAssignedTask(ureq, assignedTask);
 		}
 		return assignedTask;
@@ -339,6 +371,10 @@ public class GTAParticipantController extends GTAAbstractController implements A
 	
 	private void doSubmitDocuments(UserRequest ureq, Task task) {
 		int numOfDocs = getNumberOfSubmittedDocuments();
+		if(task == null) {
+			TaskProcess firstStep = gtaManager.firstStep(gtaNode);
+			task = gtaManager.createTask(null, taskList, firstStep, assessedGroup, assessedIdentity, gtaNode);
+		}
 		task = gtaManager.submitTask(task, gtaNode, numOfDocs, Role.user);
 		showInfo("run.documents.successfully.submitted");
 		
@@ -545,10 +581,10 @@ public class GTAParticipantController extends GTAAbstractController implements A
 		boolean visible = availableDate == null || 
 				(availableDate.getDueDate() != null && availableDate.getDueDate().compareTo(new Date()) <= 0);
 		if(visible) {
-			File documentsDir = gtaManager.getSolutionsDirectory(courseEnv, gtaNode);
-			VFSContainer documentsContainer = gtaManager.getSolutionsContainer(courseEnv, gtaNode);
-			if((availableDate != null && !availableDate.isRelative() && gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_ALL, false))
-					|| TaskHelper.hasDocuments(documentsDir)) {
+			boolean show = showSolutions(availableDate);
+			if(show) {
+				File documentsDir = gtaManager.getSolutionsDirectory(courseEnv, gtaNode);
+				VFSContainer documentsContainer = gtaManager.getSolutionsContainer(courseEnv, gtaNode);
 				solutionsCtrl = new DirectoryController(ureq, getWindowControl(), documentsDir, documentsContainer, "run.solutions.description", "bulk.solutions", "solutions");
 				listenTo(solutionsCtrl);
 				mainVC.put("solutions", solutionsCtrl.getInitialComponent());
@@ -557,6 +593,26 @@ public class GTAParticipantController extends GTAAbstractController implements A
 			VelocityContainer waitVC = createVelocityContainer("wait_for_solutions");
 			mainVC.put("solutions", waitVC);
 		}
+	}
+	
+	/**
+	 * If the due date is not defined, the solutions are show the users with an uploaded
+	 * solution or if the configuration is set to visible to all. If the due date is set
+	 * but is not a relative date, the solution is shown to the users which uploaded a
+	 * solution or if the configuration is set to visible to all.
+	 * 
+	 * @param availableDate The due date of the solutions (can be null)
+	 * @return If the solutions are visible to the user
+	 */
+	private boolean showSolutions(DueDate availableDate) {
+		boolean optional = gtaNode.isOptional();
+		File documentsDir = gtaManager.getSolutionsDirectory(courseEnv, gtaNode);
+		if(availableDate == null && optional && gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_ALL, false)
+				|| TaskHelper.hasDocuments(documentsDir)) {
+			return true;
+		} 
+		return ((availableDate != null && (optional || !availableDate.isRelative()) && gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_ALL, false))
+				|| TaskHelper.hasDocuments(documentsDir));
 	}
 
 	@Override
@@ -718,6 +774,8 @@ public class GTAParticipantController extends GTAAbstractController implements A
 			doConfirmSubmit(ureq, assignedTask);
 		} else if(resetTaskButton == source) {
 			doConfirmResetTask(ureq, (Task)resetTaskButton.getUserObject());
+		} else if(optionalTaskButton == source) {
+			doConfirmOptionalAssignment(ureq, null);
 		}
 		super.event(ureq, source, event);
 	}
@@ -773,6 +831,18 @@ public class GTAParticipantController extends GTAAbstractController implements A
 			if(submitButton != null) {
 				submitButton.setCustomEnabledLinkCSS(hasUploadDocuments ? "btn btn-primary" : "btn btn-default");
 			}
+		} else if(confirmOptionalAssignmentCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				assignTaskAutomatically(ureq, confirmOptionalAssignmentCtrl.getTask());
+				cleanUpProcess();
+				process(ureq);
+			} else {
+				optionalTaskRefused = true;
+				cleanUpProcess();
+				process(ureq);
+			}
+			cmc.deactivate();
+			cleanUpPopups();
 		} else if(cmc == source) {
 			cleanUpPopups();
 		}
@@ -817,11 +887,13 @@ public class GTAParticipantController extends GTAAbstractController implements A
 	}
 
 	private void cleanUpPopups() {
+		removeAsListenerAndDispose(confirmOptionalAssignmentCtrl);
 		removeAsListenerAndDispose(businessGroupChooserCtrl);
 		removeAsListenerAndDispose(confirmResetTaskCtrl);
 		removeAsListenerAndDispose(confirmSubmitDialog);
 		removeAsListenerAndDispose(chooserCalloutCtrl);
 		removeAsListenerAndDispose(cmc);
+		confirmOptionalAssignmentCtrl = null;
 		businessGroupChooserCtrl = null;
 		confirmResetTaskCtrl = null;
 		confirmSubmitDialog = null;

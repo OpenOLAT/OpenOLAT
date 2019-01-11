@@ -35,6 +35,9 @@
 				<div class="o_error">$r.translate("error.assignment.closed")</div>
 			#end
 			#if($r.available("availableTasks"))
+				#if($r.isTrue($assignmentOptional))
+					<div class="o_warning">$r.translate("run.assignment.optional")</div>
+				#end
 				#if($groupWarning)
 					<div class="o_warning" role="alert">$r.translate("warning.group.pick.task", $r.escapeHtml($groupName))</div>
 				#end
@@ -50,6 +53,13 @@
 			<div class="o_button_group">
 				$r.render("participant.reset.button")
 			</div>
+			#elseif($r.isTrue($assignmentOptional) && $r.isFalse($assignmentClosed))
+				<div class="o_warning">$r.translate("run.assignment.optional")</div>
+				#if($r.visible("run.accept.optional"))
+				<div class="o_button_group">
+					$r.render("run.accept.optional")
+				</div>
+				#end
 			#end
 		</div>
 	</div>

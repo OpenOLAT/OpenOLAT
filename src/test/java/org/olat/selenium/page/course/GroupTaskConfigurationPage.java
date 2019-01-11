@@ -133,6 +133,7 @@ public class GroupTaskConfigurationPage {
 		By addTaskBy = By.className("o_sel_course_gta_add_task");
 		browser.findElement(addTaskBy).click();
 		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialog(browser);
 		
 		By titleBy = By.cssSelector(".o_sel_course_gta_upload_task_title input[type='text']");
 		browser.findElement(titleBy).sendKeys(title);
@@ -145,6 +146,7 @@ public class GroupTaskConfigurationPage {
 		By saveBy = By.cssSelector(".o_sel_course_gta_upload_task_form button.btn-primary");
 		browser.findElement(saveBy).click();
 		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
 	
