@@ -93,7 +93,7 @@ public interface UserPropertiesConfig {
 	public void setUserPropertyHandlers(List<UserPropertyHandler> userPropertyHandlers);
 	
 	/**
-	 * returns a map containing all the userPropertyUsageContexts
+	 * @return A map containing all the userPropertyUsageContexts
 	 */
 	public Map<String,UserPropertyUsageContext> getUserPropertyUsageContexts();
 	
@@ -101,7 +101,7 @@ public interface UserPropertiesConfig {
 	 * Get all available property handlers. Do not use this for forms or tables,
 	 * use this only to cleanup things
 	 * 
-	 * @return
+	 * @return A list of user property handlers
 	 */
 	public List<UserPropertyHandler> getAllUserPropertyHandlers();
 

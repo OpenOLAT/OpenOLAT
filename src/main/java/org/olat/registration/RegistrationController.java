@@ -248,12 +248,7 @@ public class RegistrationController extends BasicController implements Activatea
 			}
 		} else if (source == emailSendForm) {
 			if (event == Event.DONE_EVENT) { // form
-				boolean isMailSent = processEmail(ureq);
-				if (isMailSent) {
-					showInfo("email.sent");
-				} else {
-					showError("email.notsent");
-				}
+				processEmail(ureq);
 			}
 		}  else if (source == registrationForm) {
 			// Userdata entered
@@ -333,7 +328,7 @@ public class RegistrationController extends BasicController implements Activatea
 		regarea.setContent(emailSendForm.getInitialComponent());
 	}
 	
-	private boolean processEmail(UserRequest ureq) {
+	private void processEmail(UserRequest ureq) {
 		// validation
 		// was ok
 		wizInfoController.setCurStep(3);
@@ -351,7 +346,6 @@ public class RegistrationController extends BasicController implements Activatea
 			serverpath, today, ip
 		};
 
-		boolean isMailSent = false;
 		if (registrationManager.isRegistrationPending(email) || userManager.isEmailAllowed(email)) {
 			TemporaryKey tk = null;
 			if (userModule.isEmailUnique()) {
@@ -376,7 +370,11 @@ public class RegistrationController extends BasicController implements Activatea
 			if(!htmlBody) {
 				body += SEPARATOR + translate("reg.wherefrom", whereFromAttrs);
 			}
-			sendMessage(email, translate("reg.subject"), body);
+			if(sendMessage(email, translate("reg.subject"), body)) {
+				showInfo("email.sent");
+			} else {
+				showError("email.notsent");
+			}
 		} else {
 			// if users with this email address exists, they are informed.
 			List<Identity> identities = userManager.findIdentitiesByEmail(Collections.singletonList(email));
@@ -385,8 +383,8 @@ public class RegistrationController extends BasicController implements Activatea
 				String body = translate("login.body", identity.getName()) + SEPARATOR + translate("reg.wherefrom", whereFromAttrs);
 				sendMessage(email, subject, body);
 			}
+			showError("email.notsent");
 		}
-		return isMailSent;
 	}
 	
 	private boolean sendMessage(String email, String subject, String body) {

@@ -36,6 +36,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -752,6 +753,36 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 			decoratedBody = content.getBody();
 		}
 		return new SimpleMailContent(content.getSubject(), decoratedBody, content.getAttachments());
+	}
+	
+	public String decorateMailBody(String body, Locale locale) {
+		String template = getMailTemplate();
+		boolean htmlTemplate = StringHelper.isHtml(template);
+		if (htmlTemplate) {
+			template = decorateStyle(template);
+		}
+		boolean htmlContent =  StringHelper.isHtml(body);
+		if(htmlTemplate && !htmlContent) {
+			body = body.replace("&", "&amp;");
+			body = body.replace("<", "&lt;");
+			body = body.replace("\n", "<br />");
+		}
+		VelocityContext context = new VelocityContext();
+		context.put("content", body);
+		context.put("footer", MailHelper.getMailFooter(locale));
+		context.put("server", Settings.getServerContextPathURI());
+
+		StringWriter writer = new StringWriter(2000);
+		MailerResult result = new MailerResult();
+		evaluate(context, template, writer, result);
+		
+		String decoratedBody;
+		if(result.isSuccessful()) {
+			decoratedBody = writer.toString();
+		} else {
+			decoratedBody =body;
+		}
+		return decoratedBody;
 	}
 	
 	private String decorateStyle(String template) {

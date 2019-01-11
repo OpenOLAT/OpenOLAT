@@ -54,6 +54,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Encoder;
@@ -277,21 +278,30 @@ public class RegistrationManager implements UserDataDeletable, UserDataExportabl
 			log.error("Could not send registration notification message, bad mail address", e);
 			return;
 		}
+		
+		// http://localhost:8080/auth/UserAdminSite/0/usearch/0/table/0/Identity/720896/tab/10
+		
+		String userPath = "[UserAdminSite:0][usearch:0][table:0][Identity:" + newIdentity.getKey() + "][tab:10]";
+		String url = BusinessControlFactory.getInstance().getURLFromBusinessPathString(userPath);
+		
 		MailerResult result = new MailerResult();
 		User user = newIdentity.getUser();
 		Locale loc = I18nModule.getDefaultLocale();
 		String[] userParams = new  String[] {
-				newIdentity.getName(), 
-				user.getProperty(UserConstants.FIRSTNAME, loc), 
-				user.getProperty(UserConstants.LASTNAME, loc), 
-				UserManager.getInstance().getUserDisplayEmail(user, loc),
-				user.getPreferences().getLanguage(), 
-				Settings.getServerDomainName() + WebappHelper.getServletContextPath() };
+				newIdentity.getName(), 													// 0
+				user.getProperty(UserConstants.FIRSTNAME, loc), 						// 1
+				user.getProperty(UserConstants.LASTNAME, loc),							// 2
+				UserManager.getInstance().getUserDisplayEmail(user, loc),				// 3
+				user.getPreferences().getLanguage(),									// 4
+				Settings.getServerDomainName() + WebappHelper.getServletContextPath(),	// 5
+				url																		// 6
+			};
 		Translator trans = Util.createPackageTranslator(RegistrationManager.class, loc);
 		String subject = trans.translate("reg.notiEmail.subject", userParams);
 		String body = trans.translate("reg.notiEmail.body", userParams);
+		String decoratedBody = mailManager.decorateMailBody(body, loc);
 		
-		MimeMessage msg = mailManager.createMimeMessage(from, to, null, null, body, subject, null, result);
+		MimeMessage msg = mailManager.createMimeMessage(from, to, null, null, subject, decoratedBody, null, result);
 		mailManager.sendMessage(msg, result);
 		if (result.getReturnCode() != MailerResult.OK ) {
 			log.error("Could not send registration notification message, MailerResult was ::" + result.getReturnCode(), null);			

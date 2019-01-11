@@ -57,7 +57,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  *         http://www.frentix.com
  */
 public class MailHelper {
-	private static Map<String, Translator> translators = new HashMap<String, Translator>();
+	private static Map<String, Translator> translators = new HashMap<>();
 	
 	
 	public static String getMailFooter(Locale locale) {
@@ -104,7 +104,7 @@ public class MailHelper {
 		// username / server-url are always first [0], [1].		
 		UserManager um = UserManager.getInstance();
 		List<UserPropertyHandler> userPropertyHandlers = um.getUserPropertyHandlersFor(MailHelper.class.getCanonicalName(), false);
-		List<String> userPropList = new ArrayList<String>(userPropertyHandlers.size()+2);
+		List<String> userPropList = new ArrayList<>(userPropertyHandlers.size()+2);
 		String email = UserManager.getInstance().getUserDisplayEmail(sender, locale);
 		userPropList.add(email);
 		userPropList.add(Settings.getServerContextPathURI());
@@ -298,7 +298,7 @@ public class MailHelper {
 	}
 	
 	public static List<File> checkAttachments(File[] attachments, MailerResult result) {
-		List<File> attachmentList = new ArrayList<File>();
+		List<File> attachmentList = new ArrayList<>();
 		if(attachments != null) {
 			for(File attachment:attachments) {
 				if(attachment == null || !attachment.exists()) {

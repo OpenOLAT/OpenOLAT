@@ -41,10 +41,10 @@ public class UserPropertyUsageContext {
 
 	private String description = "";
 
-	private List<UserPropertyHandler> propertyHandlers = new ArrayList<UserPropertyHandler>();
-	private Set<UserPropertyHandler> mandatoryProperties = new HashSet<UserPropertyHandler>();
-	private Set<UserPropertyHandler> adminViewOnlyProperties = new HashSet<UserPropertyHandler>();
-	private Set<UserPropertyHandler> userViewReadOnlyProperties = new HashSet<UserPropertyHandler>();
+	private List<UserPropertyHandler> propertyHandlers = new ArrayList<>();
+	private Set<UserPropertyHandler> mandatoryProperties = new HashSet<>();
+	private Set<UserPropertyHandler> adminViewOnlyProperties = new HashSet<>();
+	private Set<UserPropertyHandler> userViewReadOnlyProperties = new HashSet<>();
 
 	/**
 	 * Spring setter

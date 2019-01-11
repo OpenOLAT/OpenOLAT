@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import javax.mail.Address;
 import javax.mail.internet.MimeMessage;
@@ -199,5 +200,7 @@ public interface MailManager {
 	public void sendMessage(MimeMessage msg, MailerResult result);
 	
 	public MailContent decorateMail(MailBundle bundle);
+	
+	public String decorateMailBody(String body, Locale locale);
 
 }

@@ -40,6 +40,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.user.UserPropertiesConfig;
@@ -108,7 +109,8 @@ public class RegistrationAdminController extends FormBasicController {
 		List<UserPropertyHandler> allPropertyHandlers = userPropertiesConfig.getAllUserPropertyHandlers();
 		List<UserPropertyHandler> propertyHandlers = new ArrayList<>(allPropertyHandlers.size());
 		for(UserPropertyHandler handler:allPropertyHandlers) {
-			if(handler instanceof Generic127CharTextPropertyHandler) {
+			if(handler instanceof Generic127CharTextPropertyHandler
+					&& !UserConstants.USERNAME.equals(handler.getName())) {
 				propertyHandlers.add(handler);
 			}
 		}
@@ -338,13 +340,17 @@ public class RegistrationAdminController extends FormBasicController {
 		
 		pendingPropContainer.setVisible(enableMain);
 		if(enableMain) {
-			boolean useProps = RegistrationPendingStatus.pendingMatchingProperties.name()
-					.equals(pendingRegistrationStatusEl.getSelectedKey());
+			String selectedStatus = pendingRegistrationStatusEl.getSelectedKey();
+			boolean useProps = RegistrationPendingStatus.pendingMatchingProperties.name().equals(selectedStatus);
 			pendingProperty1Els.setVisible(useProps);
 			pendingProperty2Els.setVisible(useProps);
 			pendingProperty3Els.setVisible(useProps);
 			pendingProperty4Els.setVisible(useProps);
 			pendingProperty5Els.setVisible(useProps);
+
+			boolean mail = RegistrationPendingStatus.pendingMatchingProperties.name().equals(selectedStatus)
+					|| RegistrationPendingStatus.pending.name().equals(selectedStatus);
+			pendingRegistrationNotificationEl.setVisible(mail);
 		}
 		
 		//static prop

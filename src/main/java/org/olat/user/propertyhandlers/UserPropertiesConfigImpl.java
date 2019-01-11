@@ -47,7 +47,7 @@ public class UserPropertiesConfigImpl implements UserPropertiesConfig {
 
 	
 	private Map<String, UserPropertyHandler> userPropertyNameLookupMap;
-	private ConcurrentMap<String, List<UserPropertyHandler>> userPropertyUsageContextsLookupMap = new ConcurrentHashMap<String, List<UserPropertyHandler>>();
+	private ConcurrentMap<String, List<UserPropertyHandler>> userPropertyUsageContextsLookupMap = new ConcurrentHashMap<>();
 	
 	private List<UserPropertyHandler> userPropertyHandlers;
 	private Map<String, UserPropertyUsageContext> userPropertyUsageContexts;
@@ -88,17 +88,13 @@ public class UserPropertiesConfigImpl implements UserPropertiesConfig {
 	public void setUserPropertyHandlers(List<UserPropertyHandler> userPropertyHandlers) {
 		this.userPropertyHandlers = userPropertyHandlers;
 		// populate name lookup map for faster lookup service
-		userPropertyNameLookupMap = new HashMap<String, UserPropertyHandler>(userPropertyHandlers.size());
+		userPropertyNameLookupMap = new HashMap<>(userPropertyHandlers.size());
 		for (UserPropertyHandler propertyHandler : userPropertyHandlers) {
 			String name = propertyHandler.getName();
 			userPropertyNameLookupMap.put(name, propertyHandler);
 		}
 	}
 
-	/**
-	 * 
-	 * @see org.olat.user.UserPropertiesConfig#getPropertyHandler(java.lang.String)
-	 */
 	@Override
 	public UserPropertyHandler getPropertyHandler(String handlerName) {
 		UserPropertyHandler handler =  userPropertyNameLookupMap.get(handlerName);
@@ -108,25 +104,16 @@ public class UserPropertiesConfigImpl implements UserPropertiesConfig {
 		return handler;
 	}
 
-	/**
-	 * @see org.olat.user.UserPropertiesConfig#getTranslator(org.olat.core.gui.translator.Translator)
-	 */
 	@Override
 	public Translator getTranslator(Translator fallBack) {
 		return new PackageTranslator(PACKAGE, fallBack.getLocale(), fallBack); 
 	}
 
-	/**
-	 * @see org.olat.user.UserPropertiesConfig#getAllUserPropertyHandlers()
-	 */
 	@Override
 	public List<UserPropertyHandler> getAllUserPropertyHandlers() {
 		return userPropertyHandlers;
 	}
 
-	/**
-	 * @see org.olat.user.UserPropertiesConfig#getUserPropertyHandlersFor(java.lang.String, boolean)
-	 */
 	@Override
 	public List<UserPropertyHandler> getUserPropertyHandlersFor(String usageIdentifyer, boolean isAdministrativeUser) {
 		String key = usageIdentifyer + "_" + isAdministrativeUser;
@@ -152,18 +139,12 @@ public class UserPropertiesConfigImpl implements UserPropertiesConfig {
 		return currentUsageHandlers;
 	}
 
-	/**
-	 * @see org.olat.user.UserPropertiesConfig#isMandatoryUserProperty(java.lang.String, org.olat.user.propertyhandlers.UserPropertyHandler)
-	 */
 	@Override
 	public boolean isMandatoryUserProperty(String usageIdentifyer, UserPropertyHandler propertyHandler) {
 		UserPropertyUsageContext currentUsageConfig = getCurrentUsageConfig(usageIdentifyer);
 		return currentUsageConfig.isMandatoryUserProperty(propertyHandler);
 	}
 
-	/**
-	 * @see org.olat.user.UserPropertiesConfig#isUserViewReadOnly(java.lang.String, org.olat.user.propertyhandlers.UserPropertyHandler)
-	 */
 	@Override
 	public boolean isUserViewReadOnly(String usageIdentifyer, UserPropertyHandler propertyHandler) {
 		UserPropertyUsageContext currentUsageConfig = getCurrentUsageConfig(usageIdentifyer);
