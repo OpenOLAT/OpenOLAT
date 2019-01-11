@@ -32,7 +32,9 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.course.assessment.EfficiencyStatement;
 import org.olat.course.assessment.UserEfficiencyStatement;
+import org.olat.course.assessment.model.UserEfficiencyStatementImpl;
 import org.olat.course.assessment.model.UserEfficiencyStatementLight;
 import org.olat.modules.coach.CoachingLargeTest;
 import org.olat.repository.RepositoryEntry;
@@ -62,7 +64,7 @@ public class EfficiencyStatementManagerTest extends OlatTestCase {
 	 * @throws URISyntaxException
 	 */
 	@Test
-	public void testEfficiencyStatement() throws URISyntaxException {
+	public void createEfficiencyStatement() throws URISyntaxException {
 		RepositoryEntry re = deployTestcourse();
 		ICourse course = CourseFactory.loadCourse(re);
 		
@@ -93,6 +95,376 @@ public class EfficiencyStatementManagerTest extends OlatTestCase {
 		Assert.assertEquals(6.0f, statementLight.getScore(), 0.00001);
 	}
 	
+	@Test
+	public void getUserEfficiencyStatementLightByKey() throws URISyntaxException {
+		RepositoryEntry re = deployTestcourse();
+		ICourse course = CourseFactory.loadCourse(re);
+		
+		//add some members
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("Eff-Part-4");
+		repositoryService.addRole(participant, re, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+
+		//make statements
+	    UserEfficiencyStatement statement = effManager.createUserEfficiencyStatement(new Date(), 4.5f, false, participant, re.getOlatResource());
+		dbInstance.commitAndCloseSession();
+		
+		UserEfficiencyStatementLight reloadedStatement = effManager.getUserEfficiencyStatementLightByKey(statement.getKey());
+		Assert.assertNotNull(reloadedStatement);
+		Assert.assertEquals(statement.getKey(), reloadedStatement.getKey());
+		Assert.assertEquals(participant, reloadedStatement.getIdentity());
+		Assert.assertEquals(re.getKey(), reloadedStatement.getCourseRepoKey());
+		Assert.assertEquals(course.getCourseTitle(), reloadedStatement.getShortTitle());
+		Assert.assertEquals(re.getOlatResource(), reloadedStatement.getResource());
+		Assert.assertEquals(re.getOlatResource().getKey(), reloadedStatement.getArchivedResourceKey());
+		Assert.assertNotNull(reloadedStatement.getCreationDate());
+		Assert.assertNotNull(reloadedStatement.getLastModified());
+		Assert.assertFalse(reloadedStatement.getPassed());
+		Assert.assertEquals(4.5f, reloadedStatement.getScore(), 0.00001);
+	}
+	
+	@Test
+	public void getUserEfficiencyStatementByKey() throws URISyntaxException {
+		RepositoryEntry re = deployTestcourse();
+		ICourse course = CourseFactory.loadCourse(re);
+		
+		//add some members
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("Eff-Part-5");
+		repositoryService.addRole(participant, re, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+
+		//make statements
+	    UserEfficiencyStatement statement = effManager.createUserEfficiencyStatement(new Date(), 4.5f, false, participant, re.getOlatResource());
+		dbInstance.commitAndCloseSession();
+		effManager.updateEfficiencyStatements(re, Collections.singletonList(participant));
+		
+		EfficiencyStatement effStatement = effManager.getUserEfficiencyStatementByKey(statement.getKey());
+		Assert.assertNotNull(effStatement);
+		Assert.assertEquals(course.getCourseTitle(), effStatement.getCourseTitle());
+		Assert.assertEquals(re.getKey(), effStatement.getCourseRepoEntryKey());
+	}
+	
+	@Test
+	public void getUserEfficiencyStatementFull() throws URISyntaxException {
+		RepositoryEntry re = deployTestcourse();
+		ICourse course = CourseFactory.loadCourse(re);
+		
+		//add some members
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("Eff-Part-5");
+		repositoryService.addRole(participant, re, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+
+		//make statements
+	    UserEfficiencyStatement statement = effManager.createUserEfficiencyStatement(new Date(), 3.75f, false, participant, re.getOlatResource());
+		dbInstance.commitAndCloseSession();
+		
+		UserEfficiencyStatementImpl fullStatement = effManager.getUserEfficiencyStatementFull(re, participant);
+		Assert.assertNotNull(fullStatement);
+		Assert.assertEquals(statement.getKey(), fullStatement.getKey());
+		Assert.assertEquals(participant, fullStatement.getIdentity());
+		Assert.assertEquals(re.getKey(), fullStatement.getCourseRepoKey());
+		Assert.assertEquals(course.getCourseTitle(), fullStatement.getShortTitle());
+		Assert.assertEquals(re.getOlatResource(), fullStatement.getResource());
+		Assert.assertNotNull(fullStatement.getCreationDate());
+		Assert.assertNotNull(fullStatement.getLastModified());
+		Assert.assertFalse(fullStatement.getPassed());
+		Assert.assertEquals(3.75f, fullStatement.getScore(), 0.00001);
+	}
+	
+	@Test
+	public void getUserEfficiencyStatementLightByRepositoryEntry() throws URISyntaxException {
+		RepositoryEntry re = deployTestcourse();
+		ICourse course = CourseFactory.loadCourse(re);
+		
+		//add some members
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("Eff-Part-5");
+		repositoryService.addRole(participant, re, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+
+		//make statements
+	    UserEfficiencyStatement statement = effManager.createUserEfficiencyStatement(new Date(), 3.75f, false, participant, re.getOlatResource());
+		dbInstance.commitAndCloseSession();
+		
+		UserEfficiencyStatement lightStatement = effManager.getUserEfficiencyStatementLightByRepositoryEntry(re, participant);
+		Assert.assertNotNull(lightStatement);
+		Assert.assertEquals(statement.getKey(), lightStatement.getKey());
+		Assert.assertEquals(participant, lightStatement.getIdentity());
+		Assert.assertEquals(re.getKey(), lightStatement.getCourseRepoKey());
+		Assert.assertEquals(course.getCourseTitle(), lightStatement.getShortTitle());
+		Assert.assertNotNull(lightStatement.getCreationDate());
+		Assert.assertNotNull(lightStatement.getLastModified());
+		Assert.assertFalse(lightStatement.getPassed());
+		Assert.assertEquals(3.75f, lightStatement.getScore(), 0.00001);
+	}
+	
+	@Test
+	public void getUserEfficiencyStatementLight_identityRepo() throws URISyntaxException {
+		RepositoryEntry re = deployTestcourse();
+		ICourse course = CourseFactory.loadCourse(re);
+		
+		//add some members
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("Eff-Part-5");
+		repositoryService.addRole(participant, re, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+
+		//make statements
+	    UserEfficiencyStatement statement = effManager.createUserEfficiencyStatement(new Date(), 3.75f, false, participant, re.getOlatResource());
+		dbInstance.commitAndCloseSession();
+		
+		List<UserEfficiencyStatement> lightStatements = effManager.getUserEfficiencyStatementLight(participant, Collections.singletonList(re));
+		Assert.assertNotNull(lightStatements);
+		Assert.assertEquals(1, lightStatements.size());
+		UserEfficiencyStatement lightStatement = lightStatements.get(0);
+		Assert.assertNotNull(lightStatement);
+		Assert.assertEquals(statement.getKey(), lightStatement.getKey());
+		Assert.assertEquals(participant, lightStatement.getIdentity());
+		Assert.assertEquals(re.getKey(), lightStatement.getCourseRepoKey());
+		Assert.assertEquals(course.getCourseTitle(), lightStatement.getShortTitle());
+		Assert.assertNotNull(lightStatement.getCreationDate());
+		Assert.assertNotNull(lightStatement.getLastModified());
+		Assert.assertFalse(lightStatement.getPassed());
+		Assert.assertEquals(3.75f, lightStatement.getScore(), 0.00001);
+	}
+	
+	@Test
+	public void getUserEfficiencyStatementLight_identity() throws URISyntaxException {
+		RepositoryEntry re = deployTestcourse();
+		
+		//add some members
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("Eff-Part-6");
+		repositoryService.addRole(participant, re, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+
+		//make statements
+	    UserEfficiencyStatement statement = effManager.createUserEfficiencyStatement(new Date(), 3.75f, false, participant, re.getOlatResource());
+		dbInstance.commitAndCloseSession();
+		
+		List<UserEfficiencyStatement> lightStatements = effManager.getUserEfficiencyStatementLight(participant);
+		Assert.assertNotNull(lightStatements);
+		Assert.assertEquals(1, lightStatements.size());
+		UserEfficiencyStatement lightStatement = lightStatements.get(0);
+		Assert.assertNotNull(lightStatement);
+		Assert.assertEquals(statement.getKey(), lightStatement.getKey());
+		Assert.assertEquals(participant, lightStatement.getIdentity());
+		Assert.assertEquals(re.getKey(), lightStatement.getCourseRepoKey());
+	}
+	
+	@Test
+	public void getUserEfficiencyStatementLight_repo() throws URISyntaxException {
+		RepositoryEntry re = deployTestcourse();
+		
+		//add some members
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("Eff-Part-7");
+		repositoryService.addRole(participant, re, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+
+		//make statements
+	    UserEfficiencyStatement statement = effManager.createUserEfficiencyStatement(new Date(), 3.75f, false, participant, re.getOlatResource());
+		dbInstance.commitAndCloseSession();
+		
+		List<UserEfficiencyStatement> lightStatements = effManager.getUserEfficiencyStatementLight(re);
+		Assert.assertNotNull(lightStatements);
+		Assert.assertEquals(1, lightStatements.size());
+		UserEfficiencyStatement lightStatement = lightStatements.get(0);
+		Assert.assertNotNull(lightStatement);
+		Assert.assertEquals(statement.getKey(), lightStatement.getKey());
+		Assert.assertEquals(participant, lightStatement.getIdentity());
+		Assert.assertEquals(re.getKey(), lightStatement.getCourseRepoKey());
+	}
+	
+	@Test
+	public void getUserEfficiencyStatementLight_repos() throws URISyntaxException {
+		RepositoryEntry re = deployTestcourse();
+		
+		//add some members
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("Eff-Part-7");
+		repositoryService.addRole(participant, re, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+
+		//make statements
+	    UserEfficiencyStatement statement = effManager.createUserEfficiencyStatement(new Date(), 3.75f, false, participant, re.getOlatResource());
+		dbInstance.commitAndCloseSession();
+		
+		List<UserEfficiencyStatement> lightStatements = effManager.getUserEfficiencyStatementLight(Collections.singletonList(re));
+		Assert.assertNotNull(lightStatements);
+		Assert.assertEquals(1, lightStatements.size());
+		UserEfficiencyStatement lightStatement = lightStatements.get(0);
+		Assert.assertNotNull(lightStatement);
+		Assert.assertEquals(statement.getKey(), lightStatement.getKey());
+		Assert.assertEquals(participant, lightStatement.getIdentity());
+		Assert.assertEquals(re.getKey(), lightStatement.getCourseRepoKey());
+	}
+	
+	@Test
+	public void getUserEfficiencyStatementLightByResource() throws URISyntaxException {
+		RepositoryEntry re = deployTestcourse();
+		
+		//add some members
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("Eff-Part-7");
+		repositoryService.addRole(participant, re, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+
+		//make statements
+	    UserEfficiencyStatement statement = effManager.createUserEfficiencyStatement(new Date(), 3.75f, false, participant, re.getOlatResource());
+		dbInstance.commitAndCloseSession();
+		
+		UserEfficiencyStatement lightStatement = effManager.getUserEfficiencyStatementLightByResource(re.getOlatResource().getKey(), participant);
+		Assert.assertNotNull(lightStatement);
+		Assert.assertEquals(statement.getKey(), lightStatement.getKey());
+		Assert.assertEquals(participant, lightStatement.getIdentity());
+		Assert.assertEquals(re.getKey(), lightStatement.getCourseRepoKey());
+	}
+	
+	@Test
+	public void getUserEfficiencyStatementLightByResource_standalone() throws URISyntaxException {
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("Eff-Part-7");
+		dbInstance.commitAndCloseSession();
+		
+		Long resourceKey = 725l;
+
+		//make statements
+	    UserEfficiencyStatement statement = effManager.createStandAloneUserEfficiencyStatement(new Date(), 22.0f, Boolean.TRUE, participant, resourceKey, "Hello");
+		dbInstance.commitAndCloseSession();
+		
+		UserEfficiencyStatement lightStatement = effManager.getUserEfficiencyStatementLightByResource(resourceKey, participant);
+		Assert.assertNotNull(lightStatement);
+		Assert.assertEquals(statement.getKey(), lightStatement.getKey());
+		Assert.assertEquals(participant, lightStatement.getIdentity());
+		Assert.assertNull(lightStatement.getCourseRepoKey());
+		Assert.assertEquals("Hello", lightStatement.getShortTitle());
+		Assert.assertTrue(lightStatement.getPassed());
+		Assert.assertEquals(22.0f, lightStatement.getScore(), 0.00001);
+	}
+	
+	@Test
+	public void findEfficiencyStatements() throws URISyntaxException {
+		RepositoryEntry re = deployTestcourse();
+		ICourse course = CourseFactory.loadCourse(re);
+		
+		//add some members
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("Eff-Part-5");
+		repositoryService.addRole(participant, re, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+		
+		//make statements
+	    UserEfficiencyStatement statement = effManager.createUserEfficiencyStatement(new Date(), 4.5f, false, participant, re.getOlatResource());
+		dbInstance.commitAndCloseSession();
+		effManager.updateEfficiencyStatements(re, Collections.singletonList(participant));
+			
+		List<EfficiencyStatement> effStatements = effManager.findEfficiencyStatements(participant);
+		Assert.assertNotNull(effStatements);
+		Assert.assertEquals(1, effStatements.size());
+		EfficiencyStatement effStatement = effStatements.get(0);
+		Assert.assertNotNull(effStatement);
+		Assert.assertEquals(course.getCourseTitle(), effStatement.getCourseTitle());
+		Assert.assertEquals(re.getKey(), effStatement.getCourseRepoEntryKey());
+		Assert.assertEquals(statement.getCourseRepoKey(), effStatement.getCourseRepoEntryKey());
+	}
+	
+	@Test
+	public void findEfficiencyStatementsLight_standalone() {
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("Eff-Part-9");
+		dbInstance.commitAndCloseSession();
+		
+		Long resourceKey = 725l;
+
+		//make statements
+	    UserEfficiencyStatement statement = effManager.createStandAloneUserEfficiencyStatement(new Date(), 22.0f, Boolean.TRUE, participant, resourceKey, "Hello");
+		dbInstance.commitAndCloseSession();
+		
+		List<UserEfficiencyStatementLight> lightStatements = effManager.findEfficiencyStatementsLight(participant);
+		Assert.assertNotNull(lightStatements);
+		Assert.assertEquals(1, lightStatements.size());
+		UserEfficiencyStatementLight lightStatement = lightStatements.get(0);
+		Assert.assertNotNull(lightStatement);
+		Assert.assertEquals(statement.getKey(), lightStatement.getKey());
+		Assert.assertEquals(participant, lightStatement.getIdentity());
+		Assert.assertNull(lightStatement.getCourseRepoKey());
+		Assert.assertEquals("Hello", lightStatement.getShortTitle());
+		Assert.assertTrue(lightStatement.getPassed());
+		Assert.assertEquals(22.0f, lightStatement.getScore(), 0.00001);
+	}
+	
+	@Test
+	public void findEfficiencyStatementsLight_identity() throws URISyntaxException {
+		RepositoryEntry re = deployTestcourse();
+		ICourse course = CourseFactory.loadCourse(re);
+		
+		//add some members
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("Eff-Part-5");
+		repositoryService.addRole(participant, re, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+		
+		//make statements
+	    UserEfficiencyStatement statement = effManager.createUserEfficiencyStatement(new Date(), 102.3f, true, participant, re.getOlatResource());
+		dbInstance.commitAndCloseSession();
+		// this will reset score to 0 and passed to false
+		effManager.updateEfficiencyStatements(re, Collections.singletonList(participant));
+		
+		List<UserEfficiencyStatementLight> lightStatements = effManager.findEfficiencyStatementsLight(participant);
+		Assert.assertNotNull(lightStatements);
+		Assert.assertEquals(1, lightStatements.size());
+		UserEfficiencyStatementLight lightStatement = lightStatements.get(0);
+		Assert.assertNotNull(lightStatement);
+		Assert.assertEquals(statement.getKey(), lightStatement.getKey());
+		Assert.assertEquals(participant, lightStatement.getIdentity());
+		Assert.assertEquals(re.getKey(), lightStatement.getCourseRepoKey());
+		Assert.assertEquals(course.getCourseTitle(), lightStatement.getShortTitle());
+		Assert.assertFalse(lightStatement.getPassed());
+		Assert.assertEquals(0f, lightStatement.getScore(), 0.00001);
+	}
+	
+	@Test
+	public void findEfficiencyStatementsLight_statementKeys() throws URISyntaxException {
+		RepositoryEntry re = deployTestcourse();
+		ICourse course = CourseFactory.loadCourse(re);
+		
+		//add some members
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("Eff-Part-5");
+		repositoryService.addRole(participant, re, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+		
+		//make statements
+	    UserEfficiencyStatement statement = effManager.createUserEfficiencyStatement(new Date(), 102.3f, true, participant, re.getOlatResource());
+		dbInstance.commitAndCloseSession();
+		// this will reset score to 0 and passed to false
+		effManager.updateEfficiencyStatements(re, Collections.singletonList(participant));
+		
+		List<UserEfficiencyStatementLight> lightStatements = effManager
+				.findEfficiencyStatementsLight(Collections.singletonList(statement.getKey()));
+		Assert.assertNotNull(lightStatements);
+		Assert.assertEquals(1, lightStatements.size());
+		UserEfficiencyStatementLight lightStatement = lightStatements.get(0);
+		Assert.assertNotNull(lightStatement);
+		Assert.assertEquals(statement.getKey(), lightStatement.getKey());
+		Assert.assertEquals(participant, lightStatement.getIdentity());
+		Assert.assertEquals(re.getKey(), lightStatement.getCourseRepoKey());
+		Assert.assertEquals(course.getCourseTitle(), lightStatement.getShortTitle());
+		Assert.assertFalse(lightStatement.getPassed());
+		Assert.assertEquals(0f, lightStatement.getScore(), 0.00001);
+	}
+	
+	@Test
+	public void findIdentitiesWithEfficiencyStatements() throws URISyntaxException {
+		RepositoryEntry re = deployTestcourse();
+		
+		//add some members
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("Eff-Part-5");
+		repositoryService.addRole(participant, re, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+		
+		//make statements
+	    UserEfficiencyStatement statement = effManager.createUserEfficiencyStatement(new Date(), 102.3f, true, participant, re.getOlatResource());
+		dbInstance.commitAndCloseSession();
+		// this will reset score to 0 and passed to false
+		effManager.updateEfficiencyStatements(re, Collections.singletonList(participant));
+		
+		List<Identity> assessedIdentities = effManager.findIdentitiesWithEfficiencyStatements(re.getKey());
+		Assert.assertNotNull(assessedIdentities);
+		Assert.assertEquals(1, assessedIdentities.size());
+		Assert.assertEquals(statement.getIdentity(), assessedIdentities.get(0));
+		Assert.assertEquals(participant, assessedIdentities.get(0));
+	}
 	
 	@Test
 	public void deleteUserData() throws URISyntaxException {

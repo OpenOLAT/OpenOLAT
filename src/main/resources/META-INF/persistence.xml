@@ -5,8 +5,8 @@
         http://java.sun.com/xml/ns/persistence
         http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
 	<persistence-unit name="default">
-		<provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
-
+		<provider>org.hibernate.jpa.HibernatePersistenceProvider</provider> 
+		
 		<mapping-file>de/bps/olat/modules/cl/Checklist.hbm.xml</mapping-file>
 		<mapping-file>de/bps/olat/modules/cl/CheckpointResult.hbm.xml</mapping-file>
 		<mapping-file>de/bps/olat/modules/cl/Checkpoint.hbm.xml</mapping-file>
@@ -28,7 +28,6 @@
 		<mapping-file>org/olat/repository/model/CatalogEntryImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/course/nodes/projectbroker/datamodel/Project.hbm.xml</mapping-file>
 		<mapping-file>org/olat/course/nodes/projectbroker/datamodel/ProjectBroker.hbm.xml</mapping-file>
-		<mapping-file>org/olat/course/assessment/model/UserEfficiencyStatementImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/modules/openmeetings/model/OpenMeetingsReference.hbm.xml</mapping-file>
 		<mapping-file>org/olat/properties/Property.hbm.xml</mapping-file>
 		<mapping-file>org/olat/portfolio/model/artefacts/AbstractArtefact.hbm.xml</mapping-file>
@@ -93,7 +92,9 @@
 		<class>org.olat.course.assessment.model.AssessmentModeToGroupImpl</class>
 		<class>org.olat.course.assessment.model.AssessmentModeToCurriculumElementImpl</class>
 		<class>org.olat.course.assessment.model.UserCourseInfosImpl</class>
-		<class>org.olat.course.assessment.model.UserEfficiencyStatementRepoImpl</class>
+		<class>org.olat.course.assessment.model.UserEfficiencyStatementImpl</class>
+		<class>org.olat.course.assessment.model.UserEfficiencyStatementLight</class>
+		<class>org.olat.course.assessment.model.UserEfficiencyStatementStandalone</class>
 		<class>org.olat.course.nodes.cl.model.DBCheckbox</class>
 		<class>org.olat.course.nodes.cl.model.DBCheck</class>
 		<class>org.olat.course.nodes.dialog.model.DialogElementImpl</class>
@@ -249,6 +250,8 @@
 		<class>org.olat.shibboleth.manager.ShibbolethAutoAccessMethod</class>
 		<class>org.olat.user.UserImpl</class>
 		<class>org.olat.user.model.UserDataExportImpl</class>
+		
+		<exclude-unlisted-classes>true</exclude-unlisted-classes>
 		<properties>
 			<property name="hibernate.generate_statistics" value="true"/>
 			<property name="hibernate.archive.autodetection" value=""/>

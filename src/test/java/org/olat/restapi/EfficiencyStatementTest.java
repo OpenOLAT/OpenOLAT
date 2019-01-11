@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Date;
+import java.util.List;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
@@ -123,7 +124,7 @@ public class EfficiencyStatementTest extends OlatJerseyTestCase {
 		EntityUtils.consume(response.getEntity());
 
 		UserEfficiencyStatement efficiencyStatement = efficiencyStatementManager
-				.getUserEfficiencyStatementFullByResourceKey(entry.getOlatResource().getKey(), assessedIdentity);
+				.getUserEfficiencyStatementFull(entry, assessedIdentity);
 
 		Assert.assertNotNull(efficiencyStatement);
 		Assert.assertNotNull(efficiencyStatement.getCourseRepoKey());
@@ -161,9 +162,12 @@ public class EfficiencyStatementTest extends OlatJerseyTestCase {
 		EntityUtils.consume(response.getEntity());
 
 		//check the efficiency statement
-		UserEfficiencyStatement efficiencyStatement = efficiencyStatementManager
-				.getUserEfficiencyStatementFullByResourceKey(resourceKey, assessedIdentity);
-		Assert.assertNotNull(efficiencyStatement);
+		List<UserEfficiencyStatement> efficiencyStatements = efficiencyStatementManager
+				.getUserEfficiencyStatementLight(assessedIdentity);
+		Assert.assertNotNull(efficiencyStatements);
+		Assert.assertEquals(1, efficiencyStatements.size());
+		
+		UserEfficiencyStatement efficiencyStatement = efficiencyStatements.get(0);
 		Assert.assertEquals(8.5f, efficiencyStatement.getScore(), 0.001);
 		Assert.assertEquals(Boolean.TRUE, efficiencyStatement.getPassed());
 		Assert.assertEquals("Standalone", efficiencyStatement.getShortTitle());
@@ -205,9 +209,12 @@ public class EfficiencyStatementTest extends OlatJerseyTestCase {
 		EntityUtils.consume(response.getEntity());
 
 		//check the efficiency statement
-		UserEfficiencyStatement efficiencyStatement = efficiencyStatementManager
-				.getUserEfficiencyStatementFullByResourceKey(resourceKey, assessedIdentity);
-		Assert.assertNotNull(efficiencyStatement);
+		List<UserEfficiencyStatement> efficiencyStatements = efficiencyStatementManager
+				.getUserEfficiencyStatementLight(assessedIdentity);
+		Assert.assertNotNull(efficiencyStatements);
+		Assert.assertEquals(1, efficiencyStatements.size());
+		
+		UserEfficiencyStatement efficiencyStatement = efficiencyStatements.get(0);
 		Assert.assertEquals(8.5f, efficiencyStatement.getScore(), 0.001);
 		Assert.assertEquals(Boolean.TRUE, efficiencyStatement.getPassed());
 		Assert.assertEquals("Standalone", efficiencyStatement.getShortTitle());
