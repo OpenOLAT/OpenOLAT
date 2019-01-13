@@ -67,6 +67,19 @@ public class GroupTaskPage {
 		return this;
 	}
 	
+	public GroupTaskPage confirmOptionalTask() {
+		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialog(browser);
+		
+		By confirmBy = By.cssSelector("div.o_sel_course_gta_confirm_optional_task button.btn-primary");
+		OOGraphene.waitElement(confirmBy, browser);
+		browser.findElement(confirmBy).click();
+		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogDisappears(browser);
+		OOGraphene.waitAndCloseBlueMessageWindow(browser);
+		return this;
+	}
+	
 	public GroupTaskPage selectTask(int pos) {
 		By taskBy = By.xpath("//div[@id='o_step_assignement_content']//table//td//a[contains(@href,'select')]");
 		List<WebElement> assignementEls = browser.findElements(taskBy);
@@ -145,6 +158,24 @@ public class GroupTaskPage {
 		By submitBy = By.cssSelector("#o_step_revision_content .o_sel_course_gta_submit_revisions");
 		browser.findElement(submitBy).click();
 		return confirmDialog();
+	}
+	
+	public GroupTaskPage openSolutions() {
+		By solutionLinkBy = By.cssSelector("#o_step_solution_content ul>li>a");
+		List<WebElement> buttons = browser.findElements(solutionLinkBy);
+		if(buttons.isEmpty() || !buttons.get(0).isDisplayed()) {
+			//open grading tab
+			By collpaseBy = By.xpath("//a[@href='#o_step_solution_content']");
+			browser.findElement(collpaseBy).click();
+		}
+		OOGraphene.waitElement(solutionLinkBy, browser);
+		return this;
+	}
+	
+	public GroupTaskPage assertSolution(String solution) {
+		By solutionLinkBy = By.xpath("//div[@id='o_step_solution_content']//ul/li/a/span[contains(text(),'" + solution + "')]");
+		OOGraphene.waitElement(solutionLinkBy, browser);
+		return this;
 	}
 	
 	/**

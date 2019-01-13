@@ -138,7 +138,7 @@ public class GroupTaskToCoachPage {
 		if(buttons.isEmpty() || !buttons.get(0).isDisplayed()) {
 			//open grading tab
 			By collpaseBy = By.xpath("//a[@href='#o_step_grading_content']");
-			browser.findElement(collpaseBy).click();
+			OOGraphene.click(collpaseBy, browser);
 			OOGraphene.waitElement(assessmentButtonBy, browser);
 		}
 		

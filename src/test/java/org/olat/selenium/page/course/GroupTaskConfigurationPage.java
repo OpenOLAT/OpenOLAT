@@ -48,6 +48,19 @@ public class GroupTaskConfigurationPage {
 		return selectTab(configBy);
 	}
 	
+	public GroupTaskConfigurationPage optional(boolean optional) {
+		By optionalBy;
+		if(optional) {
+			optionalBy = By.cssSelector("div#o_coobligation input[type='radio'][value='optional']");
+		} else {
+			optionalBy = By.cssSelector("div#o_coobligation input[type='radio'][value='mandatory']");
+		}
+		OOGraphene.waitElement(optionalBy, browser);
+		browser.findElement(optionalBy).click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
 	public GroupTaskConfigurationPage enableAssignment(boolean enable) {
 		return enableStep("task.assignment", enable);
 	}
