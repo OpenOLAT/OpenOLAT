@@ -65,6 +65,10 @@ public class GroupTaskConfigurationPage {
 		return enableStep("task.assignment", enable);
 	}
 	
+	public GroupTaskConfigurationPage enableSubmission(boolean enable) {
+		return enableStep("submission", enable);
+	}
+	
 	public GroupTaskConfigurationPage enableReview(boolean enable) {
 		return enableStep("review", enable);
 	}
