@@ -217,6 +217,7 @@ public class EdusharingDispatcher implements Dispatcher {
 		sb.append("</html>");
 
 		response.setStatus(HttpServletResponse.SC_OK);
+		response.setContentType("text/html");
 		response.getWriter().write(sb.toString());
 		response.getWriter().flush();
 		response.getWriter().close();
