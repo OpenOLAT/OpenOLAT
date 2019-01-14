@@ -2102,6 +2102,7 @@ var OOEdusharing = {
 			url: url,
 			dataType : 'text',
 			success : function(){
+				OOEdusharing.render();
 				jQuery(document).on("oo.dom.replacement.after", OOEdusharing.render);
 				OOEdusharing.enableMetadataToggler();
 			},
