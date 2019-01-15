@@ -1,11 +1,40 @@
-.o_edusharing_container.o_hide_license {
-	.license {
-		display: none;
+
+.o_edusharing_container {
+	// In iFrame the popover does not work (sliced at bottom) if position is absolute.
+	// This is only a hack. We did not find a nice solution.
+	&.o_in_iframe {
+		.edusharing_metadata_wrapper {
+			margin-top: 5px;
+		}
+		.edusharing_metadata {
+			&.open {
+				position: unset;
+				margin: 0;
+				padding: 0;
+				
+				&:before {
+					content: unset;
+					border: unset;
+					top: unset;
+					position: unset;
+					left: unset;
+					width: unset;
+					height: unset;
+				}
+			}
+		}
 	}
-}
-.o_edusharing_container.o_hide_infos {
-	.edusharing_metadata_wrapper {
-		display: none;
+	
+	&.o_hide_license {
+		.license {
+			display: none;
+		}
+	}
+	
+	&.o_hide_infos {
+		.edusharing_metadata_wrapper {
+			display: none;
+		}
 	}
 }
 

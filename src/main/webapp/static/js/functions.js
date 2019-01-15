@@ -2138,7 +2138,7 @@ var OOEdusharing = {
 		return html;
 	},
 	
-	replaceWithRendered: function(node, identifier, width, height, style, showLicense, showInfos) {
+	replaceWithRendered: function(node, identifier, width, height, style, showLicense, showInfos, isIFrame) {
 		var url = o_info.uriprefix.replace("auth", "edusharing") + "render?identifier=" + identifier;
 		if (width > 0) {
 			url = url + "&width=" + width;
@@ -2148,6 +2148,9 @@ var OOEdusharing = {
 		}
 		
 		var containerHtml = "<div class='o_edusharing_container";
+		if (isIFrame) {
+			containerHtml += " o_in_iframe";
+		}
 		if ('hide' === showLicense) {
 			containerHtml += " o_hide_license";
 		}
@@ -2159,6 +2162,7 @@ var OOEdusharing = {
 		if (typeof style != 'undefined') {
 			containerHtml += " style='" + style + "'";
 		}
+		containerHtml += ">";
 		containerHtml += "</div>";
 		
 		var container = jQuery(containerHtml);
@@ -2178,7 +2182,7 @@ var OOEdusharing = {
 		})
 	},
 		
-	replace: function(node) {
+	replace: function(node, isIFrame) {
 		var identifier = node.data("es_identifier");
 		var width = node.attr("width");
 		var height = node.attr("height");
@@ -2187,7 +2191,7 @@ var OOEdusharing = {
 		var showInfos = node.data("es_show_infos");
 		
 		var spinner = OOEdusharing.replaceWithSpinner(node, width, height);
-		OOEdusharing.replaceWithRendered(spinner, identifier, width, height, style, showLicense, showInfos);
+		OOEdusharing.replaceWithRendered(spinner, identifier, width, height, style, showLicense, showInfos, isIFrame);
 	},
 	
 	/**
@@ -2198,7 +2202,7 @@ var OOEdusharing = {
 		if (esNodes.length > 0) {
 			esNodes.each(function() {
 				var node = jQuery( this );
-				OOEdusharing.replace(node);
+				OOEdusharing.replace(node, false);
 			});
 		}
 		// Handle inside internal iFrames as well
@@ -2212,7 +2216,7 @@ var OOEdusharing = {
 					if (iFrameEsNodes.length > 0) {
 						iFrameEsNodes.each(function() {
 							var iFrameEsNode = jQuery( this );
-							OOEdusharing.replace(iFrameEsNode);
+							OOEdusharing.replace(iFrameEsNode, true);
 						});
 					}
 				});
@@ -2220,6 +2224,10 @@ var OOEdusharing = {
 		}
 	},
 	
+	/**
+	 * Toggle edu-sharing metadata.
+	 * see https://github.com/edu-sharing/plugin-moodle/blob/master/filter/edusharing/amd/src/edu.js
+	 */
 	toggleMetadata: function (e) {
 		if (jQuery(e.target).closest(".edusharing_metadata").length) {
 			//clicked inside ".edusharing_metadata" - do nothing
@@ -2240,11 +2248,6 @@ var OOEdusharing = {
 			jQuery(".edusharing_metadata").removeClass('open');
 		}
 	},
-	
-	/**
-	 * Toggle edu-sharing metadata.
-	 * see https://github.com/edu-sharing/plugin-moodle/blob/master/filter/edusharing/amd/src/edu.js
-	 */
 	enableMetadataToggler: function() {
 		jQuery(document).click(OOEdusharing.toggleMetadata);
 	}
