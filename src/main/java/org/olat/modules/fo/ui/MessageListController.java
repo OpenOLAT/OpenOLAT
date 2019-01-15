@@ -310,7 +310,7 @@ public class MessageListController extends BasicController implements GenericEve
 			} else {
 				scrollTo(message);
 			}
-		} else if(message != null) {
+		} else if(message != null && message.getKey() != null) {
 			MessageView view = loadView(ureq, message);
 			int index = 0;
 			for(int i=0; i<backupViews.size(); i++) {

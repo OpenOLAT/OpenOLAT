@@ -514,9 +514,7 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Bre
 		BreadCrumb crumb  = (BreadCrumb)currentLink.getUserObject();
 		if(crumb.getController() == null) {
 			if(crumbIndex - 1 >= 0) {
-				Link parentLink = stack.get(crumbIndex - 1);
-				BreadCrumb parentCrumb  = (BreadCrumb)parentLink.getUserObject();
-				setContent(parentCrumb.getController());
+				setContent(crumbIndex - 1);
 			}
 		} else {
 			setContent(crumb.getController());

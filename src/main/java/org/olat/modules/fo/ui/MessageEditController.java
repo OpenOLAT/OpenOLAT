@@ -494,7 +494,7 @@ public class MessageEditController extends FormBasicController {
 		if(editMode == EditMode.newThread) {
 			if(foCallback.mayOpenNewThread()) {
 				// save a new thread
-				fm.addTopMessage(message);
+				message = fm.addTopMessage(message);
 				fm.markNewMessageAsRead(getIdentity(), forum, message);
 				persistTempUploadedFiles(message);
 				// if notification is enabled -> notify the publisher about news
@@ -527,7 +527,7 @@ public class MessageEditController extends FormBasicController {
 				showWarning("may.not.save.msg.as.author");
 			}
 		} else if(editMode == EditMode.reply) { 
-			fm.replyToMessage(message, parentMessage);
+			message = fm.replyToMessage(message, parentMessage);
 			fm.markNewMessageAsRead(getIdentity(), forum, message);
 			persistTempUploadedFiles(message);
 			notifiySubscription();
@@ -657,11 +657,7 @@ public class MessageEditController extends FormBasicController {
 	 * @return the edited message
 	 */
 	public Message getMessage() {
-		if (!StringHelper.containsNonWhitespace(message.getTitle()) && message == null) {
-			throw new AssertException("Getting back the edited message failed! You first have to edit one and intialize properly!");
-		} else {
-			return message;
-		}
+		return message;
 	}
 
 	/**

@@ -778,12 +778,11 @@ public class ForumManager {
 	 * @param creator
 	 * @param replyToMessage
 	 */
-	public void replyToMessage(Message newMessage, Message replyToMessage) {
+	public Message replyToMessage(Message newMessage, Message replyToMessage) {
 		Message top = replyToMessage.getThreadtop();
 		newMessage.setThreadtop((top != null ? top : replyToMessage));
 		newMessage.setParent(replyToMessage);
-		
-		saveMessage(newMessage);
+		return saveMessage(newMessage);
 	}
 
 	/**
@@ -791,10 +790,10 @@ public class ForumManager {
 	 * @param forum
 	 * @param topMessage
 	 */
-	public void addTopMessage(Message topMessage) {
+	public Message addTopMessage(Message topMessage) {
 		topMessage.setParent(null);
 		topMessage.setThreadtop(null);
-		saveMessage(topMessage);
+		return saveMessage(topMessage);
 	}
 
 	/**
