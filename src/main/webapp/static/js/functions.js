@@ -2138,7 +2138,7 @@ var OOEdusharing = {
 		return html;
 	},
 	
-	replaceWithRendered: function(node, identifier, width, height, style, showLicense, showInfos, isIFrame) {
+	replaceWithRendered: function(node, identifier, width, height, esClass, showLicense, showInfos, isIFrame) {
 		var url = o_info.uriprefix.replace("auth", "edusharing") + "render?identifier=" + identifier;
 		if (width > 0) {
 			url = url + "&width=" + width;
@@ -2148,6 +2148,9 @@ var OOEdusharing = {
 		}
 		
 		var containerHtml = "<div class='o_edusharing_container";
+		if (typeof esClass != 'undefined') {
+			containerHtml += " " + esClass;
+		}
 		if (isIFrame) {
 			containerHtml += " o_in_iframe";
 		}
@@ -2157,12 +2160,7 @@ var OOEdusharing = {
 		if ('hide' === showInfos) {
 			containerHtml += " o_hide_infos";
 		}
-		containerHtml += "'";
-		
-		if (typeof style != 'undefined') {
-			containerHtml += " style='" + style + "'";
-		}
-		containerHtml += ">";
+		containerHtml += "'>";
 		containerHtml += "</div>";
 		
 		var container = jQuery(containerHtml);
@@ -2186,12 +2184,12 @@ var OOEdusharing = {
 		var identifier = node.data("es_identifier");
 		var width = node.attr("width");
 		var height = node.attr("height");
-		var style = node.attr("style");
+		var esClass = node.attr('class');
 		var showLicense = node.data("es_show_license");
 		var showInfos = node.data("es_show_infos");
 		
 		var spinner = OOEdusharing.replaceWithSpinner(node, width, height);
-		OOEdusharing.replaceWithRendered(spinner, identifier, width, height, style, showLicense, showInfos, isIFrame);
+		OOEdusharing.replaceWithRendered(spinner, identifier, width, height, esClass, showLicense, showInfos, isIFrame);
 	},
 	
 	/**

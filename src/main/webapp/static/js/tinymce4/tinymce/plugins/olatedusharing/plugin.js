@@ -28,25 +28,6 @@
 				return cachedCoreTrans;
 			}
 			
-			function getStyle(esFloat) {
-				switch(esFloat) {
-					case 'left' :
-						var style = 'display: block; float: left; margin: 5px 5px 5px 0;';
-						break;
-					case 'right' :
-						var style = 'display: block; float: right; margin: 5px 0 5px 5px;';
-						break;
-					case 'inline' :
-						var style = 'display: inline-block; margin: 0 5px;';
-						break;
-					case 'none' :
-					default:
-						var style = 'display: block; float: none; margin: 5px 0;';
-						break;
-				}
-				return style;
-			}
-
 			function handles(node) {
 				// only an <object>-node can possibly be edu-sharing-node
 				if ( 1 != node.nodeType ) {
@@ -126,7 +107,7 @@
 				node.dataset.es_show_license = 'show';
 				node.dataset.es_show_infos = 'show';
 
-				params.esFloat = 'left';
+				node.setAttribute('class', 'o_edusharing_left');
 				setAttributes(node, params);
 				
 				editor.selection.setCursorLocation(node);
@@ -143,7 +124,6 @@
 				} else {
 					node.dataset.es_version = node.dataset.es_version_current;
 				}
-				node.dataset.es_float = params.esFloat;
 				node.dataset.es_show_license = params.esShowLicense;
 				node.dataset.es_show_infos = params.esShowInfos;
 				
@@ -151,7 +131,7 @@
 			}
 			
 			function setAttributes(node, params) {
-				node.setAttribute('class', 'edusharing');
+				node.setAttribute('class', params.esFloat);
 				node.setAttribute('alt', params.title);
 				node.setAttribute('title', params.title);
 				var width = params.window_width;
@@ -162,7 +142,6 @@
 				if (height == 0)
 					height = '';
 				node.setAttribute('height', height);
-				node.setAttribute('style', getStyle(params.esFloat));
 			}
 			
 			editor.addButton('olatedusharing', {
@@ -213,7 +192,7 @@
 					window_width : node.getAttribute('width'),
 					window_height : node.getAttribute('height'),
 					title : node.getAttribute('title'),
-					esFloat: node.dataset.es_float,
+					esFloat: node.getAttribute('class'),
 					esShowLicense: node.dataset.es_show_license,
 					esShowInfos: node.dataset.es_show_infos,
 					window_versionshow: node.dataset.es_version == 0? "latest": "current",
@@ -271,10 +250,10 @@
 								type: 'listbox',
 								label: translator().translate('tiny.config.float'), 
 								'values': [
-									{text: translator().translate('tiny.config.float.left'), value: 'left'},
-									{text: translator().translate('tiny.config.float.right'), value: 'right'},
-									{text: translator().translate('tiny.config.float.inline'), value: 'inline'},
-									{text: translator().translate('tiny.config.float.none'), value: 'none'}
+									{text: translator().translate('tiny.config.float.left'), value: 'o_edusharing_left'},
+									{text: translator().translate('tiny.config.float.right'), value: 'o_edusharing_right'},
+									{text: translator().translate('tiny.config.float.inline'), value: 'o_edusharing_inline'},
+									{text: translator().translate('tiny.config.float.none'), value: 'o_edusharing_none'}
 								],
 								value: params.esFloat
 							},

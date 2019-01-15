@@ -38,6 +38,26 @@
 	}
 }
 
+.o_edusharing_left {
+	display: block;
+	float: left;
+	margin: 5px 5px 5px 0;
+}
+.o_edusharing_right {
+	display: block;
+	float: right;
+	margin: 5px 0 5px 5px;
+}
+.o_edusharing_inline {
+	display: inline-block;
+	margin: 0 5px;
+}
+.o_edusharing_none {
+	display: block;
+	float: none;
+	margin: 5px 0;
+}
+
 /**
 * see https://github.com/edu-sharing/plugin-moodle/blob/master/filter/edusharing/styles.css
 */
