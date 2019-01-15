@@ -153,7 +153,7 @@ public class PdfDocument {
                 text = "";
             } else {
                 String subString = text.substring(0, spaceIndex);
-                float size = fontSize * textFont.getStringWidth(subString) / 1000;
+                float size = getStringWidth(subString, textFont, fontSize);
                 if (size > paragraphWidth) {
                     if (lastSpace < 0) // So we have a word longer than the line... draw it anyways
                         lastSpace = spaceIndex;
@@ -180,14 +180,19 @@ public class PdfDocument {
     
     public float getStringWidth(String string, float fontSize)
     throws IOException {
+    	return getStringWidth(string, font, fontSize);
+    }
+    
+    public float getStringWidth(String string, PDFont textFont, float fontSize)
+    throws IOException {
     	if(string == null || string.length() == 0) return 0.0f;
     	
     	try {
 			string = cleanString(string);
-			return fontSize * font.getStringWidth(string) / 1000;
+			return fontSize * textFont.getStringWidth(string) / 1000;
 		} catch (IllegalArgumentException e) {
 			log.error("", e);
-			return getStringEstimatedWidth(string.length(), fontSize);
+			return getStringEstimatedWidth(string.length(), textFont, fontSize);
 		}
     }
     
@@ -199,10 +204,10 @@ public class PdfDocument {
      * @return A width
      * @throws IOException
      */
-    public float getStringEstimatedWidth(int length, float fontSize) throws IOException {
+    public float getStringEstimatedWidth(int length, PDFont textFont, float fontSize) throws IOException {
     	char[] onlyA = new char[length];
     	Arrays.fill(onlyA, 'A');
-    	return fontSize * font.getStringWidth(String.valueOf(onlyA)) / 1000.0f;
+    	return fontSize * textFont.getStringWidth(String.valueOf(onlyA)) / 1000.0f;
     }
     
     public static String cleanString(String string) {
