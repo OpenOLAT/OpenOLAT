@@ -19,6 +19,8 @@
  */
 package org.olat.modules.gotomeeting.ui;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -30,6 +32,10 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.resource.OresHelper;
 
 /**
  * 
@@ -37,7 +43,7 @@ import org.olat.core.gui.control.controller.BasicController;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class GoToAdminController extends BasicController {
+public class GoToAdminController extends BasicController implements Activateable2 {
 	
 	private Link accountLink, organizersLink, meetingsLink;
 	private SegmentViewComponent segmentView;
@@ -72,6 +78,21 @@ public class GoToAdminController extends BasicController {
 	}
 
 	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if("Configuration".equalsIgnoreCase(type)) {
+			doOpenAccountSettings(ureq);
+		} else if("Organizers".equalsIgnoreCase(type)) {
+			List<ContextEntry> subEntries = entries.subList(1, entries.size());
+			doOpenOrganizersList(ureq).activate(ureq, subEntries, entries.get(0).getTransientState());
+		} else if("Meetings".equalsIgnoreCase(type)) {
+			doOpenMeetingsList(ureq);
+		}
+	}
+
+	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(source == segmentView) {
 			if(event instanceof SegmentViewEvent) {
@@ -91,23 +112,27 @@ public class GoToAdminController extends BasicController {
 	
 	private void doOpenAccountSettings(UserRequest ureq) {
 		if(configController == null) {
-			configController = new GoToConfigurationController(ureq, getWindowControl());
+			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("Configuration", 0l), null);
+			configController = new GoToConfigurationController(ureq, swControl);
 			listenTo(configController);
 		} 
 		mainVC.put("segmentCmp", configController.getInitialComponent());
 	}
 
-	private void doOpenOrganizersList(UserRequest ureq) {
+	private GoToOrganizerListAdminController doOpenOrganizersList(UserRequest ureq) {
 		if(organizerListCtrl == null) {
-			organizerListCtrl = new GoToOrganizerListAdminController(ureq, getWindowControl());
+			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("Organizers", 0l), null);
+			organizerListCtrl = new GoToOrganizerListAdminController(ureq, swControl);
 			listenTo(organizerListCtrl);
 		} 
 		mainVC.put("segmentCmp", organizerListCtrl.getInitialComponent());
+		return organizerListCtrl;
 	}
 	
 	private void doOpenMeetingsList(UserRequest ureq) {
 		if(meetingsListCtrl == null) {
-			meetingsListCtrl = new GoToMeetingsAdminController(ureq, getWindowControl());
+			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("Meetings", 0l), null);
+			meetingsListCtrl = new GoToMeetingsAdminController(ureq, swControl);
 			listenTo(meetingsListCtrl);
 		} 
 		mainVC.put("segmentCmp", meetingsListCtrl.getInitialComponent());

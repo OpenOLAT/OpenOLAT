@@ -48,10 +48,11 @@ public class GoToOrganizerDAOTest extends OlatTestCase {
 	public void createOrganizer_withoutOwner() {
 		String username = UUID.randomUUID().toString();
 		String accessToken = UUID.randomUUID().toString();
+		String refreshToken = UUID.randomUUID().toString();
 		String organizerKey = UUID.randomUUID().toString();
 		
 		GoToOrganizer organizer = organizerDao
-				.createOrganizer("Our account", username, accessToken, organizerKey, null, null, null, null, 10l, null);
+				.createOrganizer("Our account", username, accessToken, refreshToken, organizerKey, null, null, null, null, 10l, null);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(organizer);
 		Assert.assertNotNull(organizer.getKey());
@@ -67,7 +68,10 @@ public class GoToOrganizerDAOTest extends OlatTestCase {
 		Assert.assertEquals("Our account", reloadedOrganizer.getName());
 		Assert.assertEquals(username, reloadedOrganizer.getUsername());
 		Assert.assertEquals(accessToken, reloadedOrganizer.getAccessToken());
+		Assert.assertEquals(refreshToken, reloadedOrganizer.getRefreshToken());
 		Assert.assertEquals(organizerKey, reloadedOrganizer.getOrganizerKey());
+		Assert.assertNotNull(reloadedOrganizer.getRenewDate());
+		Assert.assertNotNull(reloadedOrganizer.getRenewRefreshDate());
 	}
 	
 	@Test
@@ -76,10 +80,11 @@ public class GoToOrganizerDAOTest extends OlatTestCase {
 
 		String username = UUID.randomUUID().toString();
 		String accessToken = UUID.randomUUID().toString();
+		String refreshToken = UUID.randomUUID().toString();
 		String organizerKey = UUID.randomUUID().toString();
 		
 		GoToOrganizer organizer = organizerDao
-				.createOrganizer(null, username, accessToken, organizerKey, "Albrecht", "Durer", "albert@openolat.com", "account-key", 1200l, org);
+				.createOrganizer(null, username, accessToken, refreshToken, organizerKey, "Albrecht", "Durer", "albert@openolat.com", "account-key", 1200l, org);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(organizer);
 
@@ -90,40 +95,22 @@ public class GoToOrganizerDAOTest extends OlatTestCase {
 		Assert.assertNotNull(organizer.getLastModified());
 		Assert.assertEquals(username, reloadedOrganizer.getUsername());
 		Assert.assertEquals(accessToken, reloadedOrganizer.getAccessToken());
+		Assert.assertEquals(refreshToken, reloadedOrganizer.getRefreshToken());
 		Assert.assertEquals(organizerKey, reloadedOrganizer.getOrganizerKey());
 		Assert.assertEquals(org, reloadedOrganizer.getOwner());
-	}
-	
-	@Test
-	public void loadOrganizerByUsername() {
-		String username = UUID.randomUUID().toString();
-		String accessToken = UUID.randomUUID().toString();
-		String organizerKey = UUID.randomUUID().toString();
-		
-		GoToOrganizer organizer = organizerDao
-				.createOrganizer(null, username, accessToken, organizerKey, "Anton", "Koberger", "anton@openolat.com", null, 10l, null);
-		dbInstance.commitAndCloseSession();
-		Assert.assertNotNull(organizer); 
-		
-		//load by user name
-		GoToOrganizer reloadedOrganizer = organizerDao.loadOrganizerByUsername(username);
-		Assert.assertNotNull(reloadedOrganizer);
-		Assert.assertEquals(organizer, reloadedOrganizer);
-		
-		// check dummy user name
-		String randomName = UUID.randomUUID().toString();
-		GoToOrganizer dummyOrganizer = organizerDao.loadOrganizerByUsername(randomName);
-		Assert.assertNull(dummyOrganizer);
+		Assert.assertNotNull(reloadedOrganizer.getRenewDate());
+		Assert.assertNotNull(reloadedOrganizer.getRenewRefreshDate());
 	}
 	
 	@Test
 	public void getOrganizers() {
 		String username = UUID.randomUUID().toString();
 		String accessToken = UUID.randomUUID().toString();
+		String refreshToken = UUID.randomUUID().toString();
 		String organizerKey = UUID.randomUUID().toString();
 		
 		GoToOrganizer organizer = organizerDao
-				.createOrganizer(null, username, accessToken, organizerKey, "Martin", "Schongauer", null, null, 10l, null);
+				.createOrganizer(null, username, accessToken, refreshToken, organizerKey, "Martin", "Schongauer", null, null, 10l, null);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(organizer); 
 
@@ -141,12 +128,13 @@ public class GoToOrganizerDAOTest extends OlatTestCase {
 		
 		String username = UUID.randomUUID().toString();
 		String accessToken = UUID.randomUUID().toString();
+		String refreshToken = UUID.randomUUID().toString();
 		String organizerKey = UUID.randomUUID().toString();
 		
 		GoToOrganizer myOrganizer = organizerDao
-				.createOrganizer(null, username, accessToken, organizerKey, "Martin", "Schongauer", null, null, 10l, org);
+				.createOrganizer(null, username, accessToken, refreshToken, organizerKey, "Martin", "Schongauer", null, null, 10l, org);
 		GoToOrganizer systemOrganizer = organizerDao
-				.createOrganizer(null, username + "_w", accessToken + "_w", organizerKey + "_w", "System", "Wide", null, null, 10l, null);
+				.createOrganizer(null, username + "_w", accessToken + "_w", refreshToken + "_w", organizerKey + "_w", "System", "Wide", null, null, 10l, null);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(myOrganizer); 
 
@@ -166,21 +154,34 @@ public class GoToOrganizerDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void organizerExists() {
+	public void getOrganizers_accountKey() {
 		String username = UUID.randomUUID().toString();
 		String accessToken = UUID.randomUUID().toString();
+		String refreshToken = UUID.randomUUID().toString();
 		String organizerKey = UUID.randomUUID().toString();
+		String accountKey = UUID.randomUUID().toString();
 		
 		GoToOrganizer organizer = organizerDao
-				.createOrganizer(null, username, accessToken, organizerKey, "Johann", "Amerbach", null, null, 10l, null);
-		dbInstance.commitAndCloseSession();
-		Assert.assertNotNull(organizer); 
+				.createOrganizer(null, username, accessToken, refreshToken, organizerKey, "Martin", "Schongauer", null, accountKey, 10l, null);
 
-		boolean exists = organizerDao.organizerExists(username);
-		Assert.assertTrue(exists);
+		//load organizers
+		List<GoToOrganizer> organizers = organizerDao.getOrganizers(accountKey, organizerKey);
+		Assert.assertNotNull(organizers);
+		Assert.assertEquals(1, organizers.size());
+		Assert.assertTrue(organizers.contains(organizer));
+		// check organizer
+		GoToOrganizer reloadedOrganizer = organizers.get(0);
+		Assert.assertNotNull(reloadedOrganizer);
 		
-		boolean notExists = organizerDao.organizerExists(accessToken);
-		Assert.assertFalse(notExists);
+		Assert.assertNotNull(reloadedOrganizer);
+		Assert.assertEquals(organizer.getKey(), reloadedOrganizer.getKey());
+		Assert.assertNotNull(organizer.getCreationDate());
+		Assert.assertNotNull(organizer.getLastModified());
+		Assert.assertEquals(username, reloadedOrganizer.getUsername());
+		Assert.assertEquals(accessToken, reloadedOrganizer.getAccessToken());
+		Assert.assertEquals(refreshToken, reloadedOrganizer.getRefreshToken());
+		Assert.assertEquals(organizerKey, reloadedOrganizer.getOrganizerKey());
+		Assert.assertNotNull(reloadedOrganizer.getRenewDate());
+		Assert.assertNotNull(reloadedOrganizer.getRenewRefreshDate());
 	}
-
 }

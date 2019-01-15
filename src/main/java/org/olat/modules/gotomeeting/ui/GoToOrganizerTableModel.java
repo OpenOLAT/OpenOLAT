@@ -24,9 +24,11 @@ import java.util.Locale;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.gotomeeting.GoToOrganizer;
 import org.olat.user.UserManager;
 
@@ -63,16 +65,15 @@ public class GoToOrganizerTableModel extends DefaultFlexiTableDataModel<GoToOrga
 	public Object getValueAt(GoToOrganizer organizer, int col) {
 		switch(OrganizerCols.values()[col]) {
 			case key: return organizer.getKey();
+			case name: return organizer.getName();
 			case firstName: return organizer.getFirstName();
 			case lastName: return organizer.getLastName();
 			case email: return organizer.getEmail();
-			case renewDate: return organizer.getRenewDate();
-			case owner: {
-				if(organizer.getOwner() == null) {
-					return null;
-				}
-				return userManager.getUserDisplayName(organizer.getOwner());
-			}
+			case renewDate: return StringHelper.containsNonWhitespace(organizer.getRefreshToken())
+					? organizer.getRenewRefreshDate() : organizer.getRenewDate();
+			case owner: return userManager.getUserDisplayName(organizer.getOwner());
+			case refresh:
+			case type: return Boolean.valueOf(StringHelper.containsNonWhitespace(organizer.getRefreshToken()));
 			case remove: return organizer.getOwner() == null;
 		}
 		return null;
@@ -83,15 +84,18 @@ public class GoToOrganizerTableModel extends DefaultFlexiTableDataModel<GoToOrga
 		return new GoToOrganizerTableModel(getTableColumnModel(), userManager);
 	}
 
-	public enum OrganizerCols {
+	public enum OrganizerCols implements FlexiSortableColumnDef {
 		
 		key("organizer.key"),
+		name("account.name"),
 		firstName("organizer.firsName"),
 		lastName("organizer.lastName"),
 		email("organizer.email"),
 		renewDate("organizer.renew.date"),
 		owner("organizer.owner"),
-		remove("remove");
+		type("organizer.type"),
+		remove("remove"),
+		refresh("refresh.organizer");
 		
 		private final String i18nHeaderKey;
 		
@@ -99,8 +103,19 @@ public class GoToOrganizerTableModel extends DefaultFlexiTableDataModel<GoToOrga
 			this.i18nHeaderKey = i18nHeaderKey;
 		}
 
+		@Override
 		public String i18nHeaderKey() {
 			return i18nHeaderKey;
+		}
+
+		@Override
+		public boolean sortable() {
+			return true;
+		}
+
+		@Override
+		public String sortKey() {
+			return name();
 		}
 	}
 	

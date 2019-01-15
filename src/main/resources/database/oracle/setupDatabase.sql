@@ -1339,6 +1339,8 @@ create table o_goto_organizer (
    g_account_key varchar2(128 char) default null,
    g_access_token varchar2(128 char) not null,
    g_renew_date date not null,
+   g_refresh_token varchar(128),
+   g_renew_refresh_date date,
    g_organizer_key varchar2(128 char) not null,
    g_username varchar2(128 char) not null,
    g_firstname varchar2(128 char) default null,

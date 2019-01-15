@@ -35,14 +35,20 @@ import org.olat.modules.gotomeeting.model.GoToError;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
+ * This controller use the replacement of the "login direct" in the new
+ * OAuth v2 interface (but without the OAuth round trip to logmein webpages).
+ * After login successfully, the controller will create or update the organizer
+ * based on the account key and organizer key.
+ * 
  * 
  * Initial date: 22.03.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class EditOrganizerController extends FormBasicController {
+public class LoginOrganizerController extends FormBasicController {
 	
-	private TextElement accountLabelEl, usernameEl;
+	private TextElement accountLabelEl;
+	private TextElement usernameEl;
 	private TextElement passwordEl;
 	
 	private final Identity owner;
@@ -51,21 +57,21 @@ public class EditOrganizerController extends FormBasicController {
 	@Autowired
 	private GoToMeetingManager meetingManager;
 	
-	public EditOrganizerController(UserRequest ureq, WindowControl wControl) {
+	public LoginOrganizerController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		organizer = null;
 		owner = null;
 		initForm(ureq);
 	}
 	
-	public EditOrganizerController(UserRequest ureq, WindowControl wControl, Identity owner) {
+	public LoginOrganizerController(UserRequest ureq, WindowControl wControl, Identity owner) {
 		super(ureq, wControl);
 		organizer = null;
 		this.owner = owner;
 		initForm(ureq);
 	}
 	
-	public EditOrganizerController(UserRequest ureq, WindowControl wControl, GoToOrganizer organizer) {
+	public LoginOrganizerController(UserRequest ureq, WindowControl wControl, GoToOrganizer organizer) {
 		super(ureq, wControl);
 		this.organizer = organizer;
 		this.owner = null;
@@ -117,7 +123,7 @@ public class EditOrganizerController extends FormBasicController {
 		String username = usernameEl.getValue();
 		String password = passwordEl.getValue();
 		GoToError error = new GoToError();
-		if(meetingManager.addOrganizer(name, username, password, owner, error)) {
+		if(meetingManager.createOrUpdateOrganizer(name, username, password, owner, error)) {
 			fireEvent(ureq, Event.DONE_EVENT);
 		} else {
 			showWarning("error.code." + error.getErrorCode());

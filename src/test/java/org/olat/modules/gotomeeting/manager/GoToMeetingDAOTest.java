@@ -55,10 +55,11 @@ public class GoToMeetingDAOTest extends OlatTestCase {
 	public void createMeeting_without() {
 		String username = UUID.randomUUID().toString();
 		String accessToken = UUID.randomUUID().toString();
+		String refreshToken = UUID.randomUUID().toString();
 		String organizerKey = UUID.randomUUID().toString();
 		
 		GoToOrganizer organizer = organizerDao
-				.createOrganizer("My account", username, accessToken, organizerKey, "Lucas", "de Leyde", null, null, 10l, null);
+				.createOrganizer("My account", username, accessToken, refreshToken, organizerKey, "Lucas", "de Leyde", null, null, 10l, null);
 		Assert.assertNotNull(organizer);
 		
 		Date start = new Date();
@@ -83,10 +84,11 @@ public class GoToMeetingDAOTest extends OlatTestCase {
 		
 		String username = UUID.randomUUID().toString();
 		String accessToken = UUID.randomUUID().toString();
+		String refreshToken = UUID.randomUUID().toString();
 		String organizerKey = UUID.randomUUID().toString();
 		
 		GoToOrganizer organizer = organizerDao
-				.createOrganizer(null, username, accessToken, organizerKey, "Michael", "Wolgemut", null, null, 10l, null);
+				.createOrganizer(null, username, accessToken, refreshToken, organizerKey, "Michael", "Wolgemut", null, null, 10l, null);
 		Assert.assertNotNull(organizer);
 
 		Date start = new Date();
@@ -109,10 +111,11 @@ public class GoToMeetingDAOTest extends OlatTestCase {
 		
 		String username = UUID.randomUUID().toString();
 		String accessToken = UUID.randomUUID().toString();
+		String refreshToken = UUID.randomUUID().toString();
 		String organizerKey = UUID.randomUUID().toString();
 		
 		GoToOrganizer organizer = organizerDao
-				.createOrganizer(null, username, accessToken, organizerKey, "Levinus", "Memminger", null, null, 10l, null);
+				.createOrganizer(null, username, accessToken, refreshToken, organizerKey, "Levinus", "Memminger", null, null, 10l, null);
 		Assert.assertNotNull(organizer);
 
 		Date start = new Date();
@@ -134,11 +137,12 @@ public class GoToMeetingDAOTest extends OlatTestCase {
 		
 		String username = UUID.randomUUID().toString();
 		String accessToken = UUID.randomUUID().toString();
+		String refreshToken = UUID.randomUUID().toString();
 		String organizerKey = UUID.randomUUID().toString();
 		String externalId = UUID.randomUUID().toString();
 		
 		GoToOrganizer organizer = organizerDao
-				.createOrganizer(null, username, accessToken, organizerKey, "Levinus", "Memminger", null, null, 10l, null);
+				.createOrganizer(null, username, accessToken, refreshToken, organizerKey, "Levinus", "Memminger", null, null, 10l, null);
 		Assert.assertNotNull(organizer);
 
 		Date start = new Date();
@@ -160,11 +164,12 @@ public class GoToMeetingDAOTest extends OlatTestCase {
 		
 		String username = UUID.randomUUID().toString();
 		String accessToken = UUID.randomUUID().toString();
+		String refreshToken = UUID.randomUUID().toString();
 		String organizerKey = UUID.randomUUID().toString();
 		String externalId = UUID.randomUUID().toString();
 		
 		GoToOrganizer organizer = organizerDao
-				.createOrganizer(null, username, accessToken, organizerKey, "Hans", "Pleydenwurff", null, null, 10l, null);
+				.createOrganizer(null, username, accessToken, refreshToken, organizerKey, "Hans", "Pleydenwurff", null, null, 10l, null);
 		Assert.assertNotNull(organizer);
 
 		Date start = new Date();
@@ -188,10 +193,11 @@ public class GoToMeetingDAOTest extends OlatTestCase {
 		
 		String username = UUID.randomUUID().toString();
 		String accessToken = UUID.randomUUID().toString();
+		String refreshToken = UUID.randomUUID().toString();
 		String organizerKey = UUID.randomUUID().toString();
 		
 		GoToOrganizer organizer = organizerDao
-				.createOrganizer(null, username, accessToken, organizerKey, "Michael", "Wolgemut", null, null, 10l, null);
+				.createOrganizer(null, username, accessToken, refreshToken, organizerKey, "Michael", "Wolgemut", null, null, 10l, null);
 		Assert.assertNotNull(organizer);
 
 		Calendar cal = Calendar.getInstance();

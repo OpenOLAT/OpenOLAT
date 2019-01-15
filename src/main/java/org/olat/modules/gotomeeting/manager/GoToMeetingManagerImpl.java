@@ -21,16 +21,19 @@ package org.olat.modules.gotomeeting.manager;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-import org.apache.http.HttpResponse;
+import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -76,7 +79,7 @@ public class GoToMeetingManagerImpl implements GoToMeetingManager {
 	
 	private static final OLog log = Tracing.createLoggerFor(GoToMeetingManagerImpl.class);
 	
-	private String directLoginUrl = "https://api.getgo.com/oauth/access_token";
+	private String tokenUrl = "https://api.getgo.com/oauth/v2/token";
 	private String gotoTrainingUrl = "https://api.getgo.com/G2T/rest";
 
 	@Autowired
@@ -97,22 +100,45 @@ public class GoToMeetingManagerImpl implements GoToMeetingManager {
 	}
 
 	@Override
-	public boolean addOrganizer(String name, String username, String password, Identity owner, GoToError error) {
-		GoToOrganizerG2T organizerVo = directLogin(username, password, error);
-		if(organizerVo != null) {
-			GoToOrganizer organizer = organizerDao.loadOrganizerByUsername(username);
-			if(organizer == null) {
-				organizerDao.createOrganizer(name, username, organizerVo.getAccessToken(), organizerVo.getOrganizerKey(),
-						organizerVo.getFirstName(), organizerVo.getLastName(), organizerVo.getEmail(),
-						organizerVo.getAccountKey(), organizerVo.getExpiresIn(), owner);
+	public boolean createOrUpdateOrganizer(GoToOrganizerG2T org) {
+		List<GoToOrganizer> organizers = organizerDao.getOrganizers(org.getAccountKey(), org.getOrganizerKey());
+		
+		String name = org.getFirstName() + " " + org.getLastName();
+		if(organizers.isEmpty()) {
+			organizerDao.createOrganizer(name, org.getEmail(), org.getAccessToken(), org.getRefreshToken(), org.getOrganizerKey(), 
+					org.getFirstName(), org.getLastName(), org.getEmail(), org.getAccountKey(), org.getExpiresIn(), null);
+		} else {
+			GoToOrganizer organizer = organizers.get(0);
+			organizerDao.updateOrganizer(organizer, name, org.getAccessToken(), org.getRefreshToken(), org.getOrganizerKey(),
+					org.getFirstName(), org.getLastName(), org.getEmail(), org.getAccountKey(), org.getExpiresIn());
+		}
+		return true;
+	}	
+	
+	@Override
+	public boolean createOrUpdateOrganizer(String name, String username, String password, Identity owner,
+			GoToError error) {
+		GoToOrganizerG2T org = login(username, password, error);
+		if(org != null) {
+			List<GoToOrganizer> organizers = organizerDao.getOrganizers(org.getAccountKey(), org.getOrganizerKey());
+			if(organizers.isEmpty()) {
+				organizerDao.createOrganizer(name, username, org.getAccessToken(), org.getRefreshToken(), org.getOrganizerKey(),
+						org.getFirstName(), org.getLastName(), org.getEmail(),
+						org.getAccountKey(), org.getExpiresIn(), owner);
 			} else {
-				organizerDao.updateOrganizer(organizer, name, organizerVo.getAccessToken(), organizerVo.getOrganizerKey(),
-						organizerVo.getFirstName(), organizerVo.getLastName(), organizerVo.getEmail(),
-						organizerVo.getAccountKey(), organizerVo.getExpiresIn());
+				GoToOrganizer organizer = organizers.get(0);
+				organizerDao.updateOrganizer(organizer, name, org.getAccessToken(), org.getRefreshToken(), org.getOrganizerKey(),
+						org.getFirstName(), org.getLastName(), org.getEmail(), org.getAccountKey(), org.getExpiresIn());
 			}
 			return true;
 		}
 		return false;
+	}
+
+	@Override
+	public void updateOrganizer(GoToOrganizer organizer, String name) {
+		GoToOrganizer reloadedOrganizer = organizerDao.loadOrganizerByKey(organizer.getKey());
+		organizerDao.updateOrganizer(reloadedOrganizer, name);
 	}
 
 	@Override
@@ -123,7 +149,8 @@ public class GoToMeetingManagerImpl implements GoToMeetingManager {
 		}
 		return false;
 	}
-	
+
+	@Override
 	public boolean checkOrganizerAvailability(GoToOrganizer organizer, Date start, Date end) {
 		List<GoToMeeting> meetings = meetingDao.getMeetingsOverlap(GoToType.training, organizer, start, end);
 		return meetings.isEmpty();
@@ -132,14 +159,12 @@ public class GoToMeetingManagerImpl implements GoToMeetingManager {
 	@Override
 	public GoToMeeting scheduleTraining(GoToOrganizer organizer, String name, String externalId, String description, Date start, Date end,
 			RepositoryEntry resourceOwner, String subIdentifier, BusinessGroup businessGroup, GoToError error) {
-		//GoToMeeting scheduledMeeting = meetingDao.createTraining(name, externalId, description, UUID.randomUUID().toString(), start, end, organizer, resourceOwner, subIdentifier, businessGroup);
+		
 		GoToMeeting scheduledMeeting = null;
 		try(CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
 			String url = gotoTrainingUrl + "/organizers/" + organizer.getOrganizerKey() + "/trainings";
 			HttpPost post = new HttpPost(url);
-			post.addHeader("Accept", "application/json");
-			post.addHeader("Authorization", "OAuth oauth_token=" + organizer.getAccessToken());
-			post.addHeader("Content-type", "application/json");
+			decorateWithAccessToken(post, organizer);
 			
 			String timeZoneId = goToMeetingModule.getGoToTimeZoneId();
 			JSONObject trainingJson = GoToJsonUtil
@@ -147,10 +172,10 @@ public class GoToMeetingManagerImpl implements GoToMeetingManager {
 			String objectStr = trainingJson.toString();
 			post.setEntity(new StringEntity(objectStr, ContentType.APPLICATION_JSON));
 			
-			HttpResponse response = httpClient.execute(post);
-			int status = response.getStatusLine().getStatusCode();
+			GoToResponse response = execute(httpClient, post);
+			int status = response.status();
 			if(status == 201) {//created
-				String trainingKey = EntityUtils.toString(response.getEntity());
+				String trainingKey = response.content();
 				trainingKey = trainingKey.replace("\"", "");
 				scheduledMeeting = meetingDao.createTraining(name, externalId, description, trainingKey, start, end, organizer, resourceOwner, subIdentifier, businessGroup);
 				dbInstance.commit();
@@ -195,17 +220,14 @@ public class GoToMeetingManagerImpl implements GoToMeetingManager {
 			String url = gotoTrainingUrl + "/organizers/" + organizer.getOrganizerKey() + "/trainings/" + meeting.getMeetingKey() + "/times";
 
 			HttpPut put = new HttpPut(url);
-			put.addHeader("Accept", "application/json");
-			put.addHeader("Authorization", "OAuth oauth_token=" + organizer.getAccessToken());
-			put.addHeader("Content-type", "application/json");
+			decorateWithAccessToken(put, organizer);
 
 			String payload = GoToJsonUtil.trainingTimes(goToMeetingModule.getGoToTimeZoneId(), start, end).toString();
 			put.setEntity(new StringEntity(payload, ContentType.APPLICATION_JSON));
 			
-			HttpResponse response = httpClient.execute(put);
-			int status = response.getStatusLine().getStatusCode();
+			GoToResponse response = execute(httpClient, put);
+			int status = response.status();
 			if(status == 200) {//created
-				EntityUtils.consume(response.getEntity());
 				meeting.setStartDate(start);
 				meeting.setEndDate(end);
 			} else {
@@ -222,9 +244,7 @@ public class GoToMeetingManagerImpl implements GoToMeetingManager {
 			String url = gotoTrainingUrl + "/organizers/" + organizer.getOrganizerKey() + "/trainings/" + meeting.getMeetingKey() + "/nameDescription";
 
 			HttpPut put = new HttpPut(url);
-			put.addHeader("Accept", "application/json");
-			put.addHeader("Authorization", "OAuth oauth_token=" + organizer.getAccessToken());
-			put.addHeader("Content-type", "application/json");
+			this.decorateWithAccessToken(put, organizer);
 			
 			if(!StringHelper.containsNonWhitespace(description) || "-".equals(description)) {
 				description = training.getDescription();
@@ -233,10 +253,9 @@ public class GoToMeetingManagerImpl implements GoToMeetingManager {
 			String payload = GoToJsonUtil.trainingNameDescription(name, description).toString();
 			put.setEntity(new StringEntity(payload, ContentType.APPLICATION_JSON));
 			
-			HttpResponse response = httpClient.execute(put);
-			int status = response.getStatusLine().getStatusCode();
+			GoToResponse response = execute(httpClient, put);
+			int status = response.status();
 			if(status == 204) {//created
-				EntityUtils.consume(response.getEntity());
 				meeting.setName(name);
 				meeting.setDescription(description);
 			} else {
@@ -259,21 +278,19 @@ public class GoToMeetingManagerImpl implements GoToMeetingManager {
 				String url = gotoTrainingUrl + "/organizers/" + organizer.getOrganizerKey() + "/trainings/" + meeting.getMeetingKey() + "/registrants";
 
 				HttpPost post = new HttpPost(url);
-				post.addHeader("Accept", "application/json");
-				post.addHeader("Authorization", "OAuth oauth_token=" + organizer.getAccessToken());
-				post.addHeader("Content-type", "application/json");
+				decorateWithAccessToken(post, organizer);
 				
 				String traineeJson = GoToJsonUtil.registrant(trainee).toString();
 				post.setEntity(new StringEntity(traineeJson, ContentType.APPLICATION_JSON));
 				
-				HttpResponse response = httpClient.execute(post);
-				int status = response.getStatusLine().getStatusCode();
+				GoToResponse response = execute(httpClient, post);
+				int status = response.status();
 				if(status == 201) {//created
-					String content = EntityUtils.toString(response.getEntity());
+					String content = response.content();
 					GoToRegistrantG2T registrantVo = GoToJsonUtil.parseAddRegistrant(content);
 					registrant = registrantDao.createRegistrant(meeting, trainee, registrantVo.getRegistrantKey(), registrantVo.getJoinUrl(), registrantVo.getConfirmationUrl());
 				} else if(status == 409) {
-					String content = EntityUtils.toString(response.getEntity());
+					String content = response.content();
 					GoToErrorG2T errorVo = GoToJsonUtil.parseError(content);
 					if(errorVo.getErrorCode() == GoToErrors.DuplicateRegistrant && StringHelper.containsNonWhitespace(errorVo.getRegistrantKey())) {
 						//already registrate but not in OpenOLAT
@@ -298,16 +315,12 @@ public class GoToMeetingManagerImpl implements GoToMeetingManager {
 			String url = gotoTrainingUrl + "/organizers/" + organizer.getOrganizerKey() + "/trainings/" + meeting.getMeetingKey() + "/registrants/" + registrantKey;
 
 			HttpGet get = new HttpGet(url);
-			get.addHeader("Accept", "application/json");
-			get.addHeader("Authorization", "OAuth oauth_token=" + organizer.getAccessToken());
-			get.addHeader("Content-type", "application/json");
+			decorateWithAccessToken(get, organizer);
 
-			HttpResponse response = httpClient.execute(get);
-			int status = response.getStatusLine().getStatusCode();
-			if(status == 200) {
-				String content = EntityUtils.toString(response.getEntity());
-				GoToRegistrantG2T registrantVo = GoToJsonUtil.parseAddRegistrant(content);
-				return registrantVo;
+			GoToResponse response = execute(httpClient, get);
+			if(response.status() == 200) {
+				String content = response.content();
+				return GoToJsonUtil.parseAddRegistrant(content);
 			} else {
 				logGoToError("getRegistrant", response, error);
 				return null;
@@ -319,11 +332,10 @@ public class GoToMeetingManagerImpl implements GoToMeetingManager {
 	}
 
 	
-	private void logGoToError(String method, HttpResponse response, GoToError error)
-	throws IOException {
-		int status = response.getStatusLine().getStatusCode();
+	private void logGoToError(String method, GoToResponse response, GoToError error) {
+		int status = response.status();
 		error.setErrorCode(status);
-		String responseString = EntityUtils.toString(response.getEntity());
+		String responseString = response.content();
 		try {
 			GoToErrorG2T errorVo = GoToJsonUtil.parseError(responseString);
 			if(errorVo != null) {
@@ -333,7 +345,6 @@ public class GoToMeetingManagerImpl implements GoToMeetingManager {
 		} catch (Exception e) {
 			log.error("", e);
 		} finally {
-			EntityUtils.consumeQuietly(response.getEntity());
 			log.error(method + " return " + status + ": " + responseString);
 		}
 	}
@@ -381,16 +392,13 @@ public class GoToMeetingManagerImpl implements GoToMeetingManager {
 			String url = gotoTrainingUrl + "/organizers/" + organizer.getOrganizerKey() + "/trainings/" + meeting.getMeetingKey();
 
 			HttpGet get = new HttpGet(url);
-			get.addHeader("Accept", "application/json");
-			get.addHeader("Authorization", "OAuth oauth_token=" + organizer.getAccessToken());
-			get.addHeader("Content-type", "application/json");
+			decorateWithAccessToken(get, organizer);
 
-			HttpResponse response = httpClient.execute(get);
-			int status = response.getStatusLine().getStatusCode();
+			GoToResponse response = execute(httpClient, get);
+			int status = response.status();
 			if(status == 200) {//deleted
-				String content = EntityUtils.toString(response.getEntity());
-				GoToTrainingG2T trainingVo = GoToJsonUtil.parseTraining(content);
-				return trainingVo;
+				String content = response.content();
+				return GoToJsonUtil.parseTraining(content);
 			} else {
 				logGoToError("getTraining", response, error);
 				return null;
@@ -408,16 +416,13 @@ public class GoToMeetingManagerImpl implements GoToMeetingManager {
 			String url = gotoTrainingUrl + "/trainings/" + meeting.getMeetingKey() + "/start";
 
 			HttpGet get = new HttpGet(url);
-			get.addHeader("Accept", "application/json");
-			get.addHeader("Authorization", "OAuth oauth_token=" + organizer.getAccessToken());
-			get.addHeader("Content-type", "application/json");
+			decorateWithAccessToken(get, organizer);
 
-			HttpResponse response = httpClient.execute(get);
-			int status = response.getStatusLine().getStatusCode();
+			GoToResponse response = execute(httpClient, get);
+			int status = response.status();
 			if(status == 200) {//deleted
-				String content = EntityUtils.toString(response.getEntity());
-				String startUrl = GoToJsonUtil.parseHostUrl(content);
-				return startUrl;
+				String content = response.content();
+				return GoToJsonUtil.parseHostUrl(content);
 			} else {
 				logGoToError("startTraining", response, error);
 				return null;
@@ -445,16 +450,13 @@ public class GoToMeetingManagerImpl implements GoToMeetingManager {
 			String url = gotoTrainingUrl + "/trainings/" + meeting.getMeetingKey() + "/recordings";
 
 			HttpGet get = new HttpGet(url);
-			get.addHeader("Accept", "application/json");
-			get.addHeader("Authorization", "OAuth oauth_token=" + organizer.getAccessToken());
-			get.addHeader("Content-type", "application/json");
+			decorateWithAccessToken(get, organizer);
 
-			HttpResponse response = httpClient.execute(get);
-			int status = response.getStatusLine().getStatusCode();
+			GoToResponse response = execute(httpClient, get);
+			int status = response.status();
 			if(status == 200) {//deleted
-				String content = EntityUtils.toString(response.getEntity());
-				List<GoToRecordingsG2T> recordings = GoToJsonUtil.parseRecordings(content);
-				return recordings;
+				String content = response.content();
+				return GoToJsonUtil.parseRecordings(content);
 			} else {
 				logGoToError("getRecordings", response, error);
 				return null;
@@ -468,18 +470,14 @@ public class GoToMeetingManagerImpl implements GoToMeetingManager {
 	@Override
 	public boolean delete(GoToMeeting meeting) {
 		GoToError error = new GoToError();
-		if(deleteTraining(meeting, error)) {
-			meetingDao.delete(meeting);
-			return true;
-		} else if(error.getError() == GoToErrors.NoSuchTraining
+		if(deleteTraining(meeting, error)
+				|| error.getError() == GoToErrors.NoSuchTraining
 				|| error.getError() == GoToErrors.InvalidRequest) {
-			//clean up our database
 			meetingDao.delete(meeting);
 			return true;
-		} else {
-			//do nothing
-			return false;
-		}	
+		}
+		//do nothing
+		return false;
 	}
 	
 	private boolean deleteTraining(GoToMeeting meeting, GoToError error) {
@@ -488,16 +486,14 @@ public class GoToMeetingManagerImpl implements GoToMeetingManager {
 			String url = gotoTrainingUrl + "/organizers/" + organizer.getOrganizerKey() + "/trainings/" + meeting.getMeetingKey();
 
 			HttpDelete delete = new HttpDelete(url);
-			delete.addHeader("Accept", "application/json");
-			delete.addHeader("Authorization", "OAuth oauth_token=" + organizer.getAccessToken());
-			delete.addHeader("Content-type", "application/json");
+			decorateWithAccessToken(delete, organizer);
 
-			HttpResponse response = httpClient.execute(delete);
-			int status = response.getStatusLine().getStatusCode();
+			GoToResponse response = execute(httpClient, delete);
+			int status = response.status();
 			if(status == 204) {//deleted
 				return true;
 			} else if (status == 404 || status == 400) {
-				String content = EntityUtils.toString(response.getEntity());
+				String content = response.content();
 				GoToErrorG2T errorVo = GoToJsonUtil.parseError(content);
 				if(errorVo.getErrorCode() == GoToErrors.NoSuchTraining
 						|| errorVo.getErrorCode() == GoToErrors.InvalidRequest) {
@@ -523,68 +519,161 @@ public class GoToMeetingManagerImpl implements GoToMeetingManager {
 			delete(training);
 		}
 	}
-
+	
 	/**
-	 * curl -X POST -H "Accept:application/json"
-	 *   -H "Content-Type: application/x-www-form-urlencoded" "https://api.citrixonline.com/oauth/access_token"
-	 *   -d 'grant_type=password&user_id=test@test.com&password=xyz&client_id={consumerKey}'
-	 *   
-	 *   
-	 * {
-	 *  "access_token":"RlUe11faKeyCWxZToK3nk0uTKAL",
-	 *  "expires_in":"30758399",
-	 *  "refresh_token":"d1cp20yB3hrFAKeTokenTr49EZ34kTvNK",
-	 *  "organizer_key":"8439885694023999999",
-	 *  "account_key":"9999982253621659654",
-	 *  "account_type":"",
-	 *  "firstName":"Mahar",
-	 *  "lastName":"Singh",
-	 *  "email":"mahar.singh@singhSong.com",
-	 *  "platform":"GLOBAL",
-	 *  "version":"2",
-	 * }
+	 * curl -X POST "https://api.getgo.com/oauth/v2/token" \
+	 *  -H "Authorization: Basic {Base64 Encoded consumerKey and consumerSecret}" \
+	 *  -H "Accept:application/json" \
+	 *  -H "Content-Type: application/x-www-form-urlencoded" \
+	 *  -d "grant_type=refresh_token&refresh_token={refresh_token}"
+	 * @param organizer
 	 */
-	private GoToOrganizerG2T directLogin(String username, String password, GoToError error) {
+	@Override
+	public boolean refreshToken(GoToOrganizer organizer) {
+		GoToOrganizer reloadedOrganizer = organizerDao.loadOrganizerForUpdate(organizer);
+		boolean success = false;
 		try(CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
-			String consumerKey = goToMeetingModule.getTrainingConsumerKey();
-			
-			HttpPost post = new HttpPost(directLoginUrl);
+			HttpPost post = new HttpPost(tokenUrl);
 			post.addHeader("Accept", "application/json");
+			
+			String authVal = goToMeetingModule.getTrainingConsumerKey() + ":" + goToMeetingModule.getTrainingConsumerSecret();
+        	post.addHeader("Authorization", "Basic " + StringHelper.encodeBase64(authVal));
+			post.addHeader("Content-Type", "application/x-www-form-urlencoded");
+
+			List<NameValuePair> urlParameters = new ArrayList<>(4);
+			urlParameters.add(new BasicNameValuePair("grant_type", "refresh_token"));
+			urlParameters.add(new BasicNameValuePair("refresh_token", reloadedOrganizer.getRefreshToken()));
+			post.setEntity(new UrlEncodedFormEntity(urlParameters));
+			
+			GoToResponse response = execute(httpClient, post);
+			if(response.status() < 400) {
+				GoToOrganizerG2T org = GoToJsonUtil.parseToken(response.content());
+				organizerDao.updateOrganizer(reloadedOrganizer, org.getAccessToken(), org.getRefreshToken(), org.getExpiresIn());
+				success = true;
+			} else {
+				GoToError error = new GoToError();
+				logGoToError(tokenUrl, response, error);
+			}
+		} catch(Exception e) {
+			log.error("", e);
+		} finally {
+			dbInstance.commit();
+		}
+		return success;
+	}
+	
+	/**
+	 * curl -X POST \
+	 *  'https://api.getgo.com/oauth/v2/token' \
+	 *  -H 'Authorization: Basic {Base64 Encoded client_id and client_secret}' \
+	 *  -H 'Content-Type: application/x-www-form-urlencoded' \
+	 *  -d 'grant_type=password&username={username}&password={password}'
+	 * @param username
+	 * @param password
+	 * @return
+	 */
+	public GoToOrganizerG2T login(String username, String password, GoToError error) {
+		GoToOrganizerG2T organizer = null;
+		try(CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
+			HttpPost post = new HttpPost(tokenUrl);
+			post.addHeader("Accept", "application/json");
+			
+			String authVal = goToMeetingModule.getTrainingConsumerKey() + ":" + goToMeetingModule.getTrainingConsumerSecret();
+        	post.addHeader("Authorization", "Basic " + StringHelper.encodeBase64(authVal));
+			post.addHeader("Content-Type", "application/x-www-form-urlencoded");
 
 			List<NameValuePair> urlParameters = new ArrayList<>(4);
 			urlParameters.add(new BasicNameValuePair("grant_type", "password"));
-			urlParameters.add(new BasicNameValuePair("user_id", username));
+			urlParameters.add(new BasicNameValuePair("username", username));
 			urlParameters.add(new BasicNameValuePair("password", password));
-			urlParameters.add(new BasicNameValuePair("client_id", consumerKey));
 			post.setEntity(new UrlEncodedFormEntity(urlParameters));
-
-			HttpResponse response = httpClient.execute(post);
-			int status = response.getStatusLine().getStatusCode();
-			if(status < 400) {
-				String content = EntityUtils.toString(response.getEntity());
-				GoToOrganizerG2T organizerVo = GoToJsonUtil.parseDirectLogin(content);
-				return organizerVo;
+			
+			GoToResponse response = execute(httpClient, post);
+			if(response.status() < 400) {
+				organizer = GoToJsonUtil.parseToken(response.content());
 			} else {
-				error.setErrorCode(status);
-				String responseString = EntityUtils.toString(response.getEntity());
-				EntityUtils.consumeQuietly(response.getEntity());
-				log.error("directLogin return " + status + ": " + responseString);
+				logGoToError(tokenUrl, response, error);
 			}
-			return null;
 		} catch(Exception e) {
 			log.error("", e);
-			return null;
+		} finally {
+			dbInstance.commit();
 		}
+		return organizer;
 	}
 
 	@Override
 	public List<GoToOrganizer> getOrganizers() {
 		return organizerDao.getOrganizers();
 	}
+	
+	@Override
+	public List<GoToOrganizer> getOrganizers(String accountKey, String organizerKey) {
+		return organizerDao.getOrganizers(accountKey, organizerKey);
+	}
 
 	@Override
 	public List<GoToOrganizer> getSystemOrganizers() {
 		return organizerDao.getOrganizers();
 	}
-
+	
+	private void decorateWithAccessToken(HttpUriRequest request, GoToOrganizer organizer) {
+		String accessToken = getAccessToken(organizer);
+		request.addHeader("Accept", "application/json");
+		request.addHeader("Authorization", "OAuth oauth_token=" + accessToken);
+		request.addHeader("Content-type", "application/json");
+	}
+	
+	private String getAccessToken(GoToOrganizer organizer) {
+		if(needRefresh(organizer)) {
+			refreshToken(organizer);
+			organizer = organizerDao.loadOrganizerByKey(organizer.getKey());
+		}
+		return organizer.getAccessToken();
+	}
+	
+	private boolean needRefresh(GoToOrganizer organizer) {
+		Date renewDate = organizer.getRenewDate();
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(renewDate);
+		cal.add(Calendar.MINUTE, -5);
+		return new Date().after(cal.getTime());
+	}
+	
+	private GoToResponse execute(CloseableHttpClient httpClient, HttpUriRequest request) {
+		try(CloseableHttpResponse response = httpClient.execute(request)) {
+			int status = response.getStatusLine().getStatusCode();
+			HttpEntity entity = response.getEntity();
+			String content;
+			if(entity == null) {
+				content = "";
+			} else {
+				content = EntityUtils.toString(entity);
+			}
+			return new GoToResponse(status, content);
+		} catch(IOException e) {
+			log.error("", e);
+			return new GoToResponse(500, null);
+		}
+	}
+	
+	private static class GoToResponse {
+		
+		private final int status;
+		private final String content;
+		
+		public GoToResponse(int status, String content) {
+			this.status = status;
+			this.content = content;
+		}
+		
+		public int status() {
+			return status;
+		}
+		
+		public String content() {
+			return content;
+		}
+		
+	}
 }

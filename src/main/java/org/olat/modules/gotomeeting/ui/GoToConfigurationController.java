@@ -46,6 +46,7 @@ public class GoToConfigurationController extends FormBasicController {
 	
 	private SingleSelection timeZoneEls;
 	private TextElement trainingConsumerKeyEl;
+	private TextElement trainingConsumerSecretEl;
 	private MultipleSelectionElement enabledEl;
 
 	private static final String[] enabledKeys = new String[]{"on"};
@@ -68,6 +69,8 @@ public class GoToConfigurationController extends FormBasicController {
 		//
 		String consumerKey = goToMeetingModule.getTrainingConsumerKey();
 		trainingConsumerKeyEl = uifactory.addTextElement("training.consumerkey", "training.consumerkey", 128, consumerKey, formLayout);
+		String consumerSecret = goToMeetingModule.getTrainingConsumerSecret();
+		trainingConsumerSecretEl = uifactory.addTextElement("training.consumersecret", "training.consumersecret", 128, consumerSecret, formLayout);
 		
 		timeZoneEls = uifactory.addDropdownSingleselect("timezone.ids", "timezone.id", formLayout,
 				GoToTimezoneIDs.TIMEZONE_IDS, GoToTimezoneIDs.TIMEZONE_IDS, null);
@@ -112,6 +115,8 @@ public class GoToConfigurationController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		String trainingConsumerKey = trainingConsumerKeyEl.getValue();
 		goToMeetingModule.setTrainingConsumerKey(trainingConsumerKey);
+		String trainingConsumerSecret = trainingConsumerSecretEl.getValue();
+		goToMeetingModule.setTrainingConsumerSecret(trainingConsumerSecret);
 		
 		String selectedTimeZoneId = timeZoneEls.getSelectedKey();
 		goToMeetingModule.setGoToTimeZoneId(selectedTimeZoneId);

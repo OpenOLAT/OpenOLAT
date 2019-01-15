@@ -121,6 +121,17 @@
 		</property>
 	</bean>
 	
+	<bean id="gotoRefreshTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+	    <property name="jobDetail" ref="gotoRefreshJob" />
+	    <!-- Once a day at 4:37:15 -->
+	    <property name="cronExpression" value="15 37 4 * * ?" />
+	    <property name="startDelay" value="30000" />
+	</bean>
+	
+	<bean id="gotoRefreshJob" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+	  <property name="jobClass" value="org.olat.modules.gotomeeting.manager.GoToRefreshJob" />
+	</bean>
+	
 	<!-- Portfolio hook to the personal menu -->
 	<bean class="org.olat.modules.portfolio.PortfolioExtension" name="personal.tool.portfolio" init-method="initExtensionPoints" >
 		<property name="order" value="303" />

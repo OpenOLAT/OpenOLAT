@@ -67,7 +67,7 @@ public class EditTrainingController extends FormBasicController {
 	private final GoToMeeting meeting;
 	
 	private CloseableModalController cmc;
-	private EditOrganizerController addOrganizerController;
+	private LoginOrganizerController addOrganizerController;
 
 	@Autowired
 	private GoToMeetingManager meetingManager;
@@ -264,7 +264,7 @@ public class EditTrainingController extends FormBasicController {
 	private void doAddPersonalAccount(UserRequest ureq) {
 		if(addOrganizerController != null) return;
 		
-		addOrganizerController = new EditOrganizerController(ureq, getWindowControl(), getIdentity());
+		addOrganizerController = new LoginOrganizerController(ureq, getWindowControl(), getIdentity());
 		listenTo(addOrganizerController);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), addOrganizerController.getInitialComponent(),

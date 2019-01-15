@@ -17,50 +17,28 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.gotomeeting;
+package org.olat.modules.gotomeeting.ui;
 
-import java.util.Date;
-
-import org.olat.core.id.CreateInfo;
-import org.olat.core.id.Identity;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
+import org.olat.core.gui.render.Renderer;
+import org.olat.core.gui.render.StringOutput;
+import org.olat.core.gui.render.URLBuilder;
+import org.olat.core.gui.translator.Translator;
 
 /**
  * 
- * Initial date: 21.03.2016<br>
+ * Initial date: 14 janv. 2019<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface GoToOrganizer extends CreateInfo {
-	
-	public Long getKey();
-	
-	public Date getLastModified();
-	
-	public String getName();
-	
-	public String getUsername();
-	
-	public String getFirstName();
-	
-	public String getLastName();
-	
-	public String getEmail();
-	
-	public String getAccessToken();
-	
-	public String getRefreshToken();
-	
-	public String getOrganizerKey();
-	
-	public Date getRenewDate();
-	
-	public Date getRenewRefreshDate();
-	
-	/**
-	 * Return the owner of this organizer configuration, or null for 
-	 * system wide organizer.
-	 * @return
-	 */
-	public Identity getOwner();
+public class GoToOrganizerTypeCellRenderer implements FlexiCellRenderer {
 
+	@Override
+	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
+			URLBuilder ubu, Translator translator) {
+		if(Boolean.TRUE.equals(cellValue)) {
+			target.append("<span><i class='o_icon o_icon_new'> </i></span>");
+		}
+	}
 }

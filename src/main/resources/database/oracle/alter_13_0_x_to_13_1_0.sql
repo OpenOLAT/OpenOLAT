@@ -19,3 +19,7 @@ create table o_es_usage (
 
 create index idx_es_usage_ident_idx on o_es_usage (e_identifier);
 create index idx_es_usage_ores_idx on o_es_usage (e_resid, e_resname);
+
+-- goto meeting
+alter table o_goto_organizer add g_refresh_token varchar(128);
+alter table o_goto_organizer add g_renew_refresh_date date;

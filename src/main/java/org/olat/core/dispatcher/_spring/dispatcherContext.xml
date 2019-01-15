@@ -73,6 +73,9 @@
 				<entry key="/oauthcallback">
 					<ref bean="oauthcallback" />
 				</entry>
+				<entry key="/getgocallback">
+					<ref bean="getgocallback" />
+				</entry>
 				<entry key="/csp/">
 					<ref bean="cspDispatcher" />
 				</entry>
@@ -89,6 +92,8 @@
 	</bean>
 	
 	<bean id="oauthcallback" class="org.olat.login.oauth.OAuthDispatcher" />
+	
+	<bean id="getgocallback" class="org.olat.modules.gotomeeting.oauth.GetGoOAuthDispatcher" />
 	
 	<bean id="robotsdispatcher" class="org.olat.dispatcher.RobotsDispatcher" />
 	

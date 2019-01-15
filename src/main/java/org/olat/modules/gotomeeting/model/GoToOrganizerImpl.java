@@ -88,9 +88,16 @@ public class GoToOrganizerImpl implements GoToOrganizer, Persistable, ModifiedIn
 	
 	@Column(name="g_access_token", nullable=false, insertable=true, updatable=true)
 	private String accessToken;
+	@Column(name="g_refresh_token", nullable=false, insertable=true, updatable=true)
+	private String refreshToken;
+	
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="g_renew_date", nullable=false, insertable=true, updatable=true)
 	private Date renewDate;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="g_renew_refresh_date", nullable=false, insertable=true, updatable=true)
+	private Date renewRefreshDate;
+	
 	@Column(name="g_organizer_key", nullable=false, insertable=true, updatable=true)
 	private String organizerKey;
 	@Column(name="g_username", nullable=false, insertable=true, updatable=false)
@@ -149,12 +156,29 @@ public class GoToOrganizerImpl implements GoToOrganizer, Persistable, ModifiedIn
 		this.accessToken = accessToken;
 	}
 
+	@Override
 	public Date getRenewDate() {
 		return renewDate;
 	}
 
 	public void setRenewDate(Date renewDate) {
 		this.renewDate = renewDate;
+	}
+
+	public String getRefreshToken() {
+		return refreshToken;
+	}
+
+	public void setRefreshToken(String refreshToken) {
+		this.refreshToken = refreshToken;
+	}
+
+	public Date getRenewRefreshDate() {
+		return renewRefreshDate;
+	}
+
+	public void setRenewRefreshDate(Date renewRefreshDate) {
+		this.renewRefreshDate = renewRefreshDate;
 	}
 
 	public String getAccountKey() {
@@ -236,5 +260,15 @@ public class GoToOrganizerImpl implements GoToOrganizer, Persistable, ModifiedIn
 	@Override
 	public boolean equalsByPersistableKey(Persistable persistable) {
 		return equals(persistable);
+	}
+	
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("GoToOrganizer[key=").append(getKey() == null ? "null" : getKey())
+		  .append(":organizerKey=").append(organizerKey == null ? "null" : organizerKey)
+		  .append(":accountKey=").append(accountKey == null ? "null" : accountKey)
+		  .append("]");
+		return sb.toString();
 	}
 }

@@ -38,6 +38,7 @@ public class GoToMeetingModule extends AbstractSpringModule implements ConfigOnO
 
 	public static final String GOTO_ENABLED = "goto.enabled";
 	public static final String GOTO_CONSUMERKEY = "goto.training.consumerKey";
+	public static final String GOTO_CONSUMERSECRET = "goto.training.consumerSecret";
 	public static final String GOTO_TIMEZONEID = "goto.timezone.id";
 	
 	@Value("${vc.gotomeetings.enabled:false}")
@@ -45,6 +46,8 @@ public class GoToMeetingModule extends AbstractSpringModule implements ConfigOnO
 
 	@Value("${vc.gotomeetings.training.consumerKey:null}")
 	private String trainingConsumerKey;
+	@Value("${vc.gotomeetings.training.consumerSecret:null}")
+	private String trainingConsumerSecret;
 	@Value("${vc.gotomeetings.timezone.id:null}")
 	private String goToTimeZoneId;
 	
@@ -64,6 +67,10 @@ public class GoToMeetingModule extends AbstractSpringModule implements ConfigOnO
 		String consumerKeyObj = getStringPropertyValue(GOTO_CONSUMERKEY, true);
 		if(StringHelper.containsNonWhitespace(consumerKeyObj)) {
 			trainingConsumerKey = consumerKeyObj;
+		}
+		String consumerSecretObj = getStringPropertyValue(GOTO_CONSUMERSECRET, true);
+		if(StringHelper.containsNonWhitespace(consumerSecretObj)) {
+			trainingConsumerSecret = consumerSecretObj;
 		}
 
 		String timezoneObj = getStringPropertyValue(GOTO_TIMEZONEID, true);
@@ -95,6 +102,15 @@ public class GoToMeetingModule extends AbstractSpringModule implements ConfigOnO
 	public void setTrainingConsumerKey(String consumerKey) {
 		this.trainingConsumerKey = consumerKey;
 		setStringProperty(GOTO_CONSUMERKEY, consumerKey, true);
+	}
+
+	public String getTrainingConsumerSecret() {
+		return trainingConsumerSecret;
+	}
+
+	public void setTrainingConsumerSecret(String secret) {
+		trainingConsumerSecret = secret;
+		setStringProperty(GOTO_CONSUMERSECRET, secret, true);
 	}
 
 	public String getGoToTimeZoneId() {

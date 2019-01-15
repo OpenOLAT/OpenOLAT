@@ -58,7 +58,7 @@ public class GoToRegistrantDAOTest extends OlatTestCase {
 		Identity trainee = JunitTestHelper.createAndPersistIdentityAsRndUser("trainee-2");
 		
 		GoToOrganizer organizer = organizerDao
-				.createOrganizer(null, token, token, token, null, null, null, null, 10l, null);
+				.createOrganizer(null, token, token, token, token, null, null, null, null, 10l, null);
 		Assert.assertNotNull(organizer);
 		
 		Date start = new Date();
@@ -88,7 +88,7 @@ public class GoToRegistrantDAOTest extends OlatTestCase {
 		Identity trainee = JunitTestHelper.createAndPersistIdentityAsRndUser("trainee-3");
 		
 		GoToOrganizer organizer = organizerDao
-				.createOrganizer(null, token, token, token, null, null, null, null, 10l, null);
+				.createOrganizer(null, token, token, token, token, null, null, null, null, 10l, null);
 		Assert.assertNotNull(organizer);
 		
 		Date start = new Date();

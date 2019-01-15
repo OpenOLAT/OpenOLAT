@@ -27,6 +27,7 @@ import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupRef;
 import org.olat.modules.gotomeeting.model.GoToError;
+import org.olat.modules.gotomeeting.model.GoToOrganizerG2T;
 import org.olat.modules.gotomeeting.model.GoToRecordingsG2T;
 import org.olat.modules.gotomeeting.model.GoToType;
 import org.olat.repository.RepositoryEntry;
@@ -40,27 +41,33 @@ import org.olat.repository.RepositoryEntryRef;
  */
 public interface GoToMeetingManager {
 	
-	/**
-	 * Add or update the organizer with the specified user name after
-	 * a round trip to the GoToMeeting server.
-	 * 
-	 * @param name Only a label for OpenOLAT (optional)
-	 * @param username
-	 * @param password
-	 * @return
-	 */
-	public boolean addOrganizer(String name, String username, String password, Identity owner, GoToError error);
+	public boolean createOrUpdateOrganizer(GoToOrganizerG2T organizer);
+	
+	public boolean createOrUpdateOrganizer(String name, String username, String password, Identity owner, GoToError error);
+	
+	public boolean refreshToken(GoToOrganizer organizer);
+	
+	public void updateOrganizer(GoToOrganizer organizer, String name);
 	
 	/**
 	 * @return The list of all organizers on the system.
 	 */
 	public List<GoToOrganizer> getOrganizers();
-	
+
 	/**
 	 * 
 	 * @return the list of system-wide organizers 
 	 */
 	public List<GoToOrganizer> getSystemOrganizers();
+	
+	/**
+	 * Return the organizers with the specific account and for the specified organizer.
+	 * 
+	 * @param accountKey The account
+	 * @param organizerKey The organizer
+	 * @return A list with only one mapping of an organizer
+	 */
+	public List<GoToOrganizer> getOrganizers(String accountKey, String organizerKey);
 	
 	/**
 	 * Return the list of system wide organizers and the one which

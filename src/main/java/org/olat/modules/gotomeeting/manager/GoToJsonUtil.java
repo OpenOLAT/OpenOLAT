@@ -322,6 +322,40 @@ public class GoToJsonUtil {
 		}
 	}
 	
+	/*
+	{
+	  "access_token":"RlUe11faKeyCWxZToK3nk0uTKAL",
+	  "expires_in":"30758399",
+	  "refresh_token":"d1cp20yB3hrFAKeTokenTr49EZ34kTvNK",
+	  "organizer_key":"8439885694023999999",
+	  "account_key":"9999982253621659654",
+	  "account_type":"",
+	  "firstName":"Mahar",
+	  "lastName":"Singh",
+	  "email":"mahar.singh@singhSong.com",
+	  "platform":"GLOBAL",
+	  "version":"2",
+	}	
+	 */
+	public static final GoToOrganizerG2T parseToken(String content) {
+		try {
+			JSONObject json = new JSONObject(content);
+			GoToOrganizerG2T organizer = new GoToOrganizerG2T();
+			organizer.setAccessToken(json.optString("access_token", null));
+			organizer.setRefreshToken(json.optString("refresh_token", null));
+			organizer.setOrganizerKey(json.optString("organizer_key", null));
+			organizer.setAccountKey(json.optString("account_key", null));
+			organizer.setExpiresIn(Long.parseLong(json.optString("expires_in", "0")));
+			organizer.setFirstName(json.optString("firstName", null));
+			organizer.setLastName(json.optString("lastName", null));
+			organizer.setEmail(json.optString("email", null));
+			return organizer;
+		} catch (Exception e) {
+			log.error("", e);
+			return null;
+		}
+	}
+	
 /*
 	[
 	  {
