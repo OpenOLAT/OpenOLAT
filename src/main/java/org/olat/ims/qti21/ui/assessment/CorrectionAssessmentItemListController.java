@@ -205,13 +205,16 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 		for(Map.Entry<Identity, AssessmentTestSession> entry:model.getLastSessions().entrySet()) {
 			if(model.getLastSessions().containsKey(entry.getKey())) {
 				TestSessionState testSessionState = model.getTestSessionStates().get(entry.getKey());
-				for(Map.Entry<TestPlanNodeKey, ItemSessionState> itemEntry:testSessionState.getItemSessionStates().entrySet()) {
-					String itemRefIdentifier = itemEntry.getKey().getIdentifier().toString();
-					CorrectionAssessmentItemRow row = itemRefIdToRows.get(itemRefIdentifier);
-					if(row != null) {
-						AssessmentItemSession itemSession = itemSessionMap
-								.get(new ItemSessionKey(entry.getValue().getKey(), itemRefIdentifier));
-						appendStatistics(row, itemSession, itemEntry.getValue());
+				Map<TestPlanNodeKey, ItemSessionState> itemSessionStates = (testSessionState == null ? null : testSessionState.getItemSessionStates());
+				if(itemSessionStates != null) {
+					for(Map.Entry<TestPlanNodeKey, ItemSessionState> itemEntry:itemSessionStates.entrySet()) {
+						String itemRefIdentifier = itemEntry.getKey().getIdentifier().toString();
+						CorrectionAssessmentItemRow row = itemRefIdToRows.get(itemRefIdentifier);
+						if(row != null) {
+							AssessmentItemSession itemSession = itemSessionMap
+									.get(new ItemSessionKey(entry.getValue().getKey(), itemRefIdentifier));
+							appendStatistics(row, itemSession, itemEntry.getValue());
+						}
 					}
 				}
 			}
