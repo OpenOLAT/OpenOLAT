@@ -51,6 +51,7 @@ import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAType;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskHelper;
+import org.olat.course.nodes.gta.TaskList;
 import org.olat.course.nodes.gta.TaskHelper.FilesLocked;
 import org.olat.course.nodes.gta.TaskProcess;
 import org.olat.course.nodes.gta.model.DueDate;
@@ -664,6 +665,12 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 	
 	private void doReviewedDocument(UserRequest ureq, Task task) {
 		//go to solution, grading or graded
+		if(task == null) {
+			TaskProcess firstStep = gtaManager.firstStep(gtaNode);
+			TaskList taskList = gtaManager.getTaskList(courseEnv.getCourseGroupManager().getCourseEntry(), gtaNode);
+			task = gtaManager.createAndPersistTask(null, taskList, firstStep, assessedGroup, assessedIdentity, gtaNode);
+		}
+		
 		gtaManager.reviewedTask(task, gtaNode);
 		showInfo("coach.documents.successfully.reviewed");
 		gtaManager.log("Review", "documents reviewed", task, getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode, Role.coach);

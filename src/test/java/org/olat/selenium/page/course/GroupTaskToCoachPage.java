@@ -116,6 +116,18 @@ public class GroupTaskToCoachPage {
 		return this;
 	}
 	
+	public GroupTaskToCoachPage openRevisionsStep() {
+		By uploadButtonBs = By.cssSelector("#o_step_review_content .o_sel_course_gta_submit_file");
+		List<WebElement> buttons = browser.findElements(uploadButtonBs);
+		if(buttons.isEmpty() || !buttons.get(0).isDisplayed()) {
+			//open grading tab
+			By collpaseBy = By.xpath("//a[@href='#o_step_review_content']");
+			OOGraphene.click(collpaseBy, browser);
+			OOGraphene.waitElement(uploadButtonBs, browser);
+		}
+		return this;
+	}
+	
 	public GroupTaskToCoachPage uploadCorrection(File correctionFile) {
 		By uploadButtonBy = By.cssSelector("#o_step_review_content .o_sel_course_gta_submit_file");
 		OOGraphene.clickAndWait(uploadButtonBy, browser);
