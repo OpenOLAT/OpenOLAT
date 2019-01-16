@@ -149,6 +149,12 @@ public class PdfDocument {
         while (text.length() > 0) {
             int spaceIndex = text.indexOf(' ', lastSpace + 1);
             if (spaceIndex < 0) {
+                float size = getStringWidth(text, textFont, fontSize);
+                if (size > paragraphWidth) {
+                	String subString = text.substring(0, lastSpace);
+                	lines.add(subString.trim());
+                	text = text.substring(lastSpace).trim();
+                }
                 lines.add(text);
                 text = "";
             } else {
