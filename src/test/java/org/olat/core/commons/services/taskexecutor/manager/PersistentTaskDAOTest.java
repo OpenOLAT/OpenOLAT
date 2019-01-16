@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.commons.services.taskexecutor;
+package org.olat.core.commons.services.taskexecutor.manager;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -29,6 +29,8 @@ import javax.persistence.EntityNotFoundException;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.taskexecutor.Task;
+import org.olat.core.commons.services.taskexecutor.TaskStatus;
 import org.olat.core.commons.services.taskexecutor.manager.PersistentTaskDAO;
 import org.olat.core.commons.services.taskexecutor.model.PersistentTask;
 import org.olat.core.id.Identity;
@@ -113,7 +115,7 @@ public class PersistentTaskDAOTest extends OlatTestCase  {
 		PersistentTask task = persistentTaskDao.createTask(taskName, new DummyTask());
 		dbInstance.commitAndCloseSession();
 		
-		PersistentTask todo = persistentTaskDao.pickTaskForRun(task.getKey());
+		PersistentTask todo = persistentTaskDao.pickTaskForRun(task);
 
 		Assert.assertNotNull(todo);
 		Assert.assertEquals(task.getKey(), todo.getKey());
@@ -128,7 +130,7 @@ public class PersistentTaskDAOTest extends OlatTestCase  {
 		dbInstance.commitAndCloseSession();
 		
 		//update
-		PersistentTask todo = persistentTaskDao.pickTaskForRun(task.getKey());
+		PersistentTask todo = persistentTaskDao.pickTaskForRun(task);
 		DummyTask taskToUpdate = new DummyTask();
 		taskToUpdate.setMarkerValue("new marker");
 		persistentTaskDao.updateTask(todo, taskToUpdate, null, null);
@@ -165,7 +167,8 @@ public class PersistentTaskDAOTest extends OlatTestCase  {
 		int count = 0;
 		List<Long> todos = persistentTaskDao.tasksToDo();
 		for(Long todo:todos) {
-			PersistentTask taskToDo = persistentTaskDao.pickTaskForRun(todo);
+			PersistentTask loadedTask = persistentTaskDao.loadTaskById(todo);
+			PersistentTask taskToDo = persistentTaskDao.pickTaskForRun(loadedTask);
 			persistentTaskDao.taskDone(taskToDo);
 			count++;
 		}
@@ -452,7 +455,8 @@ public class PersistentTaskDAOTest extends OlatTestCase  {
 		int count = 0;
 		List<Long> todos = persistentTaskDao.tasksToDo();
 		for(Long todo:todos) {
-			PersistentTask taskToDo = persistentTaskDao.pickTaskForRun(todo);
+			PersistentTask loadedTask = persistentTaskDao.loadTaskById(todo);
+			PersistentTask taskToDo = persistentTaskDao.pickTaskForRun(loadedTask);
 			persistentTaskDao.taskDone(taskToDo);
 			count++;
 		}
