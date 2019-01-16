@@ -59,6 +59,7 @@ import org.olat.core.gui.control.VetoableCloseController;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.messages.MessageController;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
@@ -69,12 +70,16 @@ import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.helpers.Settings;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
+import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.tree.TreeHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.ims.qti21.AssessmentTestHelper;
@@ -113,6 +118,9 @@ import org.olat.ims.qti21.ui.editor.events.AssessmentSectionEvent;
 import org.olat.ims.qti21.ui.editor.events.AssessmentTestEvent;
 import org.olat.ims.qti21.ui.editor.events.AssessmentTestPartEvent;
 import org.olat.ims.qti21.ui.editor.events.DetachFromPoolEvent;
+import org.olat.ims.qti21.ui.editor.events.SelectEvent;
+import org.olat.ims.qti21.ui.editor.events.SelectEvent.SelectionTarget;
+import org.olat.ims.qti21.ui.editor.overview.AssessmentTestOverviewConfigurationController;
 import org.olat.imscp.xml.manifest.FileType;
 import org.olat.imscp.xml.manifest.ResourceType;
 import org.olat.modules.qpool.QuestionItemFull;
@@ -131,6 +139,7 @@ import uk.ac.ed.ph.jqtiplus.node.test.AbstractPart;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentSection;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
+import uk.ac.ed.ph.jqtiplus.node.test.ControlObject;
 import uk.ac.ed.ph.jqtiplus.node.test.SectionPart;
 import uk.ac.ed.ph.jqtiplus.node.test.TestPart;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
@@ -159,6 +168,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			newEssayLink, newUploadLink, newDrawingLink;
 	private Link importFromPoolLink, importFromTableLink, exportToPoolLink, exportToDocxLink;
 	private Link reloadInCacheLink, deleteLink, copyLink;
+	private Link configurationOverviewLink;
 	private final TooledStackedPanel toolbar;
 	private VelocityContainer mainVC;
 
@@ -168,6 +178,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	private DialogBoxController confirmDeleteCtrl;
 	private StepsMainRunController importTableWizard;
 	private LayoutMain3ColsController columnLayoutCtr;
+	private AssessmentTestOverviewConfigurationController overviewConfigCtrl;
 	
 	private File unzippedDirRoot;
 	private VFSContainer unzippedContRoot;
@@ -350,6 +361,9 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		copyLink.setDomReplacementWrapperRequired(false);
 		changeItemTools.addComponent(copyLink);
 		
+		configurationOverviewLink = LinkFactory.createToolLink("configuration.overview", translate("configuration.overview"), this, "o_icon_description");
+		configurationOverviewLink.setDomReplacementWrapperRequired(false);
+		
 		// main layout
 		mainVC = createVelocityContainer("assessment_test_composer");
 		columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), menuTree, mainVC, "at" + testEntry.getKey());			
@@ -411,6 +425,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		toolbar.addTool(exportItemTools, Align.left);
 		toolbar.addTool(addItemTools, Align.left);
 		toolbar.addTool(changeItemTools, Align.left);
+		toolbar.addTool(configurationOverviewLink, Align.right);
 	}
 
 	@Override
@@ -474,6 +489,14 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 				doDelete(ureq, (TreeNode)confirmDeleteCtrl.getUserObject());
 			}
 			cleanUp();
+		} else if(overviewConfigCtrl == source) {
+			if(event instanceof SelectEvent) {
+				SelectEvent se = (SelectEvent)event;
+				if(doSelect(ureq, se.getControlObject(), se.getTarget())) {
+					cleanUp();
+				}
+			}
+			
 		} else if(cmc == source) {
 			cleanUp();
 		}
@@ -481,9 +504,11 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(overviewConfigCtrl);
 		removeAsListenerAndDispose(confirmDeleteCtrl);
 		removeAsListenerAndDispose(selectQItemCtrl);
 		removeAsListenerAndDispose(cmc);
+		overviewConfigCtrl = null;
 		confirmDeleteCtrl = null;
 		selectQItemCtrl = null;
 		cmc = null;
@@ -549,7 +574,25 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			doCopy(ureq);
 		} else if(reloadInCacheLink == source) {
 			doForceReloadFiles(ureq);
+		} else if(configurationOverviewLink == source) {
+			doConfigurationOverview(ureq);
 		}
+	}
+	
+	private boolean doSelect(UserRequest ureq, ControlObject<?> uobject, SelectionTarget target) {
+		TreeNode selectedNode = TreeHelper.findNodeByUserObject(uobject, menuTree.getTreeModel().getRootNode());
+		if(selectedNode != null) {
+			toolbar.popUpToController(this);
+			
+			partEditorFactory(ureq, selectedNode);
+			if(currentEditorCtrl instanceof Activateable2) {
+				List<ContextEntry> entries = BusinessControlFactory.getInstance()
+						.createCEListFromString(OresHelper.createOLATResourceableType(target.name()));
+				((Activateable2)currentEditorCtrl).activate(ureq, entries, null);
+			}
+			return currentEditorCtrl != null;
+		}
+		return false;
 	}
 	
 	private void doSelectQItem(UserRequest ureq) {
@@ -1302,6 +1345,15 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	private void doForceReloadFiles(UserRequest ureq) {
 		updateTreeModel(true);
 		assessmentChanged(ureq);
+	}
+	
+	private void doConfigurationOverview(UserRequest ureq) {
+		removeAsListenerAndDispose(overviewConfigCtrl);
+		
+		overviewConfigCtrl = new AssessmentTestOverviewConfigurationController(ureq, getWindowControl(), toolbar,
+				testEntry, resolvedAssessmentTest);
+		listenTo(overviewConfigCtrl);
+		toolbar.pushController(translate("configuration.overview"), overviewConfigCtrl);
 	}
 	
 	private void doConfirmDelete(UserRequest ureq) {
