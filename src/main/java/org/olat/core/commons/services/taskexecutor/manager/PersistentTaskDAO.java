@@ -110,14 +110,16 @@ public class PersistentTaskDAO {
 	}
 	
 	public PersistentTask loadTaskById(Long taskKey) {
-		PersistentTask task = dbInstance.getCurrentEntityManager()
-				.find(PersistentTask.class, taskKey);
-		return task;
+		return dbInstance.getCurrentEntityManager().find(PersistentTask.class, taskKey);
 	}
 	
-	public PersistentTask pickTaskForRun(Long taskKey) {
-		PersistentTask task = dbInstance.getCurrentEntityManager()
-				.find(PersistentTask.class, taskKey, LockModeType.PESSIMISTIC_WRITE);
+	public synchronized PersistentTask pickTaskForRun(PersistentTask task) {
+		if(task != null) {// remove it from the cache
+			dbInstance.getCurrentEntityManager().detach(task);
+		}
+
+		task = dbInstance.getCurrentEntityManager()
+				.find(PersistentTask.class, task.getKey(), LockModeType.PESSIMISTIC_WRITE);
 		if(task != null) {
 			if(TaskStatus.newTask.equals(task.getStatus())) {
 				task.setStatus(TaskStatus.inWork);
@@ -125,9 +127,15 @@ public class PersistentTaskDAO {
 				task.setExecutorBootId(WebappHelper.getBootId());
 				task = dbInstance.getCurrentEntityManager().merge(task);
 			} else if(TaskStatus.inWork.equals(task.getStatus())) {
-				task.setExecutorNode(Integer.toString(WebappHelper.getNodeId()));
-				task.setExecutorBootId(WebappHelper.getBootId());
-				task = dbInstance.getCurrentEntityManager().merge(task);
+				if(WebappHelper.getBootId().equals(task.getExecutorBootId())) {
+					// someone has already pick it
+					task = null;
+				} else {
+					// reboot of a task in work
+					task.setExecutorNode(Integer.toString(WebappHelper.getNodeId()));
+					task.setExecutorBootId(WebappHelper.getBootId());
+					task = dbInstance.getCurrentEntityManager().merge(task);
+				}
 			} else if(TaskStatus.edition.equals(task.getStatus())) {
 				task = null;
 			}
