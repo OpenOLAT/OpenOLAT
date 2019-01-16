@@ -41,17 +41,20 @@ public class PersistentTaskRunnable implements Runnable {
 
 	@Override
 	public void run() {
-		PersistentTask task = null;
 		PersistentTaskDAO taskDao = CoreSpringFactory.getImpl(PersistentTaskDAO.class);
+		PersistentTask task = null;
 		try {
-			task = taskDao.pickTaskForRun(taskKey);
+			task = taskDao.loadTaskById(taskKey);
 			if(task != null) {
-				Runnable runnable = taskDao.deserializeTask(task);
-				if(runnable instanceof TaskAwareRunnable) {
-					((TaskAwareRunnable)runnable).setTask(task);
+				task = taskDao.pickTaskForRun(task);
+				if(task != null) {
+					Runnable runnable = taskDao.deserializeTask(task);
+					if(runnable instanceof TaskAwareRunnable) {
+						((TaskAwareRunnable)runnable).setTask(task);
+					}
+					runnable.run();
+					taskDao.taskDone(task);
 				}
-				runnable.run();
-				taskDao.taskDone(task);
 			}
 			DBFactory.getInstance().commitAndCloseSession();
 		} catch (Throwable e) {

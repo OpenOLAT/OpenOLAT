@@ -127,14 +127,18 @@ public class MembersPeekViewController extends BasicController {
 			owners = new ArrayList<>();
 		}
 		
-		List<Identity> coaches = new ArrayList<>();
+		List<Identity> coaches;
 		if(withCoaches) {
-			MembersHelpers.addCoaches(config, cgm, businessGroupService, coaches);
+			coaches = MembersHelpers.getCoaches(config, cgm, businessGroupService);
+		} else {
+			coaches = new ArrayList<>();
 		}
 		
-		List<Identity> participants = new ArrayList<>();
+		List<Identity> participants;
 		if(withParticipants) {
-			MembersHelpers.addParticipants(config, cgm, businessGroupService, participants);
+			participants = MembersHelpers.getParticipants(config, cgm, businessGroupService);
+		} else {
+			participants = new ArrayList<>();
 		}
 		
 		MembersCourseNodeConfiguration nodeConfig = (MembersCourseNodeConfiguration)CourseNodeFactory.getInstance().getCourseNodeConfiguration("cmembers");

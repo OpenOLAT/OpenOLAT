@@ -79,7 +79,7 @@ public class MembersCourseNodeRunController extends BasicController {
 		RepositoryEntry courseRepositoryEntry = courseEnv.getCourseGroupManager().getCourseEntry();
 
 		List<Identity> owners;
-		List<Identity> coaches = new ArrayList<>();
+		List<Identity> coaches;
 		List<Identity> participants = new ArrayList<>();
 
 		boolean showOwners = config.getBooleanSafe(MembersCourseNode.CONFIG_KEY_SHOWOWNER);
@@ -105,8 +105,10 @@ public class MembersCourseNodeRunController extends BasicController {
 						MembersCourseNode.CONFIG_KEY_COACHES_CUR_ELEMENT)) {
 			
 			CourseGroupManager cgm = courseEnv.getCourseGroupManager();
-			MembersHelpers.addCoaches(config, cgm, businessGroupService, coaches);
+			coaches = MembersHelpers.getCoaches(config, cgm, businessGroupService);
 			showCoaches = true;
+		} else {
+			coaches = Collections.emptyList();
 		}
 		
 		boolean showParticipants = false;
@@ -115,8 +117,10 @@ public class MembersCourseNodeRunController extends BasicController {
 						MembersCourseNode.CONFIG_KEY_PARTICIPANTS_CUR_ELEMENT)) {
 			
 			CourseGroupManager cgm = courseEnv.getCourseGroupManager();
-			MembersHelpers.addParticipants(config, cgm, businessGroupService, participants);
+			participants = MembersHelpers.getParticipants(config, cgm, businessGroupService);
 			showParticipants = true;
+		} else {
+			participants = Collections.emptyList();
 		}
 		
 		Map<Long,CurriculumMemberInfos> curriculumInfos = null;
