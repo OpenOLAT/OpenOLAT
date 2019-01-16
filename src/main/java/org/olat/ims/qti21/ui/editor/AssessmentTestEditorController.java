@@ -20,6 +20,7 @@
 package org.olat.ims.qti21.ui.editor;
 
 import java.io.File;
+import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -29,11 +30,15 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.ims.qti21.model.xml.AssessmentTestBuilder;
 import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.ims.qti21.ui.editor.events.AssessmentTestEvent;
+import org.olat.ims.qti21.ui.editor.events.SelectEvent.SelectionTarget;
 
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
 import uk.ac.ed.ph.jqtiplus.node.test.TestPart;
@@ -44,7 +49,7 @@ import uk.ac.ed.ph.jqtiplus.node.test.TestPart;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessmentTestEditorController extends BasicController {
+public class AssessmentTestEditorController extends BasicController implements Activateable2 {
 
 	private final TabbedPane tabbedPane;
 	private final VelocityContainer mainVC;
@@ -111,6 +116,29 @@ public class AssessmentTestEditorController extends BasicController {
 		if(testPartOptionsCtrl != null) {
 			tabbedPane.addTab(translate("assessment.test.expert.config"), testPartOptionsCtrl.getInitialComponent());
 		}
+	}
+
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if(SelectionTarget.description.name().equalsIgnoreCase(type) || SelectionTarget.score.name().equalsIgnoreCase(type)) {
+			activate(ureq, optionsCtrl);
+		} else if(SelectionTarget.expert.name().equalsIgnoreCase(type) && testPartOptionsCtrl != null) {
+			activate(ureq, testPartOptionsCtrl);
+		} else if(SelectionTarget.feedback.name().equalsIgnoreCase(type) && testPartOptionsCtrl != null) {
+			activate(ureq, testPartOptionsCtrl);
+		}
+	}
+	
+	private void activate(UserRequest ureq, Controller ctrl) {
+		if(ctrl == null) return;
+		
+		int index = tabbedPane.indexOfTab(ctrl.getInitialComponent());
+		if(index >= 0) {
+			tabbedPane.setSelectedPane(ureq, index);
+		}	
 	}
 
 	@Override

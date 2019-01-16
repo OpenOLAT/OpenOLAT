@@ -30,6 +30,9 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
@@ -51,6 +54,7 @@ import org.olat.ims.qti21.model.xml.interactions.UploadAssessmentItemBuilder;
 import org.olat.ims.qti21.ui.AssessmentItemDisplayController;
 import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
 import org.olat.ims.qti21.ui.editor.events.DetachFromPoolEvent;
+import org.olat.ims.qti21.ui.editor.events.SelectEvent.SelectionTarget;
 import org.olat.ims.qti21.ui.editor.interactions.ChoiceScoreController;
 import org.olat.ims.qti21.ui.editor.interactions.DrawingEditorController;
 import org.olat.ims.qti21.ui.editor.interactions.EssayEditorController;
@@ -83,7 +87,7 @@ import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessmentItemEditorController extends BasicController {
+public class AssessmentItemEditorController extends BasicController implements Activateable2 {
 
 	private final AssessmentItemRef itemRef;
 	private final ResolvedAssessmentItem resolvedAssessmentItem;
@@ -502,6 +506,29 @@ public class AssessmentItemEditorController extends BasicController {
 		tabbedPane.addTab(translate("form.score"), scoreEditor);
 		tabbedPane.addTab(translate("form.feedback"), feedbackEditor);
 		return hottextItemBuilder;
+	}
+
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if(SelectionTarget.description.name().equalsIgnoreCase(type) || SelectionTarget.expert.name().equalsIgnoreCase(type)) {
+			activate(ureq, itemEditor);
+		} else if(SelectionTarget.description.name().equalsIgnoreCase(type) || SelectionTarget.score.name().equalsIgnoreCase(type)) {
+			activate(ureq, scoreEditor);
+		} else if(SelectionTarget.feedback.name().equalsIgnoreCase(type)) {
+			activate(ureq, feedbackEditor);
+		}
+	}
+	
+	private void activate(UserRequest ureq, Controller ctrl) {
+		if(ctrl == null) return;
+		
+		int index = tabbedPane.indexOfTab(ctrl.getInitialComponent());
+		if(index >= 0) {
+			tabbedPane.setSelectedPane(ureq, index);
+		}	
 	}
 
 	@Override

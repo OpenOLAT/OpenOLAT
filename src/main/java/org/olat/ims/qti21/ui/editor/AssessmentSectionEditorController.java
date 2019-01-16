@@ -20,6 +20,7 @@
 package org.olat.ims.qti21.ui.editor;
 
 import java.io.File;
+import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -29,10 +30,14 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.ims.qti21.ui.editor.events.AssessmentSectionEvent;
+import org.olat.ims.qti21.ui.editor.events.SelectEvent.SelectionTarget;
 
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentSection;
 
@@ -42,7 +47,7 @@ import uk.ac.ed.ph.jqtiplus.node.test.AssessmentSection;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessmentSectionEditorController extends BasicController {
+public class AssessmentSectionEditorController extends BasicController implements Activateable2 {
 
 	private final TabbedPane tabbedPane;
 	private final VelocityContainer mainVC;
@@ -93,6 +98,18 @@ public class AssessmentSectionEditorController extends BasicController {
 	@Override
 	protected void doDispose() {
 		//
+	}
+
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if(SelectionTarget.description.name().equalsIgnoreCase(type) || SelectionTarget.score.name().equalsIgnoreCase(type)) {
+			tabbedPane.setSelectedPane(ureq, tabbedPane.indexOfTab(optionsCtrl.getInitialComponent()));
+		} else if(SelectionTarget.expert.name().equalsIgnoreCase(type)) {
+			tabbedPane.setSelectedPane(ureq, tabbedPane.indexOfTab(expertOptionsCtrl.getInitialComponent()));
+		}
 	}
 
 	@Override
