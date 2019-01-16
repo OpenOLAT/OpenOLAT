@@ -21,6 +21,7 @@ package org.olat.course.nodes.members;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -44,17 +45,33 @@ public class MembersHelpers {
 	private MembersHelpers() {
 		// CANNOT CREATE
 	}
+	
+	private static void deduplicateList(List<Identity> list) {
+		if(list == null || list.size() < 2) return;
+		
+		Set<Identity> deduplicates = new HashSet<>();
+		for(Iterator<Identity> it=list.iterator(); it.hasNext(); ) {
+			Identity identity = it.next();
+			if(deduplicates.contains(identity)) {
+				it.remove();
+			} else {
+				deduplicates.add(identity);
+			}
+		}
+	}
 
 	// -----------------------------------------------------
 	
 	public static List<Identity> getOwners(RepositoryService repositoryService, RepositoryEntry courseRepositoryEntry) {
-		return repositoryService.getMembers(courseRepositoryEntry, RepositoryEntryRelationType.all, GroupRoles.owner.name());
+		List<Identity> owners = repositoryService.getMembers(courseRepositoryEntry, RepositoryEntryRelationType.all, GroupRoles.owner.name());
+		deduplicateList(owners);
+		return owners;
 	}
 
 	// -----------------------------------------------------
 
-	public static void addCoaches(ModuleConfiguration moduleConfiguration, CourseGroupManager cgm, BusinessGroupService bgs, List<Identity> list) {
-	
+	public static List<Identity> getCoaches(ModuleConfiguration moduleConfiguration, CourseGroupManager cgm, BusinessGroupService bgs) {
+		List<Identity> list = new ArrayList<>();
 		if(moduleConfiguration.has(MembersCourseNode.CONFIG_KEY_COACHES_GROUP)) {
 			String coachGroupNames = moduleConfiguration.getStringValue(MembersCourseNode.CONFIG_KEY_COACHES_GROUP);
 			List<Long> coachGroupKeys = moduleConfiguration.getList(MembersCourseNode.CONFIG_KEY_COACHES_GROUP_ID, Long.class);
@@ -84,28 +101,31 @@ public class MembersHelpers {
 		if(moduleConfiguration.anyTrue(MembersCourseNode.CONFIG_KEY_COACHES_ALL)) {
 			list.addAll(retrieveCoachesFromCourseGroups(cgm));
 		}
+		
+		deduplicateList(list);
+		return list;
 	}
 	
-	public static List<Identity> retrieveCoachesFromAreas(List<Long> areaKeys, CourseGroupManager cgm) {
+	private static List<Identity> retrieveCoachesFromAreas(List<Long> areaKeys, CourseGroupManager cgm) {
 		List<Identity> coaches = cgm.getCoachesFromAreas(areaKeys);
 		return new ArrayList<>(new HashSet<>(coaches));
 	}
 	
-	public static List<Identity> retrieveCoachesFromCurriculumElements(List<Long> elementKeys, CourseGroupManager cgm) {
+	private static List<Identity> retrieveCoachesFromCurriculumElements(List<Long> elementKeys, CourseGroupManager cgm) {
 		List<Identity> coaches = cgm.getCoachesFromCurriculumElements(elementKeys);
 		return new ArrayList<>(new HashSet<>(coaches));
 	}
 
 	
-	public static List<Identity> retrieveCoachesFromGroups(List<Long> groupKeys, CourseGroupManager cgm) {
+	private static List<Identity> retrieveCoachesFromGroups(List<Long> groupKeys, CourseGroupManager cgm) {
 		return new ArrayList<>(new HashSet<>(cgm.getCoachesFromBusinessGroups(groupKeys)));
 	}
 	
-	public static List<Identity> retrieveCoachesFromCourse(CourseGroupManager cgm) {
+	private static List<Identity> retrieveCoachesFromCourse(CourseGroupManager cgm) {
 		return cgm.getCoaches();
 	}
 
-	public static List<Identity> retrieveCoachesFromCourseGroups(CourseGroupManager cgm) {
+	private static List<Identity> retrieveCoachesFromCourseGroups(CourseGroupManager cgm) {
 		Set<Identity> uniq = new HashSet<>();
 		uniq.addAll(cgm.getCoachesFromAreas());
 		uniq.addAll(cgm.getCoachesFromBusinessGroups());
@@ -115,7 +135,8 @@ public class MembersHelpers {
 	
 	// -----------------------------------------------------
 	
-	public static void addParticipants(ModuleConfiguration moduleConfiguration, CourseGroupManager cgm, BusinessGroupService bgs, List<Identity> list) {
+	public static List<Identity> getParticipants(ModuleConfiguration moduleConfiguration, CourseGroupManager cgm, BusinessGroupService bgs) {
+		List<Identity> list = new ArrayList<>();
 
 		if(moduleConfiguration.has(MembersCourseNode.CONFIG_KEY_PARTICIPANTS_GROUP)) {
 			String participantGroupNames = moduleConfiguration.getStringValue(MembersCourseNode.CONFIG_KEY_PARTICIPANTS_GROUP);
@@ -147,21 +168,23 @@ public class MembersHelpers {
 		if(moduleConfiguration.anyTrue(MembersCourseNode.CONFIG_KEY_PARTICIPANTS_ALL)) {
 			list.addAll(retrieveParticipantsFromCourseGroups(cgm));
 		}
+		deduplicateList(list);
+		return list;
 	}
 	
-	public static List<Identity> retrieveParticipantsFromAreas(List<Long> areaKeys, CourseGroupManager cgm) {
+	private static List<Identity> retrieveParticipantsFromAreas(List<Long> areaKeys, CourseGroupManager cgm) {
 		return cgm.getParticipantsFromAreas(areaKeys);
 	}
 	
-	public static List<Identity> retrieveParticipantsFromGroups(List<Long> groupKeys, CourseGroupManager cgm) {
+	private static List<Identity> retrieveParticipantsFromGroups(List<Long> groupKeys, CourseGroupManager cgm) {
 		return cgm.getParticipantsFromBusinessGroups(groupKeys);
 	}
 	
-	public static List<Identity> retrieveParticipantsFromCurriculumElements(List<Long> elementKeys, CourseGroupManager cgm) {
+	private static List<Identity> retrieveParticipantsFromCurriculumElements(List<Long> elementKeys, CourseGroupManager cgm) {
 		return cgm.getParticipantsFromCurriculumElements(elementKeys);
 	}
 	
-	public static List<Identity> retrieveParticipantsFromCourse(CourseGroupManager cgm) {
+	private static List<Identity> retrieveParticipantsFromCourse(CourseGroupManager cgm) {
 		return cgm.getParticipants();
 	}
 	
