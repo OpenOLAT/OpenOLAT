@@ -25,6 +25,8 @@
 */
 package org.olat.core.gui.components.table;
 
+import static org.olat.core.util.StringHelper.blankIfNull;
+
 import java.util.Locale;
 
 import org.apache.commons.lang.StringEscapeUtils;
@@ -61,10 +63,10 @@ public abstract class IconCssCellRenderer implements CustomCellRenderer, FlexiCe
 				target.append(StringEscapeUtils.escapeHtml(hoverText));
 			}
 			target.append("\">");
-			target.append("<i class='").append(getCssClass(cellValue)).append("'> </i> <span>");
+			target.append("<i class='").append(blankIfNull(getCssClass(cellValue))).append("'> </i> <span>");
 	
-			target.append(getCellValue(cellValue));
-			target.append("</span></div>");			
+			target.append(blankIfNull(getCellValue(cellValue)));
+			target.append("</span></div>");
 		}
 		
 	}
@@ -79,15 +81,15 @@ public abstract class IconCssCellRenderer implements CustomCellRenderer, FlexiCe
 			}
 			sb.append(value);
 		} else {
-			sb.append("<div style='white-space: nowrap;'><i class='").append(getCssClass(val)).append("'> </i> <span");
+			sb.append("<div style='white-space: nowrap;'><i class='").append(blankIfNull(getCssClass(val))).append("'> </i> <span");
 			String hoverText = getHoverText(val);
 			if (StringHelper.containsNonWhitespace(hoverText)) {
 				sb.append(" title=\"");
 				sb.append(StringEscapeUtils.escapeHtml(hoverText));
 			}
 			sb.append("\">");
-			sb.append(getCellValue(val));
-			sb.append("</span></div>");			
+			sb.append(blankIfNull(getCellValue(val)));
+			sb.append("</span></div>");
 		}
 	}
 	

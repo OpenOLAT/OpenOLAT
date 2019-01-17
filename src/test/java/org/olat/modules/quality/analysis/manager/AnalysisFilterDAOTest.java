@@ -60,10 +60,11 @@ import org.olat.modules.quality.QualityService;
 import org.olat.modules.quality.analysis.AnalysisSearchParameter;
 import org.olat.modules.quality.analysis.AvailableAttributes;
 import org.olat.modules.quality.analysis.GroupBy;
-import org.olat.modules.quality.analysis.GroupedStatistic;
 import org.olat.modules.quality.analysis.GroupedStatistics;
 import org.olat.modules.quality.analysis.MultiGroupBy;
 import org.olat.modules.quality.analysis.MultiKey;
+import org.olat.modules.quality.analysis.RawGroupedStatistic;
+import org.olat.modules.quality.analysis.TemporalGroupBy;
 import org.olat.modules.quality.manager.QualityTestHelper;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
@@ -987,20 +988,20 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		
 		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
 		MultiGroupBy multiGroupBy = MultiGroupBy.of(TOPIC_ORGANISATION);
-		List<GroupedStatistic> statisticList = sut.loadGroupedStatisticByResponseIdentifiers(searchParams,
-				asList(identifier1.toString(), identifier2.toString()), multiGroupBy);
-		GroupedStatistics statistics = new GroupedStatistics(statisticList);
+		List<RawGroupedStatistic> statisticList = sut.loadGroupedStatisticByResponseIdentifiers(searchParams,
+				asList(identifier1.toString(), identifier2.toString()), multiGroupBy, null);
+		GroupedStatistics<RawGroupedStatistic> statistics = new GroupedStatistics<>(statisticList);
 		
-		GroupedStatistic statistic11 = statistics.getStatistic(identifier1, of(organisation1.getKey().toString()));
+		RawGroupedStatistic statistic11 = statistics.getStatistic(identifier1, of(organisation1.getKey().toString()));
 		assertThat(statistic11.getCount()).isEqualTo(2);
-		assertThat(statistic11.getAvg()).isEqualTo(10);
-		GroupedStatistic statistic12 = statistics.getStatistic(identifier1, of(organisation2.getKey().toString()));
+		assertThat(statistic11.getRawAvg()).isEqualTo(10);
+		RawGroupedStatistic statistic12 = statistics.getStatistic(identifier1, of(organisation2.getKey().toString()));
 		assertThat(statistic12.getCount()).isEqualTo(2);
-		assertThat(statistic12.getAvg()).isEqualTo(5);
-		GroupedStatistic statistic21 = statistics.getStatistic(identifier2, of(organisation1.getKey().toString()));
+		assertThat(statistic12.getRawAvg()).isEqualTo(5);
+		RawGroupedStatistic statistic21 = statistics.getStatistic(identifier2, of(organisation1.getKey().toString()));
 		assertThat(statistic21.getCount()).isEqualTo(1);
-		assertThat(statistic21.getAvg()).isEqualTo(1);
-		GroupedStatistic statistic22 = statistics.getStatistic(identifier2, of(organisation2.getKey().toString()));
+		assertThat(statistic21.getRawAvg()).isEqualTo(1);
+		RawGroupedStatistic statistic22 = statistics.getStatistic(identifier2, of(organisation2.getKey().toString()));
 		assertThat(statistic22).isNull();
 	}
 	
@@ -1035,15 +1036,15 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		
 		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
 		MultiGroupBy multiGroupBy = MultiGroupBy.of(CONTEXT_ORGANISATION, CONTEXT_CURRICULUM, CONTEXT_TAXONOMY_LEVEL);
-		List<GroupedStatistic> statisticList = sut.loadGroupedStatisticByResponseIdentifiers(searchParams,
-				asList(identifier), multiGroupBy);
-		GroupedStatistics statistics = new GroupedStatistics(statisticList);
+		List<RawGroupedStatistic> statisticList = sut.loadGroupedStatisticByResponseIdentifiers(searchParams,
+				asList(identifier), multiGroupBy, null);
+		GroupedStatistics<RawGroupedStatistic> statistics = new GroupedStatistics<>(statisticList);
 		
 		for (Organisation organisation: organisations) {
 			for (Curriculum curriculum: curriculums) {
 				for (TaxonomyLevel level: levels) {
 					MultiKey multiKey = of(organisation.getKey().toString(), curriculum.getKey().toString(), level.getKey().toString());
-					assertThat(statistics.getStatistic(identifier, multiKey).getAvg()).isEqualTo(expected.doubleValue());
+					assertThat(statistics.getStatistic(identifier, multiKey).getRawAvg()).isEqualTo(expected.doubleValue());
 				}
 			}
 		}
@@ -1067,7 +1068,32 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
 		for (GroupBy groupBy : GroupBy.values()) {
 			MultiGroupBy multiGroupBy = MultiGroupBy.of(groupBy);
-			sut.loadGroupedStatisticByResponseIdentifiers(searchParams, singletonList(identifier), multiGroupBy);
+			sut.loadGroupedStatisticByResponseIdentifiers(searchParams, singletonList(identifier), multiGroupBy, null);
+		}
+		
+		// Assert that no exception is thrown.
+	}
+	
+	@Test
+	public void shouldLoadGroupedStatisticForEveryTemporalGroupBy() {
+		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity executor = JunitTestHelper.createAndPersistIdentityAsUser("");
+		Organisation dcOrganisation = organisationService.createOrganisation("", "", null, null, null);
+		QualityDataCollection dc1 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participations = qualityService.addParticipations(dc1, asList(executor));
+		EvaluationFormParticipation participation = participations.get(0);
+		EvaluationFormSession session = evaManager.createSession(participation);
+		String identifier = UUID.randomUUID().toString();
+		evaManager.createNumericalResponse(identifier , session, BigDecimal.TEN);
+		evaManager.finishSession(session);
+		finish(asList(dc1));
+		dbInstance.commitAndCloseSession();
+		
+		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
+		for (TemporalGroupBy temporalGroupBy : TemporalGroupBy.values()) {
+			MultiGroupBy multiGroupBy = MultiGroupBy.noGroupBy();
+			sut.loadGroupedStatisticByResponseIdentifiers(searchParams, singletonList(identifier), multiGroupBy,
+					temporalGroupBy);
 		}
 		
 		// Assert that no exception is thrown.

@@ -33,56 +33,100 @@ import java.util.Set;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class GroupedStatistics {
+public class GroupedStatistics<V extends GroupedStatisticKeys> {
 
-	private final Map<String, Map<MultiKey, GroupedStatistic>> statistics = new HashMap<>();
+	private final Collection<V> allStatistics = new ArrayList<>();
+	private final Map<String, Map<MultiKey, V>> statisticsByMultiKey = new HashMap<>();
+	private final Map<String, Map<TemporalKey, V>> statisticsByTemporalKey = new HashMap<>();
 
 	public GroupedStatistics() {
 		//
 	}
 
-	public GroupedStatistics(Collection<GroupedStatistic> collection) {
-		for (GroupedStatistic statistic : collection) {
+	public GroupedStatistics(Collection<V> collection) {
+		for (V statistic : collection) {
 			putStatistic(statistic);
 		}
 	}
 
-	public GroupedStatistic getStatistic(String identifier, MultiKey multiKey) {
-		Map<MultiKey, GroupedStatistic> grouped = statistics.get(identifier);
+	public void putStatistic(V statistic) {
+		putAll(statistic);
+		putMultiKey(statistic);
+		putTemporalKey(statistic);
+	}
+
+	private void putAll(V statistic) {
+		allStatistics.add(statistic);
+	}
+
+	private void putMultiKey(V statistic) {
+		String identifier = statistic.getIdentifier();
+		MultiKey multiKey = statistic.getMultiKey();
+		if (!MultiKey.none().equals(multiKey)) {
+			Map<MultiKey, V> grouped = statisticsByMultiKey.get(identifier);
+			if (grouped == null) {
+				grouped = new HashMap<>();
+				statisticsByMultiKey.put(identifier, grouped);
+			}
+			grouped.put(multiKey, statistic);
+			
+		}
+	}
+
+	private void putTemporalKey(V statistic) {
+		String identifier = statistic.getIdentifier();
+		TemporalKey temporalKey = statistic.getTemporalKey();
+		if (!TemporalKey.none().equals(temporalKey)) {
+			Map<TemporalKey, V> grouped = statisticsByTemporalKey.get(identifier);
+			if (grouped == null) {
+				grouped = new HashMap<>();
+				statisticsByTemporalKey.put(identifier, grouped);
+			}
+			grouped.put(temporalKey, statistic);
+		}
+	}
+
+	public V getStatistic(String identifier, MultiKey multiKey) {
+		Map<MultiKey, V> grouped = statisticsByMultiKey.get(identifier);
 		if (grouped != null) {
 			return grouped.get(multiKey);
 		}
 		return null;
 	}
-
-	public void putStatistic(GroupedStatistic statistic) {
-		String identifier = statistic.getIdentifier();
-		MultiKey multiKey = statistic.getMultiKey();
-		Map<MultiKey, GroupedStatistic> grouped = statistics.get(identifier);
-		if (grouped == null) {
-			grouped = new HashMap<>();
-			statistics.put(identifier, grouped);
+	
+	public V getStatistic(String identifier, TemporalKey temporalKey) {
+		Map<TemporalKey, V> grouped = statisticsByTemporalKey.get(identifier);
+		if (grouped != null) {
+			return grouped.get(temporalKey);
 		}
-		grouped.put(multiKey, statistic);
+		return null;
 	}
 
-	public Map<MultiKey, GroupedStatistic> getStatistics(String identifier) {
-		return statistics.get(identifier);
-	}
-
-	public Collection<GroupedStatistic> getStatistics() {
-		Collection<GroupedStatistic> all = new ArrayList<>();
-		for (Map<MultiKey, GroupedStatistic> grouped : statistics.values()) {
-			all.addAll(grouped.values());
-		}
-		return all;
+	public Map<MultiKey, V> getStatisticsByMultiKey(String identifier) {
+		return statisticsByMultiKey.get(identifier);
 	}
 	
-	public Set<MultiKey> getKeys() {
+	public Map<TemporalKey, V> getStatisticsByTemporalKey(String identifier) {
+		return statisticsByTemporalKey.get(identifier);
+	}
+
+	public Collection<V> getStatistics() {
+		return allStatistics;
+	}
+	
+	public Set<MultiKey> getMultiKeys() {
 		Set<MultiKey> keys = new HashSet<>();
-		for (GroupedStatistic statistic : getStatistics()) {
+		for (V statistic : getStatistics()) {
 			keys.add(statistic.getMultiKey());
 		}
 		return keys;
+	}
+	
+	public Set<String> getIdentifiers() {
+		Set<String> identifiers = new HashSet<>();
+		for (V statistic : getStatistics()) {
+			identifiers.add(statistic.getIdentifier());
+		}
+		return identifiers;
 	}
 }

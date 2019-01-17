@@ -21,13 +21,16 @@ package org.olat.modules.quality.analysis;
 
 /**
  * 
- * Initial date: 28.09.2018<br>
+ * Initial date: 17 Jan 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public enum AnalysisSegment {
+public interface GroupedStatisticKeys {
 
-	OVERVIEW,
-	HEAT_MAP;
+	public String getIdentifier();
+
+	public MultiKey getMultiKey();
+
+	public TemporalKey getTemporalKey();
 
 }

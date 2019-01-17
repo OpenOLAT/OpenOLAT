@@ -20,6 +20,7 @@
 package org.olat.modules.quality.analysis.manager;
 
 import static java.util.stream.Collectors.toList;
+import static org.olat.modules.quality.analysis.TemporalKey.DELIMITER;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -46,8 +47,9 @@ import org.olat.modules.quality.analysis.AnalysisSearchParameter;
 import org.olat.modules.quality.analysis.AnlaysisFigures;
 import org.olat.modules.quality.analysis.AvailableAttributes;
 import org.olat.modules.quality.analysis.GroupBy;
-import org.olat.modules.quality.analysis.GroupedStatistic;
 import org.olat.modules.quality.analysis.MultiGroupBy;
+import org.olat.modules.quality.analysis.RawGroupedStatistic;
+import org.olat.modules.quality.analysis.TemporalGroupBy;
 import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -343,14 +345,15 @@ public class AnalysisFilterDAO {
 		sb.and().append("context.evaluationFormSession.key is not null");
 	}
 	
-	List<GroupedStatistic> loadGroupedStatisticByResponseIdentifiers(AnalysisSearchParameter searchParams,
-			Collection<String> responseIdentifiers, MultiGroupBy multiGroupBy) {
+	List<RawGroupedStatistic> loadGroupedStatisticByResponseIdentifiers(AnalysisSearchParameter searchParams,
+			Collection<String> responseIdentifiers, MultiGroupBy multiGroupBy, TemporalGroupBy temporalGroupBy) {
 		if (responseIdentifiers == null || responseIdentifiers.isEmpty()) return new ArrayList<>();
 		
 		QueryBuilder sb = new QueryBuilder();
-		sb.append("select new org.olat.modules.quality.analysis.GroupedStatistic(");
+		sb.append("select new org.olat.modules.quality.analysis.model.RawGroupedStatisticImpl(");
 		sb.append("       response.responseIdentifier");
 		appendGroupBys(sb, multiGroupBy, true);
+		appendTemporalGroupBy(sb, temporalGroupBy, true);
 		sb.append("     , count(response)");
 		sb.append("     , avg(response.numericalResponse)");
 		sb.append("       )");
@@ -363,9 +366,10 @@ public class AnalysisFilterDAO {
 		appendWhere(sb, searchParams);
 		sb.append(" group by response.responseIdentifier");
 		appendGroupBys(sb, multiGroupBy, false);
+		appendTemporalGroupBy(sb, temporalGroupBy, false);
 		
-		TypedQuery<GroupedStatistic> query = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), GroupedStatistic.class)
+		TypedQuery<RawGroupedStatistic> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), RawGroupedStatistic.class)
 				.setParameter("responseIdentifiers", responseIdentifiers);
 		appendParameters(query, searchParams);
 		return query.getResultList();
@@ -425,10 +429,66 @@ public class AnalysisFilterDAO {
 		}
 	}
 	
+	private void appendTemporalGroupBy(QueryBuilder sb, TemporalGroupBy temporalGroupBy, boolean select) {
+		if (temporalGroupBy == null) {
+			if (select) sb.append(", cast(null as string)");
+			return;
+		}
+		
+		sb.append(", ");
+		switch (temporalGroupBy) {
+		case DATA_COLLECTION_DEADLINE_YEAR:
+			castAsString(sb, "year(collection.deadline)", true);
+			break;
+		case DATA_COLLECTION_DEADLINE_HALF_YEAR:
+			castAsString(sb, "year(collection.deadline)", true);
+			sb.append("||'").append(DELIMITER).append("'||");
+			sb.append("CASE");
+			sb.append("  WHEN month(collection.deadline) = 1 THEN '1'");
+			sb.append("  WHEN month(collection.deadline) = 2 THEN '1'");
+			sb.append("  WHEN month(collection.deadline) = 3 THEN '1'");
+			sb.append("  WHEN month(collection.deadline) = 4 THEN '1'");
+			sb.append("  WHEN month(collection.deadline) = 5 THEN '1'");
+			sb.append("  WHEN month(collection.deadline) = 6 THEN '1'");
+			sb.append("  WHEN month(collection.deadline) = 7 THEN '2'");
+			sb.append("  WHEN month(collection.deadline) = 8 THEN '2'");
+			sb.append("  WHEN month(collection.deadline) = 9 THEN '2'");
+			sb.append("  WHEN month(collection.deadline) = 10 THEN '2'");
+			sb.append("  WHEN month(collection.deadline) = 11 THEN '2'");
+			sb.append("  WHEN month(collection.deadline) = 12 THEN '2'");
+			sb.append("END");
+			break;
+		case DATA_COLLECTION_DEADLINE_QUARTER:
+			castAsString(sb, "year(collection.deadline)", true);
+			sb.append("||'").append(DELIMITER).append("'||");
+			sb.append("CASE");
+			sb.append("  WHEN month(collection.deadline) = 1 THEN '1'");
+			sb.append("  WHEN month(collection.deadline) = 2 THEN '1'");
+			sb.append("  WHEN month(collection.deadline) = 3 THEN '1'");
+			sb.append("  WHEN month(collection.deadline) = 4 THEN '2'");
+			sb.append("  WHEN month(collection.deadline) = 5 THEN '2'");
+			sb.append("  WHEN month(collection.deadline) = 6 THEN '2'");
+			sb.append("  WHEN month(collection.deadline) = 7 THEN '3'");
+			sb.append("  WHEN month(collection.deadline) = 8 THEN '3'");
+			sb.append("  WHEN month(collection.deadline) = 9 THEN '3'");
+			sb.append("  WHEN month(collection.deadline) = 10 THEN '4'");
+			sb.append("  WHEN month(collection.deadline) = 11 THEN '4'");
+			sb.append("  WHEN month(collection.deadline) = 12 THEN '4'");
+			sb.append("END");
+			break;
+		case DATA_COLLECTION_DEADLINE_MONTH:
+			castAsString(sb, "year(collection.deadline)", true);
+			sb.append("||'").append(DELIMITER).append("'||");
+			castAsString(sb, "month(collection.deadline)", true);
+			break;
+		default:
+		}
+	}
+
 	private void castAsString(QueryBuilder sb, String attribute, boolean select) {
 		sb.append("cast(", select).append(attribute).append(" as string)", select);
 	}
-
+	
 	private static void appendFrom(QueryBuilder sb, AnalysisSearchParameter searchParams) {
 		sb.append("  from qualitydatacollection collection");
 		sb.append("       inner join evaluationformsurvey survey");

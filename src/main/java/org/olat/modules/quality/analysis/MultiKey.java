@@ -27,9 +27,15 @@ package org.olat.modules.quality.analysis;
  */
 public class MultiKey {
 	
+	private final static MultiKey NONE = new MultiKey(null, null, null);
+	
 	private final String key1;
 	private final String key2;
 	private final String key3;
+	
+	public static final MultiKey none() {
+		return NONE;
+	}
 	
 	public static final MultiKey of(String key1) {
 		return of(key1, null);

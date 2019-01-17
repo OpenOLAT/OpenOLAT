@@ -21,13 +21,14 @@ package org.olat.modules.quality.analysis;
 
 /**
  * 
- * Initial date: 28.09.2018<br>
+ * Initial date: 11.09.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public enum AnalysisSegment {
-
-	OVERVIEW,
-	HEAT_MAP;
+public interface Trend extends GroupedStatistic {
+	
+	public enum DIRECTION {UP, EQUAL, DOWN};
+	
+	public DIRECTION getDirection();
 
 }

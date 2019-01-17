@@ -20,6 +20,7 @@
 package org.olat.modules.quality.ui;
 
 import static org.olat.modules.forms.handler.EvaluationFormResource.FORM_XML_FILE;
+import static org.olat.modules.quality.ui.QualityUIFactory.emptyArray;
 
 import java.io.File;
 import java.util.Date;
@@ -84,8 +85,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class DataCollectionConfigurationController extends FormBasicController {
 
-	private static final String[] EMPTY_ARRAY = new String[] {};
-	
 	private TextElement titleEl;
 	private FormLink evaFormPreviewLink;
 	private FormLink evaFormReplaceLink;
@@ -204,12 +203,12 @@ public class DataCollectionConfigurationController extends FormBasicController {
 		topicIdentitySelectLink = uifactory.addFormLink("data.collection.topic.identity.select", formLayout,
 				"btn btn-default o_xsmall");
 		// topic organisation
-		topicOrganisationEl = uifactory.addDropdownSingleselect("data.collection.topic.organisation", formLayout, EMPTY_ARRAY, EMPTY_ARRAY);
+		topicOrganisationEl = uifactory.addDropdownSingleselect("data.collection.topic.organisation", formLayout, emptyArray(), emptyArray());
 		// topic curriculum
-		topicCurriculumEl = uifactory.addDropdownSingleselect("data.collection.topic.curriculum", formLayout, EMPTY_ARRAY, EMPTY_ARRAY);
+		topicCurriculumEl = uifactory.addDropdownSingleselect("data.collection.topic.curriculum", formLayout, emptyArray(), emptyArray());
 		topicCurriculumEl.addActionListener(FormEvent.ONCHANGE);
 		// topic curriculum element
-		topicCurriculumElementEl = uifactory.addDropdownSingleselect("data.collection.topic.curriculum.element", formLayout, EMPTY_ARRAY, EMPTY_ARRAY);
+		topicCurriculumElementEl = uifactory.addDropdownSingleselect("data.collection.topic.curriculum.element", formLayout, emptyArray(), emptyArray());
 		// topic repository
 		topicRepositoryNameEl = uifactory.addStaticTextElement("data.collection.topic.repository.name", null, formLayout);
 		topicRepositorySelectLink = uifactory.addFormLink("data.collection.topic.repository.select", formLayout,

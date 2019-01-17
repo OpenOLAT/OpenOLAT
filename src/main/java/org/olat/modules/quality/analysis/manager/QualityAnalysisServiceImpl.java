@@ -54,7 +54,10 @@ import org.olat.modules.quality.analysis.EvaluationFormViewSearchParams;
 import org.olat.modules.quality.analysis.GroupedStatistic;
 import org.olat.modules.quality.analysis.GroupedStatistics;
 import org.olat.modules.quality.analysis.MultiGroupBy;
+import org.olat.modules.quality.analysis.MultiTrendSeries;
 import org.olat.modules.quality.analysis.QualityAnalysisService;
+import org.olat.modules.quality.analysis.RawGroupedStatistic;
+import org.olat.modules.quality.analysis.TemporalGroupBy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.repository.RepositoryEntry;
@@ -288,13 +291,25 @@ public class QualityAnalysisServiceImpl implements QualityAnalysisService {
 	}
 
 	@Override
-	public GroupedStatistics calculateStatistics(AnalysisSearchParameter searchParams,
+	public GroupedStatistics<GroupedStatistic> calculateStatistics(AnalysisSearchParameter searchParams,
 			Collection<String> responseIdentifiers, Collection<Rubric> rubrics, MultiGroupBy multiGroupBy) {
-		List<GroupedStatistic> statisticsList = filterDao.loadGroupedStatisticByResponseIdentifiers(searchParams,
-				responseIdentifiers, multiGroupBy);
-		GroupedStatistics statistics = new GroupedStatistics(statisticsList);
-		statistics = statisticsCalculator.getScaledStatistics(statistics, rubrics);
+		List<RawGroupedStatistic> statisticsList = filterDao.loadGroupedStatisticByResponseIdentifiers(searchParams,
+				responseIdentifiers, multiGroupBy, null);
+		GroupedStatistics<RawGroupedStatistic> rawStatistics = new GroupedStatistics<>(statisticsList);
+		GroupedStatistics<GroupedStatistic> statistics = statisticsCalculator.getGroupedStatistics(rawStatistics, rubrics);
 		return statistics;
+	}
+
+	@Override
+	public MultiTrendSeries<String> calculateIdentifierTrends(AnalysisSearchParameter searchParams,
+			Collection<String> responseIdentifiers, Collection<Rubric> rubrics, TemporalGroupBy temporalGroupBy) {
+		if (temporalGroupBy == null) return new MultiTrendSeries<>();
+		
+		List<RawGroupedStatistic> statisticsList = filterDao.loadGroupedStatisticByResponseIdentifiers(searchParams,
+				responseIdentifiers, MultiGroupBy.noGroupBy(), temporalGroupBy);
+		GroupedStatistics<RawGroupedStatistic> rawStatistics = new GroupedStatistics<>(statisticsList);
+		GroupedStatistics<GroupedStatistic> statistics = statisticsCalculator.getGroupedStatistics(rawStatistics, rubrics);
+		return statisticsCalculator.getTrends(statistics, temporalGroupBy);
 	}
 
 	@Override

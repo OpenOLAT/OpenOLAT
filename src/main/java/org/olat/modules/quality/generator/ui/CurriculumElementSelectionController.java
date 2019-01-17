@@ -19,6 +19,8 @@
  */
 package org.olat.modules.quality.generator.ui;
 
+import static org.olat.modules.quality.ui.QualityUIFactory.emptyArray;
+
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -50,8 +52,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 class CurriculumElementSelectionController extends FormBasicController {
-	
-	private static final String[] EMPTY_ARRAY = new String[] {};
 	
 	private SingleSelection curriculumEl;
 	private SingleSelection curriculumElementEl;
@@ -90,7 +90,7 @@ class CurriculumElementSelectionController extends FormBasicController {
 		curriculumEl.addActionListener(FormEvent.ONCHANGE);
 		
 		curriculumElementEl = uifactory.addDropdownSingleselect(
-				"curriculum.element.select.curriculum.element", formLayout, EMPTY_ARRAY, EMPTY_ARRAY);
+				"curriculum.element.select.curriculum.element", formLayout, emptyArray(), emptyArray());
 		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add("buttons", buttonLayout);

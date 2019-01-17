@@ -79,12 +79,17 @@ import org.olat.user.ui.organisation.OrganisationTreeModel;
  */
 public class QualityUIFactory {
 
+	private static final String[] EMPTY_ARRAY = {};
 	private static final String FLAT_DELIMITER = " > ";
 	private static final String INTENDING = "\u00a0"; // &nbsp; non-breaking space
 	private static final Comparator<? super Curriculum> DISPLAY_NAME_COMPARATOR = 
 			(c1, c2) -> c1.getDisplayName().compareTo(c2.getDisplayName());
 	private static final Comparator<IdentityShort> IDENTITY_LAST_FIRST_COMPARATOR = 
 			Comparator.comparing(IdentityShort::getFirstName).thenComparing(IdentityShort::getLastName);
+	
+	public static String[] emptyArray() {
+		return EMPTY_ARRAY;
+	}
 	
 	public static String formatTopic(QualityDataCollectionView dataCollectionView) {
 		return formatTopic(dataCollectionView.getTopicType(), dataCollectionView.getTranslatedTopicType(),

@@ -19,15 +19,37 @@
  */
 package org.olat.modules.quality.analysis;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * 
- * Initial date: 28.09.2018<br>
+ * Initial date: 15 Jan 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public enum AnalysisSegment {
+public class TrendSeries {
+	
+	private final List<Trend> trends;
+	
+	public TrendSeries(int size) {
+		this.trends = new ArrayList<>(size);
+		for (int i = 0; i < size; i++) {
+			trends.add(null);
+		}
+	}
 
-	OVERVIEW,
-	HEAT_MAP;
+	public Trend getTrend(int index) {
+		return trends.get(index);
+	}
+	
+	public void set(int i, Trend trend) {
+		trends.set(i, trend);
+	}
+
+	public List<Trend> toList() {
+		return new ArrayList<>(trends);
+	}
+
 
 }

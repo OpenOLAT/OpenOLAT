@@ -19,59 +19,18 @@
  */
 package org.olat.modules.quality.analysis;
 
+import org.olat.modules.forms.RubricRating;
+
 /**
  * 
  * Initial date: 11.09.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class GroupedStatistic {
+public interface GroupedStatistic extends RawGroupedStatistic {
 	
-	private final String identitfier;
-	private final MultiKey multiKey;
-	private final Long count;
-	private final Double avg;
+	public Double getAvg();
 	
-	public GroupedStatistic(String identitfier, String groupedKey1, String groupedKey2, String groupedKey3, Long count, Double avg) {
-		this(identitfier, MultiKey.of(groupedKey1, groupedKey2, groupedKey3), count, avg);
-	}
-
-	public GroupedStatistic(String identitfier, MultiKey multiKey, Long count, Double avg) {
-		this.identitfier = identitfier;
-		this.multiKey = multiKey;
-		this.count = count;
-		this.avg = avg;
-	}
-
-	public String getIdentifier() {
-		return identitfier;
-	}
-
-	public MultiKey getMultiKey() {
-		return multiKey;
-	}
-
-	public Long getCount() {
-		return count;
-	}
-
-	public Double getAvg() {
-		return avg;
-	}
-
-	@Override
-	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("GroupedStatistic [identitfier=");
-		builder.append(identitfier);
-		builder.append(", multiKey=");
-		builder.append(multiKey);
-		builder.append(", count=");
-		builder.append(count);
-		builder.append(", avg=");
-		builder.append(avg);
-		builder.append("]");
-		return builder.toString();
-	}
+	public RubricRating getRating();
 
 }

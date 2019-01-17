@@ -433,6 +433,8 @@ import org.junit.runners.Suite;
 	org.olat.modules.qpool.model.QuestionItemAuditLogBuilderImplTest.class,
 	org.olat.modules.qpool.ui.metadata.QPoolTaxonomyTreeBuilderTest.class,
 	org.olat.modules.quality.analysis.manager.AnalysisPresentationXStreamTest.class,
+	org.olat.modules.quality.analysis.MultiTrendSeriesTest.class,
+	org.olat.modules.quality.analysis.TemporalKeyComparatorTest.class,
 	org.olat.modules.quality.generator.provider.ProviderHelperTest.class,
 	org.olat.modules.quality.manager.QualityServiceImplTest.class,
 	org.olat.modules.webFeed.manager.FeedManagerImplTest.class,

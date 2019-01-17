@@ -19,17 +19,35 @@
  */
 package org.olat.modules.quality.analysis.manager;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.modules.forms.EvaluationFormManager;
+import org.olat.modules.forms.RubricRating;
 import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.forms.model.xml.Slider;
 import org.olat.modules.quality.analysis.GroupedStatistic;
+import org.olat.modules.quality.analysis.GroupedStatisticKeys;
 import org.olat.modules.quality.analysis.GroupedStatistics;
-import org.olat.modules.quality.analysis.MultiKey;
+import org.olat.modules.quality.analysis.MultiTrendSeries;
+import org.olat.modules.quality.analysis.RawGroupedStatistic;
+import org.olat.modules.quality.analysis.TemporalGroupBy;
+import org.olat.modules.quality.analysis.TemporalKey;
+import org.olat.modules.quality.analysis.Trend;
+import org.olat.modules.quality.analysis.Trend.DIRECTION;
+import org.olat.modules.quality.analysis.model.GroupedStatisticImpl;
+import org.olat.modules.quality.analysis.model.TrendImpl;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import edu.emory.mathcs.backport.java.util.Collections;
 
 /**
  * 
@@ -41,43 +59,112 @@ import org.springframework.stereotype.Service;
 public class StatisticsCalculator {
 
 	private static final OLog log = Tracing.createLoggerFor(StatisticsCalculator.class);
+	
+	@Autowired
+	private EvaluationFormManager evaluationFormManager;
 
-	GroupedStatistics getScaledStatistics(GroupedStatistics statistics, Collection<Rubric> rubrics) {
-		GroupedStatistics scaledStatistics = new GroupedStatistics();
+	GroupedStatistics<GroupedStatistic> getGroupedStatistics(GroupedStatistics<RawGroupedStatistic> rawStatistics, Collection<Rubric> rubrics) {
+		Map<String, Rubric> identifierToRubric = getIdentifierToRubric(rubrics);
+		GroupedStatistics<GroupedStatistic> statistics = new GroupedStatistics<>();
+		for (RawGroupedStatistic rawStatistic : rawStatistics.getStatistics()) {
+			Rubric rubric = identifierToRubric.get(rawStatistic.getIdentifier());
+			if (rubric != null) {
+				GroupedStatistic statistic = getGroupedStatistic(rawStatistic, rubric);
+				statistics.putStatistic(statistic);
+			}
+		}
+		return statistics;
+	}
+	
+	private Map<String, Rubric> getIdentifierToRubric(Collection<Rubric> rubrics) {
+		Map<String, Rubric> identifierToRubric = new HashMap<>();
 		for (Rubric rubric : rubrics) {
 			for (Slider slider : rubric.getSliders()) {
 				String identifier = slider.getId();
-				Map<MultiKey, GroupedStatistic> sliderStatistics = statistics.getStatistics(identifier);
-				if (sliderStatistics != null) {
-					for (GroupedStatistic statistic : sliderStatistics.values()) {
-						GroupedStatistic scaledStatistic = getScaledStatistic(statistic, rubric);
-						scaledStatistics.putStatistic(scaledStatistic);
-					}
-				}
+				identifierToRubric.put(identifier, rubric);
 			}
 		}
-		return scaledStatistics;
+		return identifierToRubric;
 	}
 
-	GroupedStatistic getScaledStatistic(GroupedStatistic statistic, Rubric rubric) {
-		log.debug("Unscaled statistic: " + statistic.toString());
-		Double scaledAvg = statistic.getAvg();
+	GroupedStatistic getGroupedStatistic(RawGroupedStatistic rawStatistic, Rubric rubric) {
+		log.debug("Raw grouped statistic: " + rawStatistic.toString());
+		Double rawAvg = rawStatistic.getRawAvg();
+		Double scaledAvg = getScaledAvg(rubric, rawAvg);
+		RubricRating rating = evaluationFormManager.getRubricRating(rubric, scaledAvg);
+		GroupedStatistic statistic = new GroupedStatisticImpl(rawStatistic.getIdentifier(), rawStatistic.getMultiKey(),
+				rawStatistic.getTemporalKey(), rawStatistic.getCount(), rawAvg, scaledAvg, rating);
+		log.debug("Grouped statistic:        " + statistic.toString());
+		return statistic;
+	}
+
+	private Double getScaledAvg(Rubric rubric, Double rawAvg) {
+		Double scaledAvg = rawAvg;
 		switch (rubric.getScaleType()) {
 		case maxToOne: {
-			scaledAvg = rubric.getSteps() + 1 - statistic.getAvg();
+			scaledAvg = rubric.getSteps() + 1 - rawAvg;
 			break;
 		}
 		case zeroBallanced: {
 			double offset = (rubric.getSteps() - 1) / 2.0;
-			scaledAvg = statistic.getAvg() - 1 - offset;
+			scaledAvg = rawAvg - 1 - offset;
 			break;
 		}
 		default:
 			break;
 		}
-		GroupedStatistic scaledStatistic = new GroupedStatistic(statistic.getIdentifier(), statistic.getMultiKey(),
-				statistic.getCount(), scaledAvg);
-		log.debug("Scaled statistic:   " + scaledStatistic.toString());
-		return scaledStatistic;
+		return scaledAvg;
 	}
+
+	MultiTrendSeries<String> getTrends(GroupedStatistics<GroupedStatistic> statistics, TemporalGroupBy temporalGroupBy) {
+		Set<TemporalKey> temporalKeys = new HashSet<>();
+		for (GroupedStatisticKeys groupedStatistic : statistics.getStatistics()) {
+			temporalKeys.add(groupedStatistic.getTemporalKey());
+		}
+		List<TemporalKey> sortedTemporalKeys = new ArrayList<>(temporalKeys);
+		Collections.sort(sortedTemporalKeys);
+		TemporalKey minKey = sortedTemporalKeys.get(0);
+		TemporalKey maxKey = sortedTemporalKeys.get(sortedTemporalKeys.size() - 1);
+		
+		Set<String> identifiers = statistics.getIdentifiers();
+		
+		MultiTrendSeries<String> multiTrendSeries = new MultiTrendSeries<>(temporalGroupBy, minKey, maxKey);
+		for (String identifier: identifiers) {
+			GroupedStatistic lastStatistic = null;
+			for (TemporalKey temporalKey: multiTrendSeries.getTemporalKeys()) {
+				GroupedStatistic currentStatistic = statistics.getStatistic(identifier, temporalKey);
+				if (currentStatistic != null) {
+					DIRECTION direction = getTrendDirection(lastStatistic, currentStatistic);
+					Trend trend = new TrendImpl(currentStatistic, direction);
+					multiTrendSeries.put(identifier, temporalKey, trend);
+					lastStatistic = currentStatistic;
+				}
+			}
+		}
+		return multiTrendSeries;
+	}
+
+	DIRECTION getTrendDirection(GroupedStatistic prev, GroupedStatistic current) {
+		// First in a series
+		if (prev == null) return DIRECTION.EQUAL;
+		
+		// Should not happen
+		Double prevAvg = prev.getRawAvg();
+		Double currentAvg = current.getRawAvg();
+		return getTrendDirection(prevAvg, currentAvg);
+	}
+
+	DIRECTION getTrendDirection(Double prevAvg, Double currentAvg) {
+		if (prevAvg == null || currentAvg == null) return null;
+		
+		double diff = currentAvg.doubleValue() - prevAvg.doubleValue();
+		DIRECTION direction = DIRECTION.EQUAL;
+		if (diff > 0.05) {
+			direction = DIRECTION.UP;
+		} else if (diff < -0.05) {
+			direction = DIRECTION.DOWN;
+		}
+		return direction;
+	}
+
 }

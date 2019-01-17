@@ -182,6 +182,35 @@
 	}
 }
 
+.o_qual_question_trend {
+	.o_qual_ana_trend_up {
+		transform: rotate(315deg);
+		-webkit-transform: rotate(315deg);
+		-moz-transform: rotate(315deg);
+		-ms-transform: rotate(315deg);
+		-o-transform: rotate(315deg);
+	}
+	.o_qual_ana_trend_down {
+		transform: rotate(45deg);
+		-webkit-transform: rotate(45deg);
+		-moz-transform: rotate(45deg);
+		-ms-transform: rotate(45deg);
+		-o-transform: rotate(45deg);
+	}
+	.o_rubric_insufficient {
+		color: $o-evaluation-insufficient-color;
+	}
+	.o_rubric_neutral {
+		color: $o-evaluation-neutral-color;
+	}
+	.o_rubric_sufficient {
+		color: $o-evaluation-sufficient-color;
+	}
+	.o_qual_ana_unrated {
+		color: $o-qual-hm-base-background-color;
+	}
+}
+
 .o_evaluation_bar_chart_legend {
 	padding: 5px;
 	

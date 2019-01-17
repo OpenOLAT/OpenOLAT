@@ -103,7 +103,7 @@ public class AnalysisSegmentsController extends BasicController implements Toole
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (reportLink == source) {
 			doOpenReport(ureq);
-		} else if(heatMapLink == source) {
+		} else if (heatMapLink == source) {
 			doOpenHeatMap(ureq);
 		} else if (stackPanel == source && stackPanel.getLastController() == this && event instanceof PopEvent) {
 			PopEvent popEvent = (PopEvent) event;
@@ -114,6 +114,21 @@ public class AnalysisSegmentsController extends BasicController implements Toole
 			}
 		}
 	}
+
+	private void doOpenReport(UserRequest ureq) {
+		doOpenSegment(ureq, AnalysisSegment.OVERVIEW, translate("segments.report.breadcrumb"), reportLink);
+	}
+
+	private void doOpenHeatMap(UserRequest ureq) {
+		doOpenSegment(ureq, AnalysisSegment.HEAT_MAP, translate("segments.heatmap.breadcrumb"), heatMapLink);
+	}
+	
+	private void doOpenSegment(UserRequest ureq, AnalysisSegment segment, String breadcrumb, Link segmentLink) {
+		doOpenAnalysis(ureq);
+		analysisCtrl.setSegment(ureq, segment);
+		stackPanel.changeDisplayname(breadcrumb);
+		segmentButtonsCmp.setSelectedButton(segmentLink);
+	}
 	
 	private void doOpenAnalysis(UserRequest ureq) {
 		if (analysisCtrl == null) {
@@ -121,20 +136,6 @@ public class AnalysisSegmentsController extends BasicController implements Toole
 			listenTo(analysisCtrl);
 			stackPanel.pushController("segments.report.breadcrumb", analysisCtrl);
 		}
-	}
-
-	private void doOpenReport(UserRequest ureq) {
-		doOpenAnalysis(ureq);
-		analysisCtrl.setSegment(ureq, AnalysisSegment.OVERVIEW);
-		stackPanel.changeDisplayname(translate("segments.report.breadcrumb"));
-		segmentButtonsCmp.setSelectedButton(reportLink);
-	}
-
-	private void doOpenHeatMap(UserRequest ureq) {
-		doOpenAnalysis(ureq);
-		analysisCtrl.setSegment(ureq, AnalysisSegment.HEAT_MAP);
-		stackPanel.changeDisplayname(translate("segments.heatmap.breadcrumb"));
-		segmentButtonsCmp.setSelectedButton(heatMapLink);
 	}
 	
 	@Override

@@ -19,16 +19,13 @@
  */
 package org.olat.modules.quality.analysis.ui;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
-import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.RubricRating;
-import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.forms.ui.EvaluationFormFormatter;
 import org.olat.modules.forms.ui.RubricAvgRenderer;
 import org.olat.modules.quality.analysis.GroupedStatistic;
@@ -43,10 +40,8 @@ public class HeatMapRenderer implements FlexiCellRenderer {
 	
 	private static final int MAX_CIRCLE_SIZE = 18;
 	private int maxCount;
-	private Rubric rubric;
 
-	public HeatMapRenderer(Rubric rubric, int maxCount) {
-		this.rubric = rubric;
+	public HeatMapRenderer(int maxCount) {
 		this.maxCount = maxCount;
 	}
 
@@ -73,8 +68,7 @@ public class HeatMapRenderer implements FlexiCellRenderer {
 	}
 
 	public String getColorCss(GroupedStatistic statistic) {
-		EvaluationFormManager evaluationFormManager = CoreSpringFactory.getImpl(EvaluationFormManager.class);
-		RubricRating rating = evaluationFormManager.getRubricRating(rubric, statistic.getAvg());
+		RubricRating rating = statistic.getRating();
 		String colorCss = RubricAvgRenderer.getRatingCssClass(rating);
 		if (colorCss == null) {
 			colorCss = "o_qual_hm_basecolor";

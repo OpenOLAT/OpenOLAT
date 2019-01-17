@@ -92,8 +92,11 @@ public interface QualityAnalysisService {
 
 	public SessionFilter createSessionFilter(AnalysisSearchParameter searchParams);
 
-	public GroupedStatistics calculateStatistics(AnalysisSearchParameter searchParams,
+	public GroupedStatistics<GroupedStatistic> calculateStatistics(AnalysisSearchParameter searchParams,
 			Collection<String> responseIdentifiers, Collection<Rubric> rubrics, MultiGroupBy multiGroupBy);
+	
+	public MultiTrendSeries<String> calculateIdentifierTrends(AnalysisSearchParameter searchParams,
+			Collection<String> responseIdentifiers, Collection<Rubric> rubrics, TemporalGroupBy temporalGroupBy);
 
 	public boolean isInsufficient(Rubric rubric, Double avg);
 }

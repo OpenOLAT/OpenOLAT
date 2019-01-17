@@ -17,17 +17,33 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.quality.analysis;
+package org.olat.modules.quality.analysis.ui;
+
+import org.olat.modules.quality.analysis.Trend;
+import org.olat.modules.quality.analysis.TrendSeries;
 
 /**
  * 
- * Initial date: 28.09.2018<br>
+ * Initial date: 15 Jan 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public enum AnalysisSegment {
+public class QuestionTrendRow {
+	
+	private final String question;
+	private final TrendSeries trendSerie;
 
-	OVERVIEW,
-	HEAT_MAP;
+	public QuestionTrendRow(String question, TrendSeries trendSeries) {
+		this.question = question;
+		this.trendSerie = trendSeries;
+	}
+
+	public String getQuestion() {
+		return question;
+	}
+
+	public Trend getTrend(int i) {
+		return trendSerie.getTrend(i);
+	}
 
 }
