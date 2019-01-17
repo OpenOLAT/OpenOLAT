@@ -33,6 +33,7 @@ import org.olat.course.Structure;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.config.CourseConfig;
+import org.olat.course.folder.CourseContainerOptions;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.environment.CourseEnvironment;
@@ -136,6 +137,11 @@ final class PreviewCourseEnvironment implements CourseEnvironment {
 
 	@Override
 	public VFSContainer getCourseFolderContainer() {
+		return courseFolderContainer;
+	}
+	
+	@Override
+	public VFSContainer getCourseFolderContainer(CourseContainerOptions options) {
 		return courseFolderContainer;
 	}
 

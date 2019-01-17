@@ -92,6 +92,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.DisposedCourseRestartController;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentModeManager;
+import org.olat.course.folder.CourseContainerOptions;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
@@ -1131,7 +1132,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		removeAsListenerAndDispose(multiSPChooserCtr);
 		removeAsListenerAndDispose(cmc);
 		
-		VFSContainer rootContainer = course.getCourseEnvironment().getCourseFolderContainer();
+		VFSContainer rootContainer = course.getCourseEnvironment().getCourseFolderContainer(CourseContainerOptions.withoutElements());
 		CourseEditorTreeNode selectedNode = (CourseEditorTreeNode)menuTree.getSelectedNode();
 		multiSPChooserCtr = new MultiSPController(ureq, getWindowControl(), rootContainer, ores, selectedNode);
 		listenTo(multiSPChooserCtr);

@@ -31,6 +31,7 @@ import org.olat.course.Structure;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.config.CourseConfig;
+import org.olat.course.folder.CourseContainerOptions;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.repository.RepositoryEntry;
@@ -102,6 +103,8 @@ public interface CourseEnvironment {
 	 * @return The course folder path for this course
 	 */
 	public VFSContainer getCourseFolderContainer();
+	
+	public VFSContainer getCourseFolderContainer(CourseContainerOptions options);
 	
 	/**
 	 * Return the course base path.

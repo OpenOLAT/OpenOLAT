@@ -40,11 +40,10 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.util.vfs.MergeSource;
-import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -84,19 +83,9 @@ public class MultiSPController extends FormBasicController {
 	public MultiSPController(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer,
 			OLATResourceable ores, CourseEditorTreeNode selectedNode) {
 		super(ureq, wControl, "choosesps");
-		
 		this.ores = ores;
 		this.selectedNode = selectedNode;
-
-		if(rootContainer instanceof MergeSource) {
-			//we cannot link to files from course elements or groups folders without single page BB update
-			VFSContainer realContainer = ((MergeSource)rootContainer).getRootWriteContainer();
-			VFSContainer namedRoot = new NamedContainerImpl(rootContainer.getName(), realContainer);
-			this.rootContainer = namedRoot;
-		} else {
-			this.rootContainer = rootContainer;
-		}
-
+		this.rootContainer = rootContainer;
 		initForm(ureq);
 	}
 	
@@ -219,7 +208,7 @@ public class MultiSPController extends FormBasicController {
 				//create node
 				newNode = createCourseNode(item, "sp");
 				ModuleConfiguration moduleConfig = newNode.getModuleConfiguration();
-				String path = getRelativePath(item);
+				String path = VFSManager.getRelativeItemPath(item, rootContainer, null);
 				moduleConfig.set(SPEditController.CONFIG_KEY_FILE, path);
 				moduleConfig.setBooleanEntry(SPEditController.CONFIG_KEY_ALLOW_RELATIVE_LINKS, true);
 			} else if (item instanceof VFSContainer) {
@@ -263,26 +252,6 @@ public class MultiSPController extends FormBasicController {
 		newNode.setLearningObjectives(item.getName());
 		newNode.setNoAccessExplanation("You don't have access");
 		return newNode;
-	}
-	
-	private String getRelativePath(VFSItem item) {
-		String path = "";
-		while(item != null && !isSameAsRootContainer(item)) {
-			path = "/" + item.getName() + path;
-			item = item.getParentContainer();
-		}
-		return path;
-	}
-	
-	private boolean isSameAsRootContainer(VFSItem item) {
-		if(item instanceof VFSContainer) {
-			VFSContainer blocker = rootContainer;
-			if(blocker instanceof MergeSource) {
-				blocker = ((MergeSource)blocker).getRootWriteContainer();
-			}
-			return blocker.isSame(item);
-		}
-		return false;
 	}
 	
 	/**

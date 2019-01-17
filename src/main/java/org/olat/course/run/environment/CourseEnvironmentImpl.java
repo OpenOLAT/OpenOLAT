@@ -35,6 +35,7 @@ import org.olat.course.assessment.manager.CourseAssessmentManagerImpl;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.auditing.UserNodeAuditManagerImpl;
 import org.olat.course.config.CourseConfig;
+import org.olat.course.folder.CourseContainerOptions;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.PersistingCourseGroupManager;
 import org.olat.course.properties.CoursePropertyManager;
@@ -80,9 +81,6 @@ public class CourseEnvironmentImpl implements CourseEnvironment {
 		cgm.updateRepositoryEntry(courseEntry);
 	}
 
-	/**
-	 * @see org.olat.course.run.environment.CourseEnvironment#getCurrentTimeMillis()
-	 */
 	@Override
 	public long getCurrentTimeMillis() {
 		return System.currentTimeMillis();
@@ -93,41 +91,26 @@ public class CourseEnvironmentImpl implements CourseEnvironment {
 		return false;
 	}
 
-	/**
-	 * @see org.olat.course.run.environment.CourseEnvironment#getCourseGroupManager()
-	 */
 	@Override
 	public CourseGroupManager getCourseGroupManager() {
 		return cgm;
 	}
 
-	/**
-	 * @see org.olat.course.run.environment.CourseEnvironment#getCourseResourceableId()
-	 */
 	@Override
 	public Long getCourseResourceableId() {
 		return course.getResourceableId();
 	}
 
-	/**
-	 * @see org.olat.course.run.environment.CourseEnvironment#getCoursePropertyManager()
-	 */
 	@Override
 	public CoursePropertyManager getCoursePropertyManager() {
 		return propertyManager;
 	}
 
-	/**
-	 * @see org.olat.course.run.environment.CourseEnvironment#getAssessmentManager()
-	 */
 	@Override
 	public AssessmentManager getAssessmentManager() {
 		return assessmentManager;
 	}
 
-	/**
-	 * @see org.olat.course.run.environment.CourseEnvironment#getAuditManager()
-	 */
 	@Override
 	public UserNodeAuditManager getAuditManager() {
 		/**
@@ -139,9 +122,6 @@ public class CourseEnvironmentImpl implements CourseEnvironment {
 		return this.auditManager;
 	}
 
-	/**
-	 * @see org.olat.course.run.environment.CourseEnvironment#getRunStructure()
-	 */
 	@Override
 	public Structure getRunStructure() {
 		Structure runStructure = course.getRunStructure();
@@ -149,17 +129,11 @@ public class CourseEnvironmentImpl implements CourseEnvironment {
 		return runStructure;
 	}
 
-	/**
-	 * @see org.olat.course.run.environment.CourseEnvironment#getCourseTitle()
-	 */
 	@Override
 	public String getCourseTitle() {
 		return course.getCourseTitle();
 	}
 
-	/**
-	 * @see org.olat.course.run.environment.CourseEnvironment#getCourseConfig()
-	 */
 	@Override
 	public CourseConfig getCourseConfig() {
 		return course.getCourseConfig();
@@ -168,6 +142,11 @@ public class CourseEnvironmentImpl implements CourseEnvironment {
 	@Override
 	public VFSContainer getCourseFolderContainer() {
 		return course.getCourseFolderContainer();
+	}
+
+	@Override
+	public VFSContainer getCourseFolderContainer(CourseContainerOptions options) {
+		return course.getCourseFolderContainer(options);
 	}
 
 	@Override
