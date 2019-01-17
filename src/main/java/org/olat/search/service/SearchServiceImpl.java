@@ -82,6 +82,7 @@ import org.olat.search.service.indexer.Index;
 import org.olat.search.service.indexer.IndexerEvent;
 import org.olat.search.service.indexer.LifeFullIndexer;
 import org.olat.search.service.indexer.MainIndexer;
+import org.olat.search.service.searcher.ConditionalQueryAnalyzer;
 import org.olat.search.service.searcher.JmsSearchProvider;
 import org.olat.search.service.spell.SearchSpellChecker;
 import org.quartz.JobDetail;
@@ -104,7 +105,8 @@ public class SearchServiceImpl implements SearchService, GenericEventListener {
 	private Scheduler scheduler;
 	private CoordinatorManager coordinatorManager;
 
-	private Analyzer analyzer;
+	private final Analyzer analyzer;
+	private final ConditionalQueryAnalyzer conditionalQueryAnalyzer;
 	
 	private LifeFullIndexer lifeIndexer;
 	private SearchSpellChecker searchSpellChecker;
@@ -148,6 +150,7 @@ public class SearchServiceImpl implements SearchService, GenericEventListener {
 		this.mainIndexer = mainIndexer;
 		this.coordinatorManager = coordinatorManager;
 		analyzer = new StandardAnalyzer();
+		conditionalQueryAnalyzer = new ConditionalQueryAnalyzer();
 		searchProvider.setSearchService(this);
 		coordinatorManager.getCoordinator().getEventBus().registerFor(this, null, IndexerEvent.INDEX_ORES);
 	}
@@ -405,7 +408,7 @@ public class SearchServiceImpl implements SearchService, GenericEventListener {
 		
 		if(condQueries != null && !condQueries.isEmpty()) {
 			for(String condQueryString:condQueries) {
-				QueryParser condQueryParser = new QueryParser(condQueryString, analyzer);
+				QueryParser condQueryParser = new QueryParser(condQueryString, conditionalQueryAnalyzer);
 				condQueryParser.setLocale(locale);
 				Query condQuery = condQueryParser.parse(condQueryString);
 				query.add(condQuery, Occur.MUST);
