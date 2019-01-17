@@ -354,7 +354,7 @@ public class CheckboxPDFExport extends PdfDocument implements MediaResource {
 				currentContentStream.setTextMatrix(Matrix.getRotateInstance(3 * (Math.PI / 2), textx + cellMargin, texty - cellMargin));
 				textx += colWidth;
 			}
-			currentContentStream.showText(text);
+			currentContentStream.showText(cleanString(text));
 			currentContentStream.endText();
 		}
 
