@@ -173,30 +173,26 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 				controller = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
 			}
 		} else {
-			ModuleConfiguration config = getModuleConfiguration();
-			boolean onyx = IQEditController.CONFIG_VALUE_QTI2.equals(config.get(IQEditController.CONFIG_KEY_TYPE_QTI));
-			if (onyx) {
+			RepositoryEntry testEntry = getReferencedRepositoryEntry();
+			OLATResource ores = testEntry.getOlatResource();
+			if(ImsQTI21Resource.TYPE_NAME.equals(ores.getResourceableTypeName())) {
+				//QTI 2.1
+				controller = new QTI21AssessmentRunController(ureq, wControl, userCourseEnv, this);
+			} else if(QTIResourceTypeModule.isOnyxTest(ores)) {
 				Translator transe = Util.createPackageTranslator(IQEditController.class, ureq.getLocale());
 				controller = MessageUIFactory.createInfoMessage(ureq, wControl, "", transe.translate("error.onyx"));
 			} else {
-				RepositoryEntry testEntry = getReferencedRepositoryEntry();
-				OLATResource ores = testEntry.getOlatResource();
-				if(ImsQTI21Resource.TYPE_NAME.equals(ores.getResourceableTypeName())) {
-					//QTI 2.1
-					controller = new QTI21AssessmentRunController(ureq, wControl, userCourseEnv, this);
+				//QTI 1.2
+				TestFileResource fr = new TestFileResource();
+				fr.overrideResourceableId(ores.getResourceableId());
+				if(!CoordinatorManager.getInstance().getCoordinator().getLocker().isLocked(fr, null)) {
+					AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
+					IQSecurityCallback sec = new CourseIQSecurityCallback(this, am, ureq.getIdentity());
+					controller = new IQRunController(userCourseEnv, getModuleConfiguration(), sec, ureq, wControl, this, testEntry);
 				} else {
-					//QTI 1.2
-					TestFileResource fr = new TestFileResource();
-					fr.overrideResourceableId(ores.getResourceableId());
-					if(!CoordinatorManager.getInstance().getCoordinator().getLocker().isLocked(fr, null)) {
-						AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
-						IQSecurityCallback sec = new CourseIQSecurityCallback(this, am, ureq.getIdentity());
-						controller = new IQRunController(userCourseEnv, getModuleConfiguration(), sec, ureq, wControl, this, testEntry);
-					} else {
-						String title = trans.translate("editor.lock.title");
-						String message = trans.translate("editor.lock.message");
-						controller = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
-					}
+					String title = trans.translate("editor.lock.title");
+					String message = trans.translate("editor.lock.message");
+					controller = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
 				}
 			}
 		}

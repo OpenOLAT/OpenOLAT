@@ -587,7 +587,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		if (guiPrefs != null) {
 			guiPrefs.putAndSave(QTI21AssessmentRunController.class, getOpenPanelId(panelId), Boolean.valueOf(newValue));
 		}
-		mainVC.contextPut("in-" + panelId, Boolean.valueOf(newValue));
+		mainVC.getContext().put("in-" + panelId, Boolean.valueOf(newValue));
 	}
 	
 	private String getOpenPanelId(String panelId) {

@@ -57,6 +57,7 @@ import org.olat.course.editor.StatusDescription;
 import org.olat.course.nodes.iq.CourseIQSecurityCallback;
 import org.olat.course.nodes.iq.IQEditController;
 import org.olat.course.nodes.iq.IQRunController;
+import org.olat.course.nodes.iq.QTIResourceTypeModule;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.NodeEvaluation;
@@ -139,14 +140,12 @@ public class IQSURVCourseNode extends AbstractAccessableCourseNode implements QT
 			String message = trans.translate("guestnoaccess.message");
 			controller = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
 		} else {
-			ModuleConfiguration config = getModuleConfiguration();
-			boolean onyx = IQEditController.CONFIG_VALUE_QTI2.equals(config.get(IQEditController.CONFIG_KEY_TYPE_QTI));
-			if (onyx) {
+			RepositoryEntry repositoryEntry = getReferencedRepositoryEntry();
+			OLATResourceable ores = repositoryEntry.getOlatResource();
+			if (QTIResourceTypeModule.isOnyxTest(ores)) {
 				Translator trans = Util.createPackageTranslator(IQEditController.class, ureq.getLocale());
 				controller = MessageUIFactory.createInfoMessage(ureq, wControl, "", trans.translate("error.onyx"));
 			} else {
-				RepositoryEntry repositoryEntry = getReferencedRepositoryEntry();
-				OLATResourceable ores = repositoryEntry.getOlatResource();
 				Long resId = ores.getResourceableId();
 				SurveyFileResource fr = new SurveyFileResource();
 				fr.overrideResourceableId(resId);
