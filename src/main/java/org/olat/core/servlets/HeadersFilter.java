@@ -29,6 +29,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.modules.card2brain.Card2BrainModule;
 import org.olat.modules.edubase.EdubaseModule;
+import org.olat.modules.edusharing.EdusharingModule;
 import org.olat.modules.openmeetings.OpenMeetingsModule;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -48,6 +49,8 @@ public class HeadersFilter implements Filter {
 	@Autowired
 	private AnalyticsModule analyticsModule;
 	@Autowired
+	private EdusharingModule edusharingModule;
+	@Autowired
 	private Card2BrainModule card2BrainModule;
 	@Autowired
 	private OpenMeetingsModule openMeetingsModule;
@@ -66,7 +69,7 @@ public class HeadersFilter implements Filter {
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
 		if(securityModule == null || edubaseModule != null
 				|| analyticsModule != null || card2BrainModule != null
-				|| openMeetingsModule != null) {
+				|| openMeetingsModule != null|| edusharingModule != null) {
 			CoreSpringFactory.autowireObject(this);
 		}
 		addSecurityHeaders(response);
@@ -153,6 +156,7 @@ public class HeadersFilter implements Filter {
 		}
 		
 		appendGoogleAnalyticsUrl(sb);
+		appendEdusharingUrl(sb);
 		sb.append(";");
 	}
 	
@@ -165,6 +169,7 @@ public class HeadersFilter implements Filter {
 		
 		appendMathJaxUrl(sb);
 		appendGoogleAnalyticsUrl(sb);
+		appendEdusharingUrl(sb);
 		sb.append(";");
 	}
 	
@@ -176,6 +181,7 @@ public class HeadersFilter implements Filter {
 		}
 		appendGoogleAnalyticsUrl(sb);
 		appendEdubaseUrl(sb);
+		appendEdusharingUrl(sb);
 		sb.append(";");
 	}
 	
@@ -186,6 +192,7 @@ public class HeadersFilter implements Filter {
 			sb.append(" ").append(securityModule.getContentSecurityPolicyMediaSrc());
 		}
 		appendOpenMeetingsUrl(sb);
+		appendEdusharingUrl(sb);
 		sb.append(";");
 	}
 	
@@ -198,6 +205,7 @@ public class HeadersFilter implements Filter {
 		
 		appendCard2BrainUrl(sb);
 		appendEdubaseUrl(sb);
+		appendEdusharingUrl(sb);
 		sb.append(";");
 	}
 	
@@ -246,6 +254,12 @@ public class HeadersFilter implements Filter {
 	private void appendEdubaseUrl(StringBuilder sb) {
 		if(edubaseModule != null && edubaseModule.isEnabled()) {
 			appendUrl(sb, edubaseModule.getLtiBaseUrl());
+		}
+	}
+	
+	private void appendEdusharingUrl(StringBuilder sb) {
+		if(edusharingModule != null && edusharingModule.isEnabled()) {
+			appendUrl(sb, edusharingModule.getBaseUrl());
 		}
 	}
 	
