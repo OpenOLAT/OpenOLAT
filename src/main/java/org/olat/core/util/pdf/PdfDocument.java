@@ -142,7 +142,7 @@ public class PdfDocument {
         
         PDFont textFont = bold ? fontBold : font;
         
-        text = text.replace('\n', ' ').replace('\r', ' ');
+        text = cleanString(text);
 
         List<String> lines = new ArrayList<>();
         int lastSpace = -1;

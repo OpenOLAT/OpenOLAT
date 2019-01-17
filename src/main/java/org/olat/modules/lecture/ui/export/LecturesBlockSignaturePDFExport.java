@@ -276,7 +276,7 @@ public class LecturesBlockSignaturePDFExport extends PdfDocument implements Medi
 		//draw the content
 		texty = currentY - 15;
 		for (int i=offset; i<end; i++) {
-			String text = content[i];
+			String text = cleanString(content[i]);
 			if(text == null) continue;
 			
 			if(rowHeights[i] > rowHeight + 1) {
