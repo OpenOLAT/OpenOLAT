@@ -36,19 +36,19 @@ public enum TemporalGroupBy {
 	DATA_COLLECTION_DEADLINE_HALF_YEAR("trend.group.data.collection.deadline.half.year") {
 		@Override
 		public TemporalKey getNextKey(TemporalKey currentKey) {
-			return getNextKey(currentKey, 2);
+			return TemporalGroupBy.getNextKey(currentKey, 2);
 		}
 	},
 	DATA_COLLECTION_DEADLINE_QUARTER("trend.group.data.collection.deadline.quarter") {
 		@Override
 		public TemporalKey getNextKey(TemporalKey currentKey) {
-			return getNextKey(currentKey, 4);
+			return TemporalGroupBy.getNextKey(currentKey, 4);
 		}
 	},
 	DATA_COLLECTION_DEADLINE_MONTH("trend.group.data.collection.deadline.month") {
 		@Override
 		public TemporalKey getNextKey(TemporalKey currentKey) {
-			return getNextKey(currentKey, 12);
+			return TemporalGroupBy.getNextKey(currentKey, 12);
 		}
 	};
 
