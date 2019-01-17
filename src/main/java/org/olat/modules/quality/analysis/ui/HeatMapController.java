@@ -46,6 +46,7 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
@@ -276,10 +277,10 @@ public class HeatMapController extends FormBasicController implements Filterable
 			}
 		}
 		
-		addSliderColumns(columnsModel, columnIndex, maxCount);
+		columnIndex = addSliderColumns(columnsModel, columnIndex, maxCount);
 		
 		DefaultFlexiColumnModel trendColumn = new DefaultFlexiColumnModel("heatmap.table.title.trend", columnIndex++,
-				CMD_TREND, new StaticFlexiCellRenderer("", CMD_TREND, "o_icon o_icon-lg o_icon_qual_ana_trend", null));
+				CMD_TREND, new BooleanCellRenderer(new StaticFlexiCellRenderer("", CMD_TREND, "o_icon o_icon-lg o_icon_qual_ana_trend", null), null));
 		trendColumn.setExportable(false);
 		columnsModel.addFlexiColumnModel(trendColumn);
 		
@@ -299,13 +300,14 @@ public class HeatMapController extends FormBasicController implements Filterable
 		legendLayout.contextPut("sliders", sliders);
 	}
 
-	private void addSliderColumns(FlexiTableColumnModel columnsModel, int columnIndex, int maxCount) {
+	private int addSliderColumns(FlexiTableColumnModel columnsModel, int columnIndex, int maxCount) {
 		for (SliderWrapper sliderWrapper : sliders) {
 			DefaultFlexiColumnModel columnModel = new DefaultFlexiColumnModel("", columnIndex++,
 					new HeatMapRenderer(maxCount));
 			columnModel.setHeaderLabel(sliderWrapper.getLabelCode());
 			columnsModel.addFlexiColumnModel(columnModel);
 		}
+		return columnIndex;
 	}
 
 	@Override

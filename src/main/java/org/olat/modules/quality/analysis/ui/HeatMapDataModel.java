@@ -27,6 +27,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
+import org.olat.modules.quality.analysis.MultiKey;
 
 /**
  * 
@@ -65,6 +66,14 @@ class HeatMapDataModel extends DefaultFlexiTableDataModel<HeatMapRow>
 		index = col - row.getGroupNamesSize();
 		if (index < row.getStatisticsSize()) {
 			return row.getStatistic(index);
+		}
+		// trend icon
+		index -= row.getStatisticsSize();
+		if (index == 0) {
+			return MultiKey.none().equals(row.getMultiKey())
+					? Boolean.FALSE
+					: Boolean.TRUE;
+			
 		}
 		return null;
 	}
