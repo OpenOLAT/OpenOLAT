@@ -33,6 +33,7 @@ import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.export.CourseEnvironmentMapper;
+import org.olat.course.folder.CourseContainerOptions;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.resource.OLATResource;
@@ -92,6 +93,16 @@ public interface ICourse extends OLATResourceable {
 	 * @return the container to the coursefolder of this course
 	 */
 	public VFSContainer getCourseFolderContainer();
+	
+	/**
+	 * Return the merged course container with the desired directories:
+	 * course folder, shared resource folder, folders course elements 
+	 * and participants folder elements.
+	 * 
+	 * @return the container to the coursefolder of this course
+	 */
+	public VFSContainer getCourseFolderContainer(CourseContainerOptions options);
+	
 	
 	/**
 	 * Give the possibility to override the read-only mode of the containers

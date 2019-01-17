@@ -56,6 +56,7 @@ import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.config.CourseConfigManager;
 import org.olat.course.export.CourseEnvironmentMapper;
+import org.olat.course.folder.CourseContainerOptions;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNode.Processing;
 import org.olat.course.run.environment.CourseEnvironment;
@@ -172,11 +173,21 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 		courseFolderContainer.init(this);
 		return courseFolderContainer;
 	}
-	
+
+	@Override
+	public VFSContainer getCourseFolderContainer(CourseContainerOptions options) {
+		// add local course folder's children as read/write source and any sharedfolder as subfolder
+		MergedCourseContainer courseFolderContainer = new MergedCourseContainer(resourceableId, getCourseTitle(), null,
+				options, false);
+		courseFolderContainer.init(this);
+		return courseFolderContainer;
+	}
+
 	@Override
 	public VFSContainer getCourseFolderContainer(boolean overrideReadOnly) {
 		// add local course folder's children as read/write source and any sharedfolder as subfolder
-		MergedCourseContainer courseFolderContainer = new MergedCourseContainer(resourceableId, getCourseTitle(), null, overrideReadOnly);
+		MergedCourseContainer courseFolderContainer = new MergedCourseContainer(resourceableId, getCourseTitle(), null,
+				CourseContainerOptions.all(), overrideReadOnly);
 		courseFolderContainer.init(this);
 		return courseFolderContainer;
 	}

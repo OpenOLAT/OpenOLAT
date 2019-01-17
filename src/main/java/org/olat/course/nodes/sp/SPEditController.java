@@ -46,6 +46,7 @@ import org.olat.course.condition.Condition;
 import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.CourseEditorHelper;
 import org.olat.course.editor.NodeEditController;
+import org.olat.course.folder.CourseContainerOptions;
 import org.olat.course.nodes.SPCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -53,7 +54,6 @@ import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.course.tree.CourseInternalLinkTreeModel;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.edusharing.VFSEdusharingProvider;
-import org.olat.repository.RepositoryManager;
 import org.olat.repository.ui.settings.LazyRepositoryEdusharingProvider;
 
 /**
@@ -111,7 +111,7 @@ public class SPEditController extends ActivateableTabbableDefaultController impl
 		moduleConfiguration = config;
 		courseNode = spCourseNode;
 		courseEnv = course.getCourseEnvironment();
-		courseFolderBaseContainer = course.getCourseFolderContainer();
+		courseFolderBaseContainer = course.getCourseFolderContainer(CourseContainerOptions.withoutElements());
 
 		myContent = createVelocityContainer("edit");
 		myContent.contextPut("fieldSetLegend", translate("fieldSetLegend"));
@@ -131,7 +131,7 @@ public class SPEditController extends ActivateableTabbableDefaultController impl
 			relFilPathIsProposal = true;
 		}
 		// File create/select controller
-		Long repoKey = RepositoryManager.getInstance().lookupRepositoryEntryKey(course, true);
+		Long repoKey = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry().getKey();
 		VFSEdusharingProvider edusharingProvider = new LazyRepositoryEdusharingProvider(repoKey);
 		combiLinkCtr = new LinkFileCombiCalloutController(ureq, wControl, courseFolderBaseContainer,
 				relFilePath, relFilPathIsProposal, allowRelativeLinks, false,
@@ -159,18 +159,11 @@ public class SPEditController extends ActivateableTabbableDefaultController impl
 		listenTo(deliveryOptionsCtrl);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest urequest, Controller source, Event event) {
 		if (source instanceof NodeEditController) {
@@ -202,7 +195,7 @@ public class SPEditController extends ActivateableTabbableDefaultController impl
 				}
 				myContent.contextPut("editorEnabled", combiLinkCtr.isEditorEnabled());
 			}
-		}else if(source == securitySettingForm){
+		} else if(source == securitySettingForm){
 			if(event == Event.DONE_EVENT){
 				boolean allowRelativeLinks = securitySettingForm.getAllowRelativeLinksConfig();
 				moduleConfiguration.set(CONFIG_KEY_ALLOW_RELATIVE_LINKS, allowRelativeLinks);
@@ -222,9 +215,6 @@ public class SPEditController extends ActivateableTabbableDefaultController impl
 		return true;
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.generic.tabbable.TabbableController#addTabs(org.olat.core.gui.components.TabbedPane)
-	 */
 	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		myTabbedPane = tabbedPane;
@@ -234,14 +224,10 @@ public class SPEditController extends ActivateableTabbableDefaultController impl
 			tabbedPane.addTab(translate(PANE_TAB_DELIVERYOPTIONS), deliveryOptionsCtrl.getInitialComponent());
 		}
 	}
-	
-	/**
-	 * 
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
+
 	@Override
 	protected void doDispose() {
-		//child controllers registered with listenTo() get disposed in BasicController
+		//
 	}
 
 	@Override

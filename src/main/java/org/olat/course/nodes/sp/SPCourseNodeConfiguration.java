@@ -34,11 +34,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
 import org.olat.course.nodes.CourseNodeGroup;
 import org.olat.course.nodes.SPCourseNode;
-/**
- * 
- * Description:<br>
- * TODO: guido Class Description for SPCourseNodeConfiguration
- */
+
 public class SPCourseNodeConfiguration extends AbstractCourseNodeConfiguration {
 	
 	private SPCourseNodeConfiguration() {
