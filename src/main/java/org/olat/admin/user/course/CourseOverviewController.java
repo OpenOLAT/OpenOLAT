@@ -429,9 +429,11 @@ public class CourseOverviewController extends BasicController  {
 		List<Long> groupKeys = new ArrayList<>();
 		List<RepositoryEntry> repoEntryToLeave = new ArrayList<>();
 		for(CourseMemberView view:views) {
-			for(BusinessGroupShort group:view.getGroups()) {
-				if(!BusinessGroupManagedFlag.isManaged(group.getManagedFlags(), BusinessGroupManagedFlag.membersmanagement)) {
-					groupKeys.add(group.getKey());
+			if(view.getGroups() != null) {
+				for(BusinessGroupShort group:view.getGroups()) {
+					if(!BusinessGroupManagedFlag.isManaged(group.getManagedFlags(), BusinessGroupManagedFlag.membersmanagement)) {
+						groupKeys.add(group.getKey());
+					}
 				}
 			}
 

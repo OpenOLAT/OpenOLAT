@@ -89,6 +89,7 @@ import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.olat.resource.OLATResource;
 
 /**
  * Initial Date: Feb 9, 2004
@@ -132,20 +133,17 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 			UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
 		
 		Controller runController;
-		ModuleConfiguration config = getModuleConfiguration();
-		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
-		boolean onyx = IQEditController.CONFIG_VALUE_QTI2.equals(config.get(IQEditController.CONFIG_KEY_TYPE_QTI));
-		if (onyx) {
+		RepositoryEntry testEntry = getReferencedRepositoryEntry();
+		OLATResource ores = testEntry.getOlatResource();
+		if (QTIResourceTypeModule.isOnyxTest(ores)) {
 			Translator trans = Util.createPackageTranslator(IQEditController.class, ureq.getLocale());
 			runController = MessageUIFactory.createInfoMessage(ureq, wControl, "", trans.translate("error.onyx"));
+		} else if(ImsQTI21Resource.TYPE_NAME.equals(ores.getResourceableTypeName())) {
+			runController = new QTI21AssessmentRunController(ureq, wControl, userCourseEnv, this);
 		} else {
-			RepositoryEntry testEntry = getReferencedRepositoryEntry();
-			if(ImsQTI21Resource.TYPE_NAME.equals(testEntry.getOlatResource().getResourceableTypeName())) {
-				runController = new QTI21AssessmentRunController(ureq, wControl, userCourseEnv, this);
-			} else {
-				IQSecurityCallback sec = new CourseIQSecurityCallback(this, am, ureq.getIdentity());
-				runController = new IQRunController(userCourseEnv, getModuleConfiguration(), sec, ureq, wControl, this);
-			}
+			AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
+			IQSecurityCallback sec = new CourseIQSecurityCallback(this, am, ureq.getIdentity());
+			runController = new IQRunController(userCourseEnv, getModuleConfiguration(), sec, ureq, wControl, this);
 		}
 		
 		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, runController, this, "o_iqself_icon");
@@ -379,7 +377,7 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 					.getLastAssessmentTestSessions(courseEntry, getIdent(), referencedRepositoryEntry, assessedIdentity);
 			if(testSession != null) {
 				boolean fullyAssessed = (testSession.getFinishTime() != null || testSession.getTerminationTime() != null);
-				Float score = testSession.getScore().floatValue();
+				Float score = testSession.getScore() == null ? null : testSession.getScore().floatValue();
 				return new ScoreEvaluation(score, testSession.getPassed(), fullyAssessed, testSession.getKey());
 			}
 		} else {
