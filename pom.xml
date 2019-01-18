@@ -65,7 +65,7 @@
 		<org.springframework.version>5.1.1.RELEASE</org.springframework.version>
 		<org.hibernate.version>5.3.7.Final</org.hibernate.version>
 		<com.sun.jersey.version>1.19.4</com.sun.jersey.version>
-		<apache.cxf>3.2.6</apache.cxf>
+		<apache.cxf>3.2.7</apache.cxf>
 		<jackson.version>2.9.5</jackson.version>
 		<org.mysql.version>5.1.46</org.mysql.version>
 		<org.postgresql.version>42.2.5</org.postgresql.version>
@@ -1852,7 +1852,7 @@
 		<dependency>
 			<groupId>org.openolat</groupId>
 			<artifactId>viterows</artifactId>
-			<version>9.0</version>
+			<version>9.1.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.poi</groupId>
