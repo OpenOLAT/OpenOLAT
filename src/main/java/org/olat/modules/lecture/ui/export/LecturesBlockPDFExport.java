@@ -415,7 +415,7 @@ public class LecturesBlockPDFExport extends PdfDocument implements MediaResource
 		//draw the content
 		texty = currentY - 15;
 		for (int i=offset; i<end; i++) {
-			String text = content[i].getName();
+			String text = cleanString(content[i].getName());
 			if(text == null) continue;
 			
 			if(rowHeights[i] > rowHeight + 1) {
