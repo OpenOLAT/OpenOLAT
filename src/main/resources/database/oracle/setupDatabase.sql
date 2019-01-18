@@ -105,7 +105,7 @@ CREATE TABLE o_temporarykey (
   reglist_id number(20) NOT NULL,
   version number(20) NOT NULL,
   creationdate date,
-  email varchar2(255 char) NOT NULL,
+  email varchar2(2000 char) NOT NULL,
   regkey varchar2(255 char) NOT NULL,
   ip varchar2(255 char) NOT NULL,
   valid_until date,

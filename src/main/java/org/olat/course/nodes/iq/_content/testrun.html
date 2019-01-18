@@ -64,11 +64,11 @@
 		<div class="panel panel-default o_comment">
 		  	<div class="panel-heading" data-toggle="collapse" data-target="#collapseComment">
 	  			<h4 class="panel-title">
-	  				<i id="collapseCommentsToggler" class="o_icon o_icon-fw #if($r.isTrue($in-comment)) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i>
+	  				<i id="collapseCommentsToggler" class="o_icon o_icon-fw #if($r.isTrue($incomment)) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i>
 	  				$r.translate("comment.yourcomment")
 	  			</h4>
 	  		</div>
-			<div id="collapseComment" class="panel-collapse collapse #if($r.isTrue($in-comment)) in #end"><div class="panel-body">
+			<div id="collapseComment" class="panel-collapse collapse #if($r.isTrue($incomment)) in #end"><div class="panel-body">
 				$comment
 	  		</div></div>
 	  	</div>
@@ -90,11 +90,11 @@
 		<div class="panel panel-default o_assessment_docs">
 		  	<div class="panel-heading" data-toggle="collapse" data-target="#collapseAssessmentDocuments">
 		  		<h4 class="panel-title">
-		  			<i id="collapseAssessmentDocumentsToggler" class="o_icon o_icon-fw #if($r.isTrue($in-assessmentDocuments)) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i>
+		  			<i id="collapseAssessmentDocumentsToggler" class="o_icon o_icon-fw #if($r.isTrue($inassessmentDocuments)) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i>
 		  			$r.translate("assessment.documents.title")
 		  		</h4>
 		  	</div>
-			<div id="collapseAssessmentDocuments" class="panel-collapse collapse #if($r.isTrue($in-assessmentDocuments)) in #end"><div class="panel-body">
+			<div id="collapseAssessmentDocuments" class="panel-collapse collapse #if($r.isTrue($inassessmentDocuments)) in #end"><div class="panel-body">
 				<ul class="list-unstyled">
 				#foreach($doc in $docs)
 					<li><a href="$docsMapperUri/$doc.name" target="_blank"><i class="o_icon o_icon-fw $r.getFiletypeIconCss($doc.name)"> </i> $r.escapeHtml($doc.name) ($r.formatBytes(${doc.length()}))</a></li>
@@ -185,11 +185,11 @@
 	<div class="panel panel-default o_disclaimer">
 	  	<div class="panel-heading" data-toggle="collapse" data-target="#collapseDisclaimer">
 	  		<h4 class="panel-title">
-	  			<i id="collapseDisclaimerToggler" class="o_icon o_icon-fw #if($r.isTrue($in-disclaimer)) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i>
+	  			<i id="collapseDisclaimerToggler" class="o_icon o_icon-fw #if($r.isTrue($indisclaimer)) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i>
 	  			$r.translate("disclaimer")
 	  		</h4>
 	  	</div>
-	  	<div id="collapseDisclaimer" class="panel-collapse collapse #if($r.isTrue($in-disclaimer)) in #end"><div class="panel-body">
+	  	<div id="collapseDisclaimer" class="panel-collapse collapse #if($r.isTrue($indisclaimer)) in #end"><div class="panel-body">
 		$r.render("disc")
   		</div></div>
   		<script type="text/javascript">
@@ -211,11 +211,11 @@
 	<div class="panel panel-default o_disclaimer">
 	  	<div class="panel-heading" data-toggle="collapse" data-target="#collapseDisclaimer">
 	  		<h4 class="panel-title">
-	  			<i id="collapseDisclaimerToggler" class="o_icon o_icon-fw #if($r.isTrue($in-disclaimer)) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i>
+	  			<i id="collapseDisclaimerToggler" class="o_icon o_icon-fw #if($r.isTrue($indisclaimer)) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i>
 	  			$r.translate("disclaimer")
 	  		</h4>
 	  	</div>
-	  	<div id="collapseDisclaimer" class="panel-collapse collapse #if($r.isTrue($in-disclaimer)) in #end"><div class="panel-body">
+	  	<div id="collapseDisclaimer" class="panel-collapse collapse #if($r.isTrue($indisclaimer)) in #end"><div class="panel-body">
 		$r.render("disc")
   		</div></div>
  		<script type="text/javascript">

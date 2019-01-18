@@ -816,6 +816,10 @@ tr.choiceinteraction {
 	}
 }
 
+.choiceInteraction input + i  {
+	background-color: red;
+}
+
 .choiceInteraction div.o_qti_item_choice_option_flow  {
 	display: inline-block;
 	padding: .5em;
@@ -1427,3 +1431,46 @@ ul.testPartDrilldown {
 	width: auto;
 }
 
+@media print {
+	.choiceInteraction {
+		label {
+			font-weight: normal;
+		}
+	}
+	
+	.choiceinteraction input[type="radio"][disabled],
+	.choiceinteraction input[type="checkbox"][disabled],
+	.matchInteraction input[type="radio"][disabled],
+	.matchInteraction input[type="checkbox"][disabled] {
+		display: none;
+	}
+	
+	.choiceinteraction input + i,
+	.matchInteraction input + i  {
+		font-family: FontAwesome;
+		font-style: normal;
+		font-weight: normal;
+		font-size: 100%;
+		-webkit-font-smoothing: antialiased;
+		-moz-osx-font-smoothing: grayscale;
+	}
+	
+	.choiceInteraction input[type="radio"][disabled] + i:before,
+	.matchInteraction input[type="radio"][disabled] + i:before,
+	.matchInteraction.match_true_false input[type="checkbox"][disabled] + i:before {
+		content: $fa-var-circle-o;
+	}
+	.choiceInteraction input[type="radio"][disabled]:checked + i:before,
+	.matchInteraction input[type="radio"][disabled]:checked + i:before,
+	.matchInteraction.match_true_false input[type="checkbox"][disabled]:checked + i:before {
+		content: $fa-var-dot-circle-o;
+	}
+	.choiceInteraction input[type="checkbox"][disabled] + i:before,
+	.matchInteraction input[type="checkbox"][disabled] + i:before {
+		content: $fa-var-square-o;
+	}
+	.choiceInteraction input[type="checkbox"][disabled]:checked + i:before,
+	.matchInteraction input[type="checkbox"][disabled]:checked + i:before {
+		content: $fa-var-check-square-o;
+	}
+}

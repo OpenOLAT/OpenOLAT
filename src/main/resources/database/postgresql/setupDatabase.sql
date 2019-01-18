@@ -95,7 +95,7 @@ create table o_temporarykey (
    reglist_id int8 not null,
    version int4 not null,
    creationdate timestamp,
-   email varchar(255) not null,
+   email varchar(2000) not null,
    regkey varchar(255) not null,
    ip varchar(255) not null,
    valid_until timestamp,

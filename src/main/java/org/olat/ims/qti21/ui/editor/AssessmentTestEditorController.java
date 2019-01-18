@@ -123,12 +123,14 @@ public class AssessmentTestEditorController extends BasicController implements A
 		if(entries == null || entries.isEmpty()) return;
 		
 		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
-		if(SelectionTarget.description.name().equalsIgnoreCase(type) || SelectionTarget.score.name().equalsIgnoreCase(type)) {
+		if(SelectionTarget.description.name().equalsIgnoreCase(type)
+				|| SelectionTarget.maxpoints.name().equalsIgnoreCase(type)) {
 			activate(ureq, optionsCtrl);
-		} else if(SelectionTarget.expert.name().equalsIgnoreCase(type) && testPartOptionsCtrl != null) {
+		} else if(SelectionTarget.expert.name().equalsIgnoreCase(type)
+				|| SelectionTarget.attempts.name().equalsIgnoreCase(type)) {
 			activate(ureq, testPartOptionsCtrl);
-		} else if(SelectionTarget.feedback.name().equalsIgnoreCase(type) && testPartOptionsCtrl != null) {
-			activate(ureq, testPartOptionsCtrl);
+		} else if(SelectionTarget.feedback.name().equalsIgnoreCase(type)) {
+			activate(ureq, feedbackCtrl);
 		}
 	}
 	

@@ -97,7 +97,7 @@ create table if not exists o_temporarykey (
    reglist_id bigint not null,
    version mediumint unsigned not null,
    creationdate datetime,
-   email varchar(255) not null,
+   email varchar(2000) not null,
    regkey varchar(255) not null,
    ip varchar(255) not null,
    valid_until datetime,

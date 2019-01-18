@@ -191,7 +191,7 @@ public class CheckListRunController extends FormBasicController implements Contr
 	    String infoTextUser = (String) config.get(MSCourseNode.CONFIG_KEY_INFOTEXT_USER);
 	    if(StringHelper.containsNonWhitespace(infoTextUser)) {
 	    	layoutCont.contextPut(MSCourseNode.CONFIG_KEY_INFOTEXT_USER, infoTextUser);
-	    	layoutCont.contextPut("in-disclaimer", isPanelOpen(ureq, "disclaimer", true));
+	    	layoutCont.contextPut("indisclaimer", isPanelOpen(ureq, "disclaimer", true));
 	    }
 	    layoutCont.contextPut(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE, AssessmentHelper.getRoundedScore((Float)config.get(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE)));
 	    layoutCont.contextPut(MSCourseNode.CONFIG_KEY_SCORE_MIN, AssessmentHelper.getRoundedScore((Float)config.get(MSCourseNode.CONFIG_KEY_SCORE_MIN)));
@@ -216,14 +216,14 @@ public class CheckListRunController extends FormBasicController implements Contr
 				if(courseNode.hasCommentConfigured()) {
 					StringBuilder comment = Formatter.stripTabsAndReturns(scoreEval.getComment());
 					layoutCont.contextPut("comment", StringHelper.xssScan(comment));
-					layoutCont.contextPut("in-comment", isPanelOpen(ureq, "comment", true));
+					layoutCont.contextPut("incomment", isPanelOpen(ureq, "comment", true));
 				}
 				if(courseNode.hasIndividualAsssessmentDocuments()) {
 					List<File> docs = courseNode.getIndividualAssessmentDocuments(userCourseEnv);
 					String mapperUri = registerCacheableMapper(ureq, null, new DocumentsMapper(docs));
 					layoutCont.contextPut("docsMapperUri", mapperUri);
 					layoutCont.contextPut("docs", docs);
-					layoutCont.contextPut("in-assessmentDocuments", isPanelOpen(ureq, "assessmentDocuments", true));
+					layoutCont.contextPut("inassessmentDocuments", isPanelOpen(ureq, "assessmentDocuments", true));
 				}
 			} else {
 				layoutCont.contextPut("comment", null);

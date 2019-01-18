@@ -2,11 +2,11 @@
 <div class="panel panel-default o_disclaimer">
   	<div class="panel-heading" data-toggle="collapse" data-target="#collapseDisclaimer">
   		<h4 class="panel-title">
-  			<i id="collapseDisclaimerToggler" class="o_icon o_icon-fw #if($r.isTrue($in-disclaimer)) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i>
+  			<i id="collapseDisclaimerToggler" class="o_icon o_icon-fw #if($r.isTrue($indisclaimer)) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i>
   			$r.translate("disclaimer")
   		</h4>
   	</div>
-  	<div id="collapseDisclaimer" class="panel-collapse collapse #if($r.isTrue($in-disclaimer)) in #end"><div class="panel-body">
+  	<div id="collapseDisclaimer" class="panel-collapse collapse #if($r.isTrue($indisclaimer)) in #end"><div class="panel-body">
 	$r.render("disc")
  	</div></div>
 	<script>

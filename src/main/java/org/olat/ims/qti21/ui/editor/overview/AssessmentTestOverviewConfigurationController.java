@@ -166,25 +166,39 @@ public class AssessmentTestOverviewConfigurationController extends FormBasicCont
 	private void initTableForm(FormItemContainer formLayout, UserRequest ureq) {	
 		FlexiTableColumnModel tableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		
-		DefaultFlexiColumnModel titleCol = new DefaultFlexiColumnModel(PartCols.title,
-				SelectionTarget.description.name(), new HierarchicalPartCellRenderer());
+		// title
+		DefaultFlexiColumnModel titleCol = new DefaultFlexiColumnModel(PartCols.title, SelectionTarget.description.name(), new HierarchicalPartCellRenderer());
 		titleCol.setAlwaysVisible(true);
 		tableColumnModel.addFlexiColumnModel(titleCol);
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PartCols.maxScore,
-				new AssessmentSectionScoreCellRenderer(SelectionTarget.score.name())));
+		// score
+		DefaultFlexiColumnModel scoreCol = new DefaultFlexiColumnModel(PartCols.maxScore, SelectionTarget.maxpoints.name());
+		scoreCol.setCellRenderer(new AssessmentSectionScoreCellRenderer(SelectionTarget.maxpoints.name()));
+		tableColumnModel.addFlexiColumnModel(scoreCol);
+		// max attempts
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PartCols.attempts,
-				SelectionTarget.expert.name(), new MaxAttemptsCellRenderer(getTranslator())));
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PartCols.skipping,
-				new TestAndSectionCellRenderer(SelectionTarget.expert.name(), new OptionCellRenderer(getTranslator()))));
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PartCols.comment,
-				new TestAndSectionCellRenderer(SelectionTarget.expert.name(), new OptionCellRenderer(getTranslator()))));
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PartCols.review,
-				new TestAndSectionCellRenderer(SelectionTarget.expert.name(), new OptionCellRenderer(getTranslator()))));
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PartCols.solution,
-				new TestAndSectionCellRenderer(SelectionTarget.expert.name(), new OptionCellRenderer(getTranslator()))));
+				SelectionTarget.attempts.name(), new MaxAttemptsCellRenderer(getTranslator())));
+		// skipping allowed
+		DefaultFlexiColumnModel skippingCol = new DefaultFlexiColumnModel(PartCols.skipping, SelectionTarget.expert.name());
+		skippingCol.setCellRenderer(new TestAndSectionCellRenderer(SelectionTarget.expert.name(), new OptionCellRenderer(getTranslator())));
+		tableColumnModel.addFlexiColumnModel(skippingCol);
+		// comment allowed
+		DefaultFlexiColumnModel commentCol = new DefaultFlexiColumnModel(PartCols.comment, SelectionTarget.expert.name());
+		commentCol.setCellRenderer(new TestAndSectionCellRenderer(SelectionTarget.expert.name(), new OptionCellRenderer(getTranslator())));
+		tableColumnModel.addFlexiColumnModel(commentCol);
+		// review allowed
+		DefaultFlexiColumnModel reviewCol = new DefaultFlexiColumnModel(PartCols.review, SelectionTarget.expert.name());
+		reviewCol.setCellRenderer(new TestAndSectionCellRenderer(SelectionTarget.expert.name(), new OptionCellRenderer(getTranslator())));
+		tableColumnModel.addFlexiColumnModel(reviewCol);
+		// solution
+		DefaultFlexiColumnModel solutionCol = new DefaultFlexiColumnModel(PartCols.solution, SelectionTarget.expert.name());
+		solutionCol.setCellRenderer(new TestAndSectionCellRenderer(SelectionTarget.expert.name(), new OptionCellRenderer(getTranslator())));
+		tableColumnModel.addFlexiColumnModel(solutionCol);
+		// type
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, PartCols.type, new QuestionTypeFlexiCellRenderer(getTranslator())));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, PartCols.identifier));
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, PartCols.feedback, SelectionTarget.feedback.name()));
+		DefaultFlexiColumnModel feedbackCol = new DefaultFlexiColumnModel(PartCols.feedback, SelectionTarget.feedback.name(), new YesNoCellRenderer(getTranslator()));
+		feedbackCol.setDefaultVisible(false);
+		tableColumnModel.addFlexiColumnModel(feedbackCol);
 
 		tableModel = new AssessmentTestOverviewDataModel(tableColumnModel);
 		
@@ -222,10 +236,23 @@ public class AssessmentTestOverviewConfigurationController extends FormBasicCont
 	}
 	
 	private void loadModel(TestPart part, int pos, List<ControlObjectRow> rows) {
-		rows.add(ControlObjectRow.valueOf(part, pos));
+		ControlObjectRow partRow = ControlObjectRow.valueOf(part, pos);
+		rows.add(partRow);
+
+		boolean someMaxScore = false;
+		DoubleAdder atomicMaxScore = new DoubleAdder();
+		
 		List<AssessmentSection> sections = part.getAssessmentSections();
 		for(AssessmentSection section:sections) {
-			loadModel(section, rows);
+			Double maxScore = loadModel(section, rows);
+			if(maxScore != null) {
+				someMaxScore = true;
+				atomicMaxScore.add(maxScore.doubleValue());
+			}
+		}
+		
+		if(someMaxScore) {
+			partRow.setMaxScore(Double.valueOf(atomicMaxScore.sum()));
 		}
 	}
 	
