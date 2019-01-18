@@ -208,7 +208,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 					disclaimerVC.put("disc", iFrameCtr.getInitialComponent());
 					iFrameCtr.setCurrentURI(sDisclaimer);
 					disclaimerVC.contextPut("hasDisc", Boolean.TRUE);
-					disclaimerVC.contextPut("in-disclaimer", isPanelOpen(ureq, "disclaimer", true));
+					disclaimerVC.contextPut("indisclaimer", isPanelOpen(ureq, "disclaimer", true));
 				}
 			}
 		}
@@ -298,7 +298,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 						StringBuilder comment = Formatter.stripTabsAndReturns(testCourseNode.getUserUserComment(userCourseEnv));
 						if (comment != null && comment.length() > 0) {
 							mainVC.contextPut("comment", StringHelper.xssScan(comment));
-							mainVC.contextPut("in-comment", isPanelOpen(ureq, "comment", true));
+							mainVC.contextPut("incomment", isPanelOpen(ureq, "comment", true));
 						}
 					}
 					
@@ -307,7 +307,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 						String mapperUri = registerCacheableMapper(ureq, null, new DocumentsMapper(docs));
 						mainVC.contextPut("docsMapperUri", mapperUri);
 						mainVC.contextPut("docs", docs);
-						mainVC.contextPut("in-assessmentDocuments", isPanelOpen(ureq, "assessmentDocuments", true));
+						mainVC.contextPut("inassessmentDocuments", isPanelOpen(ureq, "assessmentDocuments", true));
 					}
 				}
 				Integer attempts = assessmentEntry.getAttempts();

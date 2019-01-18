@@ -338,7 +338,7 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 					AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
 					String comment = am.getNodeComment(courseNode, getIdentity());
 					assessmentInfosContainer.contextPut("comment", comment);
-					assessmentInfosContainer.contextPut("in-comment", isPanelOpen(ureq, "comment", true));
+					assessmentInfosContainer.contextPut("incomment", isPanelOpen(ureq, "comment", true));
 				}
 				
 				if(courseNode.hasIndividualAsssessmentDocuments()) {
@@ -346,7 +346,7 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 					String mapperUri = registerCacheableMapper(ureq, null, new DocumentsMapper(docs));
 					assessmentInfosContainer.contextPut("docsMapperUri", mapperUri);
 					assessmentInfosContainer.contextPut("docs", docs);
-					assessmentInfosContainer.contextPut("in-assessmentDocuments", isPanelOpen(ureq, "assessmentDocuments", true));
+					assessmentInfosContainer.contextPut("inassessmentDocuments", isPanelOpen(ureq, "assessmentDocuments", true));
 				}
 			}
 			assessmentInfosContainer.setVisible(true);

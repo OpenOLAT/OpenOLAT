@@ -200,7 +200,7 @@ public class MSCourseNodeRunController extends BasicController implements Activa
 	    String infoTextUser = (String) config.get(MSCourseNode.CONFIG_KEY_INFOTEXT_USER);
 	    if(StringHelper.containsNonWhitespace(infoTextUser)) {
 	    		myContent.contextPut(MSCourseNode.CONFIG_KEY_INFOTEXT_USER, infoTextUser);
-	    		myContent.contextPut("in-disclaimer", isPanelOpen(ureq, "disclaimer", true));
+	    		myContent.contextPut("indisclaimer", isPanelOpen(ureq, "disclaimer", true));
 	    }
 	    myContent.contextPut(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE, AssessmentHelper.getRoundedScore((Float)config.get(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE)));
 	    myContent.contextPut(MSCourseNode.CONFIG_KEY_SCORE_MIN, AssessmentHelper.getRoundedScore((Float)config.get(MSCourseNode.CONFIG_KEY_SCORE_MIN)));
@@ -231,7 +231,7 @@ public class MSCourseNodeRunController extends BasicController implements Activa
 				if(hasComment) {
 					StringBuilder comment = Formatter.stripTabsAndReturns(rawComment);
 					myContent.contextPut("comment", StringHelper.xssScan(comment));
-					myContent.contextPut("in-comment", isPanelOpen(ureq, "comment", true));
+					myContent.contextPut("incomment", isPanelOpen(ureq, "comment", true));
 				}
 				
 				if(courseNode.hasIndividualAsssessmentDocuments()) {
@@ -239,7 +239,7 @@ public class MSCourseNodeRunController extends BasicController implements Activa
 					mapperUri = registerCacheableMapper(ureq, null, new DocumentsMapper(docs));
 					myContent.contextPut("docsMapperUri", mapperUri);
 					myContent.contextPut("docs", docs);
-					myContent.contextPut("in-assessmentDocuments", isPanelOpen(ureq, "assessmentDocuments", true));
+					myContent.contextPut("inassessmentDocuments", isPanelOpen(ureq, "assessmentDocuments", true));
 					if(download == null) {
 						download = new DisplayOrDownloadComponent("", null);
 						myContent.put("download", download);
