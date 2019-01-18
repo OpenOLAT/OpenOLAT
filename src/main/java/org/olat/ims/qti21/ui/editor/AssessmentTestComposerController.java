@@ -592,6 +592,9 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 						.createCEListFromString(OresHelper.createOLATResourceableType(target.name()));
 				((Activateable2)currentEditorCtrl).activate(ureq, entries, null);
 			}
+			if(currentEditorCtrl != null) {
+				menuTree.setSelectedNode(selectedNode);
+			}
 			return currentEditorCtrl != null;
 		}
 		return false;

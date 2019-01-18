@@ -513,9 +513,12 @@ public class AssessmentItemEditorController extends BasicController implements A
 		if(entries == null || entries.isEmpty()) return;
 		
 		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
-		if(SelectionTarget.description.name().equalsIgnoreCase(type) || SelectionTarget.expert.name().equalsIgnoreCase(type)) {
+		if(SelectionTarget.description.name().equalsIgnoreCase(type)
+				|| SelectionTarget.expert.name().equalsIgnoreCase(type)
+				|| SelectionTarget.description.name().equalsIgnoreCase(type)) {
 			activate(ureq, itemEditor);
-		} else if(SelectionTarget.description.name().equalsIgnoreCase(type) || SelectionTarget.score.name().equalsIgnoreCase(type)) {
+		} else if(SelectionTarget.attempts.name().equalsIgnoreCase(type)
+				|| SelectionTarget.maxpoints.name().equalsIgnoreCase(type)) {
 			activate(ureq, scoreEditor);
 		} else if(SelectionTarget.feedback.name().equalsIgnoreCase(type)) {
 			activate(ureq, feedbackEditor);

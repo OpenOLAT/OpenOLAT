@@ -105,9 +105,10 @@ public class AssessmentSectionEditorController extends BasicController implement
 		if(entries == null || entries.isEmpty()) return;
 		
 		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
-		if(SelectionTarget.description.name().equalsIgnoreCase(type) || SelectionTarget.score.name().equalsIgnoreCase(type)) {
+		if(SelectionTarget.description.name().equalsIgnoreCase(type)) {
 			tabbedPane.setSelectedPane(ureq, tabbedPane.indexOfTab(optionsCtrl.getInitialComponent()));
-		} else if(SelectionTarget.expert.name().equalsIgnoreCase(type)) {
+		} else if(SelectionTarget.expert.name().equalsIgnoreCase(type)
+				|| SelectionTarget.attempts.name().equalsIgnoreCase(type)) {
 			tabbedPane.setSelectedPane(ureq, tabbedPane.indexOfTab(expertOptionsCtrl.getInitialComponent()));
 		}
 	}
