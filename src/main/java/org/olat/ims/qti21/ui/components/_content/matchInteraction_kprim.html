@@ -39,7 +39,7 @@
 				#set($responseValue = $set1Identifier + " " + $set2Identifier)
 				#set($responseChecked = $r.getResponseValue($interaction.responseIdentifier))
                	<td class="o_qti_item_kprim_input o_qti_item_kprim_input_${set2Identifier}">
-                 		<input id="oo_${set1Identifier}_${set2Identifier}" type="checkbox" name="qtiworks_response_${responseIdentifier}" value="${responseValue}" #if($r.valueContains($responseChecked,$responseValue)) checked #end #if($r.isItemSessionEnded()) disabled #end/>
+                 		<input id="oo_${set1Identifier}_${set2Identifier}" type="checkbox" name="qtiworks_response_${responseIdentifier}" value="${responseValue}" #if($r.valueContains($responseChecked,$responseValue)) checked #end #if($r.isItemSessionEnded()) disabled #end/><i> </i>
                		$r.appendFlexiFormDirtyForCheckbox("oo_${set1Identifier}_${set2Identifier}")
                	</td>
 			#end	
