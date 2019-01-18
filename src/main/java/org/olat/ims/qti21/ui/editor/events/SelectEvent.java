@@ -55,7 +55,8 @@ public class SelectEvent extends Event {
 		
 		description,
 		expert,
-		score,
+		attempts,
+		maxpoints,
 		feedback
 		
 	}

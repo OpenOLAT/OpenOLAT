@@ -21,40 +21,35 @@ package org.olat.ims.qti21.ui.editor.overview;
 
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
-import org.olat.modules.assessment.ui.ScoreCellRenderer;
-
-import uk.ac.ed.ph.jqtiplus.node.test.AssessmentSection;
-import uk.ac.ed.ph.jqtiplus.node.test.TestPart;
 
 /**
  * 
- * Initial date: 16 janv. 2019<br>
+ * Initial date: 18 janv. 2019<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessmentSectionScoreCellRenderer implements FlexiCellRenderer {
+public class YesNoCellRenderer implements FlexiCellRenderer {
 	
-	private final ScoreCellRenderer scoreRenderer;
-	private final StaticFlexiCellRenderer actionRenderer;
+	private final Translator translator;
 	
-	public AssessmentSectionScoreCellRenderer(String action) {
-		scoreRenderer = new ScoreCellRenderer();
-		actionRenderer = new StaticFlexiCellRenderer(action, scoreRenderer);
+	public YesNoCellRenderer(Translator translator) {
+		this.translator = translator;
 	}
 
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
-			URLBuilder ubu, Translator translator) {
-		ControlObjectRow object = (ControlObjectRow)source.getFlexiTableElement().getTableDataModel().getObject(row);
-		if(object.getControlObject() instanceof AssessmentSection || object.getControlObject() instanceof TestPart) {
-			scoreRenderer.render(renderer, target, cellValue, row, source, ubu, translator);
-		} else {
-			actionRenderer.render(renderer, target, cellValue, row, source, ubu, translator);
+			URLBuilder ubu, Translator trans) {
+		if(cellValue instanceof Boolean) {
+			Boolean bool = (Boolean)cellValue;
+			if(bool.booleanValue()) {
+				target.append(translator.translate("yes"));
+			} else {
+				target.append(translator.translate("no"));
+			}
 		}
 	}
 }
