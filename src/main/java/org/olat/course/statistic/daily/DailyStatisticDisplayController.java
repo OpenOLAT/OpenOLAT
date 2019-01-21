@@ -39,9 +39,7 @@ import org.olat.course.statistic.StatisticResult;
 
 public class DailyStatisticDisplayController extends StatisticDisplayController {
 
-	private VelocityContainer dailyStatisticFormVc_;
-	private VelocityContainer dailyStatisticVc_;
-	private DateChooserForm form_;
+	private DateChooserForm dateChooser;
 
 	public DailyStatisticDisplayController(UserRequest ureq, WindowControl windowControl, ICourse course, IStatisticManager statisticManager) {
 		super(ureq, windowControl, course, statisticManager);
@@ -51,24 +49,24 @@ public class DailyStatisticDisplayController extends StatisticDisplayController 
 	protected Component createInitialComponent(UserRequest ureq) {
 		setVelocityRoot(Util.getPackageVelocityRoot(getClass()));
 
-		dailyStatisticVc_ = this.createVelocityContainer("dailystatisticparent");
+		VelocityContainer dailyStatisticVc = this.createVelocityContainer("dailystatisticparent");
 		
-		dailyStatisticFormVc_ = this.createVelocityContainer("dailystatisticform");
-		form_ = new DateChooserForm(ureq, getWindowControl(), 7);
-		listenTo(form_);
-		dailyStatisticFormVc_.put("statisticForm", form_.getInitialComponent());
-		dailyStatisticFormVc_.contextPut("statsSince", getStatsSinceStr());
+		VelocityContainer dailyStatisticFormVc = this.createVelocityContainer("dailystatisticform");
+		dateChooser = new DateChooserForm(ureq, getWindowControl(), 7);
+		listenTo(dateChooser);
+		dailyStatisticFormVc.put("statisticForm", dateChooser.getInitialComponent());
 
-		dailyStatisticVc_.put("dailystatisticform", dailyStatisticFormVc_);
+		dailyStatisticVc.put("dailystatisticform", dailyStatisticFormVc);
 
 		Component parentInitialComponent = super.createInitialComponent(ureq);
-		dailyStatisticVc_.put("statistic", parentInitialComponent);
+		dailyStatisticVc.put("statistic", parentInitialComponent);
 		
-		return dailyStatisticVc_;
+		return dailyStatisticVc;
 	}
 
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
-		if (source == form_ && event == Event.DONE_EVENT) {
+		if (source == dateChooser && event == Event.DONE_EVENT) {
 			// need to regenerate the statisticResult
 			
 			if (!(getStatisticManager() instanceof DailyStatisticManager)) {
@@ -86,10 +84,7 @@ public class DailyStatisticDisplayController extends StatisticDisplayController 
 	@Override
 	protected StatisticResult recalculateStatisticResult(UserRequest ureq) {
 		// recalculate the statistic result based on the from and to dates.
-		// do this by going via sql (see DailyStatisticManager)
-		DailyStatisticManager dailyStatisticManager = (DailyStatisticManager)getStatisticManager();			
-		StatisticResult statisticResult = 
-			dailyStatisticManager.generateStatisticResult(ureq, getCourse(), getCourseRepositoryEntryKey(), form_.getFromDate(), form_.getToDate());
-		return statisticResult;
+		// do this by going via sql (see DailyStatisticManager)	
+		return getStatisticManager().generateStatisticResult(ureq, getCourse(), getCourseRepositoryEntryKey(), dateChooser.getFromDate(), dateChooser.getToDate());
 	}
 }

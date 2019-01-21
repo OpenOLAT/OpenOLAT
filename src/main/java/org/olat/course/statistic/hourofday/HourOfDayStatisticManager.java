@@ -52,7 +52,7 @@ import org.olat.course.statistic.TotalAwareColumnDescriptor;
 public class HourOfDayStatisticManager implements IStatisticManager {
 
 	/** the logging object used in this class **/
-	private static final OLog log_ = Tracing.createLoggerFor(HourOfDayStatisticManager.class);
+	private static final OLog log = Tracing.createLoggerFor(HourOfDayStatisticManager.class);
 
 	@Override
 	public StatisticResult generateStatisticResult(UserRequest ureq, ICourse course, long courseRepositoryEntryKey) {
@@ -68,13 +68,13 @@ public class HourOfDayStatisticManager implements IStatisticManager {
 			try{
 				int start = Integer.parseInt(columnHeaders.get(0));
 				int end = Integer.parseInt(columnHeaders.get(columnHeaders.size()-1));
-				List<String> resultingColumnHeaders = new ArrayList<String>((end-start)+1);
+				List<String> resultingColumnHeaders = new ArrayList<>((end-start)+1);
 				for(int hour=start; hour<=end; hour++) {
 					resultingColumnHeaders.add(String.valueOf(hour));
 				}
 				statisticResult.setColumnHeaders(resultingColumnHeaders);
 			} catch(NumberFormatException nfe) {
-				log_.warn("generateStatisticResult: Got a NumberFormatException: "+nfe, nfe);
+				log.warn("generateStatisticResult: Got a NumberFormatException: "+nfe, nfe);
 			}
 		}
 		return statisticResult;
@@ -95,7 +95,7 @@ public class HourOfDayStatisticManager implements IStatisticManager {
 			DateFormat df = DateFormat.getTimeInstance(DateFormat.SHORT, ureq.getLocale());
 			hourOfDayLocaled = df.format(c.getTime());
 		} catch(RuntimeException re) {
-			re.printStackTrace(System.out);
+			log.error("", re);
 		}
 
 		TotalAwareColumnDescriptor cd = new TotalAwareColumnDescriptor(hourOfDayLocaled, column, 

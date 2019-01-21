@@ -39,9 +39,7 @@ import org.olat.course.statistic.StatisticResult;
 
 public class WeeklyStatisticDisplayController extends StatisticDisplayController {
 
-	private VelocityContainer weeklyStatisticFormVc_;
-	private VelocityContainer weeklyStatisticVc_;
-	private DateChooserForm form_;
+	private DateChooserForm dateChooser;
 
 	public WeeklyStatisticDisplayController(UserRequest ureq, WindowControl windowControl, ICourse course, IStatisticManager statisticManager) {
 		super(ureq, windowControl, course, statisticManager);
@@ -51,24 +49,24 @@ public class WeeklyStatisticDisplayController extends StatisticDisplayController
 	protected Component createInitialComponent(UserRequest ureq) {
 		setVelocityRoot(Util.getPackageVelocityRoot(getClass()));
 
-		weeklyStatisticVc_ = createVelocityContainer("weeklystatisticparent");
+		VelocityContainer weeklyStatisticVc = createVelocityContainer("weeklystatisticparent");
 		
-		weeklyStatisticFormVc_ = createVelocityContainer("weeklystatisticform");
-		form_ = new DateChooserForm(ureq, getWindowControl(), 8*7);
-		listenTo(form_);
-		weeklyStatisticFormVc_.put("statisticForm", form_.getInitialComponent());
-		weeklyStatisticFormVc_.contextPut("statsSince", getStatsSinceStr());
+		VelocityContainer weeklyStatisticFormVc = createVelocityContainer("weeklystatisticform");
+		dateChooser = new DateChooserForm(ureq, getWindowControl(), 8*7);
+		listenTo(dateChooser);
+		weeklyStatisticFormVc.put("statisticForm", dateChooser.getInitialComponent());
 
-		weeklyStatisticVc_.put("weeklystatisticform", weeklyStatisticFormVc_);
+		weeklyStatisticVc.put("weeklystatisticform", weeklyStatisticFormVc);
 
 		Component parentInitialComponent = super.createInitialComponent(ureq);
-		weeklyStatisticVc_.put("statistic", parentInitialComponent);
+		weeklyStatisticVc.put("statistic", parentInitialComponent);
 		
-		return weeklyStatisticVc_;
+		return weeklyStatisticVc;
 	}
 
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
-		if (source == form_ && event == Event.DONE_EVENT) {
+		if (source == dateChooser && event == Event.DONE_EVENT) {
 			// need to regenerate the statisticResult
 			// and now recreate the table controller
 			recreateTableController(ureq);
@@ -80,9 +78,6 @@ public class WeeklyStatisticDisplayController extends StatisticDisplayController
 	protected StatisticResult recalculateStatisticResult(UserRequest ureq) {
 		// recalculate the statistic result based on the from and to dates.
 		// do this by going via sql (see WeeklyStatisticManager)
-		IStatisticManager weeklyStatisticManager = getStatisticManager();			
-		StatisticResult statisticResult = 
-			weeklyStatisticManager.generateStatisticResult(ureq, getCourse(), getCourseRepositoryEntryKey(), form_.getFromDate(), form_.getToDate());
-		return statisticResult;
+		return getStatisticManager().generateStatisticResult(ureq, getCourse(), getCourseRepositoryEntryKey(), dateChooser.getFromDate(), dateChooser.getToDate());
 	}
 }

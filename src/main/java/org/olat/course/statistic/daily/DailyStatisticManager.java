@@ -60,7 +60,7 @@ public class DailyStatisticManager implements IStatisticManager {
 	/** the SimpleDateFormat with which the column headers will be created formatted by the database, 
 	 * so change this in coordination with any db changes if you really need to 
 	 **/
-	private final SimpleDateFormat columnHeaderFormat_ = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+	private final SimpleDateFormat columnHeaderFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
 
 	@Override
 	public StatisticResult generateStatisticResult(UserRequest ureq, ICourse course, long courseRepositoryEntryKey) {
@@ -79,7 +79,7 @@ public class DailyStatisticManager implements IStatisticManager {
 		
 		String header = headerId;
 		try{
-			Date d = columnHeaderFormat_.parse(headerId);
+			Date d = columnHeaderFormat.parse(headerId);
 
 			Calendar c = Calendar.getInstance(ureq.getLocale());
 			c.setTime(d);
@@ -139,19 +139,19 @@ public class DailyStatisticManager implements IStatisticManager {
 		}
 		try{
 			String firstDate = columnHeaders.get(0);
-			Date fromDate = columnHeaderFormat_.parse(firstDate);
+			Date fromDate = columnHeaderFormat.parse(firstDate);
 			Date previousDate = new Date(fromDate.getTime()); // copy fromDate
-			final long DAY_DIFF = 24*60*60*1000;
+			final long DAY_DIFF = 24l * 60l * 60l * 1000l;
 			for (int i = 1; i < columnHeaders.size(); i++) {
 				String aDate = columnHeaders.get(i);
-				Date currDate = columnHeaderFormat_.parse(aDate);
+				Date currDate = columnHeaderFormat.parse(aDate);
 				long diff = currDate.getTime() - previousDate.getTime();
 				// note that we should have full days - we have the HH:MM:SS set to 00:00:00 - hence the
 				// difference should always be a full day
 				if (diff>DAY_DIFF) {
 					// then we should add a few days in here
 					Date additionalDate = new Date(previousDate.getTime() + DAY_DIFF);
-					String additionalDateStr = columnHeaderFormat_.format(additionalDate);
+					String additionalDateStr = columnHeaderFormat.format(additionalDate);
 					columnHeaders.add(i, additionalDateStr);
 					previousDate = additionalDate;
 				} else {
@@ -164,5 +164,4 @@ public class DailyStatisticManager implements IStatisticManager {
 			log.warn("fillGapsInColumnHeaders: Got a ParseException while trying to fill gaps. Giving up. ",e);
 		}
 	}
-
 }
