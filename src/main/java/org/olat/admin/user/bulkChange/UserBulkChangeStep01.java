@@ -188,7 +188,7 @@ class UserBulkChangeStep01 extends BasicStep {
 
 			// check user rights:
 			Roles roles = ureq.getUserSession().getRoles();
-			if(roles.isUserManager()) {
+			if(roles.isUserManager() || roles.isRolesManager() || roles.isAdministrator()) {
 				initRole(OrganisationRoles.author, innerFormLayout);
 			}
 			if(roles.isRolesManager() || roles.isAdministrator()) {
