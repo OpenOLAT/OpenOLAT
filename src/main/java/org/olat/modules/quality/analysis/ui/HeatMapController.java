@@ -527,7 +527,7 @@ public class HeatMapController extends FormBasicController implements Filterable
 	private void doShowTrend(UserRequest ureq, HeatMapRow row) {
 		MultiKey multiKey = row.getMultiKey();
 		AnalysisSearchParameter trendSearchParameter = getTrendSearchParams(multiKey);
-		trendCtrl = new QuestionTrendController(ureq, getWindowControl(), sliders, trendSearchParameter);
+		trendCtrl = new SliderTrendController(ureq, getWindowControl(), sliders, trendSearchParameter);
 		listenTo(trendCtrl);
 		stackPanel.changeDisplayname(translate("analysis.trend"));
 		stackPanel.pushController(getTrendTitle(multiKey), trendCtrl);

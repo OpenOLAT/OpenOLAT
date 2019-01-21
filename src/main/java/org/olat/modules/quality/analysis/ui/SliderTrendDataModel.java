@@ -34,30 +34,30 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-class QuestionTrendDataModel extends DefaultFlexiTableDataModel<QuestionTrendRow>
-		implements SortableFlexiTableDataModel<QuestionTrendRow> {
+class SliderTrendDataModel extends DefaultFlexiTableDataModel<SliderTrendRow>
+		implements SortableFlexiTableDataModel<SliderTrendRow> {
 	
 	private final Locale locale;
 	
-	QuestionTrendDataModel(FlexiTableColumnModel columnsModel, Locale locale) {
+	SliderTrendDataModel(FlexiTableColumnModel columnsModel, Locale locale) {
 		super(columnsModel);
 		this.locale = locale;
 	}
 	
 	@Override
 	public void sort(SortKey orderBy) {
-		List<QuestionTrendRow> rows = new SortableFlexiTableModelDelegate<>(orderBy, this, locale).sort();
+		List<SliderTrendRow> rows = new SortableFlexiTableModelDelegate<>(orderBy, this, locale).sort();
 		super.setObjects(rows);
 	}
 
 	@Override
 	public Object getValueAt(int row, int col) {
-		QuestionTrendRow generator = getObject(row);
+		SliderTrendRow generator = getObject(row);
 		return getValueAt(generator, col);
 	}
 
 	@Override
-	public Object getValueAt(QuestionTrendRow row, int col) {
+	public Object getValueAt(SliderTrendRow row, int col) {
 		if (col == 0) {
 			return row.getQuestion();
 		}
@@ -65,8 +65,8 @@ class QuestionTrendDataModel extends DefaultFlexiTableDataModel<QuestionTrendRow
 	}
 
 	@Override
-	public DefaultFlexiTableDataModel<QuestionTrendRow> createCopyWithEmptyList() {
-		return new QuestionTrendDataModel(getTableColumnModel(), locale);
+	public DefaultFlexiTableDataModel<SliderTrendRow> createCopyWithEmptyList() {
+		return new SliderTrendDataModel(getTableColumnModel(), locale);
 	}
 	
 }

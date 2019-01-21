@@ -56,10 +56,10 @@ import edu.emory.mathcs.backport.java.util.Arrays;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class QuestionTrendController extends FormBasicController {
+public class SliderTrendController extends FormBasicController {
 
 	private SingleSelection temporalGroupEl;
-	private QuestionTrendDataModel dataModel;
+	private SliderTrendDataModel dataModel;
 	private FlexiTableElement tableEl;
 	
 	private final List<SliderWrapper> sliders;
@@ -69,7 +69,7 @@ public class QuestionTrendController extends FormBasicController {
 	@Autowired
 	private QualityAnalysisService analysisService;
 
-	public QuestionTrendController(UserRequest ureq, WindowControl wControl, List<SliderWrapper> sliders,
+	public SliderTrendController(UserRequest ureq, WindowControl wControl, List<SliderWrapper> sliders,
 			AnalysisSearchParameter searchParams) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		this.sliders = sliders;
@@ -79,12 +79,12 @@ public class QuestionTrendController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		String groupPage = velocity_root + "/question_trend_grouping.html";
+		String groupPage = velocity_root + "/slider_trend_grouping.html";
 		FormLayoutContainer groupingCont = FormLayoutContainer.createCustomFormLayout("grouping", getTranslator(), groupPage);
 		flc.add("grouping", groupingCont);
 		
 		KeyValues temporalKV = AnalysisUIFactory.getTemporalGroupByKeyValues(getTranslator());
-		temporalGroupEl = uifactory.addDropdownSingleselect("question.trend.group.temporal", groupingCont,
+		temporalGroupEl = uifactory.addDropdownSingleselect("slider.trend.group.temporal", groupingCont,
 				temporalKV.keys(), temporalKV.values());
 		temporalGroupEl.addActionListener(FormEvent.ONCHANGE);
 		String key = AnalysisUIFactory.getKey(temporalGroupBy);
@@ -105,19 +105,19 @@ public class QuestionTrendController extends FormBasicController {
 	private void updateTable(List<String> temporalHeaders) {
 		int columnIndex = 0;
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("question.trend.table.title.question", columnIndex++));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("slider.trend.table.title.question", columnIndex++));
 		for (String header: temporalHeaders) {
-			DefaultFlexiColumnModel columnModel = new DefaultFlexiColumnModel("question.trend.table.title.question", columnIndex++);
+			DefaultFlexiColumnModel columnModel = new DefaultFlexiColumnModel("slider.trend.table.title.question", columnIndex++);
 			columnModel.setHeaderLabel(header);
 			columnModel.setCellRenderer(new TrendRenderer());
 			columnsModel.addFlexiColumnModel(columnModel);
 		}
 		
-		dataModel = new QuestionTrendDataModel(columnsModel, getLocale());
+		dataModel = new SliderTrendDataModel(columnsModel, getLocale());
 		if (tableEl != null) flc.remove(tableEl);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, getTranslator(), flc);
-		tableEl.setElementCssClass("o_qual_question_trend");
-		tableEl.setEmtpyTableMessageKey("question.trend.empty");
+		tableEl.setElementCssClass("o_qual_slider_trend");
+		tableEl.setEmtpyTableMessageKey("slider.trend.empty");
 		tableEl.setNumOfRowsEnabled(false);
 		tableEl.setCustomizeColumns(false);
 	}
@@ -129,11 +129,11 @@ public class QuestionTrendController extends FormBasicController {
 	}
 
 	private void updateModel(MultiTrendSeries<String> multiTrendSeries) {
-		List<QuestionTrendRow> rows = new ArrayList<>();
+		List<SliderTrendRow> rows = new ArrayList<>();
 		for (SliderWrapper slider : sliders) {
 			String question = slider.getLabel();
 			TrendSeries trendSeries = multiTrendSeries.getSeries(slider.getIdentifier());
-			QuestionTrendRow row = new QuestionTrendRow(question, trendSeries);
+			SliderTrendRow row = new SliderTrendRow(question, trendSeries);
 			rows.add(row);
 		}
 		dataModel.setObjects(rows);
@@ -145,8 +145,8 @@ public class QuestionTrendController extends FormBasicController {
 		List<String> headers = new ArrayList<>(temporalKeys.size());
 		for (TemporalKey temporalKey : temporalKeys) {
 			String header = TemporalKey.NO_VALUE == temporalKey.getYearPart()
-					? translate("question.trend.table.year", new String[] { Integer.toString(temporalKey.getYear()) })
-					: translate("question.trend.table.year.part", new String[] {
+					? translate("slider.trend.table.year", new String[] { Integer.toString(temporalKey.getYear()) })
+					: translate("slider.trend.table.year.part", new String[] {
 							Integer.toString(temporalKey.getYear()), Integer.toString(temporalKey.getYearPart()) });
 			headers.add(header);
 		}

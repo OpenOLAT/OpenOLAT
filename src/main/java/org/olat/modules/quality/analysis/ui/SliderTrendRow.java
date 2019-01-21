@@ -28,12 +28,12 @@ import org.olat.modules.quality.analysis.TrendSeries;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class QuestionTrendRow {
+public class SliderTrendRow {
 	
 	private final String question;
 	private final TrendSeries trendSerie;
 
-	public QuestionTrendRow(String question, TrendSeries trendSeries) {
+	public SliderTrendRow(String question, TrendSeries trendSeries) {
 		this.question = question;
 		this.trendSerie = trendSeries;
 	}
