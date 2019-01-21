@@ -19,6 +19,8 @@
  */
 package org.olat.ims.qti21.questionimport;
 
+import java.io.IOException;
+import java.io.StringReader;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,6 +46,11 @@ import org.olat.ims.qti21.model.xml.interactions.SimpleChoiceAssessmentItemBuild
 import org.olat.ims.qti21.model.xml.interactions.SingleChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.ui.editor.AssessmentItemEditorController;
 
+import com.opencsv.CSVParser;
+import com.opencsv.CSVParserBuilder;
+import com.opencsv.CSVReader;
+import com.opencsv.CSVReaderBuilder;
+
 import uk.ac.ed.ph.jqtiplus.node.content.xhtml.text.P;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleAssociableChoice;
@@ -61,12 +68,14 @@ import uk.ac.ed.ph.jqtiplus.value.DirectedPairValue;
 public class CSVToAssessmentItemConverter {
 	
 	private static final OLog log = Tracing.createLoggerFor(CSVToAssessmentItemConverter.class);
+	private static final String[] BLOCK_MARKERS = new String[] { "<p", "<P", "<div", "<DIV", "<ul", "<UL", "<ol", "<OL" };
 
 	private int currentLine;
 	private int kprimPosition = 0;
 	private ImportOptions options;
 	private final Locale locale;
 	private final QtiSerializer qtiSerializer;
+	private List<String> questionFragements;
 	private AssessmentItemAndMetadata currentItem;
 	private final List<AssessmentItemAndMetadata> items = new ArrayList<>();
 	
@@ -85,32 +94,59 @@ public class CSVToAssessmentItemConverter {
 	}
 	
 	public void parse(String input) {
-		String[] lines = input.split("\r?\n");
+		List<String[]> lines = getLines(input);
+		for(String[] line:lines) {
+			processLine(line);
+		}
+		buildCurrentItem();
+	}
+	
+	private List<String[]> getLines(String input) {
+		List<String[]> lines = getLines(input, '\t');
+		if(lines.isEmpty()) {
+			lines = getLines(input, ',');
+		}
+		return lines;
+	}
+	
+	private List<String[]> getLines(String input, char separator) {
+		CSVParser parser = new CSVParserBuilder()
+				.withSeparator(separator)
+				.build();
 		
-		for (int i = 0; i<lines.length; i++) {
-			currentLine = i+1;
+		List<String[]> lines = new ArrayList<>();
+		try(CSVReader reader = new CSVReaderBuilder(new StringReader(input))
+					.withCSVParser(parser)
+					.build()) {
 			
-			String line = lines[i];
-			if (line.equals("")) {
-				continue;
+			String [] nextLine;
+			while ((nextLine = reader.readNext()) != null) {
+				if(nextLine.length > 1) {
+					String[] stripedLine = stripLine(nextLine);
+					lines.add(stripedLine);
+				}
 			}
-		
-			String delimiter = "\t";
-			// use comma as fallback delimiter, e.g. for better testing
-			if (line.indexOf(delimiter) == -1) {
-				delimiter = ",";
+		} catch (IOException e) {
+			log.error("", e);
+		}
+		return lines;
+	}
+	
+	private String[] stripLine(String[] line) {
+		int lastPos = line.length;
+		for(int i=lastPos; i-->0; ) {
+			if(StringHelper.containsNonWhitespace(line[i])) {
+				lastPos = i;
+				break;
 			}
-			String[] parts = line.split(delimiter);
-			if(parts.length > 1) {
-				processLine(parts);
-			}	
 		}
 		
-		if(currentItem != null) {
-			build();
-			items.add(currentItem);
-			currentItem = null;
+		if(lastPos < (line.length - 1)) {
+			String[] newLine = new String[lastPos + 1];
+			System.arraycopy(line, 0, newLine, 0, lastPos + 1);
+			line = newLine;
 		}
+		return line;
 	}
 	
 	private void processLine(String[] parts) {
@@ -326,10 +362,8 @@ public class CSVToAssessmentItemConverter {
 		if(currentItem == null || parts.length < 2) return;
 		
 		String min = parts[1];
-		if(StringHelper.isLong(min)) {
-			if(currentItem.getItemBuilder() instanceof EssayAssessmentItemBuilder) {
-				((EssayAssessmentItemBuilder)currentItem.getItemBuilder()).setMinStrings(Integer.valueOf(min));
-			}
+		if(StringHelper.isLong(min) && currentItem.getItemBuilder() instanceof EssayAssessmentItemBuilder) {
+			((EssayAssessmentItemBuilder)currentItem.getItemBuilder()).setMinStrings(Integer.valueOf(min));
 		}
 	}
 	
@@ -337,19 +371,13 @@ public class CSVToAssessmentItemConverter {
 		if(currentItem == null || parts.length < 2) return;
 		
 		String max = parts[1];
-		if(StringHelper.isLong(max)) {
-			if(currentItem.getItemBuilder() instanceof EssayAssessmentItemBuilder) {
-				((EssayAssessmentItemBuilder)currentItem.getItemBuilder()).setMaxStrings(Integer.valueOf(max));
-			}
+		if(StringHelper.isLong(max) && currentItem.getItemBuilder() instanceof EssayAssessmentItemBuilder) {
+			((EssayAssessmentItemBuilder)currentItem.getItemBuilder()).setMaxStrings(Integer.valueOf(max));
 		}
 	}
 	
 	private void processType(String[] parts) {
-		if(currentItem != null) {
-			build();
-			items.add(currentItem);
-			currentItem = null;
-		}
+		buildCurrentItem();
 		
 		if(parts.length > 1) {
 			String type = parts[1].toLowerCase();
@@ -461,21 +489,78 @@ public class CSVToAssessmentItemConverter {
 		return matchBuilder;
 	}
 	
-	private void build() {
+	private void buildCurrentItem() {
 		if(currentItem != null) {
 			try {
-				String question = currentItem.getItemBuilder().getQuestion();
-				if(!StringHelper.isHtml(question)) {
-					question = "<p>" + question + "</p>";
-				}
+				String question = buildQuestion(); 
 				currentItem.getItemBuilder().setQuestion(question);
 				currentItem.getItemBuilder().build();
+				items.add(currentItem);
 			} catch (Exception e) {
 				log.error("", e);
 				currentItem.setHasError(true);
 			}
 		}
+		currentItem = null;
+		questionFragements = null;
 	}
+	
+	private String buildQuestion() {
+		StringBuilder questionBuilder = new StringBuilder(2048);
+		if(questionFragements != null) {
+			boolean needClosing = false;
+
+			for(String questionFragment:questionFragements) {
+				if(isHtmlBlock(questionFragment)) {
+					if(needClosing) {
+						questionBuilder.append("</p>");
+						needClosing = false;
+					}
+					questionBuilder.append(questionFragment);
+				} else {
+					if(!needClosing) {
+						questionBuilder.append("<p>");
+						needClosing = true;
+					}
+					
+					String[] subLines = questionFragment.split("\r?\n");
+					if(subLines.length > 1) {
+						StringBuilder sb = new StringBuilder(questionFragment.length() + 32);
+						for(int i=0; i<subLines.length; i++) {
+							if(i>0) {
+								sb.append("<br>");
+							}
+							sb.append(subLines[i]);
+						}
+						questionFragment = sb.toString();
+					}
+					questionBuilder.append(questionFragment);
+				}
+			}
+			
+			if(needClosing) {
+				questionBuilder.append("</p>");
+			}
+		}
+
+		String question = questionBuilder.toString();
+		if(!StringHelper.isHtml(question)) {
+			question = "<p>" + question + "</p>";
+		}
+		return question;
+	}
+	
+	private boolean isHtmlBlock(String block) {
+		if(block == null) return false;
+		
+		for(String marker:BLOCK_MARKERS) {
+			if(block.startsWith(marker)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	
 	private void processCoverage(String[] parts) {
 		if(currentItem == null || parts.length < 2) return;
@@ -536,8 +621,10 @@ public class CSVToAssessmentItemConverter {
 		
 		String content = parts[1];
 		if(StringHelper.containsNonWhitespace(content)) {
-			AssessmentItemBuilder itemBuilder = currentItem.getItemBuilder();
-			itemBuilder.setQuestion("<p>" + content + "</p>");
+			if(questionFragements == null) {
+				questionFragements = new ArrayList<>();
+			}
+			questionFragements.add(content);
 		}
 	}
 	
@@ -649,11 +736,10 @@ public class CSVToAssessmentItemConverter {
 		String firstPart = parts[0].toLowerCase();
 		if("text".equals(firstPart) || "texte".equals(firstPart)) {
 			String text = parts[1];
-			if(StringHelper.containsNonWhitespace(fibBuilder.getQuestion())) {
-				fibBuilder.setQuestion(fibBuilder.getQuestion() + " " + text);
-			} else {
-				fibBuilder.setQuestion(text);
-			}	
+			if(questionFragements == null) {
+				questionFragements = new ArrayList<>();
+			}
+			questionFragements.add(text);	
 		} else {
 			double score = parseFloat(parts[0], 1.0f);
 			String correctBlank = parts[1];
@@ -669,8 +755,11 @@ public class CSVToAssessmentItemConverter {
 				}	
 			}
 			
-			String entry = " <textEntryInteraction responseIdentifier=\"" + responseId + "\"/>";
-			fibBuilder.setQuestion(fibBuilder.getQuestion() + " " + entry);
+			String entry = "<textEntryInteraction responseIdentifier=\"" + responseId + "\"/>";
+			if(questionFragements == null) {
+				questionFragements = new ArrayList<>();
+			}
+			questionFragements.add(entry);	
 		}
 	}
 	
