@@ -309,7 +309,7 @@ public class MembersMailController extends FormBasicController {
 			} else if (individualEl != null && !individualEl.isAtLeastSelected(1)) {
 				individualEl.setErrorKey("at.least.one.recipient", null);
 			} else if (externalEl != null && !externalEl.isAtLeastSelected(1)) {
-				individualEl.setErrorKey("at.least.one.recipient", null);
+				externalEl.setErrorKey("at.least.one.recipient", null);
 			}
 		}
 		
