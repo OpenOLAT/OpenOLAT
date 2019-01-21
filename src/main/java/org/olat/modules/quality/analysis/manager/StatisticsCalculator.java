@@ -90,10 +90,11 @@ public class StatisticsCalculator {
 	GroupedStatistic getGroupedStatistic(RawGroupedStatistic rawStatistic, Rubric rubric) {
 		log.debug("Raw grouped statistic: " + rawStatistic.toString());
 		Double rawAvg = rawStatistic.getRawAvg();
+		boolean rawAvgMaxGood = !rubric.isStartGoodRating();
 		Double scaledAvg = getScaledAvg(rubric, rawAvg);
 		RubricRating rating = evaluationFormManager.getRubricRating(rubric, scaledAvg);
 		GroupedStatistic statistic = new GroupedStatisticImpl(rawStatistic.getIdentifier(), rawStatistic.getMultiKey(),
-				rawStatistic.getTemporalKey(), rawStatistic.getCount(), rawAvg, scaledAvg, rating);
+				rawStatistic.getTemporalKey(), rawStatistic.getCount(), rawAvg, rawAvgMaxGood, scaledAvg, rating);
 		log.debug("Grouped statistic:        " + statistic.toString());
 		return statistic;
 	}
@@ -134,7 +135,7 @@ public class StatisticsCalculator {
 			for (TemporalKey temporalKey: multiTrendSeries.getTemporalKeys()) {
 				GroupedStatistic currentStatistic = statistics.getStatistic(identifier, temporalKey);
 				if (currentStatistic != null) {
-					DIRECTION direction = getTrendDirection(lastStatistic, currentStatistic);
+					DIRECTION direction = getTrendDirection(lastStatistic, currentStatistic, currentStatistic.isRawAvgMaxGood());
 					Trend trend = new TrendImpl(currentStatistic, direction);
 					multiTrendSeries.put(identifier, temporalKey, trend);
 					lastStatistic = currentStatistic;
@@ -144,25 +145,26 @@ public class StatisticsCalculator {
 		return multiTrendSeries;
 	}
 
-	DIRECTION getTrendDirection(GroupedStatistic prev, GroupedStatistic current) {
+	DIRECTION getTrendDirection(GroupedStatistic prev, GroupedStatistic current, boolean rawAvgMaxGood) {
 		// First in a series
 		if (prev == null) return DIRECTION.EQUAL;
 		
 		// Should not happen
 		Double prevAvg = prev.getRawAvg();
 		Double currentAvg = current.getRawAvg();
-		return getTrendDirection(prevAvg, currentAvg);
+		return getTrendDirection(prevAvg, currentAvg, rawAvgMaxGood);
 	}
 
-	DIRECTION getTrendDirection(Double prevAvg, Double currentAvg) {
+	DIRECTION getTrendDirection(Double prevAvg, Double currentAvg, boolean rawAvgMaxGood) {
 		if (prevAvg == null || currentAvg == null) return null;
 		
+		double diffRange = 0.05;
 		double diff = currentAvg.doubleValue() - prevAvg.doubleValue();
 		DIRECTION direction = DIRECTION.EQUAL;
-		if (diff > 0.05) {
-			direction = DIRECTION.UP;
-		} else if (diff < -0.05) {
-			direction = DIRECTION.DOWN;
+		if (diff > diffRange) {
+			direction = rawAvgMaxGood? DIRECTION.UP: DIRECTION.DOWN;
+		} else if (diff < -diffRange) {
+			direction = rawAvgMaxGood? DIRECTION.DOWN: DIRECTION.UP;
 		}
 		return direction;
 	}

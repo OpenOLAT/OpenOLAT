@@ -19,6 +19,8 @@
  */
 package org.olat.modules.forms.ui;
 
+import static org.olat.core.gui.translator.TranslatorHelper.translateAll;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -58,6 +60,12 @@ import org.olat.modules.forms.model.xml.StepLabel;
  */
 public class RubricEditorController extends FormBasicController implements PageElementEditorController {
 	
+	private static final String GOOD_RATING_END_KEY = "rubric.good.rating.end";
+	private static final String GOOD_RATING_START_KEY = "rubric.good.rating.start";
+	private final String[] GOOD_RATING_KEYS = new String[] {
+			GOOD_RATING_END_KEY, GOOD_RATING_START_KEY
+	};
+
 	private static AtomicInteger count = new AtomicInteger();
 	private final Rubric rubric;
 	private boolean editMode = false;
@@ -83,6 +91,7 @@ public class RubricEditorController extends FormBasicController implements PageE
 	private TextElement upperBoundNeutralEl;
 	private TextElement lowerBoundSufficientEl;
 	private TextElement upperBoundSufficientEl;
+	private SingleSelection goodRatingEl;
 	private FormLink addSliderButton;
 	private FormLayoutContainer settingsLayout;
 	
@@ -222,6 +231,13 @@ public class RubricEditorController extends FormBasicController implements PageE
 				sufficientCont);
 		upperBoundSufficientEl.setDomReplacementWrapperRequired(false);
 		upperBoundSufficientEl.setDisplaySize(4);
+		
+		goodRatingEl = uifactory.addDropdownSingleselect("rubric.good.rating" + count.incrementAndGet(), "rubric.good.rating",
+				settingsLayout, GOOD_RATING_KEYS, translateAll(getTranslator(), GOOD_RATING_KEYS), null);
+		if (rubric != null) {
+			String goodRatingKey = rubric.isStartGoodRating()? GOOD_RATING_START_KEY: GOOD_RATING_END_KEY;
+			goodRatingEl.select(goodRatingKey, true);
+		}
 
 		updateTypeSettings();
 		updateSteps();
@@ -591,6 +607,11 @@ public class RubricEditorController extends FormBasicController implements PageE
 		} else {
 			rubric.setUpperBoundSufficient(null);
 		}
+		
+		boolean startGoodRating = goodRatingEl.isOneSelected() && GOOD_RATING_END_KEY.equals(goodRatingEl.getSelectedKey())
+				? true
+				: false;
+		rubric.setStartGoodRating(startGoodRating);
 		
 		rubricCtrl.updateForm();
 		

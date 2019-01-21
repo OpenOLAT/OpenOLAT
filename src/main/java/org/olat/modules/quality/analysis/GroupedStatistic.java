@@ -29,8 +29,10 @@ import org.olat.modules.forms.RubricRating;
  */
 public interface GroupedStatistic extends RawGroupedStatistic {
 	
+	public boolean isRawAvgMaxGood();
+
 	public Double getAvg();
 	
 	public RubricRating getRating();
-
+	
 }

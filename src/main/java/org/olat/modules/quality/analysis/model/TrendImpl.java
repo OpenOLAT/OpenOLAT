@@ -72,6 +72,11 @@ public class TrendImpl implements Trend {
 	}
 
 	@Override
+	public boolean isRawAvgMaxGood() {
+		return groupedStatistic.isRawAvgMaxGood();
+	}
+
+	@Override
 	public Double getAvg() {
 		return groupedStatistic.getAvg();
 	}

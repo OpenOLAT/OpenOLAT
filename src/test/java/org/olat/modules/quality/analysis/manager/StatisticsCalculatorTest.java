@@ -88,21 +88,42 @@ public class StatisticsCalculatorTest extends OlatTestCase {
 	
 	@Test
 	public void shouldCalculateTrendDirectionUp() {
-		DIRECTION direction = sut.getTrendDirection(1.0, 2.0);
+		DIRECTION direction = sut.getTrendDirection(1.0, 2.0, true);
 		
 		assertThat(direction).isEqualTo(DIRECTION.UP);
 	}
 	
 	@Test
 	public void shouldCalculateTrendDirectionDown() {
-		DIRECTION direction = sut.getTrendDirection(2.0, 1.0);
+		DIRECTION direction = sut.getTrendDirection(2.0, 1.0, true);
 		
 		assertThat(direction).isEqualTo(DIRECTION.DOWN);
 	}
 	
 	@Test
 	public void shouldCalculateTrendDirectionEqual() {
-		DIRECTION direction = sut.getTrendDirection(1.0, 1.01);
+		DIRECTION direction = sut.getTrendDirection(1.0, 1.01, true);
+		
+		assertThat(direction).isEqualTo(DIRECTION.EQUAL);
+	}
+	
+	@Test
+	public void shouldCalculateTrendDirectionDownWithRawMaxBad() {
+		DIRECTION direction = sut.getTrendDirection(1.0, 2.0, false);
+		
+		assertThat(direction).isEqualTo(DIRECTION.DOWN);
+	}
+	
+	@Test
+	public void shouldCalculateTrendDirectionUpWithRawMaxBad() {
+		DIRECTION direction = sut.getTrendDirection(2.0, 1.0, false);
+		
+		assertThat(direction).isEqualTo(DIRECTION.UP);
+	}
+	
+	@Test
+	public void shouldCalculateTrendDirectionEqualWithRawMaxBad() {
+		DIRECTION direction = sut.getTrendDirection(1.0, 1.01, false);
 		
 		assertThat(direction).isEqualTo(DIRECTION.EQUAL);
 	}
@@ -113,17 +134,17 @@ public class StatisticsCalculatorTest extends OlatTestCase {
 		TemporalKey tk2000 = TemporalKey.of(2000);
 		TemporalKey tk2005 = TemporalKey.of(2005);
 		GroupedStatistics<GroupedStatistic> statistics = new GroupedStatistics<>();
-		GroupedStatistic gs0 = new GroupedStatisticImpl(identifier1, MultiKey.none(), tk2000, 1l, 1.0, null, null);
+		GroupedStatistic gs0 = new GroupedStatisticImpl(identifier1, MultiKey.none(), tk2000, 1l, 1.0, true, null, null);
 		statistics.putStatistic(gs0);
-		GroupedStatistic gs1 = new GroupedStatisticImpl(identifier1, MultiKey.none(), TemporalKey.of(2001), 1l, 1.0, null, null);
+		GroupedStatistic gs1 = new GroupedStatisticImpl(identifier1, MultiKey.none(), TemporalKey.of(2001), 1l, 1.0, true, null, null);
 		statistics.putStatistic(gs1);
-		GroupedStatistic gs2 = new GroupedStatisticImpl(identifier1, MultiKey.none(), TemporalKey.of(2002), 1l, 2.0, null, null);
+		GroupedStatistic gs2 = new GroupedStatisticImpl(identifier1, MultiKey.none(), TemporalKey.of(2002), 1l, 2.0, true, null, null);
 		statistics.putStatistic(gs2);
-		GroupedStatistic gs3 = new GroupedStatisticImpl(identifier1, MultiKey.none(), TemporalKey.of(2003), 1l, 2.01, null, null);
+		GroupedStatistic gs3 = new GroupedStatisticImpl(identifier1, MultiKey.none(), TemporalKey.of(2003), 1l, 2.01, true, null, null);
 		statistics.putStatistic(gs3);
-		GroupedStatistic gs4 = new GroupedStatisticImpl(identifier1, MultiKey.none(), TemporalKey.of(2004), 1l, 1.0, null, null);
+		GroupedStatistic gs4 = new GroupedStatisticImpl(identifier1, MultiKey.none(), TemporalKey.of(2004), 1l, 1.0, true, null, null);
 		statistics.putStatistic(gs4);
-		GroupedStatistic gs5 = new GroupedStatisticImpl(identifier1, MultiKey.none(), tk2005, 1l, 1.0, null, null);
+		GroupedStatistic gs5 = new GroupedStatisticImpl(identifier1, MultiKey.none(), tk2005, 1l, 1.0, true, null, null);
 		statistics.putStatistic(gs5);
 		
 		MultiTrendSeries<String> multiTrendSeries = sut.getTrends(statistics, TemporalGroupBy.DATA_COLLECTION_DEADLINE_YEAR);
@@ -147,9 +168,9 @@ public class StatisticsCalculatorTest extends OlatTestCase {
 	public void shouldClaculateTrendGaps() {
 		String identifier1 = "i1";
 		GroupedStatistics<GroupedStatistic> statistics = new GroupedStatistics<>();
-		GroupedStatistic gs0 = new GroupedStatisticImpl(identifier1, MultiKey.none(), TemporalKey.of(2000), 1l, 1.0, null, null);
+		GroupedStatistic gs0 = new GroupedStatisticImpl(identifier1, MultiKey.none(), TemporalKey.of(2000), 1l, 1.0, true, null, null);
 		statistics.putStatistic(gs0);
-		GroupedStatistic gs3 = new GroupedStatisticImpl(identifier1, MultiKey.none(), TemporalKey.of(2003), 1l, 2.01, null, null);
+		GroupedStatistic gs3 = new GroupedStatisticImpl(identifier1, MultiKey.none(), TemporalKey.of(2003), 1l, 2.01, true, null, null);
 		statistics.putStatistic(gs3);
 		
 		MultiTrendSeries<String> multiTrendSeries = sut.getTrends(statistics, TemporalGroupBy.DATA_COLLECTION_DEADLINE_YEAR);

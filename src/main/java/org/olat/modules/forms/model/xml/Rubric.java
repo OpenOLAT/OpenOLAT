@@ -50,6 +50,7 @@ public class Rubric extends AbstractElement {
 	private Double upperBoundNeutral;
 	private Double lowerBoundSufficient;
 	private Double upperBoundSufficient;
+	private boolean startGoodRating;
 	
 	@Override
 	public String getType() {
@@ -183,6 +184,14 @@ public class Rubric extends AbstractElement {
 
 	public void setUpperBoundSufficient(Double upperBoundSufficient) {
 		this.upperBoundSufficient = upperBoundSufficient;
+	}
+
+	public boolean isStartGoodRating() {
+		return startGoodRating;
+	}
+
+	public void setStartGoodRating(boolean startGoodRating) {
+		this.startGoodRating = startGoodRating;
 	}
 
 	@Override
