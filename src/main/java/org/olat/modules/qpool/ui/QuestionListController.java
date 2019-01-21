@@ -371,28 +371,28 @@ public class QuestionListController extends AbstractItemListController implement
 	private List<QuestionItemShort> getRemovableItems() {
 		return getItemsTable().getMultiSelectedIndex().stream()
 				.map(index -> getModel().getObject(index.intValue()))
-				.filter(itemRow -> itemRow.getSecurityCallback().canRemove())
+				.filter(itemRow -> itemRow != null && itemRow.getSecurityCallback().canRemove())
 				.collect(Collectors.toList());
 	}
 
 	private List<QuestionItemShort> getDeletableItems() {
 		return getItemsTable().getMultiSelectedIndex().stream()
 				.map(index -> getModel().getObject(index.intValue()))
-				.filter(itemRow -> itemRow.getSecurityCallback().canDelete())
+				.filter(itemRow -> itemRow != null && itemRow.getSecurityCallback().canDelete())
 				.collect(Collectors.toList());
 	}
 	
 	private List<QuestionItemShort> getAuthorsEditableItems() {
 		return getItemsTable().getMultiSelectedIndex().stream()
 				.map(index -> getModel().getObject(index.intValue()))
-				.filter(itemRow -> itemRow.getSecurityCallback().canEditAuthors())
+				.filter(itemRow -> itemRow != null && itemRow.getSecurityCallback().canEditAuthors())
 				.collect(Collectors.toList());
 	}
 	
 	private List<ItemRow> getMetadataEditableItems() {
 		return getItemsTable().getMultiSelectedIndex().stream()
 				.map(index -> getModel().getObject(index.intValue()))
-				.filter(itemRow -> itemRow.getSecurityCallback().canEditMetadata())
+				.filter(itemRow -> itemRow != null && itemRow.getSecurityCallback().canEditMetadata())
 				.collect(Collectors.toList());
 	}
 
