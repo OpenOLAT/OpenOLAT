@@ -51,6 +51,11 @@ class AnalysisUIFactory {
 		return 0;
 	}
 	
+	
+	static String formatYearPart(int yearPart) {
+		return String.format("%02d", yearPart);
+	}
+	
 	static String formatSliderLabel(Slider slider) {
 		boolean hasStartLabel = StringHelper.containsNonWhitespace(slider.getStartLabel());
 		boolean hasEndLabel = StringHelper.containsNonWhitespace(slider.getEndLabel());

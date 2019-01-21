@@ -147,7 +147,7 @@ public class SliderTrendController extends FormBasicController {
 			String header = TemporalKey.NO_VALUE == temporalKey.getYearPart()
 					? translate("slider.trend.table.year", new String[] { Integer.toString(temporalKey.getYear()) })
 					: translate("slider.trend.table.year.part", new String[] {
-							Integer.toString(temporalKey.getYear()), Integer.toString(temporalKey.getYearPart()) });
+							Integer.toString(temporalKey.getYear()), AnalysisUIFactory.formatYearPart(temporalKey.getYearPart()) });
 			headers.add(header);
 		}
 		return headers;
