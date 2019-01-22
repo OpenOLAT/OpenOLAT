@@ -50,19 +50,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 class GroupByNameCache {
 	
-	private Map<String, String> groupNamesTopicIdentity;
-	private Map<String, String> groupNamesTopicOrganisation;
-	private Map<String, String> groupNamesTopicCurriculum;
-	private Map<String, String> groupNamesTopicCurriculumElement;
-	private Map<String, String> groupNamesTopicRepositoryEntry;
-	private Map<String, String> groupNamesContextExecutorOrganisation;
-	private Map<String, String> groupNamesContextCurriculum;
-	private Map<String, String> groupNamesContextCurriculumElement;
-	private Map<String, String> groupNamesContextCurriculumOrganisation;
-	private Map<String, String> groupNamesContextTaxonomyLevel;
-	private Map<String, String> groupNamesContextLocation;
-	private Map<String, String> groupNamesDataCollection;
-	
 	private Map<GroupBy, Map<String, String>> cache = new HashMap<>();
 
 	private final AnalysisSearchParameter searchParams;
@@ -133,128 +120,128 @@ class GroupByNameCache {
 	}
 
 	private Map<String, String> loadTopicIdentityGroupNames() {
-		groupNamesTopicIdentity = new HashMap<>();
+		Map<String, String> keyToName = new HashMap<>();
 		List<IdentityShort> identities = analysisService.loadTopicIdentity(searchParams);
 		for (IdentityShort identity : identities) {
 			String key = identity.getKey().toString();
 			String value = identity.getLastName() + " " + identity.getFirstName();
-			groupNamesTopicIdentity.put(key, value);
+			keyToName.put(key, value);
 		}
-		return groupNamesTopicIdentity;
+		return keyToName;
 	}
 
 	private Map<String, String> loadTopicOrganisationGroupNames() {
-		groupNamesTopicOrganisation = new HashMap<>();
+		Map<String, String> keyToName = new HashMap<>();
 		List<Organisation> organisations = analysisService.loadTopicOrganisations(searchParams, false);
 		for (Organisation organisation : organisations) {
 			String key = organisation.getKey().toString();
 			String value = organisation.getDisplayName();
-			groupNamesTopicOrganisation.put(key, value);
+			keyToName.put(key, value);
 		}
-		return groupNamesTopicOrganisation;
+		return keyToName;
 	}
 
 	private Map<String, String> loadTopicCurriculumGroupNames() {
-		groupNamesTopicCurriculum = new HashMap<>();
+		Map<String, String> keyToName = new HashMap<>();
 		List<Curriculum> curriculums = analysisService.loadTopicCurriculums(searchParams);
 		for (Curriculum curriculum : curriculums) {
 			String key = curriculum.getKey().toString();
 			String value = curriculum.getDisplayName();
-			groupNamesTopicCurriculum.put(key, value);
+			keyToName.put(key, value);
 		}
-		return groupNamesTopicCurriculum;
+		return keyToName;
 	}
 
 	private Map<String, String> loadTopicCurriculumElementGroupNames() {
-		groupNamesTopicCurriculumElement = new HashMap<>();
+		Map<String, String> keyToName = new HashMap<>();
 		List<CurriculumElement> curriculumElements = analysisService.loadTopicCurriculumElements(searchParams);
 		for (CurriculumElement curriculumElement : curriculumElements) {
 			String key = curriculumElement.getKey().toString();
 			String value = curriculumElement.getDisplayName();
-			groupNamesTopicCurriculumElement.put(key, value);
+			keyToName.put(key, value);
 		}
-		return groupNamesTopicCurriculumElement;
+		return keyToName;
 	}
 
 	private Map<String, String> loadTopicRepositoryEntryGroupNames() {
-		groupNamesTopicRepositoryEntry = new HashMap<>();
+		Map<String, String> keyToName = new HashMap<>();
 		List<RepositoryEntry> entries = analysisService.loadTopicRepositoryEntries(searchParams);
 		for (RepositoryEntry entry : entries) {
 			String key = entry.getKey().toString();
 			String value = entry.getDisplayname();
-			groupNamesTopicRepositoryEntry.put(key, value);
+			keyToName.put(key, value);
 		}
-		return groupNamesTopicRepositoryEntry;
+		return keyToName;
 	}
 
 	private Map<String, String> loadContextExecutorOrganisationGroupNames() {
-		groupNamesContextExecutorOrganisation = new HashMap<>();
+		Map<String, String> keyToName = new HashMap<>();
 		List<Organisation> elements = analysisService.loadContextExecutorOrganisations(searchParams, false);
 		for (Organisation element : elements) {
 			String key = element.getKey().toString();
 			String value = element.getDisplayName();
-			groupNamesContextExecutorOrganisation.put(key, value);
+			keyToName.put(key, value);
 		}
-		return groupNamesContextExecutorOrganisation;
+		return keyToName;
 	}
 
 	private Map<String, String> loadContextCurriculumGroupNames() {
-		groupNamesContextCurriculum = new HashMap<>();
+		Map<String, String> keyToName = new HashMap<>();
 		List<Curriculum> elements = analysisService.loadContextCurriculums(searchParams);
 		for (Curriculum element : elements) {
 			String key = element.getKey().toString();
 			String value = element.getDisplayName();
-			groupNamesContextCurriculum.put(key, value);
+			keyToName.put(key, value);
 		}
-		return groupNamesContextCurriculum;
+		return keyToName;
 	}
 
 	private Map<String, String> loadContextCurriculumElementGroupNames() {
-		groupNamesContextCurriculumElement = new HashMap<>();
+		Map<String, String> keyToName = new HashMap<>();
 		List<CurriculumElement> elements = analysisService.loadContextCurriculumElements(searchParams, false);
 		for (CurriculumElement element : elements) {
 			String key = element.getKey().toString();
 			String value = element.getDisplayName();
-			groupNamesContextCurriculumElement.put(key, value);
+			keyToName.put(key, value);
 		}
-		return groupNamesContextCurriculumElement;
+		return keyToName;
 	}
 	
 	private Map<String, String> loadContextCurriculumOrganisationGroupNames() {
-		groupNamesContextCurriculumOrganisation = new HashMap<>();
+		Map<String, String> keyToName = new HashMap<>();
 		List<Organisation> elements = analysisService.loadContextCurriculumOrganisations(searchParams, false);
 		for (Organisation element : elements) {
 			String key = element.getKey().toString();
 			String value = element.getDisplayName();
-			groupNamesContextCurriculumOrganisation.put(key, value);
+			keyToName.put(key, value);
 		}
-		return groupNamesContextCurriculumOrganisation;
+		return keyToName;
 	}
 
 	private Map<String, String> loadContextTaxonomyLevelGroupNames() {
-		groupNamesContextTaxonomyLevel = new HashMap<>();
+		Map<String, String> keyToName = new HashMap<>();
 		List<TaxonomyLevel> elements = analysisService.loadContextTaxonomyLevels(searchParams, false);
 		for (TaxonomyLevel element : elements) {
 			String key = element.getKey().toString();
 			String value = element.getDisplayName();
-			groupNamesContextTaxonomyLevel.put(key, value);
+			keyToName.put(key, value);
 		}
-		return groupNamesContextTaxonomyLevel;
+		return keyToName;
 	}
 
 	private Map<String, String> loadContextLocationGroupNames() {
-		groupNamesContextLocation = new HashMap<>();
+		Map<String, String> keyToName = new HashMap<>();
 		List<String> contextLocations = analysisService.loadContextLocations(searchParams);
 		for (String location: contextLocations) {
 			String key = location;
 			String value = location;
-			groupNamesContextLocation.put(key, value);
+			keyToName.put(key, value);
 		}
-		return groupNamesContextLocation;
+		return keyToName;
 	}
 	
 	private Map<String, String> loadDataCollectionGroupNames() {
-		groupNamesDataCollection = new HashMap<>();
+		Map<String, String> keyToName = new HashMap<>();
 		List<QualityDataCollection> dataCollections = analysisService.loadDataCollections(searchParams);
 		for (QualityDataCollection dataCollection : dataCollections) {
 			String key = dataCollection.getKey().toString();
@@ -265,9 +252,9 @@ class GroupByNameCache {
 				sb.append("<small> (").append(StringHelper.escapeHtml(period)).append(")</small>");
 			}
 			String value = sb.toString();
-			groupNamesDataCollection.put(key, value);
+			keyToName.put(key, value);
 		}
-		return groupNamesDataCollection;
+		return keyToName;
 	}
 
 }
