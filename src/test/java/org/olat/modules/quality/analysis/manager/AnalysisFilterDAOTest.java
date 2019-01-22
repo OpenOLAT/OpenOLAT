@@ -1184,6 +1184,35 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void shouldFilterByDataCollections() {
+		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity executor = JunitTestHelper.createAndPersistIdentityAsUser("");
+		Organisation dcOrganisation = qualityTestHelper.createOrganisation();
+		// Data collection 1
+		QualityDataCollection dc1 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participations1 = qualityService.addParticipations(dc1, Collections.singletonList(executor));
+		qualityService.createContextBuilder(dc1, participations1.get(0)).build();
+		// Data collection 2
+		QualityDataCollection dc2 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participations2 = qualityService.addParticipations(dc2, Collections.singletonList(executor));
+		qualityService.createContextBuilder(dc2, participations2.get(0)).build();
+		// Other data collection
+		QualityDataCollection dcOther = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participationsOther = qualityService.addParticipations(dcOther, Collections.singletonList(executor));
+		qualityService.createContextBuilder(dcOther, participationsOther.get(0)).build();
+		finish(asList(dc1, dc2, dcOther));
+		dbInstance.commitAndCloseSession();
+		
+		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
+		searchParams.setDataCollectionRefs(asList(dc1, dc2));
+		List<QualityDataCollection> dataCollections = sut.loadDataCollection(searchParams);
+		
+		assertThat(dataCollections)
+				.containsExactlyInAnyOrder(dc1, dc2)
+				.doesNotContain(dcOther);
+	}
+	
+	@Test
 	public void shouldFilterByTopicIdentity() {
 		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Organisation dcOrganisation = qualityTestHelper.createOrganisation();
@@ -1422,6 +1451,49 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void shouldFilterByContextOrganisation() {
+		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity executor = JunitTestHelper.createAndPersistIdentityAsUser("");
+		Organisation dcOrganisation = qualityTestHelper.createOrganisation();
+		Organisation organisation1 = qualityTestHelper.createOrganisation();
+		Organisation organisation2 = qualityTestHelper.createOrganisation();
+		Organisation subOrganisation = organisationService.createOrganisation("", "", null, organisation1, null);
+		Organisation otherOrganisation = qualityTestHelper.createOrganisation();
+		// Participation with two organisations
+		QualityDataCollection dc1 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participations1 = qualityService.addParticipations(dc1, Collections.singletonList(executor));
+		QualityContextBuilder contextBuilder1 = qualityService.createContextBuilder(dc1, participations1.get(0));
+		contextBuilder1.addExecutorOrganisation(organisation1).addExecutorOrganisation(organisation2).build();
+		// Participation with the same organisation
+		QualityDataCollection dc2 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participations2 = qualityService.addParticipations(dc2, Collections.singletonList(executor));
+		QualityContextBuilder contextBuilder2 = qualityService.createContextBuilder(dc2, participations2.get(0));
+		contextBuilder2.addExecutorOrganisation(organisation2).build();
+		// Participation in a child organisation (include them)
+		QualityDataCollection dcChild = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participationscild = qualityService.addParticipations(dcChild, Collections.singletonList(executor));
+		QualityContextBuilder contextBuilderChild = qualityService.createContextBuilder(dcChild, participationscild.get(0));
+		contextBuilderChild.addExecutorOrganisation(subOrganisation).build();
+		// Participation with an other organisation
+		QualityDataCollection dcOther = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participationsOther = qualityService.addParticipations(dcOther, Collections.singletonList(executor));
+		QualityContextBuilder contextBuilderOther = qualityService.createContextBuilder(dcOther, participationsOther.get(0));
+		contextBuilderOther.addExecutorOrganisation(otherOrganisation).build();
+		// Participation without organisation
+		QualityDataCollection dcNull = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		qualityService.addParticipations(dcNull, Collections.singletonList(executor));
+		finish(asList(dc1, dc2, dcOther, dcChild, dcNull));
+		dbInstance.commitAndCloseSession();
+		
+		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
+		searchParams.setContextOrganisationRef(organisation1);
+		List<QualityDataCollection> dataCollections = sut.loadDataCollection(searchParams);
+		
+		assertThat(dataCollections).hasSize(1);
+		assertThat(dataCollections.get(0)).isEqualTo(dc1);
+	}
+	
+	@Test
 	public void shouldFilterByContextOrganisations() {
 		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Identity executor = JunitTestHelper.createAndPersistIdentityAsUser("");
@@ -1465,6 +1537,45 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void shouldFilterByContextCurriculum() {
+		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity executor = JunitTestHelper.createAndPersistIdentityAsUser("");
+		Organisation dcOrganisation = qualityTestHelper.createOrganisation();
+		Curriculum curriculum1 = qualityTestHelper.createCurriculum();
+		CurriculumElement element1 = qualityTestHelper.createCurriculumElement(curriculum1);
+		Curriculum curriculum2 = qualityTestHelper.createCurriculum();
+		CurriculumElement element2 = qualityTestHelper.createCurriculumElement(curriculum2);
+		Curriculum curriculumOther = qualityTestHelper.createCurriculum();
+		CurriculumElement elementOther = qualityTestHelper.createCurriculumElement(curriculumOther);
+		// Participation with curriculum
+		QualityDataCollection dc1 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participations1 = qualityService.addParticipations(dc1, Collections.singletonList(executor));
+		QualityContextBuilder contextBuilder1 = qualityService.createContextBuilder(dc1, participations1.get(0));
+		contextBuilder1.addCurriculumElement(element1).build();
+		// Participation with another curriculum
+		QualityDataCollection dc2 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participations2 = qualityService.addParticipations(dc2, Collections.singletonList(executor));
+		QualityContextBuilder contextBuilder2 = qualityService.createContextBuilder(dc2, participations2.get(0));
+		contextBuilder2.addCurriculumElement(element2).build();
+		// Participation with other curriculum
+		QualityDataCollection dcOther = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participationsOther = qualityService.addParticipations(dcOther, Collections.singletonList(executor));
+		QualityContextBuilder contextBuilderOther = qualityService.createContextBuilder(dcOther, participationsOther.get(0));
+		contextBuilderOther.addCurriculumElement(elementOther).build();
+		// Participation without curriculum
+		QualityDataCollection dcNull = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		qualityService.addParticipations(dcNull, Collections.singletonList(executor));
+		finish(asList(dc1, dc2, dcOther, dcNull));
+		dbInstance.commitAndCloseSession();
+		
+		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
+		searchParams.setContextCurriculumRefs(asList(curriculum1, curriculum2));
+		Long count = sut.loadAnalyticFigures(searchParams).getDataCollectionCount();
+		
+		assertThat(count).isEqualTo(2);
+	}
+	
+	@Test
 	public void shouldFilterByContextCurriculums() {
 		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Identity executor = JunitTestHelper.createAndPersistIdentityAsUser("");
@@ -1501,6 +1612,50 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		Long count = sut.loadAnalyticFigures(searchParams).getDataCollectionCount();
 		
 		assertThat(count).isEqualTo(2);
+	}
+	
+	@Test
+	public void shouldFilterByContextCurriculumElement() {
+		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity executor = JunitTestHelper.createAndPersistIdentityAsUser("");
+		Organisation dcOrganisation = qualityTestHelper.createOrganisation();
+		Curriculum curriculum = qualityTestHelper.createCurriculum();
+		CurriculumElement element1 = qualityTestHelper.createCurriculumElement();
+		CurriculumElement element2 = qualityTestHelper.createCurriculumElement();
+		CurriculumElement subElement = curriculumService.createCurriculumElement("", "", null, null, element1, null, CurriculumCalendars.disabled, curriculum);
+		CurriculumElement otherElement = qualityTestHelper.createCurriculumElement();
+		// Participation with curriculum element
+		QualityDataCollection dc1 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participations1 = qualityService.addParticipations(dc1, Collections.singletonList(executor));
+		QualityContextBuilder contextBuilder1 = qualityService.createContextBuilder(dc1, participations1.get(0));
+		contextBuilder1.addCurriculumElement(element1).build();
+		// Participation with another curriculum element
+		QualityDataCollection dc2 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participations2 = qualityService.addParticipations(dc2, Collections.singletonList(executor));
+		QualityContextBuilder contextBuilder2 = qualityService.createContextBuilder(dc2, participations2.get(0));
+		contextBuilder2.addCurriculumElement(element2).build();
+		// Participation with a child element
+		QualityDataCollection dcChild = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participationsChild = qualityService.addParticipations(dcChild, Collections.singletonList(executor));
+		QualityContextBuilder contextBuilderChild = qualityService.createContextBuilder(dcChild, participationsChild.get(0));
+		contextBuilderChild.addCurriculumElement(subElement).build();
+		// Participation with other curriculum element
+		QualityDataCollection dcOther = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participationsOther = qualityService.addParticipations(dcOther, Collections.singletonList(executor));
+		QualityContextBuilder contextBuilderOther = qualityService.createContextBuilder(dcOther, participationsOther.get(0));
+		contextBuilderOther.addCurriculumElement(otherElement).build();
+		// Participation without curriculum
+		QualityDataCollection dcNull = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		qualityService.addParticipations(dcNull, Collections.singletonList(executor));
+		finish(asList(dc1, dc2, dcChild, dcOther, dcNull));
+		dbInstance.commitAndCloseSession();
+		
+		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
+		searchParams.setContextCurriculumElementRef(element1);
+		List<QualityDataCollection> dataCollections = sut.loadDataCollection(searchParams);
+		
+		assertThat(dataCollections).hasSize(1);
+		assertThat(dataCollections.get(0)).isEqualTo(dc1);
 	}
 	
 	@Test
@@ -1595,6 +1750,52 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void shouldFilterByContextCurriculumOrganisation() {
+		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity executor = JunitTestHelper.createAndPersistIdentityAsUser("");
+		Organisation dcOrganisation = qualityTestHelper.createOrganisation();
+		Organisation organisation1 = qualityTestHelper.createOrganisation();
+		Curriculum curriculum1 = qualityTestHelper.createCurriculum(organisation1);
+		CurriculumElement element1 = qualityTestHelper.createCurriculumElement(curriculum1);
+		Organisation organisation2 = qualityTestHelper.createOrganisation();
+		Curriculum curriculum2 = qualityTestHelper.createCurriculum(organisation2);
+		CurriculumElement element2 = qualityTestHelper.createCurriculumElement(curriculum2);
+		Organisation organisationSub = organisationService.createOrganisation("", "", null, organisation1, null);
+		Curriculum curriculumSub = qualityTestHelper.createCurriculum(organisationSub);
+		CurriculumElement elementSub = qualityTestHelper.createCurriculumElement(curriculumSub);
+		Organisation organisationOther = qualityTestHelper.createOrganisation();
+		Curriculum curriculumOther = qualityTestHelper.createCurriculum(organisationOther);
+		CurriculumElement elementOther = qualityTestHelper.createCurriculumElement(curriculumOther);
+		// Participation with two organisations
+		QualityDataCollection dc1 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participations1 = qualityService.addParticipations(dc1, Collections.singletonList(executor));
+		QualityContextBuilder contextBuilder1 = qualityService.createContextBuilder(dc1, participations1.get(0));
+		contextBuilder1.addCurriculumElement(element1).addCurriculumElement(element2).build();
+		// Participation in a child organisation (include them)
+		QualityDataCollection dcChild = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participationscild = qualityService.addParticipations(dcChild, Collections.singletonList(executor));
+		QualityContextBuilder contextBuilderChild = qualityService.createContextBuilder(dcChild, participationscild.get(0));
+		contextBuilderChild.addCurriculumElement(elementSub).build();
+		// Participation with an other organisation
+		QualityDataCollection dcOther = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participationsOther = qualityService.addParticipations(dcOther, Collections.singletonList(executor));
+		QualityContextBuilder contextBuilderOther = qualityService.createContextBuilder(dcOther, participationsOther.get(0));
+		contextBuilderOther.addCurriculumElement(elementOther).build();
+		// Participation without organisation
+		QualityDataCollection dcNull = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		qualityService.addParticipations(dcNull, Collections.singletonList(executor));
+		finish(asList(dc1, dcOther, dcChild, dcNull));
+		dbInstance.commitAndCloseSession();
+		
+		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
+		searchParams.setContextCurriculumOrganisationRef(organisation1);
+		List<QualityDataCollection> dataCollections = sut.loadDataCollection(searchParams);
+		
+		assertThat(dataCollections).hasSize(1);
+		assertThat(dataCollections.get(0)).isEqualTo(dc1);
+	}
+	
+	@Test
 	public void shouldFilterByContextCurriculumOrganisations() {
 		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Identity executor = JunitTestHelper.createAndPersistIdentityAsUser("");
@@ -1643,6 +1844,50 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		
 		long expected = asList(organisation1, organisation2, organisationSub).size();
 		assertThat(count).isEqualTo(expected);
+	}
+	
+	@Test
+	public void shouldFilterByContextTaxonomyLevel() {
+		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity executor = JunitTestHelper.createAndPersistIdentityAsUser("");
+		Organisation dcOrganisation = qualityTestHelper.createOrganisation();
+		Taxonomy taxonomy = qualityTestHelper.createTaxonomy();
+		TaxonomyLevel taxonomyLevel1 = qualityTestHelper.createTaxonomyLevel(taxonomy);
+		TaxonomyLevel taxonomyLevel2 = qualityTestHelper.createTaxonomyLevel();
+		TaxonomyLevel subTaxonomyLevel = qualityTestHelper.createTaxonomyLevel(taxonomyLevel1);
+		TaxonomyLevel otherTaxonomyLevel = qualityTestHelper.createTaxonomyLevel();
+		// Participation with two taxonomyLevels
+		QualityDataCollection dc1 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participations1 = qualityService.addParticipations(dc1, Collections.singletonList(executor));
+		QualityContextBuilder contextBuilder1 = qualityService.createContextBuilder(dc1, participations1.get(0));
+		contextBuilder1.addTaxonomyLevel(taxonomyLevel1).addTaxonomyLevel(taxonomyLevel2).build();
+		// Participation with the same taxonomyLevel
+		QualityDataCollection dc2 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participations2 = qualityService.addParticipations(dc2, Collections.singletonList(executor));
+		QualityContextBuilder contextBuilder2 = qualityService.createContextBuilder(dc2, participations2.get(0));
+		contextBuilder2.addTaxonomyLevel(taxonomyLevel2).build();
+		// Participation in a child taxonomyLevel (include them)
+		QualityDataCollection dcChild = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participationscild = qualityService.addParticipations(dcChild, Collections.singletonList(executor));
+		QualityContextBuilder contextBuilderChild = qualityService.createContextBuilder(dcChild, participationscild.get(0));
+		contextBuilderChild.addTaxonomyLevel(subTaxonomyLevel).build();
+		// Participation with an other taxonomyLevel
+		QualityDataCollection dcOther = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participationsOther = qualityService.addParticipations(dcOther, Collections.singletonList(executor));
+		QualityContextBuilder contextBuilderOther = qualityService.createContextBuilder(dcOther, participationsOther.get(0));
+		contextBuilderOther.addTaxonomyLevel(otherTaxonomyLevel).build();
+		// Participation without organisation
+		QualityDataCollection dcNull = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		qualityService.addParticipations(dcNull, Collections.singletonList(executor));
+		finish(asList(dc1, dc2, dcOther, dcChild, dcNull));
+		dbInstance.commitAndCloseSession();
+		
+		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
+		searchParams.setContextTaxonomyLevelRef(taxonomyLevel1);
+		List<QualityDataCollection> dataCollections = sut.loadDataCollection(searchParams);
+		
+		assertThat(dataCollections).hasSize(1);
+		assertThat(dataCollections.get(0)).isEqualTo(dc1);
 	}
 	
 	@Test
@@ -1755,6 +2000,288 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		
 		long expected = asList(dc1, dc3, dc4, dc6).size();
 		assertThat(count).isEqualTo(expected);
+	}
+
+	@Test
+	public void shouldFilterByTopicIdentityNull() {
+		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity executor = JunitTestHelper.createAndPersistIdentityAsUser("");
+		Organisation dcOrganisation = qualityTestHelper.createOrganisation();
+		// Data collection ok
+		QualityDataCollection dc = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		dc.setTopicIdentity(executor);
+		dc = qualityService.updateDataCollection(dc);
+		List<EvaluationFormParticipation> participations = qualityService.addParticipations(dc, singletonList(executor));
+		qualityService.createContextBuilder(dc, participations.get(0)).build();
+		// Data collection with null value
+		QualityDataCollection dcNull = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participationsNull = qualityService.addParticipations(dcNull, singletonList(executor));
+		qualityService.createContextBuilder(dcNull, participationsNull.get(0)).build();
+		finish(asList(dc, dcNull));
+		dbInstance.commitAndCloseSession();
+		
+		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
+		searchParams.setTopicIdentityNull(true);
+		List<QualityDataCollection> dataCollections = sut.loadDataCollection(searchParams);
+		
+		assertThat(dataCollections).hasSize(1);
+		assertThat(dataCollections.get(0)).isEqualTo(dcNull);
+	}
+	
+	@Test
+	public void shouldFilterByTopicOrganisationNull() {
+		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity executor = JunitTestHelper.createAndPersistIdentityAsUser("");
+		Organisation dcOrganisation = qualityTestHelper.createOrganisation();
+		// Data collection ok
+		QualityDataCollection dc = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		dc.setTopicOrganisation(dcOrganisation);
+		dc = qualityService.updateDataCollection(dc);
+		List<EvaluationFormParticipation> participations = qualityService.addParticipations(dc, singletonList(executor));
+		qualityService.createContextBuilder(dc, participations.get(0)).build();
+		// Data collection with null value
+		QualityDataCollection dcNull = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participationsNull = qualityService.addParticipations(dcNull, singletonList(executor));
+		qualityService.createContextBuilder(dcNull, participationsNull.get(0)).build();
+		finish(asList(dc, dcNull));
+		dbInstance.commitAndCloseSession();
+		
+		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
+		searchParams.setTopicOrganisationNull(true);
+		List<QualityDataCollection> dataCollections = sut.loadDataCollection(searchParams);
+		
+		assertThat(dataCollections).hasSize(1);
+		assertThat(dataCollections.get(0)).isEqualTo(dcNull);
+	}
+	
+	@Test
+	public void shouldFilterByTopicCurriculumNull() {
+		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity executor = JunitTestHelper.createAndPersistIdentityAsUser("");
+		Organisation dcOrganisation = qualityTestHelper.createOrganisation();
+		Curriculum curriculum = qualityTestHelper.createCurriculum();
+		// Data collection ok
+		QualityDataCollection dc = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		dc.setTopicCurriculum(curriculum);
+		dc = qualityService.updateDataCollection(dc);
+		List<EvaluationFormParticipation> participations = qualityService.addParticipations(dc, singletonList(executor));
+		qualityService.createContextBuilder(dc, participations.get(0)).build();
+		// Data collection with null value
+		QualityDataCollection dcNull = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participationsNull = qualityService.addParticipations(dcNull, singletonList(executor));
+		qualityService.createContextBuilder(dcNull, participationsNull.get(0)).build();
+		finish(asList(dc, dcNull));
+		dbInstance.commitAndCloseSession();
+		
+		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
+		searchParams.setTopicCurriculumNull(true);
+		List<QualityDataCollection> dataCollections = sut.loadDataCollection(searchParams);
+		
+		assertThat(dataCollections).hasSize(1);
+		assertThat(dataCollections.get(0)).isEqualTo(dcNull);
+	}
+	
+	@Test
+	public void shouldFilterByTopicCurriculumElementNull() {
+		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity executor = JunitTestHelper.createAndPersistIdentityAsUser("");
+		Organisation dcOrganisation = qualityTestHelper.createOrganisation();
+		CurriculumElement curriculumElement = qualityTestHelper.createCurriculumElement();
+		// Data collection ok
+		QualityDataCollection dc = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		dc.setTopicCurriculumElement(curriculumElement);
+		dc = qualityService.updateDataCollection(dc);
+		List<EvaluationFormParticipation> participations = qualityService.addParticipations(dc, singletonList(executor));
+		qualityService.createContextBuilder(dc, participations.get(0)).build();
+		// Data collection with null value
+		QualityDataCollection dcNull = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participationsNull = qualityService.addParticipations(dcNull, singletonList(executor));
+		qualityService.createContextBuilder(dcNull, participationsNull.get(0)).build();
+		finish(asList(dc, dcNull));
+		dbInstance.commitAndCloseSession();
+		
+		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
+		searchParams.setTopicCurriculumElementNull(true);
+		List<QualityDataCollection> dataCollections = sut.loadDataCollection(searchParams);
+		
+		assertThat(dataCollections).hasSize(1);
+		assertThat(dataCollections.get(0)).isEqualTo(dcNull);
+	}
+	
+	@Test
+	public void shouldFilterByTopicRepositoryEntryNull() {
+		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity executor = JunitTestHelper.createAndPersistIdentityAsUser("");
+		Organisation dcOrganisation = qualityTestHelper.createOrganisation();
+		RepositoryEntry re = qualityTestHelper.createRepositoryEntry();
+		// Data collection ok
+		QualityDataCollection dc = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		dc.setTopicRepositoryEntry(re);
+		dc = qualityService.updateDataCollection(dc);
+		List<EvaluationFormParticipation> participations = qualityService.addParticipations(dc, singletonList(executor));
+		qualityService.createContextBuilder(dc, participations.get(0)).build();
+		// Data collection with null value
+		QualityDataCollection dcNull = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participationsNull = qualityService.addParticipations(dcNull, singletonList(executor));
+		qualityService.createContextBuilder(dcNull, participationsNull.get(0)).build();
+		finish(asList(dc, dcNull));
+		dbInstance.commitAndCloseSession();
+		
+		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
+		searchParams.setTopicRepositoryNull(true);
+		List<QualityDataCollection> dataCollections = sut.loadDataCollection(searchParams);
+		
+		assertThat(dataCollections).hasSize(1);
+		assertThat(dataCollections.get(0)).isEqualTo(dcNull);
+	}
+	
+	@Test
+	public void shouldFilterByContextOrganisationNull() {
+		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity executor = JunitTestHelper.createAndPersistIdentityAsUser("");
+		Organisation dcOrganisation = qualityTestHelper.createOrganisation();
+		// Data collection ok
+		QualityDataCollection dc = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participations = qualityService.addParticipations(dc, singletonList(executor));
+		qualityService.createContextBuilder(dc, participations.get(0)).addExecutorOrganisation(dcOrganisation).build();
+		// Data collection with null value
+		QualityDataCollection dcNull = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participationsNull = qualityService.addParticipations(dcNull, singletonList(executor));
+		qualityService.createContextBuilder(dcNull, participationsNull.get(0)).build();
+		finish(asList(dc, dcNull));
+		dbInstance.commitAndCloseSession();
+		
+		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
+		searchParams.setContextOrganisationNull(true);
+		List<QualityDataCollection> dataCollections = sut.loadDataCollection(searchParams);
+		
+		assertThat(dataCollections).hasSize(1);
+		assertThat(dataCollections.get(0)).isEqualTo(dcNull);
+	}
+	
+	@Test
+	public void shouldFilterByContextCurriculumNull() {
+		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity executor = JunitTestHelper.createAndPersistIdentityAsUser("");
+		Organisation dcOrganisation = qualityTestHelper.createOrganisation();
+		CurriculumElement curriculumElement = qualityTestHelper.createCurriculumElement();
+		// Data collection ok
+		QualityDataCollection dc = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participations = qualityService.addParticipations(dc, singletonList(executor));
+		qualityService.createContextBuilder(dc, participations.get(0)).addCurriculumElement(curriculumElement).build();
+		// Data collection with null value
+		QualityDataCollection dcNull = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participationsNull = qualityService.addParticipations(dcNull, singletonList(executor));
+		qualityService.createContextBuilder(dcNull, participationsNull.get(0)).build();
+		finish(asList(dc, dcNull));
+		dbInstance.commitAndCloseSession();
+		
+		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
+		searchParams.setContextCurriculumNull(true);
+		List<QualityDataCollection> dataCollections = sut.loadDataCollection(searchParams);
+		
+		assertThat(dataCollections).hasSize(1);
+		assertThat(dataCollections.get(0)).isEqualTo(dcNull);
+	}
+	
+	@Test
+	public void shouldFilterByContextCurriculumElementNull() {
+		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity executor = JunitTestHelper.createAndPersistIdentityAsUser("");
+		Organisation dcOrganisation = qualityTestHelper.createOrganisation();
+		CurriculumElement curriculumElement = qualityTestHelper.createCurriculumElement();
+		// Data collection ok
+		QualityDataCollection dc = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participations = qualityService.addParticipations(dc, singletonList(executor));
+		qualityService.createContextBuilder(dc, participations.get(0)).addCurriculumElement(curriculumElement).build();
+		// Data collection with null value
+		QualityDataCollection dcNull = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participationsNull = qualityService.addParticipations(dcNull, singletonList(executor));
+		qualityService.createContextBuilder(dcNull, participationsNull.get(0)).build();
+		finish(asList(dc, dcNull));
+		dbInstance.commitAndCloseSession();
+		
+		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
+		searchParams.setContextCurriculumElementNull(true);
+		List<QualityDataCollection> dataCollections = sut.loadDataCollection(searchParams);
+		
+		assertThat(dataCollections).hasSize(1);
+		assertThat(dataCollections.get(0)).isEqualTo(dcNull);
+	}
+	
+	@Test
+	public void shouldFilterByContextCurriculumOraganisationNull() {
+		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity executor = JunitTestHelper.createAndPersistIdentityAsUser("");
+		Organisation dcOrganisation = qualityTestHelper.createOrganisation();
+		CurriculumElement curriculumElement = qualityTestHelper.createCurriculumElement();
+		// Data collection ok
+		QualityDataCollection dc = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participations = qualityService.addParticipations(dc, singletonList(executor));
+		qualityService.createContextBuilder(dc, participations.get(0)).addCurriculumElement(curriculumElement).build();
+		// Data collection with null value
+		QualityDataCollection dcNull = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participationsNull = qualityService.addParticipations(dcNull, singletonList(executor));
+		qualityService.createContextBuilder(dcNull, participationsNull.get(0)).build();
+		finish(asList(dc, dcNull));
+		dbInstance.commitAndCloseSession();
+		
+		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
+		searchParams.setContextCurriculumOrganisationNull(true);
+		List<QualityDataCollection> dataCollections = sut.loadDataCollection(searchParams);
+		
+		assertThat(dataCollections).hasSize(1);
+		assertThat(dataCollections.get(0)).isEqualTo(dcNull);
+	}
+	
+	@Test
+	public void shouldFilterByContextTaxonomyLevelNull() {
+		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity executor = JunitTestHelper.createAndPersistIdentityAsUser("");
+		Organisation dcOrganisation = qualityTestHelper.createOrganisation();
+		TaxonomyLevel taxonomyLevel = qualityTestHelper.createTaxonomyLevel();
+		// Data collection ok
+		QualityDataCollection dc = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participations = qualityService.addParticipations(dc, singletonList(executor));
+		qualityService.createContextBuilder(dc, participations.get(0)).addTaxonomyLevel(taxonomyLevel).build();
+		// Data collection with null value
+		QualityDataCollection dcNull = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participationsNull = qualityService.addParticipations(dcNull, singletonList(executor));
+		qualityService.createContextBuilder(dcNull, participationsNull.get(0)).build();
+		finish(asList(dc, dcNull));
+		dbInstance.commitAndCloseSession();
+		
+		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
+		searchParams.setContextTaxonomyLevelNull(true);
+		List<QualityDataCollection> dataCollections = sut.loadDataCollection(searchParams);
+		
+		assertThat(dataCollections).hasSize(1);
+		assertThat(dataCollections.get(0)).isEqualTo(dcNull);
+	}
+	
+	
+	@Test
+	public void shouldFilterByContextLocationNull() {
+		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity executor = JunitTestHelper.createAndPersistIdentityAsUser("");
+		Organisation dcOrganisation = qualityTestHelper.createOrganisation();
+		// Data collection ok
+		QualityDataCollection dc = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participations = qualityService.addParticipations(dc, singletonList(executor));
+		qualityService.createContextBuilder(dc, participations.get(0)).withLocation("somewhere").build();
+		// Data collection with null value
+		QualityDataCollection dcNull = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		List<EvaluationFormParticipation> participationsNull = qualityService.addParticipations(dcNull, singletonList(executor));
+		qualityService.createContextBuilder(dcNull, participationsNull.get(0)).build();
+		finish(asList(dc, dcNull));
+		dbInstance.commitAndCloseSession();
+		
+		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
+		searchParams.setContextLocationNull(true);
+		List<QualityDataCollection> dataCollections = sut.loadDataCollection(searchParams);
+		
+		assertThat(dataCollections).hasSize(1);
+		assertThat(dataCollections.get(0)).isEqualTo(dcNull);
 	}
 	
 	private void finish(Collection<QualityDataCollection> dataCollections) {

@@ -30,6 +30,7 @@ import org.olat.modules.curriculum.model.CurriculumRefImpl;
 import org.olat.modules.quality.analysis.AnalysisSearchParameter;
 import org.olat.modules.quality.analysis.GroupBy;
 import org.olat.modules.quality.analysis.MultiGroupBy;
+import org.olat.modules.quality.model.QualityDataCollectionRefImpl;
 import org.olat.modules.taxonomy.model.TaxonomyLevelRefImpl;
 import org.olat.repository.model.RepositoryEntryRefImpl;
 
@@ -50,13 +51,14 @@ public class AnalysisPresentationXStream {
 	static {
 		XStream.setupDefaultSecurity(xstream);
 		Class<?>[] types = new Class[] {
-				MultiGroupBy.class, GroupBy.class, AnalysisSearchParameter.class, RepositoryEntryRefImpl.class,
-				IdentityRefImpl.class, OrganisationRefImpl.class, CurriculumRefImpl.class,
+				MultiGroupBy.class, GroupBy.class, AnalysisSearchParameter.class, QualityDataCollectionRefImpl.class,
+				RepositoryEntryRefImpl.class, IdentityRefImpl.class, OrganisationRefImpl.class, CurriculumRefImpl.class,
 				CurriculumElementRefImpl.class, TaxonomyLevelRefImpl.class };
 		xstream.addPermission(new ExplicitTypePermission(types));
 		xstream.alias("multiGroupBy", MultiGroupBy.class);
 		xstream.alias("groupBy", GroupBy.class);
 		xstream.alias("AnalysisSearchParameter", AnalysisSearchParameter.class);
+		xstream.alias("QualityDataCollectionRef", QualityDataCollectionRefImpl.class);
 		xstream.alias("RepositoryEntryRef", RepositoryEntryRefImpl.class);
 		xstream.alias("IdentityRef", IdentityRefImpl.class);
 		xstream.alias("OrganisationRef", OrganisationRefImpl.class);

@@ -33,6 +33,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.basesecurity.model.IdentityRefImpl;
 import org.olat.basesecurity.model.OrganisationRefImpl;
@@ -46,7 +47,6 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
@@ -75,6 +75,7 @@ import org.olat.modules.quality.analysis.GroupedStatistics;
 import org.olat.modules.quality.analysis.MultiGroupBy;
 import org.olat.modules.quality.analysis.MultiKey;
 import org.olat.modules.quality.analysis.QualityAnalysisService;
+import org.olat.modules.quality.model.QualityDataCollectionRefImpl;
 import org.olat.modules.quality.ui.DataCollectionReportController;
 import org.olat.modules.taxonomy.model.TaxonomyLevelRefImpl;
 import org.olat.repository.model.RepositoryEntryRefImpl;
@@ -277,12 +278,10 @@ public class HeatMapController extends FormBasicController implements Filterable
 		
 		columnIndex = addSliderColumns(columnsModel, columnIndex, maxCount);
 		
-		if (!GroupBy.DATA_COLLECTION.equals(getLastGroupBy(multiGroupBy))) {
-			DefaultFlexiColumnModel trendColumn = new DefaultFlexiColumnModel("heatmap.table.title.trend", columnIndex++,
-					CMD_TREND, new BooleanCellRenderer(new StaticFlexiCellRenderer("", CMD_TREND, "o_icon o_icon-lg o_icon_qual_ana_trend", null), null));
-			trendColumn.setExportable(false);
-			columnsModel.addFlexiColumnModel(trendColumn);
-		}
+		DefaultFlexiColumnModel trendColumn = new DefaultFlexiColumnModel("heatmap.table.title.trend", columnIndex++,
+				CMD_TREND, new StaticFlexiCellRenderer("", CMD_TREND, "o_icon o_icon-lg o_icon_qual_ana_trend", null));
+		trendColumn.setExportable(false);
+		columnsModel.addFlexiColumnModel(trendColumn);
 		
 		dataModel = new HeatMapDataModel(columnsModel, getLocale());
 		if (tableEl != null) flc.remove(tableEl);
@@ -364,7 +363,6 @@ public class HeatMapController extends FormBasicController implements Filterable
 	}
 	
 	private void loadHeatMap() {
-		GroupBy lastGroupBy = getLastGroupBy(multiGroupBy);
 		String groupNameNA = translate("heatmap.not.specified");
 		List<String> identifiers = sliders.stream().map(SliderWrapper::getIdentifier).collect(toList());
 		GroupedStatistics<GroupedStatistic> statistics = loadHeatMapStatistics();
@@ -381,8 +379,7 @@ public class HeatMapController extends FormBasicController implements Filterable
 				GroupedStatistic rowStatistic = statistics.getStatistic(identifier, multiKey);
 				rowStatistics.add(rowStatistic);
 			}
-			boolean hideTrend = GroupBy.DATA_COLLECTION.equals(lastGroupBy);
-			HeatMapRow row = new HeatMapRow(multiKey, groupNames, rowStatistics, !hideTrend);
+			HeatMapRow row = new HeatMapRow(multiKey, groupNames, rowStatistics);
 			rows.add(row);
 		}
 		
@@ -466,7 +463,6 @@ public class HeatMapController extends FormBasicController implements Filterable
 			return null;
 		}
 	}
-
 	
 	public GroupedStatistics<GroupedStatistic> loadHeatMapStatistics() {
 		List<String> identifiers = sliders.stream().map(SliderWrapper::getIdentifier).collect(toList());
@@ -525,59 +521,113 @@ public class HeatMapController extends FormBasicController implements Filterable
 	}
 
 	private AnalysisSearchParameter getTrendSearchParams(MultiKey multiKey) {
-		GroupByKey groupByKey = getLastGroupByAndKey(multiGroupBy, multiKey);
 		AnalysisSearchParameter trendSearchParams = searchParams.clone();
-		ammendGroupBySearchParam(trendSearchParams, groupByKey);
+		ammendGroupBySearchParam(trendSearchParams, getGroupByAndKey(multiGroupBy, multiKey, 1));
+		ammendGroupBySearchParam(trendSearchParams, getGroupByAndKey(multiGroupBy, multiKey, 2));
+		ammendGroupBySearchParam(trendSearchParams, getGroupByAndKey(multiGroupBy, multiKey, 3));
 		return trendSearchParams;
 	}
 
-	private void ammendGroupBySearchParam(AnalysisSearchParameter searchParams, GroupByKey groupByKey) {
-		if (groupByKey == null) return;
+	private void ammendGroupBySearchParam(AnalysisSearchParameter trendSearchParams, GroupByKey groupByKey) {
+		if (groupByKey == null || groupByKey.getGroupBy() == null) return;
 		
 		String key = groupByKey.getKey();
-		switch (groupByKey.getGroupBy()) {
+		GroupBy groupBy = groupByKey.getGroupBy();
+		if (key != null) {
+			ammendGroupBySearchParamKey(trendSearchParams, groupBy, key);
+		} else {
+			ammendGroupBySearchParamNull(trendSearchParams, groupBy);
+		}
+	}
+
+	private void ammendGroupBySearchParamKey(AnalysisSearchParameter trendSearchParams, GroupBy groupBy, String key) {
+		switch (groupBy) {
 		case TOPIC_IDENTITY:
-			searchParams.setTopicIdentityRefs(singletonList(new IdentityRefImpl(toLongOrZero(key))));
+			trendSearchParams.setTopicIdentityRefs(singletonList(new IdentityRefImpl(toLongOrZero(key))));
 			break;
 		case TOPIC_ORGANISATION:
-			searchParams.setTopicOrganisationRefs(singletonList(new OrganisationRefImpl(toLongOrZero(key))));
+			trendSearchParams.setTopicOrganisationRefs(singletonList(new OrganisationRefImpl(toLongOrZero(key))));
 			break;
 		case TOPIC_CURRICULUM:
-			searchParams.setTopicCurriculumRefs(singletonList(new CurriculumRefImpl(toLongOrZero(key))));
+			trendSearchParams.setTopicCurriculumRefs(singletonList(new CurriculumRefImpl(toLongOrZero(key))));
 			break;
 		case TOPIC_CURRICULUM_ELEMENT:
-			searchParams.setTopicCurriculumElementRefs(singletonList(new CurriculumElementRefImpl(toLongOrZero(key))));
+			trendSearchParams.setTopicCurriculumElementRefs(singletonList(new CurriculumElementRefImpl(toLongOrZero(key))));
 			break;
 		case TOPIC_REPOSITORY:
-			searchParams.setTopicRepositoryRefs(singletonList(new RepositoryEntryRefImpl(toLongOrZero(key))));
+			trendSearchParams.setTopicRepositoryRefs(singletonList(new RepositoryEntryRefImpl(toLongOrZero(key))));
 			break;
 		case CONTEXT_ORGANISATION:
-			searchParams.setContextOrganisationRefs(singletonList(new OrganisationRefImpl(toLongOrZero(key))));
+			trendSearchParams.setContextOrganisationRef(new OrganisationRefImpl(toLongOrZero(key)));
 			break;
 		case CONTEXT_CURRICULUM:
-			searchParams.setContextCurriculumRefs(singletonList(new CurriculumRefImpl(toLongOrZero(key))));
+			trendSearchParams.setContextCurriculumRefs(singletonList(new CurriculumRefImpl(toLongOrZero(key))));
 			break;
 		case CONTEXT_CURRICULUM_ELEMENT:
-			searchParams.setContextCurriculumElementRefs(singletonList(new CurriculumElementRefImpl(toLongOrZero(key))));
+			trendSearchParams.setContextCurriculumElementRef(new CurriculumElementRefImpl(toLongOrZero(key)));
 			break;
 		case CONTEXT_CURRICULUM_ORGANISATION:
-			searchParams.setContextCurriculumOrganisationRefs(singletonList(new OrganisationRefImpl(toLongOrZero(key))));
+			trendSearchParams.setContextCurriculumOrganisationRef(new OrganisationRefImpl(toLongOrZero(key)));
 			break;
 		case CONTEXT_TAXONOMY_LEVEL:
-			searchParams.setContextTaxonomyLevelRefs(singletonList(new TaxonomyLevelRefImpl(toLongOrZero(key))));
+			trendSearchParams.setContextTaxonomyLevelRef(new TaxonomyLevelRefImpl(toLongOrZero(key)));
 			break;
 		case CONTEXT_LOCATION:
-			searchParams.setContextLocations(singletonList(key));
+			trendSearchParams.setContextLocations(singletonList(key));
 			break;
 		case DATA_COLLECTION:
+			trendSearchParams.setDataCollectionRefs(singletonList(new QualityDataCollectionRefImpl(toLongOrZero(key))));
+			break;
+		default:
+		}
+	}
+
+	private void ammendGroupBySearchParamNull(AnalysisSearchParameter trendSearchParams, GroupBy groupBy) {
+		switch (groupBy) {
+		case TOPIC_IDENTITY:
+			trendSearchParams.setTopicIdentityNull(true);
+			break;
+		case TOPIC_ORGANISATION:
+			trendSearchParams.setTopicOrganisationNull(true);
+			break;
+		case TOPIC_CURRICULUM:
+			trendSearchParams.setTopicCurriculumNull(true);
+			break;
+		case TOPIC_CURRICULUM_ELEMENT:
+			trendSearchParams.setTopicCurriculumElementNull(true);
+			break;
+		case TOPIC_REPOSITORY:
+			trendSearchParams.setTopicRepositoryNull(true);
+			break;
+		case CONTEXT_ORGANISATION:
+			trendSearchParams.setContextOrganisationNull(true);
+			break;
+		case CONTEXT_CURRICULUM:
+			trendSearchParams.setContextCurriculumNull(true);
+			break;
+		case CONTEXT_CURRICULUM_ELEMENT:
+			trendSearchParams.setContextCurriculumElementNull(true);
+			break;
+		case CONTEXT_CURRICULUM_ORGANISATION:
+			trendSearchParams.setContextCurriculumOrganisationNull(true);
+			break;
+		case CONTEXT_TAXONOMY_LEVEL:
+			trendSearchParams.setContextTaxonomyLevelNull(true);
+			break;
+		case CONTEXT_LOCATION:
+			trendSearchParams.setContextLocationNull(true);
+			break;
+		case DATA_COLLECTION:
+			// is never null
 		default:
 		}
 	}
 
 	private String getTrendTitle(MultiKey multiKey) {
-		GroupByKey groupByKey = getLastGroupByAndKey(multiGroupBy, multiKey);
-		String name = groupByNames.getName(groupByKey);
-		return name != null? name: translate("heatmap.not.specified");
+		String groupNameNA = translate("heatmap.not.specified");
+		return getGroupNames(multiKey, groupNameNA)
+				.stream()
+				.collect(Collectors.joining(", "));
 	}
 
 	private void doShowDetails(UserRequest ureq, HeatMapRow row, int index) {
@@ -595,30 +645,6 @@ public class HeatMapController extends FormBasicController implements Filterable
 			stackPanel.changeDisplayname(translate("analysis.details"));
 			stackPanel.pushController(dataCollection.getTitle(), detailCtrl);
 		}
-	}
-	
-	private GroupByKey getLastGroupByAndKey(MultiGroupBy mGroupBy, MultiKey mKey) {
-		GroupByKey groupByKey = null;
-		if (mGroupBy.getGroupBy3() != null) {
-			groupByKey = new GroupByKey(mGroupBy.getGroupBy3(), mKey.getKey3());
-		} else if (mGroupBy.getGroupBy2() != null) {
-			groupByKey = new GroupByKey(mGroupBy.getGroupBy2(), mKey.getKey2());
-		} else if (multiGroupBy.getGroupBy1() != null) {
-			groupByKey =new GroupByKey(mGroupBy.getGroupBy1(), mKey.getKey1());
-		}
-		return groupByKey;
-	}
-	
-	private GroupBy getLastGroupBy(MultiGroupBy mGroupBy) {
-		GroupBy groupBy = null;
-		if (mGroupBy.getGroupBy3() != null) {
-			groupBy = mGroupBy.getGroupBy3();
-		} else if (mGroupBy.getGroupBy2() != null) {
-			groupBy = mGroupBy.getGroupBy2();
-		} else if (multiGroupBy.getGroupBy1() != null) {
-			groupBy = mGroupBy.getGroupBy1();
-		}
-		return groupBy;
 	}
 	
 	private GroupByKey getGroupByAndKey(MultiGroupBy mGroupBy, MultiKey mKey, int index) {

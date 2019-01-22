@@ -42,6 +42,7 @@ import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.quality.QualityContextRole;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityDataCollectionLight;
+import org.olat.modules.quality.QualityDataCollectionRef;
 import org.olat.modules.quality.QualityDataCollectionStatus;
 import org.olat.modules.quality.analysis.AnalysisSearchParameter;
 import org.olat.modules.quality.analysis.AnlaysisFigures;
@@ -527,6 +528,9 @@ public class AnalysisFilterDAO {
 		if (searchParams.getDateRangeTo() != null) {
 			sb.and().append("collection.deadline <= :dateRangeTo");
 		}
+		if (searchParams.getDataCollectionRefs() != null && !searchParams.getDataCollectionRefs().isEmpty()) {
+			sb.and().append("collection.key in :dataCollectionKeys");
+		}
 		if (searchParams.getTopicIdentityRefs() != null && !searchParams.getTopicIdentityRefs().isEmpty()) {
 			sb.and().append("collection.topicIdentity.key in :topicIdentityKeys");
 		}
@@ -544,6 +548,9 @@ public class AnalysisFilterDAO {
 		}
 		if (searchParams.getContextLocations() != null && !searchParams.getContextLocations().isEmpty()) {
 			sb.and().append("context.location in :contextLocations");
+		}
+		if (searchParams.getContextOrganisationRef() != null) {
+			sb.and().append("contextOrganisation.key = :contextOrganisationKey");
 		}
 		if (searchParams.getContextOrganisationRefs() != null && !searchParams.getContextOrganisationRefs().isEmpty()) {
 			// load the organisations and all children
@@ -563,6 +570,9 @@ public class AnalysisFilterDAO {
 		if (searchParams.getContextCurriculumRefs() != null && !searchParams.getContextCurriculumRefs().isEmpty()) {
 			sb.and().append("contextCurriculum.key in :contextCurriculumKeys");
 		}
+		if (searchParams.getContextCurriculumElementRef() != null) {
+			sb.and().append("contextCurriculumElement.key = :contextCurriculumElementKey");
+		}
 		if (searchParams.getContextCurriculumElementRefs() != null && !searchParams.getContextCurriculumElementRefs().isEmpty()) {
 			// load the curriculum elements and all children
 			sb.and();
@@ -581,6 +591,9 @@ public class AnalysisFilterDAO {
 		if (searchParams.getContextCurriculumElementTypeRefs() != null && !searchParams.getContextCurriculumElementTypeRefs().isEmpty()) {
 			sb.and().append("contextCurriculumElement.type.key in :contextCurriculumElementTypeKeys");
 		}
+		if (searchParams.getContextCurriculumOrganisationRef() != null) {
+			sb.and().append("contextCurriculumOrganisation.key = :contextCurriculumOrganisationKey");
+		}
 		if (searchParams.getContextCurriculumOrganisationRefs() != null && !searchParams.getContextCurriculumOrganisationRefs().isEmpty()) {
 			// load the organisations and all children
 			sb.and();
@@ -595,6 +608,10 @@ public class AnalysisFilterDAO {
 					sb.append(")");
 				}
 			}
+		}
+
+		if (searchParams.getContextTaxonomyLevelRef() != null) {
+			sb.and().append("taxonomyLevel.key = :contextTaxonomyLevelKey");
 		}
 		if (searchParams.getContextTaxonomyLevelRefs() != null && !searchParams.getContextTaxonomyLevelRefs().isEmpty()) {
 			// load the taxonomy level and all children
@@ -629,6 +646,39 @@ public class AnalysisFilterDAO {
 			sb.append(" or sessionInfo.studySubject is not null");
 			sb.append(")");
 		}
+		if (searchParams.isTopicIdentityNull()) {
+			sb.and().append("collection.topicIdentity is null");
+		}
+		if (searchParams.isTopicOrganisationNull()) {
+			sb.and().append("collection.topicOrganisation is null");
+		}
+		if (searchParams.isTopicCurriculumNull()) {
+			sb.and().append("collection.topicCurriculum is null");
+		}
+		if (searchParams.isTopicCurriculumElementNull()) {
+			sb.and().append("collection.topicCurriculumElement is null");
+		}
+		if (searchParams.isTopicRepositoryNull()) {
+			sb.and().append("collection.topicRepositoryEntry is null");
+		}
+		if (searchParams.isContextOrganisationNull()) {
+			sb.and().append("contextOrganisation is null");
+		}
+		if (searchParams.isContextCurriculumNull()) {
+			sb.and().append("contextCurriculum is null");
+		}
+		if (searchParams.isContextCurriculumElementNull()) {
+			sb.and().append("contextCurriculumElement is null");
+		}
+		if (searchParams.isContextCurriculumOrganisationNull()) {
+			sb.and().append("contextCurriculumOrganisation is null");
+		}
+		if (searchParams.isContextTaxonomyLevelNull()) {
+			sb.and().append("contextToTaxonomyLevel.taxonomyLevel is null");
+		}
+		if (searchParams.isContextLocationNull()) {
+			sb.and().append("context.location is null");
+		}
 	}
 
 	static void appendParameters(Query query, AnalysisSearchParameter searchParams) {
@@ -640,6 +690,10 @@ public class AnalysisFilterDAO {
 		}
 		if (searchParams.getDateRangeTo() != null) {
 			query.setParameter("dateRangeTo", searchParams.getDateRangeTo());
+		}
+		if (searchParams.getDataCollectionRefs() != null && !searchParams.getDataCollectionRefs().isEmpty()) {
+			List<Long> keys = searchParams.getDataCollectionRefs().stream().map(QualityDataCollectionRef::getKey).collect(toList());
+			query.setParameter("dataCollectionKeys", keys);
 		}
 		if (searchParams.getTopicIdentityRefs() != null && !searchParams.getTopicIdentityRefs().isEmpty()) {
 			List<Long> keys = searchParams.getTopicIdentityRefs().stream().map(IdentityRef::getKey).collect(toList());
@@ -664,6 +718,9 @@ public class AnalysisFilterDAO {
 		if (searchParams.getContextLocations() != null && !searchParams.getContextLocations().isEmpty()) {
 			query.setParameter("contextLocations", searchParams.getContextLocations());
 		}
+		if (searchParams.getContextOrganisationRef() != null) {
+			query.setParameter("contextOrganisationKey", searchParams.getContextOrganisationRef().getKey());
+		}
 		if (searchParams.getContextOrganisationRefs() != null && !searchParams.getContextOrganisationRefs().isEmpty()) {
 			for (int i = 0; i < searchParams.getContextOrganisationRefs().size(); i++) {
 				String parameter = new StringBuilder(12).append("orgPath").append(i).toString();
@@ -675,6 +732,9 @@ public class AnalysisFilterDAO {
 		if (searchParams.getContextCurriculumRefs() != null && !searchParams.getContextCurriculumRefs().isEmpty()) {
 			List<Long> keys = searchParams.getContextCurriculumRefs().stream().map(CurriculumRef::getKey).collect(toList());
 			query.setParameter("contextCurriculumKeys", keys);
+		}
+		if (searchParams.getContextCurriculumElementRef() != null) {
+			query.setParameter("contextCurriculumElementKey", searchParams.getContextCurriculumElementRef().getKey());
 		}
 		if (searchParams.getContextCurriculumElementRefs() != null && !searchParams.getContextCurriculumElementRefs().isEmpty()) {
 			for (int i = 0; i < searchParams.getContextCurriculumElementRefs().size(); i++) {
@@ -688,6 +748,9 @@ public class AnalysisFilterDAO {
 			List<Long> keys = searchParams.getContextCurriculumElementTypeRefs().stream().map(CurriculumElementTypeRef::getKey).collect(toList());
 			query.setParameter("contextCurriculumElementTypeKeys", keys);
 		}
+		if (searchParams.getContextCurriculumOrganisationRef() != null) {
+			query.setParameter("contextCurriculumOrganisationKey", searchParams.getContextCurriculumOrganisationRef().getKey());
+		}
 		if (searchParams.getContextCurriculumOrganisationRefs() != null && !searchParams.getContextCurriculumOrganisationRefs().isEmpty()) {
 			for (int i = 0; i < searchParams.getContextCurriculumOrganisationRefs().size(); i++) {
 				String parameter = new StringBuilder(40).append("contextCurriculumOrganisationPath").append(i).toString();
@@ -695,6 +758,9 @@ public class AnalysisFilterDAO {
 				String value = new StringBuilder(32).append("%/").append(key).append("/%").toString();
 				query.setParameter(parameter, value);
 			}
+		}
+		if (searchParams.getContextTaxonomyLevelRef() != null) {
+			query.setParameter("contextTaxonomyLevelKey", searchParams.getContextTaxonomyLevelRef().getKey());
 		}
 		if (searchParams.getContextTaxonomyLevelRefs() != null && !searchParams.getContextTaxonomyLevelRefs().isEmpty()) {
 			for (int i = 0; i < searchParams.getContextTaxonomyLevelRefs().size(); i++) {

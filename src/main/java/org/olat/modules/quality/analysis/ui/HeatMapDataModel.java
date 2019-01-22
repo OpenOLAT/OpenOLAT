@@ -66,11 +66,6 @@ class HeatMapDataModel extends DefaultFlexiTableDataModel<HeatMapRow>
 		if (index < row.getStatisticsSize()) {
 			return row.getStatistic(index);
 		}
-		// trend icon
-		index -= row.getStatisticsSize();
-		if (index == 0) {
-			return Boolean.valueOf(row.isShowTrend());
-		}
 		return null;
 	}
 

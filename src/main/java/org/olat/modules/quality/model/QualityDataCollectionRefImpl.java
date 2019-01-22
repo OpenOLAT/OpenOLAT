@@ -17,21 +17,21 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.taxonomy.model;
+package org.olat.modules.quality.model;
 
-import org.olat.modules.taxonomy.TaxonomyLevelRef;
+import org.olat.modules.quality.QualityDataCollectionRef;
 
 /**
  * 
- * Initial date: 6 Oct 2017<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial date: 22 Jan 2019<br>
+ * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class TaxonomyLevelRefImpl implements TaxonomyLevelRef {
-	
+public class QualityDataCollectionRefImpl implements QualityDataCollectionRef {
+
 	private final Long key;
 	
-	public TaxonomyLevelRefImpl(Long key) {
+	public QualityDataCollectionRefImpl(Long key) {
 		this.key = key;
 	}
 
@@ -56,7 +56,7 @@ public class TaxonomyLevelRefImpl implements TaxonomyLevelRef {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		TaxonomyLevelRefImpl other = (TaxonomyLevelRefImpl) obj;
+		QualityDataCollectionRefImpl other = (QualityDataCollectionRefImpl) obj;
 		if (key == null) {
 			if (other.key != null)
 				return false;
@@ -64,4 +64,5 @@ public class TaxonomyLevelRefImpl implements TaxonomyLevelRef {
 			return false;
 		return true;
 	}
+
 }

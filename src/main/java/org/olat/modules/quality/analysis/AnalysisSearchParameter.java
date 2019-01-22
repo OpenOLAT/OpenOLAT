@@ -30,6 +30,7 @@ import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumElementTypeRef;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.quality.QualityContextRole;
+import org.olat.modules.quality.QualityDataCollectionRef;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.model.RepositoryEntryRefImpl;
@@ -45,21 +46,37 @@ public class AnalysisSearchParameter {
 	private RepositoryEntryRef formEntryRef;
 	private Date dateRangeFrom;
 	private Date dateRangeTo;
+	private Collection<? extends QualityDataCollectionRef> dataCollectionRefs;
 	private Collection<? extends IdentityRef> topicIdentityRefs;
 	private List<? extends OrganisationRef> topicOrganisationRefs;
 	private Collection<? extends CurriculumRef> topicCurriculumRefs;
 	private List<? extends CurriculumElementRef> topicCurriculumElementRefs;
 	private List<? extends RepositoryEntryRef> topicRepositoryRefs;
 	private Collection<String> contextLocations;
+	private OrganisationRef contextOrganisationRef; // of the executor
 	private List<? extends OrganisationRef> contextOrganisationRefs; // of the executor
 	private Collection<? extends CurriculumRef> contextCurriculumRefs;
+	private CurriculumElementRef contextCurriculumElementRef;
 	private List<? extends CurriculumElementRef> contextCurriculumElementRefs;
 	private Collection<? extends CurriculumElementTypeRef> contextCurriculumElementTypeRefs;
+	private OrganisationRef contextCurriculumOrganisationRef;
 	private List<? extends OrganisationRef> contextCurriculumOrganisationRefs;
+	private TaxonomyLevelRef contextTaxonomyLevelRef;
 	private List<? extends TaxonomyLevelRef> contextTaxonomyLevelRefs;
 	private Collection<Integer> seriesIndexes;
 	private Collection<QualityContextRole> contextRoles;
 	private boolean withUserInfosOnly;
+	private boolean topicIdentityNull;
+	private boolean topicOrganisationNull;
+	private boolean topicCurriculumNull;
+	private boolean topicCurriculumElementNull;
+	private boolean topicRepositoryNull;
+	private boolean contextOrganisationNull;
+	private boolean contextCurriculumNull;
+	private boolean contextCurriculumElementNull;
+	private boolean contextCurriculumOrganisationNull;
+	private boolean contextTaxonomyLevelNull;
+	private boolean contextLocationNull;
 
 	public RepositoryEntryRef getFormEntryRef() {
 		return formEntryRef;
@@ -84,6 +101,14 @@ public class AnalysisSearchParameter {
 
 	public void setDateRangeTo(Date dateRangeTo) {
 		this.dateRangeTo = dateRangeTo;
+	}
+
+	public Collection<? extends QualityDataCollectionRef> getDataCollectionRefs() {
+		return dataCollectionRefs;
+	}
+
+	public void setDataCollectionRefs(Collection<? extends QualityDataCollectionRef> dataCollectionRefs) {
+		this.dataCollectionRefs = dataCollectionRefs;
 	}
 
 	public Collection<? extends IdentityRef> getTopicIdentityRefs() {
@@ -116,6 +141,22 @@ public class AnalysisSearchParameter {
 
 	public void setTopicCurriculumElementRefs(List<? extends CurriculumElementRef> topicCurriculumElementRefs) {
 		this.topicCurriculumElementRefs = topicCurriculumElementRefs;
+	}
+
+	public OrganisationRef getContextOrganisationRef() {
+		return contextOrganisationRef;
+	}
+
+	public void setContextOrganisationRef(OrganisationRef contextOrganisationRef) {
+		this.contextOrganisationRef = contextOrganisationRef;
+	}
+
+	public OrganisationRef getContextCurriculumOrganisationRef() {
+		return contextCurriculumOrganisationRef;
+	}
+
+	public void setContextCurriculumOrganisationRef(OrganisationRef contextCurriculumOrganisationRef) {
+		this.contextCurriculumOrganisationRef = contextCurriculumOrganisationRef;
 	}
 
 	public List<? extends OrganisationRef> getContextCurriculumOrganisationRefs() {
@@ -158,6 +199,14 @@ public class AnalysisSearchParameter {
 		this.contextCurriculumRefs = contextCurriculumRefs;
 	}
 	
+	public CurriculumElementRef getContextCurriculumElementRef() {
+		return contextCurriculumElementRef;
+	}
+
+	public void setContextCurriculumElementRef(CurriculumElementRef contextCurriculumElementRef) {
+		this.contextCurriculumElementRef = contextCurriculumElementRef;
+	}
+
 	public List<? extends CurriculumElementRef> getContextCurriculumElementRefs() {
 		return contextCurriculumElementRefs;
 	}
@@ -173,6 +222,14 @@ public class AnalysisSearchParameter {
 	public void setContextCurriculumElementTypeRefs(
 			Collection<? extends CurriculumElementTypeRef> contextCurriculumElementTypeRefs) {
 		this.contextCurriculumElementTypeRefs = contextCurriculumElementTypeRefs;
+	}
+
+	public TaxonomyLevelRef getContextTaxonomyLevelRef() {
+		return contextTaxonomyLevelRef;
+	}
+
+	public void setContextTaxonomyLevelRef(TaxonomyLevelRef contextTaxonomyLevelRef) {
+		this.contextTaxonomyLevelRef = contextTaxonomyLevelRef;
 	}
 
 	public List<? extends TaxonomyLevelRef> getContextTaxonomyLevelRefs() {
@@ -207,12 +264,103 @@ public class AnalysisSearchParameter {
 		this.withUserInfosOnly = withUserInfosOnly;
 	}
 
+	public boolean isTopicIdentityNull() {
+		return topicIdentityNull;
+	}
+
+	public void setTopicIdentityNull(boolean topicIdentityNull) {
+		this.topicIdentityNull = topicIdentityNull;
+	}
+
+	public boolean isTopicOrganisationNull() {
+		return topicOrganisationNull;
+	}
+
+	public void setTopicOrganisationNull(boolean topicOrganisationNull) {
+		this.topicOrganisationNull = topicOrganisationNull;
+	}
+
+	public boolean isTopicCurriculumNull() {
+		return topicCurriculumNull;
+	}
+
+	public void setTopicCurriculumNull(boolean topicCurriculumNull) {
+		this.topicCurriculumNull = topicCurriculumNull;
+	}
+
+	public boolean isTopicCurriculumElementNull() {
+		return topicCurriculumElementNull;
+	}
+
+	public void setTopicCurriculumElementNull(boolean topicCurriculumElementNull) {
+		this.topicCurriculumElementNull = topicCurriculumElementNull;
+	}
+
+	public boolean isTopicRepositoryNull() {
+		return topicRepositoryNull;
+	}
+
+	public void setTopicRepositoryNull(boolean topicRepositoryNull) {
+		this.topicRepositoryNull = topicRepositoryNull;
+	}
+
+	public boolean isContextOrganisationNull() {
+		return contextOrganisationNull;
+	}
+
+	public void setContextOrganisationNull(boolean contextOrganisationNull) {
+		this.contextOrganisationNull = contextOrganisationNull;
+	}
+
+	public boolean isContextCurriculumNull() {
+		return contextCurriculumNull;
+	}
+
+	public void setContextCurriculumNull(boolean contextCurriculumNull) {
+		this.contextCurriculumNull = contextCurriculumNull;
+	}
+
+	public boolean isContextCurriculumElementNull() {
+		return contextCurriculumElementNull;
+	}
+
+	public void setContextCurriculumElementNull(boolean contextCurriculumElementNull) {
+		this.contextCurriculumElementNull = contextCurriculumElementNull;
+	}
+
+	public boolean isContextCurriculumOrganisationNull() {
+		return contextCurriculumOrganisationNull;
+	}
+
+	public void setContextCurriculumOrganisationNull(boolean contextCurriculumOrganisationNull) {
+		this.contextCurriculumOrganisationNull = contextCurriculumOrganisationNull;
+	}
+
+	public boolean isContextTaxonomyLevelNull() {
+		return contextTaxonomyLevelNull;
+	}
+
+	public void setContextTaxonomyLevelNull(boolean contextTaxonomyLevelNull) {
+		this.contextTaxonomyLevelNull = contextTaxonomyLevelNull;
+	}
+
+	public boolean isContextLocationNull() {
+		return contextLocationNull;
+	}
+
+	public void setContextLocationNull(boolean contextLocationNull) {
+		this.contextLocationNull = contextLocationNull;
+	}
+
 	@Override
 	public AnalysisSearchParameter clone() {
 		AnalysisSearchParameter clone = new AnalysisSearchParameter();
 		clone.formEntryRef = this.formEntryRef;
 		clone.dateRangeFrom = this.dateRangeFrom;
 		clone.dateRangeTo = this.dateRangeTo;
+		clone.dataCollectionRefs = this.dataCollectionRefs != null
+				? new ArrayList<>(this.dataCollectionRefs)
+				: null;
 		clone.topicIdentityRefs = this.topicIdentityRefs != null
 				? new ArrayList<>(this.topicIdentityRefs)
 				: null;
@@ -231,18 +379,25 @@ public class AnalysisSearchParameter {
 		clone.contextLocations = this.contextLocations != null
 				? new ArrayList<>(this.contextLocations)
 				: null;
+		clone.contextCurriculumElementRef = this.contextCurriculumElementRef;
 		clone.contextOrganisationRefs = this.contextOrganisationRefs != null
 				? new ArrayList<>(this.contextOrganisationRefs)
 				: null;
 		clone.contextCurriculumRefs = this.contextCurriculumRefs != null
 				? new ArrayList<>(this.contextCurriculumRefs)
 				: null;
+		clone.contextCurriculumElementRef = this.contextCurriculumElementRef;
 		clone.contextCurriculumElementRefs = this.contextCurriculumElementRefs != null
 				? new ArrayList<>(this.contextCurriculumElementRefs)
 				: null;
 		clone.contextCurriculumElementTypeRefs = this.contextCurriculumElementTypeRefs != null
 				? new ArrayList<>(this.contextCurriculumElementTypeRefs)
 				: null;
+		clone.contextCurriculumOrganisationRef = this.contextCurriculumOrganisationRef;
+		clone.contextCurriculumOrganisationRefs = this.contextCurriculumOrganisationRefs != null
+				? new ArrayList<>(this.contextCurriculumOrganisationRefs)
+				: null;
+		clone.contextTaxonomyLevelRef = this.contextTaxonomyLevelRef;
 		clone.contextTaxonomyLevelRefs = this.contextTaxonomyLevelRefs != null
 				? new ArrayList<>(this.contextTaxonomyLevelRefs)
 				: null;
@@ -253,6 +408,17 @@ public class AnalysisSearchParameter {
 				? new ArrayList<>(this.contextRoles)
 				: null;
 		clone.withUserInfosOnly = this.withUserInfosOnly;
+		clone.topicIdentityNull = this.topicIdentityNull;
+		clone.topicOrganisationNull = this.topicOrganisationNull;
+		clone.topicCurriculumNull = this.topicCurriculumNull;
+		clone.topicCurriculumElementNull = this.topicCurriculumElementNull;
+		clone.topicRepositoryNull = this.topicRepositoryNull;
+		clone.contextOrganisationNull = this.contextOrganisationNull;
+		clone.contextCurriculumNull = this.contextCurriculumNull;
+		clone.contextCurriculumElementNull = this.contextCurriculumElementNull;
+		clone.contextCurriculumOrganisationNull = this.contextCurriculumOrganisationNull;
+		clone.contextTaxonomyLevelNull = this.contextTaxonomyLevelNull;
+		clone.contextLocationNull = this.contextLocationNull;
 		return clone;
 	}
 
