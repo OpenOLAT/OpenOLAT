@@ -608,7 +608,7 @@ public class RubricEditorController extends FormBasicController implements PageE
 			rubric.setUpperBoundSufficient(null);
 		}
 		
-		boolean startGoodRating = goodRatingEl.isOneSelected() && GOOD_RATING_END_KEY.equals(goodRatingEl.getSelectedKey())
+		boolean startGoodRating = goodRatingEl.isOneSelected() && GOOD_RATING_START_KEY.equals(goodRatingEl.getSelectedKey())
 				? true
 				: false;
 		rubric.setStartGoodRating(startGoodRating);
