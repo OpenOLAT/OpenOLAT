@@ -60,6 +60,7 @@ class GroupByNameCache {
 	private Map<String, String> groupNamesContextCurriculumElement;
 	private Map<String, String> groupNamesContextCurriculumOrganisation;
 	private Map<String, String> groupNamesContextTaxonomyLevel;
+	private Map<String, String> groupNamesContextLocation;
 	private Map<String, String> groupNamesDataCollection;
 	
 	private Map<GroupBy, Map<String, String>> cache = new HashMap<>();
@@ -122,6 +123,8 @@ class GroupByNameCache {
 			return loadContextCurriculumOrganisationGroupNames();
 		case CONTEXT_TAXONOMY_LEVEL:
 			return loadContextTaxonomyLevelGroupNames();
+		case CONTEXT_LOCATION:
+			return loadContextLocationGroupNames();
 		case DATA_COLLECTION:
 			return loadDataCollectionGroupNames();
 		default:
@@ -237,6 +240,17 @@ class GroupByNameCache {
 			groupNamesContextTaxonomyLevel.put(key, value);
 		}
 		return groupNamesContextTaxonomyLevel;
+	}
+
+	private Map<String, String> loadContextLocationGroupNames() {
+		groupNamesContextLocation = new HashMap<>();
+		List<String> contextLocations = analysisService.loadContextLocations(searchParams);
+		for (String location: contextLocations) {
+			String key = location;
+			String value = location;
+			groupNamesContextLocation.put(key, value);
+		}
+		return groupNamesContextLocation;
 	}
 	
 	private Map<String, String> loadDataCollectionGroupNames() {
