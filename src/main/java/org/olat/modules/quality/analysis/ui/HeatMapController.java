@@ -187,9 +187,6 @@ public class HeatMapController extends FormBasicController implements Filterable
 			insufficientEl.select(insufficientEl.getKey(0), true);
 		}
 		insufficientEl.setVisible(insufficientConfigured);
-		
-		// Heat map
-		updateTable(Collections.emptyList(), 0);
 	}
 	
 	private void updateGroupingUI() {
