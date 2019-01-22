@@ -580,14 +580,17 @@ public class GTAParticipantController extends GTAAbstractController implements A
 		DueDate availableDate = getSolutionDueDate(assignedTask);
 		boolean visible = availableDate == null || 
 				(availableDate.getDueDate() != null && availableDate.getDueDate().compareTo(new Date()) <= 0);
-		if(visible) {
-			boolean show = showSolutions(availableDate);
-			if(show) {
-				File documentsDir = gtaManager.getSolutionsDirectory(courseEnv, gtaNode);
+
+		File documentsDir = gtaManager.getSolutionsDirectory(courseEnv, gtaNode);
+		if(visible && TaskHelper.hasDocuments(documentsDir)) {
+			if(showSolutions(availableDate)) {
 				VFSContainer documentsContainer = gtaManager.getSolutionsContainer(courseEnv, gtaNode);
 				solutionsCtrl = new DirectoryController(ureq, getWindowControl(), documentsDir, documentsContainer, "run.solutions.description", "bulk.solutions", "solutions");
 				listenTo(solutionsCtrl);
 				mainVC.put("solutions", solutionsCtrl.getInitialComponent());
+			} else {
+				VelocityContainer waitVC = createVelocityContainer("no_solutions_foryou");
+				mainVC.put("solutions", waitVC);
 			}
 		} else {
 			VelocityContainer waitVC = createVelocityContainer("wait_for_solutions");
@@ -605,14 +608,24 @@ public class GTAParticipantController extends GTAAbstractController implements A
 	 * @return If the solutions are visible to the user
 	 */
 	private boolean showSolutions(DueDate availableDate) {
+		
 		boolean optional = gtaNode.isOptional();
-		File documentsDir = gtaManager.getSolutionsDirectory(courseEnv, gtaNode);
-		if(availableDate == null && optional && gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_ALL, false)
-				|| TaskHelper.hasDocuments(documentsDir)) {
-			return true;
-		} 
-		return ((availableDate != null && (optional || !availableDate.isRelative()) && gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_ALL, false))
-				|| TaskHelper.hasDocuments(documentsDir));
+		File submitDirectory;
+		if(GTAType.group.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))) {
+			submitDirectory = gtaManager.getSubmitDirectory(courseEnv, gtaNode, assessedGroup);
+		} else {
+			submitDirectory = gtaManager.getSubmitDirectory(courseEnv, gtaNode, assessedIdentity);
+		}
+		
+		boolean show = false;
+		if(availableDate == null && optional
+				&& (gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_ALL, false) || TaskHelper.hasDocuments(submitDirectory))) {
+			show = true;
+		} else if((availableDate != null && (optional || !availableDate.isRelative())
+				&& (gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_ALL, false)) || TaskHelper.hasDocuments(submitDirectory))) {
+			show = true;
+		}
+		return show;
 	}
 
 	@Override
