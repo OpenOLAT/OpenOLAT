@@ -69,6 +69,7 @@ import org.olat.modules.quality.QualityService;
 import org.olat.modules.quality.analysis.AnalysisSearchParameter;
 import org.olat.modules.quality.analysis.AvailableAttributes;
 import org.olat.modules.quality.analysis.GroupBy;
+import org.olat.modules.quality.analysis.GroupByKey;
 import org.olat.modules.quality.analysis.GroupedStatistic;
 import org.olat.modules.quality.analysis.GroupedStatistics;
 import org.olat.modules.quality.analysis.MultiGroupBy;
@@ -279,10 +280,12 @@ public class HeatMapController extends FormBasicController implements Filterable
 		
 		columnIndex = addSliderColumns(columnsModel, columnIndex, maxCount);
 		
-		DefaultFlexiColumnModel trendColumn = new DefaultFlexiColumnModel("heatmap.table.title.trend", columnIndex++,
-				CMD_TREND, new BooleanCellRenderer(new StaticFlexiCellRenderer("", CMD_TREND, "o_icon o_icon-lg o_icon_qual_ana_trend", null), null));
-		trendColumn.setExportable(false);
-		columnsModel.addFlexiColumnModel(trendColumn);
+		if (!GroupBy.DATA_COLLECTION.equals(getLastGroupBy(multiGroupBy))) {
+			DefaultFlexiColumnModel trendColumn = new DefaultFlexiColumnModel("heatmap.table.title.trend", columnIndex++,
+					CMD_TREND, new BooleanCellRenderer(new StaticFlexiCellRenderer("", CMD_TREND, "o_icon o_icon-lg o_icon_qual_ana_trend", null), null));
+			trendColumn.setExportable(false);
+			columnsModel.addFlexiColumnModel(trendColumn);
+		}
 		
 		dataModel = new HeatMapDataModel(columnsModel, getLocale());
 		if (tableEl != null) flc.remove(tableEl);
@@ -364,6 +367,7 @@ public class HeatMapController extends FormBasicController implements Filterable
 	}
 	
 	private void loadHeatMap() {
+		GroupBy lastGroupBy = getLastGroupBy(multiGroupBy);
 		List<String> identifiers = sliders.stream().map(SliderWrapper::getIdentifier).collect(toList());
 		GroupedStatistics<GroupedStatistic> statistics = loadHeatMapStatistics();
 		Set<MultiKey> keys = statistics.getMultiKeys();
@@ -375,7 +379,7 @@ public class HeatMapController extends FormBasicController implements Filterable
 			if (multiGroupBy.getGroupBy1() != null) {
 				String groupName1 = translate("heatmap.not.specified");
 				if (multiKey.getKey1() != null) {
-					groupName1 = groupByNames.getName(multiGroupBy.getGroupBy1(), multiKey.getKey1());
+					groupName1 = groupByNames.getName(new GroupByKey(multiGroupBy.getGroupBy1(), multiKey.getKey1()));
 					if (groupName1 == null) {
 						found = false;
 					}
@@ -385,7 +389,7 @@ public class HeatMapController extends FormBasicController implements Filterable
 			if (multiGroupBy.getGroupBy2() != null) {
 				String groupName2 = translate("heatmap.not.specified");
 				if (multiKey.getKey2() != null) {
-					groupName2 = groupByNames.getName(multiGroupBy.getGroupBy2(), multiKey.getKey2());
+					groupName2 = groupByNames.getName(new GroupByKey(multiGroupBy.getGroupBy2(), multiKey.getKey2()));
 					if (groupName2 == null) {
 						found = false;
 					}
@@ -395,7 +399,7 @@ public class HeatMapController extends FormBasicController implements Filterable
 			if (multiGroupBy.getGroupBy3() != null) {
 				String groupName3 = translate("heatmap.not.specified");
 				if (multiKey.getKey3() != null) {
-					groupName3 = groupByNames.getName(multiGroupBy.getGroupBy3(), multiKey.getKey3());
+					groupName3 = groupByNames.getName(new GroupByKey(multiGroupBy.getGroupBy3(), multiKey.getKey3()));
 					if (groupName3 == null) {
 						found = false;
 					}
@@ -410,7 +414,8 @@ public class HeatMapController extends FormBasicController implements Filterable
 					GroupedStatistic rowStatistic = statistics.getStatistic(identifier, multiKey);
 					rowStatistics.add(rowStatistic);
 				}
-				HeatMapRow row = new HeatMapRow(multiKey, groupNames, rowStatistics);
+				boolean hideTrend = GroupBy.DATA_COLLECTION.equals(lastGroupBy) || MultiKey.none().equals(multiKey);
+				HeatMapRow row = new HeatMapRow(multiKey, groupNames, rowStatistics, !hideTrend);
 				rows.add(row);
 			}
 		}
@@ -534,29 +539,17 @@ public class HeatMapController extends FormBasicController implements Filterable
 	}
 
 	private AnalysisSearchParameter getTrendSearchParams(MultiKey multiKey) {
-		GroupBy groupBy = null;
-		String key = null;
-		if (multiGroupBy.getGroupBy3() != null) {
-			groupBy = multiGroupBy.getGroupBy3();
-			key = multiKey.getKey3();
-		} else if (multiGroupBy.getGroupBy2() != null) {
-			groupBy = multiGroupBy.getGroupBy2();
-			key = multiKey.getKey2();
-		} else if (multiGroupBy.getGroupBy1() != null) {
-			groupBy = multiGroupBy.getGroupBy1();
-			key = multiKey.getKey1();
-		}
-		if (groupBy == null || key == null) {
-			return null;
-		}
-		
+		GroupByKey groupByKey = getLastGroupByAndKey(multiGroupBy, multiKey);
 		AnalysisSearchParameter trendSearchParams = searchParams.clone();
-		ammendGroupBySearchParam(trendSearchParams, groupBy, key);
+		ammendGroupBySearchParam(trendSearchParams, groupByKey);
 		return trendSearchParams;
 	}
 
-	private void ammendGroupBySearchParam(AnalysisSearchParameter searchParams, GroupBy groupBy, String key) {
-		switch (groupBy) {
+	private void ammendGroupBySearchParam(AnalysisSearchParameter searchParams, GroupByKey groupByKey) {
+		if (groupByKey == null) return;
+		
+		String key = groupByKey.getKey();
+		switch (groupByKey.getGroupBy()) {
 		case TOPIC_IDENTITY:
 			searchParams.setTopicIdentityRefs(singletonList(new IdentityRefImpl(toLongOrZero(key))));
 			break;
@@ -592,59 +585,66 @@ public class HeatMapController extends FormBasicController implements Filterable
 			break;
 		case DATA_COLLECTION:
 		default:
-			// return no values
-			searchParams.setSeriesIndexes(singletonList(-1));
 		}
 	}
 
 	private String getTrendTitle(MultiKey multiKey) {
-		GroupBy groupBy = null;
-		String key = null;
-		if (multiGroupBy.getGroupBy3() != null) {
-			groupBy = multiGroupBy.getGroupBy3();
-			key = multiKey.getKey3();
-		} else if (multiGroupBy.getGroupBy2() != null) {
-			groupBy = multiGroupBy.getGroupBy2();
-			key = multiKey.getKey2();
-		} else if (multiGroupBy.getGroupBy1() != null) {
-			groupBy = multiGroupBy.getGroupBy1();
-			key = multiKey.getKey1();
-		}
-		String name = null;
-		if (groupBy != null) {
-			name = groupByNames.getName(groupBy, key);
-		}
+		GroupByKey groupByKey = getLastGroupByAndKey(multiGroupBy, multiKey);
+		String name = groupByNames.getName(groupByKey);
 		return name != null? name: translate("heatmap.not.specified");
 	}
 
 	private void doShowDetails(UserRequest ureq, HeatMapRow row, int index) {
-		GroupBy groupBy = null;
-		String groupKey = null;
-		if (index == 1) {
-			groupBy = multiGroupBy.getGroupBy1();
-			groupKey = row.getMultiKey().getKey1();
-		} else if (index == 2) {
-			groupBy = multiGroupBy.getGroupBy2();
-			groupKey = row.getMultiKey().getKey2();
-		} else if (index == 3) {
-			groupBy = multiGroupBy.getGroupBy3();
-			groupKey = row.getMultiKey().getKey3();
-		}
-		
-		if (groupBy != null && StringHelper.containsNonWhitespace(groupKey)) {
-			doShowDetails(ureq, groupBy, groupKey);
-		}
+		GroupByKey groupByKey = getGroupByAndKey(multiGroupBy, row.getMultiKey(), index);
+		doShowDetails(ureq, groupByKey);
 	}
 	
-	private void doShowDetails(UserRequest ureq, GroupBy groupBy, String groupKey) {
-		if (GroupBy.DATA_COLLECTION.equals(groupBy)) {
-			Long key = Long.valueOf(groupKey);
+	private void doShowDetails(UserRequest ureq, GroupByKey groupByKey) {
+		if (groupByKey != null && GroupBy.DATA_COLLECTION.equals(groupByKey.getGroupBy())
+				&& StringHelper.containsNonWhitespace(groupByKey.getKey())) {
+			Long key = Long.valueOf(groupByKey.getKey());
 			QualityDataCollection dataCollection = qualityService.loadDataCollectionByKey(() -> key);
 			detailCtrl = new DataCollectionReportController(ureq, getWindowControl(), dataCollection);
 			listenTo(detailCtrl);
 			stackPanel.changeDisplayname(translate("analysis.details"));
 			stackPanel.pushController(dataCollection.getTitle(), detailCtrl);
 		}
+	}
+	
+	private GroupByKey getLastGroupByAndKey(MultiGroupBy mGroupBy, MultiKey mKey) {
+		GroupByKey groupByKey = null;
+		if (mGroupBy.getGroupBy3() != null) {
+			groupByKey = new GroupByKey(mGroupBy.getGroupBy3(), mKey.getKey3());
+		} else if (mGroupBy.getGroupBy2() != null) {
+			groupByKey = new GroupByKey(mGroupBy.getGroupBy2(), mKey.getKey2());
+		} else if (multiGroupBy.getGroupBy1() != null) {
+			groupByKey =new GroupByKey(mGroupBy.getGroupBy1(), mKey.getKey1());
+		}
+		return groupByKey;
+	}
+	
+	private GroupBy getLastGroupBy(MultiGroupBy mGroupBy) {
+		GroupBy groupBy = null;
+		if (mGroupBy.getGroupBy3() != null) {
+			groupBy = mGroupBy.getGroupBy3();
+		} else if (mGroupBy.getGroupBy2() != null) {
+			groupBy = mGroupBy.getGroupBy2();
+		} else if (multiGroupBy.getGroupBy1() != null) {
+			groupBy = mGroupBy.getGroupBy1();
+		}
+		return groupBy;
+	}
+	
+	private GroupByKey getGroupByAndKey(MultiGroupBy mGroupBy, MultiKey mKey, int index) {
+		GroupByKey groupByKey = null;
+		if (index == 3) {
+			groupByKey = new GroupByKey(mGroupBy.getGroupBy3(), mKey.getKey3());
+		} else if (index == 2) {
+			groupByKey = new GroupByKey(mGroupBy.getGroupBy2(), mKey.getKey2());
+		} else if (index == 1) {
+			groupByKey =new GroupByKey(mGroupBy.getGroupBy1(), mKey.getKey1());
+		}
+		return groupByKey;
 	}
 
 	@Override

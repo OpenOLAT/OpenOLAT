@@ -35,6 +35,7 @@ import org.olat.modules.forms.ui.EvaluationFormFormatter;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.analysis.AnalysisSearchParameter;
 import org.olat.modules.quality.analysis.GroupBy;
+import org.olat.modules.quality.analysis.GroupByKey;
 import org.olat.modules.quality.analysis.QualityAnalysisService;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.repository.RepositoryEntry;
@@ -87,13 +88,16 @@ class GroupByNameCache {
 				&& !formEntryRef.getKey().equals(searchParams.getFormEntryRef().getKey());
 	}
 	
-	String getName(GroupBy groupBy, String key) {
+	String getName(GroupByKey groupByKey) {
+		if (groupByKey == null) return null;
+		
+		GroupBy groupBy = groupByKey.getGroupBy();
 		Map<String, String> names = cache.get(groupBy);
 		if (names == null) {
 			names = load(groupBy);
 			cache.put(groupBy, names);
 		}
-		return names.get(key);
+		return names.get(groupByKey.getKey());
 	}
 	
 	private Map<String, String> load(GroupBy groupBy) {

@@ -35,11 +35,14 @@ public class HeatMapRow {
 	private final MultiKey multiKey;
 	private final List<String> groupNames;
 	private final List<GroupedStatistic> statistics;
+	private final boolean showTrend;
 	
-	public HeatMapRow(MultiKey multiKey, List<String> groupNames, List<GroupedStatistic> statistics) {
+	public HeatMapRow(MultiKey multiKey, List<String> groupNames, List<GroupedStatistic> statistics,
+			boolean showTrend) {
 		this.multiKey = multiKey;
 		this.groupNames = groupNames;
 		this.statistics = statistics;
+		this.showTrend = showTrend;
 	}
 	
 	public MultiKey getMultiKey() {
@@ -64,6 +67,10 @@ public class HeatMapRow {
 
 	public GroupedStatistic getStatistic(int index) {
 		return statistics.get(index);
+	}
+
+	public boolean isShowTrend() {
+		return showTrend;
 	}
 
 }
