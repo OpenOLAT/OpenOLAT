@@ -365,56 +365,25 @@ public class HeatMapController extends FormBasicController implements Filterable
 	
 	private void loadHeatMap() {
 		GroupBy lastGroupBy = getLastGroupBy(multiGroupBy);
+		String groupNameNA = translate("heatmap.not.specified");
 		List<String> identifiers = sliders.stream().map(SliderWrapper::getIdentifier).collect(toList());
 		GroupedStatistics<GroupedStatistic> statistics = loadHeatMapStatistics();
 		Set<MultiKey> keys = statistics.getMultiKeys();
 		List<HeatMapRow> rows = new ArrayList<>(keys.size());
 		for (MultiKey multiKey : keys) {
-			List<String> groupNames = new ArrayList<>(6);
-			boolean found = true;
+			if (MultiKey.none().equals(multiKey)) continue;
 			
-			if (multiGroupBy.getGroupBy1() != null) {
-				String groupName1 = translate("heatmap.not.specified");
-				if (multiKey.getKey1() != null) {
-					groupName1 = groupByNames.getName(new GroupByKey(multiGroupBy.getGroupBy1(), multiKey.getKey1()));
-					if (groupName1 == null) {
-						found = false;
-					}
-				}
-				groupNames.add(groupName1);
-			}
-			if (multiGroupBy.getGroupBy2() != null) {
-				String groupName2 = translate("heatmap.not.specified");
-				if (multiKey.getKey2() != null) {
-					groupName2 = groupByNames.getName(new GroupByKey(multiGroupBy.getGroupBy2(), multiKey.getKey2()));
-					if (groupName2 == null) {
-						found = false;
-					}
-				}
-				groupNames.add(groupName2);
-			}
-			if (multiGroupBy.getGroupBy3() != null) {
-				String groupName3 = translate("heatmap.not.specified");
-				if (multiKey.getKey3() != null) {
-					groupName3 = groupByNames.getName(new GroupByKey(multiGroupBy.getGroupBy3(), multiKey.getKey3()));
-					if (groupName3 == null) {
-						found = false;
-					}
-				}
-				groupNames.add(groupName3);
-			}
+			List<String> groupNames = getGroupNames(multiKey, groupNameNA);
 			
-			if (found) {
-				// Iterate over the identifiers to sort the statistics according to the headers.
-				List<GroupedStatistic> rowStatistics = new ArrayList<>();
-				for (String identifier : identifiers) {
-					GroupedStatistic rowStatistic = statistics.getStatistic(identifier, multiKey);
-					rowStatistics.add(rowStatistic);
-				}
-				boolean hideTrend = GroupBy.DATA_COLLECTION.equals(lastGroupBy) || MultiKey.none().equals(multiKey);
-				HeatMapRow row = new HeatMapRow(multiKey, groupNames, rowStatistics, !hideTrend);
-				rows.add(row);
+			// Iterate over the identifiers to sort the statistics according to the headers.
+			List<GroupedStatistic> rowStatistics = new ArrayList<>();
+			for (String identifier : identifiers) {
+				GroupedStatistic rowStatistic = statistics.getStatistic(identifier, multiKey);
+				rowStatistics.add(rowStatistic);
 			}
+			boolean hideTrend = GroupBy.DATA_COLLECTION.equals(lastGroupBy);
+			HeatMapRow row = new HeatMapRow(multiKey, groupNames, rowStatistics, !hideTrend);
+			rows.add(row);
 		}
 		
 		if (insufficientOnly) {
@@ -428,6 +397,26 @@ public class HeatMapController extends FormBasicController implements Filterable
 		rows.sort(new GroupNameAlphabeticalComparator());
 		dataModel.setObjects(rows);
 		tableEl.reset(true, true, true);
+	}
+
+	private List<String> getGroupNames(MultiKey multiKey, String groupNameNA) {
+		List<String> groupNames = new ArrayList<>(3);
+		if (multiGroupBy.getGroupBy1() != null) {
+			groupNames.add(getGroupName(multiKey, 1, groupNameNA));
+		}
+		if (multiGroupBy.getGroupBy2() != null) {
+			groupNames.add(getGroupName(multiKey, 2, groupNameNA));
+		}
+		if (multiGroupBy.getGroupBy3() != null) {
+			groupNames.add(getGroupName(multiKey, 3, groupNameNA));
+		}
+		return groupNames;
+	}
+
+	private String getGroupName(MultiKey mKey, int index, String groupNameNA) {
+		GroupByKey groupByAndKey = getGroupByAndKey(multiGroupBy, mKey, index);
+		String groupName = groupByNames.getName(groupByAndKey);
+		return StringHelper.containsNonWhitespace(groupName)? groupName: groupNameNA;
 	}
 
 	public List<ColumnConfig> getColumnConfigs() {
