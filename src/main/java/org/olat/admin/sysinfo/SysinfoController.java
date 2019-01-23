@@ -151,7 +151,7 @@ public class SysinfoController extends FormBasicController {
 		
 		//version
 		uifactory.addStaticTextElement("version", "sysinfo.version", Settings.getFullVersionInfo(), serverCont);
-		uifactory.addStaticTextElement("version.hg", "sysinfo.version.hg", WebappHelper.getChangeSet(), serverCont);
+		uifactory.addStaticTextElement("version.git", "sysinfo.version.git", WebappHelper.getChangeSet(), serverCont);
 		String buildDate = format.formatDateAndTime(Settings.getBuildDate());
 		uifactory.addStaticTextElement("version.date", "sysinfo.version.date", buildDate, serverCont);
 

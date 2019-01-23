@@ -85,13 +85,16 @@ public class JmsIndexer implements MessageListener, LifeFullIndexer, ConfigOnOff
 	
 	private double ramBufferSizeMB;
 	private boolean indexingNode;
-	
+
+	private FullIndexerStatus fullIndexerStatus;
+
 	private List<LifeIndexer> indexers = new ArrayList<>();
 	
 	public JmsIndexer(SearchModule searchModuleConfig, CoordinatorManager coordinatorManager) {
 		indexingNode = searchModuleConfig.isSearchServiceEnabled();
 		ramBufferSizeMB = searchModuleConfig.getRAMBufferSizeMB();
 		permanentIndexPath = searchModuleConfig.getFullPermanentIndexPath();
+		fullIndexerStatus = new FullIndexerStatus(0);
 		this.coordinatorManager = coordinatorManager;
 	}
 
@@ -243,9 +246,18 @@ public class JmsIndexer implements MessageListener, LifeFullIndexer, ConfigOnOff
 	
 	@Override
 	public void fullIndex() {
+		log.info("start full reindex of life index");
+		fullIndexerStatus.indexingStarted();
 		for(LifeIndexer indexer:indexers) {
 			indexer.fullIndex(this);
 		}
+		fullIndexerStatus.indexingFinished();
+		log.info("end full reindex of life index");
+	}
+
+	@Override
+	public FullIndexerStatus getStatus() {
+		return fullIndexerStatus;
 	}
 
 	@Override

@@ -25,6 +25,7 @@
 
 package org.olat.search;
 
+import java.util.Date;
 
 /**
  * Collection of search-service states. Includes state of full-index, index and search.
@@ -34,5 +35,7 @@ package org.olat.search;
 public interface SearchServiceStatus {
 	
 	public String getStatus();
+	
+	public Date getLastFullIndexTime();
 
 }
