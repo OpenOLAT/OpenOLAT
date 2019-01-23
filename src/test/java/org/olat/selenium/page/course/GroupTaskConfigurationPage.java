@@ -91,6 +91,18 @@ public class GroupTaskConfigurationPage {
 		return this;
 	}
 	
+	public GroupTaskConfigurationPage enableSolutionForAll(boolean forAll) {
+		By optionBy;
+		if(forAll) {
+			optionBy = By.xpath("//div[@id='o_covisibleall']//label/input[@name='visibleall'][@value='all']");
+		} else {
+			optionBy = By.xpath("//div[@id='o_covisibleall']//label/input[@name='visibleall'][@value='restricted']");
+		}
+		OOGraphene.waitElement(optionBy, browser);
+		browser.findElement(optionBy).click();;
+		return this;
+	}
+	
 	public GroupTaskConfigurationPage saveWorkflow() {
 		By saveBy = By.cssSelector(".o_sel_course_gta_save_workflow button.btn-primary");
 		browser.findElement(saveBy).click();

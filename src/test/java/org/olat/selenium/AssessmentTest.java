@@ -1861,7 +1861,7 @@ public class AssessmentTest extends Deployments {
 		gtaConfig
 			.selectWorkflow()
 			.enableAssignment(false)
-			.enableSubmission(false)	
+			.enableSubmission(false)
 			.saveWorkflow();
 		
 		gtaConfig
@@ -1983,7 +1983,8 @@ public class AssessmentTest extends Deployments {
 			.selectWorkflow()
 			.optional(true)
 			.enableAssignment(false)
-			.enableSubmission(false)	
+			.enableSubmission(false)
+			.enableSolutionForAll(true)
 			.saveWorkflow();
 		
 		gtaConfig

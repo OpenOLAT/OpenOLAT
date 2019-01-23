@@ -608,21 +608,26 @@ public class GTAParticipantController extends GTAAbstractController implements A
 	 * @return If the solutions are visible to the user
 	 */
 	private boolean showSolutions(DueDate availableDate) {
-		
-		boolean optional = gtaNode.isOptional();
-		File submitDirectory;
-		if(GTAType.group.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))) {
-			submitDirectory = gtaManager.getSubmitDirectory(courseEnv, gtaNode, assessedGroup);
-		} else {
-			submitDirectory = gtaManager.getSubmitDirectory(courseEnv, gtaNode, assessedIdentity);
-		}
-		
 		boolean show = false;
-		if(availableDate == null && optional
-				&& (gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_ALL, false) || TaskHelper.hasDocuments(submitDirectory))) {
-			show = true;
-		} else if((availableDate != null && (optional || !availableDate.isRelative())
-				&& (gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_ALL, false)) || TaskHelper.hasDocuments(submitDirectory))) {
+		boolean optional = gtaNode.isOptional();
+		if(config.getBooleanSafe(GTACourseNode.GTASK_SUBMIT)) {
+			File submitDirectory;
+			if(GTAType.group.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))) {
+				submitDirectory = gtaManager.getSubmitDirectory(courseEnv, gtaNode, assessedGroup);
+			} else {
+				submitDirectory = gtaManager.getSubmitDirectory(courseEnv, gtaNode, assessedIdentity);
+			}
+			
+			if(availableDate == null && optional
+					&& (gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_ALL, false) || TaskHelper.hasDocuments(submitDirectory))) {
+				show = true;
+			} else if(availableDate != null && (optional || !availableDate.isRelative())
+					&& (gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_ALL, false) || TaskHelper.hasDocuments(submitDirectory))) {
+				show = true;
+			}
+		} else if(optional) {
+			show = gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_ALL, false);
+		} else {
 			show = true;
 		}
 		return show;
