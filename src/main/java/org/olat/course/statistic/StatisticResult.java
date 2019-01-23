@@ -36,6 +36,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.olat.core.gui.components.table.TableDataModel;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
@@ -43,17 +45,19 @@ import org.olat.course.nodes.CourseNode;
 
 /** work in progress **/
 public class StatisticResult implements TableDataModel {
+	
+	private static final OLog log = Tracing.createLoggerFor(StatisticResult.class);
 
 	/** token representing the title cell in the total row - renderers must know how to render this **/
 	static final Object TOTAL_ROW_TITLE_CELL = new Object();
 	
 	public static final String KEY_NODE = "result_key_node";
 	
-	private List<String> columnHeaders_ = new LinkedList<String>();
+	private List<String> columnHeaders_ = new LinkedList<>();
 	
-	private List<CourseNode> orderedNodesList_ = new LinkedList<CourseNode>();
+	private List<CourseNode> orderedNodesList_ = new LinkedList<>();
 
-	private Map<CourseNode,Map<String,Integer>> statistic_ = new HashMap<CourseNode, Map<String,Integer>>();
+	private Map<CourseNode,Map<String,Integer>> statistic_ = new HashMap<>();
 	
 	/**
 	 * mysql> select businesspath,day,value from o_stat_dayofweek where businesspath like '[RepositoryEntry:393216]%';
@@ -65,13 +69,13 @@ public class StatisticResult implements TableDataModel {
 | [RepositoryEntry:393216][CourseNode:73156787421533] |   4 |    34 |
 	 */
 	public StatisticResult(ICourse course, List<Object[]> result) {
-		final Set<String> groupByKeys = new HashSet<String>();
+		final Set<String> groupByKeys = new HashSet<>();
 		doAddQueryListResultsForNodeAndChildren(course.getRunStructure().getRootNode(), result, groupByKeys);
-		if (result.size()!=0) {
-			System.out.println("ERROR - should have 0 left....: "+result.size());
+		if (!result.isEmpty()) {
+			log.error("ERROR - should have 0 left....: " + result.size());
 		}
 		
-		columnHeaders_ = new LinkedList<String>(groupByKeys);
+		columnHeaders_ = new LinkedList<>(groupByKeys);
 		Collections.sort(columnHeaders_, new Comparator<String>() {
 
 			@Override 
@@ -96,11 +100,11 @@ public class StatisticResult implements TableDataModel {
 	}
 	
 	public List<String> getColumnHeaders() {
-		return new ArrayList<String>(columnHeaders_);
+		return new ArrayList<>(columnHeaders_);
 	}
 	
 	public void setColumnHeaders(List<String> columnHeaders) {
-		columnHeaders_ = new ArrayList<String>(columnHeaders);
+		columnHeaders_ = new ArrayList<>(columnHeaders);
 	}
 	
 	private void doAddQueryListResultsForNodeAndChildren(CourseNode node, List<Object[]> result, Set<String> groupByKeys) {
@@ -123,7 +127,7 @@ public class StatisticResult implements TableDataModel {
 			
 			Map<String,Integer> nodeMap = statistic_.get(node);
 			if (nodeMap==null) {
-				nodeMap = new HashMap<String,Integer>();
+				nodeMap = new HashMap<>();
 				statistic_.put(node, nodeMap);
 			}
 			
@@ -166,9 +170,9 @@ public class StatisticResult implements TableDataModel {
 		// Store node data in hash map. This hash map serves as data model for 
 		// the user assessment overview table. Leave user data empty since not used in
 		// this table. (use only node data)
-		Map<String,Object> nodeData = new HashMap<String, Object>();
+		Map<String,Object> nodeData = new HashMap<>();
 		// indent
-		nodeData.put(AssessmentHelper.KEY_INDENT, new Integer(recursionLevel));
+		nodeData.put(AssessmentHelper.KEY_INDENT, Integer.valueOf(recursionLevel));
 		// course node data
 		nodeData.put(AssessmentHelper.KEY_TYPE, node.getType());
 		nodeData.put(AssessmentHelper.KEY_TITLE_SHORT, node.getShortTitle());
@@ -181,7 +185,7 @@ public class StatisticResult implements TableDataModel {
 	}
 
 	public List<String> getHeaders() {
-		return new ArrayList<String>(columnHeaders_);
+		return new ArrayList<>(columnHeaders_);
 	}
 
 	@Override
@@ -224,8 +228,8 @@ public class StatisticResult implements TableDataModel {
 					if (statisticMap==null) {
 						continue;
 					}
-					for (Iterator it2 = statisticMap.values().iterator(); it2.hasNext();) {
-						Integer num = (Integer) it2.next();
+					for (Iterator<Integer> it2 = statisticMap.values().iterator(); it2.hasNext();) {
+						Integer num = it2.next();
 						if (num!=null) {
 							total+=num;
 						}

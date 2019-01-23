@@ -48,7 +48,7 @@ class QTI12To21HtmlHandler extends DefaultHandler {
 	private final XMLStreamWriter xtw;
 
 	private int subLevel = 0;
-	private Deque<String> skipTags = new ArrayDeque<String>();
+	private Deque<String> skipTags = new ArrayDeque<>();
 	private Map<String,String> materialsMapping = new HashMap<>();
 
 	private boolean envelopP = false;
@@ -156,6 +156,9 @@ class QTI12To21HtmlHandler extends DefaultHandler {
 				}
 				if(start < 0) {
 					start = 0;//Bug neko
+				}
+				if(start + length > ch.length) {
+					length = ch.length - start;// Make sure the length is correct
 				}
 				xtw.writeCharacters(ch, start, length);
 			} else {

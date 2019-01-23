@@ -62,7 +62,7 @@ public class DayOfWeekStatisticManager implements IStatisticManager {
 		Calendar c = Calendar.getInstance(ureq.getLocale());
 		int firstDayOfWeek = c.getFirstDayOfWeek();
 		
-		List<String> columnHeaders = new ArrayList<String>(7);
+		List<String> columnHeaders = new ArrayList<>(7);
 		for(int i=firstDayOfWeek; i<firstDayOfWeek+7; i++) {
 			int mod = i%7;
 			if (mod==0) {

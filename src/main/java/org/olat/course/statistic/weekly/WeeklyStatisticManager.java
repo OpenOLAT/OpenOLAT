@@ -59,7 +59,7 @@ public class WeeklyStatisticManager implements IStatisticManager {
 
 	/** the logging object used in this class **/
 	private static final OLog log = Tracing.createLoggerFor(WeeklyStatisticManager.class);
-	private SimpleDateFormat sdf_ = new SimpleDateFormat("yyyy-ww");
+	private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-ww");
 	
 	@Override
 	public StatisticResult generateStatisticResult(UserRequest ureq, ICourse course, long courseRepositoryEntryKey) {
@@ -104,7 +104,7 @@ public class WeeklyStatisticManager implements IStatisticManager {
 		TypedQuery<Object[]> dbQuery = DBFactory.getInstance().getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class)
 				.setParameter("resId", courseRepositoryEntryKey);
-		StringBuffer infoMsg = new StringBuffer();
+		StringBuilder infoMsg = new StringBuilder(256);
 		if (fromDate!=null) {
 			String fromDateStr = getYear(fromDate) + "-" + getWeek(fromDate);
 			infoMsg.append("from date: "+fromDateStr);
@@ -127,15 +127,15 @@ public class WeeklyStatisticManager implements IStatisticManager {
 	}
 
 	private String getWeek(Date date) {
-		SimpleDateFormat sdf = new SimpleDateFormat(); 
-		sdf.applyPattern("ww");
-		return sdf.format(date);
+		SimpleDateFormat df = new SimpleDateFormat(); 
+		df.applyPattern("ww");
+		return df.format(date);
 	}
 
 	private String getYear(Date date) {
-		SimpleDateFormat sdf = new SimpleDateFormat(); 
-		sdf.applyPattern("yyyy");
-		return sdf.format(date);
+		SimpleDateFormat df = new SimpleDateFormat(); 
+		df.applyPattern("yyyy");
+		return df.format(date);
 	}
 
 	/** fill any gaps in the column headers between the first and the last days **/
@@ -166,9 +166,9 @@ public class WeeklyStatisticManager implements IStatisticManager {
 			log.debug("fillGapsInColumnHeaders: columnHeaders.size()="+columnHeaders.size());
 			log.debug("fillGapsInColumnHeaders: columnHeaders="+columnHeaders);
 			if (columnHeaders.size()>1) {
-				Date previousWeekDate = sdf_.parse(previousWeek);
+				Date previousWeekDate = sdf.parse(previousWeek);
 				String lastWeek = columnHeaders.get(columnHeaders.size()-1);
-				Date lastWeekDate = sdf_.parse(lastWeek);
+				Date lastWeekDate = sdf.parse(lastWeek);
 				if (previousWeekDate==null || lastWeekDate==null) {
 					log.warn("fillGapsInColumnHeaders: can't get date from weeks: "+previousWeek+"/"+lastWeek);
 					return null;
@@ -197,7 +197,7 @@ public class WeeklyStatisticManager implements IStatisticManager {
 						log.warn("fillGapsInColumnHeaders: throwing a ParseException, can't add "+additionalWeek+" to "+columnHeaders);
 						throw new ParseException("Can't add "+additionalWeek+" to the list of weeks - it is already there", 0);
 					}
-					if (sdf_.parse(additionalWeek).compareTo(sdf_.parse(currWeek))>0) {
+					if (sdf.parse(additionalWeek).compareTo(sdf.parse(currWeek))>0) {
 						// then we're overshooting
 						continue;
 					}
@@ -219,9 +219,9 @@ public class WeeklyStatisticManager implements IStatisticManager {
 	}
 
 	private String nextWeek(String week) throws ParseException {
-		Date d = sdf_.parse(week);
+		Date d = sdf.parse(week);
 		d = new Date(d.getTime() + 7*24*60*60*1000);
-		String result = sdf_.format(d);
+		String result = sdf.format(d);
 		
 		// bug with SimpleDateFormat:
 		//   Mon Dec 29 00:00:00 CET 2008
@@ -255,7 +255,7 @@ public class WeeklyStatisticManager implements IStatisticManager {
 		} else if (result.equals(week)) {
 			// daylight saving
 			d = new Date(d.getTime() + 1*60*60*1000);
-			result = sdf_.format(d);
+			result = sdf.format(d);
 		}
 		
 		return result;

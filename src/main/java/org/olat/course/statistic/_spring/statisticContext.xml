@@ -454,23 +454,4 @@ insert into o_stat_hourofday (businesspath, resid, hour, value)
 		<constructor-arg value="${cluster.singleton.services}"/>
 		<property name="taskExecutorManager" ref="taskExecutorManager"/>
 	</bean>
-
-	<bean class="org.olat.course.statistic.SimpleStatisticInfoHelper" >
-		<constructor-arg>
-			<ref bean="database"/>
-		</constructor-arg>
-		<constructor-arg>
-			<map>
-				<entry key="mysql">
-					<value>select unix_timestamp(creationdate) from o_loggingtable limit 1;</value>
-				</entry>
-				<entry key="postgresql">
-					<value>select round(date_part('epoch', creationdate)) from o_loggingtable limit 1;</value>
-				</entry>
-				<entry key="oracle">
-					<value>select round((creationdate - TO_DATE('19700101000000','YYYYMMDDHH24MISS'))*86400) from o_loggingtable where rownum=1</value>
-				</entry>
-			</map>
-		</constructor-arg>
-	</bean>
 </beans>
