@@ -40,9 +40,10 @@ public class GroupedStatisticImpl implements GroupedStatistic {
 	private final boolean rawAvgMaxGood;
 	private final Double avg;
 	private final RubricRating rating;
+	private final int steps;
 	
 	public GroupedStatisticImpl(String identitfier, MultiKey multiKey, TemporalKey temporalKey, Long count,
-			Double rawAvg, boolean rawMaxGood, Double avg, RubricRating rating) {
+			Double rawAvg, boolean rawMaxGood, Double avg, RubricRating rating, int steps) {
 		this.identitfier = identitfier;
 		this.multiKey = multiKey;
 		this.temporalKey = temporalKey;
@@ -51,6 +52,7 @@ public class GroupedStatisticImpl implements GroupedStatistic {
 		this.avg = avg;
 		this.rawAvgMaxGood = rawMaxGood;
 		this.rating = rating;
+		this.steps = steps;
 	}
 
 	@Override
@@ -91,6 +93,11 @@ public class GroupedStatisticImpl implements GroupedStatistic {
 	@Override
 	public RubricRating getRating() {
 		return rating;
+	}
+
+	@Override
+	public int getSteps() {
+		return steps;
 	}
 
 	@Override

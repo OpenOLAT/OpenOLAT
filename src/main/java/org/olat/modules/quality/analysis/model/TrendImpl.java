@@ -35,10 +35,15 @@ public class TrendImpl implements Trend {
 	
 	private final GroupedStatistic groupedStatistic;
 	private final DIRECTION direction;
+	private final Double avgDiffAbsolute;
+	private final Double avgDiffRelative;
 	
-	public TrendImpl(GroupedStatistic groupedStatistic, DIRECTION direction) {
+	public TrendImpl(GroupedStatistic groupedStatistic, DIRECTION direction, Double avgDiffAbsolute,
+			Double avgDiffRelative) {
 		this.groupedStatistic = groupedStatistic;
 		this.direction = direction;
+		this.avgDiffAbsolute = avgDiffAbsolute;
+		this.avgDiffRelative = avgDiffRelative;
 	}
 
 	@Override
@@ -86,4 +91,18 @@ public class TrendImpl implements Trend {
 		return groupedStatistic.getRating();
 	}
 
+	@Override
+	public int getSteps() {
+		return groupedStatistic.getSteps();
+	}
+
+	@Override
+	public Double getAvgDiffAbsolute() {
+		return avgDiffAbsolute;
+	}
+
+	@Override
+	public Double getAvgDiffRelative() {
+		return avgDiffRelative;
+	}
 }

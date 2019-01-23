@@ -19,9 +19,11 @@
  */
 package org.olat.modules.quality.analysis.ui;
 
+import java.math.BigDecimal;
+
 import org.olat.core.gui.components.table.IconCssCellRenderer;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.forms.RubricRating;
-import org.olat.modules.forms.ui.EvaluationFormFormatter;
 import org.olat.modules.forms.ui.RubricAvgRenderer;
 import org.olat.modules.quality.analysis.Trend;
 import org.olat.modules.quality.analysis.Trend.DIRECTION;
@@ -33,6 +35,12 @@ import org.olat.modules.quality.analysis.Trend.DIRECTION;
  *
  */
 public class TrendRenderer  extends IconCssCellRenderer {
+
+	private final TrendDifference difference;
+
+	public TrendRenderer(TrendDifference difference) {
+		this.difference = difference;
+	}
 
 	@Override
 	protected String getCssClass(Object val) {
@@ -68,9 +76,34 @@ public class TrendRenderer  extends IconCssCellRenderer {
 	protected String getCellValue(Object val) {
 		if (val instanceof Trend) {
 			Trend trend = (Trend) val;
-			return EvaluationFormFormatter.formatDouble(trend.getAvg());
+			StringBuilder sb = new StringBuilder();
+			if (isAvgNotNegative(trend)) {
+				// space to align by decimal point
+				sb.append("<span class='o_qual_trend_invisible'>-</span>");
+			}
+			sb.append(AnalysisUIFactory.formatAvg(trend.getAvg()));
+			String difference = getDifference(trend);
+			if (StringHelper.containsNonWhitespace(difference)) {
+				sb.append(" <small class='text-muted'>(").append(difference).append(")</small>");
+			}
+			return sb.toString();
 		}
 		return null;
+	}
+
+	private boolean isAvgNotNegative(Trend trend) {
+		return BigDecimal.ZERO.compareTo(BigDecimal.valueOf(trend.getAvg().doubleValue())) <= 0;
+	}
+
+	private String getDifference(Trend trend) {
+		switch(difference) {
+		case ABSOLUTE:
+			return AnalysisUIFactory.formatDiffAbsolute(trend.getAvgDiffAbsolute()) ;
+		case RELATIVE:
+			return AnalysisUIFactory.formatDiffRelative(trend.getAvgDiffRelative());
+		default:
+			return null;
+		}
 	}
 
 	@Override

@@ -17,24 +17,27 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.quality.analysis;
-
-import org.olat.modules.forms.RubricRating;
+package org.olat.modules.quality.analysis.ui;
 
 /**
  * 
- * Initial date: 11.09.2018<br>
+ * Initial date: 23 Jan 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface GroupedStatistic extends RawGroupedStatistic {
+public enum TrendDifference {
 	
-	public int getSteps();
-	
-	public boolean isRawAvgMaxGood();
+	NONE("trend.diff.none"),
+	ABSOLUTE("trend.diff.absolute"),
+	RELATIVE("trend.diff.relative");
 
-	public Double getAvg();
-	
-	public RubricRating getRating();
-	
+	private String i18nKey;
+
+	private TrendDifference(String i18nKey) {
+		this.i18nKey = i18nKey;
+	}
+
+	public String i18nKey() {
+		return i18nKey;
+	}
 }

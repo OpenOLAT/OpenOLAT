@@ -22,6 +22,11 @@ package org.olat.modules.quality.analysis.manager;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
+import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.forms.model.xml.ScaleType;
 import org.olat.modules.quality.analysis.GroupedStatistic;
@@ -36,8 +41,6 @@ import org.olat.modules.quality.analysis.Trend.DIRECTION;
 import org.olat.modules.quality.analysis.TrendSeries;
 import org.olat.modules.quality.analysis.model.GroupedStatisticImpl;
 import org.olat.modules.quality.analysis.model.RawGroupedStatisticImpl;
-import org.olat.test.OlatTestCase;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -45,9 +48,13 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class StatisticsCalculatorTest extends OlatTestCase {
+@RunWith(MockitoJUnitRunner.Silent.class)
+public class StatisticsCalculatorTest {
 	
-	@Autowired
+	@Mock
+	private EvaluationFormManager evaluationFormManagerMock;
+	
+	@InjectMocks
 	private StatisticsCalculator sut;
 	
 	@Test
@@ -129,22 +136,82 @@ public class StatisticsCalculatorTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void shouldCalculateDiffAbsoluteWithGoodEnd() {
+		boolean rawMaxGood = true;
+		double avgPrev = 1.0;
+		double avgCurrent = 1.1;
+		double expected = 0.1;
+		GroupedStatistic prev = new GroupedStatisticImpl(null, MultiKey.none(), null, 1l, null, rawMaxGood, avgPrev, null, 5);
+		GroupedStatistic current = new GroupedStatisticImpl(null, MultiKey.none(), null, 1l, null, rawMaxGood, avgCurrent, null, 5);
+
+		Double diff = sut.getAvgDiffAbsolute(prev, current);
+		
+		assertThat(diff).isEqualTo(expected);
+	}
+	
+	@Test
+	public void shouldCalculateDiffAbsoluteWithBadEnd() {
+		boolean rawMaxGood = false;
+		double avgPrev = 1.0;
+		double avgCurrent = 1.1;
+		double expected = 0.1;
+		GroupedStatistic prev = new GroupedStatisticImpl(null, MultiKey.none(), null, 1l, null, rawMaxGood, avgPrev, null, 5);
+		GroupedStatistic current = new GroupedStatisticImpl(null, MultiKey.none(), null, 1l, null, rawMaxGood, avgCurrent, null, 5);
+
+		Double diff = sut.getAvgDiffAbsolute(prev, current);
+		
+		assertThat(diff).isEqualTo(expected);
+	}
+	
+	@Test
+	public void shouldCalculateDiffRelativeWithGoodEnd() {
+		int steps = 6;
+		boolean rawMaxGood = true;
+		double avgPrev = 1.0;
+		double avgCurrent = 2.0;
+		double expected = 0.2;
+		GroupedStatistic prev = new GroupedStatisticImpl(null, MultiKey.none(), null, 1l, null, rawMaxGood, avgPrev, null, steps);
+		GroupedStatistic current = new GroupedStatisticImpl(null, MultiKey.none(), null, 1l, null, rawMaxGood, avgCurrent, null, steps);
+
+		Double diffAbs = sut.getAvgDiffAbsolute(prev, current);
+		Double diff = sut.getAvgDiffRelativ(diffAbs, steps);
+		
+		assertThat(diff).isEqualTo(expected);
+	}
+	
+	@Test
+	public void shouldCalculateDiffRelativeWithBadEnd() {
+		int steps = 6;
+		boolean rawMaxGood = false;
+		double avgPrev = 1.0;
+		double avgCurrent = 2.0;
+		double expected = 0.2;
+		GroupedStatistic prev = new GroupedStatisticImpl(null, MultiKey.none(), null, 1l, null, rawMaxGood, avgPrev, null, steps);
+		GroupedStatistic current = new GroupedStatisticImpl(null, MultiKey.none(), null, 1l, null, rawMaxGood, avgCurrent, null, steps);
+
+		Double diffAbs = sut.getAvgDiffAbsolute(prev, current);
+		Double diff = sut.getAvgDiffRelativ(diffAbs, steps);
+		
+		assertThat(diff).isEqualTo(expected);
+	}
+	
+	@Test
 	public void shouldCalculateTrends() {
 		String identifier1 = "i1";
 		TemporalKey tk2000 = TemporalKey.of(2000);
 		TemporalKey tk2005 = TemporalKey.of(2005);
 		GroupedStatistics<GroupedStatistic> statistics = new GroupedStatistics<>();
-		GroupedStatistic gs0 = new GroupedStatisticImpl(identifier1, MultiKey.none(), tk2000, 1l, 1.0, true, null, null);
+		GroupedStatistic gs0 = new GroupedStatisticImpl(identifier1, MultiKey.none(), tk2000, 1l, 1.0, true, null, null, 5);
 		statistics.putStatistic(gs0);
-		GroupedStatistic gs1 = new GroupedStatisticImpl(identifier1, MultiKey.none(), TemporalKey.of(2001), 1l, 1.0, true, null, null);
+		GroupedStatistic gs1 = new GroupedStatisticImpl(identifier1, MultiKey.none(), TemporalKey.of(2001), 1l, 1.0, true, null, null, 5);
 		statistics.putStatistic(gs1);
-		GroupedStatistic gs2 = new GroupedStatisticImpl(identifier1, MultiKey.none(), TemporalKey.of(2002), 1l, 2.0, true, null, null);
+		GroupedStatistic gs2 = new GroupedStatisticImpl(identifier1, MultiKey.none(), TemporalKey.of(2002), 1l, 2.0, true, null, null, 5);
 		statistics.putStatistic(gs2);
-		GroupedStatistic gs3 = new GroupedStatisticImpl(identifier1, MultiKey.none(), TemporalKey.of(2003), 1l, 2.01, true, null, null);
+		GroupedStatistic gs3 = new GroupedStatisticImpl(identifier1, MultiKey.none(), TemporalKey.of(2003), 1l, 2.01, true, null, null, 5);
 		statistics.putStatistic(gs3);
-		GroupedStatistic gs4 = new GroupedStatisticImpl(identifier1, MultiKey.none(), TemporalKey.of(2004), 1l, 1.0, true, null, null);
+		GroupedStatistic gs4 = new GroupedStatisticImpl(identifier1, MultiKey.none(), TemporalKey.of(2004), 1l, 1.0, true, null, null, 5);
 		statistics.putStatistic(gs4);
-		GroupedStatistic gs5 = new GroupedStatisticImpl(identifier1, MultiKey.none(), tk2005, 1l, 1.0, true, null, null);
+		GroupedStatistic gs5 = new GroupedStatisticImpl(identifier1, MultiKey.none(), tk2005, 1l, 1.0, true, null, null, 5);
 		statistics.putStatistic(gs5);
 		
 		MultiTrendSeries<String> multiTrendSeries = sut.getTrends(statistics, TemporalGroupBy.DATA_COLLECTION_DEADLINE_YEAR);
@@ -168,9 +235,9 @@ public class StatisticsCalculatorTest extends OlatTestCase {
 	public void shouldClaculateTrendGaps() {
 		String identifier1 = "i1";
 		GroupedStatistics<GroupedStatistic> statistics = new GroupedStatistics<>();
-		GroupedStatistic gs0 = new GroupedStatisticImpl(identifier1, MultiKey.none(), TemporalKey.of(2000), 1l, 1.0, true, null, null);
+		GroupedStatistic gs0 = new GroupedStatisticImpl(identifier1, MultiKey.none(), TemporalKey.of(2000), 1l, 1.0, true, null, null, 5);
 		statistics.putStatistic(gs0);
-		GroupedStatistic gs3 = new GroupedStatisticImpl(identifier1, MultiKey.none(), TemporalKey.of(2003), 1l, 2.01, true, null, null);
+		GroupedStatistic gs3 = new GroupedStatisticImpl(identifier1, MultiKey.none(), TemporalKey.of(2003), 1l, 2.01, true, null, null, 5);
 		statistics.putStatistic(gs3);
 		
 		MultiTrendSeries<String> multiTrendSeries = sut.getTrends(statistics, TemporalGroupBy.DATA_COLLECTION_DEADLINE_YEAR);

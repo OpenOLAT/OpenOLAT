@@ -30,5 +30,9 @@ public interface Trend extends GroupedStatistic {
 	public enum DIRECTION {UP, EQUAL, DOWN};
 	
 	public DIRECTION getDirection();
+	
+	public Double getAvgDiffAbsolute();
+	
+	public Double getAvgDiffRelative();
 
 }

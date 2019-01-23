@@ -59,12 +59,14 @@ import edu.emory.mathcs.backport.java.util.Arrays;
 public class SliderTrendController extends FormBasicController {
 
 	private SingleSelection temporalGroupEl;
+	private SingleSelection differenceEl;
 	private SliderTrendDataModel dataModel;
 	private FlexiTableElement tableEl;
 	
 	private final List<SliderWrapper> sliders;
 	private final AnalysisSearchParameter searchParams;
 	private TemporalGroupBy temporalGroupBy = TemporalGroupBy.DATA_COLLECTION_DEADLINE_YEAR;
+	private TrendDifference difference = TrendDifference.NONE;
 	
 	@Autowired
 	private QualityAnalysisService analysisService;
@@ -87,9 +89,18 @@ public class SliderTrendController extends FormBasicController {
 		temporalGroupEl = uifactory.addDropdownSingleselect("slider.trend.group.temporal", groupingCont,
 				temporalKV.keys(), temporalKV.values());
 		temporalGroupEl.addActionListener(FormEvent.ONCHANGE);
-		String key = AnalysisUIFactory.getKey(temporalGroupBy);
-		if (Arrays.asList(temporalGroupEl.getKeys()).contains(key)) {
-			temporalGroupEl.select(key, true);
+		String temporalGroupKey = AnalysisUIFactory.getKey(temporalGroupBy);
+		if (Arrays.asList(temporalGroupEl.getKeys()).contains(temporalGroupKey)) {
+			temporalGroupEl.select(temporalGroupKey, true);
+		}
+		
+		KeyValues diffKV = AnalysisUIFactory.getTrendDifferenceKeyValues(getTranslator());
+		differenceEl = uifactory.addDropdownSingleselect("slider.trend.difference", groupingCont,
+				diffKV.keys(), diffKV.values());
+		differenceEl.addActionListener(FormEvent.ONCHANGE);
+		String differenceKey = AnalysisUIFactory.getKey(difference);
+		if (Arrays.asList(differenceEl.getKeys()).contains(differenceKey)) {
+			differenceEl.select(differenceKey, true);
 		}
 		
 		updateTrendDiagram();
@@ -109,7 +120,7 @@ public class SliderTrendController extends FormBasicController {
 		for (String header: temporalHeaders) {
 			DefaultFlexiColumnModel columnModel = new DefaultFlexiColumnModel("slider.trend.table.title.question", columnIndex++);
 			columnModel.setHeaderLabel(header);
-			columnModel.setCellRenderer(new TrendRenderer());
+			columnModel.setCellRenderer(new TrendRenderer(difference));
 			columnsModel.addFlexiColumnModel(columnModel);
 		}
 		
@@ -157,6 +168,8 @@ public class SliderTrendController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == temporalGroupEl) {
 			setTemporalGroupBy();
+		} else if (source == differenceEl) {
+			setDifference();
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -165,6 +178,13 @@ public class SliderTrendController extends FormBasicController {
 		temporalGroupBy = temporalGroupEl.isOneSelected()
 			? AnalysisUIFactory.getTemporalGroupBy(temporalGroupEl.getSelectedKey())
 			: null;
+		updateTrendDiagram();
+	}
+
+	private void setDifference() {
+		difference = differenceEl.isOneSelected()
+				? AnalysisUIFactory.getTrendDifference(differenceEl.getSelectedKey())
+				: TrendDifference.NONE;
 		updateTrendDiagram();
 	}
 

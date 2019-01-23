@@ -19,6 +19,7 @@
  */
 package org.olat.modules.quality.analysis.manager;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -93,8 +94,9 @@ public class StatisticsCalculator {
 		boolean rawAvgMaxGood = !rubric.isStartGoodRating();
 		Double scaledAvg = getScaledAvg(rubric, rawAvg);
 		RubricRating rating = evaluationFormManager.getRubricRating(rubric, scaledAvg);
+		int steps = rubric.getSteps();
 		GroupedStatistic statistic = new GroupedStatisticImpl(rawStatistic.getIdentifier(), rawStatistic.getMultiKey(),
-				rawStatistic.getTemporalKey(), rawStatistic.getCount(), rawAvg, rawAvgMaxGood, scaledAvg, rating);
+				rawStatistic.getTemporalKey(), rawStatistic.getCount(), rawAvg, rawAvgMaxGood, scaledAvg, rating, steps);
 		log.debug("Grouped statistic:        " + statistic.toString());
 		return statistic;
 	}
@@ -136,7 +138,9 @@ public class StatisticsCalculator {
 				GroupedStatistic currentStatistic = statistics.getStatistic(identifier, temporalKey);
 				if (currentStatistic != null) {
 					DIRECTION direction = getTrendDirection(lastStatistic, currentStatistic, currentStatistic.isRawAvgMaxGood());
-					Trend trend = new TrendImpl(currentStatistic, direction);
+					Double avgDiffAbsolute = getAvgDiffAbsolute(lastStatistic, currentStatistic);
+					Double avgDiffRelative = getAvgDiffRelativ(avgDiffAbsolute, currentStatistic.getSteps());
+					Trend trend = new TrendImpl(currentStatistic, direction, avgDiffAbsolute, avgDiffRelative);
 					multiTrendSeries.put(identifier, temporalKey, trend);
 					lastStatistic = currentStatistic;
 				}
@@ -144,12 +148,26 @@ public class StatisticsCalculator {
 		}
 		return multiTrendSeries;
 	}
+	
+	Double getAvgDiffAbsolute(GroupedStatistic prev, GroupedStatistic current) {
+		if (prev == null || prev.getAvg() == null || current == null || current.getAvg() == null) return null;
+		
+		BigDecimal diff = BigDecimal.valueOf(current.getAvg()).subtract(BigDecimal.valueOf(prev.getAvg()));
+		return Double.valueOf(diff.doubleValue());
+	}
+	
+	Double getAvgDiffRelativ(Double diffAbsulute, int steps) {
+		if (diffAbsulute == null) return null;
+		
+		double all = (double)steps - 1;
+		double diff = diffAbsulute.doubleValue() / all;
+		return Double.valueOf(diff);
+	}
 
 	DIRECTION getTrendDirection(GroupedStatistic prev, GroupedStatistic current, boolean rawAvgMaxGood) {
 		// First in a series
 		if (prev == null) return DIRECTION.EQUAL;
 		
-		// Should not happen
 		Double prevAvg = prev.getRawAvg();
 		Double currentAvg = current.getRawAvg();
 		return getTrendDirection(prevAvg, currentAvg, rawAvgMaxGood);

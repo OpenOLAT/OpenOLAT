@@ -72,7 +72,7 @@ public class MultiTrendSeriesTest {
 		String identifier = "1";
 		TemporalKey tk2000 = TemporalKey.of(2000);
 		TemporalKey tk2003 = TemporalKey.of(2003);
-		Trend trend = new TrendImpl(null, null);
+		Trend trend = new TrendImpl(null, null, null, null);
 
 		MultiTrendSeries<String> multiTrendSeries = new MultiTrendSeries<>(TemporalGroupBy.DATA_COLLECTION_DEADLINE_YEAR, tk2000, tk2003);
 		multiTrendSeries.put(identifier, tk2003, trend);
