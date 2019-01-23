@@ -34,6 +34,10 @@ public class OrganisationRefImpl implements OrganisationRef {
 	public OrganisationRefImpl(Long key) {
 		this.key = key;
 	}
+	
+	public OrganisationRefImpl(OrganisationRef ref) {
+		this(ref.getKey());
+	}
 
 	@Override
 	public Long getKey() {

@@ -30,12 +30,14 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.admin.user.bulkChange.UserBulkChangeManager;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
+import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -329,6 +331,7 @@ public class SystemRolesAndRightsController extends FormBasicController {
 		for(MultipleSelectionElement roleEl:rolesEls) {
 			rolesCont.remove(roleEl);
 		}
+		rolesEls.clear();
 		initFormRoles();
 		update();
 	}
@@ -395,19 +398,42 @@ public class SystemRolesAndRightsController extends FormBasicController {
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
-		
+
 		if(rolesEls.isEmpty()) {
-			
 			allOk &= false;
 		} else {
+			rolesEls.get(0).clearError();
+			
 			int numOfRoles = 0;
+			Set<String> allSelectedRoles = new HashSet<>();
 			for(MultipleSelectionElement rolesEl:rolesEls) {
-				numOfRoles += rolesEl.getSelectedKeys().size();
+				Collection<String> selectedRoles = rolesEl.getSelectedKeys();
+				numOfRoles += selectedRoles.size();
+				allSelectedRoles.addAll(selectedRoles);
 			}
 			
 			if(numOfRoles == 0) {
 				rolesEls.get(0).setErrorKey("error.roles.atleastone", null);
 				allOk &= false;
+			} else if(!allSelectedRoles.contains(OrganisationRoles.invitee.name()) && !allSelectedRoles.contains(OrganisationRoles.user.name())) {
+				Roles currentRoles = securityManager.getRoles(editedIdentity, false);
+				List<OrganisationRef> userOrgs = currentRoles.getOrganisationsWithRole(OrganisationRoles.user)
+						.stream().map(OrganisationRefImpl::new).collect(Collectors.toList());
+				List<OrganisationRef> inviteeOrgs = currentRoles.getOrganisationsWithRole(OrganisationRoles.invitee)
+						.stream().map(OrganisationRefImpl::new).collect(Collectors.toList());
+				Set<OrganisationRef> allOrgRefs = new HashSet<>();
+				allOrgRefs.addAll(userOrgs);
+				allOrgRefs.addAll(inviteeOrgs);
+				
+				for(MultipleSelectionElement rolesEl:rolesEls) {
+					RolesElement rolesElement = (RolesElement)rolesEl.getUserObject();
+					allOrgRefs.remove(new OrganisationRefImpl(rolesElement.getOrganisation()));
+				}
+				
+				if(allOrgRefs.isEmpty()) {
+					rolesEls.get(0).setErrorKey("error.roles.atleastone.userorinvitee", null);
+					allOk &= false;
+				}
 			}
 		}
 
