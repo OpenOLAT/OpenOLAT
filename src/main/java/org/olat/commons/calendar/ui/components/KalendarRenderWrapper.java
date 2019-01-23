@@ -55,6 +55,7 @@ public class KalendarRenderWrapper {
 	public static final int ACCESS_READ_ONLY = 1;
 	
 	private String displayName;
+	private String identifier;
 	
 	private Kalendar kalendar;
 	private LinkProvider linkProvider;
@@ -76,15 +77,14 @@ public class KalendarRenderWrapper {
 	 * @param calendarColor
 	 * @param access
 	 */
-	public KalendarRenderWrapper(Kalendar kalendar, String displayName) {
-		this.kalendar = kalendar;
-		this.displayName = displayName;
-		setConfiguration(null);
+	public KalendarRenderWrapper(Kalendar kalendar, String displayName, String identifier) {
+		this(kalendar, null, displayName, identifier);
 	}
 	
-	public KalendarRenderWrapper(Kalendar kalendar, CalendarUserConfiguration config, String displayName) {
+	public KalendarRenderWrapper(Kalendar kalendar, CalendarUserConfiguration config, String displayName, String identifier) {
 		this.kalendar = kalendar;
 		this.displayName = displayName;
+		this.identifier = identifier;
 		setConfiguration(config);
 	}
 	
@@ -113,6 +113,14 @@ public class KalendarRenderWrapper {
 
 	public void setDisplayName(String displayName) {
 		this.displayName = displayName;
+	}
+
+	public String getIdentifier() {
+		return identifier;
+	}
+
+	public void setIdentifier(String identifier) {
+		this.identifier = identifier;
 	}
 
 	public int getAccess() {

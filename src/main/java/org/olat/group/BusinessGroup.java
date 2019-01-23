@@ -45,7 +45,7 @@ public interface BusinessGroup extends BusinessGroupShort, Persistable, CreateIn
 
 	/** regular expression to check for valid group names */
 	// commas are not allowed. name is used in course conditions for weak binding
-	public final static String VALID_GROUPNAME_REGEXP = "^[^,\"]*$";
+	public static final String VALID_GROUPNAME_REGEXP = "^[^,\"]*$";
 	
 	/** the max length for the group name.*/
 	public static final int MAX_GROUP_NAME_LENGTH = 255;

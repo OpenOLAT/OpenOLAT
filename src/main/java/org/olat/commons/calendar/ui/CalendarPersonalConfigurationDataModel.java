@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 
@@ -63,7 +64,8 @@ public class CalendarPersonalConfigurationDataModel extends DefaultFlexiTableDat
 		switch(ConfigCols.values()[col]) {
 			case type: return row.getWrapper();
 			case name: return row.getDisplayName();
-			case cssClass: return row.getColorLink();//.getCssClass();
+			case identifier: return row.getIdentifier();
+			case cssClass: return row.getColorLink();
 			case visible: return row.getVisibleLink();
 			case aggregated: return row.getAggregatedLink();
 			case feed: return row.getFeedLink();
@@ -72,9 +74,10 @@ public class CalendarPersonalConfigurationDataModel extends DefaultFlexiTableDat
 		return null;
 	}
 	
-	public enum ConfigCols {
+	public enum ConfigCols implements FlexiSortableColumnDef {
 		type("table.header.type"),
 		name("table.header.name"),
+		identifier("table.header.identifier"),
 		cssClass("table.header.color"),
 		visible("table.header.visible"),
 		aggregated("table.header.aggregated.feed"),
@@ -89,6 +92,21 @@ public class CalendarPersonalConfigurationDataModel extends DefaultFlexiTableDat
 		
 		public String i18nKey() {
 			return i18nKey;
+		}
+
+		@Override
+		public String i18nHeaderKey() {
+			return i18nKey;
+		}
+
+		@Override
+		public boolean sortable() {
+			return this != tools && this != feed;
+		}
+
+		@Override
+		public String sortKey() {
+			return name();
 		}
 	}
 }

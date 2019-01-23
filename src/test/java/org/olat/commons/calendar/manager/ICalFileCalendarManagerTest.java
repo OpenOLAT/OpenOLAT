@@ -52,7 +52,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
-import org.infinispan.manager.EmbeddedCacheManager;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Test;
@@ -89,8 +88,7 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 	private final void emptyCalendarCache() {
 		CoordinatorManager coordinator = CoreSpringFactory.getImpl(CoordinatorManager.class);
 		Cacher cacher = coordinator.getCoordinator().getCacher();
-		EmbeddedCacheManager cm = cacher.getCacheContainer();
-		cm.getCache("CalendarManager@calendar").clear();
+		cacher.getCacheContainer().getCache("CalendarManager@calendar").clear();
 	}
 	
 	@Test
@@ -328,6 +326,8 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		File newCalendarFile = new File(calendarFile.getParentFile(), calendarFile.getName());
 		InputStream in = CalendarImportTest.class.getResourceAsStream("cal_without_dtend.ics");
 		FileUtils.copyInputStreamToFile(in, newCalendarFile);
+		in.close();
+		
 		//to be sure
 		emptyCalendarCache();
 		//load the calendar
@@ -474,6 +474,8 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		File newCalendarFile = new File(calendarFile.getParentFile(), calendarFile.getName());
 		InputStream in = CalendarImportTest.class.getResourceAsStream("cal_without_dtend.ics");
 		FileUtils.copyInputStreamToFile(in, newCalendarFile);
+		in.close();
+		
 		//to be sure
 		emptyCalendarCache();
 		//load the calendar

@@ -113,16 +113,12 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 		
 		//add the table
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigCols.type.i18nKey(), ConfigCols.type.ordinal(),
-				true, ConfigCols.type.name(), new CalendarTypeClassRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigCols.cssClass.i18nKey(), ConfigCols.cssClass.ordinal(),
-				true, ConfigCols.cssClass.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigCols.name.i18nKey(), ConfigCols.name.ordinal(),
-				true, ConfigCols.name.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigCols.visible.i18nKey(), ConfigCols.visible.ordinal(),
-				true, ConfigCols.visible.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigCols.aggregated.i18nKey(), ConfigCols.aggregated.ordinal(),
-				true, ConfigCols.aggregated.name()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigCols.type, new CalendarTypeClassRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigCols.cssClass));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigCols.name));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigCols.identifier));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigCols.visible));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigCols.aggregated));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigCols.feed.i18nKey(), ConfigCols.feed.ordinal()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigCols.tools.i18nKey(), ConfigCols.tools.ordinal()));
 		

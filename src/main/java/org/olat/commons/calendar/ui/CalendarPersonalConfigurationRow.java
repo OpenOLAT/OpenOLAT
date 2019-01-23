@@ -64,6 +64,10 @@ public class CalendarPersonalConfigurationRow {
 	public String getDisplayName() {
 		return wrapper.getDisplayName();
 	}
+	
+	public String getIdentifier() {
+		return wrapper.getIdentifier();
+	}
 
 	public String getCssClass() {
 		return wrapper.getCssClass();
