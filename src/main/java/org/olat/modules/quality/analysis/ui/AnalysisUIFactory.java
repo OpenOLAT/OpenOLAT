@@ -71,7 +71,7 @@ class AnalysisUIFactory {
 	static String formatDiffRelative(Double value) {
 		if (value == null || Double.isNaN(value)) return "";
 		
-		return PLUS_MINUS_ONE_DECIMAL.format(value.doubleValue()) + "%";
+		return PLUS_MINUS_ONE_DECIMAL.format(value.doubleValue() * 100) + "%";
 	}
 	
 	static String formatYearPart(int yearPart) {
