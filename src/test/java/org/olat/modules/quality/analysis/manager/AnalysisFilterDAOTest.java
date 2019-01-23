@@ -40,6 +40,7 @@ import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
@@ -2138,7 +2139,10 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 	@Test
 	public void shouldFilterByContextOrganisationNull() {
 		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
-		Identity executor = JunitTestHelper.createAndPersistIdentityAsUser("");
+		Identity executor = JunitTestHelper.createAndPersistIdentityAsUser(UUID.randomUUID().toString());
+		// Remove user from all organisations. This test / filter is somewhat
+		// superfluous because a user is always in an organisation
+		organisationService.removeMember(executor, OrganisationRoles.user);
 		Organisation dcOrganisation = qualityTestHelper.createOrganisation();
 		// Data collection ok
 		QualityDataCollection dc = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
