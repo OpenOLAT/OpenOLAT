@@ -21,7 +21,6 @@ package org.olat.restapi.system;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -43,8 +42,6 @@ import org.olat.restapi.system.MonitoringService.Statistics;
 import org.olat.restapi.system.vo.SessionsVO;
 import org.olat.search.SearchServiceStatus;
 import org.olat.search.service.SearchServiceFactory;
-import org.olat.search.service.SearchServiceStatusImpl;
-import org.olat.search.service.indexer.FullIndexerStatus;
 import org.quartz.JobExecutionContext;
 import org.springframework.scheduling.quartz.QuartzJobBean;
 import org.w3c.dom.Document;
@@ -118,27 +115,29 @@ public class ProcSamplerJob extends QuartzJobBean {
 			SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 			format.setTimeZone(TimeZones.getUtcTimeZone());
 			SearchServiceStatus status = SearchServiceFactory.getService().getStatus();
-			if(status instanceof SearchServiceStatusImpl) {
-				SearchServiceStatusImpl statusImpl = (SearchServiceStatusImpl)status;
-				FullIndexerStatus fStatus = statusImpl.getFullIndexerStatus();
-				String date = format.format(new Date(fStatus.getLastFullIndexTime()));
-				addValue("lastFullIndexTime", date, rootEl, doc);
-			}
+
+			String date = format.format(status.getLastFullIndexTime());
+			addValue("lastFullIndexTime", date, rootEl, doc);
+
 			//marker
 			addValue("lastOpenOLATSampling", format.format(new Date()), rootEl, doc);
 
-			// Use a Transformer for output
-			try(OutputStream out = new FileOutputStream(xmlFile)) {
-				TransformerFactory tFactory = TransformerFactory.newInstance();
-				Transformer transformer = tFactory.newTransformer();
-				transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-				transformer.transform(new DOMSource(doc), new StreamResult(out));
-			} catch(IOException e) {
-				log.error("", e);
-			}
+			writeDocument(xmlFile, doc);
 		} catch(Exception e) {
 			log.error("", e);
 			
+		}
+	}
+	
+	private void writeDocument(File xmlFile, Document doc) {
+		// Use a Transformer for output
+		try(OutputStream out = new FileOutputStream(xmlFile)) {
+			TransformerFactory tFactory = TransformerFactory.newInstance();
+			Transformer transformer = tFactory.newTransformer();
+			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+			transformer.transform(new DOMSource(doc), new StreamResult(out));
+		} catch(Exception e) {
+			log.error("", e);
 		}
 	}
 	

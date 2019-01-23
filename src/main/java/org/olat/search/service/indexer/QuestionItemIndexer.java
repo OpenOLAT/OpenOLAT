@@ -25,6 +25,7 @@ import java.util.List;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexWriter;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.qpool.QPoolService;
@@ -32,6 +33,8 @@ import org.olat.modules.qpool.QuestionItemFull;
 import org.olat.modules.qpool.manager.QuestionItemDocumentFactory;
 import org.olat.modules.qpool.model.QItemDocument;
 import org.olat.search.service.SearchResourceContext;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * 
@@ -39,9 +42,13 @@ import org.olat.search.service.SearchResourceContext;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
+@Service("questionItemIndexer")
 public class QuestionItemIndexer implements LifeIndexer {
 	private static final OLog log = Tracing.createLoggerFor(QuestionItemIndexer.class);
 	private static final int BATCH_SIZE = 100;
+	
+	@Autowired
+	private DB dbInstance;
 
 	@Override
 	public String getSupportedTypeName() {
@@ -87,12 +94,15 @@ public class QuestionItemIndexer implements LifeIndexer {
 					indexWriter.addDocument(doc, writer);
 				}
 				counter += items.size();
+				indexWriter.getStatus().addDocumentCount(items.size());
+				dbInstance.commitAndCloseSession();
 			} while(items.size() == BATCH_SIZE);
 			
 		} catch (Exception e) {
 			log.error("", e);
 		} finally {
 			indexWriter.releaseWriter(writer);
+			dbInstance.commitAndCloseSession();
 		}
 	}
 }

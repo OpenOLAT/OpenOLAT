@@ -429,7 +429,7 @@ public class SearchServiceImpl implements SearchService, GenericEventListener {
 
 	@Override
 	public SearchServiceStatus getStatus() {
-		return new SearchServiceStatusImpl(indexer,this);
+		return new SearchServiceStatusImpl(indexer, lifeIndexer, this);
 	}
 
 	@Override

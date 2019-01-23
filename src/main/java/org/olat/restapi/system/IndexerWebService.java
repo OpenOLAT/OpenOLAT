@@ -43,9 +43,9 @@ public class IndexerWebService {
 	/**
 	 * Return the statistics about the indexer
 	 * @response.representation.200.qname {http://www.example.com}releaseVO
-   * @response.representation.200.mediaType application/xml, application/json
-   * @response.representation.200.doc Statistics about the indexer
-   * @response.representation.200.example {@link org.olat.restapi.system.vo.Examples#SAMPLE_OO_INDEXERSTATSVO}
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc Statistics about the indexer
+	 * @response.representation.200.example {@link org.olat.restapi.system.vo.Examples#SAMPLE_OO_INDEXERSTATSVO}
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
 	 * @return The statistics about the indexer
 	 */
@@ -58,8 +58,8 @@ public class IndexerWebService {
 	
 	/**
 	 * Return the status of the indexer: running, stopped
-   * @response.representation.200.mediaType application/xml, application/json
-   * @response.representation.200.doc The status of the indexer
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc The status of the indexer
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
 	 * @return The status of the indexer
 	 */
@@ -72,15 +72,15 @@ public class IndexerWebService {
 		if(serviceStatus instanceof SearchServiceStatusImpl) {
 			status = serviceStatus.getStatus();
 		} else {
-			status = "disabled";
+			status = FullIndexerStatus.STATUS_DISABLED;
 		}
 		return Response.ok(new IndexerStatus(status)).build();
 	}
 	
 	/**
 	 * Return the status of the indexer: running, stopped
-   * @response.representation.200.mediaType text/plain
-   * @response.representation.200.doc The status of the indexer
+	 * @response.representation.200.mediaType text/plain
+	 * @response.representation.200.doc The status of the indexer
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
 	 * @return The status of the indexer
 	 */
@@ -93,7 +93,7 @@ public class IndexerWebService {
 		if(serviceStatus instanceof SearchServiceStatusImpl) {
 			status = serviceStatus.getStatus();
 		} else {
-			status = "disabled";
+			status = FullIndexerStatus.STATUS_DISABLED;
 		}
 		return Response.ok(status).build();
 	}
@@ -101,7 +101,7 @@ public class IndexerWebService {
 	/**
 	 * Update the status of the indexer: running, stopped.
 	 * Running start the indexer, stopped, stop it.
-   * @response.representation.200.doc The status has changed
+	 * @response.representation.200.doc The status has changed
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
 	 * @return The status of the indexer
 	 */
@@ -123,18 +123,20 @@ public class IndexerWebService {
 		if(status instanceof SearchServiceStatusImpl) {
 			SearchServiceStatusImpl statusImpl = (SearchServiceStatusImpl)status;
 			FullIndexerStatus fStatus = statusImpl.getFullIndexerStatus();
-			stats.setIndexedDocumentCount(fStatus.getDocumentCount());
-			stats.setExcludedDocumentCount(fStatus.getExcludedDocumentCount());
-			stats.setIndexSize(fStatus.getIndexSize());
-			stats.setIndexingTime(fStatus.getIndexingTime());
+			FullIndexerStatus lStatus = statusImpl.getLifeIndexerStatus();
+
+			stats.setIndexedDocumentCount(fStatus.getDocumentCount() + lStatus.getDocumentCount());
+			stats.setExcludedDocumentCount(fStatus.getExcludedDocumentCount() + lStatus.getExcludedDocumentCount());
+			stats.setIndexSize(fStatus.getIndexSize() + lStatus.getIndexSize());
+			stats.setIndexingTime(fStatus.getIndexingTime() + lStatus.getIndexingTime());
 			stats.setFullIndexStartedAt(fStatus.getFullIndexStartedAt());
-			stats.setDocumentQueueSize(fStatus.getDocumentQueueSize());
-			stats.setRunningFolderIndexerCount(fStatus.getNumberRunningFolderIndexer());
-			stats.setAvailableFolderIndexerCount(fStatus.getNumberAvailableFolderIndexer());
+			stats.setDocumentQueueSize(fStatus.getDocumentQueueSize() + lStatus.getDocumentQueueSize());
+			stats.setRunningFolderIndexerCount(fStatus.getNumberRunningFolderIndexer() + lStatus.getNumberRunningFolderIndexer());
+			stats.setAvailableFolderIndexerCount(fStatus.getNumberAvailableFolderIndexer() + lStatus.getNumberAvailableFolderIndexer());
 			stats.setLastFullIndexTime(fStatus.getLastFullIndexDateString());
 			stats.setStatus(status.getStatus());
 		} else {
-			stats.setStatus("disabled");
+			stats.setStatus(FullIndexerStatus.STATUS_DISABLED);
 		}
 		return stats;
 	}

@@ -25,10 +25,13 @@
 
 package org.olat.search.service;
 
+import java.util.Date;
+
 import org.olat.search.SearchService;
 import org.olat.search.SearchServiceStatus;
 import org.olat.search.service.indexer.FullIndexerStatus;
 import org.olat.search.service.indexer.Index;
+import org.olat.search.service.indexer.LifeFullIndexer;
 
 /**
  * Collection of search-service states. Includes state of full-index, index and search.
@@ -37,7 +40,8 @@ import org.olat.search.service.indexer.Index;
  */
 public class SearchServiceStatusImpl implements SearchServiceStatus {
 	
-	FullIndexerStatus fullIndexerStatus;
+	private final FullIndexerStatus fullIndexerStatus;
+	private final FullIndexerStatus lifeIndexerStatus;
 	
 	private boolean indexExists; 
 	private long queryCount;
@@ -50,15 +54,25 @@ public class SearchServiceStatusImpl implements SearchServiceStatus {
 	 * @param indexer  Reference to index-component.
 	 * @param search   Reference to search-component.
 	 */
-	public SearchServiceStatusImpl(Index indexer, SearchService search) {
+	public SearchServiceStatusImpl(Index indexer, LifeFullIndexer lifeIndexer, SearchService search) {
 		fullIndexerStatus = indexer.getFullIndexStatus();
+		lifeIndexerStatus = lifeIndexer.getStatus();
 		indexExists = indexer.existIndex();
 		queryCount = search.getQueryCount();
 	}
 
 	@Override
 	public String getStatus() {
-		return fullIndexerStatus.getStatus();
+		String fullStatus = fullIndexerStatus.getStatus();
+		String lifeStatus = lifeIndexerStatus.getStatus();
+		
+		String status = FullIndexerStatus.STATUS_STOPPED;
+		if(FullIndexerStatus.STATUS_RUNNING.equals(fullStatus) || FullIndexerStatus.STATUS_RUNNING.equals(lifeStatus)) {
+			status = FullIndexerStatus.STATUS_RUNNING;
+		} else if(FullIndexerStatus.STATUS_FINISHED.equals(fullStatus) || FullIndexerStatus.STATUS_FINISHED.equals(lifeStatus)) {
+			status = FullIndexerStatus.STATUS_FINISHED;
+		}
+		return status;
 	}
 
 	/**
@@ -66,6 +80,20 @@ public class SearchServiceStatusImpl implements SearchServiceStatus {
 	 */
 	public FullIndexerStatus getFullIndexerStatus() {
 		return fullIndexerStatus;
+	}
+	
+	/**
+	 * @return  Status of life-indexer.
+	 */
+	public FullIndexerStatus getLifeIndexerStatus() {
+		return lifeIndexerStatus;
+	}
+
+	@Override
+	public Date getLastFullIndexTime() {
+		long fullTime = fullIndexerStatus.getLastFullIndexTime();
+		long lifeTime = lifeIndexerStatus.getLastFullIndexTime();
+		return (lifeTime > fullTime) ? new Date(lifeTime) : new Date(fullTime);
 	}
 	
 	/**

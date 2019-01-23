@@ -231,12 +231,12 @@ public class OlatFullIndexer {
 	private void doIndex() throws InterruptedException{
 		try {
 			if(indexerExecutor == null) {
-				BlockingQueue<Runnable> queue = new LinkedBlockingQueue<Runnable>(2);
+				BlockingQueue<Runnable> queue = new LinkedBlockingQueue<>(2);
 				indexerExecutor = new ThreadPoolExecutor(indexerPoolSize, indexerPoolSize, 0L, TimeUnit.MILLISECONDS,
 						queue, indexWorkersThreadFactory, new ThreadPoolExecutor.CallerRunsPolicy());
 			}
 			if(indexerWriterExecutor == null) {
-				BlockingQueue<Runnable> queue = new LinkedBlockingQueue<Runnable>(2);
+				BlockingQueue<Runnable> queue = new LinkedBlockingQueue<>(2);
 				indexerWriterExecutor = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS, queue, indexWriterThreadFactory);
 			}
 			
@@ -391,7 +391,7 @@ public class OlatFullIndexer {
 			  intValue = fileCounter.intValue();
 			}
 			intValue++;
-			fileTypeCounters.put(fileType, new Integer(intValue));
+			fileTypeCounters.put(fileType, Integer.valueOf(intValue));
 		}
 	}
 
@@ -403,7 +403,7 @@ public class OlatFullIndexer {
 		  intValue = docCounter.intValue();
 		}
 		intValue++;
-		documentCounters.put(documentType, new Integer(intValue));
+		documentCounters.put(documentType, Integer.valueOf(intValue));
 	}
 
 	private void countIndexPerMinute() {
@@ -452,8 +452,8 @@ public class OlatFullIndexer {
 	}
 	
 	private void resetDocumentCounters() {
-		documentCounters = new Hashtable<String,Integer>();
-		fileTypeCounters = new Hashtable<String,Integer>();		
+		documentCounters = new Hashtable<>();
+		fileTypeCounters = new Hashtable<>();		
 	}
 	
 	private class CloseIndexCallable implements Callable<Boolean> {

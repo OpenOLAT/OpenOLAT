@@ -24,8 +24,6 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.olat.search.SearchServiceStatus;
-
 /**
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
@@ -33,7 +31,7 @@ import org.olat.search.SearchServiceStatus;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "indexerStatusVO")
-public class IndexerStatus implements SearchServiceStatus {
+public class IndexerStatus {
 
 	@XmlAttribute(name="status")
 	private String status;

@@ -302,10 +302,6 @@
 		</property>				
 	</bean>
 	
-	
-	<!-- Question items -->
-	<bean id="questionItemIndexer" class="org.olat.search.service.indexer.QuestionItemIndexer"/>
-	
 	<!-- Inject security callback to IdentityIndexer which reduce the visibility of users 
 	     via the full text search to admin and user managers -->
 	<!--

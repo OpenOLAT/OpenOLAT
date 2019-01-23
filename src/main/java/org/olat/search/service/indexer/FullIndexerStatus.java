@@ -38,10 +38,10 @@ import org.olat.search.service.document.file.FileDocumentFactory;
  */
 public class FullIndexerStatus {
 
-	public final static String STATUS_STOPPED  = "stopped";
-	public final static String STATUS_RUNNING  = "running";
-	public final static String STATUS_FINISHED = "finished";
-	public final static String STATUS_SLEEPING = "sleeping";
+	public static final String STATUS_STOPPED  = "stopped";
+	public static final String STATUS_RUNNING  = "running";
+	public static final String STATUS_FINISHED = "finished";
+	public static final String STATUS_DISABLED = "disabled";
 
 	private long fullIndexStartedAt = 0;
 	private long lastFullIndexTime = 0;
@@ -63,8 +63,8 @@ public class FullIndexerStatus {
 		
 	public FullIndexerStatus(int numberOfPartDocumentCounters) {
 		partDocumentCounters = new int[numberOfPartDocumentCounters];
-		documentCounters = new Hashtable<String,Integer>();
-		fileTypeCounters = new Hashtable<String,Integer>();
+		documentCounters = new Hashtable<>();
+		fileTypeCounters = new Hashtable<>();
 	}
 	
 
@@ -140,8 +140,8 @@ public class FullIndexerStatus {
 		for (int i = 0; i < partDocumentCounters.length; i++) {
 			partDocumentCounters[i] = 0;
 		}
-		documentCounters = new Hashtable<String,Integer>();
-		fileTypeCounters = new Hashtable<String,Integer>();
+		documentCounters = new Hashtable<>();
+		fileTypeCounters = new Hashtable<>();
 		CoreSpringFactory.getImpl(FileDocumentFactory.class).resetExcludedFileSizeCount();
 	}
 
@@ -262,10 +262,10 @@ public class FullIndexerStatus {
 	 * @return  Return HTML formatted text with document-type names and counter-values.
 	 */
 	public String getDocumentCounters() {
-		StringBuilder buf = new StringBuilder();
-		for (String documentType : documentCounters.keySet()) {
-			Integer counterValue = documentCounters.get(documentType);
-			buf.append(documentType);
+		StringBuilder buf = new StringBuilder(1024);
+		for (Map.Entry<String, Integer> documentType : documentCounters.entrySet()) {
+			Integer counterValue = documentType.getValue();
+			buf.append(documentType.getKey());
 			buf.append("=");
 			buf.append(counterValue.toString());
 			buf.append("<br />");
@@ -285,10 +285,10 @@ public class FullIndexerStatus {
 	 * @return  Return HTML formatted text with file-type names and counter-values.
 	 */
 	public String getFileTypeCounters() {
-		StringBuilder buf = new StringBuilder();
-		for (String fileType : fileTypeCounters.keySet()) {
-			Integer counterValue = fileTypeCounters.get(fileType);
-			buf.append(fileType);
+		StringBuilder buf = new StringBuilder(1024);
+		for (Map.Entry<String, Integer> fileType : fileTypeCounters.entrySet()) {
+			Integer counterValue = fileType.getValue();
+			buf.append(fileType.getKey());
 			buf.append("=");
 			buf.append(counterValue.toString());
 			buf.append("<br />");

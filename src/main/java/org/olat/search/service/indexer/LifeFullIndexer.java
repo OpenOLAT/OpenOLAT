@@ -40,6 +40,8 @@ public interface LifeFullIndexer {
 	 */
 	public void fullIndex();
 	
+	public FullIndexerStatus getStatus();
+	
 	/**
 	 * Ask to index the document with the specified key
 	 * @param type
