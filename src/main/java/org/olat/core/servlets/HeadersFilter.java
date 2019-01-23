@@ -108,8 +108,7 @@ public class HeadersFilter implements Filter {
 		appendDirective(sb, "style-src", securityModule.getContentSecurityPolicyStyleSrc(),
 				CSPModule.DEFAULT_CONTENT_SECURITY_POLICY_STYLE_SRC);
 		appendImgSrcDirective(sb, false);
-		appendDirective(sb, "font-src", securityModule.getContentSecurityPolicyFontSrc(),
-				CSPModule.DEFAULT_CONTENT_SECURITY_POLICY_FONT_SRC);
+		appendFontSrcDirective(sb, false);
 		appendDirective(sb, "worker-src", securityModule.getContentSecurityPolicyWorkerSrc(),
 				CSPModule.DEFAULT_CONTENT_SECURITY_POLICY_WORKER_SRC);
 		appendFrameSrcDirective(sb, false);
@@ -132,10 +131,8 @@ public class HeadersFilter implements Filter {
 				appendDirective(sb, "style-src", null, CSPModule.DEFAULT_CONTENT_SECURITY_POLICY_STYLE_SRC);
 				break;
 			case "img-src": appendImgSrcDirective(sb, true); break;
-			case "font-src":
-				appendDirective(sb, "font-src", null, CSPModule.DEFAULT_CONTENT_SECURITY_POLICY_FONT_SRC);
-				break;
-			case "connect-src":appendConnectSrcDirective(sb, true); break;
+			case "font-src": appendFontSrcDirective(sb, true); break;
+			case "connect-src": appendConnectSrcDirective(sb, true); break;
 			case "frame-src": appendFrameSrcDirective(sb, true); break;
 			case "media-src": appendMediaSrcDirective(sb, true); break;
 			case "object-src":
@@ -146,6 +143,17 @@ public class HeadersFilter implements Filter {
 		
 		return sb.toString();
 		
+	}
+	
+	private void appendFontSrcDirective(StringBuilder sb, boolean standard) {
+		sb.append("font-src ")
+		  .append(CSPModule.DEFAULT_CONTENT_SECURITY_POLICY_FONT_SRC);
+		if(!standard && StringHelper.containsNonWhitespace(securityModule.getContentSecurityPolicyFontSrc())) {
+			sb.append(" ").append(securityModule.getContentSecurityPolicyFontSrc());
+		}
+		
+		appendEdusharingUrl(sb);
+		sb.append(";");
 	}
 	
 	private void appendConnectSrcDirective(StringBuilder sb, boolean standard) {
