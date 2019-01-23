@@ -377,7 +377,8 @@ public class StudentCoursesController extends FormBasicController implements Act
 		removeAsListenerAndDispose(cmc);
 
 		ContactMessage cmsg = new ContactMessage(getIdentity());
-		ContactList contactList = new ContactList("to");
+		String fullName = userManager.getUserDisplayName(student);
+		ContactList contactList = new ContactList(fullName);
 		contactList.add(student);
 		cmsg.addEmailTo(contactList);
 		contactCtrl = new ContactFormController(ureq, getWindowControl(), true, false, false, cmsg);
