@@ -130,15 +130,13 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 				Integer.toString(Identity.STATUS_ACTIV),
 				Integer.toString(Identity.STATUS_PERMANENT),
 				Integer.toString(Identity.STATUS_PENDING),
-				Integer.toString(Identity.STATUS_LOGIN_DENIED),
-				Integer.toString(Identity.STATUS_DELETED)
+				Integer.toString(Identity.STATUS_LOGIN_DENIED)
 		};
 		statusValues = new String[] {
 				translate("rightsForm.status.activ"),
 				translate("rightsForm.status.permanent"),
 				translate("rightsForm.status.pending"),
-				translate("rightsForm.status.login_denied"),
-				translate("rightsForm.status.deleted")
+				translate("rightsForm.status.login_denied")
 		};
 		
 		List<String> organisationKeyList = new ArrayList<>();
