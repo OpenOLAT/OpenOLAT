@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.StringWriter;
 import java.math.BigInteger;
 import java.net.ConnectException;
+import java.net.URI;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -155,6 +156,16 @@ public class ViteroManager implements UserDataDeletable {
 	private static final String VMS_PROVIDER = "VMS";
 	private static final String VMS_CATEGORY = "vitero-category";
 	private static final String VMS_CATEGORY_ZOMBIE = "vitero-category-zombie";
+	
+	// We cache the ports because of Apache CXF (not the JAX-WS) implementation
+	// see: http://cxf.apache.org/faq.html#FAQ%2DAreJAX%2DWSclientproxiesthreadsafe%3F
+	// and because we only use one credential ( one user to access the service
+	private Mtom mtomWebService;
+	private Group groupWebService;
+	private Booking bookingWebService;
+	private Licence licenseWebService;
+	private SessionCode sessionCodeWebService;
+	private de.vitero.schema.user.User userWebService;
 	
 	@Autowired
 	private ViteroModule viteroModule;
@@ -1266,7 +1277,7 @@ public class ViteroManager implements UserDataDeletable {
 	public List<ViteroBooking> getBookings(BusinessGroup group, OLATResourceable ores, String subIdentifier)
 	throws VmsNotAvailableException {
 		List<Property> properties = propertyManager.listProperties(null, group, ores, VMS_CATEGORY, null);
-		List<ViteroBooking> bookings = new ArrayList<ViteroBooking>();
+		List<ViteroBooking> bookings = new ArrayList<>();
 		for(Property property:properties) {
 			String propIdentifier = property.getStringValue();
 			if((propIdentifier == null || subIdentifier == null)
@@ -1347,8 +1358,7 @@ public class ViteroManager implements UserDataDeletable {
 		try {
 			Bookingid bookingId = new Bookingid();
 			bookingId.setBookingid(id);
-			Bookingtype booking = getBookingWebService().getBookingById(bookingId);
-			return booking;
+			return getBookingWebService().getBookingById(bookingId);
 		} catch(SOAPFaultException f) {
 			ErrorCode code = handleAxisFault(f);
 			switch(code) {
@@ -1438,15 +1448,15 @@ public class ViteroManager implements UserDataDeletable {
 		try {
 			LicenceService ss = new LicenceService();
 	        ss.setHandlerResolver(new HandlerResolver() {
-						@SuppressWarnings("rawtypes")
-						@Override
-						public List<Handler> getHandlerChain(PortInfo portInfo) {
-							List<Handler> handlerList = new ArrayList<Handler>();
-							handlerList.add(new ViteroSecurityHandler(login, password));
-							return handlerList;
-						}
-	        	
+				@SuppressWarnings("rawtypes")
+				@Override
+				public List<Handler> getHandlerChain(PortInfo portInfo) {
+					List<Handler> handlerList = new ArrayList<>();
+					handlerList.add(new ViteroSecurityHandler(login, password));
+					return handlerList;
+				}
 	        });
+	        
 	        Licence port = ss.getLicenceSoap11();
 	        String endPoint = UriBuilder.fromUri(url).path("services").path("LicenseService").build().toString();
 	        ((BindingProvider)port).getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, endPoint);
@@ -1524,7 +1534,7 @@ public class ViteroManager implements UserDataDeletable {
 		
 		if(f.getMessage() != null) {
 			if(sb.length() > 0) sb.append(" -> ");
-			sb.append(f.getMessage().toString());
+			sb.append(f.getMessage());
 		}
 		
 		if(StringHelper.containsNonWhitespace(f.getMessage())) {
@@ -1536,7 +1546,7 @@ public class ViteroManager implements UserDataDeletable {
 	}
 	
 	private final List<ViteroBooking> convert(List<Booking_Type> bookings) {
-		List<ViteroBooking> viteroBookings = new ArrayList<ViteroBooking>();
+		List<ViteroBooking> viteroBookings = new ArrayList<>();
 		
 		if(bookings != null && bookings.size() > 0) {
 			for(Booking_Type b:bookings) {
@@ -1576,7 +1586,7 @@ public class ViteroManager implements UserDataDeletable {
 	}
 	
 	private final List<ViteroUser> convertUsertype(List<Usertype> userTypes) {
-		List<ViteroUser> vUsers = new ArrayList<ViteroUser>();
+		List<ViteroUser> vUsers = new ArrayList<>();
 		if(userTypes != null) {
 			for(Usertype userType:userTypes) {
 				vUsers.add(convert(userType));
@@ -1625,7 +1635,7 @@ public class ViteroManager implements UserDataDeletable {
 	private final Property createProperty(final BusinessGroup group, final OLATResourceable courseResource, String subIdentifier, ViteroBooking booking) {
 		String serialized = serializeViteroBooking(booking);
 		String bookingId = Integer.toString(booking.getBookingId());
-		Long groupId = new Long(booking.getGroupId());
+		Long groupId = Long.valueOf(booking.getGroupId());
 		return propertyManager.createPropertyInstance(null, group, courseResource, VMS_CATEGORY, bookingId, null, groupId, subIdentifier, serialized);
 	}
 	
@@ -1647,57 +1657,105 @@ public class ViteroManager implements UserDataDeletable {
 	
 	//Factories for service stubs
 	private final  Booking getBookingWebService() {
+        if(bookingWebService != null && endPointMatch((BindingProvider)bookingWebService)) {
+        	return bookingWebService;
+        }
+		
 		BookingService ss = new BookingService();
         ss.setHandlerResolver(new VmsSecurityHandlerResolver());
         Booking port = ss.getBookingSoap11();
         String endPoint = getVmsEndPoint("BookingService");
         ((BindingProvider)port).getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, endPoint);
+        bookingWebService = port;
 		return port;
 	}
 	
 	private final Licence getLicenceWebService() {
+        if(licenseWebService != null && endPointMatch((BindingProvider)licenseWebService)) {
+        	return licenseWebService;
+        }
+		
 		LicenceService ss = new LicenceService();
         ss.setHandlerResolver(new VmsSecurityHandlerResolver());
         Licence port = ss.getLicenceSoap11();
         String endPoint = getVmsEndPoint("LicenceService");
         ((BindingProvider)port).getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, endPoint);
+        licenseWebService = port;
 		return port;
 	}
+
+
 	
 	private final Group getGroupWebService() {
+        if(groupWebService != null && endPointMatch((BindingProvider)groupWebService)) {
+        	return groupWebService;
+        }
+		
 		GroupService ss = new GroupService();
         ss.setHandlerResolver(new VmsSecurityHandlerResolver());
         Group port = ss.getGroupSoap11();
         String endPoint = getVmsEndPoint("GroupService");
         ((BindingProvider)port).getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, endPoint);
+        groupWebService = port;
 		return port;
 	}
 	
 	private final de.vitero.schema.user.User getUserWebService() {
+        if(userWebService != null && endPointMatch((BindingProvider)userWebService)) {
+        	return userWebService;
+        }
+		
 		UserService ss = new UserService();
         ss.setHandlerResolver(new VmsSecurityHandlerResolver());
         de.vitero.schema.user.User port = ss.getUserSoap11();
         String endPoint = getVmsEndPoint("UserService");
         ((BindingProvider)port).getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, endPoint);
+        userWebService = port;
 		return port;
 	}
 	
 	private final Mtom getMtomWebService() {
+        if(mtomWebService != null && endPointMatch((BindingProvider)mtomWebService)) {
+        	return mtomWebService;
+        }
+		
 		MtomService ss = new MtomService();
         ss.setHandlerResolver(new VmsSecurityHandlerResolver());
         Mtom port = ss.getMtomSoap11();
         String endPoint = getVmsEndPoint("MtomService");
         ((BindingProvider)port).getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, endPoint);
+        mtomWebService = port;
 		return port;
 	}
 	
+	
 	private final SessionCode getSessionCodeWebService() {
+        if(sessionCodeWebService != null && endPointMatch((BindingProvider)sessionCodeWebService)) {
+        	return sessionCodeWebService;
+        }
+
+        String endPoint = getVmsEndPoint("SessionCodeService");
 		SessionCodeService ss = new SessionCodeService();
         ss.setHandlerResolver(new VmsSecurityHandlerResolver());
         SessionCode port = ss.getSessionCodeSoap11();
-        String endPoint = getVmsEndPoint("SessionCodeService");
         ((BindingProvider)port).getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, endPoint);
+        sessionCodeWebService = port;
 		return port;
+	}
+	
+	/**
+	 * 
+	 * @param webservice The proxy to check
+	 * @return true if the proxy use the host configured in the module
+	 */
+	private boolean endPointMatch(BindingProvider webservice) {
+        Object endPoint = webservice.getRequestContext().get(BindingProvider.ENDPOINT_ADDRESS_PROPERTY);
+        if(endPoint instanceof String) {
+        	URI configuredUri = viteroModule.getVmsURI();
+        	URI endpointUri = URI.create((String)endPoint);
+        	return endpointUri.getHost().equals(configuredUri.getHost());	
+        }
+        return false;
 	}
 
 	private final String getVmsEndPoint(String service) {
@@ -1742,7 +1800,7 @@ public class ViteroManager implements UserDataDeletable {
 		@SuppressWarnings("rawtypes")
 		@Override
 		public List<Handler> getHandlerChain(PortInfo portInfo) {
-			List<Handler> handlerList = new ArrayList<Handler>();
+			List<Handler> handlerList = new ArrayList<>();
 			handlerList.add(new ViteroSecurityHandler(viteroModule.getAdminLogin(), viteroModule.getAdminPassword()));
 			return handlerList;
 		}

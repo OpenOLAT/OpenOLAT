@@ -31,6 +31,7 @@ import org.olat.modules.card2brain.Card2BrainModule;
 import org.olat.modules.edubase.EdubaseModule;
 import org.olat.modules.edusharing.EdusharingModule;
 import org.olat.modules.openmeetings.OpenMeetingsModule;
+import org.olat.modules.vitero.ViteroModule;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -44,6 +45,8 @@ public class HeadersFilter implements Filter {
 	
 	@Autowired
 	private CSPModule securityModule;
+	@Autowired
+	private ViteroModule viteroModule;
 	@Autowired
 	private EdubaseModule edubaseModule;
 	@Autowired
@@ -69,7 +72,8 @@ public class HeadersFilter implements Filter {
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
 		if(securityModule == null || edubaseModule != null
 				|| analyticsModule != null || card2BrainModule != null
-				|| openMeetingsModule != null|| edusharingModule != null) {
+				|| openMeetingsModule != null|| edusharingModule != null
+				|| viteroModule != null) {
 			CoreSpringFactory.autowireObject(this);
 		}
 		addSecurityHeaders(response);
@@ -214,6 +218,7 @@ public class HeadersFilter implements Filter {
 		appendCard2BrainUrl(sb);
 		appendEdubaseUrl(sb);
 		appendEdusharingUrl(sb);
+		appendViteroUrl(sb);
 		sb.append(";");
 	}
 	
@@ -274,6 +279,12 @@ public class HeadersFilter implements Filter {
 	private void appendCard2BrainUrl(StringBuilder sb) {
 		if(card2BrainModule != null && card2BrainModule.isEnabled()) {
 			appendUrl(sb, card2BrainModule.getVerifyLtiUrl());
+		}
+	}
+	
+	private void appendViteroUrl(StringBuilder sb) {
+		if(viteroModule != null && viteroModule.isEnabled()) {
+			appendUrl(sb, viteroModule.getVmsURI().toString());
 		}
 	}
 	
