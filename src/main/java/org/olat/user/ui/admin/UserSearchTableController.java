@@ -389,10 +389,13 @@ public class UserSearchTableController extends FormBasicController {
 				if (userBulkChanges.isValidChange()) {
 					Map<String, String> attributeChangeMap = userBulkChanges.getAttributeChangeMap();
 					Map<OrganisationRoles, String> roleChangeMap = userBulkChanges.getRoleChangeMap();
+					userBulkChanges.getStatus();
 					List<Long> ownGroups = userBulkChanges.getOwnerGroups();
 					List<Long> partGroups = userBulkChanges.getParticipantGroups();
 					List<String> notUpdatedIdentities = new ArrayList<>();
-					if (!attributeChangeMap.isEmpty() || !roleChangeMap.isEmpty() || !ownGroups.isEmpty() || !partGroups.isEmpty()){
+					if (!attributeChangeMap.isEmpty() || !roleChangeMap.isEmpty()
+							|| !ownGroups.isEmpty() || !partGroups.isEmpty()
+							|| userBulkChanges.getStatus() != null){
 						Identity addingIdentity = ureq1.getIdentity();
 						userBulkChangesManager.changeSelectedIdentities(identities, userBulkChanges, notUpdatedIdentities,
 							isAdministrativeUser, getTranslator(), addingIdentity);
@@ -434,6 +437,8 @@ public class UserSearchTableController extends FormBasicController {
 		} else {
 			showInfo("bulkChange.success");
 		}
+		// reload the data
+		tableEl.reset(true, true, true);
 	}
 	
 	private List<Identity> getSelectedIdentitiesWithWarning() {
