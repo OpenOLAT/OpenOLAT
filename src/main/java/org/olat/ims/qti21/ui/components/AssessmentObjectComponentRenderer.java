@@ -685,7 +685,10 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 				break;
 			}
 			case TextRun.DISPLAY_NAME: {
-				sb.append(((TextRun)inline).getTextContent());
+				String content = ((TextRun)inline).getTextContent();
+				if(content != null) {
+					sb.append(content.replace("<", "&lt;"));
+				}
 				break;
 			}
 			case Math.QTI_CLASS_NAME: {
