@@ -68,8 +68,7 @@ public abstract class OlatTestCase extends AbstractJUnit4SpringContextTests {
 	private static boolean postgresqlConfigured = false;
 	private static boolean oracleConfigured = false;
 	private static boolean started = false;
-	
-	private SimpleSmtpServer dumbster;
+	private static SimpleSmtpServer dumbster;
 	
 	 @Rule public TestName currentTestName = new TestName();
 	
