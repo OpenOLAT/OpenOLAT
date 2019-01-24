@@ -2492,6 +2492,12 @@
 			<version>0.5.2</version>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>com.github.kirviq</groupId>
+			<artifactId>dumbster</artifactId>
+			<version>1.7.1</version>
+			<scope>test</scope>
+		</dependency>
     
 		<!-- Start test dependencies for Arquillian and Selenium -->
 		<dependency>

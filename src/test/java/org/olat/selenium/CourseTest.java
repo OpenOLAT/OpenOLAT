@@ -250,7 +250,6 @@ public class CourseTest extends Deployments {
 		//from description editor, back to details and launch the course
 		settings
 			.assertOnInfos();
-		OOGraphene.closeErrorBox(browser);//close mail error
 		settings	
 			.back();
 		

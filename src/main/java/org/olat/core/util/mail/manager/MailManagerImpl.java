@@ -1782,9 +1782,8 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 		}
 
 		try{
-			if(Settings.isJUnitTest()) {
-				//we want not send really e-mails
-			} else if (mailModule.isMailHostEnabled() && result.getReturnCode() == MailerResult.OK) {
+			System.out.println("mailModule isMailHostEnabled: " + mailModule.isMailHostEnabled() + " " + WebappHelper.getMailConfig("mailhost"));
+			if (mailModule.isMailHostEnabled() && result.getReturnCode() == MailerResult.OK) {
 				// now send the mail
 				if(Settings.isDebuging()) {
 					logMessage(msg);

@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.List;
 import java.util.UUID;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -31,6 +32,7 @@ import org.jboss.arquillian.graphene.page.InitialPage;
 import org.jboss.arquillian.graphene.page.Page;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.olat.selenium.page.LoginPage;
@@ -61,6 +63,8 @@ import org.olat.test.JunitTestHelper;
 import org.olat.test.rest.UserRestClient;
 import org.olat.user.restapi.UserVO;
 import org.openqa.selenium.WebDriver;
+
+import com.dumbster.smtp.SmtpMessage;
 
 /**
  * 
@@ -565,10 +569,11 @@ public class PortfolioV2Test extends Deployments {
 			.createEntry("3. Page", 1)
 			.assertOnPage("3. Page");
 		
+		String invitation = "c.l." + UUID.randomUUID() + "@frentix.com";
 		BinderPublicationPage binderPublish = binder
 			.selectPublish()
 			.openAccessMenu()
-			.addInvitation("c.l." + UUID.randomUUID() + "@frentix.com")
+			.addInvitation(invitation)
 			.fillInvitation("Clara", "Vigne")
 			.fillAccessRights("3. Page", Boolean.TRUE);
 		String url = binderPublish.getInvitationURL();
@@ -595,6 +600,13 @@ public class PortfolioV2Test extends Deployments {
 			.assertOnPageInEntries("3. Page")
 			.selectEntryInEntries("3. Page")
 			.assertOnPage("3. Page");
+		
+		// check mail really send
+		List<SmtpMessage> emails = getSmtpServer().getReceivedEmails();
+		Assert.assertNotNull(emails);
+		Assert.assertEquals(1, emails.size());
+		SmtpMessage email = emails.get(0);
+		Assert.assertEquals(invitation + ":;", email.getHeaderValue("To"));
 	}
 	
 

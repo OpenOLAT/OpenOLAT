@@ -101,9 +101,6 @@ public class BinderPublicationPage {
 		By submitBy = By.cssSelector(".o_sel_pf_invitation_button_group button.btn-primary");
 		browser.findElement(submitBy).click();
 		OOGraphene.waitBusy(browser);
-		
-		//close error smtp
-		OOGraphene.closeErrorBox(browser);
 		return this;
 	}
 }
