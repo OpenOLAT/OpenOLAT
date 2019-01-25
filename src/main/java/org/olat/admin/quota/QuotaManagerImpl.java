@@ -527,7 +527,7 @@ public class QuotaManagerImpl implements QuotaManager, InitializingBean {
 
 	private String getDefaultQuotaIdentifier(String path) {
 		String identifier = QuotaConstants.IDENTIFIER_DEFAULT;
-		if(path.startsWith(QuotaConstants.IDENTIFIER_DEFAULT)) {
+		if(path == null || path.startsWith(QuotaConstants.IDENTIFIER_DEFAULT)) {
 			identifier = path;
 		} else if(path.startsWith("/cts/folders/BusinessGroup/")) {
 			identifier = QuotaConstants.IDENTIFIER_DEFAULT_GROUPS;
