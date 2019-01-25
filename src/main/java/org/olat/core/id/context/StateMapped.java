@@ -33,7 +33,7 @@ import java.util.Map;
 public class StateMapped implements StateEntry{
 
 	private static final long serialVersionUID = -164313132644246934L;
-	private Map<String,String> delegate = new HashMap<String,String>();
+	private Map<String,String> delegate = new HashMap<>();
 	
 	public StateMapped() {
 		//make XStream happy

@@ -317,13 +317,11 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 
 	protected StateMapped getStateEntry() {
 		StateMapped state = new StateMapped();
-		if(items != null) {
-			for(Map.Entry<String, FormItem> itemEntry : items.entrySet()) {
-				String key = itemEntry.getKey();
-				FormItem f = itemEntry.getValue();
-				if (f instanceof TextElement) {
-					state.getDelegate().put(key, ((TextElement) f).getValue());
-				}	
+		for(Map.Entry<String, FormItem> itemEntry : items.entrySet()) {
+			String key = itemEntry.getKey();
+			FormItem f = itemEntry.getValue();
+			if (f instanceof TextElement) {
+				state.getDelegate().put(key, ((TextElement) f).getValue());
 			}	
 		}
 		return state;

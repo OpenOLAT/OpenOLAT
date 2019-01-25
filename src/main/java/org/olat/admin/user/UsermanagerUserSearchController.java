@@ -24,8 +24,11 @@
 */
 package org.olat.admin.user;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.SearchIdentityParams;
 import org.olat.core.gui.UserRequest;
@@ -77,6 +80,8 @@ public class UsermanagerUserSearchController extends BasicController implements 
 	
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private BaseSecurity securityManager;
 	@Autowired
 	private BaseSecurityModule securityModule;
 
@@ -178,9 +183,17 @@ public class UsermanagerUserSearchController extends BasicController implements 
 			
 			if(entries != null && !entries.isEmpty()) {
 				String table = entries.get(0).getOLATResourceable().getResourceableTypeName();
-				if("table".equals(table)) {
+				if("table".equalsIgnoreCase(table)) {
 					entries.remove(0);
 					event(ureq, searchFormCtrl, Event.DONE_EVENT);
+				}
+			}
+		} else {
+			if(entries != null && entries.size()> 1) {
+				String table = entries.get(0).getOLATResourceable().getResourceableTypeName();
+				String identity = entries.get(1).getOLATResourceable().getResourceableTypeName();
+				if("table".equalsIgnoreCase(table) && "Identity".equalsIgnoreCase(identity)) {
+					doActivateUser(ureq, entries.subList(1, entries.size()));
 				}
 			}
 		}
@@ -189,6 +202,20 @@ public class UsermanagerUserSearchController extends BasicController implements 
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		//
+	}
+	
+	private void doActivateUser(UserRequest ureq, List<ContextEntry> entries) {
+		Long identityKey = entries.get(0).getOLATResourceable().getResourceableId();
+		Identity searchedIdentity = securityManager.loadIdentityByKey(identityKey);
+		
+		StateMapped searchState = new StateMapped();
+		Map<String,String> states = new HashMap<>();
+		states.put("login", searchedIdentity.getName());
+		searchState.setDelegate(states);
+		searchFormCtrl.setStateEntry(searchState);
+		
+		doPushSearch(ureq);
+		tableCtr.activate(ureq, entries, null);
 	}
 	
 	private void doPushSearch(UserRequest ureq) {

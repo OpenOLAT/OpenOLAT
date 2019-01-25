@@ -279,9 +279,9 @@ public class RegistrationManager implements UserDataDeletable, UserDataExportabl
 			return;
 		}
 		
-		// http://localhost:8080/auth/UserAdminSite/0/usearch/0/table/0/Identity/720896/tab/10
+		// http://localhost:8080/auth/UserAdminSite/0/usearch/0/table/0/Identity/720896/roles/0
 		
-		String userPath = "[UserAdminSite:0][usearch:0][table:0][Identity:" + newIdentity.getKey() + "][tab:10]";
+		String userPath = "[UserAdminSite:0][usearch:0][table:0][Identity:" + newIdentity.getKey() + "][roles:0]";
 		String url = BusinessControlFactory.getInstance().getURLFromBusinessPathString(userPath);
 		
 		MailerResult result = new MailerResult();

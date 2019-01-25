@@ -54,9 +54,11 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.WebappHelper;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.QuotaManager;
 import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementListController;
 import org.olat.ldap.LDAPLoginManager;
@@ -116,6 +118,7 @@ public class UserAdminController extends BasicController implements Activateable
 	private Identity editedIdentity;
 	private final Roles editedRoles;
 	private final boolean allowedToManage;
+	private int rolesTab;
 
 	// controllers used in tabbed pane
 	private TabbedPane userTabP;
@@ -206,9 +209,13 @@ public class UserAdminController extends BasicController implements Activateable
 		if(entries == null || entries.isEmpty()) return;
 
 		String entryPoint = entries.get(0).getOLATResourceable().getResourceableTypeName();
-		if("tab".equals(entryPoint)) {
+		if("tab".equalsIgnoreCase(entryPoint)) {
 			userTabP.activate(ureq, entries, state);
-		} else if("table".equals(entryPoint)) {
+		} else if("roles".equalsIgnoreCase(entryPoint) && rolesTab >= 0) {
+			List<ContextEntry> tabEntries = BusinessControlFactory.getInstance()
+					.createCEListFromString(OresHelper.createOLATResourceableInstance("tab", Long.valueOf(rolesTab)));
+			userTabP.activate(ureq, tabEntries, state);
+		} else if("table".equalsIgnoreCase(entryPoint)) {
 			if(entries.size() > 2) {
 				List<ContextEntry> subEntries = entries.subList(2, entries.size());
 				userTabP.activate(ureq, subEntries, state);
@@ -430,7 +437,7 @@ public class UserAdminController extends BasicController implements Activateable
 		}
 
 		// the controller manager is read-write permissions
-		userTabP.addTab(translate(NLS_EDIT_UROLES), uureq -> {
+		rolesTab = userTabP.addTab(translate(NLS_EDIT_UROLES), uureq -> {
 			rolesCtr = new SystemRolesAndRightsController(getWindowControl(), uureq, identity);
 			listenTo(rolesCtr);
 			return rolesCtr.getInitialComponent();

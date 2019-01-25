@@ -62,12 +62,15 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Util;
 import org.olat.core.util.mail.ContactList;
@@ -87,7 +90,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class UserSearchTableController extends FormBasicController {
+public class UserSearchTableController extends FormBasicController implements Activateable2 {
 	
 	private static final String USER_PROPS_ID = ExtendedIdentitiesTableDataModel.class.getCanonicalName();
 	public static final int USER_PROPS_OFFSET = 500;
@@ -206,6 +209,22 @@ public class UserSearchTableController extends FormBasicController {
 	}
 
 	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if("Identity".equalsIgnoreCase(type)) {
+			Long identityKey = entries.get(0).getOLATResourceable().getResourceableId();
+			List<IdentityPropertiesRow> rows = tableModel.getObjects();
+			for(IdentityPropertiesRow row:rows) {
+				if(row != null && row.getIdentityKey().equals(identityKey)) {
+					doSelectIdentity(ureq, row).activate(ureq, entries.subList(1, entries.size()), null);
+				}
+			}
+		}
+	}
+
+	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(userBulkChangesController == source) {
 			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
@@ -302,7 +321,7 @@ public class UserSearchTableController extends FormBasicController {
 		}
 	}
 
-	private void doSelectIdentity(UserRequest ureq, IdentityPropertiesRow userRow) {
+	private UserAdminController doSelectIdentity(UserRequest ureq, IdentityPropertiesRow userRow) {
 		removeAsListenerAndDispose(userAdminCtr);
 		
 		Identity identity = securityManager.loadIdentityByKey(userRow.getIdentityKey());
@@ -319,7 +338,8 @@ public class UserSearchTableController extends FormBasicController {
 		stackPanel.pushController(fullName, userAdminCtr);
 		stackPanel.addTool(previousLink, Align.rightEdge, false, "o_tool_previous");
 		stackPanel.addTool(nextLink, Align.rightEdge, false, "o_tool_next");
-		updateNextPrevious(userRow, false);	
+		updateNextPrevious(userRow, false);
+		return userAdminCtr;
 	}
 	
 	private void doSelectVcard(UserRequest ureq, IdentityPropertiesRow userRow) {
