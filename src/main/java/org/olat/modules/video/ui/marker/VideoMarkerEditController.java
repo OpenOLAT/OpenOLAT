@@ -312,6 +312,8 @@ public class VideoMarkerEditController extends BasicController {
 			if(currentTimeCode != null) {
 				long time = Math.round(Double.parseDouble(currentTimeCode)) * 1000l;
 				newMarker.setBegin(new Date(time));
+			} else {
+				newMarker.setBegin(new Date(0l));
 			}
 			
 			markers.getMarkers().add(newMarker);
@@ -341,7 +343,7 @@ public class VideoMarkerEditController extends BasicController {
 		private void doDeleteMarker(VideoMarker marker) {
 			markers.getMarkers().remove(marker);
 			videoManager.saveMarkers(markers, entry.getOlatResource());
-			if(markerEditCtrl != null && markerEditCtrl.getMarker().equals(marker)) {
+			if(markerEditCtrl != null && markerEditCtrl.getMarker() != null && markerEditCtrl.getMarker().equals(marker)) {
 				markerEditCtrl.getInitialComponent().setVisible(false);
 			}
 			loadModel(true, markers.getMarkers());
