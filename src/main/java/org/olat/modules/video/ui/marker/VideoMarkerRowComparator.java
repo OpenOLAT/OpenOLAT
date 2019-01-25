@@ -44,6 +44,13 @@ public class VideoMarkerRowComparator implements Comparator<VideoMarker> {
 		
 		Date b1 = o1.getBegin();
 		Date b2 = o2.getBegin();
+		if(b1 == null && b2 == null) {
+			return 0;
+		} else if(b1 == null) {
+			return -1;
+		} else if(b2 == null) {
+			return 1;
+		}
 		return b1.compareTo(b2);
 	}
 }

@@ -22,6 +22,7 @@ package org.olat.modules.quality.analysis.manager;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -47,8 +48,6 @@ import org.olat.modules.quality.analysis.model.GroupedStatisticImpl;
 import org.olat.modules.quality.analysis.model.TrendImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import edu.emory.mathcs.backport.java.util.Collections;
 
 /**
  * 

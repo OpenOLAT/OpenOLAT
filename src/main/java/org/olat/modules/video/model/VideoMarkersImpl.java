@@ -20,13 +20,12 @@
 package org.olat.modules.video.model;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.olat.modules.video.VideoMarker;
 import org.olat.modules.video.VideoMarkers;
 import org.olat.modules.video.ui.marker.VideoMarkerRowComparator;
-
-import edu.emory.mathcs.backport.java.util.Collections;
 
 /**
  * 

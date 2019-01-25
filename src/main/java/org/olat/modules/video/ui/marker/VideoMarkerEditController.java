@@ -19,6 +19,7 @@
  */
 package org.olat.modules.video.ui.marker;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -64,8 +65,6 @@ import org.olat.modules.video.ui.event.VideoEvent;
 import org.olat.modules.video.ui.marker.VideoMarkersTableModel.MarkerCols;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import edu.emory.mathcs.backport.java.util.Collections;
 
 /**
  * 
@@ -144,6 +143,8 @@ public class VideoMarkerEditController extends BasicController {
 	}
 	
 	private void selectTime(Date time) {
+		if(time == null) return;
+		
 		long timeInSeconds = time.getTime() / 1000l;
 		SelectTimeCommand selectTime = new SelectTimeCommand(videoElementId, timeInSeconds);
 		getWindowControl().getWindowBackOffice().sendCommandTo(selectTime);

@@ -22,6 +22,7 @@ package org.olat.modules.quality.analysis.ui;
 import static java.util.stream.Collectors.toList;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -47,8 +48,6 @@ import org.olat.modules.quality.analysis.TemporalKey;
 import org.olat.modules.quality.analysis.TrendSeries;
 import org.olat.modules.quality.analysis.ui.HeatMapController.SliderWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import edu.emory.mathcs.backport.java.util.Arrays;
 
 /**
  * 
