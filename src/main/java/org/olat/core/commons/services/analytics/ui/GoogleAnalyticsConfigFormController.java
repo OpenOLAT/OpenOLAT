@@ -75,19 +75,19 @@ public class GoogleAnalyticsConfigFormController extends FormBasicController {
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
-		uifactory.addFormSubmitButton("save", buttonsCont);
 		uifactory.addFormResetButton("reset", "reset", buttonsCont);
+		uifactory.addFormSubmitButton("save", buttonsCont);
 	}
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;		
+		boolean allOk = super.validateFormLogic(ureq);		
 		analyticsTrackingIdEl.clearError();
 		if(!StringHelper.containsNonWhitespace(analyticsTrackingIdEl.getValue())) {
 			analyticsTrackingIdEl.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;
 		}
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override

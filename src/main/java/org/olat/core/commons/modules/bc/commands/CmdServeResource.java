@@ -26,6 +26,7 @@
 
 package org.olat.core.commons.modules.bc.commands;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -40,6 +41,8 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.gui.media.StringMediaResource;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.CoreLoggingResourceable;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.FileUtils;
@@ -52,6 +55,8 @@ import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.core.util.vfs.meta.MetaInfo;
 
 public class CmdServeResource implements FolderCommand {
+	
+	private static final OLog log = Tracing.createLoggerFor(CmdServeResource.class);
 
 	private static final String DEFAULT_ENCODING = "iso-8859-1";
 	private static final Pattern PATTERN_ENCTYPE = Pattern.compile("<meta.*charset=([^\"]*)\"", Pattern.CASE_INSENSITIVE);
@@ -102,51 +107,54 @@ public class CmdServeResource implements FolderCommand {
 			if (path.toLowerCase().endsWith(".html") || path.toLowerCase().endsWith(".htm")) {
 				// set the http content-type and the encoding
 				// try to load in iso-8859-1
-				InputStream is = vfsfile.getInputStream();
-				if(is == null) {
-					mr = new NotFoundMediaResource();
-				} else {
-					String page = FileUtils.load(is, DEFAULT_ENCODING);
-					// search for the <meta content="text/html; charset=utf-8"
-					// http-equiv="Content-Type" /> tag
-					// if none found, assume iso-8859-1
-					String enc = DEFAULT_ENCODING;
-					boolean useLoaded = false;
-					// <meta.*charset=([^"]*)"
-					Matcher m = PATTERN_ENCTYPE.matcher(page);
-					boolean found = m.find();
-					if (found) {
-						String htmlcharset = m.group(1);
-						enc = htmlcharset;
-						if (htmlcharset.equals(DEFAULT_ENCODING)) {
+				try(InputStream is = vfsfile.getInputStream()) {
+					if(is == null) {
+						mr = new NotFoundMediaResource();
+					} else {
+						String page = FileUtils.load(is, DEFAULT_ENCODING);
+						// search for the <meta content="text/html; charset=utf-8"
+						// http-equiv="Content-Type" /> tag
+						// if none found, assume iso-8859-1
+						String enc = DEFAULT_ENCODING;
+						boolean useLoaded = false;
+						// <meta.*charset=([^"]*)"
+						Matcher m = PATTERN_ENCTYPE.matcher(page);
+						boolean found = m.find();
+						if (found) {
+							String htmlcharset = m.group(1);
+							enc = htmlcharset;
+							if (htmlcharset.equals(DEFAULT_ENCODING)) {
+								useLoaded = true;
+							}
+						} else {
 							useLoaded = true;
 						}
-					} else {
-						useLoaded = true;
-					}
-					// set the new encoding to remember for any following .js file loads
-					g_encoding = enc;
-					if (useLoaded) {
-						StringMediaResource smr = new StringMediaResource();
-						String mimetype = forceDownload ? VFSMediaResource.MIME_TYPE_FORCE_DOWNLOAD : "text/html;charset=" + enc;
-						smr.setContentType(mimetype);
-						smr.setEncoding(enc);
-						smr.setData(page);
-						if(forceDownload) {
-							smr.setDownloadable(true, vfsfile.getName());
+						// set the new encoding to remember for any following .js file loads
+						g_encoding = enc;
+						if (useLoaded) {
+							StringMediaResource smr = new StringMediaResource();
+							String mimetype = forceDownload ? VFSMediaResource.MIME_TYPE_FORCE_DOWNLOAD : "text/html;charset=" + enc;
+							smr.setContentType(mimetype);
+							smr.setEncoding(enc);
+							smr.setData(page);
+							if(forceDownload) {
+								smr.setDownloadable(true, vfsfile.getName());
+							}
+							mr = smr;
+						} else {
+							// found a new charset other than iso-8859-1 -> let it load again
+							// as bytes (so we do not need to convert to string and back
+							// again)
+							VFSMediaResource vmr = new VFSMediaResource(vfsfile);
+							vmr.setEncoding(enc);
+							if(forceDownload) {
+								vmr.setDownloadable(true);
+							}
+							mr = vmr;
 						}
-						mr = smr;
-					} else {
-						// found a new charset other than iso-8859-1 -> let it load again
-						// as bytes (so we do not need to convert to string and back
-						// again)
-						VFSMediaResource vmr = new VFSMediaResource(vfsfile);
-						vmr.setEncoding(enc);
-						if(forceDownload) {
-							vmr.setDownloadable(true);
-						}
-						mr = vmr;
 					}
+				} catch (IOException e) {
+					log.error("", e);
 				}
 			} else if (path.endsWith(".js")) { // a javascript library
 				VFSMediaResource vmr = new VFSMediaResource(vfsfile);

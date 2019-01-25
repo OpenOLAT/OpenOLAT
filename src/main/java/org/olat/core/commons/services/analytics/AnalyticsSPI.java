@@ -22,6 +22,7 @@ package org.olat.core.commons.services.analytics;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.render.StringOutput;
 
 /**
  * The AnalyticsSPI offers methods to analyse site usage and patterns based on a
@@ -84,5 +85,12 @@ public interface AnalyticsSPI {
 	 *            The location as an URL part
 	 */
 	public void analyticsCountPageJavaScript(StringBuilder sb, String title, String url);
+	
+	/**
+	 * The script can rely on the download attribute.
+	 * 
+	 * @param sb The string builder
+	 */
+	public void analyticsCountOnclickJavaScript(StringOutput sb);
 
 }

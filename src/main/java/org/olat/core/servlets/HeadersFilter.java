@@ -20,7 +20,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.analytics.AnalyticsModule;
+import org.olat.core.commons.services.analytics.AnalyticsSPI;
 import org.olat.core.commons.services.analytics.spi.GoogleAnalyticsSPI;
+import org.olat.core.commons.services.analytics.spi.MatomoSPI;
 import org.olat.core.commons.services.csp.CSPModule;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.OLog;
@@ -167,7 +169,7 @@ public class HeadersFilter implements Filter {
 			sb.append(" ").append(securityModule.getContentSecurityPolicyConnectSrc());
 		}
 		
-		appendGoogleAnalyticsUrl(sb);
+		appendAnalyticsUrl(sb);
 		appendEdusharingUrl(sb);
 		sb.append(";");
 	}
@@ -180,7 +182,7 @@ public class HeadersFilter implements Filter {
 		}
 		
 		appendMathJaxUrl(sb);
-		appendGoogleAnalyticsUrl(sb);
+		appendAnalyticsUrl(sb);
 		appendEdusharingUrl(sb);
 		sb.append(";");
 	}
@@ -191,7 +193,7 @@ public class HeadersFilter implements Filter {
 		if(!standard && StringHelper.containsNonWhitespace(securityModule.getContentSecurityPolicyImgSrc())) {
 			sb.append(" ").append(securityModule.getContentSecurityPolicyImgSrc());
 		}
-		appendGoogleAnalyticsUrl(sb);
+		appendAnalyticsUrl(sb);
 		appendEdubaseUrl(sb);
 		appendEdusharingUrl(sb);
 		sb.append(";");
@@ -258,9 +260,17 @@ public class HeadersFilter implements Filter {
 		}
 	}
 	
-	private void appendGoogleAnalyticsUrl(StringBuilder sb) {
-		if(analyticsModule != null && analyticsModule.getAnalyticsProvider() instanceof GoogleAnalyticsSPI) {
-			sb.append(" ").append("https://www.google-analytics.com");
+	private void appendAnalyticsUrl(StringBuilder sb) {
+		if(analyticsModule != null) {
+			AnalyticsSPI spi = analyticsModule.getAnalyticsProvider();
+			if(spi instanceof GoogleAnalyticsSPI) {
+				sb.append(" ").append("https://www.google-analytics.com");
+			} else if(spi instanceof MatomoSPI) {
+				String trackerUrl = ((MatomoSPI)spi).getTrackerUrl();
+				if(StringHelper.containsNonWhitespace(trackerUrl)) {
+					sb.append(" ").append(trackerUrl);
+				}
+			}
 		}
 	}
 	

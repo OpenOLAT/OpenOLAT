@@ -372,7 +372,9 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		// Add JS analytics code, e.g. for google analytics
 		if (analyticsModule.isAnalyticsEnabled()) {
 			AnalyticsSPI analyticsSPI = analyticsModule.getAnalyticsProvider();
-			mainVc.contextPut("analytics",analyticsSPI.analyticsInitPageJavaScript());			
+			if(analyticsSPI != null) {
+				mainVc.contextPut("analytics",analyticsSPI.analyticsInitPageJavaScript());
+			}
 		}
 		
 		// content panel

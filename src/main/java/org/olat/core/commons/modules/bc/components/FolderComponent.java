@@ -34,11 +34,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.commons.modules.bc.FolderLoggingAction;
 import org.olat.core.commons.modules.bc.FolderRunController;
 import org.olat.core.commons.modules.bc.commands.FolderCommandFactory;
 import org.olat.core.commons.modules.bc.comparators.LockComparator;
+import org.olat.core.commons.services.analytics.AnalyticsModule;
+import org.olat.core.commons.services.analytics.AnalyticsSPI;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
@@ -99,6 +102,8 @@ public class FolderComponent extends AbstractComponent {
 	private VFSItemExcludePrefixFilter exclFilter;
 	private CustomLinkTreeModel customLinkTreeModel;
 	private final VFSContainer externContainerForCopy;
+	
+	private final AnalyticsSPI analyticsSpi;
 
 	/**
 	 * Wraps the folder module as a component.
@@ -138,6 +143,8 @@ public class FolderComponent extends AbstractComponent {
 		setCurrentContainerPath("/");
 		
 		dateTimeFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, locale);
+		
+		analyticsSpi = CoreSpringFactory.getImpl(AnalyticsModule.class).getAnalyticsProvider();
 	}
 	
 	@Override
@@ -199,6 +206,10 @@ public class FolderComponent extends AbstractComponent {
 	
 	public void setCanMail(boolean canMail) {
 		this.canMail = canMail;
+	}
+	
+	public AnalyticsSPI getAnalyticsSPI() {
+		return analyticsSpi;
 	}
 
 	/**

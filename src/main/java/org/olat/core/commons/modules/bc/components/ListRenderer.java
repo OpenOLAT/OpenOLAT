@@ -267,6 +267,11 @@ public class ListRenderer {
 				} else {					
 					sb.append(" target=\"_blank\"");
 				}
+				if(fc.getAnalyticsSPI() != null) {
+					sb.append(" onclick=\"");
+					fc.getAnalyticsSPI().analyticsCountOnclickJavaScript(sb);
+					sb.append("\"");
+				}
 			}
 			sb.append(">");
 

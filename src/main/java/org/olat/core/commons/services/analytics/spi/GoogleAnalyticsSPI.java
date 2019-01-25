@@ -25,9 +25,11 @@ import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.render.StringOutput;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -54,6 +56,7 @@ public class GoogleAnalyticsSPI extends AbstractSpringModule implements Analytic
 	 * Constructor, used by spring. Implements the module interface to store configuration
 	 * @param coordinatorManager
 	 */
+	@Autowired
 	public GoogleAnalyticsSPI(CoordinatorManager coordinatorManager) {
 		super(coordinatorManager);
 	}
@@ -137,6 +140,14 @@ public class GoogleAnalyticsSPI extends AbstractSpringModule implements Analytic
 			// Currently only send page views with url and title. No support for tags so far
 			sb.append("ga('send', 'pageview', { page: \"").append(url).append("\", title: \"")
 					.append(Formatter.escapeDoubleQuotes(title)).append("\" });");
+		}
+	}
+
+	@Override
+	public void analyticsCountOnclickJavaScript(StringOutput sb) {
+		if (isValid()) {
+			// Currently only send page views with url and title. No support for tags so far
+			sb.append("ga('send', 'pageview', { page: o_info.businessPath, title: jQuery(this).attr('download') });");
 		}
 	}
 
