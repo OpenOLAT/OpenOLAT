@@ -78,7 +78,7 @@ public class AnalysisListController extends FormBasicController implements Flexi
 	private FlexiTableElement tableEl;
 	private AnalysisDataModel dataModel;
 	
-	private AnalysisSegmentsController analysisCtrl;
+	private AnalysisController analysisCtrl;
 	
 	private int counter = 0;
 	private AnalysisPresentation presentation;
@@ -237,11 +237,10 @@ public class AnalysisListController extends FormBasicController implements Flexi
 	private void doOpenAnalysis(UserRequest ureq) {
 		OLATResourceable ores = getOlatResourceable(presentation);
 		WindowControl bwControl = addToHistory(ureq, ores, null);
-		analysisCtrl = new AnalysisSegmentsController(ureq, bwControl, secCallback, stackPanel, presentation);
+		analysisCtrl = new AnalysisController(ureq, bwControl, secCallback, stackPanel, presentation);
 		listenTo(analysisCtrl);
 		String title = getBreadcrumbTitle(presentation);
 		stackPanel.pushController(title, analysisCtrl);
-		analysisCtrl.activate(ureq, null, null);
 	}
 	
 	private String getBreadcrumbTitle(AnalysisPresentation presentation) {

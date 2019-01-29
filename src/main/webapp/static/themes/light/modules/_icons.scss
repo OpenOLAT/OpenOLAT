@@ -707,7 +707,9 @@ $fa-css-prefix: "o_icon" !default;
 
 .o_icon_qual_ana_hide_filter:before { content: $fa-var-toggle-on;}
 .o_icon_qual_ana_pres_edit:before { content: $fa-var-thumb-tack;}
+.o_icon_qual_ana_export:before { content: $fa-var-download;}
 .o_icon_qual_ana_pres_delete:before { content: $fa-var-ban;}
+.o_icon_qual_ana_print:before { content: $fa-var-print;}
 .o_icon_qual_ana_show_filter:before { content: $fa-var-toggle-off;}
 .o_icon_qual_ana_trend:before { content: $fa-var-line-chart; }
 .o_icon_qual_ana_trend_arrow:before { content: $fa-var-arrow-circle-right; }

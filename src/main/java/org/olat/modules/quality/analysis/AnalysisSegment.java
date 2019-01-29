@@ -28,6 +28,9 @@ package org.olat.modules.quality.analysis;
 public enum AnalysisSegment {
 
 	OVERVIEW,
+	TABLES,
+	DIAGRAMS,
+	SESSIONS,
 	HEAT_MAP;
 
 }
