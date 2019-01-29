@@ -2991,7 +2991,7 @@ alter table o_usercomment add constraint FKF26C8375236F20A foreign key (creator_
 create index FKF26C8375236F20A on o_usercomment (creator_id);
 create index usercmt_id_idx on o_usercomment (resid);
 create index usercmt_name_idx on o_usercomment (resname);
-create index usercmt_subpath_idx on o_usercomment (ressubpath);
+create index usercmt_subpath_idx on o_usercomment (substr(ressubpath,0,255));
 
 -- checkpoint
 alter table o_checkpoint_results add constraint FK9E30F4B661159ZZY foreign key (checkpoint_fk) references o_checkpoint (checkpoint_id);
@@ -3594,7 +3594,7 @@ create index idx_dc_status_idx on o_qual_data_collection (q_status);
 alter table o_qual_data_collection_to_org add constraint qual_dc_to_org_idx foreign key (fk_data_collection) references o_qual_data_collection (id);
 create unique index idx_qual_dc_to_org_idx on o_qual_data_collection_to_org (fk_data_collection, fk_organisation);
 
-alter table o_qual_context add constraint qual_con_to_data_collection_idx foreign key (fk_data_collection) references o_qual_data_collection (id);
+alter table o_qual_context add constraint qual_con_to_data_coll_idx foreign key (fk_data_collection) references o_qual_data_collection (id);
 create index idx_con_to_data_collection_idx on o_qual_context (fk_data_collection);
 alter table o_qual_context add constraint qual_con_to_participation_idx foreign key (fk_eva_participation) references o_eva_form_participation (id);
 create index idx_con_to_participation_idx on o_qual_context (fk_eva_participation);
@@ -3617,7 +3617,7 @@ alter table o_qual_context_to_tax_level add constraint qual_con_to_tax_level_con
 create index idx_con_to_tax_level_con_idx on o_qual_context_to_tax_level (fk_context);
 create unique index idx_con_to_tax_level_tax_idx on o_qual_context_to_tax_level (fk_tax_leveL, fk_context);
 
-alter table o_qual_reminder add constraint qual_rem_to_data_collection_idx foreign key (fk_data_collection) references o_qual_data_collection (id);
+alter table o_qual_reminder add constraint qual_rem_to_data_coll_idx foreign key (fk_data_collection) references o_qual_data_collection (id);
 create index idx_rem_to_data_collection_idx on o_qual_reminder (fk_data_collection);
 
 alter table o_qual_report_access add constraint qual_repacc_to_dc_idx foreign key (fk_data_collection) references o_qual_data_collection (id);

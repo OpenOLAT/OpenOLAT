@@ -20,6 +20,9 @@ create table o_gta_task_revision_date (
   primary key (id)
 );
 
+alter table o_qual_context add constraint qual_con_to_data_coll_idx foreign key (fk_data_collection) references o_qual_data_collection (id);
+alter table o_qual_reminder add constraint qual_rem_to_data_coll_idx foreign key (fk_data_collection) references o_qual_data_collection (id);
+
 drop index idx_eva_part_executor_idx;
 create unique index idx_eva_part_executor_idx on o_eva_form_participation  (case when fk_executor is not null and fk_survey is not null then fk_executor || ',' || fk_survey end);
 
