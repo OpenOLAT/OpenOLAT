@@ -504,7 +504,7 @@ public class NotificationsManagerTest extends OlatTestCase {
 	 */
 	@Test
 	public void testConcurrentCreateSubscriberWithOneIdentity() {
-		final int NUM_OF_THREADS = 100;
+		final int NUM_OF_THREADS =  isOracleConfigured() ? 25 : 100;
 		
 		PublisherData pd = new PublisherData("CreateSubscriber", "e.g. forumdata=keyofforum", null);
 		SubscriptionContext sc = new SubscriptionContext("Course", new Long(1238778566), UUID.randomUUID().toString().replace("-", ""));
@@ -525,7 +525,7 @@ public class NotificationsManagerTest extends OlatTestCase {
 		
 		// sleep until threads should have terminated/excepted
 		try {
-			finishCount.await(10, TimeUnit.SECONDS);
+			finishCount.await(60, TimeUnit.SECONDS);
 		} catch (InterruptedException e) {
 			log.error("", e);
 		}

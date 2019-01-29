@@ -90,6 +90,9 @@ public class BusinessGroupMembershipProcessorTest extends OlatTestCase {
 		notificationManager.subscribe(id1, context, publisherData);
 		notificationManager.subscribe(id2, context, publisherData);
 		dbInstance.commitAndCloseSession();
+		Assert.assertTrue(notificationManager.isSubscribed(coach, context));
+		Assert.assertTrue(notificationManager.isSubscribed(id1, context));
+		Assert.assertTrue(notificationManager.isSubscribed(id2, context));
 		
 		//remove id1 and check subscription
 		MailPackage mailing = new MailPackage(false);

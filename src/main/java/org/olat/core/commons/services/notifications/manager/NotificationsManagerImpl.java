@@ -195,8 +195,9 @@ implements UserDataDeletable, UserDataExportable, GenericEventListener, Initiali
 	 *         primary key
 	 */
 	private Publisher createAndPersistPublisher(String resName, Long resId, String subidentifier, String type, String data, String businessPath) {
-		if (resName == null || resId == null || subidentifier == null) throw new AssertException(
-				"resName, resId, and subidentifier must not be null");
+		if (resName == null || resId == null || subidentifier == null) {
+			throw new AssertException("resName, resId, and subidentifier must not be null");
+		}
 		
 		if(businessPath != null && businessPath.length() > 230) {
 			log.error("Businesspath too long for publisher: " + resName + " with business path: " + businessPath);
@@ -684,18 +685,15 @@ implements UserDataDeletable, UserDataExportable, GenericEventListener, Initiali
 			return pub;
 		}
 		
-		Publisher publisher = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(ores, new SyncerCallback<Publisher>(){
-			public Publisher execute() {
-				Publisher p = getPublisher(scontext);
-				// if not found, create it
-				if (p == null) {
-					p = createAndPersistPublisher(scontext.getResName(), scontext.getResId(), scontext.getSubidentifier(), pdata.getType(), pdata
-							.getData(), pdata.getBusinessPath());
-				}
-				return p;
+		return CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(ores, () -> {
+			Publisher p = getPublisher(scontext);
+			// if not found, create it
+			if (p == null) {
+				p = createAndPersistPublisher(scontext.getResName(), scontext.getResId(), scontext.getSubidentifier(), pdata.getType(), pdata
+						.getData(), pdata.getBusinessPath());
 			}
+			return p;
 		});
-		return publisher;
 	}
 
 	/**
@@ -706,7 +704,7 @@ implements UserDataDeletable, UserDataExportable, GenericEventListener, Initiali
 	public Publisher getPublisher(SubscriptionContext subsContext) {
 		StringBuilder q = new StringBuilder();
 		q.append("select pub from notipublisher pub ")
-		 .append(" where pub.resName=:resName and pub.resId = :resId");
+		 .append(" where pub.resName=:resName and pub.resId=:resId");
 		if(StringHelper.containsNonWhitespace(subsContext.getSubidentifier())) {
 			q.append(" and pub.subidentifier=:subidentifier");
 		} else {
@@ -1159,12 +1157,16 @@ implements UserDataDeletable, UserDataExportable, GenericEventListener, Initiali
 	 */
 	@Override
 	public boolean isSubscribed(Identity identity, SubscriptionContext subscriptionContext) {
-		StringBuilder q = new StringBuilder();		
+		StringBuilder q = new StringBuilder(256);		
 		q.append("select count(sub) from notisub as sub ")
 		 .append(" inner join sub.publisher as pub ")
-		 .append(" where sub.identity.key=:anIdentityKey and pub.resName=:resName and pub.resId=:resId")
-		 .append(" and pub.subidentifier=:subidentifier");
-		
+		 .append(" where sub.identity.key=:anIdentityKey and pub.resName=:resName and pub.resId=:resId");
+		if(StringHelper.containsNonWhitespace(subscriptionContext.getSubidentifier())) {
+			q.append(" and pub.subidentifier=:subidentifier");
+		} else {
+			q.append(" and (pub.subidentifier=:subidentifier or pub.subidentifier is null)");
+		}
+
 		Number count = dbInstance.getCurrentEntityManager()
 				.createQuery(q.toString(), Number.class)
 				.setParameter("anIdentityKey", identity.getKey())

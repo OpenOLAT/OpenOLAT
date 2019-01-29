@@ -248,7 +248,7 @@ create unique index idx_eva_surv_ores_idx on o_eva_form_survey (e_resid, e_resna
 
 alter table o_eva_form_participation add constraint eva_part_to_surv_idx foreign key (fk_survey) references o_eva_form_survey (id);
 create unique index idx_eva_part_ident_idx on o_eva_form_participation (e_identifier_key, e_identifier_type, fk_survey);
-create unique index idx_eva_part_executor_idx on o_eva_form_participation (fk_executor, fk_survey);
+create unique index idx_eva_part_executor_idx on o_eva_form_participation  (case when fk_executor is not null and fk_survey is not null then fk_executor || ',' || fk_survey end);
 
 alter table o_eva_form_session add constraint eva_sess_to_surv_idx foreign key (fk_survey) references o_eva_form_survey (id);
 create index idx_eva_sess_to_surv_idx on o_eva_form_session (fk_survey);

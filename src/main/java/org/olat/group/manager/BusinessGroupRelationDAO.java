@@ -347,7 +347,7 @@ public class BusinessGroupRelationDAO {
 		sb.append("select membership.identity.key from businessgroup as bgroup ")
 		  .append(" inner join bgroup.baseGroup as baseGroup")
 		  .append(" inner join baseGroup.members as membership")
-		  .append(" where bgroup.key=:businessGroupKey and membership.role in (:roles) order by membership.creationDate");
+		  .append(" where bgroup.key=:businessGroupKey and membership.role in (:roles) order by membership.creationDate asc");
 
 		List<String> roleList = GroupRoles.toList(roles);
 		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Long.class)

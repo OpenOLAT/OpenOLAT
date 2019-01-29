@@ -32,6 +32,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.GroupRoles;
@@ -296,6 +297,8 @@ public class CoachingLargeTest extends OlatTestCase {
 	
 	@Test
 	public void getGroupsStatistics() {
+		Assume.assumeTrue(!isOracleConfigured());
+		
 		List<GroupStatEntry> groupStatEntries = coachingService.getGroupsStatistics(coach10);
 		Assert.assertNotNull(groupStatEntries);
 		List<Long> coachedGroups = coachToGroupCourseMap.get(coach10.getKey());

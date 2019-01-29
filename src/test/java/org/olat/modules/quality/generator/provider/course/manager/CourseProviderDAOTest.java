@@ -113,13 +113,13 @@ public class CourseProviderDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldFilterByNotAlreadyGenerated() {
-		Organisation organisation = organisationService.createOrganisation("", "o1", null, null, null);
+		Organisation organisation = organisationService.createOrganisation("Org-32", "o1", null, null, null);
 		RepositoryEntry courseWithoutDataCollection = createEntry(null, null, organisation);
 		RepositoryEntry courseWithDataCollection = createEntry(null, null, organisation);
-		QualityGenerator generator = generatorService.createGenerator("", singletonList(organisation));
+		QualityGenerator generator = generatorService.createGenerator("Gen", singletonList(organisation));
 		createDataCollection(organisation, courseWithDataCollection, generator);
 		RepositoryEntry courseWithOtherDataCollection = createEntry(null, null, organisation);
-		QualityGenerator generatorOther = generatorService.createGenerator("", singletonList(organisation));
+		QualityGenerator generatorOther = generatorService.createGenerator("Gen", singletonList(organisation));
 		createDataCollection(organisation, courseWithOtherDataCollection, generatorOther);
 		dbInstance.commitAndCloseSession();
 		
@@ -134,10 +134,10 @@ public class CourseProviderDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldFilterByOrganisation() {
-		Organisation superOrganisation = organisationService.createOrganisation("", "o1", null, null, null);
-		Organisation organisation = organisationService.createOrganisation("", "o1", null, superOrganisation, null);
-		Organisation subOrganisation = organisationService.createOrganisation("", "o1s", null, organisation, null);
-		Organisation organisationOther = organisationService.createOrganisation("", "o2", null, null, null);
+		Organisation superOrganisation = organisationService.createOrganisation("Org-33", "o1", null, null, null);
+		Organisation organisation = organisationService.createOrganisation("Org-34", "o1", null, superOrganisation, null);
+		Organisation subOrganisation = organisationService.createOrganisation("Org-35", "o1s", null, organisation, null);
+		Organisation organisationOther = organisationService.createOrganisation("Org.36", "o2", null, null, null);
 		RepositoryEntry courseSuper = createEntry(null, null, superOrganisation);
 		RepositoryEntry course1 = createEntry(null, null, organisation);
 		RepositoryEntry course2 = createEntry(null, null, organisation);
@@ -258,9 +258,9 @@ public class CourseProviderDAOTest extends OlatTestCase {
 	public void shouldFilterByGeneratorDataCollectionStart() {
 		Date start = nextHour();
 		Date other = nextYear();
-		Organisation organisation = organisationService.createOrganisation("", "o1", null, null, null);
-		QualityGenerator generator = generatorService.createGenerator("", singletonList(organisation));
-		QualityGenerator generatorOther = generatorService.createGenerator("", singletonList(organisation));
+		Organisation organisation = organisationService.createOrganisation("Org-37", "o1", null, null, null);
+		QualityGenerator generator = generatorService.createGenerator("Gen", singletonList(organisation));
+		QualityGenerator generatorOther = generatorService.createGenerator("Gen", singletonList(organisation));
 		//Without data collection
 		RepositoryEntry courseNoDataCollection = createEntry(null, null, organisation);
 		//Data collection with generator, without start date

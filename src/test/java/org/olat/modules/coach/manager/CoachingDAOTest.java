@@ -19,6 +19,8 @@
  */
 package org.olat.modules.coach.manager;
 
+import static org.junit.Assume.assumeTrue;
+
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Date;
@@ -98,6 +100,8 @@ public class CoachingDAOTest extends OlatTestCase {
 	@Test
 	public void getStatistics_duplicateInGroups()
 	throws URISyntaxException {
+		assumeTrue(!isOracleConfigured());
+		
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, false);
 		
 		URL courseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
@@ -205,6 +209,8 @@ public class CoachingDAOTest extends OlatTestCase {
 	@Test
 	public void getStatistics_notAttempted()
 	throws URISyntaxException {
+		assumeTrue(!isOracleConfigured());
+		
 		URL courseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
 		RepositoryEntry re1 = JunitTestHelper.deployCourse(null, "Coaching course 1", courseUrl);
 		RepositoryEntry re2 = JunitTestHelper.deployCourse(null, "Coaching course 2", courseUrl);
@@ -324,6 +330,8 @@ public class CoachingDAOTest extends OlatTestCase {
 	@Test
 	public void getStatistics_owner()
 	throws URISyntaxException {
+		assumeTrue(!isOracleConfigured());
+		
 		URL courseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
 		RepositoryEntry re1 = JunitTestHelper.deployCourse(null, "Coaching course 1", courseUrl); 
 		RepositoryEntry re2 = JunitTestHelper.deployCourse(null, "Coaching course 2", courseUrl); 
@@ -470,6 +478,8 @@ public class CoachingDAOTest extends OlatTestCase {
 	@Test
 	public void getStatistics_permissionOnCourses()
 	throws URISyntaxException {
+		assumeTrue(!isOracleConfigured());
+		
 		URL courseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
 		RepositoryEntry re1 = JunitTestHelper.deployCourse(null, "Coaching course 1",
 				RepositoryEntryStatusEnum.preparation, false, false, courseUrl);
@@ -656,6 +666,8 @@ public class CoachingDAOTest extends OlatTestCase {
 	@Test
 	public void getStatistics_emptyStatements_emptyCourseInfos()
 	throws URISyntaxException {
+		assumeTrue(!isOracleConfigured());
+		
 		URL courseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
 		RepositoryEntry re1 = JunitTestHelper.deployCourse(null, "Coaching course 1", courseUrl);
 		RepositoryEntry re2 = JunitTestHelper.deployCourse(null, "Coaching course 2", courseUrl);
@@ -734,6 +746,8 @@ public class CoachingDAOTest extends OlatTestCase {
 	@Test
 	public void getStatistics_empty()
 	throws URISyntaxException {
+		assumeTrue(!isOracleConfigured());
+		
 		URL courseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
 		RepositoryEntry re1 = JunitTestHelper.deployCourse(null, "Coaching course 1", courseUrl);
 		RepositoryEntry re2 = JunitTestHelper.deployCourse(null, "Coaching course 2", courseUrl);
@@ -877,6 +891,8 @@ public class CoachingDAOTest extends OlatTestCase {
 	
 	@Test
 	public void getStudents_owner_course() throws URISyntaxException {
+		assumeTrue(!isOracleConfigured());
+		
 		URL courseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
 		RepositoryEntry re = JunitTestHelper.deployCourse(null, "Coaching course", courseUrl);
 		dbInstance.commitAndCloseSession();

@@ -533,9 +533,9 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 	@Test
 	public void testRemoveFromWaitingListAndFireEvent() throws Exception {
 		//add 3 identities in waiting group
-		Identity ident1 = JunitTestHelper.createAndPersistIdentityAsUser("move-w3-1-" + UUID.randomUUID().toString());
-		Identity ident2 = JunitTestHelper.createAndPersistIdentityAsUser("move-w3-2-" + UUID.randomUUID().toString());
-		Identity ident3 = JunitTestHelper.createAndPersistIdentityAsUser("move-w3-3-" + UUID.randomUUID().toString());
+		Identity ident1 = JunitTestHelper.createAndPersistIdentityAsUser("move-w3-1-" + UUID.randomUUID());
+		Identity ident2 = JunitTestHelper.createAndPersistIdentityAsUser("move-w3-2-" + UUID.randomUUID());
+		Identity ident3 = JunitTestHelper.createAndPersistIdentityAsUser("move-w3-3-" + UUID.randomUUID());
 		BusinessGroup group = businessGroupService.createBusinessGroup(null, "move-bg-3", "move-desc", 0, 10, true, false, null);
 		dbInstance.commitAndCloseSession();
 		businessGroupService.addToWaitingList(ident1, Collections.singletonList(ident1), group, null);

@@ -24,6 +24,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Test;
 import org.olat.core.gui.util.SyntheticUserRequest;
 import org.olat.core.id.Identity;
@@ -49,6 +50,8 @@ public class HourOfDayStatisticUpdateManagerTest extends AbstractStatisticUpdate
 	
 	@Test
 	public void statistics_hourOfDay() {
+		Assume.assumeTrue(!isOracleConfigured());
+		
 		Assert.assertNotNull(statisticUpdateManager);
 		statisticUpdateManager.setEnabled(true);
 		Assert.assertTrue(statisticUpdateManager.isEnabled());

@@ -264,9 +264,9 @@ public class EnrollmentManagerConcurrentTest extends OlatTestCase implements Win
 	
 	@Test
 	public void testConcurrentEnrollmentWithWaitingList() {
-		int NUM_OF_USERS = 30;
-		List<Identity> ids = new ArrayList<Identity>(NUM_OF_USERS);	
-		for(int i=0; i<NUM_OF_USERS; i++) {
+		int numOfUsers = isOracleConfigured() ? 12 : 30;
+		List<Identity> ids = new ArrayList<Identity>(numOfUsers);	
+		for(int i=0; i<numOfUsers; i++) {
 			Identity id = JunitTestHelper.createAndPersistIdentityAsUser("enroll-a-" + i + "-" + UUID.randomUUID().toString());
 			ids.add(id);
 		}
@@ -281,7 +281,7 @@ public class EnrollmentManagerConcurrentTest extends OlatTestCase implements Win
 		dbInstance.commitAndCloseSession();
 
 		final CountDownLatch doneSignal = new CountDownLatch(ids.size());
-		EnrollThread[] threads = new EnrollThread[NUM_OF_USERS];
+		EnrollThread[] threads = new EnrollThread[numOfUsers];
 		int t = 0;
 		for(Identity id:ids) {
 			threads[t++] = new EnrollThread(id, addedEntry, group, enNode, cenv, doneSignal);

@@ -235,7 +235,7 @@ alter table o_gta_task add g_submission_revisions_ndocs number(20) default null;
 alter table o_gta_task add g_collection_ndocs number(20) default null;
 
 create table o_gta_task_revision_date (
-  id number(20) generated always as identity,
+  id number(20) not null,
   creationdate date not null,
   g_status varchar2(36 char) not null,
   g_rev_loop number(20) not null,

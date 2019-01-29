@@ -25,6 +25,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Test;
 import org.olat.core.gui.util.SyntheticUserRequest;
 import org.olat.core.id.Identity;
@@ -49,6 +50,8 @@ public class DailyStatisticUpdateManagerTest extends AbstractStatisticUpdateMana
 	
 	@Test
 	public void statistics_daily() {
+		Assume.assumeTrue(!isOracleConfigured());
+		
 		statisticUpdateManager.setEnabled(true);
 		cleanUpLog();
 		

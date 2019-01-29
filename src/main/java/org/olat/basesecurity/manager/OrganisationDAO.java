@@ -25,8 +25,10 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.persistence.TypedQuery;
@@ -277,18 +279,21 @@ public class OrganisationDAO {
 	
 	public List<Organisation> getOrganisations(IdentityRef identity, List<String> roleList) {
 		QueryBuilder sb = new QueryBuilder(256);
-		sb.append("select distinct org from organisation org")
+		sb.append("select org from organisation org")
 		  .append(" inner join fetch org.group baseGroup")
 		  .append(" inner join baseGroup.members membership")
 		  .append(" left join fetch org.type orgType")
 		  .append(" left join fetch org.parent parentOrg")
 		  .append(" where membership.identity.key=:identityKey and membership.role in (:roles)")
 		  .append(" and org.status ").in(OrganisationStatus.notDelete());
-		return dbInstance.getCurrentEntityManager()
+		List<Organisation> organisations = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Organisation.class)
 				.setParameter("identityKey", identity.getKey())
 				.setParameter("roles", roleList)
 				.getResultList();
+		// because of the CLOB on Oracle, we make the "distinct" in Java
+		Set<Organisation> deduplicatedOrganisations = new HashSet<>(organisations);
+		return new ArrayList<>(deduplicatedOrganisations);
 	}
 	
 	public List<Organisation> getOrganisations(Collection<OrganisationRef> rootOrganisations) {
