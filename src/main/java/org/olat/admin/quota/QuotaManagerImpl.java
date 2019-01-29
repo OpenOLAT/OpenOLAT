@@ -170,7 +170,10 @@ public class QuotaManagerImpl implements QuotaManager, InitializingBean {
 	 */
 	@Override
 	public Quota getDefaultQuota(String identifyer) {
-		return defaultQuotas.get(identifyer);
+		if(StringHelper.containsNonWhitespace(identifyer)) {
+			return defaultQuotas.get(identifyer);
+		}
+		return null;
 	}
 
 	/**
