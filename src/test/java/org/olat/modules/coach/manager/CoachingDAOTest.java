@@ -205,6 +205,7 @@ public class CoachingDAOTest extends OlatTestCase {
 	@Test
 	public void getStatistics_notAttempted()
 	throws URISyntaxException {
+		
 		URL courseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
 		RepositoryEntry re1 = JunitTestHelper.deployCourse(null, "Coaching course 1", courseUrl);
 		RepositoryEntry re2 = JunitTestHelper.deployCourse(null, "Coaching course 2", courseUrl);

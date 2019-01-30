@@ -202,10 +202,10 @@ public class CourseLecturesProviderDAOTest extends OlatTestCase {
 	@Test
 	public void shouldFilterLectureBlockInfosByCurriculumElements() {
 		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("");
-		Organisation organisation = organisationService.createOrganisation("", "", null, null, null);
-		Curriculum curriculum = curriculumService.createCurriculum("", "", null, organisation);
-		CurriculumElement element = curriculumService.createCurriculumElement("", "", null, null, null, null, CurriculumCalendars.disabled, curriculum);
-		CurriculumElement otherElement = curriculumService.createCurriculumElement("", "", null, null, null, null, CurriculumCalendars.disabled, curriculum);
+		Organisation organisation = organisationService.createOrganisation("org", "Org", null, null, null);
+		Curriculum curriculum = curriculumService.createCurriculum("Curriculum", "Curriculum", null, organisation);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element", "Element", null, null, null, null, CurriculumCalendars.disabled, curriculum);
+		CurriculumElement otherElement = curriculumService.createCurriculumElement("Element", "Element", null, null, null, null, CurriculumCalendars.disabled, curriculum);
 		RepositoryEntry course1 = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry course2 = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry otherCourse = JunitTestHelper.createAndPersistRepositoryEntry();
@@ -261,7 +261,7 @@ public class CourseLecturesProviderDAOTest extends OlatTestCase {
 	@Test
 	public void shouldFilterLectureBlockInfosByFinishedDataCollectionForTopicIdentity() {
 		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("");
-		Organisation organisation = organisationService.createOrganisation("", "", null, null, null);
+		Organisation organisation = organisationService.createOrganisation("Org-39", "", null, null, null);
 		List<Organisation> organisations = Collections.singletonList(organisation);
 		RepositoryEntry courseNoDC = JunitTestHelper.createAndPersistRepositoryEntry();
 		repositoryService.addOrganisation(courseNoDC, organisation);
@@ -272,7 +272,7 @@ public class CourseLecturesProviderDAOTest extends OlatTestCase {
 		createLectureBlock(courseNoDC, teacher, 1);
 		createLectureBlock(courseRunningDC, teacher, 1);
 		createLectureBlock(courseFinishedDC, teacher, 1);
-		QualityGenerator generator = generatorService.createGenerator("", organisations);
+		QualityGenerator generator = generatorService.createGenerator("Generator", organisations);
 		dbInstance.commitAndCloseSession();
 		
 		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
@@ -301,7 +301,7 @@ public class CourseLecturesProviderDAOTest extends OlatTestCase {
 	@Test
 	public void shouldFilterLectureBlockInfosByFinishedDataCollectionForTopicRepository() {
 		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("");
-		Organisation organisation = organisationService.createOrganisation("", "", null, null, null);
+		Organisation organisation = organisationService.createOrganisation("org", "Org", null, null, null);
 		List<Organisation> organisations = Collections.singletonList(organisation);
 		RepositoryEntry courseNoDC = JunitTestHelper.createAndPersistRepositoryEntry();
 		repositoryService.addOrganisation(courseNoDC, organisation);
@@ -312,7 +312,7 @@ public class CourseLecturesProviderDAOTest extends OlatTestCase {
 		createLectureBlock(courseNoDC, teacher, 1);
 		createLectureBlock(courseRunningDC, teacher, 1);
 		createLectureBlock(courseFinishedDC, teacher, 1);
-		QualityGenerator generator = generatorService.createGenerator("", organisations);
+		QualityGenerator generator = generatorService.createGenerator("Gen", organisations);
 		dbInstance.commitAndCloseSession();
 		
 		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
@@ -341,7 +341,7 @@ public class CourseLecturesProviderDAOTest extends OlatTestCase {
 	@Test
 	public void shouldFilterLectureBlockInfosByExcludeForTopicIdentity() {
 		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("");
-		Organisation organisation = organisationService.createOrganisation("", "", null, null, null);
+		Organisation organisation = organisationService.createOrganisation("org", "Org", null, null, null);
 		List<Organisation> organisations = Collections.singletonList(organisation);
 		RepositoryEntry course1 = JunitTestHelper.createAndPersistRepositoryEntry();
 		repositoryService.addOrganisation(course1, organisation);
@@ -352,7 +352,7 @@ public class CourseLecturesProviderDAOTest extends OlatTestCase {
 		createLectureBlock(course1, teacher, 1);
 		createLectureBlock(course2, teacher, 1);
 		createLectureBlock(otherCourse, teacher, 1);
-		QualityGenerator generator = generatorService.createGenerator("", organisations);
+		QualityGenerator generator = generatorService.createGenerator("Gen", organisations);
 		dbInstance.commitAndCloseSession();
 		
 		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
@@ -375,7 +375,7 @@ public class CourseLecturesProviderDAOTest extends OlatTestCase {
 	@Test
 	public void shouldFilterLectureBlockInfosByExcludeForTopicRepository() {
 		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("");
-		Organisation organisation = organisationService.createOrganisation("", "", null, null, null);
+		Organisation organisation = organisationService.createOrganisation("org", "Org", null, null, null);
 		List<Organisation> organisations = Collections.singletonList(organisation);
 		RepositoryEntry course1 = JunitTestHelper.createAndPersistRepositoryEntry();
 		repositoryService.addOrganisation(course1, organisation);
@@ -386,7 +386,7 @@ public class CourseLecturesProviderDAOTest extends OlatTestCase {
 		createLectureBlock(course1, teacher, 1);
 		createLectureBlock(course2, teacher, 1);
 		createLectureBlock(otherCourse, teacher, 1);
-		QualityGenerator generator = generatorService.createGenerator("", organisations);
+		QualityGenerator generator = generatorService.createGenerator("Gen", organisations);
 		dbInstance.commitAndCloseSession();
 		
 		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
@@ -409,9 +409,9 @@ public class CourseLecturesProviderDAOTest extends OlatTestCase {
 	@Test
 	public void shouldFilterLectureBlockInfosByOrganisation() {
 		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("");
-		Organisation superOrganisation = organisationService.createOrganisation("", "", null, null, null);
-		Organisation organisation = organisationService.createOrganisation("", "", null, superOrganisation, null);
-		Organisation subOrganisation = organisationService.createOrganisation("", "", null, organisation, null);
+		Organisation superOrganisation = organisationService.createOrganisation("org", "Org", null, null, null);
+		Organisation organisation = organisationService.createOrganisation("org", "Org", null, superOrganisation, null);
+		Organisation subOrganisation = organisationService.createOrganisation("org", "Org", null, organisation, null);
 		RepositoryEntry courseSuperOrg = JunitTestHelper.createAndPersistRepositoryEntry();
 		repositoryService.addOrganisation(courseSuperOrg, superOrganisation);
 		RepositoryEntry course1 = JunitTestHelper.createAndPersistRepositoryEntry();

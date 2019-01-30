@@ -98,39 +98,39 @@ public class CurriculumElementQualityContextBuilderTest extends OlatTestCase {
 				Arrays.asList(executor));
 		EvaluationFormParticipation evaluationFormParticipation = participations.get(0);
 		
-		Organisation curriculumOrganisation1 = organisationService.createOrganisation("", UUID.randomUUID().toString(), "", null,
+		Organisation curriculumOrganisation1 = organisationService.createOrganisation("Org-29", UUID.randomUUID().toString(), "", null,
 				null);
-		Organisation curriculumOrganisation2Parent = organisationService.createOrganisation("", UUID.randomUUID().toString(), "",
+		Organisation curriculumOrganisation2Parent = organisationService.createOrganisation("Org-30", UUID.randomUUID().toString(), "",
 				null, null);
-		Organisation curriculumOrganisation2 = organisationService.createOrganisation("", UUID.randomUUID().toString(), "",
+		Organisation curriculumOrganisation2 = organisationService.createOrganisation("Org-31", UUID.randomUUID().toString(), "",
 				curriculumOrganisation2Parent, null);
 		
-		Curriculum curriculum1 = curriculumService.createCurriculum(UUID.randomUUID().toString(), "", "",
+		Curriculum curriculum1 = curriculumService.createCurriculum(UUID.randomUUID().toString(), "Curriculum 1", "",
 				curriculumOrganisation1);
-		Curriculum curriculum2 = curriculumService.createCurriculum(UUID.randomUUID().toString(), "", "",
+		Curriculum curriculum2 = curriculumService.createCurriculum(UUID.randomUUID().toString(), "Curriculum 2", "",
 				curriculumOrganisation2);
 
 		CurriculumElement curriculumElementParent = curriculumService
-				.createCurriculumElement(UUID.randomUUID().toString(), "", null, null, null, null, CurriculumCalendars.disabled, curriculum2);
+				.createCurriculumElement(UUID.randomUUID().toString(), "Element", null, null, null, null, CurriculumCalendars.disabled, curriculum2);
 		CurriculumElement curriculumElement = curriculumService.createCurriculumElement(UUID.randomUUID().toString(),
-				"", null, null, curriculumElementParent, null, CurriculumCalendars.disabled, curriculum1);
+				"Element 1", null, null, curriculumElementParent, null, CurriculumCalendars.disabled, curriculum1);
 		CurriculumElement otherCurriculumElement = curriculumService.createCurriculumElement(UUID.randomUUID().toString(),
-				"", null, null, null, null, CurriculumCalendars.disabled, curriculum2);
+				"Element 2", null, null, null, null, CurriculumCalendars.disabled, curriculum2);
 
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		curriculumService.addRepositoryEntry(curriculumElement, entry, true);
 
-		Taxonomy taxonomy = taxonomyService.createTaxonomy(UUID.randomUUID().toString(), "", "", null);
-		TaxonomyLevel taxonomyLevel1 = taxonomyService.createTaxonomyLevel(UUID.randomUUID().toString(), "", "", null,
+		Taxonomy taxonomy = taxonomyService.createTaxonomy(UUID.randomUUID().toString(), "Taxonomy", "", null);
+		TaxonomyLevel taxonomyLevel1 = taxonomyService.createTaxonomyLevel(UUID.randomUUID().toString(), "Level 1", "", null,
 				null, null, taxonomy);
-		TaxonomyLevel taxonomyLevel2Parent = taxonomyService.createTaxonomyLevel(UUID.randomUUID().toString(), "", "",
+		TaxonomyLevel taxonomyLevel2Parent = taxonomyService.createTaxonomyLevel(UUID.randomUUID().toString(), "Level 2", "",
 				null, null, null, taxonomy);
-		TaxonomyLevel taxonomyLevel2 = taxonomyService.createTaxonomyLevel(UUID.randomUUID().toString(), "", "", null,
+		TaxonomyLevel taxonomyLevel2 = taxonomyService.createTaxonomyLevel(UUID.randomUUID().toString(), "Level 3", "", null,
 				null, taxonomyLevel2Parent, taxonomy);
-		TaxonomyLevel taxonomyLevelRepo = taxonomyService.createTaxonomyLevel(UUID.randomUUID().toString(), "", "", null,
+		TaxonomyLevel taxonomyLevelRepo = taxonomyService.createTaxonomyLevel(UUID.randomUUID().toString(), "Level 4", "", null,
 				null, null, taxonomy);
 		TaxonomyLevel taxonomyLevelOfCurriculumElement = taxonomyService
-				.createTaxonomyLevel(UUID.randomUUID().toString(), "", "", null, null, null, taxonomy);
+				.createTaxonomyLevel(UUID.randomUUID().toString(), "Level 5", "", null, null, null, taxonomy);
 		curriculumElementToTaxonomyLevelDao.createRelation(curriculumElement, taxonomyLevel1);
 		curriculumElementToTaxonomyLevelDao.createRelation(curriculumElement, taxonomyLevel2);
 		repositoryTaxonomyDao.createRelation(entry, taxonomyLevelRepo);
@@ -189,9 +189,9 @@ public class CurriculumElementQualityContextBuilderTest extends OlatTestCase {
 		Organisation organisationExecutorOnly = qualityTestHelper.createOrganisation();
 		organisationService.addMember(organisationExecutorOnly, executor, OrganisationRoles.user);
 		
-		Curriculum curriculum = curriculumService.createCurriculum(UUID.randomUUID().toString(), "", "",
+		Curriculum curriculum = curriculumService.createCurriculum(UUID.randomUUID().toString(), "Curriculum", "",
 				organisationExecutorAndCurriculum);
-		CurriculumElement curriculumElement = curriculumService.createCurriculumElement(UUID.randomUUID().toString(), "", null, null, null, null,
+		CurriculumElement curriculumElement = curriculumService.createCurriculumElement(UUID.randomUUID().toString(), "Element", null, null, null, null,
 				CurriculumCalendars.disabled, curriculum);
 		dbInstance.commitAndCloseSession();
 		
@@ -222,9 +222,9 @@ public class CurriculumElementQualityContextBuilderTest extends OlatTestCase {
 		organisationService.addMember(organisationExecutorOnly, executor, OrganisationRoles.user);
 		Organisation organisationCurriculumOnly = qualityTestHelper.createOrganisation();
 		
-		Curriculum curriculum = curriculumService.createCurriculum(UUID.randomUUID().toString(), "", "",
+		Curriculum curriculum = curriculumService.createCurriculum(UUID.randomUUID().toString(), "Curriculum", "",
 				organisationCurriculumOnly);
-		CurriculumElement curriculumElement = curriculumService.createCurriculumElement(UUID.randomUUID().toString(), "", null, null, null, null,
+		CurriculumElement curriculumElement = curriculumService.createCurriculumElement(UUID.randomUUID().toString(), "Element", null, null, null, null,
 				CurriculumCalendars.disabled, curriculum);
 		dbInstance.commitAndCloseSession();
 		
@@ -256,9 +256,9 @@ public class CurriculumElementQualityContextBuilderTest extends OlatTestCase {
 		Organisation organisationExecutorAndCurriculumButManager = qualityTestHelper.createOrganisation();
 		organisationService.addMember(organisationExecutorAndCurriculumButManager, executor, OrganisationRoles.usermanager);
 		
-		Curriculum curriculum = curriculumService.createCurriculum(UUID.randomUUID().toString(), "", "",
+		Curriculum curriculum = curriculumService.createCurriculum(UUID.randomUUID().toString(), "Curriculum", "",
 				organisationExecutorAndCurriculumButManager);
-		CurriculumElement curriculumElement = curriculumService.createCurriculumElement(UUID.randomUUID().toString(), "", null, null, null, null,
+		CurriculumElement curriculumElement = curriculumService.createCurriculumElement(UUID.randomUUID().toString(), "Element", null, null, null, null,
 				CurriculumCalendars.disabled, curriculum);
 		dbInstance.commitAndCloseSession();
 		
@@ -278,9 +278,9 @@ public class CurriculumElementQualityContextBuilderTest extends OlatTestCase {
 	
 	@Test
 	public void shouldNotDeleteContextOfOtherRoles() {
-		Curriculum curriculum = curriculumService.createCurriculum(UUID.randomUUID().toString(), "", "", null);
+		Curriculum curriculum = curriculumService.createCurriculum(UUID.randomUUID().toString(), "Curriculum", "", null);
 		CurriculumElement curriculumElement = curriculumService.createCurriculumElement(UUID.randomUUID().toString(),
-				"", null, null, null, null, CurriculumCalendars.disabled, curriculum);
+				"Curriculum", null, null, null, null, CurriculumCalendars.disabled, curriculum);
 		Identity executor = JunitTestHelper.createAndPersistIdentityAsRndAuthor("");
 		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
 		List<EvaluationFormParticipation> participations = qualityService.addParticipations(dataCollection,

@@ -50,7 +50,7 @@ public class CourseLecturesProviderDAO {
 	private DB dbInstance;
 
 	public Long loadLectureBlockCount(SearchParameters searchParams) {
-		if (dbInstance.isMySQL()) {
+		if (dbInstance.isMySQL() || dbInstance.isOracle()) {
 			return loadLectureBlockCountHql(searchParams);
 		}
 		return loadLectureBlockCountNative(searchParams);

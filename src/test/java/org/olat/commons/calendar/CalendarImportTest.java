@@ -29,6 +29,8 @@ import java.util.Iterator;
 
 import org.junit.Ignore;
 import org.junit.Test;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 
 import net.fortuna.ical4j.data.CalendarBuilder;
 import net.fortuna.ical4j.data.ParserException;
@@ -51,6 +53,7 @@ import net.fortuna.ical4j.util.CompatibilityHints;
  */
 public class CalendarImportTest {
 
+	private static final OLog log = Tracing.createLoggerFor(CalendarImportTest.class);
 	
 	@Test
 	public void testImportMonthFromOutlook() throws IOException, ParserException {
@@ -146,13 +149,13 @@ public class CalendarImportTest {
         Period period = new Period(start, end);
         PeriodList pList = rootEvent.calculateRecurrenceSet(period);
         for(Object obj:pList) {
-        		Period p = (Period)obj;
-        		System.out.println("Period: " + p.getStart());
+        	Period p = (Period)obj;
+        	log.info("Period: " + p.getStart());
         }
         
         RecurrenceId recurrenceId = exceptionEvent.getRecurrenceId();
         Date recurrenceDate = recurrenceId.getDate();
-        System.out.println("Recurrence: " + recurrenceDate);
+        log.info("Recurrence: " + recurrenceDate);
         exceptionEvent.getSequence();
 	}
 }

@@ -52,8 +52,8 @@ CREATE TABLE o_bs_group (
 
 CREATE TABLE o_bs_group_member (
    id number(20) not null,
-   creationdate date not null,
-   lastmodified date not null,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
    g_role varchar2(50 char) not null,
    g_inheritance_mode varchar2(16 char) default 'none' not null,
    fk_group_id number(20) not null,
@@ -507,7 +507,6 @@ CREATE TABLE o_repositoryentry (
   guests number default 0 not null,
   bookable number default 0 not null,
   allowtoleave varchar2(16 char),
-  canlaunch number NOT NULL,
   candownload number NOT NULL,
   cancopy number NOT NULL,
   canreference number NOT NULL,
@@ -849,7 +848,6 @@ create table o_ep_struct_to_group (
 );
 create table o_bs_invitation (
    id number(20) not null,
-   version number(20) not null,
    creationdate date,
    token varchar(64 char) not null,
    first_name varchar(64 char),
@@ -1801,9 +1799,9 @@ create table o_eva_form_session (
    e_study_subject varchar2(1024),
    fk_survey number(20),
    fk_participation number(20) unique,
-   fk_identity number(20) not null,
-   fk_page_body number(20) not null,
-   fk_form_entry number(20) not null,
+   fk_identity number(20),
+   fk_page_body number(20),
+   fk_form_entry number(20),
    primary key (id)
 );
 
@@ -2171,9 +2169,9 @@ create table o_gta_task (
 );
 
 create table o_gta_task_revision_date (
-  id number(20) generated always as identity,
+  id number(20) not null,
   creationdate date not null,
-  g_status varchar2(36 char) not null,
+  g_status varchar(36) not null,
   g_rev_loop number(20) not null,
   g_date date not null,
   fk_task number(20) not null,
@@ -2993,7 +2991,7 @@ alter table o_usercomment add constraint FKF26C8375236F20A foreign key (creator_
 create index FKF26C8375236F20A on o_usercomment (creator_id);
 create index usercmt_id_idx on o_usercomment (resid);
 create index usercmt_name_idx on o_usercomment (resname);
-create index usercmt_subpath_idx on o_usercomment (ressubpath);
+create index usercmt_subpath_idx on o_usercomment (substr(ressubpath,0,255));
 
 -- checkpoint
 alter table o_checkpoint_results add constraint FK9E30F4B661159ZZY foreign key (checkpoint_fk) references o_checkpoint (checkpoint_id);
@@ -3570,11 +3568,11 @@ create index idx_page_pfpage_idx on o_pf_page_user_infos (fk_page_id);
 
 -- evaluation form
 alter table o_eva_form_survey add constraint eva_surv_to_surv_idx foreign key (fk_series_previous) references o_eva_form_survey (id);
-create unique index idx_eva_surv_ores_idx on o_eva_form_survey (e_resid, e_resname, e_sub_ident);
+create unique index idx_eva_surv_ores_idx on o_eva_form_survey  (case when e_sub_ident is null then e_resid || ',' || e_resname else e_resid || ',' || e_resname || ',' || e_sub_ident end);
 
 alter table o_eva_form_participation add constraint eva_part_to_surv_idx foreign key (fk_survey) references o_eva_form_survey (id);
 create unique index idx_eva_part_ident_idx on o_eva_form_participation (e_identifier_key, e_identifier_type, fk_survey);
-create unique index idx_eva_part_executor_idx on o_eva_form_participation (fk_executor, fk_survey);
+create unique index idx_eva_part_executor_idx on o_eva_form_participation  (case when fk_executor is not null and fk_survey is not null then fk_executor || ',' || fk_survey end);
 
 alter table o_eva_form_session add constraint eva_sess_to_surv_idx foreign key (fk_survey) references o_eva_form_survey (id);
 create index idx_eva_sess_to_surv_idx on o_eva_form_session (fk_survey);
@@ -3596,7 +3594,7 @@ create index idx_dc_status_idx on o_qual_data_collection (q_status);
 alter table o_qual_data_collection_to_org add constraint qual_dc_to_org_idx foreign key (fk_data_collection) references o_qual_data_collection (id);
 create unique index idx_qual_dc_to_org_idx on o_qual_data_collection_to_org (fk_data_collection, fk_organisation);
 
-alter table o_qual_context add constraint qual_con_to_data_collection_idx foreign key (fk_data_collection) references o_qual_data_collection (id);
+alter table o_qual_context add constraint qual_con_to_data_coll_idx foreign key (fk_data_collection) references o_qual_data_collection (id);
 create index idx_con_to_data_collection_idx on o_qual_context (fk_data_collection);
 alter table o_qual_context add constraint qual_con_to_participation_idx foreign key (fk_eva_participation) references o_eva_form_participation (id);
 create index idx_con_to_participation_idx on o_qual_context (fk_eva_participation);
@@ -3619,7 +3617,7 @@ alter table o_qual_context_to_tax_level add constraint qual_con_to_tax_level_con
 create index idx_con_to_tax_level_con_idx on o_qual_context_to_tax_level (fk_context);
 create unique index idx_con_to_tax_level_tax_idx on o_qual_context_to_tax_level (fk_tax_leveL, fk_context);
 
-alter table o_qual_reminder add constraint qual_rem_to_data_collection_idx foreign key (fk_data_collection) references o_qual_data_collection (id);
+alter table o_qual_reminder add constraint qual_rem_to_data_coll_idx foreign key (fk_data_collection) references o_qual_data_collection (id);
 create index idx_rem_to_data_collection_idx on o_qual_reminder (fk_data_collection);
 
 alter table o_qual_report_access add constraint qual_repacc_to_dc_idx foreign key (fk_data_collection) references o_qual_data_collection (id);

@@ -30,6 +30,7 @@ import org.olat.core.commons.modules.bc.components.FolderComponent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.media.ForbiddenMediaResource;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.gui.translator.Translator;
@@ -47,31 +48,33 @@ public class CmdServeThumbnailResource implements FolderCommand {
 	@Override
 	public Controller execute(FolderComponent folderComponent, UserRequest ureq, WindowControl wControl, Translator translator) {
 		VFSSecurityCallback inheritedSecCallback = VFSManager.findInheritedSecurityCallback(folderComponent.getCurrentContainer());
-		if (inheritedSecCallback != null && !inheritedSecCallback.canRead())
-			throw new RuntimeException("Illegal read attempt: " + folderComponent.getCurrentContainerPath());
 		
-		// extract file
-		String path = ureq.getModuleURI();
 		MediaResource mr = null;
-		VFSLeaf vfsfile = (VFSLeaf)folderComponent.getRootContainer().resolve(path);
-		if(vfsfile == null) {
-			//double decoding of ++
-			vfsfile = (VFSLeaf)FolderCommandHelper.tryDoubleDecoding(ureq, folderComponent);
-		}
-		
-		if(vfsfile.canMeta() == VFSConstants.YES) {
-			MetaInfo info = vfsfile.getMetaInfo();
-			if(info != null && info.isThumbnailAvailable()) {
-				VFSLeaf thumbnail = info.getThumbnail(200, 200, false);
-				if(thumbnail != null) {
-					mr = new VFSMediaResource(thumbnail);
+		if (inheritedSecCallback != null && !inheritedSecCallback.canRead()) {
+			mr = new ForbiddenMediaResource();
+		} else {
+			// extract file
+			String path = ureq.getModuleURI();
+			
+			VFSLeaf vfsLeaf = (VFSLeaf)folderComponent.getRootContainer().resolve(path);
+			if(vfsLeaf == null) {
+				//double decoding of ++
+				vfsLeaf = (VFSLeaf)FolderCommandHelper.tryDoubleDecoding(ureq, folderComponent);
+			}
+			
+			if(vfsLeaf != null && vfsLeaf.canMeta() == VFSConstants.YES) {
+				MetaInfo info = vfsLeaf.getMetaInfo();
+				if(info != null && info.isThumbnailAvailable()) {
+					VFSLeaf thumbnail = info.getThumbnail(200, 200, false);
+					if(thumbnail != null) {
+						mr = new VFSMediaResource(thumbnail);
+					}
 				}
 			}
+			if(mr == null) {
+				mr = new NotFoundMediaResource();
+			}
 		}
-		if(mr == null) {
-			mr = new NotFoundMediaResource();
-		}
-		
 		ureq.getDispatchResult().setResultingMediaResource(mr);
 		return null;
 	}

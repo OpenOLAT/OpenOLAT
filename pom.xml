@@ -88,6 +88,10 @@
 	    <test.env.db.postgresql.user>postgres</test.env.db.postgresql.user>
 	    <test.env.db.postgresql.pass>postgres</test.env.db.postgresql.pass>
 	    <test.env.db.postgresql.host.port>5432</test.env.db.postgresql.host.port>
+	    <test.env.db.oracle.name>orcl</test.env.db.oracle.name>
+	    <test.env.db.oracle.user>OLATTEST</test.env.db.oracle.user>
+	    <test.env.db.oracle.pass>olat00002</test.env.db.oracle.pass>
+	    <test.env.db.oracle.host.port>1521</test.env.db.oracle.host.port>
 	    <test.env.instance.id>myolat</test.env.instance.id>
 	    <test.env.jmx.rmi.port.0>3000</test.env.jmx.rmi.port.0>
 	    <test.env.webdriver.browser>chrome</test.env.webdriver.browser>
@@ -1070,6 +1074,7 @@
 			<properties>
 				<testFailureIgnore>false</testFailureIgnore>
 				<test.env>oracle</test.env>
+				<skipTests>false</skipTests>
 			</properties>
 			<build>
 				<plugins>
@@ -1110,10 +1115,15 @@
 				</plugins>
 			</build>
 			<dependencies>
+				<!-- 
+				Configure the Oracle maven repository in your .m2/settings.xml file or
+				download the JDBC driver, install it on your local repo with:
+				mvn install:install-file -Dfile=ojdbc8.jar -DgroupId=com.oracle.jdbc -DartifactId=ojdbc8 -Dversion=12.2.0.1.0 -Dpackaging=jar -DcreateChecksum=true
+				 -->
 				<dependency>
-					<groupId>com.oracle</groupId>
-					<artifactId>ojdbc6</artifactId>
-					<version>11.0</version>
+					<groupId>com.oracle.jdbc</groupId>
+					<artifactId>ojdbc8</artifactId>
+					<version>12.2.0.1.0</version>
 					<optional>true</optional>
 				</dependency>
 			</dependencies>

@@ -40,6 +40,7 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
+import org.olat.course.nodes.gta.model.Membership;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
@@ -75,7 +76,9 @@ public class GTARunController extends BasicController implements Activateable2 {
 		this.userCourseEnv = userCourseEnv;
 		
 		ModuleConfiguration config = gtaNode.getModuleConfiguration();
-		if((userCourseEnv.isCoach() && userCourseEnv.isParticipant()) || (userCourseEnv.isAdmin() && userCourseEnv.isParticipant())) {
+		RepositoryEntry entry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		Membership membership = gtaManager.getMembership(getIdentity(), entry, gtaNode);
+		if((membership.isCoach() && membership.isParticipant()) || (userCourseEnv.isAdmin() && membership.isParticipant())) {
 			mainVC = createVelocityContainer("run_segments");
 			
 			segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
@@ -106,7 +109,7 @@ public class GTARunController extends BasicController implements Activateable2 {
 			doOpenSelectionList(ureq);
 			mainVC.put("segments", segmentView);
 			putInitialPanel(mainVC);
-		} else if(userCourseEnv.isCoach() || userCourseEnv.isAdmin()) {
+		} else if(membership.isCoach() || userCourseEnv.isAdmin()) {
 			mainVC = createVelocityContainer("run_segments");
 
 			segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
@@ -118,7 +121,7 @@ public class GTARunController extends BasicController implements Activateable2 {
 			doOpenSelectionList(ureq);
 			mainVC.put("segments", segmentView);
 			putInitialPanel(mainVC);
-		} else if(userCourseEnv.isParticipant()) {
+		} else if(membership.isParticipant()) {
 			createRun(ureq);
 			putInitialPanel(runCtrl.getInitialComponent());
 		} else {

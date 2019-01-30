@@ -76,6 +76,7 @@ public class CertificateAndEfficiencyStatementListModel extends DefaultFlexiTabl
 				return AssessmentHelper.getRoundedScore(score);
 			case passed: return statement.getPassed();
 			case lastModified: return statement.getLastModified();
+			case lastUserUpdate: return statement.getLastUserModified();
 			case certificate: return statement.getCertificate();
 			case recertification: {
 				if(statement.getCertificate() != null) {
@@ -89,12 +90,13 @@ public class CertificateAndEfficiencyStatementListModel extends DefaultFlexiTabl
 		return null;
 	}
 
-	public static enum Cols implements FlexiSortableColumnDef {
+	public enum Cols implements FlexiSortableColumnDef {
 		
 		displayName("table.header.course", true),
 		score("table.header.score", true),
 		passed("table.header.passed", true),
 		lastModified("table.header.lastScoreDate", true),
+		lastUserUpdate("table.header.lastUserModificationDate", true),
 		efficiencyStatement("table.header.certificate", true),
 		certificate("table.header.certificate", true),
 		recertification("table.header.recertification", true),
@@ -132,6 +134,7 @@ public class CertificateAndEfficiencyStatementListModel extends DefaultFlexiTabl
 		private Boolean passed;
 		private Date lastModified;
 		private String displayName;
+		private Date lastUserModified;
 		
 		private Long resourceKey;
 		private Long efficiencyStatementKey;
@@ -167,6 +170,14 @@ public class CertificateAndEfficiencyStatementListModel extends DefaultFlexiTabl
 
 		public void setLastModified(Date lastModified) {
 			this.lastModified = lastModified;
+		}
+
+		public Date getLastUserModified() {
+			return lastUserModified;
+		}
+
+		public void setLastUserModified(Date lastUserModified) {
+			this.lastUserModified = lastUserModified;
 		}
 
 		public CertificateLight getCertificate() {

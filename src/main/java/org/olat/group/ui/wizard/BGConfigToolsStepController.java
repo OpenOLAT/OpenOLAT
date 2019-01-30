@@ -22,6 +22,7 @@ package org.olat.group.ui.wizard;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.admin.quota.QuotaConstants;
 import org.olat.collaboration.CalendarToolSettingsController;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
@@ -118,7 +119,7 @@ public class BGConfigToolsStepController extends StepFormBasicController {
 				
 				//add quota configuration for admin only
 				if(quotaManager.hasMinimalRolesToEditquota(roles)) {
-					Quota quota = quotaManager.createQuota(null, null, null);
+					Quota quota = quotaManager.createQuota(QuotaConstants.IDENTIFIER_DEFAULT_GROUPS, null, null);
 					config.quotaCtrl = new BGConfigQuotaController(ureq, getWindowControl(), quota, mainForm);
 					config.configContainer.add("quota", config.quotaCtrl.getInitialFormItem());
 					config.quotaCtrl.getInitialFormItem().setVisible(false);

@@ -233,9 +233,9 @@ public class EvaluationFormDAOTest extends OlatTestCase {
 	public void shouldFilterByOrganisations() {
 		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry otherFormEntry = JunitTestHelper.createAndPersistRepositoryEntry();
-		Organisation organisation = organisationService.createOrganisation("", "", null, null, null);
+		Organisation organisation = organisationService.createOrganisation("Org-14", "", null, null, null);
 		List<Organisation> organisations = Collections.singletonList(organisation);
-		Organisation otherOrganisation = organisationService.createOrganisation("", "", null, null, null);
+		Organisation otherOrganisation = organisationService.createOrganisation("Org-15", "", null, null, null);
 		List<Organisation> otherOrganisations = Collections.singletonList(otherOrganisation);
 		QualityDataCollection dataCollection1 = qualityService.createDataCollection(organisations, formEntry);
 		qualityTestHelper.updateStatus(dataCollection1, QualityDataCollectionStatus.FINISHED);
@@ -263,9 +263,9 @@ public class EvaluationFormDAOTest extends OlatTestCase {
 	public void shouldFilterByAllOrganisations() {
 		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry otherFormEntry = JunitTestHelper.createAndPersistRepositoryEntry();
-		Organisation organisation = organisationService.createOrganisation("", "", null, null, null);
+		Organisation organisation = organisationService.createOrganisation("Org-16", "", null, null, null);
 		List<Organisation> organisations = Collections.singletonList(organisation);
-		Organisation otherOrganisation = organisationService.createOrganisation("", "", null, null, null);
+		Organisation otherOrganisation = organisationService.createOrganisation("Org-17", "", null, null, null);
 		List<Organisation> otherOrganisations = Collections.singletonList(otherOrganisation);
 		QualityDataCollection dataCollection1 = qualityService.createDataCollection(organisations, formEntry);
 		qualityTestHelper.updateStatus(dataCollection1, QualityDataCollectionStatus.FINISHED);
@@ -291,9 +291,9 @@ public class EvaluationFormDAOTest extends OlatTestCase {
 	public void shouldFilterByNoOrganisations() {
 		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry otherFormEntry = JunitTestHelper.createAndPersistRepositoryEntry();
-		Organisation organisation = organisationService.createOrganisation("", "", null, null, null);
+		Organisation organisation = organisationService.createOrganisation("Org-18", "", null, null, null);
 		List<Organisation> organisations = Collections.singletonList(organisation);
-		Organisation otherOrganisation = organisationService.createOrganisation("", "", null, null, null);
+		Organisation otherOrganisation = organisationService.createOrganisation("Org-19", "", null, null, null);
 		List<Organisation> otherOrganisations = Collections.singletonList(otherOrganisation);
 		QualityDataCollection dataCollection1 = qualityService.createDataCollection(organisations, formEntry);
 		qualityTestHelper.updateStatus(dataCollection1, QualityDataCollectionStatus.FINISHED);

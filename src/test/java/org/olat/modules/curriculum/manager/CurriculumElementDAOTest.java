@@ -189,18 +189,18 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	
 	@Test
 	public void loadElementsByCurriculums() {
-		Curriculum curriculum1 = curriculumDao.createAndPersist("", "", null, null);
-		CurriculumElement parentElement = curriculumElementDao.createCurriculumElement("", "", null, null,  null,
+		Curriculum curriculum1 = curriculumDao.createAndPersist("Cur-for-load-1", "Curriculum to load 1", null, null);
+		CurriculumElement parentElement = curriculumElementDao.createCurriculumElement("El-load-1", "Element 1", null, null,  null,
 				null, CurriculumCalendars.disabled, curriculum1);
-		CurriculumElement element1 = curriculumElementDao.createCurriculumElement("", "", null, null, parentElement,
+		CurriculumElement element1 = curriculumElementDao.createCurriculumElement("El-load-2", "Element 2", null, null, parentElement,
 				null, CurriculumCalendars.disabled, curriculum1);
-		CurriculumElement element2 = curriculumElementDao.createCurriculumElement("", "", null, null, parentElement,
+		CurriculumElement element2 = curriculumElementDao.createCurriculumElement("El-load-3", "Element 3", null, null, parentElement,
 				null, CurriculumCalendars.disabled, curriculum1);
-		Curriculum curriculum2 = curriculumDao.createAndPersist("", "", null, null);
-		CurriculumElement parentElement2 = curriculumElementDao.createCurriculumElement("", "", null, null,  null,
+		Curriculum curriculum2 = curriculumDao.createAndPersist("Cur-for-load-2", "Curriculum to load 2", null, null);
+		CurriculumElement parentElement2 = curriculumElementDao.createCurriculumElement("El-load-4", "Element 4", null, null,  null,
 				null, CurriculumCalendars.disabled, curriculum2);
-		Curriculum otherCurriculum = curriculumDao.createAndPersist("", "", null, null);
-		CurriculumElement otherElement = curriculumElementDao.createCurriculumElement("", "", null, null,  null,
+		Curriculum otherCurriculum = curriculumDao.createAndPersist("Cur-for-load-3", "Curriculum to load3", null, null);
+		CurriculumElement otherElement = curriculumElementDao.createCurriculumElement("El-load-5", "Element 5", null, null,  null,
 				null, CurriculumCalendars.disabled, otherCurriculum);
 		dbInstance.commitAndCloseSession();
 		

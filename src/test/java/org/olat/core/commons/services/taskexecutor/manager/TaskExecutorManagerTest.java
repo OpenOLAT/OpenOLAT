@@ -81,7 +81,7 @@ public class TaskExecutorManagerTest extends OlatTestCase {
 		final int numOfExecutors = 5;
 		final Thread[] executors = new Thread[numOfExecutors];
 		for(int i=numOfExecutors; i-->0; ) {
-			executors[i] = new Thread(new ProcessTask(taskExecutorManager));
+			executors[i] = new Thread(new ProcessTask(taskExecutorManager, dbInstance));
 		}
 		
 		try {
@@ -104,15 +104,18 @@ public class TaskExecutorManagerTest extends OlatTestCase {
 	
 	public static class ProcessTask implements Runnable {
 		
+		private final DB db;
 		private final TaskExecutorManagerImpl executor;
 		
-		public ProcessTask(TaskExecutorManagerImpl executor) {
+		public ProcessTask(TaskExecutorManagerImpl executor, DB db) {
 			this.executor = executor;
+			this.db = db;
 		}
 
 		@Override
 		public void run() {
 			executor.processTaskToDo();
+			db.commitAndCloseSession();	
 		}
 	}
 	

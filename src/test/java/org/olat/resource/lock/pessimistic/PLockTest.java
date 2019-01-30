@@ -60,8 +60,6 @@ public class PLockTest extends OlatTestCase {
 	
 	private static final OLog log = Tracing.createLoggerFor(PLockTest.class);
 
-	private static final int MAX_COUNT = 5; //5; //30;
-	private static final int MAX_USERS_MORE = 20; //20; //100;
 	
 	@Autowired
 	private DB dbInstance;
@@ -509,11 +507,15 @@ public class PLockTest extends OlatTestCase {
 	@Test
 	public void testSync() {
 		log.info("testing enrollment");
+		
+		int count = 5;
+		int maxUsers = isOracleConfigured() ? 5 : 20;// I give less connections
+		
 		//	 ------------------ now check with lock -------------------
 		// create a group
 		//	 create users
 		final List<Identity> identities = new ArrayList<Identity>();
-		for (int i = 0; i < MAX_COUNT + MAX_USERS_MORE; i++) {
+		for (int i = 0; i < count + maxUsers; i++) {
 			Identity id = JunitTestHelper.createAndPersistIdentityAsUser("u-" + i + "-" + UUID.randomUUID().toString());
 			identities.add(id);
 			log.info("testSync: Identity=" + id.getName() + " created");
@@ -525,7 +527,7 @@ public class PLockTest extends OlatTestCase {
 		dbInstance.closeSession();
 		
 		//prepare threads
-		int numOfThreads = MAX_COUNT + MAX_USERS_MORE;
+		int numOfThreads = count + maxUsers;
 		final CountDownLatch finishCount = new CountDownLatch(numOfThreads);
 
 		// try to enrol all in the same group
@@ -539,13 +541,13 @@ public class PLockTest extends OlatTestCase {
 						//
 						PLock p2 = pessimisticLockManager.findOrPersistPLock("befinsert");
 						assertNotNull(p2);
-						doNoLockingEnrol(id, group2);
+						doNoLockingEnrol(id, group2, count);
 						dbInstance.commit();
-						dbInstance.closeSession();
 					} catch (Exception e) {
-						e.printStackTrace();
+						log.error("", e);
 					} finally {
 						finishCount.countDown();
+						dbInstance.closeSession();
 					}
 				}}).start();
 		}
@@ -559,23 +561,23 @@ public class PLockTest extends OlatTestCase {
 		// now count 
 		dbInstance.closeSession();
 		int cnt2 = securityGroupDao.countIdentitiesOfSecurityGroup(group2);
-		assertTrue("cnt should be smaller or eq than allowed since synced with select for update. cnt:"+cnt2+", max "+MAX_COUNT, cnt2 <= MAX_COUNT);
-		assertTrue("cnt should be eq to allowed since synced with select for update. cnt:"+cnt2+", max "+MAX_COUNT, cnt2 == MAX_COUNT);
+		assertTrue("cnt should be smaller or eq than allowed since synced with select for update. cnt:"+cnt2+", max "+count, cnt2 <= count);
+		assertTrue("cnt should be eq to allowed since synced with select for update. cnt:"+cnt2+", max "+count, cnt2 == count);
 		log.info("cnt lock "+cnt2);
 	}
 	
 	
-	private void doNoLockingEnrol(Identity i, SecurityGroup group) {
+	private void doNoLockingEnrol(Identity i, SecurityGroup group, int count) {
 		// check that below max
 		try {
-			StringBuilder sb = new StringBuilder();
+			StringBuilder sb = new StringBuilder(128);
 			int cnt = securityGroupDao.countIdentitiesOfSecurityGroup(group);
 			sb.append("enrol:cnt:"+cnt);
-			if (cnt < MAX_COUNT) {
+			if (cnt < count) {
 				// now sleep a while to allow others to think also that there is still space left in the group
 				sleep(100);
 				// now add the user to the security group
-				sb.append(" adding "+i.getName()+": current.. "+cnt+", max = "+MAX_COUNT);
+				sb.append(" adding " + i.getName() + ": current.. " + cnt + ", max = " + count);
 				securityGroupDao.addIdentityToSecurityGroup(i, group);
 			}
 			log.info(sb.toString());
