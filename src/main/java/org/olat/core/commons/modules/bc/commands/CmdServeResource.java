@@ -36,6 +36,7 @@ import org.olat.core.commons.modules.bc.components.FolderComponent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.media.ForbiddenMediaResource;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.gui.media.StringMediaResource;
@@ -58,32 +59,35 @@ public class CmdServeResource implements FolderCommand {
 
 	// the latest encoding is saved since .js files loaded by the browser are
 	// assumed to have the same encoding as the html page
-	private String g_encoding;
+	private String encoding;
 	
 	private int status = FolderCommandStatus.STATUS_SUCCESS;
 	
 	@Override
 	public Controller execute(FolderComponent folderComponent, UserRequest ureq, WindowControl wControl, Translator translator) {
 		VFSSecurityCallback inheritedSecCallback = VFSManager.findInheritedSecurityCallback(folderComponent.getCurrentContainer());
-		if (inheritedSecCallback != null && !inheritedSecCallback.canRead())
-			throw new RuntimeException("Illegal read attempt: " + folderComponent.getCurrentContainerPath());
-		
-		// extract file
-		String path = ureq.getModuleURI();
-		VFSItem vfsitem = folderComponent.getRootContainer().resolve(path);
-		if(vfsitem == null) {
-			//double decoding of ++
-			vfsitem = FolderCommandHelper.tryDoubleDecoding(ureq, folderComponent);
-		}
-		MediaResource mr = getMediaResource(path, vfsitem);
-		ThreadLocalUserActivityLogger.log(FolderLoggingAction.BC_FILE_READ, getClass(), CoreLoggingResourceable.wrapBCFile(path));
-		ureq.getDispatchResult().setResultingMediaResource(mr);
-		
-		// update download counter
-		if (vfsitem.canMeta() == VFSConstants.YES) {
-			MetaInfo meta = vfsitem.getMetaInfo();
-			meta.increaseDownloadCount();
-			meta.write();
+		if (inheritedSecCallback != null && !inheritedSecCallback.canRead()) {
+			ureq.getDispatchResult().setResultingMediaResource(new ForbiddenMediaResource());
+		} else {
+			// extract file
+			String path = ureq.getModuleURI();
+			VFSItem vfsItem = folderComponent.getRootContainer().resolve(path);
+			if(vfsItem == null) {
+				//double decoding of ++
+				vfsItem = FolderCommandHelper.tryDoubleDecoding(ureq, folderComponent);
+			}
+			MediaResource mr = getMediaResource(path, vfsItem);
+			ThreadLocalUserActivityLogger.log(FolderLoggingAction.BC_FILE_READ, getClass(), CoreLoggingResourceable.wrapBCFile(path));
+			ureq.getDispatchResult().setResultingMediaResource(mr);
+			
+			// update download counter
+			if(vfsItem == null) {
+				folderComponent.updateChildren();
+			} else if (vfsItem.canMeta() == VFSConstants.YES) {
+				MetaInfo meta = vfsItem.getMetaInfo();
+				meta.increaseDownloadCount();
+				meta.write();
+			}
 		}
 
 		return null;
@@ -125,7 +129,7 @@ public class CmdServeResource implements FolderCommand {
 						useLoaded = true;
 					}
 					// set the new encoding to remember for any following .js file loads
-					g_encoding = enc;
+					encoding = enc;
 					if (useLoaded) {
 						StringMediaResource smr = new StringMediaResource();
 						String mimetype = forceDownload ? VFSMediaResource.MIME_TYPE_FORCE_DOWNLOAD : "text/html;charset=" + enc;
@@ -156,8 +160,8 @@ public class CmdServeResource implements FolderCommand {
 				// together with the mime-type, which is wrong.
 				// so we assume the .js file has the same encoding as the html file
 				// that loads the .js file
-				if (g_encoding != null) {
-					vmr.setEncoding(g_encoding);
+				if (encoding != null) {
+					vmr.setEncoding(encoding);
 				}
 				if(forceDownload) {
 					vmr.setDownloadable(true);
