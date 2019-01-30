@@ -304,10 +304,6 @@ public class AnalysisController extends BasicController implements TooledControl
 		reportHelper = null;
 		reportFigures = null;
 		
-		if (heatMapCtrl != null) {
-			heatMapCtrl.onFilter(ureq, searchParams);
-		}
-		
 		doOpenSegment(ureq, presentation.getAnalysisSegment());
 	}
 	
@@ -386,6 +382,8 @@ public class AnalysisController extends BasicController implements TooledControl
 			stackedDetailsPanel = new BreadcrumbedStackedPanel("forms", getTranslator(), heatMapCtrl);
 			stackedDetailsPanel.pushController(translate("analysis.details"), heatMapCtrl);
 			heatMapCtrl.setBreadcrumbPanel(stackedDetailsPanel);
+		} else {
+			heatMapCtrl.onFilter(ureq, presentation.getSearchParams());
 		}
 		mainVC.put(SEGMENTS_CMP, stackedDetailsPanel);
 		segmentButtonsCmp.setSelectedButton(heatMapLink);
