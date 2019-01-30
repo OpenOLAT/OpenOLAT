@@ -92,9 +92,9 @@ public class MergeTaxonomyLevelController extends FormBasicController {
 		mergeToEl = uifactory.addDropdownSingleselect("mergeto", "merge.to", formLayout,
 				keyList.toArray(new String[keyList.size()]), valueList.toArray(new String[valueList.size()]), null);
 		mergeToEl.setEscapeHtml(false);
-
+		
 		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
-		uifactory.addFormSubmitButton("delete", formLayout);
+		uifactory.addFormSubmitButton("merge.taxonomy.level", formLayout);
 	}
 	
 	private void buildMergeToSelection(TreeNode node, String identation, List<String> keys, List<String> values) {
