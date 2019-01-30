@@ -45,7 +45,7 @@
 	<bean id="OAuthAuthenticationProvider" class="org.olat.login.oauth.OAuthAuthenticationProvider" >
 		<constructor-arg index="0" value="OAuth"/>
 		<constructor-arg index="1" value="org.olat.login.oauth.ui.OAuthAuthenticationController"/>
-		<constructor-arg index="2" value="false"/>
+		<constructor-arg index="2" value="${oauth.default}"/>
 		<constructor-arg index="3" value="o_icon_provider_oauth"/>
 	</bean>
 	
