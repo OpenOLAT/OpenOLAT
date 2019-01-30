@@ -1,4 +1,4 @@
-<div class="o_form form-horizontal" role="form">
+<div class="o_form form-horizontal clearfix" role="form">
 	#if($r.isNotEmpty($errorMsg))
 		<div class="o_error">$errorMsg</div>
 	#else
@@ -11,10 +11,12 @@
 			</div>
 		</div>
 	#end
-	<div class="o_button_group">
-		$r.render("cancel")
-		#if($r.available("delete"))
-			$r.render("delete")
-		#end
+	<div class="form-group clearfix">
+		<div class="col-sm-offset-3 col-sm-9 ">
+			$r.render("cancel")
+			#if($r.available("merge.taxonomy.level"))
+				$r.render("merge.taxonomy.level")
+			#end
+		</div>
 	</div>
 </div>

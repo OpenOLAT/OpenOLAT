@@ -23,10 +23,12 @@
 			</div>
 		</div>
 	#end
-	<div class="o_button_group">
+	<div class="form-group clearfix">
+		<div class="col-sm-offset-3 col-sm-9 ">
 		$r.render("cancel")
 		#if($r.available("delete"))
 			$r.render("delete")
 		#end
+		</div>
 	</div>
 </div>
