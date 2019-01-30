@@ -475,7 +475,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 		resetDataCtrl = new QTI21ResetDataController(ureq, getWindowControl(), courseEnv, asOptions, (IQTESTCourseNode)courseNode);
 		listenTo(resetDataCtrl);
 		
-		String title = translate("tool.reset");
+		String title = translate("reset.test.data.title");
 		cmc = new CloseableModalController(getWindowControl(), null, resetDataCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();

@@ -121,11 +121,6 @@ public class QTI21AssessedIdentityListController extends AssessedIdentityListCon
 	
 	private void doResetData(UserRequest ureq) {
 		if(resetDataCtrl != null) return;
-		
-		/*
-		if(identities == null || identities.isEmpty()) {
-			showWarning("warning.reset.test.data.nobody");
-		} */
 	
 		AssessmentToolOptions asOptions = getOptions();
 		resetDataCtrl = new QTI21ResetDataController(ureq, getWindowControl(), this.getRepositoryEntry(), asOptions);
