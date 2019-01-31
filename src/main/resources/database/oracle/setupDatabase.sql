@@ -2980,7 +2980,7 @@ alter table o_userrating add constraint FKF26C8375236F20X foreign key (creator_i
 create index FKF26C8375236F20X on o_userrating (creator_id);
 create index userrating_id_idx on o_userrating (resid);
 create index userrating_name_idx on o_userrating (resname);
-create index userrating_subpath_idx on o_userrating (ressubpath);
+create index userrating_subpath_idx on o_userrating (substr(ressubpath,0,255));
 create index userrating_rating_idx on o_userrating (rating);
 create index userrating_rating_res_idx on o_userrating (resid, resname, creator_id, rating);
 
@@ -3284,8 +3284,8 @@ create index FKF26C8375236F21X on o_mark (creator_id);
 
 create index mark_id_idx on o_mark(resid);
 create index mark_name_idx on o_mark(resname);
-create index mark_subpath_idx on o_mark(ressubpath);
-create index mark_businesspath_idx on o_mark(businesspath);
+create index mark_subpath_idx on o_mark(substr(ressubpath,0,255));
+create index mark_businesspath_idx on o_mark(substr(businesspath,0,255));
 
 -- forum
 alter table o_message add constraint FKF26C8375236F20E foreign key (creator_id) references o_bs_identity (id);
