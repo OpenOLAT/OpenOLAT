@@ -71,6 +71,11 @@ public class ManagedUserVO {
 	}
 	
 	@Override
+	public int hashCode() {
+		return key == null ? 296578 : key.hashCode();
+	}
+
+	@Override
 	public boolean equals(Object obj) {
 		if(this == obj) {
 			return true;

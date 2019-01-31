@@ -40,7 +40,6 @@ import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -98,10 +97,8 @@ public class UserVOFactory {
 		if(withPortrait) {
 			File portrait = CoreSpringFactory.getImpl(DisplayPortraitManager.class).getSmallPortrait(identity.getName());
 			if(portrait != null && portrait.exists()) {
-				try {
-					InputStream input = new FileInputStream(portrait);
+				try(InputStream input = new FileInputStream(portrait)) {
 					byte[] datas = IOUtils.toByteArray(input);
-					FileUtils.closeSafely(input);
 					byte[] data64 = Base64.encodeBase64(datas);
 					userVO.setPortrait(new String(data64, "UTF8"));
 				} catch (IOException e) {
@@ -109,7 +106,6 @@ public class UserVOFactory {
 				}
 			}
 		}
-		
 		
 		if(allProperties) {
 			UserManager um = UserManager.getInstance();

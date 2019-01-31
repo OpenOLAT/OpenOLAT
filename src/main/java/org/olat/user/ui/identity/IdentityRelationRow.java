@@ -17,52 +17,57 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.assessment.ui.tool;
+package org.olat.user.ui.identity;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.basesecurity.IdentityToIdentityRelationManagedFlag;
+import org.olat.basesecurity.RelationRole;
 import org.olat.core.id.Identity;
-import org.olat.modules.coach.model.EfficiencyStatementEntry;
 import org.olat.user.UserPropertiesRow;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
  * 
- * Initial date: 07.10.2015<br>
+ * Initial date: 30 janv. 2019<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessedIdentityCourseRow extends UserPropertiesRow {
+public class IdentityRelationRow extends UserPropertiesRow {
+
+	private final RelationRole relationRole;
+	private final Long relationKey;
+	private final boolean asSource;
+	private final IdentityToIdentityRelationManagedFlag[] managedFlags;
 	
-	private final Float score;
-	private final Boolean passed;
-	private final Date lastModified;
-	
-	public AssessedIdentityCourseRow(Identity identity, EfficiencyStatementEntry entry, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
+	public IdentityRelationRow(boolean asSource, Long relationKey, Identity identity, RelationRole relationRole,
+			IdentityToIdentityRelationManagedFlag[] managedFlags, List<UserPropertyHandler> userPropertyHandlers,
+			Locale locale) {
 		super(identity, userPropertyHandlers, locale);
-		
-		if(entry != null && entry.getUserEfficencyStatement() != null) {
-			score = entry.getUserEfficencyStatement().getScore();
-			passed = entry.getUserEfficencyStatement().getPassed();
-			lastModified = entry.getUserEfficencyStatement().getLastModified();
-		} else {
-			score = null;
-			passed = null;
-			lastModified = null;
-		}
+		this.relationRole = relationRole;
+		this.relationKey = relationKey;
+		this.managedFlags = managedFlags;
+		this.asSource = asSource;
 	}
-
-	public Float getScore() {
-		return score;
+	
+	public boolean isAsSource() {
+		return asSource;
 	}
-
-	public Boolean getPassed() {
-		return passed;
+	
+	public  Long getRelationKey() {
+		return relationKey;
 	}
-
-	public Date getLastModified() {
-		return lastModified;
+	
+	public String getRelationRoleName() {
+		return relationRole.getRole();
+	}
+	
+	public RelationRole getRelationRole() {
+		return relationRole;
+	}
+	
+	public IdentityToIdentityRelationManagedFlag[] getManagedFlags() {
+		return managedFlags;
 	}
 }

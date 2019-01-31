@@ -77,6 +77,7 @@ import org.olat.user.PropFoundEvent;
 import org.olat.user.UserManager;
 import org.olat.user.UserPropertiesController;
 import org.olat.user.ui.data.UserDataExportController;
+import org.olat.user.ui.identity.UserRelationsOverviewController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -102,9 +103,10 @@ public class UserAdminController extends BasicController implements Activateable
 	private static final String NLS_EDIT_UAUTH 			= "edit.uauth";
 	private static final String NLS_EDIT_UPROP			= "edit.uprop";
 	private static final String NLS_EDIT_UROLES			= "edit.uroles";
+	private static final String NLS_EDIT_RELATIONS		= "edit.urelations";
 	private static final String NLS_EDIT_UQUOTA			= "edit.uquota";
 	private static final String NLS_VIEW_GROUPS			= "view.groups";
-	private static final String NLS_VIEW_COURSES			= "view.courses";
+	private static final String NLS_VIEW_COURSES		= "view.courses";
 	private static final String NLS_VIEW_ACCESS			= "view.access";
 	private static final String NLS_VIEW_EFF_STATEMENTS	= "view.effStatements";
 	private static final String NLS_VIEW_SUBSCRIPTIONS 	= "view.subscriptions";
@@ -123,6 +125,7 @@ public class UserAdminController extends BasicController implements Activateable
 	// controllers used in tabbed pane
 	private TabbedPane userTabP;
 	private Controller prefsCtr, propertiesCtr, pwdCtr, quotaCtr, rolesCtr, userShortDescrCtr;
+	private UserRelationsOverviewController relationsCtrl;
 	private DisplayPortraitController portraitCtr;
 	private UserAuthenticationsEditorController authenticationsCtr;
 	private Link backLink;
@@ -442,6 +445,15 @@ public class UserAdminController extends BasicController implements Activateable
 			listenTo(rolesCtr);
 			return rolesCtr.getInitialComponent();
 		});
+		
+		if (isUserManagerOf || isRolesManagerOf || isAdminOf || isPrincipalOf) {
+			userTabP.addTab(translate(NLS_EDIT_RELATIONS),  uureq -> {
+				boolean canModify = isUserManagerOf || isRolesManagerOf || isAdminOf;
+				relationsCtrl = new UserRelationsOverviewController(uureq, getWindowControl(), identity, canModify);
+				listenTo(relationsCtrl);
+				return relationsCtrl.getInitialComponent();
+			});
+		}
 
 		if (isUserManagerOf || isRolesManagerOf || isAdminOf) {
 			userTabP.addTab(translate(NLS_EDIT_UQUOTA),  uureq -> {

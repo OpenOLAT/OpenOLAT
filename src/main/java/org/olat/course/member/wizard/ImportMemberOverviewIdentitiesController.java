@@ -29,7 +29,6 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -73,9 +72,6 @@ public class ImportMemberOverviewIdentitiesController extends StepFormBasicContr
 
 	public ImportMemberOverviewIdentitiesController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
-		userManager = UserManager.getInstance();
-		securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
-		securityModule = CoreSpringFactory.getImpl(BaseSecurityModule.class);
 
 		oks = null;
 		if(containsRunContextKey("logins")) {

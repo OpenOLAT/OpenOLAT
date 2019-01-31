@@ -20,6 +20,8 @@
 
 package org.olat.user.restapi;
 
+import java.util.Collections;
+
 /**
  * 
  * Description:<br>
@@ -41,6 +43,8 @@ public class Examples {
 	
 	public static final OrganisationTypeVO SAMPLE_ORGANISATIONTYPEVO = new OrganisationTypeVO();
 	
+	public static final RelationRoleVO SAMPLE_RELATIONROLEVO = new RelationRoleVO();
+	public static final IdentityToIdentityRelationVO SAMPLE_IDENTITYTOIDENTITYRELATIONVO = new IdentityToIdentityRelationVO();
   
 	static {
 		SAMPLE_USERVO.setKey(345l);
@@ -77,5 +81,20 @@ public class Examples {
 		SAMPLE_ORGANISATIONTYPEVO.setDisplayName("Organization type");
 		SAMPLE_ORGANISATIONTYPEVO.setExternalId("OWL-1-ext");
 		SAMPLE_ORGANISATIONTYPEVO.setManagedFlagsString("externalId");
+		
+		SAMPLE_RELATIONROLEVO.setKey(56l);
+		SAMPLE_RELATIONROLEVO.setExternalId("RO-1");
+		SAMPLE_RELATIONROLEVO.setExternalRef("ROR-2");
+		SAMPLE_RELATIONROLEVO.setManagedFlags("delete");
+		SAMPLE_RELATIONROLEVO.setRights(Collections.singletonList("myRight"));
+		
+		SAMPLE_IDENTITYTOIDENTITYRELATIONVO.setKey(234l);
+		SAMPLE_IDENTITYTOIDENTITYRELATIONVO.setExternalId("ID-2-ID-256");
+		SAMPLE_IDENTITYTOIDENTITYRELATIONVO.setIdentitySourceKey(34019l);
+		SAMPLE_IDENTITYTOIDENTITYRELATIONVO.setIdentityTargetKey(23100l);
+		SAMPLE_IDENTITYTOIDENTITYRELATIONVO.setRelationRole("Supervisor");
+		SAMPLE_IDENTITYTOIDENTITYRELATIONVO.setRelationRoleKey(23l);
+		SAMPLE_IDENTITYTOIDENTITYRELATIONVO.setManagedFlagsString("all");
+		
 	}
 }

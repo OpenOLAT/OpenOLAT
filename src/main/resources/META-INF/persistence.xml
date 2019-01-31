@@ -69,6 +69,10 @@
 		<class>org.olat.basesecurity.model.OrganisationTypeImpl</class>
 		<class>org.olat.basesecurity.model.OrganisationTypeToTypeImpl</class>
 		<class>org.olat.basesecurity.model.OrganisationImpl</class>
+		<class>org.olat.basesecurity.model.RelationRoleImpl</class>
+		<class>org.olat.basesecurity.model.RelationRightImpl</class>
+		<class>org.olat.basesecurity.model.RelationRoleToRightImpl</class>
+		<class>org.olat.basesecurity.model.IdentityToIdentityRelationImpl</class>
 		<class>org.olat.core.dispatcher.mapper.model.PersistedMapper</class>
 		<class>org.olat.core.logging.activity.LoggingObject</class>
 		<class>org.olat.commons.calendar.model.ImportedCalendar</class>

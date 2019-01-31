@@ -105,6 +105,7 @@ public class BaseSecurityModule extends AbstractSpringModule {
 	private static final String USERSEARCHAUTOCOMPLETE_SYSTEMADMINS = "userSearchAdminPropsForSystemAdmins";
 	private static final String USERSEARCH_MAXRESULTS = "userSearchMaxResults";
 	
+	private static final String RELATION_ROLE_MANAGED = "relationRoleManaged";
 
 	private static final String USERINFOS_TUNNEL_CBB = "userInfosTunnelCourseBuildingBlock";
 	/** The feature is enabled, always */
@@ -212,8 +213,8 @@ public class BaseSecurityModule extends AbstractSpringModule {
 	@Value("${usersearch.autocomplete.systemadmins:enabled}")
 	private String userSearchAutocompleteForSystemAdmins;
 	
-	
-	
+	@Value("${managed.relation.role:enabled}")
+	private String relationRoleManaged;
 	
 	@Value("${userinfos.tunnelcoursebuildingblock}")
 	private String userInfosTunnelCourseBuildingBlock;
@@ -297,6 +298,7 @@ public class BaseSecurityModule extends AbstractSpringModule {
 		userSearchAutocompleteForSystemAdmins = getStringPropertyValue(USERSEARCHAUTOCOMPLETE_SYSTEMADMINS, userSearchAutocompleteForSystemAdmins);
 
 		// other stuff
+		relationRoleManaged = getStringPropertyValue(USERSEARCHAUTOCOMPLETE_USERS, relationRoleManaged);
 		userSearchMaxResults = getStringPropertyValue(USERSEARCH_MAXRESULTS, userSearchMaxResults);
 		userInfosTunnelCourseBuildingBlock = getStringPropertyValue(USERINFOS_TUNNEL_CBB, userInfosTunnelCourseBuildingBlock);
 		wikiEnabled = getStringPropertyValue(WIKI_ENABLED, wikiEnabled);
@@ -528,6 +530,15 @@ public class BaseSecurityModule extends AbstractSpringModule {
 
 	public void setUserInfosTunnelCourseBuildingBlock(String enable) {
 		setStringProperty(USERINFOS_TUNNEL_CBB, enable, true);
+	}
+	
+	public boolean isRelationRoleManaged() {
+		return "enabled".equals(relationRoleManaged);
+	}
+
+	public void setRelationRoleManaged(boolean managed) {
+		relationRoleManaged = managed ? "enabled" : "disabled";
+		setStringProperty(RELATION_ROLE_MANAGED, relationRoleManaged, true);
 	}
 
 	public boolean isWikiEnabled() {

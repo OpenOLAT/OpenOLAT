@@ -175,6 +175,39 @@ create table if not exists o_bs_identity (
    deletedby varchar(128),
    primary key (id)
 );
+create table o_bs_relation_role (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   g_role varchar(128) not null,
+   g_external_id varchar(128),
+   g_external_ref varchar(128),
+   g_managed_flags varchar(256),
+   primary key (id)
+);
+create table o_bs_relation_right (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   g_right varchar(128) not null,
+   primary key (id)
+);
+create table o_bs_relation_role_to_right (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   fk_role_id bigint,
+   fk_right_id bigint not null,
+   primary key (id)
+);
+create table o_bs_identity_to_identity (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   g_external_id varchar(128),
+   g_managed_flags varchar(256),
+   fk_source_id bigint not null,
+   fk_target_id bigint not null,
+   fk_role_id bigint not null,
+   primary key (id)
+);
 create table o_csp_log (
    id bigint not null auto_increment,
    creationdate datetime,
@@ -2857,6 +2890,9 @@ alter table o_property ENGINE = InnoDB;
 alter table o_bs_secgroup ENGINE = InnoDB;
 alter table o_bs_group ENGINE = InnoDB;
 alter table o_bs_group_member ENGINE = InnoDB;
+alter table o_bs_relation_role ENGINE = InnoDB;
+alter table o_bs_relation_right ENGINE = InnoDB;
+alter table o_bs_relation_role_to_right ENGINE = InnoDB;
 alter table o_re_to_group ENGINE = InnoDB;
 alter table o_re_to_tax_level ENGINE = InnoDB;
 alter table o_bs_grant ENGINE = InnoDB;
@@ -3108,6 +3144,18 @@ alter table o_bs_membership add constraint FK7B6288B4B85B522C foreign key (secgr
 
 alter table o_bs_invitation add constraint inv_to_group_group_ctx foreign key (fk_group_id) references o_bs_group (id);
 alter table o_bs_invitation add constraint invit_to_id_idx foreign key (fk_identity_id) references o_bs_identity (id);
+
+-- user to user relations
+alter table o_bs_relation_role ENGINE = InnoDB;
+
+create index idx_right_idx on o_bs_relation_right (g_right);
+
+alter table o_bs_relation_role_to_right add constraint role_to_right_role_idx foreign key (fk_role_id) references o_bs_relation_role (id);
+alter table o_bs_relation_role_to_right add constraint role_to_right_right_idx foreign key (fk_right_id) references o_bs_relation_right (id);
+
+alter table o_bs_identity_to_identity add constraint id_to_id_source_idx foreign key (fk_source_id) references o_bs_identity (id);
+alter table o_bs_identity_to_identity add constraint id_to_id_target_idx foreign key (fk_target_id) references o_bs_identity (id);
+alter table o_bs_identity_to_identity add constraint id_to_role_idx foreign key (fk_role_id) references o_bs_relation_role (id);
 
 -- user
 create index usr_notification_interval_idx on o_user (notification_interval);

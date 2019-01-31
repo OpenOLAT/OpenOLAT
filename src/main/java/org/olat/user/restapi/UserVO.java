@@ -147,6 +147,11 @@ public class UserVO {
 	}
 	
 	@Override
+	public int hashCode() {
+		return key == null ? 7287 : key.hashCode();
+	}
+
+	@Override
 	public boolean equals(Object obj) {
 		if(this == obj) {
 			return true;

@@ -19,6 +19,7 @@
  */
 package org.olat.admin.restapi;
 
+import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.commons.calendar.CalendarModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -49,7 +50,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class RestapiAdminController extends FormBasicController {
 	
-	private MultipleSelectionElement enabled, managedGroupsEl, managedRepoEl, managedCalendarEl;
+	private MultipleSelectionElement enabled;
+	private MultipleSelectionElement managedRepoEl;
+	private MultipleSelectionElement managedGroupsEl;
+	private MultipleSelectionElement managedCalendarEl;
+	private MultipleSelectionElement managedRelationRole;
 	private FormLayoutContainer docLinkFlc;
 	
 	private static final String[] keys = {"on"};
@@ -62,6 +67,8 @@ public class RestapiAdminController extends FormBasicController {
 	private BusinessGroupModule groupModule;
 	@Autowired
 	private RepositoryModule repositoryModule;
+	@Autowired
+	private BaseSecurityModule securityModule;
 
 	public RestapiAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "rest");
@@ -87,8 +94,8 @@ public class RestapiAdminController extends FormBasicController {
 			FormLayoutContainer accessDataFlc = FormLayoutContainer.createDefaultFormLayout("flc_access_data", getTranslator());
 			layoutContainer.add(accessDataFlc);
 
-			String[] values = new String[] { getTranslator().translate("rest.on") };
-			enabled = uifactory.addCheckboxesHorizontal("rest.enabled", accessDataFlc, keys, values);
+			String[] valueOn = new String[] { getTranslator().translate("rest.on") };
+			enabled = uifactory.addCheckboxesHorizontal("rest.enabled", accessDataFlc, keys, valueOn);
 			enabled.select(keys[0], restEnabled);
 			enabled.addActionListener(FormEvent.ONCHANGE);
 			
@@ -98,20 +105,21 @@ public class RestapiAdminController extends FormBasicController {
 			FormLayoutContainer managedFlc = FormLayoutContainer.createDefaultFormLayout("flc_managed", getTranslator());
 			layoutContainer.add(managedFlc);
 			
-			String[] valueGrps = new String[] { getTranslator().translate("rest.on") };
-			managedGroupsEl = uifactory.addCheckboxesHorizontal("managed.group", managedFlc, keys, valueGrps);
+			managedGroupsEl = uifactory.addCheckboxesHorizontal("managed.group", managedFlc, keys, valueOn);
 			managedGroupsEl.addActionListener(FormEvent.ONCHANGE);
 			managedGroupsEl.select(keys[0], groupModule.isManagedBusinessGroups());
 			
-			String[] valueRes = new String[] { getTranslator().translate("rest.on") };
-			managedRepoEl = uifactory.addCheckboxesHorizontal("managed.repo", managedFlc, keys, valueRes);
+			managedRepoEl = uifactory.addCheckboxesHorizontal("managed.repo", managedFlc, keys, valueOn);
 			managedRepoEl.addActionListener(FormEvent.ONCHANGE);
 			managedRepoEl.select(keys[0], repositoryModule.isManagedRepositoryEntries());
 			
-			String[] valueCal = new String[] { getTranslator().translate("rest.on") };
-			managedCalendarEl = uifactory.addCheckboxesHorizontal("managed.cal", managedFlc, keys, valueCal);
+			managedCalendarEl = uifactory.addCheckboxesHorizontal("managed.cal", managedFlc, keys, valueOn);
 			managedCalendarEl.addActionListener(FormEvent.ONCHANGE);
 			managedCalendarEl.select(keys[0], calendarModule.isManagedCalendars());
+			
+			managedRelationRole = uifactory.addCheckboxesHorizontal("managed.relation.role", managedFlc, keys, valueOn);
+			managedRelationRole.addActionListener(FormEvent.ONCHANGE);
+			managedRelationRole.select(keys[0], securityModule.isRelationRoleManaged());
 		}
 	}
 
@@ -122,7 +130,7 @@ public class RestapiAdminController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		
+		//
 	}
 
 	@Override
@@ -141,6 +149,9 @@ public class RestapiAdminController extends FormBasicController {
 		} else if (source == managedCalendarEl) {
 			boolean enable = managedCalendarEl.isAtLeastSelected(1);
 			calendarModule.setManagedCalendars(enable);
+		} else if (source == managedRelationRole) {
+			boolean enable = managedRelationRole.isAtLeastSelected(1);
+			securityModule.setRelationRoleManaged(enable);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}

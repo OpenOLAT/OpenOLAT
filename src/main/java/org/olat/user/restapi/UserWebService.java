@@ -543,7 +543,19 @@ public class UserWebService {
 		userManager.updateUserFromIdentity(identity);
 		return Response.ok(new PreferencesVO(prefs)).build();
 	}
-	
+
+	@Path("{identityKey}/relations")
+	public IdentityToIdentityRelationsWebService getRelations(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
+		boolean isUserManager = isUserManagerOf(identityKey, request);
+		if(!isUserManager) {
+			throw new WebApplicationException(Status.FORBIDDEN);
+		}
+		Identity identity = securityManager.loadIdentityByKey(identityKey, false);
+		if(identity == null) {
+			throw new WebApplicationException(Status.NOT_FOUND);
+		}
+		return new IdentityToIdentityRelationsWebService(identity);
+	}
 
 	/**
 	 * Retrieves an user given its unique key identifier
