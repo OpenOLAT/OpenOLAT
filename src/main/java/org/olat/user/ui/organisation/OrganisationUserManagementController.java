@@ -250,13 +250,28 @@ public class OrganisationUserManagementController extends FormBasicController {
 	}
 	
 	private void doRemove(List<OrganisationUserRow> membersToRemove) {
+		boolean warningUser = false;
 		for(OrganisationUserRow memberToRemove:membersToRemove) {
-			if(OrganisationRoles.isValue(memberToRemove.getRole()) && !OrganisationRoles.user.name().equals(memberToRemove.getRole())) {
+			if(OrganisationRoles.isValue(memberToRemove.getRole()) && isAlwaysUser(memberToRemove)) {
 				organisationService.removeMember(organisation, new IdentityRefImpl(memberToRemove.getIdentityKey()),
 						OrganisationRoles.valueOf(memberToRemove.getRole()), false);
+			} else {
+				warningUser = true;
 			}
 		}
 		loadModel(true);
+		if(warningUser) {
+			showWarning("warning.user.orphan");
+		}
+	}
+	
+	private boolean isAlwaysUser(OrganisationUserRow memberToRemove) {
+		if(OrganisationRoles.user.name().equals(memberToRemove.getRole())) {
+			List<Organisation> orgAsUser = organisationService
+					.getOrganisations(new IdentityRefImpl(memberToRemove.getIdentityKey()), OrganisationRoles.user);
+			return orgAsUser.size() > 1;
+		}
+		return true;
 	}
 	
 	private void doRolleCallout(UserRequest ureq) {
