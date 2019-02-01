@@ -124,7 +124,7 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 	}
 
 	@Override
-	public void deleteOrganisation(OrganisationRef organisation) {
+	public void deleteOrganisation(OrganisationRef organisation, OrganisationRef organisationAlt) {
 		OrganisationImpl reloadedOrganisation = (OrganisationImpl)organisationDao.loadByKey(organisation.getKey());
 		if(DEFAULT_ORGANISATION_IDENTIFIER.equals(reloadedOrganisation.getIdentifier())) {
 			log.error("Someone try to delete the default organisation");
@@ -133,7 +133,7 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 		
 		List<Organisation> children = organisationDao.getChildren(reloadedOrganisation, OrganisationStatus.values());
 		for(Organisation child:children) {
-			deleteOrganisation(child);
+			deleteOrganisation(child, organisationAlt);
 		}
 		
 		//TODO organisation: move memberships to default organisation or a lost+found???
@@ -144,10 +144,15 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 		}
 		groupDao.removeMemberships(organisationGroup);
 		
+		Organisation replacementOrganisation = null;
+		if(organisationAlt != null) {
+			replacementOrganisation = organisationDao.loadByKey(organisationAlt.getKey());
+		}
+		
 		boolean delete = true;
 		Map<String,OrganisationDataDeletable> deleteDelegates = CoreSpringFactory.getBeansOfType(OrganisationDataDeletable.class);
 		for(OrganisationDataDeletable delegate:deleteDelegates.values()) {
-			delete &= delegate.deleteOrganisationData(reloadedOrganisation);
+			delete &= delegate.deleteOrganisationData(reloadedOrganisation, replacementOrganisation);
 		}
 		
 		if(delete) {

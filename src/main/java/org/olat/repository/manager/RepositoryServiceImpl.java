@@ -824,9 +824,34 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	}
 
 	@Override
-	public boolean deleteOrganisationData(Organisation organisation) {
+	public boolean deleteOrganisationData(Organisation organisation, Organisation replacementOrganisation) {
+		if(replacementOrganisation != null) {
+			List<RepositoryEntry> entries = reToGroupDao.getRepositoryEntries(organisation);
+			for(RepositoryEntry entry:entries) {
+				List<Organisation> currentOrganisationsByGroups = reToGroupDao.getOrganisations(entry);
+				if(!currentOrganisationsByGroups.contains(replacementOrganisation)) {
+					RepositoryEntryToGroupRelation relToGroup = reToGroupDao.createRelation(replacementOrganisation.getGroup(), entry);
+					entry.getGroups().add(relToGroup);
+				}
+				
+				boolean addReplacement = true;
+				for(RepositoryEntryToOrganisation reToOrganisation:entry.getOrganisations()) {
+					if(reToOrganisation.getOrganisation().equals(replacementOrganisation)) {
+						addReplacement = false;
+					}
+				}
+				
+				if(addReplacement) {
+					RepositoryEntryToOrganisation newRelation = repositoryEntryToOrganisationDao.createRelation(replacementOrganisation, entry, false);
+					entry.getOrganisations().add(newRelation);
+				}
+				dbInstance.getCurrentEntityManager().merge(entry);
+			}
+		}
+		
 		repositoryEntryToOrganisationDao.delete(organisation);
 		reToGroupDao.removeRelation(organisation.getGroup());
+		
 		return true;
 	}
 }

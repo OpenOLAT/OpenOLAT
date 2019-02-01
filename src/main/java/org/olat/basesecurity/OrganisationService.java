@@ -76,7 +76,7 @@ public interface OrganisationService {
 	 * 
 	 * @param organisation
 	 */
-	public void deleteOrganisation(OrganisationRef organisation);
+	public void deleteOrganisation(OrganisationRef organisation, OrganisationRef organisationAlt);
 	
 	/**
 	 * Move an organization to a new place in the organization structure.
