@@ -17,21 +17,30 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.quality.analysis;
+package org.olat.modules.quality.analysis.ui;
+
+import org.olat.core.gui.control.Event;
+import org.olat.modules.quality.analysis.TemporalGroupBy;
 
 /**
  * 
- * Initial date: 28.09.2018<br>
+ * Initial date: 01.02.2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public enum AnalysisSegment {
+public class TemporalGroupingEvent extends Event {
 
-	OVERVIEW,
-	TABLES,
-	DIAGRAMS,
-	SESSIONS,
-	HEAT_MAP,
-	TREND;
+	private static final long serialVersionUID = 1978401477008265198L;
+	
+	private final TemporalGroupBy temporalGroupBy;
+
+	public TemporalGroupingEvent(TemporalGroupBy temporalGroupBy) {
+		super("analysis-temporal-grouping-event");
+		this.temporalGroupBy = temporalGroupBy;
+	}
+
+	public TemporalGroupBy getTemporalGroupBy() {
+		return temporalGroupBy;
+	}
 
 }

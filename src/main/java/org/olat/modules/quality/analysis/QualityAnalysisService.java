@@ -21,6 +21,7 @@ package org.olat.modules.quality.analysis;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.basesecurity.IdentityShort;
 import org.olat.core.id.Organisation;
@@ -97,6 +98,23 @@ public interface QualityAnalysisService {
 	
 	public MultiTrendSeries<String> calculateIdentifierTrends(AnalysisSearchParameter searchParams,
 			Collection<String> responseIdentifiers, Collection<Rubric> rubrics, TemporalGroupBy temporalGroupBy);
+	
+	public MultiTrendSeries<MultiKey> calculateTrends(AnalysisSearchParameter searchParams,
+			Rubric rubric, MultiGroupBy groupBy, TemporalGroupBy temporalGroupBy);
+
+	/**
+	 * Calculate trend of multiple rubrics. Before using this method, make sure,
+	 * that all rubrics are identically configured to get accurate results (same
+	 * scale, number of steps, good end, ...)!
+	 *
+	 * @param searchParams
+	 * @param rubrics
+	 * @param groupBy
+	 * @param temporalGroupBy
+	 * @return
+	 */
+	public MultiTrendSeries<MultiKey> calculateTrends(AnalysisSearchParameter searchParams,
+			Set<Rubric> rubrics, MultiGroupBy groupBy, TemporalGroupBy temporalGroupBy);
 
 	public boolean isInsufficient(Rubric rubric, Double avg);
 }

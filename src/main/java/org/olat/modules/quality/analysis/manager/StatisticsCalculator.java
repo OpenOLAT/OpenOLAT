@@ -38,6 +38,7 @@ import org.olat.modules.forms.model.xml.Slider;
 import org.olat.modules.quality.analysis.GroupedStatistic;
 import org.olat.modules.quality.analysis.GroupedStatisticKeys;
 import org.olat.modules.quality.analysis.GroupedStatistics;
+import org.olat.modules.quality.analysis.MultiKey;
 import org.olat.modules.quality.analysis.MultiTrendSeries;
 import org.olat.modules.quality.analysis.RawGroupedStatistic;
 import org.olat.modules.quality.analysis.TemporalGroupBy;
@@ -118,7 +119,7 @@ public class StatisticsCalculator {
 		return scaledAvg;
 	}
 
-	MultiTrendSeries<String> getTrends(GroupedStatistics<GroupedStatistic> statistics, TemporalGroupBy temporalGroupBy) {
+	MultiTrendSeries<String> getTrendsByIdentifiers(GroupedStatistics<GroupedStatistic> statistics, TemporalGroupBy temporalGroupBy) {
 		Set<TemporalKey> temporalKeys = new HashSet<>();
 		for (GroupedStatisticKeys groupedStatistic : statistics.getStatistics()) {
 			temporalKeys.add(groupedStatistic.getTemporalKey());
@@ -141,6 +142,36 @@ public class StatisticsCalculator {
 					Double avgDiffRelative = getAvgDiffRelativ(avgDiffAbsolute, currentStatistic.getSteps());
 					Trend trend = new TrendImpl(currentStatistic, direction, avgDiffAbsolute, avgDiffRelative);
 					multiTrendSeries.put(identifier, temporalKey, trend);
+					lastStatistic = currentStatistic;
+				}
+			}
+		}
+		return multiTrendSeries;
+	}
+	
+	MultiTrendSeries<MultiKey> getTrendsByMultiKey(GroupedStatistics<GroupedStatistic> statistics, TemporalGroupBy temporalGroupBy) {
+		Set<TemporalKey> temporalKeys = new HashSet<>();
+		for (GroupedStatisticKeys groupedStatistic : statistics.getStatistics()) {
+			temporalKeys.add(groupedStatistic.getTemporalKey());
+		}
+		List<TemporalKey> sortedTemporalKeys = new ArrayList<>(temporalKeys);
+		Collections.sort(sortedTemporalKeys);
+		TemporalKey minKey = sortedTemporalKeys.get(0);
+		TemporalKey maxKey = sortedTemporalKeys.get(sortedTemporalKeys.size() - 1);
+		
+		Set<MultiKey> multiKeys = statistics.getMultiKeys();
+		
+		MultiTrendSeries<MultiKey> multiTrendSeries = new MultiTrendSeries<>(temporalGroupBy, minKey, maxKey);
+		for (MultiKey multiKey: multiKeys) {
+			GroupedStatistic lastStatistic = null;
+			for (TemporalKey temporalKey: multiTrendSeries.getTemporalKeys()) {
+				GroupedStatistic currentStatistic = statistics.getStatistic(multiKey, temporalKey);
+				if (currentStatistic != null) {
+					DIRECTION direction = getTrendDirection(lastStatistic, currentStatistic, currentStatistic.isRawAvgMaxGood());
+					Double avgDiffAbsolute = getAvgDiffAbsolute(lastStatistic, currentStatistic);
+					Double avgDiffRelative = getAvgDiffRelativ(avgDiffAbsolute, currentStatistic.getSteps());
+					Trend trend = new TrendImpl(currentStatistic, direction, avgDiffAbsolute, avgDiffRelative);
+					multiTrendSeries.put(multiKey, temporalKey, trend);
 					lastStatistic = currentStatistic;
 				}
 			}

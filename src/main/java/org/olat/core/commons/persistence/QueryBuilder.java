@@ -28,6 +28,7 @@ package org.olat.core.commons.persistence;
 public class QueryBuilder implements Appendable {
 
 	private boolean and = false;
+	private boolean groupBy = false;
 	private final StringBuilder sb;
 
 	/**
@@ -135,6 +136,16 @@ public class QueryBuilder implements Appendable {
 		} else {
 			and = true;
 			sb.append(" where ");
+		}
+		return this;
+	}
+	
+	public QueryBuilder groupBy() {
+		if(groupBy) {
+			sb.append(" , ");
+		} else {
+			groupBy = true;
+			sb.append(" group by ");
 		}
 		return this;
 	}

@@ -24,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 import org.assertj.core.api.SoftAssertions;
 import org.junit.Before;
@@ -35,6 +36,8 @@ import org.olat.modules.quality.analysis.AnalysisPresentationSearchParameter;
 import org.olat.modules.quality.analysis.AnalysisSearchParameter;
 import org.olat.modules.quality.analysis.AnalysisSegment;
 import org.olat.modules.quality.analysis.MultiGroupBy;
+import org.olat.modules.quality.analysis.TemporalGroupBy;
+import org.olat.modules.quality.analysis.ui.TrendDifference;
 import org.olat.modules.quality.manager.QualityTestHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
@@ -84,6 +87,9 @@ public class AnalysisPresentationDAOTest extends OlatTestCase {
 		softly.assertThat(presentation.getSearchParams().getFormEntryRef().getKey()).isEqualTo(formEntry.getKey());
 		softly.assertThat(presentation.getHeatMapGrouping()).isNotNull();
 		softly.assertThat(presentation.getHeatMapInsufficientOnly()).isFalse();
+		softly.assertThat(presentation.getTemporalGroupBy()).isEqualTo(TemporalGroupBy.DATA_COLLECTION_DEADLINE_YEAR);
+		softly.assertThat(presentation.getTrendDifference()).isEqualTo(TrendDifference.NONE);
+		softly.assertThat(presentation.getRubricId()).isNull();
 		softly.assertAll();
 	}
 	
@@ -101,6 +107,12 @@ public class AnalysisPresentationDAOTest extends OlatTestCase {
 		presentation.setName(name);
 		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
 		presentation.setSearchParams(searchParams);
+		TemporalGroupBy temporalGroupBy = TemporalGroupBy.DATA_COLLECTION_DEADLINE_HALF_YEAR;
+		presentation.setTemporalGroupBy(temporalGroupBy);
+		TrendDifference trendDifference = TrendDifference.ABSOLUTE;
+		presentation.setTrendDifference(trendDifference);
+		String rubricId = UUID.randomUUID().toString();
+		presentation.setRubricId(rubricId);
 		
 		presentation = sut.save(presentation);
 		dbInstance.commitAndCloseSession();
@@ -115,6 +127,9 @@ public class AnalysisPresentationDAOTest extends OlatTestCase {
 		softly.assertThat(presentation.getAnalysisSegment()).isEqualTo(segment);
 		softly.assertThat(presentation.getHeatMapGrouping()).isEqualTo(groupBy);
 		softly.assertThat(presentation.getSearchParams()).isNotNull();
+		softly.assertThat(presentation.getTemporalGroupBy()).isEqualTo(temporalGroupBy);
+		softly.assertThat(presentation.getTrendDifference()).isEqualTo(trendDifference);
+		softly.assertThat(presentation.getRubricId()).isEqualTo(rubricId);
 		softly.assertAll();
 	}
 
@@ -134,6 +149,12 @@ public class AnalysisPresentationDAOTest extends OlatTestCase {
 		presentation.setName(name);
 		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
 		presentation.setSearchParams(searchParams);
+		TemporalGroupBy temporalGroupBy = TemporalGroupBy.DATA_COLLECTION_DEADLINE_HALF_YEAR;
+		presentation.setTemporalGroupBy(temporalGroupBy);
+		TrendDifference trendDifference = TrendDifference.ABSOLUTE;
+		presentation.setTrendDifference(trendDifference);
+		String rubricId = UUID.randomUUID().toString();
+		presentation.setRubricId(rubricId);
 		
 		presentation = sut.save(presentation);
 
@@ -147,6 +168,9 @@ public class AnalysisPresentationDAOTest extends OlatTestCase {
 		softly.assertThat(presentation.getAnalysisSegment()).isEqualTo(segment);
 		softly.assertThat(presentation.getHeatMapGrouping()).isEqualTo(groupBy);
 		softly.assertThat(presentation.getSearchParams()).isNotNull();
+		softly.assertThat(presentation.getTemporalGroupBy()).isEqualTo(temporalGroupBy);
+		softly.assertThat(presentation.getTrendDifference()).isEqualTo(trendDifference);
+		softly.assertThat(presentation.getRubricId()).isEqualTo(rubricId);
 		softly.assertAll();
 	}
 	
@@ -166,6 +190,12 @@ public class AnalysisPresentationDAOTest extends OlatTestCase {
 		presentation.setName(name);
 		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
 		presentation.setSearchParams(searchParams);
+		TemporalGroupBy temporalGroupBy = TemporalGroupBy.DATA_COLLECTION_DEADLINE_HALF_YEAR;
+		presentation.setTemporalGroupBy(temporalGroupBy);
+		TrendDifference trendDifference = TrendDifference.ABSOLUTE;
+		presentation.setTrendDifference(trendDifference);
+		String rubricId = UUID.randomUUID().toString();
+		presentation.setRubricId(rubricId);
 		presentation = sut.save(presentation);
 		dbInstance.commitAndCloseSession();
 		
@@ -181,6 +211,9 @@ public class AnalysisPresentationDAOTest extends OlatTestCase {
 		softly.assertThat(presentation.getAnalysisSegment()).isEqualTo(segment);
 		softly.assertThat(presentation.getHeatMapGrouping()).isEqualTo(groupBy);
 		softly.assertThat(presentation.getSearchParams()).isNotNull();
+		softly.assertThat(presentation.getTemporalGroupBy()).isEqualTo(temporalGroupBy);
+		softly.assertThat(presentation.getTrendDifference()).isEqualTo(trendDifference);
+		softly.assertThat(presentation.getRubricId()).isEqualTo(rubricId);
 		softly.assertAll();
 	}
 	

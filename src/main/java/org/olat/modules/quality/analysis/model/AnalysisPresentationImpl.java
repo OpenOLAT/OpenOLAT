@@ -41,6 +41,8 @@ import org.olat.modules.quality.analysis.AnalysisPresentation;
 import org.olat.modules.quality.analysis.AnalysisSearchParameter;
 import org.olat.modules.quality.analysis.AnalysisSegment;
 import org.olat.modules.quality.analysis.MultiGroupBy;
+import org.olat.modules.quality.analysis.TemporalGroupBy;
+import org.olat.modules.quality.analysis.ui.TrendDifference;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -82,6 +84,14 @@ public class AnalysisPresentationImpl implements AnalysisPresentation, Persistab
 	private MultiGroupBy heatMapGrouping;
 	@Column(name="q_heatmap_insufficient_only", nullable=true, insertable=true, updatable=true)
 	private Boolean heatMapInsufficientOnly;
+	@Enumerated(EnumType.STRING)
+	@Column(name="q_temporal_grouping", nullable=true, insertable=true, updatable=true)
+	private TemporalGroupBy temporalGroupBy;
+	@Enumerated(EnumType.STRING)
+	@Column(name="q_trend_difference", nullable=true, insertable=true, updatable=true)
+	private TrendDifference trendDifference;
+	@Column(name="q_rubric_id", nullable=true, insertable=true, updatable=true)
+	private String rubricId;
 	
 	@ManyToOne(targetEntity=RepositoryEntry.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="fk_form_entry", nullable=false, insertable=true, updatable=false)
@@ -179,6 +189,36 @@ public class AnalysisPresentationImpl implements AnalysisPresentation, Persistab
 	@Override
 	public void setHeatMapInsufficientOnly(Boolean heatMapInsufficientOnly) {
 		this.heatMapInsufficientOnly = heatMapInsufficientOnly;
+	}
+
+	@Override
+	public TemporalGroupBy getTemporalGroupBy() {
+		return temporalGroupBy;
+	}
+
+	@Override
+	public void setTemporalGroupBy(TemporalGroupBy temporalGroupBy) {
+		this.temporalGroupBy = temporalGroupBy;
+	}
+
+	@Override
+	public TrendDifference getTrendDifference() {
+		return trendDifference;
+	}
+
+	@Override
+	public void setTrendDifference(TrendDifference trendDifference) {
+		this.trendDifference = trendDifference;
+	}
+
+	@Override
+	public String getRubricId() {
+		return rubricId;
+	}
+
+	@Override
+	public void setRubricId(String rubricId) {
+		this.rubricId = rubricId;
 	}
 
 	@Override

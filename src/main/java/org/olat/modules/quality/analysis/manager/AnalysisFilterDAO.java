@@ -346,13 +346,14 @@ public class AnalysisFilterDAO {
 		sb.and().append("context.evaluationFormSession.key is not null");
 	}
 	
-	List<RawGroupedStatistic> loadGroupedStatisticByResponseIdentifiers(AnalysisSearchParameter searchParams,
-			Collection<String> responseIdentifiers, MultiGroupBy multiGroupBy, TemporalGroupBy temporalGroupBy) {
+	List<RawGroupedStatistic> loadGroupedStatistic(AnalysisSearchParameter searchParams,
+			Collection<String> responseIdentifiers, boolean groupByIdentifier, MultiGroupBy multiGroupBy,
+			TemporalGroupBy temporalGroupBy) {
 		if (responseIdentifiers == null || responseIdentifiers.isEmpty()) return new ArrayList<>();
 		
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select new org.olat.modules.quality.analysis.model.RawGroupedStatisticImpl(");
-		sb.append("       response.responseIdentifier");
+		sb.append(groupByIdentifier? " response.responseIdentifier": " cast(null as string)");
 		appendGroupBys(sb, multiGroupBy, true);
 		appendTemporalGroupBy(sb, temporalGroupBy, true);
 		sb.append("     , count(response)");
@@ -365,7 +366,9 @@ public class AnalysisFilterDAO {
 		sb.append("              and (response.noResponse is false or response.noResponse is null)");
 		sb.append("              and response.responseIdentifier in (:responseIdentifiers)");
 		appendWhere(sb, searchParams);
-		sb.append(" group by response.responseIdentifier");
+		if (groupByIdentifier) {
+			sb.groupBy().append(" response.responseIdentifier");
+		}
 		appendGroupBys(sb, multiGroupBy, false);
 		appendTemporalGroupBy(sb, temporalGroupBy, false);
 		
@@ -388,7 +391,11 @@ public class AnalysisFilterDAO {
 			return;
 		}
 		
-		sb.append(", ");
+		if (select) {
+			sb.append(",");
+		} else {
+			sb.groupBy();
+		}
 		switch (groupBy) {
 		case TOPIC_IDENTITY:
 			castAsString(sb, "collection.topicIdentity.key", select);
@@ -436,7 +443,11 @@ public class AnalysisFilterDAO {
 			return;
 		}
 		
-		sb.append(", ");
+		if (select) {
+			sb.append(",");
+		} else {
+			sb.groupBy();
+		}
 		switch (temporalGroupBy) {
 		case DATA_COLLECTION_DEADLINE_YEAR:
 			castAsString(sb, "year(collection.deadline)", true);

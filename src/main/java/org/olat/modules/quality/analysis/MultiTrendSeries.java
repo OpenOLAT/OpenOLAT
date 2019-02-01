@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * 
@@ -56,6 +57,10 @@ public class MultiTrendSeries<V> {
 			TemporalKey next = temporalGroupBy.getNextKey(current);
 			generateTemporalKeys(seriesTemporalKeys, next, max);
 		}
+	}
+	
+	public Set<V> getIdentifiers() {
+		return multiTrendSeries.keySet();
 	}
 
 	public List<TemporalKey> getTemporalKeys() {

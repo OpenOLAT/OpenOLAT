@@ -196,7 +196,7 @@ public class StatisticsCalculatorTest {
 	}
 	
 	@Test
-	public void shouldCalculateTrends() {
+	public void shouldCalculateTrendsByIdentifiers() {
 		String identifier1 = "i1";
 		TemporalKey tk2000 = TemporalKey.of(2000);
 		TemporalKey tk2005 = TemporalKey.of(2005);
@@ -214,7 +214,7 @@ public class StatisticsCalculatorTest {
 		GroupedStatistic gs5 = new GroupedStatisticImpl(identifier1, MultiKey.none(), tk2005, 1l, 1.0, true, null, null, 5);
 		statistics.putStatistic(gs5);
 		
-		MultiTrendSeries<String> multiTrendSeries = sut.getTrends(statistics, TemporalGroupBy.DATA_COLLECTION_DEADLINE_YEAR);
+		MultiTrendSeries<String> multiTrendSeries = sut.getTrendsByIdentifiers(statistics, TemporalGroupBy.DATA_COLLECTION_DEADLINE_YEAR);
 		TrendSeries series = multiTrendSeries.getSeries(identifier1);
 		
 		Trend trend0 = series.getTrend(0);
@@ -232,7 +232,7 @@ public class StatisticsCalculatorTest {
 	}
 	
 	@Test
-	public void shouldClaculateTrendGaps() {
+	public void shouldClaculateTrendByIdentifiersGaps() {
 		String identifier1 = "i1";
 		GroupedStatistics<GroupedStatistic> statistics = new GroupedStatistics<>();
 		GroupedStatistic gs0 = new GroupedStatisticImpl(identifier1, MultiKey.none(), TemporalKey.of(2000), 1l, 1.0, true, null, null, 5);
@@ -240,8 +240,66 @@ public class StatisticsCalculatorTest {
 		GroupedStatistic gs3 = new GroupedStatisticImpl(identifier1, MultiKey.none(), TemporalKey.of(2003), 1l, 2.01, true, null, null, 5);
 		statistics.putStatistic(gs3);
 		
-		MultiTrendSeries<String> multiTrendSeries = sut.getTrends(statistics, TemporalGroupBy.DATA_COLLECTION_DEADLINE_YEAR);
+		MultiTrendSeries<String> multiTrendSeries = sut.getTrendsByIdentifiers(statistics, TemporalGroupBy.DATA_COLLECTION_DEADLINE_YEAR);
 		TrendSeries series = multiTrendSeries.getSeries(identifier1);
+		
+		Trend trend0 = series.getTrend(0);
+		assertThat(trend0.getDirection()).isEqualTo(DIRECTION.EQUAL);
+		Trend trend1 = series.getTrend(1);
+		assertThat(trend1).isNull();
+		Trend trend2 = series.getTrend(2);
+		assertThat(trend2).isNull();
+		Trend trend3 = series.getTrend(3);
+		assertThat(trend3.getDirection()).isEqualTo(DIRECTION.UP);
+	}
+	
+	@Test
+	public void shouldCalculateTrendsByMultipleKeys() {
+		MultiKey multiKey = MultiKey.of("i1", "i1");
+		TemporalKey tk2000 = TemporalKey.of(2000);
+		TemporalKey tk2005 = TemporalKey.of(2005);
+		GroupedStatistics<GroupedStatistic> statistics = new GroupedStatistics<>();
+		GroupedStatistic gs0 = new GroupedStatisticImpl(null, multiKey, tk2000, 1l, 1.0, true, null, null, 5);
+		statistics.putStatistic(gs0);
+		GroupedStatistic gs1 = new GroupedStatisticImpl(null, multiKey, TemporalKey.of(2001), 1l, 1.0, true, null, null, 5);
+		statistics.putStatistic(gs1);
+		GroupedStatistic gs2 = new GroupedStatisticImpl(null, multiKey, TemporalKey.of(2002), 1l, 2.0, true, null, null, 5);
+		statistics.putStatistic(gs2);
+		GroupedStatistic gs3 = new GroupedStatisticImpl(null, multiKey, TemporalKey.of(2003), 1l, 2.01, true, null, null, 5);
+		statistics.putStatistic(gs3);
+		GroupedStatistic gs4 = new GroupedStatisticImpl(null, multiKey, TemporalKey.of(2004), 1l, 1.0, true, null, null, 5);
+		statistics.putStatistic(gs4);
+		GroupedStatistic gs5 = new GroupedStatisticImpl(null, multiKey, tk2005, 1l, 1.0, true, null, null, 5);
+		statistics.putStatistic(gs5);
+		
+		MultiTrendSeries<MultiKey> multiTrendSeries = sut.getTrendsByMultiKey(statistics, TemporalGroupBy.DATA_COLLECTION_DEADLINE_YEAR);
+		TrendSeries series = multiTrendSeries.getSeries(multiKey);
+		
+		Trend trend0 = series.getTrend(0);
+		assertThat(trend0.getDirection()).isEqualTo(DIRECTION.EQUAL);
+		Trend trend1 = series.getTrend(1);
+		assertThat(trend1.getDirection()).isEqualTo(DIRECTION.EQUAL);
+		Trend trend2 = series.getTrend(2);
+		assertThat(trend2.getDirection()).isEqualTo(DIRECTION.UP);
+		Trend trend3 = series.getTrend(3);
+		assertThat(trend3.getDirection()).isEqualTo(DIRECTION.EQUAL);
+		Trend trend4 = series.getTrend(4);
+		assertThat(trend4.getDirection()).isEqualTo(DIRECTION.DOWN);
+		Trend trend5 = series.getTrend(5);
+		assertThat(trend5.getDirection()).isEqualTo(DIRECTION.EQUAL);
+	}
+	
+	@Test
+	public void shouldClaculateTrendByMultiKeyGaps() {
+		MultiKey multiKey = MultiKey.of("i1", "i1");
+		GroupedStatistics<GroupedStatistic> statistics = new GroupedStatistics<>();
+		GroupedStatistic gs0 = new GroupedStatisticImpl(null, multiKey, TemporalKey.of(2000), 1l, 1.0, true, null, null, 5);
+		statistics.putStatistic(gs0);
+		GroupedStatistic gs3 = new GroupedStatisticImpl(null, multiKey, TemporalKey.of(2003), 1l, 2.01, true, null, null, 5);
+		statistics.putStatistic(gs3);
+		
+		MultiTrendSeries<MultiKey> multiTrendSeries = sut.getTrendsByMultiKey(statistics, TemporalGroupBy.DATA_COLLECTION_DEADLINE_YEAR);
+		TrendSeries series = multiTrendSeries.getSeries(multiKey);
 		
 		Trend trend0 = series.getTrend(0);
 		assertThat(trend0.getDirection()).isEqualTo(DIRECTION.EQUAL);

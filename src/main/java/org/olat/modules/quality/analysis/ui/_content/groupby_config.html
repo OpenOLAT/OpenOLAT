@@ -7,22 +7,37 @@
 	<div class="panel-heading">
 		<h4 class="panel-title">$r.translate("heatmap.group.panel.header")</h4>
 	</div>
-	<div class="panel-body">
-		<div class='row'>
+	<div class="panel-body o_hm_panel_body">
+		<div class="row">
 			<div class="$col o_hm_group_select">
 				$r.render("heatmap.group1")
 			</div>
 			<div class="$col o_hm_group_select">
 				$r.render("heatmap.group2")
 			</div>
-			<div class="$col">
+			<div class="$col o_hm_group_select">
 				$r.render("heatmap.group3")
 			</div>
 			#if($r.visible("heatmap.insufficient"))
-				<div class="$col">
+				<div class="$col o_hm_group_select">
 					$r.render("heatmap.insufficient")
 				</div>
 			#end
 		</div>
+		#if($r.available("trend.temporal.group"))
+			<div class="row o_hm_trend_row">
+				<div class="$col o_hm_group_select">
+					$r.render("trend.temporal.group")
+				</div>
+				<div class="$col o_hm_group_select">
+					$r.render("trend.difference")
+				</div>
+				#if($r.available("trend.rubrics"))
+					<div class="$col o_hm_group_select">
+						$r.render("trend.rubrics")
+					</div>
+				#end
+			</div>
+		#end
 	</div>
 </div>

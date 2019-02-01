@@ -23,6 +23,7 @@ import static org.olat.core.gui.components.util.KeyValues.entry;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.util.List;
 
 import org.olat.basesecurity.OrganisationModule;
 import org.olat.core.CoreSpringFactory;
@@ -30,6 +31,7 @@ import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.CurriculumModule;
+import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.forms.model.xml.Slider;
 import org.olat.modules.forms.ui.EvaluationFormFormatter;
 import org.olat.modules.quality.analysis.AvailableAttributes;
@@ -44,6 +46,7 @@ import org.olat.modules.quality.analysis.TemporalGroupBy;
  */
 class AnalysisUIFactory {
 	
+	private static final String ALL_RUBRICS_KEY = "-1";
 	private static final NumberFormat PLUS_MINUS_TWO_DECIMAL = new DecimalFormat("+#0.00;-#");
 	private static final NumberFormat PLUS_MINUS_ONE_DECIMAL = new DecimalFormat("+#0.0;-#");
 	
@@ -177,6 +180,70 @@ class AnalysisUIFactory {
 			keyValues.add(entry(getKey(groupBy), translator.translate(groupBy.i18nKey())));
 		}
 		return keyValues;
+	}
+	
+	static String getKey(Rubric rubric) {
+		return rubric.getId();
+	}
+	
+	static boolean isAllRubricsKey(String key) {
+		return ALL_RUBRICS_KEY.equals(key);
+	}
+	
+	static String getRubricId(String key) {
+		return key;
+	}
+
+	static KeyValues getRubricKeyValue(Translator translator, List<Rubric> rubrics) {
+		KeyValues keyValues = new KeyValues();
+		boolean identicaRubrics = areIdenticalRubrics(rubrics);
+		if (identicaRubrics) {
+			keyValues.add(entry(ALL_RUBRICS_KEY, translator.translate("trend.rubric.index.all")));
+		}
+		for (int i = 0; i < rubrics.size(); i++) {
+			Rubric rubric = rubrics.get(i);
+			keyValues.add(entry(getKey(rubric), getRubricName(translator, rubric, i)));
+		}
+		return keyValues;
+	}
+	
+	private static boolean areIdenticalRubrics(List<Rubric> rubrics) {
+		Rubric master = rubrics.get(0);
+		for (int i = 1; i < rubrics.size(); i++) {
+			Rubric rubric = rubrics.get(i);
+			if (!equalsNull(master.getLowerBoundInsufficient(), rubric.getLowerBoundInsufficient())
+					|| !equalsNull(master.getLowerBoundNeutral(), rubric.getLowerBoundNeutral())
+					|| !equalsNull(master.getLowerBoundSufficient(), rubric.getLowerBoundSufficient())
+					|| !equalsNull(master.getUpperBoundInsufficient(), rubric.getUpperBoundInsufficient())
+					|| !equalsNull(master.getUpperBoundNeutral(), rubric.getUpperBoundNeutral())
+					|| !equalsNull(master.getUpperBoundSufficient(), rubric.getUpperBoundSufficient())
+					|| master.getScaleType() != rubric.getScaleType()
+					|| master.getSliderType() != rubric.getSliderType()
+					|| master.getSteps() != rubric.getSteps()
+					|| master.getStart() != rubric.getStart()
+					|| master.getEnd() != rubric.getEnd()
+					|| master.isStartGoodRating() != master.isStartGoodRating()
+					) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	@SuppressWarnings("null")
+	private static boolean equalsNull(Object o1, Object o2) {
+		if (o1 == null && o2 == null) return true;
+		if (o1 == null && o2 != null) return false;
+		if (o1 != null && o2 == null) return false;
+		return o1.equals(o2);
+	}
+
+	private static String getRubricName(Translator translator, Rubric rubric, int i) {
+		String index = String.valueOf(i + 1);
+		String rubricName = rubric.getName();
+		return StringHelper.containsNonWhitespace(rubricName)
+				? translator.translate("trend.rubric.index.name", new String[] {index, rubricName})
+				: translator.translate("trend.rubric.index", new String[] {index});
 	}
 
 }

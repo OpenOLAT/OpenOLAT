@@ -66,6 +66,7 @@ import org.olat.modules.quality.analysis.AnlaysisFigures;
 import org.olat.modules.quality.analysis.AvailableAttributes;
 import org.olat.modules.quality.analysis.MultiGroupBy;
 import org.olat.modules.quality.analysis.QualityAnalysisService;
+import org.olat.modules.quality.analysis.TemporalGroupBy;
 import org.olat.modules.quality.analysis.ui.PresentationEvent.Action;
 import org.olat.modules.quality.ui.security.MainSecurityCallback;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -87,6 +88,7 @@ public class AnalysisController extends BasicController implements TooledControl
 	private final Link diagramReportLink;
 	private final Link sessionSelectionLink;
 	private final Link heatMapLink;
+	private final Link trendDiagramLink;
 	
 	private Link editPresentationLink;
 	private Link deletePresentationLink;
@@ -99,9 +101,11 @@ public class AnalysisController extends BasicController implements TooledControl
 	private Controller tableReportCtrl;
 	private Controller diagramReportCtrl;
 	private EvaluationFormSessionSelectionController sessionSelectionCtrl;
-	private FilterableController heatMapCtrl;
+	private BreadcrumbedStackedPanel heatMapPanel;
+	private HeatMapController heatMapCtrl;
+	private BreadcrumbedStackedPanel trendPanel;
+	private TrendController trendDiagramCtrl;
 	private Controller filterCtrl;
-	private BreadcrumbedStackedPanel stackedDetailsPanel;
 	private CloseableModalController cmc;
 	private PresentationController presentationCtrl;
 	private PresentationDeleteConfirmationController presentationDeleteCtrl;
@@ -142,6 +146,8 @@ public class AnalysisController extends BasicController implements TooledControl
 		segmentButtonsCmp.addButton(sessionSelectionLink, false);
 		heatMapLink = LinkFactory.createLink("segments.heatmap.link", getTranslator(), this);
 		segmentButtonsCmp.addButton(heatMapLink, false);
+		trendDiagramLink = LinkFactory.createLink("segments.trend.link", getTranslator(), this);
+		segmentButtonsCmp.addButton(trendDiagramLink, false);
 
 		mainVC = createVelocityContainer("analysis");
 		putInitialPanel(mainVC);
@@ -218,6 +224,8 @@ public class AnalysisController extends BasicController implements TooledControl
 			doOpenSegment(ureq, AnalysisSegment.SESSIONS);
 		} else if (source == heatMapLink) {
 			doOpenSegment(ureq, AnalysisSegment.HEAT_MAP);
+		} else if (source == trendDiagramLink) {
+			doOpenSegment(ureq, AnalysisSegment.TREND);
 		}
 	}
 
@@ -227,15 +235,27 @@ public class AnalysisController extends BasicController implements TooledControl
 			AnalysisFilterEvent filterEvent = (AnalysisFilterEvent) event;
 			AnalysisSearchParameter searchParams = filterEvent.getSearchParams();
 			doFilter(ureq, searchParams);
-		} else if (source == heatMapCtrl) {
+		} else if (source == heatMapCtrl || source == trendDiagramCtrl) {
 			if (event instanceof AnalysisGroupingEvent) {
 				AnalysisGroupingEvent groupingEvent = (AnalysisGroupingEvent) event;
 				MultiGroupBy multiGroupBy = groupingEvent.getMultiGroupBy();
-				presentation.setHeatMapGrouping(multiGroupBy);
+				setHeatMapGrouping(multiGroupBy);
 			} else if (event instanceof AnalysisInsufficientOnlyEvent) {
 				AnalysisInsufficientOnlyEvent iEvent = (AnalysisInsufficientOnlyEvent) event;
 				Boolean insufficientOnly = iEvent.getInsufficientOnly();
-				presentation.setHeatMapInsufficientOnly(insufficientOnly);
+				setHeatMapInsufficientOnly(insufficientOnly);
+			} else if (event instanceof TemporalGroupingEvent) {
+				TemporalGroupingEvent tgEvent = (TemporalGroupingEvent) event;
+				TemporalGroupBy temporalGroupBy = tgEvent.getTemporalGroupBy();
+				presentation.setTemporalGroupBy(temporalGroupBy);
+			} else if (event instanceof TrendDifferenceEvent) {
+				TrendDifferenceEvent tdEvent = (TrendDifferenceEvent) event;
+				TrendDifference trendDifference = tdEvent.getTrendDifference();
+				presentation.setTrendDifference(trendDifference);
+			} else if (event instanceof RubricIdEvent) {
+				RubricIdEvent riEvent = (RubricIdEvent) event;
+				String rubricId = riEvent.getRubricId();
+				presentation.setRubricId(rubricId);
 			}
 		} else if (source == presentationCtrl) {
 			if (event instanceof PresentationEvent) {
@@ -264,7 +284,7 @@ public class AnalysisController extends BasicController implements TooledControl
 		}
 		super.event(ureq, source, event);
 	}
-	
+
 	private void cleanUp() {
 		removeAsListenerAndDispose(presentationDeleteCtrl);
 		removeAsListenerAndDispose(presentationCtrl);
@@ -325,6 +345,9 @@ public class AnalysisController extends BasicController implements TooledControl
 		case HEAT_MAP:
 			doOpenHeatMap(ureq);
 			break;
+		case TREND:
+			doOpenTrendDiagram(ureq);
+			break;
 		default:
 			doOpenOverviewReport(ureq);
 			break;
@@ -375,18 +398,56 @@ public class AnalysisController extends BasicController implements TooledControl
 	
 	private void doOpenHeatMap(UserRequest ureq) {
 		if (heatMapCtrl == null) {
-			heatMapCtrl = new HeatMapController(ureq, getWindowControl(), form, availableAttributes, presentation.getHeatMapGrouping(),
-					presentation.getHeatMapInsufficientOnly());
+			heatMapCtrl = new HeatMapController(ureq, getWindowControl(), form, availableAttributes,
+					presentation.getHeatMapGrouping(), presentation.getHeatMapInsufficientOnly(),
+					presentation.getTemporalGroupBy(), presentation.getTrendDifference(), presentation.getRubricId());
 			listenTo(heatMapCtrl);
 			heatMapCtrl.onFilter(ureq, presentation.getSearchParams());
-			stackedDetailsPanel = new BreadcrumbedStackedPanel("forms", getTranslator(), heatMapCtrl);
-			stackedDetailsPanel.pushController(translate("analysis.details"), heatMapCtrl);
-			heatMapCtrl.setBreadcrumbPanel(stackedDetailsPanel);
+			heatMapPanel = new BreadcrumbedStackedPanel("heatMapDetails", getTranslator(), heatMapCtrl);
+			heatMapPanel.pushController(translate("analysis.details"), heatMapCtrl);
+			heatMapCtrl.setBreadcrumbPanel(heatMapPanel);
 		} else {
 			heatMapCtrl.onFilter(ureq, presentation.getSearchParams());
 		}
-		mainVC.put(SEGMENTS_CMP, stackedDetailsPanel);
+		mainVC.put(SEGMENTS_CMP, heatMapPanel);
 		segmentButtonsCmp.setSelectedButton(heatMapLink);
+	}
+	
+	private void doOpenTrendDiagram(UserRequest ureq) {
+		if (trendDiagramCtrl == null) {
+			trendDiagramCtrl = new TrendController(ureq, getWindowControl(), form, availableAttributes,
+					presentation.getHeatMapGrouping(), presentation.getHeatMapInsufficientOnly(),
+					presentation.getTemporalGroupBy(), presentation.getTrendDifference(), presentation.getRubricId());
+			listenTo(trendDiagramCtrl);
+			trendDiagramCtrl.onFilter(ureq, presentation.getSearchParams());
+			trendPanel = new BreadcrumbedStackedPanel("trendDetails", getTranslator(), trendDiagramCtrl);
+			trendPanel.pushController(translate("analysis.details"), trendDiagramCtrl);
+			trendDiagramCtrl.setBreadcrumbPanel(trendPanel);
+		} else {
+			trendDiagramCtrl.onFilter(ureq, presentation.getSearchParams());
+		}
+		mainVC.put(SEGMENTS_CMP, trendPanel);
+		segmentButtonsCmp.setSelectedButton(trendDiagramLink);
+	}
+	
+	private void setHeatMapInsufficientOnly(Boolean insufficientOnly) {
+		presentation.setHeatMapInsufficientOnly(insufficientOnly);
+		if (heatMapCtrl != null) {
+			heatMapCtrl.setInsufficientOnly(insufficientOnly);
+		}
+		if (trendDiagramCtrl != null) {
+			trendDiagramCtrl.setInsufficientOnly(insufficientOnly);
+		}
+	}
+
+	private void setHeatMapGrouping(MultiGroupBy multiGroupBy) {
+		presentation.setHeatMapGrouping(multiGroupBy);
+		if (heatMapCtrl != null) {
+			heatMapCtrl.setMultiGroupBy(multiGroupBy);
+		}
+		if (trendDiagramCtrl != null) {
+			trendDiagramCtrl.setMultiGroupBy(multiGroupBy);
+		}
 	}
 	
 	private void doEditPresentation(UserRequest ureq) {

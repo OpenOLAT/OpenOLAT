@@ -46,7 +46,7 @@ import org.olat.modules.quality.analysis.QualityAnalysisService;
 import org.olat.modules.quality.analysis.TemporalGroupBy;
 import org.olat.modules.quality.analysis.TemporalKey;
 import org.olat.modules.quality.analysis.TrendSeries;
-import org.olat.modules.quality.analysis.ui.HeatMapController.SliderWrapper;
+import org.olat.modules.quality.analysis.ui.GroupByController.SliderWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -126,7 +126,7 @@ public class SliderTrendController extends FormBasicController {
 		dataModel = new SliderTrendDataModel(columnsModel, getLocale());
 		if (tableEl != null) flc.remove(tableEl);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, getTranslator(), flc);
-		tableEl.setElementCssClass("o_qual_slider_trend");
+		tableEl.setElementCssClass("o_qual_trend");
 		tableEl.setEmtpyTableMessageKey("slider.trend.empty");
 		tableEl.setNumOfRowsEnabled(false);
 		tableEl.setCustomizeColumns(false);
@@ -155,8 +155,8 @@ public class SliderTrendController extends FormBasicController {
 		List<String> headers = new ArrayList<>(temporalKeys.size());
 		for (TemporalKey temporalKey : temporalKeys) {
 			String header = TemporalKey.NO_VALUE == temporalKey.getYearPart()
-					? translate("slider.trend.table.year", new String[] { Integer.toString(temporalKey.getYear()) })
-					: translate("slider.trend.table.year.part", new String[] {
+					? translate("trend.year", new String[] { Integer.toString(temporalKey.getYear()) })
+					: translate("trend.year.part", new String[] {
 							Integer.toString(temporalKey.getYear()), AnalysisUIFactory.formatYearPart(temporalKey.getYearPart()) });
 			headers.add(header);
 		}

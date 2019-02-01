@@ -19,41 +19,51 @@
  */
 package org.olat.modules.quality.analysis.ui;
 
-import java.util.Comparator;
 import java.util.List;
 
-import org.olat.core.util.StringHelper;
+import org.olat.modules.quality.analysis.GroupedStatistic;
+import org.olat.modules.quality.analysis.MultiKey;
 
 /**
  * 
- * Initial date: 14.09.2018<br>
+ * Initial date: 11.09.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class GroupNameAlphabeticalComparator implements Comparator<GroupByRow> {
+public class GroupByRow {
+	
+	private final MultiKey multiKey;
+	private final List<String> groupNames;
+	private final List<? extends GroupedStatistic> statistics;
+	
+	public GroupByRow(MultiKey multiKey, List<String> groupNames, List<? extends GroupedStatistic> statistics) {
+		this.multiKey = multiKey;
+		this.groupNames = groupNames;
+		this.statistics = statistics;
+	}
+	
+	public MultiKey getMultiKey() {
+		return multiKey;
+	}
 
-	@Override
-	public int compare(GroupByRow row1, GroupByRow row2) {
-		List<String> groupNames1 = row1.getGroupNames();
-		if (groupNames1 == null || groupNames1.isEmpty()) return -1;
-		List<String> groupNames2 = row2.getGroupNames();
-		if (groupNames2 == null || groupNames2.isEmpty()) return 1;
-		
-		for (int i = 0; i < groupNames1.size(); i++) {
-			String groupName1 = groupNames1.get(i);
-			String groupName2 = groupNames2.get(i);
-			if (!StringHelper.containsNonWhitespace(groupName1)) {
-				return -1;
-			}
-			if (!StringHelper.containsNonWhitespace(groupName2)) {
-				return 1;
-			}
-			int compareTo = groupName1.compareToIgnoreCase(groupName2);
-			if (compareTo != 0) {
-				return compareTo;
-			}
-		}
-		return 0;
+	public int getGroupNamesSize() {
+		return groupNames.size();
+	}
+
+	public String getGroupName(int index) {
+		return groupNames.get(index);
+	}
+	
+	public List<String> getGroupNames() {
+		return groupNames;
+	}
+
+	public int getStatisticsSize() {
+		return statistics.size();
+	}
+
+	public GroupedStatistic getStatistic(int index) {
+		return statistics.get(index);
 	}
 
 }

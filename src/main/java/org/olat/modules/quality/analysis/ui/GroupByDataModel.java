@@ -34,30 +34,30 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-class HeatMapDataModel extends DefaultFlexiTableDataModel<HeatMapRow>
-		implements SortableFlexiTableDataModel<HeatMapRow> {
+class GroupByDataModel extends DefaultFlexiTableDataModel<GroupByRow>
+		implements SortableFlexiTableDataModel<GroupByRow> {
 	
 	private final Locale locale;
 	
-	HeatMapDataModel(FlexiTableColumnModel columnsModel, Locale locale) {
+	GroupByDataModel(FlexiTableColumnModel columnsModel, Locale locale) {
 		super(columnsModel);
 		this.locale = locale;
 	}
 	
 	@Override
 	public void sort(SortKey orderBy) {
-		List<HeatMapRow> rows = new SortableFlexiTableModelDelegate<>(orderBy, this, locale).sort();
+		List<GroupByRow> rows = new SortableFlexiTableModelDelegate<>(orderBy, this, locale).sort();
 		super.setObjects(rows);
 	}
 
 	@Override
 	public Object getValueAt(int row, int col) {
-		HeatMapRow generator = getObject(row);
+		GroupByRow generator = getObject(row);
 		return getValueAt(generator, col);
 	}
 
 	@Override
-	public Object getValueAt(HeatMapRow row, int col) {
+	public Object getValueAt(GroupByRow row, int col) {
 		int index = col;
 		if (index < row.getGroupNamesSize()) {
 			return row.getGroupName(index);
@@ -70,8 +70,8 @@ class HeatMapDataModel extends DefaultFlexiTableDataModel<HeatMapRow>
 	}
 
 	@Override
-	public DefaultFlexiTableDataModel<HeatMapRow> createCopyWithEmptyList() {
-		return new HeatMapDataModel(getTableColumnModel(), locale);
+	public DefaultFlexiTableDataModel<GroupByRow> createCopyWithEmptyList() {
+		return new GroupByDataModel(getTableColumnModel(), locale);
 	}
 	
 }

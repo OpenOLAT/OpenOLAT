@@ -51,3 +51,9 @@ alter table o_bs_identity_to_identity add constraint id_to_id_source_idx foreign
 alter table o_bs_identity_to_identity add constraint id_to_id_target_idx foreign key (fk_target_id) references o_bs_identity (id);
 alter table o_bs_identity_to_identity add constraint id_to_role_idx foreign key (fk_role_id) references o_bs_relation_role (id);
 
+
+-- quality management
+alter table o_qual_analysis_presentation add q_temporal_grouping varchar(50);
+alter table o_qual_analysis_presentation add q_trend_difference varchar(50);
+alter table o_qual_analysis_presentation add q_rubric_id varchar(50);
+

@@ -37,7 +37,9 @@ import org.olat.modules.quality.analysis.AnalysisPresentationSearchParameter;
 import org.olat.modules.quality.analysis.AnalysisSearchParameter;
 import org.olat.modules.quality.analysis.AnalysisSegment;
 import org.olat.modules.quality.analysis.MultiGroupBy;
+import org.olat.modules.quality.analysis.TemporalGroupBy;
 import org.olat.modules.quality.analysis.model.AnalysisPresentationImpl;
+import org.olat.modules.quality.analysis.ui.TrendDifference;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -65,6 +67,8 @@ class AnalysisPresentationDAO {
 		presentation.setSearchParams(searchParams);
 		presentation.setHeatMapGrouping(MultiGroupBy.noGroupBy());
 		presentation.setHeatMapInsufficientOnly(Boolean.FALSE);
+		presentation.setTemporalGroupBy(TemporalGroupBy.DATA_COLLECTION_DEADLINE_YEAR);
+		presentation.setTrendDifference(TrendDifference.NONE);
 		return presentation;
 	}
 	

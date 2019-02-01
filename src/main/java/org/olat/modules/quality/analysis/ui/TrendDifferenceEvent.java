@@ -17,21 +17,29 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.quality.analysis;
+package org.olat.modules.quality.analysis.ui;
+
+import org.olat.core.gui.control.Event;
 
 /**
  * 
- * Initial date: 28.09.2018<br>
+ * Initial date: 01.02.2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public enum AnalysisSegment {
+public class TrendDifferenceEvent extends Event {
 
-	OVERVIEW,
-	TABLES,
-	DIAGRAMS,
-	SESSIONS,
-	HEAT_MAP,
-	TREND;
+	private static final long serialVersionUID = 1807843031708842780L;
+	
+	private final TrendDifference trendDifference;
+
+	public TrendDifferenceEvent(TrendDifference trendDifference) {
+		super("analysis-trend-difference-event");
+		this.trendDifference = trendDifference;
+	}
+
+	public TrendDifference getTrendDifference() {
+		return trendDifference;
+	}
 
 }

@@ -36,8 +36,9 @@ import java.util.Set;
 public class GroupedStatistics<V extends GroupedStatisticKeys> {
 
 	private final Collection<V> allStatistics = new ArrayList<>();
-	private final Map<String, Map<MultiKey, V>> statisticsByMultiKey = new HashMap<>();
-	private final Map<String, Map<TemporalKey, V>> statisticsByTemporalKey = new HashMap<>();
+	private final Map<String, Map<MultiKey, V>> identifierToMultiKey = new HashMap<>();
+	private final Map<String, Map<TemporalKey, V>> identifierToTemporalKey = new HashMap<>();
+	private final Map<MultiKey, Map<TemporalKey, V>> multiKeyToTemporalKey = new HashMap<>();
 
 	public GroupedStatistics() {
 		//
@@ -51,43 +52,57 @@ public class GroupedStatistics<V extends GroupedStatisticKeys> {
 
 	public void putStatistic(V statistic) {
 		putAll(statistic);
-		putMultiKey(statistic);
-		putTemporalKey(statistic);
+		putIdentifierToMultiKey(statistic);
+		putIdentifierToTemporalKey(statistic);
+		putMultiKeyToTemporalKey(statistic);
 	}
 
 	private void putAll(V statistic) {
 		allStatistics.add(statistic);
 	}
 
-	private void putMultiKey(V statistic) {
+	private void putIdentifierToMultiKey(V statistic) {
 		String identifier = statistic.getIdentifier();
 		MultiKey multiKey = statistic.getMultiKey();
 		if (!MultiKey.none().equals(multiKey)) {
-			Map<MultiKey, V> grouped = statisticsByMultiKey.get(identifier);
+			Map<MultiKey, V> grouped = identifierToMultiKey.get(identifier);
 			if (grouped == null) {
 				grouped = new HashMap<>();
-				statisticsByMultiKey.put(identifier, grouped);
+				identifierToMultiKey.put(identifier, grouped);
 			}
 			grouped.put(multiKey, statistic);
 			
 		}
 	}
 
-	private void putTemporalKey(V statistic) {
+	private void putIdentifierToTemporalKey(V statistic) {
 		String identifier = statistic.getIdentifier();
 		TemporalKey temporalKey = statistic.getTemporalKey();
 		if (!TemporalKey.none().equals(temporalKey)) {
-			Map<TemporalKey, V> grouped = statisticsByTemporalKey.get(identifier);
+			Map<TemporalKey, V> grouped = identifierToTemporalKey.get(identifier);
 			if (grouped == null) {
 				grouped = new HashMap<>();
-				statisticsByTemporalKey.put(identifier, grouped);
+				identifierToTemporalKey.put(identifier, grouped);
+			}
+			grouped.put(temporalKey, statistic);
+		}
+	}
+
+	private void putMultiKeyToTemporalKey(V statistic) {
+		MultiKey multiKey = statistic.getMultiKey();
+		TemporalKey temporalKey = statistic.getTemporalKey();
+		if (!TemporalKey.none().equals(temporalKey)) {
+			Map<TemporalKey, V> grouped = multiKeyToTemporalKey.get(multiKey);
+			if (grouped == null) {
+				grouped = new HashMap<>();
+				multiKeyToTemporalKey.put(multiKey, grouped);
 			}
 			grouped.put(temporalKey, statistic);
 		}
 	}
 
 	public V getStatistic(String identifier, MultiKey multiKey) {
-		Map<MultiKey, V> grouped = statisticsByMultiKey.get(identifier);
+		Map<MultiKey, V> grouped = identifierToMultiKey.get(identifier);
 		if (grouped != null) {
 			return grouped.get(multiKey);
 		}
@@ -95,7 +110,15 @@ public class GroupedStatistics<V extends GroupedStatisticKeys> {
 	}
 	
 	public V getStatistic(String identifier, TemporalKey temporalKey) {
-		Map<TemporalKey, V> grouped = statisticsByTemporalKey.get(identifier);
+		Map<TemporalKey, V> grouped = identifierToTemporalKey.get(identifier);
+		if (grouped != null) {
+			return grouped.get(temporalKey);
+		}
+		return null;
+	}
+	
+	public V getStatistic(MultiKey multiKey, TemporalKey temporalKey) {
+		Map<TemporalKey, V> grouped = multiKeyToTemporalKey.get(multiKey);
 		if (grouped != null) {
 			return grouped.get(temporalKey);
 		}
@@ -103,11 +126,11 @@ public class GroupedStatistics<V extends GroupedStatisticKeys> {
 	}
 
 	public Map<MultiKey, V> getStatisticsByMultiKey(String identifier) {
-		return statisticsByMultiKey.get(identifier);
+		return identifierToMultiKey.get(identifier);
 	}
 	
 	public Map<TemporalKey, V> getStatisticsByTemporalKey(String identifier) {
-		return statisticsByTemporalKey.get(identifier);
+		return identifierToTemporalKey.get(identifier);
 	}
 
 	public Collection<V> getStatistics() {

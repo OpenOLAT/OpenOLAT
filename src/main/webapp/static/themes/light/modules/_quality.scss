@@ -186,7 +186,7 @@
 	visibility: hidden;
 }
 
-.o_qual_slider_trend {
+.o_qual_trend {
 	.o_qual_ana_trend_up {
 		transform: rotate(315deg);
 		-webkit-transform: rotate(315deg);
@@ -229,6 +229,14 @@
 @media (max-width: $screen-sm-min) {
 	.o_hm_group_select {
 		padding-bottom: 12px;
+	}
+	.o_hm_panel_body {
+		margin-bottom: -12px;
+	}
+}
+@media (min-width: $screen-sm-min) {
+	.o_hm_trend_row {
+		padding-top: 12px;
 	}
 }
 

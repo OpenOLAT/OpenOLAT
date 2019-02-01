@@ -19,8 +19,6 @@
  */
 package org.olat.modules.quality.analysis.ui;
 
-import static java.util.stream.Collectors.toList;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -30,14 +28,14 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.forms.model.xml.Form;
-import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.quality.analysis.AvailableAttributes;
 import org.olat.modules.quality.analysis.GroupedStatistic;
-import org.olat.modules.quality.analysis.GroupedStatistics;
 import org.olat.modules.quality.analysis.MultiGroupBy;
 import org.olat.modules.quality.analysis.MultiKey;
+import org.olat.modules.quality.analysis.MultiTrendSeries;
 import org.olat.modules.quality.analysis.QualityAnalysisService;
 import org.olat.modules.quality.analysis.TemporalGroupBy;
+import org.olat.modules.quality.analysis.TemporalKey;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -46,15 +44,14 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class HeatMapController extends GroupByController {
+public class TrendController extends GroupByController {
 
-	private GroupedStatistics<GroupedStatistic> statistics;
-	private int maxCount;
+	private MultiTrendSeries<MultiKey> multiTrendSeries;
 	
 	@Autowired
 	private QualityAnalysisService analysisService;
 
-	public HeatMapController(UserRequest ureq, WindowControl wControl, Form evaluationForm,
+	public TrendController(UserRequest ureq, WindowControl wControl, Form evaluationForm,
 			AvailableAttributes availableAttributes, MultiGroupBy multiGroupBy, Boolean insufficientOnly,
 			TemporalGroupBy temporalGroupBy, TrendDifference trendDifference, String rubricId) {
 		super(ureq, wControl, evaluationForm, availableAttributes, multiGroupBy, insufficientOnly, temporalGroupBy,
@@ -63,56 +60,51 @@ public class HeatMapController extends GroupByController {
 
 	@Override
 	protected boolean showTemporalConfig() {
-		return false;
+		return true;
 	}
 
 	@Override
 	protected boolean showLegend() {
-		return true;
+		return false;
 	}
-	
+
 	@Override
 	protected void loadStatistics() {
-		List<Rubric> rubrics = getSliders().stream().map(SliderWrapper::getRubric).distinct().collect(toList());
-		statistics = analysisService.calculateStatistics(getSearchParams(), getIdentifiers(), rubrics, getMultiGroupBy());
-		maxCount = getMaxCount();
+		multiTrendSeries = analysisService.calculateTrends(getSearchParams(), getTrendRubrics(), getMultiGroupBy(), getTemporalGroupBy());
 	}
-	
-	private int getMaxCount() {
-		long maxCount = 0;
-		for (GroupedStatistic statistic : statistics.getStatistics()) {
-			Long count = statistic.getCount();
-			if (count > maxCount) {
-				maxCount = count;
-			}
-		}
-		return Long.valueOf(maxCount).intValue();
-	}
-	
+
 	@Override
 	protected int addDataColumns(FlexiTableColumnModel columnsModel, int columnIndex) {
-		for (SliderWrapper sliderWrapper : getSliders()) {
-			DefaultFlexiColumnModel columnModel = new DefaultFlexiColumnModel("", columnIndex++,
-					new HeatMapRenderer(maxCount));
-			columnModel.setHeaderLabel(sliderWrapper.getLabelCode());
+		for (String header: getTemporalHeaders()) {
+			DefaultFlexiColumnModel columnModel = new DefaultFlexiColumnModel("trend.year", columnIndex++);
+			columnModel.setHeaderLabel(header);
+			columnModel.setCellRenderer(new TrendRenderer(getTrendDifference()));
 			columnsModel.addFlexiColumnModel(columnModel);
 		}
-		return columnIndex;
+		return 0;
 	}
 	
+	private List<String> getTemporalHeaders() {
+		List<TemporalKey> temporalKeys = multiTrendSeries.getTemporalKeys();
+		List<String> headers = new ArrayList<>(temporalKeys.size());
+		for (TemporalKey temporalKey : temporalKeys) {
+			String header = TemporalKey.NO_VALUE == temporalKey.getYearPart()
+					? translate("trend.year", new String[] { Integer.toString(temporalKey.getYear()) })
+					: translate("trend.year.part", new String[] {
+							Integer.toString(temporalKey.getYear()), AnalysisUIFactory.formatYearPart(temporalKey.getYearPart()) });
+			headers.add(header);
+		}
+		return headers;
+	}
+
 	@Override
 	protected List<? extends GroupedStatistic> getGroupedStatistcList(MultiKey multiKey) {
-		// Iterate over the identifiers to sort the statistics according to the headers.
-		List<GroupedStatistic> rowStatistics = new ArrayList<>();
-		for (String identifier : getIdentifiers()) {
-			GroupedStatistic rowStatistic = statistics.getStatistic(identifier, multiKey);
-			rowStatistics.add(rowStatistic);
-		}
-		return rowStatistics;
+		return multiTrendSeries.getSeries(multiKey).toList();
 	}
 
 	@Override
 	protected Set<MultiKey> getStatisticsMultiKeys() {
-		return statistics.getMultiKeys();
+		return multiTrendSeries.getIdentifiers();
 	}
+
 }

@@ -21,6 +21,7 @@ package org.olat.modules.quality.analysis;
 
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
+import org.olat.modules.quality.analysis.ui.TrendDifference;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -50,6 +51,18 @@ public interface AnalysisPresentation extends AnalysisPresentationRef, CreateInf
 	public Boolean getHeatMapInsufficientOnly();
 	
 	public void setHeatMapInsufficientOnly(Boolean insufficientOnly);
+	
+	public TemporalGroupBy getTemporalGroupBy();
+	
+	public void setTemporalGroupBy(TemporalGroupBy temporalGroupBy);
+	
+	public TrendDifference getTrendDifference();
+	
+	public void setTrendDifference(TrendDifference trendDifference);
+	
+	public String getRubricId();
+	
+	public void setRubricId(String rubricId);
 	
 	public RepositoryEntry getFormEntry();
 	

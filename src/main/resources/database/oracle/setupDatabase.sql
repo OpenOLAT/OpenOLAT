@@ -1994,6 +1994,9 @@ create table o_qual_analysis_presentation (
    q_search_params CLOB,
    q_heatmap_grouping CLOB,
    q_heatmap_insufficient_only number default 0,
+   q_temporal_grouping varchar(50),
+   q_trend_difference varchar(50),
+   q_rubric_id varchar(50),
    fk_form_entry number(20) not null,
    primary key (id)
 );

@@ -989,8 +989,8 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		
 		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
 		MultiGroupBy multiGroupBy = MultiGroupBy.of(TOPIC_ORGANISATION);
-		List<RawGroupedStatistic> statisticList = sut.loadGroupedStatisticByResponseIdentifiers(searchParams,
-				asList(identifier1.toString(), identifier2.toString()), multiGroupBy, null);
+		List<RawGroupedStatistic> statisticList = sut.loadGroupedStatistic(searchParams,
+				asList(identifier1.toString(), identifier2.toString()), true, multiGroupBy, null);
 		GroupedStatistics<RawGroupedStatistic> statistics = new GroupedStatistics<>(statisticList);
 		
 		RawGroupedStatistic statistic11 = statistics.getStatistic(identifier1, of(organisation1.getKey().toString()));
@@ -1004,6 +1004,75 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		assertThat(statistic21.getRawAvg()).isEqualTo(1);
 		RawGroupedStatistic statistic22 = statistics.getStatistic(identifier2, of(organisation2.getKey().toString()));
 		assertThat(statistic22).isNull();
+	}
+	
+	@Test
+	public void shouldLoadGroupedStatisticsWithoutIdentifier() {
+		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Organisation dcOrganisation = qualityTestHelper.createOrganisation();
+		Organisation organisation1 = qualityTestHelper.createOrganisation();
+		Organisation organisation2 = qualityTestHelper.createOrganisation();
+		String identifier1 = UUID.randomUUID().toString();
+		String identifier2 = UUID.randomUUID().toString();
+		Identity executor1 = JunitTestHelper.createAndPersistIdentityAsUser("e1");
+		Identity executor2 = JunitTestHelper.createAndPersistIdentityAsUser("e2");
+		QualityDataCollection dc1 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		QualityDataCollection dc2 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
+		dc1.setTopicOrganisation(organisation1);
+		dc2.setTopicOrganisation(organisation2);
+		qualityService.updateDataCollection(dc1);
+		qualityService.updateDataCollection(dc2);
+		List<EvaluationFormParticipation> participations1 = qualityService.addParticipations(dc1, asList(executor1, executor2));
+		List<EvaluationFormParticipation> participations2 = qualityService.addParticipations(dc2, asList(executor1, executor2));
+		EvaluationFormParticipation participationOrg1Ex1 = participations1.get(0);
+		EvaluationFormParticipation participationOrg1Ex2 = participations1.get(1);
+		EvaluationFormParticipation participationOrg2Ex1 = participations2.get(0);
+		EvaluationFormParticipation participationOrg2Ex2 = participations2.get(1);
+		qualityService.createContextBuilder(dc1, participationOrg1Ex1).build();
+		qualityService.createContextBuilder(dc1, participationOrg1Ex2).build();
+		qualityService.createContextBuilder(dc2, participationOrg2Ex1).build();
+		qualityService.createContextBuilder(dc2, participationOrg2Ex2).build();
+		EvaluationFormSession sessionOrg1Ex1 = evaManager.createSession(participationOrg1Ex1);
+		EvaluationFormSession sessionOrg1Ex2 = evaManager.createSession(participationOrg1Ex2);
+		EvaluationFormSession sessionOrg2Ex1 = evaManager.createSession(participationOrg2Ex1);
+		EvaluationFormSession sessionOrg2Ex2 = evaManager.createSession(participationOrg2Ex2);
+		evaManager.createNumericalResponse(identifier1 , sessionOrg1Ex1, BigDecimal.TEN);
+		evaManager.createNumericalResponse(identifier1 , sessionOrg1Ex2, BigDecimal.TEN);
+		evaManager.createNumericalResponse(identifier1 , sessionOrg2Ex1, BigDecimal.TEN);
+		evaManager.createNumericalResponse(identifier1 , sessionOrg2Ex2, BigDecimal.ZERO);
+		evaManager.createNumericalResponse(identifier2 , sessionOrg1Ex1, BigDecimal.ONE);
+		evaManager.createNoResponse(identifier2, sessionOrg1Ex2);
+		evaManager.finishSession(sessionOrg1Ex1);
+		evaManager.finishSession(sessionOrg1Ex2);
+		evaManager.finishSession(sessionOrg2Ex1);
+		evaManager.finishSession(sessionOrg2Ex2);
+		finish(asList(dc1, dc2));
+		dbInstance.commitAndCloseSession();
+		
+		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
+		MultiGroupBy multiGroupBy = MultiGroupBy.of(TOPIC_ORGANISATION);
+		List<RawGroupedStatistic> statisticList = sut.loadGroupedStatistic(searchParams,
+				asList(identifier1.toString(), identifier2.toString()), false, multiGroupBy, null);
+		GroupedStatistics<RawGroupedStatistic> statistics = new GroupedStatistics<>(statisticList);
+		
+		RawGroupedStatistic statistic11 = statistics.getStatistic(null, of(organisation1.getKey().toString()));
+		assertThat(statistic11.getCount()).isEqualTo(3);
+		assertThat(statistic11.getRawAvg()).isEqualTo(21/3);
+		RawGroupedStatistic statistic12 = statistics.getStatistic(null, of(organisation2.getKey().toString()));
+		assertThat(statistic12.getCount()).isEqualTo(2);
+		assertThat(statistic12.getRawAvg()).isEqualTo(5);
+		
+//		RawGroupedStatistic statistic11 = statistics.getStatistic(identifier1, of(organisation1.getKey().toString()));
+//		assertThat(statistic11.getCount()).isEqualTo(2);
+//		assertThat(statistic11.getRawAvg()).isEqualTo(10);
+//		RawGroupedStatistic statistic12 = statistics.getStatistic(identifier1, of(organisation2.getKey().toString()));
+//		assertThat(statistic12.getCount()).isEqualTo(2);
+//		assertThat(statistic12.getRawAvg()).isEqualTo(5);
+//		RawGroupedStatistic statistic21 = statistics.getStatistic(identifier2, of(organisation1.getKey().toString()));
+//		assertThat(statistic21.getCount()).isEqualTo(1);
+//		assertThat(statistic21.getRawAvg()).isEqualTo(1);
+//		RawGroupedStatistic statistic22 = statistics.getStatistic(identifier2, of(organisation2.getKey().toString()));
+//		assertThat(statistic22).isNull();
 	}
 	
 	@Test
@@ -1037,8 +1106,8 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		
 		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
 		MultiGroupBy multiGroupBy = MultiGroupBy.of(CONTEXT_ORGANISATION, CONTEXT_CURRICULUM, CONTEXT_TAXONOMY_LEVEL);
-		List<RawGroupedStatistic> statisticList = sut.loadGroupedStatisticByResponseIdentifiers(searchParams,
-				asList(identifier), multiGroupBy, null);
+		List<RawGroupedStatistic> statisticList = sut.loadGroupedStatistic(searchParams,
+				asList(identifier), true, multiGroupBy, null);
 		GroupedStatistics<RawGroupedStatistic> statistics = new GroupedStatistics<>(statisticList);
 		
 		for (Organisation organisation: organisations) {
@@ -1069,7 +1138,7 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
 		for (GroupBy groupBy : GroupBy.values()) {
 			MultiGroupBy multiGroupBy = MultiGroupBy.of(groupBy);
-			sut.loadGroupedStatisticByResponseIdentifiers(searchParams, singletonList(identifier), multiGroupBy, null);
+			sut.loadGroupedStatistic(searchParams, singletonList(identifier), true, multiGroupBy, null);
 		}
 		
 		// Assert that no exception is thrown.
@@ -1093,8 +1162,8 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		AnalysisSearchParameter searchParams = new AnalysisSearchParameter();
 		for (TemporalGroupBy temporalGroupBy : TemporalGroupBy.values()) {
 			MultiGroupBy multiGroupBy = MultiGroupBy.noGroupBy();
-			sut.loadGroupedStatisticByResponseIdentifiers(searchParams, singletonList(identifier), multiGroupBy,
-					temporalGroupBy);
+			sut.loadGroupedStatistic(searchParams, singletonList(identifier), true,
+					multiGroupBy, temporalGroupBy);
 		}
 		
 		// Assert that no exception is thrown.

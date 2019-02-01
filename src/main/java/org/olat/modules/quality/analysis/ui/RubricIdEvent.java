@@ -19,51 +19,27 @@
  */
 package org.olat.modules.quality.analysis.ui;
 
-import java.util.List;
-
-import org.olat.modules.quality.analysis.GroupedStatistic;
-import org.olat.modules.quality.analysis.MultiKey;
+import org.olat.core.gui.control.Event;
 
 /**
  * 
- * Initial date: 11.09.2018<br>
+ * Initial date: 01.02.2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class HeatMapRow {
+public class RubricIdEvent extends Event {
+
+	private static final long serialVersionUID = 182401985700351509L;
 	
-	private final MultiKey multiKey;
-	private final List<String> groupNames;
-	private final List<GroupedStatistic> statistics;
-	
-	public HeatMapRow(MultiKey multiKey, List<String> groupNames, List<GroupedStatistic> statistics) {
-		this.multiKey = multiKey;
-		this.groupNames = groupNames;
-		this.statistics = statistics;
-	}
-	
-	public MultiKey getMultiKey() {
-		return multiKey;
+	private final String rubricId;
+
+	public RubricIdEvent(String rubricId) {
+		super("analysis-rubric-id-event");
+		this.rubricId = rubricId;
 	}
 
-	public int getGroupNamesSize() {
-		return groupNames.size();
-	}
-
-	public String getGroupName(int index) {
-		return groupNames.get(index);
-	}
-	
-	public List<String> getGroupNames() {
-		return groupNames;
-	}
-
-	public int getStatisticsSize() {
-		return statistics.size();
-	}
-
-	public GroupedStatistic getStatistic(int index) {
-		return statistics.get(index);
+	public String getRubricId() {
+		return rubricId;
 	}
 
 }
