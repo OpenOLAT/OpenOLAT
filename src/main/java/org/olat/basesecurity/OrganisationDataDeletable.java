@@ -32,8 +32,9 @@ public interface OrganisationDataDeletable {
 	/**
 	 * 
 	 * @param organisation The organization which be deleted
+	 * @param replacementOrganisation Can be null, an organization to replace the deleted one.
 	 * @return false if the organization cannot be completely deleted
 	 */
-	public boolean deleteOrganisationData(Organisation organisation);
+	public boolean deleteOrganisationData(Organisation organisation, Organisation replacementOrganisation);
 
 }

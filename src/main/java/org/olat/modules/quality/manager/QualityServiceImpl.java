@@ -587,7 +587,7 @@ public class QualityServiceImpl
 	}
 
 	@Override
-	public boolean deleteOrganisationData(Organisation organisation) {
+	public boolean deleteOrganisationData(Organisation organisation, Organisation replacementOrganisation) {
 		return !dataCollectionDao.hasDataCollection(organisation)
 				&& !contextToOrganisationDao.hasRelations(organisation)
 				&& !dataCollectionToOrganisationDao.hasRelations(organisation);

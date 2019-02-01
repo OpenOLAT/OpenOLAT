@@ -32,6 +32,7 @@ import java.util.Set;
 import org.olat.basesecurity.GroupMembershipInheritance;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.OrganisationDataDeletable;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.CoreSpringFactory;
@@ -86,7 +87,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class CurriculumServiceImpl implements CurriculumService {
+public class CurriculumServiceImpl implements CurriculumService, OrganisationDataDeletable {
 	
 	@Autowired
 	private DB dbInstance;
@@ -591,4 +592,17 @@ public class CurriculumServiceImpl implements CurriculumService {
 		
 		return allowedToManaged;
 	}
+
+	@Override
+	public boolean deleteOrganisationData(Organisation organisation, Organisation replacementOrganisation) {
+		CurriculumSearchParameters searchParams = new CurriculumSearchParameters();
+		searchParams.setOrganisations(Collections.singletonList(organisation));
+		List<Curriculum> curriculums = curriculumDao.search(searchParams);
+		for(Curriculum curriculum:curriculums) {
+			curriculum.setOrganisation(replacementOrganisation);
+			curriculumDao.update(curriculum);
+		}
+		return true;
+	}
+	
 }
