@@ -31,7 +31,7 @@ jobs:
       LC_ALL: "en_US.UTF-8"
 
     steps:
-      - run: apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y install sudo git locales
+      - run: apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y install sudo git locales nodejs
       - run: sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen &&  dpkg-reconfigure --frontend=noninteractive locales && update-locale en_US.UTF-8
       - checkout
 
