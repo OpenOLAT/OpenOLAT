@@ -157,7 +157,7 @@ public class EvaluationFormReportDAOTest extends OlatTestCase {
 	}
 
 	@Test
-	public void shouldGetCountBySinguifiedResponse() {
+	public void shouldGetCountByStringuifiedResponse() {
 		String responseIdentifier = UUID.randomUUID().toString();
 		String otherIdentifier = UUID.randomUUID().toString();
 		EvaluationFormSession session1 = evaTestHelper.createSession();
