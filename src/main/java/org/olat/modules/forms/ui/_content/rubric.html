@@ -45,8 +45,14 @@
 	#set($colRight = "col-sm-0")
 #end
 
+<div class="o_evaluation_block">
+#if($element.showName())
+	<div class="o_rubric_name">
+		$element.name
+	</div>
+#end
 #if($element.isDiscreteRubric())
-<div class="o_evaluation_block o_evaluation_discrete_radio">
+<div class="o_evaluation_discrete_radio">
 	#if($element.isStepLabels() || $isNoResponseEnabled) 
 	<div class="clearfix">
 		<div class="$colLeft"></div>
@@ -86,7 +92,7 @@
 	#end
 </div>
 #elseif($element.isDiscreteSliderRubric())
-<div class="o_evaluation_block o_evaluation_discrete_slider">
+<div class="o_evaluation_discrete_slider">
 	#if($element.isStepLabels() || $isNoResponseEnabled) 
 	<div class="clearfix">
 		<div class="$colLeft"></div>
@@ -142,7 +148,7 @@
 	#end
 </div>
 #else
-<div class="o_evaluation_block o_evaluation_continous">
+<div class="o_evaluation_continous">
 	<div class="clearfix">
 		<div class="$colLeft"></div>
 		<div class="$colMiddle o_evaluation_step_labels hidden-xs">
@@ -164,4 +170,5 @@
 	#end
 </div>
 #end
+</div>
 </div>

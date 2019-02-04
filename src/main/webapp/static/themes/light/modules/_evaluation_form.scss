@@ -3,6 +3,11 @@
 		margin-top: $o-evaluation-block-margin-top;
 		margin-bottom: $o-evaluation-block-margin-bottom;
 	}
+	
+	.o_rubric_name {
+		font-weight: bold;
+		margin-bottom: 1em;
+	}
 		
 	.o_evaluation_step_labels {
 		margin-bottom: $o-evaluation-step-labels-margin-bottom;

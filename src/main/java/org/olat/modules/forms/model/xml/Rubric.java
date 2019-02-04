@@ -20,6 +20,7 @@
 package org.olat.modules.forms.model.xml;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -40,6 +41,7 @@ public class Rubric extends AbstractElement {
 	private List<StepLabel> stepLabels = new ArrayList<>();
 	
 	private String name;
+	private List<NameDisplay> nameDisplays;
 	private int start;
 	private int end;
 	private int steps;
@@ -82,6 +84,19 @@ public class Rubric extends AbstractElement {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+	
+	public List<NameDisplay> getNameDisplays() {
+		return nameDisplays != null? nameDisplays: Arrays.asList(NameDisplay.report);
+	}
+
+	public void setNameDisplays(List<NameDisplay> nameDisplays) {
+		this.nameDisplays = nameDisplays != null? nameDisplays: new ArrayList<>(0);
+	}
+
+	public enum NameDisplay {
+		execution,
+		report;
 	}
 
 	public int getStart() {
@@ -135,7 +150,7 @@ public class Rubric extends AbstractElement {
 	public enum SliderType {
 		discrete,
 		discrete_slider,
-		continuous	
+		continuous
 	}
 	
 	public Double getLowerBoundInsufficient() {

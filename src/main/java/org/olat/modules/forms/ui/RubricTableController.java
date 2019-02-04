@@ -40,6 +40,7 @@ import org.olat.modules.forms.RubricStatistic;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.SliderStatistic;
 import org.olat.modules.forms.model.xml.Rubric;
+import org.olat.modules.forms.model.xml.Rubric.NameDisplay;
 import org.olat.modules.forms.model.xml.Rubric.SliderType;
 import org.olat.modules.forms.model.xml.ScaleType;
 import org.olat.modules.forms.model.xml.Slider;
@@ -143,7 +144,8 @@ public class RubricTableController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(avgColumn);
 		legendSigns.add(new LegendEntry(translate("rubric.report.avg.abrev"), translate("rubric.report.avg.title")));
 
-		String footerHeader = translate("rubric.report.total", new String[] {rubric.getName()});
+		String name = rubric.getNameDisplays().contains(NameDisplay.report)? rubric.getName(): "";
+		String footerHeader = translate("rubric.report.total", new String[] {name});
 		dataModel = new RubricDataModel(columnsModel, footerHeader);
 		tableEl = uifactory.addTableElement(getWindowControl(), "ru_" + CodeHelper.getRAMUniqueID(), dataModel, getTranslator(), formLayout);
 		tableEl.setElementCssClass("o_rubric_table");

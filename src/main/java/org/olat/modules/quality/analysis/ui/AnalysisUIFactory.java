@@ -32,6 +32,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.forms.model.xml.Rubric;
+import org.olat.modules.forms.model.xml.Rubric.NameDisplay;
 import org.olat.modules.forms.model.xml.Slider;
 import org.olat.modules.forms.ui.EvaluationFormFormatter;
 import org.olat.modules.quality.analysis.AvailableAttributes;
@@ -241,7 +242,7 @@ class AnalysisUIFactory {
 	private static String getRubricName(Translator translator, Rubric rubric, int i) {
 		String index = String.valueOf(i + 1);
 		String rubricName = rubric.getName();
-		return StringHelper.containsNonWhitespace(rubricName)
+		return rubric.getNameDisplays().contains(NameDisplay.report) && StringHelper.containsNonWhitespace(rubricName)
 				? translator.translate("trend.rubric.index.name", new String[] {index, rubricName})
 				: translator.translate("trend.rubric.index", new String[] {index});
 	}

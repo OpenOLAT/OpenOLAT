@@ -42,6 +42,7 @@ import org.olat.modules.forms.EvaluationFormResponse;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.model.jpa.EvaluationFormResponses;
 import org.olat.modules.forms.model.xml.Rubric;
+import org.olat.modules.forms.model.xml.Rubric.NameDisplay;
 import org.olat.modules.forms.model.xml.Rubric.SliderType;
 import org.olat.modules.forms.model.xml.Slider;
 import org.olat.modules.forms.model.xml.StepLabel;
@@ -367,6 +368,14 @@ public class RubricController extends FormBasicController implements EvaluationF
 
 		public RubricWrapper(Rubric rubric) {
 			this.rubric = rubric;
+		}
+		
+		public boolean showName() {
+			return rubric.getNameDisplays().contains(NameDisplay.execution);
+		}
+		
+		public String getName() {
+			return rubric.getName();
 		}
 		
 		public boolean isDiscreteRubric() {

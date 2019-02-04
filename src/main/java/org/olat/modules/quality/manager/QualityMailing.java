@@ -43,6 +43,7 @@ import org.olat.modules.forms.EvaluationFormDispatcher;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.RubricRating;
 import org.olat.modules.forms.RubricStatistic;
+import org.olat.modules.forms.model.xml.Rubric.NameDisplay;
 import org.olat.modules.forms.ui.EvaluationFormFormatter;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityDataCollectionStatus;
@@ -281,9 +282,11 @@ class QualityMailing {
 			
 			String index = String.valueOf(i + 1);
 			String rubricName = rubricStatistic.getRubric().getName();
-			String rubricTranslatedIndexName = StringHelper.containsNonWhitespace(rubricName)
-					? translator.translate("report.access.email.rubric.index.name", new String[] {index, rubricName})
-					: translator.translate("report.access.email.rubric.index", new String[] {index});
+			String rubricTranslatedIndexName = 
+					rubricStatistic.getRubric().getNameDisplays().contains(NameDisplay.report)
+					&& StringHelper.containsNonWhitespace(rubricName)
+							? translator.translate("report.access.email.rubric.index.name", new String[] {index, rubricName})
+							: translator.translate("report.access.email.rubric.index", new String[] {index});
 			RubricRating rating = rubricStatistic.getTotalStatistic().getRating();
 			String translatedRating = translator.translate(getRatingI18n(rating));
 			

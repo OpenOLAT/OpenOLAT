@@ -29,6 +29,7 @@ import org.olat.modules.forms.RubricStatistic;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.SliderStatistic;
 import org.olat.modules.forms.model.xml.Rubric;
+import org.olat.modules.forms.model.xml.Rubric.NameDisplay;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -50,7 +51,8 @@ public class RubricTotalBarChartsController extends RubricBarChartsController {
 	
 	@Override
 	protected RubricWrapper createRubricWrapper() {
-		String name = translate("rubric.report.total", new String[] {getRubric().getName()});
+		String rawName = getRubric().getNameDisplays().contains(NameDisplay.report)? getRubric().getName(): "";
+		String name = translate("rubric.report.total", new String[] {rawName});
 		RubricStatistic rubricStatistic = evaluationFormManager.getRubricStatistic(getRubric(), getFilter());
 		SliderStatistic totalStatistic = rubricStatistic.getTotalStatistic();
 		List<SliderWrapper> sliderWrappers = new ArrayList<>();

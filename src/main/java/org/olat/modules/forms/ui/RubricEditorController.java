@@ -22,6 +22,7 @@ package org.olat.modules.forms.ui;
 import static org.olat.core.gui.translator.TranslatorHelper.translateAll;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
@@ -47,6 +48,7 @@ import org.olat.modules.ceditor.PageElementEditorController;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.ceditor.ui.event.ClosePartEvent;
 import org.olat.modules.forms.model.xml.Rubric;
+import org.olat.modules.forms.model.xml.Rubric.NameDisplay;
 import org.olat.modules.forms.model.xml.Rubric.SliderType;
 import org.olat.modules.forms.model.xml.ScaleType;
 import org.olat.modules.forms.model.xml.Slider;
@@ -72,6 +74,7 @@ public class RubricEditorController extends FormBasicController implements PageE
 	private final boolean restrictedEdit;
 	private RubricController rubricCtrl;
 	
+	private final String[] nameDisplayKeys = new String[] { NameDisplay.execution.name(), NameDisplay.report.name() };
 	private final String[] sliderTypeKeys = new String[] { SliderType.discrete.name(), SliderType.discrete_slider.name(), SliderType.continuous.name() };
 	private final String[] sliderStepKeys = new String[] { "2", "3", "4", "5", "6", "7", "8", "9", "10" };
 	private final String[] showResponseKey = new String[] { "show.no.response" };
@@ -83,6 +86,7 @@ public class RubricEditorController extends FormBasicController implements PageE
 	private SingleSelection sliderTypeEl;
 	private SingleSelection scaleTypeEl;
 	private TextElement nameEl;
+	private MultipleSelectionElement nameDisplayEl;
 	private SingleSelection stepsEl;
 	private MultipleSelectionElement noAnswerEl;
 	private TextElement lowerBoundInsufficientEl;
@@ -115,6 +119,12 @@ public class RubricEditorController extends FormBasicController implements PageE
 		formLayout.add("settings", settingsLayout);
 
 		nameEl = uifactory.addTextElement("rubric.name", 128, rubric.getName(), settingsLayout);
+		
+		String[] nameDisplayValues = new String[] { translate("rubric.name.execution"), translate("rubric.name.report") };
+		nameDisplayEl = uifactory.addCheckboxesHorizontal("rubric.name.display", settingsLayout, nameDisplayKeys, nameDisplayValues);
+		for (NameDisplay nameDisplay : rubric.getNameDisplays()) {
+			nameDisplayEl.select(nameDisplay.name(), true);
+		}
 		
 		String[] sliderTypeValues = new String[] { translate("slider.discrete"), translate("slider.discrete.slider"), translate("slider.continuous") };
 		sliderTypeEl = uifactory.addDropdownSingleselect("slider.type." + count.incrementAndGet(), "slider.type", settingsLayout, sliderTypeKeys, sliderTypeValues, null);
@@ -534,6 +544,14 @@ public class RubricEditorController extends FormBasicController implements PageE
 		commitStepLabels();
 		
 		rubric.setName(nameEl.getValue());
+		
+		List<NameDisplay> nameDisplays = new ArrayList<>(2);
+		Collection<String> nameDisplayKeys = nameDisplayEl.getSelectedKeys();
+		for (String key : nameDisplayKeys) {
+			NameDisplay nameDisplay = NameDisplay.valueOf(key);
+			nameDisplays.add(nameDisplay);
+		}
+		rubric.setNameDisplays(nameDisplays);
 
 		String selectedSliderType = sliderTypeEl.getSelectedKey();
 		SliderType sliderType =  SliderType.valueOf(selectedSliderType);
