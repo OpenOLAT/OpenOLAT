@@ -618,7 +618,9 @@ public class GTAParticipantController extends GTAAbstractController implements A
 				submitDirectory = gtaManager.getSubmitDirectory(courseEnv, gtaNode, assessedIdentity);
 			}
 			
-			if(availableDate == null && optional
+			if(availableDate == null && !optional) {
+				show = true;
+			} else if(availableDate == null && optional
 					&& (gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_ALL, false) || TaskHelper.hasDocuments(submitDirectory))) {
 				show = true;
 			} else if(availableDate != null && (optional || !availableDate.isRelative())

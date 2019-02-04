@@ -1230,7 +1230,8 @@ public class AssessmentTest extends Deployments {
 			.clickTree()
 			.selectWithTitle(gtaNodeTitle);
 		ryomouTask
-			.assertPassed();
+			.assertPassed()
+			.assertSolution("solution_1.txt");
 	}
 	
 	/**
