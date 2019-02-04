@@ -51,7 +51,7 @@ jobs:
       - run: mvn test jacoco:report coveralls:report -Dwith-postgresql -Dtest.env.db.postgresql.user=olat -Dtest.env.db.postgresql.pass=olat -Dtest=org.olat.test.AllTestsJunit4 -Ptomcat
 
       # publish sonar results
-      - run: mvn sonar:sonar -Dsonar.projectKey=tomgross_OpenOLAT -Dsonar.organization=tomgross-github -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=fecec388d2ba4a0844f4eb9752ba31e41d6bdaa9
+      - run: mvn sonar:sonar -Dsonar.projectKey=tomgross_OpenOLAT -Dsonar.organization=tomgross-github -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=fecec388d2ba4a0844f4eb9752ba31e41d6bdaa9 -Dsonar.pullrequest.provider=github
 
       - save_cache:
           paths:
