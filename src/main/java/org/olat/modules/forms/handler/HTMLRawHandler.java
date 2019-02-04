@@ -75,16 +75,6 @@ public class HTMLRawHandler implements EvaluationFormElementHandler, PageElement
 		return null;
 	}
 
-//	@Override
-//	public PageElement createPageElement(Locale locale) {
-//		Translator translator = Util.createPackageTranslator(HTMLRawEditorController.class, locale);
-//		String content = translator.translate("raw.example");
-//		HTMLRaw part = new HTMLRaw();
-//		part.setId(UUID.randomUUID().toString());
-//		part.setContent(content);
-//		return part;
-//	}
-
 	@Override
 	public HTMLElement savePageElement(HTMLElement element) {
 		return element;
