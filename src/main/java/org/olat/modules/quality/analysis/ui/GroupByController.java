@@ -124,8 +124,8 @@ public abstract class GroupByController extends FormBasicController implements F
 	private MultiGroupBy multiGroupBy;
 	private final boolean insufficientConfigured;
 	private boolean insufficientOnly = false;
-	private TemporalGroupBy temporalGroupBy = TemporalGroupBy.DATA_COLLECTION_DEADLINE_YEAR;
-	private TrendDifference trendDifference = TrendDifference.NONE;
+	private TemporalGroupBy temporalGroupBy;
+	private TrendDifference trendDifference;
 	private String rubricId;
 
 	@Autowired
@@ -144,8 +144,8 @@ public abstract class GroupByController extends FormBasicController implements F
 		this.sliders = initSliders(evaluationForm);
 		this.identifiers = sliders.stream().map(SliderWrapper::getIdentifier).collect(toList());
 		this.insufficientConfigured = initInsufficientConfigured(evaluationForm);
-		this.temporalGroupBy = temporalGroupBy;
-		this.trendDifference = trendDifference;
+		this.temporalGroupBy = temporalGroupBy != null? temporalGroupBy: TemporalGroupBy.DATA_COLLECTION_DEADLINE_YEAR;
+		this.trendDifference = trendDifference != null? trendDifference: TrendDifference.NONE;
 		this.rubricId = rubricId;
 		initForm(ureq);
 	}
