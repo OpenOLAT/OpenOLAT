@@ -8,6 +8,7 @@ A sophisticated modular toolkit provides course authors with a wide range of did
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![CircleCI](https://circleci.com/gh/tomgross/OpenOLAT.svg?style=svg)](https://circleci.com/gh/tomgross/OpenOLAT)
+[![Coverage Status](https://coveralls.io/repos/github/tomgross/OpenOLAT/badge.svg?branch=master)](https://coveralls.io/github/tomgross/OpenOLAT?branch=master)
 
 ## Table of Contents
 
