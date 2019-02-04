@@ -34,12 +34,12 @@ public class TranslatorMock implements Translator {
 
 	@Override
 	public String getPackageName() {
-		return "";
+		return "packageName";
 	}
 
 	@Override
 	public String translate(String key) {
-		return "";
+		return "translated";
 	}
 
 	@Override

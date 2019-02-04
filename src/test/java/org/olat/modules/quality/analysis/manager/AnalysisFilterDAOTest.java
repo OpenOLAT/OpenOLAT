@@ -2008,9 +2008,9 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 	public void shouldFilterByWithUserInfosOnly() {
 		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Organisation dcOrganisation = qualityTestHelper.createOrganisation();
-		Identity executor1 = JunitTestHelper.createAndPersistIdentityAsRndUser("Analyst");
-		Identity executor2 = JunitTestHelper.createAndPersistIdentityAsRndUser("Analyst");
-		Identity executorOther = JunitTestHelper.createAndPersistIdentityAsRndUser("Analyst");
+		Identity executor1 = JunitTestHelper.createAndPersistIdentityAsRndUser("Analyst1");
+		Identity executor2 = JunitTestHelper.createAndPersistIdentityAsRndUser("Analyst2");
+		Identity executorOther = JunitTestHelper.createAndPersistIdentityAsRndUser("Analyst3");
 		// First session with informations
 		QualityDataCollection dc1 = qualityService.createDataCollection(asList(dcOrganisation), formEntry);
 		List<EvaluationFormParticipation> participations1 = qualityService.addParticipations(dc1, Collections.singletonList(executor1));
@@ -2025,7 +2025,7 @@ public class AnalysisFilterDAOTest extends OlatTestCase {
 		EvaluationFormParticipation participation2 = participations2.get(0);
 		qualityService.createContextBuilder(dc2, participation2).build();
 		EvaluationFormSession session2 = evaManager.createSession(participation2);
-		evaManager.updateSession(session2, null, null, null, null, null, null, "");
+		evaManager.updateSession(session2, null, null, null, null, null, null, "math");
 		evaManager.finishSession(session2);
 		// Session without informations
 		QualityDataCollection dcOther = qualityService.createDataCollection(asList(dcOrganisation), formEntry);

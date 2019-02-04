@@ -71,9 +71,9 @@ public class CourseProviderDAO {
 			sb.append("  from qualitydatacollection as datacollection");
 			sb.append(" where datacollection.generator.key = :generatorKey");
 			if (searchParams.getGeneratorDataCollectionStart() != null) {
-				sb.append(" and year(datacollection.start) = year(DATE(:generatorStart))");
-				sb.append(" and month(datacollection.start) = month(DATE(:generatorStart))");
-				sb.append(" and day(datacollection.start) = day(DATE(:generatorStart))");
+				sb.append(" and year(datacollection.start) = year(cast(:generatorStart as date))");
+				sb.append(" and month(datacollection.start) = month(cast(:generatorStart as date))");
+				sb.append(" and day(datacollection.start) = day(cast(:generatorStart as date))");
 			}
 			sb.append(")");
 		}

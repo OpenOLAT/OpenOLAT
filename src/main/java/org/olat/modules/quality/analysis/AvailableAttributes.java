@@ -42,25 +42,25 @@ public class AvailableAttributes {
 	private final boolean seriesIndex;
 	private final boolean dataCollection;
 
-	public AvailableAttributes(boolean topicIdentity, boolean topicRepository, boolean topicOrganisation,
-			boolean topicCurriculum, boolean topicCurriculumElement, Boolean contextLocation,
-			boolean contextExecutorOrganisation, boolean contextCurriculum, boolean contextCurriculumElement,
-			boolean contextCurriculumElementType, boolean contextCurriculumOrganisation, boolean contextTaxonomyLevel,
-			boolean seriesIndex, boolean dataCollection) {
-		this.topicIdentity = topicIdentity;
-		this.topicRepository = topicRepository;
-		this.topicOrganisation = topicOrganisation;
-		this.topicCurriculum = topicCurriculum;
-		this.topicCurriculumElement = topicCurriculumElement;
-		this.contextLocation = contextLocation != null? contextLocation.booleanValue(): false;
-		this.contextExecutorOrganisation = contextExecutorOrganisation;
-		this.contextCurriculum = contextCurriculum;
-		this.contextCurriculumElement = contextCurriculumElement;
-		this.contextCurriculumElementType = contextCurriculumElementType;
-		this.contextCurriculumOrganisation = contextCurriculumOrganisation;
-		this.contextTaxonomyLevel = contextTaxonomyLevel;
-		this.seriesIndex = seriesIndex;
-		this.dataCollection = dataCollection;
+	public AvailableAttributes(long topicIdentityCount, long topicRepositoryCount, long topicOrganisationCount,
+			long topicCurriculumCount, long topicCurriculumElementCount, int contextLocationMax,
+			long contextExecutorOrganisationCount, long contextCurriculumCount, long contextCurriculumElementCount,
+			long contextCurriculumElementTypeCount, long contextCurriculumOrganisationCount,
+			long contextTaxonomyLevelCount, int seriesIndexMax, long dataCollectionCount) {
+		this.topicIdentity = topicIdentityCount > 0;
+		this.topicRepository = topicRepositoryCount > 0;
+		this.topicOrganisation = topicOrganisationCount > 0;
+		this.topicCurriculum = topicCurriculumCount > 0;
+		this.topicCurriculumElement = topicCurriculumElementCount > 0;
+		this.contextLocation = contextLocationMax > 0;
+		this.contextExecutorOrganisation = contextExecutorOrganisationCount > 0;
+		this.contextCurriculum = contextCurriculumCount > 0;
+		this.contextCurriculumElement = contextCurriculumElementCount > 0;
+		this.contextCurriculumElementType = contextCurriculumElementTypeCount > 0;
+		this.contextCurriculumOrganisation = contextCurriculumOrganisationCount > 0;
+		this.contextTaxonomyLevel = contextTaxonomyLevelCount > 0;
+		this.seriesIndex = seriesIndexMax > 1;
+		this.dataCollection = dataCollectionCount > 0;
 	}
 
 	public boolean isTopicIdentity() {

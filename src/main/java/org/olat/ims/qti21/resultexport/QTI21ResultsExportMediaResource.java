@@ -231,8 +231,7 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 			ResultDetail resultDetail = new ResultDetail(assessmentID.toString(), 
 					assessmentDateFormat.format(session.getCreationDate()),
 					displayDateFormat.format(new Date(session.getDuration())),
-					session.getScore(), session.getManualScore(), 
-					createPassedIcons(session.getPassed() == null ? true : session.getPassed()),
+					session.getScore(), session.getManualScore(), createPassedIcons(session.getPassed()),
 					idPath.replace(idDir, "") + assessmentID + ".html");
 			
 			assessments.add(resultDetail);

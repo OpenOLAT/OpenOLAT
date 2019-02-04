@@ -3538,11 +3538,12 @@ create index idx_eva_resp_to_sess_idx on o_eva_form_response (fk_session);
 create index idx_eva_resp_report_idx on o_eva_form_response (fk_session, e_responseidentifier, e_no_response);
 
 -- quality management
+alter table o_qual_data_collection add constraint qual_dc_to_gen_idx foreign key (fk_generator) references o_qual_generator (id);
+create index idx_dc_to_gen_idx on o_qual_data_collection(fk_generator);
 create index idx_dc_status_idx on o_qual_data_collection (q_status) where q_status in ('READY', 'RUNNING');
 
 alter table o_qual_data_collection_to_org add constraint qual_dc_to_org_idx foreign key (fk_data_collection) references o_qual_data_collection (id);
 create unique index idx_qual_dc_to_org_idx on o_qual_data_collection_to_org (fk_data_collection, fk_organisation);
-
 alter table o_qual_context add constraint qual_con_to_data_collection_idx foreign key (fk_data_collection) references o_qual_data_collection (id);
 create index idx_con_to_data_collection_idx on o_qual_context (fk_data_collection);
 alter table o_qual_context add constraint qual_con_to_participation_idx foreign key (fk_eva_participation) references o_eva_form_participation (id);
@@ -3573,8 +3574,6 @@ alter table o_qual_report_access add constraint qual_repacc_to_dc_idx foreign ke
 create index o_qual_report_access_dc_idx on o_qual_report_access(fk_data_collection);
 alter table o_qual_report_access add constraint qual_repacc_to_generator_idx foreign key (fk_generator) references o_qual_generator (id);
 create index o_qual_report_access_gen_idx on o_qual_report_access(fk_generator);
-
-alter table o_qual_data_collection add constraint qual_dc_to_gen_idx foreign key (fk_generator) references o_qual_generator (id);
 
 alter table o_qual_generator_to_org add constraint qual_gen_to_org_idx foreign key (fk_generator) references o_qual_generator (id);
 create unique index idx_qual_gen_to_org_idx on o_qual_generator_to_org (fk_generator, fk_organisation);

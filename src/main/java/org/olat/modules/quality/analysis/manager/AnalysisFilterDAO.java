@@ -70,20 +70,20 @@ public class AnalysisFilterDAO {
 	public AvailableAttributes getAvailableAttributes(AnalysisSearchParameter searchParams) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select new org.olat.modules.quality.analysis.AvailableAttributes(");
-		sb.append("       count(collection.topicIdentity.key) > 0");
-		sb.append("     , count(collection.topicRepositoryEntry.key) > 0");
-		sb.append("     , count(collection.topicOrganisation.key) > 0");
-		sb.append("     , count(collection.topicCurriculum.key) > 0");
-		sb.append("     , count(collection.topicCurriculumElement.key) > 0");
-		sb.append("     , sum(CASE WHEN context.location is not null THEN 1 ELSE 0 END) > 0");
-		sb.append("     , count(contextToOrganisation.organisation.key) > 0");
-		sb.append("     , count(contextCurriculum.key) > 0");
-		sb.append("     , count(contextCurriculumElement.key) > 0");
-		sb.append("     , count(contextCurriculumElement.type.key) > 0");
-		sb.append("     , count(contextCurriculumOrganisation.key) > 0");
-		sb.append("     , count(contextToTaxonomyLevel.taxonomyLevel.key) > 0");
-		sb.append("     , CASE WHEN max(survey.seriesIndex) is not null THEN max(survey.seriesIndex) ELSE 0 END >= 2");
-		sb.append("     , count(collection.key) > 0");
+		sb.append("       count(collection.topicIdentity.key)");
+		sb.append("     , count(collection.topicRepositoryEntry.key)");
+		sb.append("     , count(collection.topicOrganisation.key)");
+		sb.append("     , count(collection.topicCurriculum.key)");
+		sb.append("     , count(collection.topicCurriculumElement.key)");
+		sb.append("     , CASE WHEN max(context.location) is not null THEN length(max(context.location)) ELSE 0 END");
+		sb.append("     , count(contextToOrganisation.organisation.key)");
+		sb.append("     , count(contextCurriculum.key)");
+		sb.append("     , count(contextCurriculumElement.key)");
+		sb.append("     , count(contextCurriculumElement.type.key)");
+		sb.append("     , count(contextCurriculumOrganisation.key)");
+		sb.append("     , count(contextToTaxonomyLevel.taxonomyLevel.key)");
+		sb.append("     , CASE WHEN max(survey.seriesIndex) is not null THEN max(survey.seriesIndex) ELSE 0 END");
+		sb.append("     , count(collection.key)");
 		sb.append("       )");
 		appendFrom(sb, searchParams);
 		appendWhere(sb, searchParams);
@@ -136,18 +136,36 @@ public class AnalysisFilterDAO {
 	}
 
 	List<Curriculum> loadContextCurriculums(AnalysisSearchParameter searchParams) {
+		String statement = dbInstance.isOracle()
+				? getContextCurriculumsOraQuery(searchParams)
+				: getContextCurriculumsQuery(searchParams);
+		
+		TypedQuery<Curriculum> query = dbInstance.getCurrentEntityManager()
+				.createQuery(statement, Curriculum.class);
+		appendParameters(query, searchParams);
+		return query.getResultList();
+	}
+
+	private String getContextCurriculumsQuery(AnalysisSearchParameter searchParams) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select distinct contextCurriculum");
 		appendFrom(sb, searchParams);
 		appendWhere(sb, searchParams);
 		sb.and().append("contextCurriculum.key is not null");
-		
-		TypedQuery<Curriculum> query = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Curriculum.class);
-		appendParameters(query, searchParams);
-		return query.getResultList();
+		return sb.toString();
 	}
 
+	private String getContextCurriculumsOraQuery(AnalysisSearchParameter searchParams) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select dCurriculum from curriculum as dCurriculum where dCurriculum.key in (");
+		sb.append("select distinct contextCurriculum.key");
+		appendFrom(sb, searchParams);
+		appendWhere(sb, searchParams);
+		sb.and().append("contextCurriculum.key is not null");
+		sb.append(")");
+		return sb.toString();
+	}
+	
 	List<CurriculumElement> loadContextCurriculumElements(AnalysisSearchParameter searchParams) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select distinct contextCurriculumElement");
@@ -201,16 +219,34 @@ public class AnalysisFilterDAO {
 	}
 
 	List<CurriculumElementType> loadContextCurriculumElementsTypes(AnalysisSearchParameter searchParams) {
+		String statement = dbInstance.isOracle()
+				? getContextCurriculumElementsTypesOraQuery(searchParams)
+				: getContextCurriculumElementsTypesQuery(searchParams);
+				
+		TypedQuery<CurriculumElementType> query = dbInstance.getCurrentEntityManager()
+				.createQuery(statement, CurriculumElementType.class);
+		appendParameters(query, searchParams);
+		return query.getResultList();
+	}
+
+	private String getContextCurriculumElementsTypesQuery(AnalysisSearchParameter searchParams) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select distinct contextCurriculumElement.type");
 		appendFrom(sb, searchParams);
 		appendWhere(sb, searchParams);
 		sb.and().append("contextCurriculumElement.type is not null");
-		
-		TypedQuery<CurriculumElementType> query = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), CurriculumElementType.class);
-		appendParameters(query, searchParams);
-		return query.getResultList();
+		return sb.toString();
+	}
+	
+	private String getContextCurriculumElementsTypesOraQuery(AnalysisSearchParameter searchParams) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select dType from curriculumelementtype dType where dType in (");
+		sb.append("select distinct contextCurriculumElement.type.key");
+		appendFrom(sb, searchParams);
+		appendWhere(sb, searchParams);
+		sb.and().append("contextCurriculumElement.type is not null");
+		sb.append(")");
+		return sb.toString();
 	}
 
 	List<String> loadContextTaxonomyLevelPathes(AnalysisSearchParameter searchParams) {

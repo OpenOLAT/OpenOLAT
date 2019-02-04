@@ -107,14 +107,16 @@ public class EvaluationFormReportDAO {
 			return new ArrayList<>();
 		
 		StringBuilder sb = new StringBuilder();
-		sb.append("select new org.olat.modules.forms.model.jpa.CalculatedLong(response.stringuifiedResponse, count(response))");
+		sb.append("select new org.olat.modules.forms.model.jpa.CalculatedLong(");
+		sb.append("       cast(response.stringuifiedResponse as string)");
+		sb.append("     , count(response))");
 		sb.append("  from evaluationformresponse as response");
 		sb.append(" where response.responseIdentifier=:responseIdentifier");
 		sb.append("   and response.session.key in (");
 		sb.append(filter.getSelectKeys());
 		sb.append("       )");
 		sb.append("   and (response.noResponse is false or response.noResponse is null)");
-		sb.append(" group by response.stringuifiedResponse");
+		sb.append(" group by cast(response.stringuifiedResponse as string)");
 		
 		TypedQuery<CalculatedLong> query = dbInstance.getCurrentEntityManager()
 					.createQuery(sb.toString(), CalculatedLong.class)
