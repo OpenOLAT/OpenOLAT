@@ -21,7 +21,6 @@ package org.olat.core.commons.modules.glossary;
 
 import java.util.List;
 
-import org.olat.core.commons.modules.glossary.morphService.MorphologicalService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
@@ -47,8 +46,6 @@ public class GlossaryItemEditorController extends BasicController {
 	private GlossaryDefinitionController defCtrl;
 	private VelocityContainer editorVC;
 	private GlossaryTermAndSynonymController itmCtrl;
-	private GlossaryFlexionController flexCtrl;
-	private final boolean morphServiceEnabled;
 
 	/**
 	 * 
@@ -75,14 +72,6 @@ public class GlossaryItemEditorController extends BasicController {
 		itmCtrl = new GlossaryTermAndSynonymController(ureq, control, glossaryItem, glossaryFolder, add);
 		listenTo(itmCtrl);
 		glossEditTabP.addTab(translate("term.and.synonyms.title"), itmCtrl.getInitialComponent());
-		
-		List<MorphologicalService> morphServices = GlossaryModule.getMorphologicalServices();
-		morphServiceEnabled = morphServices != null && morphServices.size() > 0;
-		if (morphServiceEnabled) {
-			flexCtrl = new GlossaryFlexionController(ureq, control, glossaryItem, glossaryFolder);
-			listenTo(flexCtrl);
-			glossEditTabP.addTab(translate("flexions.title"), flexCtrl.getInitialComponent());
-		}
 
 		defCtrl = new GlossaryDefinitionController(ureq, control, glossaryItem);
 		listenTo(defCtrl);
@@ -96,10 +85,6 @@ public class GlossaryItemEditorController extends BasicController {
 		putInitialPanel(editorVC);
 	}
 
-	/**
-	 * 
-	 * @see org.olat.core.gui.control.DefaultController#doDispose()
-	 */
 	@Override
 	protected void doDispose() {
 		//nothing to dispose, everything gets cleared because of earlier registering with "listenTo"		
@@ -107,24 +92,14 @@ public class GlossaryItemEditorController extends BasicController {
 
 	private void enableDisableTermDependentTabs(boolean enDis){
 		glossEditTabP.setEnabled(1, enDis);
-		if(morphServiceEnabled) {
-			glossEditTabP.setEnabled(2, enDis);
-		}
 		glossEditTabP.setDirty(true);
 	}
-	
-	/**
-	 * 
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
+
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//none
 	}
-	
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
+
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == itmCtrl){
