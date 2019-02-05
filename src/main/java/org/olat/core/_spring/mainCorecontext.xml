@@ -8,7 +8,7 @@
   http://www.springframework.org/schema/context 
   http://www.springframework.org/schema/context/spring-context.xsd">
   
-	<context:component-scan base-package="org.olat.core.dispatcher.mapper,org.olat.core.id.context,org.olat.core.commons.controllers.impressum,org.olat.core.helpers,org.olat.core.commons.modules.bc,org.olat.core.gui.render.velocity,org.olat.core.gui.control.generic.textmarker" />
+	<context:component-scan base-package="org.olat.core.dispatcher.mapper,org.olat.core.id.context,org.olat.core.commons.controllers.impressum,org.olat.core.helpers,org.olat.core.commons.modules,org.olat.core.gui.render.velocity,org.olat.core.gui.control.generic.textmarker" />
 
 	<bean id="coreSpringFactory" class="org.olat.core.CoreSpringFactory" />
 	
@@ -19,7 +19,6 @@
 	<import resource="classpath:/org/olat/core/commons/controllers/impressum/_spring/impressumContext.xml"/>
 	<import resource="classpath:/org/olat/core/commons/persistence/_spring/databaseCorecontext.xml"/>
 	<import resource="classpath:/org/olat/core/commons/fullWebApp/util/_spring/StickyMessageCorecontext.xml"/>
-	<import resource="classpath:/org/olat/core/commons/modules/glossary/_spring/glossaryCorecontext.xml"/>
 	<import resource="classpath:/org/olat/core/logging/_spring/loggingCorecontext.xml"/>
 	<import resource="classpath:/org/olat/core/logging/activity/_spring/activityCorecontext.xml"/>
 	
