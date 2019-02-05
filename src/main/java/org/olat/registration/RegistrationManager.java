@@ -538,6 +538,13 @@ public class RegistrationManager implements UserDataDeletable, UserDataExportabl
 		Property disclaimerProperty = propertyManager.createUserPropertyInstance(identity, "user", "dislaimer_accepted", null, 1l, null, null);
 		propertyManager.saveProperty(disclaimerProperty);
 	}
+	
+	public Date getDisclaimerConfirmationDate(Identity identity) {
+		if(identity == null) return null;
+		
+		List<Property> disclaimerProperties = propertyManager.listProperties(identity, null, null, "user", "dislaimer_accepted");
+		return disclaimerProperties.isEmpty() ? null : disclaimerProperties.get(0).getLastModified();
+	}
 
 	/**
 	 * Remove all disclaimer confirmations. This means that every user on the

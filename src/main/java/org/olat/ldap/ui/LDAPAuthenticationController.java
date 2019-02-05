@@ -227,7 +227,7 @@ public class LDAPAuthenticationController extends AuthenticationController imple
 				// accept disclaimer first
 				
 				removeAsListenerAndDispose(disclaimerCtr);
-				disclaimerCtr = new DisclaimerController(ureq, getWindowControl());
+				disclaimerCtr = new DisclaimerController(ureq, getWindowControl(), authenticatedIdentity, false);
 				listenTo(disclaimerCtr);
 				
 				removeAsListenerAndDispose(cmc);

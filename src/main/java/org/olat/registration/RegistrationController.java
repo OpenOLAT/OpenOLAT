@@ -308,7 +308,7 @@ public class RegistrationController extends BasicController implements Activatea
 			myContent.contextPut("text", translate("step4.reg.text"));
 			
 			removeAsListenerAndDispose(disclaimerController);
-			disclaimerController = new DisclaimerController(ureq, getWindowControl());
+			disclaimerController = new DisclaimerController(ureq, getWindowControl(), null, false);
 			listenTo(disclaimerController);
 			
 			regarea.setContent(disclaimerController.getInitialComponent());

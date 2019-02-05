@@ -175,9 +175,6 @@ public class OLATAuthenticationController extends AuthenticationController imple
 		cmc.activate();
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == loginForm && event == Event.DONE_EVENT) {
@@ -218,7 +215,7 @@ public class OLATAuthenticationController extends AuthenticationController imple
 				// accept disclaimer first
 				
 				removeAsListenerAndDispose(disclaimerCtr);
-				disclaimerCtr = new DisclaimerController(ureq, getWindowControl());
+				disclaimerCtr = new DisclaimerController(ureq, getWindowControl(), authenticatedIdentity, false);
 				listenTo(disclaimerCtr);
 				
 				removeAsListenerAndDispose(cmc);

@@ -270,7 +270,7 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 	@Test
 	public void loadIdentityShortByKey() {
 		//create a user it
-		String idName = "find-me-short-1-" + UUID.randomUUID().toString();
+		String idName = "find-me-short-1-" + UUID.randomUUID();
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser(idName);
 		dbInstance.commitAndCloseSession();
 		
@@ -282,19 +282,19 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		Assert.assertEquals(id.getUser().getEmail(), foundId.getEmail());
 		Assert.assertEquals(id.getUser().getFirstName(), foundId.getFirstName());
 		Assert.assertEquals(id.getUser().getLastName(), foundId.getLastName());
-		Assert.assertNotNull(foundId.getLastLogin());
+		Assert.assertNull(foundId.getLastLogin());// no login, no last login date
 		Assert.assertEquals(id.getUser().getKey(), foundId.getUserKey());
 		Assert.assertTrue(foundId.getStatus() < Identity.STATUS_VISIBLE_LIMIT);
 	}
 
 	@Test
 	public void testLoadIdentityByKeys() {
-		//create a security group with 2 identites
-		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser( "load-1-sec-" + UUID.randomUUID().toString());
-		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser( "load-2-sec-" + UUID.randomUUID().toString());
+		//create a security group with 2 identities
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser( "load-1-sec-");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser( "load-2-sec-");
 		dbInstance.commitAndCloseSession();
 		
-		List<Long> keys = new ArrayList<Long>(2);
+		List<Long> keys = new ArrayList<>(2);
 		keys.add(id1.getKey());
 		keys.add(id2.getKey());
 		List<Identity> identities = securityManager.loadIdentityByKeys(keys);

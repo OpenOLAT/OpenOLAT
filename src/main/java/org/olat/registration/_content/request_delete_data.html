@@ -1,0 +1,11 @@
+<div class="o_info">
+	$r.translate("request.data.deletion.text")
+	$r.render("request.data.deletion.confirm")
+	#if($f.hasError("request.data.deletion.confirm"))
+	<div class="">$r.render("request.data.deletion.confirm_ERROR")</div>
+	#end
+</div>
+<div class="o_button_group">
+	$r.render("no")
+	$r.render("yes")
+</div>

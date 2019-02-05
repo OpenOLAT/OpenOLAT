@@ -228,7 +228,7 @@ public class OAuthRegistrationController extends FormBasicController {
 		
 		//open disclaimer
 		removeAsListenerAndDispose(disclaimerController);
-		disclaimerController = new DisclaimerController(ureq, getWindowControl());
+		disclaimerController = new DisclaimerController(ureq, getWindowControl(), authenticatedIdentity, false);
 		listenTo(disclaimerController);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), disclaimerController.getInitialComponent(),

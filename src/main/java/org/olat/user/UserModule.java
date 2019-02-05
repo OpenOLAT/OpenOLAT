@@ -67,6 +67,9 @@ public class UserModule extends AbstractSpringModule {
 	
 	private static final String USER_EMAIL_MANDATORY = "userEmailMandatory";
 	private static final String USER_EMAIL_UNIQUE = "userEmailUnique";
+	private static final String ALLOW_REQUEST_DELETE_ACCOUNT = "allow.request.delete.account";
+	private static final String ALLOW_REQUEST_DELETE_ACCOUNT_DISCLAIMER = "allow.request.delete.account.disclaimer";
+	private static final String MAIL_REQUEST_DELETE_ACCOUNT = "request.delete.account.mail";
 	
 	@Autowired @Qualifier("loginBlacklist")
 	private ArrayList<String> loginBlacklist;
@@ -76,6 +79,13 @@ public class UserModule extends AbstractSpringModule {
 	private boolean pwdchangeallowed;
 	@Value("${password.change.allowed.without.authentications:false}")
 	private boolean pwdChangeWithoutAuthenticationAllowed;
+	
+	@Value("${allow.request.delete.account:false}")
+	private boolean allowRequestToDeleteAccount;
+	@Value("${allow.request.delete.account.disclaimer:false}")
+	private boolean allowRequestToDeleteAccountDisclaimer;
+	@Value("${request.delete.account.mail}")
+	private String mailToRequestAccountDeletion;
 
 	private String adminUserName = "administrator";
 	@Value("${user.logoByProfile:disabled}")
@@ -108,17 +118,8 @@ public class UserModule extends AbstractSpringModule {
 		}
 		
 		log.info("Successfully added " + count + " entries to login blacklist.");
-		
-		String userEmailOptionalValue = getStringPropertyValue(USER_EMAIL_MANDATORY, false);
-		if(StringHelper.containsNonWhitespace(userEmailOptionalValue)) {
-			isEmailMandatory = "true".equalsIgnoreCase(userEmailOptionalValue);
-		}
-		
-		String userEmailUniquenessOptionalValue = getStringPropertyValue(USER_EMAIL_UNIQUE, false);
-		if(StringHelper.containsNonWhitespace(userEmailUniquenessOptionalValue)) {
-			isEmailUnique = "true".equalsIgnoreCase(userEmailUniquenessOptionalValue);
-		}
-		
+		updateProperties();
+
 		// Check if user manager is configured properly and has user property
 		// handlers for the mandatory user properties used in OLAT
 		checkMandatoryUserProperty(UserConstants.FIRSTNAME);
@@ -142,7 +143,31 @@ public class UserModule extends AbstractSpringModule {
 
 	@Override
 	protected void initFromChangedProperties() {
-		//
+		updateProperties();
+	}
+	
+	private void updateProperties() {
+		String userEmailOptionalValue = getStringPropertyValue(USER_EMAIL_MANDATORY, false);
+		if(StringHelper.containsNonWhitespace(userEmailOptionalValue)) {
+			isEmailMandatory = "true".equalsIgnoreCase(userEmailOptionalValue);
+		}
+		String userEmailUniquenessOptionalValue = getStringPropertyValue(USER_EMAIL_UNIQUE, false);
+		if(StringHelper.containsNonWhitespace(userEmailUniquenessOptionalValue)) {
+			isEmailUnique = "true".equalsIgnoreCase(userEmailUniquenessOptionalValue);
+		}
+		
+		String allowRequestDeleteObj = getStringPropertyValue(ALLOW_REQUEST_DELETE_ACCOUNT, false);
+		if(StringHelper.containsNonWhitespace(allowRequestDeleteObj)) {
+			allowRequestToDeleteAccount = "true".equalsIgnoreCase(allowRequestDeleteObj);
+		}
+		String allowRequestDeleteDisclaimerObj = getStringPropertyValue(ALLOW_REQUEST_DELETE_ACCOUNT_DISCLAIMER, false);
+		if(StringHelper.containsNonWhitespace(allowRequestDeleteDisclaimerObj)) {
+			allowRequestToDeleteAccountDisclaimer = "true".equalsIgnoreCase(allowRequestDeleteDisclaimerObj);
+		}
+		String mailRequestDeleteObj = getStringPropertyValue(MAIL_REQUEST_DELETE_ACCOUNT, false);
+		if(StringHelper.containsNonWhitespace(mailRequestDeleteObj)) {
+			mailToRequestAccountDeletion = mailRequestDeleteObj;
+		}
 	}
 
 	private void checkMandatoryUserProperty(String userPropertyIdentifyer) {
@@ -262,4 +287,32 @@ public class UserModule extends AbstractSpringModule {
 		setStringProperty(USER_EMAIL_UNIQUE, isEmailUniqueStr, true);
 	}
 
+	public boolean isAllowRequestToDeleteAccount() {
+		return allowRequestToDeleteAccount;
+	}
+
+	public void setAllowRequestToDeleteAccount(boolean allowRequestToDeleteAccount) {
+		this.allowRequestToDeleteAccount = allowRequestToDeleteAccount;
+		String allowed = allowRequestToDeleteAccount ? "true" : "false";
+		setStringProperty(ALLOW_REQUEST_DELETE_ACCOUNT, allowed, true);
+	}
+
+	public boolean isAllowRequestToDeleteAccountDisclaimer() {
+		return allowRequestToDeleteAccountDisclaimer;
+	}
+
+	public void setAllowRequestToDeleteAccountDisclaimer(boolean allowRequestToDeleteAccountDisclaimer) {
+		this.allowRequestToDeleteAccountDisclaimer = allowRequestToDeleteAccountDisclaimer;
+		String allowed = allowRequestToDeleteAccountDisclaimer ? "true" : "false";
+		setStringProperty(ALLOW_REQUEST_DELETE_ACCOUNT_DISCLAIMER, allowed, true);
+	}
+
+	public String getMailToRequestAccountDeletion() {
+		return mailToRequestAccountDeletion;
+	}
+
+	public void setMailToRequestAccountDeletion(String mailToRequestAccountDeletion) {
+		this.mailToRequestAccountDeletion = mailToRequestAccountDeletion;
+		setStringProperty(MAIL_REQUEST_DELETE_ACCOUNT, mailToRequestAccountDeletion, true);
+	}
 }

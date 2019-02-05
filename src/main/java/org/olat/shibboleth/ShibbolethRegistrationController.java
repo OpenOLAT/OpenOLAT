@@ -194,7 +194,7 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 			setRegistrationForm(ureq, wControl, null);
 		}
 
-		dclController = new DisclaimerController(ureq, getWindowControl());
+		dclController = new DisclaimerController(ureq, getWindowControl(), null, false);
 		dclController.addControllerListener(this);
 		mainContainer.put("dclComp", dclController.getInitialComponent());
 
@@ -368,15 +368,10 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 	private void doLogin(Identity identity, UserRequest ureq) {
 		int loginStatus = AuthHelper.doLogin(identity, ShibbolethDispatcher.PROVIDER_SHIB, ureq);
 		if (loginStatus != AuthHelper.LOGIN_OK) {
-			//REVIEW:2010-01-11:revisited:pb: do not redirect if already MediaResource is set before
-			//ureq.getDispatchResult().setResultingMediaResource(resultingMediaResource);
-			//instead set the media resource accordingly
-			//pb -> provide a DispatcherAction.getDefaultDispatcherRedirectMediaresource();
-			//to be used here. (and some more places like CatalogController.
 			DispatcherModule.redirectToDefaultDispatcher(ureq.getHttpResp()); // error, redirect to login screen
 			return;
 		}
-		// successfull login
+		// successful login
 		ureq.getUserSession().getIdentityEnvironment().addAttributes(
 				shibbolethModule.getAttributeTranslator().translateAttributesMap(shibbolethAttributes.toMap()));
 	}

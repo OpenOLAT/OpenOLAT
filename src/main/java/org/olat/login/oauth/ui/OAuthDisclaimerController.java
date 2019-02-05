@@ -80,7 +80,7 @@ public class OAuthDisclaimerController extends FormBasicController implements Ac
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		disclaimerController = new DisclaimerController(ureq, getWindowControl());
+		disclaimerController = new DisclaimerController(ureq, getWindowControl(), null, false);
 		listenTo(disclaimerController);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), disclaimerController.getInitialComponent(),

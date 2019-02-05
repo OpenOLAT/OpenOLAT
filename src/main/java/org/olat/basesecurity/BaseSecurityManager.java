@@ -359,7 +359,6 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 		IdentityImpl iimpl = new IdentityImpl();
 		iimpl.setUser(user);
 		iimpl.setName(username);
-		iimpl.setLastLogin(new Date());
 		iimpl.setExternalId(externalId);
 		iimpl.setStatus(Identity.STATUS_ACTIV);
 		((UserImpl)user).setIdentity(iimpl);

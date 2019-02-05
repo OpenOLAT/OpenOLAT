@@ -1,0 +1,9 @@
+<div class="o_info">
+	#if($r.isNotEmpty($title))
+	<h5>$title</h5>
+	#end
+	<p>$text</p>
+	<div class="o_button_group">
+		$r.render("request.delete.account")
+	</div>
+</div>

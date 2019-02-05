@@ -331,6 +331,26 @@
 		<property name="order" value="7411" />
 	</bean>
 	
+	<!-- User request to delete account -->
+	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+		<property name="order" value="9014" />
+		<property name="actionController">	
+			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+				<property name="className" value="org.olat.user.ui.admin.UserAccountDeletionSettingsController"/>
+			</bean>
+		</property>
+		<property name="navigationKey" value="requestdeleteaccount" />
+		<property name="parentTreeNodeIdentifier" value="modulesParent" /> 
+		<property name="i18nActionKey" value="admin.menu.title.request"/>
+		<property name="i18nDescriptionKey" value="admin.menu.title.request.alt"/>
+		<property name="translationPackage" value="org.olat.user.ui.admin"/>
+		<property name="extensionPoints">
+			<list>	
+				<value>org.olat.admin.SystemAdminMainController</value>		
+			</list>
+		</property>
+	</bean>
+	
 	<!-- Delete old user data export job -->
 	<bean id="deleteUserDataExportTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
 		<property name="jobDetail" ref="deleteUserDataExportJob.${cluster.singleton.services}" />

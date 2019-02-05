@@ -202,7 +202,7 @@ public class UserSettingsController extends BasicController implements Activatea
 		if(disclaimerCtrl == null) {
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Disclaimer", 0l);
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-			disclaimerCtrl = new DisclaimerController(ureq, bwControl, true);
+			disclaimerCtrl = new DisclaimerController(ureq, bwControl);
 			listenTo(disclaimerCtrl);
 		}
 		mainVC.put("segmentCmp", disclaimerCtrl.getInitialComponent());
