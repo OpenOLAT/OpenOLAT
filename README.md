@@ -239,6 +239,10 @@ The process need a lot of memory, give it 4 Gig.
 
 ### Automated tests
 
+Running tests locally:
+
+ `docker run -e "POSTGRES_USER=olat" -e "POSTGRES_PASSWORD=olat" -e "POSTGRES_DB=olattest" -e "TZ=Europe/Zurich" -p 5432:5432 circleci/postgres:9.6`
+
 #### Preconditions
 
 * Make sure the following ports are not in use (Selenium, Tomcat )

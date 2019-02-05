@@ -859,6 +859,27 @@
 		</profile>
 	
 		<profile>
+  <id>only-eclipse</id>
+  <activation>
+    <property>
+      <name>m2e.version</name>
+    </property>
+  </activation>
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.eclipse.m2e</groupId>
+          <artifactId>lifecycle-mapping</artifactId>
+          <version>1.0.0</version>
+          <configuration>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+</profile>
+		<profile>
 			<id>postgresqlunittests</id>
 			<activation>
 				<property>
