@@ -30,6 +30,7 @@ import org.junit.Test;
 import org.olat.login.oauth.model.OAuthUser;
 import org.olat.login.oauth.spi.ADFSApi;
 import org.olat.login.oauth.spi.FacebookProvider;
+import org.olat.login.oauth.spi.Google2Api;
 import org.olat.login.oauth.spi.Google2Provider;
 import org.olat.login.oauth.spi.JSONWebToken;
 import org.olat.login.oauth.spi.LinkedInProvider;
@@ -87,6 +88,16 @@ public class OAuthDispatcherTest {
 		Assert.assertEquals("John", infos.getFirstName());
 		Assert.assertEquals("Smith", infos.getLastName());
 		Assert.assertEquals("fr", infos.getLang()); 
+	}
+	
+	@Test
+	public void parseToken_google() throws IOException {
+		URL jsonUrl = OAuthDispatcherTest.class.getResource("token_google.json");
+		String body = IOUtils.toString(jsonUrl, "UTF-8");
+		
+		Token token = new Google2Api().getAccessTokenExtractor().extract(body);
+		Assert.assertNotNull(token);
+		Assert.assertEquals("ya29.GlunBoqIMXtDT81i_QwNg75qTJDvprP96EWP1wZx-DGu47o5OGXPIEkcbJWi-eDN8gfc0B1mVSVkZoKuwaHu6YBZgNuCRDp73unPOCAb4Zn7fVQc5mbMqWAIpLO1", token.getToken());
 	}
 	
 	@Test
