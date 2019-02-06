@@ -37,6 +37,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
 import org.cyberneko.html.parsers.SAXParser;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.pdf.PdfService;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.dispatcher.mapper.MapperService;
@@ -67,6 +68,7 @@ import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.model.ExtendedMediaRenderingHints;
 import org.olat.modules.portfolio.ui.BinderOnePageController;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -93,26 +95,28 @@ public class ExportBinderAsPDFResource implements MediaResource {
 	private final Page selectedPage;
 	private final BinderRef binderRef;
 	private final Translator translator;
-	private final MapperService mapperService;
 	
-	private final PortfolioService portfolioService;
+	@Autowired
+	private PdfService pdfService;
+	@Autowired
+	private MapperService mapperService;
+	@Autowired
+	private PortfolioService portfolioService;
 	
 	public ExportBinderAsPDFResource(BinderRef binderRef, UserRequest ureq, Locale locale) {
+		CoreSpringFactory.autowireObject(this);
+		translator = Util.createPackageTranslator(ExportBinderAsPDFResource.class, locale);	
 		this.ureq = new SyntheticUserRequest(ureq.getIdentity(), locale, ureq.getUserSession());
 		this.binderRef = binderRef;
 		selectedPage = null;
-		translator = Util.createPackageTranslator(ExportBinderAsPDFResource.class, locale);	
-		portfolioService = CoreSpringFactory.getImpl(PortfolioService.class);
-		mapperService = CoreSpringFactory.getImpl(MapperService.class);
 	}
 	
 	public ExportBinderAsPDFResource(Page selectedPage, UserRequest ureq, Locale locale) {
+		CoreSpringFactory.autowireObject(this);
+		translator = Util.createPackageTranslator(ExportBinderAsPDFResource.class, locale);	
 		this.ureq = new SyntheticUserRequest(ureq.getIdentity(), locale, ureq.getUserSession());
 		binderRef = null;
 		this.selectedPage = selectedPage;
-		translator = Util.createPackageTranslator(ExportBinderAsPDFResource.class, locale);	
-		portfolioService = CoreSpringFactory.getImpl(PortfolioService.class);
-		mapperService = CoreSpringFactory.getImpl(MapperService.class);
 	}
 	
 	@Override
@@ -166,7 +170,6 @@ public class ExportBinderAsPDFResource implements MediaResource {
 		}
 
 		htmlDir = prepareHtml();
-		pdfFile = renderPdf(htmlDir);
 
 		String label;
 		if(selectedPage != null) {
@@ -181,6 +184,12 @@ public class ExportBinderAsPDFResource implements MediaResource {
 		String file = secureLabel + ".pdf";
 		hres.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + StringHelper.urlEncodeUTF8(file));			
 		hres.setHeader("Content-Description", StringHelper.urlEncodeUTF8(label));
+		
+		try(OutputStream out = hres.getOutputStream()) {
+			pdfService.convert(htmlDir, "index.html", out);
+		} catch(IOException e) {
+			log.error("", e);
+		}
 	}
 	
 	private File prepareHtml() {
@@ -207,13 +216,6 @@ public class ExportBinderAsPDFResource implements MediaResource {
 		}
 		printCtrl.dispose();
 		return outputDir;
-	}
-	
-	private File renderPdf(File outputDir) {
-		File indexHtml = new File(outputDir, "index.html");
-		BinderPhantomWorker worker = new BinderPhantomWorker();
-		File filePdf = worker.fill(indexHtml, outputDir, "portfolio.pdf");
-		return filePdf;
 	}
 
 	private String createResultHTML(Component content) {

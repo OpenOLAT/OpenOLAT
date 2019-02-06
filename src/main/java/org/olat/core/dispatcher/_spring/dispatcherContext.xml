@@ -79,6 +79,9 @@
 				<entry key="/csp/">
 					<ref bean="cspDispatcher" />
 				</entry>
+				<entry key="/pdfd/">
+					<ref bean="pdfDeliveryBean" />
+				</entry>
 			</map>
 		</property>
 	</bean>

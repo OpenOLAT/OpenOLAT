@@ -169,5 +169,15 @@
 			</memory>
 			<expiration max-idle="900000" interval="15000" />
 		</local-cache>
+		
+		<local-cache name="PdfService@delivery" simple-cache="true" statistics="true" statistics-available="true">
+			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
+			<transaction mode="NONE" auto-commit="true" />
+			<memory>
+				<object size="50000" strategy="REMOVE" />
+			</memory>
+			<expiration max-idle="900000" interval="15000" />
+		</local-cache>
+		
 	</cache-container>
 </infinispan>

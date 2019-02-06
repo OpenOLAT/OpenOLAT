@@ -29,6 +29,7 @@ import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.ui.UserCommentsController;
+import org.olat.core.commons.services.pdf.PdfModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.Dropdown;
@@ -139,6 +140,8 @@ public class TableOfContentController extends BasicController implements TooledC
 	private final BinderSecurityCallback secCallback;
 	
 	@Autowired
+	private PdfModule pdfModule;
+	@Autowired
 	private UserManager userManager;
 	@Autowired
 	private PortfolioService portfolioService;
@@ -224,6 +227,12 @@ public class TableOfContentController extends BasicController implements TooledC
 			exportBinderAsCpLink = LinkFactory.createToolLink("export.binder.cp", translate("export.binder.cp"), this);
 			exportBinderAsCpLink.setIconLeftCSS("o_icon o_icon_download o_icon-fw ");
 			exportTools.addComponent(exportBinderAsCpLink);
+			
+			if(pdfModule.isEnabled()) {
+				exportBinderAsPdfLink = LinkFactory.createToolLink("export.binder.pdf", translate("export.binder.pdf"), this);
+				exportBinderAsPdfLink.setIconLeftCSS("o_icon o_filetype_pdf o_icon-fw ");
+				exportTools.addComponent(exportBinderAsPdfLink);
+			}
 			
 			printLink = LinkFactory.createToolLink("export.binder.onepage", translate("export.binder.onepage"), this);
 			printLink.setIconLeftCSS("o_icon o_icon_print o_icon-fw ");

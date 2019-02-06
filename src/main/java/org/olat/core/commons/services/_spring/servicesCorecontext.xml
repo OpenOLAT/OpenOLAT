@@ -78,6 +78,27 @@
 		</property>
 	</bean>
 	
+	<!-- Pdf service -->
+	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+		<property name="order" value="8280" />
+		<property name="actionController">	
+			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+				<property name="className" value="org.olat.core.commons.services.pdf.ui.PdfServiceAdminController"/>
+			</bean>
+		</property>
+		<property name="navigationKey" value="pdfservice" />
+		<property name="parentTreeNodeIdentifier" value="externalToolsParent" /> 
+		<property name="i18nActionKey" value="admin.menu.title"/>
+		<property name="i18nDescriptionKey" value="admin.menu.title.alt"/>
+		<property name="translationPackage" value="org.olat.core.commons.services.pdf.ui"/>
+		<property name="extensionPoints">
+			<list>	
+				<value>org.olat.admin.SystemAdminMainController</value>		
+			</list>
+		</property>
+	</bean>
+	
+	
 	<!-- Cleaning job for CSP reports -->
 	<bean id="cspCleanupJob" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
 		<property name="jobDetail">

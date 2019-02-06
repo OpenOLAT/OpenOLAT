@@ -27,6 +27,7 @@ import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.ui.UserCommentsAndRatingsController;
+import org.olat.core.commons.services.pdf.PdfModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.Dropdown;
@@ -146,6 +147,8 @@ public class PageRunController extends BasicController implements TooledControll
 	private final BinderSecurityCallback secCallback;
 	
 	@Autowired
+	private PdfModule pdfModule;
+	@Autowired
 	private CoordinatorManager coordinator;
 	@Autowired
 	private PortfolioService portfolioService;
@@ -224,6 +227,12 @@ public class PageRunController extends BasicController implements TooledControll
 			exportTools.setElementCssClass("o_sel_pf_export_tools");
 			exportTools.setIconCSS("o_icon o_icon_download");
 			stackPanel.addTool(exportTools, Align.left);
+			
+			if(pdfModule.isEnabled()) {
+				exportPageAsPdfLink = LinkFactory.createToolLink("export.page.pdf", translate("export.page.pdf"), this);
+				exportPageAsPdfLink.setIconLeftCSS("o_icon o_filetype_pdf");
+				exportTools.addComponent(exportPageAsPdfLink);
+			}
 			
 			printLink = LinkFactory.createToolLink("export.page.onepage", translate("export.page.onepage"), this);
 			printLink.setIconLeftCSS("o_icon o_icon_print");
