@@ -41,6 +41,8 @@ public class ResponsiveBarChartComponent extends DefaultD3Component {
 	private String defaultBarClass = "bar_default";
 	private String yLegend;
 	private String xLegend;
+	private Double yMin;
+	private Double yMax;
 	
 	public ResponsiveBarChartComponent(String name) {
 		super(name);
@@ -74,6 +76,22 @@ public class ResponsiveBarChartComponent extends DefaultD3Component {
 		return seriesList;
 	}
 	
+	public Double getYMin() {
+		return yMin;
+	}
+
+	public void setYMin(Double yMin) {
+		this.yMin = yMin;
+	}
+
+	public Double getYMax() {
+		return yMax;
+	}
+
+	public void setYMax(Double yMax) {
+		this.yMax = yMax;
+	}
+
 	public void addSeries(BarSeries... series) {
 		if(series != null && series.length > 0 && series[0] != null) {
 			for(BarSeries s:series) {

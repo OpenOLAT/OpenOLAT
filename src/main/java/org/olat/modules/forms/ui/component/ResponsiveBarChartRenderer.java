@@ -52,7 +52,8 @@ public class ResponsiveBarChartRenderer extends DefaultComponentRenderer {
 
 		Stringuified infos = BarSeries.getDatasAndColors(seriesList, chartCmp.getDefaultBarClass());
 
-		String sum = getSum(seriesList);
+		String yMax = getYMax(chartCmp);
+		String yMin = getYMin(chartCmp);
 		String cmpId = chartCmp.getDispatchID();
 		
 		sb.append("<div id='d").append(cmpId).append("d3holder' class='d3chart'></div>")
@@ -71,11 +72,15 @@ public class ResponsiveBarChartRenderer extends DefaultComponentRenderer {
 		  .append("    .domain(data.map(function(d) { return d[0]; }))")
 		  .append("    .rangeRound([0, width]).padding(.1);")
 		  .append("")
-		  .append("var y = d3.scaleLinear()")
-		  .append("    .domain([0, d3.max(data, function(d) { return ").append(sum).append("; })])")
-		  .append("    .range([height, 0]);")
 		  .append("var xAxis = d3.axisBottom(x);")
-		  .append("var yAxis = d3.axisLeft(y);");
+		  .append("var y = d3.scaleLinear()")
+		  .append("    .domain([0, d3.max(data, function(d) { return ").append(yMax).append("; })])")
+		  .append("    .range([height, 0]);")
+		  .append("var yAxisScale = d3.scaleLinear()")
+		  .append("    .domain([d3.max(data, function(d) { return ").append(yMax).append("; }), d3.max(data, function(d) { return ").append(yMin).append("; })])")
+		  .append("    .range([0, height]);")
+		  .append("var yAxis = d3.axisLeft(yAxisScale);");
+
 
 		sb.append("var svg = d3.select('#d").append(cmpId).append("d3holder')");
 		sb.append("    .append('div')");
@@ -87,10 +92,12 @@ public class ResponsiveBarChartRenderer extends DefaultComponentRenderer {
 		sb.append("    .append('g')");
 		sb.append("    .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');");
 		
+		appendSeries(sb, infos.getColors(), chartCmp);
+		
 		//append x axis and legend
 		sb.append("svg.append('g')")
 		  .append("   .attr('class', 'x axis')")
-		  .append("   .attr('transform', 'translate(0,' + height + ')')")
+		  .append("   .attr('transform', 'translate(0,' + yAxisScale(0) + ')')")
 		  .append("   .call(xAxis)");
 		if(StringHelper.containsNonWhitespace(xLegend)) {
 			sb.append("  .append('text')")
@@ -119,8 +126,6 @@ public class ResponsiveBarChartRenderer extends DefaultComponentRenderer {
 			  .append("");
 		}
 		sb.append(";");
-		
-		appendSeries(sb, infos.getColors(), chartCmp);
 		
 		sb.append("});")
 		  .append("/* ]]> */")
@@ -153,10 +158,18 @@ public class ResponsiveBarChartRenderer extends DefaultComponentRenderer {
 
 			sb.append("    .attr('fill', '").append(color).append("')")
 			  .append("    .attr('x', function(d) { return x(d[0]); })")
-			  .append("    .attr('y', function(d) { return y(d[").append((i+1)).append("]) ").append(correction).append(" ; })")
+			  .append("    .attr('y', function(d) { return yAxisScale(Math.max(0, d[").append((i+1)).append("])) ").append(correction).append(" ; })")
 			  .append("    .attr('width', x.bandwidth())")
-			  .append("    .attr('height', function(d) { return height - y(d[").append((i+1)).append("]); });");
+			  .append("    .attr('height', function(d) { return height - yAxisScale(d[").append((i+1)).append("]); });");
 		}
+	}
+	
+	private String getYMax(ResponsiveBarChartComponent chartCmp) {
+		Double yMax = chartCmp.getYMax();
+		if (yMax != null) {
+			return Double.toString(yMax.doubleValue());
+		}
+		return getSum(chartCmp.getSeries());
 	}
 	
 	private String getSum(List<BarSeries> seriesList) {
@@ -166,6 +179,14 @@ public class ResponsiveBarChartRenderer extends DefaultComponentRenderer {
 			sum.append(" d[").append((i+1)).append("]");
 		}
 		return sum.toString();
+	}
+	
+	private String getYMin(ResponsiveBarChartComponent chartCmp) {
+		Double yMin = chartCmp.getYMin();
+		if (yMin != null) {
+			return Double.toString(yMin.doubleValue());
+		}
+		return "0";
 	}
 	
 	private String getCorrection(int i) {

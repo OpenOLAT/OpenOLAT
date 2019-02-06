@@ -83,16 +83,7 @@ class AnalysisUIFactory {
 	}
 	
 	static String formatSliderLabel(Slider slider) {
-		boolean hasStartLabel = StringHelper.containsNonWhitespace(slider.getStartLabel());
-		boolean hasEndLabel = StringHelper.containsNonWhitespace(slider.getEndLabel());
-		if (hasStartLabel && hasEndLabel) {
-			return slider.getStartLabel() + " ... " + slider.getEndLabel();
-		} else if (hasStartLabel) {
-			return slider.getStartLabel();
-		} else if (hasEndLabel) {
-			return slider.getEndLabel();
-		}
-		return null;
+		return EvaluationFormFormatter.formatSliderLabel(slider);
 	}
 
 	static String getKey(GroupBy groupBy) {

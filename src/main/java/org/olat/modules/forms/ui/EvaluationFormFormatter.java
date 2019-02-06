@@ -26,6 +26,8 @@ import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
+import org.olat.modules.forms.model.xml.Slider;
 
 /**
  * 
@@ -87,5 +89,18 @@ public class EvaluationFormFormatter {
 				.append(" - ")
 				.append(formatter.formatDate(lastSubmission))
 				.toString();
+	}
+	
+	public static String formatSliderLabel(Slider slider) {
+		boolean hasStartLabel = StringHelper.containsNonWhitespace(slider.getStartLabel());
+		boolean hasEndLabel = StringHelper.containsNonWhitespace(slider.getEndLabel());
+		if (hasStartLabel && hasEndLabel) {
+			return slider.getStartLabel() + " ... " + slider.getEndLabel();
+		} else if (hasStartLabel) {
+			return slider.getStartLabel();
+		} else if (hasEndLabel) {
+			return slider.getEndLabel();
+		}
+		return null;
 	}
 }

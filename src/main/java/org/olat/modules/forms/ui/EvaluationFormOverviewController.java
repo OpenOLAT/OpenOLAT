@@ -38,7 +38,7 @@ import org.olat.modules.forms.Figures;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.handler.EvaluationFormReportHandler;
 import org.olat.modules.forms.handler.EvaluationFormReportProvider;
-import org.olat.modules.forms.handler.RubricBarChartsHandler;
+import org.olat.modules.forms.handler.RubricSliderAvgBarChartHandler;
 import org.olat.modules.forms.model.xml.AbstractElement;
 import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.model.xml.Rubric;
@@ -201,12 +201,12 @@ public class EvaluationFormOverviewController extends BasicController {
 	
 	private static final class OverviewProvider implements EvaluationFormReportProvider {
 		
-		RubricBarChartsHandler rubricBarChartsHandler = new RubricBarChartsHandler(true);
+		RubricSliderAvgBarChartHandler rubricHandler = new RubricSliderAvgBarChartHandler();
 
 		@Override
 		public EvaluationFormReportHandler getReportHandler(PageElement element) {
 			if (Rubric.TYPE.equals(element.getType())) {
-				return rubricBarChartsHandler;
+				return rubricHandler;
 			}
 			return null;
 		}

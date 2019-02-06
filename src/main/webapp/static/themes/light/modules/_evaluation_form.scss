@@ -181,6 +181,10 @@
 
 .d3chart {
 	.o_eva_bar { fill: $o-d3chart-default; }
+	.o_rubric_sufficient { fill: $o-evaluation-sufficient-color; }
+	.o_rubric_neutral { fill: $o-evaluation-neutral-color; }
+	.o_rubric_insufficient { fill: $o-evaluation-insufficient-color; }
+	.o_rubric_unrated { fill: $o-d3chart-default; }
 }
 
 .o_qual_hm_legend {
