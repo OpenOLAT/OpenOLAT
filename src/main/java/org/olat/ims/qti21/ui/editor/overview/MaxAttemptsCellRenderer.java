@@ -45,8 +45,9 @@ public class MaxAttemptsCellRenderer extends OptionCellRenderer {
 			OptionEnum option = attempts.getOption();
 			if(option == OptionEnum.yes) {
 				target.append(attempts.getMaxAttempts());
-			} else {
-				super.render(renderer, target, option, row, source, ubu, trans);
+			} else if(option == OptionEnum.inherited && attempts.getMaxAttempts() != null && attempts.getMaxAttempts().intValue() > 0) {
+				String val = attempts.getMaxAttempts().toString();
+				target.append(translator.translate("configuration.option.inherited.val", new String[] { val }));
 			}
 		}
 	}
