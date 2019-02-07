@@ -398,18 +398,22 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 		List<AssessmentItemListEntry> reorderItemSessions = new ArrayList<>(assessedIdentities.size());
 		for(Identity assessedIdentity:assessedIdentities) {
 			AssessmentTestSession testSession = model.getLastSessions().get(assessedIdentity);
-			if(testSession != null) {
-				AssessmentItemSession itemSession = testToItemSession.get(testSession);
-	
-				String title;
-				if(anonymous) {
-					title = translate("number.assessed.identity", new String[] { Integer.toString(count++)} );
-				} else {
-					title = userManager.getUserDisplayName(assessedIdentity);
-				}
-				AssessmentItemListEntry entry = new AssessmentItemListEntry(assessedIdentity, testSession, itemSession, itemRef, title, "o_icon_user");
-				if(filter.test(entry)) {
-					reorderItemSessions.add(entry);
+			TestSessionState testSessionState = model.getTestSessionStates().get(assessedIdentity);
+			if(testSession != null && testSessionState != null) {
+				List<TestPlanNode> nodes = testSessionState.getTestPlan().getNodes(itemRef.getIdentifier());
+				if(nodes != null) {
+					AssessmentItemSession itemSession = testToItemSession.get(testSession);
+		
+					String title;
+					if(anonymous) {
+						title = translate("number.assessed.identity", new String[] { Integer.toString(count++)} );
+					} else {
+						title = userManager.getUserDisplayName(assessedIdentity);
+					}
+					AssessmentItemListEntry entry = new AssessmentItemListEntry(assessedIdentity, testSession, itemSession, itemRef, title, "o_icon_user");
+					if(filter.test(entry)) {
+						reorderItemSessions.add(entry);
+					}
 				}
 			}
 		}
