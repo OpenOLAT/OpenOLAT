@@ -25,6 +25,10 @@
 
 package org.olat.gui.demo.guidemo;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.olat.admin.user.UserSearchController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -36,6 +40,10 @@ import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.text.TextComponent;
 import org.olat.core.gui.components.text.TextFactory;
+import org.olat.core.gui.components.updown.UpDown;
+import org.olat.core.gui.components.updown.UpDownEvent;
+import org.olat.core.gui.components.updown.UpDownEvent.Direction;
+import org.olat.core.gui.components.updown.UpDownFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -63,12 +71,16 @@ public class GuiDemoLinksController extends BasicController {
 	private Link iconButton;
 	private Link buttonLongTrans;
 	private Link buttonCloseIcon;
+	
+	private List<UpDownWrapper> upDowns;
+	
 	private TextComponent counterText;
 	private int counter;
 	
 	private Panel pFirstInvisible;
 	private CloseableModalController cmc;
-	
+
+
 	public GuiDemoLinksController(UserRequest ureq, WindowControl wControl) {
 		super(ureq,wControl);		
 		mainVC = createVelocityContainer("guidemo-links");
@@ -112,6 +124,22 @@ public class GuiDemoLinksController extends BasicController {
 		linkTooltip = LinkFactory.createCustomLink("link.tooltip", "link.tooltip", "link.tooltip", Link.LINK, mainVC, this);
 		linkTooltip.setTooltip("link.tooltip.text");
 		
+		upDowns = new ArrayList<>();
+		UpDown upDownA = UpDownFactory.createUpDown("updown-a", mainVC, this);
+		upDownA.setUserObject("A");
+		upDowns.add(new UpDownWrapper("A", upDownA));
+		UpDown upDownB = UpDownFactory.createUpDown("updown-b", mainVC, this);
+		upDownA.setUserObject("B");
+		upDowns.add(new UpDownWrapper("B", upDownB));
+		UpDown upDownC = UpDownFactory.createUpDown("updown-c", mainVC, this);
+		upDownA.setUserObject("C");
+		upDowns.add(new UpDownWrapper("C", upDownC));
+		UpDown upDownD = UpDownFactory.createUpDown("updown-d", mainVC, this);
+		upDownA.setUserObject("D");
+		upDowns.add(new UpDownWrapper("D", upDownD));
+		doDisableUpDowns();
+		mainVC.contextPut("upDowns", upDowns);
+		
 		// add some text components
 		TextFactory.createTextComponentFromString("text.simple", "Hello World, this text is hardcoded", null, true, mainVC);
 		TextFactory.createTextComponentFromI18nKey("text.translated", "text.translated", getTranslator(), null, true, mainVC);
@@ -135,6 +163,7 @@ public class GuiDemoLinksController extends BasicController {
 		putInitialPanel(mainVC);		
 	}
 
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		// update counter on each click to demo setter method on text component
 		counter++;
@@ -173,9 +202,43 @@ public class GuiDemoLinksController extends BasicController {
 			showInfo("info.button.long.trans", ureq.getIdentity().getName());			
 		} else if (source == buttonCloseIcon){
 			showInfo("info.button.close.icon", ureq.getIdentity().getName());			
+		} else if (event instanceof UpDownEvent) {
+			UpDownEvent ude = (UpDownEvent) event;
+			doMoveUpDownWrapper(source, ude.getDirection());
+			mainVC.setDirty(true);
 		}
 	}
 
+	private void doMoveUpDownWrapper(Component source, Direction direction) {
+		Integer index = getUpDownWrapperIndxex(source);
+		if (Direction.UP.equals(direction)) {
+			Collections.swap(upDowns, index - 1, index);
+		} else {
+			Collections.swap(upDowns, index, index + 1);
+		}
+		doDisableUpDowns();
+	}
+
+	private void doDisableUpDowns() {
+		for (UpDownWrapper upDownWrapper : upDowns) {
+			upDownWrapper.getComponent().setTopmost(false);
+			upDownWrapper.getComponent().setLowermost(false);
+		}
+		upDowns.get(0).getComponent().setTopmost(true);
+		upDowns.get(upDowns.size()-1).getComponent().setLowermost(true);
+	}
+
+	private Integer getUpDownWrapperIndxex(Component source) {
+		for (int i = 0; i < upDowns.size(); i++) {
+			UpDownWrapper upDownWrapper = upDowns.get(i);
+			if (source == upDownWrapper.getComponent()) {
+				return i;
+			}
+		}
+		return null;
+	}
+
+	@Override
 	protected void doDispose() {
 		//
 	}
@@ -213,5 +276,25 @@ public class GuiDemoLinksController extends BasicController {
 		protected void doDispose() {
 			// do nothing
 		}
+	}
+	
+	public static final class UpDownWrapper {
+		
+		private final String text;
+		private final UpDown component;
+		
+		public UpDownWrapper(String text, UpDown component) {
+			this.text = text;
+			this.component = component;
+		}
+
+		public String getText() {
+			return text;
+		}
+
+		public UpDown getComponent() {
+			return component;
+		}
+		
 	}
 }

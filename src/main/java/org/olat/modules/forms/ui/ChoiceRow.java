@@ -17,48 +17,35 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.forms.model.xml;
+package org.olat.modules.forms.ui;
 
-import java.util.ArrayList;
-import java.util.List;
+import org.olat.core.gui.components.Component;
+import org.olat.modules.forms.model.xml.Choice;
 
 /**
  * 
- * Initial date: 11.04.2018<br>
+ * Initial date: 7 Feb 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class Choices {
-
-	private List<Choice> choices = new ArrayList<>();
+public class ChoiceRow {
 	
-	public List<Choice> asList() {
-		return new ArrayList<>(choices);
-	}
-
-	public void addNotPresent(Choice choice) {
-		if (!choices.contains(choice)) {
-			choices.add(choice);
-		}
+	private final Choice choice;
+	private final Component upDown;
+	
+	
+	public ChoiceRow(Choice choice, Component upDown) {
+		this.choice = choice;
+		this.upDown = upDown;
 	}
 	
-	public void remove(Choice choice) {
-		choices.remove(choice);
+	public Choice getChoice() {
+		return choice;
 	}
 	
-	public Integer getIndex(Choice choice) {
-		for (int i = 0; i < choices.size(); i++) {
-			if (choices.get(i).equals(choice)) {
-				return i;
-			}
-		}
-		return null;
+	public Component getUpDown() {
+		return upDown;
 	}
 	
-	public void swap(int i, int j) {
-		Choice temp = choices.get(i);
-		choices.set(i, choices.get(j));
-		choices.set(j, temp);
-	}
 
 }

@@ -23,6 +23,11 @@ Links:<br>
 <p>$r.render("link.mail") (CSS class <b>o_icon o_icon_mail</b>)</p>
 <p>$r.render("link.pos") (Give the position)</p>
 <p>$r.render("link.tooltip") (Tooltip)</p>
+<hr />
+Up and down:<br>
+#foreach($upDown in $upDowns)
+<p>$r.render($upDown.component) $upDown.text</p>
+#end
 <br />
 <br />
 <hr />

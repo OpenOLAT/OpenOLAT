@@ -19,10 +19,13 @@
  */
 package org.olat.modules.forms.ui;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -31,13 +34,16 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.updown.UpDown;
+import org.olat.core.gui.components.updown.UpDownEvent;
+import org.olat.core.gui.components.updown.UpDownEvent.Direction;
+import org.olat.core.gui.components.updown.UpDownFactory;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -57,8 +63,6 @@ import org.olat.modules.forms.ui.ChoiceDataModel.ChoiceCols;
  */
 public class SingleChoiceEditorController extends FormBasicController implements PageElementEditorController {
 
-	private static final String CMD_UP = "up";
-	private static final String CMD_DOWN = "down";
 	private static final String CMD_EDIT = "edit";
 	private static final String CMD_DELETE = "delete";
 	
@@ -116,14 +120,7 @@ public class SingleChoiceEditorController extends FormBasicController implements
 		
 		// choices
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ChoiceCols.up, CMD_UP,
-				new BooleanCellRenderer(
-						new StaticFlexiCellRenderer("", CMD_UP, "o_icon o_icon-lg o_icon_move_up"),
-						null)));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ChoiceCols.down, CMD_DOWN,
-				new BooleanCellRenderer(
-						new StaticFlexiCellRenderer("", CMD_DOWN, "o_icon o_icon-lg o_icon_move_down"),
-						null)));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ChoiceCols.move));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ChoiceCols.value));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ChoiceCols.edit, CMD_EDIT,
 				new StaticFlexiCellRenderer("", CMD_EDIT, "o_icon o_icon-lg o_icon_edit")));
@@ -145,7 +142,22 @@ public class SingleChoiceEditorController extends FormBasicController implements
 	}
 	
 	private void loadModel() {
-		dataModel.setObjects(singleChoice.getChoices().asList());
+		List<Choice> choices = singleChoice.getChoices().asList();
+		List<ChoiceRow> rows = new ArrayList<>(choices.size());
+		for (int i = 0; i < choices.size(); i++) {
+			Choice choice = choices.get(i);
+			UpDown upDown = UpDownFactory.createUpDown("ud_" + CodeHelper.getRAMUniqueID(), flc.getFormItemComponent(), this);
+			upDown.setUserObject(choice);
+			if (i == 0) {
+				upDown.setTopmost(true);
+			}
+			if (i == choices.size() - 1) {
+				upDown.setLowermost(true);
+			}
+			ChoiceRow choiceRow = new ChoiceRow(choice, upDown);
+			rows.add(choiceRow);
+		}
+		dataModel.setObjects(rows);
 		tableEl.reset();
 	}
 	
@@ -156,16 +168,12 @@ public class SingleChoiceEditorController extends FormBasicController implements
 			singleChoiceCtrl.updateForm();
 		} else if (addChoiceEl == source) {
 			doAddChoice(ureq);
-		}  else if(tableEl == source) {
+		} else if(tableEl == source) {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
 				String cmd = se.getCommand();
 				int index = se.getIndex();
-				if (CMD_UP.equals(cmd)) {
-					doUp(index);	
-				} else if (CMD_DOWN.equals(cmd)) {
-					doDown(index);
-				} else if (CMD_EDIT.equals(cmd)) {
+				if (CMD_EDIT.equals(cmd)) {
 					doEditChoice(ureq, index);
 				} else if (CMD_DELETE.equals(cmd)) {
 					doDelete(index);
@@ -173,6 +181,16 @@ public class SingleChoiceEditorController extends FormBasicController implements
 			}
 			singleChoiceCtrl.updateForm();
 		}
+	}
+
+	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if (event instanceof UpDownEvent) {
+			UpDownEvent ude = (UpDownEvent) event;
+			doMove((Choice)ude.getUserObject(), ude.getDirection());
+			singleChoiceCtrl.updateForm();
+		}
+		super.event(ureq, source, event);
 	}
 
 	@Override
@@ -215,9 +233,9 @@ public class SingleChoiceEditorController extends FormBasicController implements
 	}
 
 	private void doEditChoice(UserRequest ureq, int index) {
-		Choice choice = dataModel.getObject(index);
+		ChoiceRow row = dataModel.getObject(index);
 		String title = translate("choice.edit.value");
-		doEditChoice(ureq, choice, title);
+		doEditChoice(ureq, row.getChoice(), title);
 	}
 	
 	private void doEditChoice(UserRequest ureq, Choice choice, String title) {
@@ -228,6 +246,17 @@ public class SingleChoiceEditorController extends FormBasicController implements
 				title, true);
 		listenTo(cmc);
 		cmc.activate();
+	}
+
+	private void doMove(Choice choice, Direction direction) {
+		Integer index = singleChoice.getChoices().getIndex(choice);
+		if (index != null) {
+			if (Direction.UP.equals(direction)) {
+				doUp(index);
+			} else if (Direction.DOWN.equals(direction)) {
+				doDown(index);
+			}
+		}
 	}
 
 	private void doUp(int index) {
@@ -241,8 +270,8 @@ public class SingleChoiceEditorController extends FormBasicController implements
 	}
 
 	private void doDelete(int index) {
-		Choice choice = dataModel.getObject(index);
-		singleChoice.getChoices().remove(choice);
+		ChoiceRow row = dataModel.getObject(index);
+		singleChoice.getChoices().remove(row.getChoice());
 		loadModel();
 	}
 

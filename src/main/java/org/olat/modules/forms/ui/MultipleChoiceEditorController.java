@@ -19,9 +19,12 @@
  */
 package org.olat.modules.forms.ui;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -30,13 +33,15 @@ import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElem
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.updown.UpDownEvent;
+import org.olat.core.gui.components.updown.UpDownEvent.Direction;
+import org.olat.core.gui.components.updown.UpDownFactory;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -57,8 +62,6 @@ public class MultipleChoiceEditorController extends FormBasicController implemen
 
 	private static final String WITH_OTHER_KEY = "multiple.choice.with.others.enabled";
 	private static final String[] WITH_OTHER_KEYS = new String[] {WITH_OTHER_KEY};
-	private static final String CMD_UP = "up";
-	private static final String CMD_DOWN = "down";
 	private static final String CMD_EDIT = "edit";
 	private static final String CMD_DELETE = "delete";
 	
@@ -115,14 +118,6 @@ public class MultipleChoiceEditorController extends FormBasicController implemen
 		
 		// choices
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ChoiceCols.up, CMD_UP,
-				new BooleanCellRenderer(
-						new StaticFlexiCellRenderer("", CMD_UP, "o_icon o_icon-lg o_icon_move_up"),
-						null)));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ChoiceCols.down, CMD_DOWN,
-				new BooleanCellRenderer(
-						new StaticFlexiCellRenderer("", CMD_DOWN, "o_icon o_icon-lg o_icon_move_down"),
-						null)));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ChoiceCols.value));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ChoiceCols.edit, CMD_EDIT,
 				new StaticFlexiCellRenderer("", CMD_EDIT, "o_icon o_icon-lg o_icon_edit")));
@@ -144,7 +139,14 @@ public class MultipleChoiceEditorController extends FormBasicController implemen
 	}
 	
 	private void loadModel() {
-		dataModel.setObjects(multipleChoice.getChoices().asList());
+		List<Choice> choices = multipleChoice.getChoices().asList();
+		List<ChoiceRow> rows = new ArrayList<>(choices.size());
+		for (Choice choice : choices) {
+			Component upDown = UpDownFactory.createUpDown("ud_" + CodeHelper.getRAMUniqueID(), flc.getFormItemComponent(), this);
+			ChoiceRow choiceRow = new ChoiceRow(choice, upDown);
+			rows.add(choiceRow);
+		}
+		dataModel.setObjects(rows);
 		tableEl.reset();
 	}
 	
@@ -160,11 +162,7 @@ public class MultipleChoiceEditorController extends FormBasicController implemen
 				SelectionEvent se = (SelectionEvent)event;
 				String cmd = se.getCommand();
 				int index = se.getIndex();
-				if (CMD_UP.equals(cmd)) {
-					doUp(index);	
-				} else if (CMD_DOWN.equals(cmd)) {
-					doDown(index);
-				} else if (CMD_EDIT.equals(cmd)) {
+				if (CMD_EDIT.equals(cmd)) {
 					doEditChoice(ureq, index);
 				} else if (CMD_DELETE.equals(cmd)) {
 					doDelete(index);
@@ -172,6 +170,16 @@ public class MultipleChoiceEditorController extends FormBasicController implemen
 			}
 			multipleChoiceCtrl.updateForm();
 		}
+	}
+	
+	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if (event instanceof UpDownEvent) {
+			UpDownEvent ude = (UpDownEvent) event;
+			doMove((Choice)ude.getUserObject(), ude.getDirection());
+			multipleChoiceCtrl.updateForm();
+		}
+		super.event(ureq, source, event);
 	}
 
 	@Override
@@ -210,9 +218,9 @@ public class MultipleChoiceEditorController extends FormBasicController implemen
 	}
 
 	private void doEditChoice(UserRequest ureq, int index) {
-		Choice choice = dataModel.getObject(index);
+		ChoiceRow row = dataModel.getObject(index);
 		String title = translate("choice.edit.value");
-		doEditChoice(ureq, choice, title);
+		doEditChoice(ureq, row.getChoice(), title);
 	}
 	
 	private void doEditChoice(UserRequest ureq, Choice choice, String title) {
@@ -224,6 +232,18 @@ public class MultipleChoiceEditorController extends FormBasicController implemen
 		listenTo(cmc);
 		cmc.activate();
 	}
+	
+	private void doMove(Choice choice, Direction direction) {
+		Integer index = multipleChoice.getChoices().getIndex(choice);
+		if (index != null) {
+			if (Direction.UP.equals(direction)) {
+				doUp(index);
+			} else if (Direction.DOWN.equals(direction)) {
+				doDown(index);
+			}
+		}
+	}
+
 
 	private void doUp(int index) {
 		multipleChoice.getChoices().swap(index - 1, index);
@@ -236,8 +256,8 @@ public class MultipleChoiceEditorController extends FormBasicController implemen
 	}
 
 	private void doDelete(int index) {
-		Choice choice = dataModel.getObject(index);
-		multipleChoice.getChoices().remove(choice);
+		ChoiceRow row = dataModel.getObject(index);
+		multipleChoice.getChoices().remove(row.getChoice());
 		loadModel();
 	}
 

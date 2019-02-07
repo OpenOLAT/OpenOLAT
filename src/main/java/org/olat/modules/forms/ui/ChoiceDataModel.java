@@ -22,7 +22,6 @@ package org.olat.modules.forms.ui;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.modules.forms.model.xml.Choice;
 
 /**
  * 
@@ -30,35 +29,32 @@ import org.olat.modules.forms.model.xml.Choice;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class ChoiceDataModel extends DefaultFlexiTableDataModel<Choice> {
+public class ChoiceDataModel extends DefaultFlexiTableDataModel<ChoiceRow> {
 
 	public ChoiceDataModel(FlexiTableColumnModel columnModel) {
 		super(columnModel);
 	}
 
 	@Override
-	public DefaultFlexiTableDataModel<Choice> createCopyWithEmptyList() {
+	public DefaultFlexiTableDataModel<ChoiceRow> createCopyWithEmptyList() {
 		return new ChoiceDataModel(getTableColumnModel());
 	}
 
 	@Override
 	public Object getValueAt(int row, int col) {
-		Choice choice = getObject(row);
+		ChoiceRow choiceRow = getObject(row);
 		switch (ChoiceCols.values()[col]) {
-			case up:
-				return row == 0 ? Boolean.FALSE : Boolean.TRUE;
-			case down:
-				return row >= (getRowCount() - 1) ? Boolean.FALSE : Boolean.TRUE;
+			case move:
+				return choiceRow.getUpDown();
 			case value:
-				return choice.getValue();
+				return choiceRow.getChoice().getValue();
 			default:
 				return "";
 		}
 	}
 
 	enum ChoiceCols implements FlexiColumnDef {
-		up("choice.up"),
-		down("choice.down"),
+		move("choice.move"),
 		value("choice.value"),
 		edit("choice.edit"),
 		delete("choice.delete");
