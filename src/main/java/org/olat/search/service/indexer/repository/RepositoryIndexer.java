@@ -235,7 +235,7 @@ public class RepositoryIndexer extends AbstractHierarchicalIndexer {
 		}
 	
 		if (debug) logDebug("isOwner=" + reSecurity.isEntryAdmin() + "  isAllowedToLaunch=" + isAllowedToLaunch);
-		if (reSecurity.isEntryAdmin() || isAllowedToLaunch) {
+		if (reSecurity.isEntryAdmin() || reSecurity.canLaunch() || isAllowedToLaunch) {
 			Indexer repositoryEntryIndexer = getRepositoryEntryIndexer(repositoryEntry);
 			if (debug) logDebug("repositoryEntryIndexer=" + repositoryEntryIndexer);
 			if (repositoryEntryIndexer != null) {
