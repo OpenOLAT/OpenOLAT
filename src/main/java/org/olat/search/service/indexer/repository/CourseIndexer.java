@@ -121,7 +121,10 @@ public class CourseIndexer extends AbstractHierarchicalIndexer {
 			CourseNode childCourseNode = (CourseNode)node;
 			CourseNodeIndexer courseNodeIndexer = getCourseNodeIndexer(childCourseNode);
 			if (courseNodeIndexer != null) {
-				if (isLogDebugEnabled()) logDebug("courseNodeIndexer=" + courseNodeIndexer);
+				if (isLogDebugEnabled()) {
+					logDebug("courseNodeIndexer=" + courseNodeIndexer);
+				}
+				
  				try {
 					courseNodeIndexer.doIndex(repositoryResourceContext, course, childCourseNode, indexWriter);
 				} catch (Exception e) {

@@ -24,6 +24,7 @@ import java.util.List;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 
+import uk.ac.ed.ph.jqtiplus.node.QtiNode;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.test.AbstractPart;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
@@ -49,10 +50,10 @@ public class ControlObjectRow {
 	private Boolean feedbacks;
 	private QTI21QuestionType type;
 
-	private OptionEnum review;
-	private OptionEnum comment;
-	private OptionEnum skipping;
-	private OptionEnum solution;
+	private OptionAndInheritance review;
+	private OptionAndInheritance comment;
+	private OptionAndInheritance skipping;
+	private OptionAndInheritance solution;
 	private MaxAttemptOption attemptOption;
 	
 	public ControlObjectRow(String title, ControlObject<?> part, String iconCssClass) {
@@ -127,46 +128,108 @@ public class ControlObjectRow {
 		if(maxAttempts != null) {
 			OptionEnum option = (maxAttempts.intValue() == 0 ? OptionEnum.no : OptionEnum.yes);
 			row.attemptOption = MaxAttemptOption.valueOf(option, maxAttempts);	
+		} else if(part instanceof TestPart) {
+			row.attemptOption = MaxAttemptOption.valueOf(OptionEnum.no, Integer.valueOf(1));
 		} else {
-			OptionEnum option = (part instanceof TestPart) ? OptionEnum.no : OptionEnum.inherited;
-			row.attemptOption = MaxAttemptOption.valueOf(option, Integer.valueOf(1));
+			Integer inheritedMaxAttempts = inheritedAttempts(part);
+			row.attemptOption = MaxAttemptOption.valueOf(OptionEnum.inherited, inheritedMaxAttempts);
 		}
+	}
+	
+	private static Integer inheritedAttempts(AbstractPart part) {
+		for(QtiNode parent=part.getParent(); parent != null; parent=parent.getParent()) {
+			if(parent instanceof AbstractPart) {
+				ItemSessionControl itemSessionControl = ((AbstractPart)parent).getItemSessionControl();
+				if(itemSessionControl != null && itemSessionControl.getMaxAttempts() != null) {
+					return itemSessionControl.getMaxAttempts();
+				}
+			}
+		}
+		return Integer.valueOf(1);
 	}
 	
 	private static void skipping(ControlObjectRow row, AbstractPart part) {
 		ItemSessionControl itemSessionControl = part.getItemSessionControl();
 		if(itemSessionControl != null && itemSessionControl.getAllowSkipping() != null) {
-			row.skipping = itemSessionControl.getAllowSkipping().booleanValue() ? OptionEnum.yes : OptionEnum.no;
+			row.skipping = itemSessionControl.getAllowSkipping().booleanValue() ? OptionAndInheritance.yes() : OptionAndInheritance.no();
 		} else {
-			row.skipping = (part instanceof TestPart) ? OptionEnum.yes : OptionEnum.inherited;
+			row.skipping = (part instanceof TestPart) ? OptionAndInheritance.yes() : OptionAndInheritance.inherited(inheritedSkipping(part));
 		}
+	}
+	
+	private static OptionEnum inheritedSkipping(AbstractPart part) {
+		for(QtiNode parent=part.getParent(); parent != null; parent=parent.getParent()) {
+			if(parent instanceof AbstractPart) {
+				ItemSessionControl itemSessionControl = ((AbstractPart)parent).getItemSessionControl();
+				if(itemSessionControl != null && itemSessionControl.getAllowSkipping() != null) {
+					return itemSessionControl.getAllowSkipping().booleanValue() ? OptionEnum.yes : OptionEnum.no;
+				}
+			}
+		}
+		return OptionEnum.yes;
 	}
 	
 	private static void comment(ControlObjectRow row, AbstractPart part) {
 		ItemSessionControl itemSessionControl = part.getItemSessionControl();
 		if(itemSessionControl != null && itemSessionControl.getAllowComment() != null) {
-			row.comment = itemSessionControl.getAllowComment().booleanValue() ? OptionEnum.yes : OptionEnum.no;
+			row.comment = itemSessionControl.getAllowComment().booleanValue() ? OptionAndInheritance.yes() : OptionAndInheritance.no();
 		} else {
-			row.comment = (part instanceof TestPart) ? OptionEnum.yes : OptionEnum.inherited;
+			row.comment = (part instanceof TestPart) ? OptionAndInheritance.yes() : OptionAndInheritance.inherited(inheritedComment(part));
 		}
+	}
+	
+	private static OptionEnum inheritedComment(AbstractPart part) {
+		for(QtiNode parent=part.getParent(); parent != null; parent=parent.getParent()) {
+			if(parent instanceof AbstractPart) {
+				ItemSessionControl itemSessionControl = ((AbstractPart)parent).getItemSessionControl();
+				if(itemSessionControl != null && itemSessionControl.getAllowComment() != null) {
+					return itemSessionControl.getAllowComment().booleanValue() ? OptionEnum.yes : OptionEnum.no;
+				}
+			}
+		}
+		return OptionEnum.yes;
 	}
 	
 	private static void review(ControlObjectRow row, AbstractPart part) {
 		ItemSessionControl itemSessionControl = part.getItemSessionControl();
 		if(itemSessionControl != null && itemSessionControl.getAllowReview() != null) {
-			row.review = itemSessionControl.getAllowReview().booleanValue() ? OptionEnum.yes : OptionEnum.no;
+			row.review = itemSessionControl.getAllowReview().booleanValue() ? OptionAndInheritance.yes() : OptionAndInheritance.no();
 		} else {
-			row.review = (part instanceof TestPart) ? OptionEnum.no : OptionEnum.inherited;
+			row.review = (part instanceof TestPart) ? OptionAndInheritance.no() : OptionAndInheritance.inherited(inheritedReview(part));
 		}
+	}
+	
+	private static OptionEnum inheritedReview(AbstractPart part) {
+		for(QtiNode parent=part.getParent(); parent != null; parent=parent.getParent()) {
+			if(parent instanceof AbstractPart) {
+				ItemSessionControl itemSessionControl = ((AbstractPart)parent).getItemSessionControl();
+				if(itemSessionControl != null && itemSessionControl.getAllowReview() != null) {
+					return itemSessionControl.getAllowReview().booleanValue() ? OptionEnum.yes : OptionEnum.no;
+				}
+			}
+		}
+		return OptionEnum.no;
 	}
 	
 	private static void solution(ControlObjectRow row, AbstractPart part) {
 		ItemSessionControl itemSessionControl = part.getItemSessionControl();
 		if(itemSessionControl != null && itemSessionControl.getShowSolution() != null) {
-			row.solution = itemSessionControl.getShowSolution().booleanValue() ? OptionEnum.yes : OptionEnum.no;
+			row.solution = itemSessionControl.getShowSolution().booleanValue() ? OptionAndInheritance.yes() : OptionAndInheritance.no();
 		} else {
-			row.solution = (part instanceof TestPart) ? OptionEnum.no : OptionEnum.inherited;
+			row.solution = (part instanceof TestPart) ? OptionAndInheritance.no() : OptionAndInheritance.inherited(inheritedSolution(part));
 		}
+	}
+	
+	private static OptionEnum inheritedSolution(AbstractPart part) {
+		for(QtiNode parent=part.getParent(); parent != null; parent=parent.getParent()) {
+			if(parent instanceof AbstractPart) {
+				ItemSessionControl itemSessionControl = ((AbstractPart)parent).getItemSessionControl();
+				if(itemSessionControl != null && itemSessionControl.getShowSolution() != null) {
+					return itemSessionControl.getShowSolution().booleanValue() ? OptionEnum.yes : OptionEnum.no;
+				}
+			}
+		}
+		return OptionEnum.no;
 	}
 	
 	public String getTitle() {
@@ -201,19 +264,19 @@ public class ControlObjectRow {
 		return feedbacks;
 	}
 	
-	public OptionEnum getSkipping() {
+	public OptionAndInheritance getSkipping() {
 		return skipping;
 	}
 	
-	public OptionEnum getComment() {
+	public OptionAndInheritance getComment() {
 		return comment;
 	}
 	
-	public OptionEnum getReview() {
+	public OptionAndInheritance getReview() {
 		return review;
 	}
 	
-	public OptionEnum getSolution() {
+	public OptionAndInheritance getSolution() {
 		return solution;
 	}
 	
