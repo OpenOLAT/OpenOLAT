@@ -397,6 +397,10 @@ public class IFrameDeliveryMapper implements Mapper {
 		sb.append(parser.getBodyTag());
 		// finally add content and finish page
 		sb.append(parser.getHtmlContent());
+		// iFrameResizer adds that snippet at the end of the iFrame body, but without &nbsp.
+		// Sometimes this leads to a invisible line at the end of the iFrame, so we add the
+		// same snippet but with &nbsp.
+		sb.append("<div style=\"clear: both; display: block;\">&nbsp;</div>");
 		sb.append("</body></html>");
 		
 		return sb.toString();
