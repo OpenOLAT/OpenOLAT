@@ -34,7 +34,7 @@ import org.olat.core.gui.translator.Translator;
  */
 public class OptionCellRenderer implements FlexiCellRenderer {
 	
-	private final Translator translator;
+	protected final Translator translator;
 	
 	public OptionCellRenderer(Translator translator) {
 		this.translator = translator;
@@ -43,9 +43,14 @@ public class OptionCellRenderer implements FlexiCellRenderer {
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator trans) {
-		if(cellValue instanceof OptionEnum) {
-			OptionEnum option = (OptionEnum)cellValue;
-			target.append(translator.translate("configuration.option.".concat(option.name())));
+		if(cellValue instanceof OptionAndInheritance) {
+			OptionAndInheritance option = (OptionAndInheritance)cellValue;
+			if(option.getOption() == OptionEnum.inherited && option.getInheritedValue() != null) {
+				String val = translator.translate("configuration.option.".concat(option.getInheritedValue().name()));
+				target.append(translator.translate("configuration.option.inherited.val", new String[] { val }));
+			} else {
+				target.append(translator.translate("configuration.option.".concat(option.getOption().name())));
+			}
 		}
 	}
 }
