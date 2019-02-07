@@ -12,25 +12,25 @@
 <div class="clearfix">
 	#if ($r.available("ownerList"))
 		<h4>$r.translate("members.owners")</h4>
-		<div>
+		<div class="o_sel_cmembers_owners">
 			$r.render("ownerList")
 		</div>
 	#end
 	#if ($r.available("coachList"))
 		<h4>$r.translate("members.coaches")</h4>
-		<div>
+		<div class="o_sel_cmembers_coaches">
 			$r.render("coachList")
 		</div>
 	#end
 	#if ($r.available("participantList"))
 		<h4>$r.translate("members.participants")</h4>
-		<div>
+		<div class="o_sel_cmembers_participants">
 			$r.render("participantList")
 		</div>
 	#end
 	#if ($r.available("waitingList"))
 		<h4>$r.translate("members.waiting")</h4>
-		<div>
+		<div class="o_sel_cmembers_waiting">
 			$r.render("waitingList")
 		</div>
 	#end

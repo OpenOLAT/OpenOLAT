@@ -109,10 +109,12 @@ public class MembersDisplayRunController extends BasicController {
 		mainVC.contextPut("headline", businessGroup != null);
 		
 		tableCustomLink = LinkFactory.createLink(null, "tableCustomLink", "select.custom", "blank", getTranslator(), mainVC, this, Link.BUTTON);
-		tableCustomLink.setIconLeftCSS( "o_icon o_icon_table_custom o_icon-lg");
+		tableCustomLink.setIconLeftCSS("o_icon o_icon_table_custom o_icon-lg");
+		tableCustomLink.setElementCssClass("o_sel_cmembers_thumbnails_view");
 		
 		tableLink = LinkFactory.createLink(null, "tableLink", "select.table", "blank", getTranslator(), mainVC, this, Link.BUTTON);
-		tableLink.setIconLeftCSS( "o_icon o_icon_table o_icon-lg");
+		tableLink.setIconLeftCSS("o_icon o_icon_table o_icon-lg");
+		tableLink.setElementCssClass("o_sel_cmembers_table_view");
 			
 		if (doLoadMemberListConfig(ureq)) {
 			doOpenPortraitView(ureq);

@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.List;
 import java.util.UUID;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -40,6 +41,7 @@ import org.olat.selenium.page.Participant;
 import org.olat.selenium.page.Student;
 import org.olat.selenium.page.User;
 import org.olat.selenium.page.core.FolderPage;
+import org.olat.selenium.page.core.MenuTreePageFragment;
 import org.olat.selenium.page.course.CourseEditorPageFragment;
 import org.olat.selenium.page.course.CoursePageFragment;
 import org.olat.selenium.page.course.DialogConfigurationPage;
@@ -67,6 +69,8 @@ import org.olat.user.restapi.UserVO;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+
+import com.dumbster.smtp.SmtpMessage;
 
 /**
  * 
@@ -951,6 +955,129 @@ public class CourseElementTest extends Deployments {
 			.assertOnCoach(coach.getFirstName())
 			.assertOnNotParticipant(participant1.getFirstName())
 			.assertOnNotParticipant(participant2.getFirstName());
+	}
+	
+	/**
+	 * An author create a course with a course element
+	 * to show the member list. It add coaches and
+	 * participants. It navigates to the member list,
+	 * switch to the table view and send and an E-mail
+	 * to the participants.
+	 * 
+	 * @param authorLoginPage The login page
+	 * @param ryomouBrowser A browser for the student
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void createCourseWithMemberList_sendMail(@InitialPage LoginPage authorLoginPage)
+	throws IOException, URISyntaxException {
+						
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO kanu = new UserRestClient(deploymentUrl).createRandomUser("kanu");
+		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("ryomou");
+		UserVO student1 = new UserRestClient(deploymentUrl).createRandomUser("student1");
+		UserVO student2 = new UserRestClient(deploymentUrl).createRandomUser("student2");
+		
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//create a course
+		String courseTitle = "Course-with-member-list-" + UUID.randomUUID();
+		CoursePageFragment courseRuntime = navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle)
+			.clickToolbarBack();
+		
+		//add coaches as course member
+		courseRuntime
+			.members()
+			.importMembers()
+			.setMembers(ryomou, kanu)
+			.nextUsers()
+			.nextOverview()
+			.selectRepositoryEntryRole(false, true, false)
+			.nextPermissions()
+			.finish();
+		
+		//add participatns
+		MembersPage members = courseRuntime
+			.members();
+		members
+			.importMembers()
+			.setMembers(ryomou, student1, student2)
+			.nextUsers()
+			.nextOverview()
+			.selectRepositoryEntryRole(false, false, true)
+			.nextPermissions()
+			.finish();
+		// back to course
+		members
+			.clickToolbarBack();
+		
+		getSmtpServer().reset();// reset e-mails
+		
+		//create a course element of type Test with the test that we create above
+		String nodeTitle = "Members 2";
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+			.edit();
+		courseEditor
+			.createNode("cmembers")
+			.nodeTitle(nodeTitle);
+		
+		MemberListConfigurationPage memberListConfig = new MemberListConfigurationPage(browser);
+		memberListConfig
+				.selectSettings()
+				.setCoaches(Boolean.TRUE)
+				.setCourseCoachesOnly()
+				.setParticipants(Boolean.TRUE)
+				.save();
+		
+		//go check that we see only the coaches results
+		courseRuntime = courseEditor
+			.autoPublish();
+		MenuTreePageFragment menuTree = courseRuntime
+			.clickTree();
+
+		MemberListPage memberList = new MemberListPage(browser);
+		// check peek view
+		memberList
+			.assertOnPeekview(1, 1)
+			.assertOnPeekview(2, 2)
+			.assertOnPeekview(3, 2);
+		
+		menuTree
+			.selectWithTitle(nodeTitle);
+		
+		memberList
+			.assertOnMembers()
+			.assertOnOwner(author.getFirstName())
+			.assertOnCoach(kanu.getFirstName())
+			.assertOnCoach(ryomou.getFirstName())
+			.assertOnParticipant(student1.getFirstName())
+			.assertOnParticipant(student2.getFirstName())
+			.assertOnNotParticipant(ryomou.getFirstName());
+		
+		// switch to the table view
+		memberList
+			.switchToTableView()
+			.assertOnTableOwner(author.getFirstName())
+			.assertOnTableCoach(kanu.getFirstName())
+			.assertOnTableCoach(ryomou.getFirstName())
+			.assertOnTableParticipant(student1.getFirstName())
+			.assertOnTableParticipant(student2.getFirstName())
+			.assertOnTableNotParticipant(ryomou.getFirstName());
+		
+		// send mail
+		memberList
+			.emailAll()
+			.contactAllParticipants()
+			.contactExternal("openolat@frentix.com")
+			.contactSubject("Hello my friends")
+			.send();
+		
+		List<SmtpMessage> messages = getSmtpServer().getReceivedEmails();
+		Assert.assertEquals(1, messages.size());
 	}
 	
 	/**

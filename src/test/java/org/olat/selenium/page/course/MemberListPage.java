@@ -42,6 +42,62 @@ public class MemberListPage {
 		this.browser = browser;
 	}
 	
+	public MemberListPage switchToThumbnailsView() {
+		By thumbnailsViewBy = By.cssSelector("a.o_sel_cmembers_thumbnails_view");
+		OOGraphene.waitElement(thumbnailsViewBy, browser);
+		browser.findElement(thumbnailsViewBy).click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	public MemberListPage switchToTableView() {
+		By tableViewBy = By.cssSelector("a.o_sel_cmembers_table_view");
+		OOGraphene.waitElement(tableViewBy, browser);
+		browser.findElement(tableViewBy).click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	public MemberListPage emailAll() {
+		By tableViewBy = By.cssSelector("a.o_sel_cmembers_email_all");
+		OOGraphene.waitElement(tableViewBy, browser);
+		browser.findElement(tableViewBy).click();
+		OOGraphene.waitModalDialog(browser);
+		return this;
+	}
+	
+	public MemberListPage contactAllParticipants() {
+		By allParticipantsBy = By.cssSelector("div.o_sel_cmembers_mail_participant input[name='contact.all.participants']");
+		WebElement allParticipantEl = browser.findElement(allParticipantsBy);
+		OOGraphene.check(allParticipantEl, Boolean.TRUE);
+		return this;
+	}
+	
+	public MemberListPage contactExternal(String mail) {
+		By externalBy = By.cssSelector("div.o_sel_cmembers_mail_external input[name='contact.external']");
+		WebElement externalEl = browser.findElement(externalBy);
+		OOGraphene.check(externalEl, Boolean.TRUE);
+		
+		By externalMailBy = By.cssSelector("div.o_sel_cmembers_external_mail textarea");
+		OOGraphene.waitElement(externalMailBy, browser);
+		browser.findElement(externalMailBy).sendKeys(mail);
+		return this;
+	}
+	
+	public MemberListPage contactSubject(String subject) {
+		By subjectBy = By.cssSelector("div.o_sel_cmembers_mail_subject input[type='text']");
+		browser.findElement(subjectBy).sendKeys(subject);
+		return this;
+	}
+	
+	public MemberListPage send() {
+		By sendBy = By.cssSelector("div.modal-dialog fieldset button.btn-primary");
+		browser.findElement(sendBy).click();
+		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogDisappears(browser);
+		return this;
+	}
+	
 	public MemberListPage assertOnMembers() {
 		By membersBy = By.cssSelector("div.o_cmembers");
 		OOGraphene.waitElement(membersBy, browser);
@@ -82,6 +138,43 @@ public class MemberListPage {
 	
 	public MemberListPage assertOnNotParticipant(String name) {
 		By participantBy = By.xpath("//div[contains(@class,'o_sel_participants')]//div[@class='o_cmember_info_wrapper']/a/span[contains(text(),'" + name + "')]");
+		List<WebElement> participantEls = browser.findElements(participantBy);
+		Assert.assertEquals(0, participantEls.size());
+		return this;
+	}
+	
+	/**
+	 * 
+	 * @param row The row in the table of the peekview (starts with 1)
+	 * @param number The number of members
+	 * @return Itself
+	 */
+	public MemberListPage assertOnPeekview(int row, int number) {
+		By rowBy = By.xpath("//div[contains(@class,'o_portlet_table')]//div[@class='o_table_wrapper']/table/tbody/tr[" + row + "]/td[contains(text(),'" + number+ "')]");
+		OOGraphene.waitElement(rowBy, browser);
+		return this;
+	}
+	
+	public MemberListPage assertOnTableOwner(String name) {
+		By ownerBy = By.xpath("//div[@class='o_sel_cmembers_owners']//table//td/a[contains(text(),'" + name + "')]");
+		OOGraphene.waitElement(ownerBy, browser);
+		return this;
+	}
+	
+	public MemberListPage assertOnTableCoach(String name) {
+		By coachBy = By.xpath("//div[@class='o_sel_cmembers_coaches']//table//td/a[contains(text(),'" + name + "')]");
+		OOGraphene.waitElement(coachBy, browser);
+		return this;
+	}
+	
+	public MemberListPage assertOnTableParticipant(String name) {
+		By participantBy = By.xpath("//div[@class='o_sel_cmembers_participants']//table//td/a[contains(text(),'" + name + "')]");
+		OOGraphene.waitElement(participantBy, browser);
+		return this;
+	}
+	
+	public MemberListPage assertOnTableNotParticipant(String name) {
+		By participantBy = By.xpath("//div[@class='o_sel_cmembers_participants']//table//td/a[contains(text(),'" + name + "')]");
 		List<WebElement> participantEls = browser.findElements(participantBy);
 		Assert.assertEquals(0, participantEls.size());
 		return this;

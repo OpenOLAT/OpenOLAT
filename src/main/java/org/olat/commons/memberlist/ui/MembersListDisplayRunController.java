@@ -163,6 +163,7 @@ public class MembersListDisplayRunController extends BasicController {
 		if(canEmail) {
 			allEmailLink = LinkFactory.createLink(null, "email", "email.all", "members.email.title", getTranslator(), mainVC, this, Link.BUTTON);
 			allEmailLink.setIconLeftCSS("o_icon o_icon_mail");
+			allEmailLink.setElementCssClass("o_sel_cmembers_email_all");
 		}
 		
 		Identity ownId = getIdentity();

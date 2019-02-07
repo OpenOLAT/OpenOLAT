@@ -145,21 +145,25 @@ public class MembersMailController extends FormBasicController {
 		if(ownerList != null && ownerList.size() > 0) {
 			String[] values = new String[] { translate("contact.all.owners") };
 			ownerEl = uifactory.addCheckboxesHorizontal("contact.all.owners", to, formLayout, keys, values);
+			ownerEl.setElementCssClass("o_sel_cmembers_mail_owner");
 			to = null;
 		}
 		if(coachList != null && coachList.size() > 0) {
 			String[] values = new String[] { translate("contact.all.coaches") };
 			coachEl = uifactory.addCheckboxesHorizontal("contact.all.coaches", to, formLayout, keys, values);
+			coachEl.setElementCssClass("o_sel_cmembers_mail_coach");
 			to = null;
 		}
 		if(participantList != null && participantList.size() > 0) {
 			String[] values = new String[] { translate("contact.all.participants") };
 			participantEl = uifactory.addCheckboxesHorizontal("contact.all.participants", to, formLayout, keys, values);
+			participantEl.setElementCssClass("o_sel_cmembers_mail_participant");
 			to = null;
 		}
 		if(waitingList != null && waitingList.size() > 0) {
 			String[] values = new String[] { translate("contact.all.waiting") };
 			waitingEl = uifactory.addCheckboxesHorizontal("contact.all.waiting", to, formLayout, keys, values);
+			waitingEl.setElementCssClass("o_sel_cmembers_mail_waiting");
 			to = null;
 		}
 		
@@ -187,18 +191,22 @@ public class MembersMailController extends FormBasicController {
 
 		String[] extValues = new String[] { translate("contact.external") };
 		externalEl = uifactory.addCheckboxesHorizontal("contact.external", to, formLayout, keys, extValues);
+		externalEl.setElementCssClass("o_sel_cmembers_mail_external");
 		externalEl.addActionListener(FormEvent.ONCHANGE);
 		
 		externalAddressesEl = uifactory.addTextAreaElement("contact.external.list", null, 4096, 3, 60, false, false, "", formLayout);
 		externalAddressesEl.setExampleKey("contact.external.list.example", null);
+		externalAddressesEl.setElementCssClass("o_sel_cmembers_external_mail");
 		externalAddressesEl.setVisible(false);
 
 		uifactory.addSpacerElement("space-2", formLayout, false);
 		
 		subjectEl = uifactory.addTextElement("subject", "mail.subject", 255, "", formLayout);
+		subjectEl.setElementCssClass("o_sel_cmembers_mail_subject");
 		subjectEl.setDisplaySize(255);
 		subjectEl.setMandatory(true);
 		bodyEl = uifactory.addRichTextElementForStringDataMinimalistic("body", "mail.body", "", 15, 8, formLayout, getWindowControl());
+		bodyEl.setElementCssClass("o_sel_cmembers_mail_body");
 		bodyEl.setMandatory(true);
 		
 		attachmentEl = uifactory.addFileElement(getWindowControl(), "file_upload_1", "contact.attachment", formLayout);

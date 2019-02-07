@@ -244,7 +244,6 @@ public class CourseTest extends Deployments {
 			.nextNodes()
 			.nextCatalog()
 			.finish();
-		//OOGraphene.closeErrorBox(browser);//STMP error
 		
 		RepositorySettingsPage settings = new RepositorySettingsPage(browser);
 		//from description editor, back to details and launch the course
