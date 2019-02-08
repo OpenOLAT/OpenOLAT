@@ -439,11 +439,13 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			AssessmentTestEvent ate = (AssessmentTestEvent)event;
 			if(ate == AssessmentTestEvent.ASSESSMENT_TEST_CHANGED_EVENT) {
 				AssessmentTest ast = assessmentTestBuilder.getAssessmentTest();
+				assessmentChanged(ureq);
 				doUpdate(ast.getIdentifier(), ast.getTitle());
 			}
 		} else if(event instanceof AssessmentTestPartEvent) {
 			AssessmentTestPartEvent atpe = (AssessmentTestPartEvent)event;
 			if(atpe == AssessmentTestPartEvent.ASSESSMENT_TEST_PART_CHANGED_EVENT) {
+				assessmentChanged(ureq);
 				doSaveAssessmentTest(ureq, null);
 			}
 		} else if(event instanceof AssessmentSectionEvent) {
