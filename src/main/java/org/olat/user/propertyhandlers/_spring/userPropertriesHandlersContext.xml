@@ -71,11 +71,6 @@
 		<property name="name" value="skype" />
 		<property name="group" value="contact" />
 	</bean>
-	
-	<bean id="userPropertyMSN" class="org.olat.user.propertyhandlers.MSNPropertyHandler">
-        <property name="name" value="msn" />
-        <property name="group" value="contact" />
-    </bean>
     
     <bean id="userPropertyXing" class="org.olat.user.propertyhandlers.XingPropertyHandler">
         <property name="name" value="xing" />

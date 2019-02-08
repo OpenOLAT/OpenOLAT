@@ -28,7 +28,6 @@
 				<ref bean="userPropertySmsTelMobile" />
 				<ref bean="userPropertyTelOffice" />
 				<ref bean="userPropertySkype" />
-				<ref bean="userPropertyMSN" />
                 <ref bean="userPropertyXing" />
                 <ref bean="userPropertyICQ" />
 				<ref bean="userPropertyHomepage" />
@@ -114,7 +113,6 @@
 								<ref bean="userPropertyTelMobile" />
 								<ref bean="userPropertyTelOffice" />
 								<ref bean="userPropertySkype" />
-								<ref bean="userPropertyMSN" />
 								<ref bean="userPropertyXing" />
 								<ref bean="userPropertyICQ" />
 								<ref bean="userPropertyHomepage" />
@@ -181,7 +179,6 @@
 								<ref bean="userPropertyTelMobile" />
 								<ref bean="userPropertyTelOffice" />
 								<ref bean="userPropertySkype" />
-								<ref bean="userPropertyMSN" />
                                 <ref bean="userPropertyXing" />
                                 <ref bean="userPropertyICQ" />
 								<ref bean="userPropertyHomepage" />
@@ -572,7 +569,6 @@
 								<ref bean="userPropertyTelMobile" />
 								<ref bean="userPropertyTelOffice" />
 								<ref bean="userPropertySkype" />
-								<ref bean="userPropertyMSN" />
                                 <ref bean="userPropertyXing" />
                                 <ref bean="userPropertyICQ" />
 								<ref bean="userPropertyHomepage" />
@@ -606,7 +602,6 @@
 								<ref bean="userPropertyTelMobile" />
 								<ref bean="userPropertyTelOffice" />
 								<ref bean="userPropertySkype" />
-								<ref bean="userPropertyMSN" />
                                 <ref bean="userPropertyXing" />
                                 <ref bean="userPropertyICQ" />
 								<ref bean="userPropertyHomepage" />
@@ -784,7 +779,6 @@
 								<ref bean="userPropertyTelMobile" />
 								<ref bean="userPropertyTelOffice" />
 								<ref bean="userPropertySkype" />
-								<ref bean="userPropertyMSN" />
                                 <ref bean="userPropertyXing" />
                                 <ref bean="userPropertyICQ" />
 								<ref bean="userPropertyHomepage" />
@@ -818,9 +812,8 @@
 								<ref bean="userPropertyTelMobile" />
 								<ref bean="userPropertyTelOffice" />
 								<ref bean="userPropertySkype" />
-								<ref bean="userPropertyMSN" />
-                                	<ref bean="userPropertyXing" />
-                                	<ref bean="userPropertyICQ" />
+								<ref bean="userPropertyXing" />
+								<ref bean="userPropertyICQ" />
 								<ref bean="userPropertyHomepage" />
 								<ref bean="userPropertyStreet" />
 								<ref bean="userPropertyExtendedAddress" />
@@ -870,7 +863,6 @@
 								<ref bean="userPropertyTelMobile" />
 								<ref bean="userPropertyTelOffice" />
 								<ref bean="userPropertySkype" />
-								<ref bean="userPropertyMSN" />
                                 <ref bean="userPropertyXing" />
                                 <ref bean="userPropertyICQ" />
 								<ref bean="userPropertyHomepage" />
@@ -918,7 +910,6 @@
 								<ref bean="userPropertyTelMobile" />
 								<ref bean="userPropertyTelOffice" />
 								<ref bean="userPropertySkype" />
-								<ref bean="userPropertyMSN" />
                                 <ref bean="userPropertyXing" />
                                 <ref bean="userPropertyICQ" />
 								<ref bean="userPropertyHomepage" />
@@ -952,7 +943,6 @@
 								<ref bean="userPropertyTelMobile" />
 								<ref bean="userPropertyTelOffice" />
 								<ref bean="userPropertySkype" />
-								<ref bean="userPropertyMSN" />
                                 <ref bean="userPropertyXing" />
                                 <ref bean="userPropertyICQ" />
 								<ref bean="userPropertyHomepage" />
@@ -990,7 +980,6 @@
 								<ref bean="userPropertyTelMobile" />
 								<ref bean="userPropertyTelOffice" />
 								<ref bean="userPropertySkype" />
-								<ref bean="userPropertyMSN" />
                                 <ref bean="userPropertyXing" />
                                 <ref bean="userPropertyICQ" />
 								<ref bean="userPropertyHomepage" />
@@ -1303,7 +1292,6 @@
 								<ref bean="userPropertyTelMobile" />
 								<ref bean="userPropertyTelOffice" />
 								<ref bean="userPropertySkype" />
-								<ref bean="userPropertyMSN" />
 								<ref bean="userPropertyXing" />
 								<ref bean="userPropertyICQ" />
 								<ref bean="userPropertyHomepage" />

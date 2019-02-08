@@ -134,8 +134,6 @@ public class UserImpl implements Persistable, User {
 	private String smsTelMobile;
 	@Column(name="u_skype", nullable=true, insertable=true, updatable=true)
 	private String skype;
-	@Column(name="u_msn", nullable=true, insertable=true, updatable=true)
-	private String msn;
 	@Column(name="u_xing", nullable=true, insertable=true, updatable=true)
 	private String xing;
 	@Column(name="u_icq", nullable=true, insertable=true, updatable=true)
@@ -385,7 +383,6 @@ public class UserImpl implements Persistable, User {
 			case "smsTelMobile": return smsTelMobile;
 			case "telOffice": return telOffice;
 			case "skype": return skype;
-			case "msn": return msn;
 			case "xing": return xing;
 			case "icq": return icq;
 			case "homepage": return homepage;
@@ -461,7 +458,6 @@ public class UserImpl implements Persistable, User {
 			case "smsTelMobile": smsTelMobile = value; break;
 			case "telOffice": telOffice = value; break;
 			case "skype": skype = value; break;
-			case "msn": msn = value; break;
 			case "xing": xing = value; break;
 			case "icq": icq = value; break;
 			case "homepage": homepage = value; break;
