@@ -32,7 +32,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 public class UpDownFactory {
 	
 	public static UpDown createUpDown(String name, Layout layout, VelocityContainer vc, ComponentEventListener listener) {
-		UpDown upDown = new UpDown(name, layout);
+		UpDown upDown = createUpDown(name, layout);
 		if (listener != null) {
 			upDown.addListener(listener);
 		}
@@ -41,5 +41,9 @@ public class UpDownFactory {
 		}
 		return upDown;
 	}
-
+	
+	static UpDown createUpDown(String name, Layout layout) {
+		return new UpDown(name, layout);
+	}
+	
 }

@@ -68,14 +68,9 @@ public class UpDownRenderer extends DefaultComponentRenderer {
 
 	private void renderButtonHorizontal(Renderer renderer, StringOutput sb, String[] args, UpDown upDown) {
 		sb.append("<div class='btn-group o_updown'>");
-		if (upDown.isTopmost()) {
-			upDown.getUp().setEnabled(false);
-		}
+		upDown.getUp().setEnabled(!upDown.isTopmost());
 		renderer.render(upDown.getUp(), sb, args);
-		
-		if (upDown.isLowermost()) {
-			upDown.getDown().setEnabled(false);
-		}
+		upDown.getDown().setEnabled(!upDown.isLowermost());
 		renderer.render(upDown.getDown(), sb, args);
 		sb.append("</div>");
 	}

@@ -29,6 +29,7 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -40,7 +41,12 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.updown.UpDown;
+import org.olat.core.gui.components.updown.UpDownEvent;
+import org.olat.core.gui.components.updown.UpDownEvent.Direction;
+import org.olat.core.gui.components.updown.UpDownFactory;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
@@ -256,6 +262,7 @@ public class RubricEditorController extends FormBasicController implements PageE
 			SliderRow row = forgeSliderRow(slider);
 			sliders.add(row);
 		}
+		setUpDownVisibility();
 		
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
@@ -345,6 +352,13 @@ public class RubricEditorController extends FormBasicController implements PageE
 			row.setDeleteButton(deleteButton);
 			flc.contextPut("deleteButtons", Boolean.TRUE);
 		}
+		
+		String name = "ud." + count.incrementAndGet();
+		UpDown upDown = UpDownFactory.createUpDown(name, UpDown.Layout.BUTTON_HORIZONTAL, flc.getFormItemComponent(), this);
+		upDown.setUserObject(row);
+		row.setUpDown(upDown);
+		flc.put(name, upDown);
+		
 		return row;
 	}
 
@@ -442,10 +456,45 @@ public class RubricEditorController extends FormBasicController implements PageE
 		super.formInnerEvent(ureq, source, event);
 	}
 	
+	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if (event instanceof UpDownEvent) {
+			UpDownEvent ude = (UpDownEvent) event;
+			SliderRow row = (SliderRow) ude.getUserObject();
+			doMove(row.getSlider(), ude.getDirection());
+		}
+		super.event(ureq, source, event);
+	}
+
+	private void doMove(Slider slider, Direction direction) {
+		int index = rubric.getSliders().indexOf(slider);
+		if (index > -1) {
+			if (Direction.UP.equals(direction)) {
+				swapSliders(index - 1, index);
+			} else if (Direction.DOWN.equals(direction)) {
+				swapSliders(index, index + 1);
+			}
+			setUpDownVisibility();
+			flc.setDirty(true);
+		}
+	}
+	
+	private void swapSliders(int i, int j) {
+		List<Slider> rubricSliders = rubric.getSliders();
+		Slider tempRubricSlider = rubricSliders.get(i);
+		rubricSliders.set(i, rubricSliders.get(j));
+		rubricSliders.set(j, tempRubricSlider);
+		
+		SliderRow tempSlider = sliders.get(i);
+		sliders.set(i, sliders.get(j));
+		sliders.set(j, tempSlider);
+	}
+
 	private void doRemoveSlider(SliderRow row) {
 		updateSteps();
 		sliders.remove(row);
 		rubric.getSliders().remove(row.getSlider());
+		setUpDownVisibility();
 		flc.setDirty(true);
 	}
 	
@@ -455,7 +504,23 @@ public class RubricEditorController extends FormBasicController implements PageE
 		rubric.getSliders().add(slider);
 		SliderRow row = forgeSliderRow(slider);
 		sliders.add(row);
+		setUpDownVisibility();
 		flc.setDirty(true);
+	}
+	
+	private void setUpDownVisibility() {
+		for (int i = 0; i < sliders.size(); i++) {
+			SliderRow sliderRow = sliders.get(i);
+			UpDown upDown = sliderRow.getUpDown();
+			upDown.setTopmost(false);
+			upDown.setLowermost(false);
+			if (i == 0) {
+				upDown.setTopmost(true);
+			}
+			if (i == sliders.size() -1) {
+				upDown.setLowermost(true);
+			}
+		}
 	}
 
 	@Override
@@ -718,6 +783,7 @@ public class RubricEditorController extends FormBasicController implements PageE
 		private final TextElement startLabelEl;
 		private final TextElement endLabelEl;
 		private FormLink deleteButton;
+		private UpDown upDown;
 		private FormItem sliderEl;
 		
 		private final Slider slider;
@@ -728,7 +794,7 @@ public class RubricEditorController extends FormBasicController implements PageE
 			this.endLabelEl = endLabelEl;
 			this.sliderEl = sliderEl;
 		}
-		
+
 		public Slider getSlider() {
 			return slider;
 		}
@@ -749,6 +815,14 @@ public class RubricEditorController extends FormBasicController implements PageE
 			this.deleteButton = deleteButton;
 		}
 		
+		public UpDown getUpDown() {
+			return upDown;
+		}
+
+		void setUpDown(UpDown upDown) {
+			this.upDown = upDown;
+		}
+
 		public FormItem getSliderEl() {
 			return sliderEl;
 		}

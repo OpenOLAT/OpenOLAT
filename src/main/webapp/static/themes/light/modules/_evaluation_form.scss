@@ -248,6 +248,7 @@
 	margin: 10px 10px 0 10px;
 	
 	.o_slider_editor {
+		padding-right: 80px;
 		margin-top: 10px;
 		position:relative;
 	}
@@ -289,8 +290,17 @@
 		font-size: 90%;
 	}
 	
+	.o_slider_editor_ud_button {
+		position: absolute;
+		right: 15px;
+	}
+	
 	.o_slider_editor_delete {
-		padding-right: 48px;
+		padding-right: 125px;
+		
+		.o_slider_editor_ud_button {
+			right: 60px;
+		}
 		
 		.o_slider_editor_delete_button {
 			position: absolute;

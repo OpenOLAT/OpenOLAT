@@ -56,7 +56,7 @@ public class UpDown extends AbstractComponent implements ComponentCollection, Co
 	private boolean loweremost = false;
 	private Object userObject;
 
-	public UpDown(String name, Layout layout) {
+	UpDown(String name, Layout layout) {
 		super(name);
 		this.layout = layout;
 		setDomReplacementWrapperRequired(false);

@@ -174,6 +174,7 @@ public class Link extends AbstractComponent {
 	/**
 	 * @see org.olat.core.gui.components.Component#dispatchRequest(org.olat.core.gui.UserRequest)
 	 */
+	@Override
 	protected void doDispatchRequest(UserRequest ureq) {
 		setDirty(true);
 		String cmd = ureq.getParameter(VelocityContainer.COMMAND_ID);
@@ -203,6 +204,7 @@ public class Link extends AbstractComponent {
 	/**
 	 * @see org.olat.core.gui.components.Component#getHTMLRendererSingleton()
 	 */
+	@Override
 	public ComponentRenderer getHTMLRendererSingleton() {
 		return RENDERER;
 	}

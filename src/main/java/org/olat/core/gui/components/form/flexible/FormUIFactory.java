@@ -1298,4 +1298,5 @@ public class FormUIFactory {
 		}
 		return ratingCmp;
 	}
+	
 }
