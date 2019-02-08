@@ -59,6 +59,8 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
+import org.olat.core.commons.services.pdf.PdfModule;
+import org.olat.core.commons.services.pdf.PdfService;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
@@ -139,6 +141,10 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private PdfModule pdfModule;
+	@Autowired
+	private PdfService pdfService;
 	@Autowired
 	private I18nManager i18nManager;
 	@Autowired
@@ -886,10 +892,17 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 				certificate.setStatus(CertificateStatus.ok);
 			}
 		} else {
-			CertificatePhantomWorker worker = new CertificatePhantomWorker(identity, entry, score, passed,
-					dateCertification, dateFirstCertification, dateNextRecertification, certUrl, locale,
-					userManager, this);
-			certificateFile = worker.fill(template, dirFile, filename);
+			if(pdfModule.isEnabled()) {
+				CertificatePdfServiceWorker worker = new CertificatePdfServiceWorker(identity, entry, score, passed,
+						dateCertification, dateFirstCertification, dateNextRecertification, certUrl, locale,
+						userManager, this, pdfService);
+				certificateFile = worker.fill(template, dirFile, filename);
+			} else {
+				CertificatePhantomWorker worker = new CertificatePhantomWorker(identity, entry, score, passed,
+						dateCertification, dateFirstCertification, dateNextRecertification, certUrl, locale,
+						userManager, this);
+				certificateFile = worker.fill(template, dirFile, filename);
+			}
 			if(certificateFile == null) {
 				certificate.setStatus(CertificateStatus.error);
 			} else {
