@@ -48,6 +48,13 @@ public class EvaluationFormFormatter {
 		return String.format("%.2f", value);
 	}
 	
+	public static String oneDecimal(Double value) {
+		if (value == null || Double.isNaN(value)) {
+			return "";
+		}
+		return String.format("%.1f", value);
+	}
+	
 	public static String formatZeroOrOneDecimals(double value) {
 		return ZERO_OR_ONE_DECIMAL.format(value);
 	}
