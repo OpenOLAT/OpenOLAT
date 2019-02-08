@@ -19,6 +19,8 @@
  */
 package org.olat.modules.forms.ui;
 
+import static org.olat.core.gui.components.updown.UpDown.Layout.LINK_HORIZONTAL;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -143,7 +145,8 @@ public class SingleChoiceEditorController extends FormBasicController implements
 			Choice choice = choices.get(i);
 			
 			// move
-			UpDown upDown = UpDownFactory.createUpDown("ud_" + CodeHelper.getRAMUniqueID(), flc.getFormItemComponent(), this);
+			UpDown upDown = UpDownFactory.createUpDown("ud_" + CodeHelper.getRAMUniqueID(), LINK_HORIZONTAL,
+					flc.getFormItemComponent(), this);
 			upDown.setUserObject(choice);
 			if (i == 0) {
 				upDown.setTopmost(true);

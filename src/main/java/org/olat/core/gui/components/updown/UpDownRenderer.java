@@ -42,6 +42,19 @@ public class UpDownRenderer extends DefaultComponentRenderer {
 		
 		UpDown upDown = (UpDown) source;
 		
+		switch (upDown.getLayout()) {
+		case LINK_HORIZONTAL:
+			renderLinkHorizontal(renderer, sb, args, upDown);
+			break;
+		case BUTTON_HORIZONTAL:
+			renderButtonHorizontal(renderer, sb, args, upDown);
+			break;
+		default:
+			break;
+		}
+	}
+
+	private void renderLinkHorizontal(Renderer renderer, StringOutput sb, String[] args, UpDown upDown) {
 		sb.append("<span class='o_updown'>");
 		sb.append("<span class='o_hidden'>", upDown.isTopmost());
 		renderer.render(upDown.getUp(), sb, args);
@@ -51,6 +64,20 @@ public class UpDownRenderer extends DefaultComponentRenderer {
 		renderer.render(upDown.getDown(), sb, args);
 		sb.append("</span>", upDown.isLowermost());
 		sb.append("</span>");
+	}
+
+	private void renderButtonHorizontal(Renderer renderer, StringOutput sb, String[] args, UpDown upDown) {
+		sb.append("<div class='btn-group o_updown'>");
+		if (upDown.isTopmost()) {
+			upDown.getUp().setEnabled(false);
+		}
+		renderer.render(upDown.getUp(), sb, args);
+		
+		if (upDown.isLowermost()) {
+			upDown.getDown().setEnabled(false);
+		}
+		renderer.render(upDown.getDown(), sb, args);
+		sb.append("</div>");
 	}
 
 }

@@ -43,30 +43,47 @@ public class UpDown extends AbstractComponent implements ComponentCollection, Co
 	
 	private static final ComponentRenderer RENDERER = new UpDownRenderer();
 	
+	public enum Layout { LINK_HORIZONTAL, BUTTON_HORIZONTAL };
+	
 	private final Link up;
 	private final Link down;
 
 	private final long idPrefix;
 	private final String downName;
 	private final String upName;
+	private final Layout layout;
 	private boolean topmost = false;
 	private boolean loweremost = false;
 	private Object userObject;
 
-	public UpDown(String name) {
+	public UpDown(String name, Layout layout) {
 		super(name);
+		this.layout = layout;
 		setDomReplacementWrapperRequired(false);
 		idPrefix = CodeHelper.getRAMUniqueID();
 		
 		upName = idPrefix + "_up";
-		this.up = LinkFactory.createCustomLink(upName, "up", "", Link.LINK | Link.NONTRANSLATED, null, this);
+		this.up = createLink(layout, upName);
 		up.setDomReplacementWrapperRequired(false);
 		up.setIconLeftCSS("o_icon o_icon-lg o_icon_move_up");
+		up.setCustomDisplayText("");
 		
 		downName = idPrefix + "_down";
-		this.down = LinkFactory.createCustomLink(downName, "down", "", Link.LINK | Link.NONTRANSLATED, null, this);
+		this.down = createLink(layout, downName);;
 		down.setDomReplacementWrapperRequired(false);
 		down.setIconLeftCSS("o_icon o_icon-lg o_icon_move_down");
+		down.setCustomDisplayText("");
+	}
+
+	private Link createLink(Layout layout, String name) {
+		switch (layout) {
+		case LINK_HORIZONTAL:
+			return LinkFactory.createCustomLink(name, "up", "", Link.LINK | Link.NONTRANSLATED, null, this);
+		case BUTTON_HORIZONTAL:
+			return LinkFactory.createButton(name, null, this);
+		default:
+			return LinkFactory.createCustomLink(name, "up", "", Link.LINK | Link.NONTRANSLATED, null, this);
+		}
 	}
 
 	Link getUp() {
@@ -77,6 +94,10 @@ public class UpDown extends AbstractComponent implements ComponentCollection, Co
 		return down;
 	}
 	
+	Layout getLayout() {
+		return layout;
+	}
+
 	public void setTopmost(boolean topmost) {
 		this.topmost = topmost;
 	}
