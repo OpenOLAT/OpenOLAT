@@ -51,6 +51,8 @@ public class CalendarWSHelper {
 		kalEvent.setLocation(event.getLocation());
 		kalEvent.setManagedFlags(CalendarManagedFlag.toEnum(event.getManagedFlags()));
 		kalEvent.setAllDayEvent(event.isAllDayEvent());
+        kalEvent.setExternalId(event.getExternalId());
+        kalEvent.setExternalSource(event.getExternalSource());
 	}
 	
 	protected static boolean hasReadAccess(KalendarRenderWrapper wrapper) {
