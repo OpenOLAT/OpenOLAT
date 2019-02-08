@@ -141,11 +141,17 @@ public class EditCurriculumController extends FormBasicController {
 		}
 		
 		String selectedOrganisationKey = null;
-		if(curriculum != null && curriculum.getOrganisation() != null) {
-			selectedOrganisationKey = curriculum.getOrganisation().getKey().toString();
-			if(!keyList.contains(selectedOrganisationKey)) {
-				keyList.add(selectedOrganisationKey);
-				valueList.add(curriculum.getOrganisation().getDisplayName());
+		if(curriculum != null) {
+			if(curriculum.getOrganisation() == null) {
+				keyList.add(0, "");
+				valueList.add(0, "-");
+				selectedOrganisationKey = "";
+			} else {
+				selectedOrganisationKey = curriculum.getOrganisation().getKey().toString();
+				if(!keyList.contains(selectedOrganisationKey)) {
+					keyList.add(selectedOrganisationKey);
+					valueList.add(curriculum.getOrganisation().getDisplayName());
+				}
 			}
 		}
 
@@ -186,8 +192,12 @@ public class EditCurriculumController extends FormBasicController {
 		//create a new one
 		Organisation organisation;
 		if(organisationEl != null && organisationEl.isVisible() && organisationEl.isOneSelected()) {
-			organisation = organisationService
-					.getOrganisation(new OrganisationRefImpl(Long.valueOf(organisationEl.getSelectedKey())));
+			if(StringHelper.isLong(organisationEl.getSelectedKey())) {
+				organisation = organisationService
+						.getOrganisation(new OrganisationRefImpl(Long.valueOf(organisationEl.getSelectedKey())));
+			} else {
+				organisation = null;
+			}
 		} else {
 			organisation = organisationService.getDefaultOrganisation();
 		}
