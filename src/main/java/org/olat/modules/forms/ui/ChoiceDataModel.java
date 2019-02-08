@@ -47,7 +47,7 @@ public class ChoiceDataModel extends DefaultFlexiTableDataModel<ChoiceRow> {
 			case move:
 				return choiceRow.getUpDown();
 			case value:
-				return choiceRow.getChoice().getValue();
+				return choiceRow.getValueEl();
 			default:
 				return "";
 		}
@@ -56,7 +56,6 @@ public class ChoiceDataModel extends DefaultFlexiTableDataModel<ChoiceRow> {
 	enum ChoiceCols implements FlexiColumnDef {
 		move("choice.move"),
 		value("choice.value"),
-		edit("choice.edit"),
 		delete("choice.delete");
 		
 		private final String i18nKey;

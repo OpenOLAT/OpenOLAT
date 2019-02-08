@@ -31,6 +31,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -47,7 +48,6 @@ import org.olat.core.gui.components.updown.UpDownFactory;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.CodeHelper;
 import org.olat.modules.ceditor.PageElementEditorController;
 import org.olat.modules.forms.model.xml.Choice;
@@ -63,7 +63,6 @@ import org.olat.modules.forms.ui.ChoiceDataModel.ChoiceCols;
  */
 public class SingleChoiceEditorController extends FormBasicController implements PageElementEditorController {
 
-	private static final String CMD_EDIT = "edit";
 	private static final String CMD_DELETE = "delete";
 	
 	private SingleSelection presentationEl;
@@ -72,8 +71,6 @@ public class SingleChoiceEditorController extends FormBasicController implements
 	private ChoiceDataModel dataModel;
 
 	private SingleChoiceController singleChoiceCtrl;
-	private CloseableModalController cmc;
-	private ChoiceController choiceValueCtrl;
 	
 	private final SingleChoice singleChoice;
 	private boolean editMode = false;
@@ -122,8 +119,6 @@ public class SingleChoiceEditorController extends FormBasicController implements
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ChoiceCols.move));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ChoiceCols.value));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ChoiceCols.edit, CMD_EDIT,
-				new StaticFlexiCellRenderer("", CMD_EDIT, "o_icon o_icon-lg o_icon_edit")));
 		if (!restrictedEdit) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ChoiceCols.delete, CMD_DELETE,
 					new StaticFlexiCellRenderer("", CMD_DELETE, "o_icon o_icon-lg o_icon_delete_item")));
@@ -146,6 +141,8 @@ public class SingleChoiceEditorController extends FormBasicController implements
 		List<ChoiceRow> rows = new ArrayList<>(choices.size());
 		for (int i = 0; i < choices.size(); i++) {
 			Choice choice = choices.get(i);
+			
+			// move
 			UpDown upDown = UpDownFactory.createUpDown("ud_" + CodeHelper.getRAMUniqueID(), flc.getFormItemComponent(), this);
 			upDown.setUserObject(choice);
 			if (i == 0) {
@@ -154,7 +151,13 @@ public class SingleChoiceEditorController extends FormBasicController implements
 			if (i == choices.size() - 1) {
 				upDown.setLowermost(true);
 			}
-			ChoiceRow choiceRow = new ChoiceRow(choice, upDown);
+			
+			// value
+			TextElement valueEl = uifactory.addTextElement("o_value_" + CodeHelper.getRAMUniqueID(), 255, null, flc);
+			valueEl.setValue(choice.getValue());
+			valueEl.addActionListener(FormEvent.ONCHANGE);
+			
+			ChoiceRow choiceRow = new ChoiceRow(choice, upDown, valueEl);
 			rows.add(choiceRow);
 		}
 		dataModel.setObjects(rows);
@@ -163,19 +166,16 @@ public class SingleChoiceEditorController extends FormBasicController implements
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (presentationEl == source) {
-			doSetPresentation();
-			singleChoiceCtrl.updateForm();
+		if (presentationEl == source || source instanceof TextElement) {
+			doSave();
 		} else if (addChoiceEl == source) {
-			doAddChoice(ureq);
+			doAddChoice();
 		} else if(tableEl == source) {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
 				String cmd = se.getCommand();
 				int index = se.getIndex();
-				if (CMD_EDIT.equals(cmd)) {
-					doEditChoice(ureq, index);
-				} else if (CMD_DELETE.equals(cmd)) {
+				if (CMD_DELETE.equals(cmd)) {
 					doDelete(index);
 				}
 			}
@@ -189,34 +189,17 @@ public class SingleChoiceEditorController extends FormBasicController implements
 			UpDownEvent ude = (UpDownEvent) event;
 			doMove((Choice)ude.getUserObject(), ude.getDirection());
 			singleChoiceCtrl.updateForm();
-		}
+		} 
 		super.event(ureq, source, event);
 	}
-
-	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (choiceValueCtrl == source) {
-			if (event == Event.DONE_EVENT) {
-				singleChoice.getChoices().addNotPresent(choiceValueCtrl.getChoice());
-				loadModel();
-				singleChoiceCtrl.updateForm();
-			}
-			cmc.deactivate();
-			cleanUp();
-		} else if(cmc == source) {
-			cleanUp();
-		}
-		super.event(ureq, source, event);
+	
+	private void doSave() {
+		doSavePresentation();
+		doSaveValues();
+		singleChoiceCtrl.updateForm();
 	}
 
-	private void cleanUp() {
-		removeAsListenerAndDispose(choiceValueCtrl);
-		removeAsListenerAndDispose(cmc);
-		choiceValueCtrl = null;
-		cmc = null;
-	}
-
-	private void doSetPresentation() {
+	private void doSavePresentation() {
 		Presentation presentation = null;
 		if (presentationEl.isOneSelected()) {
 			String selectedKey = presentationEl.getSelectedKey();
@@ -224,28 +207,22 @@ public class SingleChoiceEditorController extends FormBasicController implements
 		}
 		singleChoice.setPresentation(presentation);
 	}
+	
+	private void doSaveValues() {
+		for (ChoiceRow choiceRow : dataModel.getObjects()) {
+			TextElement valueEl = choiceRow.getValueEl();
+			String value = valueEl.getValue();
+			choiceRow.getChoice().setValue(value);
+		}
+	}
 
-	private void doAddChoice(UserRequest ureq) {
+	private void doAddChoice() {
 		Choice choice = new Choice();
 		choice.setId(UUID.randomUUID().toString());
-		String title = translate("choice.add");
-		doEditChoice(ureq, choice, title);
-	}
-
-	private void doEditChoice(UserRequest ureq, int index) {
-		ChoiceRow row = dataModel.getObject(index);
-		String title = translate("choice.edit.value");
-		doEditChoice(ureq, row.getChoice(), title);
-	}
-	
-	private void doEditChoice(UserRequest ureq, Choice choice, String title) {
-		choiceValueCtrl = new ChoiceController(ureq, getWindowControl(), choice);
-		listenTo(choiceValueCtrl);
-
-		cmc = new CloseableModalController(getWindowControl(), "close", choiceValueCtrl.getInitialComponent(), true,
-				title, true);
-		listenTo(cmc);
-		cmc.activate();
+		choice.setValue(translate("choice.example"));
+		singleChoice.getChoices().addNotPresent(choice);
+		loadModel();
+		singleChoiceCtrl.updateForm();
 	}
 
 	private void doMove(Choice choice, Direction direction) {
@@ -277,7 +254,7 @@ public class SingleChoiceEditorController extends FormBasicController implements
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		
+		//
 	}
 
 	@Override

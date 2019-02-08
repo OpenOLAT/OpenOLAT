@@ -20,6 +20,7 @@
 package org.olat.modules.forms.ui;
 
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.modules.forms.model.xml.Choice;
 
 /**
@@ -32,10 +33,12 @@ public class ChoiceRow {
 	
 	private final Choice choice;
 	private final Component upDown;
+	private final TextElement valueEl;
 	
 	
-	public ChoiceRow(Choice choice, Component upDown) {
+	public ChoiceRow(Choice choice, Component upDown, TextElement valueEl) {
 		this.choice = choice;
+		this.valueEl = valueEl;
 		this.upDown = upDown;
 	}
 	
@@ -43,6 +46,10 @@ public class ChoiceRow {
 		return choice;
 	}
 	
+	public TextElement getValueEl() {
+		return valueEl;
+	}
+
 	public Component getUpDown() {
 		return upDown;
 	}
