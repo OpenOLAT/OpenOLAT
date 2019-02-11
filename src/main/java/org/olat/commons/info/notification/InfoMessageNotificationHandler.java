@@ -26,7 +26,6 @@ import java.util.Locale;
 
 import org.olat.commons.info.InfoMessage;
 import org.olat.commons.info.InfoMessageManager;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.notifications.NotificationHelper;
 import org.olat.core.commons.services.notifications.NotificationsHandler;
 import org.olat.core.commons.services.notifications.NotificationsManager;
@@ -46,7 +45,6 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -68,7 +66,13 @@ public class InfoMessageNotificationHandler implements NotificationsHandler {
 	private static final String CSS_CLASS_ICON = "o_infomsg_icon";
 	
 	@Autowired
+	private RepositoryManager repositoryManager;
+	@Autowired
 	private InfoMessageManager infoMessageManager;
+	@Autowired
+	private NotificationsManager notificationsManager;
+	@Autowired
+	private BusinessGroupService businessGroupService;
 	
 	@Override
 	public SubscriptionInfo createSubscriptionInfo(Subscriber subscriber, Locale locale, Date compareDate) {
@@ -89,16 +93,13 @@ public class InfoMessageNotificationHandler implements NotificationsHandler {
 				String displayName;
 				String notificationtitle;
 				if ("BusinessGroup".equals(resName)) {
-					BusinessGroupService groupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
-					BusinessGroup group = groupService.loadBusinessGroup(resId);
+					BusinessGroup group = businessGroupService.loadBusinessGroup(resId);
 					displayName = group.getName();
 					notificationtitle = "notification.title.group";
 				} else {
-					RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(OresHelper.createOLATResourceableInstance(resName, resId), false);
-					if(re== null || re.getEntryStatus() == RepositoryEntryStatusEnum.closed
-							|| re.getEntryStatus() == RepositoryEntryStatusEnum.trash
-							|| re.getEntryStatus() == RepositoryEntryStatusEnum.deleted) {
-						return NotificationsManager.getInstance().getNoSubscriptionInfo();
+					RepositoryEntry re = repositoryManager.lookupRepositoryEntry(OresHelper.createOLATResourceableInstance(resName, resId), false);
+					if(re== null || re.getEntryStatus().decommissioned()) {
+						return notificationsManager.getNoSubscriptionInfo();
 					}					
 					displayName = re.getDisplayname();	
 					notificationtitle = "notification.title";
@@ -122,10 +123,10 @@ public class InfoMessageNotificationHandler implements NotificationsHandler {
 				}
 			} catch (Exception e) {
 				log.error("Unexpected exception", e);
-				si = NotificationsManager.getInstance().getNoSubscriptionInfo();
+				si = notificationsManager.getNoSubscriptionInfo();
 			}
 		} else {
-			si = NotificationsManager.getInstance().getNoSubscriptionInfo();
+			si = notificationsManager.getNoSubscriptionInfo();
 		}
 		return si;
 	}
@@ -133,7 +134,7 @@ public class InfoMessageNotificationHandler implements NotificationsHandler {
 	@Override
 	public String createTitleInfo(Subscriber subscriber, Locale locale) {
 		Translator translator = Util.createPackageTranslator(this.getClass(), locale);
-		String displayName = RepositoryManager.getInstance().lookupDisplayNameByOLATResourceableId(subscriber.getPublisher().getResId());
+		String displayName = repositoryManager.lookupDisplayNameByOLATResourceableId(subscriber.getPublisher().getResId());
 		return translator.translate("notification.title", new String[]{displayName});
 	}
 	

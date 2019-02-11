@@ -128,7 +128,11 @@ public class PersistingCourseGroupManager implements CourseGroupManager {
 	
 	@Override
 	public boolean isNotificationsAllowed() {
-		return false;
+		RepositoryEntry re = getCourseEntry();
+		if(re == null || re.getEntryStatus() == null) {
+			return false;
+		}
+		return !re.getEntryStatus().decommissioned();
 	}
 
 	public void updateRepositoryEntry(RepositoryEntry entry) {
