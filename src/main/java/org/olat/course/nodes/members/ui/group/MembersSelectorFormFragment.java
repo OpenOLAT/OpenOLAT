@@ -160,16 +160,18 @@ public abstract class MembersSelectorFormFragment extends FormBasicController {
 				|| config.getBooleanSafe(getConfigKeyCoachesCourse())
 				|| config.get(getConfigKeyCoachesGroup()) != null
 				|| config.get(getConfigKeyCoachesArea()) != null
-				||  config.get(getConfigKeyCoachesCurriculumElement()) != null;
+				|| config.get(getConfigKeyCoachesCurriculumElement()) != null;
 
 		// COACHES: from course or groups
 		wantCoaches = uifactory.addCheckboxesHorizontal("coaches", "message.want.coaches", formLayout, onKeys, new String[]{ "" });
+		wantCoaches.setElementCssClass("o_sel_config_want_coaches");
 		if(coacheSelection != null && coacheSelection) {
 			wantCoaches.select("xx", true);
 		}
 		wantCoaches.addActionListener(FormEvent.ONCLICK);
 		
 		coachesChoice = uifactory.addRadiosVertical("coachesChoice", null, formLayout, membersKeys, membersCoachesValues);
+		coachesChoice.setElementCssClass("o_sel_config_coaches");
 		if(config.getBooleanSafe(getConfigKeyCoachesAll())) {
 			coachesChoice.select("all", true);
 		}
@@ -255,10 +257,12 @@ public abstract class MembersSelectorFormFragment extends FormBasicController {
 				|| config.get(getConfigKeyParticipantsCurriculumElement()) != null;
 		
 		wantParticipants = uifactory.addCheckboxesHorizontal("participants", "message.want.participants", formLayout, onKeys,new String[]{null});
+		wantParticipants.setElementCssClass("o_sel_config_want_participants");
 		if(particiapntSelection != null && particiapntSelection) wantParticipants.select("xx", true);
 		wantParticipants.addActionListener(FormEvent.ONCLICK);
 		
 		participantsChoice = uifactory.addRadiosVertical("participantsChoice", null, formLayout, membersKeys, membersParticipantsValues);
+		participantsChoice.setElementCssClass("o_sel_config_participants");
 		if(config.getBooleanSafe(getConfigKeyParticipantsAll())) {
 			participantsChoice.select("all", true);
 		}

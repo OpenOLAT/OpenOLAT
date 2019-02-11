@@ -221,7 +221,7 @@ public class CourseEditorPageFragment {
 		
 		By nodeBy = By.xpath("//div[@id='o_course_editor_choose_nodetype']//a[contains(@class,'o_sel_course_editor_node-" + nodeAlias + "')]");
 		OOGraphene.waitElement(nodeBy, browser);
-		if("lti".equals(nodeAlias)) {
+		if("lti".equals(nodeAlias) || "co".equals(nodeAlias)) {
 			OOGraphene.clickAndWait(nodeBy, browser);
 		} else {
 			browser.findElement(nodeBy).click();

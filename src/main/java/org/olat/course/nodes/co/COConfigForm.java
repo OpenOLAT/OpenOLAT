@@ -228,6 +228,7 @@ public class COConfigForm extends MembersSelectorFormFragment {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_co_config_form");
 
 		Boolean ownerSelection = config.getBooleanSafe(COEditController.CONFIG_KEY_EMAILTOOWNERS);
 
@@ -253,6 +254,7 @@ public class COConfigForm extends MembersSelectorFormFragment {
 		
 		// Course authors / owners
 		wantOwners = uifactory.addCheckboxesHorizontal("wantOwners","message.want.owners" , formLayout, new String[]{"xx"},new String[]{null});
+		wantOwners.setElementCssClass("o_sel_co_want_owners");
 		if( ownerSelection!= null){
 			wantOwners.select("xx", ownerSelection.booleanValue());
 		}
