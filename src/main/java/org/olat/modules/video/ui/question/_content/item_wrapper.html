@@ -6,6 +6,7 @@
 jQuery(function() {
 	var player = jQuery('#o_so_vid${videoElementId}').data('player');
 	player.pause();
+	player.options.enableKeyboard=false;
 	#if($r.isFalse($authorMode))
 	jQuery(player.controls).hide();
 	jQuery('#' + player.id + ' .mejs__overlay-play')
