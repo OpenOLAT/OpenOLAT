@@ -49,7 +49,6 @@ import org.olat.modules.webFeed.Feed;
 import org.olat.modules.webFeed.Item;
 import org.olat.modules.webFeed.ui.FeedMainController;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -85,29 +84,28 @@ public abstract class FeedNotificationsHandler implements NotificationsHandler {
 		try {
 		 	final Translator translator = Util.createPackageTranslator(FeedMainController.class, locale);
 		 	if (notificationsManager.isPublisherValid(p) && compareDate.before(latestNews)) {
+
+				RepositoryEntry re = repoManager.lookupRepositoryEntry(
+						OresHelper.createOLATResourceableInstance(p.getResName(), p.getResId()), false);
+				if (re.getEntryStatus().decommissioned()) {
+					return notificationsManager.getNoSubscriptionInfo();
+				}
+				
 				String title;
-				try {
-					RepositoryEntry re = repoManager.lookupRepositoryEntry(
-							OresHelper.createOLATResourceableInstance(p.getResName(), p.getResId()), false);
-					RepositoryEntryStatusEnum status = re.getEntryStatus();
-					if (status.decommissioned()) {
+				String displayName = re.getDisplayname();
+				if("CourseModule".equals(p.getResName())) {
+					ICourse course = CourseFactory.loadCourse(re);
+					CourseNode node = course.getRunStructure().getNode(p.getSubidentifier());
+					if(node == null) {
+						notificationsManager.deactivate(p);
 						return notificationsManager.getNoSubscriptionInfo();
 					}
-					String displayName = re.getDisplayname();
-					if("CourseModule".equals(p.getResName())) {
-						ICourse course = CourseFactory.loadCourse(re);
-						CourseNode node = course.getRunStructure().getNode(p.getSubidentifier());
-						if(node == null) {
-							notificationsManager.deactivate(p);
-							return notificationsManager.getNoSubscriptionInfo();
-						}
-						title = translator.translate(NOTIFICATIONS_HEADER_COURSE,  new String[]{displayName});
-					} else {
-						title = getHeader(translator, displayName);
+					if (!course.getCourseEnvironment().getCourseGroupManager().isNotificationsAllowed()) {
+						return notificationsManager.getNoSubscriptionInfo();
 					}
-				} catch (Exception e) {
-					log.error("Unknown Exception", e);
-					return notificationsManager.getNoSubscriptionInfo();
+					title = translator.translate(NOTIFICATIONS_HEADER_COURSE,  new String[]{displayName});
+				} else {
+					title = getHeader(translator, displayName);
 				}
 
 				OLATResourceable feedOres = OresHelper.createOLATResourceableInstance(p.getType(), new Long(p.getData()));
@@ -138,6 +136,10 @@ public abstract class FeedNotificationsHandler implements NotificationsHandler {
 		String urlToSend = BusinessControlFactory.getInstance()
 					.getURLFromBusinessPathString(businessPath);
 		String iconCssClass = item.extraCSSClass();
+		if(!StringHelper.containsNonWhitespace(iconCssClass)) {
+			iconCssClass = getCssClassIcon();
+		}
+		
 		Date publishDate = item.getPublishDate();
 		if(item.isPublished()) {
 			if(compareDate.before(publishDate)) {

@@ -42,7 +42,6 @@ import org.olat.core.commons.services.notifications.model.TitleItem;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.BusinessControlFactory;
-import org.olat.core.logging.LogDelegator;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
@@ -52,7 +51,6 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.modules.fo.manager.ForumManager;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 
 /**
@@ -60,7 +58,7 @@ import org.olat.repository.RepositoryManager;
  * 
  * @author Felix Jost
  */
-public class ForumNotificationsHandler extends LogDelegator implements NotificationsHandler {
+public class ForumNotificationsHandler implements NotificationsHandler {
 	private static final OLog log = Tracing.createLoggerFor(ForumNotificationsHandler.class);
 
 	public ForumNotificationsHandler() {
@@ -85,16 +83,14 @@ public class ForumNotificationsHandler extends LogDelegator implements Notificat
 				try {
 					forumKey = Long.parseLong(p.getData());
 				} catch (NumberFormatException e) {
-					logError("Could not parse forum key!", e);
+					log.error("Could not parse forum key!", e);
 					NotificationsManager.getInstance().deactivate(p);
 					return NotificationsManager.getInstance().getNoSubscriptionInfo();
 				}
 				
 				if("CourseModule".equals(p.getResName())) {
 					RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(OresHelper.createOLATResourceableInstance(p.getResName(), p.getResId()), false);
-					if(re == null || re.getEntryStatus() == RepositoryEntryStatusEnum.closed
-							|| re.getEntryStatus() == RepositoryEntryStatusEnum.trash
-							|| re.getEntryStatus() == RepositoryEntryStatusEnum.deleted) {
+					if(re == null || re.getEntryStatus().decommissioned()) {
 						return NotificationsManager.getInstance().getNoSubscriptionInfo();
 					}
 				}
@@ -153,17 +149,17 @@ public class ForumNotificationsHandler extends LogDelegator implements Notificat
 			if("BusinessGroup".equals(p.getResName())) {
 				BusinessGroup bg = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(p.getResId());
 				if(bg == null) {
-					logInfo("deactivating publisher with key; " + p.getKey(), null);
+					log.info("deactivating publisher with key; " + p.getKey(), null);
 					NotificationsManager.getInstance().deactivate(p);
 				}
 			} else if ("CourseModule".equals(p.getResName())) {
 				if(!NotificationsUpgradeHelper.checkCourse(p)) {
-					logInfo("deactivating publisher with key; " + p.getKey(), null);
+					log.info("deactivating publisher with key; " + p.getKey(), null);
 					NotificationsManager.getInstance().deactivate(p);
 				}
 			}
 		} catch (Exception e) {
-			logError("", e);
+			log.error("", e);
 		}
 	}
 

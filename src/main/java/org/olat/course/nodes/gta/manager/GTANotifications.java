@@ -71,7 +71,6 @@ import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.manager.AssessmentEntryDAO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
-import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryService;
 import org.olat.user.UserManager;
 
@@ -145,14 +144,12 @@ class GTANotifications {
 		if(subIdentifier.startsWith("Marked::")) {
 			subIdentifier = subIdentifier.substring("Marked::".length(), subIdentifier.length());
 		}
-		CourseNode node = course.getRunStructure().getNode(subIdentifier);
-		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		if(entry == null || entry.getEntryStatus() == RepositoryEntryStatusEnum.closed
-				|| entry.getEntryStatus() == RepositoryEntryStatusEnum.trash
-				|| entry.getEntryStatus() == RepositoryEntryStatusEnum.deleted) {
+		if(!course.getCourseEnvironment().getCourseGroupManager().isNotificationsAllowed()) {
 			return Collections.emptyList();
 		}
 		
+		CourseNode node = course.getRunStructure().getNode(subIdentifier);
+		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		if(node instanceof GTACourseNode) {
 			gtaNode = (GTACourseNode)node;
 			displayName = entry.getDisplayname();

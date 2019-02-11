@@ -95,7 +95,6 @@ public class GTAMarkedNotificationsHandler implements NotificationsHandler  {
 			}
 		} catch (Exception e) {
 			log.error("Cannot create gtask notifications for subscriber: " + subscriber.getKey(), e);
-			//checkPublisher(p);
 			si = notificationsManager.getNoSubscriptionInfo();
 		}
 		return si;
