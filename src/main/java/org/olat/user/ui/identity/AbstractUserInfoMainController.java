@@ -166,7 +166,7 @@ public abstract class AbstractUserInfoMainController extends BasicController {
 		
 		OLATResourceable ores = OresHelper.createOLATResourceableType(CMD_CONTACT);
 		WindowControl bwControl = addToHistory(ureq, ores, null);
-		contactFormController = new ContactFormController(ureq, bwControl, true, false, false, cmsg);
+		contactFormController = new ContactFormController(ureq, bwControl, true, false, false, cmsg, null);
 		listenTo(contactFormController);
 		return contactFormController;
 	}

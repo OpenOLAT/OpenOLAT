@@ -381,7 +381,7 @@ public class StudentCoursesController extends FormBasicController implements Act
 		ContactList contactList = new ContactList(fullName);
 		contactList.add(student);
 		cmsg.addEmailTo(contactList);
-		contactCtrl = new ContactFormController(ureq, getWindowControl(), true, false, false, cmsg);
+		contactCtrl = new ContactFormController(ureq, getWindowControl(), true, false, false, cmsg, null);
 		listenTo(contactCtrl);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), contactCtrl.getInitialComponent());
 		cmc.activate();

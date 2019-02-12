@@ -45,6 +45,14 @@ public class MailBundle {
 	private String metaId;
 	private MailContent content;
 	
+	public MailBundle() {
+		//
+	}
+	
+	public MailBundle(MailContext context) {
+		this.context = context;
+	}
+	
 	public MailContext getContext() {
 		return context;
 	}

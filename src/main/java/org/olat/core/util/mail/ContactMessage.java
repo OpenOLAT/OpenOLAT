@@ -49,7 +49,7 @@ public class ContactMessage {
 	 * 
 	 * @param from
 	 */
-	public ContactMessage(Identity from){
+	public ContactMessage(Identity from) {
 		this.from = from;
 		disabledIdentities = new ArrayList<>();
 	}
@@ -61,12 +61,15 @@ public class ContactMessage {
 	public void setSubject(String subject){
 		this.subject=subject;
 	}
+	
 	public String getSubject(){
 		return subject;
 	}
+	
 	public void setBodyText(String bodyText){
 		this.bodyText=bodyText;
 	}
+	
 	public String getBodyText(){
 		return bodyText;
 	}

@@ -853,7 +853,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 		//create e-mail Message
 		ContactMessage cmsg = new ContactMessage(ureq.getIdentity());
 		cmsg.addEmailTo(caretaker);
-		contactCtrl = new ContactFormController(ureq, getWindowControl(), true, false, false, cmsg);
+		contactCtrl = new ContactFormController(ureq, getWindowControl(), true, false, false, cmsg, null);
 		listenTo(contactCtrl);
 		
 		// open form in dialog

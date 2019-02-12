@@ -85,27 +85,27 @@ import org.olat.user.UserManager;
 
 public class ContactForm extends FormBasicController {
 	//
-	private final static String NLS_CONTACT_TO = "contact.to";
+	private static final String NLS_CONTACT_TO = "contact.to";
 	private TextElement tto = null;
 	private TextElement ttoBig = null;
-	private final static String NLS_CONTACT_FROM = "contact.from";
+	private static final String NLS_CONTACT_FROM = "contact.from";
 	private TextElement tfrom;
-	private final static String NLS_CONTACT_SUBJECT = "contact.subject";
+	private static final String NLS_CONTACT_SUBJECT = "contact.subject";
 	private TextElement tsubject;
-	private final static String NLS_CONTACT_BODY = "contact.body";
+	private static final String NLS_CONTACT_BODY = "contact.body";
 	private RichTextElement tbody;
-	private final static String NLS_CONTACT_ATTACHMENT = "contact.attachment";
-	private final static String NLS_CONTACT_ATTACHMENT_EXPL = "contact.attachment.maxsize";
+	private static final String NLS_CONTACT_ATTACHMENT = "contact.attachment";
+	private static final String NLS_CONTACT_ATTACHMENT_EXPL = "contact.attachment.maxsize";
 	private int contactAttachmentMaxSizeInMb = 5;
 	private FileElement attachmentEl;
 	private List<FormLink> attachmentLinks = new ArrayList<>();
 	private FormLayoutContainer uploadCont;
 	private boolean recipientsAreEditable = false;
-	private final static int emailCols = 60;
+	private static final int emailCols = 60;
 	private boolean readOnly=false;
 	private boolean hasMsgCancel=false;
 	private boolean hasMsgSave=true;
-	private final static String NLS_CONTACT_SEND_CP_FROM = "contact.cp.from";
+	private static final String NLS_CONTACT_SEND_CP_FROM = "contact.cp.from";
 	private SelectionElement tcpfrom;
 	private Identity emailFrom;
 	private File attachementTempDir;
@@ -199,17 +199,11 @@ public class ContactForm extends FormBasicController {
 		}
 		boolean subjectOk = !tsubject.isEmpty("error.field.not.empty");
 		boolean bodyOk = !tbody.isEmpty("error.field.not.empty");
-		// the body message may not be longer than about 4 pages or 10000
-		// characters
-		//bodyOk = bodyOk && tbody.notLongerThan(10000, "input.toolong");
 		boolean toOk = false;
 		if (tto != null) {
 			toOk = !tto.isEmpty("error.field.not.empty");
 		} else {
 			toOk = !ttoBig.isEmpty("error.field.not.empty");
-			// limit of recipients about 700 (1 emailaddress medial 40
-			// characters)
-			//toOk = toOk && ttoBig.notLongerThan(30000, "input.toolong");
 		}
 		boolean fromOk = !tfrom.isEmpty("error.field.not.empty");
 		return subjectOk && bodyOk && toOk && fromOk && fromMailAddOk;
@@ -328,7 +322,6 @@ public class ContactForm extends FormBasicController {
 				attachmentEl.reset();
 			} else {
 				File attachment = attachmentEl.moveUploadFileTo(attachementTempDir);
-//				attachment = null;
 				// OO-48  somehow file-move can fail, check for it, display error-dialog if it failed
 				if(attachment == null){
 					attachmentEl.reset();

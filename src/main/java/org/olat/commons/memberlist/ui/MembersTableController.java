@@ -326,7 +326,7 @@ public class MembersTableController extends FormBasicController {
 			cmsg.addEmailTo(contactList);
 			// preset body template from i18n
 			cmsg.setBodyText(createBodyTemplate());
-			emailController = new ContactFormController(ureq, getWindowControl(), true, false, false, cmsg);
+			emailController = new ContactFormController(ureq, getWindowControl(), true, false, false, cmsg, null);
 			listenTo(emailController);
 			
 			String title = translate("members.email.title");

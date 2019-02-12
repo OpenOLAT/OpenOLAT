@@ -53,6 +53,7 @@ import org.olat.group.BusinessGroupService;
 import org.olat.group.area.BGAreaManager;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.co.ContactFormController;
+import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -153,13 +154,13 @@ public class CORunController extends BasicController {
 			ContactList cl = retrieveCoachesFromCourse();
 			contactLists.push(cl);
 			List<BusinessGroup> groups = cgm.getAllBusinessGroups();
-			List<Long> grp_keys = new ArrayList<>();
+			List<Long> groupKeys = new ArrayList<>();
 			for(BusinessGroup group:groups){
-				grp_keys.add(group.getKey());
+				groupKeys.add(group.getKey());
 			}
-			cl = retrieveCoachesFromGroups(grp_keys);
+			cl = retrieveCoachesFromGroups(groupKeys);
 			contactLists.push(cl);
-			cl = retrieveCoachesFromAreas(grp_keys);
+			cl = retrieveCoachesFromAreas(groupKeys);
 			contactLists.push(cl);
 		} else if (coachesCourseConfigured != null && coachesCourseConfigured.booleanValue()){
 			ContactList cl = retrieveCoachesFromCourse();
@@ -170,13 +171,13 @@ public class CORunController extends BasicController {
 			ContactList cl = retrieveParticipantsFromCourse();
 			contactLists.push(cl);
 			List<BusinessGroup> groups = cgm.getAllBusinessGroups();
-			List<Long> grp_keys = new ArrayList<>();
+			List<Long> groupKeys = new ArrayList<>();
 			for(BusinessGroup group:groups){
-				grp_keys.add(group.getKey());
+				groupKeys.add(group.getKey());
 			}
-			cl = retrieveParticipantsFromGroups(grp_keys);
+			cl = retrieveParticipantsFromGroups(groupKeys);
 			contactLists.push(cl);
-			cl = retrieveParticipantsFromAreas(grp_keys);
+			cl = retrieveParticipantsFromAreas(groupKeys);
 			contactLists.push(cl);
 		} else if (participantsCourseConfigured != null && participantsCourseConfigured.booleanValue()){
 			ContactList cl = retrieveParticipantsFromCourse();
@@ -213,17 +214,18 @@ public class CORunController extends BasicController {
 			contactLists.push(emailList);
 		}
 
-		if (contactLists.size() > 0) { 
+		if (!contactLists.isEmpty()) { 
 			ContactMessage cmsg = new ContactMessage(ureq.getIdentity());
-			
 			while (!contactLists.empty()) {
 				ContactList cl = contactLists.pop();
 				cmsg.addEmailTo(cl);	
 			}
 			
-			cmsg.setBodyText(mBody);
-			cmsg.setSubject(mSubject);
-			coFoCtr = new ContactFormController(ureq, getWindowControl(), false, false, false, cmsg);
+			RepositoryEntry entry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+			CourseMailTemplate template = new CourseMailTemplate(entry, getIdentity(), getLocale());
+			template.setBodyTemplate(mBody);
+			template.setSubjectTemplate(mSubject);
+			coFoCtr = new ContactFormController(ureq, getWindowControl(), false, false, false, cmsg, template);
 			listenTo(coFoCtr);//dispose as this controller is disposed
 			putInitialPanel(coFoCtr.getInitialComponent());
 		} else { // no email adresses at all

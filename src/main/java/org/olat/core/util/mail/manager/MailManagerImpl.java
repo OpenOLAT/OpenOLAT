@@ -667,20 +667,20 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 	}
 
 	@Override
-	public MailBundle makeMailBundle(MailContext ctxt, Identity recipientTO,
+	public MailBundle makeMailBundle(MailContext ctxt, Identity recipientTo,
 			MailTemplate template, Identity sender, String metaId, MailerResult result) {	
 
 		MailBundle bundle;
-		if(MailHelper.isDisabledMailAddress(recipientTO, result)) {
+		if(recipientTo != null && MailHelper.isDisabledMailAddress(recipientTo, result)) {
 			bundle = null;//email disabled, nothing to do
 		} else {
-			MailContent msg = createWithContext(recipientTO, template, result);
+			MailContent msg = createWithContext(recipientTo, template, result);
 			if(msg != null && result.getReturnCode() == MailerResult.OK){
 				// send mail
 				bundle = new MailBundle();
 				bundle.setContext(ctxt);
 				bundle.setFromId(sender);
-				bundle.setToId(recipientTO);
+				bundle.setToId(recipientTo);
 				bundle.setMetaId(metaId);
 				bundle.setContent(msg);
 			} else {

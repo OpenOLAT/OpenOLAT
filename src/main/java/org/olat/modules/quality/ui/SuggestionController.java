@@ -63,7 +63,7 @@ public class SuggestionController extends BasicController {
 		String emailBody = qualityModule.getSuggestionEmailBody();
 		contactMessage.setBodyText(emailBody);
 
-		contactFormCtrl = new ContactFormController(ureq, getWindowControl(), false, false, false, contactMessage);
+		contactFormCtrl = new ContactFormController(ureq, getWindowControl(), false, false, false, contactMessage, null);
 		contactFormCtrl.setContactFormTitle(translate("suggestion.title"));
 		contactFormCtrl.setContactFormDescription(translate("suggestion.description"));
 		listenTo(contactFormCtrl);

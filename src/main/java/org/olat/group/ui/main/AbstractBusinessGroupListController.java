@@ -592,7 +592,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 		msg.setBodyText(translate("request.leaving.body", args));
 		msg.addEmailTo(contacts);
 		
-		contactCtrl = new ContactFormController(ureq, getWindowControl(), true, false, true, msg);
+		contactCtrl = new ContactFormController(ureq, getWindowControl(), true, false, true, msg, null);
 		listenTo(contactCtrl);
 		cmc = new CloseableModalController(getWindowControl(), "close", contactCtrl.getInitialComponent(),
 				true, translate("dialog.modal.bg.asktoleave.title"));

@@ -831,7 +831,7 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 			ContactMessage cmsg = new ContactMessage(ureq.getIdentity());
 			cmsg.addEmailTo(contactList);
 			
-			emailController = new ContactFormController(ureq, getWindowControl(), true, false, false, cmsg);
+			emailController = new ContactFormController(ureq, getWindowControl(), true, false, false, cmsg, null);
 			listenTo(emailController);
 			
 			removeAsListenerAndDispose(cmc);

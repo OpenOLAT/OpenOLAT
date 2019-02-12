@@ -90,9 +90,9 @@ public class ContactController extends BasicController implements GenericEventLi
 		contactMessage.addEmailTo(contactList);
 
 		// Show GUI
-		this.contactForm = new ContactFormController(ureq, getWindowControl(), false, false, false, contactMessage);
-		listenTo(this.contactForm);
-		this.content.put("contactForm", this.contactForm.getInitialComponent());
+		contactForm = new ContactFormController(ureq, getWindowControl(), false, false, false, contactMessage, null);
+		listenTo(contactForm);
+		content.put("contactForm", contactForm.getInitialComponent());
 		putInitialPanel(content);
 	}
 

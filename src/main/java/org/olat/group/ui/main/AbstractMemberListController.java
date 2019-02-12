@@ -671,7 +671,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		contactList.addAllIdentites(identities);
 		contactMessage.addEmailTo(contactList);
 		
-		contactCtrl = new ContactFormController(ureq, getWindowControl(), true, false, false, contactMessage);
+		contactCtrl = new ContactFormController(ureq, getWindowControl(), true, false, false, contactMessage, null);
 		listenTo(contactCtrl);
 
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), contactCtrl.getInitialComponent(),
@@ -745,7 +745,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		
 		OLATResourceable ores = OresHelper.createOLATResourceableType("Contact");
 		WindowControl bwControl = addToHistory(ureq, ores, null);
-		contactCtrl = new ContactFormController(ureq, bwControl, true, false, false, cmsg);
+		contactCtrl = new ContactFormController(ureq, bwControl, true, false, false, cmsg, null);
 		listenTo(contactCtrl);
 		
 		toolbarPanel.pushController(fullname, contactCtrl);
