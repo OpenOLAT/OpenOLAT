@@ -41,6 +41,7 @@ import org.olat.selenium.page.User;
 import org.olat.selenium.page.course.AssessmentToolPage;
 import org.olat.selenium.page.course.CourseEditorPageFragment;
 import org.olat.selenium.page.course.CoursePageFragment;
+import org.olat.selenium.page.course.MembersPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.qti.QTI21ConfigurationCEPage;
 import org.olat.selenium.page.qti.QTI21CorrectionPage;
@@ -1063,5 +1064,109 @@ public class ImsQTI21Test extends Deployments {
 		qtiPage = QTI21Page
 			.getQTI21Page(participantBrowser)
 			.assertOnCourseAssessmentTestScore(2);
+	}
+	
+	/**
+	 * An author create a course with a course element
+	 * of type self test. It add a participant. The
+	 * participant log in, go to the course to make the
+	 * test.
+	 * 
+	 * @param loginPage The login page
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void qti21Course_selfTest(@InitialPage LoginPage loginPage)
+	throws IOException, URISyntaxException {
+						
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("ryomou");
+		
+		loginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//upload a test
+		String qtiTestTitle = "Simple QTI 2.1 " + UUID.randomUUID();
+		URL qtiTestUrl = JunitTestHelper.class.getResource("file_resources/qti21/simple_QTI_21_test.zip");
+		File qtiTestFile = new File(qtiTestUrl.toURI());
+		navBar
+			.openAuthoringEnvironment()
+			.uploadResource(qtiTestTitle, qtiTestFile);
+		
+		//create a course
+		String courseTitle = "Course-self-" + UUID.randomUUID();
+		CoursePageFragment courseRuntime = navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle)
+			.clickToolbarBack();
+		
+		//add participants
+		MembersPage members = courseRuntime
+			.members();
+		members
+			.importMembers()
+			.setMembers(ryomou)
+			.nextUsers()
+			.nextOverview()
+			.selectRepositoryEntryRole(false, false, true)
+			.nextPermissions()
+			.finish();
+		// back to course
+		members
+			.clickToolbarBack();
+		
+		//create a course element of type Test with the test that we create above
+		String nodeTitle = "Selftest";
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+			.edit();
+		courseEditor
+			.createNode("iqself")
+			.nodeTitle(nodeTitle)
+			.selectTabLearnContent()
+			.chooseTest(qtiTestTitle);
+		
+		QTI21ConfigurationCEPage configPage = new QTI21ConfigurationCEPage(browser);
+		configPage
+			.showResultsOnHomepage(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
+			.showScoreOnHomepage(true)
+			.saveConfiguration();
+		
+		courseEditor
+			.autoPublish()
+			.publish()
+			.settings()
+			.accessConfiguration()
+			.setUserAccess(UserAccess.membersOnly)
+			.save()
+			.clickToolbarBack();
+			
+		//log out
+		new UserToolsPage(browser)
+			.logout();
+		
+		// participant comes in and do the self test
+		loginPage.loginAs(ryomou.getLogin(), ryomou.getPassword());
+
+		NavigationPage ryomouNavBar = new NavigationPage(browser);
+		ryomouNavBar
+			.openMyCourses()
+			.select(courseTitle);
+		
+		CoursePageFragment course = new CoursePageFragment(browser);
+		course
+			.clickTree()
+			.selectWithTitle(nodeTitle);
+
+		QTI21Page qtiPage = QTI21Page
+			.getQTI21Page(browser);
+		qtiPage
+			.start()
+			.answerSingleChoiceWithParagraph("Right")
+			.saveAnswer()
+			.endTest()
+			.closeAssessmentResults()
+			.assertOnStart()
+			.assertOnAssessmentResults();
 	}
 }

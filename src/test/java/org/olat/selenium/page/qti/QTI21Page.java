@@ -59,13 +59,19 @@ public class QTI21Page {
 		return new QTI21Page(browser);
 	}
 	
+	public QTI21Page assertOnStart() {
+		By startBy = By.cssSelector("a.o_sel_start_qti21assessment");
+		OOGraphene.waitElement(startBy, browser);
+		return this;
+	}
+	
 	public QTI21Page start() {
 		By startBy = By.cssSelector("a.o_sel_start_qti21assessment");
 		WebElement startButton = browser.findElement(startBy);
 		startButton.click();
 		OOGraphene.waitBusy(browser);
 		By mainBy = By.cssSelector("div.qtiworks.o_assessmenttest");
-		OOGraphene.waitElement(mainBy, 5, browser);
+		OOGraphene.waitElement(mainBy, browser);
 		return this;
 	}
 	
