@@ -370,6 +370,8 @@ public class ContactForm extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_contact_form");
+		
 		setFormTitle("header.newcntctmsg");
 		String fullName = userManager.getUserDisplayName(emailFrom);
 		if(StringHelper.containsNonWhitespace(fullName)) {
@@ -381,6 +383,7 @@ public class ContactForm extends FormBasicController {
 		tfrom.setEnabled((this.emailFrom == null));
 		
 		tto = uifactory.addTextElement("tto", NLS_CONTACT_TO, 255, "", formLayout);
+		tto.setElementCssClass("o_sel_contact_to");
 		tto.setEnabled(false);
 		tto.setVisible(false);
 	
@@ -389,8 +392,10 @@ public class ContactForm extends FormBasicController {
 		ttoBig.setVisible(false);
 		
 		tsubject = uifactory.addTextElement("tsubject", NLS_CONTACT_SUBJECT, 255, "", formLayout);
+		tsubject.setElementCssClass("o_sel_contact_subject");
 		tsubject.setDisplaySize(emailCols);
 		tbody = uifactory.addRichTextElementForStringDataMinimalistic("tbody", NLS_CONTACT_BODY, "", 15, emailCols, formLayout, getWindowControl());
+		tbody.setElementCssClass("o_sel_contact_body");
 		tbody.setEnabled(!readOnly);
 		tbody.getEditorConfiguration().setRelativeUrls(false);
 		tbody.getEditorConfiguration().setRemoveScriptHost(false);

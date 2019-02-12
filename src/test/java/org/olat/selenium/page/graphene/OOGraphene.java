@@ -289,6 +289,10 @@ public class OOGraphene {
 				break a_a;
 			}
 		}
+		
+		if(!found) {
+			System.out.println();
+		}
 
 		Assert.assertTrue("Found the tab", found);
 	}

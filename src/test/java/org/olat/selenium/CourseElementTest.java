@@ -40,8 +40,10 @@ import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.Participant;
 import org.olat.selenium.page.Student;
 import org.olat.selenium.page.User;
+import org.olat.selenium.page.core.ContactPage;
 import org.olat.selenium.page.core.FolderPage;
 import org.olat.selenium.page.core.MenuTreePageFragment;
+import org.olat.selenium.page.course.ContactConfigPage;
 import org.olat.selenium.page.course.CourseEditorPageFragment;
 import org.olat.selenium.page.course.CoursePageFragment;
 import org.olat.selenium.page.course.DialogConfigurationPage;
@@ -101,7 +103,7 @@ public class CourseElementTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void createCourseWithCP(@InitialPage LoginPage loginPage)
+	public void courseWithCP(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
@@ -213,7 +215,7 @@ public class CourseElementTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void createCourseWithWiki(@InitialPage LoginPage loginPage)
+	public void courseWithWiki(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
@@ -275,7 +277,7 @@ public class CourseElementTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void createCourseWithWiki_createInCourseEditor(@InitialPage LoginPage loginPage)
+	public void courseWithWiki_createInCourseEditor(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
@@ -322,7 +324,7 @@ public class CourseElementTest extends Deployments {
 
 	@Test
 	@RunAsClient
-	public void createCourseWithQTITest(@InitialPage LoginPage loginPage)
+	public void courseWithQTITest(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
@@ -376,7 +378,7 @@ public class CourseElementTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void createCourseWithPodcast_externalFeed(@InitialPage LoginPage loginPage)
+	public void courseWithPodcast_externalFeed(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
@@ -432,7 +434,7 @@ public class CourseElementTest extends Deployments {
 	
 	@Test
 	@RunAsClient
-	public void createCourseWithBlog_externalFeed(@InitialPage LoginPage loginPage)
+	public void courseWithBlog_externalFeed(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
@@ -497,7 +499,7 @@ public class CourseElementTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void blogWithMultipleUsers(@InitialPage LoginPage loginPage,
+	public void courseWithBlog_multipleUsers(@InitialPage LoginPage loginPage,
 			@Drone @Participant WebDriver participantDrone)
 	throws IOException, URISyntaxException {
 		
@@ -593,7 +595,7 @@ public class CourseElementTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void createCourseWithInfoMessages(@InitialPage LoginPage authorLoginPage)
+	public void courseWithInfoMessages(@InitialPage LoginPage authorLoginPage)
 	throws IOException, URISyntaxException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
@@ -696,7 +698,7 @@ public class CourseElementTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void createCourseWithDialog(@InitialPage LoginPage authorLoginPage,
+	public void courseWithDialog(@InitialPage LoginPage authorLoginPage,
 			@Drone @Participant WebDriver participantBrowser)
 	throws IOException, URISyntaxException {
 		
@@ -829,7 +831,7 @@ public class CourseElementTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void createCourseWithMemberList(@InitialPage LoginPage authorLoginPage)
+	public void courseWithMemberList(@InitialPage LoginPage authorLoginPage)
 	throws IOException, URISyntaxException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO coach = new UserRestClient(deploymentUrl).createRandomUser("Rei");
@@ -971,7 +973,7 @@ public class CourseElementTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void createCourseWithMemberList_sendMail(@InitialPage LoginPage authorLoginPage)
+	public void courseWithMemberList_sendMail(@InitialPage LoginPage authorLoginPage)
 	throws IOException, URISyntaxException {
 						
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
@@ -1095,7 +1097,7 @@ public class CourseElementTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void createCourseWithParticipantFolder(@InitialPage LoginPage authorLoginPage,
+	public void courseWithParticipantFolder(@InitialPage LoginPage authorLoginPage,
 			@Drone @Participant WebDriver participantBrowser)
 	throws IOException, URISyntaxException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
@@ -1216,7 +1218,7 @@ public class CourseElementTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void forumConcurrent(@InitialPage LoginPage loginPage,
+	public void courseWithForum_concurrent(@InitialPage LoginPage loginPage,
 			@Drone @Participant WebDriver kanuBrowser,
 			@Drone @Student WebDriver reiBrowser)
 	throws IOException, URISyntaxException {
@@ -1347,7 +1349,7 @@ public class CourseElementTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void forumWithGuest(@InitialPage LoginPage loginPage,
+	public void courseWithForum_guest(@InitialPage LoginPage loginPage,
 			@Drone @User WebDriver guestBrowser)
 	throws IOException, URISyntaxException {
 		
@@ -1466,7 +1468,7 @@ public class CourseElementTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void createCourseWithLTI(@InitialPage LoginPage authorLoginPage,
+	public void courseWithLTI(@InitialPage LoginPage authorLoginPage,
 			@Drone @User WebDriver participantBrowser)
 	throws IOException, URISyntaxException {
 		
@@ -1543,5 +1545,105 @@ public class CourseElementTest extends Deployments {
 			.start()
 			.outcomeToolProvider();
 			//.sendGrade(0.8d);
+	}
+	
+	/**
+	 * An author create a course with a course element
+	 * to contact all members of the course. It add some
+	 * participants. A participant log in, go to the
+	 * course to use the contact form and send an E-mail.
+	 * 
+	 * @param loginPage The login page
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void courseWithContact(@InitialPage LoginPage loginPage)
+	throws IOException, URISyntaxException {
+						
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("ryomou");
+		UserVO student = new UserRestClient(deploymentUrl).createRandomUser("student");
+		
+		loginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//create a course
+		String courseTitle = "Course-with-member-list-" + UUID.randomUUID();
+		CoursePageFragment courseRuntime = navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle)
+			.clickToolbarBack();
+		
+		//add participants
+		MembersPage members = courseRuntime
+			.members();
+		members
+			.importMembers()
+			.setMembers(ryomou, student)
+			.nextUsers()
+			.nextOverview()
+			.selectRepositoryEntryRole(false, false, true)
+			.nextPermissions()
+			.finish();
+		// back to course
+		members
+			.clickToolbarBack();
+		
+		getSmtpServer().reset();// reset e-mails
+		
+		//create a course element of type Test with the test that we create above
+		String nodeTitle = "Contact";
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+			.edit();
+		courseEditor
+			.createNode("co")
+			.nodeTitle(nodeTitle);
+		
+		ContactConfigPage contactConfig = new ContactConfigPage(browser);
+		contactConfig
+				.selectConfiguration()
+				.wantAllOwners()
+				.wantAllCoaches()
+				.wantAllParticipants()
+				.save();
+		
+		courseEditor
+			.autoPublish()
+			.publish()
+			.settings()
+			.accessConfiguration()
+			.setUserAccess(UserAccess.membersOnly)
+			.save()
+			.clickToolbarBack();
+		
+		
+		//log out
+		new UserToolsPage(browser)
+			.logout();
+		
+		// participant comes in
+		loginPage.loginAs(ryomou.getLogin(), ryomou.getPassword());
+
+
+		NavigationPage ryomouNavBar = new NavigationPage(browser);
+		ryomouNavBar
+			.openMyCourses()
+			.select(courseTitle);
+		
+		CoursePageFragment course = new CoursePageFragment(browser);
+		course
+			.clickTree()
+			.selectWithTitle(nodeTitle);
+
+		ContactPage contactPage = new ContactPage(browser);
+		// check peek view
+		contactPage
+			.setContent("Hello", "Hello, are you fine?")
+			.send()
+			.assertSend();
+		
+		List<SmtpMessage> messages = getSmtpServer().getReceivedEmails();
+		Assert.assertEquals(1, messages.size());
 	}
 }

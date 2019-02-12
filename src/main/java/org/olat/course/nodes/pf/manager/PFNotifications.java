@@ -25,6 +25,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -83,19 +84,23 @@ public class PFNotifications {
 		translator = Util.createPackageTranslator(PFRunController.class, locale);
 	}
 	
-	public List<SubscriptionListItem> getItems() throws Exception {
+	public List<SubscriptionListItem> getItems() {
 		Publisher p = subscriber.getPublisher();
 		Identity identity = subscriber.getIdentity();
 		ICourse course = CourseFactory.loadCourse(p.getResId());
 		CourseEnvironment courseEnv = course.getCourseEnvironment();
-		CourseGroupManager groupManager = courseEnv.getCourseGroupManager();
+		if(!courseEnv.getCourseGroupManager().isNotificationsAllowed()) {
+			return Collections.emptyList();
+		}
+		
 		CourseNode node = course.getRunStructure().getNode(p.getSubidentifier());
-		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		Date latestNews = p.getLatestNewsDate();
 
 		if (notificationsManager.isPublisherValid(p) && compareDate.before(latestNews)) {
+			RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 			this.displayname = entry.getDisplayname();
-			
+
+			CourseGroupManager groupManager = courseEnv.getCourseGroupManager();
 			if (groupManager.isIdentityCourseCoach(identity) || groupManager.isIdentityCourseAdministrator(identity)) {
 				List<Identity> participants = pfManager.getParticipants(identity, courseEnv, groupManager.isIdentityCourseAdministrator(identity));
 
