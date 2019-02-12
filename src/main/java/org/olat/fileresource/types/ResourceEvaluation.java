@@ -40,6 +40,10 @@ public class ResourceEvaluation {
 		this.valid = valid;
 	}
 	
+	public static ResourceEvaluation notValid() {
+		return new ResourceEvaluation(false);
+	}
+	
 	public boolean isValid() {
 		return valid;
 	}

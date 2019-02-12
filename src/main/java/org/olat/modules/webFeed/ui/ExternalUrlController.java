@@ -84,7 +84,9 @@ public class ExternalUrlController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		return validateExternalFeedUrl() & super.validateFormLogic(ureq);
+		boolean allOk = super.validateFormLogic(ureq);
+		allOk &= validateExternalFeedUrl();
+		return allOk;
 	}
 
 	private boolean validateExternalFeedUrl(){

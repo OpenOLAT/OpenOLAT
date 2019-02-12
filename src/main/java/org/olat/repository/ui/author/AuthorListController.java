@@ -152,6 +152,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	private ConfirmCloseController closeCtrl;
 	private ConfirmDeleteSoftlyController confirmDeleteCtrl;
 	private ImportRepositoryEntryController importCtrl;
+	private ImportURLRepositoryEntryController importUrlCtrl;
 	private CreateEntryController createCtrl;
 	protected CloseableCalloutWindowController toolsCalloutCtrl;
 	
@@ -159,6 +160,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	protected boolean hasAdministratorRight;
 	
 	private Link importLink;
+	private Link importUrlLink;
 	private Dropdown createDropdown;
 	private FormLink sendMailButton, addOwnersButton, deleteButton, copyButton;
 
@@ -221,6 +223,12 @@ public class AuthorListController extends FormBasicController implements Activat
 			importLink.setElementCssClass("o_sel_author_import");
 			stackPanel.addTool(importLink, Align.left);
 			
+			importUrlLink = LinkFactory.createLink("cmd.import.url.ressource", getTranslator(), this);
+			importUrlLink.setDomReplacementWrapperRequired(false);
+			importUrlLink.setIconLeftCSS("o_icon o_icon_import");
+			importUrlLink.setElementCssClass("o_sel_author_url_import");
+			stackPanel.addTool(importUrlLink, Align.left);
+			
 			List<OrderedRepositoryHandler> handlers = repositoryHandlerFactory.getOrderRepositoryHandlers();
 			createDropdown = new Dropdown("cmd.create.ressource", "cmd.create.ressource", false, getTranslator());
 			createDropdown.setElementCssClass("o_sel_author_create");
@@ -229,7 +237,7 @@ public class AuthorListController extends FormBasicController implements Activat
 			for(OrderedRepositoryHandler orderedHandler:handlers) {
 				RepositoryHandler handler = orderedHandler.getHandler();
 				
-				if(handler != null && handler.isCreate()) {
+				if(handler != null && handler.supportCreate()) {
 					// for each 10-group, create a separator
 					int group = orderedHandler.getOrder() / 10;
 					if (group > lastGroup) {
@@ -457,6 +465,8 @@ public class AuthorListController extends FormBasicController implements Activat
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(importLink == source) {
 			doImport(ureq);
+		} else if(importUrlLink == source) {
+			doImportUrl(ureq);
 		} else if(source instanceof Link && ((Link)source).getUserObject() instanceof RepositoryHandler) {
 			RepositoryHandler handler = (RepositoryHandler)((Link)source).getUserObject();
 			if(handler != null) {
@@ -493,6 +503,13 @@ public class AuthorListController extends FormBasicController implements Activat
 			if(Event.DONE_EVENT.equals(event)) {
 				reloadRows();
 				launchEditDescription(ureq, importCtrl.getImportedEntry());
+			}
+			cleanUp();
+		} else if(importUrlCtrl == source ) {
+			cmc.deactivate();
+			if(Event.DONE_EVENT.equals(event)) {
+				reloadRows();
+				launchEditDescription(ureq, importUrlCtrl.getImportedEntry());
 			}
 			cleanUp();
 		} else if(wizardCtrl == source) {
@@ -576,6 +593,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		removeAsListenerAndDispose(confirmDeleteCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
 		removeAsListenerAndDispose(userSearchCtr);
+		removeAsListenerAndDispose(importUrlCtrl);
 		removeAsListenerAndDispose(sendMailCtrl);
 		removeAsListenerAndDispose(createCtrl);
 		removeAsListenerAndDispose(importCtrl);
@@ -586,6 +604,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		confirmDeleteCtrl = null;
 		toolsCalloutCtrl = null;
 		userSearchCtr = null;
+		importUrlCtrl = null;
 		sendMailCtrl = null;
 		createCtrl = null;
 		importCtrl = null;
@@ -738,6 +757,21 @@ public class AuthorListController extends FormBasicController implements Activat
 		
 		String title = translate("cmd.import.ressource");
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), importCtrl.getInitialComponent(),
+				true, title);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doImportUrl(UserRequest ureq) {
+		if(importUrlCtrl != null) return;
+
+		removeAsListenerAndDispose(importUrlCtrl);
+		importUrlCtrl = new ImportURLRepositoryEntryController(ureq, getWindowControl());
+		listenTo(importUrlCtrl);
+		removeAsListenerAndDispose(cmc);
+		
+		String title = translate("cmd.import.ressource");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), importUrlCtrl.getInitialComponent(),
 				true, title);
 		listenTo(cmc);
 		cmc.activate();

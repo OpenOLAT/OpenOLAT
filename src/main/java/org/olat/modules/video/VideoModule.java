@@ -34,6 +34,8 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.modules.video.site.VideoSite;
+import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.olat.repository.handlers.VideoHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -82,6 +84,8 @@ public class VideoModule extends AbstractSpringModule {
 	private int[] transcodingResolutionsArr; //= new int[] { 1080,720,480,360 };
 	private Integer preferredDefaultResolution;// = new Integer(720);
 
+	@Autowired
+	private VideoHandler videoHandler;
 
 	@Autowired
 	public VideoModule(CoordinatorManager coordinatorManager) {
@@ -114,6 +118,8 @@ public class VideoModule extends AbstractSpringModule {
 
 	@Override
 	public void init() {
+		RepositoryHandlerFactory.registerHandler(this.videoHandler, 43);
+		
 		String enabledObj = getStringPropertyValue(VIDEO_ENABLED, true);
 		if(StringHelper.containsNonWhitespace(enabledObj)) {
 			enabled = "true".equals(enabledObj);

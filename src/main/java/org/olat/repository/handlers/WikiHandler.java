@@ -91,7 +91,7 @@ import org.olat.resource.references.ReferenceManager;
 public class WikiHandler implements RepositoryHandler {
 
 	@Override
-	public boolean isCreate() {
+	public boolean supportCreate() {
 		return CoreSpringFactory.getImpl(WikiModule.class).isWikiEnabled();
 	}
 	
@@ -118,8 +118,23 @@ public class WikiHandler implements RepositoryHandler {
 	}
 
 	@Override
+	public boolean supportImport() {
+		return true;
+	}
+
+	@Override
 	public ResourceEvaluation acceptImport(File file, String filename) {
 		return WikiResource.validate(file, filename);
+	}
+
+	@Override
+	public boolean supportImportUrl() {
+		return false;
+	}
+	
+	@Override
+	public ResourceEvaluation acceptImport(String url) {
+		return ResourceEvaluation.notValid();
 	}
 	
 	@Override
@@ -133,6 +148,12 @@ public class WikiHandler implements RepositoryHandler {
 				description, resource, RepositoryEntryStatusEnum.preparation, organisation);
 		DBFactory.getInstance().commit();
 		return re;
+	}
+	
+	@Override
+	public RepositoryEntry importResource(Identity initialAuthor, String initialAuthorAlt, String displayname,
+			String description, Organisation organisation, Locale locale, String url) {
+		return null;
 	}
 	
 	@Override

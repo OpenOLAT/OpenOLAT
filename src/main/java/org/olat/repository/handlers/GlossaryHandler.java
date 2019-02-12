@@ -87,7 +87,7 @@ public class GlossaryHandler implements RepositoryHandler {
 	public static final String PROCESS_UPLOAD = "pu";
 
 	@Override
-	public boolean isCreate() {
+	public boolean supportCreate() {
 		return true;
 	}
 	
@@ -112,10 +112,25 @@ public class GlossaryHandler implements RepositoryHandler {
 	public boolean isPostCreateWizardAvailable() {
 		return false;
 	}
+	
+	@Override
+	public boolean supportImport() {
+		return true;
+	}
 
 	@Override
 	public ResourceEvaluation acceptImport(File file, String filename) {
 		return GlossaryResource.evaluate(file, filename);
+	}
+
+	@Override
+	public boolean supportImportUrl() {
+		return false;
+	}
+	
+	@Override
+	public ResourceEvaluation acceptImport(String url) {
+		return ResourceEvaluation.notValid();
 	}
 	
 	@Override
@@ -132,6 +147,13 @@ public class GlossaryHandler implements RepositoryHandler {
 				RepositoryEntryStatusEnum.preparation, organisation);
 		DBFactory.getInstance().commit();
 		return re;
+	}
+	
+	@Override
+	public RepositoryEntry importResource(Identity initialAuthor, String initialAuthorAlt, String displayname,
+			String description, Organisation organisation, Locale locale, String url) {
+		//
+		return null;
 	}
 	
 	@Override

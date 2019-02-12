@@ -35,6 +35,8 @@ import javax.persistence.TemporalType;
 
 import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.Persistable;
+import org.olat.core.util.StringHelper;
+import org.olat.modules.video.VideoFormat;
 import org.olat.modules.video.VideoMeta;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceImpl;
@@ -66,6 +68,8 @@ public class VideoMetaImpl implements VideoMeta, Persistable, ModifiedInfo {
 	@JoinColumn(name="fk_resource_id", nullable=false, insertable=true, updatable=false)
 	private OLATResource videoResource;
 	
+	@Column(name="vid_url", nullable=true, insertable=true, updatable=true)
+	private String url;
 	@Column(name="vid_width", nullable=true, insertable=true, updatable=true)
 	private int width;
 	@Column(name="vid_height", nullable=true, insertable=true, updatable=true)
@@ -123,6 +127,15 @@ public class VideoMetaImpl implements VideoMeta, Persistable, ModifiedInfo {
 	}
 
 	@Override
+	public String getUrl() {
+		return url;
+	}
+
+	public void setUrl(String url) {
+		this.url = url;
+	}
+
+	@Override
 	public int getWidth() {
 		return width;
 	}
@@ -152,14 +165,29 @@ public class VideoMetaImpl implements VideoMeta, Persistable, ModifiedInfo {
 		this.size = size;
 	}
 
-	@Override
 	public String getFormat() {
 		return format;
 	}
 
-	@Override
 	public void setFormat(String format) {
 		this.format = format;
+	}
+
+	@Override
+	public VideoFormat getVideoFormat() {
+		if(StringHelper.containsNonWhitespace(format)) {
+			return VideoFormat.valueOf(format);
+		}
+		return null;
+	}
+
+	@Override
+	public void setVideoFormat(VideoFormat format) {
+		if(format != null) {
+			this.format = format.name();
+		} else {
+			this.format = null;
+		}
 	}
 
 	@Override

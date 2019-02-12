@@ -88,7 +88,7 @@ public class BinderTemplateHandler implements RepositoryHandler {
 	private static final OLog log = Tracing.createLoggerFor(BinderTemplateHandler.class);
 
 	@Override
-	public boolean isCreate() {
+	public boolean supportCreate() {
 		return CoreSpringFactory.getImpl(PortfolioV2Module.class).isEnabled();
 	}
 	
@@ -113,10 +113,25 @@ public class BinderTemplateHandler implements RepositoryHandler {
 	public boolean isPostCreateWizardAvailable() {
 		return false;
 	}
+	
+	@Override
+	public boolean supportImport() {
+		return true;
+	}
 
 	@Override
 	public ResourceEvaluation acceptImport(File file, String filename) {
 		return BinderTemplateResource.evaluate(file, filename);
+	}
+
+	@Override
+	public boolean supportImportUrl() {
+		return false;
+	}
+	
+	@Override
+	public ResourceEvaluation acceptImport(String url) {
+		return ResourceEvaluation.notValid();
 	}
 	
 	@Override
@@ -160,6 +175,13 @@ public class BinderTemplateHandler implements RepositoryHandler {
 		}
 	}
 	
+	@Override
+	public RepositoryEntry importResource(Identity initialAuthor, String initialAuthorAlt, String displayname,
+			String description, Organisation organisation, Locale locale, String url) {
+		//
+		return null;
+	}
+
 	@Override
 	public RepositoryEntry copy(Identity author, RepositoryEntry source, RepositoryEntry target) {
 		PortfolioService portfolioService = CoreSpringFactory.getImpl(PortfolioService.class);

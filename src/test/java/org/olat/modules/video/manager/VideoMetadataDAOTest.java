@@ -24,6 +24,7 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
+import org.olat.modules.video.VideoFormat;
 import org.olat.modules.video.VideoMeta;
 import org.olat.modules.video.model.VideoMetaImpl;
 import org.olat.repository.RepositoryEntry;
@@ -45,14 +46,14 @@ public class VideoMetadataDAOTest extends OlatTestCase {
 	private VideoMetadataDAO videoMetadataDao;
 		
 	@Test 
-	public void createVideoMetadata () {
+	public void createVideoMetadata() {
 		RepositoryEntry entry1 = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry entry2 = JunitTestHelper.createAndPersistRepositoryEntry();
 		
 		//create metadata entries
-		VideoMeta meta1 = videoMetadataDao.createVideoMetadata(entry1, 1500, "vid.mp4");
+		VideoMeta meta1 = videoMetadataDao.createVideoMetadata(entry1, 1500, null, VideoFormat.mp4);
 		Assert.assertNotNull(meta1);
-		VideoMeta meta2 = videoMetadataDao.createVideoMetadata(entry2, 5500, "vid.mov");
+		VideoMeta meta2 = videoMetadataDao.createVideoMetadata(entry2, 5500, null, VideoFormat.mp4);
 		Assert.assertNotNull(meta2);
 		dbInstance.commitAndCloseSession();
 		
@@ -60,6 +61,21 @@ public class VideoMetadataDAOTest extends OlatTestCase {
 		VideoMeta reloadMeta1 = videoMetadataDao.getVideoMetadata(entry1.getOlatResource());
 		Assert.assertNotNull(reloadMeta1);
 		Assert.assertEquals(1500, reloadMeta1.getSize());
+	}
+	
+	@Test 
+	public void createVideoMetadata_url() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+
+		//create metadata entries
+		VideoMeta meta = videoMetadataDao.createVideoMetadata(entry, -1l, "https://frentix.com/video.mp4", null);
+		Assert.assertNotNull(meta);
+		dbInstance.commitAndCloseSession();
+		
+		//retrieve by olat resource
+		VideoMeta reloadMeta = videoMetadataDao.getVideoMetadata(entry.getOlatResource());
+		Assert.assertNotNull(reloadMeta);
+		Assert.assertEquals("https://frentix.com/video.mp4", reloadMeta.getUrl());
 	}
 	
 	@Test
@@ -70,10 +86,10 @@ public class VideoMetadataDAOTest extends OlatTestCase {
 		RepositoryEntry entry3 = JunitTestHelper.createAndPersistRepositoryEntry();
 		
 		//create metadata entries
-		VideoMeta meta0 = videoMetadataDao.createVideoMetadata(entry0, 1500, "vid.mp4");
-		VideoMeta meta1 = videoMetadataDao.createVideoMetadata(entry1, 1100, "vide.mp4");
-		VideoMeta meta2 = videoMetadataDao.createVideoMetadata(entry2, 1200, "video.mov");
-		VideoMeta meta3 = videoMetadataDao.createVideoMetadata(entry3, 4500, "videos.mp4");
+		VideoMeta meta0 = videoMetadataDao.createVideoMetadata(entry0, 1500, null, VideoFormat.mp4);
+		VideoMeta meta1 = videoMetadataDao.createVideoMetadata(entry1, 1100, null, VideoFormat.mp4);
+		VideoMeta meta2 = videoMetadataDao.createVideoMetadata(entry2, 1200, null, VideoFormat.mp4);
+		VideoMeta meta3 = videoMetadataDao.createVideoMetadata(entry3, 4500, null, VideoFormat.mp4);
 		Assert.assertNotNull(meta1);
 		Assert.assertNotNull(meta3);
 		Assert.assertNotNull(meta2);

@@ -89,7 +89,7 @@ public class WebDocumentHandler extends FileHandler {
 	}
 	
 	@Override
-	public boolean isCreate() {
+	public boolean supportCreate() {
 		return false;
 	}
 
@@ -108,7 +108,12 @@ public class WebDocumentHandler extends FileHandler {
 	public boolean isPostCreateWizardAvailable() {
 		return false;
 	}
-	
+
+	@Override
+	public boolean supportImport() {
+		return true;
+	}
+
 	@Override
 	public ResourceEvaluation acceptImport(File file, String filename) {
 		if(!StringHelper.containsNonWhitespace(filename)) {
@@ -137,6 +142,16 @@ public class WebDocumentHandler extends FileHandler {
 			}
 		}
 		return eval;
+	}
+	
+	@Override
+	public boolean supportImportUrl() {
+		return false;
+	}
+
+	@Override
+	public ResourceEvaluation acceptImport(String url) {
+		return ResourceEvaluation.notValid();
 	}
 	
 	@Override
@@ -178,6 +193,12 @@ public class WebDocumentHandler extends FileHandler {
 				description, resource, RepositoryEntryStatusEnum.preparation, organisation);
 		DBFactory.getInstance().commit();
 		return re;
+	}
+	
+	@Override
+	public RepositoryEntry importResource(Identity initialAuthor, String initialAuthorAlt, String displayname,
+			String description, Organisation organisation, Locale locale, String url) {
+		return null;
 	}
 	
 	@Override

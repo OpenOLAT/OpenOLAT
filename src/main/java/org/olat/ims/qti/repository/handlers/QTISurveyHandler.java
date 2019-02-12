@@ -79,7 +79,7 @@ import org.olat.resource.references.ReferenceManager;
 public class QTISurveyHandler extends QTIHandler {
 	
 	@Override
-	public boolean isCreate() {
+	public boolean supportCreate() {
 		return CoreSpringFactory.getImpl(QTIModule.class).isCreateSurveyResourcesEnabled();
 	}
 
@@ -96,14 +96,35 @@ public class QTISurveyHandler extends QTIHandler {
 	}
 
 	@Override
+	public boolean supportImport() {
+		return true;
+	}
+
+	@Override
 	public ResourceEvaluation acceptImport(File file, String filename) {
 		return SurveyFileResource.evaluate(file, filename);
+	}
+
+	@Override
+	public boolean supportImportUrl() {
+		return false;
+	}
+
+	@Override
+	public ResourceEvaluation acceptImport(String url) {
+		return ResourceEvaluation.notValid();
 	}
 
 	@Override
 	public RepositoryEntry importResource(Identity initialAuthor, String initialAuthorAlt, String displayname, String description,
 			boolean withReferences, Organisation organisation, Locale locale, File file, String filename) {
 		return super.importResource(initialAuthor, displayname, description, organisation, new SurveyFileResource(), file, filename);
+	}
+	
+	@Override
+	public RepositoryEntry importResource(Identity initialAuthor, String initialAuthorAlt, String displayname,
+			String description, Organisation organisation, Locale locale, String url) {
+		return null;
 	}
 
 	@Override

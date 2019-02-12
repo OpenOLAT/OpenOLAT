@@ -58,12 +58,12 @@ public class QuestionConfigurationController extends FormBasicController {
 	
 	private VideoQuestion question;
 	private final SimpleDateFormat displayDateFormat;
-	private final long videoDurationInSecs;
+	private Long videoDurationInSecs;
 	
 	@Autowired
 	private VideoModule videoModule;
 	
-	public QuestionConfigurationController(UserRequest ureq, WindowControl wControl, VideoQuestion question, long videoDurationInSecs) {
+	public QuestionConfigurationController(UserRequest ureq, WindowControl wControl, VideoQuestion question, Long videoDurationInSecs) {
 		super(ureq, wControl, Util.createPackageTranslator(VideoSettingsController.class, ureq.getLocale()));
 		this.question = question;
 		this.videoDurationInSecs = videoDurationInSecs;
@@ -75,6 +75,12 @@ public class QuestionConfigurationController extends FormBasicController {
 	
 	public VideoQuestion getQuestion() {
 		return question;
+	}
+	
+	public void setVideoDurationInSecs(Long videoDurationInSecs) {
+		if(videoDurationInSecs == null || videoDurationInSecs.longValue() <= 0l) return;
+		
+		this.videoDurationInSecs = videoDurationInSecs;
 	}
 
 	@Override
@@ -157,7 +163,7 @@ public class QuestionConfigurationController extends FormBasicController {
 		} else {
 			try {
 				Date val = displayDateFormat.parse(beginEl.getValue());
-				if(val.getTime() > (videoDurationInSecs * 1000l)) {
+				if(videoDurationInSecs != null && (val.getTime() > (videoDurationInSecs.longValue() * 1000l))) {
 					beginEl.setErrorKey("chapter.error.out.of.range", null);
 					allOk &= false;
 				}
@@ -198,6 +204,5 @@ public class QuestionConfigurationController extends FormBasicController {
 			beginEl.setErrorKey("form.legende.mandatory", null);
 			logError("", e);
 		}
-		
 	}
 }

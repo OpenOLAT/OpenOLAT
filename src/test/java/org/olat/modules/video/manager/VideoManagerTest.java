@@ -17,40 +17,33 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.webFeed.manager;
+package org.olat.modules.video.manager;
+
+import org.junit.Assert;
+import org.junit.Test;
+import org.olat.modules.video.VideoManager;
+import org.olat.test.OlatTestCase;
+import org.springframework.beans.factory.annotation.Autowired;
+
 
 /**
- * <P>
- * Initial Date:  25 feb. 2010 <br>
- * @author srosse, stephane.rosse@frentix.com
+ * 
+ * Initial date: 12 févr. 2019<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
  */
-public class ValidatedURL {
-	private final String url;
-	private final String title;
-	private final State state;
+public class VideoManagerTest extends OlatTestCase {
 	
-	public ValidatedURL(String url, String title, State state) {
-		this.url = url;
-		this.title = title;
-		this.state = state;
-	}
+	@Autowired
+	private VideoManager videoManager;
 	
-	public String getUrl() {
-		return url;
+	
+	@Test
+	public void toPodcastVideoUrl() {
+		String originalUrl = "https://vcrp-test.cloud.panopto.eu/Panopto/Pages/Viewer.aspx?id=5eea17a7-dbc1-4980-a44b-a8cd00d6a3e2";
+		String podcastUrl = videoManager.toPodcastVideoUrl(originalUrl);
+		Assert.assertEquals("https://vcrp-test.cloud.panopto.eu/Panopto/Podcast/StreamInBrowser/5eea17a7-dbc1-4980-a44b-a8cd00d6a3e2.mp4", podcastUrl);
 	}
 
-	public State getState() {
-		return state;
-	}
-	
-	public String getTitle() {
-		return title;
-	}
 
-	public enum State {
-		VALID,
-		NO_ENCLOSURE,
-		NOT_FOUND,
-		MALFORMED
-	}
 }

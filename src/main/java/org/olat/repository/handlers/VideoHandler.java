@@ -28,8 +28,7 @@ package org.olat.repository.handlers;
 import java.io.File;
 import java.util.Locale;
 
-import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
@@ -47,10 +46,10 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.course.assessment.AssessmentMode;
 import org.olat.fileresource.types.FileResource;
 import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.fileresource.types.VideoFileResource;
+import org.olat.modules.video.VideoFormat;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.ui.VideoDisplayController;
 import org.olat.modules.video.ui.VideoRuntimeController;
@@ -59,9 +58,10 @@ import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.RepositoryEntrySecurity;
-import org.olat.repository.ui.RepositoryEntryRuntimeController.RuntimeControllerCreator;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 
 /** 
@@ -72,10 +72,22 @@ import org.olat.resource.OLATResourceManager;
  *
  *
  */
+@Service("videoRepositoryHandler")
 public class VideoHandler extends FileHandler {
 	
+	@Autowired
+	private DB dbInstance;
+	@Autowired
+	private VideoManager videoManager;
+	@Autowired
+	private OLATResourceManager resourceManager;
+	@Autowired
+	private RepositoryManager repositoryManager;
+	@Autowired
+	private RepositoryService repositoryService;
+	
 	@Override
-	public boolean isCreate() {
+	public boolean supportCreate() {
 		return false;
 	}
 
@@ -96,6 +108,11 @@ public class VideoHandler extends FileHandler {
 	}
 
 	@Override
+	public boolean supportImport() {
+		return true;
+	}
+
+	@Override
 	public ResourceEvaluation acceptImport(File file, String filename) {
 		if(!StringHelper.containsNonWhitespace(filename)) {
 			filename = file.getName();
@@ -108,6 +125,20 @@ public class VideoHandler extends FileHandler {
 		}
 		return eval;
 	}
+	
+	@Override
+	public boolean supportImportUrl() {
+		return true;
+	}
+
+	@Override
+	public ResourceEvaluation acceptImport(String url) {
+		ResourceEvaluation eval = new ResourceEvaluation();
+		if(VideoFormat.valueOfUrl(url) != null) {
+			eval.setValid(true);
+		}
+		return eval;
+	}
 
 	@Override
 	public RepositoryEntry importResource(Identity initialAuthor, String initialAuthorAlt, String displayname, String description,
@@ -115,8 +146,8 @@ public class VideoHandler extends FileHandler {
 
 		// 1) Create resource and repository entry
 		FileResource ores = new VideoFileResource();
-		OLATResource resource = OLATResourceManager.getInstance().createAndPersistOLATResourceInstance(ores);
-		RepositoryEntry repoEntry = CoreSpringFactory.getImpl(RepositoryService.class).create(initialAuthor, null, "",
+		OLATResource resource = resourceManager.createAndPersistOLATResourceInstance(ores);
+		RepositoryEntry repoEntry = repositoryService.create(initialAuthor, null, "",
 				displayname, description, resource, RepositoryEntryStatusEnum.preparation, organisation);
 		
 		if(fileName == null) {
@@ -125,7 +156,6 @@ public class VideoHandler extends FileHandler {
 		fileName = fileName.toLowerCase();
 		VFSLeaf importFile = new LocalFileImpl(file);	
 		long filesize = importFile.getSize();
-		VideoManager videoManager = CoreSpringFactory.getImpl(VideoManager.class);
 
 		if (fileName.endsWith(".mp4") || fileName.endsWith(".mov") || fileName.endsWith(".m4v")) {
 			// 2a) import video from raw mp4 master video file
@@ -133,26 +163,52 @@ public class VideoHandler extends FileHandler {
 			
 		} else if (fileName.endsWith(".zip")) {
 			// 2b) import video from archive from another OpenOLAT instance
-			DBFactory.getInstance().commit();
+			dbInstance.commit();
 			videoManager.importFromExportArchive(repoEntry, importFile);			
 		}	
 		// 3) Persist Meta data
 		videoManager.createVideoMetadata(repoEntry, filesize, fileName);
-		DBFactory.getInstance().commit();	
+		dbInstance.commit();	
 		// 4) start transcoding process if enabled
 		videoManager.startTranscodingProcessIfEnabled(resource);
 		
 		return repoEntry;
 	}
+	
+	@Override
+	public RepositoryEntry importResource(Identity initialAuthor, String initialAuthorAlt, String displayname,
+			String description, Organisation organisation, Locale locale, String url) {
+		VideoFormat format = VideoFormat.valueOfUrl(url);
+		if(format == null) {
+			return null;// cannot understand the URL
+		}
+		
+		// 1) Create resource and repository entry
+		FileResource ores = new VideoFileResource();
+		OLATResource resource = resourceManager.createAndPersistOLATResourceInstance(ores);
+		RepositoryEntry repoEntry = repositoryService.create(initialAuthor, null, "", displayname, description,
+				resource, RepositoryEntryStatusEnum.preparation, organisation);
+		
+		if(format == VideoFormat.panopto) {
+			url = videoManager.toPodcastVideoUrl(url);
+		}
+
+		// 3) Persist Meta data
+		videoManager.createVideoMetadata(repoEntry, url, format);
+		dbInstance.commit();
+		
+		if(format == VideoFormat.mp4 || format == VideoFormat.panopto) {
+			repoEntry = videoManager.updateVideoMetadata(repoEntry, url);
+		}
+		return repoEntry;
+	}
 
 	@Override
 	public MediaResource getAsMediaResource(OLATResourceable res) {
-		RepositoryManager repoManager = CoreSpringFactory.getImpl(RepositoryManager.class);
-		RepositoryEntry repoEntry = repoManager.lookupRepositoryEntry(res, false);
+		RepositoryEntry repoEntry = repositoryManager.lookupRepositoryEntry(res, false);
 		if (repoEntry == null) {
 			return new NotFoundMediaResource();
-		}
-		VideoManager videoManager = CoreSpringFactory.getImpl(VideoManager.class);		
+		}	
 		return videoManager.getVideoExportMediaResource(repoEntry);
 	}
 
@@ -183,13 +239,9 @@ public class VideoHandler extends FileHandler {
 
 	@Override
 	public MainLayoutController createLaunchController(RepositoryEntry re,  RepositoryEntrySecurity reSecurity, UserRequest ureq, WindowControl wControl) {
-		return new VideoRuntimeController(ureq, wControl, re, reSecurity, new RuntimeControllerCreator() {
-			@Override
-			public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel,
-					RepositoryEntry entry, RepositoryEntrySecurity rereSecurity, AssessmentMode assessmentMode) {
-				return new VideoDisplayController(uureq, wwControl, entry);
-			}
-		});
+		return new VideoRuntimeController(ureq, wControl, re, reSecurity, (uureq, wwControl, toolbarPanel, entry, rereSecurity, assessmentMode) -> 
+			new VideoDisplayController(uureq, wwControl, entry)
+		);
 	}
 
 	@Override
@@ -227,7 +279,6 @@ public class VideoHandler extends FileHandler {
 			RepositoryEntry target) {
 		OLATResource sourceResource = source.getOlatResource();
 		OLATResource targetResource = target.getOlatResource();
-		VideoManager videoManager = CoreSpringFactory.getImpl(VideoManager.class);
 		videoManager.copyVideo(sourceResource, targetResource);
 		return target;
 	}
@@ -237,14 +288,10 @@ public class VideoHandler extends FileHandler {
 		boolean success = super.cleanupOnDelete(entry, res);
 		if (success) {
 			// remove transcodings
-			VideoManager videoManager = CoreSpringFactory.getImpl(VideoManager.class);
 			success = videoManager.deleteVideoTranscodings(entry.getOlatResource());
 			//remove metadata
 			success &= videoManager.deleteVideoMetadata(entry.getOlatResource());
 		}
 		return success;
 	}
-	
-	
-
 }

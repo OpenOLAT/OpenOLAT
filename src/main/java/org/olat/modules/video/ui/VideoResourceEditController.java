@@ -24,7 +24,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.io.FilenameUtils;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.video.MovieService;
 import org.olat.core.gui.UserRequest;
@@ -40,6 +39,7 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.modules.video.VideoFormat;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoMeta;
 import org.olat.modules.video.VideoModule;
@@ -114,7 +114,6 @@ public class VideoResourceEditController extends FormBasicController {
 	private int doReplaceFileAndUpdateMetadata() {
 		VFSLeaf video = (VFSLeaf) vfsContainer.resolve(VIDEO_RESOURCE);		
 		File uploadFile = uploadFileEl.getUploadFile();
-//		VideoMetadata videoMetadata = videoManager.getMetaDataFromOLATResource(videoResource);
 		VideoMeta meta = videoManager.getVideoMetadata(videoResource);
 		if (uploadFileEl.getUploadSize() > 0 && uploadFile.exists()){
 			video.delete();
@@ -132,7 +131,7 @@ public class VideoResourceEditController extends FormBasicController {
 				meta.setSize(uploadFile.length());
 				meta.setWidth(dimensions.getWidth());
 				meta.setHeight(dimensions.getHeight());
-				meta.setFormat(FilenameUtils.getExtension(uploadVideo.getName()));
+				meta.setVideoFormat(VideoFormat.valueOfFilename(uploadVideo.getName()));
 				meta.setLength(length);
 			}
 		} 

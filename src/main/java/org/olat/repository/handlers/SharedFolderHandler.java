@@ -77,7 +77,7 @@ import org.olat.resource.references.ReferenceManager;
 public class SharedFolderHandler implements RepositoryHandler {
 	
 	@Override
-	public boolean isCreate() {
+	public boolean supportCreate() {
 		return true;
 	}
 	
@@ -104,13 +104,34 @@ public class SharedFolderHandler implements RepositoryHandler {
 	}
 
 	@Override
+	public boolean supportImport() {
+		return false;
+	}
+
+	@Override
 	public ResourceEvaluation acceptImport(File file, String filename) {
-		return new ResourceEvaluation(false);
+		return ResourceEvaluation.notValid();
+	}
+
+	@Override
+	public boolean supportImportUrl() {
+		return false;
+	}
+
+	@Override
+	public ResourceEvaluation acceptImport(String url) {
+		return ResourceEvaluation.notValid();
 	}
 	
 	@Override
 	public RepositoryEntry importResource(Identity initialAuthor, String initialAuthorAlt, String displayname, String description,
 			boolean withReferences, Organisation organisation, Locale locale, File file, String filename) {
+		return null;
+	}
+	
+	@Override
+	public RepositoryEntry importResource(Identity initialAuthor, String initialAuthorAlt, String displayname,
+			String description, Organisation organisation, Locale locale, String url) {
 		return null;
 	}
 	

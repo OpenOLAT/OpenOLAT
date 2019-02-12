@@ -135,7 +135,7 @@ public class CourseHandler implements RepositoryHandler {
 	private static final OLog log = Tracing.createLoggerFor(CourseHandler.class);
 	
 	@Override
-	public boolean isCreate() {
+	public boolean supportCreate() {
 		return true;
 	}
 	
@@ -162,6 +162,11 @@ public class CourseHandler implements RepositoryHandler {
 	@Override
 	public String getCreateLabelI18nKey() {
 		return "new.course";
+	}
+
+	@Override
+	public boolean supportImport() {
+		return true;
 	}
 
 	@Override
@@ -194,6 +199,16 @@ public class CourseHandler implements RepositoryHandler {
 		return eval;
 	}
 	
+	@Override
+	public boolean supportImportUrl() {
+		return false;
+	}
+
+	@Override
+	public ResourceEvaluation acceptImport(String url) {
+		return ResourceEvaluation.notValid();
+	}
+
 	/**
 	 * Find references in the export folder with the repo.xml.
 	 * @param fPath
@@ -304,6 +319,13 @@ public class CourseHandler implements RepositoryHandler {
 		cleanExportAfterImport(fImportBaseDirectory);
 		
 		return re;
+	}
+	
+	@Override
+	public RepositoryEntry importResource(Identity initialAuthor, String initialAuthorAlt, String displayname,
+			String description, Organisation organisation, Locale locale, String url) {
+		//
+		return null;
 	}
 	
 	private void cleanExportAfterImport(File fImportBaseDirectory) {

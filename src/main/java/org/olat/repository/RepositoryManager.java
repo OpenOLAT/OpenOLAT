@@ -838,6 +838,24 @@ public class RepositoryManager {
 		autoAccessManager.grantAccess(updatedRe);
 		return updatedRe;
 	}
+	
+	public RepositoryEntry setExpenditureOfWork(final RepositoryEntry re,String expenditureOfWork) {
+		RepositoryEntry reloadedRe = repositoryEntryDao.loadForUpdate(re);
+		if(reloadedRe == null) {
+			return null;
+		}
+		reloadedRe.setExpenditureOfWork(expenditureOfWork);
+		
+		RepositoryEntry updatedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
+
+		//fetch the values
+		updatedRe.getStatistics().getLaunchCounter();
+		if(updatedRe.getLifecycle() != null) {
+			updatedRe.getLifecycle().getCreationDate();
+		}
+		dbInstance.commit();
+		return updatedRe;
+	}
 
 	/**
 	 * The method updates empty and null values!

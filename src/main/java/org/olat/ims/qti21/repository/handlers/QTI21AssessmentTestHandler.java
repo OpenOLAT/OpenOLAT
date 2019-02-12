@@ -127,7 +127,7 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 	}
 
 	@Override
-	public boolean isCreate() {
+	public boolean supportCreate() {
 		return true;
 	}
 
@@ -266,10 +266,25 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 	public boolean isPostCreateWizardAvailable() {
 		return false;
 	}
+	
+	@Override
+	public boolean supportImport() {
+		return true;
+	}
 
 	@Override
 	public ResourceEvaluation acceptImport(File file, String filename) {
 		return ImsQTI21Resource.evaluate(file, filename);
+	}
+
+	@Override
+	public boolean supportImportUrl() {
+		return false;
+	}
+	
+	@Override
+	public ResourceEvaluation acceptImport(String url) {
+		return ResourceEvaluation.notValid();
 	}
 
 	@Override
@@ -315,6 +330,12 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 			log.error("", e);
 			return false;
 		}
+	}
+	
+	@Override
+	public RepositoryEntry importResource(Identity initialAuthor, String initialAuthorAlt, String displayname,
+			String description, Organisation organisation, Locale locale, String url) {
+		return null;
 	}
 
 	@Override

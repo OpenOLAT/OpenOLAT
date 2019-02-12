@@ -84,7 +84,7 @@ public class PortfolioHandler implements RepositoryHandler {
 	private static final OLog log = Tracing.createLoggerFor(PortfolioHandler.class);
 	
 	@Override
-	public boolean isCreate() {
+	public boolean supportCreate() {
 		return false;
 	}
 	
@@ -122,8 +122,23 @@ public class PortfolioHandler implements RepositoryHandler {
 	}
 
 	@Override
+	public boolean supportImport() {
+		return false;
+	}
+
+	@Override
 	public ResourceEvaluation acceptImport(File file, String filename) {
-		return new ResourceEvaluation(false);
+		return ResourceEvaluation.notValid();
+	}
+
+	@Override
+	public boolean supportImportUrl() {
+		return false;
+	}
+	
+	@Override
+	public ResourceEvaluation acceptImport(String url) {
+		return ResourceEvaluation.notValid();
 	}
 	
 	@Override
@@ -141,6 +156,12 @@ public class PortfolioHandler implements RepositoryHandler {
 			ePFMgr.importPortfolioMapTemplate(structure, resource);
 		}
 		return re;
+	}
+	
+	@Override
+	public RepositoryEntry importResource(Identity initialAuthor, String initialAuthorAlt, String displayname,
+			String description, Organisation organisation, Locale locale, String url) {
+		return null;
 	}
 	
 	@Override

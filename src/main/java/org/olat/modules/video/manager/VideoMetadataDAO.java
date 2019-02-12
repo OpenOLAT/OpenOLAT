@@ -22,10 +22,11 @@ package org.olat.modules.video.manager;
 import java.util.Date;
 import java.util.List;
 
-import org.apache.commons.io.FilenameUtils;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.image.Size;
+import org.olat.modules.video.VideoFormat;
 import org.olat.modules.video.VideoManager;
+import org.olat.modules.video.VideoMeta;
 import org.olat.modules.video.model.VideoMetaImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
@@ -64,6 +65,11 @@ public class VideoMetadataDAO {
 				.setParameter("videoresource", videoResource)
 				.getResultList();
 		return metadata.isEmpty() ? null :  metadata.get(0);
+	}
+	
+	VideoMeta updateVideoMetadata(VideoMeta videoMetadata) {
+		((VideoMetaImpl)videoMetadata).setLastModified(new Date());
+		return dbInstance.getCurrentEntityManager().merge(videoMetadata);
 	}
 	
 	/**
@@ -117,14 +123,14 @@ public class VideoMetadataDAO {
 	 * @param filename
 	 * @return metadata
 	 */
-	VideoMetaImpl createVideoMetadata(RepositoryEntry repoEntry, long size, String fileName) {
+	VideoMetaImpl createVideoMetadata(RepositoryEntry repoEntry, long size, String url, VideoFormat format) {
 		VideoMetaImpl videometa = new VideoMetaImpl();
 		OLATResource videoResource = repoEntry.getOlatResource();
 		videometa.setVideoResource(videoResource);
-		String format = FilenameUtils.getExtension(fileName);
-		videometa.setFormat(format);
+		videometa.setVideoFormat(format);
+		videometa.setUrl(url);
 		videometa.setCreationDate(new Date());
-		videometa.setLastModified(new Date());		
+		videometa.setLastModified(videometa.getCreationDate());		
 		Size resolution = videoManager.getVideoResolutionFromOLATResource(videoResource);
 		videometa.setHeight(resolution.getHeight());
 		videometa.setWidth(resolution.getWidth());

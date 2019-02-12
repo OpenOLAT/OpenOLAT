@@ -40,6 +40,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.media.ForbiddenMediaResource;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
@@ -47,6 +48,7 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.modules.video.VideoManager;
+import org.olat.modules.video.VideoMeta;
 import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -59,8 +61,8 @@ public class VideoPosterSelectionForm extends BasicController {
 	private static final String FILENAME_POSTFIX_JPG = ".jpg";
 	private static final String FILENAME_PREFIX_PROPOSAL_POSTER = "proposalPoster";
 	
+	private VFSLeaf tmpFile;
 	private VFSContainer tmpContainer;
-	
 
 	@Autowired
 	private VideoManager videoManager;
@@ -69,14 +71,23 @@ public class VideoPosterSelectionForm extends BasicController {
 	private static final int STEP = 24;
 	private final boolean hasProposals;
 
-	public VideoPosterSelectionForm(UserRequest ureq, WindowControl wControl, OLATResource videoResource) {
+	public VideoPosterSelectionForm(UserRequest ureq, WindowControl wControl,
+			OLATResource videoResource, VideoMeta videoMetadata) {
 		super(ureq, wControl);
 		
 		proposalLayout = createVelocityContainer("video_poster_proposal");
 		// posters are generated in tmp. 
 		tmpContainer = new LocalFolderImpl(new File(WebappHelper.getTmpDir(), "poster_" + UUID.randomUUID()));
-
-		List<String> proposals = generatePosterProposals(videoResource);
+		
+		VFSLeaf videoFile;
+		if(StringHelper.containsNonWhitespace(videoMetadata.getUrl())) {
+			videoFile = videoManager.downloadTmpVideo(videoResource, videoMetadata);
+			tmpFile = videoFile;// delete temporary file
+		} else {
+			videoFile = videoManager.getMasterVideo(videoResource);
+		}
+		
+		List<String> proposals = generatePosterProposals(videoFile);
 		proposalLayout.contextPut("proposals", proposals);
 		hasProposals = !proposals.isEmpty();
 		
@@ -87,12 +98,24 @@ public class VideoPosterSelectionForm extends BasicController {
 		putInitialPanel(proposalLayout);
 	}
 	
+	@Override
+	protected void doDispose() {
+		// cleanup tmp file
+		if(tmpContainer != null) {
+			tmpContainer.deleteSilently();
+			tmpContainer = null;
+		}
+		if(tmpFile != null && tmpFile.exists()) {
+			tmpFile.deleteSilently();
+		}
+	}
+	
 	public boolean hasProposals() {
 		return hasProposals;
 	}
 	
-	private List<String> generatePosterProposals(OLATResource videoResource) {
-		long frames = videoManager.getVideoFrameCount(videoResource);
+	private List<String> generatePosterProposals(VFSLeaf videoFile) {
+		long frames = videoManager.getVideoFrameCount(videoFile);
 
 		long framesStepping = frames / 7;
 		if(framesStepping == 0) {
@@ -112,7 +135,7 @@ public class VideoPosterSelectionForm extends BasicController {
 
 				boolean imgBlack = true;
 				for(int i=0; i<maxAdjust && imgBlack; i++) {
-					imgBlack = videoManager.getFrameWithFilter(videoResource, (currentFrame+adjust), frames, posterProposal);
+					imgBlack = videoManager.getFrameWithFilter(videoFile, (currentFrame+adjust), frames, posterProposal);
 					
 					if (currentFrame + STEP <= frames) {
 						adjust += STEP;
@@ -122,7 +145,7 @@ public class VideoPosterSelectionForm extends BasicController {
 					// set lower bound to avoid endless loop
 					if (currentFrame + adjust < 0) {
 						// if all poster images are mostly black just take current frame
-						if(videoManager.getFrame(videoResource, currentFrame, posterProposal)) {
+						if(videoManager.getFrame(videoFile, currentFrame, posterProposal)) {
 							break;
 						} else {
 							break a_a;
@@ -136,20 +159,11 @@ public class VideoPosterSelectionForm extends BasicController {
 				button.setUserObject(fileName);
 				generatedPosters.add(fileName);
 			} catch (Exception | AssertionError e) {
-				logError("Error while creating poster images for video: " + videoResource, e);
+				logError("Error while creating poster images for video: " + videoFile, e);
 			}
 		}
 		
 		return generatedPosters;
-	}
-
-	@Override
-	protected void doDispose() {
-		// cleanup tmp file
-		if (tmpContainer != null) {
-			tmpContainer.delete();
-			tmpContainer = null;
-		}
 	}
 
 	@Override

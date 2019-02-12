@@ -106,7 +106,7 @@ public class EvaluationFormHandler implements RepositoryHandler {
 	private EvaluationFormManager evaluationFormManager;
 
 	@Override
-	public boolean isCreate() {
+	public boolean supportCreate() {
 		return formsModule.isEnabled();
 	}
 	
@@ -141,8 +141,23 @@ public class EvaluationFormHandler implements RepositoryHandler {
 	}
 
 	@Override
+	public boolean supportImport() {
+		return true;
+	}
+
+	@Override
 	public ResourceEvaluation acceptImport(File file, String filename) {
 		return EvaluationFormResource.evaluate(file, filename);
+	}
+
+	@Override
+	public boolean supportImportUrl() {
+		return false;
+	}
+	
+	@Override
+	public ResourceEvaluation acceptImport(String url) {
+		return ResourceEvaluation.notValid();
 	}
 	
 	@Override
@@ -176,6 +191,13 @@ public class EvaluationFormHandler implements RepositoryHandler {
 			log.error("", e);
 			return false;
 		}
+	}
+	
+	@Override
+	public RepositoryEntry importResource(Identity initialAuthor, String initialAuthorAlt, String displayname,
+			String description, Organisation organisation, Locale locale, String url) {
+		//
+		return null;
 	}
 	
 	@Override

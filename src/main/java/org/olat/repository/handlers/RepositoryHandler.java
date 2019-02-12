@@ -68,7 +68,7 @@ public interface RepositoryHandler {
 	 * This resource support creation within OpenOLAT.
 	 * @return
 	 */
-	public boolean isCreate();
+	public boolean supportCreate();
 	
 	public String getCreateLabelI18nKey();
 	
@@ -81,12 +81,27 @@ public interface RepositoryHandler {
 	public boolean isPostCreateWizardAvailable();
 	
 	/**
+	 * This resource support import of files.
+	 * 
+	 * @return
+	 */
+	public boolean supportImport();
+	
+	/**
 	 * 
 	 * @param file
 	 * @param filename
 	 * @return
 	 */
 	public ResourceEvaluation acceptImport(File file, String filename);
+	
+	/**
+	 * This resource support import with an URL.
+	 * @return
+	 */
+	public boolean supportImportUrl();
+	
+	public ResourceEvaluation acceptImport(String url);
 	
 	/**
 	 * 
@@ -101,7 +116,10 @@ public interface RepositoryHandler {
 	 * @return
 	 */
 	public RepositoryEntry importResource(Identity initialAuthor, String initialAuthorAlt, String displayname,
-			String description, boolean withReferences, Organisation organisation, Locale locale, File file, String filename);	
+			String description, boolean withReferences, Organisation organisation, Locale locale, File file, String filename);
+	
+	public RepositoryEntry importResource(Identity initialAuthor, String initialAuthorAlt, String displayname,
+			String description, Organisation organisation, Locale locale, String url);
 
 	/**
 	 * 

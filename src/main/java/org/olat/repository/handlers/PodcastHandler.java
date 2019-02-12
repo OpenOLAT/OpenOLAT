@@ -53,6 +53,8 @@ import org.olat.modules.webFeed.FeedChangedEvent;
 import org.olat.modules.webFeed.FeedResourceSecurityCallback;
 import org.olat.modules.webFeed.FeedSecurityCallback;
 import org.olat.modules.webFeed.manager.FeedManager;
+import org.olat.modules.webFeed.manager.ValidatedURL;
+import org.olat.modules.webFeed.manager.ValidatedURL.State;
 import org.olat.modules.webFeed.ui.FeedMainController;
 import org.olat.modules.webFeed.ui.FeedRuntimeController;
 import org.olat.modules.webFeed.ui.podcast.PodcastUIFactory;
@@ -77,7 +79,7 @@ import org.olat.resource.references.ReferenceManager;
 public class PodcastHandler implements RepositoryHandler {
 	
 	@Override
-	public boolean isCreate() {
+	public boolean supportCreate() {
 		return true;
 	}
 	
@@ -104,8 +106,29 @@ public class PodcastHandler implements RepositoryHandler {
 	}
 	
 	@Override
+	public boolean supportImport() {
+		return true;
+	}
+
+	@Override
 	public ResourceEvaluation acceptImport(File file, String filename) {
 		return PodcastFileResource.evaluate(file, filename);
+	}
+
+	@Override
+	public boolean supportImportUrl() {
+		return true;
+	}
+
+	@Override
+	public ResourceEvaluation acceptImport(String url) {
+		ResourceEvaluation eval = new ResourceEvaluation();
+		ValidatedURL vUrl = FeedManager.getInstance().validateFeedUrl(url, PodcastFileResource.TYPE_NAME);
+		if(vUrl.getState() == State.VALID) {
+			eval.setValid(true);
+			eval.setDisplayname(vUrl.getTitle());
+		}
+		return eval;
 	}
 	
 	@Override
@@ -120,6 +143,25 @@ public class PodcastHandler implements RepositoryHandler {
 		RepositoryEntry re = CoreSpringFactory.getImpl(RepositoryService.class).create(initialAuthor, null, "", displayname, description,
 				resource, RepositoryEntryStatusEnum.preparation, organisation);
 		DBFactory.getInstance().commit();
+		return re;
+	}
+	
+	@Override
+	public RepositoryEntry importResource(Identity initialAuthor, String initialAuthorAlt, String displayname,
+			String description, Organisation organisation, Locale locale, String url) {
+		
+		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
+		OLATResourceable ores = FeedManager.getInstance().createPodcastResource();
+		OLATResource resource = OLATResourceManager.getInstance().findOrPersistResourceable(ores);
+		RepositoryEntry re = repositoryService.create(initialAuthor, null, "", displayname, description,
+				resource, RepositoryEntryStatusEnum.preparation, organisation);
+		DBFactory.getInstance().commit();
+		
+		Feed feed = FeedManager.getInstance().loadFeed(ores);
+		feed = FeedManager.getInstance().updateFeedMode(Boolean.TRUE, feed);
+		FeedManager.getInstance().updateExternalFeedUrl(feed, url);
+		DBFactory.getInstance().commit();
+		
 		return re;
 	}
 	

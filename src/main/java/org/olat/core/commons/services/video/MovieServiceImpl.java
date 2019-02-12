@@ -94,9 +94,10 @@ public class MovieServiceImpl implements MovieService, ThumbnailSPI {
 		}
 
 		if(extensions.contains(suffix)) {
-			try(RandomAccessFile accessFile = new RandomAccessFile(file, "r")) {
-				FileChannel ch = accessFile.getChannel();
-				FileChannelWrapper in = new FileChannelWrapper(ch);
+			try(RandomAccessFile accessFile = new RandomAccessFile(file, "r");
+					FileChannel ch = accessFile.getChannel();
+					FileChannelWrapper in = new FileChannelWrapper(ch)) {
+				
 				MP4Demuxer demuxer1 = new MP4Demuxer(in);
 				org.jcodec.common.model.Size size = demuxer1.getMovie().getDisplaySize();
 				// Case 1: standard case, get dimension from movie
@@ -158,9 +159,10 @@ public class MovieServiceImpl implements MovieService, ThumbnailSPI {
 		}
 
 		if(extensions.contains(suffix)) {
-			try(RandomAccessFile accessFile = new RandomAccessFile(file, "r")) {
+			try(RandomAccessFile accessFile = new RandomAccessFile(file, "r");
 				FileChannel ch = accessFile.getChannel();
-				FileChannelWrapper in = new FileChannelWrapper(ch);
+				FileChannelWrapper in = new FileChannelWrapper(ch)) {
+
 				MP4Demuxer demuxer1 = new MP4Demuxer(in);
 				MovieBox movie = demuxer1.getMovie();
 				long duration = movie.getDuration();
@@ -169,7 +171,7 @@ public class MovieServiceImpl implements MovieService, ThumbnailSPI {
 					timescale = 1;
 				}				
 				// Simple calculation. Ignore NTSC and other issues for now
-				return duration / timescale * 1000;
+				return duration / timescale * 1000l;
 			} catch (Exception | AssertionError e) {
 				log.error("Cannot extract duration of: " + media, e);
 			}
@@ -192,9 +194,10 @@ public class MovieServiceImpl implements MovieService, ThumbnailSPI {
 		}
 
 		if(extensions.contains(suffix)) {
-			try(RandomAccessFile accessFile = new RandomAccessFile(file, "r")) {
-				FileChannel ch = accessFile.getChannel();
-				FileChannelWrapper in = new FileChannelWrapper(ch);
+			try(RandomAccessFile accessFile = new RandomAccessFile(file, "r");
+					FileChannel ch = accessFile.getChannel();
+					FileChannelWrapper in = new FileChannelWrapper(ch)) {
+				
 				MP4Demuxer demuxer1 = new MP4Demuxer(in);
 				return demuxer1.getVideoTrack().getFrameCount();
 			} catch (Exception | AssertionError e) {
@@ -219,9 +222,10 @@ public class MovieServiceImpl implements MovieService, ThumbnailSPI {
 		}
 		String suffix = FileUtils.getFileSuffix(fileName);
 		if(extensions.contains(suffix)) {
-			try(RandomAccessFile accessFile = new RandomAccessFile(file, "r")) {
-				FileChannel ch = accessFile.getChannel();
-				FileChannelWrapper in = new FileChannelWrapper(ch);
+			try(RandomAccessFile accessFile = new RandomAccessFile(file, "r");
+					FileChannel ch = accessFile.getChannel();
+					FileChannelWrapper in = new FileChannelWrapper(ch)) {
+				
 				MP4Demuxer demuxer1 = new MP4Demuxer(in);
 				String fourCC = demuxer1.getVideoTrack().getFourcc();
 				if (fourCCs.contains(fourCC.toLowerCase())) {

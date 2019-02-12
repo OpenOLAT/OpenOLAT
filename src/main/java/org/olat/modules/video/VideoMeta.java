@@ -45,6 +45,11 @@ public interface VideoMeta extends CreateInfo {
 	public OLATResource getVideoResource();
 	
 	/**
+	 * @return The URL of an external video
+	 */
+	public String getUrl();
+	
+	/**
 	 * @return width of transcoded video in pixel
 	 */
 	public int getWidth();
@@ -77,12 +82,13 @@ public interface VideoMeta extends CreateInfo {
 	/**
 	 * @return the transcoding format, e.g. mp4
 	 */
-	public String getFormat();
+	public VideoFormat getVideoFormat();
 
 	/**
 	 * @return format the transcoding format, e.g. mp4
 	 */
-	public void setFormat(String format);
+	public void setVideoFormat(VideoFormat format);
+
 	
 	/**
 	 * Gets the length of the video as string.

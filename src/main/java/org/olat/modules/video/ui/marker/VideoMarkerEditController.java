@@ -130,6 +130,9 @@ public class VideoMarkerEditController extends BasicController {
 				if(StringHelper.containsNonWhitespace(videoEvent.getDuration()) && !"NaN".equals(videoEvent.getDuration())) {
 					try {
 						durationInSeconds = Math.round(Double.parseDouble(videoEvent.getDuration()));
+						if(markerEditCtrl != null) {
+							markerEditCtrl.setVideoDurationInSecs(durationInSeconds);
+						}
 					} catch (NumberFormatException e) {
 						//don't panic
 					}

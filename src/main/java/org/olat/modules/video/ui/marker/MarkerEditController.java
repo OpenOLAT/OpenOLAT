@@ -60,17 +60,21 @@ public class MarkerEditController extends FormBasicController {
 	
 	private VideoMarker marker;
 	private final SimpleDateFormat displayDateFormat;
-	private final long videoDurationInSecs;
+	private Long videoDurationInSecs;
 	
 	@Autowired
 	private VideoModule videoModule;
 	
-	public MarkerEditController(UserRequest ureq, WindowControl wControl, long videoDurationInSecs) {
+	public MarkerEditController(UserRequest ureq, WindowControl wControl, Long videoDurationInSecs) {
 		super(ureq, wControl, "marker_edit", Util.createPackageTranslator(VideoSettingsController.class, ureq.getLocale()));
 		this.videoDurationInSecs = videoDurationInSecs;
 		displayDateFormat = new SimpleDateFormat("HH:mm:ss");
 		displayDateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
 		initForm(ureq);
+	}
+	
+	public void setVideoDurationInSecs(Long videoDurationInSecs) {
+		this.videoDurationInSecs = videoDurationInSecs;
 	}
 	
 	public VideoMarker getMarker() {
@@ -202,10 +206,10 @@ public class MarkerEditController extends FormBasicController {
 		if(!StringHelper.containsNonWhitespace(beginEl.getValue())) {
 			beginEl.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;
-		} else {
+		} else if(videoDurationInSecs != null) {
 			try {
 				Date val = displayDateFormat.parse(beginEl.getValue());
-				if(val.getTime() > (videoDurationInSecs * 1000l)) {
+				if(val.getTime() > (videoDurationInSecs.longValue() * 1000l)) {
 					beginEl.setErrorKey("chapter.error.out.of.range", null);
 					allOk &= false;
 				}
@@ -234,7 +238,7 @@ public class MarkerEditController extends FormBasicController {
 				if(duration == 0) {
 					durationEl.setErrorKey("chapter.error.out.of.range", null);
 					allOk &= false;
-				} else if(end < 1 || end > (videoDurationInSecs * 1000l)) {
+				} else if(videoDurationInSecs != null && (end < 1 || end > (videoDurationInSecs.longValue() * 1000l))) {
 					durationEl.setErrorKey("chapter.error.out.of.range", null);
 					allOk &= false;
 				}

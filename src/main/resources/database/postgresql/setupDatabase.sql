@@ -1401,6 +1401,7 @@ create table o_vid_metadata (
   vid_size int8 default null,
   vid_format varchar(32) default null,
   vid_length varchar(32) default null,
+  vid_url varchar(512) default null,
   fk_resource_id int8 not null,
   primary key (id)
 );

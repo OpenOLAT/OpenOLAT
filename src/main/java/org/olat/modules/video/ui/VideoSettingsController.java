@@ -36,10 +36,14 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.video.VideoManager;
+import org.olat.modules.video.VideoMeta;
 import org.olat.modules.video.ui.marker.VideoMarkerEditController;
 import org.olat.modules.video.ui.question.VideoQuestionEditController;
 import org.olat.repository.RepositoryEntry;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -49,6 +53,7 @@ import org.olat.repository.RepositoryEntry;
 public class VideoSettingsController extends BasicController implements Activateable2 {
 
 	private RepositoryEntry entry;
+	private VideoMeta videoMetadata;
 
 	private VideoMetaDataEditFormController metaDataController;
 	private VideoPosterEditController posterEditController;
@@ -68,11 +73,16 @@ public class VideoSettingsController extends BasicController implements Activate
 
 	private final VelocityContainer mainVC;
 	private final SegmentViewComponent segmentView;
+	
+	@Autowired
+	private VideoManager videoManager;
 
 	public VideoSettingsController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry ) {
 		super(ureq, wControl);
 
 		this.entry = entry;
+		videoMetadata = videoManager.getVideoMetadata(entry.getOlatResource());
+		
 		mainVC = createVelocityContainer("video_settings");
 
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
@@ -90,8 +100,11 @@ public class VideoSettingsController extends BasicController implements Activate
 		
 		trackEditLink = LinkFactory.createLink("tab.video.trackConfig", mainVC, this);
 		segmentView.addSegment(trackEditLink, false);
-		qualityConfig = LinkFactory.createLink("tab.video.qualityConfig", mainVC, this);
-		segmentView.addSegment(qualityConfig, false);
+		
+		if(!StringHelper.containsNonWhitespace(videoMetadata.getUrl())) {
+			qualityConfig = LinkFactory.createLink("tab.video.qualityConfig", mainVC, this);
+			segmentView.addSegment(qualityConfig, false);
+		}
 
 		doOpenMetaDataConfig(ureq);
 		putInitialPanel(mainVC);
@@ -116,7 +129,7 @@ public class VideoSettingsController extends BasicController implements Activate
 		} else if("tracks".equalsIgnoreCase(type)) {
 			doOpenTrackConfig(ureq);
 			segmentView.select(trackEditLink);
-		} else if("quality".equalsIgnoreCase(type)) {
+		} else if("quality".equalsIgnoreCase(type) && !StringHelper.containsNonWhitespace(videoMetadata.getUrl())) {
 			doOpenQualityConfig(ureq);
 			segmentView.select(qualityConfig);
 		} else if("chapters".equalsIgnoreCase(type)) {
@@ -161,7 +174,7 @@ public class VideoSettingsController extends BasicController implements Activate
 		if(metaDataController == null) {
 			OLATResourceable ores = OresHelper.createOLATResourceableType("metadata");
 			WindowControl swControl = addToHistory(ureq, ores, null);
-			metaDataController = new VideoMetaDataEditFormController(ureq, swControl, entry);
+			metaDataController = new VideoMetaDataEditFormController(ureq, swControl, entry, videoMetadata);
 			listenTo(metaDataController);
 		} else {
 			addToHistory(ureq, metaDataController);

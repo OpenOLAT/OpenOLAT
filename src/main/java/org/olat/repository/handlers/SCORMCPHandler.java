@@ -73,7 +73,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
 public class SCORMCPHandler extends FileHandler {
 	
 	@Override
-	public boolean isCreate() {
+	public boolean supportCreate() {
 		return false;
 	}
 	
@@ -94,8 +94,23 @@ public class SCORMCPHandler extends FileHandler {
 	}
 	
 	@Override
+	public boolean supportImport() {
+		return true;
+	}
+
+	@Override
 	public ResourceEvaluation acceptImport(File file, String filename) {
 		return ScormCPFileResource.evaluate(file, filename);
+	}
+
+	@Override
+	public boolean supportImportUrl() {
+		return false;
+	}
+	
+	@Override
+	public ResourceEvaluation acceptImport(String url) {
+		return ResourceEvaluation.notValid();
 	}
 	
 	@Override
@@ -113,6 +128,12 @@ public class SCORMCPHandler extends FileHandler {
 	
 		DBFactory.getInstance().commit();
 		return re;
+	}
+	
+	@Override
+	public RepositoryEntry importResource(Identity initialAuthor, String initialAuthorAlt, String displayname,
+			String description, Organisation organisation, Locale locale, String url) {
+		return null;
 	}
 	
 	@Override

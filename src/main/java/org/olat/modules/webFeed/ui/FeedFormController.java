@@ -215,10 +215,6 @@ class FeedFormController extends FormBasicController {
 		return validUrl;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#initForm(org.olat.core.gui.components.form.flexible.FormItemContainer,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		// title might be longer from external source
@@ -251,7 +247,7 @@ class FeedFormController extends FormBasicController {
 			}
 		}
 
-		Set<String> mimeTypes = new HashSet<String>();
+		Set<String> mimeTypes = new HashSet<>();
 		mimeTypes.add("image/jpeg");
 		mimeTypes.add("image/jpg");
 		mimeTypes.add("image/png");
@@ -260,7 +256,7 @@ class FeedFormController extends FormBasicController {
 		
 		int maxFileSizeKB = feedQuota.getUlLimitKB().intValue();
 		String supportAddr = WebappHelper.getMailConfig("mailQuota");
-		file.setMaxUploadSizeKB(maxFileSizeKB, "ULLimitExceeded", new String[]{ new Long(maxFileSizeKB / 1024).toString(), supportAddr });
+		file.setMaxUploadSizeKB(maxFileSizeKB, "ULLimitExceeded", new String[]{ Integer.toString(maxFileSizeKB / 1024), supportAddr });
 
 		// if external feed, display feed-url text-element:
 		if(feed.isExternal()){

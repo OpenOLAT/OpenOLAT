@@ -54,3 +54,7 @@ create index idx_id_to_id_role_idx on o_bs_identity_to_identity (fk_role_id);
 alter table o_qual_analysis_presentation add q_temporal_grouping varchar(50);
 alter table o_qual_analysis_presentation add q_trend_difference varchar(50);
 alter table o_qual_analysis_presentation add q_rubric_id varchar(50);
+
+
+-- video
+alter table o_vid_metadata add vid_url varchar(512);

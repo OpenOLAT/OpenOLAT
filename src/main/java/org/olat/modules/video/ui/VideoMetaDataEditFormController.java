@@ -19,6 +19,8 @@
  */
 package org.olat.modules.video.ui;
 
+import java.io.File;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -39,13 +41,17 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class VideoMetaDataEditFormController extends FormBasicController {
+	
+	private final RepositoryEntry repoEntry;
+	private final VideoMeta videoMetadata;
+
 	@Autowired
 	private VideoManager videoManager;
-	private RepositoryEntry repoEntry;
 
-	public VideoMetaDataEditFormController(UserRequest ureq, WindowControl wControl, RepositoryEntry repoEntry) {
+	public VideoMetaDataEditFormController(UserRequest ureq, WindowControl wControl, RepositoryEntry repoEntry, VideoMeta videoMetadata) {
 		super(ureq, wControl);
 		this.repoEntry = repoEntry;
+		this.videoMetadata = videoMetadata;
 		initForm(ureq);
 	}
 
@@ -55,8 +61,10 @@ public class VideoMetaDataEditFormController extends FormBasicController {
 		setFormTitle("tab.video.metaDataConfig");
 		
 		OLATResource videoResource = repoEntry.getOlatResource();
-		
-		VideoMeta videoMetadata = videoManager.getVideoMetadata(videoResource);
+		if(StringHelper.containsNonWhitespace(videoMetadata.getUrl())) {
+			uifactory.addStaticTextElement("video.config.url", videoMetadata.getUrl(), formLayout);
+		}
+
 		uifactory.addStaticTextElement("video.config.duration", repoEntry.getExpenditureOfWork(), formLayout);
 
 		uifactory.addStaticTextElement("video.config.width", String.valueOf(videoMetadata.getWidth()) + "px", formLayout);
@@ -66,8 +74,21 @@ public class VideoMetaDataEditFormController extends FormBasicController {
 		uifactory.addStaticTextElement("video.config.ratio", aspcectRatio, formLayout);
 
 		uifactory.addStaticTextElement("video.config.creationDate", StringHelper.formatLocaleDateTime(videoResource.getCreationDate().getTime(), getLocale()), formLayout);
-		uifactory.addStaticTextElement("video.config.fileSize", Formatter.formatBytes(videoManager.getVideoFile(videoResource).length()), formLayout);
-
+		
+		long size;
+		if(StringHelper.containsNonWhitespace(videoMetadata.getUrl())) {
+			size = videoMetadata.getSize();
+		} else {
+			File videoFile = videoManager.getVideoFile(videoResource);
+			if(videoFile != null) {
+				size = videoFile.length();
+			} else {
+				size = videoMetadata.getSize();
+			}
+		}
+		if(size > 0) {
+			uifactory.addStaticTextElement("video.config.fileSize", Formatter.formatBytes(size), formLayout);
+		}
 	}
 
 	@Override

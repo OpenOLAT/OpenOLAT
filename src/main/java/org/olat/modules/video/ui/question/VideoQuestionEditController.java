@@ -154,6 +154,10 @@ public class VideoQuestionEditController extends BasicController {
 						//don't panic
 					}
 				}
+				
+				if(questionConfigCtrl != null) {
+					questionConfigCtrl.setVideoDurationInSecs(durationInSeconds);
+				}
 			}
 		} else if(questionConfigCtrl == source) {
 			questionsCtrl.event(ureq, questionConfigCtrl, event);

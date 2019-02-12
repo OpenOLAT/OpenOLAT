@@ -87,7 +87,7 @@ import org.olat.resource.OLATResourceManager;
 public class ImsCPHandler extends FileHandler {
 	
 	@Override
-	public boolean isCreate() {
+	public boolean supportCreate() {
 		return true;
 	}
 	
@@ -116,8 +116,23 @@ public class ImsCPHandler extends FileHandler {
 	}
 	
 	@Override
+	public boolean supportImport() {
+		return true;
+	}
+
+	@Override
 	public ResourceEvaluation acceptImport(File file, String filename) {
 		return ImsCPFileResource.evaluate(file, filename);
+	}
+
+	@Override
+	public boolean supportImportUrl() {
+		return false;
+	}
+
+	@Override
+	public ResourceEvaluation acceptImport(String url) {
+		return ResourceEvaluation.notValid();
 	}
 	
 	@Override
@@ -136,6 +151,13 @@ public class ImsCPHandler extends FileHandler {
 
 		DBFactory.getInstance().commit();
 		return re;
+	}
+	
+	@Override
+	public RepositoryEntry importResource(Identity initialAuthor, String initialAuthorAlt, String displayname,
+			String description, Organisation organisation, Locale locale, String url) {
+		//
+		return null;
 	}
 	
 	@Override

@@ -78,7 +78,6 @@ public class RepositoryHandlerFactory {
 		registerHandler(new SharedFolderHandler(), 40);
 		registerHandler(new GlossaryHandler(), 41);
 		registerHandler(new PortfolioHandler(), 42);
-		registerHandler(new VideoHandler(), 43);
 		
 		registerHandler(new WebDocumentHandler(DocFileResource.TYPE_NAME), 10001);
 		registerHandler(new WebDocumentHandler(XlsFileResource.TYPE_NAME), 10002);

@@ -46,7 +46,9 @@ import java.util.zip.ZipFile;
 
 import javax.imageio.ImageIO;
 
-import org.apache.commons.io.FilenameUtils;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.jcodec.api.FrameGrab;
 import org.jcodec.common.FileChannelWrapper;
 import org.olat.core.commons.services.image.Crop;
@@ -59,6 +61,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.ZipUtil;
+import org.olat.core.util.httpclient.HttpClientFactory;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSConstants;
@@ -71,6 +74,7 @@ import org.olat.core.util.vfs.filters.VFSItemSuffixFilter;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ResourceEvaluation;
+import org.olat.modules.video.VideoFormat;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoMarkers;
 import org.olat.modules.video.VideoMeta;
@@ -104,6 +108,9 @@ import org.springframework.stereotype.Service;
  */
 @Service("videoManager")
 public class VideoManagerImpl implements VideoManager {
+	
+	private static final OLog log = Tracing.createLoggerFor(VideoManagerImpl.class);
+	
 	private static final String CR = System.lineSeparator();
 	private static final String ENCODING = "utf-8";
 	protected static final String DIRNAME_REPOENTRY = "repoentry";
@@ -121,7 +128,6 @@ public class VideoManagerImpl implements VideoManager {
 	
 	public static final String TRACK = "track_";
 
-	
 	private static final SimpleDateFormat displayDateFormat = new SimpleDateFormat("HH:mm:ss");
 	private static final SimpleDateFormat vttDateFormat = new SimpleDateFormat("HH:mm:ss.SSS");
 	
@@ -141,8 +147,6 @@ public class VideoManagerImpl implements VideoManager {
 	private Scheduler scheduler;
 	@Autowired
 	private ImageService imageHelper;
-	
-	private static final OLog log = Tracing.createLoggerFor(VideoManagerImpl.class);
 
 	/**
 	 * get the configured posterframe
@@ -255,8 +259,8 @@ public class VideoManagerImpl implements VideoManager {
 	 * @param frame the VFSLeaf to write the picked image to
 	 */
 	@Override
-	public boolean getFrame(OLATResource videoResource, int frameNumber, VFSLeaf frame) {
-		File videoFile = ((LocalFileImpl)getMasterVideoFile(videoResource)).getBasefile();
+	public boolean getFrame(VFSLeaf video, int frameNumber, VFSLeaf frame) {
+		File videoFile = ((LocalFileImpl)video).getBasefile();
 		
 		try (RandomAccessFile randomAccessFile = new RandomAccessFile(videoFile, "r")) {
 			FileChannel ch = randomAccessFile.getChannel();
@@ -280,8 +284,8 @@ public class VideoManagerImpl implements VideoManager {
 	}
 	
 	@Override
-	public boolean getFrameWithFilter(OLATResource videoResource, int frameNumber, long duration, VFSLeaf frame) {
-		File videoFile = ((LocalFileImpl) getMasterVideoFile(videoResource)).getBasefile();
+	public boolean getFrameWithFilter(VFSLeaf video, int frameNumber, long duration, VFSLeaf frame) {
+		File videoFile = ((LocalFileImpl)video).getBasefile();
 		BufferedImage bufImg = null;
 		boolean imgBlack = true;
 		int countBlack = 0;
@@ -390,7 +394,31 @@ public class VideoManagerImpl implements VideoManager {
 			return meta;
 		}
 	}
-	
+
+	@Override
+	public String toPodcastVideoUrl(String url) {
+		try {
+			int index = url.indexOf("/Pages/Viewer.aspx?");
+			if(index >= 0) {
+				int idIndex = url.indexOf("id=", index);
+				if(idIndex >= 0) {
+					String start = url.substring(0, index);
+					
+					int idEnd = url.indexOf('&', idIndex);
+					if(idEnd < 0) {
+						idEnd = url.length();
+					}
+					
+					String id = url.substring(idIndex + 3, idEnd);
+					url = start + "/Podcast/StreamInBrowser/" + id + ".mp4";
+				}
+			}
+		} catch (Exception e) {
+			log.error("", e);
+		}
+		return url;
+	}
+
 	@Override
 	public void startTranscodingProcessIfEnabled(OLATResource video) {
 		if (videoModule.isTranscodingEnabled()) {
@@ -597,14 +625,22 @@ public class VideoManagerImpl implements VideoManager {
 			RepositoryEntryImport repoMetadata = null;
 			if (repoMetadataEntry != null) {
 				eval.setValid(true);
-				InputStream repoMetaDataStream = zipFile.getInputStream(repoMetadataEntry);
-				repoMetadata = RepositoryEntryImportExport.getConfiguration(repoMetaDataStream);
+				repoMetadata = readMetadata(zipFile, repoMetadataEntry);
 				if (repoMetadata != null) {
 					eval.setDisplayname(repoMetadata.getDisplayname());
 				}
 			}
 		} catch (Exception e) {
 			log.error("Error while checking for video resource archive", e);
+		}
+	}
+	
+	private RepositoryEntryImport readMetadata(ZipFile zipFile, ZipEntry entry) {
+		try(InputStream repoMetaDataStream = zipFile.getInputStream(entry);) {
+			return RepositoryEntryImportExport.getConfiguration(repoMetaDataStream);
+		} catch(Exception e) {
+			log.error("", e);
+			return null;
 		}
 	}
 	
@@ -625,7 +661,7 @@ public class VideoManagerImpl implements VideoManager {
 		}
 		// generate a poster image, use 20th frame as a default
 		VFSLeaf posterResource = VFSManager.resolveOrCreateLeafFromPath(masterContainer, FILENAME_POSTER_JPG);
-		getFrame(videoResource, 20, posterResource);
+		getFrame(targetFile, 20, posterResource);
 
 		// 2) Set poster image for repo entry
 		VFSLeaf posterImage = (VFSLeaf)masterContainer.resolve(FILENAME_POSTER_JPG);
@@ -650,8 +686,9 @@ public class VideoManagerImpl implements VideoManager {
 	@Override
 	public void exchangePoster (OLATResource videoResource) {
 		VFSContainer masterContainer = getMasterContainer(videoResource);
+		VFSLeaf videoFile = VFSManager.resolveOrCreateLeafFromPath(masterContainer, FILENAME_VIDEO_MP4);
 		VFSLeaf posterResource = VFSManager.resolveOrCreateLeafFromPath(masterContainer, FILENAME_POSTER_JPG);
-		getFrame(videoResource, 20, posterResource);
+		getFrame(videoFile, 20, posterResource);
 		// Update also repository entry image, use new posterframe
 		VFSLeaf posterImage = (VFSLeaf)masterContainer.resolve(FILENAME_POSTER_JPG);
 		if (posterImage != null) {
@@ -673,11 +710,93 @@ public class VideoManagerImpl implements VideoManager {
 			meta.setSize(uploadVideo.getSize());
 			meta.setWidth(dimensions.getWidth());
 			meta.setHeight(dimensions.getHeight());
-			meta.setFormat(FilenameUtils.getExtension(uploadVideo.getName()));
+			
+			VideoFormat format = VideoFormat.valueOfFilename(uploadVideo.getName());
+			meta.setVideoFormat(format);
 			meta.setLength(length);
 		}
 	}
+	
+	@Override
+	public RepositoryEntry updateVideoMetadata(RepositoryEntry entry, Long durationInSeconds) {
+		if(durationInSeconds == null) return entry;
+		
+		long durationInMillis = durationInSeconds.longValue() * 1000l;
+		
+		String durationStr = Formatter.formatTimecode(durationInMillis);
+		entry = repositoryManager.setExpenditureOfWork(entry, durationStr);
+		
+		VideoMeta meta = getVideoMetadata(entry.getOlatResource());
+		meta.setLength(durationStr);
+		videoMetadataDao.updateVideoMetadata(meta);
+		return entry;
+	}
 
+	@Override
+	public RepositoryEntry updateVideoMetadata(RepositoryEntry entry, String url) {
+		OLATResource videoResource = entry.getOlatResource();
+		VFSLeaf videoFile = downloadTmpVideo(videoResource, url);
+		if(videoFile.exists() && videoFile.getSize() > 0) {
+			VideoMeta meta = videoMetadataDao.getVideoMetadata(videoResource);
+			meta.setSize(videoFile.getSize());
+
+			Size dimensions = movieService.getSize(videoFile, "mp4");
+			if(dimensions != null) {
+				meta.setWidth(dimensions.getWidth());
+				meta.setHeight(dimensions.getHeight());
+			}
+			
+			long duration = movieService.getDuration(videoFile, "mp4");
+			if(duration > 0) {
+				String length = Formatter.formatTimecode(duration);
+				meta.setLength(length);
+				entry = repositoryManager.setExpenditureOfWork(entry, length);
+			}
+			videoMetadataDao.updateVideoMetadata(meta);
+		}
+
+		if(videoFile.exists()) {
+			videoFile.deleteSilently();
+		}
+		return entry;
+	}
+	
+	@Override
+	public VFSLeaf downloadTmpVideo(OLATResource videoResource, VideoMeta videoMetadata) {
+		return downloadTmpVideo(videoResource, videoMetadata.getUrl());
+	}
+	
+	private VFSLeaf downloadTmpVideo(OLATResource videoResource, String url) {
+		VFSContainer baseContainer =  FileResourceManager.getInstance().getFileResourceRootImpl(videoResource);
+		VFSContainer tmpContainer = VFSManager.getOrCreateContainer(baseContainer, "download");
+		
+		VFSItem videoItem = tmpContainer.resolve(FILENAME_VIDEO_MP4);
+		if(videoItem != null) {
+			videoItem.deleteSilently();
+		}
+		VFSLeaf videoFile = tmpContainer.createChildLeaf(FILENAME_VIDEO_MP4);
+		
+		HttpGet get = new HttpGet(url);
+		get.addHeader("Accept", "video/mp4");
+		
+		try(CloseableHttpClient httpClient = HttpClientFactory.getHttpClientInstance(true);
+				CloseableHttpResponse response = httpClient.execute(get)) {
+			download(response, videoFile);	
+		} catch(Exception e) {
+			log.error("", e);
+		}
+		return videoFile;
+	}
+
+	private void download(CloseableHttpResponse response, VFSLeaf file) {
+		try(InputStream in=response.getEntity().getContent();
+				OutputStream out=file.getOutputStream(false)) {
+			FileUtils.copy(in, out);
+		} catch(Exception e) {
+			log.error("", e);
+		}	
+	}
+	
 	@Override
 	public boolean importFromExportArchive(RepositoryEntry repoEntry, VFSLeaf exportArchive) {
 		OLATResource videoResource = repoEntry.getOlatResource();
@@ -959,19 +1078,23 @@ public class VideoManagerImpl implements VideoManager {
 		}
 		return null;
 	}
+	
+	@Override
+	public long getVideoFrameCount(VFSLeaf video) {
+		return movieService.getFrameCount(video, FILETYPE_MP4);
+	}
+
+	@Override
+	public VFSLeaf getMasterVideo(OLATResource videoResource) {
+		VFSContainer masterContainer = getMasterContainer(videoResource);
+		return (VFSLeaf)masterContainer.resolve(FILENAME_VIDEO_MP4);
+	}
 
 	@Override
 	public long getVideoDuration(OLATResource videoResource){
 		VFSContainer masterContainer = getMasterContainer(videoResource);
 		VFSLeaf video = (VFSLeaf)masterContainer.resolve(FILENAME_VIDEO_MP4);	
 		return movieService.getDuration(video, FILETYPE_MP4);
-	}
-	
-	@Override
-	public long getVideoFrameCount(OLATResource videoResource) {
-		VFSContainer masterContainer = getMasterContainer(videoResource);
-		VFSLeaf video = (VFSLeaf)masterContainer.resolve(FILENAME_VIDEO_MP4);	
-		return movieService.getFrameCount(video, FILETYPE_MP4);
 	}
 
 	@Override
@@ -995,9 +1118,15 @@ public class VideoManagerImpl implements VideoManager {
 	
 	@Override 
 	public VideoMeta createVideoMetadata(RepositoryEntry repoEntry, long size, String fileName) {
-		return videoMetadataDao.createVideoMetadata(repoEntry, size, fileName); 
+		VideoFormat format = VideoFormat.valueOfFilename(fileName);
+		return videoMetadataDao.createVideoMetadata(repoEntry, size, null, format); 
 	}
 	
+	@Override
+	public VideoMeta createVideoMetadata(RepositoryEntry repoEntry, String url, VideoFormat format) {
+		return videoMetadataDao.createVideoMetadata(repoEntry, -1l, url, format); 
+	}
+
 	@Override
 	public List<RepositoryEntry> getAllVideoRepoEntries(String typename) {
 		return videoMetadataDao.getAllVideoRepoEntries(typename);

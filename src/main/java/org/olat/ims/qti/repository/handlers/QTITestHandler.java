@@ -80,7 +80,7 @@ import org.olat.resource.references.ReferenceManager;
 public class QTITestHandler extends QTIHandler {
 	
 	@Override
-	public boolean isCreate() {
+	public boolean supportCreate() {
 		return CoreSpringFactory.getImpl(QTIModule.class).isCreateResourcesEnabled();
 	}
 	
@@ -95,6 +95,11 @@ public class QTITestHandler extends QTIHandler {
 		TestFileResource ores = new TestFileResource();
 		return super.createResource(AssessmentInstance.QMD_ENTRY_TYPE_ASSESS, ores, initialAuthor, displayname, description, createObject, organisation, locale);
 	}
+	
+	@Override
+	public boolean supportImport() {
+		return true;
+	}
 
 	@Override
 	public ResourceEvaluation acceptImport(File file, String filename) {
@@ -102,9 +107,25 @@ public class QTITestHandler extends QTIHandler {
 	}
 
 	@Override
+	public boolean supportImportUrl() {
+		return false;
+	}
+
+	@Override
+	public ResourceEvaluation acceptImport(String url) {
+		return ResourceEvaluation.notValid();
+	}
+
+	@Override
 	public RepositoryEntry importResource(Identity initialAuthor, String initialAuthorAlt, String displayname, String description,
 			boolean withReferences, Organisation organisation, Locale locale, File file, String filename) {
 		return super.importResource(initialAuthor, displayname, description, organisation, new TestFileResource(), file, filename);
+	}
+	
+	@Override
+	public RepositoryEntry importResource(Identity initialAuthor, String initialAuthorAlt, String displayname,
+			String description, Organisation organisation, Locale locale, String url) {
+		return null;
 	}
 
 	@Override
