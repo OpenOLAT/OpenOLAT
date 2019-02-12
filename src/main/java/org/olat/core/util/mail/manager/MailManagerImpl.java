@@ -755,6 +755,25 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 		return new SimpleMailContent(content.getSubject(), decoratedBody, content.getAttachments());
 	}
 	
+	@Override
+	public MailContent evaluateTemplate(MailTemplate template) {
+		VelocityContext context;
+		if(template.getContext() != null) {
+			context = new VelocityContext(template.getContext());
+		} else {
+			context = new VelocityContext();
+		}
+		template.putVariablesInMailContext(context, null);
+		context.put("server", Settings.getServerContextPathURI());
+
+		MailerResult result = new MailerResult();
+		StringWriter subjectWriter = new StringWriter(2000);
+		evaluate(context, template.getSubjectTemplate(), subjectWriter, result);
+		StringWriter bodyWriter = new StringWriter(2000);
+		evaluate(context, template.getBodyTemplate(), bodyWriter, result);
+		return new SimpleMailContent(subjectWriter.toString(), bodyWriter.toString(), template.getAttachments());
+	}
+
 	public String decorateMailBody(String body, Locale locale) {
 		String template = getMailTemplate();
 		boolean htmlTemplate = StringHelper.isHtml(template);

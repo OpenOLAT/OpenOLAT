@@ -46,6 +46,8 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
+import org.olat.core.util.mail.MailContent;
+import org.olat.core.util.mail.MailManager;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
@@ -70,12 +72,15 @@ public class CORunController extends BasicController {
 	private ContactFormController coFoCtr;
 
 	private final CourseGroupManager cgm;
+	
+	@Autowired
+	private MailManager mailManager;
 	@Autowired
 	private BGAreaManager areaManager;
 	@Autowired
-	private BusinessGroupService businessGroupService;	
+	private RepositoryService repositoryService;
 	@Autowired
-	private  RepositoryService repositoryService;
+	private BusinessGroupService businessGroupService;
 
 	/**
 	 * Constructor for the contact form run controller
@@ -225,6 +230,9 @@ public class CORunController extends BasicController {
 			CourseMailTemplate template = new CourseMailTemplate(entry, getIdentity(), getLocale());
 			template.setBodyTemplate(mBody);
 			template.setSubjectTemplate(mSubject);
+			MailContent content = mailManager.evaluateTemplate(template);
+			template.setSubjectTemplate(content.getSubject());
+			template.setBodyTemplate(content.getBody());
 			coFoCtr = new ContactFormController(ureq, getWindowControl(), false, false, false, cmsg, template);
 			listenTo(coFoCtr);//dispose as this controller is disposed
 			putInitialPanel(coFoCtr.getInitialComponent());

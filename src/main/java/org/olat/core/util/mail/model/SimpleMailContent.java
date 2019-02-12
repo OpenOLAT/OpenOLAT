@@ -41,7 +41,7 @@ public class SimpleMailContent implements MailContent {
 		this.subject = subject;
 		this.body = body;
 		
-		attachments = new ArrayList<File>();
+		attachments = new ArrayList<>();
 		if(attachmentArr != null && attachmentArr.length > 0) {
 			for(File attachment:attachmentArr) {
 				if(attachment != null && attachment.exists()) {
@@ -55,9 +55,9 @@ public class SimpleMailContent implements MailContent {
 		this.subject = subject;
 		this.body = body;
 		if(attachmentList == null) {
-			this.attachments = new ArrayList<File>(1);
+			this.attachments = new ArrayList<>(1);
 		} else {
-			this.attachments = new ArrayList<File>(attachmentList);
+			this.attachments = new ArrayList<>(attachmentList);
 		}
 	}
 

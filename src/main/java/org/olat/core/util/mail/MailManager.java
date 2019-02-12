@@ -202,5 +202,7 @@ public interface MailManager {
 	public MailContent decorateMail(MailBundle bundle);
 	
 	public String decorateMailBody(String body, Locale locale);
+	
+	public MailContent evaluateTemplate(MailTemplate template);
 
 }
