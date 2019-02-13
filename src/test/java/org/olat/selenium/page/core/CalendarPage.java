@@ -88,6 +88,7 @@ public class CalendarPage {
 		LocalDate date = LocalDate.now().withDayOfMonth(day);
 		String dateString = date.format(formatter);
 		By cellBy = By.xpath("//div[contains(@class,'o_cal')]//td[contains(@data-date,'" + dateString + "')][contains(@class,'fc-day')][contains(@class,'fc-widget-content')]");
+		OOGraphene.waitElement(cellBy, browser);
 		browser.findElement(cellBy).click();
 		OOGraphene.waitModalDialog(browser);
 		return this;

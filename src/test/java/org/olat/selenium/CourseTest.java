@@ -652,6 +652,7 @@ public class CourseTest extends Deployments {
 		// create a recurring event
 		CalendarPage calendar = new CalendarPage(browser);
 		calendar
+			.assertOnCalendar()
 			.addEvent(3)
 			.setDescription("Eventhor", "Hammer", "Asgard")
 			.setAllDay(true)
@@ -785,6 +786,86 @@ public class CourseTest extends Deployments {
 			.delete()
 			.confirmDeleteFuturOccurences()
 			.assertOnEventsAt("Repeat", 2, 15);
+	}
+	
+	/**
+	 * An author create a course with a calendar. It add
+	 * an event to the calendar, the event is not recurring
+	 * for the moment. The author save it, edit it again
+	 * and make it a recurring event. The test is there to
+	 * check the transition from non-recurring to recurring
+	 * works flawlessly. 
+	 * 
+	 * @param loginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void createCourseWithCalendar_singleToRecurrent(@InitialPage LoginPage loginPage)
+	throws IOException, URISyntaxException {
+		
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		loginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//create a course
+		String courseTitle = "Course-iCal-" + UUID.randomUUID();
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle)
+			.clickToolbarBack();
+		
+		navBar.openCourse(courseTitle);
+		
+		// activate the calendar options
+		CoursePageFragment course = CoursePageFragment.getCourse(browser);
+		CourseSettingsPage settings = course
+			.settings();
+		settings
+			.toolbar()
+			.calendar(Boolean.TRUE)
+			.save();
+		settings
+			.clickToolbarBack();
+		
+		String calendarNodeTitle = "iCal-3";
+		//create a course element of type calendar
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+			.edit();
+		courseEditor
+			.createNode("cal")
+			.nodeTitle(calendarNodeTitle);
+		
+		//publish the course
+		course = courseEditor
+			.autoPublish();
+		//open the course and see the CP
+		course
+			.clickTree()
+			.selectWithTitle(calendarNodeTitle);
+		
+		// create a recurring event
+		CalendarPage calendar = new CalendarPage(browser);
+		calendar
+			.assertOnCalendar()
+			.addEvent(2)
+			.setDescription("Repeat", "Loop", "Foreach")
+			.setAllDay(false)
+			.setBeginEnd(14, 18)
+			.save()
+			.assertOnEvents("Repeat", 1);
+		
+		//pick an occurence which is not the first and modify it
+		calendar
+			.openDetails("Repeat")
+			.edit()
+			.setRecurringEvent(KalendarEvent.WEEKLY, 28)
+			.save()
+			.assertOnEventsAt("Repeat", 4, 14);
+		
+		//pick details of an occurent
+		calendar
+			.openDetailsOccurence("Repeat", 9);
 	}
 	
 	/**
