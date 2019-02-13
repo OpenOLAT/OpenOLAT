@@ -538,7 +538,7 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 			closeParagraph();
 			currentListParagraph = null;
 		} else if("li".equals(tag)) {
-			//do nothing
+			closeParagraph();// close the paragraph but let the list
 		} else if("blockquote".equals(tag)) {
 			popStyle(tag);
 		} else if("div".equals(tag)) {
