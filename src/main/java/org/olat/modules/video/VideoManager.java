@@ -274,7 +274,7 @@ public interface VideoManager {
 	 * @param sourceResource the existing video resource
 	 * @param targetResource the empty new resource
 	 */
-	public void copyVideo(OLATResource sourceResource, OLATResource targetResource);
+	public void copyVideo(RepositoryEntry sourceEntry, RepositoryEntry targetEntry);
 
 	/**
 	 * Delete the video transcodings on disk an in database

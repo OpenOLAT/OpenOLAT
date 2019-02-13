@@ -291,7 +291,7 @@ public class FeedFileStorge {
 		if (feedContainer != null) {
 			VFSLeaf leaf = (VFSLeaf) feedContainer.resolve(FEED_FILE_NAME);
 			if (leaf != null) {
-				feed = (FeedImpl) XStreamHelper.readObject(xstream, leaf.getInputStream());
+				feed = (FeedImpl) XStreamHelper.readObject(xstream, leaf);
 				shorteningFeedToLengthOfDbAttribues(feed);
 			}
 		} else {
@@ -390,7 +390,7 @@ public class FeedFileStorge {
 			VFSLeaf leaf = (VFSLeaf) itemContainer.resolve(ITEM_FILE_NAME);
 			if (leaf != null) {
 				try {
-					item = (ItemImpl) XStreamHelper.readObject(xstream, leaf.getInputStream());
+					item = (ItemImpl) XStreamHelper.readObject(xstream, leaf);
 				} catch (Exception e) {
 					log.warn("Item XML-File could not be read. Item container: " + leaf);
 				}

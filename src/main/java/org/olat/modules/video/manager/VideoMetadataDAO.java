@@ -139,5 +139,20 @@ public class VideoMetadataDAO {
 		dbInstance.getCurrentEntityManager().persist(videometa);
 		return videometa;
 	}
+	
+	VideoMetaImpl copyVideoMetadata(RepositoryEntry repoEntry, VideoMeta sourceMeta) {
+		VideoMetaImpl videometa = new VideoMetaImpl();
+		videometa.setVideoResource(repoEntry.getOlatResource());
+		videometa.setVideoFormat(sourceMeta.getVideoFormat());
+		videometa.setUrl(sourceMeta.getUrl());
+		videometa.setCreationDate(new Date());
+		videometa.setLastModified(videometa.getCreationDate());		
+		videometa.setHeight(sourceMeta.getHeight());
+		videometa.setWidth(sourceMeta.getWidth());
+		videometa.setSize(sourceMeta.getSize());
+		videometa.setLength(sourceMeta.getLength());
+		dbInstance.getCurrentEntityManager().persist(videometa);
+		return videometa;
+	}
 
 }

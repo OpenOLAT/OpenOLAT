@@ -60,6 +60,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.httpclient.HttpClientFactory;
 import org.olat.core.util.vfs.LocalFileImpl;
@@ -614,7 +615,13 @@ public class VideoManagerImpl implements VideoManager {
 		LocalFolderImpl repoentryContainer = (LocalFolderImpl)VFSManager.resolveOrCreateContainerFromPath(baseContainer, DIRNAME_REPOENTRY); 
 		RepositoryEntryImportExport importExport = new RepositoryEntryImportExport(repoEntry, repoentryContainer.getBasefile());
 		importExport.exportDoExportProperties();
-		// 2) package everything in resource folder to streaming zip resource
+		// 2) dump video metadata to resource folder
+		VideoMeta videoMeta = getVideoMetadata(videoResource);
+		if(videoMeta != null) {
+			VFSLeaf videoMetaFile = VFSManager.resolveOrCreateLeafFromPath(repoentryContainer, FILENAME_VIDEO_METADATA_XML);
+			VideoMetaXStream.toXml(videoMetaFile, videoMeta);
+		}
+		// 3) package everything in resource folder to streaming zip resource
 		return new VideoExportMediaResource(baseContainer, repoEntry.getDisplayname());
 	}
 
@@ -808,8 +815,15 @@ public class VideoManagerImpl implements VideoManager {
 		// 2) update metadata from the repo entry export
 		LocalFolderImpl repoentryContainer = (LocalFolderImpl) baseContainer.resolve(DIRNAME_REPOENTRY); 
 		if (repoentryContainer != null) {
+			// repo metadata
 			RepositoryEntryImportExport importExport = new RepositoryEntryImportExport(repoentryContainer.getBasefile());
 			importExport.setRepoEntryPropertiesFromImport(repoEntry);
+			// video metadata
+			VFSItem videoMetaFile = repoentryContainer.resolve(FILENAME_VIDEO_METADATA_XML); 
+			if(videoMetaFile instanceof VFSLeaf) {
+				VideoMeta videoMeta = VideoMetaXStream.fromXml((VFSLeaf)videoMetaFile);
+				videoMetadataDao.copyVideoMetadata(repoEntry, videoMeta);
+			}
 			// now delete the import folder, not used anymore
 			repoentryContainer.delete();
 		}
@@ -830,13 +844,20 @@ public class VideoManagerImpl implements VideoManager {
 	}
 
 	@Override
-	public void copyVideo(OLATResource sourceResource, OLATResource targetResource) {
+	public void copyVideo(RepositoryEntry sourceEntry, RepositoryEntry targetEntry) {
+		OLATResource sourceResource = sourceEntry.getOlatResource();
+		OLATResource targetResource = targetEntry.getOlatResource();
 		// 1) Copy files on disk
 		File sourceFileroot = FileResourceManager.getInstance().getFileResourceRootImpl(sourceResource).getBasefile();
 		File targetFileroot = FileResourceManager.getInstance().getFileResourceRootImpl(targetResource).getBasefile();
 		FileUtils.copyDirContentsToDir(sourceFileroot, targetFileroot, false, "copyVideoResource");
-		// 2) Trigger transcoding in background
-		if (videoModule.isTranscodingEnabled()) {
+		// 2) Copy metadata
+		VideoMetaImpl sourceMeta = getVideoMetadata(sourceResource);
+		if(sourceMeta != null) {
+			sourceMeta = videoMetadataDao.copyVideoMetadata(targetEntry, sourceMeta);
+		}
+		// 3) Trigger transcoding in background
+		if (videoModule.isTranscodingEnabled() && !StringHelper.containsNonWhitespace(sourceMeta.getUrl())) {
 			startTranscodingProcess(targetResource);
 		}
 	}

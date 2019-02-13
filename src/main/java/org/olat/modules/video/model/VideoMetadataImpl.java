@@ -33,7 +33,6 @@ import org.olat.modules.video.VideoMetadata;
  * @author Dirk Furrer
  * 
  */
-
 public class VideoMetadataImpl implements Serializable, VideoMetadata {
 	private static final long serialVersionUID = 1L;
 		private int width;
@@ -41,7 +40,7 @@ public class VideoMetadataImpl implements Serializable, VideoMetadata {
 		private HashMap<String, String> tracks;
 		
 		public VideoMetadataImpl() {
-			tracks = new HashMap<String, String>();
+			tracks = new HashMap<>();
 		}
 				
 		@Override

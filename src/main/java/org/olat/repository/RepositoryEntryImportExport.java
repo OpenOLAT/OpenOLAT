@@ -30,11 +30,11 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -165,9 +165,9 @@ public class RepositoryEntryImportExport {
 		}
 	}
 	
-	private void addLicenseInformations(RepositoryEntryImport imp, RepositoryEntry re) {
+	private void addLicenseInformations(RepositoryEntryImport imp, RepositoryEntry entry) {
 		LicenseService licenseService = CoreSpringFactory.getImpl(LicenseService.class);
-		ResourceLicense license = licenseService.loadLicense(re.getOlatResource());
+		ResourceLicense license = licenseService.loadLicense(entry.getOlatResource());
 		if (license != null) {
 			imp.setLicenseTypeKey(String.valueOf(license.getLicenseType().getKey()));
 			imp.setLicenseTypeName(license.getLicenseType().getName());
@@ -183,8 +183,9 @@ public class RepositoryEntryImportExport {
 		if(image != null) {
 			imp.setImageName(image.getName());
 			zout.putNextEntry(new ZipEntry(image.getName()));
-			try(InputStream inImage=image.getInputStream()) {
-				FileUtils.copy(inImage, new ShieldOutputStream(zout));
+			try(InputStream inImage=image.getInputStream();
+					OutputStream out = new ShieldOutputStream(zout)) {
+				FileUtils.copy(inImage, out);
 			} catch(Exception e) {
 				log.error("", e);
 			}
@@ -196,8 +197,9 @@ public class RepositoryEntryImportExport {
 		if(movie != null) {
 			imp.setMovieName(movie.getName());
 			zout.putNextEntry(new ZipEntry(movie.getName()));
-			try(InputStream inMovie=movie.getInputStream()) {
-				FileUtils.copy(inMovie, new ShieldOutputStream(zout));
+			try(InputStream inMovie=movie.getInputStream();
+					OutputStream out=new ShieldOutputStream(zout)) {
+				FileUtils.copy(inMovie, out);
 			} catch(Exception e) {
 				log.error("", e);
 			}
@@ -205,7 +207,11 @@ public class RepositoryEntryImportExport {
 		}
 		
 		zout.putNextEntry(new ZipEntry(PROPERTIES_FILE));
-		getXStream().toXML(imp, new ShieldOutputStream(zout));
+		try(OutputStream out=new ShieldOutputStream(zout)) {
+			getXStream().toXML(imp, out);
+		} catch(IOException e) {
+			log.error("", e);
+		}
 		zout.closeEntry();
 	}
 
@@ -318,37 +324,27 @@ public class RepositoryEntryImportExport {
 	 * Read previousely exported Propertiesproperties
 	 */
 	private void loadConfiguration() {
-		FileSystem fs = null;
-		try {
-			if(baseDirectory.exists()) {
-				if(baseDirectory.getName().endsWith(".zip")) {
-					fs = FileSystems.newFileSystem(baseDirectory.toPath(), null);
+		if(baseDirectory != null && baseDirectory.exists()) {
+			if(baseDirectory.getName().endsWith(".zip")) {
+				try(FileSystem fs = FileSystems.newFileSystem(baseDirectory.toPath(), null)) {
 					Path fPath = fs.getPath("/");
 					Path manifestPath = fPath.resolve("export").resolve(PROPERTIES_FILE);
-					try(InputStream inputFile = Files.newInputStream(manifestPath, StandardOpenOption.READ)) {
-						XStream xstream = getXStream();
-						repositoryProperties = (RepositoryEntryImport)xstream.fromXML(inputFile);
-					} catch(Exception e) {
-						log.error("Cannot read repo.xml im zip", e);
-					}
-				} else {
-					File inputFile = new File(baseDirectory, PROPERTIES_FILE);
-					if(inputFile.exists()) {
-						XStream xstream = getXStream();
-						repositoryProperties = (RepositoryEntryImport)xstream.fromXML(inputFile);
-					} else {
-						repositoryProperties = new RepositoryEntryImport();
-					}
+					repositoryProperties = (RepositoryEntryImport)XStreamHelper.readObject(getXStream(), manifestPath);
+				} catch(Exception e) {
+					log.error("", e);
 				}
 			} else {
-				repositoryProperties = new RepositoryEntryImport();
+				File inputFile = new File(baseDirectory, PROPERTIES_FILE);
+				if(inputFile.exists()) {
+					repositoryProperties = (RepositoryEntryImport)XStreamHelper.readObject(getXStream(), inputFile);
+				} else {
+					repositoryProperties = new RepositoryEntryImport();
+				}
 			}
-			propertiesLoaded = true;
-		} catch (Exception ce) {
-			throw new OLATRuntimeException("Error importing repository entry properties.", ce);
-		} finally {
-			IOUtils.closeQuietly(fs);
+		} else {
+			repositoryProperties = new RepositoryEntryImport();
 		}
+		propertiesLoaded = true;
 	}
 	
 	/**

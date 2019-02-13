@@ -476,12 +476,12 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 	 */
 	private Object readObject(String fileName) {
 		VFSItem vfsItem = getCourseBaseContainer().resolve(fileName);
-		if (vfsItem == null || !(vfsItem instanceof VFSLeaf)) {
+		if (!(vfsItem instanceof VFSLeaf)) {
 			throw new CorruptedCourseException("Cannot resolve file: " + fileName + " course=" + toString());
 		}
 		try {
 			XStream xstream = CourseXStreamAliases.getReadCourseXStream();
-			return XStreamHelper.readObject(xstream, ((VFSLeaf)vfsItem).getInputStream());
+			return XStreamHelper.readObject(xstream, (VFSLeaf)vfsItem);
 		} catch (Exception e) {
 			log.error("Cannot read course tree file: " + fileName, e);
 			throw new CorruptedCourseException("Cannot resolve file: " + fileName + " course=" + toString(), e);

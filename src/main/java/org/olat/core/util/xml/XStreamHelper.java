@@ -251,25 +251,11 @@ public class XStreamHelper {
 	 * @return
 	 */
 	public static Object readObject(XStream xStream, File file) {
-		FileInputStream fis = null;
-		BufferedInputStream bis = null;
-		try {
-			fis = new FileInputStream(file);
-			bis = new BufferedInputStream(fis);
+		try(FileInputStream fis = new FileInputStream(file);
+				BufferedInputStream bis = new BufferedInputStream(fis)) {
 			return readObject(xStream, bis);
 		} catch (IOException e) {
-			throw new OLATRuntimeException(XStreamHelper.class,
-					"could not read Object from file: "
-							+ file.getAbsolutePath(), e);
-		} finally {
-			try {
-				if (fis != null)
-					fis.close();
-				if (bis != null)
-					bis.close();
-			} catch (Exception e) {
-				// we did our best to close the inputStream
-			}
+			throw new OLATRuntimeException(XStreamHelper.class, "could not read Object from file: " + file.getAbsolutePath(), e);
 		}
 	}
 	
@@ -284,9 +270,7 @@ public class XStreamHelper {
 				InputStream bis = new BufferedInputStream(in)) {
 			return readObject(xStream, bis);
 		} catch (Exception e) {
-			throw new OLATRuntimeException(XStreamHelper.class,
-					"could not read Object from file: "
-							+ path, e);
+			throw new OLATRuntimeException(XStreamHelper.class, "could not read Object from file: " + path, e);
 		}
 	}
 	
@@ -300,25 +284,11 @@ public class XStreamHelper {
 	 * @return
 	 */
 	public static Object readObject(XStream xStream, VFSLeaf file) {
-		InputStream fis = null;
-		BufferedInputStream bis = null;
-		try {
-			fis = file.getInputStream();
-			bis = new BufferedInputStream(fis);
+		try(InputStream fis = file.getInputStream();
+				BufferedInputStream bis = new BufferedInputStream(fis)) {
 			return readObject(xStream, bis);
 		} catch (Exception e) {
-			throw new OLATRuntimeException(XStreamHelper.class,
-					"could not read Object from file: "
-							+ file.getName(), e);
-		} finally {
-			try {
-				if (fis != null)
-					fis.close();
-				if (bis != null)
-					bis.close();
-			} catch (Exception e) {
-				// we did our best to close the inputStream
-			}
+			throw new OLATRuntimeException(XStreamHelper.class, "could not read Object from file: " + file.getName(), e);
 		}
 	}
 
@@ -332,12 +302,8 @@ public class XStreamHelper {
 	 * @return
 	 */
 	public static Object readObject(XStream xStream, InputStream is) {
-		try {
-			InputStreamReader isr = new InputStreamReader(is, ENCODING);
-			Object obj = xStream.fromXML(isr);
-			isr.close();
-			is.close();
-			return obj;
+		try(InputStreamReader isr = new InputStreamReader(is, ENCODING);) {
+			return xStream.fromXML(isr);
 		} catch (Exception e) {
 			throw new OLATRuntimeException(XStreamHelper.class,
 					"could not read Object from inputstream: " + is, e);

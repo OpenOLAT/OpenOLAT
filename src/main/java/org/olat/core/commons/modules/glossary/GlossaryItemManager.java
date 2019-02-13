@@ -278,7 +278,7 @@ public class GlossaryItemManager {
 		List<GlossaryItem> glossaryItemList = new ArrayList<>();
 		if (glossaryFile == null) { return new ArrayList<>(); }
 		
-		Object glossObj = XStreamHelper.readObject(xstreamReader, glossaryFile.getInputStream());
+		Object glossObj = XStreamHelper.readObject(xstreamReader, glossaryFile);
 		if (glossObj instanceof ArrayList) {
 			ArrayList<GlossaryItem> glossItemsFromFile = (ArrayList<GlossaryItem>) glossObj;
 			glossaryItemList.addAll(glossItemsFromFile);

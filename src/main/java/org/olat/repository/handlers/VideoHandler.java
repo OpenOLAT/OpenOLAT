@@ -51,6 +51,7 @@ import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.fileresource.types.VideoFileResource;
 import org.olat.modules.video.VideoFormat;
 import org.olat.modules.video.VideoManager;
+import org.olat.modules.video.VideoMeta;
 import org.olat.modules.video.ui.VideoDisplayController;
 import org.olat.modules.video.ui.VideoRuntimeController;
 import org.olat.repository.RepositoryEntry;
@@ -164,14 +165,19 @@ public class VideoHandler extends FileHandler {
 		} else if (fileName.endsWith(".zip")) {
 			// 2b) import video from archive from another OpenOLAT instance
 			dbInstance.commit();
-			videoManager.importFromExportArchive(repoEntry, importFile);			
+			videoManager.importFromExportArchive(repoEntry, importFile);
+			dbInstance.commit();			
 		}	
 		// 3) Persist Meta data
-		videoManager.createVideoMetadata(repoEntry, filesize, fileName);
-		dbInstance.commit();	
+		VideoMeta videoMeta = videoManager.getVideoMetadata(resource);
+		if(videoMeta == null) {
+			videoMeta =videoManager.createVideoMetadata(repoEntry, filesize, fileName);
+		}
+		dbInstance.commit();
 		// 4) start transcoding process if enabled
-		videoManager.startTranscodingProcessIfEnabled(resource);
-		
+		if(!StringHelper.containsNonWhitespace(videoMeta.getUrl())) {
+			videoManager.startTranscodingProcessIfEnabled(resource);
+		}
 		return repoEntry;
 	}
 	
@@ -277,9 +283,7 @@ public class VideoHandler extends FileHandler {
 	@Override
 	public RepositoryEntry copy(Identity author, RepositoryEntry source,
 			RepositoryEntry target) {
-		OLATResource sourceResource = source.getOlatResource();
-		OLATResource targetResource = target.getOlatResource();
-		videoManager.copyVideo(sourceResource, targetResource);
+		videoManager.copyVideo(source, target);
 		return target;
 	}
 
