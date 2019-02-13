@@ -55,6 +55,7 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 	private boolean latex = false;
 	private StringBuilder textBuffer;
 	private Spacing startSpacing;
+	protected String relPath;
 	
 	private boolean appendToCursor = true;
 	protected final OpenXMLDocument factory;
@@ -72,17 +73,17 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 	public HTMLToOpenXMLHandler(OpenXMLDocument document) {
 		this.factory = document;
 	}
-	
 
 	/**
 	 * @param document The OpenXML document
 	 * @param paragraph The current paragraph
 	 * @param appendToCursor If true, append automatically to the document
 	 */
-	public HTMLToOpenXMLHandler(OpenXMLDocument document, Element paragraph, boolean appendToCursor) {
+	public HTMLToOpenXMLHandler(OpenXMLDocument document, String relPath, Element paragraph, boolean appendToCursor) {
 		this(document);
 		this.currentParagraph = paragraph;
 		this.appendToCursor = appendToCursor;
+		this.relPath = relPath;
 	}
 	
 	public HTMLToOpenXMLHandler(OpenXMLDocument document, Spacing spacing) {
@@ -239,7 +240,7 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 		if(cssStyles == null) {
 			return setTextPreferences();
 		} else {
-			List<Style> styles = new ArrayList<Style>(4);
+			List<Style> styles = new ArrayList<>(4);
 			if(cssStyles.contains("bold")) styles.add(Style.bold);
 			if(cssStyles.contains("italic")) styles.add(Style.italic);
 			if(cssStyles.contains("underline")) styles.add(Style.underline);
@@ -497,7 +498,10 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 		}
 	}
 	
-	protected String path(String path) {
+	public String path(String path) {
+		if(relPath != null) {
+			return relPath.concat(path);
+		}
 		return path;
 	}
 
@@ -538,7 +542,7 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 			closeParagraph();
 			currentListParagraph = null;
 		} else if("li".equals(tag)) {
-			//do nothing
+			closeParagraph();// close the paragraph but let the list
 		} else if("blockquote".equals(tag)) {
 			popStyle(tag);
 		} else if("div".equals(tag)) {
