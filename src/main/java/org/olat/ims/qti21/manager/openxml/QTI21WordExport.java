@@ -374,7 +374,6 @@ public class QTI21WordExport implements MediaResource {
 	private static class QTI21AndHTMLToOpenXMLHandler extends HTMLToOpenXMLHandler {
 		
 		private final File itemFile;
-		private final String relPath;
 		private final AssessmentItem assessmentItem;
 		private final boolean withResponses;
 		private final AssessmentHtmlBuilder htmlBuilder;
@@ -488,11 +487,6 @@ public class QTI21WordExport implements MediaResource {
 					}
 				}
 			}
-		}
-		
-		@Override
-		protected String path(String path) {
-			return relPath.concat(path);
 		}
 
 		@Override
@@ -773,7 +767,7 @@ public class QTI21WordExport implements MediaResource {
 
 				// add the drop panels
 				Element wrapEl = factory.createParagraphEl();
-				HTMLToOpenXMLHandler dropTable = new HTMLToOpenXMLHandler(factory, wrapEl, false);
+				HTMLToOpenXMLHandler dropTable = new HTMLToOpenXMLHandler(factory, relPath, wrapEl, false);
 				dropTable.setMaxWidthCm(7);
 				dropTable.startTable(Columns.valueOf(columnWidthPct - 50));
 				if(withResponses) {
@@ -941,7 +935,7 @@ public class QTI21WordExport implements MediaResource {
 			String backgroundColor = "FFFFFF";
 			Border sourceBorder = new Border(0, 6, "E9EAF2");
 			
-			HTMLToOpenXMLHandler innerTable = new HTMLToOpenXMLHandler(factory, wrapEl, false);
+			HTMLToOpenXMLHandler innerTable = new HTMLToOpenXMLHandler(factory, relPath, wrapEl, false);
 			innerTable.setMaxWidthCm(7.5);
 			innerTable.startTable(Columns.valueOf(columnWidthPct));
 			for(SimpleAssociableChoice choice:choices) {
@@ -950,7 +944,7 @@ public class QTI21WordExport implements MediaResource {
 				
 				String html = htmlBuilder.flowStaticString(choice.getFlowStatics());
 				List<Node> nodes = appendHtmlText(html, factory.createParagraphEl(), 7.5);
-				if(nodes.size() == 0) {
+				if(nodes.isEmpty()) {
 					contentCell.appendChild(factory.createParagraphEl());
 				} else {
 					for(Node node:nodes) {
@@ -978,7 +972,7 @@ public class QTI21WordExport implements MediaResource {
 			Border dropBorder = new Border(0, 6, "EEEEEE");
 			Element wrapEl = factory.createParagraphEl();
 
-			HTMLToOpenXMLHandler innerTable = new HTMLToOpenXMLHandler(factory, wrapEl, false);
+			HTMLToOpenXMLHandler innerTable = new HTMLToOpenXMLHandler(factory, relPath, wrapEl, false);
 			innerTable.setMaxWidthCm(7.5);
 			innerTable.startTable(Columns.valueOf(columnWidthPct));
 			for(SimpleAssociableChoice choice:targetChoices) {
@@ -992,7 +986,7 @@ public class QTI21WordExport implements MediaResource {
 				}
 
 				// add the drop panels
-				HTMLToOpenXMLHandler dropTable = new HTMLToOpenXMLHandler(factory, wrapEl, false);
+				HTMLToOpenXMLHandler dropTable = new HTMLToOpenXMLHandler(factory, relPath, wrapEl, false);
 				dropTable.setMaxWidthCm(7);
 				dropTable.startTable(Columns.valueOf(columnWidthPct - 50));
 				if(withResponses) {
@@ -1003,7 +997,7 @@ public class QTI21WordExport implements MediaResource {
 							Node answerCell = dropTable.addCell(factory.createTableCell(dropBackgroundColor, targetBorder, columnWidthPct - 10, Unit.pct));
 							String answerHtml = htmlBuilder.flowStaticString(sourceChoice.getFlowStatics());
 							List<Node> answerNodes = appendHtmlText(answerHtml, factory.createParagraphEl(), 7.5);
-							if(answerNodes.size() == 0) {
+							if(answerNodes.isEmpty()) {
 								answerCell.appendChild(factory.createParagraphEl());
 							} else {
 								for(Node answerNode:answerNodes) {
@@ -1115,7 +1109,7 @@ public class QTI21WordExport implements MediaResource {
 			}
 			try {
 				SAXParser parser = new SAXParser();
-				HTMLToOpenXMLHandler handler = new HTMLToOpenXMLHandler(factory, wrapEl, false);
+				HTMLToOpenXMLHandler handler = new HTMLToOpenXMLHandler(factory, relPath, wrapEl, false);
 				handler.setMaxWidthCm(widthCm);
 				parser.setContentHandler(handler);
 				parser.parse(new InputSource(new StringReader(html)));

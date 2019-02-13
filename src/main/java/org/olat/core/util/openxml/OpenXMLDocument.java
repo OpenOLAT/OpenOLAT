@@ -435,7 +435,7 @@ public class OpenXMLDocument {
 			html = cleanUpHTML(html);
 			SAXParser parser = new SAXParser();
 			Element paragraphEl = getParagraphToAppendTo(newParagraph);
-			parser.setContentHandler(new HTMLToOpenXMLHandler(this, paragraphEl, true));
+			parser.setContentHandler(new HTMLToOpenXMLHandler(this, null, paragraphEl, true));
 			parser.parse(new InputSource(new StringReader(html)));
 		} catch (SAXException e) {
 			log.error("", e);
