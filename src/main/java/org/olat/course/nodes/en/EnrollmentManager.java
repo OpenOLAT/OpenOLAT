@@ -303,8 +303,10 @@ public class EnrollmentManager {
 			String name = (String)row[1];
 			String desc = (String)row[2];
 			if(StringHelper.containsNonWhitespace(desc) && descriptionMaxSize > 0) {
-				desc = FilterFactory.getHtmlTagsFilter().filter(desc);
-				desc = Formatter.truncate(desc, 256);
+				String asciiDesc = FilterFactory.getHtmlTagsFilter().filter(desc);
+				if(asciiDesc.length() > descriptionMaxSize) {
+					desc = Formatter.truncate(asciiDesc, descriptionMaxSize);
+				}
 			}
 
 			int maxParticipants = row[3] == null ? -1 : ((Number)row[3]).intValue();
