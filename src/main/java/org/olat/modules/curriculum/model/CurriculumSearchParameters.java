@@ -34,6 +34,7 @@ import org.olat.core.id.OrganisationRef;
 public class CurriculumSearchParameters {
 	
 	private String searchString;
+	private Identity ownerIdentity;
 	private Identity managerIdentity;
 	private List<? extends OrganisationRef> organisations;
 
@@ -62,5 +63,13 @@ public class CurriculumSearchParameters {
 
 	public void setManagerIdentity(Identity managerIdentity) {
 		this.managerIdentity = managerIdentity;
+	}
+
+	public Identity getOwnerIdentity() {
+		return ownerIdentity;
+	}
+
+	public void setOwnerIdentity(Identity ownerIdentity) {
+		this.ownerIdentity = ownerIdentity;
 	}
 }

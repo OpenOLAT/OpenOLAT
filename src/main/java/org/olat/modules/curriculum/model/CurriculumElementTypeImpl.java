@@ -42,6 +42,7 @@ import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumElementTypeManagedFlag;
 import org.olat.modules.curriculum.CurriculumElementTypeToType;
+import org.olat.modules.curriculum.CurriculumLectures;
 
 /**
  * 
@@ -83,6 +84,8 @@ public class CurriculumElementTypeImpl implements Persistable, CurriculumElement
 	private String managedFlagsString;
 	@Column(name="c_calendars", nullable=true, insertable=true, updatable=true)
 	private String calendarsEnabledString;
+	@Column(name="c_lectures", nullable=true, insertable=true, updatable=true)
+	private String lecturesEnabledString;
 	
 	@OneToMany(targetEntity=CurriculumElementTypeToTypeImpl.class, fetch=FetchType.LAZY,
 			orphanRemoval=true, cascade={CascadeType.PERSIST, CascadeType.REMOVE})
@@ -187,6 +190,29 @@ public class CurriculumElementTypeImpl implements Persistable, CurriculumElement
 			calendarsEnabledString = null;
 		} else {
 			calendarsEnabledString = calendars.name();
+		}
+	}
+
+	public String getLecturesEnabled() {
+		return lecturesEnabledString;
+	}
+
+	public void setLecturesEnabled(String lecturesEnabledString) {
+		this.lecturesEnabledString = lecturesEnabledString;
+	}
+
+	@Override
+	public CurriculumLectures getLectures() {
+		return StringHelper.containsNonWhitespace(lecturesEnabledString)
+				? CurriculumLectures.valueOf(lecturesEnabledString): CurriculumLectures.disabled;
+	}
+
+	@Override
+	public void setLectures(CurriculumLectures lectures) {
+		if(lectures == null) {
+			lecturesEnabledString = null;
+		} else {
+			lecturesEnabledString = lectures.name();
 		}
 	}
 

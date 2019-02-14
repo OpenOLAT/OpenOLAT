@@ -619,6 +619,9 @@ public class LectureBlockRollCallDAO {
 			  .append("  or lower(user.institutionalUserIdentifier) in (:bulkIdentifiers)")
 			  .append(")");
 		}
+		if(params.hasEntries()) {
+			sb.append(" and re.key in (:repoEntryKeys)");
+		}
 		
 		Map<String,Object> queryParams = new HashMap<>();
 		appendUsersStatisticsSearchParams(params, queryParams, userPropertyHandlers, sb);
@@ -640,6 +643,11 @@ public class LectureBlockRollCallDAO {
 		}
 		if(params.getBulkIdentifiers() != null && !params.getBulkIdentifiers().isEmpty()) {
 			rawQuery.setParameter("bulkIdentifiers", params.getBulkIdentifiers());
+		}
+		if(params.hasEntries()) {
+			List<Long> repoEntryKeys = params.getEntries().stream()
+					.map(RepositoryEntryRef::getKey).collect(Collectors.toList());
+			rawQuery.setParameter("repoEntryKeys", repoEntryKeys);
 		}
 		for(Map.Entry<String, Object> entry:queryParams.entrySet()) {
 			rawQuery.setParameter(entry.getKey(), entry.getValue());

@@ -28,7 +28,9 @@ import java.util.stream.Collectors;
 
 import javax.persistence.TypedQuery;
 
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
@@ -69,7 +71,8 @@ public class CurriculumRepositoryEntryRelationDAO {
 			.getResultList();
 	}
 	
-	public List<RepositoryEntry> getRepositoryEntries(List<CurriculumElementRef> elements, RepositoryEntryStatusEnum[] status) {
+	public List<RepositoryEntry> getRepositoryEntries(List<CurriculumElementRef> elements, RepositoryEntryStatusEnum[] status,
+			boolean onlyWithLectures, IdentityRef identity) {
 		if(elements == null || elements.isEmpty()) return new ArrayList<>();
 		
 		QueryBuilder sb = new QueryBuilder(256);
@@ -80,13 +83,27 @@ public class CurriculumRepositoryEntryRelationDAO {
 		  .append(" inner join v.groups as rel")
 		  .append(" inner join curriculumelement as el on (el.group.key=rel.group.key)")
 		  .append(" where el.key in (:elementKeys) and v.status ").in(status);
+		if(onlyWithLectures) {
+			sb.append(" and exists (select lectureConfig.key from lectureentryconfig as lectureConfig")
+			  .append("  where lectureConfig.entry.key=v.key and lectureConfig.lectureEnabled=true")
+			  .append(" )");
+		}
+		if(identity != null) {
+			sb.append(" and exists (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
+			  .append("  where rel.group.key=membership.group.key and rel.entry.key=v.key and membership.identity.key=:identityKey")
+			  .append("  and membership.role ").in(OrganisationRoles.administrator, OrganisationRoles.principal, OrganisationRoles.learnresourcemanager, GroupRoles.owner)
+			  .append(" )");
+		}
 		
 		List<Long> elementKeys = elements
 				.stream().map(CurriculumElementRef::getKey).collect(Collectors.toList());
-		return dbInstance.getCurrentEntityManager()
+		TypedQuery<RepositoryEntry> query = dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), RepositoryEntry.class)
-			.setParameter("elementKeys", elementKeys)
-			.getResultList();
+			.setParameter("elementKeys", elementKeys);
+		if(identity != null) {
+			query.setParameter("identityKey", identity.getKey());
+		}
+		return query.getResultList();
 	}
 	
 	public List<CurriculumElementWebDAVInfos> getCurriculumElementInfosForWebDAV(IdentityRef identity, List<String> roles) {

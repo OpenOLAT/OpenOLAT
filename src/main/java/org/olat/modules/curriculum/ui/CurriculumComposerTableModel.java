@@ -187,6 +187,7 @@ public class CurriculumComposerTableModel extends DefaultFlexiTreeTableDataModel
 			case numOfCoaches: return element.getNumOfCoaches();
 			case numOfOwners: return element.getNumOfOwners();
 			case calendars: return element.getCalendarsLink();
+			case lectures: return element.getLecturesLink();
 			default: return "ERROR";
 		}
 	}
@@ -210,6 +211,7 @@ public class CurriculumComposerTableModel extends DefaultFlexiTreeTableDataModel
 		numOfCoaches("table.header.num.of.coaches"),
 		numOfOwners("table.header.num.of.owners"),
 		calendars("table.header.calendars"),
+		lectures("table.header.lectures"),
 		status("table.header.status"),
 		tools("table.header.tools");
 		

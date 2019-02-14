@@ -52,9 +52,19 @@ public interface CurriculumElementType extends CurriculumElementTypeRef, CreateI
 	
 	public void setExternalId(String externalId);
 
+	/**
+	 * @return true if calendars aggregation is available for curriculum elements of this type.
+	 */
 	public CurriculumCalendars getCalendars();
 	
 	public void setCalendars(CurriculumCalendars calendars);
+	
+	/**
+	 * @return true if absence management aggregation is available for curriculum elements of this type.
+	 */
+	public CurriculumLectures getLectures();
+	
+	public void setLectures(CurriculumLectures lectures);
 	
 	public CurriculumElementTypeManagedFlag[] getManagedFlags();
 	

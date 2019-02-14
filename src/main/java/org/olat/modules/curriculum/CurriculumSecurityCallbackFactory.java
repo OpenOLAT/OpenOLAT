@@ -45,6 +45,10 @@ public class CurriculumSecurityCallbackFactory {
 		return new DefaultCurriculumSecurityCallback(admin);
 	}
 	
+	public static final CurriculumSecurityCallback createCallback(boolean canManage) {
+		return new DefaultCurriculumSecurityCallback(canManage);
+	}
+	
 	private static class DefaultCurriculumSecurityCallback implements CurriculumSecurityCallback {
 		
 		private final boolean admin;
@@ -90,6 +94,11 @@ public class CurriculumSecurityCallbackFactory {
 
 		@Override
 		public boolean canViewAllCalendars() {
+			return admin;
+		}
+
+		@Override
+		public boolean canViewAllLectures() {
 			return admin;
 		}
 	}

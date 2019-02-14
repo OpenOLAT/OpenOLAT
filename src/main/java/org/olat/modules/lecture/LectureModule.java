@@ -44,6 +44,7 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 	private static final String AUTHORIZED_ABSENCE_ENABLED = "lecture.authorized.absence.enabled";
 	private static final String AUTHORIZED_ABSENCE_ATTENDANT_ENABLED = "lecture.authorized.absence.as.attendant";
 	private static final String TEACHER_CAN_AUTHORIZED_ABSENCE = "teacher.can.authorized.absence";
+	private static final String OWNER_CAN_VIEW_ALL_COURSES_IN_CURRICULUM = "lecture.owner.can.view.all.courses.curriculum";
 	private static final String ROLLCALL_REMINDER_ENABLED = "lecture.rollcall.reminder.enabled";
 	private static final String ROLLCALL_REMINDER_PERIOD = "lecture.rollcall.reminder.period";
 	private static final String ROLLCALL_AUTOCLOSE_PERIOD = "lecture.rollcall.autoclose.period";
@@ -78,6 +79,9 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 	private boolean absenceDefaultAuthorized;
 	@Value("${lecture.teacher.can.authorized.absence:true}")
 	private boolean teacherCanAuthorizedAbsence;
+	
+	@Value("${lecture.owner.can.view.all.courses.curriculum:true}")
+	private boolean ownerCanViewAllCoursesInCurriculum;
 
 	@Value("${lecture.rollcall.reminder.enabled:true}")
 	private boolean rollCallReminderEnabled;
@@ -158,6 +162,11 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 		String teacherCanAuthorizedAbsenceObj = getStringPropertyValue(TEACHER_CAN_AUTHORIZED_ABSENCE, true);
 		if(StringHelper.containsNonWhitespace(teacherCanAuthorizedAbsenceObj)) {
 			teacherCanAuthorizedAbsence = "true".equals(teacherCanAuthorizedAbsenceObj);
+		}
+		
+		String ownerCanViewAllCoursesInCurriculumObj = getStringPropertyValue(OWNER_CAN_VIEW_ALL_COURSES_IN_CURRICULUM, true);
+		if(StringHelper.containsNonWhitespace(ownerCanViewAllCoursesInCurriculumObj)) {
+			ownerCanViewAllCoursesInCurriculum = "true".equals(ownerCanViewAllCoursesInCurriculumObj);
 		}
 		
 		String rollCallReminderEnabledObj = getStringPropertyValue(ROLLCALL_REMINDER_ENABLED, true);
@@ -306,6 +315,15 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 	public void setTeacherCanAuthorizedAbsence(boolean enable) {
 		this.teacherCanAuthorizedAbsence = enable;
 		setStringProperty(TEACHER_CAN_AUTHORIZED_ABSENCE, Boolean.toString(enable), true);
+	}
+
+	public boolean isOwnerCanViewAllCoursesInCurriculum() {
+		return ownerCanViewAllCoursesInCurriculum;
+	}
+
+	public void setOwnerCanViewAllCoursesInCurriculum(boolean enable) {
+		this.ownerCanViewAllCoursesInCurriculum = enable;
+		setStringProperty(OWNER_CAN_VIEW_ALL_COURSES_IN_CURRICULUM, Boolean.toString(enable), true);
 	}
 
 	public boolean isRollCallReminderEnabled() {

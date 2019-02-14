@@ -62,7 +62,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class LecturesSearchFormController extends FormBasicController {
 
-	protected static final String PROPS_IDENTIFIER = LecturesSearchFormController.class.getName();
+	public static final String PROPS_IDENTIFIER = LecturesSearchFormController.class.getName();
 	
 	private TextElement login;
 	private TextElement bulkEl;
@@ -93,7 +93,7 @@ public class LecturesSearchFormController extends FormBasicController {
 		
 		Roles roles = ureq.getUserSession().getRoles();
 		admin = roles.isAdministrator() || roles.isLearnResourceManager() || roles.isLectureManager() || roles.isAuthor();
-		adminProps = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
+		adminProps = securityModule.isUserAllowedAdminProps(roles);
 		
 		if(organisationModule.isEnabled()) {
 			searcheableOrganisations = roles.getOrganisationsWithRoles(OrganisationRoles.administrator,

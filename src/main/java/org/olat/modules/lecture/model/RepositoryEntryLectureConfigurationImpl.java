@@ -29,7 +29,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -47,9 +46,7 @@ import org.olat.repository.RepositoryEntry;
  */
 @Entity(name="lectureentryconfig")
 @Table(name="o_lecture_entry_config")
-@NamedQueries(
-	@NamedQuery(name="lectureconfigByRepositoryEntry", query="select config from lectureentryconfig config where config.entry.key=:entryKey")
-)
+@NamedQuery(name="lectureconfigByRepositoryEntry", query="select config from lectureentryconfig config where config.entry.key=:entryKey")
 public class RepositoryEntryLectureConfigurationImpl implements Persistable, RepositoryEntryLectureConfiguration {
 
 	private static final long serialVersionUID = -728141275261361935L;

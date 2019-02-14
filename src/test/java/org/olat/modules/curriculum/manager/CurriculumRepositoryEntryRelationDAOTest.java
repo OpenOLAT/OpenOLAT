@@ -31,8 +31,11 @@ import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
+import org.olat.modules.curriculum.CurriculumLectures;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
+import org.olat.modules.lecture.manager.RepositoryEntryLectureConfigurationDAO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.test.JunitTestHelper;
@@ -53,11 +56,14 @@ public class CurriculumRepositoryEntryRelationDAOTest extends OlatTestCase {
 	private CurriculumService curriculumService;
 	@Autowired
 	private CurriculumRepositoryEntryRelationDAO curriculumRepositoryEntryRelationDao;
+	@Autowired
+	private RepositoryEntryLectureConfigurationDAO repositoryEntryLectureConfigurationDao;
 	
 	@Test
 	public void getRepositoryEntries() {
 		Curriculum curriculum = curriculumService.createCurriculum("cur-el-rel-2", "Curriculum for relation", "Curriculum", null);
-		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-rel", "Element for relation", null, null, null, null, CurriculumCalendars.disabled, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-rel", "Element for relation", null, null, null, null,
+				CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-re-auth");
 		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(author);
 		dbInstance.commit();
@@ -65,16 +71,74 @@ public class CurriculumRepositoryEntryRelationDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		List<CurriculumElementRef> elements = Collections.singletonList(element);
-		List<RepositoryEntry> entries = curriculumRepositoryEntryRelationDao.getRepositoryEntries(elements, RepositoryEntryStatusEnum.preparationToClosed());
+		List<RepositoryEntry> entries = curriculumRepositoryEntryRelationDao
+				.getRepositoryEntries(elements, RepositoryEntryStatusEnum.preparationToClosed(), false, null);
 		Assert.assertNotNull(entries);
 		Assert.assertEquals(1, entries.size());
 		Assert.assertEquals(entry, entries.get(0));
 	}
 	
 	@Test
+	public void getRepositoryEntries_withLectures() {
+		Curriculum curriculum = curriculumService.createCurriculum("cur-el-rel-2", "Curriculum for relation", "Curriculum", null);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-rel", "Element for relation", null, null, null, null,
+				CurriculumCalendars.disabled, CurriculumLectures.enabled, curriculum);
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-re-auth");
+		RepositoryEntry entryLecture = JunitTestHelper.createRandomRepositoryEntry(author);
+		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(author);
+		RepositoryEntryLectureConfiguration lectureConfig = repositoryEntryLectureConfigurationDao.createConfiguration(entryLecture);
+		lectureConfig.setLectureEnabled(true);
+		repositoryEntryLectureConfigurationDao.update(lectureConfig);
+		dbInstance.commit();
+		curriculumService.addRepositoryEntry(element, entryLecture, false);
+		curriculumService.addRepositoryEntry(element, entry, false);
+		dbInstance.commitAndCloseSession();
+		
+		List<CurriculumElementRef> elements = Collections.singletonList(element);
+		List<RepositoryEntry> entries = curriculumRepositoryEntryRelationDao
+				.getRepositoryEntries(elements, RepositoryEntryStatusEnum.preparationToClosed(), true, null);
+		Assert.assertNotNull(entries);
+		Assert.assertEquals(1, entries.size());
+		Assert.assertEquals(entryLecture, entries.get(0));
+	}
+	
+	@Test
+	public void getRepositoryEntries_withPermissions() {
+		Curriculum curriculum = curriculumService.createCurriculum("cur-el-rel-2", "Curriculum for checked relation", "Curriculum", null);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-rel", "Element for checked relation", null, null, null, null,
+				CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-re-not-user");
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-re-auth");
+		RepositoryEntry entryLecture = JunitTestHelper.createRandomRepositoryEntry(author);
+		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(author);
+		RepositoryEntryLectureConfiguration lectureConfig = repositoryEntryLectureConfigurationDao.createConfiguration(entryLecture);
+		lectureConfig.setLectureEnabled(true);
+		repositoryEntryLectureConfigurationDao.update(lectureConfig);
+		dbInstance.commit();
+		curriculumService.addRepositoryEntry(element, entryLecture, false);
+		curriculumService.addRepositoryEntry(element, entry, false);
+		dbInstance.commitAndCloseSession();
+		
+		// check author
+		List<CurriculumElementRef> elements = Collections.singletonList(element);
+		List<RepositoryEntry> entries = curriculumRepositoryEntryRelationDao
+				.getRepositoryEntries(elements, RepositoryEntryStatusEnum.preparationToClosed(), true, author);
+		Assert.assertNotNull(entries);
+		Assert.assertEquals(1, entries.size());
+		Assert.assertEquals(entryLecture, entries.get(0));
+		
+		// check the second user without permission
+		List<RepositoryEntry> noEntries = curriculumRepositoryEntryRelationDao
+				.getRepositoryEntries(elements, RepositoryEntryStatusEnum.preparationToClosed(), true, user);
+		Assert.assertNotNull(noEntries);
+		Assert.assertTrue(noEntries.isEmpty());
+	}
+	
+	@Test
 	public void getCurriculumElements() {
 		Curriculum curriculum = curriculumService.createCurriculum("cur-el-rel-2", "Curriculum for relation", "Curriculum", null);
-		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-rel", "Element for relation", null, null, null, null, CurriculumCalendars.disabled, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-rel", "Element for relation", null, null, null, null,
+				CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-re-auth");
 		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(author);
 		dbInstance.commit();
@@ -90,7 +154,8 @@ public class CurriculumRepositoryEntryRelationDAOTest extends OlatTestCase {
 	@Test
 	public void getCurriculumElementsRepositoryEntryAnsUser() {
 		Curriculum curriculum = curriculumService.createCurriculum("cur-el-rel-2", "Curriculum for relation", "Curriculum", null);
-		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-rel", "Element for relation", null, null, null, null, CurriculumCalendars.disabled, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-rel", "Element for relation", null, null, null, null,
+				CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-re-auth");
 		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(author);
 		dbInstance.commit();

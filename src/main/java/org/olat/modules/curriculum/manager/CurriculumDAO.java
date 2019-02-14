@@ -224,13 +224,33 @@ public class CurriculumDAO {
 			sb.append(")");	
 		}
 		
-		if(params.getManagerIdentity() != null) {
+		if(params.getOwnerIdentity() != null || params.getManagerIdentity() != null) {
 			sb.and()
-			  .append("exists (select membership.key from bgroupmember as membership")
-			  .append("  where membership.identity.key=:managerKey")
-			  .append("  and (membership.group.key=baseGroup.key or membership.group.key=organis.group.key)")
-			  .append("  and role in ('").append(CurriculumRoles.curriculummanager).append("','").append(OrganisationRoles.administrator).append("','").append(OrganisationRoles.principal).append("')")
-			  .append(")");
+			  .append("(");
+		
+			if(params.getOwnerIdentity() != null) {
+				sb.append("exists (select courseMembership.key from curriculumelement as courseCurEl")
+				  .append(" inner join repoentrytogroup as curRelGroup on (courseCurEl.group.key=curRelGroup.group.key)")
+				  .append(" inner join repoentrytogroup as courseRelGroup on (courseRelGroup.entry.key=curRelGroup.entry.key)")
+				  .append(" inner join courseRelGroup.group as courseBaseGroup")
+				  .append(" inner join courseBaseGroup.members as courseMembership")
+				  .append(" where courseMembership.identity.key=:ownerKey and courseMembership.role='").append(GroupRoles.owner.name()).append("'")
+				  .append(" and courseCurEl.curriculum.key=cur.key")
+				  .append(")");
+			}
+			
+			if(params.getManagerIdentity() != null) {
+				if(params.getOwnerIdentity() != null) {
+					sb.append(" or ");
+				}
+				sb.append("exists (select membership.key from bgroupmember as membership")
+				  .append("  where membership.identity.key=:managerKey")
+				  .append("  and (membership.group.key=baseGroup.key or membership.group.key=organis.group.key)")
+				  .append("  and role in ('").append(CurriculumRoles.curriculummanager).append("','").append(OrganisationRoles.administrator).append("','").append(OrganisationRoles.principal).append("')")
+				  .append(")");
+			}
+			
+			sb.append(")");
 		}
 
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
@@ -251,6 +271,9 @@ public class CurriculumDAO {
 		}
 		if(params.getManagerIdentity() != null) {
 			query.setParameter("managerKey", params.getManagerIdentity().getKey());
+		}
+		if(params.getOwnerIdentity() != null) {
+			query.setParameter("ownerKey", params.getOwnerIdentity().getKey());
 		}
 		
 		List<Object[]> rawObjects = query.getResultList();
@@ -288,11 +311,30 @@ public class CurriculumDAO {
 		sb.append("select cur.key from curriculum cur")
 		  .append(" inner join cur.group baseGroup")
 		  .append(" left join baseGroup.members membership")
-		  .append(" where membership.identity.key=:identityKey and membership.role =:role");
+		  .append(" where membership.identity.key=:identityKey and membership.role=:role");
 		List<Long> has = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Long.class)
 				.setParameter("identityKey", identity.getKey())
 				.setParameter("role", role)
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return has != null && !has.isEmpty() && has.get(0) != null;
+	}
+	
+	public boolean hasOwnerRoleInCurriculum(IdentityRef identity) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select v.key from repositoryentry v")
+		  .append(" inner join v.groups as relGroup")
+		  .append(" inner join relGroup.group as baseGroup")
+		  .append(" inner join baseGroup.members as membership")
+		  .append(" inner join v.groups as curriculumRelGroup")
+		  .append(" inner join curriculumelement as curEl on (curEl.group.key = curriculumRelGroup.group.key)")
+		  .append(" where membership.identity.key=:identityKey and membership.role=:role");
+		List<Long> has = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("role", GroupRoles.owner.name())
 				.setFirstResult(0)
 				.setMaxResults(1)
 				.getResultList();

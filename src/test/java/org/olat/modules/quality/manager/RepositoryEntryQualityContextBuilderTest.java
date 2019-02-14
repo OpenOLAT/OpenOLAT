@@ -39,6 +39,7 @@ import org.olat.core.id.Organisation;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumLectures;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.manager.CurriculumElementToTaxonomyLevelDAO;
@@ -125,13 +126,14 @@ public class RepositoryEntryQualityContextBuilderTest extends OlatTestCase {
 		Curriculum curriculum3 = curriculumService.createCurriculum(UUID.randomUUID().toString(), "Curriculum 3", "",
 				curriculumOrganisation3);
 		CurriculumElement curriculumElement1 = curriculumService.createCurriculumElement(UUID.randomUUID().toString(),
-				"Element 1", null, null, null, null, CurriculumCalendars.disabled, curriculum1);
+				"Element 1", null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum1);
 		CurriculumElement curriculumElement2Parent = curriculumService
-				.createCurriculumElement(UUID.randomUUID().toString(), "Element 2 parent", null, null, null, null, CurriculumCalendars.disabled, curriculum2);
+				.createCurriculumElement(UUID.randomUUID().toString(), "Element 2 parent", null, null, null, null,
+						CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum2);
 		CurriculumElement curriculumElement2 = curriculumService.createCurriculumElement(UUID.randomUUID().toString(),
-				"Element 2", null, null, curriculumElement2Parent, null, CurriculumCalendars.disabled, curriculum2);
+				"Element 2", null, null, curriculumElement2Parent, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum2);
 		CurriculumElement curriculumElement3 = curriculumService.createCurriculumElement(UUID.randomUUID().toString(),
-				"Element 3", null, null, null, null, CurriculumCalendars.disabled, curriculum3);
+				"Element 3", null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum3);
 		curriculumService.addRepositoryEntry(curriculumElement1, entry, true);
 		curriculumService.addRepositoryEntry(curriculumElement2, entry, true);
 		curriculumService.addRepositoryEntry(curriculumElement3, entry, true);
@@ -221,13 +223,14 @@ public class RepositoryEntryQualityContextBuilderTest extends OlatTestCase {
 		Curriculum curriculumOther = curriculumService.createCurriculum(UUID.randomUUID().toString(), "Other curriculum", "",
 				curriculumOrganisationOther);
 		CurriculumElement curriculumElement1 = curriculumService.createCurriculumElement(UUID.randomUUID().toString(),
-				"Element 1", null, null, null, null, CurriculumCalendars.disabled, curriculum1);
+				"Element 1", null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum1);
 		CurriculumElement curriculumElement2Parent = curriculumService
-				.createCurriculumElement(UUID.randomUUID().toString(), "Element 2 parent", null, null, null, null, CurriculumCalendars.disabled, curriculum2);
+				.createCurriculumElement(UUID.randomUUID().toString(), "Element 2 parent", null, null, null, null,
+						CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum2);
 		CurriculumElement curriculumElement2 = curriculumService.createCurriculumElement(UUID.randomUUID().toString(),
-				"Element 2", null, null, curriculumElement2Parent, null, CurriculumCalendars.disabled, curriculum2);
+				"Element 2", null, null, curriculumElement2Parent, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum2);
 		CurriculumElement curriculumElementOther = curriculumService.createCurriculumElement(UUID.randomUUID().toString(),
-				"Other element", null, null, null, null, CurriculumCalendars.disabled, curriculumOther);
+				"Other element", null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculumOther);
 		curriculumService.addRepositoryEntry(curriculumElement1, entry, true);
 		curriculumService.addRepositoryEntry(curriculumElement2, entry, true);
 		Taxonomy taxonomy = taxonomyService.createTaxonomy(UUID.randomUUID().toString(), "Taxonomy", "", null);
@@ -310,21 +313,21 @@ public class RepositoryEntryQualityContextBuilderTest extends OlatTestCase {
 		Curriculum curriculum1 = curriculumService.createCurriculum(UUID.randomUUID().toString(), "Curriculum 1", "",
 				organisationExecutorAndCurriculum1);
 		CurriculumElement curriculumElement1 = curriculumService.createCurriculumElement(UUID.randomUUID().toString(), "Element 1", null, null, null, null,
-				CurriculumCalendars.disabled, curriculum1);
+				CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum1);
 		curriculumService.addMember(curriculumElement1, executor, CurriculumRoles.participant);
 		curriculumService.addRepositoryEntry(curriculumElement1, entry, true);
 		
 		Curriculum curriculum2 = curriculumService.createCurriculum(UUID.randomUUID().toString(), "Curriculum 2", "",
 				organisationExecutorAndCurriculum2);
 		CurriculumElement curriculumElement2 = curriculumService.createCurriculumElement(UUID.randomUUID().toString(), "Element 2", null, null, null, null,
-				CurriculumCalendars.disabled, curriculum2);
+				CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum2);
 		curriculumService.addMember(curriculumElement2, executor, CurriculumRoles.participant);
 		curriculumService.addRepositoryEntry(curriculumElement2, entry, true);
 		
 		Curriculum curriculum3 = curriculumService.createCurriculum(UUID.randomUUID().toString(), "Curriculum 3", "",
 				organisationExecutorAndCurriculumButManager);
 		CurriculumElement curriculumElement3 = curriculumService.createCurriculumElement(UUID.randomUUID().toString(), "Element 3", null, null, null, null,
-				CurriculumCalendars.disabled, curriculum3);
+				CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum3);
 		curriculumService.addMember(curriculumElement3, executor, CurriculumRoles.participant);
 		curriculumService.addRepositoryEntry(curriculumElement3, entry, true);
 		
@@ -371,7 +374,7 @@ public class RepositoryEntryQualityContextBuilderTest extends OlatTestCase {
 		Curriculum curriculum3 = curriculumService.createCurriculum(UUID.randomUUID().toString(), "Curriculum", "",
 				organisationExecutorAndCurriculumButManager);
 		CurriculumElement curriculumElement3 = curriculumService.createCurriculumElement(UUID.randomUUID().toString(),
-				"Element", null, null, null, null, CurriculumCalendars.disabled, curriculum3);
+				"Element", null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum3);
 		curriculumService.addMember(curriculumElement3, executor, CurriculumRoles.participant);
 		curriculumService.addRepositoryEntry(curriculumElement3, entry, true);
 		

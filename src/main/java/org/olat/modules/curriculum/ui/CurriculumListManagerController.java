@@ -31,11 +31,13 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.PopEvent;
@@ -56,6 +58,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumManagedFlag;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
+import org.olat.modules.curriculum.CurriculumSecurityCallbackFactory;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumInfos;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
@@ -116,7 +119,8 @@ public class CurriculumListManagerController extends FormBasicController impleme
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumCols.identifier, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CurriculumCols.externalId, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumCols.numOfElements));
-		DefaultFlexiColumnModel editCol = new DefaultFlexiColumnModel("edit.icon", translate("edit.icon"), "edit");
+		DefaultFlexiColumnModel editCol = new DefaultFlexiColumnModel("edit.icon", CurriculumCols.edit.ordinal(), "edit",
+				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("edit"), "edit"), null));		
 		editCol.setExportable(false);
 		columnsModel.addFlexiColumnModel(editCol);
 		if(secCallback.canEditCurriculum()) {
@@ -135,23 +139,36 @@ public class CurriculumListManagerController extends FormBasicController impleme
 	}
 	
 	private void loadModel(String searchString, boolean reset) {
-		CurriculumSearchParameters params = new CurriculumSearchParameters();
-		params.setSearchString(searchString);
-		params.setManagerIdentity(getIdentity());
-		List<CurriculumInfos> curriculums = curriculumService.getCurriculumsWithInfos(params);
-		List<CurriculumRow> rows = curriculums.stream()
-				.map(this::forgeRow).collect(Collectors.toList());
+		CurriculumSearchParameters managerParams = new CurriculumSearchParameters();
+		managerParams.setSearchString(searchString);
+		managerParams.setManagerIdentity(getIdentity());
+		List<CurriculumInfos> managerCurriculums = curriculumService.getCurriculumsWithInfos(managerParams);
+		List<CurriculumRow> rows = managerCurriculums.stream()
+				.map(this::forgeManagedRow).collect(Collectors.toList());
+		
+		CurriculumSearchParameters ownerParams = new CurriculumSearchParameters();
+		ownerParams.setSearchString(searchString);
+		ownerParams.setOwnerIdentity(getIdentity());
+		List<CurriculumInfos> reOwnersCurriculums = curriculumService.getCurriculumsWithInfos(ownerParams);
+		List<CurriculumRow> reOwnerRows = reOwnersCurriculums.stream()
+				.filter(c -> !managerCurriculums.contains(c))
+				.map(CurriculumRow::new).collect(Collectors.toList());
+		
+		rows.addAll(reOwnerRows);
+		
 		tableModel.setObjects(rows);
 		tableEl.reset(reset, reset, true);
 	}
 	
-	private CurriculumRow forgeRow(CurriculumInfos curriculum) {
+	private CurriculumRow forgeManagedRow(CurriculumInfos curriculum) {
 		FormLink toolsLink = uifactory.addFormLink("tools_" + (++counter), "tools", "", null, null, Link.NONTRANSLATED);
 		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-lg");
-		CurriculumRow row = new CurriculumRow(curriculum, toolsLink);
+		CurriculumRow row = new CurriculumRow(curriculum, toolsLink, true);
 		toolsLink.setUserObject(row);
 		return row;
 	}
+	
+	
 
 	@Override
 	protected void doDispose() {
@@ -292,7 +309,8 @@ public class CurriculumListManagerController extends FormBasicController impleme
 			showWarning("warning.curriculum.deleted");
 		} else {
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance(Curriculum.class, row.getKey()), null);
-			composerCtrl = new CurriculumComposerController(ureq, swControl, toolbarPanel, curriculum, secCallback);
+			CurriculumSecurityCallback curriculumSecCallback = CurriculumSecurityCallbackFactory.createCallback(row.canManage());
+			composerCtrl = new CurriculumComposerController(ureq, swControl, toolbarPanel, curriculum, curriculumSecCallback);
 			listenTo(composerCtrl);
 			toolbarPanel.pushController(row.getDisplayName(), composerCtrl);
 			composerCtrl.activate(ureq, entries, null);
@@ -320,9 +338,10 @@ public class CurriculumListManagerController extends FormBasicController impleme
 	
 	private class ToolsController extends BasicController {
 		
+		private Link editLink;
+		private Link deleteLink;
 		private final VelocityContainer mainVC;
-		private Link editLink, deleteLink;
-		
+
 		private CurriculumRow row;
 		
 		public ToolsController(UserRequest ureq, WindowControl wControl, CurriculumRow row, Curriculum curriculum) {

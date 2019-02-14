@@ -43,7 +43,9 @@ import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementManagedFlag;
 import org.olat.modules.curriculum.CurriculumElementType;
+import org.olat.modules.curriculum.CurriculumElementTypeRef;
 import org.olat.modules.curriculum.CurriculumElementTypeToType;
+import org.olat.modules.curriculum.CurriculumLectures;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementTypeRefImpl;
@@ -65,13 +67,22 @@ public class EditCurriculumElementController extends FormBasicController {
 	private static final String[] calendarsTypedKeys = new String[] {
 			CurriculumCalendars.enabled.name(), CurriculumCalendars.disabled.name(), CurriculumCalendars.inherited.name()
 		};
+	
+	private static final String[] lecturesKeys = new String[] {
+			CurriculumLectures.enabled.name(), CurriculumLectures.disabled.name()
+		};
+	
+	private static final String[] lecturesTypedKeys = new String[] {
+			CurriculumLectures.enabled.name(), CurriculumLectures.disabled.name(), CurriculumLectures.inherited.name()
+		};
 
 	private DateChooser endEl;
 	private DateChooser beginEl;
 	private TextElement identifierEl;
 	private TextElement displayNameEl;
 	private RichTextElement descriptionEl;
-	
+
+	private SingleSelection lecturesEnabledEl;
 	private SingleSelection calendarsEnabledEl;
 	private SingleSelection curriculumElementTypeEl;
 	
@@ -152,8 +163,9 @@ public class EditCurriculumElementController extends FormBasicController {
 		curriculumElementTypeEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.type) && secCallback.canEditCurriculumElement());
 		curriculumElementTypeEl.addActionListener(FormEvent.ONCHANGE);
 		boolean typeFound = false;
-		if(element != null && element.getType() != null) {
-			String selectedTypeKey = element.getType().getKey().toString();
+		CurriculumElementType elementType = element == null ? null : element.getType();
+		if(elementType != null) {
+			String selectedTypeKey = elementType.getKey().toString();
 			for(String typeKey:typeKeys) {
 				if(typeKey.equals(selectedTypeKey)) {
 					curriculumElementTypeEl.select(selectedTypeKey, true);
@@ -167,9 +179,14 @@ public class EditCurriculumElementController extends FormBasicController {
 		}
 		
 		calendarsEnabledEl = uifactory.addRadiosHorizontal("type.calendars.enabled", formLayout, new String[0], new String[0]);
-		calendarsEnabledEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.calendars));
+		calendarsEnabledEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.calendars) && secCallback.canEditCurriculumElement());
 		CurriculumCalendars calendarsEnabled =  element == null ? CurriculumCalendars.inherited : element.getCalendars();
-		updateCalendarsEnabled(calendarsEnabled);
+		updateCalendarsEnabled(calendarsEnabled, elementType);
+		
+		lecturesEnabledEl = uifactory.addRadiosHorizontal("type.lectures.enabled", formLayout, new String[0], new String[0]);
+		lecturesEnabledEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.lectures) && secCallback.canEditCurriculumElement());
+		CurriculumLectures lecturesEnabled =  element == null ? CurriculumLectures.inherited : element.getLectures();
+		updateLecturesEnabled(lecturesEnabled, elementType);
 		
 		List<TaxonomyLevel> levels = curriculumService.getTaxonomy(element);
 		if(!levels.isEmpty()) {
@@ -202,7 +219,7 @@ public class EditCurriculumElementController extends FormBasicController {
 		}
 	}
 	
-	private void updateCalendarsEnabled(CurriculumCalendars preferedEnabled) {
+	private void updateCalendarsEnabled(CurriculumCalendars preferedEnabled, CurriculumElementType selectedType) {
 		if(curriculumElementTypeEl.getSelected() == 0) {
 			String[] onValues = new String[] {
 					translate("type.calendars.enabled.enabled"), translate("type.calendars.enabled.disabled")
@@ -215,12 +232,52 @@ public class EditCurriculumElementController extends FormBasicController {
 				calendarsEnabledEl.select(CurriculumCalendars.disabled.name(), true);
 			}
 		} else {
+			String typeVal = null;
+			if(selectedType == null) {
+				typeVal = "???";
+			} else if(selectedType.getCalendars() == CurriculumCalendars.enabled) {
+				typeVal = translate("type.calendars.enabled.enabled");
+			} else if(selectedType.getCalendars() == CurriculumCalendars.disabled) {
+				typeVal = translate("type.calendars.enabled.disabled");
+			}
+
 			String[] onValues = new String[] {
 					translate("type.calendars.enabled.enabled"), translate("type.calendars.enabled.disabled"),
-					translate("type.calendars.enabled.inherited")
+					translate("type.calendars.enabled.inherited", new String[] { typeVal })
 			};
 			calendarsEnabledEl.setKeysAndValues(calendarsTypedKeys, onValues, null);
 			calendarsEnabledEl.select(preferedEnabled.name(), true);
+		}
+	}
+	
+	private void updateLecturesEnabled(CurriculumLectures preferedEnabled, CurriculumElementType selectedType) {
+		if(curriculumElementTypeEl.getSelected() == 0) {
+			String[] onValues = new String[] {
+					translate("type.lectures.enabled.enabled"), translate("type.lectures.enabled.disabled")
+			};
+			lecturesEnabledEl.setKeysAndValues(lecturesKeys, onValues, null);
+			
+			if(preferedEnabled == CurriculumLectures.enabled || preferedEnabled == CurriculumLectures.disabled) {
+				lecturesEnabledEl.select(preferedEnabled.name(), true);
+			} else {
+				lecturesEnabledEl.select(CurriculumLectures.disabled.name(), true);
+			}
+		} else {
+			String typeVal = null;
+			if(selectedType == null) {
+				typeVal = "???";
+			} else if(selectedType.getLectures() == CurriculumLectures.enabled) {
+				typeVal = translate("type.lectures.enabled.enabled");
+			} else if(selectedType.getLectures() == CurriculumLectures.disabled) {
+				typeVal = translate("type.lectures.enabled.disabled");
+			}
+
+			String[] onValues = new String[] {
+					translate("type.lectures.enabled.enabled"), translate("type.lectures.enabled.disabled"),
+					translate("type.lectures.enabled.inherited", new String[] { typeVal })
+			};
+			lecturesEnabledEl.setKeysAndValues(lecturesTypedKeys, onValues, null);
+			lecturesEnabledEl.select(preferedEnabled.name(), true);
 		}
 	}
 	
@@ -288,22 +345,24 @@ public class EditCurriculumElementController extends FormBasicController {
 			allOk &= false;
 		}
 		
+		lecturesEnabledEl.clearError();
+		if(!lecturesEnabledEl.isOneSelected()) {
+			lecturesEnabledEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
+		
 		return allOk;
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		CurriculumElementType elementType = null;
-		String selectedTypeKey = curriculumElementTypeEl.getSelectedKey();
-		if(StringHelper.containsNonWhitespace(selectedTypeKey)) {
-			elementType = curriculumService
-					.getCurriculumElementType(new CurriculumElementTypeRefImpl(Long.valueOf(selectedTypeKey)));
-		}
+		CurriculumElementType elementType = getSelectedType();
+		CurriculumLectures lectures = CurriculumLectures.valueOf(lecturesEnabledEl.getSelectedKey());
 		CurriculumCalendars calendars = CurriculumCalendars.valueOf(calendarsEnabledEl.getSelectedKey());
 		if(element == null) {
 			//create a new one
 			element = curriculumService.createCurriculumElement(identifierEl.getValue(), displayNameEl.getValue(),
-					beginEl.getDate(), endEl.getDate(), parentElement, elementType, calendars, curriculum);
+					beginEl.getDate(), endEl.getDate(), parentElement, elementType, calendars, lectures, curriculum);
 		} else {
 			element = curriculumService.getCurriculumElement(element);
 			element.setIdentifier(identifierEl.getValue());
@@ -313,18 +372,33 @@ public class EditCurriculumElementController extends FormBasicController {
 			element.setEndDate(endEl.getDate());
 			element.setType(elementType);
 			element.setCalendars(calendars);
+			element.setLectures(lectures);
 			element = curriculumService.updateCurriculumElement(element);
 		}
 
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
+	
+	private CurriculumElementType getSelectedType() {
+		String selectedTypeKey = curriculumElementTypeEl.getSelectedKey();
+		if(StringHelper.containsNonWhitespace(selectedTypeKey)) {
+			CurriculumElementTypeRef ref = new CurriculumElementTypeRefImpl(Long.valueOf(selectedTypeKey));
+			return curriculumService.getCurriculumElementType(ref);
+		}
+		return null;
+	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source == curriculumElementTypeEl) {
+			CurriculumElementType elementType = getSelectedType();
 			if(calendarsEnabledEl.isOneSelected()) {
 				CurriculumCalendars enabled = CurriculumCalendars.valueOf(calendarsEnabledEl.getSelectedKey());
-				updateCalendarsEnabled(enabled);
+				updateCalendarsEnabled(enabled, elementType);
+			}
+			if(lecturesEnabledEl.isOneSelected()) {
+				CurriculumLectures enabled = CurriculumLectures.valueOf(lecturesEnabledEl.getSelectedKey());
+				updateLecturesEnabled(enabled, elementType);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);

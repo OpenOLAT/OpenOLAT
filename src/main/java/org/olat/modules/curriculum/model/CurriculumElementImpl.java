@@ -53,6 +53,7 @@ import org.olat.modules.curriculum.CurriculumElementManagedFlag;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumElementToTaxonomyLevel;
 import org.olat.modules.curriculum.CurriculumElementType;
+import org.olat.modules.curriculum.CurriculumLectures;
 
 /**
  * 
@@ -91,6 +92,8 @@ public class CurriculumElementImpl implements CurriculumElement, Persistable {
 	private String description;
 	@Column(name="c_calendars", nullable=true, insertable=true, updatable=true)
 	private String calendarsEnabledString;
+	@Column(name="c_lectures", nullable=true, insertable=true, updatable=true)
+	private String lecturesEnabledString;
 	
 	@Column(name="c_status", nullable=true, insertable=true, updatable=true)
 	private String status;
@@ -220,6 +223,35 @@ public class CurriculumElementImpl implements CurriculumElement, Persistable {
 			calendarsEnabledString = null;
 		} else {
 			calendarsEnabledString = calendars.name();
+		}
+	}
+	public String getLecturesEnabled() {
+		return lecturesEnabledString;
+	}
+
+	public void setLecturesEnabled(String lecturesEnabledString) {
+		this.lecturesEnabledString = lecturesEnabledString;
+	}
+
+	@Override
+	public CurriculumLectures getLectures() {
+		CurriculumLectures enabled;
+		if(StringHelper.containsNonWhitespace(lecturesEnabledString)) {
+			enabled = CurriculumLectures.valueOf(lecturesEnabledString);
+		} else if(this.type != null) {
+			enabled = CurriculumLectures.inherited;
+		} else {
+			enabled = CurriculumLectures.disabled;
+		}
+		return enabled;
+	}
+
+	@Override
+	public void setLectures(CurriculumLectures lectures) {
+		if(lectures == null) {
+			lecturesEnabledString = null;
+		} else {
+			lecturesEnabledString = lectures.name();
 		}
 	}
 

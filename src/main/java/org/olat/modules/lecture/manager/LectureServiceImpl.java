@@ -62,6 +62,7 @@ import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.group.BusinessGroup;
 import org.olat.group.DeletableGroupData;
+import org.olat.modules.coach.model.IdentityRepositoryEntryKey;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockAuditLog;
 import org.olat.modules.lecture.LectureBlockAuditLog.Action;
@@ -73,11 +74,13 @@ import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureBlockToGroup;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureParticipantSummary;
+import org.olat.modules.lecture.LectureRateWarning;
 import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.Reason;
 import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
 import org.olat.modules.lecture.model.AggregatedLectureBlocksStatistics;
+import org.olat.modules.lecture.model.IdentityRateWarning;
 import org.olat.modules.lecture.model.LectureBlockAndRollCall;
 import org.olat.modules.lecture.model.LectureBlockIdentityStatistics;
 import org.olat.modules.lecture.model.LectureBlockImpl;
@@ -994,6 +997,54 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	}
 
 	@Override
+	public List<IdentityRateWarning> groupRateWarning(List<LectureBlockIdentityStatistics> statistics) {
+		Map<IdentityRepositoryEntryKey,LectureBlockIdentityStatistics> groupBy = new HashMap<>();
+		for(LectureBlockIdentityStatistics statistic:statistics) {
+			IdentityRepositoryEntryKey key = new IdentityRepositoryEntryKey(statistic.getIdentityKey(), statistic.getRepoKey());
+			if(groupBy.containsKey(key)){
+				groupBy.get(key).aggregate(statistic);
+			} else {
+				groupBy.put(key, statistic.cloneAll());
+			}
+		}
+
+		boolean countAuthorizedAbsenceAsAttendant = lectureModule.isCountAuthorizedAbsenceAsAttendant();
+		List<LectureBlockIdentityStatistics> aggregatedStatistics = new ArrayList<>(groupBy.values());
+		for(LectureBlockIdentityStatistics statistic:aggregatedStatistics) {
+			lectureBlockRollCallDao.calculateAttendanceRate(statistic, countAuthorizedAbsenceAsAttendant);
+		}
+		
+		Map<Long,IdentityRateWarning> warnings = new HashMap<>();
+		for(LectureBlockIdentityStatistics aggregatedStatistic:aggregatedStatistics) {
+			LectureRateWarning warning = calculateWarning(aggregatedStatistic);
+			if(warning == LectureRateWarning.error || warning == LectureRateWarning.warning) {
+				Long identityKey = aggregatedStatistic.getIdentityKey();
+				if(warnings.containsKey(identityKey)) {
+					warnings.get(identityKey).updateWarning(warning);
+				} else {
+					warnings.put(identityKey, new IdentityRateWarning(identityKey, warning));
+				}
+			}
+		}
+		return new ArrayList<>(warnings.values());
+	}
+	
+	private LectureRateWarning calculateWarning(LectureBlockIdentityStatistics stats) {
+		if(stats.isCalculateRate() && stats.getTotalPersonalPlannedLectures() > 0 &&
+				(stats.getTotalAbsentLectures() > 0 || stats.getTotalAttendedLectures() > 0 || stats.getTotalAuthorizedAbsentLectures() > 0)) {
+			double attendanceRate = stats.getAttendanceRate();
+			double requiredRate = stats.getRequiredRate();
+			
+			if(requiredRate > attendanceRate) {
+				return LectureRateWarning.error;
+			} else if(attendanceRate - requiredRate < 0.05) {// less than 5%
+				return LectureRateWarning.warning;
+			}
+		}
+		return LectureRateWarning.none;
+	}
+
+	@Override
 	public List<LectureBlockStatistics> getParticipantLecturesStatistics(IdentityRef identity) {
 		boolean authorizedAbsenceEnabled = lectureModule.isAuthorizedAbsenceEnabled();
 		boolean calculateAttendanceRate = lectureModule.isRollCallCalculateAttendanceRateDefaultEnabled();
@@ -1269,4 +1320,5 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 			//
 		}
 	}
+
 }

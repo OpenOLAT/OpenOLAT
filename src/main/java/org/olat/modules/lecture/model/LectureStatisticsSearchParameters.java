@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.olat.core.id.OrganisationRef;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 
 /**
@@ -43,6 +44,7 @@ public class LectureStatisticsSearchParameters {
 	private Date endDate;
 	private RepositoryEntryLifecycle lifecycle;
 	private List<OrganisationRef> organisations;
+	private List<RepositoryEntryRef> entries;
 	
 	public String getLogin() {
 		return login;
@@ -82,6 +84,22 @@ public class LectureStatisticsSearchParameters {
 
 	public void setBulkIdentifiers(List<String> bulkIdentifiers) {
 		this.bulkIdentifiers = bulkIdentifiers;
+	}
+	
+	public boolean hasEntries() {
+		return entries != null && !entries.isEmpty();
+	}
+
+	public List<RepositoryEntryRef> getEntries() {
+		return new ArrayList<>(entries);
+	}
+
+	public void setEntries(List<? extends RepositoryEntryRef> entries) {
+		if(entries == null) {
+			this.entries = null;
+		} else {
+			this.entries = new ArrayList<>(entries);
+		}
 	}
 
 	public Map<String, String> getUserProperties() {

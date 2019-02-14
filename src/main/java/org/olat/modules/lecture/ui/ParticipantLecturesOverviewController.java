@@ -20,6 +20,8 @@
 package org.olat.modules.lecture.ui;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
@@ -60,6 +62,7 @@ import org.olat.modules.lecture.ui.component.PercentCellRenderer;
 import org.olat.modules.lecture.ui.component.RateWarningCellRenderer;
 import org.olat.modules.lecture.ui.export.IdentityAuditLogExport;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryService;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,6 +87,8 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 	private final boolean withSelect;
 	private final Identity assessedIdentity;
 	private final boolean authorizedAbsenceEnabled;
+	private final List<RepositoryEntryRef> filterByEntries;
+	
 	private ParticipantLectureBlocksController lectureBlocksCtrl;
 	
 	@Autowired
@@ -96,17 +101,19 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 	private RepositoryService repositoryService;
 	
 	public ParticipantLecturesOverviewController(UserRequest ureq, WindowControl wControl, boolean withTitle) {
-		this(ureq, wControl, ureq.getIdentity(), true, true, false, withTitle);
+		this(ureq, wControl, ureq.getIdentity(), null, true, true, false, withTitle);
 	}
 	
 	public ParticipantLecturesOverviewController(UserRequest ureq, WindowControl wControl,
-			Identity assessedIdentity, boolean withPrint, boolean withSelect, boolean withLog, boolean withTitle) {
+			Identity assessedIdentity, List<RepositoryEntryRef> filterByEntries,
+			boolean withPrint, boolean withSelect, boolean withLog, boolean withTitle) {
 		super(ureq, wControl, "participant_overview");
 		this.withLog = withLog;
 		this.withPrint = withPrint;
 		this.withTitle = withTitle;
 		this.withSelect = withSelect;
 		this.assessedIdentity = assessedIdentity;
+		this.filterByEntries = filterByEntries;
 		authorizedAbsenceEnabled = lectureModule.isAuthorizedAbsenceEnabled();
 		initForm(ureq);
 		loadModel();
@@ -184,6 +191,15 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 	
 	private void loadModel() {
 		List<LectureBlockStatistics> statistics = lectureService.getParticipantLecturesStatistics(assessedIdentity);
+		if(filterByEntries != null && !filterByEntries.isEmpty()) {
+			Set<Long> acceptedEntries = filterByEntries.stream()
+					.map(RepositoryEntryRef::getKey).collect(Collectors.toSet());
+			
+			List<LectureBlockStatistics> filteredStatistics = statistics.stream()
+					.filter(s -> acceptedEntries.contains(s.getRepoKey()))
+					.collect(Collectors.toList());
+			statistics = filteredStatistics;
+		}
 		AggregatedLectureBlocksStatistics total = lectureService.aggregatedStatistics(statistics);
 		tableModel.setObjects(statistics, total);
 		tableEl.reset(true, true, true);
@@ -259,7 +275,7 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 	private void doPrint(UserRequest ureq) {
 		ControllerCreator printControllerCreator = (lureq, lwControl) -> {
 			lwControl.getWindowBackOffice().getChiefController().addBodyCssClass("o_lectures_print");
-			Controller printCtrl = new ParticipantLecturesOverviewController(lureq, lwControl, assessedIdentity, false, false, false, true);
+			Controller printCtrl = new ParticipantLecturesOverviewController(lureq, lwControl, assessedIdentity, filterByEntries, false, false, false, true);
 			listenTo(printCtrl);
 			return printCtrl;				
 		};

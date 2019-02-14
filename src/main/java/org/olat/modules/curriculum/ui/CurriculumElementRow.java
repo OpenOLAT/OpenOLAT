@@ -28,6 +28,7 @@ import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumElementType;
+import org.olat.modules.curriculum.CurriculumLectures;
 
 /**
  * 
@@ -49,6 +50,7 @@ public class CurriculumElementRow implements CurriculumElementRef, FlexiTreeTabl
 	
 	private final FormLink toolsLink;
 	private final FormLink resourcesLink;
+	private FormLink lecturesLink;
 	private FormLink calendarsLink;
 	
 	private boolean acceptedByFilter = true;
@@ -132,6 +134,18 @@ public class CurriculumElementRow implements CurriculumElementRef, FlexiTreeTabl
 		}
 		return enabled;
 	}
+	
+	public boolean isLecturesEnabled() {
+		boolean enabled = false;
+		if(element != null) {
+			if(element.getLectures() == CurriculumLectures.enabled) {
+				enabled = true;
+			} else if(element.getLectures() == CurriculumLectures.inherited && elementType != null) {
+				enabled = elementType.getLectures() == CurriculumLectures.enabled;
+			}
+		}
+		return enabled;
+	}
 
 	public boolean isAcceptedByFilter() {
 		return acceptedByFilter;
@@ -204,6 +218,14 @@ public class CurriculumElementRow implements CurriculumElementRef, FlexiTreeTabl
 
 	public void setCalendarsLink(FormLink calendarsLink) {
 		this.calendarsLink = calendarsLink;
+	}
+
+	public FormLink getLecturesLink() {
+		return lecturesLink;
+	}
+
+	public void setLecturesLink(FormLink lecturesLink) {
+		this.lecturesLink = lecturesLink;
 	}
 
 	@Override

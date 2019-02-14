@@ -66,6 +66,7 @@ implements SortableFlexiTableDataModel<CurriculumRow> {
 			case identifier: return row.getIdentifier();
 			case externalId: return row.getExternalId();
 			case numOfElements: return row.getNumOfElements();
+			case edit: return row.canManage();
 			case tools: return row.getTools();
 			default: return "ERROR";
 		}
@@ -82,6 +83,7 @@ implements SortableFlexiTableDataModel<CurriculumRow> {
 		identifier("table.header.identifier"),
 		externalId("table.header.external.id"),
 		numOfElements("table.header.num.elements"),
+		edit("edit.icon"),
 		tools("table.header.tools");
 		
 		private final String i18nHeaderKey;

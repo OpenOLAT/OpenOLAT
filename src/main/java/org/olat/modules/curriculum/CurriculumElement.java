@@ -56,9 +56,19 @@ public interface CurriculumElement extends CurriculumElementShort, CreateInfo, M
 	
 	public void setEndDate(Date date);
 	
+	/**
+	 * @return true if calendars aggregation is available at this level of the curriculum
+	 */
 	public CurriculumCalendars getCalendars();
 
 	public void setCalendars(CurriculumCalendars calendars);
+	
+	/**
+	 * @return true if absence management aggregation is available at this level of the curriculum
+	 */
+	public CurriculumLectures getLectures();
+	
+	public void setLectures(CurriculumLectures lectures);
 	
 	public CurriculumElementStatus getElementStatus();
 	

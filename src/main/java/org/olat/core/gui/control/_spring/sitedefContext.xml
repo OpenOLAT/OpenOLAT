@@ -91,7 +91,7 @@
 	<bean id="olatsites_curriculumadmin" class="org.olat.modules.curriculum.site.CurriculumAdminSiteDef">
 	   <property name="order" value="12" />
 	   <property name="enabled" value="${site.catalogadmin.enable}"/>
-	   	<property name="defaultSiteSecurityCallbackBeanId" value="curriculumManagerSiteSecurityCallback"/>
+	   	<property name="defaultSiteSecurityCallbackBeanId" value="curriculumManagerAndOwnerSiteSecurityCallback"/>
 	</bean>
 	<bean id="olatsites_quality" class="org.olat.modules.quality.site.QualitySiteDef">
 	   <property name="order" value="13" />

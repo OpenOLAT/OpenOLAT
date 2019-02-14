@@ -19,6 +19,8 @@
  */
 package org.olat.modules.lecture.model;
 
+import org.olat.modules.lecture.LectureRateWarning;
+
 /**
  * 
  * 
@@ -30,6 +32,8 @@ public class LectureBlockIdentityStatistics extends LectureBlockStatistics {
 	
 	private final String identityName;
 	private final String[] identityProps;
+	
+	private LectureRateWarning explicitWarning;
 	
 	public LectureBlockIdentityStatistics(Long identityKey, String identityName, String[] identityProps,
 			Long repoKey, String displayName, String externalRef, boolean calculateRate, double requiredRate) {
@@ -46,6 +50,14 @@ public class LectureBlockIdentityStatistics extends LectureBlockStatistics {
 		return identityProps;
 	}
 	
+	public LectureRateWarning getExplicitWarning() {
+		return explicitWarning;
+	}
+
+	public void setExplicitWarning(LectureRateWarning explicitWarning) {
+		this.explicitWarning = explicitWarning;
+	}
+
 	public String getIdentityProp(int pos) {
 		if(identityProps != null && pos >= 0 && pos < identityProps.length) {
 			return identityProps[pos];
@@ -56,6 +68,18 @@ public class LectureBlockIdentityStatistics extends LectureBlockStatistics {
 	public LectureBlockIdentityStatistics cloneForAggregation() {
 		LectureBlockIdentityStatistics clone
 			= new LectureBlockIdentityStatistics(getIdentityKey(), identityName, identityProps, null, null, null, false, 0.0d);
+		clone.addTotalAbsentLectures(getTotalAbsentLectures());
+		clone.addTotalAttendedLectures(getTotalAttendedLectures());
+		clone.addTotalAuthorizedAbsentLectures(getTotalAuthorizedAbsentLectures());
+		clone.addTotalEffectiveLectures(getTotalEffectiveLectures());		
+		clone.addTotalLectureBlocks(getTotalLectureBlocks());
+		clone.addTotalPersonalPlannedLectures(getTotalPersonalPlannedLectures());
+		return clone;
+	}
+	
+	public LectureBlockIdentityStatistics cloneAll() {
+		LectureBlockIdentityStatistics clone = new LectureBlockIdentityStatistics(getIdentityKey(),
+				identityName, identityProps, getRepoKey(), getDisplayName(), getExternalRef(), isCalculateRate(), getRequiredRate());
 		clone.addTotalAbsentLectures(getTotalAbsentLectures());
 		clone.addTotalAttendedLectures(getTotalAttendedLectures());
 		clone.addTotalAuthorizedAbsentLectures(getTotalAuthorizedAbsentLectures());

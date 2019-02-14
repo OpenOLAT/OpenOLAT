@@ -85,6 +85,7 @@ import org.olat.modules.curriculum.model.CurriculumElementInfos;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
 import org.olat.modules.curriculum.ui.CurriculumComposerTableModel.ElementCols;
 import org.olat.modules.curriculum.ui.event.SelectReferenceEvent;
+import org.olat.modules.curriculum.ui.lectures.CurriculumElementLecturesController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -116,6 +117,7 @@ public class CurriculumComposerController extends FormBasicController implements
 	private MoveCurriculumElementController moveElementCtrl;
 	private ConfirmCurriculumElementDeleteController confirmDeleteCtrl;
 	private CurriculumElementCalendarController calendarsCtrl;
+	private CurriculumElementLecturesController lecturesCtrl;
 	
 	private int counter;
 	private final boolean managed;
@@ -192,6 +194,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementCols.numOfCoaches, "members"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementCols.numOfOwners, "members"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.calendars));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementCols.lectures));
 
 		DefaultFlexiColumnModel zoomColumn = new DefaultFlexiColumnModel("zoom", translate("zoom"), "tt-focus");
 		zoomColumn.setExportable(false);
@@ -311,6 +314,13 @@ public class CurriculumComposerController extends FormBasicController implements
 			row.setCalendarsLink(calendarsLink);
 			calendarsLink.setUserObject(row);
 		}
+		if(row.isLecturesEnabled()) {
+			FormLink lecturesLink = uifactory.addFormLink("lecs_" + (++counter), "lectures", "lectures", null, null, Link.LINK);
+			lecturesLink.setIconLeftCSS("o_icon o_icon_lecture o_icon-fw");
+			row.setLecturesLink(lecturesLink);
+			lecturesLink.setUserObject(row);
+		}
+		
 		return row;
 	}
 	
@@ -421,7 +431,8 @@ public class CurriculumComposerController extends FormBasicController implements
 				doOpenReferences(ureq, (CurriculumElementRow)link.getUserObject(), link);
 			} else if("calendars".equals(cmd)) {
 				doOpenCalendars(ureq, (CurriculumElementRow)link.getUserObject());
-				
+			} else if("lectures".equals(cmd)) {
+				doOpenLectures(ureq, (CurriculumElementRow)link.getUserObject());
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -595,6 +606,18 @@ public class CurriculumComposerController extends FormBasicController implements
 		calendarsCtrl = new CurriculumElementCalendarController(ureq, bwControl, row, entries, secCallback);
 		listenTo(calendarsCtrl);
 		toolbarPanel.pushController(translate("calendars"), calendarsCtrl);
+	}
+	
+	private void doOpenLectures(UserRequest ureq, CurriculumElementRow row) {
+		removeAsListenerAndDispose(lecturesCtrl);
+		
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Lectures", row.getKey());
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+		CurriculumElement curriculumElement = curriculumService.getCurriculumElement(row);
+		lecturesCtrl = new CurriculumElementLecturesController(ureq, bwControl, toolbarPanel, curriculumElement, secCallback);
+		listenTo(lecturesCtrl);
+		toolbarPanel.pushController(row.getDisplayName(), null, row);
+		toolbarPanel.pushController(translate("lectures"), lecturesCtrl);
 	}
 	
 	private void doConfirmDelete(UserRequest ureq, CurriculumElementRow row) {

@@ -17,33 +17,18 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.curriculum;
+package org.olat.modules.lecture;
 
 /**
  * 
- * Initial date: 15 févr. 2018<br>
+ * Initial date: 14 févr. 2019<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface CurriculumSecurityCallback {
+public enum LectureRateWarning {
 	
-	public boolean canNewCurriculum();
-	
-	public boolean canEditCurriculum();
-	
-	public boolean canManagerCurriculumUsers();
-	
-	public boolean canNewCurriculumElement();
-	
-	public boolean canEditCurriculumElement();
-	
-	public boolean canManagerCurriculumElementUsers();
-	
-	public boolean canManagerCurriculumElementResources();
-	
-	public boolean canViewAllCalendars();
-	
-	public boolean canViewAllLectures();
-	
+	none,
+	warning,
+	error
 
 }

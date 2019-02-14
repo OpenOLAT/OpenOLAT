@@ -30,6 +30,7 @@ import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementToTaxonomyLevel;
+import org.olat.modules.curriculum.CurriculumLectures;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.manager.TaxonomyDAO;
@@ -62,7 +63,7 @@ public class CurriculumElementToTaxonomyLevelDAOTest extends OlatTestCase {
 	public void createRelation() {
 		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-rela-1", "Curriculum for relation to taxonomy", "Curriculum", null);
 		CurriculumElement element = curriculumElementDao.createCurriculumElement("Element-1", "1. Element", new Date(), new Date(), null,
-				null, CurriculumCalendars.disabled, curriculum);
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
 		
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-98", "Leveled taxonomy", null, null);
 		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", "My first taxonomy level", "A basic level", null, null, null, null, taxonomy);
@@ -75,7 +76,7 @@ public class CurriculumElementToTaxonomyLevelDAOTest extends OlatTestCase {
 	public void createAndGetRelation() {
 		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-rela-2", "Curriculum for relation to taxonomy", "Curriculum", null);
 		CurriculumElement element = curriculumElementDao.createCurriculumElement("Element-2", "2. Element", new Date(), new Date(), null,
-				null, CurriculumCalendars.disabled, curriculum);
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
 		
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-301", "Leveled taxonomy", null, null);
 		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", "My first taxonomy level", "A basic level", null, null, null, null, taxonomy);
@@ -95,7 +96,7 @@ public class CurriculumElementToTaxonomyLevelDAOTest extends OlatTestCase {
 	public void getTaxonomyLevels() {
 		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-rela-3", "Curriculum for relation to taxonomy", "Curriculum", null);
 		CurriculumElement element = curriculumElementDao.createCurriculumElement("Element-3", "3. Element", new Date(), new Date(), null,
-				null, CurriculumCalendars.disabled, curriculum);
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
 		
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-302", "Leveled taxonomy", null, null);
 		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", "My first taxonomy level", "A basic level", null, null, null, null, taxonomy);
@@ -112,7 +113,7 @@ public class CurriculumElementToTaxonomyLevelDAOTest extends OlatTestCase {
 	public void getCurriculumElements() {
 		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-rela-4", "Curriculum for relation to taxonomy", "Curriculum", null);
 		CurriculumElement element = curriculumElementDao.createCurriculumElement("Element-4", "4. Element", new Date(), new Date(), null,
-				null, CurriculumCalendars.disabled, curriculum);
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
 		
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-303", "Leveled taxonomy", null, null);
 		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", "My first taxonomy level", "A basic level", null, null, null, null, taxonomy);

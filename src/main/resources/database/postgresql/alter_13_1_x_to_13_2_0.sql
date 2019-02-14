@@ -59,3 +59,9 @@ alter table o_qual_analysis_presentation add q_rubric_id varchar(50);
 -- video
 alter table o_vid_metadata add vid_url varchar(512);
 
+
+-- lectures
+alter table o_cur_curriculum_element add c_lectures varchar(16);
+alter table o_cur_element_type add c_lectures varchar(16);
+
+

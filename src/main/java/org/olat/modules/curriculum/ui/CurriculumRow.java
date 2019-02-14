@@ -34,6 +34,7 @@ public class CurriculumRow implements CurriculumRef {
 	
 	private final Curriculum curriculum;
 	private final long numOfElements;
+	private final boolean canManage;
 	
 	private final FormLink toolsLink;
 	
@@ -41,12 +42,21 @@ public class CurriculumRow implements CurriculumRef {
 		this.curriculum = curriculum;
 		numOfElements = -1l;
 		toolsLink = null;
+		canManage = false;
 	}
 	
-	public CurriculumRow(CurriculumInfos infos, FormLink toolsLink) {
+	public CurriculumRow(CurriculumInfos infos) {
+		this.curriculum = infos.getCurriculum();
+		numOfElements = infos.getNumOfElements();
+		toolsLink = null;
+		canManage = false;
+	}
+	
+	public CurriculumRow(CurriculumInfos infos, FormLink toolsLink, boolean canManage) {
 		curriculum = infos.getCurriculum();
 		numOfElements = infos.getNumOfElements();
 		this.toolsLink = toolsLink;
+		this.canManage = canManage;
 	}
 	
 	@Override
@@ -72,5 +82,26 @@ public class CurriculumRow implements CurriculumRef {
 	
 	public FormLink getTools() {
 		return toolsLink;
+	}
+	
+	public boolean canManage() {
+		return canManage;
+	}
+
+	@Override
+	public int hashCode() {
+		return curriculum.getKey().hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj) {
+			return true;
+		}
+		if(obj instanceof CurriculumRow) {
+			CurriculumRow row = (CurriculumRow)obj;
+			return curriculum.equals(row.curriculum);
+		}
+		return false;
 	}
 }

@@ -17,33 +17,37 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.curriculum;
+package org.olat.modules.lecture.model;
+
+import org.olat.modules.lecture.LectureRateWarning;
 
 /**
  * 
- * Initial date: 15 févr. 2018<br>
+ * Initial date: 14 févr. 2019<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface CurriculumSecurityCallback {
+public class IdentityRateWarning {
 	
-	public boolean canNewCurriculum();
+	private final Long identityKey;
+	private LectureRateWarning warning;
 	
-	public boolean canEditCurriculum();
+	public IdentityRateWarning(Long identityKey, LectureRateWarning warning) {
+		this.identityKey = identityKey;
+		this.warning = warning;
+	}
 	
-	public boolean canManagerCurriculumUsers();
-	
-	public boolean canNewCurriculumElement();
-	
-	public boolean canEditCurriculumElement();
-	
-	public boolean canManagerCurriculumElementUsers();
-	
-	public boolean canManagerCurriculumElementResources();
-	
-	public boolean canViewAllCalendars();
-	
-	public boolean canViewAllLectures();
-	
+	public Long getIdentityKey() {
+		return identityKey;
+	}
 
+	public LectureRateWarning getWarning() {
+		return warning;
+	}
+
+	public void updateWarning(LectureRateWarning newState) {
+		if(this.warning == null || this.warning.ordinal() < newState.ordinal()) {
+			this.warning = newState;
+		}
+	}
 }

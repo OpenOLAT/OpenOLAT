@@ -54,12 +54,20 @@ public class LectureSettingsAdminController extends FormBasicController {
 	private SingleSelection canOverrideStandardConfigEl, showAllTeachersLecturesEl;
 	private TextElement attendanceRateEl, appealPeriodEl, reminderPeriodEl,
 		autoClosePeriodEl;
-	private MultipleSelectionElement enableEl, calculateAttendanceRateEnableEl,
-		appealAbsenceEnableEl, statusEnabledEl, partiallyDoneEnabledEl,
-		authorizedAbsenceEnableEl, absenceDefaultAuthorizedEl,
-		countAuthorizedAbsenceAsAttendantEl, syncTeachersCalendarEnableEl,
-		syncCourseCalendarEnableEl, teacherCanAuthorizeAbsenceEl,
-		reminderEnableEl, rollCallEnableEl;
+	private MultipleSelectionElement enableEl;
+	private MultipleSelectionElement calculateAttendanceRateEnableEl;
+	private MultipleSelectionElement appealAbsenceEnableEl;
+	private MultipleSelectionElement statusEnabledEl;
+	private MultipleSelectionElement partiallyDoneEnabledEl;
+	private MultipleSelectionElement authorizedAbsenceEnableEl;
+	private MultipleSelectionElement absenceDefaultAuthorizedEl;
+	private MultipleSelectionElement countAuthorizedAbsenceAsAttendantEl;
+	private MultipleSelectionElement syncTeachersCalendarEnableEl;
+	private MultipleSelectionElement syncCourseCalendarEnableEl;
+	private MultipleSelectionElement teacherCanAuthorizeAbsenceEl;
+	private MultipleSelectionElement courseOwnersCanViewAllCoursesInCurriculumEl;
+	private MultipleSelectionElement reminderEnableEl;
+	private MultipleSelectionElement rollCallEnableEl;
 	private FormLayoutContainer globalCont;
 	
 	@Autowired
@@ -137,6 +145,7 @@ public class LectureSettingsAdminController extends FormBasicController {
 		countAuthorizedAbsenceAsAttendantEl = uifactory.addCheckboxesHorizontal("lecture.count.authorized.absence.attendant", globalCont, onKeys, onValues);
 		absenceDefaultAuthorizedEl = uifactory.addCheckboxesHorizontal("lecture.absence.default.authorized", globalCont, onKeys, onValues);
 		teacherCanAuthorizeAbsenceEl = uifactory.addCheckboxesHorizontal("lecture.teacher.can.authorize.absence", globalCont, onKeys, onValues);
+		courseOwnersCanViewAllCoursesInCurriculumEl = uifactory.addCheckboxesHorizontal("lecture.owner.can.view.all.curriculum.elements", globalCont, onKeys, onValues);
 
 		// appeal enabled
 		appealAbsenceEnableEl = uifactory.addCheckboxesHorizontal("lecture.appeal.absence.enabled", globalCont, onKeys, onValues);
@@ -247,6 +256,14 @@ public class LectureSettingsAdminController extends FormBasicController {
 		} else {
 			teacherCanAuthorizeAbsenceEl.uncheckAll();
 		}
+		teacherCanAuthorizeAbsenceEl.setVisible(authorizedAbsenceEnableEl.isVisible() && authorizedAbsenceEnableEl.isAtLeastSelected(1));
+		
+		if(lectureModule.isOwnerCanViewAllCoursesInCurriculum()) {
+			courseOwnersCanViewAllCoursesInCurriculumEl.select(onKeys[0], true);
+		} else {
+			courseOwnersCanViewAllCoursesInCurriculumEl.uncheckAll();
+		}
+		
 		if(lectureModule.isAbsenceAppealEnabled()) {
 			appealAbsenceEnableEl.select(onKeys[0], true);
 		} else {
@@ -403,6 +420,8 @@ public class LectureSettingsAdminController extends FormBasicController {
 			lectureModule.setAuthorizedAbsenceEnabled(authorizedAbsenceEnableEl.isAtLeastSelected(1));
 			lectureModule.setCountAuthorizedAbsenceAsAttendant(authorizedAbsenceenabled && countAuthorizedAbsenceAsAttendantEl.isAtLeastSelected(1));
 			lectureModule.setTeacherCanAuthorizedAbsence(authorizedAbsenceenabled && teacherCanAuthorizeAbsenceEl.isAtLeastSelected(1));
+			
+			lectureModule.setOwnerCanViewAllCoursesInCurriculum(courseOwnersCanViewAllCoursesInCurriculumEl.isAtLeastSelected(1));
 			
 			lectureModule.setAbsenceAppealEnabled(appealAbsenceEnableEl.isAtLeastSelected(1));
 			if(appealAbsenceEnableEl.isAtLeastSelected(1)) {

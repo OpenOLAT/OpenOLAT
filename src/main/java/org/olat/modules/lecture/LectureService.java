@@ -27,6 +27,7 @@ import org.olat.basesecurity.Group;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
 import org.olat.modules.lecture.model.AggregatedLectureBlocksStatistics;
+import org.olat.modules.lecture.model.IdentityRateWarning;
 import org.olat.modules.lecture.model.LectureBlockAndRollCall;
 import org.olat.modules.lecture.model.LectureBlockIdentityStatistics;
 import org.olat.modules.lecture.model.LectureBlockRollCallAndCoach;
@@ -514,6 +515,15 @@ public interface LectureService {
 	
 	
 	public List<LectureBlockIdentityStatistics> groupByIdentity(List<LectureBlockIdentityStatistics> statistics);
+	
+	/**
+	 * The method calculate warnings on a user base. If a user as a course with a warning,
+	 * the method return the warning for it. It's a "max" grouping, not an average one.
+	 * 
+	 * @param statistics
+	 * @return
+	 */
+	public List<IdentityRateWarning> groupRateWarning(List<LectureBlockIdentityStatistics> statistics);
 	
 	/**
 	 * Returns the statistics for the specified participant.

@@ -39,6 +39,7 @@ import org.olat.modules.curriculum.CurriculumElementMembership;
 import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumElementType;
+import org.olat.modules.curriculum.CurriculumLectures;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
@@ -73,7 +74,7 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-el-1", "Curriculum for element", "Curriculum", null);
 		CurriculumElementType type = curriculumElementTypeDao.createCurriculumElementType("typ-for-cur-el-1", "Type for", "First element", "AC-234");
 		CurriculumElement element = curriculumElementDao.createCurriculumElement("Element-1", "1. Element", new Date(), new Date(), null,
-				type, CurriculumCalendars.disabled, curriculum);
+				type, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
 		Assert.assertNotNull(element);
 		dbInstance.commitAndCloseSession();
 		
@@ -94,7 +95,7 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-el-2", "Curriculum for element", "Curriculum", null);
 		CurriculumElementType type = curriculumElementTypeDao.createCurriculumElementType("typ-for-cur-el-2", "Type for", "First element", "AC-234");
 		CurriculumElement element = curriculumElementDao.createCurriculumElement("Element-2", "2. Element", new Date(), new Date(), null,
-				type, CurriculumCalendars.disabled, curriculum);
+				type, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
 		Assert.assertNotNull(element);
 		dbInstance.commitAndCloseSession();
 		
@@ -118,11 +119,11 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	public void loadByKeys() {
 		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-el-2", "Curriculum for element", "Curriculum", null);
 		CurriculumElement element1 = curriculumElementDao.createCurriculumElement("Element-2", "2. Element", new Date(), new Date(), null,
-				null, CurriculumCalendars.disabled, curriculum);
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
 		CurriculumElement element2 = curriculumElementDao.createCurriculumElement("Element-2", "2. Element", new Date(), new Date(), null,
-				null, CurriculumCalendars.disabled, curriculum);
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
 		CurriculumElement otherElement = curriculumElementDao.createCurriculumElement("Element-2", "2. Element", new Date(), new Date(), null,
-				null, CurriculumCalendars.disabled, curriculum);
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
 		dbInstance.commitAndCloseSession();
 		
 		List<CurriculumElement> elements = curriculumElementDao.loadByKeys(Arrays.asList(element1, element2));
@@ -136,11 +137,11 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	public void loadElements_curricullum() {
 		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-el-6", "Curriculum for element", "Curriculum", null);
 		CurriculumElement element1 = curriculumElementDao.createCurriculumElement("Element-6", "6.1 Element", null, null, null,
-				null, CurriculumCalendars.disabled, curriculum);
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
 		CurriculumElement element2 = curriculumElementDao.createCurriculumElement("Element-6", "6.1.1 Element", null, null, element1,
-				null, CurriculumCalendars.disabled, curriculum);
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
 		CurriculumElement element3 = curriculumElementDao.createCurriculumElement("Element-6", "6.2 Element", null, null, null,
-				null, CurriculumCalendars.disabled, curriculum);
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
 		dbInstance.commitAndCloseSession();
 		
 		//load all elements of the curriculum
@@ -156,7 +157,8 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	@Test
 	public void loadElementsWithInfos() {
 		Curriculum curriculum = curriculumService.createCurriculum("cur-el-rel-1", "Curriculum for relation", "Curriculum", null);
-		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-rel", "Element for relation", null, null, null, null, CurriculumCalendars.disabled, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-rel", "Element for relation", null, null, null, null,
+				CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-re-auth");
 		RepositoryEntry entry1 = JunitTestHelper.createRandomRepositoryEntry(author);
 		RepositoryEntry entry2 = JunitTestHelper.createRandomRepositoryEntry(author);
@@ -175,7 +177,8 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	@Test
 	public void loadElements_repoEntry() {
 		Curriculum curriculum = curriculumService.createCurriculum("cur-el-rel-1", "Curriculum for relation", "Curriculum", null);
-		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-rel", "Element for relation", null, null, null, null, CurriculumCalendars.disabled, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-for-rel", "Element for relation", null, null, null, null,
+				CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-re-auth");
 		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(author);
 		dbInstance.commit();
@@ -191,17 +194,17 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	public void loadElementsByCurriculums() {
 		Curriculum curriculum1 = curriculumDao.createAndPersist("Cur-for-load-1", "Curriculum to load 1", null, null);
 		CurriculumElement parentElement = curriculumElementDao.createCurriculumElement("El-load-1", "Element 1", null, null,  null,
-				null, CurriculumCalendars.disabled, curriculum1);
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum1);
 		CurriculumElement element1 = curriculumElementDao.createCurriculumElement("El-load-2", "Element 2", null, null, parentElement,
-				null, CurriculumCalendars.disabled, curriculum1);
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum1);
 		CurriculumElement element2 = curriculumElementDao.createCurriculumElement("El-load-3", "Element 3", null, null, parentElement,
-				null, CurriculumCalendars.disabled, curriculum1);
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum1);
 		Curriculum curriculum2 = curriculumDao.createAndPersist("Cur-for-load-2", "Curriculum to load 2", null, null);
 		CurriculumElement parentElement2 = curriculumElementDao.createCurriculumElement("El-load-4", "Element 4", null, null,  null,
-				null, CurriculumCalendars.disabled, curriculum2);
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum2);
 		Curriculum otherCurriculum = curriculumDao.createAndPersist("Cur-for-load-3", "Curriculum to load3", null, null);
 		CurriculumElement otherElement = curriculumElementDao.createCurriculumElement("El-load-5", "Element 5", null, null,  null,
-				null, CurriculumCalendars.disabled, otherCurriculum);
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, otherCurriculum);
 		dbInstance.commitAndCloseSession();
 		
 		Collection<CurriculumRef> curriculumRefs = Arrays.asList(curriculum1, curriculum2);
@@ -216,17 +219,17 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	public void createCurriculumElementParentChildren() {
 		Curriculum curriculum = curriculumDao.createAndPersist("cur-for-el-3", "Curriculum for element", "Curriculum", null);
 		CurriculumElement parentElement = curriculumElementDao.createCurriculumElement("Element-3", "3. Element", null, null,  null,
-				null, CurriculumCalendars.disabled, curriculum);
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
 		dbInstance.commit();
 		// save 3 children
 		CurriculumElement element1 = curriculumElementDao.createCurriculumElement("Element-3-1", "3.1 Element", null, null, parentElement,
-				null, CurriculumCalendars.disabled, curriculum);
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
 		dbInstance.commit();
 		CurriculumElement element2 = curriculumElementDao.createCurriculumElement("Element-3-2", "3.2 Element", null, null, parentElement,
-				null, CurriculumCalendars.disabled, curriculum);
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
 		dbInstance.commit();
 		CurriculumElement element3 = curriculumElementDao.createCurriculumElement("Element-3-3", "3.3 Element", null, null, parentElement,
-				null, CurriculumCalendars.disabled, curriculum);
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
 		dbInstance.commitAndCloseSession();
 		
 		//reload parents
@@ -243,17 +246,17 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	public void getParentLine() {
 		Curriculum curriculum = curriculumDao.createAndPersist("cur-for-el-4", "Curriculum for element", "Curriculum", null);
 		CurriculumElement parentElement = curriculumElementDao.createCurriculumElement("Element-4", "4. Element", null, null, null,
-				null, CurriculumCalendars.disabled, curriculum);
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
 		dbInstance.commit();
 		// save 3 children
 		CurriculumElement element1 = curriculumElementDao.createCurriculumElement("Element-4-1", "4.1 Element", null, null, parentElement,
-				null, CurriculumCalendars.disabled, curriculum);
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
 		dbInstance.commit();
 		CurriculumElement element2 = curriculumElementDao.createCurriculumElement("Element-4-2", "4.1.1 Element", null, null, element1,
-				null, CurriculumCalendars.disabled, curriculum);
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
 		dbInstance.commit();
 		CurriculumElement element3 = curriculumElementDao.createCurriculumElement("Element-4-3", "4.1.1.1 Element", null, null, element2,
-				null, CurriculumCalendars.disabled, curriculum);
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
 		dbInstance.commitAndCloseSession();
 		
 		//reload parents
@@ -272,7 +275,7 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 		String externalId = UUID.randomUUID().toString();
 		String identifier = UUID.randomUUID().toString();
 		CurriculumElement element = curriculumElementDao.createCurriculumElement(identifier, "6.1 Element", null, null, null,
-				null, CurriculumCalendars.disabled, curriculum);
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
 		dbInstance.commit();
 		element.setExternalId(externalId);
 		element = curriculumElementDao.update(element);
@@ -301,17 +304,17 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	public void getDescendants() {
 		Curriculum curriculum = curriculumDao.createAndPersist("cur-for-el-5", "Curriculum for element", "Curriculum", null);
 		CurriculumElement parentElement = curriculumElementDao.createCurriculumElement("Element-5", "5. Element", null, null, null,
-				null, CurriculumCalendars.disabled, curriculum);
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
 		dbInstance.commit();
 		// save 3 children
 		CurriculumElement element1 = curriculumElementDao.createCurriculumElement("Element-5-1", "5.1 Element", null, null, parentElement,
-				null, CurriculumCalendars.disabled, curriculum);
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
 		dbInstance.commit();
 		CurriculumElement element1_1 = curriculumElementDao.createCurriculumElement("Element-5-1-1", "5.1.1 Element", null, null, element1,
-				null, CurriculumCalendars.disabled, curriculum);
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
 		dbInstance.commit();
 		CurriculumElement element2 = curriculumElementDao.createCurriculumElement("Element-5-2", "5.2 Element", null, null, parentElement,
-				null, CurriculumCalendars.disabled, curriculum);
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
 		dbInstance.commitAndCloseSession();
 		
 		// load descendants of the root element
@@ -327,17 +330,17 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	public void getChildren() {
 		Curriculum curriculum = curriculumDao.createAndPersist("cur-for-el-15", "Curriculum for element", "Curriculum", null);
 		CurriculumElement parentElement = curriculumElementDao.createCurriculumElement("Element-15", "15. Element", null, null, null,
-				null, CurriculumCalendars.disabled, curriculum);
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
 		dbInstance.commit();
 		// save 3 children
 		CurriculumElement element1 = curriculumElementDao.createCurriculumElement("Element-15-1", "15.1 Element", null, null, parentElement,
-				null, CurriculumCalendars.disabled, curriculum);
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
 		dbInstance.commit();
 		CurriculumElement element2 = curriculumElementDao.createCurriculumElement("Element-15-2", "15.2 Element", null, null, parentElement,
-				null, CurriculumCalendars.disabled, curriculum);
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
 		dbInstance.commit();
 		CurriculumElement element2_1 = curriculumElementDao.createCurriculumElement("Element-15-2-1", "15.2.1 Element", null, null, element2,
-				null, CurriculumCalendars.disabled, curriculum);
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
 		dbInstance.commitAndCloseSession();
 		
 		// get children of the root element
@@ -358,17 +361,17 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	public void moveCurriculumElement() {
 		Curriculum curriculum = curriculumDao.createAndPersist("cur-for-el-7", "Curriculum for element", "Curriculum", null);
 		CurriculumElement rootElement = curriculumElementDao.createCurriculumElement("Element-7", "7. Element", null, null, null,
-				null, CurriculumCalendars.disabled, curriculum);
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
 		CurriculumElement element1 = curriculumElementDao.createCurriculumElement("Element-7-1", "7.1 Element", null, null, rootElement,
-				null, CurriculumCalendars.disabled, curriculum);
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
 		CurriculumElement element1_1 = curriculumElementDao.createCurriculumElement("Element-7-1-1", "7.1.1 Element", null, null, element1,
-				null, CurriculumCalendars.disabled, curriculum);
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
 		CurriculumElement element1_1_1 = curriculumElementDao.createCurriculumElement("Element-7-1-1", "7.1.1 Element", null, null, element1_1,
-				null, CurriculumCalendars.disabled, curriculum);
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
 		CurriculumElement element1_1_2 = curriculumElementDao.createCurriculumElement("Element-7-1-2", "7.1.2 Element", null, null, element1_1,
-				null, CurriculumCalendars.disabled, curriculum);
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
 		CurriculumElement element2 = curriculumElementDao.createCurriculumElement("Element-7-2", "7.2 Element", null, null, rootElement,
-				null, CurriculumCalendars.disabled, curriculum);
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
 		dbInstance.commitAndCloseSession();
 		
 		// move element1_1 under element2
@@ -398,7 +401,8 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	public void getMembersIdentity() {
 		Identity supervisor = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-supervisor-1");
 		Curriculum curriculum = curriculumService.createCurriculum("cur-for-el-4", "Curriculum for element", "Curriculum", null);
-		CurriculumElement element = curriculumService.createCurriculumElement("Element-4", "4. Element", null, null, null, null, CurriculumCalendars.disabled, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-4", "4. Element", null, null, null, null,
+				CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
 		curriculumService.addMember(element, supervisor, CurriculumRoles.curriculummanager);
 		dbInstance.commitAndCloseSession();
 		
@@ -412,7 +416,8 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	public void getMembersIdentity_elementKeys() {
 		Identity supervisor = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-supervisor-1");
 		Curriculum curriculum = curriculumService.createCurriculum("cur-for-el-4", "Curriculum for element", "Curriculum", null);
-		CurriculumElement element = curriculumService.createCurriculumElement("Element-4", "4. Element", null, null, null, null, CurriculumCalendars.disabled, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-4", "4. Element", null, null, null, null,
+				CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
 		curriculumService.addMember(element, supervisor, CurriculumRoles.curriculummanager);
 		dbInstance.commitAndCloseSession();
 		
@@ -433,7 +438,8 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	public void getMemberKeys() {
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-supervisor-1");
 		Curriculum curriculum = curriculumService.createCurriculum("cur-for-el-24", "Curriculum for element", "Curriculum", null);
-		CurriculumElement element = curriculumService.createCurriculumElement("Element-24", "4. Element", null, null, null, null, CurriculumCalendars.disabled, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-24", "4. Element", null, null, null, null,
+				CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
 		curriculumService.addMember(element, coach, CurriculumRoles.coach);
 		dbInstance.commitAndCloseSession();
 		
@@ -450,7 +456,8 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	public void getMembershipInfos_elements() {
 		Identity supervisor = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-supervisor-1");
 		Curriculum curriculum = curriculumService.createCurriculum("cur-for-el-4", "Curriculum for element", "Curriculum", null);
-		CurriculumElement element = curriculumService.createCurriculumElement("Element-4", "4. Element", null, null, null, null, CurriculumCalendars.disabled, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-4", "4. Element", null, null, null, null,
+				CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
 		curriculumService.addMember(element, supervisor, CurriculumRoles.curriculummanager);
 		dbInstance.commitAndCloseSession();
 		
@@ -469,7 +476,8 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	public void getMembershipInfos_curriculum() {
 		Identity supervisor = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-supervisor-1");
 		Curriculum curriculum = curriculumService.createCurriculum("cur-for-el-5", "Curriculum for element", "Curriculum", null);
-		CurriculumElement element = curriculumService.createCurriculumElement("Element-5", "5. Element", null, null, null, null, CurriculumCalendars.disabled, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-5", "5. Element", null, null, null, null,
+				CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
 		curriculumService.addMember(element, supervisor, CurriculumRoles.curriculummanager);
 		dbInstance.commitAndCloseSession();
 		

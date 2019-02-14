@@ -54,6 +54,7 @@ import org.olat.course.ICourse;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumLectures;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockStatus;
@@ -481,7 +482,7 @@ public class LecturesBlocksTest extends OlatJerseyTestCase {
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		Curriculum curriculum = curriculumService.createCurriculum("add-group", "Add group REST", "", defOrganisation);
 		CurriculumElement curriculumElement = curriculumService.createCurriculumElement("add-group", "Add element group", null, null, null,
-				null, CurriculumCalendars.disabled, curriculum);
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
 		curriculumService.addRepositoryEntry(curriculumElement, entry, true);
 		dbInstance.commit();
 
@@ -518,7 +519,7 @@ public class LecturesBlocksTest extends OlatJerseyTestCase {
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		Curriculum curriculum = curriculumService.createCurriculum("rm-group", "Remove group REST", "", defOrganisation);
 		CurriculumElement curriculumElement = curriculumService.createCurriculumElement("rm-group", "Remove element group", null, null, null,
-				null, CurriculumCalendars.disabled, curriculum);
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
 		curriculumService.addRepositoryEntry(curriculumElement, entry, true);
 		dbInstance.commit();
 		lectureService.save(block, Collections.singletonList(curriculumElement.getGroup()));

@@ -465,7 +465,7 @@ public class UserAdminController extends BasicController implements Activateable
 
 		if(lectureModule.isEnabled() && (isUserManagerOf || isRolesManagerOf || isAdminOf || isPrincipalOf)) {
 			userTabP.addTab(translate(NLS_VIEW_LECTURES),  uureq -> {
-				lecturesCtrl = new ParticipantLecturesOverviewController(uureq, getWindowControl(), identity, true, true, true, true);
+				lecturesCtrl = new ParticipantLecturesOverviewController(uureq, getWindowControl(), identity, null, true, true, true, true);
 				listenTo(lecturesCtrl);
 				BreadcrumbedStackedPanel lecturesPanel = new BreadcrumbedStackedPanel("lectures", getTranslator(), lecturesCtrl);
 				lecturesPanel.pushController(translate(NLS_VIEW_LECTURES), lecturesCtrl);

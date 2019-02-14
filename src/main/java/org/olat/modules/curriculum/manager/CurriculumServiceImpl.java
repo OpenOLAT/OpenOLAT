@@ -52,6 +52,7 @@ import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumElementTypeRef;
 import org.olat.modules.curriculum.CurriculumElementTypeToType;
+import org.olat.modules.curriculum.CurriculumLectures;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
@@ -155,6 +156,12 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 
 	@Override
+	public boolean isCurriculumManagerOrOwner(IdentityRef identity) {
+		return curriculumDao.hasCurriculumRole(identity, CurriculumRoles.curriculummanager.name())
+				|| curriculumDao.hasOwnerRoleInCurriculum(identity);
+	}
+
+	@Override
 	public void addMember(Curriculum curriculum, Identity identity, CurriculumRoles role) {
 		if(!groupDao.hasRole(curriculum.getGroup(), identity, role.name())) {
 			groupDao.addMembershipOneWay(curriculum.getGroup(), identity, role.name(), GroupMembershipInheritance.none);
@@ -247,8 +254,9 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 
 	@Override
 	public CurriculumElement createCurriculumElement(String identifier, String displayName, Date beginDate, Date endDate,
-			CurriculumElementRef parentRef, CurriculumElementType elementType, CurriculumCalendars calendars, Curriculum curriculum) {
-		return curriculumElementDao.createCurriculumElement(identifier, displayName, beginDate, endDate, parentRef, elementType, calendars, curriculum);
+			CurriculumElementRef parentRef, CurriculumElementType elementType,
+			CurriculumCalendars calendars, CurriculumLectures lectures, Curriculum curriculum) {
+		return curriculumElementDao.createCurriculumElement(identifier, displayName, beginDate, endDate, parentRef, elementType, calendars, lectures, curriculum);
 	}
 
 	@Override
@@ -457,7 +465,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	@Override
 	public List<RepositoryEntry> getRepositoryEntries(CurriculumElementRef element) {
 		List<CurriculumElementRef> elements = Collections.singletonList(element);
-		return curriculumRepositoryEntryRelationDao.getRepositoryEntries(elements, RepositoryEntryStatusEnum.preparationToClosed());
+		return curriculumRepositoryEntryRelationDao
+				.getRepositoryEntries(elements, RepositoryEntryStatusEnum.preparationToClosed(), false, null);
 	}
 
 	@Override
@@ -465,7 +474,17 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		List<CurriculumElement> descendants = curriculumElementDao.getDescendants(element);
 		descendants.add(element);
 		List<CurriculumElementRef> descendantRefs = new ArrayList<>(descendants);
-		return curriculumRepositoryEntryRelationDao.getRepositoryEntries(descendantRefs, RepositoryEntryStatusEnum.preparationToClosed());
+		return curriculumRepositoryEntryRelationDao
+				.getRepositoryEntries(descendantRefs, RepositoryEntryStatusEnum.preparationToClosed(), false, null);
+	}
+
+	@Override
+	public List<RepositoryEntry> getRepositoryEntriesWithLecturesAndDescendants(CurriculumElement element, Identity identity) {
+		List<CurriculumElement> descendants = curriculumElementDao.getDescendants(element);
+		descendants.add(element);
+		List<CurriculumElementRef> descendantRefs = new ArrayList<>(descendants);
+		return curriculumRepositoryEntryRelationDao
+				.getRepositoryEntries(descendantRefs, RepositoryEntryStatusEnum.preparationToClosed(), true, identity);
 	}
 
 	@Override

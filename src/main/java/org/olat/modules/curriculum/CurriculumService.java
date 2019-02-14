@@ -121,6 +121,13 @@ public interface CurriculumService {
 	public boolean isCurriculumManager(IdentityRef identity);
 	
 	/**
+	 * @param identity The identity
+	 * @return true if the identity is manager of at least one curriculum or
+	 * 		is course owner of a course in a curriculum.
+	 */
+	public boolean isCurriculumManagerOrOwner(IdentityRef identity);
+	
+	/**
 	 * Add a member to the curriculum with the specified role.
 	 * 
 	 * @param curriculum The curriculum
@@ -206,7 +213,8 @@ public interface CurriculumService {
 	
 	
 	public CurriculumElement createCurriculumElement(String identifier, String displayName, Date beginDate, Date endDate,
-			CurriculumElementRef parent, CurriculumElementType elementType, CurriculumCalendars calendars, Curriculum curriculum);
+			CurriculumElementRef parent, CurriculumElementType elementType, CurriculumCalendars calendars,
+			CurriculumLectures lectures, Curriculum curriculum);
 	
 	
 	public CurriculumElement getCurriculumElement(CurriculumElementRef element);
@@ -373,6 +381,16 @@ public interface CurriculumService {
 	 * @return A list of repository entries
 	 */
 	public List<RepositoryEntry> getRepositoryEntriesWithDescendants(CurriculumElement element);
+	
+	/**
+	 * The all list of repository entries hold by the specified curriculum element and
+	 * its descendants elements, reduced to the
+	 * 
+	 * @param element The curriculum element
+	 * @param identity Specify the identity to check the permissions of the repository entries
+	 * @return A list of repository entries with lectures enabled
+	 */
+	public List<RepositoryEntry> getRepositoryEntriesWithLecturesAndDescendants(CurriculumElement element, Identity identity);
 	
 	/**
 	 * Check if the repository entry is already in relation with the specified

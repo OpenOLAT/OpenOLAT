@@ -44,4 +44,22 @@ public class CurriculumInfos {
 	public long getNumOfElements() {
 		return numOfElements;
 	}
+	
+
+	@Override
+	public int hashCode() {
+		return curriculum.getKey().hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj) {
+			return true;
+		}
+		if(obj instanceof CurriculumInfos) {
+			CurriculumInfos infos = (CurriculumInfos)obj;
+			return curriculum.equals(infos.curriculum);
+		}
+		return false;
+	}
 }
