@@ -1098,6 +1098,7 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 		 * @param response
 		 * @return
 		 */
+		@Override
 		public boolean match(String response) {
 			if(match(response, solution)) {
 				return true;
@@ -1113,10 +1114,12 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 
 		private boolean match(String response, String alternative) {
 			if(caseSensitive) {
-				if(alternative.equals(response)) {
+				if(alternative.equals(response)
+						|| (response != null && alternative.trim().equals(response.trim()))) {
 					return true;
 				}
-			} else if(alternative.equalsIgnoreCase(response)) {
+			} else if(alternative.equalsIgnoreCase(response)
+					|| (response != null && alternative.trim().equalsIgnoreCase(response.trim()))) {
 				return true;
 			}
 			return false;
