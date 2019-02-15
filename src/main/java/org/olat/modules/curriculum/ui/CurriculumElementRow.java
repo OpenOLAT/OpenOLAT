@@ -136,15 +136,7 @@ public class CurriculumElementRow implements CurriculumElementRef, FlexiTreeTabl
 	}
 	
 	public boolean isLecturesEnabled() {
-		boolean enabled = false;
-		if(element != null) {
-			if(element.getLectures() == CurriculumLectures.enabled) {
-				enabled = true;
-			} else if(element.getLectures() == CurriculumLectures.inherited && elementType != null) {
-				enabled = elementType.getLectures() == CurriculumLectures.enabled;
-			}
-		}
-		return enabled;
+		return CurriculumLectures.isEnabled(element, elementType);
 	}
 
 	public boolean isAcceptedByFilter() {

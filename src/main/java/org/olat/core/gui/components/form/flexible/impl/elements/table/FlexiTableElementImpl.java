@@ -941,7 +941,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			saveCustomSettings(ureq);
 			getRootForm().fireFormEvent(ureq, new FlexiTableRenderEvent(FlexiTableRenderEvent.CHANGE_RENDER_TYPE, this,
 					FlexiTableRendererType.classic, FormEvent.ONCLICK));
-		} else if(doSelect(ureq)) {
+		} else if(getFormDispatchId().equals(dispatchuri) && doSelect(ureq)) {
 			//do select
 		}
 	}

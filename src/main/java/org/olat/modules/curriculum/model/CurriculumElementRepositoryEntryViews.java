@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementMembership;
+import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumElementWithView;
 import org.olat.repository.RepositoryEntryMyView;
 
@@ -36,6 +37,7 @@ import org.olat.repository.RepositoryEntryMyView;
 public class CurriculumElementRepositoryEntryViews implements CurriculumElementWithView {
 	
 	private final CurriculumElement curriculumElement;
+	private final CurriculumElementType curriculumElementType;
 	private final List<RepositoryEntryMyView> entries;
 	private final CurriculumElementMembership curriculumMembership;
 
@@ -46,6 +48,7 @@ public class CurriculumElementRepositoryEntryViews implements CurriculumElementW
 	public CurriculumElementRepositoryEntryViews(CurriculumElement curriculumElement, List<RepositoryEntryMyView> entries,
 			CurriculumElementMembership curriculumMembership) {
 		this.curriculumElement = curriculumElement;
+		this.curriculumElementType = curriculumElement.getType();
 		this.entries = entries;
 		this.curriculumMembership = curriculumMembership;
 		curriculumMember = curriculumMembership != null && curriculumMembership.hasMembership();
@@ -58,6 +61,10 @@ public class CurriculumElementRepositoryEntryViews implements CurriculumElementW
 
 	public CurriculumElement getCurriculumElement() {
 		return curriculumElement;
+	}
+	
+	public CurriculumElementType getCurriculumElementType() {
+		return curriculumElementType;
 	}
 
 	public List<RepositoryEntryMyView> getEntries() {
@@ -104,5 +111,14 @@ public class CurriculumElementRepositoryEntryViews implements CurriculumElementW
 			return curriculumElement.equals(el.curriculumElement);
 		}
 		return super.equals(obj);
+	}
+	
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder(128);
+		sb.append("curriculumElementRepositoryEntryViews[key=").append(curriculumElement.getKey())
+		  .append(";displayName=").append(curriculumElement.getDisplayName()).append("]");
+		return sb.toString();
+		
 	}
 }

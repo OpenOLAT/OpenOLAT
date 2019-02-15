@@ -191,7 +191,7 @@ public class LecturesListController extends FormBasicController {
 		
 		Identity assessedIdentity = securityManager.loadIdentityByKey(row.getIdentityKey());
 		participantLecturesOverviewCtrl = new ParticipantLecturesOverviewController(ureq, getWindowControl(),
-				assessedIdentity, filterByEntries, true, true, true, true);
+				assessedIdentity, filterByEntries, true, true, true, true, false, false);
 		listenTo(participantLecturesOverviewCtrl);
 		participantLecturesOverviewCtrl.setBreadcrumbPanel(toolbarPanel);
 		

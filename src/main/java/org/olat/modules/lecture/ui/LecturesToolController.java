@@ -39,6 +39,8 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.curriculum.CurriculumModule;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -54,7 +56,10 @@ public class LecturesToolController extends BasicController implements Breadcrum
 	private Link teacherLink, participantLink;
 	
 	private final TeacherToolOverviewController teacherOverviewCtrl;
-	private final ParticipantLecturesOverviewController participantOverviewCtrl;
+	private ParticipantLecturesOverviewController participantOverviewCtrl;
+	
+	@Autowired
+	private CurriculumModule curriculumModule;
 	
 	public LecturesToolController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -66,7 +71,9 @@ public class LecturesToolController extends BasicController implements Breadcrum
 		listenTo(teacherOverviewCtrl);
 		boolean withTitle = teacherOverviewCtrl.getRowCount() == 0;
 		WindowControl twControl = addToHistory(ureq, OresHelper.createOLATResourceableType("attendee"), null);
-		participantOverviewCtrl = new ParticipantLecturesOverviewController(ureq, twControl, withTitle);
+		
+		boolean curriculumEnabled = curriculumModule.isEnabled();
+		participantOverviewCtrl = new ParticipantLecturesOverviewController(ureq, twControl, withTitle, curriculumEnabled);
 		listenTo(participantOverviewCtrl);
 		
 		if(teacherOverviewCtrl.getRowCount() > 0 && participantOverviewCtrl.getRowCount() > 0) {

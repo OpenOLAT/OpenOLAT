@@ -19,6 +19,7 @@
  */
 package org.olat.modules.curriculum.manager;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.Assert;
@@ -31,6 +32,7 @@ import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementMembership;
 import org.olat.modules.curriculum.CurriculumLectures;
+import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementRepositoryEntryViews;
@@ -94,7 +96,8 @@ public class CurriculumServiceTest extends OlatTestCase {
 		curriculumService.addMember(element, participant, CurriculumRoles.participant);
 		dbInstance.commitAndCloseSession();
 
-		List<CurriculumElementRepositoryEntryViews> myElements = curriculumService.getCurriculumElements(participant, Roles.userRoles(), curriculum);
+		List<CurriculumRef> curriculumList = Collections.singletonList(curriculum);
+		List<CurriculumElementRepositoryEntryViews> myElements = curriculumService.getCurriculumElements(participant, Roles.userRoles(), curriculumList);
 		Assert.assertNotNull(myElements);
 		Assert.assertEquals(1, myElements.size());
 		

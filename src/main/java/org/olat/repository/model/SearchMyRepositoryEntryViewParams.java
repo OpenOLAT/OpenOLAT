@@ -46,7 +46,7 @@ public class SearchMyRepositoryEntryViewParams {
 	private List<Filter> filters;
 	private CatalogEntry parentEntry;
 	private List<String> resourceTypes;
-	private CurriculumRef curriculum;
+	private List<CurriculumRef> curriculums;
 
 	private String idAndRefs;
 	private String idRefsAndTitle;
@@ -75,12 +75,12 @@ public class SearchMyRepositoryEntryViewParams {
 		this.membershipMandatory = membershipMandatory;
 	}
 
-	public CurriculumRef getCurriculum() {
-		return curriculum;
+	public List<CurriculumRef> getCurriculums() {
+		return curriculums;
 	}
 
-	public void setCurriculum(CurriculumRef curriculum) {
-		this.curriculum = curriculum;
+	public void setCurriculums(List<CurriculumRef> curriculums) {
+		this.curriculums = curriculums;
 	}
 
 	public String getIdAndRefs() {

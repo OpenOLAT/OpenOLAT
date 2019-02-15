@@ -481,7 +481,8 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 		curriculumService.addMember(element, supervisor, CurriculumRoles.curriculummanager);
 		dbInstance.commitAndCloseSession();
 		
-		List<CurriculumElementMembership> members = curriculumElementDao.getMembershipInfos(curriculum, null, supervisor);
+		List<CurriculumRef> curriculumList = Collections.singletonList(curriculum);
+		List<CurriculumElementMembership> members = curriculumElementDao.getMembershipInfos(curriculumList, null, supervisor);
 		Assert.assertNotNull(members);
 		Assert.assertEquals(1, members.size());
 		Assert.assertEquals(supervisor.getKey(), members.get(0).getIdentityKey());

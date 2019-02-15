@@ -29,6 +29,17 @@ public enum CurriculumLectures {
 	
 	enabled,
 	disabled,
-	inherited
-
+	inherited;
+	
+	public static boolean isEnabled(CurriculumElement element, CurriculumElementType elementType) {
+		boolean on = false;
+		if(element != null) {
+			if(element.getLectures() == CurriculumLectures.enabled) {
+				on = true;
+			} else if(element.getLectures() == CurriculumLectures.inherited && elementType != null) {
+				on = elementType.getLectures() == CurriculumLectures.enabled;
+			}
+		}
+		return on;
+	}
 }

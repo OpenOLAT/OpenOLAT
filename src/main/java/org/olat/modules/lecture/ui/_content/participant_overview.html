@@ -25,7 +25,11 @@ function print() {
 	$r.contextHelpWithWrapper("Lectures - User view")
 	</div>
 #end
-$r.render("table")
+#foreach($aggregatedElement in $aggregatedElements)
+	#if($r.visible($aggregatedElement))
+		$r.render($aggregatedElement)
+	#end
+#end
 <ul class="list-unstyled">
 	<li><i class="o_icon o_lectures_attended"> </i> $r.translate("table.legend.attended")</li>
 	#if($r.isTrue($authorizedAbsenceEnabled))

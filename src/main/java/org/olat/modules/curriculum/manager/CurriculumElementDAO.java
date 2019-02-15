@@ -625,7 +625,7 @@ public class CurriculumElementDAO {
 				.getResultList();
 	}
 	
-	public List<CurriculumElementMembership> getMembershipInfos(CurriculumRef curriculum, Collection<CurriculumElement> elements, Identity... identities) {
+	public List<CurriculumElementMembership> getMembershipInfos(List<CurriculumRef> curriculums, Collection<CurriculumElement> elements, Identity... identities) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select el.key, membership from curriculumelement el")
 		  .append(" inner join el.group baseGroup")
@@ -640,9 +640,9 @@ public class CurriculumElementDAO {
 			and = and(sb, and);
 			sb.append("el.key in (:elementKeys)");
 		}
-		if(curriculum != null) {
+		if(curriculums != null && !curriculums.isEmpty()) {
 			and = and(sb, and);
-			sb.append("el.curriculum.key=:curriculumKey");
+			sb.append("el.curriculum.key in (:curriculumKeys)");
 		}
 		
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
@@ -659,8 +659,10 @@ public class CurriculumElementDAO {
 					.map(CurriculumElement::getKey).collect(Collectors.toList());
 			query.setParameter("elementKeys", elementKeys);
 		}
-		if(curriculum != null) {
-			query.setParameter("curriculumKey", curriculum.getKey());
+		if(curriculums != null &&!curriculums.isEmpty()) {
+			List<Long> curriculumKeys = curriculums.stream()
+					.map(CurriculumRef::getKey).collect(Collectors.toList());
+			query.setParameter("curriculumKeys", curriculumKeys);
 		}
 
 		List<Object[]> rawObjects = query.getResultList();

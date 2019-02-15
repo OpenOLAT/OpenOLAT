@@ -77,7 +77,7 @@ public class FlexiTableComponent extends FormBaseComponentImpl implements Compon
 
 	@Override
 	public Iterable<Component> getComponents() {
-		List<Component> cmp = new ArrayList<Component>();
+		List<Component> cmp = new ArrayList<>();
 		for(FormItem item:element.getFormItems()) {
 			cmp.add(item.getComponent());
 		}
@@ -85,9 +85,6 @@ public class FlexiTableComponent extends FormBaseComponentImpl implements Compon
 		return cmp;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.Component#getHTMLRendererSingleton()
-	 */
 	@Override
 	public ComponentRenderer getHTMLRendererSingleton() {
 		switch(element.getRendererType()) {

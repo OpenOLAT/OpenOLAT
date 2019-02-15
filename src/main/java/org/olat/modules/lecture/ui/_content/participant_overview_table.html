@@ -1,0 +1,20 @@
+#if($r.visible("table"))
+
+#if($r.isNotEmpty($elementDisplayName))
+<h3 onclick="jQuery('#collapse_${r.getCId()}').collapse('toggle')">
+	<i id="collapse_${r.getCId()}_toggler" class="o_icon o_icon-fw #if($closed) o_icon_open_togglebox #else o_icon_close_togglebox #end"> </i> $r.escapeHtml($elementDisplayName) #if($r.isNotEmpty($elementIdentifier))<small>$r.escapeHtml($elementIdentifier)</small>#end</h3>
+#end
+<div id="collapse_${r.getCId()}" class="#if($closed) collapse #end">$r.render("table")</div>
+<script>
+/* <![CDATA[ */
+jQuery(function() {
+	jQuery('#collapse_${r.getCId()}').on('hide.bs.collapse', function () {
+		jQuery('#collapse_${r.getCId()}_toggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+	})
+	jQuery('#collapse_${r.getCId()}').on('show.bs.collapse', function () {
+		jQuery('#collapse_${r.getCId()}_toggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+	})
+});
+/* ]]> */
+</script>
+#end

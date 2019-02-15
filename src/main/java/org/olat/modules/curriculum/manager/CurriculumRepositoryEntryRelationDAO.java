@@ -21,6 +21,7 @@ package org.olat.modules.curriculum.manager;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -172,18 +173,23 @@ public class CurriculumRepositoryEntryRelationDAO {
 	 * @param curriculum The curriculum
 	 * @return A map of curriculum element to their repository entries
 	 */
-	public Map<CurriculumElement, List<Long>> getCurriculumElementsWithRepositoryEntryKeys(CurriculumRef curriculum) {
+	public Map<CurriculumElement, List<Long>> getCurriculumElementsWithRepositoryEntryKeys(List<CurriculumRef> curriculums) {
+		if(curriculums == null || curriculums.isEmpty()) return Collections.emptyMap();
+		
 		QueryBuilder sb = new QueryBuilder(256);
 		sb.append("select el, rel.entry.key from curriculumelement el")
 		  .append(" left join fetch el.type elementType")
 		  .append(" inner join el.curriculum curriculum")
 		  .append(" left join fetch el.parent parentEl")
 		  .append(" left join repoentrytogroup as rel on (el.group.key=rel.group.key)")
-		  .append(" where curriculum.key=:curriculumKey and el.status ").in(CurriculumElementStatus.notDeleted());
+		  .append(" where curriculum.key in (:curriculumKeys) and el.status ").in(CurriculumElementStatus.notDeleted());
 
+		List<Long> curriculumKeys = curriculums.stream()
+				.map(CurriculumRef::getKey).collect(Collectors.toList());
+		
 		List<Object[]> rawObjects = dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), Object[].class)
-			.setParameter("curriculumKey", curriculum.getKey())
+			.setParameter("curriculumKeys", curriculumKeys)
 			.getResultList();
 		
 		Map<CurriculumElement, List<Long>> map = new HashMap<>();

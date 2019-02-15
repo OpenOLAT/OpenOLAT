@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.persistence.FlushModeType;
 import javax.persistence.TypedQuery;
@@ -45,6 +46,7 @@ import org.olat.course.assessment.manager.EfficiencyStatementManager;
 import org.olat.course.assessment.model.UserEfficiencyStatementImpl;
 import org.olat.course.assessment.model.UserEfficiencyStatementLight;
 import org.olat.fileresource.types.VideoFileResource;
+import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -230,9 +232,9 @@ public class RepositoryEntryMyCourseQueries {
 			}
 		}
 
-		if(params.getCurriculum() != null) {
+		if(params.getCurriculums() != null && !params.getCurriculums().isEmpty()) {
 			sb.append(" and exists (select el.key from curriculumelement el, repoentrytogroup rel")
-			  .append("   where el.curriculum.key=:curriculumKey and rel.entry.key=v.key and el.group.key=rel.group.key")
+			  .append("   where el.curriculum.key in (:curriculumKeys) and rel.entry.key=v.key and el.group.key=rel.group.key")
 			  .append(" )");
 		}
 		
@@ -327,8 +329,10 @@ public class RepositoryEntryMyCourseQueries {
 		if(params.getParentEntry() != null) {
 			dbQuery.setParameter("parentCeiKey", params.getParentEntry().getKey());
 		}
-		if(params.getCurriculum() != null) {
-			dbQuery.setParameter("curriculumKey", params.getCurriculum().getKey());
+		if(params.getCurriculums() != null && !params.getCurriculums().isEmpty()) {
+			List<Long> curriculumKeys = params.getCurriculums().stream()
+					.map(CurriculumRef::getKey).collect(Collectors.toList());
+			dbQuery.setParameter("curriculumKeys", curriculumKeys);
 		}
 		if (params.isResourceTypesDefined()) {
 			dbQuery.setParameter("resourcetypes", resourceTypes);

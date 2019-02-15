@@ -532,20 +532,21 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 
 	@Override
-	public List<CurriculumElementRepositoryEntryViews> getCurriculumElements(Identity identity, Roles roles, CurriculumRef curriculum) {
-		if(curriculum == null) return Collections.emptyList();
+	public List<CurriculumElementRepositoryEntryViews> getCurriculumElements(Identity identity, Roles roles, List<CurriculumRef> curriculums) {
+		if(curriculums == null || curriculums.isEmpty()) return Collections.emptyList();
 		
-		List<CurriculumElementMembership> memberships = curriculumElementDao.getMembershipInfos(curriculum, null, identity);
+		List<CurriculumElementMembership> memberships = curriculumElementDao.getMembershipInfos(curriculums, null, identity);
 		Map<Long,CurriculumElementMembership> membershipMap = new HashMap<>();
 		for(CurriculumElementMembership membership:memberships) {
 			membershipMap.put(membership.getCurriculumElementKey(), membership);
 		}
 		
-		Map<CurriculumElement, List<Long>> elementsMap = curriculumRepositoryEntryRelationDao.getCurriculumElementsWithRepositoryEntryKeys(curriculum);
+		Map<CurriculumElement, List<Long>> elementsMap = curriculumRepositoryEntryRelationDao
+				.getCurriculumElementsWithRepositoryEntryKeys(curriculums);
 		List<CurriculumElementRepositoryEntryViews> elements = new ArrayList<>(elementsMap.size());
 		if(!elementsMap.isEmpty()) {
 			SearchMyRepositoryEntryViewParams params = new SearchMyRepositoryEntryViewParams(identity, roles);
-			params.setCurriculum(curriculum);
+			params.setCurriculums(curriculums);
 			List<RepositoryEntryMyView> views = myCourseQueries.searchViews(params, 0, -1);
 			Map<Long, RepositoryEntryMyView> viewMap = new HashMap<>();
 			for(RepositoryEntryMyView view:views) {

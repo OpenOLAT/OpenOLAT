@@ -259,6 +259,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.lecture.manager.RepositoryEntryLectureConfigurationDAOTest.class,
 	org.olat.modules.lecture.manager.LectureBlockAuditLogDAOTest.class,
 	org.olat.modules.lecture.ui.blockimport.BlockConverterTest.class,
+	org.olat.modules.lecture.ui.ParticipantLecturesOverviewControllerTest.class,
 	org.olat.modules.reminder.ReminderModuleTest.class,
 	org.olat.modules.reminder.manager.ReminderDAOTest.class,
 	org.olat.modules.reminder.manager.ReminderRuleEngineTest.class,

@@ -231,7 +231,8 @@ public class CurriculumElementListController extends FormBasicController impleme
 
 	private void loadModel(UserRequest ureq) {
 		Roles roles = ureq.getUserSession().getRoles();
-		List<CurriculumElementRepositoryEntryViews> elementsWithViews = curriculumService.getCurriculumElements(getIdentity(), roles, curriculum);
+		List<CurriculumRef> curriculumList = Collections.singletonList(curriculum);
+		List<CurriculumElementRepositoryEntryViews> elementsWithViews = curriculumService.getCurriculumElements(getIdentity(), roles, curriculumList);
 		
 		Set<Long> repoKeys = new HashSet<>(elementsWithViews.size() * 3);
 		List<OLATResource> resourcesWithAC = new ArrayList<>(elementsWithViews.size() * 3);
@@ -431,7 +432,7 @@ public class CurriculumElementListController extends FormBasicController impleme
 				String rowKeyStr = ureq.getParameter("select_row");
 				if(StringHelper.isLong(rowKeyStr)) {
 					try {
-						Long rowKey = new Long(rowKeyStr);
+						Long rowKey = Long.valueOf(rowKeyStr);
 						List<CurriculumElementWithViewsRow> rows = tableModel.getObjects();
 						for(CurriculumElementWithViewsRow row:rows) {
 							if(row != null && row.getRepositoryEntryKey() != null  && row.getRepositoryEntryKey().equals(rowKey)) {
