@@ -41,6 +41,7 @@
 		            ed.dom.setAttrib(contentNode, "data-mce-placeholder", "")
 		            ed.dom.setAttrib(contentNode, "title", escape(tex));
 		            ed.execCommand("mceRepaint");
+					ed.setDirty(true);
 		        } else {
 		        	var htmlCode = '<img src="' + tinymce.Env.transparentSrc + '" class="mce-shim mceItemJSMath" data-mce-placeholder="latex" data-mathtex="' + tex + '" title="' + escape(tex) + '" width="32" height="32"/>';
 		            ed.execCommand("mceInsertContent", false, htmlCode);
@@ -197,7 +198,7 @@
 				author : 'frentix GmbH',
 				authorurl : 'http://www.frentix.com',
 				infourl : 'http://www.frentix.com',
-				version : "1.2.1"
+				version : "1.2.2"
 			};
 		}
 	});

@@ -504,6 +504,14 @@
 					jQuery('#collapse_${itemResult.interactionResults.solutionFormItem.name}').on('show.bs.collapse', function () {
 						jQuery('#collapse_${itemResult.interactionResults.solutionFormItem.name}_toggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
 					})
+					jQuery('#collapse_${itemResult.interactionResults.solutionFormItem.name}').on('shown.bs.collapse', function () {
+						jQuery('#collapse_${itemResult.interactionResults.solutionFormItem.name} canvas').each(function(index, el) {
+							var jEl = jQuery(el);
+							if(jEl.css('height') == '0px') {
+								jEl.css('height', jEl.attr('height') + "px");
+							}
+						});
+					})
 				});
 				/* ]]> */
 				</script>
