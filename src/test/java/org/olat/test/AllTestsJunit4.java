@@ -250,7 +250,6 @@ import org.junit.runners.Suite;
 	org.olat.ims.qti21.model.xml.AssessmentHtmlBuilderTest.class,
 	org.olat.ims.qti21.model.xml.AssessmentItemPackageTest.class,
 	org.olat.ims.qti21.model.xml.ManifestPackageTest.class,
-	org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilderTextEntryTest.class,
 	org.olat.ims.qti21.pool.QTI12To21ConverterTest.class,
 	org.olat.ims.qti21.pool.QTI12To21HtmlHandlerTest.class,
 	org.olat.ims.qti21.pool.QTI21QPoolServiceProviderTest.class,
