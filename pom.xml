@@ -62,7 +62,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<targetJdk>1.8</targetJdk>
-		<org.springframework.version>5.1.4.RELEASE</org.springframework.version>
+		<org.springframework.version>5.1.5.RELEASE</org.springframework.version>
 		<org.hibernate.version>5.4.1.Final</org.hibernate.version>
 		<com.sun.jersey.version>1.19.4</com.sun.jersey.version>
 		<apache.cxf>3.2.7</apache.cxf>
@@ -1790,7 +1790,7 @@
 		<dependency>
 			<groupId>commons-codec</groupId>
 			<artifactId>commons-codec</artifactId>
-			<version>1.11</version>
+			<version>1.12</version>
 		</dependency>
 		<dependency>
 			<!-- Used by at least commons-validator -->
@@ -1802,7 +1802,7 @@
 			<!-- Used by email address validator -->
 			<groupId>commons-validator</groupId>
 			<artifactId>commons-validator</artifactId>
-			<version>1.5.0</version>
+			<version>1.6</version>
 			<exclusions>
 				<exclusion>
 					<groupId>commons-logging</groupId>
@@ -1874,12 +1874,12 @@
 		<dependency>
 			<groupId>org.apache.poi</groupId>
 			<artifactId>poi</artifactId>
-			<version>3.17</version>
+			<version>4.0.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.poi</groupId>
 			<artifactId>poi-scratchpad</artifactId>
-			<version>3.17</version>
+			<version>4.0.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.pdfbox</groupId>
@@ -1906,12 +1906,12 @@
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcmail-jdk15on</artifactId>
-			<version>1.60</version>
+			<version>1.61</version>
 		</dependency>
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcprov-jdk15on</artifactId>
-			<version>1.60</version>
+			<version>1.61</version>
 		</dependency>
 		<dependency>
 			<groupId>org.scribe</groupId>
@@ -2209,7 +2209,7 @@
 		<dependency>
 			<groupId>com.opencsv</groupId>
 			<artifactId>opencsv</artifactId>
-			<version>4.4</version>
+			<version>4.5</version>
 			<exclusions>
 				<exclusion>
 					<groupId>commons-logging</groupId>
@@ -2469,7 +2469,7 @@
 		<dependency>
 			<groupId>org.assertj</groupId>
 			<artifactId>assertj-core</artifactId>
-			<version>3.6.1</version>
+			<version>3.12.0</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -2481,7 +2481,7 @@
 		<dependency>
 			<groupId>xmlunit</groupId>
 			<artifactId>xmlunit</artifactId>
-			<version>1.5</version>
+			<version>1.6</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -2499,7 +2499,7 @@
 		<dependency>
 			<groupId>org.zapodot</groupId>
 			<artifactId>embedded-ldap-junit</artifactId>
-			<version>0.5.2</version>
+			<version>0.7</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -2518,7 +2518,7 @@
 		<dependency>
 			<groupId>org.jboss.arquillian.container</groupId>
 			<artifactId>arquillian-tomcat-managed-7</artifactId>
-			<version>1.0.0</version>
+			<version>1.1.0.Final</version>
 		<scope>test</scope>
       	</dependency>
 		<dependency>
@@ -2529,7 +2529,7 @@
 		<dependency>
 			<groupId>org.eu.ingwar.tools</groupId>
 			<artifactId>arquillian-suite-extension</artifactId>
-			<version>1.1.4</version>
+			<version>1.2.0</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

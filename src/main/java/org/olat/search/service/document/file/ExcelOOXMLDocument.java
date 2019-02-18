@@ -81,16 +81,17 @@ public class ExcelOOXMLDocument extends FileDocument {
 	
 	private String parseSheets(Map<String,String> sharedStrings, VFSLeaf leaf)  throws IOException, DocumentException {
 		try(InputStream stream = leaf.getInputStream();
-				ZipInputStream zip = new ZipInputStream(stream)) {
+				ZipInputStream zip = new ZipInputStream(stream);
+				LimitedContentWriter writer = new LimitedContentWriter(100000, FileDocumentFactory.getMaxFileSize())) {
 			
 			ZipEntry entry = zip.getNextEntry();
-			LimitedContentWriter writer = new LimitedContentWriter(100000, FileDocumentFactory.getMaxFileSize());
+			
 			while (entry != null) {
 				if(writer.accept()) {
 					String name = entry.getName();
 					if(name.startsWith(SHEET) && name.endsWith(".xml")) {
 						OfficeDocumentHandler dh = new OfficeDocumentHandler(writer, sharedStrings);
-						parse(new ShieldInputStream(zip), dh);
+						parse(zip, dh);
 					}
 				}
 				entry = zip.getNextEntry();
@@ -112,7 +113,7 @@ public class ExcelOOXMLDocument extends FileDocument {
 			while (entry != null) {
 				String name = entry.getName();
 				if(name.endsWith("xl/sharedStrings.xml")) {
-					parse(new ShieldInputStream(zip), dh);
+					parse(zip, dh);
 					break;
 				}
 				entry = zip.getNextEntry();
@@ -125,8 +126,8 @@ public class ExcelOOXMLDocument extends FileDocument {
 		}
 	}
 	
-	private void parse(InputStream stream, DefaultHandler handler) throws DocumentException {
-		try {
+	private void parse(ZipInputStream zip, DefaultHandler handler) throws DocumentException {
+		try(InputStream in=new ShieldInputStream(zip)) {
 			XMLReader parser = XMLReaderFactory.createXMLReader();
 			parser.setContentHandler(handler);
 			parser.setEntityResolver(handler);
@@ -135,7 +136,7 @@ public class ExcelOOXMLDocument extends FileDocument {
 			} catch(Exception e) {
 				log.error("Cannot deactivate validation", e);
 			}
-			parser.parse(new InputSource(stream));
+			parser.parse(new InputSource(in));
 		} catch (Exception e) {
 			throw new DocumentException("XML parser configuration error", e);
 		}

@@ -165,5 +165,7 @@ public class OfficeDocumentTest extends OlatTestCase {
 		Assert.assertNotNull(content);
 		String body = content.getContent();
 		Assert.assertTrue(body.contains("Sample Powerpoint Slide"));
+		Assert.assertTrue(body.contains("Service Release 1"));
+		Assert.assertTrue(body.contains("full text search"));
 	}
 }

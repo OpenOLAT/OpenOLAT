@@ -21,8 +21,6 @@ package org.olat.core.util.mail;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 
 /**
  * Description:<br>
@@ -32,10 +30,10 @@ import org.junit.runners.JUnit4;
  * Initial Date:  14.07.2009 <br>
  * @author gnaegi
  */
-@RunWith(JUnit4.class)
 public class EmailAddressValidatorTest {
 
-	@Test public void testPlainText() {
+	@Test
+	public void testPlainText() {
 		// correct stuff
 		Assert.assertTrue(EmailAddressValidator.isValidEmailAddress("contact@openolat.org"));
 		Assert.assertTrue(EmailAddressValidator.isValidEmailAddress("hello.world@crazy.world"));

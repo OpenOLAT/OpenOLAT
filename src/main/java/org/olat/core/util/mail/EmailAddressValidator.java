@@ -39,7 +39,6 @@ public class EmailAddressValidator {
 	 */
 	public static boolean isValidEmailAddress(String mailAddress) {
 		// Validate an email address
-		boolean isAddressValid = validator.isValid(mailAddress);
-		return isAddressValid;
+		return validator.isValid(mailAddress);
 	}
 }

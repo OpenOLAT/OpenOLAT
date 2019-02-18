@@ -65,17 +65,16 @@ class GetDocumentByCallable implements Callable<Document> {
 	public Document call() {
 		Document doc = null;
 		IndexSearcher searcher = null;
-		try {
+		try(KeywordAnalyzer analyzer=new KeywordAnalyzer()) {
 			if (searchService.existIndex()) {
 				searcher = searchService.getIndexSearcher();
 				String url = Encoder.md5hash(resourceUrl);
 				String queryStr = "+" + AbstractOlatDocument.RESOURCEURL_MD5_FIELD_NAME + ":\"" + url + "\"";
-				QueryParser idQueryParser = new QueryParser(queryStr, new KeywordAnalyzer());
+				QueryParser idQueryParser = new QueryParser(queryStr, analyzer);
 				Query query = idQueryParser.parse(queryStr);
 				
 				TopDocs docs = searcher.search(query, 500);
 				long numOfDocs = docs.totalHits;
-				
 
 				Set<String> retrievedFields = new HashSet<>();
 				retrievedFields.add(AbstractOlatDocument.RESOURCEURL_FIELD_NAME);

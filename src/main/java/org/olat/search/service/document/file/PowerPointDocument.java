@@ -71,8 +71,8 @@ public class PowerPointDocument extends FileDocument {
 	@Override
 	public FileContent readContent(VFSLeaf leaf) throws IOException,DocumentException {
 		if (log.isDebug()) log.debug("read PPT Content of leaf=" + leaf.getName());
-		try (BufferedInputStream bis = new BufferedInputStream(leaf.getInputStream())) {
-			LimitedContentWriter oStream = new LimitedContentWriter(100000, FileDocumentFactory.getMaxFileSize());
+		try (BufferedInputStream bis = new BufferedInputStream(leaf.getInputStream());
+				LimitedContentWriter oStream = new LimitedContentWriter(100000, FileDocumentFactory.getMaxFileSize())) {
 			extractText(bis, oStream);
 			return new FileContent(oStream.toString());			
 		} catch (Exception e) {
@@ -98,10 +98,8 @@ public class PowerPointDocument extends FileDocument {
 		public void processPOIFSReaderEvent(POIFSReaderEvent event) {
 			int errorCounter = 0;
       
-			try {
-				DocumentInputStream dis = event.getStream();
-        
-				byte btoWrite[] = new byte[dis.available()];
+			try(DocumentInputStream dis = event.getStream()) {
+				byte[] btoWrite = new byte[dis.available()];
 				dis.read(btoWrite, 0, dis.available());
 				for (int i = 0; i < btoWrite.length - 20; i++) {
 					long type = LittleEndian.getUShort(btoWrite, i + 2);
@@ -133,8 +131,7 @@ public class PowerPointDocument extends FileDocument {
 		private String removeUnvisibleChars(String inputString) {
 			Pattern p = Pattern.compile("[^a-zA-Z0-9\n\r!&#<>{}]");
 			Matcher m = p.matcher(inputString);
-			String output = m.replaceAll(" ");
-			return output;
+			return m.replaceAll(" ");
 		}
 	}
 }

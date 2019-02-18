@@ -75,9 +75,8 @@ public class ExcelDocument extends FileDocument {
 		int sheetNullCounter = 0;
 
 		try(BufferedInputStream bis = new BufferedInputStream(leaf.getInputStream());
-				HSSFWorkbook workbook = new HSSFWorkbook(new POIFSFileSystem(bis));) {
-
-			LimitedContentWriter content = new LimitedContentWriter((int)leaf.getSize(), FileDocumentFactory.getMaxFileSize());
+				HSSFWorkbook workbook = new HSSFWorkbook(new POIFSFileSystem(bis));
+				LimitedContentWriter content = new LimitedContentWriter((int)leaf.getSize(), FileDocumentFactory.getMaxFileSize())) {
 			for (int sheetNumber = 0; sheetNumber < workbook.getNumberOfSheets(); sheetNumber++) {
 				HSSFSheet sheet = workbook.getSheetAt(sheetNumber);
 				if (sheet != null) {
@@ -87,7 +86,7 @@ public class ExcelDocument extends FileDocument {
 							for (int cellNumber = row.getFirstCellNum(); cellNumber <= row.getLastCellNum(); cellNumber++) {
 								HSSFCell cell = row.getCell(cellNumber);
 								if (cell != null) {
-									if (cell.getCellTypeEnum() == CellType.STRING) {
+									if (cell.getCellType() == CellType.STRING) {
 										content.append(cell.getStringCellValue()).append(' ');
 									}
 								} else {
@@ -108,7 +107,6 @@ public class ExcelDocument extends FileDocument {
 							+ sheetNullCounter);
 				}
 			}
-			content.close();
 			return new FileContent(content.toString());
 		} catch (Exception ex) {
 			throw new DocumentException("Can not read XLS Content. File=" + leaf.getName(), ex);
