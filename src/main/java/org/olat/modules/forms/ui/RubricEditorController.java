@@ -187,6 +187,7 @@ public class RubricEditorController extends FormBasicController implements PageE
 
 		// name
 		nameEl = uifactory.addTextElement("rubric.name", 128, rubric.getName(), settingsLayout);
+		nameEl.setHelpTextKey("rubric.name.help", null);
 		
 		// name display
 		String[] nameDisplayValues = new String[] { translate("rubric.name.execution"), translate("rubric.name.report") };
@@ -195,6 +196,7 @@ public class RubricEditorController extends FormBasicController implements PageE
 		// scale type
 		scaleTypeEl = uifactory.addDropdownSingleselect("scale.type." + count.incrementAndGet(), "rubric.scale.type",
 				settingsLayout, ScaleType.getKeys(), ScaleType.getValues(getTranslator()), null);
+		scaleTypeEl.setHelpTextKey("rubric.scale.type.help", null);
 		scaleTypeEl.addActionListener(FormEvent.ONCHANGE);
 		scaleTypeEl.setEnabled(!restrictedEdit);
 		boolean scaleSelected = false;
@@ -213,6 +215,7 @@ public class RubricEditorController extends FormBasicController implements PageE
 		// good rating side
 		goodRatingEl = uifactory.addDropdownSingleselect("rubric.good.rating" + count.incrementAndGet(), "rubric.good.rating",
 				settingsLayout, GOOD_RATING_KEYS, translateAll(getTranslator(), GOOD_RATING_KEYS), null);
+		goodRatingEl.setHelpTextKey("rubric.good.rating.help", null);
 		goodRatingEl.addActionListener(FormEvent.ONCHANGE);
 		if (rubric != null) {
 			String goodRatingKey = rubric.isStartGoodRating()? GOOD_RATING_START_KEY: GOOD_RATING_END_KEY;
@@ -226,6 +229,7 @@ public class RubricEditorController extends FormBasicController implements PageE
 		insufficientCont.setRootForm(mainForm);
 		settingsLayout.add("insufficient", insufficientCont);
 		insufficientCont.setLabel("rubric.insufficient", null);
+		insufficientCont.setHelpTextKey("rubric.rating.help", new String[] { translate("rubric.insufficient")} );
 		String insufficientLowerBound = rubric.getLowerBoundInsufficient() != null
 				? String.valueOf(rubric.getLowerBoundInsufficient())
 				: null;
@@ -248,6 +252,7 @@ public class RubricEditorController extends FormBasicController implements PageE
 		neutralCont.setRootForm(mainForm);
 		settingsLayout.add("neutral", neutralCont);
 		neutralCont.setLabel("rubric.neutral", null);
+		neutralCont.setHelpTextKey("rubric.rating.help", new String[] { translate("rubric.neutral")} );
 		String neutralLowerBound = rubric.getLowerBoundNeutral() != null ? String.valueOf(rubric.getLowerBoundNeutral())
 				: null;
 		lowerBoundNeutralEl = uifactory.addTextElement("rubric.lower.bound.neutral", 4, neutralLowerBound, neutralCont);
@@ -266,6 +271,7 @@ public class RubricEditorController extends FormBasicController implements PageE
 		sufficientCont.setRootForm(mainForm);
 		settingsLayout.add("sufficient", sufficientCont);
 		sufficientCont.setLabel("rubric.sufficient", null);
+		sufficientCont.setHelpTextKey("rubric.rating.help", new String[] { translate("rubric.sufficient")} );
 		String sufficientLowerBound = rubric.getLowerBoundSufficient() != null
 				? String.valueOf(rubric.getLowerBoundSufficient())
 				: null;
@@ -286,6 +292,7 @@ public class RubricEditorController extends FormBasicController implements PageE
 		noAnswerEl = uifactory.addCheckboxesVertical("no.response." + count.incrementAndGet(),
 				"rubric.no.response.enabled", settingsLayout, ENABLED_KEYS,
 				translateAll(getTranslator(), ENABLED_KEYS), 1);
+		noAnswerEl.setHelpTextKey("no.response.help", null);
 		noAnswerEl.setEnabled(!restrictedEdit);
 		
 		uifactory.addSpacerElement("rubric.survey.configuration.upper", settingsLayout, false);
