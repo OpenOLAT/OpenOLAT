@@ -248,9 +248,19 @@
 	margin: 10px 10px 0 10px;
 	
 	.o_slider_editor {
-		padding-right: 80px;
 		margin-top: 10px;
-		position:relative;
+		
+		@media (max-width: $screen-md-min) {
+			margin-bottom: 20px;
+		}
+	}
+	
+	.o_evaluation_step_label {
+		@media (max-width: $screen-md-min) {
+			text-align: unset;
+			margin-bottom: 5px;
+			padding-top: unset;
+		}
 	}
 	
 	.o_evaluation_step_labels {
@@ -276,6 +286,12 @@
 		}
 	}
 	
+	input[type="text"] {
+		@media (max-width: $screen-md-min) {
+			margin-bottom: 5px;
+		}
+	}
+	
 	.o_slider_continous {
 		padding-top: 10px;
 		padding-bottom: -10px;
@@ -290,23 +306,6 @@
 		font-size: 90%;
 	}
 	
-	.o_slider_editor_ud_button {
-		position: absolute;
-		right: 15px;
-	}
-	
-	.o_slider_editor_delete {
-		padding-right: 125px;
-		
-		.o_slider_editor_ud_button {
-			right: 60px;
-		}
-		
-		.o_slider_editor_delete_button {
-			position: absolute;
-			right: 15px;
-		}
-	}
 }
 
 @media (max-width: $screen-sm-min) {

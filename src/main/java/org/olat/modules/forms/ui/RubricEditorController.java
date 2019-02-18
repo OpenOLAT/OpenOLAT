@@ -109,14 +109,28 @@ public class RubricEditorController extends FormBasicController implements PageE
 	private TextElement upperBoundSufficientEl;
 	private SingleSelection goodRatingEl;
 	private FormLink addSliderButton;
+	private Boolean showEnd;
+	private FormLink showEndButton;
+	private FormLink hideEndButton;
 	private FormLayoutContainer settingsLayout;
+
 	public RubricEditorController(UserRequest ureq, WindowControl wControl, Rubric rubric, boolean restrictedEdit) {
 		super(ureq, wControl, "rubric_editor");
 		this.rubric = rubric;
 		this.restrictedEdit = restrictedEdit;
+		this.showEnd = initShowEnd();
 
 		initForm(ureq);
 		setEditMode(editMode);
+	}
+
+	private Boolean initShowEnd() {
+		for (Slider slider : rubric.getSliders()) {
+			if (StringHelper.containsNonWhitespace(slider.getEndLabel())) {
+				return Boolean.TRUE;
+			}
+		}
+		return Boolean.FALSE;
 	}
 
 	@Override
@@ -295,15 +309,22 @@ public class RubricEditorController extends FormBasicController implements PageE
 		if(!restrictedEdit) {
 			addSliderButton = uifactory.addFormLink("add.slider." + postfix, "add.slider", null, formLayout, Link.BUTTON);
 			addSliderButton.setIconLeftCSS("o_icon o_icon-lg o_icon_add");
+
+			showEndButton = uifactory.addFormLink("show.end", "show.end", "", null, formLayout, Link.BUTTON | Link.NONTRANSLATED);
+			showEndButton.setIconLeftCSS("o_icon o_icon_eva_end_show");
+
+			hideEndButton = uifactory.addFormLink("hide.end", "hide.end", "", null, formLayout, Link.BUTTON | Link.NONTRANSLATED);
+			hideEndButton.setIconLeftCSS("o_icon o_icon_eva_end_hide");
 		}
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
 			layoutCont.contextPut("postfix", Long.toString(postfix));
 		}
 		
+		doShowHideEnd();
 		updateUI();
 	}
-	
+
 	private void updateUI() {
 		updateSurveyConfigUI();
 	}
@@ -330,6 +351,21 @@ public class RubricEditorController extends FormBasicController implements PageE
 		upperBoundSufficientEl.setVisible(isSurveyConfig);
 		goodRatingEl.setVisible(isSurveyConfig);
 	}
+	
+	private void doShowEnd() {
+		showEnd = Boolean.TRUE;
+		doShowHideEnd();
+	}
+	
+	private void doHideEnd() {
+		showEnd = Boolean.FALSE;
+		doShowHideEnd();
+	}
+
+	private void doShowHideEnd() {
+		flc.contextPut("showEnd", showEnd);
+		flc.setDirty(true);
+	}
 
 	private void updateSteps() {
 		List<StepLabelColumn> stepLabelColumns = new ArrayList<>();
@@ -350,7 +386,7 @@ public class RubricEditorController extends FormBasicController implements PageE
 					textEl.setDisplaySize(4);
 					col = new StepLabelColumn(i, textEl);
 				}
-				if (scaleTypeEl.isVisible() && scaleTypeEl.isOneSelected()) {
+				if (scaleTypeEl.isOneSelected()) {
 					String selectedScaleTypeKey = scaleTypeEl.getSelectedKey();
 					ScaleType scaleType = ScaleType.getEnum(selectedScaleTypeKey);
 					double stepValue = scaleType.getStepValue(steps, i + 1);
@@ -532,6 +568,10 @@ public class RubricEditorController extends FormBasicController implements PageE
 			updateUI();
 		} else if (addSliderButton == source) {
 			doAddSlider();
+		} else if (showEndButton == source) {
+			doShowEnd();
+		} else if (hideEndButton == source) {
+			doHideEnd();
 		} else if(sliderTypeEl == source) {
 			updateTypeSettings();
 			updateSteps();
@@ -888,10 +928,11 @@ public class RubricEditorController extends FormBasicController implements PageE
 			} else {
 				row.getSlider().setStartLabel(null);
 			}
-			if(StringHelper.containsNonWhitespace(end)) {
+			if(StringHelper.containsNonWhitespace(end) && showEnd) {
 				row.getSlider().setEndLabel(end);
 			} else {
 				row.getSlider().setEndLabel(null);
+				row.endLabelEl.setValue(null);
 			}
 		}
 	}

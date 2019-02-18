@@ -1,35 +1,77 @@
 #if($editMode)
+	#if($showEnd)
+		#set($colLabelButtons = "col-xs-12 col-ms-12 col-md-2 col-md-push-10")
+		#set($colLabelLabel = "col-xs-12 col-ms-12 col-md-3 col-md-pull-2")
+		#set($colLabelSpace = "hidden")
+		#set($colLabelValue = "col-xs-12 col-ms-12 col-md-4 col-md-pull-2")
+		#set($colSliderStart = "col-md-3")
+		#set($colSliderPreview = "col-md-4")
+		#set($colSliderEnd = "col-md-3")
+		#set($colSliderButtons = "col-md-2")
+	#else
+		#set($colLabelButtons = "col-xs-12 col-ms-12 col-md-2 col-md-push-10")
+		#set($colLabelLabel = "col-xs-12 col-ms-12 col-md-3 col-md-pull-2")
+		#set($colLabelSpace = "col-xs-12 col-ms-12 col-md-2 col-sm-hidden col-md-pull-2")
+		#set($colLabelValue = "col-xs-12 col-ms-12 col-md-5 col-md-pull-2")
+		#set($colSliderStart = "col-md-5")
+		#set($colSliderPreview = "col-md-5")
+		#set($colSliderEnd = "hidden")
+		#set($colSliderButtons = "col-md-2")
+	#end
 <div class="o_evaluation_editor_form">
 	$r.render("settings")
 	
 	#if($r.isNotEmpty($stepLabels))
 	<div class="row">
-		<div class="form-horizontal">
-			<label class="control-label col-sm-3">$r.translate("rubric.column.label")</label>
-		</div>
-		<div class="col-sm-6"><div class="form-inline">
-		#foreach($stepLabel in $stepLabels)
-			<div class="o_evaluation_step_labels" style="width:${stepInPercent}%;">
-				$r.render($stepLabel.stepLabelEl)
-				#if($f.hasExample($stepLabel.stepLabelEl.getComponent().getComponentName()))
-					<div class="help-block o_evaluation_example">
-						$r.render("${stepLabel.stepLabelEl.getComponent().getComponentName()}_EXAMPLE")
-					</div>
+	
+		<div class="$colLabelButtons">
+			<div class="pull-right">
+				#if($showEnd)
+					#if($r.available("hide.end") && $r.visible("hide.end"))
+						$r.render("hide.end")
+					#end
+				#else
+					#if($r.available("show.end") && $r.visible("show.end"))
+						$r.render("show.end")
+					#end
 				#end
 			</div>
-		#end
-		</div></div>
-		<div class="col-sm-3"></div>
+		</div>
+	
+		<div class="form-horizontal">
+			<label class="control-label $colLabelLabel o_evaluation_step_label">$r.translate("rubric.column.label")</label>
+		</div>
+		
+		<div class="$colLabelSpace"></div>
+		
+		<div class="$colLabelValue"><div class="form-inline">
+			#foreach($stepLabel in $stepLabels)
+				<div class="o_evaluation_step_labels" style="width:${stepInPercent}%;">
+					$r.render($stepLabel.stepLabelEl)
+					#if($f.hasExample($stepLabel.stepLabelEl.getComponent().getComponentName()))
+						<div class="help-block o_evaluation_example">
+							$r.render("${stepLabel.stepLabelEl.getComponent().getComponentName()}_EXAMPLE")
+						</div>
+					#end
+				</div>
+			#end
+		</div> </div>
 	</div>
 	#end
 
 	#foreach($slider in $sliders)
-	<div class="row o_slider_editor #if($r.isNotNull($slider.deleteButton) && $r.visible($slider.deleteButton)) o_slider_editor_delete #end">
-		<div class="col-sm-3">$r.render($slider.startLabelEl)</div>
-		<div class="col-sm-6 $slider.sliderCss">$r.render($slider.sliderEl)</div>
-		<div class="col-sm-3">$r.render($slider.endLabelEl)</div>
-		<div class="o_slider_editor_ud_button">$r.render($slider.upDown)</div>
-		#if($r.isNotNull($slider.deleteButton) && $r.visible($slider.deleteButton))<div class="o_slider_editor_delete_button">$r.render($slider.deleteButton)</div>#end
+	<div class="row o_slider_editor">
+		<div class="$colSliderStart">$r.render($slider.startLabelEl)</div>
+		<div class="$colSliderPreview $slider.sliderCss">$r.render($slider.sliderEl)</div>
+		<div class="$colSliderEnd">$r.render($slider.endLabelEl)</div>
+		<div class="$colSliderButtons">
+			<div class="pull-right">
+				$r.render($slider.upDown)
+				#if($r.isNotNull($slider.deleteButton) && $r.visible($slider.deleteButton))
+					$r.render($slider.deleteButton)
+				#end
+			</div>
+		</div>
 	</div>
 	#end
 	<div class="o_button_group">
