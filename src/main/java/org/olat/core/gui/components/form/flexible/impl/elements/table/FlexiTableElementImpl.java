@@ -1625,10 +1625,10 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			resetInternComponents();
 			if(dataModel instanceof FlexiTableDataSource) {
 				((FlexiTableDataSource<?>)dataModel).clear();
-				((FlexiTableDataSource<?>)dataModel).load(null, null, null, 0, getPageSize());
+				((FlexiTableDataSource<?>)dataModel).load(null, null, null, 0, getPageSize(), orderBy);
 			} else {
 				dataSource.clear();
-				dataSource.load(null, null, null, 0, getPageSize());
+				dataSource.load(null, null, null, 0, getPageSize(), orderBy);
 			}
 		} else {
 			getRootForm().fireFormEvent(ureq, new FlexiTableSearchEvent(this, FormEvent.ONCLICK));
@@ -1640,9 +1640,9 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		if(allSelectedNeedLoadOfWholeModel && dataSource != null) {
 			//ensure the whole data model is loaded
 			if(dataModel instanceof FlexiTableDataSource) {
-				((FlexiTableDataSource<?>)dataModel).load(getSearchText(), getSelectedFilters(), getConditionalQueries(), 0, -1);
+				((FlexiTableDataSource<?>)dataModel).load(getSearchText(), getSelectedFilters(), getConditionalQueries(), 0, -1, orderBy);
 			} else {
-				dataSource.load(getSearchText(), getSelectedFilters(), getConditionalQueries(), 0, -1);
+				dataSource.load(getSearchText(), getSelectedFilters(), getConditionalQueries(), 0, -1, orderBy);
 			}
 			
 			Set<Integer> allIndex = new HashSet<>();

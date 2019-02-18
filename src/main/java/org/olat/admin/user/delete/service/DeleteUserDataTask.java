@@ -34,6 +34,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.io.SystemFileFilter;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.CourseFactory;
@@ -42,6 +43,7 @@ import org.olat.course.PersistingCourseImpl;
 import org.olat.course.assessment.manager.CourseAssessmentManagerImpl;
 import org.olat.course.nodes.ProjectBrokerCourseNode;
 import org.olat.course.nodes.TACourseNode;
+import org.olat.course.nodes.pf.manager.PFManager;
 import org.olat.course.nodes.ta.DropboxController;
 import org.olat.course.nodes.ta.ReturnboxController;
 import org.olat.resource.OLATResource;
@@ -92,6 +94,49 @@ public class DeleteUserDataTask implements LowPriorityRunnable {
 			if (courseDir.isDirectory()) {
 				deleteAssessmentDocuments(identity, courseDir);
 				deleteDropboxReturnbox(identity, courseDir);
+				deleteParticipantFolder(identity, courseDir);
+				deleteGTasks(identity, courseDir);
+			}
+		}
+	}
+	
+	/**
+	 * /coursedir/participantfolder/{node}/{identityKey}
+	 * @param identity
+	 * @param courseDir
+	 */
+	private void deleteParticipantFolder(Identity identity, File courseDir) {
+		File participantFoldersDir = new File(courseDir, PFManager.FILENAME_PARTICIPANTFOLDER);
+		if(participantFoldersDir.exists()) {
+			File[] nodeDirs = participantFoldersDir.listFiles(new SystemFileFilter(false, true));
+			for(File nodeDir:nodeDirs) {
+				File userDir = new File(nodeDir, identity.getKey().toString());
+				if(userDir.exists()) {
+					FileUtils.deleteDirsAndFiles(userDir, true, true); 
+					log.audit("User-Deletion: identity=" + identity.getKey() +" : User file data deleted under dir=" + userDir.getAbsolutePath());
+				}
+			}
+		}
+	}
+	
+	/**
+	 * /coursedir/gtasks/{nodeId}/revisions/person_{identityKey}
+	 * @param identity
+	 * @param courseDir
+	 */
+	private void deleteGTasks(Identity identity, File courseDir) {
+		File gtasksDir = new File(courseDir, "gtasks");
+		if(gtasksDir.exists()) {
+			File[] nodeDirs = gtasksDir.listFiles(new SystemFileFilter(false, true));
+			for(File nodeDir:nodeDirs) {
+				File[] boxes = nodeDir.listFiles(new SystemFileFilter(false, true));
+				for(File box:boxes) {
+					File userDir = new File(box, "person_" + identity.getKey());
+					if(userDir.exists()) {
+						FileUtils.deleteDirsAndFiles(userDir, true, true); 
+						log.audit("User-Deletion: identity=" + identity.getKey() +" : User file data deleted under dir=" + userDir.getAbsolutePath());
+					}
+				}
 			}
 		}
 	}
@@ -99,7 +144,7 @@ public class DeleteUserDataTask implements LowPriorityRunnable {
 	private void deleteAssessmentDocuments(Identity identity, File courseDir) {
 		File assessmentDocsDir = new File(courseDir, CourseAssessmentManagerImpl.ASSESSMENT_DOCS_DIR);
 		if(assessmentDocsDir.exists()) {
-			File[] nodeDirs = assessmentDocsDir.listFiles();
+			File[] nodeDirs = assessmentDocsDir.listFiles(new SystemFileFilter(false, true));
 			for(File nodeDir:nodeDirs) {
 				File userDir = new File(nodeDir, "person_" + identity.getKey());
 				if(userDir.exists()) {
@@ -119,7 +164,7 @@ public class DeleteUserDataTask implements LowPriorityRunnable {
 			for (File dropboxReturnboxDir: dropboxReturnboxDirs) {
 				if(!dropboxReturnboxDir.exists()) continue;
 				
-				File[] nodeDirs = dropboxReturnboxDir.listFiles();
+				File[] nodeDirs = dropboxReturnboxDir.listFiles(new SystemFileFilter(false, true));
 				// 3. loop over all node-id e.g. 78933379704296
 				for (File nodeDir:nodeDirs) {
 					String currentNodeId = nodeDir.getName();
@@ -133,7 +178,7 @@ public class DeleteUserDataTask implements LowPriorityRunnable {
 						deleteUserDirectory(identity, nodeDir);
 					} else if (isProjectBrokerNode(currentCourse, currentNodeId)) {
 						// additional loop over project-id
-						File[] projectDirs = nodeDir.listFiles();
+						File[] projectDirs = nodeDir.listFiles(new SystemFileFilter(false, true));
 						for (File projectDir:projectDirs) {
 							deleteUserDirectory(identity, projectDir);
 						}

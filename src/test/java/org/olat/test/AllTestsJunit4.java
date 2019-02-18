@@ -310,6 +310,7 @@ import org.junit.runners.Suite;
 	org.olat.ims.qti21.pool.QTI12To21HtmlHandlerTest.class,
 	org.olat.ims.qti21.pool.QTI21QPoolServiceProviderTest.class,
 	org.olat.ims.qti21.repository.handlers.QTI21AssessmentTestHandlerTest.class,
+	org.olat.ims.qti21.statistics.TextEntryInteractionStatisticsTest.class,
 	org.olat.ims.qti21.model.xml.Onyx38ToQtiWorksAssessementItemsTest.class,
 	org.olat.ims.qti21.model.xml.OnyxToQtiWorksAssessementItemsTest.class,
 	org.olat.ims.qti21.model.xml.OnyxToQtiWorksAssessementTestsTest.class,
