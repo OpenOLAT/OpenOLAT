@@ -209,7 +209,8 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 				layoutCont.setRootForm(mainForm);
 				layoutCont.contextPut("elementDisplayName", aggregatedElement.getCurriculumElementView().getCurriculumElement().getDisplayName());
 				layoutCont.contextPut("elementIdentifier", aggregatedElement.getCurriculumElementView().getCurriculumElement().getIdentifier());
-				layoutCont.contextPut("closed", !openAll && !aggregatedElement.isNow());
+				layoutCont.contextPut("opened", openAll || aggregatedElement.isNow());
+				layoutCont.contextPut("titleSize", "4");
 				aggregatedElement.setTable(initTable(ureq,  layoutCont));
 			}
 		}
@@ -222,13 +223,17 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 		if(!aggregatedElements.isEmpty()) {
 			genericLayoutCont.contextPut("elementDisplayName", translate("lectures.without.curriculum"));
 		}
-		genericLayoutCont.contextPut("closed", Boolean.FALSE);
+		genericLayoutCont.contextPut("opened", Boolean.TRUE);
+		genericLayoutCont.contextPut("titleSize", "3");
 		genericTable = initTable(ureq, genericLayoutCont);
 		
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
 			layoutCont.contextPut("authorizedAbsenceEnabled", authorizedAbsenceEnabled);
 			layoutCont.contextPut("aggregatedElements", containerIds);
+			if(!aggregatedElements.isEmpty()) {
+				layoutCont.contextPut("aggregatedElementsTitle", translate("lectures.with.curriculum"));
+			}
 		}
 	}
 	

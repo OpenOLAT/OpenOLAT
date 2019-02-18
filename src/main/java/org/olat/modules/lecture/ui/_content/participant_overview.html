@@ -5,7 +5,7 @@
 #if(($r.isNotNull($withPrint) && $withPrint) || $r.available("log"))
 	<div class="o_button_group o_button_group_right">
 	#if($r.isNotNull($withPrint) && $withPrint)
-		<script type="text/javascript">
+		<script>
 /* <![CDATA[ */ 
 function print() {
 	try {
@@ -24,6 +24,9 @@ function print() {
 	#end
 	$r.contextHelpWithWrapper("Lectures - User view")
 	</div>
+#end
+#if($r.isNotEmpty($aggregatedElementsTitle))
+	<h3><i class="o_icon o_icon-fw o_icon_curriculum_element"> </i> $aggregatedElementsTitle</h3>
 #end
 #foreach($aggregatedElement in $aggregatedElements)
 	#if($r.visible($aggregatedElement))
