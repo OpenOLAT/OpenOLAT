@@ -364,6 +364,7 @@ public class LTIRunController extends BasicController {
 			Boolean skipLaunchPage = config.getBooleanEntry(BasicLTICourseNode.CONFIG_SKIP_LAUNCH_PAGE);
 			if(!ltiModule.isForceLaunchPage() && skipLaunchPage != null && skipLaunchPage.booleanValue()) {
 				// start the content immediately
+				courseNode.incrementUserAttempts(userCourseEnv, Role.user);
 				openBasicLTIContent(ureq);
 			} else {
 				// or show the start button
