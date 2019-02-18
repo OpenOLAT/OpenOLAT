@@ -31,6 +31,7 @@ import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.forms.model.xml.SessionInformations;
 import org.olat.modules.forms.model.xml.SingleChoice;
 import org.olat.modules.forms.model.xml.Spacer;
+import org.olat.modules.forms.model.xml.Table;
 import org.olat.modules.forms.model.xml.TextInput;
 import org.olat.modules.forms.model.xml.Title;
 
@@ -49,6 +50,7 @@ public class DefaultReportProvider implements EvaluationFormReportProvider {
 		handlers.put(Spacer.TYPE, new SpacerHandler());
 		handlers.put(HTMLRaw.TYPE, new HTMLRawHandler());
 		handlers.put(HTMLParagraph.TYPE, new HTMLParagraphHandler());
+		handlers.put(Table.TYPE, new TableHandler());
 		handlers.put(Rubric.TYPE, new RubricBarChartsHandler(false));
 		handlers.put(TextInput.TYPE, new TextInputLegendTextHandler());
 		handlers.put(FileUpload.TYPE, new FileUploadListingHandler());

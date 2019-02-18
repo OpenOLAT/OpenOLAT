@@ -47,6 +47,7 @@ import org.olat.modules.forms.handler.RubricHandler;
 import org.olat.modules.forms.handler.SessionInformationsHandler;
 import org.olat.modules.forms.handler.SingleChoiceHandler;
 import org.olat.modules.forms.handler.SpacerHandler;
+import org.olat.modules.forms.handler.TableHandler;
 import org.olat.modules.forms.handler.TextInputHandler;
 import org.olat.modules.forms.handler.TitleHandler;
 import org.olat.modules.forms.model.xml.AbstractElement;
@@ -135,6 +136,8 @@ public class EvaluationFormEditorController extends BasicController {
 			// handler for HTML code
 			HTMLRawHandler htmlHandler = new HTMLRawHandler();
 			handlers.add(htmlHandler);
+			TableHandler tableHandler = new TableHandler();
+			handlers.add(tableHandler);
 			// handler for rubric
 			RubricHandler rubricHandler = new RubricHandler(restrictedEdit);
 			handlers.add(rubricHandler);
@@ -161,6 +164,7 @@ public class EvaluationFormEditorController extends BasicController {
 				creationHandlers.add(titleRawHandler);
 				creationHandlers.add(hrHandler);
 				creationHandlers.add(htmlParagraphHandler);
+				creationHandlers.add(tableHandler);
 				creationHandlers.add(rubricHandler);
 				creationHandlers.add(textInputHandler);
 				creationHandlers.add(fileUploadhandler);

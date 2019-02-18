@@ -48,6 +48,7 @@ public class FormXStream {
 		xstream.alias("sessioninformations", SessionInformations.class);
 		xstream.alias("informationType", InformationType.class);
 		xstream.alias("disclaimer", Disclaimer.class);
+		xstream.alias("table", Table.class);
 	}
 	
 	public static XStream getXStream() {
