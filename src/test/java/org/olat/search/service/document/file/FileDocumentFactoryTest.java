@@ -89,6 +89,8 @@ public class FileDocumentFactoryTest extends OlatTestCase {
 
 		Assert.assertTrue("DOC must be supported", fileDocumentFactory.isFileSupported(getVFSFile("test2.DOC")));
 		Assert.assertTrue("doc must be supported", fileDocumentFactory.isFileSupported(getVFSFile("test.doc")));
+		
+		Assert.assertTrue("doc must be supported", fileDocumentFactory.isFileSupported(getVFSFile("Test_word_indexing.docx")));
 
 		Assert.assertTrue("TXT must be supported", fileDocumentFactory.isFileSupported("test.TXT"));
 		Assert.assertTrue("txt must be supported", fileDocumentFactory.isFileSupported("test.txt"));

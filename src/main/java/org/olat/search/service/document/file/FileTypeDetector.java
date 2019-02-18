@@ -25,7 +25,6 @@ import java.io.InputStream;
 
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.VFSLeaf;
 
 /**
@@ -52,20 +51,18 @@ public class FileTypeDetector {
 			throw new DocumentNotImplementedException("I cannot detect the document suffix (marked with '.') for " + fileName);
 		}
 		String suffix = fileName.substring(dotpos+1).toLowerCase();
-		if("doc".equals(suffix)) {
-			if(checkMagicBytes(leaf, ZIP)) return "docx";
-		} else if("xls".equals(suffix)) {
-			if(checkMagicBytes(leaf, ZIP)) return "xlsx";
-		} else if("ppt".equals(suffix)) {
-			if(checkMagicBytes(leaf, ZIP)) return "pptx";
+		if("doc".equals(suffix) && checkMagicBytes(leaf, ZIP)) {
+			return "docx";
+		} else if("xls".equals(suffix) && checkMagicBytes(leaf, ZIP)) {
+			return "xlsx";
+		} else if("ppt".equals(suffix) && checkMagicBytes(leaf, ZIP)) {
+			return "pptx";
 		}
 		return suffix;
 	}
 	
 	public static boolean checkMagicBytes(VFSLeaf leaf, String reference) {
-		InputStream in = null;
-		try {
-			in = leaf.getInputStream();
+		try(InputStream in = leaf.getInputStream()) {
 			byte[] buffer = new byte[50];
 			int n = in.read(buffer);
 			if (n > 0) {
@@ -78,8 +75,6 @@ public class FileTypeDetector {
 			}
 		} catch (IOException e) {
 			log.warn("", e);
-		} finally {
-			FileUtils.closeSafely(in);
 		}
 		return false;
 	}
