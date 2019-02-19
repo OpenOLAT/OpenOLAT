@@ -20,6 +20,7 @@
 package org.olat.basesecurity;
 
 import java.util.List;
+import java.util.Locale;
 
 import org.olat.core.id.Identity;
 
@@ -45,6 +46,8 @@ public interface IdentityRelationshipService {
 	public List<RelationRole> getAvailableRoles();
 	
 	public List<RelationRight> getAvailableRights();
+	
+	public String getTranslatedName(RelationRight right, Locale locale);
 	
 	public boolean isInUse(RelationRole relationRole);
 	

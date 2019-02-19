@@ -21,12 +21,16 @@ package org.olat.basesecurity.manager;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+
+import javax.annotation.PostConstruct;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.IdentityRelationshipService;
 import org.olat.basesecurity.IdentityToIdentityRelation;
 import org.olat.basesecurity.IdentityToIdentityRelationManagedFlag;
 import org.olat.basesecurity.RelationRight;
+import org.olat.basesecurity.RelationRightProvider;
 import org.olat.basesecurity.RelationRole;
 import org.olat.basesecurity.RelationRoleManagedFlag;
 import org.olat.core.id.Identity;
@@ -49,6 +53,16 @@ public class IdentityRelationshipServiceImpl implements IdentityRelationshipServ
 	@Autowired
 	private IdentityToIdentityRelationDAO identityRelationshipDao;
 	
+	@Autowired
+	private List<RelationRightProvider> relationRightProviders;
+	
+	@PostConstruct
+	void ensureRightsExists() {
+		for (RelationRightProvider relationRightProvider : relationRightProviders) {
+			relationRightDao.ensureRightExists(relationRightProvider.getRight());
+		}
+	}
+	
 	@Override
 	public RelationRole createRole(String role, List<RelationRight> rights) {
 		RelationRole relationRole = relationRoleDao.createRelationRole(role, null, null, null);
@@ -67,8 +81,6 @@ public class IdentityRelationshipServiceImpl implements IdentityRelationshipServ
 		}
 		return relationRole;
 	}
-
-
 
 	@Override
 	public RelationRole updateRole(RelationRole relationRole, List<RelationRight> rights) {
@@ -91,6 +103,21 @@ public class IdentityRelationshipServiceImpl implements IdentityRelationshipServ
 	@Override
 	public List<RelationRight> getAvailableRights() {
 		return relationRightDao.loadRelationRights();
+	}
+
+	@Override
+	public String getTranslatedName(RelationRight right, Locale locale) {
+		RelationRightProvider provider = getRelationRightProvider(right);
+		return provider != null? provider.getTranslatedName(locale): "???";
+	}
+
+	private RelationRightProvider getRelationRightProvider(RelationRight right) {
+		for (RelationRightProvider provider : relationRightProviders) {
+			if (provider.getRight().equals(right.getRight())) {
+				return provider;
+			}
+		}
+		return null;
 	}
 
 	@Override

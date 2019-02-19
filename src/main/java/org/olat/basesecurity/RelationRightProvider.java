@@ -17,16 +17,20 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.user.ui.role;
+package org.olat.basesecurity;
+
+import java.util.Locale;
 
 /**
  * 
- * Initial date: 29 janv. 2019<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial date: 19 Feb 2019<br>
+ * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class RelationRolesAndRightsUIFactory {
-	
-	public static final String TRANS_ROLE_PREFIX = "relation.role.";
+public interface RelationRightProvider {
 
+	public String getRight();
+	
+	public String getTranslatedName(Locale locale);
+	
 }

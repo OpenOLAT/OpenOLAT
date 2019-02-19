@@ -27,7 +27,6 @@ package org.olat.course;
 
 import java.util.HashMap;
 
-import org.olat.basesecurity.manager.RelationRightDAO;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.id.Identity;
@@ -37,7 +36,6 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.AssessmentManager;
-import org.olat.course.groupsandrights.CourseRightsEnum;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,9 +73,6 @@ public class CourseModule extends AbstractSpringModule {
 	public static final OLATResourceable ORESOURCEABLE_TYPE_COURSE = OresHelper.lookupType(CourseModule.class);
 	public static final String ORES_COURSE_ASSESSMENT = OresHelper.calculateTypeName(AssessmentManager.class);
 	
-	@Autowired
-	private RelationRightDAO relationRightDao;
-	
 	private static CoordinatorManager coordinatorManager;
 
 	@Autowired
@@ -102,14 +97,6 @@ public class CourseModule extends AbstractSpringModule {
 	@Override
 	public void init() {
 		initFromChangedProperties();
-		initCourseRights();
-	}
-	
-	/**
-	 * Initialize the course rights for user to user relations.
-	 */
-	private void initCourseRights() {
-		relationRightDao.ensureRightsExists(CourseRightsEnum.class);
 	}
 	
 	/**

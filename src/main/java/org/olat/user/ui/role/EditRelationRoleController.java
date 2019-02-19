@@ -81,7 +81,7 @@ public class EditRelationRoleController extends FormBasicController {
 		String[] rightValues = new String[rights.size()];
 		for(int i=rights.size(); i-->0; ) {
 			rightKeys[i] = rights.get(i).getRight();
-			rightValues[i] = translate(RelationRolesAndRightsUIFactory.TRANS_RIGHT_PREFIX.concat(rights.get(i).getRight()));
+			rightValues[i] = identityRelationsService.getTranslatedName(rights.get(i), getLocale());
 		}
 		rightsEl = uifactory.addCheckboxesVertical("role.rights", formLayout, rightKeys, rightValues, 2);
 		rightsEl.setEnabled(!RelationRoleManagedFlag.isManaged(relationRole, RelationRoleManagedFlag.rights));

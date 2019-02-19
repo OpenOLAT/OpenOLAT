@@ -17,16 +17,33 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.user.ui.role;
+package org.olat.course.groupsandrights;
+
+import java.util.Locale;
+
+import org.olat.basesecurity.RelationRightProvider;
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Util;
+import org.springframework.stereotype.Component;
 
 /**
  * 
- * Initial date: 29 janv. 2019<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial date: 19 Feb 2019<br>
+ * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class RelationRolesAndRightsUIFactory {
-	
-	public static final String TRANS_ROLE_PREFIX = "relation.role.";
+@Component
+public class ViewEfficiencyStatementRightProvider implements RelationRightProvider {
+
+	@Override
+	public String getRight() {
+		return CourseRightsEnum.viewEfficiencyStatement.name();
+	}
+
+	@Override
+	public String getTranslatedName(Locale locale) {
+		Translator translator = Util.createPackageTranslator(GroupsAndRightsController.class, locale);
+		return translator.translate("relation.right.viewCourseCalendar");
+	}
 
 }
