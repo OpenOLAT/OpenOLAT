@@ -170,7 +170,7 @@ public class LecturesListController extends FormBasicController {
 	}
 
 	private void doExportStatistics(UserRequest ureq) {
-		LecturesStatisticsExport export = new LecturesStatisticsExport(statistics, userPropertyHandlers, isAdministrativeUser, getTranslator());
+		LecturesStatisticsExport export = new LecturesStatisticsExport(statistics, null, null, userPropertyHandlers, isAdministrativeUser, getTranslator());
 		ureq.getDispatchResult().setResultingMediaResource(export);
 	}
 	

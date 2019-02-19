@@ -34,9 +34,13 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
+import org.olat.core.util.Formatter;
+import org.olat.core.util.Util;
+import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.ui.CurriculumComposerController;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureRateWarning;
 import org.olat.modules.lecture.LectureService;
@@ -80,7 +84,7 @@ public class CurriculumElementLecturesController extends BasicController {
 	
 	public CurriculumElementLecturesController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
 			CurriculumElement element, CurriculumSecurityCallback secCallback) {
-		super(ureq, wControl);
+		super(ureq, wControl, Util.createPackageTranslator(CurriculumComposerController.class, ureq.getLocale()));
 
 		Roles roles = ureq.getUserSession().getRoles();
 		adminProps = securityModule.isUserAllowedAdminProps(roles);
@@ -100,20 +104,34 @@ public class CurriculumElementLecturesController extends BasicController {
 		calculateWarningRates(rawStatistics, aggregatedStatistics);
 		
 		List<RepositoryEntryRef> filterByEntry = new ArrayList<>(entries);
-
+		
+		Curriculum curriculum = element.getCurriculum();
 		lecturesListCtlr = new LecturesListController(ureq, getWindowControl(), toolbarPanel,
-				aggregatedStatistics, filterByEntry, userPropertyHandlers, PROPS_IDENTIFIER);
+				aggregatedStatistics, filterByEntry, curriculum, element, userPropertyHandlers, PROPS_IDENTIFIER);
 		listenTo(lecturesListCtlr);
 		
 		VelocityContainer mainVC = createVelocityContainer("curriculum_lectures");
 		mainVC.put("lectures", lecturesListCtlr.getInitialComponent());
 		mainVC.contextPut("elementName", element.getDisplayName());
 		mainVC.contextPut("elementIdentifier", element.getIdentifier());
-		mainVC.contextPut("curriculumName", element.getCurriculum().getDisplayName());
-		mainVC.contextPut("curriculumIdentifier", element.getCurriculum().getIdentifier());
+		Formatter formatter = Formatter.getInstance(getLocale());
+		if(element.getBeginDate() != null) {
+			mainVC.contextPut("elementBegin", formatter.formatDate(element.getBeginDate()));
+		}
+		if(element.getEndDate() != null) {
+			mainVC.contextPut("elementEnd", formatter.formatDate(element.getEndDate()));
+		}
+		mainVC.contextPut("curriculumName", curriculum.getDisplayName());
+		mainVC.contextPut("curriculumIdentifier", curriculum.getIdentifier());
+		
+		List<CurriculumElement> parentLine = curriculumService.getCurriculumElementParentLine(element);
+		parentLine.remove(element);
+		mainVC.contextPut("parentLine", parentLine);
 
 		putInitialPanel(mainVC);
 	}
+	
+	
 	
 	private void calculateWarningRates(List<LectureBlockIdentityStatistics> rawStatistics, List<LectureBlockIdentityStatistics> aggregatedStatistics) {
 		List<IdentityRateWarning> warnings = lectureService.groupRateWarning(rawStatistics);

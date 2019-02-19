@@ -33,6 +33,8 @@ import org.olat.core.util.openxml.OpenXMLWorkbook;
 import org.olat.core.util.openxml.OpenXMLWorkbookResource;
 import org.olat.core.util.openxml.OpenXMLWorksheet;
 import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
+import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.LectureBlockIdentityStatistics;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -51,13 +53,28 @@ public class LecturesStatisticsExport extends OpenXMLWorkbookResource {
 	private final boolean isAdministrativeUser;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private final List<LectureBlockIdentityStatistics> statistics;
+	private final Curriculum curriculum;
+	private final CurriculumElement curriculumElement;
+	
 	private final LectureService lectureService;
 	
+	/**
+	 * 
+	 * @param statistics The raw statistics
+	 * @param curriculum Add a title line
+	 * @param curriculumElement Add a title line
+	 * @param userPropertyHandlers The list of user property handlers
+	 * @param isAdministrativeUser If the user which initiated the download has administrative rights
+	 * @param translator the translator
+	 */
 	public LecturesStatisticsExport(List<LectureBlockIdentityStatistics> statistics,
+			Curriculum curriculum, CurriculumElement curriculumElement,
 			List<UserPropertyHandler> userPropertyHandlers, boolean isAdministrativeUser, Translator translator) {
 		super(label());
 		this.translator = translator;
 		this.statistics = statistics;
+		this.curriculum = curriculum;
+		this.curriculumElement = curriculumElement;
 		this.isAdministrativeUser = isAdministrativeUser;
 		this.userPropertyHandlers = userPropertyHandlers;
 		lectureService = CoreSpringFactory.getImpl(LectureService.class);
@@ -72,16 +89,33 @@ public class LecturesStatisticsExport extends OpenXMLWorkbookResource {
 	protected void generate(OutputStream out) {
 		try(OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, 2)) {
 			OpenXMLWorksheet exportSheet = workbook.nextWorksheet();
-			exportSheet.setHeaderRows(1);
+			exportSheet.setHeaderRows(curriculum == null ? 1 : 2);
+			addHeadersCurriculum(exportSheet, workbook);
 			addHeadersAggregated(exportSheet);
 			addContentAggregated(exportSheet, workbook);
 			
 			exportSheet = workbook.nextWorksheet();
-			exportSheet.setHeaderRows(1);
+			exportSheet.setHeaderRows(curriculum == null ? 1 : 2);
+			addHeadersCurriculum(exportSheet, workbook);
 			addHeadersDetailled(exportSheet);
 			addContentDetailled(exportSheet, workbook);
 		} catch (IOException e) {
 			log.error("", e);
+		}
+	}
+	
+	private void addHeadersCurriculum(OpenXMLWorksheet exportSheet, OpenXMLWorkbook workbook) {
+		if(curriculum == null) return;
+		
+		Row headerRow = exportSheet.newRow();
+		headerRow.addCell(0, "Curriculum", workbook.getStyles().getHeaderStyle());
+		headerRow.addCell(1, curriculum.getDisplayName());
+		headerRow.addCell(2, curriculum.getIdentifier());
+		
+		if(curriculumElement != null) {
+			headerRow.addCell(3, "Element", workbook.getStyles().getHeaderStyle());
+			headerRow.addCell(4, curriculumElement.getDisplayName());
+			headerRow.addCell(5, curriculumElement.getIdentifier());
 		}
 	}
 	

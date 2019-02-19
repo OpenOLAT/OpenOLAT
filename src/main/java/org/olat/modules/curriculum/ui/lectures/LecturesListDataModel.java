@@ -23,11 +23,14 @@ import java.util.List;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ExportableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableFooterModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.modules.lecture.model.AggregatedLectureBlocksStatistics;
 import org.olat.modules.lecture.model.LectureBlockIdentityStatistics;
@@ -39,14 +42,16 @@ import org.olat.modules.lecture.model.LectureBlockIdentityStatistics;
  *
  */
 public class LecturesListDataModel extends DefaultFlexiTableDataModel<LectureBlockIdentityStatistics>
-implements SortableFlexiTableDataModel<LectureBlockIdentityStatistics>, FlexiTableFooterModel {
+implements SortableFlexiTableDataModel<LectureBlockIdentityStatistics>, FlexiTableFooterModel, ExportableFlexiTableDataModel {
 	
 	private final Translator translator;
 	private AggregatedLectureBlocksStatistics totalStatistics;
+	private final ExportableFlexiTableDataModel exportDelegate;
 	
-	public LecturesListDataModel(FlexiTableColumnModel columnModel, Translator translator) {
+	public LecturesListDataModel(ExportableFlexiTableDataModel exportDelegate, FlexiTableColumnModel columnModel, Translator translator) {
 		super(columnModel);
 		this.translator = translator;
+		this.exportDelegate = exportDelegate;
 	}
 
 	@Override
@@ -55,6 +60,11 @@ implements SortableFlexiTableDataModel<LectureBlockIdentityStatistics>, FlexiTab
 			= new SortableFlexiTableModelDelegate<>(orderBy, this, null);
 		List<LectureBlockIdentityStatistics> views = sorter.sort();
 		super.setObjects(views);
+	}
+
+	@Override
+	public MediaResource export(FlexiTableComponent ftC) {
+		return exportDelegate.export(ftC);
 	}
 
 	@Override
@@ -117,7 +127,7 @@ implements SortableFlexiTableDataModel<LectureBlockIdentityStatistics>, FlexiTab
 	
 	@Override
 	public DefaultFlexiTableDataModel<LectureBlockIdentityStatistics> createCopyWithEmptyList() {
-		return new LecturesListDataModel(getTableColumnModel(), translator);
+		return new LecturesListDataModel(exportDelegate, getTableColumnModel(), translator);
 	}
 	
 	public enum StatsCols implements FlexiSortableColumnDef {

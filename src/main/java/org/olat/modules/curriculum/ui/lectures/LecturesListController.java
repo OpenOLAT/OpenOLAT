@@ -27,21 +27,24 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ExportableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
-import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
+import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.ui.lectures.LecturesListDataModel.StatsCols;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureService;
@@ -63,11 +66,10 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class LecturesListController extends FormBasicController {
+public class LecturesListController extends FormBasicController implements ExportableFlexiTableDataModel {
 	
 	public static final int USER_PROPS_OFFSET = 500;
 	
-	private FormLink exportButton;
 	private FlexiTableElement tableEl;
 	private LecturesListDataModel tableModel;
 	private TooledStackedPanel toolbarPanel;
@@ -75,6 +77,8 @@ public class LecturesListController extends FormBasicController {
 	private final String propsIdentifier;
 	private final boolean isAdministrativeUser;
 	private final boolean authorizedAbsenceEnabled;
+	private final Curriculum curriculum;
+	private final CurriculumElement curriculumElement;
 	private final List<RepositoryEntryRef> filterByEntries;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private final List<LectureBlockIdentityStatistics> statistics;
@@ -94,6 +98,7 @@ public class LecturesListController extends FormBasicController {
 	
 	public LecturesListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
 			List<LectureBlockIdentityStatistics> statistics, List<RepositoryEntryRef> filterByEntries,
+			Curriculum curriculum, CurriculumElement curriculumElement,
 			List<UserPropertyHandler> userPropertyHandlers, String propsIdentifier) {
 		super(ureq, wControl, "curriculum_lectures_table", Util.createPackageTranslator(LectureRepositoryAdminController.class, ureq.getLocale()));
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
@@ -101,6 +106,8 @@ public class LecturesListController extends FormBasicController {
 		this.statistics = statistics;
 		this.filterByEntries = filterByEntries;
 		this.propsIdentifier = propsIdentifier;
+		this.curriculum = curriculum;
+		this.curriculumElement = curriculumElement;
 		this.userPropertyHandlers = userPropertyHandlers;
 		authorizedAbsenceEnabled = lectureModule.isAuthorizedAbsenceEnabled();
 		Roles roles = ureq.getUserSession().getRoles();
@@ -110,9 +117,6 @@ public class LecturesListController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		exportButton = uifactory.addFormLink("export", formLayout, Link.BUTTON);
-		exportButton.setIconLeftCSS("o_icon o_icon_download");
-		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, StatsCols.id));
 		
@@ -146,7 +150,7 @@ public class LecturesListController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(warningCol);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(StatsCols.currentRate, new PercentCellRenderer()));
 		
-		tableModel = new LecturesListDataModel(columnsModel, getTranslator());
+		tableModel = new LecturesListDataModel(this, columnsModel, getTranslator());
 		AggregatedLectureBlocksStatistics total = lectureService.aggregatedStatistics(statistics);
 		tableModel.setObjects(statistics, total);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
@@ -175,15 +179,14 @@ public class LecturesListController extends FormBasicController {
 					doSelectAssessedIdentity(ureq, row);
 				}
 			}
-		} else if(source == exportButton) {
-			doExportStatistics(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
-
-	private void doExportStatistics(UserRequest ureq) {
-		LecturesStatisticsExport export = new LecturesStatisticsExport(statistics, userPropertyHandlers, isAdministrativeUser, getTranslator());
-		ureq.getDispatchResult().setResultingMediaResource(export);
+	
+	@Override
+	public MediaResource export(FlexiTableComponent ftC) {
+		return new LecturesStatisticsExport(statistics, curriculum, curriculumElement,
+				userPropertyHandlers, isAdministrativeUser, getTranslator());
 	}
 	
 	private void doSelectAssessedIdentity(UserRequest ureq, LectureBlockIdentityStatistics row) {
