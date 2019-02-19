@@ -207,7 +207,6 @@ public class ExportBinderAsPDFResource implements MediaResource {
 		String html = createResultHTML(content);
 		
 		File indexHtml = new File(outputDir, "index.html");
-		exportCSSAndJs(outputDir);
 		html = exportMedia(html, outputDir);
 		try(OutputStream out= new FileOutputStream(indexHtml)) {
 			IOUtils.write(html, out, "UTF-8");
@@ -223,29 +222,18 @@ public class ExportBinderAsPDFResource implements MediaResource {
 		VelocityContainer mainVC = new VelocityContainer("html", pagePath, translator, null);
 		mainVC.put("cmp", content);
 		mainVC.contextPut("bodyCssClass", "o_portfolio_export");
-		
-		StringOutput sb = new StringOutput(32000);
+
 		URLBuilder ubu = new URLBuilder("auth", "1", "0");
 		Renderer renderer = Renderer.getInstance(mainVC, translator, ubu, new RenderResult(), new DefaultGlobalSettings());
-		VelocityRenderDecorator vrdec = new VelocityRenderDecorator(renderer, mainVC, sb);
-		mainVC.contextPut("r", vrdec);
-		renderer.render(sb, mainVC, null);
-		return sb.toString();
-	}
-	
-	private void exportCSSAndJs(File outputDir) {
-		//Copy resource files or file trees to export file tree 
-		File sasstheme = new File(WebappHelper.getContextRealPath("/static/themes/light"));
-		File lightDir = new File(new File(outputDir.getAbsolutePath(), "css"), "offline");
-		FileUtils.copyDirToDir(sasstheme, lightDir, "Copy theme");
-		
-		File fontawesome = new File(WebappHelper.getContextRealPath("/static/font-awesome"));
-		File fontDir = new File(outputDir, "css");
-		FileUtils.copyDirToDir(fontawesome, fontDir, "Copy font awesome");
-		
-		File js = new File(WebappHelper.getContextRealPath("/static/js/jquery/"));
-		File jsDir = new File(outputDir, "js");
-		FileUtils.copyDirToDir(js, jsDir, "Copy javascripts");
+		try(StringOutput sb = new StringOutput(32000);
+				VelocityRenderDecorator vrdec = new VelocityRenderDecorator(renderer, mainVC, sb)) {
+			mainVC.contextPut("r", vrdec);
+			renderer.render(sb, mainVC, null);
+			return sb.toString();
+		} catch(IOException e) {
+			log.error("", e);
+			return "";
+		}
 	}
 	
 	public String exportMedia(String html, File outputDir) {
@@ -258,8 +246,6 @@ public class ExportBinderAsPDFResource implements MediaResource {
 			 for(Map.Entry<String,String> replacement:replaces.entrySet()) {
 				 html = html.replace(replacement.getKey(), replacement.getValue());
 			 }
-		} catch (SAXException | IOException e) {
-			log.error("", e);
 		} catch (Exception e) {
 			log.error("", e);
 		}

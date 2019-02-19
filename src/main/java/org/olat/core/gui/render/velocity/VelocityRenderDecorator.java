@@ -50,6 +50,7 @@ import org.olat.core.gui.render.StringOutputPool;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.gui.util.CSSHelper;
+import org.olat.core.helpers.GUISettings;
 import org.olat.core.helpers.Settings;
 import org.olat.core.util.ArrayHelper;
 import org.olat.core.util.CodeHelper;
@@ -354,6 +355,21 @@ public class VelocityRenderDecorator implements Closeable {
 	public StringOutput staticLink(String uri) {
 		StringOutput sb = new StringOutput(100);
 		Renderer.renderStaticURI(sb, uri);
+		return sb;
+	}
+	
+	public StringOutput staticFullLink(String uri) {
+		StringOutput sb = new StringOutput(100);
+		sb.append(Settings.createServerURI());
+		Renderer.renderStaticURI(sb, uri);
+		return sb;
+	}
+	
+	public StringOutput themeFullLink() {
+		StringOutput sb = new StringOutput(100);
+		sb.append(Settings.createServerURI());	
+		GUISettings settings = CoreSpringFactory.getImpl(GUISettings.class);
+		Renderer.renderStaticURI(sb, "themes/" + settings.getGuiThemeIdentifyer() + "/theme.css");
 		return sb;
 	}
 	

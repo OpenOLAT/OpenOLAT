@@ -375,13 +375,17 @@ public class ExportBinderAsCPResource implements MediaResource {
 	}
 	
 	private String renderVelocityContainer(VelocityContainer mainVC) {
-		StringOutput sb = new StringOutput(32000);
 		URLBuilder ubu = new URLBuilder("auth", "1", "0");
 		Renderer renderer = Renderer.getInstance(mainVC, translator, ubu, new RenderResult(), new DefaultGlobalSettings());
-		VelocityRenderDecorator vrdec = new VelocityRenderDecorator(renderer, mainVC, sb);
-		mainVC.contextPut("r", vrdec);
-		renderer.render(sb, mainVC, null);
-		return sb.toString();
+		try(StringOutput sb = new StringOutput(32000);
+				VelocityRenderDecorator vrdec = new VelocityRenderDecorator(renderer, mainVC, sb)) {
+			mainVC.contextPut("r", vrdec);
+			renderer.render(sb, mainVC, null);
+			return sb.toString();
+		} catch(IOException e) {
+			log.error("", e);
+			return null;
+		}
 	}
 	
 	private void convertToZipEntry(ZipOutputStream zout, String link, String content) throws IOException {
