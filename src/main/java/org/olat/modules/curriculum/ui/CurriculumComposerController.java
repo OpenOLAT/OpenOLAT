@@ -140,6 +140,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		managed = CurriculumManagedFlag.isManaged(curriculum, CurriculumManagedFlag.members);
 		
 		initForm(ureq);
+		toolbarPanel.addListener(this);
 		if(tableEl.getSelectedFilterValue() == null) {
 			tableEl.setSelectedFilterKey("active");
 		}
@@ -271,7 +272,9 @@ public class CurriculumComposerController extends FormBasicController implements
 
 	@Override
 	protected void doDispose() {
-		//
+		if(!toolbarPanel.isToolbarEnabled()) {
+			toolbarPanel.setToolbarEnabled(true);
+		}
 	}
 	
 	private void loadModel() {
@@ -399,6 +402,10 @@ public class CurriculumComposerController extends FormBasicController implements
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(newElementButton == source) {
 			doNewCurriculumElement(ureq);
+		} else if(toolbarPanel == source) {
+			if(!toolbarPanel.isToolbarEnabled()) {
+				toolbarPanel.setToolbarEnabled(true);
+			}
 		}
 		super.event(ureq, source, event);
 	}
@@ -512,6 +519,7 @@ public class CurriculumComposerController extends FormBasicController implements
 			tableEl.reloadData();
 			showWarning("warning.curriculum.element.deleted");
 		} else {
+			toolbar(false);
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance(CurriculumElement.class, row.getKey()), null);
 			EditCurriculumElementOverviewController editCtrl = new EditCurriculumElementOverviewController(ureq, swControl, element, curriculum, secCallback);
 			listenTo(editCtrl);
@@ -622,6 +630,7 @@ public class CurriculumComposerController extends FormBasicController implements
 	
 	private void doOpenCalendars(UserRequest ureq, CurriculumElementRow row) {
 		removeAsListenerAndDispose(calendarsCtrl);
+		toolbar(false);
 		
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Calendars", row.getKey());
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
@@ -633,6 +642,7 @@ public class CurriculumComposerController extends FormBasicController implements
 	
 	private void doOpenLectures(UserRequest ureq, CurriculumElementRow row) {
 		removeAsListenerAndDispose(lecturesCtrl);
+		toolbar(false);
 		
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Lectures", row.getKey());
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
@@ -660,6 +670,10 @@ public class CurriculumComposerController extends FormBasicController implements
 		if(!NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl())) {
 			tableEl.reloadData();
 		}
+	}
+	
+	private void toolbar(boolean enable) {
+		toolbarPanel.setToolbarEnabled(enable);
 	}
 	
 	private class ToolsController extends BasicController {

@@ -55,9 +55,9 @@ public class TooledStackedPanelRenderer extends DefaultComponentRenderer {
 		String mainCssClass = panel.getCssClass();
 		sb.append("<div id='o_c").append(source.getDispatchID()).append("' class='").append(mainCssClass, mainCssClass != null).append("'>");
 		
-		if((panel.isBreadcrumbEnabled() && breadCrumbs.size() > panel.getInvisibleCrumb()) || (tools.size() > 0 && panel.isToolbarEnabled())) {
+		if((panel.isBreadcrumbEnabled() && breadCrumbs.size() > panel.getInvisibleCrumb()) || (!tools.isEmpty() && panel.isToolbarEnabled())) {
 			sb.append("<div id='o_main_toolbar' class='o_toolbar");
-			if ((panel.isToolbarAutoEnabled() || panel.isToolbarEnabled() ) && getTools(tools, Align.segment).size() > 0) {
+			if ((panel.isToolbarAutoEnabled() || panel.isToolbarEnabled() ) && !getTools(tools, Align.segment).isEmpty()) {
 				sb.append(" o_toolbar_with_segments");
 			}
 			sb.append("'>");
@@ -96,37 +96,36 @@ public class TooledStackedPanelRenderer extends DefaultComponentRenderer {
 				List<Tool> notAlignedTools = getTools(tools, null);
 				
 				if(panel.isToolbarEnabled() || (panel.isToolbarAutoEnabled()
-						&& (leftTools.size() > 0 || rightTools.size() > 0 || rightTools.size() > 0 || notAlignedTools.size() > 0 || segmentsTools.size() > 0))) {
+						&& (!leftTools.isEmpty() || !rightTools.isEmpty() || !rightTools.isEmpty() || !notAlignedTools.isEmpty() || !segmentsTools.isEmpty()))) {
 					sb.append("<div class='o_tools_container'><div class='container-fluid'>");
 					
-					if(leftTools.size() > 0) {
+					if(!leftTools.isEmpty()) {
 						sb.append("<ul class='o_tools o_tools_left list-inline'>");
 						renderTools(leftTools, renderer, sb, args);
 						sb.append("</ul>");
 					}
 					
-					if(rightEdgeTools.size() > 0) {
+					if(!rightEdgeTools.isEmpty()) {
 						sb.append("<ul class='o_tools o_tools_right_edge list-inline'>");
 						renderTools(rightEdgeTools, renderer, sb, args);
 						sb.append("</ul>");
 					}
 
-					if(rightTools.size() > 0) {
+					if(!rightTools.isEmpty()) {
 						sb.append("<ul class='o_tools o_tools_right list-inline'>");
 						renderTools(rightTools, renderer, sb, args);
 						sb.append("</ul>");
 					}
 
-					if(notAlignedTools.size() > 0) {
+					if(!notAlignedTools.isEmpty()) {
 						sb.append("<ul class='o_tools o_tools_center list-inline'>");
 						renderTools(notAlignedTools, renderer, sb, args);
 						sb.append("</ul>");
 					}
 					sb.append("</div>"); // container-fluid,
 					
-					if(segmentsTools.size() > 0) {
-						boolean segmentAlone = leftTools.isEmpty() && rightTools.isEmpty()
-								&& rightTools.isEmpty() && notAlignedTools.isEmpty();
+					if(!segmentsTools.isEmpty()) {
+						boolean segmentAlone = leftTools.isEmpty() && rightTools.isEmpty() && notAlignedTools.isEmpty();
 						sb.append("<ul class='o_tools o_tools_segments list-inline")
 						  .append(" o_tools_segments_alone", segmentAlone).append("'>");
 						

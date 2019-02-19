@@ -131,8 +131,6 @@ public class CurriculumElementLecturesController extends BasicController {
 		putInitialPanel(mainVC);
 	}
 	
-	
-	
 	private void calculateWarningRates(List<LectureBlockIdentityStatistics> rawStatistics, List<LectureBlockIdentityStatistics> aggregatedStatistics) {
 		List<IdentityRateWarning> warnings = lectureService.groupRateWarning(rawStatistics);
 		if(warnings.isEmpty()) return;
