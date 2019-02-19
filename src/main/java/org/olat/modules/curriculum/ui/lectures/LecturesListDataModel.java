@@ -20,10 +20,13 @@
 package org.olat.modules.curriculum.ui.lectures;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.ExportableFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FilterableFlexiTableModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
@@ -32,6 +35,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
+import org.olat.modules.lecture.LectureRateWarning;
 import org.olat.modules.lecture.model.AggregatedLectureBlocksStatistics;
 import org.olat.modules.lecture.model.LectureBlockIdentityStatistics;
 
@@ -42,11 +46,14 @@ import org.olat.modules.lecture.model.LectureBlockIdentityStatistics;
  *
  */
 public class LecturesListDataModel extends DefaultFlexiTableDataModel<LectureBlockIdentityStatistics>
-implements SortableFlexiTableDataModel<LectureBlockIdentityStatistics>, FlexiTableFooterModel, ExportableFlexiTableDataModel {
+implements SortableFlexiTableDataModel<LectureBlockIdentityStatistics>, FlexiTableFooterModel,
+		FilterableFlexiTableModel, ExportableFlexiTableDataModel {
 	
 	private final Translator translator;
 	private AggregatedLectureBlocksStatistics totalStatistics;
 	private final ExportableFlexiTableDataModel exportDelegate;
+
+	private List<LectureBlockIdentityStatistics> backups;
 	
 	public LecturesListDataModel(ExportableFlexiTableDataModel exportDelegate, FlexiTableColumnModel columnModel, Translator translator) {
 		super(columnModel);
@@ -60,6 +67,18 @@ implements SortableFlexiTableDataModel<LectureBlockIdentityStatistics>, FlexiTab
 			= new SortableFlexiTableModelDelegate<>(orderBy, this, null);
 		List<LectureBlockIdentityStatistics> views = sorter.sort();
 		super.setObjects(views);
+	}
+
+	@Override
+	public void filter(String searchString, List<FlexiTableFilter> filters) {
+		if(filters != null && !filters.isEmpty() && filters.get(0) != null && !filters.get(0).isShowAll()) {
+			List<LectureBlockIdentityStatistics> filteredRows = backups.stream()
+						.filter(row -> row.getExplicitWarning() == LectureRateWarning.error)
+						.collect(Collectors.toList());
+			super.setObjects(filteredRows);
+		} else {
+			super.setObjects(backups);
+		}
 	}
 
 	@Override
@@ -123,6 +142,7 @@ implements SortableFlexiTableDataModel<LectureBlockIdentityStatistics>, FlexiTab
 	public void setObjects(List<LectureBlockIdentityStatistics> objects, AggregatedLectureBlocksStatistics totalStatistics) {
 		super.setObjects(objects);
 		this.totalStatistics = totalStatistics;
+		backups = objects;
 	}
 	
 	@Override

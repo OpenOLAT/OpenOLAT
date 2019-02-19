@@ -19,6 +19,7 @@
  */
 package org.olat.modules.curriculum.ui.lectures;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.basesecurity.BaseSecurity;
@@ -27,6 +28,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
@@ -156,6 +158,15 @@ public class LecturesListController extends FormBasicController implements Expor
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
 		tableEl.setFooter(true);
+		tableEl.setFilters("activity", getFilters(), false);
+	}
+	
+	private List<FlexiTableFilter> getFilters() {
+		List<FlexiTableFilter> filters = new ArrayList<>(5);
+		filters.add(new FlexiTableFilter(translate("filter.warning"), "warning"));
+		filters.add(FlexiTableFilter.SPACER);
+		filters.add(new FlexiTableFilter(translate("filter.showAll"), "all", true));
+		return filters;
 	}
 
 	@Override
