@@ -21,8 +21,6 @@ package org.olat.basesecurity.manager;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.olat.basesecurity.RelationRight;
 import org.olat.basesecurity.model.RelationRightImpl;
@@ -79,40 +77,16 @@ public class RelationRightDAO {
 	/**
 	 * This method commits and closes the hibernate session.
 	 * 
-	 * @param rights The rights to create if they not exists
+	 * @param right The right to create if it not exists
 	 */
-	public void ensureRightsExists(Class<? extends Enum<?>> rightsEnum) {
-		Enum<?>[] rights = rightsEnum.getEnumConstants();
+	public void ensureRightExists(String right) {
+		if(!StringHelper.containsNonWhitespace(right)) return;
 		
-		List<RelationRight> relationRights = loadRelationRights();
-		Set<String> rightNames = relationRights.stream()
-				.map(RelationRight::getRight).collect(Collectors.toSet());
-		
-		for(Enum<?> right:rights) {
-			if(!rightNames.contains(right.name())) {
-				createRelationRight(right.name());
-			}
+		RelationRight relationRight = loadRelationRightByRight(right);
+		if (relationRight == null) {
+			createRelationRight(right);
 		}
-		dbInstance.commitAndCloseSession();
-	}
-	
-	/**
-	 * This method commits and closes the hibernate session.
-	 * 
-	 * @param rights The rights to create if they not exists
-	 */
-	public void ensureRightsExists(String...  rights) {
-		if(rights == null || rights.length == 0 || rights[0] == null) return;
-		
-		List<RelationRight> relationRights = loadRelationRights();
-		Set<String> rightNames = relationRights.stream()
-				.map(RelationRight::getRight).collect(Collectors.toSet());
-		
-		for(String right:rights) {
-			if(StringHelper.containsNonWhitespace(right) && !rightNames.contains(right)) {
-				createRelationRight(right);
-			}
-		}
+
 		dbInstance.commitAndCloseSession();
 	}
 

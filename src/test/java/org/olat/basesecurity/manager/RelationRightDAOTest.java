@@ -92,18 +92,13 @@ public class RelationRightDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void ensureRightsExists_enum() {
-		relationRightDao.ensureRightsExists(UnitTestRights.class);
+	public void ensureRightsExists() {
+		String right = "unitTestRight";
+		relationRightDao.ensureRightExists(right);
 		dbInstance.commitAndCloseSession();
 		
-		RelationRight firstRight = relationRightDao.loadRelationRightByRight(UnitTestRights.iWantToTest.name());
-		Assert.assertNotNull(firstRight);
-		RelationRight secondRight = relationRightDao.loadRelationRightByRight(UnitTestRights.moreUnitTest.name());
-		Assert.assertNotNull(secondRight);
+		RelationRight loadedRight = relationRightDao.loadRelationRightByRight(right);
+		Assert.assertNotNull(loadedRight);
 	}
 	
-	public enum UnitTestRights {
-		iWantToTest,
-		moreUnitTest	
-	}
 }
