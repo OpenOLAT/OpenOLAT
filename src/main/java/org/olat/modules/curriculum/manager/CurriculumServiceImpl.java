@@ -49,6 +49,7 @@ import org.olat.modules.curriculum.CurriculumElementManagedFlag;
 import org.olat.modules.curriculum.CurriculumElementMembership;
 import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumElementStatus;
+import org.olat.modules.curriculum.CurriculumElementToTaxonomyLevel;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumElementTypeRef;
 import org.olat.modules.curriculum.CurriculumElementTypeToType;
@@ -56,6 +57,7 @@ import org.olat.modules.curriculum.CurriculumLectures;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.model.CurriculumCopySettings;
 import org.olat.modules.curriculum.model.CurriculumElementImpl;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
@@ -257,6 +259,54 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 			CurriculumElementRef parentRef, CurriculumElementType elementType,
 			CurriculumCalendars calendars, CurriculumLectures lectures, Curriculum curriculum) {
 		return curriculumElementDao.createCurriculumElement(identifier, displayName, beginDate, endDate, parentRef, elementType, calendars, lectures, curriculum);
+	}
+
+	@Override
+	public CurriculumElement cloneCurriculumElement(Curriculum curriculum, CurriculumElement parentElement,
+			CurriculumElement elementToClone, CurriculumCopySettings settings) {
+		return cloneCurriculumElementRec(curriculum, parentElement, elementToClone, settings, 0);
+	}
+	
+	private CurriculumElement cloneCurriculumElementRec(Curriculum curriculum, CurriculumElement parentElement,
+			CurriculumElement elementToClone, CurriculumCopySettings settings, int depth) {
+		
+		Date beginDate = null;
+		Date endDate = null;
+		if(settings.isCopyDates()) {
+			beginDate = elementToClone.getBeginDate();
+			endDate = elementToClone.getEndDate();
+		}
+		
+		String identifier = elementToClone.getIdentifier();
+		String displayName = elementToClone.getDisplayName();
+		if(depth == 0) {
+			displayName += " (Copy)";
+		}
+		
+		CurriculumElement clone = curriculumElementDao.createCurriculumElement(identifier, displayName,
+				beginDate, endDate, parentElement, elementToClone.getType(), elementToClone.getCalendars(), elementToClone.getLectures(),
+				curriculum);
+		
+		if(settings.isCopyLinkToResources()) {
+			List<RepositoryEntry> entries = getRepositoryEntries(elementToClone);
+			for(RepositoryEntry entry:entries) {
+				repositoryEntryRelationDao.createRelation(clone.getGroup(), entry);
+			}
+		}
+		
+		if(settings.isCopyTaxonomy()) {
+			Set<CurriculumElementToTaxonomyLevel> taxonomyLevels = clone.getTaxonomyLevels();
+			for(CurriculumElementToTaxonomyLevel taxonomyLevel:taxonomyLevels) {
+				TaxonomyLevel level = taxonomyLevel.getTaxonomyLevel();
+				curriculumElementToTaxonomyLevelDao.createRelation(clone, level);	
+			}
+		}
+		
+		List<CurriculumElement> childrenToClone = getCurriculumElements(elementToClone);
+		for(CurriculumElement childToClone:childrenToClone) {
+			cloneCurriculumElementRec(curriculum, clone, childToClone, settings, depth);
+		}
+		return clone;
 	}
 
 	@Override

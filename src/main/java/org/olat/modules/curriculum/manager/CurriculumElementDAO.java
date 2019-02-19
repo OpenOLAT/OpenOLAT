@@ -81,7 +81,7 @@ public class CurriculumElementDAO {
 	
 	public CurriculumElement createCurriculumElement(String identifier, String displayName, Date beginDate, Date endDate,
 			CurriculumElementRef parentRef, CurriculumElementType elementType,
-			CurriculumCalendars calendars, CurriculumLectures lectures, Curriculum curriculum) {
+			CurriculumCalendars calendars, CurriculumLectures lectures,  Curriculum curriculum) {
 		CurriculumElementImpl element = new CurriculumElementImpl();
 		element.setCreationDate(new Date());
 		element.setLastModified(element.getCreationDate());
@@ -103,11 +103,12 @@ public class CurriculumElementDAO {
 			dbInstance.getCurrentEntityManager().merge(parent);
 		}
 		element.setMaterializedPathKeys(getMaterializedPathKeys(parent, element));
+		dbInstance.getCurrentEntityManager().merge(element);
 		return element;
 	}
 	
 	/**
-	 * The element must be loaded. The method doesn't do a relead.
+	 * The element must be loaded. The method doesn't do a reload.
 	 * 
 	 * @param element
 	 */

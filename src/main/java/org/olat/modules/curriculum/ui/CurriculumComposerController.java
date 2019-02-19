@@ -69,6 +69,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.member.wizard.ImportMember_1a_LoginListStep;
@@ -84,6 +85,7 @@ import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
 import org.olat.modules.curriculum.ui.CurriculumComposerTableModel.ElementCols;
+import org.olat.modules.curriculum.ui.copy.CopySettingsController;
 import org.olat.modules.curriculum.ui.event.SelectReferenceEvent;
 import org.olat.modules.curriculum.ui.lectures.CurriculumElementLecturesController;
 import org.olat.repository.RepositoryEntry;
@@ -109,6 +111,7 @@ public class CurriculumComposerController extends FormBasicController implements
 	
 	private ToolsController toolsCtrl;
 	private CloseableModalController cmc;
+	private CopySettingsController copyCtrl;
 	private ReferencesController referencesCtrl;
 	private StepsMainRunController importMembersWizard;
 	private EditCurriculumElementController newElementCtrl;
@@ -350,7 +353,9 @@ public class CurriculumComposerController extends FormBasicController implements
 					loadModel();
 				}
 			}
-		} else if(newElementCtrl == source || newSubElementCtrl == source || moveElementCtrl == source || confirmDeleteCtrl == source) {
+		} else if(newElementCtrl == source || newSubElementCtrl == source
+				|| moveElementCtrl == source || confirmDeleteCtrl == source
+				|| copyCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				loadModel();
 			}
@@ -374,12 +379,14 @@ public class CurriculumComposerController extends FormBasicController implements
 		removeAsListenerAndDispose(newElementCtrl);
 		removeAsListenerAndDispose(referencesCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
+		removeAsListenerAndDispose(copyCtrl);
 		removeAsListenerAndDispose(cmc);
 		toolsCalloutCtrl = null;
 		confirmDeleteCtrl = null;
 		moveElementCtrl = null;
 		newElementCtrl = null;
 		referencesCtrl = null;
+		copyCtrl = null;
 		cmc = null;
 	}
 
@@ -478,6 +485,22 @@ public class CurriculumComposerController extends FormBasicController implements
 			listenTo(newSubElementCtrl);
 			
 			cmc = new CloseableModalController(getWindowControl(), "close", newSubElementCtrl.getInitialComponent(), true, translate("add.curriculum.element"));
+			listenTo(cmc);
+			cmc.activate();
+		}
+	}
+	
+	private void doCopyCurriculumElement(UserRequest ureq, CurriculumElementRow row) {
+		CurriculumElement element = curriculumService.getCurriculumElement(row);
+		if(element == null) {
+			tableEl.reloadData();
+			showWarning("warning.curriculum.element.deleted");
+		} else {
+			copyCtrl = new CopySettingsController(ureq, getWindowControl(), element);
+			listenTo(copyCtrl);
+			
+			String title = translate("copy.element", new String[] { StringHelper.escapeHtml(element.getDisplayName() )});
+			cmc = new CloseableModalController(getWindowControl(), "close", copyCtrl.getInitialComponent(), true, title);
 			listenTo(cmc);
 			cmc.activate();
 		}
@@ -642,9 +665,10 @@ public class CurriculumComposerController extends FormBasicController implements
 	private class ToolsController extends BasicController {
 		
 		private final VelocityContainer mainVC;
+		private Link newLink;
 		private Link editLink;
 		private Link moveLink;
-		private Link newLink;
+		private Link copyLink;
 		private Link deleteLink;
 		
 		private CurriculumElementRow row;
@@ -666,6 +690,8 @@ public class CurriculumComposerController extends FormBasicController implements
 			if(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.addChildren)) {
 				newLink = addLink("add.element.under", "o_icon_levels", links);
 			}
+			copyLink = addLink("copy.element", "o_icon_copy", links);
+			
 			if(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.delete)) {
 				links.add("-");
 				deleteLink = addLink("delete", "o_icon_delete_item", links);
@@ -702,6 +728,9 @@ public class CurriculumComposerController extends FormBasicController implements
 			} else if(newLink == source) {
 				close();
 				doNewSubCurriculumElement(ureq, row);
+			} else if(copyLink == source) {
+				close();
+				doCopyCurriculumElement(ureq, row);
 			}
 		}
 		

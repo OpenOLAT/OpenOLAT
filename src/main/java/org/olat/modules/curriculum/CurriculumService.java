@@ -28,6 +28,7 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
+import org.olat.modules.curriculum.model.CurriculumCopySettings;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
 import org.olat.modules.curriculum.model.CurriculumElementRepositoryEntryViews;
@@ -215,6 +216,17 @@ public interface CurriculumService {
 	public CurriculumElement createCurriculumElement(String identifier, String displayName, Date beginDate, Date endDate,
 			CurriculumElementRef parent, CurriculumElementType elementType, CurriculumCalendars calendars,
 			CurriculumLectures lectures, Curriculum curriculum);
+	
+	/**
+	 * 
+	 * @param curriculum The curriculum of the cloned element
+	 * @param parentElement The parent element for the new clone
+	 * @param elementToClone The element to clone
+	 * @param settings The settings to clone elements
+	 * @return The root element
+	 */
+	public CurriculumElement cloneCurriculumElement(Curriculum curriculum, CurriculumElement parentElement,
+			CurriculumElement elementToClone, CurriculumCopySettings settings);
 	
 	
 	public CurriculumElement getCurriculumElement(CurriculumElementRef element);
