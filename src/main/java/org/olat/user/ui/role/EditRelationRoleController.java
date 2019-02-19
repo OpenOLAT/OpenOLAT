@@ -129,7 +129,7 @@ public class EditRelationRoleController extends FormBasicController {
 		if(relationRole == null) {
 			identityRelationsService.createRole(roleEl.getValue(), selectedRights);
 		} else {
-			//update
+			identityRelationsService.updateRole(relationRole, selectedRights);
 		}
 		
 		fireEvent(ureq, Event.DONE_EVENT);
