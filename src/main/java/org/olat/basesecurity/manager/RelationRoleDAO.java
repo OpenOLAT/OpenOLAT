@@ -31,6 +31,7 @@ import org.olat.basesecurity.RelationRoleToRight;
 import org.olat.basesecurity.model.RelationRoleImpl;
 import org.olat.basesecurity.model.RelationRoleToRightImpl;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -76,6 +77,19 @@ public class RelationRoleDAO {
 			.setParameter("role", role)
 			.getResultList();
 		return roles.isEmpty() ? null : roles.get(0);
+	}
+
+	public List<RelationRole> loadRelationRolesByRight(String right) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select rr.role");
+		sb.append("  from relationroletoright as rr");
+		sb.and().append(" rr.right.right = :right");
+		
+		List<RelationRole> roles = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), RelationRole.class)
+				.setParameter("right", right)
+				.getResultList();
+			return roles;
 	}
 	
 	public List<RelationRole> loadRelationRoles() {

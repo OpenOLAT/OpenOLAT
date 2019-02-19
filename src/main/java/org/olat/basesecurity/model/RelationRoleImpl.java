@@ -115,6 +115,7 @@ public class RelationRoleImpl implements RelationRole, Persistable {
 		return role;
 	}
 
+	@Override
 	public void setRole(String role) {
 		this.role = role;
 	}
@@ -124,6 +125,7 @@ public class RelationRoleImpl implements RelationRole, Persistable {
 		return externalId;
 	}
 
+	@Override
 	public void setExternalId(String externalId) {
 		this.externalId = externalId;
 	}
@@ -133,6 +135,7 @@ public class RelationRoleImpl implements RelationRole, Persistable {
 		return externalRef;
 	}
 
+	@Override
 	public void setExternalRef(String externalRef) {
 		this.externalRef = externalRef;
 	}

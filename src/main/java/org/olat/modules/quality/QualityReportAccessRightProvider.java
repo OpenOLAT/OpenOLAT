@@ -19,48 +19,34 @@
  */
 package org.olat.modules.quality;
 
-import org.olat.basesecurity.Group;
-import org.olat.core.id.CreateInfo;
-import org.olat.core.id.ModifiedInfo;
+import java.util.Locale;
+
+import org.olat.basesecurity.RelationRightProvider;
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Util;
+import org.olat.modules.quality.ui.QualityMainController;
+import org.springframework.stereotype.Component;
 
 /**
  * 
- * Initial date: 29.10.2018<br>
+ * Initial date: 19 Feb 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface QualityReportAccess extends CreateInfo, ModifiedInfo {
+@Component
+public class QualityReportAccessRightProvider implements RelationRightProvider {
 
-	public enum Type {
-		GroupRoles,
-		CurriculumRoles,
-		TopicIdentity,
-		Participants,
-		ReportMember,
-		RelationRole
-	}
-	
-	public enum EmailTrigger {
-		never,
-		insufficient,
-		insufficientNeutral,
-		always
+	public static final String RELATION_RIGHT = "selectableQualityReportAccess";
+
+	@Override
+	public String getRight() {
+		return RELATION_RIGHT;
 	}
 
-	public Long getKey();
-	
-	public Type getType();
-	
-	public String getRole();
-
-	public boolean isOnline();
-	
-	public void setOnline(boolean online);
-	
-	public EmailTrigger getEmailTrigger();
-	
-	public void setEmailTrigger(EmailTrigger trigger);
-	
-	public Group getGroup();
+	@Override
+	public String getTranslatedName(Locale locale) {
+		Translator translator = Util.createPackageTranslator(QualityMainController.class, locale);
+		return translator.translate("relation.right.selectableQualityReportAccess");
+	}
 
 }

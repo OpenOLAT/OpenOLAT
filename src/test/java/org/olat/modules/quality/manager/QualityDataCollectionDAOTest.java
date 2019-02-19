@@ -34,10 +34,14 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.UUID;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.IdentityRelationshipService;
+import org.olat.basesecurity.RelationRight;
+import org.olat.basesecurity.RelationRole;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
@@ -89,6 +93,8 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 	private RepositoryService repositoryService;
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private IdentityRelationshipService identityRelationshipService;
 	
 	@Autowired
 	private QualityDataCollectionDAO sut;
@@ -1009,4 +1015,89 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 						dcAccessDenied.getKey()
 						);
 	}
+	
+	@Test
+	public void shouldFilterDataCollectionsByRelationRoles() {
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsUser("c");
+		Identity coachSourceOtherRole = JunitTestHelper.createAndPersistIdentityAsUser("otherRole");
+		Identity coachSourceOtherRight = JunitTestHelper.createAndPersistIdentityAsUser("otherRight");
+		Identity relSource = JunitTestHelper.createAndPersistIdentityAsUser("rt");
+		List<RelationRight> rights = identityRelationshipService.getAvailableRights();
+		RelationRight right = rights.get(0);
+		RelationRight rightOther = rights.get(1);
+		RelationRole role = identityRelationshipService.createRole(random(), singletonList(right));
+		RelationRole roleOtherRole = identityRelationshipService.createRole(random(), singletonList(right));
+		RelationRole roleOtherRight = identityRelationshipService.createRole(random(), singletonList(rightOther));
+		
+		// Everything fulfilled
+		identityRelationshipService.addRelation(relSource, coach, role, null, null);
+		QualityDataCollection dc = qualityTestHelper.createDataCollection();
+		dc.setTopicIdentity(coach);
+		dc = qualityService.updateDataCollection(dc);
+		dc = qualityService.updateDataCollectionStatus(dc, QualityDataCollectionStatus.FINISHED);
+		QualityReportAccess ra = qualityService.createReportAccess(of(dc), QualityReportAccess.Type.RelationRole, role.getKey().toString());
+		ra.setOnline(true);
+		qualityService.updateReportAccess(ra);
+		
+		// other right
+		identityRelationshipService.addRelation(relSource, coachSourceOtherRight, roleOtherRight, null, null);
+		QualityDataCollection dcOtherRight = qualityTestHelper.createDataCollection();
+		dcOtherRight.setTopicIdentity(coach);
+		dcOtherRight = qualityService.updateDataCollection(dcOtherRight);
+		dcOtherRight = qualityService.updateDataCollectionStatus(dcOtherRight, QualityDataCollectionStatus.FINISHED);
+		QualityReportAccess raOtherRight = qualityService.createReportAccess(of(dcOtherRight), QualityReportAccess.Type.RelationRole, roleOtherRight.getKey().toString());
+		raOtherRight.setOnline(true);
+		qualityService.updateReportAccess(raOtherRight);
+		
+		// other role
+		identityRelationshipService.addRelation(relSource, coachSourceOtherRole, roleOtherRole, null, null);
+		QualityDataCollection dcOtherRole = qualityTestHelper.createDataCollection();
+		dcOtherRole.setTopicIdentity(coach);
+		dcOtherRole = qualityService.updateDataCollection(dcOtherRole);
+		dcOtherRole = qualityService.updateDataCollectionStatus(dcOtherRole, QualityDataCollectionStatus.FINISHED);
+		QualityReportAccess raOtherRole = qualityService.createReportAccess(of(dcOtherRole), QualityReportAccess.Type.RelationRole, roleOtherRole.getKey().toString());
+		raOtherRole.setOnline(true);
+		qualityService.updateReportAccess(raOtherRole);
+		
+		// data collection not finished
+		QualityDataCollection dcNotFinished = qualityTestHelper.createDataCollection();
+		dcNotFinished.setTopicIdentity(coach);
+		dcNotFinished = qualityService.updateDataCollection(dcNotFinished);
+		dcNotFinished = qualityService.updateDataCollectionStatus(dcNotFinished, QualityDataCollectionStatus.RUNNING);
+		QualityReportAccess raNotFinished = qualityService.createReportAccess(of(dcNotFinished), QualityReportAccess.Type.RelationRole, role.getKey().toString());
+		raNotFinished.setOnline(true);
+		qualityService.updateReportAccess(raNotFinished);
+		
+		// Report access denied
+		QualityDataCollection dcAccessDenied = qualityTestHelper.createDataCollection();
+		dcAccessDenied.setTopicIdentity(coach);
+		dcAccessDenied = qualityService.updateDataCollection(dcAccessDenied);
+		dcAccessDenied = qualityService.updateDataCollectionStatus(dcAccessDenied, QualityDataCollectionStatus.FINISHED);
+		QualityReportAccess raAccesDenied = qualityService.createReportAccess(of(dcAccessDenied), QualityReportAccess.Type.RelationRole, role.getKey().toString());
+		raAccesDenied.setOnline(false);
+		qualityService.updateReportAccess(raAccesDenied);
+		
+		dbInstance.commitAndCloseSession();
+		
+		QualityDataCollectionViewSearchParams searchParams = new QualityDataCollectionViewSearchParams();
+		searchParams.setOrgansationRefs(Collections.emptyList());
+		searchParams.setReportAccessIdentity(relSource);
+		List<QualityDataCollectionView> dataCollections = sut.loadDataCollections(TRANSLATOR, searchParams, 0, -1);
+		
+		assertThat(dataCollections)
+				.extracting(QualityDataCollectionView::getKey)
+				.containsExactlyInAnyOrder(
+						dc.getKey())
+				.doesNotContain(
+						dcOtherRight.getKey(),
+						dcOtherRole.getKey(),
+						dcNotFinished.getKey(),
+						dcAccessDenied.getKey()
+						);
+	}
+	
+	private String random() {
+		return UUID.randomUUID().toString();
+	}
+
 }

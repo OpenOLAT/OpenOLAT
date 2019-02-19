@@ -19,6 +19,8 @@
  */
 package org.olat.basesecurity.manager;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -74,8 +76,7 @@ public class RelationRoleDAOTest extends OlatTestCase {
 		Assert.assertNotNull(loadedRelationRole);
 		Assert.assertEquals(relationRole, loadedRelationRole);
 		Assert.assertEquals(role, loadedRelationRole.getRole());
-	}
-	
+	}	
 	
 	@Test
 	public void loadRelationRole_byRole() {
@@ -88,6 +89,29 @@ public class RelationRoleDAOTest extends OlatTestCase {
 		Assert.assertNotNull(loadedRelationRole);
 		Assert.assertEquals(relationRole, loadedRelationRole);
 		Assert.assertEquals(role, loadedRelationRole.getRole());
+	}
+	
+	@Test
+	public void loadRelationRole_byRight() {
+		String role1 = UUID.randomUUID().toString();
+		String role2 = UUID.randomUUID().toString();
+		String roleOther = UUID.randomUUID().toString();
+		RelationRole relationRole1 = relationRoleDao.createRelationRole(role1, null, null, null);
+		RelationRole relationRole2 = relationRoleDao.createRelationRole(role2, null, null, null);
+		RelationRole relationRole3 = relationRoleDao.createRelationRole(roleOther, null, null, null);
+		String right1 = UUID.randomUUID().toString();
+		RelationRight relationRight1 = relationRightDao.createRelationRight(right1);
+		String rightOther = UUID.randomUUID().toString();
+		RelationRight relationRightOther = relationRightDao.createRelationRight(rightOther);
+		relationRoleDao.addRight(relationRole1, relationRight1);
+		relationRoleDao.addRight(relationRole1, relationRightOther);
+		relationRoleDao.addRight(relationRole2, relationRight1);
+		relationRoleDao.addRight(relationRole3, relationRightOther);
+		dbInstance.commitAndCloseSession();
+		
+		List<RelationRole> byRight = relationRoleDao.loadRelationRolesByRight(right1);
+		
+		assertThat(byRight).containsExactlyInAnyOrder(relationRole1, relationRole2);
 	}
 
 	@Test

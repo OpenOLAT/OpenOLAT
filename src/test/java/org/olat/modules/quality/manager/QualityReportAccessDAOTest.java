@@ -24,12 +24,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.olat.modules.quality.QualityReportAccessReference.of;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.assertj.core.api.SoftAssertions;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.IdentityRelationshipService;
+import org.olat.basesecurity.RelationRight;
+import org.olat.basesecurity.RelationRole;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
@@ -77,6 +81,8 @@ public class QualityReportAccessDAOTest extends OlatTestCase {
 	private EvaluationFormManager evaluationFormManager;
 	@Autowired
 	private GroupDAO groupDao;
+	@Autowired
+	private IdentityRelationshipService identityRelationshipService;
 	
 	@Autowired
 	private QualityReportAccessDAO sut;
@@ -468,6 +474,55 @@ public class QualityReportAccessDAOTest extends OlatTestCase {
 		assertThat(receivers)
 				.containsExactlyInAnyOrder(member)
 				.doesNotContain(memberOther);
+	}
+	
+	@Test
+	public void shouldLoadReceviersForRelationRoles() {
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsUser("c");
+		Identity relSource = JunitTestHelper.createAndPersistIdentityAsUser("rt");
+		Identity relSourceOtherRole = JunitTestHelper.createAndPersistIdentityAsUser("rtOtherRole");
+		Identity relSourceOtherRight = JunitTestHelper.createAndPersistIdentityAsUser("rtOtherRight");
+		Identity coachOther = JunitTestHelper.createAndPersistIdentityAsUser("cOther");
+		List<RelationRight> rights = identityRelationshipService.getAvailableRights();
+		RelationRight right = rights.get(0);
+		RelationRight rightOther = rights.get(1);
+		RelationRole role = identityRelationshipService.createRole(random(), singletonList(right));
+		RelationRole roleOtherRole = identityRelationshipService.createRole(random(), singletonList(right));
+		RelationRole roleOtherRight = identityRelationshipService.createRole(random(), singletonList(rightOther));
+		
+		// Everything fulfilled
+		QualityDataCollection dc = qualityTestHelper.createDataCollection();
+		dc.setTopicIdentity(coach);
+		qualityService.updateDataCollection(dc);
+		identityRelationshipService.addRelation(relSource, coach, role, null, null);
+		
+		// other right
+		identityRelationshipService.addRelation(relSourceOtherRight, coach, roleOtherRight, null, null);
+		
+		// other role
+		identityRelationshipService.addRelation(relSourceOtherRole, coach, roleOtherRole, null, null);
+		
+		// other data collection
+		QualityDataCollection dcOther = qualityTestHelper.createDataCollection();
+		dcOther.setTopicIdentity(coach);
+		qualityService.updateDataCollection(dcOther);
+		
+		QualityReportAccess reportAccess = qualityService.createReportAccess(of(dc), Type.RelationRole, role.getKey().toString());
+		dbInstance.commitAndCloseSession();
+		
+		List<Identity> receivers = sut.loadRecipients(reportAccess);
+		
+		assertThat(receivers)
+				.containsExactlyInAnyOrder(
+						relSource)
+				.doesNotContain(
+						relSourceOtherRight,
+						relSourceOtherRole,
+						coachOther);
+	}
+
+	private String random() {
+		return UUID.randomUUID().toString();
 	}
 
 }

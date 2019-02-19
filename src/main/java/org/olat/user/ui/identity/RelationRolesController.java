@@ -69,11 +69,7 @@ public class RelationRolesController extends StepFormBasicController {
 		
 		for(int i=availableRoles.size(); i-->0; ) {
 			roleKeys[i] = availableRoles.get(i).getKey().toString();
-			String translatedRole = translate(RelationRolesAndRightsUIFactory.TRANS_ROLE_PREFIX + availableRoles.get(i).getKey());
-			if(translatedRole.length() > 256 || translatedRole.startsWith(RelationRolesAndRightsUIFactory.TRANS_ROLE_PREFIX)) {
-				translatedRole = availableRoles.get(i).getRole();
-			}
-			roleValues[i] = translatedRole;
+			roleValues[i] = RelationRolesAndRightsUIFactory.getTranslatedRole(getTranslator(), availableRoles.get(i));
 		}
 		relationRoleEl = uifactory.addCheckboxesVertical("relation.roles", formLayout, roleKeys, roleValues, 2);
 	}

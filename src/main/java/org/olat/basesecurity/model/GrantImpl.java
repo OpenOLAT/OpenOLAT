@@ -87,6 +87,7 @@ public class GrantImpl implements Grant, Persistable {
 	@JoinColumn(name="fk_resource_id", nullable=false, insertable=true, updatable=false)
 	private OLATResource resource;
 
+	@Override
 	public Long getKey() {
 		return key;
 	}
@@ -103,6 +104,7 @@ public class GrantImpl implements Grant, Persistable {
 		this.creationDate = creationDate;
 	}
 
+	@Override
 	public String getRole() {
 		return role;
 	}
@@ -111,6 +113,7 @@ public class GrantImpl implements Grant, Persistable {
 		this.role = role;
 	}
 
+	@Override
 	public String getPermission() {
 		return permission;
 	}
@@ -119,6 +122,7 @@ public class GrantImpl implements Grant, Persistable {
 		this.permission = permission;
 	}
 
+	@Override
 	public Group getGroup() {
 		return group;
 	}
@@ -127,6 +131,7 @@ public class GrantImpl implements Grant, Persistable {
 		this.group = group;
 	}
 
+	@Override
 	public OLATResource getResource() {
 		return resource;
 	}

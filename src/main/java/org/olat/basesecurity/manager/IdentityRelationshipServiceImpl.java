@@ -21,7 +21,6 @@ package org.olat.basesecurity.manager;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 import javax.annotation.PostConstruct;
 
@@ -96,6 +95,11 @@ public class IdentityRelationshipServiceImpl implements IdentityRelationshipServ
 	}
 
 	@Override
+	public List<RelationRole> getRolesByRight(String right) {
+		return relationRoleDao.loadRelationRolesByRight(right);
+	}
+
+	@Override
 	public List<RelationRole> getAvailableRoles() {
 		return relationRoleDao.loadRelationRoles();
 	}
@@ -106,12 +110,7 @@ public class IdentityRelationshipServiceImpl implements IdentityRelationshipServ
 	}
 
 	@Override
-	public String getTranslatedName(RelationRight right, Locale locale) {
-		RelationRightProvider provider = getRelationRightProvider(right);
-		return provider != null? provider.getTranslatedName(locale): "???";
-	}
-
-	private RelationRightProvider getRelationRightProvider(RelationRight right) {
+	public RelationRightProvider getRelationRightProvider(RelationRight right) {
 		for (RelationRightProvider provider : relationRightProviders) {
 			if (provider.getRight().equals(right.getRight())) {
 				return provider;

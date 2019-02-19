@@ -19,6 +19,17 @@
  */
 package org.olat.user.ui.role;
 
+import java.util.Locale;
+
+import org.olat.basesecurity.IdentityRelationshipService;
+import org.olat.basesecurity.RelationRight;
+import org.olat.basesecurity.RelationRightProvider;
+import org.olat.basesecurity.RelationRole;
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Util;
+import org.olat.user.UserModule;
+
 /**
  * 
  * Initial date: 29 janv. 2019<br>
@@ -28,5 +39,24 @@ package org.olat.user.ui.role;
 public class RelationRolesAndRightsUIFactory {
 	
 	public static final String TRANS_ROLE_PREFIX = "relation.role.";
+	
+	public static String getTranslatedRight(RelationRight right, Locale locale) {
+		IdentityRelationshipService relationshipService = CoreSpringFactory.getImpl(IdentityRelationshipService.class);
+		RelationRightProvider provider = relationshipService.getRelationRightProvider(right);
+		return provider != null? provider.getTranslatedName(locale): "???";
+	}
+	
+	public static String getTranslatedRole(RelationRole role, Locale locale) {
+		Translator translator = Util.createPackageTranslator(UserModule.class, locale);
+		return getTranslatedRole(translator, role);
+	}
 
+	public static String getTranslatedRole(Translator translator, RelationRole role) {
+		String translatedRole = translator.translate(TRANS_ROLE_PREFIX + role.getKey());
+		if (translatedRole.length() > 256 || translatedRole.startsWith(RelationRolesAndRightsUIFactory.TRANS_ROLE_PREFIX)) {
+			translatedRole = role.getRole();
+		}
+		return translatedRole;
+	}
+	
 }

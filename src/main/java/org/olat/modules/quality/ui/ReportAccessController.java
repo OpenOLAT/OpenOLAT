@@ -31,6 +31,8 @@ import org.olat.admin.user.UserSearchController;
 import org.olat.admin.user.UserTableDataModel;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.IdentityRelationshipService;
+import org.olat.basesecurity.RelationRole;
 import org.olat.basesecurity.events.MultiIdentityChosenEvent;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
 import org.olat.basesecurity.model.IdentityRefImpl;
@@ -63,6 +65,7 @@ import org.olat.modules.quality.QualityReportAccess;
 import org.olat.modules.quality.QualityReportAccess.EmailTrigger;
 import org.olat.modules.quality.QualityReportAccess.Type;
 import org.olat.modules.quality.QualityReportAccessReference;
+import org.olat.modules.quality.QualityReportAccessRightProvider;
 import org.olat.modules.quality.QualityReportAccessSearchParams;
 import org.olat.modules.quality.QualityService;
 import org.olat.modules.quality.ui.ReportAccessDataModel.ReportAccessCols;
@@ -70,6 +73,7 @@ import org.olat.modules.quality.ui.ReportMemberTableModel.ReportMemberCols;
 import org.olat.user.UserManager;
 import org.olat.user.UserPropertiesRow;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.olat.user.ui.role.RelationRolesAndRightsUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -90,6 +94,7 @@ public abstract class ReportAccessController extends FormBasicController {
 	private FlexiTableElement accessTableEl;
 	private final String[] emailTriggerKeys;
 	private final String[] emailTriggerValues;
+	private FormLayoutContainer membersLayout;
 	private ReportMemberTableModel membersTableModel;
 	private FlexiTableElement membersTableEl;
 	private FormLink addMemberButton;
@@ -111,7 +116,8 @@ public abstract class ReportAccessController extends FormBasicController {
 	private UserManager userManager;
 	@Autowired
 	private BaseSecurityModule securityModule;
-	private FormLayoutContainer membersLayout;
+	@Autowired
+	private IdentityRelationshipService identityRelationshipService;
 
 	protected ReportAccessController(UserRequest ureq, WindowControl windowControl, QualityReportAccessReference reference) {
 		super(ureq, windowControl, "report_access");
@@ -179,17 +185,25 @@ public abstract class ReportAccessController extends FormBasicController {
 	private List<ReportAccessRow> createRows() {
 		List<ReportAccessRow> rows = new ArrayList<>();
 
-		rows.add(createRow("report.access.name.participants.all", Type.Participants, null));
-		rows.add(createRow("report.access.name.participants.done", Type.Participants, EvaluationFormParticipationStatus.done.name()));
-		rows.add(createRow("report.access.name.repo.owner", Type.GroupRoles, GroupRoles.owner.name()));
-		rows.add(createRow("report.access.name.repo.coach", Type.GroupRoles, GroupRoles.coach.name()));
-		rows.add(createRow("report.access.name.topic.identity", Type.TopicIdentity, null));
-		rows.add(createRow("report.access.name.members", Type.ReportMember, null));
+		rows.add(createRow(translate("report.access.name.participants.all"), Type.Participants, null));
+		rows.add(createRow(translate("report.access.name.participants.done"), Type.Participants, EvaluationFormParticipationStatus.done.name()));
+		rows.add(createRow(translate("report.access.name.repo.owner"), Type.GroupRoles, GroupRoles.owner.name()));
+		rows.add(createRow(translate("report.access.name.repo.coach"), Type.GroupRoles, GroupRoles.coach.name()));
+		rows.add(createRow(translate("report.access.name.topic.identity"), Type.TopicIdentity, null));
+		
+		List<RelationRole> roles = identityRelationshipService.getRolesByRight(QualityReportAccessRightProvider.RELATION_RIGHT);
+		for (RelationRole role : roles) {
+			String roleName = RelationRolesAndRightsUIFactory.getTranslatedRole(role, getLocale());
+			roleName = translate("report.access.name.topic.identity.relation", new String[]{ roleName });
+			rows.add(createRow(roleName, Type.RelationRole, role.getKey().toString()));
+		}
+
+		rows.add(createRow(translate("report.access.name.members"), Type.ReportMember, null));
 		return rows;
 	}
 	
-	private ReportAccessRow createRow(String nameI18n, Type type, String role) {
-		ReportAccessRow row = new ReportAccessRow(translate(nameI18n), type, role);
+	private ReportAccessRow createRow(String name, Type type, String role) {
+		ReportAccessRow row = new ReportAccessRow(name, type, role);
 		QualityReportAccess access = getCachedReportAccess(type, role);
 		MultipleSelectionElement onlineEl = createOnlineCheckbox(row, access);
 		row.setOnlineEl(onlineEl);

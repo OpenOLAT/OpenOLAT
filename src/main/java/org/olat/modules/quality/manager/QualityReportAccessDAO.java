@@ -38,6 +38,7 @@ import org.olat.modules.quality.QualityReportAccess;
 import org.olat.modules.quality.QualityReportAccess.EmailTrigger;
 import org.olat.modules.quality.QualityReportAccess.Type;
 import org.olat.modules.quality.QualityReportAccessReference;
+import org.olat.modules.quality.QualityReportAccessRightProvider;
 import org.olat.modules.quality.QualityReportAccessSearchParams;
 import org.olat.modules.quality.generator.QualityGenerator;
 import org.olat.modules.quality.generator.model.QualityGeneratorImpl;
@@ -210,6 +211,7 @@ class QualityReportAccessDAO {
 		case GroupRoles: return loadRecipientsOfGroupRoles(reportAccess);
 		case TopicIdentity: return loadRecipientsOfTopicIdentity(reportAccess);
 		case ReportMember: return loadRecipientsOfReportMember(reportAccess);
+		case RelationRole: return loadRecipientsOfRelationRole(reportAccess);
 		default: return Collections.emptyList();
 		}
 	}
@@ -301,6 +303,27 @@ class QualityReportAccessDAO {
 		sb.append("     , bgroupmember as membership");
 		sb.and().append("ra.group.key = membership.group.key");
 		sb.and().append("ra.key = :reportAccessKey");
+		
+		return dbInstance.getCurrentEntityManager()
+					.createQuery(sb.toString(), Identity.class)
+					.setParameter("reportAccessKey", reportAccess.getKey())
+					.getResultList();
+	}
+
+	private List<Identity> loadRecipientsOfRelationRole(QualityReportAccess reportAccess) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select identRel.source");
+		sb.append("  from qualityreportaccess as ra");
+		sb.append("       join ra.dataCollection as collection");
+		sb.append("       join collection.topicIdentity topicIdentity");
+		sb.append("       join identitytoidentity as identRel");
+		sb.append("         on identRel.target.key = topicIdentity.key");
+		sb.append("        and cast(identRel.role.key as string) = ra.role");
+		sb.append("       join relationroletoright as roleRel");
+		sb.append("         on identRel.role.key = roleRel.role.key");
+		sb.append("       join roleRel.right as rright");
+		sb.and().append(" rright.right = '").append(QualityReportAccessRightProvider.RELATION_RIGHT).append("'");
+		sb.and().append(" ra.key = :reportAccessKey");
 		
 		return dbInstance.getCurrentEntityManager()
 					.createQuery(sb.toString(), Identity.class)

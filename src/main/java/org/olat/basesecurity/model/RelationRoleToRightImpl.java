@@ -85,6 +85,7 @@ public class RelationRoleToRightImpl implements RelationRoleToRight, Persistable
 		this.creationDate = creationDate;
 	}
 
+	@Override
 	public RelationRole getRole() {
 		return role;
 	}
@@ -93,6 +94,7 @@ public class RelationRoleToRightImpl implements RelationRoleToRight, Persistable
 		this.role = role;
 	}
 
+	@Override
 	public RelationRight getRight() {
 		return right;
 	}
