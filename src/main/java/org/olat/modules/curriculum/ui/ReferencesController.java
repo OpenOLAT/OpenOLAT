@@ -32,11 +32,14 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.ui.event.SelectReferenceEvent;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryEntryStatusEnum;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.ui.RepositoyUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -54,7 +57,7 @@ public class ReferencesController extends BasicController {
 	private CurriculumService curriculumService;
 		
 	public ReferencesController(UserRequest ureq, WindowControl wControl, Translator translator, CurriculumElement element) {
-		super(ureq, wControl, translator);
+		super(ureq, wControl, Util.createPackageTranslator(RepositoryService.class, ureq.getLocale(), translator));
 		VelocityContainer mainVC = createVelocityContainer("references");
 
 		List<RepositoryEntry> refs = curriculumService.getRepositoryEntries(element);
@@ -63,7 +66,8 @@ public class ReferencesController extends BasicController {
 		for(RepositoryEntry ref:refs) {
 			String name = "ref-" + (++counter);
 			Link refLink = LinkFactory.createLink(name, "reference", getTranslator(), mainVC, this, Link.NONTRANSLATED);
-			refLink.setCustomDisplayText(StringHelper.escapeHtml(ref.getDisplayname()));
+			String label =  label(ref);
+			refLink.setCustomDisplayText(label);
 			refLink.setUserObject(ref);
 			refLink.setIconLeftCSS("o_icon o_icon-fw " + RepositoyUIFactory.getIconCssClass(ref));
 			refLinks.add(name);
@@ -71,6 +75,20 @@ public class ReferencesController extends BasicController {
 		mainVC.contextPut("referenceLinks", refLinks);
 		
 		putInitialPanel(mainVC);
+	}
+	
+	private String label(RepositoryEntry ref) {
+		StringBuilder sb = new StringBuilder(128);
+		sb.append(StringHelper.escapeHtml(ref.getDisplayname()));
+		if(StringHelper.containsNonWhitespace(ref.getExternalRef())) {
+			sb.append(" <small>").append(StringHelper.escapeHtml(ref.getExternalRef())).append("</small>");
+		}
+		
+		RepositoryEntryStatusEnum status = ref.getEntryStatus();
+		sb.append(" <span class='o_labeled_light o_repo_status_").append(status.name())
+		  .append("' title=\"").append(StringHelper.escapeHtml(translate("status." + status.name() + ".desc"))).append("\">")
+		  .append("<i class='o_icon o_icon-fw o_icon_repo_status_").append(status.name()).append("'> </i></span>");
+		return sb.toString();
 	}
 
 	@Override

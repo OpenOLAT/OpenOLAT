@@ -19,6 +19,7 @@
  */
 package org.olat.repository.ui.author;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 
@@ -28,6 +29,8 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.ui.PriceMethod;
 import org.olat.repository.ui.catalog.CatalogEntryRow;
@@ -39,6 +42,8 @@ import org.olat.repository.ui.catalog.CatalogEntryRow;
  *
  */
 public class ACRenderer implements FlexiCellRenderer {
+	
+	private static final OLog log = Tracing.createLoggerFor(ACRenderer.class);
 
 	@Override
 	public void render(Renderer renderer, StringOutput sb, Object val,
@@ -60,16 +65,18 @@ public class ACRenderer implements FlexiCellRenderer {
 		} else if (val instanceof AuthoringEntryRow) {
 			AuthoringEntryRow entry = (AuthoringEntryRow)val;			
 			if(entry.getEntryStatus() != RepositoryEntryStatusEnum.trash && entry.getEntryStatus() != RepositoryEntryStatusEnum.deleted) {				
-				StringOutput methodsSb = new StringOutput();
-				renderPriceMethods(renderer, methodsSb, entry.getAccessTypes());
-				sb.append(methodsSb);
-				if (methodsSb.length() == 0 && entry.isAllUsers()) {
-					sb.append(" <span class='o_small text-muted'>");
-					sb.append(translator.translate("table.allusers"));
-					sb.append("</span>");
+				try(StringOutput methodsSb = new StringOutput()) {
+					renderPriceMethods(renderer, methodsSb, entry.getAccessTypes());
+					sb.append(methodsSb);
+					if (methodsSb.length() == 0 && entry.isAllUsers()) {
+						sb.append(" <span class='o_small text-muted'>");
+						sb.append(translator.translate("table.allusers"));
+						sb.append("</span>");
+					}
+				} catch(IOException e) {
+					log.error("", e);
 				}
 			}
-
 		} else if (val instanceof CatalogEntryRow) {
 			CatalogEntryRow entry = (CatalogEntryRow)val;
 			renderPriceMethods(renderer, sb, entry.getAccessTypes());
