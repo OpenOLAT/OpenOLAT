@@ -311,7 +311,7 @@ public class MultiEvaluationFormController extends BasicController {
 				
 		SessionFilter surveyFilter = SessionFilterFactory.createSelectDone(survey);
 		List<EvaluationFormSession> sessions = evaluationFormManager.loadSessionsFiltered(surveyFilter, 0, -1);
-		sessions.removeIf(session -> notEvaluator(session));
+		sessions.removeIf(this::notEvaluator);
 		SessionFilter filter = SessionFilterFactory.create(sessions);
 		
 		EvaluationFormReportProvider provider = new ReportProvider();
@@ -335,7 +335,7 @@ public class MultiEvaluationFormController extends BasicController {
 		return true;
 	}
 
-	private final static class ReportProvider implements EvaluationFormReportProvider {
+	private static final class ReportProvider implements EvaluationFormReportProvider {
 		
 		private final Map<String, EvaluationFormReportHandler> handlers = new HashMap<>();
 		
@@ -357,14 +357,14 @@ public class MultiEvaluationFormController extends BasicController {
 		}
 	}
 	
-	private final static class EvaluatorNameGenerator implements LegendNameGenerator {
+	private static final class EvaluatorNameGenerator implements LegendNameGenerator {
 
 		private final Map<Identity, String> identityToName;
 		
 		public EvaluatorNameGenerator(List<Evaluator> evaluators) {
 			super();
-			this.identityToName = evaluators.stream()
-					.collect(Collectors.toMap(Evaluator::getIdentity, Evaluator::getFullName));
+			identityToName = evaluators.stream()
+					.collect(Collectors.toMap(Evaluator::getIdentity, Evaluator::getFullName, (u, v) -> u));
 		}
 
 		@Override
@@ -375,7 +375,7 @@ public class MultiEvaluationFormController extends BasicController {
 		
 	}
 	
-	private final static class Evaluator {
+	private static final class Evaluator {
 		
 		private final Identity identity;
 		private String fullName;

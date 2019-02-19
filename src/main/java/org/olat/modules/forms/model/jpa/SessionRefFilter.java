@@ -49,14 +49,20 @@ public class SessionRefFilter implements SessionFilter {
 		QueryBuilder sb = new QueryBuilder(128);
 		sb.append("select sessionFilter.key");
 		sb.append("  from evaluationformsession sessionFilter");
-		sb.and().append("sessionFilter.key in :sessionFilterKeys");
+		if(sessionRefs.isEmpty()) {
+			sb.and().append("sessionFilter.key is null");// not possible
+		} else {
+			sb.and().append("sessionFilter.key in (:sessionFilterKeys)");
+		}
 		return sb.toString();
 	}
 
 	@Override
 	public void addParameters(Query query) {
-		List<Long> sessionKeys = sessionRefs.stream().map(EvaluationFormSessionRef::getKey).collect(toList());
-		query.setParameter("sessionFilterKeys", sessionKeys);
+		if(!sessionRefs.isEmpty()) {
+			List<Long> sessionKeys = sessionRefs.stream().map(EvaluationFormSessionRef::getKey).collect(toList());
+			query.setParameter("sessionFilterKeys", sessionKeys);
+		}
 	}
 
 }
