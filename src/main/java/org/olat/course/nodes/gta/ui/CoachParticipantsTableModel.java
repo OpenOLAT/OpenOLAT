@@ -85,6 +85,9 @@ public class CoachParticipantsTableModel extends DefaultFlexiTableDataModel<Coac
 		} else if(col == CGCols.passed.ordinal()) {
 			return row.getPassed();
 		} else if(col == CGCols.numOfSubmissionDocs.ordinal()) {
+			if(row.getCollectionDate() != null) {
+				return row.getNumOfCollectedDocs();
+			}
 			return row.getNumOfSubmissionDocs();
 		} else if(col >= GTACoachedGroupGradingController.USER_PROPS_OFFSET) {
 			int propIndex = col - GTACoachedGroupGradingController.USER_PROPS_OFFSET;

@@ -41,6 +41,7 @@
 				<bean id="upgrade_12_4_0" class="org.olat.upgrade.OLATUpgrade_12_4_0"/>
 				<bean id="upgrade_12_4_1" class="org.olat.upgrade.OLATUpgrade_12_4_1"/>
 				<bean id="upgrade_12_5_3" class="org.olat.upgrade.OLATUpgrade_12_5_3"/>
+				<bean id="upgrade_12_5_17" class="org.olat.upgrade.OLATUpgrade_12_5_17"/>
 				<bean id="upgrade_13_0_0" class="org.olat.upgrade.OLATUpgrade_13_0_0"/>
 				<bean id="upgrade_13_0_0_beta1" class="org.olat.upgrade.OLATUpgrade_13_0_0_beta1"/>
 				<bean id="upgrade_13_0_0_beta7" class="org.olat.upgrade.OLATUpgrade_13_0_0_beta7"/>
