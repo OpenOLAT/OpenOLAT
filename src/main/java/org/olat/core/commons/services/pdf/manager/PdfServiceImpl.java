@@ -22,8 +22,14 @@ package org.olat.core.commons.services.pdf.manager;
 import java.io.File;
 import java.io.OutputStream;
 
+import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
+import org.olat.core.commons.services.pdf.PdfControllerResource;
 import org.olat.core.commons.services.pdf.PdfModule;
 import org.olat.core.commons.services.pdf.PdfService;
+import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.creator.ControllerCreator;
+import org.olat.core.gui.media.MediaResource;
+import org.olat.core.id.Identity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -42,5 +48,16 @@ public class PdfServiceImpl implements PdfService {
 	@Override
 	public void convert(File path, String rootFilename, OutputStream out) {
 		pdfModule.getPdfServiceProvider().convert(path, rootFilename, out);
+	}
+	
+	@Override
+	public MediaResource convert(String filename, Identity identity, ControllerCreator creator, WindowControl wControl) {
+		return new PdfControllerResource(filename, identity, creator, wControl);
+	}
+
+	@Override
+	public void convert(Identity identity, ControllerCreator creator, WindowControl windowControl, OutputStream out) {
+		ControllerCreator printCreator = BaseFullWebappPopupLayoutFactory.createPrintPopupLayout(creator);
+		pdfModule.getPdfServiceProvider().convert(identity, printCreator, windowControl, out);
 	}
 }

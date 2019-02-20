@@ -41,7 +41,9 @@ import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.helpers.Settings;
+import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
@@ -131,6 +133,18 @@ public class AthenaPdfSPI extends AbstractSpringModule implements PdfSPI {
 		cache.remove(key);
 	}
 	
+	@Override
+	public void convert(Identity identity, ControllerCreator creator, WindowControl wControl, OutputStream out) {
+		String key = UUID.randomUUID().toString();
+		PdfDelivery delivery = new PdfDelivery(key);
+		delivery.setIdentity(identity);
+		delivery.setControllerCreator(creator);
+		delivery.setWindowControl(wControl);
+		cache.put(key, delivery);
+		render(key, "index.html", out);
+		cache.remove(key);
+	}
+
 	private void render(String key, String rootFilename, OutputStream out) {
 		HttpClientBuilder builder = HttpClientBuilder.create();
 		try(CloseableHttpClient httpclient = builder.build()) {

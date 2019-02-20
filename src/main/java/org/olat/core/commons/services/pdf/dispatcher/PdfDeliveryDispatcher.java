@@ -33,9 +33,16 @@ import org.olat.core.commons.services.pdf.PdfService;
 import org.olat.core.commons.services.pdf.model.PdfDelivery;
 import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.dispatcher.DispatcherModule;
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.UserRequestImpl;
+import org.olat.core.gui.components.Window;
+import org.olat.core.gui.control.creator.ControllerCreator;
+import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
+import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -86,9 +93,32 @@ public class PdfDeliveryDispatcher implements Dispatcher {
 		PdfDelivery delivery = cache.get(key);
 		if(delivery == null) {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND);
-			return;
+		} else if(delivery.getDirectory() != null) {
+			renderFile(delivery, filename, response);
+		} else if(delivery.getControllerCreator() != null) {
+			renderController(delivery, request, response);
+		} else {
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+		}
+	}
+	
+	private void renderController(PdfDelivery delivery, HttpServletRequest request, HttpServletResponse response) {
+		ControllerCreator creator = delivery.getControllerCreator();
+		UserRequest ureq = new UserRequestImpl("pdfd", request, response);
+		UserSession usess = ureq.getUserSession();
+		if(usess.getIdentity() == null) {
+			usess.setIdentity(delivery.getIdentity());
+			usess.setRoles(Roles.userRoles());
 		}
 		
+		PopupBrowserWindow pbw = delivery.getWindowControl().getWindowBackOffice()
+				.getWindowManager().createNewPopupBrowserWindowFor(ureq, creator);
+		Window window = pbw.getPopupWindowControl().getWindowBackOffice().getWindow();
+		window.dispatchRequest(ureq, true);
+	}
+	
+	private void renderFile(PdfDelivery delivery, String filename, HttpServletResponse response)
+	throws IOException {
 		File directory = new File(delivery.getDirectory());
 		File file = new File(directory, filename);
 		if(file.exists()) {

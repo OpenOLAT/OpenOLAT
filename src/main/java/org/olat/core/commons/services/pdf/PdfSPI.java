@@ -25,6 +25,8 @@ import java.io.OutputStream;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.creator.ControllerCreator;
+import org.olat.core.id.Identity;
 
 /**
  * 
@@ -41,6 +43,8 @@ public interface PdfSPI {
 	public String getId();
 	
 	public void convert(File path, String rootFilename, OutputStream out);
+	
+	public void convert(Identity identity, ControllerCreator creator, WindowControl windowControl, OutputStream out);
 
 	public Controller createAdminController(UserRequest ureq, WindowControl wControl);
 

@@ -21,6 +21,10 @@ package org.olat.core.commons.services.pdf.model;
 
 import java.io.Serializable;
 
+import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.creator.ControllerCreator;
+import org.olat.core.id.Identity;
+
 /**
  * 
  * Initial date: 6 févr. 2019<br>
@@ -32,6 +36,9 @@ public class PdfDelivery implements Serializable {
 	private static final long serialVersionUID = -8032606199374880702L;
 	private final String key;
 	private String directory;
+	private Identity identity;
+	private ControllerCreator controllerCreator;
+	private WindowControl windowControl;
 	
 	public PdfDelivery(String key) {
 		this.key = key;
@@ -47,6 +54,30 @@ public class PdfDelivery implements Serializable {
 
 	public void setDirectory(String directory) {
 		this.directory = directory;
+	}
+
+	public Identity getIdentity() {
+		return identity;
+	}
+
+	public void setIdentity(Identity identity) {
+		this.identity = identity;
+	}
+
+	public WindowControl getWindowControl() {
+		return windowControl;
+	}
+
+	public void setWindowControl(WindowControl windowControl) {
+		this.windowControl = windowControl;
+	}
+
+	public ControllerCreator getControllerCreator() {
+		return controllerCreator;
+	}
+
+	public void setControllerCreator(ControllerCreator controllerCreator) {
+		this.controllerCreator = controllerCreator;
 	}
 
 	@Override

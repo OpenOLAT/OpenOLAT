@@ -2,14 +2,19 @@
 #if($r.available("email"))
 	$r.render("email")
 #end
+
+#if($r.available("print") && $r.available("pdf") && $r.available("download"))<div class="btn-group">#end
 #if($r.available("download"))
 	$r.render("download")
 #end
 #if($r.available("print"))
 	$r.render("print")
 #end
+#if($r.available("pdf"))
+	$r.render("pdf")
+#end
+#if($r.available("print") && $r.available("pdf"))</div>#end
 </div>
-
 <div class="o_cmembers">
 	#if($showOwners && $hasOwners)
 	<div class="clearfix o_owners o_sel_owners">

@@ -22,6 +22,7 @@ package org.olat.commons.memberlist.ui;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -36,6 +37,8 @@ import org.olat.commons.memberlist.manager.MembersExportManager;
 import org.olat.commons.memberlist.model.CurriculumElementInfos;
 import org.olat.commons.memberlist.model.CurriculumMemberInfos;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
+import org.olat.core.commons.services.pdf.PdfModule;
+import org.olat.core.commons.services.pdf.PdfService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -60,6 +63,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.id.UserConstants;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
@@ -97,7 +101,8 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 	private final List<UserPropertyHandler> userPropertyAvatarHandlers;
 
 	private final String avatarBaseURL;
-	
+
+	private Link pdfLink;
 	private Link printLink;
 	private FormLink allEmailLink;
 	private FormLink downloadLink;
@@ -133,6 +138,10 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 	private int count = 0;
 	private final boolean deduplicateList;
 	
+	@Autowired
+	private PdfModule pdfModule;
+	@Autowired
+	private PdfService pdfService;
 	@Autowired
 	private UserManager userManager;
 	@Autowired
@@ -211,6 +220,13 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 				printLink.setIconLeftCSS("o_icon o_icon_print o_icon-lg");
 				printLink.setPopup(new LinkPopupSettings(700, 500, "print-members"));
 				((FormLayoutContainer)formLayout).getFormItemComponent().put("print", printLink);
+				
+				if(pdfModule.isEnabled()) {
+					pdfLink = LinkFactory.createButton("pdf", ((FormLayoutContainer)formLayout).getFormItemComponent(), this);
+					pdfLink.setIconLeftCSS("o_icon o_icon_print o_icon-lg o_filetype_pdf");
+					pdfLink.setTarget("_blank");
+					((FormLayoutContainer)formLayout).getFormItemComponent().put("pdf", pdfLink);
+				}
 			}
 		}
 
@@ -386,6 +402,8 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(source == printLink) {
 			doPrint(ureq);
+		} else if(source == pdfLink) {
+			doPdf(ureq);
 		}
 		super.event(ureq, source, event);
 	}
@@ -525,16 +543,30 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 	}
 	
 	private void doPrint(UserRequest ureq) {
+		ControllerCreator printControllerCreator = getPrintControllerCreator();
+		ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createPrintPopupLayout(printControllerCreator);
+		openInNewBrowserWindow(ureq, layoutCtrlr);
+	}
+	
+	private void doPdf(UserRequest ureq) {
+		ControllerCreator printControllerCreator = getPrintControllerCreator();
+		
+		final String title = (businessGroup != null
+				? businessGroup.getName() : userCourseEnv.getCourseEnvironment().getCourseTitle())
+				+ "_" + Formatter.formatShortDateFilesystem(new Date());
+		MediaResource resource = pdfService.convert(title, getIdentity(), printControllerCreator, getWindowControl());
+		ureq.getDispatchResult().setResultingMediaResource(resource);
+	}
+	
+	private ControllerCreator getPrintControllerCreator() {
 		final String title = businessGroup != null
 				? businessGroup.getName() : userCourseEnv.getCourseEnvironment().getCourseTitle();
-		ControllerCreator printControllerCreator = (lureq, lwControl) -> {
+		return (lureq, lwControl) -> {
 			lwControl.getWindowBackOffice().getChiefController().addBodyCssClass("o_cmembers_print");
 			return new MembersPrintController(lureq, lwControl, getTranslator(), owners, coaches,
 					participants, waiting, curriculumInfos, showOwners, showCoaches, showParticipants, showWaiting, 
 					deduplicateList, title);
 		};
-		ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createPrintPopupLayout(printControllerCreator);
-		openInNewBrowserWindow(ureq, layoutCtrlr);
 	}
 	
 	public static class IdentityComparator implements Comparator<Identity> {
