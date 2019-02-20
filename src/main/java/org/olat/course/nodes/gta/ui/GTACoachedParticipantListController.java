@@ -311,7 +311,8 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 				}
 			}
 			
-			int numSubmittedDocs = task != null && task.getSubmissionNumOfDocs() != null? task.getSubmissionNumOfDocs(): 0;
+			int numSubmittedDocs = task != null && task.getSubmissionNumOfDocs() != null ? task.getSubmissionNumOfDocs().intValue() : 0;
+			int numOfCollectedDocs = task != null && task.getCollectionNumOfDocs() != null ? task.getCollectionNumOfDocs().intValue() : 0;
 
 			AssessmentEntry assessment = identityToAssessments.get(assessableIdentity.getIdentityKey());
 			Boolean userVisibility = assessment!=null? assessment.getUserVisibility(): null;
@@ -319,7 +320,8 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 			Boolean passed = assessment!=null? assessment.getPassed(): null;
 			
 			rows.add(new CoachedIdentityRow(assessableIdentity, task, submissionDueDate, syntheticSubmissionDate,
-					hasSubmittedDocument, markLink, userVisibility, score, passed, numSubmittedDocs));
+					hasSubmittedDocument, markLink, userVisibility, score, passed,
+					numSubmittedDocs, numOfCollectedDocs));
 		}
 		
 		tableModel.setObjects(rows);
