@@ -164,7 +164,7 @@ insert into o_stat_daily (businesspath, resid, day, value)
 				<value>
 update o_stat_weekly set value = value + delta.cnt
 from (select businesspath as tempbusinesspath,
-  (date_part('year', temptable.creationdate) || '-' || date_part('week', temptable.creationdate)) as w,
+  (date_part('year', temptable.creationdate) || '-' || to_char(temptable.creationdate, 'WW'))  as w,
   count(*) cnt
   from o_stat_temptable as temptable
   group by tempbusinesspath, w) as delta 
@@ -174,10 +174,10 @@ from (select businesspath as tempbusinesspath,
 insert into o_stat_weekly (businesspath, resid, week, value)  
   (select temptable.businesspath,
      int8(substring(temptable.businesspath from position(':' in temptable.businesspath) + 1 for position(']' in temptable.businesspath) - position(':' in temptable.businesspath) - 1)) as resid,
-     (date_part('year', temptable.creationdate) || '-' || date_part('week', temptable.creationdate)) as w,
+     (date_part('year', temptable.creationdate) || '-' || to_char(temptable.creationdate, 'WW')) as w,
      count(*) as cnt 
    from o_stat_temptable as temptable
-   left join o_stat_weekly old on (temptable.businesspath=old.businesspath and (date_part('year', temptable.creationdate) || '-' || date_part('week', temptable.creationdate))=old.week)
+   left join o_stat_weekly old on (temptable.businesspath=old.businesspath and (date_part('year', temptable.creationdate) || '-' || to_char(temptable.creationdate, 'WW'))=old.week)
    where temptable.businesspath != '' and old.businesspath is null
    group by temptable.businesspath, w);
 				</value>
