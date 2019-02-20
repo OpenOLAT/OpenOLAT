@@ -262,6 +262,7 @@ public class PageEditorController extends BasicController {
 		Link saveLink = LinkFactory.createLink("save.and.close", "save.element", getTranslator(), mainVC, this, Link.LINK);
 		saveLink.setIconLeftCSS("o_icon o_icon-sm o_icon_close");
 		saveLink.setElementCssClass("o_sel_save_element");
+		saveLink.setTitle("save.and.close");
 		saveLink.setUserObject(fragment);
 		fragment.setSaveLink(saveLink);
 
@@ -269,7 +270,7 @@ public class PageEditorController extends BasicController {
 		moveUpLink.setIconLeftCSS("o_icon o_icon-sm o_icon_move_up");
 		moveUpLink.setElementCssClass("o_sel_move_up_element");
 		moveUpLink.setCustomDisplayText("");
-		moveUpLink.setTitle(translate("move.up"));
+		moveUpLink.setTitle(("move.up"));
 		moveUpLink.setUserObject(fragment);
 		moveUpLink.setEnabled(fragments.indexOf(fragment) > 0 && secCallback.canMoveUpAndDown());
 		moveUpLink.setVisible(secCallback.canMoveUpAndDown());
@@ -288,6 +289,7 @@ public class PageEditorController extends BasicController {
 		Link deleteLink = LinkFactory.createLink("delete", "delete.element", getTranslator(), mainVC, this, Link.LINK);
 		deleteLink.setIconLeftCSS("o_icon o_icon-sm o_icon_delete_item");
 		deleteLink.setElementCssClass("o_sel_delete_element");
+		deleteLink.setTitle("delete");
 		deleteLink.setUserObject(fragment);
 		deleteLink.setVisible(secCallback.canDeleteElement());
 		deleteLink.setEnabled(secCallback.canDeleteElement());
