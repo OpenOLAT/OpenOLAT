@@ -45,8 +45,7 @@ import org.olat.test.JunitTestHelper;
  */
 public class WeeklyStatisticUpdateManagerTest extends AbstractStatisticUpdateManagerTest {
 
-	private final SimpleDateFormat weeklyFormat = new SimpleDateFormat("yyyy-w");
-	private final SimpleDateFormat weeklyMySQLFormat = new SimpleDateFormat("yyyy-ww");
+	private final SimpleDateFormat weeklyFormat = new SimpleDateFormat("yyyy-ww");
 	
 	private final WeeklyStatisticManager weeklyStatisticManager = new WeeklyStatisticManager();
 
@@ -129,10 +128,6 @@ public class WeeklyStatisticUpdateManagerTest extends AbstractStatisticUpdateMan
 		cal.set(Calendar.SECOND, 0);
 		cal.set(Calendar.MILLISECOND, 0);
 		
-		if(dbInstance.isMySQL()) {
-			weeklyMySQLFormat.setCalendar(cal);
-			return weeklyMySQLFormat.format(cal.getTime());
-		}
 		weeklyFormat.setCalendar(cal);
 		return weeklyFormat.format(cal.getTime());
 	}

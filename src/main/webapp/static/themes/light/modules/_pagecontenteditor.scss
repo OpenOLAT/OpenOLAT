@@ -197,6 +197,16 @@
 	}
 }
 
+.o_page_container_slot.col-md-3, .o_page_container_slot.col-md-4 {
+	.o_page_others_above a span {
+		display: none;
+	}
+	
+	.o_page_edit_toolbar ul>li {
+		padding-right: 0;
+	}
+}
+
 div.o_page_content_editor .gu-mirror, .o_page_content_editor .gu-transit {
 	box-shadow: none;
 }

@@ -45,10 +45,11 @@ public class CoachedIdentityRow implements CoachedElementRow {
 	private final BigDecimal score;
 	private final Boolean passed;
 	private final int numOfSubmissionDocs;
+	private final int numOfCollectedDocs;
 	
 	public CoachedIdentityRow(UserPropertiesRow identity, TaskLight task, Date submissionDueDate,
 			Date syntheticSubmissionDate, boolean hasSubmittedDocuments, FormLink markLink, Boolean userVisibility,
-			BigDecimal score, Boolean passed, int numOfSubmissionDocs) {
+			BigDecimal score, Boolean passed, int numOfSubmissionDocs, int numOfCollectedDocs) {
 		this.identity = identity;
 		this.task = task;
 		this.submissionDueDate = submissionDueDate;
@@ -59,6 +60,7 @@ public class CoachedIdentityRow implements CoachedElementRow {
 		this.score = score;
 		this.passed = passed;
 		this.numOfSubmissionDocs = numOfSubmissionDocs;
+		this.numOfCollectedDocs = numOfCollectedDocs;
 	}
 
 	@Override
@@ -128,6 +130,10 @@ public class CoachedIdentityRow implements CoachedElementRow {
 
 	public int getNumOfSubmissionDocs() {
 		return numOfSubmissionDocs;
+	}
+	
+	public int getNumOfCollectedDocs() {
+		return numOfCollectedDocs;
 	}
 	
 }
