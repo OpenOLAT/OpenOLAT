@@ -567,7 +567,8 @@ public class CourseFactory {
 				//course folder
 				File courseFolderZip = new File(fCanonicalCourseBasePath, "oocoursefolder.zip");
 				if(courseFolderZip.exists()) {
-					ZipUtil.unzipNonStrict(courseFolderZip, courseBaseContainer, null, false);
+					VFSContainer courseFolder = VFSManager.getOrCreateContainer(courseBaseContainer, PersistingCourseImpl.COURSEFOLDER);
+					ZipUtil.unzipNonStrict(courseFolderZip, courseFolder, null, false);
 					FileUtils.deleteFile(courseFolderZip);
 				}
 				return newCourse;
