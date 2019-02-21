@@ -102,7 +102,7 @@ public class ImportToCalendarManager {
 						log.audit("Failed to update calendar: " + type + " / " + id);
 					}
 				} catch(Exception ex) {
-					log.error("Cannot synchronize calendar (" + importedToCalendar.getKey() + ") from url: " + importUrl, ex);
+					log.warn("Cannot synchronize calendar (" + importedToCalendar.getKey() + ") from url: " + importUrl, ex);
 				}
 			} else {
 				log.audit("Delete imported calendar because of missing resource: " + type + " " + id + " with URL: " + importUrl);

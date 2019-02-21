@@ -121,7 +121,7 @@ public interface RepositoryService {
 	 * @param locale
 	 * @return
 	 */
-	public ErrorList deletePermanently(RepositoryEntry entry, Identity identity, Roles roles, Locale locale);
+	public ErrorList deletePermanently(RepositoryEntryRef entryRef, Identity identity, Roles roles, Locale locale);
 
 	/**
 	 * Delete only the database object

@@ -489,8 +489,7 @@ public class ProfileFormController extends FormBasicController {
 			OresHelper.createOLATResourceableInstance(Identity.class, identityToModify.getKey()), new SyncerExecutor() {
 			@Override
 			public void execute() {
-				UserManager um = UserManager.getInstance();
-				identityToModify = (Identity) DBFactory.getInstance().loadObject(identityToModify);
+				identityToModify = securityManager.loadIdentityByKey(identityToModify.getKey());
 				currentEmail = identityToModify.getUser().getProperty("email", null);
 
 				identityToModify = updateIdentityFromFormData(identityToModify);
@@ -511,7 +510,7 @@ public class ProfileFormController extends FormBasicController {
 						identityToModify.getUser().setProperty("email", currentEmail);
 					}
 				}
-				if (!um.updateUserFromIdentity(identityToModify)) {
+				if (!userManager.updateUserFromIdentity(identityToModify)) {
 					getWindowControl().setInfo(translate("profile.unsuccessful"));
 					// reload user data from db
 					identityToModify = securityManager.loadIdentityByKey(identityToModify.getKey());
