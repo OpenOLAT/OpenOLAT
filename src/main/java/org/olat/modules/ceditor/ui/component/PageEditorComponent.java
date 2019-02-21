@@ -229,7 +229,7 @@ public class PageEditorComponent extends FormBaseComponentImpl implements Compon
 		String targetId = "o_ccad_" + containerId + "_" + column;
 		
 		addElementsCtrl = new AddElementsController(ureq, wControl, provider,
-				referenceFragment, PageElementTarget.within, Integer.parseInt(column));
+				referenceFragment, PageElementTarget.within, Integer.parseInt(column), getTranslator());
 		addElementsCtrl.addControllerListener(this);
 		
 		callout = new CloseableCalloutWindowController(ureq, wControl, addElementsCtrl.getInitialComponent(),

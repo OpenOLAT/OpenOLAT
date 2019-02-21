@@ -30,6 +30,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.translator.Translator;
 import org.olat.modules.ceditor.InteractiveAddPageElementHandler;
 import org.olat.modules.ceditor.PageEditorProvider;
 import org.olat.modules.ceditor.PageElementHandler;
@@ -50,8 +51,8 @@ public class AddElementsController extends BasicController {
 	private final EditorFragment referenceFragment;
 	
 	public AddElementsController(UserRequest ureq, WindowControl wControl, PageEditorProvider provider,
-			EditorFragment referenceFragment, PageElementTarget target) {
-		super(ureq, wControl);
+			EditorFragment referenceFragment, PageElementTarget target, Translator fallbackTranslator) {
+		super(ureq, wControl, fallbackTranslator);
 		this.target = target;
 		containerColumn = -1;
 		this.referenceFragment = referenceFragment;
@@ -59,8 +60,8 @@ public class AddElementsController extends BasicController {
 	}
 	
 	public AddElementsController(UserRequest ureq, WindowControl wControl, PageEditorProvider provider,
-			EditorFragment referenceFragment, PageElementTarget target, int containerColumn) {
-		super(ureq, wControl);
+			EditorFragment referenceFragment, PageElementTarget target, int containerColumn, Translator fallbackTranslator) {
+		super(ureq, wControl, fallbackTranslator);
 		this.target = target;
 		this.containerColumn = containerColumn;
 		this.referenceFragment = referenceFragment;

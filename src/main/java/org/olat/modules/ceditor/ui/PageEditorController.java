@@ -299,7 +299,7 @@ public class PageEditorController extends BasicController {
 	}
 	
 	private void openAddElementCallout(UserRequest ureq, Link link, EditorFragment referenceFragment, PageElementTarget target) {
-		addElementsCtrl = new AddElementsController(ureq, getWindowControl(), provider, referenceFragment, target);
+		addElementsCtrl = new AddElementsController(ureq, getWindowControl(), provider, referenceFragment, target, getTranslator());
 		listenTo(addElementsCtrl);
 		
 		CalloutSettings calloutSettings;
