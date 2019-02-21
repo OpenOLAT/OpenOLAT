@@ -20,6 +20,7 @@
 
 package org.olat.core.gui.components.form.flexible.impl.elements;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -467,7 +468,7 @@ public class FileElementImpl extends FormItemImpl
 		if (tempUploadFile == null)
 			return null;
 		try {
-			return new FileInputStream(tempUploadFile);
+			return new BufferedInputStream(new FileInputStream(tempUploadFile), FileUtils.BSIZE);
 		} catch (FileNotFoundException e) {
 			log.error("Could not open stream for file element::" + getName(), e);
 		}

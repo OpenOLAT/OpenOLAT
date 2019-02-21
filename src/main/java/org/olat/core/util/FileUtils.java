@@ -690,8 +690,9 @@ public class FileUtils {
 	 * @return the file in form of a string
 	 */
 	public static String load(File source, String encoding) {
-		try(InputStream in=new FileInputStream(source)) {
-			return load(in, encoding);
+		try(InputStream in=new FileInputStream(source);
+				BufferedInputStream bis = new BufferedInputStream(in, FileUtils.BSIZE)) {
+			return load(bis, encoding);
 		} catch (IOException e) {
 			throw new RuntimeException("could not copy file to ram: " + source.getAbsolutePath());
 		}
@@ -896,8 +897,9 @@ public class FileUtils {
 	
 	public static void bcopy (File src, File dst, String wt) throws IOException {
 		try(InputStream in=new FileInputStream(src);
+				BufferedInputStream bis = new BufferedInputStream(in, FileUtils.BSIZE);
 				OutputStream out=new FileOutputStream(dst)) {
-			cpio(in, out, wt);
+			cpio(bis, out, wt);
 		} catch(IOException e) {
 			log.error("", e);
 		}

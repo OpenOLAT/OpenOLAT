@@ -19,6 +19,7 @@
  */
 package org.olat.core.id.context;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -134,8 +135,9 @@ public class HistoryManager {
 	
 	protected HistoryPoint readHistory(File resumeXml) throws IOException {
 		if(resumeXml.exists()) {
-			try(FileInputStream in = new FileInputStream(resumeXml)) {
-				return (HistoryPoint)historyReadStream.fromXML(in);
+			try(FileInputStream in = new FileInputStream(resumeXml);
+					BufferedInputStream bis = new BufferedInputStream(in, FileUtils.BSIZE)) {
+				return (HistoryPoint)historyReadStream.fromXML(bis);
 			} catch(IOException e) {
 				log.error("Cannot read this file: " + resumeXml, e);
 				throw e;

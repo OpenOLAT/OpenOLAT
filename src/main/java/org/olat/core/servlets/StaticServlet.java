@@ -19,6 +19,7 @@
  */
 package org.olat.core.servlets;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -202,8 +203,9 @@ public class StaticServlet extends HttpServlet {
 			response.setContentType(mimeType);
 			response.setContentLengthLong(file.length());
 
-			try(InputStream in = new FileInputStream(file)) {
-				FileUtils.cpio(in, response.getOutputStream(), "static");
+			try(InputStream in = new FileInputStream(file);
+					BufferedInputStream bis = new BufferedInputStream(in, FileUtils.BSIZE)) {
+				FileUtils.cpio(bis, response.getOutputStream(), "static");
 			} catch(Exception ex) {
 				log.error("", ex);
 			}

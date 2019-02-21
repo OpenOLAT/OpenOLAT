@@ -19,6 +19,7 @@
  */
 package org.olat.course.nodes.gta.ui;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -35,6 +36,7 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.ZipUtil;
 import org.xml.sax.Attributes;
@@ -124,11 +126,12 @@ public class HTMLZippedMediaResource implements MediaResource {
 	}
 	
 	public HTMLHandler filter(File file) {
-		try(InputStream in = new FileInputStream(file)) {
+		try(InputStream in = new FileInputStream(file);
+				BufferedInputStream bis = new BufferedInputStream(in, FileUtils.BSIZE)) {
 			SAXParser parser = new SAXParser();
 			HTMLHandler contentHandler = new HTMLHandler();
 			parser.setContentHandler(contentHandler);
-			parser.parse(new InputSource(in));
+			parser.parse(new InputSource(bis));
 			return contentHandler;
 		} catch (Exception e) {
 			log.error("", e);

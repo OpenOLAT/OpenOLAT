@@ -26,6 +26,7 @@
 
 package org.olat.core.util.i18n;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -841,7 +842,9 @@ public class I18nManager {
 			// Now load the properties from resource (file, classpath or
 			// langpacks)
 			if (is != null) {
-				props.load(is);
+				BufferedInputStream bis = new BufferedInputStream(is, FileUtils.BSIZE);
+				props.load(bis);
+				bis.close();
 			}
 		} catch (IOException e) {
 			throw new AssertException("LocalStrings for key::" + key + " could not be loaded", e);

@@ -26,6 +26,7 @@
 
 package org.olat.core.util.vfs.meta;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -424,8 +425,9 @@ public class MetaInfoFileImpl implements MetaInfo, Serializable {
 	public byte[] readBinary() {
 		byte[] content = null;
 		try(InputStream in = new FileInputStream(metaFile);
+				BufferedInputStream bis = new BufferedInputStream(in, FileUtils.BSIZE);
 				ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-			FileUtils.cpio(in, out, "");
+			FileUtils.cpio(bis, out, "");
 			content = out.toByteArray();
 		} catch(IOException e) {
 			log.error("", e);
@@ -462,11 +464,12 @@ public class MetaInfoFileImpl implements MetaInfo, Serializable {
 	private boolean parseSAX(File fMeta) {
 		if (fMeta == null || !fMeta.exists() || fMeta.isDirectory()) return false;
 
-		try(InputStream in = new FileInputStream(fMeta)) {
+		try(InputStream in = new FileInputStream(fMeta);
+				BufferedInputStream bis = new BufferedInputStream(in, FileUtils.BSIZE)) {
 			//the performance gain of the SAX Parser over the DOM Parser allow
 			//this to be synchronized (factor 5 to 10 quicker)
 			synchronized(saxParser) {
-				saxParser.parse(in, new MetaHandler(this));
+				saxParser.parse(bis, new MetaHandler(this));
 				if(uuid == null) {
 					generateUUID();
 					write();

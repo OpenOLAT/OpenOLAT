@@ -19,6 +19,7 @@
  */
 package org.olat.core.commons.services.image;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -44,11 +45,11 @@ public class ImageUtils {
 	
 	private static final OLog log = Tracing.createLoggerFor(ImageUtils.class);
 	
-	
 	public static Size getImageSize(File image) {
-		try(InputStream in = new FileInputStream(image)) {
+		try(InputStream in = new FileInputStream(image);
+				BufferedInputStream bis = new BufferedInputStream(in, FileUtils.BSIZE)) {
 			String suffix = FileUtils.getFileSuffix(image.getName());
-			return getImageSize(suffix, in);
+			return getImageSize(suffix, bis);
 		} catch (IOException e) {
 			return null;
 		}
@@ -77,46 +78,4 @@ public class ImageUtils {
 		}
 		return result;
 	}
-	/*
-	public int getPngResolution() throws IOException {
-        ImageInputStream imageInput = ImageIO.createImageInputStream(f);
-        Iterator it = ImageIO.getImageReaders(imageInput);
-        ImageReader reader = (ImageReader) it.next();
-
-        reader.setInput(imageInput);
-        IIOMetadata meta = reader.getImageMetadata(0);
-        org.w3c.dom.Node n = meta.getAsTree("javax_imageio_1.0");
-        n = n.getFirstChild();
-
-        while (n != null) {
-            if (n.getNodeName().equals("Dimension")) {
-                org.w3c.dom.Node n2 = n.getFirstChild();
-
-                while (n2 != null) {
-                    if (n2.getNodeName().equals("HorizontalPixelSize")) {
-                        org.w3c.dom.NamedNodeMap nnm = n2.getAttributes();
-                        org.w3c.dom.Node n3 = nnm.item(0);
-                        float hps = Float.parseFloat(n3.getNodeValue());
-                        xDPI = Math.round(25.4f / hps);
-                    }
-                    if (n2.getNodeName().equals("VerticalPixelSize")) {
-                        org.w3c.dom.NamedNodeMap nnm = n2.getAttributes();
-                        org.w3c.dom.Node n3 = nnm.item(0);
-                        float vps = Float.parseFloat(n3.getNodeValue());
-                        yDPI = Math.round(25.4f / vps);
-                    }
-                    n2 = n2.getNextSibling();
-                }
-            }
-            n = n.getNextSibling();
-        }
-
-        if (xDPI == yDPI) {
-            resolution = xDPI;
-        } else {
-            resolution = 0;
-        }
-        return resolution;
-    }
-	*/
 }

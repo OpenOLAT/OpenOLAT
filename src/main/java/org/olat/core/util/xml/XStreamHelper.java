@@ -26,6 +26,7 @@
 package org.olat.core.util.xml;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -252,7 +253,7 @@ public class XStreamHelper {
 	 */
 	public static Object readObject(XStream xStream, File file) {
 		try(FileInputStream fis = new FileInputStream(file);
-				BufferedInputStream bis = new BufferedInputStream(fis)) {
+				BufferedInputStream bis = new BufferedInputStream(fis, FileUtils.BSIZE)) {
 			return readObject(xStream, bis);
 		} catch (IOException e) {
 			throw new OLATRuntimeException(XStreamHelper.class, "could not read Object from file: " + file.getAbsolutePath(), e);
@@ -355,8 +356,9 @@ public class XStreamHelper {
 	 *            the object to be serialized
 	 */
 	public static void writeObject(XStream xStream, File file, Object obj) {
-		try(OutputStream out=new FileOutputStream(file)) {
-			writeObject(xStream, out, obj);
+		try(OutputStream out=new FileOutputStream(file);
+				BufferedOutputStream bout = new BufferedOutputStream(out, FileUtils.BSIZE)) {
+			writeObject(xStream, bout, obj);
 		} catch (Exception e) {
 			throw new OLATRuntimeException(XStreamHelper.class, "Could not write object to file: " + file.getAbsolutePath(), e);
 		}

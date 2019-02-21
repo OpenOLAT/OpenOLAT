@@ -772,8 +772,9 @@ public class VFSManager {
 	 * @return
 	 */
 	public static boolean copyContent(File source, VFSLeaf target) {
-		try(InputStream inStream = new FileInputStream(source)) {
-			return copyContent(inStream, target);
+		try(InputStream in = new FileInputStream(source);
+				BufferedInputStream bis = new BufferedInputStream(in, FileUtils.BSIZE)) {
+			return copyContent(bis, target);
 		} catch(IOException ex) {
 			log.error("", ex);
 			return false;
