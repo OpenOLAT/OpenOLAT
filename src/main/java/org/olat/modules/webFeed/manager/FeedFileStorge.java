@@ -19,6 +19,7 @@
  */
 package org.olat.modules.webFeed.manager;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,6 +34,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.LocalFileImpl;
@@ -334,8 +336,9 @@ public class FeedFileStorge {
 
 		if (feedDir != null) {
 			Path feedPath = feedDir.resolve(FeedFileStorge.FEED_FILE_NAME);
-			try (InputStream in = Files.newInputStream(feedPath)) {
-				feed = (FeedImpl) XStreamHelper.readObject(xstream, in);
+			try (InputStream in = Files.newInputStream(feedPath);
+					BufferedInputStream bis = new BufferedInputStream(in, FileUtils.BSIZE)) {
+				feed = (FeedImpl) XStreamHelper.readObject(xstream, bis);
 			} catch (IOException e) {
 				log.warn("Feed XML-File could not be found on file system. Feed path: " + feedPath, e);
 			}

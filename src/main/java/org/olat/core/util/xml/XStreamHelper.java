@@ -308,8 +308,6 @@ public class XStreamHelper {
 		} catch (Exception e) {
 			throw new OLATRuntimeException(XStreamHelper.class,
 					"could not read Object from inputstream: " + is, e);
-		} finally {
-			FileUtils.closeSafely(is);
 		}
 	}
 	
@@ -341,7 +339,11 @@ public class XStreamHelper {
 	 *            the object to be serialized
 	 */
 	public static void writeObject(XStream xStream, VFSLeaf vfsLeaf, Object obj) {
-		writeObject(xStream, vfsLeaf.getOutputStream(false), obj);
+		try(OutputStream out=vfsLeaf.getOutputStream(false)) {
+			writeObject(xStream, out, obj);
+		} catch(Exception e) {
+			throw new OLATRuntimeException(XStreamHelper.class, "Could not write object to file: " + vfsLeaf, e);
+		}
 	}
 
 	/**

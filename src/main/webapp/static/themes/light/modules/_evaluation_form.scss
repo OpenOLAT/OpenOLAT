@@ -17,6 +17,9 @@
 			display:inline-block;
 			text-align: center;
 			align-self: flex-end;
+			-webkit-hyphens: auto;
+			-ms-hyphens: auto;
+			hyphens: auto;
 		}
 	}
  

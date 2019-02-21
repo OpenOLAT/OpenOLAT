@@ -93,7 +93,7 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 	private static final String EDITORTREEMODEL_XML = "editortreemodel.xml";
 	private static final String RUNSTRUCTURE_XML = "runstructure.xml";
 	private static final String ORES_TYPE_NAME = CourseModule.getCourseTypeName();
-	private static final String COURSEFOLDER = "coursefolder";
+	public static final String COURSEFOLDER = "coursefolder";
 
 	private Long resourceableId;
 	private Structure runStructure;
@@ -239,6 +239,9 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 			throw new OLATRuntimeException(this.getClass(), "Could not create course base path:" + courseRootContainer, null);
 	}
 
+	/**
+	 * @return The directory "coursefolder" or storage folder of the course
+	 */
 	protected LocalFolderImpl getIsolatedCourseFolder() {
 		// create local course folder
 		LocalFolderImpl isolatedCourseFolder = VFSManager.olatRootContainer(courseRootContainer.getRelPath() + File.separator + COURSEFOLDER, null);
@@ -254,11 +257,17 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 		return isolatedCourseFolder;
 	}
 	
+	/**
+	 * @return The directory "coursefolder" or storage folder of the course
+	 */
 	protected File getIsolatedCourseBaseFolder() {
 		// create local course folder
 		return VFSManager.olatRootDirectory(courseRootContainer.getRelPath() + File.separator + COURSEFOLDER);
 	}
 	
+	/**
+	 * @return The directory "coursefolder" or storage folder of the course
+	 */
 	protected VFSContainer getIsolatedCourseBaseContainer() {
 		// create local course folder
 		return VFSManager.olatRootContainer(courseRootContainer.getRelPath() + File.separator + COURSEFOLDER, null);
@@ -322,11 +331,7 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 		tv.visitAll();
 		log.info("exportToFilesystem: exporting course "+this+": exporting all nodes...done.");
 		
-		//OLAT-5368: do intermediate commit to avoid transaction timeout
-		// discussion intermediatecommit vs increased transaction timeout:
-		//  pro intermediatecommit: not much
-		//  pro increased transaction timeout: would fix OLAT-5368 but only move the problem
-		//@TODO OLAT-2597: real solution is a long-running background-task concept...
+		// Do intermediate commit to avoid transaction timeout
 		DBFactory.getInstance().intermediateCommit();
 
 		// export shared folder
@@ -343,11 +348,7 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 			log.info("exportToFilesystem: exporting course "+this+": shared folder...done.");
 		}
 		
-		//OLAT-5368: do intermediate commit to avoid transaction timeout
-		// discussion intermediatecommit vs increased transaction timeout:
-		//  pro intermediatecommit: not much
-		//  pro increased transaction timeout: would fix OLAT-5368 but only move the problem
-		//@TODO OLAT-2597: real solution is a long-running background-task concept...
+		// Do intermediate commit to avoid transaction timeout
 		DBFactory.getInstance().intermediateCommit();
 
 		// export glossary
@@ -365,11 +366,7 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 			log.info("exportToFilesystem: exporting course "+this+": glossary...done.");
 		}
 		
-		//OLAT-5368: do intermediate commit to avoid transaction timeout
-		// discussion intermediatecommit vs increased transaction timeout:
-		//  pro intermediatecommit: not much
-		//  pro increased transaction timeout: would fix OLAT-5368 but only move the problem
-		//@TODO OLAT-2597: real solution is a long-running background-task concept...
+		// Do intermediate commit to avoid transaction timeout
 		DBFactory.getInstance().intermediateCommit();
 
 		log.info("exportToFilesystem: exporting course "+this+": configuration and repo data...");
@@ -382,11 +379,7 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 		RepositoryEntryImportExport importExport = new RepositoryEntryImportExport(myRE, fExportedDataDir);
 		importExport.exportDoExportProperties();
 		
-		//OLAT-5368: do intermediate commit to avoid transaction timeout
-		// discussion intermediatecommit vs increased transaction timeout:
-		//  pro intermediatecommit: not much
-		//  pro increased transaction timeout: would fix OLAT-5368 but only move the problem
-		//@TODO OLAT-2597: real solution is a long-running background-task concept...
+		// Do intermediate commit to avoid transaction timeout
 		DBFactory.getInstance().intermediateCommit();
 		
 		//export reminders
@@ -488,16 +481,12 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 		}
 	}
 
-	/**
-	 * @see org.olat.core.id.OLATResourceablegetResourceableTypeName()
-	 */
+	@Override
 	public String getResourceableTypeName() {
 		return ORES_TYPE_NAME;
 	}
 
-	/**
-	 * @see org.olat.core.id.OLATResourceablegetResourceableId()
-	 */
+	@Override
 	public Long getResourceableId() {
 		return resourceableId;
 	}
@@ -531,10 +520,7 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 		CoreSpringFactory.getImpl(CourseConfigManager.class).saveConfigTo(this, courseConfig);
 	}
 	
-	/**
-	 * 
-	 * @return
-	 */
+	@Override
 	public CourseConfig getCourseConfig() {
 		return courseConfig;
 	}
@@ -548,16 +534,12 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 		this.hasAssessableNodes = AssessmentHelper.checkForAssessableNodes(runStructure.getRootNode());
 	}
 
-	/**
-	 * @see org.olat.course.ICourse#hasAssessableNodes()
-	 */
+	@Override
 	public boolean hasAssessableNodes() {
 		return hasAssessableNodes;
 	}
 
-	/**
-	 * @see java.lang.Object#toString()
-	 */
+	@Override
 	public String toString() {
 		return "Course:[" + getResourceableId() + "," + courseTitle + "], " + super.toString();
 	}
@@ -654,14 +636,11 @@ class NodeExportVisitor implements Visitor {
 	 * 
 	 * @see org.olat.core.util.tree.Visitor#visit(org.olat.core.util.nodes.INode)
 	 */
+	@Override
 	public void visit(INode node) {
 		CourseEditorTreeNode cNode = (CourseEditorTreeNode) node;
 		cNode.getCourseNode().exportNode(exportDirectory, course);
-		//OLAT-5368: do frequent intermediate commits to avoid transaction timeout
-		// discussion intermediatecommit vs increased transaction timeout:
-		//  pro intermediatecommit: not much
-		//  pro increased transaction timeout: would fix OLAT-5368 but only move the problem
-		//@TODO OLAT-2597: real solution is a long-running background-task concept...
+		// Do frequent intermediate commits to avoid transaction timeout
 		DBFactory.getInstance().intermediateCommit();
 	}
 

@@ -471,14 +471,17 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	}
 
 	@Override
-	public ErrorList deletePermanently(RepositoryEntry entry, Identity identity, Roles roles, Locale locale) {
+	public ErrorList deletePermanently(RepositoryEntryRef entryRef, Identity identity, Roles roles, Locale locale) {
 		ErrorList errors = new ErrorList();
 
 		boolean debug = log.isDebug();
 
 		// invoke handler delete callback
-		if(debug) log.debug("deleteRepositoryEntry start entry=" + entry);
-		entry = (RepositoryEntry) dbInstance.loadObject(entry,true);
+		RepositoryEntry entry = repositoryEntryDAO.loadByKey(entryRef.getKey());
+		if(entry == null) {
+			return errors;
+		}
+
 		if(debug) log.debug("deleteRepositoryEntry after load entry=" + entry);
 		RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(entry);
 		OLATResource resource = entry.getOlatResource();
