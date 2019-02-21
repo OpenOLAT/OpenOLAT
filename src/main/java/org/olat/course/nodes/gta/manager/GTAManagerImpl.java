@@ -1522,6 +1522,8 @@ public class GTAManagerImpl implements GTAManager {
 		TaskImpl taskImpl = (TaskImpl)task;
 		taskImpl.setSubmissionDate(new Date());
 		taskImpl.setSubmissionNumOfDocs(numOfDocs);
+		taskImpl.setCollectionDate(null);
+		taskImpl.setCollectionNumOfDocs(null);
 		return updateTask(task, review, cNode, by);
 	}
 
