@@ -81,8 +81,10 @@
 						|| jQuery(e.target).closest(".mce-menu").length > 0
 						|| jQuery(e.target).closest(".mce-window").length > 0
 						|| jQuery(e.target).closest(".mce-container").length > 0
-						|| jQuery(e.target).closest(".mce-widget").length > 0;
-					if(!edited && !excludedEls && jQuery(".o_layered_panel .modal-dialog").length == 0) {
+						|| jQuery(e.target).closest(".mce-widget").length > 0
+						|| jQuery(e.target).closest(".o_layered_panel .popover").length > 0
+						|| jQuery(e.target).closest(".o_layered_panel .modal-dialog").length > 0;
+					if(!edited && !excludedEls) {
 						o_XHREvent(componentUrl, false, false, 'cid', 'close_edit_fragment');
 					}
 				}
