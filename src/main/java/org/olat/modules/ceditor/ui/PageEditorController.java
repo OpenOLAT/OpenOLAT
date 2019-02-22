@@ -97,6 +97,7 @@ public class PageEditorController extends BasicController {
 		
 		addElementButton = LinkFactory.createCustomLink("add.element", "add.element", null, Link.BUTTON | Link.NONTRANSLATED, mainVC, this);
 		addElementButton.setIconLeftCSS("o_icon o_icon-lg o_icon_add");
+		addElementButton.setElementCssClass("o_sel_add_element_main");
 		
 		loadModel(ureq);
 		putInitialPanel(mainVC);
@@ -287,7 +288,7 @@ public class PageEditorController extends BasicController {
 		addElementsCtrl.addControllerListener(this);
 		
 		addCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), addElementsCtrl.getInitialComponent(),
-				addElementButton, "", true, "o_sel_flexi_filter_callout");
+				addElementButton, "", true, "o_sel_add_element_callout");
 		addCalloutCtrl.addControllerListener(this);
 		addCalloutCtrl.activate();
 	}

@@ -43,12 +43,22 @@ public class EntryPage {
 	
 	public EntryPage assertOnPage(String title) {
 		By metaTitleBy = By.xpath("//div[contains(@class,'o_page_lead')]//h2[contains(text(),'" + title + "')]");
-		OOGraphene.waitElement(metaTitleBy, 5, browser);
+		OOGraphene.waitElement(metaTitleBy, browser);
+		return this;
+	}
+	
+	public EntryPage openElementsChooser() {
+		By addBy = By.cssSelector("a.btn.o_sel_add_element_main");
+		OOGraphene.waitElement(addBy, browser);
+		browser.findElement(addBy).click();
+		OOGraphene.waitBusy(browser);
+		By addCalloutBy = By.cssSelector("div.popover div.o_sel_add_element_callout");
+		OOGraphene.waitElement(addCalloutBy, browser);
 		return this;
 	}
 	
 	public EntryPage addTitle(String title) {
-		By addTitleBy = By.cssSelector("a#o_coadd_htitle");
+		By addTitleBy = By.cssSelector("a#o_coadd_el_htitle");
 		browser.findElement(addTitleBy).click();
 		OOGraphene.waitElement(editFragmentBy, 5, browser);
 		OOGraphene.tinymce(title, ".o_page_part.o_page_edit", browser);
@@ -82,7 +92,7 @@ public class EntryPage {
 	}
 	
 	public EntryPage addImage(String title, File image) {
-		By addImageBy = By.cssSelector("a#o_coadd_image");
+		By addImageBy = By.cssSelector("a#o_coadd_el_image");
 		browser.findElement(addImageBy).click();
 		OOGraphene.waitModalDialog(browser);
 		
@@ -114,7 +124,7 @@ public class EntryPage {
 	}
 	
 	public EntryPage addDocument(String title, File document) {
-		By addDocumentBy = By.cssSelector("a#o_coadd_bc");
+		By addDocumentBy = By.cssSelector("a#o_coadd_el_bc");
 		browser.findElement(addDocumentBy).click();
 		OOGraphene.waitModalDialog(browser);
 		
@@ -140,7 +150,7 @@ public class EntryPage {
 	}
 	
 	public EntryPage addCitation(String title, String citation) {
-		By addCitationBy = By.cssSelector("a#o_coadd_citation");
+		By addCitationBy = By.cssSelector("a#o_coadd_el_citation");
 		browser.findElement(addCitationBy).click();
 		OOGraphene.waitModalDialog(browser);
 		
