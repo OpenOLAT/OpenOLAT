@@ -2,21 +2,3 @@ $r.render("page_editor")
 <div class="o_button_group">
 	$r.render("add.element")
 </div>
-#if($r.isNotEmpty($addElementLinks))
-<div class="o_page_add_contents panel panel-placeholder">
-	<div class="panel-heading">
-		<h4 class="panel-title">$r.translate("add.content.title")</h4>
-	</div>
-	<div class="panel-body">
-		<p>$r.translate("add.content.descr")</p>
-		<div class="o_button_group o_toolbar">
-			<ul class="o_tools o_tools_left list-inline">
-			#foreach($addElementLink in $addElementLinks)
-				<li class="o_tool">$r.render($addElementLink)</li>
-			#end
-			</ul>
-		</div>
-	</div>
-</div>
-#end
-
