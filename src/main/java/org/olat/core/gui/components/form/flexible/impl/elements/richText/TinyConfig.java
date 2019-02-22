@@ -74,8 +74,8 @@ public class TinyConfig {
 	}
 	//paragraph editor for content editor
 	static {
-		String plugins = "contextmenu,textcolor,hr,noneditable,paste,link,olatmatheditor,tabfocus,noneditable";
-		String tools1 = "bold italic underline strikethrough | alignjustify alignright aligncenter alignleft | bullist | link | olatmatheditor";
+		String plugins = "lists,contextmenu,textcolor,hr,noneditable,paste,link,olatmatheditor,tabfocus,noneditable";
+		String tools1 = "bold italic underline strikethrough | alignjustify alignright aligncenter alignleft | fontsizeselect forecolor backcolor | bullist numlist | link | olatmatheditor";
 		paragraphEditorConfig = new TinyConfig(plugins, null, tools1);
 	}
 	//full profile
