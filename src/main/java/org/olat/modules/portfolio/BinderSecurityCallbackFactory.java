@@ -462,12 +462,14 @@ public class BinderSecurityCallbackFactory {
 			if(section == null) {
 				return owner && (deliveryOptions == null || deliveryOptions.isAllowNewEntries());
 			}
-			if(owner) {
-				return !SectionStatus.isClosed(section)
-						&& section.getSectionStatus() != SectionStatus.submitted
-						&& (deliveryOptions == null || deliveryOptions.isAllowNewEntries());
-			}
-			return false;
+			return owner && !SectionStatus.isClosed(section)
+					&& section.getSectionStatus() != SectionStatus.submitted
+					&& (deliveryOptions == null || deliveryOptions.isAllowNewEntries());
+		}
+		
+		@Override
+		public boolean canNewPageWithoutAssignment() {
+			return deliveryOptions == null || deliveryOptions.isOptionalTemplateForEntry();
 		}
 
 		/**
@@ -885,6 +887,11 @@ public class BinderSecurityCallbackFactory {
 
 		@Override
 		public boolean canAddPage(Section section) {
+			return false;
+		}
+
+		@Override
+		public boolean canNewPageWithoutAssignment() {
 			return false;
 		}
 

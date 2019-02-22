@@ -643,7 +643,7 @@ public class BinderPageListController extends AbstractPageListController {
 	private void doCreateNewPage(UserRequest ureq, Section preSelectedSection) {
 		if(newPageCtrl != null) return;
 		
-		newPageCtrl = new PageMetadataEditController(ureq, getWindowControl(), binder, false, preSelectedSection, true);
+		newPageCtrl = new PageMetadataEditController(ureq, getWindowControl(), secCallback, binder, false, preSelectedSection, true);
 		listenTo(newPageCtrl);
 		
 		String title = translate("create.new.page");

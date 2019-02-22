@@ -55,6 +55,7 @@ public class BinderDeliveryOptionsController extends FormBasicController impleme
 	private MultipleSelectionElement templatesEl;
 	private MultipleSelectionElement newEntriesEl;
 	private MultipleSelectionElement deleteBinderEl;
+	private MultipleSelectionElement mandatoryTemplatesPageEl;
 	
 	private CloseableModalController deleteOptionCmcCtrl;
 	private ConfirmDeleteOptionController deleteOptionCtrl;
@@ -92,8 +93,16 @@ public class BinderDeliveryOptionsController extends FormBasicController impleme
 		}
 		
 		templatesEl = uifactory.addCheckboxesHorizontal("canTemplates", "allow.templates.folder", formLayout, onKeys, onValues);
+		templatesEl.addActionListener(FormEvent.ONCHANGE);
 		if(deliveryOptions.isAllowTemplatesFolder()) {
 			templatesEl.select(onKeys[0], true);
+		}
+		
+		mandatoryTemplatesPageEl = uifactory.addCheckboxesHorizontal("mandatoryTemplates", "allow.templates.mandatory", formLayout, onKeys, onValues);
+		mandatoryTemplatesPageEl.setVisible(templatesEl.isAtLeastSelected(1));
+		mandatoryTemplatesPageEl.setEnabled(templatesEl.isAtLeastSelected(1));
+		if(!deliveryOptions.isOptionalTemplateForEntry()) {
+			mandatoryTemplatesPageEl.select(onKeys[0], true);
 		}
 		
 		FormLayoutContainer buttonsLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
@@ -119,6 +128,9 @@ public class BinderDeliveryOptionsController extends FormBasicController impleme
 			if(deleteBinderEl.isAtLeastSelected(1)) {
 				doConfirmDeleteOption(ureq);
 			}
+		} else if(source == templatesEl) {
+			mandatoryTemplatesPageEl.setVisible(templatesEl.isAtLeastSelected(1));
+			mandatoryTemplatesPageEl.setEnabled(templatesEl.isAtLeastSelected(1));
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -131,6 +143,8 @@ public class BinderDeliveryOptionsController extends FormBasicController impleme
 		deliveryOptions.setAllowDeleteBinder(allowDeleteBinder);
 		boolean allowTemplatesFolder = templatesEl.isAtLeastSelected(1);
 		deliveryOptions.setAllowTemplatesFolder(allowTemplatesFolder);
+		boolean mandatoryTemplates = mandatoryTemplatesPageEl.isAtLeastSelected(1);
+		deliveryOptions.setOptionalTemplateForEntry(!mandatoryTemplates);
 		portfolioService.setDeliveryOptions(binder.getOlatResource(), deliveryOptions);
 		fireEvent(ureq, new ReloadSettingsEvent());
 	}
@@ -198,7 +212,7 @@ public class BinderDeliveryOptionsController extends FormBasicController impleme
 
 		@Override
 		protected boolean validateFormLogic(UserRequest ureq) {
-			boolean allOk = true;
+			boolean allOk = super.validateFormLogic(ureq);
 			
 			acknowledgeEl.clearError();
 			if(!acknowledgeEl.isAtLeastSelected(1)) {
@@ -206,7 +220,7 @@ public class BinderDeliveryOptionsController extends FormBasicController impleme
 				allOk &= false;
 			}
 			
-			return allOk & super.validateFormLogic(ureq);
+			return allOk;
 		}
 
 		@Override

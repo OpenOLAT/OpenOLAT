@@ -196,7 +196,7 @@ public class AssignmentTemplatesListController extends FormBasicController imple
 	private void doCreateNewPage(UserRequest ureq) {
 		if(newPageCtrl != null) return;
 		
-		newPageCtrl = new PageMetadataEditController(ureq, getWindowControl(), binder, false, (Section)null, true);
+		newPageCtrl = new PageMetadataEditController(ureq, getWindowControl(), secCallback, binder, false, (Section)null, true);
 		listenTo(newPageCtrl);
 		
 		String title = translate("create.new.page");
@@ -208,7 +208,7 @@ public class AssignmentTemplatesListController extends FormBasicController imple
 	private void doCreateNewPage(UserRequest ureq, Assignment assignment) {
 		if(newPageCtrl != null) return;
 		
-		newPageCtrl = new PageMetadataEditController(ureq, getWindowControl(), binder, false, assignment, true);
+		newPageCtrl = new PageMetadataEditController(ureq, getWindowControl(), secCallback, binder, false, assignment, true);
 		listenTo(newPageCtrl);
 		
 		String title = translate("create.new.page");

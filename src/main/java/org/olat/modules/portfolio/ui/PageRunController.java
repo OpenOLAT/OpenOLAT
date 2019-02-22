@@ -616,7 +616,7 @@ public class PageRunController extends BasicController implements TooledControll
 		}
 		
 		boolean editMetadata = secCallback.canEditPageMetadata(page, assignments);
-		editMetadataCtrl = new PageMetadataEditController(ureq, getWindowControl(),
+		editMetadataCtrl = new PageMetadataEditController(ureq, getWindowControl(), secCallback,
 				binder, editMetadata, section, editMetadata, page, editMetadata);
 		listenTo(editMetadataCtrl);
 		

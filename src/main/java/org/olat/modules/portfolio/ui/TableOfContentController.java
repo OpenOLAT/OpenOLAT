@@ -843,7 +843,7 @@ public class TableOfContentController extends BasicController implements TooledC
 	private void doCreateNewEntry(UserRequest ureq) {
 		if(newPageCtrl != null) return;
 		
-		newPageCtrl = new PageMetadataEditController(ureq, getWindowControl(), binder, false, (Section)null, true);
+		newPageCtrl = new PageMetadataEditController(ureq, getWindowControl(), secCallback, binder, false, (Section)null, true);
 		listenTo(newPageCtrl);
 		
 		String title = translate("create.new.page");

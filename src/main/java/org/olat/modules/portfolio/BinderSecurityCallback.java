@@ -96,6 +96,12 @@ public interface BinderSecurityCallback {
 	
 	/**
 	 * 
+	 * @return
+	 */
+	public boolean canNewPageWithoutAssignment();
+	
+	/**
+	 * 
 	 * @return true if the user can create a new assignment (limited to the template).
 	 */
 	public boolean canNewAssignment();

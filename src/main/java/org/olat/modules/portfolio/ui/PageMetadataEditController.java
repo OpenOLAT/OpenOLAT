@@ -55,6 +55,7 @@ import org.olat.core.util.io.SystemFilenameFilter;
 import org.olat.modules.portfolio.Assignment;
 import org.olat.modules.portfolio.AssignmentType;
 import org.olat.modules.portfolio.Binder;
+import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.Category;
 import org.olat.modules.portfolio.Media;
 import org.olat.modules.portfolio.MediaHandler;
@@ -104,6 +105,7 @@ public class PageMetadataEditController extends FormBasicController {
 	private Page page;
 	private Binder currentBinder;
 	private Section currentSection;
+	private final BinderSecurityCallback secCallback;
 
 	private int counter;
 	private File tempFolder;
@@ -121,11 +123,10 @@ public class PageMetadataEditController extends FormBasicController {
 	@Autowired
 	private PortfolioFileStorage portfolioFileStorage;
 	
-	public PageMetadataEditController(UserRequest ureq, WindowControl wControl,
-			Binder currentBinder, boolean chooseBinder,
-			Section currentSection, boolean chooseSection) {
+	public PageMetadataEditController(UserRequest ureq, WindowControl wControl, BinderSecurityCallback secCallback,
+			Binder currentBinder, boolean chooseBinder, Section currentSection, boolean chooseSection) {
 		super(ureq, wControl);
-		
+		this.secCallback = secCallback;
 		this.currentBinder = currentBinder;
 		this.currentSection = currentSection;
 		
@@ -133,13 +134,26 @@ public class PageMetadataEditController extends FormBasicController {
 		this.chooseSection = chooseSection;
 		editTitleAndSummary = true;
 		initForm(ureq);
+		
+		if(assignmentsTemplatesEl != null && assignmentsTemplatesEl.getKeys().length > 0) {
+			Assignment assignmentTemplate = null;
+			if(assignmentsTemplatesEl.isOneSelected()) {
+				assignmentTemplate = assignmentTemplatesMap.get(assignmentsTemplatesEl.getSelectedKey());
+			} else if(StringHelper.containsNonWhitespace(assignmentsTemplatesEl.getKeys()[0])) {
+				assignmentsTemplatesEl.select(assignmentsTemplatesEl.getKeys()[0], true);
+				assignmentTemplate = assignmentTemplatesMap.get(assignmentsTemplatesEl.getSelectedKey());
+			} else if(assignmentsTemplatesEl.getKeys().length > 1) {
+				assignmentsTemplatesEl.select(assignmentsTemplatesEl.getKeys()[1], true);
+				assignmentTemplate = assignmentTemplatesMap.get(assignmentsTemplatesEl.getSelectedKey());
+			}
+			updateForAssignmentTemplate(assignmentTemplate);
+		}
 	}
 	
-	public PageMetadataEditController(UserRequest ureq, WindowControl wControl,
-			Binder currentBinder, boolean chooseBinder,
-			Assignment assignmentTemplate, boolean chooseSection) {
+	public PageMetadataEditController(UserRequest ureq, WindowControl wControl, BinderSecurityCallback secCallback,
+			Binder currentBinder, boolean chooseBinder, Assignment assignmentTemplate, boolean chooseSection) {
 		super(ureq, wControl);
-		
+		this.secCallback = secCallback;
 		this.currentBinder = currentBinder;
 		currentSection = null;
 		
@@ -153,12 +167,11 @@ public class PageMetadataEditController extends FormBasicController {
 		assignmentsTemplatesEl.setEnabled(false);
 	}
 	
-	public PageMetadataEditController(UserRequest ureq, WindowControl wControl,
-			Binder currentBinder, boolean chooseBinder,
-			Section currentSection, boolean chooseSection,
+	public PageMetadataEditController(UserRequest ureq, WindowControl wControl, BinderSecurityCallback secCallback,
+			Binder currentBinder, boolean chooseBinder, Section currentSection, boolean chooseSection,
 			Page page, boolean editTitleAndSummary) {
 		super(ureq, wControl);
-
+		this.secCallback = secCallback;
 		this.page = page;
 		this.editTitleAndSummary = editTitleAndSummary;
 		
@@ -371,16 +384,22 @@ public class PageMetadataEditController extends FormBasicController {
 		List<Assignment> assignments = portfolioService.getBindersAssignmentsTemplates(currentBinder);
 		if(assignments.isEmpty()) return;
 		
-		String[] assignmentKeys = new String[assignments.size()];
-		String[] assignmentNames = new String[assignments.size()];
-		for(int i=assignmentKeys.length; i-->0; ) {
+		List<String> assignmentKeys = new ArrayList<>(assignments.size() + 2);
+		List<String> assignmentNames = new ArrayList<>(assignments.size() + 2);
+
+		if(secCallback.canNewPageWithoutAssignment()) {
+			assignmentKeys.add("");
+			assignmentNames.add(translate("assignments.templates.without"));
+		}
+		for(int i=assignments.size(); i-->0; ) {
 			Assignment assignment = assignments.get(i);
-			assignmentKeys[i] = assignment.getKey().toString();
-			assignmentNames[i] = assignment.getTitle();
-			assignmentTemplatesMap.put(assignmentKeys[i], assignment);
+			String assignmentKey = assignment.getKey().toString();
+			assignmentKeys.add(assignmentKey);
+			assignmentNames.add(assignment.getTitle());
+			assignmentTemplatesMap.put(assignmentKey, assignment);
 		}
 		
-		assignmentsTemplatesEl.setKeysAndValues(assignmentKeys, assignmentNames, null);
+		assignmentsTemplatesEl.setKeysAndValues(assignmentKeys.toArray(new String[assignmentKeys.size()]), assignmentNames.toArray(new String[assignmentNames.size()]), null);
 		assignmentsTemplatesEl.setMandatory(true);
 		assignmentsTemplatesEl.setVisible(true);
 	}
@@ -440,8 +459,7 @@ public class PageMetadataEditController extends FormBasicController {
 		
 		if(assignmentsTemplatesEl != null) {
 			assignmentsTemplatesEl.clearError();
-			if(assignmentsTemplatesEl.isVisible()
-					&& (!assignmentsTemplatesEl.isOneSelected() || !StringHelper.containsNonWhitespace(assignmentsTemplatesEl.getSelectedKey()))) {
+			if(assignmentsTemplatesEl.isVisible() && !assignmentsTemplatesEl.isOneSelected()) {
 				assignmentsTemplatesEl.setErrorKey("form.legende.mandatory", null);
 				allOk &= false;
 			}
@@ -575,9 +593,12 @@ public class PageMetadataEditController extends FormBasicController {
 			}
 		} else if(assignmentsTemplatesEl == source) {
 			Assignment assignment = null;
-			if(assignmentsTemplatesEl.isEnabled() && assignmentsTemplatesEl.isOneSelected()) {
+			if(assignmentsTemplatesEl.isEnabled() && assignmentsTemplatesEl.isOneSelected()
+					&& StringHelper.containsNonWhitespace(assignmentsTemplatesEl.getSelectedKey())) {
 				String templateKey = assignmentsTemplatesEl.getSelectedKey();
 				assignment = assignmentTemplatesMap.get(templateKey);
+			} else {
+				assignment = null;
 			}
 			updateForAssignmentTemplate(assignment);
 		} else if(assignmentDocUploadEl == source) {
