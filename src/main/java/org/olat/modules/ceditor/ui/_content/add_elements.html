@@ -1,5 +1,10 @@
-<div class="o_page_add_callout"><ul class="list-inline">
-#foreach($linkName in $linkNames)
-	<li>$r.render("$linkName")</li>
+#foreach($category in $categories)
+	<h5 class="o_ce_cat_title">$category.name</h5>
+	<div class="o_ce_add o_button_group o_toolbar">
+		<ul class="o_ce_tools o_tools list-inline">
+			#foreach($linkId in $category.linkIds)
+				<li class="o_ce_tool o_tool">$r.render($linkId)</li>
+			#end
+		</ul>
+	</div>
 #end
-</ul></div>

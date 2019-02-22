@@ -28,6 +28,7 @@ import org.olat.core.gui.components.text.TextComponent;
 import org.olat.core.gui.components.text.TextFactory;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.ceditor.PageElement;
+import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementEditorController;
 import org.olat.modules.ceditor.PageElementHandler;
 import org.olat.modules.ceditor.PageElementRenderingHints;
@@ -58,6 +59,11 @@ public class TitlePageElementHandler implements PageElementHandler, PageElementS
 	@Override
 	public String getIconCssClass() {
 		return "o_icon_header";
+	}
+	
+	@Override
+	public PageElementCategory getCategory() {
+		return PageElementCategory.content;
 	}
 
 	@Override

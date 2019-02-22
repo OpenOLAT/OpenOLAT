@@ -33,6 +33,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.modules.ceditor.InteractiveAddPageElementHandler;
 import org.olat.modules.ceditor.PageEditorProvider;
+import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementHandler;
 import org.olat.modules.ceditor.SimpleAddPageElementHandler;
 import org.olat.modules.ceditor.ui.event.AddElementEvent;
@@ -71,21 +72,35 @@ public class AddElementsController extends BasicController {
 	private void initContainer(PageEditorProvider provider) {
 		VelocityContainer mainVC = createVelocityContainer("add_elements");
 		
-		List<String> addElements = new ArrayList<>();
+		List<CategoryWrapper> categoryWrappers = new ArrayList<>();
 		for(PageElementHandler handler:provider.getCreateHandlers()) {
 			if(handler instanceof InteractiveAddPageElementHandler || handler instanceof SimpleAddPageElementHandler) {
+				CategoryWrapper categoryWrapper = getCategoryWrapper(categoryWrappers, handler.getCategory());
+				
 				String id = "add.el." + handler.getType();
 				Link addLink = LinkFactory.createLink(id, "add." + handler.getType(), "add.elements", mainVC, this);
 				addLink.setIconLeftCSS("o_icon o_icon-lg " + handler.getIconCssClass());
 				addLink.setUserObject(handler);
 				addLink.setTooltip("add." + handler.getType());
 				mainVC.put(id, addLink);
-				addElements.add(id);
+				
+				categoryWrapper.getLinkIds().add(id);
 			}
 		}
 		
-		mainVC.contextPut("linkNames", addElements);
+		mainVC.contextPut("categories", categoryWrappers);
 		putInitialPanel(mainVC);
+	}
+
+	private CategoryWrapper getCategoryWrapper(List<CategoryWrapper> catgoryWrappers, PageElementCategory category) {
+		for (CategoryWrapper categoryWrapper : catgoryWrappers) {
+			if (categoryWrapper.getCategory().equals(category)) {
+				return categoryWrapper;
+			}
+		}
+		CategoryWrapper categoryWrapper = new CategoryWrapper(category, translate(category.getI18nKey()));
+		catgoryWrappers.add(categoryWrapper);
+		return categoryWrapper;
 	}
 
 	@Override
@@ -102,5 +117,30 @@ public class AddElementsController extends BasicController {
 	@Override
 	protected void doDispose() {
 		//
+	}
+	
+	public static final class CategoryWrapper {
+		
+		private final PageElementCategory category;
+		private final String name;
+		private final List<String> linkIds = new ArrayList<>();
+		
+		public CategoryWrapper(PageElementCategory category, String name) {
+			this.category = category;
+			this.name = name;
+		}
+
+		public PageElementCategory getCategory() {
+			return category;
+		}
+
+		public String getName() {
+			return name;
+		}
+
+		public List<String> getLinkIds() {
+			return linkIds;
+		}
+		
 	}
 }

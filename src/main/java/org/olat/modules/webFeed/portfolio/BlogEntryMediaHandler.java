@@ -36,6 +36,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.fileresource.types.BlogFileResource;
+import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.portfolio.Media;
 import org.olat.modules.portfolio.MediaInformations;
 import org.olat.modules.portfolio.MediaLight;
@@ -81,6 +82,11 @@ public class BlogEntryMediaHandler extends AbstractMediaHandler {
 	@Override
 	public String getIconCssClass() {
 		return "o_blog_icon";
+	}
+
+	@Override
+	public PageElementCategory getCategory() {
+		return PageElementCategory.embed;
 	}
 
 	@Override
@@ -162,4 +168,5 @@ public class BlogEntryMediaHandler extends AbstractMediaHandler {
 		List<File> attachments = files == null ? Collections.emptyList() : Arrays.asList(files);
 		super.exportContent(media, null, attachments, mediaArchiveDirectory, locale);
 	}
+	
 }

@@ -1,5 +1,4 @@
 /**
-
  * <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
@@ -20,26 +19,28 @@
  */
 package org.olat.modules.ceditor;
 
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.WindowControl;
-
 /**
  * 
- * Initial date: 04.07.2016<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial date: 20 Feb 2019<br>
+ * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface PageElementHandler {
+public enum PageElementCategory {
 	
-	public String getType();
+	content("category.content"),
+	questionType("category.question.type"),
+	organisational("category.organisational"),
+	embed("category.embed"),
+	layout("category.layout");
 	
-	public String getIconCssClass();
-	
-	public PageElementCategory getCategory();
-	
-	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, PageElementRenderingHints options);
-	
-	public Controller getEditor(UserRequest ureq, WindowControl wControl, PageElement element);
+	private final String i18nKey;
+
+	private PageElementCategory(String i18nKey) {
+		this.i18nKey = i18nKey;
+	}
+
+	public String getI18nKey() {
+		return i18nKey;
+	}
 	
 }

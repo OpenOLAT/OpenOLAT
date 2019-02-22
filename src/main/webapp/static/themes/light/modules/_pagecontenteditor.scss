@@ -33,14 +33,12 @@
 		.o_page_add_above {
 			position: absolute;
 			left: 0;
-			top: -$o-portfolio-editor-border-width;		
+			right: 0;
+			margin-left: auto;
+			margin-right: auto;
+			width: 26px;
+			top: -$o-portfolio-editor-border-width;
 			height: $o-portfolio-editor-border-width;
-			border-left: $o-panel-placeholder-border-width dashed $o-portfolio-editor-border-color;
-			border-top: $o-panel-placeholder-border-width dashed $o-portfolio-editor-border-color;
-			border-right: $o-panel-placeholder-border-width dashed $o-portfolio-editor-border-color;
-			border-radius: $o-panel-placeholder-border-radius $o-panel-placeholder-border-radius 0 0;
-			box-shadow: 0 -5px 10px 0px rgba(0, 0, 0, 0.2);
-			background: #fff;
 		}
 		.o_sel_add_element_above {
 			display: inline-block;
@@ -171,15 +169,16 @@
 	.o_page_add_below {
 		position: absolute;
 		z-index: 3;
+		
+		position: absolute;
+		z-index: 3;
 		left: 0;
+		right: 0;
+		margin-left: auto;
+		margin-right: auto;
+		width: 26px;
 		bottom: -$o-portfolio-editor-border-width;
 		height: $o-portfolio-editor-border-width;
-		border-left: $o-panel-placeholder-border-width dashed $o-portfolio-editor-border-color;
-		border-bottom: $o-panel-placeholder-border-width dashed $o-portfolio-editor-border-color;
-		border-right: $o-panel-placeholder-border-width dashed $o-portfolio-editor-border-color;
-		border-radius: 0 0 $o-panel-placeholder-border-radius $o-panel-placeholder-border-radius;
-		box-shadow: 3px 8px 10px 0px rgba(0, 0, 0, 0.2);
-		background: #fff;
 
 		.o_sel_add_element_below {
 			display: inline-block;
@@ -329,5 +328,37 @@ table.o_ce_table {
 	caption {
 		caption-side: bottom;
 	}
-
 }
+
+.o_ce_add {
+	border: none;
+	margin-bottom: 0px;
+	
+	.o_ce_tools {
+		display: flex;
+		flex-direction: row;
+		flex-wrap: wrap;
+		width: 100%;
+	
+		.o_ce_tool {
+			padding: 0px;
+			margin: 0px;
+			width: 33%;
+			
+			a {
+				padding: 6px 3px;
+				margin: 0px;
+				display: block;
+				width: 100%;
+				height: 100%;
+				
+				&:hover {
+					padding: 5px 2px;
+					border: 1px solid $o-toolbar-border-color;
+					border-radius: 4px;
+				}
+			}
+		}
+	}
+}
+

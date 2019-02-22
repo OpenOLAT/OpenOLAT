@@ -31,6 +31,7 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.ceditor.InteractiveAddPageElementHandler;
 import org.olat.modules.ceditor.PageElementAddController;
+import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.portfolio.Media;
 import org.olat.modules.portfolio.MediaInformations;
 import org.olat.modules.portfolio.MediaLight;
@@ -66,6 +67,11 @@ public class CitationHandler extends AbstractMediaHandler implements Interactive
 	@Override
 	public String getIconCssClass() {
 		return "o_icon_citation";
+	}
+	
+	@Override
+	public PageElementCategory getCategory() {
+		return PageElementCategory.embed;
 	}
 	
 	@Override

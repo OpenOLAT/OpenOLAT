@@ -162,18 +162,18 @@ public class EvaluationFormEditorController extends BasicController {
 
 			if(!restrictedEdit) {
 				creationHandlers.add(titleRawHandler);
-				creationHandlers.add(hrHandler);
 				creationHandlers.add(htmlParagraphHandler);
 				creationHandlers.add(tableHandler);
 				creationHandlers.add(rubricHandler);
-				creationHandlers.add(textInputHandler);
-				creationHandlers.add(fileUploadhandler);
 				creationHandlers.add(singleChoiceHandler);
 				creationHandlers.add(multipleChoiceHandler);
-				creationHandlers.add(disclaimerHandler);
+				creationHandlers.add(textInputHandler);
+				creationHandlers.add(fileUploadhandler);
 				creationHandlers.add(sessionInformationsHandler);
+				creationHandlers.add(disclaimerHandler);
 				creationHandlers.add(containerHandler);
-				creationHandlers.add(htmlHandler);
+				creationHandlers.add(hrHandler);
+				creationHandlers.add(htmlHandler); // legacy
 			}
 		}
 

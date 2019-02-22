@@ -27,6 +27,7 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.ceditor.PageElement;
+import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementRenderingHints;
 import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.SimpleAddPageElementHandler;
@@ -64,6 +65,11 @@ public class RubricHandler implements EvaluationFormElementHandler, SimpleAddPag
 	@Override
 	public String getIconCssClass() {
 		return "o_icon_rubric";
+	}
+	
+	@Override
+	public PageElementCategory getCategory() {
+		return PageElementCategory.questionType;
 	}
 
 	@Override

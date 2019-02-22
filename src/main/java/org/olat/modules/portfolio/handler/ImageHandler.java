@@ -43,6 +43,7 @@ import org.olat.core.util.vfs.meta.MetaInfo;
 import org.olat.modules.ceditor.InteractiveAddPageElementHandler;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementAddController;
+import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementRenderingHints;
 import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.portfolio.Media;
@@ -93,6 +94,11 @@ public class ImageHandler extends AbstractMediaHandler implements InteractiveAdd
 	@Override
 	public String getIconCssClass() {
 		return "o_icon_image";
+	}
+	
+	@Override
+	public PageElementCategory getCategory() {
+		return PageElementCategory.content;
 	}
 	
 	@Override

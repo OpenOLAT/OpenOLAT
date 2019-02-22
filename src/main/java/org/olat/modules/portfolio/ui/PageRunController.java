@@ -62,6 +62,7 @@ import org.olat.modules.ceditor.InteractiveAddPageElementHandler;
 import org.olat.modules.ceditor.PageEditorProvider;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementAddController;
+import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementEditorController;
 import org.olat.modules.ceditor.PageElementHandler;
 import org.olat.modules.ceditor.PageElementRenderingHints;
@@ -747,10 +748,6 @@ public class PageRunController extends BasicController implements TooledControll
 		private final List<PageElementHandler> creationHandlers = new ArrayList<>();
 		
 		public PortfolioPageEditorProvider() {
-			//handler for container
-			ContainerHandler containerHandler = new ContainerHandler();
-			handlers.add(containerHandler);
-			creationHandlers.add(containerHandler);
 			//handler for title
 			TitlePageElementHandler titleRawHandler = new TitlePageElementHandler();
 			handlers.add(titleRawHandler);
@@ -781,6 +778,10 @@ public class PageRunController extends BasicController implements TooledControll
 			//add the hook to pick media from the media center
 			creationHandlers.add(new OtherArtefactsHandler());
 			
+			//handler for container
+			ContainerHandler containerHandler = new ContainerHandler();
+			handlers.add(containerHandler);
+			creationHandlers.add(containerHandler);
 			//handler for HR code
 			SpacerElementHandler hrHandler = new SpacerElementHandler();
 			handlers.add(hrHandler);
@@ -863,6 +864,11 @@ public class PageRunController extends BasicController implements TooledControll
 		@Override
 		public String getIconCssClass() {
 			return "o_icon_mediacenter";
+		}
+		
+		@Override
+		public PageElementCategory getCategory() {
+			return PageElementCategory.embed;
 		}
 
 		@Override

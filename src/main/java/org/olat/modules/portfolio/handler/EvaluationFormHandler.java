@@ -36,6 +36,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.modules.ceditor.PageElement;
+import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementHandler;
 import org.olat.modules.ceditor.PageElementRenderingHints;
 import org.olat.modules.ceditor.PageRunElement;
@@ -71,6 +72,11 @@ public class EvaluationFormHandler implements PageElementHandler {
 	@Override
 	public String getIconCssClass() {
 		return null;
+	}
+	
+	@Override
+	public PageElementCategory getCategory() {
+		return PageElementCategory.embed;
 	}
 
 	@Override

@@ -29,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.elements.SpacerElementComponent;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.ceditor.PageElement;
+import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementEditorController;
 import org.olat.modules.ceditor.PageElementRenderingHints;
 import org.olat.modules.ceditor.PageRunElement;
@@ -62,6 +63,11 @@ public class SpacerHandler implements EvaluationFormElementHandler, SimpleAddPag
 	@Override
 	public String getIconCssClass() {
 		return "o_icon_spacer";
+	}
+	
+	@Override
+	public PageElementCategory getCategory() {
+		return PageElementCategory.layout;
 	}
 
 	@Override

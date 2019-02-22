@@ -27,6 +27,7 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.ceditor.PageElement;
+import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementRenderingHints;
 import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.SimpleAddPageElementHandler;
@@ -60,6 +61,11 @@ public class SessionInformationsHandler implements EvaluationFormElementHandler,
 	@Override
 	public String getIconCssClass() {
 		return "o_icon_eva_session_info";
+	}
+	
+	@Override
+	public PageElementCategory getCategory() {
+		return PageElementCategory.organisational;
 	}
 
 	@Override

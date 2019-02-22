@@ -41,6 +41,7 @@ import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.meta.MetaInfo;
 import org.olat.modules.ceditor.InteractiveAddPageElementHandler;
 import org.olat.modules.ceditor.PageElementAddController;
+import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.portfolio.Media;
 import org.olat.modules.portfolio.MediaInformations;
 import org.olat.modules.portfolio.MediaLight;
@@ -69,7 +70,6 @@ import org.springframework.stereotype.Service;
 public class FileHandler extends AbstractMediaHandler implements InteractiveAddPageElementHandler {
 	
 	public static final String FILE_TYPE = "bc";
-
 	
 	@Autowired
 	private MediaDAO mediaDao;
@@ -85,6 +85,11 @@ public class FileHandler extends AbstractMediaHandler implements InteractiveAddP
 	@Override
 	public String getIconCssClass() {
 		return "o_filetype_file";
+	}
+	
+	@Override
+	public PageElementCategory getCategory() {
+		return PageElementCategory.embed;
 	}
 
 	@Override

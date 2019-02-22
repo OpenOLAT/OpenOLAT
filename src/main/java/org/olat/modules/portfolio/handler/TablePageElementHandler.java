@@ -26,6 +26,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.ceditor.PageElement;
+import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementEditorController;
 import org.olat.modules.ceditor.PageElementHandler;
 import org.olat.modules.ceditor.PageElementRenderingHints;
@@ -55,6 +56,11 @@ public class TablePageElementHandler implements PageElementHandler, PageElementS
 	@Override
 	public String getIconCssClass() {
 		return "o_icon_table";
+	}
+	
+	@Override
+	public PageElementCategory getCategory() {
+		return PageElementCategory.content;
 	}
 
 	@Override

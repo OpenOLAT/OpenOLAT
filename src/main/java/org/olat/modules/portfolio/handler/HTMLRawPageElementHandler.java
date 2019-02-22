@@ -26,6 +26,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.text.TextComponent;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.ceditor.PageElement;
+import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementEditorController;
 import org.olat.modules.ceditor.PageElementHandler;
 import org.olat.modules.ceditor.PageElementRenderingHints;
@@ -57,6 +58,11 @@ public class HTMLRawPageElementHandler implements PageElementHandler, PageElemen
 	public String getIconCssClass() {
 		// For now we use the paragraph icon until we have a minimized paragraph element o_icon_code
 		return "o_icon_code";
+	}
+	
+	@Override
+	public PageElementCategory getCategory() {
+		return PageElementCategory.content;
 	}
 
 	@Override

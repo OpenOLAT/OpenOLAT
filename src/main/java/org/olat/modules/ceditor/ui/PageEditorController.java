@@ -33,8 +33,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
-import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings.CalloutOrientation;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.translator.Translator;
@@ -65,10 +63,11 @@ import org.olat.modules.ceditor.ui.model.EditorFragment;
  *
  */
 public class PageEditorController extends BasicController {
-
+	
 	private PageEditorModel editorModel;
 	private final VelocityContainer mainVC;
 	private final PageEditorComponent editorCmp;
+	private final Link addElementButton;
 	
 	private CloseableModalController cmc;
 	private PageElementAddController addCtrl;
@@ -86,27 +85,18 @@ public class PageEditorController extends BasicController {
 		this.provider = provider;
 		this.secCallback = secCallback;
 
-		mainVC = createVelocityContainer("page_editor");
 		for(PageElementHandler handler:provider.getAvailableHandlers()) {
 			handlerMap.put(handler.getType(), handler);
 		}
 
-		List<String> addElements = new ArrayList<>();
-		for(PageElementHandler handler:provider.getCreateHandlers()) {
-			if(handler instanceof InteractiveAddPageElementHandler || handler instanceof SimpleAddPageElementHandler) {
-				String id = "add." + handler.getType();
-				Link addLink = LinkFactory.createLink(id, id, "add", mainVC, this);
-				addLink.setIconLeftCSS("o_icon o_icon-lg " + handler.getIconCssClass());
-				addLink.setUserObject(handler);
-				mainVC.put(id, addLink);
-				addElements.add(id);
-			}
-		}
+		mainVC = createVelocityContainer("page_editor");
 		
-		mainVC.contextPut("addElementLinks", addElements);
 		editorCmp = new PageEditorComponent("page_editor", getWindowControl(), provider);
 		editorCmp.addListener(this);
 		mainVC.put("page_editor", editorCmp);
+		
+		addElementButton = LinkFactory.createCustomLink("add.element", "add.element", null, Link.BUTTON | Link.NONTRANSLATED, mainVC, this);
+		addElementButton.setIconLeftCSS("o_icon o_icon-lg o_icon_add");
 		
 		loadModel(ureq);
 		putInitialPanel(mainVC);
@@ -169,8 +159,6 @@ public class PageEditorController extends BasicController {
 		super.event(ureq, source, event);
 	}
 	
-
-	
 	private void cleanUp() {
 		removeAsListenerAndDispose(addElementsCtrl);
 		removeAsListenerAndDispose(addCalloutCtrl);
@@ -184,12 +172,8 @@ public class PageEditorController extends BasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if(source instanceof Link) {
-			Link link = (Link)source;
-			if("add".equals(link.getCommand())) {
-				PageElementHandler handler = (PageElementHandler)link.getUserObject();
-				doAddElement(ureq, null, handler, PageElementTarget.atTheEnd, -1);
-			}
+		if (source == addElementButton) {
+			openMainAddElementsCallout(ureq);
 		} else if(editorCmp == source) {
 			if(event instanceof EditFragmentEvent) {
 				EditFragmentEvent efe = (EditFragmentEvent)event;
@@ -242,17 +226,16 @@ public class PageEditorController extends BasicController {
 			}
 		}
 		//The link must every time created as new
-
-		Link addAboveLink = LinkFactory.createLink("add.element.above", "add.element.above", getTranslator(), mainVC, this, Link.LINK);
-		addAboveLink.setIconLeftCSS("o_icon o_icon-sm o_icon_element_before");
+		Link addAboveLink = LinkFactory.createCustomLink("add.element.above", "add.element.above", null, Link.LINK | Link.NONTRANSLATED, mainVC, this);
+		addAboveLink.setIconLeftCSS("o_icon o_icon_add");
 		addAboveLink.setElementCssClass("o_sel_add_element_above");
 		addAboveLink.setUserObject(fragment);
 		addAboveLink.setVisible(!provider.getCreateHandlers().isEmpty());
 		addAboveLink.setEnabled(!provider.getCreateHandlers().isEmpty());
 		fragment.setAddElementAboveLink(addAboveLink);
 
-		Link addBelowLink = LinkFactory.createLink("add.element.below", "add.element.below", getTranslator(), mainVC, this, Link.LINK);
-		addBelowLink.setIconLeftCSS("o_icon o_icon-sm o_icon_element_after");
+		Link addBelowLink = LinkFactory.createCustomLink("add.element.below", "add.element.below", null, Link.LINK | Link.NONTRANSLATED, mainVC, this);
+		addBelowLink.setIconLeftCSS("o_icon o_icon_add");
 		addBelowLink.setElementCssClass("o_sel_add_element_below");
 		addBelowLink.setUserObject(fragment);
 		addBelowLink.setVisible(!provider.getCreateHandlers().isEmpty());
@@ -298,19 +281,24 @@ public class PageEditorController extends BasicController {
 		mainVC.setDirty(true);
 	}
 	
+	private void openMainAddElementsCallout(UserRequest ureq) {
+		addElementsCtrl = new AddElementsController(ureq, getWindowControl(), provider, null,
+				PageElementTarget.atTheEnd, getTranslator());
+		addElementsCtrl.addControllerListener(this);
+		
+		addCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), addElementsCtrl.getInitialComponent(),
+				addElementButton, "", true, "o_sel_flexi_filter_callout");
+		addCalloutCtrl.addControllerListener(this);
+		addCalloutCtrl.activate();
+	}
+	
 	private void openAddElementCallout(UserRequest ureq, Link link, EditorFragment referenceFragment, PageElementTarget target) {
 		addElementsCtrl = new AddElementsController(ureq, getWindowControl(), provider, referenceFragment, target, getTranslator());
 		listenTo(addElementsCtrl);
 		
-		CalloutSettings calloutSettings;
-		if(target == PageElementTarget.above) {
-			calloutSettings = new CalloutSettings(true, CalloutOrientation.top);
-		} else {
-			calloutSettings = new CalloutSettings(false);
-		}
 		addCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
 				addElementsCtrl.getInitialComponent(), link.getDispatchID(),
-				"", true, "", calloutSettings);
+				"", true, "");
 		listenTo(addCalloutCtrl);
 		addCalloutCtrl.activate();
 	}

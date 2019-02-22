@@ -29,6 +29,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.modules.ceditor.PageElement;
+import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementRenderingHints;
 import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.SimpleAddPageElementHandler;
@@ -66,6 +67,11 @@ public class SingleChoiceHandler implements EvaluationFormElementHandler, Simple
 	@Override
 	public String getIconCssClass() {
 		return "o_icon_eva_sc";
+	}
+	
+	@Override
+	public PageElementCategory getCategory() {
+		return PageElementCategory.questionType;
 	}
 
 	@Override

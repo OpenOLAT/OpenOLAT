@@ -43,6 +43,7 @@ import org.olat.course.assessment.EfficiencyStatement;
 import org.olat.course.assessment.model.AssessmentNodeData;
 import org.olat.course.assessment.ui.tool.IdentityAssessmentOverviewController;
 import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementController;
+import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.portfolio.Media;
 import org.olat.modules.portfolio.MediaInformations;
 import org.olat.modules.portfolio.MediaLight;
@@ -83,6 +84,11 @@ public class EfficiencyStatementMediaHandler extends AbstractMediaHandler {
 	@Override
 	public String getIconCssClass() {
 		return "o_icon_certificate";
+	}
+	
+	@Override
+	public PageElementCategory getCategory() {
+		return PageElementCategory.embed;
 	}
 	
 	@Override
