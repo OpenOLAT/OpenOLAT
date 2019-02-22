@@ -819,6 +819,7 @@ public class PortfolioV2Test extends Deployments {
 		// add a title
 		String title = "My long title " + UUID.randomUUID();
 		entry
+			.openElementsChooser()
 			.addTitle(title)
 			.setTitleSize(4)
 			.closeEditFragment()
@@ -828,6 +829,7 @@ public class PortfolioV2Test extends Deployments {
 		URL imageUrl = JunitTestHelper.class.getResource("file_resources/IMG_1484.jpg");
 		File imageFile = new File(imageUrl.toURI());
 		entry
+			.openElementsChooser()
 			.addImage("Blue is the new black", imageFile)
 			.assertOnImage(imageFile);
 		// close the editor and check
@@ -841,11 +843,13 @@ public class PortfolioV2Test extends Deployments {
 		File pdfFile = new File(pdfUrl.toURI());
 		entry
 			.toggleEditor()
+			.openElementsChooser()
 			.addDocument("Anything about", pdfFile)
 			.assertOnDocument(pdfFile);
 		//and a citation
 		String citation = "Close the world, open the next.";
 		entry
+			.openElementsChooser()
 			.addCitation("Serial experiment", citation)
 			.assertOnCitation(citation);
 		//close the editor and check all parts
@@ -855,7 +859,6 @@ public class PortfolioV2Test extends Deployments {
 			.assertOnDocument(pdfFile)
 			.assertOnCitation(citation);
 	}
-	
 
 	/**
 	 * A user create a binder with a section and two pages. It deletes
