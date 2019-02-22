@@ -17,49 +17,42 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio;
+package org.olat.modules.ceditor.model;
 
-import java.util.Date;
-
-import org.olat.core.id.Identity;
-import org.olat.modules.ceditor.model.DublinCoreMetadata;
-import org.olat.modules.ceditor.model.StoredData;
+import java.io.Serializable;
 
 /**
+ * Represent a file defined by it's path and name stored
+ * somewhere. Somewhere is defined by the implementation
+ * of the @see org.olat.modules.ceditor.DataStorage and
+ * this implementation must handle the relative path
+ * constantly.
  * 
- * Initial date: 17.06.2016<br>
+ * Initial date: 21 févr. 2019<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface Media extends StoredData, MediaLight, DublinCoreMetadata {
-
-	@Override
-	public Long getKey();
-
-	@Override
-	public Date getCreationDate();
-
-	@Override
-	public Date getCollectionDate();
-
-	@Override
-	public String getType();
-
-	@Override
-	public String getTitle();
+public interface StoredData extends Serializable {
 	
-	public void setTitle(String title);
+	/**
+	 * 
+	 * @return A description of the data (can be null)
+	 */
+	public String getDescription();
 	
-	public void setDescription(String description);
+	/**
+	 * @return The relative path of the file.
+	 */
+	public String getStoragePath();
 	
-	public String getContent();
-	
-	public void setContent(String content);
-	
-	public Identity getAuthor();
-	
-	public String getMetadataXml();
+	public void setStoragePath(String relativePath);
 
-	public void setMetadataXml(String medadata);
+	/**
+	 * 
+	 * @return The name of the file.
+	 */
+	public String getRootFilename();
+	
+	public void setRootFilename(String name);
 
 }

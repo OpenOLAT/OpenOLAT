@@ -30,6 +30,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.CodeHelper;
+import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormPrintSelection;
 import org.olat.modules.forms.EvaluationFormSession;
@@ -59,6 +60,7 @@ public class EvaluationFormPrintController extends BasicController {
 	private VelocityContainer mainVC;
 	
 	private final Form form;
+	private final DataStorage storage;
 	private final SessionFilter filter;
 	private final ReportHelper reportHelper;
 	
@@ -67,33 +69,35 @@ public class EvaluationFormPrintController extends BasicController {
 	@Autowired
 	private EvaluationFormsModule evaluationFormsModule;
 
-	public EvaluationFormPrintController(UserRequest ureq, WindowControl wControl, Form form, SessionFilter filter,
+	public EvaluationFormPrintController(UserRequest ureq, WindowControl wControl, Form form, DataStorage storage, SessionFilter filter,
 			Figures figures, ReportHelper reportHelper,
 			EvaluationFormPrintSelection printSelection) {
 		super(ureq, wControl);
 		this.form = form;
+		this.storage = storage;
 		this.filter = filter;
 		this.reportHelper = reportHelper;
 
 		mainVC = createVelocityContainer("report_print");
 		if (printSelection.isOverview()) {
-			Controller overviewCtrl = new EvaluationFormOverviewController(ureq, getWindowControl(), form, filter, figures);
+			Controller overviewCtrl = new EvaluationFormOverviewController(ureq, getWindowControl(), form, storage, filter, figures);
 			mainVC.put("overview", overviewCtrl.getInitialComponent());
 		}
 		
 		if (printSelection.isTables()) {
-			DefaultReportProvider provider = new DefaultReportProvider();
+			DefaultReportProvider provider = new DefaultReportProvider(storage);
 			provider.put(Rubric.TYPE, new RubricTableHandler());
 			provider.put(SingleChoice.TYPE, new SingleChoiceTableHandler());
 			provider.put(MultipleChoice.TYPE, new MultipleChoiceTableHandler());
-			Controller tableReportCtrl = new EvaluationFormReportController(ureq, getWindowControl(), form, filter,
+			Controller tableReportCtrl = new EvaluationFormReportController(ureq, getWindowControl(), form, storage, filter,
 					provider, reportHelper);
 			mainVC.put("tables", tableReportCtrl.getInitialComponent());
 		}
 
 		if (printSelection.isDiagrams()) {
-			DefaultReportProvider provider = new DefaultReportProvider();
-			Controller diagramReportCtrl = new EvaluationFormReportController(ureq, getWindowControl(), form, filter, provider, reportHelper);
+			DefaultReportProvider provider = new DefaultReportProvider(storage);
+			Controller diagramReportCtrl = new EvaluationFormReportController(ureq, getWindowControl(), form, storage, filter,
+					provider, reportHelper);
 			mainVC.put("diagrams", diagramReportCtrl.getInitialComponent());
 		}
 		
@@ -125,7 +129,7 @@ public class EvaluationFormPrintController extends BasicController {
 		String componentName = "se_" + CodeHelper.getRAMUniqueID();
 		String legendName = reportHelper.getLegend(session).getName();
 		Controller controller = new EvaluationFormExecutionController(ureq, getWindowControl(), session,
-				responses, form, null);
+				responses, form, storage, null);
 		mainVC.put(componentName, controller.getInitialComponent());
 		return new SessionWrapper(legendName, componentName);
 	}

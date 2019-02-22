@@ -48,6 +48,7 @@ public class EvaluationFormResource extends FileResource {
 	
 	public static final String TYPE_NAME = "FileResource.FORM";
 	public static final String FORM_XML_FILE = "form.xml";
+	public static final String FORM_DATA_DIR = "data";
 	
 	public EvaluationFormResource() {
 		super(TYPE_NAME);

@@ -37,6 +37,7 @@ import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.stack.BreadcrumbPanelAware;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.SessionFilter;
@@ -62,6 +63,7 @@ public class EvaluationFormSessionSelectionController extends FormBasicControlle
 	private FlexiTableElement tableEl;
 
 	private final Form form;
+	private final DataStorage storage;
 	private final SessionFilter filter;
 	private final ReportHelper reportHelper;
 	private final Component formHeader;
@@ -70,10 +72,11 @@ public class EvaluationFormSessionSelectionController extends FormBasicControlle
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
 
-	public EvaluationFormSessionSelectionController(UserRequest ureq, WindowControl wControl, Form form,
+	public EvaluationFormSessionSelectionController(UserRequest ureq, WindowControl wControl, Form form, DataStorage storage,
 			SessionFilter filter, ReportHelper reportHelper, Component formHeader) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		this.form = form;
+		this.storage = storage;
 		this.filter = filter;
 		this.reportHelper = reportHelper;
 		this.formHeader = formHeader;
@@ -167,7 +170,7 @@ public class EvaluationFormSessionSelectionController extends FormBasicControlle
 		EvaluationFormSession reloadedSession = evaluationFormManager.loadSessionByKey(row.getSession());
 		EvaluationFormResponses responses = evaluationFormManager.loadResponsesBySessions(filter);
 		executionCtrl = new EvaluationFormExecutionController(ureq, getWindowControl(),
-				reloadedSession, responses, form, formHeader);
+				reloadedSession, responses, form, storage, formHeader);
 		stackPanel.pushController(row.getParticipant(), executionCtrl);
 	}
 

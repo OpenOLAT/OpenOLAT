@@ -48,6 +48,7 @@ import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodes.SurveyCourseNode;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.handler.EvaluationFormResource;
@@ -263,7 +264,8 @@ public class SurveyConfigController extends FormBasicController {
 		RepositoryEntry formEntry = survey.getFormEntry();
 		File repositoryDir = new File(FileResourceManager.getInstance().getFileResourceRoot(formEntry.getOlatResource()), FileResourceManager.ZIPDIR);
 		File formFile = new File(repositoryDir, FORM_XML_FILE);
-		Controller controller =  new EvaluationFormExecutionController(ureq, getWindowControl(), formFile);
+		DataStorage storage = evaluationFormManager.loadStorage(formEntry);
+		Controller controller = new EvaluationFormExecutionController(ureq, getWindowControl(), formFile, storage);
 
 		previewCtr = new LayoutMain3ColsPreviewController(ureq, getWindowControl(), null,
 				controller.getInitialComponent(), null);

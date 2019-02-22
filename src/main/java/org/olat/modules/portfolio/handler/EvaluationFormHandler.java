@@ -35,12 +35,14 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
 import org.olat.fileresource.FileResourceManager;
+import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementHandler;
 import org.olat.modules.ceditor.PageElementRenderingHints;
 import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.ui.PageRunControllerElement;
+import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.ui.EvaluationFormExecutionController;
@@ -210,10 +212,13 @@ public class EvaluationFormHandler implements PageElementHandler {
 			Assignment assignment = portfolioService.getAssignment(body);
 			
 			//find the evaluation form
+			EvaluationFormManager evaluationFormManager = CoreSpringFactory.getImpl(EvaluationFormManager.class);
 			RepositoryEntry re = assignment.getFormEntry();
 			File repositoryDir = new File(FileResourceManager.getInstance().getFileResourceRoot(re.getOlatResource()), FileResourceManager.ZIPDIR);
 			File formFile = new File(repositoryDir, FORM_XML_FILE);
-			return new EvaluationFormExecutionController(ureq, wControl, formFile);
+
+			DataStorage storage = evaluationFormManager.loadStorage(re);
+			return new EvaluationFormExecutionController(ureq, wControl, formFile, storage);
 		}
 		return null;
 	}

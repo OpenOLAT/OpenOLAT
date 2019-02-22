@@ -22,10 +22,12 @@ package org.olat.modules.forms.handler;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.forms.model.xml.FileUpload;
 import org.olat.modules.forms.model.xml.HTMLParagraph;
 import org.olat.modules.forms.model.xml.HTMLRaw;
+import org.olat.modules.forms.model.xml.Image;
 import org.olat.modules.forms.model.xml.MultipleChoice;
 import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.forms.model.xml.SessionInformations;
@@ -45,10 +47,11 @@ public class DefaultReportProvider implements EvaluationFormReportProvider {
 	
 	private final Map<String, EvaluationFormReportHandler> handlers = new HashMap<>();
 	
-	public DefaultReportProvider() {
+	public DefaultReportProvider(DataStorage storage) {
 		handlers.put(Title.TYPE, new TitleHandler());
 		handlers.put(Spacer.TYPE, new SpacerHandler());
 		handlers.put(HTMLRaw.TYPE, new HTMLRawHandler());
+		handlers.put(Image.TYPE, new ImageHandler(storage));
 		handlers.put(HTMLParagraph.TYPE, new HTMLParagraphHandler());
 		handlers.put(Table.TYPE, new TableHandler());
 		handlers.put(Rubric.TYPE, new RubricBarChartsHandler(false));

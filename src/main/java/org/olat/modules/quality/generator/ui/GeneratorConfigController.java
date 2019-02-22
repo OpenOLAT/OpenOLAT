@@ -48,6 +48,8 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.id.Organisation;
 import org.olat.core.util.StringHelper;
 import org.olat.fileresource.FileResourceManager;
+import org.olat.modules.ceditor.DataStorage;
+import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.handler.EvaluationFormResource;
 import org.olat.modules.forms.ui.EvaluationFormExecutionController;
 import org.olat.modules.quality.generator.QualityGenerator;
@@ -90,6 +92,8 @@ public class GeneratorConfigController extends FormBasicController {
 	private QualityGeneratorService generatorService;
 	@Autowired
 	private OrganisationModule organisationModule;
+	@Autowired
+	private EvaluationFormManager evaluationManager;
 
 	public GeneratorConfigController(UserRequest ureq, WindowControl wControl, Form mainForm,
 			GeneratorSecurityCallback secCallback, TooledStackedPanel stackPanel, QualityGeneratorRef generatorRef) {
@@ -216,7 +220,8 @@ public class GeneratorConfigController extends FormBasicController {
 				FileResourceManager.getInstance().getFileResourceRoot(formEntry.getOlatResource()),
 				FileResourceManager.ZIPDIR);
 		File formFile = new File(repositoryDir, FORM_XML_FILE);
-		Controller previewCtrl =  new EvaluationFormExecutionController(ureq, getWindowControl(), formFile);
+		DataStorage storage = evaluationManager.loadStorage(formEntry);
+		Controller previewCtrl =  new EvaluationFormExecutionController(ureq, getWindowControl(), formFile, storage);
 		stackPanel.pushController(translate("generator.form.preview.title"), previewCtrl);
 	}
 

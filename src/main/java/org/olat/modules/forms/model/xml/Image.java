@@ -17,49 +17,50 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio;
+package org.olat.modules.forms.model.xml;
 
-import java.util.Date;
-
-import org.olat.core.id.Identity;
-import org.olat.modules.ceditor.model.DublinCoreMetadata;
+import org.olat.modules.ceditor.model.ImageElement;
 import org.olat.modules.ceditor.model.StoredData;
 
 /**
  * 
- * Initial date: 17.06.2016<br>
+ * Initial date: 21 févr. 2019<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface Media extends StoredData, MediaLight, DublinCoreMetadata {
+public class Image extends AbstractHTMLElement implements ImageElement {
+
+	private static final long serialVersionUID = 3536645850664794909L;
+
+	public static final String TYPE = "formimage";
+	
+	private String layoutOptions;
+	private StoredData storedData;
+	
+	@Override
+	public String getType() {
+		return TYPE;
+	}
 
 	@Override
-	public Long getKey();
+	public String getLayoutOptions() {
+		return layoutOptions;
+	}
 
 	@Override
-	public Date getCreationDate();
+	public void setLayoutOptions(String layoutOptions) {
+		this.layoutOptions = layoutOptions;
+	}
 
 	@Override
-	public Date getCollectionDate();
-
-	@Override
-	public String getType();
-
-	@Override
-	public String getTitle();
+	public StoredData getStoredData() {
+		return storedData;
+	}
 	
-	public void setTitle(String title);
+	public void setStoredData(StoredData data) {
+		storedData = data;
+	}
 	
-	public void setDescription(String description);
 	
-	public String getContent();
-	
-	public void setContent(String content);
-	
-	public Identity getAuthor();
-	
-	public String getMetadataXml();
-
-	public void setMetadataXml(String medadata);
 
 }

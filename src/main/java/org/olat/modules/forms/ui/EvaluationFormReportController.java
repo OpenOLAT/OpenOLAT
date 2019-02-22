@@ -29,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
+import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.handler.DefaultReportProvider;
 import org.olat.modules.forms.handler.EvaluationFormReportHandler;
@@ -53,27 +54,27 @@ public class EvaluationFormReportController extends FormBasicController {
 	private final Component header;
 	private final List<ReportFragment> fragments = new ArrayList<>();
 	
-	public EvaluationFormReportController(UserRequest ureq, WindowControl wControl, Form form, SessionFilter filter) {
-			this(ureq, wControl, form, filter, null, null, null);
+	public EvaluationFormReportController(UserRequest ureq, WindowControl wControl, Form form, DataStorage storage, SessionFilter filter) {
+			this(ureq, wControl, form, storage, filter, null, null, null);
 	}
 	
-	public EvaluationFormReportController(UserRequest ureq, WindowControl wControl, Form form, SessionFilter filter,
+	public EvaluationFormReportController(UserRequest ureq, WindowControl wControl, Form form, DataStorage storage, SessionFilter filter,
 			EvaluationFormReportProvider provider) {
-		this(ureq, wControl, form, filter, provider, null, null);
+		this(ureq, wControl, form, storage, filter, provider, null, null);
 	}
 
-	public EvaluationFormReportController(UserRequest ureq, WindowControl wControl, Form form, SessionFilter filter,
+	public EvaluationFormReportController(UserRequest ureq, WindowControl wControl, Form form, DataStorage storage, SessionFilter filter,
 			EvaluationFormReportProvider provider, ReportHelper reportHelper) {
-		this(ureq, wControl, form, filter, provider, reportHelper, null);
+		this(ureq, wControl, form, storage, filter, provider, reportHelper, null);
 	}
 
-	public EvaluationFormReportController(UserRequest ureq, WindowControl wControl, Form form,
+	public EvaluationFormReportController(UserRequest ureq, WindowControl wControl, Form form, DataStorage storage,
 			SessionFilter filter, EvaluationFormReportProvider provider, ReportHelper reportHelper,
 			Component header) {
 		super(ureq, wControl, "report");
 		this.form = form;
 		this.filter = filter;
-		this.provider = provider != null? provider: new DefaultReportProvider();
+		this.provider = provider != null? provider: new DefaultReportProvider(storage);
 		this.reportHelper = reportHelper != null? reportHelper: ReportHelper.builder(getLocale()).build();
 		this.header = header;
 		initForm(ureq);

@@ -30,6 +30,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormStatistic;
@@ -61,8 +62,8 @@ public class EvaluationFormOverviewController extends BasicController {
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
 
-	public EvaluationFormOverviewController(UserRequest ureq, WindowControl wControl, Form form, SessionFilter filter,
-			Figures figures) {
+	public EvaluationFormOverviewController(UserRequest ureq, WindowControl wControl, Form form, DataStorage storage,
+			SessionFilter filter, Figures figures) {
 		super(ureq, wControl);
 
 		mainVC = createVelocityContainer("overview");
@@ -98,7 +99,7 @@ public class EvaluationFormOverviewController extends BasicController {
 		mainVC.contextPut("figures", allFigures);
 
 		if (hasRubrics(form)) {
-			Controller reportCtrl = new EvaluationFormReportController(ureq, wControl, form, filter, PROVIDER);
+			Controller reportCtrl = new EvaluationFormReportController(ureq, wControl, form, storage, filter, PROVIDER);
 			listenTo(reportCtrl);
 			mainVC.put("report", reportCtrl.getInitialComponent());
 		}

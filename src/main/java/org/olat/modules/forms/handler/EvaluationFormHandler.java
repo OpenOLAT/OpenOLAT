@@ -61,6 +61,7 @@ import org.olat.core.util.xml.XStreamHelper;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.FileResource;
 import org.olat.fileresource.types.ResourceEvaluation;
+import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormsModule;
 import org.olat.modules.forms.model.xml.Form;
@@ -256,6 +257,8 @@ public class EvaluationFormHandler implements RepositoryHandler {
 	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl control, TooledStackedPanel toolbar) {
 		File repositoryDir = new File(FileResourceManager.getInstance().getFileResourceRoot(re.getOlatResource()), FileResourceManager.ZIPDIR);
 		File formFile = new File(repositoryDir, FORM_XML_FILE);
+		DataStorage storage = evaluationFormManager.loadStorage(re);
+		
 		//if in use -> edition is restricted
 		boolean restrictedEdit = evaluationFormManager.isEvaluationFormActivelyUsed(re);
 		if(restrictedEdit) {
@@ -263,7 +266,7 @@ public class EvaluationFormHandler implements RepositoryHandler {
 			toolbar.setMessage(translator.translate("evaluation.form.in.use"));
 			toolbar.setMessageCssClass("o_warning");
 		}
-		return new EvaluationFormEditorController(ureq, control, formFile, restrictedEdit);
+		return new EvaluationFormEditorController(ureq, control, formFile, storage, restrictedEdit);
 	}
 	
 	public File getFormFile(RepositoryEntry re) {
@@ -277,7 +280,8 @@ public class EvaluationFormHandler implements RepositoryHandler {
 			(uureq, wwControl, toolbarPanel, entry, security, assessmentMode) -> {
 					File repositoryDir = new File(FileResourceManager.getInstance().getFileResourceRoot(re.getOlatResource()), FileResourceManager.ZIPDIR);
 					File formFile = new File(repositoryDir, FORM_XML_FILE);
-					return new EvaluationFormExecutionController(uureq, wwControl, formFile);
+					DataStorage storage = evaluationFormManager.loadStorage(re);
+					return new EvaluationFormExecutionController(uureq, wwControl, formFile, storage);
 			});
 	}
 

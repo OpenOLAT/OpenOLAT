@@ -54,6 +54,7 @@ import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.util.StringHelper;
 import org.olat.fileresource.FileResourceManager;
+import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
@@ -62,6 +63,7 @@ import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
 import org.olat.modules.curriculum.ui.CurriculumTreeModel;
+import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.handler.EvaluationFormResource;
 import org.olat.modules.forms.ui.EvaluationFormExecutionController;
 import org.olat.modules.quality.QualityDataCollection;
@@ -131,6 +133,8 @@ public class DataCollectionConfigurationController extends FormBasicController {
 	private OrganisationService organisationService;
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private EvaluationFormManager evaluationFormManager;
 
 	public DataCollectionConfigurationController(UserRequest ureq, WindowControl wControl,
 			DataCollectionSecurityCallback secCallback, TooledStackedPanel stackPanel,
@@ -652,7 +656,8 @@ public class DataCollectionConfigurationController extends FormBasicController {
 	private void doPreviewEvaluationForm(UserRequest ureq) {
 		File repositoryDir = new File(FileResourceManager.getInstance().getFileResourceRoot(formEntry.getOlatResource()), FileResourceManager.ZIPDIR);
 		File formFile = new File(repositoryDir, FORM_XML_FILE);
-		Controller previewCtrl =  new EvaluationFormExecutionController(ureq, getWindowControl(), formFile);
+		DataStorage storage = evaluationFormManager.loadStorage(formEntry);
+		Controller previewCtrl =  new EvaluationFormExecutionController(ureq, getWindowControl(), formFile, storage);
 		stackPanel.pushController(translate("data.collection.form.preview.title"), previewCtrl);
 	}
 	

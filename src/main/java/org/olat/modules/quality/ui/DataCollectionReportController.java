@@ -29,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.FiguresBuilder;
@@ -107,9 +108,10 @@ public class DataCollectionReportController extends FormBasicController {
 		
 		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(dataCollection, null);
 		Form form = evaluationFormManager.loadForm(survey.getFormEntry());
+		DataStorage storage = evaluationFormManager.loadStorage(survey.getFormEntry());
 		SessionFilter filter = SessionFilterFactory.createSelectDone(survey);
 		
-		reportsCtrl = new EvaluationFormReportsController(ureq, getWindowControl(), form,
+		reportsCtrl = new EvaluationFormReportsController(ureq, getWindowControl(), form, storage,
 				filter, ReportSegment.OVERVIEW, reportHeaderCtrl.getInitialComponent(), builder.build());
 		flc.put("report", reportsCtrl.getInitialComponent());
 	}

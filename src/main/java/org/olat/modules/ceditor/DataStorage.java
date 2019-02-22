@@ -17,49 +17,31 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio;
+package org.olat.modules.ceditor;
 
-import java.util.Date;
+import java.io.File;
+import java.io.IOException;
 
-import org.olat.core.id.Identity;
-import org.olat.modules.ceditor.model.DublinCoreMetadata;
 import org.olat.modules.ceditor.model.StoredData;
 
 /**
  * 
- * Initial date: 17.06.2016<br>
+ * Initial date: 21 févr. 2019<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface Media extends StoredData, MediaLight, DublinCoreMetadata {
-
-	@Override
-	public Long getKey();
-
-	@Override
-	public Date getCreationDate();
-
-	@Override
-	public Date getCollectionDate();
-
-	@Override
-	public String getType();
-
-	@Override
-	public String getTitle();
+public interface DataStorage {
 	
-	public void setTitle(String title);
+	public File getFile(StoredData metadata);
 	
-	public void setDescription(String description);
-	
-	public String getContent();
-	
-	public void setContent(String content);
-	
-	public Identity getAuthor();
-	
-	public String getMetadataXml();
-
-	public void setMetadataXml(String medadata);
+	/**
+	 * The method will save the file and enrich the specified
+	 * stored object with the path and the file name.
+	 * 
+	 * @param file The file to store
+	 * @param metadata The metadata object
+	 * @return 
+	 */
+	public StoredData save(String filename, File file, StoredData metadata) throws IOException;
 
 }

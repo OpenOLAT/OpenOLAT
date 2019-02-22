@@ -17,49 +17,32 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio;
+package org.olat.modules.ceditor.model;
 
-import java.util.Date;
+import javax.persistence.Transient;
 
-import org.olat.core.id.Identity;
-import org.olat.modules.ceditor.model.DublinCoreMetadata;
-import org.olat.modules.ceditor.model.StoredData;
+import org.olat.core.util.StringHelper;
+import org.olat.modules.ceditor.ContentEditorXStream;
+import org.olat.modules.ceditor.PageElement;
+
 
 /**
  * 
- * Initial date: 17.06.2016<br>
+ * Initial date: 20 févr. 2019<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface Media extends StoredData, MediaLight, DublinCoreMetadata {
-
-	@Override
-	public Long getKey();
-
-	@Override
-	public Date getCreationDate();
-
-	@Override
-	public Date getCollectionDate();
-
-	@Override
-	public String getType();
-
-	@Override
-	public String getTitle();
+public interface ImageElement extends StoredDataElement, PageElement {
 	
-	public void setTitle(String title);
+	public String getLayoutOptions();
 	
-	public void setDescription(String description);
+	public void setLayoutOptions(String options);
 	
-	public String getContent();
-	
-	public void setContent(String content);
-	
-	public Identity getAuthor();
-	
-	public String getMetadataXml();
-
-	public void setMetadataXml(String medadata);
-
+	@Transient
+	public default ImageSettings getImageSettings() {
+		if(StringHelper.containsNonWhitespace(getLayoutOptions())) {
+			return ContentEditorXStream.fromXml(getLayoutOptions(), ImageSettings.class);
+		}
+		return new ImageSettings();	
+	}
 }

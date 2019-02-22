@@ -303,7 +303,202 @@ div.o_page_content_editor .gu-mirror, .o_page_content_editor .gu-transit {
 	}
 }
 
+/* Image */
+.o_page_content, .o_page_content_editor {
 
+	.o_image, .o_video {
+		width: 100%;
+		img {
+			border: 1px $o-portfolio-media-content-background-color solid;
+			border-radius: $o-panel-placeholder-border-radius;
+		}
+		
+		.o_artefact_metadata {
+			text-align: left;
+		}
+	
+		/* image alignment */
+		&.o_image_align_left {
+			@extend %o_block_large;
+			float: left;
+			&+.o_image_clear {
+				clear: both;
+			}			
+		}
+		&.o_image_align_right {
+			@extend %o_block_large;
+			float: right;
+			&+.o_image_clear {
+				clear: both;
+			}			
+		}
+		&.o_image_align_middle {
+			@extend %o_block_large;
+			clear:both;
+			margin-left: 50%;
+			text-align: center;
+			transform: translate(-50%, 0%);
+		}
+		&.o_image_align_leftfloat {
+			float: left;
+			padding-right: $o-portfolio-media-content-space;
+			padding-bottom: $o-portfolio-media-content-space;
+		}
+		&.o_image_align_rightfloat {
+			float: right;
+			padding-left: $o-portfolio-media-content-space;
+			padding-bottom: $o-portfolio-media-content-space;
+		}
+	
+		/* image size */
+		&.o_image_size_style_none {
+		
+		}		
+		&.o_image_size_style_small {
+			width: 25%;
+			img {
+				width: 100%;
+			}		
+		}
+		&.o_image_size_style_medium {
+			width: 40%;
+			img {
+				width: 100%;
+			}
+		}
+		&.o_image_size_style_large {
+			width: 60%;
+			img {
+				width: 100%;
+			}
+		}
+		&.o_image_size_style_fill {
+			@extend %o_block_large;
+			width: 100%;
+			float: none !important;
+			display: block;
+			.o_figure_caption_bottom {
+				display: block;
+			}
+			img {
+				width: 100%;
+				display: block;
+			}
+		}
+		
+		/* Image styles */
+		img.o_image_classic {
+			/* not styled */
+			padding: 0;
+			border: 0;
+			border-radius: 0;
+		}
+		img.o_image_border {
+			padding: 3px;
+			border: solid 1px #CCC;
+		}
+		img.o_image_shadow {
+			padding: 0;
+			border: 0;
+		    -moz-box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+			-webkit-box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+	    	box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+		}
+		img.o_image_frame {
+			/* see https://designshack.net/articles/css/4-fun-css-image-effects-you-can-copy-and-paste/ */
+			padding: 0;
+			border: 0;
+			border-radius: 0;
+		    -moz-box-shadow: 0px 0px 0px 1px rgba(0,0,0,0.6), 0px 0px 0px 10px #f6f3f8, 0px 0px 0px 14px rgba(0,0,0,0.2);
+			-webkit-box-shadow: 0px 0px 0px 1px rgba(0,0,0,0.6), 0px 0px 0px 10px #f6f3f8, 0px 0px 0px 14px rgba(0,0,0,0.2);
+	    	box-shadow: 0px 0px 0px 1px rgba(0,0,0,0.6), 0px 0px 0px 10px #f6f3f8, 0px 0px 0px 14px rgba(0,0,0,0.2);
+	    	margin: 15px;
+		}
+		img.o_image_polaroid {
+			padding: 0;
+			border-radius: 0;
+			border: 1px solid #dcdcdc;
+			background: #fff;
+			padding: 10px 10px 45px 10px;
+		  	-webkit-box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.2);
+	     	-moz-box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.2);
+	      	box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.2);
+		}
+		
+		img.o_image_round {
+			padding: 3px;
+			border: solid 1px #CCC;
+			border-radius: 50%;
+		}
+		
+		.o_image_title_dark {
+			color: $o-editor-title-dark;
+		}
+		.o_image_title_bright {
+			color: $o-editor-title-bright;
+		}
+		
+		.o_image_title {
+			position: relative;
+			
+			.o_image_title_top,
+			.o_image_title_centered,
+			.o_image_title_bottom {
+				position: absolute;
+				left: 50%;
+				margin-right: -50%;
+				transform: translate(-50%, -50%);			
+			}		
+			
+			.o_image_title_top {
+				top: 10%;
+			}
+			.o_image_title_centered {
+				top: 50%;
+			}			
+			.o_image_title_bottom {
+				bottom: 10%;
+			}
+		}
+	
+		&.o_image_size_style_none {
+			.o_image_title_top,
+			.o_image_title_centered,
+			.o_image_title_bottom {
+				font-size: 24px;			
+			}		
+		}		
+		&.o_image_size_style_small {
+			.o_image_title_top,
+			.o_image_title_centered,
+			.o_image_title_bottom {
+				font-size: 18px;			
+			}
+		}
+		&.o_image_size_style_medium {
+			.o_image_title_top,
+			.o_image_title_centered,
+			.o_image_title_bottom {
+				font-size: 32px;			
+			}
+		}
+		&.o_image_size_style_large {
+			.o_image_title_top,
+			.o_image_title_centered,
+			.o_image_title_bottom {
+				font-size: 40px;			
+			}
+		}
+		&.o_image_size_style_fill {
+			.o_image_title_top,
+			.o_image_title_centered,
+			.o_image_title_bottom {
+				font-size: 56px;			
+			}		
+		}
+	}
+}
+	
 .o_page_add_contents {
 	clear: both;
 	margin-top: 30px;

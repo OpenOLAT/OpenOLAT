@@ -25,7 +25,13 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Transient;
 
+import org.olat.core.util.StringHelper;
+import org.olat.modules.ceditor.ContentEditorXStream;
+import org.olat.modules.ceditor.model.ImageElement;
+import org.olat.modules.ceditor.model.ImageSettings;
+import org.olat.modules.ceditor.model.StoredData;
 import org.olat.modules.portfolio.Media;
+import org.olat.modules.portfolio.handler.ImageHandler;
 
 /**
  * 
@@ -34,7 +40,7 @@ import org.olat.modules.portfolio.Media;
  *
  */
 @Entity(name="pfmediapart")
-public class MediaPart extends AbstractPart {
+public class MediaPart extends AbstractPart implements ImageElement {
 
 	private static final long serialVersionUID = -5902348088983758191L;
 	
@@ -50,6 +56,19 @@ public class MediaPart extends AbstractPart {
 		this.media = media;
 	}
 	
+	@Override
+	public StoredData getStoredData() {
+		return media;
+	}
+
+	@Override
+	public ImageSettings getImageSettings() {
+		if(ImageHandler.IMAGE_TYPE.equals(getType()) && StringHelper.containsNonWhitespace(getLayoutOptions())) {
+			return ContentEditorXStream.fromXml(getLayoutOptions(), ImageSettings.class);
+		}
+		return null;
+	}
+
 	@Override
 	@Transient
 	public String getType() {

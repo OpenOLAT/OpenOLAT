@@ -37,6 +37,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.Figures;
@@ -115,6 +116,7 @@ public class AnalysisController extends BasicController implements TooledControl
 	private final TooledStackedPanel stackPanel;
 	
 	private final Form form;
+	private final DataStorage storage;
 	private final AvailableAttributes availableAttributes;
 	private SessionFilter reportSessionFilter;
 	private ReportHelper reportHelper;
@@ -134,6 +136,7 @@ public class AnalysisController extends BasicController implements TooledControl
 		stackPanel.addListener(this);
 		this.presentation = presentation;
 		this.form = evaluationFormManager.loadForm(presentation.getFormEntry());
+		this.storage = evaluationFormManager.loadStorage(presentation.getFormEntry());
 		
 		segmentButtonsCmp = new ButtonGroupComponent("segments");
 		overviewReportLink = LinkFactory.createLink("segments.table.overview", getTranslator(), this);
@@ -357,7 +360,7 @@ public class AnalysisController extends BasicController implements TooledControl
 	private void doOpenOverviewReport(UserRequest ureq) {
 		removeAsListenerAndDispose(overviewCtrl);
 		
-		overviewCtrl = new EvaluationFormOverviewController(ureq, getWindowControl(), form, getReportSessionFilter(), getReportFigures());
+		overviewCtrl = new EvaluationFormOverviewController(ureq, getWindowControl(), form, storage, getReportSessionFilter(), getReportFigures());
 		mainVC.put(SEGMENTS_CMP, overviewCtrl.getInitialComponent());
 		segmentButtonsCmp.setSelectedButton(overviewReportLink);
 	}
@@ -365,11 +368,11 @@ public class AnalysisController extends BasicController implements TooledControl
 	private void doOpenTableReport(UserRequest ureq) {
 		removeAsListenerAndDispose(tableReportCtrl);
 		
-		DefaultReportProvider provider = new DefaultReportProvider();
+		DefaultReportProvider provider = new DefaultReportProvider(storage);
 		provider.put(Rubric.TYPE, new RubricTableHandler());
 		provider.put(SingleChoice.TYPE, new SingleChoiceTableHandler());
 		provider.put(MultipleChoice.TYPE, new MultipleChoiceTableHandler());
-		tableReportCtrl = new EvaluationFormReportController(ureq, getWindowControl(), form, getReportSessionFilter(), provider, getReportHelper(), null);
+		tableReportCtrl = new EvaluationFormReportController(ureq, getWindowControl(), form, storage, getReportSessionFilter(), provider, getReportHelper(), null);
 		listenTo(tableReportCtrl);
 		mainVC.put(SEGMENTS_CMP, tableReportCtrl.getInitialComponent());
 		segmentButtonsCmp.setSelectedButton(tableReportLink);
@@ -378,8 +381,8 @@ public class AnalysisController extends BasicController implements TooledControl
 	private void doOpenDiagramReport(UserRequest ureq) {
 		removeAsListenerAndDispose(diagramReportCtrl);
 		
-		DefaultReportProvider provider = new DefaultReportProvider();
-		diagramReportCtrl = new EvaluationFormReportController(ureq, getWindowControl(), form, getReportSessionFilter(), provider, getReportHelper(), null);
+		DefaultReportProvider provider = new DefaultReportProvider(storage);
+		diagramReportCtrl = new EvaluationFormReportController(ureq, getWindowControl(), form, storage, getReportSessionFilter(), provider, getReportHelper(), null);
 		listenTo(diagramReportCtrl);
 		mainVC.put(SEGMENTS_CMP, diagramReportCtrl.getInitialComponent());
 		segmentButtonsCmp.setSelectedButton(diagramReportLink);
@@ -388,7 +391,7 @@ public class AnalysisController extends BasicController implements TooledControl
 	private void doOpenSessionSelection(UserRequest ureq) {
 		removeAsListenerAndDispose(sessionSelectionCtrl);
 		
-		sessionSelectionCtrl = new EvaluationFormSessionSelectionController(ureq, getWindowControl(), form, getReportSessionFilter(), getReportHelper(), null);
+		sessionSelectionCtrl = new EvaluationFormSessionSelectionController(ureq, getWindowControl(), form, storage, getReportSessionFilter(), getReportHelper(), null);
 		BreadcrumbedStackedPanel stackedSessionPanel = new BreadcrumbedStackedPanel("forms", getTranslator(), sessionSelectionCtrl);
 		stackedSessionPanel.pushController(translate("analysis.session.forms"), sessionSelectionCtrl);
 		sessionSelectionCtrl.setBreadcrumbPanel(stackedSessionPanel);
@@ -494,7 +497,7 @@ public class AnalysisController extends BasicController implements TooledControl
 	
 	private void doOpenPrintSelection(UserRequest ureq) {
 		if (printSelectionCtrl == null) {
-			printSelectionCtrl = new EvaluationFormPrintSelectionController(ureq, getWindowControl(), form, getReportSessionFilter(),
+			printSelectionCtrl = new EvaluationFormPrintSelectionController(ureq, getWindowControl(), form, storage, getReportSessionFilter(),
 					getReportFigures(), getReportHelper());
 			listenTo(printSelectionCtrl);
 		}

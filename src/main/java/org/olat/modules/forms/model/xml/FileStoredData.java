@@ -17,49 +17,49 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio;
+package org.olat.modules.forms.model.xml;
 
-import java.util.Date;
-
-import org.olat.core.id.Identity;
-import org.olat.modules.ceditor.model.DublinCoreMetadata;
 import org.olat.modules.ceditor.model.StoredData;
 
 /**
  * 
- * Initial date: 17.06.2016<br>
+ * Initial date: 21 févr. 2019<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface Media extends StoredData, MediaLight, DublinCoreMetadata {
+public class FileStoredData implements StoredData {
+
+	private static final long serialVersionUID = -8235463039511593670L;
+	
+	private String storagePath;
+	private String rootFilename;
 
 	@Override
-	public Long getKey();
+	public String getStoragePath() {
+		return storagePath;
+	}	
 
 	@Override
-	public Date getCreationDate();
+	public void setStoragePath(String relativePath) {
+		this.storagePath = relativePath;
+	}
 
 	@Override
-	public Date getCollectionDate();
+	public String getRootFilename() {
+		return rootFilename;
+	}
+	
+	@Override
+	public void setRootFilename(String name) {
+		this.rootFilename = name;
+	}
 
 	@Override
-	public String getType();
+	public String getDescription() {
+		return null;
+	}
 
-	@Override
-	public String getTitle();
-	
-	public void setTitle(String title);
-	
-	public void setDescription(String description);
-	
-	public String getContent();
-	
-	public void setContent(String content);
-	
-	public Identity getAuthor();
-	
-	public String getMetadataXml();
 
-	public void setMetadataXml(String medadata);
-
+	
+	
 }

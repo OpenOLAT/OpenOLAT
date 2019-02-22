@@ -27,8 +27,8 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.ceditor.model.DublinCoreMetadata;
 import org.olat.modules.portfolio.Citation;
-import org.olat.modules.portfolio.DublinCoreMetadata;
 
 /**
  * 

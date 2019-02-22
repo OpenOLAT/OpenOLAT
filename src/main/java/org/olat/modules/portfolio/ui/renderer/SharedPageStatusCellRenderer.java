@@ -19,12 +19,16 @@
  */
 package org.olat.modules.portfolio.ui.renderer;
 
+import java.io.IOException;
+
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.modules.portfolio.PageStatus;
 import org.olat.modules.portfolio.PageUserStatus;
 import org.olat.modules.portfolio.ui.TableOfContentController.PageRow;
@@ -38,6 +42,8 @@ import org.olat.modules.portfolio.ui.shared.SharedPageRow;
  *
  */
 public class SharedPageStatusCellRenderer implements FlexiCellRenderer {
+	
+	private static final OLog log = Tracing.createLoggerFor(SharedPageStatusCellRenderer.class);
 	
 	private final Translator translator;
 	
@@ -66,21 +72,29 @@ public class SharedPageStatusCellRenderer implements FlexiCellRenderer {
 	public String renderPageRow(PageRow pageRow) {
 		if(pageRow == null || pageRow.getPage() == null) return "";
 		
-		StringOutput target = new StringOutput(64);
-		PageStatus pageStatus = pageRow.getPage().getPageStatus();
-		PageUserStatus userStatus = pageRow.getUserInfosStatus();
-		render(target, pageStatus, userStatus) ;
-		return target.toString();
+		try(StringOutput target = new StringOutput(64)) {
+			PageStatus pageStatus = pageRow.getPage().getPageStatus();
+			PageUserStatus userStatus = pageRow.getUserInfosStatus();
+			render(target, pageStatus, userStatus) ;
+			return target.toString();
+		} catch(IOException e) {
+			log.error("", e);
+			return "ERROR";
+		}
 	}
 	
 	public String renderPortfolioElementRow(PortfolioElementRow elementRow) {
 		if(elementRow == null || elementRow.getPage() == null) return "";
 		
-		StringOutput target = new StringOutput(64);
-		PageStatus pageStatus = elementRow.getPage().getPageStatus();
-		PageUserStatus userStatus = elementRow.getUserInfosStatus();
-		render(target, pageStatus, userStatus) ;
-		return target.toString();
+		try(StringOutput target = new StringOutput(64)) {
+			PageStatus pageStatus = elementRow.getPage().getPageStatus();
+			PageUserStatus userStatus = elementRow.getUserInfosStatus();
+			render(target, pageStatus, userStatus) ;
+			return target.toString();
+		} catch(IOException e) {
+			log.error("", e);
+			return "ERROR";
+		}
 	}
 
 	private final void render(StringOutput target, PageStatus status, PageUserStatus userStatus) {

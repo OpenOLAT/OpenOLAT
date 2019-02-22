@@ -30,6 +30,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.forms.model.jpa.EvaluationFormResponses;
 import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.model.xml.Rubric;
@@ -46,6 +47,8 @@ import org.olat.repository.RepositoryEntryRef;
 public interface EvaluationFormManager {
 
 	public Form loadForm(RepositoryEntry formEntry);
+	
+	public DataStorage loadStorage(RepositoryEntry formEntry);
 
 	public EvaluationFormSurvey createSurvey(OLATResourceable ores, String subIdent, RepositoryEntry formEntry);
 	

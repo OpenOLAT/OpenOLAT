@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio.ui.media;
+package org.olat.modules.ceditor.ui;
 
 import java.util.List;
 
@@ -36,15 +36,16 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.ceditor.ContentEditorModule;
 import org.olat.modules.ceditor.ContentEditorXStream;
+import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.ceditor.PageElementEditorController;
+import org.olat.modules.ceditor.PageElementStore;
+import org.olat.modules.ceditor.model.DublinCoreMetadata;
+import org.olat.modules.ceditor.model.ImageElement;
 import org.olat.modules.ceditor.model.ImageHorizontalAlignment;
 import org.olat.modules.ceditor.model.ImageSettings;
 import org.olat.modules.ceditor.model.ImageSize;
 import org.olat.modules.ceditor.model.ImageTitlePosition;
-import org.olat.modules.ceditor.ui.PageEditorController;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
-import org.olat.modules.portfolio.PortfolioService;
-import org.olat.modules.portfolio.model.MediaPart;
 import org.olat.modules.portfolio.model.StandardMediaRenderingHints;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -54,7 +55,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class ImageMediaEditorController extends FormBasicController implements PageElementEditorController {
+public class ImageEditorController extends FormBasicController implements PageElementEditorController {
 	
 	private static final String[] titlePositionKeys = new String[] {
 			ImageTitlePosition.above.name(), ImageTitlePosition.top.name(), ImageTitlePosition.centered.name(), ImageTitlePosition.bottom.name()
@@ -80,19 +81,21 @@ public class ImageMediaEditorController extends FormBasicController implements P
 	private TextElement captionEl;
 	private TextElement descriptionEl;
 	
-	private ImageMediaController imagePreview;
+	private ImageRunController imagePreview;
 	
-	private MediaPart mediaPart;
 	private boolean editMode;
+	private DataStorage dataStorage;
+	private ImageElement imageElement;
+	private final PageElementStore<ImageElement> store;
 	
-	@Autowired
-	private PortfolioService portfolioService;
 	@Autowired
 	private ContentEditorModule contentEditorModule;
 	
-	public ImageMediaEditorController(UserRequest ureq, WindowControl wControl, MediaPart mediaPart) {
-		super(ureq, wControl, "editor_image", Util.createPackageTranslator(PageEditorController.class, ureq.getLocale()));
-		this.mediaPart = mediaPart;
+	public ImageEditorController(UserRequest ureq, WindowControl wControl, ImageElement mediaPart, DataStorage storage, PageElementStore<ImageElement> store) {
+		super(ureq, wControl, "image_editor", Util.createPackageTranslator(PageEditorController.class, ureq.getLocale()));
+		this.imageElement = mediaPart;
+		this.dataStorage = storage;
+		this.store = store;
 		initForm(ureq);
 	}
 	
@@ -110,7 +113,7 @@ public class ImageMediaEditorController extends FormBasicController implements P
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {		
-		imagePreview = new ImageMediaController(ureq, getWindowControl(), mediaPart, new StandardMediaRenderingHints());
+		imagePreview = new ImageRunController(ureq, getWindowControl(), dataStorage, imageElement, new StandardMediaRenderingHints());
 		listenTo(imagePreview);
 		((FormLayoutContainer)formLayout).getFormItemComponent().put("imagePreview", imagePreview.getInitialComponent());
 		
@@ -172,6 +175,7 @@ public class ImageMediaEditorController extends FormBasicController implements P
 		String[] licenseValues = new String[] { translate("image.origin.show") };
 		sourceEl = uifactory.addCheckboxesHorizontal("image.origin", "image.origin", formLayout, onKeys, licenseValues);
 		sourceEl.addActionListener(FormEvent.ONCHANGE);
+		sourceEl.setVisible(imageElement.getStoredData() instanceof DublinCoreMetadata);
 		
 		String[] descriptionValues = new String[] { translate("image.description.show") };
 		descriptionEnableEl = uifactory.addCheckboxesHorizontal("image.description", "image.description", formLayout, onKeys, descriptionValues);
@@ -181,8 +185,8 @@ public class ImageMediaEditorController extends FormBasicController implements P
 		descriptionEl.addActionListener(FormEvent.ONCHANGE);
 		descriptionEl.setVisible(false);
 		
-		if(StringHelper.containsNonWhitespace(mediaPart.getLayoutOptions())) {
-			ImageSettings settings = ContentEditorXStream.fromXml(mediaPart.getLayoutOptions(), ImageSettings.class);
+		ImageSettings settings = imageElement.getImageSettings();
+		if(settings != null) {
 			if(settings.getAlignment() != null) {
 				for(String alignmentKey:alignmentKeys) {
 					if(settings.getAlignment().name().equals(alignmentKey)) {
@@ -235,8 +239,8 @@ public class ImageMediaEditorController extends FormBasicController implements P
 				descriptionEl.setValue(settings.getDescription());
 			}
 		} else {
-			if(StringHelper.containsNonWhitespace(mediaPart.getMedia().getDescription())) {
-				captionEl.setValue(mediaPart.getMedia().getDescription());
+			if(StringHelper.containsNonWhitespace(imageElement.getStoredData().getDescription())) {
+				captionEl.setValue(imageElement.getStoredData().getDescription());
 			}
 		}
 	}
@@ -265,10 +269,8 @@ public class ImageMediaEditorController extends FormBasicController implements P
 	}
 	
 	private void doSaveSettings(UserRequest ureq) {
-		ImageSettings settings;
-		if(StringHelper.containsNonWhitespace(mediaPart.getLayoutOptions())) {
-			settings = ContentEditorXStream.fromXml(mediaPart.getLayoutOptions(), ImageSettings.class);
-		} else {
+		ImageSettings settings = imageElement.getImageSettings();
+		if(settings == null) {
 			settings = new ImageSettings();
 		}
 		
@@ -322,14 +324,14 @@ public class ImageMediaEditorController extends FormBasicController implements P
 		}
 		
 		String settingsXml = ContentEditorXStream.toXml(settings);
-		mediaPart.setLayoutOptions(settingsXml);
-		mediaPart = portfolioService.updatePart(mediaPart);
+		imageElement.setLayoutOptions(settingsXml);
+		imageElement = store.savePageElement(imageElement);
 		
 		removeAsListenerAndDispose(imagePreview);
-		imagePreview = new ImageMediaController(ureq, getWindowControl(), mediaPart, new StandardMediaRenderingHints());
+		imagePreview = new ImageRunController(ureq, getWindowControl(), dataStorage, imageElement, new StandardMediaRenderingHints());
 		listenTo(imagePreview);
 		flc.getFormItemComponent().put("imagePreview", imagePreview.getInitialComponent());
 		
-		fireEvent(ureq, new ChangePartEvent(mediaPart));
+		fireEvent(ureq, new ChangePartEvent(imageElement));
 	}
 }

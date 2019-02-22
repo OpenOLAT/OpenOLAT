@@ -20,6 +20,7 @@
 package org.olat.modules.forms.model.xml;
 
 import org.olat.core.util.xml.XStreamHelper;
+import org.olat.modules.ceditor.model.ImageSettings;
 import org.olat.modules.forms.model.xml.SessionInformations.InformationType;
 
 import com.thoughtworks.xstream.XStream;
@@ -49,6 +50,9 @@ public class FormXStream {
 		xstream.alias("informationType", InformationType.class);
 		xstream.alias("disclaimer", Disclaimer.class);
 		xstream.alias("table", Table.class);
+		xstream.alias("image", Image.class);
+		xstream.alias("imageSettgins", ImageSettings.class);
+		xstream.alias("fileStoredData", FileStoredData.class);
 	}
 	
 	public static XStream getXStream() {

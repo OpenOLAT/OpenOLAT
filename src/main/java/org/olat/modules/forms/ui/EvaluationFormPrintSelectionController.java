@@ -38,6 +38,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.ControllerCreator;
+import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.forms.EvaluationFormPrintSelection;
 import org.olat.modules.forms.Figures;
 import org.olat.modules.forms.SessionFilter;
@@ -66,15 +67,17 @@ public class EvaluationFormPrintSelectionController extends FormBasicController 
 	private Link printLink;
 
 	private final Form form;
+	private final DataStorage storage;
 	private final SessionFilter filter;
 	private final Figures figures;
 	private final ReportHelper reportHelper;
 	private final EvaluationFormPrintSelection printSelection;
 
 	public EvaluationFormPrintSelectionController(UserRequest ureq, WindowControl wControl, Form form,
-			SessionFilter filter, Figures figures, ReportHelper reportHelper) {
+			DataStorage storage, SessionFilter filter, Figures figures, ReportHelper reportHelper) {
 		super(ureq, wControl, "report_print_selection");
 		this.form = form;
+		this.storage = storage;
 		this.filter = filter;
 		this.figures = figures;
 		this.reportHelper = reportHelper;
@@ -140,7 +143,7 @@ public class EvaluationFormPrintSelectionController extends FormBasicController 
 		ControllerCreator ctrlCreator = new ControllerCreator() {
 			@Override
 			public Controller createController(UserRequest lureq, WindowControl lwControl) {
-				EvaluationFormPrintController printCtrl = new EvaluationFormPrintController(lureq, lwControl, form,
+				EvaluationFormPrintController printCtrl = new EvaluationFormPrintController(lureq, lwControl, form, storage,
 						filter, figures, reportHelper, printSelection);
 				LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, lwControl, printCtrl);
 				layoutCtr.addDisposableChildController(printCtrl); // dispose controller on layout dispose

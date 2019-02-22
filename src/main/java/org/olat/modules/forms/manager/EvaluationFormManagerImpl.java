@@ -19,6 +19,7 @@
  */
 package org.olat.modules.forms.manager;
 
+import static org.olat.modules.forms.handler.EvaluationFormResource.FORM_DATA_DIR;
 import static org.olat.modules.forms.handler.EvaluationFormResource.FORM_XML_FILE;
 
 import java.io.File;
@@ -38,6 +39,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.fileresource.FileResourceManager;
+import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationIdentifier;
@@ -54,6 +56,7 @@ import org.olat.modules.forms.RubricRating;
 import org.olat.modules.forms.RubricStatistic;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.SessionStatusInformation;
+import org.olat.modules.forms.handler.FormDataElementStorage;
 import org.olat.modules.forms.model.jpa.EvaluationFormResponses;
 import org.olat.modules.forms.model.jpa.RubricStatisticImpl;
 import org.olat.modules.forms.model.xml.Form;
@@ -95,6 +98,18 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 		return (Form) XStreamHelper.readObject(FormXStream.getXStream(), formFile);
 	}
 	
+	@Override
+	public DataStorage loadStorage(RepositoryEntry formEntry) {
+		File repositoryDir = new File(
+				FileResourceManager.getInstance().getFileResourceRoot(formEntry.getOlatResource()),
+				FileResourceManager.ZIPDIR);
+		File formFile = new File(repositoryDir, FORM_DATA_DIR);
+		if(!formFile.exists()) {
+			formFile.mkdir();
+		}
+		return new FormDataElementStorage(formFile);
+	}
+
 	@Override
 	public EvaluationFormSurvey createSurvey(OLATResourceable ores, String subIdent, RepositoryEntry formEntry) {
 		return evaluationFormSurveyDao.createSurvey(ores, subIdent, formEntry, null);

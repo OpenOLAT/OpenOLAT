@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
@@ -45,18 +46,22 @@ import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementAddController;
 import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementRenderingHints;
+import org.olat.modules.ceditor.PageElementStore;
 import org.olat.modules.ceditor.PageRunElement;
+import org.olat.modules.ceditor.model.ImageElement;
+import org.olat.modules.ceditor.ui.ImageEditorController;
 import org.olat.modules.portfolio.Media;
 import org.olat.modules.portfolio.MediaInformations;
 import org.olat.modules.portfolio.MediaLight;
 import org.olat.modules.portfolio.MediaRenderingHints;
 import org.olat.modules.portfolio.PortfolioLoggingAction;
+import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.manager.MediaDAO;
 import org.olat.modules.portfolio.manager.PortfolioFileStorage;
+import org.olat.modules.portfolio.model.ExtendedMediaRenderingHints;
 import org.olat.modules.portfolio.model.MediaPart;
 import org.olat.modules.portfolio.ui.media.CollectImageMediaController;
 import org.olat.modules.portfolio.ui.media.ImageMediaController;
-import org.olat.modules.portfolio.ui.media.ImageMediaEditorController;
 import org.olat.modules.portfolio.ui.media.UploadMedia;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.olat.user.manager.ManifestBuilder;
@@ -71,7 +76,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class ImageHandler extends AbstractMediaHandler implements InteractiveAddPageElementHandler {
+public class ImageHandler extends AbstractMediaHandler implements PageElementStore<ImageElement>, InteractiveAddPageElementHandler {
 	
 	public static final String IMAGE_TYPE = "image";
 	public static final Set<String> mimeTypes = new HashSet<>();
@@ -178,7 +183,7 @@ public class ImageHandler extends AbstractMediaHandler implements InteractiveAdd
 	public Controller getEditor(UserRequest ureq, WindowControl wControl, PageElement element) {
 		if(element instanceof MediaPart) {
 			MediaPart mediaPart = (MediaPart)element;
-			return new ImageMediaEditorController(ureq, wControl, mediaPart);
+			return new ImageEditorController(ureq, wControl, mediaPart, dataStorage, this);
 		}
 		return super.getEditor(ureq, wControl, element);
 	}
@@ -186,14 +191,14 @@ public class ImageHandler extends AbstractMediaHandler implements InteractiveAdd
 	@Override
 	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, PageElementRenderingHints options) {
 		if(element instanceof MediaPart) {
-			return new ImageMediaController(ureq, wControl, (MediaPart)element, new RenderingHints(options));
+			return new ImageMediaController(ureq, wControl, dataStorage, (MediaPart)element, options);
 		}
 		return super.getContent(ureq, wControl, element, options);
 	}
 
 	@Override
 	public Controller getMediaController(UserRequest ureq, WindowControl wControl, Media media, MediaRenderingHints hints) {
-		return new ImageMediaController(ureq, wControl, media, hints);
+		return new ImageMediaController(ureq, wControl, dataStorage, media, ExtendedMediaRenderingHints.valueOf(hints));
 	}
 
 	@Override
@@ -212,5 +217,10 @@ public class ImageHandler extends AbstractMediaHandler implements InteractiveAdd
 		File mediaDir = fileStorage.getMediaDirectory(media);
 		images.add(new File(mediaDir, media.getRootFilename()));
 		super.exportContent(media, null, images, mediaArchiveDirectory, locale);
+	}
+	
+	@Override
+	public ImageElement savePageElement(ImageElement element) {
+		return CoreSpringFactory.getImpl(PortfolioService.class).updatePart((MediaPart)element);
 	}
 }

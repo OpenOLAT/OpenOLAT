@@ -22,8 +22,8 @@ package org.olat.modules.portfolio.ui.component;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
+import org.olat.modules.ceditor.model.DublinCoreMetadata;
 import org.olat.modules.portfolio.Citation;
-import org.olat.modules.portfolio.DublinCoreMetadata;
 
 /**
  * 

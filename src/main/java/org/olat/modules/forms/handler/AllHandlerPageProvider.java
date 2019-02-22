@@ -22,6 +22,7 @@ package org.olat.modules.forms.handler;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageProvider;
 import org.olat.modules.forms.model.xml.Form;
@@ -37,13 +38,14 @@ public class AllHandlerPageProvider implements PageProvider {
 	private final Form form;
 	private final List<EvaluationFormElementHandler> handlers = new ArrayList<>();
 	
-	public AllHandlerPageProvider(Form form) {
+	public AllHandlerPageProvider(Form form, DataStorage storage) {
 		this.form = form;
 		
 		handlers.add(new TitleHandler());
 		handlers.add(new SpacerHandler());
 		handlers.add(new HTMLRawHandler());
 		handlers.add(new HTMLParagraphHandler());
+		handlers.add(new ImageHandler(storage));
 		handlers.add(new TableHandler());
 		handlers.add(new RubricHandler(false));
 		handlers.add(new TextInputHandler(false));

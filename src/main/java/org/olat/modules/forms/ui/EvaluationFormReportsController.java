@@ -31,6 +31,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
+import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.Figures;
 import org.olat.modules.forms.SessionFilter;
@@ -56,23 +57,25 @@ public class EvaluationFormReportsController extends BasicController {
 	private EvaluationFormPrintSelectionController printSelectionCtrl;
 
 	private final Form form;
+	private final DataStorage storage;
 	private final SessionFilter filter;
 	private final Figures figures;
 	private final ReportHelper reportHelper;
 
-	public EvaluationFormReportsController(UserRequest ureq, WindowControl wControl, Form form, SessionFilter filter) {
-		this(ureq, wControl, form, filter, null);
+	public EvaluationFormReportsController(UserRequest ureq, WindowControl wControl, Form form, DataStorage storage, SessionFilter filter) {
+		this(ureq, wControl, form, storage, filter, null);
 	}
 
-	public EvaluationFormReportsController(UserRequest ureq, WindowControl wControl, Form form, SessionFilter filter,
+	public EvaluationFormReportsController(UserRequest ureq, WindowControl wControl, Form form, DataStorage storage, SessionFilter filter,
 			ReportSegment show) {
-		this(ureq, wControl, form, filter, show, null, null);
+		this(ureq, wControl, form, storage, filter, show, null, null);
 	}
 
-	public EvaluationFormReportsController(UserRequest ureq, WindowControl wControl, Form form, SessionFilter filter,
+	public EvaluationFormReportsController(UserRequest ureq, WindowControl wControl, Form form, DataStorage storage, SessionFilter filter,
 			ReportSegment show, Component formHeader, Figures figures) {
 		super(ureq, wControl);
 		this.form = form;
+		this.storage = storage;
 		this.filter = filter;
 		this.figures = figures;
 
@@ -89,7 +92,7 @@ public class EvaluationFormReportsController extends BasicController {
 		exportLink = LinkFactory.createButtonSmall(CMD_EXPORT, mainVC, this);
 		exportLink.setIconLeftCSS("o_icon o_icon-fw o_icon_eva_export");
 
-		segmentsController = new EvaluationFormReportSegmentsController(ureq, getWindowControl(), form, filter, show,
+		segmentsController = new EvaluationFormReportSegmentsController(ureq, getWindowControl(), form, storage, filter, show,
 				formHeader, figures, reportHelper);
 		listenTo(segmentsController);
 		mainVC.put("segments", segmentsController.getInitialComponent());
@@ -136,7 +139,7 @@ public class EvaluationFormReportsController extends BasicController {
 
 	private void doOpenPrintSelection(UserRequest ureq) {
 		if (printSelectionCtrl == null) {
-			printSelectionCtrl = new EvaluationFormPrintSelectionController(ureq, getWindowControl(), form, filter,
+			printSelectionCtrl = new EvaluationFormPrintSelectionController(ureq, getWindowControl(), form, storage, filter,
 					figures, reportHelper);
 			listenTo(printSelectionCtrl);
 		}

@@ -17,49 +17,16 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio;
-
-import java.util.Date;
-
-import org.olat.core.id.Identity;
-import org.olat.modules.ceditor.model.DublinCoreMetadata;
-import org.olat.modules.ceditor.model.StoredData;
+package org.olat.modules.ceditor.model;
 
 /**
  * 
- * Initial date: 17.06.2016<br>
+ * Initial date: 21 févr. 2019<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface Media extends StoredData, MediaLight, DublinCoreMetadata {
-
-	@Override
-	public Long getKey();
-
-	@Override
-	public Date getCreationDate();
-
-	@Override
-	public Date getCollectionDate();
-
-	@Override
-	public String getType();
-
-	@Override
-	public String getTitle();
+public interface StoredDataElement {
 	
-	public void setTitle(String title);
-	
-	public void setDescription(String description);
-	
-	public String getContent();
-	
-	public void setContent(String content);
-	
-	public Identity getAuthor();
-	
-	public String getMetadataXml();
-
-	public void setMetadataXml(String medadata);
+	public StoredData getStoredData();
 
 }

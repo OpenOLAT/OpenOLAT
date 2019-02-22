@@ -19,8 +19,6 @@
  */
 package org.olat.modules.forms.ui;
 
-import static org.olat.modules.forms.handler.EvaluationFormResource.FORM_XML_FILE;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -46,7 +44,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.xml.XStreamHelper;
-import org.olat.fileresource.FileResourceManager;
+import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.ceditor.ValidatingController;
 import org.olat.modules.ceditor.ui.ValidationMessage;
 import org.olat.modules.ceditor.ui.ValidationMessage.Level;
@@ -87,6 +85,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 	private PageFragmentsElementImpl fragmentsEl;
 
 	private final Form form;
+	private final DataStorage storage;
 	private final ExecutionIdentity executionIdentity;
 	private final Component header;
 	private boolean readOnly;
@@ -96,6 +95,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 
 	private EvaluationFormSession session;
 	private final EvaluationFormResponses responses;
+	
 
 	@Autowired
 	private DB dbInstance;
@@ -103,7 +103,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 	private EvaluationFormManager evaluationFormManager;
 
 	public EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, EvaluationFormSession session) {
-		this(ureq, wControl, null, session, null, null, null, false, true);
+		this(ureq, wControl, null, null, session, null, null, null, false, true);
 	}
 
 	/**
@@ -113,16 +113,16 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 	 * 
 	 */
 	public EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, EvaluationFormSession session,
-			EvaluationFormResponses responses, Form form, Component header) {
-		this(ureq, wControl, form, session, responses, null, header, false, true);
+			EvaluationFormResponses responses, Form form, DataStorage storage, Component header) {
+		this(ureq, wControl, form, storage, session, responses, null, header, false, true);
 	}
 
 	public EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, EvaluationFormSession session,
 			boolean readOnly, boolean showDoneButton) {
-		this(ureq, wControl, null, session, null, null, null, readOnly, showDoneButton);
+		this(ureq, wControl, null, null, session, null, null, null, readOnly, showDoneButton);
 	}
 
-	public EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, Form form,
+	public EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, Form form, DataStorage storage,
 			EvaluationFormSession session, EvaluationFormResponses responses, ExecutionIdentity executionIdentity,
 			Component header, boolean readOnly, boolean showDoneButton) {
 		super(ureq, wControl, "execute");
@@ -134,13 +134,11 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 
 		if (form != null) {
 			this.form = form;
+			this.storage = storage;
 		} else {
 			RepositoryEntry formEntry = session.getSurvey().getFormEntry();
-			File repositoryDir = new File(
-					FileResourceManager.getInstance().getFileResourceRoot(formEntry.getOlatResource()),
-					FileResourceManager.ZIPDIR);
-			File formFile = new File(repositoryDir, FORM_XML_FILE);
-			this.form = (Form) XStreamHelper.readObject(FormXStream.getXStream(), formFile);
+			this.form = evaluationFormManager.loadForm(formEntry);
+			this.storage = evaluationFormManager.loadStorage(formEntry);
 		}
 
 		if (responses != null) {
@@ -159,10 +157,11 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 		initForm(ureq);
 	}
 
-	public EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, File formFile) {
+	public EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, File formFile, DataStorage storage) {
 		super(ureq, wControl, "execute");
 
 		this.form = (Form) XStreamHelper.readObject(FormXStream.getXStream(), formFile);
+		this.storage = storage;
 
 		this.session = null;
 		this.responses = null;
@@ -176,7 +175,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		AllHandlerPageProvider provider = new AllHandlerPageProvider(form);
+		AllHandlerPageProvider provider = new AllHandlerPageProvider(form, storage);
 		for (EvaluationFormElementHandler handler : provider.getAvailableHandlers()) {
 			handlerMap.put(handler.getType(), handler);
 		}

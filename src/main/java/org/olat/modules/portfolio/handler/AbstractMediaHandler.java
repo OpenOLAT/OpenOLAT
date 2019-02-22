@@ -26,6 +26,7 @@ import java.io.OutputStream;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.gui.DefaultGlobalSettings;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -40,15 +41,18 @@ import org.olat.core.gui.render.velocity.VelocityRenderDecorator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.gui.util.SyntheticUserRequest;
 import org.olat.core.gui.util.WindowControlMocker;
+import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementHandler;
 import org.olat.modules.ceditor.PageElementRenderingHints;
 import org.olat.modules.ceditor.PageRunElement;
+import org.olat.modules.ceditor.model.StoredData;
 import org.olat.modules.ceditor.ui.PageRunControllerElement;
 import org.olat.modules.portfolio.Media;
 import org.olat.modules.portfolio.MediaHandler;
@@ -67,8 +71,10 @@ import org.olat.modules.portfolio.ui.MediaMetadataController;
  *
  */
 public abstract class AbstractMediaHandler implements MediaHandler, PageElementHandler {
-	
+
 	private static final OLog log = Tracing.createLoggerFor(AbstractMediaHandler.class);
+	
+	protected static final PortfolioStorage dataStorage = new PortfolioStorage();
 	
 	private final String type;
 	
@@ -142,22 +148,30 @@ public abstract class AbstractMediaHandler implements MediaHandler, PageElementH
 	}
 
 	private String exportContent(Media media, Component contentCmp, List<File> attachments, Locale locale) {
-		StringOutput sb = new StringOutput(10000);
-		Translator translator = Util.createPackageTranslator(MediaCenterController.class, locale);
-		String pagePath = Util.getPackageVelocityRoot(AbstractMediaHandler.class) + "/export_content.html";
-		VelocityContainer component = new VelocityContainer("html", pagePath, translator, null);
-		component.contextPut("media", media);
-		if(contentCmp != null) {
-			component.put("contentCmp", contentCmp);
-		} else {
-			component.contextPut("content", media.getContent());
+		try(StringOutput sb = new StringOutput(10000)) {
+			Translator translator = Util.createPackageTranslator(MediaCenterController.class, locale);
+			String pagePath = Util.getPackageVelocityRoot(AbstractMediaHandler.class) + "/export_content.html";
+			VelocityContainer component = new VelocityContainer("html", pagePath, translator, null);
+			component.contextPut("media", media);
+			if(contentCmp != null) {
+				component.put("contentCmp", contentCmp);
+			} else {
+				component.contextPut("content", media.getContent());
+			}
+			component.contextPut("attachments", attachments);
+			
+			SyntheticUserRequest ureq = new SyntheticUserRequest(null, locale);
+			MediaMetadataController metadata = new MediaMetadataController(ureq, new WindowControlMocker(), media);
+			component.put("metadata", metadata.getInitialComponent());
+			render(sb, component, translator);
+			return sb.toString();
+		} catch(IOException e) {
+			log.error("", e);
+			return "ERROR";
 		}
-		component.contextPut("attachments", attachments);
-		
-		SyntheticUserRequest ureq = new SyntheticUserRequest(null, locale);
-		MediaMetadataController metadata = new MediaMetadataController(ureq, new WindowControlMocker(), media);
-		component.put("metadata", metadata.getInitialComponent());
-		
+	}
+	
+	private void render(StringOutput sb, VelocityContainer component, Translator translator) {
 		Renderer renderer = Renderer.getInstance(component, translator, new EmptyURLBuilder(), new RenderResult(), new DefaultGlobalSettings());
 		try(VelocityRenderDecorator vrdec = new VelocityRenderDecorator(renderer, component, sb)) {
 			component.contextPut("r", vrdec);
@@ -165,7 +179,6 @@ public abstract class AbstractMediaHandler implements MediaHandler, PageElementH
 		} catch(IOException e) {
 			log.error("", e);
 		}
-		return sb.toString();
 	}
 
 	public final class Informations implements MediaInformations {
@@ -215,6 +228,20 @@ public abstract class AbstractMediaHandler implements MediaHandler, PageElementH
 		@Override
 		public boolean isExtendedMetadata() {
 			return options.isExtendedMetadata();
+		}
+	}
+	
+	public static class PortfolioStorage implements DataStorage {
+
+		@Override
+		public File getFile(StoredData storedData) {
+			File mediaDir = new File(FolderConfig.getCanonicalRoot(), storedData.getStoragePath());
+			return new File(mediaDir, storedData.getRootFilename());
+		}
+
+		@Override
+		public StoredData save(String filename, File file, StoredData metadata) throws IOException {
+			throw new OLATRuntimeException("Not implemented");
 		}
 	}
 }

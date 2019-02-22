@@ -31,9 +31,13 @@ import org.olat.modules.portfolio.MediaRenderingHints;
 public class ExtendedMediaRenderingHints implements MediaRenderingHints, PageElementRenderingHints {
 
 	private final boolean toPdf;
+	private final boolean onePage;
+	private final boolean extendedMetadata;
 	
-	private ExtendedMediaRenderingHints(boolean toPdf) {
+	private ExtendedMediaRenderingHints(boolean toPdf, boolean onePage, boolean extendedMetadata) {
 		this.toPdf = toPdf;
+		this.onePage = onePage;
+		this.extendedMetadata = extendedMetadata;
 	}
 
 	@Override
@@ -43,20 +47,29 @@ public class ExtendedMediaRenderingHints implements MediaRenderingHints, PageEle
 
 	@Override
 	public boolean isOnePage() {
-		return true;
+		return onePage;
 	}
 
 	@Override
 	public boolean isExtendedMetadata() {
-		return true;
+		return extendedMetadata;
 	}
 	
-	public static PageElementRenderingHints toPdf() {
-		return new ExtendedMediaRenderingHints(true);
+	public static ExtendedMediaRenderingHints toPdf() {
+		return new ExtendedMediaRenderingHints(true, true, true);
 	}
 	
-	public static PageElementRenderingHints toPrint() {
-		return new ExtendedMediaRenderingHints(false);
+	public static ExtendedMediaRenderingHints toPrint() {
+		return new ExtendedMediaRenderingHints(false, true, true);
 	}
 	
+	public static ExtendedMediaRenderingHints valueOf(MediaRenderingHints hints) {
+		boolean hintPdf = hints.isToPdf();
+		boolean hintPage = true;
+		boolean hintMeta = hints.isExtendedMetadata();
+		if(hints instanceof PageElementRenderingHints) {
+			hintPage = ((PageElementRenderingHints)hints).isOnePage();
+		}
+		return new ExtendedMediaRenderingHints(hintPdf, hintPage, hintMeta);
+	}
 }

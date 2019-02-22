@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio;
+package org.olat.modules.ceditor.model;
 
 import java.util.Date;
 
@@ -30,6 +30,8 @@ import java.util.Date;
 public interface DublinCoreMetadata {
 	
 	public String getTitle();
+	
+	public void setTitle(String title);
 	
 	public String getCreators();
 

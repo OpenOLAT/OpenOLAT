@@ -25,6 +25,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.SessionFilter;
@@ -51,8 +52,9 @@ public class SurveyReportingController extends BasicController {
 		mainVC = createVelocityContainer("reporting");
 
 		Form form = evaluationFormManager.loadForm(survey.getFormEntry());
+		DataStorage storage = evaluationFormManager.loadStorage(survey.getFormEntry());
 		SessionFilter filter = SessionFilterFactory.createSelectDone(survey);
-		EvaluationFormReportsController reportsCtrl = new EvaluationFormReportsController(ureq, wControl, form, filter);
+		EvaluationFormReportsController reportsCtrl = new EvaluationFormReportsController(ureq, wControl, form, storage, filter);
 		mainVC.put("report", reportsCtrl.getInitialComponent());
 
 		putInitialPanel(mainVC);

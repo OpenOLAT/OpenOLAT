@@ -31,6 +31,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.xml.XStreamHelper;
+import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.ceditor.PageEditorProvider;
 import org.olat.modules.ceditor.PageEditorSecurityCallback;
 import org.olat.modules.ceditor.PageElement;
@@ -42,6 +43,7 @@ import org.olat.modules.forms.handler.DisclaimerHandler;
 import org.olat.modules.forms.handler.FileUploadHandler;
 import org.olat.modules.forms.handler.HTMLParagraphHandler;
 import org.olat.modules.forms.handler.HTMLRawHandler;
+import org.olat.modules.forms.handler.ImageHandler;
 import org.olat.modules.forms.handler.MultipleChoiceHandler;
 import org.olat.modules.forms.handler.RubricHandler;
 import org.olat.modules.forms.handler.SessionInformationsHandler;
@@ -66,14 +68,16 @@ public class EvaluationFormEditorController extends BasicController {
 	
 	private final Form form;
 	private final File formFile;
+	private final DataStorage storage;
 	private boolean changes = false;
 	private final boolean restrictedEdit;
 	
 	private PageEditorController pageEditCtrl;
 	
-	public EvaluationFormEditorController(UserRequest ureq, WindowControl wControl, File formFile, boolean restrictedEdit) {
+	public EvaluationFormEditorController(UserRequest ureq, WindowControl wControl, File formFile, DataStorage storage, boolean restrictedEdit) {
 		super(ureq, wControl);
 		this.formFile = formFile;
+		this.storage = storage;
 		this.restrictedEdit = restrictedEdit;
 		if(formFile.exists()) {
 			form = (Form)XStreamHelper.readObject(FormXStream.getXStream(), formFile);
@@ -138,6 +142,9 @@ public class EvaluationFormEditorController extends BasicController {
 			handlers.add(htmlHandler);
 			TableHandler tableHandler = new TableHandler();
 			handlers.add(tableHandler);
+			// handler media
+			ImageHandler imageHandler = new ImageHandler(storage);
+			handlers.add(imageHandler);
 			// handler for rubric
 			RubricHandler rubricHandler = new RubricHandler(restrictedEdit);
 			handlers.add(rubricHandler);
@@ -164,6 +171,7 @@ public class EvaluationFormEditorController extends BasicController {
 				creationHandlers.add(titleRawHandler);
 				creationHandlers.add(htmlParagraphHandler);
 				creationHandlers.add(tableHandler);
+				creationHandlers.add(imageHandler);
 				creationHandlers.add(rubricHandler);
 				creationHandlers.add(singleChoiceHandler);
 				creationHandlers.add(multipleChoiceHandler);

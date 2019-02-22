@@ -212,7 +212,7 @@ public class ExportBinderAsCPResource implements MediaResource {
 			//manifest
 			ManifestType manifest = createImsManifest(binder, sections, pages);
 			zout.putNextEntry(new ZipEntry("imsmanifest.xml"));
-			write(manifest, new ShieldOutputStream(zout));
+			writeManifest(manifest, zout);
 			zout.closeEntry();
 			
 			//write pages
@@ -234,6 +234,14 @@ public class ExportBinderAsCPResource implements MediaResource {
 			String indexSrc = sectionFilename(sections.get(0));
 			CPOfflineReadableManager.getInstance().makeCPOfflineReadable(manifestXml, indexSrc, zout);
 		} catch (Exception e) {
+			log.error("", e);
+		}
+	}
+	
+	private void writeManifest(ManifestType manifest, ZipOutputStream zout) {
+		try(OutputStream out=new ShieldOutputStream(zout)) {
+			write(manifest, out);
+		} catch(IOException e) {
 			log.error("", e);
 		}
 	}

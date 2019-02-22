@@ -39,6 +39,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
@@ -308,6 +309,7 @@ public class MultiEvaluationFormController extends BasicController {
 	
 	private EvaluationFormReportController createReportController(UserRequest ureq) {
 		Form form = evaluationFormManager.loadForm(survey.getFormEntry());
+		DataStorage storage = evaluationFormManager.loadStorage(survey.getFormEntry());
 				
 		SessionFilter surveyFilter = SessionFilterFactory.createSelectDone(survey);
 		List<EvaluationFormSession> sessions = evaluationFormManager.loadSessionsFiltered(surveyFilter, 0, -1);
@@ -321,7 +323,7 @@ public class MultiEvaluationFormController extends BasicController {
 				.withColors()
 				.withLegendNameGenrator(legendNameGenerator)
 				.build();
-		return new EvaluationFormReportController(ureq, getWindowControl(), form, filter, provider, reportHelper);
+		return new EvaluationFormReportController(ureq, getWindowControl(), form, storage, filter, provider, reportHelper);
 	}
 	
 	private boolean notEvaluator(EvaluationFormSession session) {

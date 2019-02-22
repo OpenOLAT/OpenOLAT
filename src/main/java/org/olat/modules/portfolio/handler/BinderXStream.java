@@ -21,6 +21,7 @@ package org.olat.modules.portfolio.handler;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.zip.ZipOutputStream;
@@ -44,12 +45,9 @@ public class BinderXStream {
 	private static final OLog log = Tracing.createLoggerFor(BinderXStream.class);
 	private static final XStream myStream = XStreamHelper.createXStreamInstanceForDBObjects();
 	
-	
-	
 	public static final Binder copy(Binder binder) {
 		String stringuified = myStream.toXML(binder);
-		Binder copiedBinder = (Binder)myStream.fromXML(stringuified);
-		return copiedBinder;
+		return (Binder)myStream.fromXML(stringuified);
 	}
 	
 	public static final Binder fromPath(Path path)
@@ -64,11 +62,10 @@ public class BinderXStream {
 	
 	public static final void toStream(Binder binder, ZipOutputStream zout)
 	throws IOException {
-		try {
-			myStream.toXML(binder, new ShieldOutputStream(zout));
+		try(OutputStream out=new ShieldOutputStream(zout)) {
+			myStream.toXML(binder, out);
 		} catch (Exception e) {
 			log.error("Cannot export this map: " + binder, e);
 		}
 	}
-
 }
