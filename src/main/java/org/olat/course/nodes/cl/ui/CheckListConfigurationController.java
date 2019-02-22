@@ -356,7 +356,7 @@ public class CheckListConfigurationController extends FormBasicController {
 		
 		dueDateChooserEl.clearError();
 		if(dueDateEl.isAtLeastSelected(1)) {
-			if (dueDateChooserEl.isEmpty()) {
+			if (!wizard && dueDateChooserEl.isEmpty()) {
 				dueDateChooserEl.setErrorKey("form.error.date", null);
 				allOk &= false;
 			}
