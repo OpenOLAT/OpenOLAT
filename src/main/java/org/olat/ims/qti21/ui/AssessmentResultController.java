@@ -31,6 +31,8 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 import org.olat.admin.user.UserShortDescription;
+import org.olat.core.commons.services.pdf.PdfModule;
+import org.olat.core.commons.services.pdf.PdfService;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -38,6 +40,8 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -47,7 +51,10 @@ import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.nodes.CourseNode;
 import org.olat.fileresource.DownloadeableMediaResource;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.fileresource.types.ImsQTI21Resource.PathResourceLocator;
@@ -102,6 +109,8 @@ import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
  */
 public class AssessmentResultController extends FormBasicController {
 	
+	private Link pdfLink;
+	
 	private final String mapperUri;
 	private String signatureMapperUri;
 	private final String submissionMapperUri;
@@ -126,12 +135,15 @@ public class AssessmentResultController extends FormBasicController {
 	private final AssessmentHtmlBuilder htmlBuilder;
 	
 	private int count = 0;
-	
-	@Autowired
-	private QTI21Service qtiService;
-	
+
 	@Autowired
 	private UserManager userMgr;
+	@Autowired
+	private PdfModule pdfModule;
+	@Autowired
+	private PdfService pdfService;
+	@Autowired
+	private QTI21Service qtiService;
 	
 	public AssessmentResultController(UserRequest ureq, WindowControl wControl, Identity assessedIdentity, boolean anonym,
 			AssessmentTestSession candidateSession, File fUnzippedDirRoot, String mapperUri, String submissionMapperUri,
@@ -236,11 +248,14 @@ public class AssessmentResultController extends FormBasicController {
 				
 				layoutCont.contextPut("title", Boolean.valueOf(withTitle));
 				layoutCont.contextPut("print", Boolean.valueOf(withPrint));
+				layoutCont.contextPut("pdf", Boolean.valueOf(withPrint && pdfModule.isEnabled()));
 				layoutCont.contextPut("printCommand", Boolean.FALSE);
 				layoutCont.contextPut("toggleSolution", Boolean.valueOf(toggleSolution));
 				if(withPrint) {
 					layoutCont.contextPut("winid", "w" + layoutCont.getFormItemComponent().getDispatchID());
 					layoutCont.getFormItemComponent().addListener(this);
+					pdfLink = LinkFactory.createButton("download.pdf", layoutCont.getFormItemComponent(), this);
+					pdfLink.setIconLeftCSS("o_icon o_filetype_pdf");
 				}
 
 				if(assessedIdentityInfosCtrl != null) {
@@ -511,21 +526,63 @@ public class AssessmentResultController extends FormBasicController {
 
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		if(flc.getFormItemComponent() == source && "print".equals(event.getCommand())) {
-			doPrint(ureq);
+		if(flc.getFormItemComponent() == source) {
+			if("print".equals(event.getCommand())) {
+				doPrint(ureq);
+			} else if("pdf".equals(event.getCommand())) {
+				doPdf(ureq);
+			}
+		} else if(pdfLink == source) {
+			doPdf(ureq);
 		}
 		super.event(ureq, source, event);
 	}
 
 	private void doPrint(UserRequest ureq) {
-		ControllerCreator creator = (uureq, wwControl) -> {
+		ControllerCreator creator = getResultControllerCtreator();
+		openInNewBrowserWindow(ureq, creator);
+	}
+	
+	private void doPdf(UserRequest ureq) {
+		ControllerCreator creator = getResultControllerCtreator();
+		String filename = generateDownloadName(candidateSession);
+		MediaResource pdf = pdfService.convert(filename, getIdentity(), creator, getWindowControl());
+		ureq.getDispatchResult().setResultingMediaResource(pdf);
+	}
+	
+	private String generateDownloadName(AssessmentTestSession session) {
+		String filename = "results_";
+		if(session.getAnonymousIdentifier() != null) {
+			filename += session.getAnonymousIdentifier();
+		} else {
+			filename += session.getIdentity().getUser().getFirstName()
+					+ "_" + session.getIdentity().getUser().getLastName();
+		}
+		filename += "_" + session.getRepositoryEntry().getDisplayname();
+		
+		String subIdent = session.getSubIdent();
+		if(StringHelper.containsNonWhitespace(subIdent)) {
+			ICourse course = CourseFactory.loadCourse(session.getRepositoryEntry());
+			CourseNode node = course.getRunStructure().getNode(subIdent);
+			if(node != null) {
+				if(StringHelper.containsNonWhitespace(node.getShortTitle())) {
+					filename += "_" + node.getShortTitle();
+				} else {
+					filename += "_" + node.getLongTitle();
+				}
+			}
+		}
+		return filename;
+	}
+	
+	private ControllerCreator getResultControllerCtreator() {
+		return (uureq, wwControl) -> {
 			AssessmentResultController printViewCtrl = new AssessmentResultController(uureq, wwControl, assessedIdentity, anonym,
 					candidateSession, fUnzippedDirRoot, mapperUri, submissionMapperUri, options, false, true, false);
 			printViewCtrl.flc.contextPut("printCommand", Boolean.TRUE);
 			listenTo(printViewCtrl);
 			return printViewCtrl;
 		};
-		openInNewBrowserWindow(ureq, creator);
 	}
 
 	public static class InteractionResults {

@@ -19,6 +19,7 @@
  */
 package org.olat.ims.qti21.ui;
 
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.ims.qti21.AssessmentTestSession;
 
 /**
@@ -33,6 +34,8 @@ public class QTI21AssessmentTestSessionDetails {
 	private final int numOfItemsResponded;
 	private final int numOfItemsCorrected;
 	private final AssessmentTestSession testSession;
+	
+	private FormLink toolsLink;
 	
 	public QTI21AssessmentTestSessionDetails(AssessmentTestSession testSession,
 			int numOfItems, int numOfItemsResponded, int numOfItemsCorrected) {
@@ -56,5 +59,13 @@ public class QTI21AssessmentTestSessionDetails {
 	
 	public AssessmentTestSession getTestSession() {
 		return testSession;
+	}
+
+	public FormLink getToolsLink() {
+		return toolsLink;
+	}
+
+	public void setToolsLink(FormLink toolsLink) {
+		this.toolsLink = toolsLink;
 	}
 }

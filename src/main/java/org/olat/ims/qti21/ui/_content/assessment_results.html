@@ -10,9 +10,9 @@
 		#end
 	</h2>
 	#end
-	#if($print)
+	#if($print || $pdf)
 	<div class="o_button_group o_button_group_right">
-		<script type="text/javascript">
+		<script>
 		/* <![CDATA[ */ 
 			function print() {
 				try {
@@ -24,7 +24,14 @@
 			}
 		/* ]]> */
 		</script>
-		<a class="btn btn-default" href="javascript:print()" title="$r.translate("print")"><i class="o_icon o_icon_print"> </i> $r.translate("print")</a>	
+		#if($print && $pdf) <div class='btn-group'> #end
+		#if($print)
+		<a class="btn btn-default" href="javascript:print()" title="$r.translate("print")"><i class="o_icon o_icon_print"> </i> $r.translate("print")</a>
+		#end
+		#if($pdf)
+		$r.render("download.pdf")
+		#end
+		#if($print && $pdf) </div> #end
 	</div>
 	#end
 </div>

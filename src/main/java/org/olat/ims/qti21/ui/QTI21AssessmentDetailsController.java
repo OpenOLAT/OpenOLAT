@@ -31,7 +31,10 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.olat.core.commons.services.pdf.PdfModule;
+import org.olat.core.commons.services.pdf.PdfService;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -47,14 +50,20 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionE
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.creator.ControllerCreator;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.media.FileMediaResource;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.course.CourseFactory;
@@ -121,17 +130,24 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	private final boolean manualCorrections;
 	private final Identity assessedIdentity;
 	
+	private int count = 0;
 	private final boolean readOnly;
 	private final IQTESTCourseNode courseNode;
 	private final RepositoryEntrySecurity reSecurity;
 	private final UserCourseEnvironment assessedUserCourseEnv;
-	
+
+	private ToolsController toolsCtrl;
 	private CloseableModalController cmc;
 	private AssessmentResultController resultCtrl;
 	private QTI21ResetDataController resetToolCtrl;
 	private DialogBoxController retrieveConfirmationCtr;
+	private CloseableCalloutWindowController calloutCtrl;
 	private CorrectionIdentityAssessmentItemListController correctionCtrl;
 	
+	@Autowired
+	private PdfModule pdfModule;
+	@Autowired
+	private PdfService pdfService;
 	@Autowired
 	private UserManager userManager;
 	@Autowired
@@ -223,7 +239,14 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.correction.i18nHeaderKey(), TSCols.correction.ordinal(), "correction",
 					new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("correction"), "correction"), null)));
 		}
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("download.log", translate("download.log"), "log"));
+		if(pdfModule.isEnabled()) {
+			DefaultFlexiColumnModel toolsCol = new DefaultFlexiColumnModel(TSCols.tools);
+			toolsCol.setAlwaysVisible(true);
+			toolsCol.setExportable(false);
+			columnsModel.addFlexiColumnModel(toolsCol);
+		} else {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("download.log", translate("download.log"), "log"));
+		}
 
 		tableModel = new QTI21AssessmentTestSessionTableModel(columnsModel, getTranslator());
 		tableEl = uifactory.addTableElement(getWindowControl(), "sessions", tableModel, 20, false, getTranslator(), formLayout);
@@ -264,9 +287,13 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 					}
 				}
 			}
-
-			infos.add(new QTI21AssessmentTestSessionDetails(testSession,
-					numOfItems, responded, sessionStatistics.getNumOfCorrectedItems()));
+			QTI21AssessmentTestSessionDetails row = new QTI21AssessmentTestSessionDetails(testSession,
+					numOfItems, responded, sessionStatistics.getNumOfCorrectedItems());
+			
+			FormLink tools = uifactory.addFormLink("tools_" + (++count), "tools", null, flc, Link.LINK);
+			row.setToolsLink(tools);
+			tools.setUserObject(row);
+			infos.add(row);
 		}
 		
 		
@@ -320,6 +347,11 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if(toolsCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				calloutCtrl.deactivate();
+				cleanUp();
+			}
 		}
 		super.event(ureq, source, event);
 	}
@@ -327,11 +359,15 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	private void cleanUp() {
 		removeAsListenerAndDispose(correctionCtrl);
 		removeAsListenerAndDispose(resetToolCtrl);
+		removeAsListenerAndDispose(calloutCtrl);
 		removeAsListenerAndDispose(resultCtrl);
+		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(cmc);
 		correctionCtrl = null;
 		resetToolCtrl = null;
+		calloutCtrl = null;
 		resultCtrl = null;
+		toolsCtrl = null;
 		cmc = null;
 	}
 
@@ -357,6 +393,13 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 					doDownloadLog(ureq, testSession);
 				}
 			}
+		} else if(source instanceof FormLink) {
+			FormLink link = (FormLink)source;
+			if(link.getCmd().startsWith("tools")) {
+				this.doTools(ureq, link, (QTI21AssessmentTestSessionDetails)link.getUserObject());
+			}
+			
+			
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -494,29 +537,103 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		listenTo(cmc);
 	}
 	
+	private void doTools(UserRequest ureq, FormLink link, QTI21AssessmentTestSessionDetails row) {
+		removeAsListenerAndDispose(cmc);
+		removeAsListenerAndDispose(toolsCtrl);
+		
+		toolsCtrl = new ToolsController(ureq, getWindowControl(), row);
+		listenTo(toolsCtrl);
+
+		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+		listenTo(calloutCtrl);
+		calloutCtrl.activate();
+	}
+	
 	private void doDownloadLog(UserRequest ureq, AssessmentTestSession session) {
 		File logFile = qtiService.getAssessmentSessionAuditLogFile(session);
 		if(logFile != null && logFile.exists()) {
-			String filename = "auditlog_";
-			if(session.getAnonymousIdentifier() != null) {
-				filename += session.getAnonymousIdentifier();
-			} else {
-				filename += session.getIdentity().getUser().getFirstName()
-						+ "_" + session.getIdentity().getUser().getLastName();
-			}
-			filename += "_" + entry.getDisplayname();
-			if(courseNode != null) {
-				if(StringHelper.containsNonWhitespace(courseNode.getShortTitle())) {
-					filename += "_" + courseNode.getShortTitle();
-				} else {
-					filename += "_" + courseNode.getLongTitle();
-				}
-			}
-			
-			filename += ".log";
+			String filename = generateDownloadName("auditlog", session) + ".log";
 			ureq.getDispatchResult().setResultingMediaResource(new LogDownload(logFile, filename));
 		} else {
 			showWarning("warning.download.log");
+		}
+	}
+	
+	private void doDownloadPdf(UserRequest ureq, QTI21AssessmentTestSessionDetails row) {
+		final AssessmentTestSession session = qtiService.getAssessmentTestSession(row.getTestSession().getKey());
+		FileResourceManager frm = FileResourceManager.getInstance();
+		final File fUnzippedDirRoot = frm.unzipFileResource(session.getTestEntry().getOlatResource());
+		URI assessmentObjectUri = qtiService.createAssessmentTestUri(fUnzippedDirRoot);
+		File submissionDir = qtiService.getSubmissionDirectory(session);
+		String mapperUri = registerCacheableMapper(ureq, "QTI21DetailsResources::" + session.getKey(),
+				new ResourcesMapper(assessmentObjectUri, submissionDir));
+
+		ControllerCreator creator = (uureq, wwControl) -> {
+			final AssessmentTestSession ssession = qtiService.getAssessmentTestSession(row.getTestSession().getKey());
+			AssessmentResultController printViewCtrl = new AssessmentResultController(uureq, wwControl, assessedIdentity, false,
+					ssession, fUnzippedDirRoot, mapperUri, null, QTI21AssessmentResultsOptions.allOptions(), false, true, false);
+			listenTo(printViewCtrl);
+			return printViewCtrl;
+		};
+		
+		String filename = generateDownloadName("results_", session);
+		MediaResource pdf = pdfService.convert(filename, getIdentity(), creator, getWindowControl());
+		ureq.getDispatchResult().setResultingMediaResource(pdf);
+	}
+	
+	private String generateDownloadName(String prefix, AssessmentTestSession session) {
+		String filename = prefix + "_";
+		if(session.getAnonymousIdentifier() != null) {
+			filename += session.getAnonymousIdentifier();
+		} else {
+			filename += session.getIdentity().getUser().getFirstName()
+					+ "_" + session.getIdentity().getUser().getLastName();
+		}
+		filename += "_" + entry.getDisplayname();
+		if(courseNode != null) {
+			if(StringHelper.containsNonWhitespace(courseNode.getShortTitle())) {
+				filename += "_" + courseNode.getShortTitle();
+			} else {
+				filename += "_" + courseNode.getLongTitle();
+			}
+		}
+		return filename;
+	}
+	
+	private class ToolsController extends BasicController {
+		
+		private Link pdfLink;
+		private Link logLink;
+		
+		private final QTI21AssessmentTestSessionDetails row;
+		
+		public ToolsController(UserRequest ureq, WindowControl wControl, QTI21AssessmentTestSessionDetails row) {
+			super(ureq, wControl);
+			this.row = row;
+			
+			VelocityContainer mainVC = createVelocityContainer("details_tools");
+			pdfLink = LinkFactory.createLink("download.pdf", mainVC, this);
+			pdfLink.setIconLeftCSS("o_icon o_icon-fw o_filetype_pdf");
+			logLink = LinkFactory.createLink("download.log", mainVC, this);
+			logLink.setIconLeftCSS("o_icon o_icon-fw o_icon_log");	
+			
+			putInitialPanel(mainVC);
+		}
+
+		@Override
+		protected void doDispose() {
+			//
+		}
+
+		@Override
+		protected void event(UserRequest ureq, Component source, Event event) {
+			fireEvent(ureq, Event.DONE_EVENT);
+			if(pdfLink == source) {
+				doDownloadPdf(ureq, row);
+			} else if(logLink == source) {
+				doDownloadLog(ureq, row.getTestSession());
+			}
 		}
 	}
 	

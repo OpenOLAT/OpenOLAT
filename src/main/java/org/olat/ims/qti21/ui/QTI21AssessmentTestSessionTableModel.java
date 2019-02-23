@@ -107,9 +107,8 @@ public class QTI21AssessmentTestSessionTableModel extends DefaultFlexiTableDataM
 				Date finished = session.getTestSession().getFinishTime();
 				return finished == null ? Boolean.FALSE : Boolean.TRUE;
 			}
-			case correction: {
-				return (lastSession != null && lastSession.equals(session.getTestSession()));
-			}
+			case correction: return (lastSession != null && lastSession.equals(session.getTestSession()));
+			case tools: return session.getToolsLink();
 			default: return "ERROR";
 		}
 	}
@@ -137,7 +136,8 @@ public class QTI21AssessmentTestSessionTableModel extends DefaultFlexiTableDataM
 		manualScore("table.header.manualScore"),
 		finalScore("table.header.finalScore"),
 		open("table.header.action"),
-		correction("table.header.correction");
+		correction("table.header.correction"),
+		tools("table.header.tools");
 		
 		private final String i18nKey;
 		
