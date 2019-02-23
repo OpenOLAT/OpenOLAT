@@ -34,9 +34,11 @@ import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.scheduler.JobWithDB;
 import org.olat.core.commons.services.video.MovieService;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.modules.video.VideoManager;
+import org.olat.modules.video.VideoMeta;
 import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.VideoTranscoding;
 import org.olat.resource.OLATResource;
@@ -59,7 +61,7 @@ public class VideoTranscodingJob extends JobWithDB {
 	@Override
 	public void executeWithDB(JobExecutionContext context) throws JobExecutionException {
 		// uses StatefulJob interface to prevent concurrent job execution
-		doExecute(context);
+		doExecute();
 	}
 
 	/**
@@ -68,7 +70,7 @@ public class VideoTranscodingJob extends JobWithDB {
 	 * @return
 	 * @throws JobExecutionException
 	 */
-	private boolean doExecute(JobExecutionContext context) throws JobExecutionException {
+	private boolean doExecute() {
 		VideoModule videoModule = CoreSpringFactory.getImpl(VideoModule.class);
 		if (!videoModule.isTranscodingLocal()) {
 			log.debug("Skipping execution of video transcoding job, local transcoding disabled");
@@ -115,6 +117,19 @@ public class VideoTranscodingJob extends JobWithDB {
 		VideoModule videoModule = CoreSpringFactory.getImpl(VideoModule.class);
 		VideoManager videoManager = CoreSpringFactory.getImpl(VideoManager.class);
 		File masterFile = videoManager.getVideoFile(video);
+		if(masterFile == null) {
+			VideoMeta meta = videoManager.getVideoMetadata(videoTranscoding.getVideoResource());
+			if(meta != null && StringHelper.containsNonWhitespace(meta.getUrl())) {
+				videoTranscoding.setTranscoder(VideoTranscoding.TRANSCODER_LOCAL);
+				videoTranscoding.setStatus(VideoTranscoding.TRANSCODING_STATUS_DONE);
+			} else {
+				videoTranscoding.setTranscoder(VideoTranscoding.TRANSCODER_LOCAL);
+				videoTranscoding.setStatus(VideoTranscoding.TRANSCODING_STATUS_ERROR);
+			}
+			videoTranscoding = videoManager.updateVideoTranscoding(videoTranscoding);
+			return true; 
+		}
+		
 		File transcodingFolder = ((LocalFolderImpl)videoManager.getTranscodingContainer(video)).getBasefile();
 		File transcodedFile = new File(transcodingFolder,  Integer.toString(videoTranscoding.getResolution()) + masterFile.getName());
 		// mark this as beeing transcoded by this local transcoder

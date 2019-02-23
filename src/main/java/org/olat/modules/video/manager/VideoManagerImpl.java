@@ -345,8 +345,8 @@ public class VideoManagerImpl implements VideoManager {
 	@Override
 	public File getVideoFile(OLATResource videoResource) {
 		VFSContainer masterContainer = getMasterContainer(videoResource);
-		LocalFileImpl videoFile = (LocalFileImpl) masterContainer.resolve(FILENAME_VIDEO_MP4);
-		return videoFile.getBasefile();
+		VFSItem videoFile = masterContainer.resolve(FILENAME_VIDEO_MP4);
+		return (videoFile instanceof LocalFileImpl) ? ((LocalFileImpl)videoFile).getBasefile() : null;
 	}
 
 	/**
