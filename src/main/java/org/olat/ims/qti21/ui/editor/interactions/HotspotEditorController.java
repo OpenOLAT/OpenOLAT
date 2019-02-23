@@ -362,6 +362,9 @@ public class HotspotEditorController extends FormBasicController {
 				backgroundEl.validate(status);
 				if(status.isEmpty()) {
 					flc.setDirty(true);
+					String uniqueFilename = itemBuilder
+							.checkFilename(backgroundEl.getUploadFileName(), itemBuilder.getBackground(), itemFile.getParentFile());
+					backgroundEl.setUploadFileName(uniqueFilename);
 					backgroundImage = backgroundEl.moveUploadFileTo(itemFile.getParentFile());
 					Size size = imageService.getSize(new LocalFileImpl(backgroundImage), null);
 					optimizeResizeEl(size, true);
