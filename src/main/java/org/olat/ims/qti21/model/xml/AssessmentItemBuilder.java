@@ -22,6 +22,7 @@ package org.olat.ims.qti21.model.xml;
 import static org.olat.ims.qti21.QTI21Constants.MAXSCORE_IDENTIFIER;
 import static org.olat.ims.qti21.QTI21Constants.MINSCORE_IDENTIFIER;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,6 +31,7 @@ import javax.xml.transform.stream.StreamResult;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.ModalFeedbackBuilder.ModalFeedbackType;
@@ -341,6 +343,23 @@ public abstract class AssessmentItemBuilder {
 		}
 		
 		return interactionNames;
+	}
+	
+	/**
+	 * 
+	 * @param uploadedFilename The uploaded filename
+	 * @param currentFilename The current filename
+	 * @param directory The directory where the file will be saved
+	 * @return A proposition of unique filename
+	 */
+	public String checkFilename(String uploadedFilename, String currentFilename, File directory) {
+		if(uploadedFilename == null) return null;
+
+		if(!uploadedFilename.equals(currentFilename)) {
+			File file = new File(directory, uploadedFilename);
+			uploadedFilename = FileUtils.rename(file);
+		}
+		return uploadedFilename;
 	}
 	
 	protected final void serializeJqtiObject(QtiNode block, StringOutput sb) {
