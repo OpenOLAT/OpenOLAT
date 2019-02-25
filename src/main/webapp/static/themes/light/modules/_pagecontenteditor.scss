@@ -37,12 +37,19 @@
 			margin-left: auto;
 			margin-right: auto;
 			width: 26px;
-			top: -$o-portfolio-editor-border-width;
-			height: $o-portfolio-editor-border-width;
+			top: -$o-portfolio-editor-border-width + 6;
+			height: $o-portfolio-editor-border-width - 6;
+			background-color: $o-portfolio-editor-border-color;
+			border-radius: $o-panel-placeholder-border-radius $o-panel-placeholder-border-radius 0 0;
+			
+			.o_icon {
+				color: #fff;
+				background-color: $o-portfolio-editor-border-color;
+			}
 		}
 		.o_sel_add_element_above {
 			display: inline-block;
-			padding: 5px 5px 0 5px;
+			padding: 3px 5px 0 7px;
 		}
 		
 		.o_page_others_above {
@@ -177,12 +184,20 @@
 		margin-left: auto;
 		margin-right: auto;
 		width: 26px;
-		bottom: -$o-portfolio-editor-border-width;
-		height: $o-portfolio-editor-border-width;
+		bottom: -$o-portfolio-editor-border-width + 5;
+		height: $o-portfolio-editor-border-width - 3;
+		background-color: $o-portfolio-editor-border-color;
+		border-radius: 0 0 $o-panel-placeholder-border-radius $o-panel-placeholder-border-radius;
+			
+		.o_icon {
+			color: #fff;
+			background-color: $o-portfolio-editor-border-color;
+		}
 
 		.o_sel_add_element_below {
 			display: inline-block;
 			padding: 0 5px 5px 5px;
+			margin: 0px 0px 0px 2px;
 		}
 	}
 	
