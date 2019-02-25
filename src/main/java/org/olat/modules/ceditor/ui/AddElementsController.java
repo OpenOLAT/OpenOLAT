@@ -79,7 +79,7 @@ public class AddElementsController extends BasicController {
 				
 				String id = "add.el." + handler.getType();
 				Link addLink = LinkFactory.createLink(id, "add." + handler.getType(), "add.elements", mainVC, this);
-				addLink.setIconLeftCSS("o_icon o_icon-lg " + handler.getIconCssClass());
+				addLink.setIconLeftCSS("o_icon o_icon-fw " + handler.getIconCssClass());
 				addLink.setUserObject(handler);
 				addLink.setTooltip("add." + handler.getType());
 				mainVC.put(id, addLink);

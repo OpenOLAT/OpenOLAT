@@ -1,3 +1,4 @@
+<div class="hidden-xs">
 #foreach($category in $categories)
 	<h5 class="o_ce_cat_title">$category.name</h5>
 	<div class="o_ce_add o_button_group o_toolbar">
@@ -8,3 +9,17 @@
 		</ul>
 	</div>
 #end
+</div>
+<div class="visible-xs">
+#foreach($category in $categories)
+	<h5 class="o_ce_cat_title">$category.name</h5>
+	<div class="">
+		<ul class="o_ce_add_list list-group">
+			#foreach($linkId in $category.linkIds)
+				<li class="o_ce_add_list_item list-group-item">$r.render($linkId)</li>
+			#end
+		</ul>
+	</div>
+#end
+
+</div>
