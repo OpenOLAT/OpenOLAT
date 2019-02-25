@@ -67,18 +67,31 @@ public class LLRunController extends BasicController {
 		runVC.contextPut("linkList", linkList);
 		runVC.contextPut("showLinkComments", Boolean.valueOf(showLinkComments));
 		
-		CourseEnvironment courseEnv = userCourseEnv.getCourseEnvironment();
-		VFSContainer courseContainer = courseEnv.getCourseFolderContainer();
-		Mapper customMapper = null;
-		if (CoreSpringFactory.containsBean(CustomMediaChooserFactory.class.getName())) {
-			CustomMediaChooserFactory customMediaChooserFactory = (CustomMediaChooserFactory)CoreSpringFactory.getBean(CustomMediaChooserFactory.class.getName());
-			customMapper = customMediaChooserFactory.getMapperInstance();
+		boolean hasInternLinks = hasInternLinks(linkList);
+		if(hasInternLinks) {
+			CourseEnvironment courseEnv = userCourseEnv.getCourseEnvironment();
+			VFSContainer courseContainer = courseEnv.getCourseFolderContainer();
+			Mapper customMapper = null;
+			if (CoreSpringFactory.containsBean(CustomMediaChooserFactory.class.getName())) {
+				CustomMediaChooserFactory customMediaChooserFactory = (CustomMediaChooserFactory)CoreSpringFactory.getBean(CustomMediaChooserFactory.class.getName());
+				customMapper = customMediaChooserFactory.getMapperInstance();
+			}
+			String mapperID = courseEnv.getCourseResourceableId() + "/" + llCourseNode.getIdent();
+			String mapperBaseUrl = registerCacheableMapper(ureq, mapperID, new LLMapper(linkList, customMapper, courseContainer));
+			runVC.contextPut("mapperBaseUrl", mapperBaseUrl);
 		}
-		String mapperID = courseEnv.getCourseResourceableId() + "/" + llCourseNode.getIdent();
-		String mapperBaseUrl = registerCacheableMapper(ureq, mapperID, new LLMapper(linkList, customMapper, courseContainer));
-		
-		runVC.contextPut("mapperBaseUrl", mapperBaseUrl);
 		putInitialPanel(runVC);
+	}
+	
+	private boolean hasInternLinks(List<LLModel> linkList) {
+		if(linkList != null && !linkList.isEmpty()) {
+			for(LLModel link:linkList) {
+				if(link.isIntern()) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	@Override
@@ -103,6 +116,7 @@ public class LLRunController extends BasicController {
 			this.courseContainer = courseContainer;
 		}
 
+		@Override
 		public MediaResource handle(String relPath, HttpServletRequest request) {
 			boolean ok = false;
 			for(LLModel link:linkList) {
