@@ -26,11 +26,6 @@ import javax.servlet.http.HttpSessionListener;
 import org.olat.core.CoreSpringFactory;
 
 /**
- * 
- * Description:<br>
- * TODO: srosse Class Description for RestApiSessionListener
- * 
- * <P>
  * Initial Date:  7 apr. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com
  */

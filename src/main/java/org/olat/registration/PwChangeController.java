@@ -284,7 +284,7 @@ public class PwChangeController extends BasicController {
 		    .append(userTrans.translate("pwchange.body.alt", new String[] { serverpath, tk.getRegistrationKey(), i18nModule.getLocaleKey(ureq.getLocale()) }))
 		    .append("</div>")
 		    .append("<div class='o_footer'>")
-		    .append(userTrans.translate("reg.wherefrom", new String[] { serverpath, today, ip }))
+		    .append(userTrans.translate("reg.wherefrom", new String[] { serverpath, today }))
 		    .append("</div>");
 
 		MailBundle bundle = new MailBundle();

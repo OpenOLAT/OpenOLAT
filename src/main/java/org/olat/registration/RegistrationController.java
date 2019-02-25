@@ -342,9 +342,7 @@ public class RegistrationController extends BasicController implements Activatea
 		String ip = ureq.getHttpReq().getRemoteAddr();
 		String serverpath = Settings.getServerContextPathURI();
 		String today = DateFormat.getDateInstance(DateFormat.LONG, ureq.getLocale()).format(new Date());
-		String[] whereFromAttrs = new String[]{
-			serverpath, today, ip
-		};
+		String[] whereFromAttrs = new String[]{ serverpath, today };
 
 		if (registrationManager.isRegistrationPending(email) || userManager.isEmailAllowed(email)) {
 			TemporaryKey tk = null;

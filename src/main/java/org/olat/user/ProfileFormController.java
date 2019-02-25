@@ -576,7 +576,7 @@ public class ProfileFormController extends FormBasicController {
 		String currentEmailDisplay = userManager.getUserDisplayEmail(currentEmail, getLocale());
 		String changedEmaildisplay = userManager.getUserDisplayEmail(changedEmail, getLocale());
 		body = translate("email.change.body", new String[] { link, time, currentEmailDisplay, changedEmaildisplay })
-				+ SEPARATOR + translate("email.change.wherefrom", new String[] { serverpath, today, ip });
+				+ SEPARATOR + translate("email.change.wherefrom", new String[] { serverpath, today });
 		subject = translate("email.change.subject");
 		// send email
 		try {
