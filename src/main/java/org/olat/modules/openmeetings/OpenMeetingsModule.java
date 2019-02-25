@@ -192,7 +192,7 @@ public class OpenMeetingsModule  extends AbstractSpringModule implements ConfigO
 	}
 
 	public void setAdminPassword(String adminPassword) {
-		setStringProperty(ADMIN_PASSWORD, adminPassword, true);
+		setSecretStringProperty(ADMIN_PASSWORD, adminPassword, true);
 	}
 	
 }
