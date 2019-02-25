@@ -84,6 +84,20 @@ public class RepositoryEntryImportExport {
 	private static final String PROP_DISPLAYNAME = "DisplayName";
 	private static final String PROP_DECRIPTION = "Description";
 	private static final String PROP_INITIALAUTHOR = "InitialAuthor";
+	
+	private static final XStream xstream = XStreamHelper.createXStreamInstance();
+	static {
+		xstream.alias(PROP_ROOT, RepositoryEntryImport.class);
+		xstream.aliasField(PROP_SOFTKEY, RepositoryEntryImport.class, "softkey");
+		xstream.aliasField(PROP_RESOURCENAME, RepositoryEntryImport.class, "resourcename");
+		xstream.aliasField(PROP_DISPLAYNAME, RepositoryEntryImport.class, "displayname");
+		xstream.aliasField(PROP_DECRIPTION, RepositoryEntryImport.class, "description");
+		xstream.aliasField(PROP_INITIALAUTHOR, RepositoryEntryImport.class, "initialAuthor");
+		xstream.omitField(RepositoryEntryImport.class, "outer-class");
+		xstream.ignoreUnknownElements();
+	}
+	
+	
 	private boolean propertiesLoaded = false;
 
 	private RepositoryEntry re;
@@ -134,11 +148,7 @@ public class RepositoryEntryImportExport {
 	 */
 	public void exportDoExportProperties() {
 		// save repository entry properties
-		FileOutputStream fOut = null;
-		try {
-			fOut = new FileOutputStream(new File(baseDirectory, PROPERTIES_FILE));
-			XStream xstream = getXStream();
-			
+		try(FileOutputStream fOut = new FileOutputStream(new File(baseDirectory, PROPERTIES_FILE))) {
 			RepositoryEntryImport imp = new RepositoryEntryImport(re);
 			RepositoryManager rm = RepositoryManager.getInstance();
 			VFSLeaf image = rm.getImage(re);
@@ -160,8 +170,6 @@ public class RepositoryEntryImportExport {
 			xstream.toXML(imp, fOut);
 		} catch (IOException ioe) {
 			throw new OLATRuntimeException("Error writing repo properties.", ioe);
-		} finally {
-			FileUtils.closeSafely(fOut);
 		}
 	}
 	
@@ -208,7 +216,7 @@ public class RepositoryEntryImportExport {
 		
 		zout.putNextEntry(new ZipEntry(PROPERTIES_FILE));
 		try(OutputStream out=new ShieldOutputStream(zout)) {
-			getXStream().toXML(imp, out);
+			xstream.toXML(imp, out);
 		} catch(IOException e) {
 			log.error("", e);
 		}
@@ -329,14 +337,14 @@ public class RepositoryEntryImportExport {
 				try(FileSystem fs = FileSystems.newFileSystem(baseDirectory.toPath(), null)) {
 					Path fPath = fs.getPath("/");
 					Path manifestPath = fPath.resolve("export").resolve(PROPERTIES_FILE);
-					repositoryProperties = (RepositoryEntryImport)XStreamHelper.readObject(getXStream(), manifestPath);
+					repositoryProperties = (RepositoryEntryImport)XStreamHelper.readObject(xstream, manifestPath);
 				} catch(Exception e) {
 					log.error("", e);
 				}
 			} else {
 				File inputFile = new File(baseDirectory, PROPERTIES_FILE);
 				if(inputFile.exists()) {
-					repositoryProperties = (RepositoryEntryImport)XStreamHelper.readObject(getXStream(), inputFile);
+					repositoryProperties = (RepositoryEntryImport)XStreamHelper.readObject(xstream, inputFile);
 				} else {
 					repositoryProperties = new RepositoryEntryImport();
 				}
@@ -356,7 +364,6 @@ public class RepositoryEntryImportExport {
 	 */
 	public static RepositoryEntryImport getConfiguration(Path repoXmlPath) {
 		try (InputStream in=Files.newInputStream(repoXmlPath)) {
-			XStream xstream = getXStream();
 			return (RepositoryEntryImport)xstream.fromXML(in);
 		} catch(IOException e) {
 			log.error("", e);
@@ -372,27 +379,7 @@ public class RepositoryEntryImportExport {
 	 * @return The RepositoryEntryImport or NULL
 	 */
 	public static RepositoryEntryImport getConfiguration(InputStream repoMetaFileInputStream) {
-		XStream xstream = getXStream();
 		return (RepositoryEntryImport)xstream.fromXML(repoMetaFileInputStream);
-	}
-	
-	/**
-	 * Helper to load the xstream instances with all the aliases for the
-	 * RepositoryEntryImport class
-	 * 
-	 * @return
-	 */
-	private static XStream getXStream() {
-		XStream xStream = XStreamHelper.createXStreamInstance();
-		xStream.alias(PROP_ROOT, RepositoryEntryImport.class);
-		xStream.aliasField(PROP_SOFTKEY, RepositoryEntryImport.class, "softkey");
-		xStream.aliasField(PROP_RESOURCENAME, RepositoryEntryImport.class, "resourcename");
-		xStream.aliasField(PROP_DISPLAYNAME, RepositoryEntryImport.class, "displayname");
-		xStream.aliasField(PROP_DECRIPTION, RepositoryEntryImport.class, "description");
-		xStream.aliasField(PROP_INITIALAUTHOR, RepositoryEntryImport.class, "initialAuthor");
-		xStream.omitField(RepositoryEntryImport.class, "outer-class");
-		xStream.ignoreUnknownElements();
-		return xStream;
 	}
 
 	/**
