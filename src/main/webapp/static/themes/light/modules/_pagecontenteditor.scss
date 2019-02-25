@@ -256,8 +256,8 @@ div.o_page_content_editor .gu-mirror, .o_page_content_editor .gu-transit {
 		border: $o-panel-placeholder-border-width dotted $o-editor-hover-border-color;    
 	}
 }
-.o_page_add_in_container {
-	float: right;
+.o_page_add_in_container_grp {
+	margin-bottom: 0;
 }
 
 /* d&d styles */

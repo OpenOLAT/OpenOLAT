@@ -259,16 +259,6 @@ public class PageEditorComponentRenderer extends DefaultComponentRenderer {
 			sb.append("<div id='occ_").append(container.getId()).append("_").append(i).append("' class='")
 			  .append(cssColumns.get(i)).append(" o_page_container_slot o_page_drop' data-oo-slot='").append(i).append("'>");
 			
-			if(cmpFragment != null) {
-				sb.append("<a id='o_ccad_").append(container.getId()).append("_").append(i).append("' ")
-				  .append("href='#' onclick=\"");// add elements directly in container
-				ubu.buildXHREvent(sb, "", false, true,
-						new NameValuePair(VelocityContainer.COMMAND_ID, "add_to_container"),
-						new NameValuePair("container", cmpFragment.getCmpId()),
-						new NameValuePair("column", Integer.toString(i)));
-				sb.append(" return false;\" class='btn btn-default btn-xs o_page_add_in_container'><i class='o_icon o_icon_add'> </i></a>");
-			}
-			
 			if(columns != null && i < columns.size()) {
 				ContainerColumn column = columns.get(i);
 				for(String elementId:column.getElementIds()) {
@@ -277,6 +267,17 @@ public class PageEditorComponentRenderer extends DefaultComponentRenderer {
 						render(renderer, sb, cmp, fragment,  elementIdToFragments, ubu, translator, renderResult, args);
 					}
 				}
+			}
+			
+			if(cmpFragment != null) {
+				sb.append("<div class='o_button_group o_page_add_in_container_grp'><a id='o_ccad_").append(container.getId()).append("_").append(i).append("' ")
+				  .append("href='#' onclick=\"");// add elements directly in container
+				ubu.buildXHREvent(sb, "", false, true,
+						new NameValuePair(VelocityContainer.COMMAND_ID, "add_to_container"),
+						new NameValuePair("container", cmpFragment.getCmpId()),
+						new NameValuePair("column", Integer.toString(i)));
+				sb.append(" return false;\" class='btn btn-default btn-xs o_page_add_in_container'><i class='o_icon o_icon_add'> </i>");
+				sb.append(" <span>").append(translator.translate("add.element")).append("</span></a></div>");
 			}
 			sb.append("</div>");
 		}	
