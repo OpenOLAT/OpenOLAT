@@ -31,9 +31,7 @@ import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.nodes.INode;
 import org.olat.core.util.tree.TreeVisitor;
-import org.olat.core.util.tree.Visitor;
 import org.olat.core.util.vfs.MergeSource;
 import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.Quota;
@@ -92,12 +90,9 @@ public class MergedCourseElementDataContainer extends MergeSource {
 		ICourse course = CourseFactory.loadCourse(courseId);
 		AtomicInteger count = new AtomicInteger(0);
 		if(identityEnv == null) {
-			new TreeVisitor(new Visitor() {
-				@Override
-				public void visit(INode node) {
-					if(node instanceof PFCourseNode || node instanceof BCCourseNode) {
-						count.incrementAndGet();
-					}
+			new TreeVisitor(node -> {
+				if(node instanceof PFCourseNode || node instanceof BCCourseNode) {
+					count.incrementAndGet();
 				}
 			}, course.getRunStructure().getRootNode(), true).visitAll();
 		} else if(course instanceof PersistingCourseImpl) {
@@ -107,18 +102,12 @@ public class MergedCourseElementDataContainer extends MergeSource {
 			CourseNode rootCn = userCourseEnv.getCourseEnvironment().getRunStructure().getRootNode();
 			NodeEvaluation rootNodeEval = rootCn.eval(userCourseEnv.getConditionInterpreter(), treeEval, new VisibleTreeFilter());
 	
-			new TreeVisitor(new Visitor() {
-				@Override
-				public void visit(INode node) {
-					if(node instanceof TreeNode) {
-						
-						if(((TreeNode)node).getUserObject() instanceof NodeEvaluation) {
-							NodeEvaluation nodeEval = (NodeEvaluation)((TreeNode)node).getUserObject();
-							if(nodeEval != null
-									&& (nodeEval.getCourseNode() instanceof PFCourseNode || nodeEval.getCourseNode() instanceof BCCourseNode)) {
-								count.incrementAndGet();
-							}
-						}
+			new TreeVisitor(node -> {
+				if(node instanceof TreeNode && ((TreeNode)node).getUserObject() instanceof NodeEvaluation) {
+					NodeEvaluation nodeEval = (NodeEvaluation)((TreeNode)node).getUserObject();
+					if(nodeEval != null
+							&& (nodeEval.getCourseNode() instanceof PFCourseNode || nodeEval.getCourseNode() instanceof BCCourseNode)) {
+						count.incrementAndGet();
 					}
 				}
 			}, rootNodeEval.getTreeNode(), true).visitAll();

@@ -61,10 +61,12 @@ public class TreeVisitor {
 		if (!visitChildrenFirst) {
 			v.visit(node);
 		}
-		int chdCnt = node.getChildCount();
-		for (int i = 0; i < chdCnt; i++) {
-			INode chd = node.getChildAt(i);
-			doVisit(chd);
+		if(node != null) {
+			int chdCnt = node.getChildCount();
+			for (int i = 0; i < chdCnt; i++) {
+				INode chd = node.getChildAt(i);
+				doVisit(chd);
+			}
 		}
 		if (visitChildrenFirst) {
 			v.visit(node);
