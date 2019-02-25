@@ -108,4 +108,13 @@ public class RelationRightImpl implements RelationRight, Persistable {
 	public boolean equalsByPersistableKey(Persistable persistable) {
 		return equals(persistable);
 	}
+
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("relationRight[id=").append(key == null ? "null" : key.toString()).append(";")
+		  .append("right=").append(right == null ? "null" : right).append("]")
+		  .append(super.toString());
+		return sb.toString();
+	}
 }

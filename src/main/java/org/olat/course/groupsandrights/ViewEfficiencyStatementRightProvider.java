@@ -43,7 +43,7 @@ public class ViewEfficiencyStatementRightProvider implements RelationRightProvid
 	@Override
 	public String getTranslatedName(Locale locale) {
 		Translator translator = Util.createPackageTranslator(GroupsAndRightsController.class, locale);
-		return translator.translate("relation.right.viewCourseCalendar");
+		return translator.translate("relation.right.viewEfficiencyStatement");
 	}
 
 }
