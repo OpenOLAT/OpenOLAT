@@ -73,12 +73,9 @@ public class ResponsiveBarChartRenderer extends DefaultComponentRenderer {
 		  .append("    .rangeRound([0, width]).padding(.1);")
 		  .append("")
 		  .append("var xAxis = d3.axisBottom(x);")
-		  .append("var y = d3.scaleLinear()")
-		  .append("    .domain([0, d3.max(data, function(d) { return ").append(yMax).append("; })])")
-		  .append("    .range([height, 0]);")
 		  .append("var yAxisScale = d3.scaleLinear()")
-		  .append("    .domain([d3.max(data, function(d) { return ").append(yMax).append("; }), d3.max(data, function(d) { return ").append(yMin).append("; })])")
-		  .append("    .range([0, height]);")
+		  .append("    .domain([").append(yMin).append(",").append(yMax).append("])")
+		  .append("    .range([height, 0]);")
 		  .append("var yAxis = d3.axisLeft(yAxisScale);");
 
 
@@ -160,7 +157,7 @@ public class ResponsiveBarChartRenderer extends DefaultComponentRenderer {
 			  .append("    .attr('x', function(d) { return x(d[0]); })")
 			  .append("    .attr('y', function(d) { return yAxisScale(Math.max(0, d[").append((i+1)).append("])) ").append(correction).append(" ; })")
 			  .append("    .attr('width', x.bandwidth())")
-			  .append("    .attr('height', function(d) { return height - yAxisScale(d[").append((i+1)).append("]); });");
+			  .append("    .attr('height', function(d) { return Math.abs( yAxisScale(d[").append((i+1)).append("]) - yAxisScale(0)); });");
 		}
 	}
 	
@@ -169,16 +166,7 @@ public class ResponsiveBarChartRenderer extends DefaultComponentRenderer {
 		if (yMax != null) {
 			return Double.toString(yMax.doubleValue());
 		}
-		return getSum(chartCmp.getSeries());
-	}
-	
-	private String getSum(List<BarSeries> seriesList) {
-		StringBuilder sum = new StringBuilder();
-		for(int i=0; i<seriesList.size(); i++) {
-			if(sum.length() > 0) sum.append(" + ");
-			sum.append(" d[").append((i+1)).append("]");
-		}
-		return sum.toString();
+		return "1";
 	}
 	
 	private String getYMin(ResponsiveBarChartComponent chartCmp) {

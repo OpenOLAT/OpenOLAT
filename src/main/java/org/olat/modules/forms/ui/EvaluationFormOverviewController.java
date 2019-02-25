@@ -139,10 +139,15 @@ public class EvaluationFormOverviewController extends BasicController {
 		}
 
 		BarSeries series = new BarSeries("o_eva_bar");
+		long maxCount = 1;
 		for (DurationCategory category : durationCategories) {
 			series.add(category.getCount(), category.getName());
+			if (category.getCount() > maxCount) {
+				maxCount = category.getCount();
+			}
 		}
 		chart.addSeries(series);
+		chart.setYMax(Double.valueOf(maxCount));
 		return chart;
 	}
 
