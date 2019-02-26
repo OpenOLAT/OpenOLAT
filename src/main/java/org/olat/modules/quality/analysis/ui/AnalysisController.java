@@ -98,6 +98,7 @@ public class AnalysisController extends BasicController implements TooledControl
 	private Link editPresentationLink;
 	private Link deletePresentationLink;
 	private Link printLink;
+	private Link printPopupLink;
 	private Link exportLink;
 	private Link showFilterLink;
 	private Link hideFilterLink;
@@ -173,6 +174,7 @@ public class AnalysisController extends BasicController implements TooledControl
 		initOutputTools();
 		initFilterTools();
 		stackPanel.addTool(segmentButtonsCmp, true);
+		showPrintLink();
 	}
 
 	private void initPresentationTools() {
@@ -193,8 +195,11 @@ public class AnalysisController extends BasicController implements TooledControl
 	private void initOutputTools() {
 		printLink = LinkFactory.createToolLink("analysis.print", translate("analysis.print"), this);
 		printLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_ana_print");
-		printLink.setPopup(new LinkPopupSettings(950, 750, "report"));
 		stackPanel.addTool(printLink, Align.right);
+		printPopupLink = LinkFactory.createToolLink("analysis.print.popup", translate("analysis.print"), this);
+		printPopupLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_ana_print");
+		printPopupLink.setPopup(new LinkPopupSettings(950, 750, "report-hm"));
+		stackPanel.addTool(printPopupLink, Align.right);
 		exportLink = LinkFactory.createToolLink("analysis.export", translate("analysis.export"), this);
 		exportLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_ana_export");
 		stackPanel.addTool(exportLink, Align.right);
@@ -215,7 +220,9 @@ public class AnalysisController extends BasicController implements TooledControl
 		} else if (source == deletePresentationLink) {
 			doConfirmDeletePresentation(ureq);
 		} else if (source == printLink) {
-			doPrint(ureq);
+			doOpenPrintSelection(ureq);
+		} else if (source == printPopupLink) {
+			doPopupPrint(ureq);
 		} else if (source == exportLink) {
 			doExport(ureq);
 		} else if (source == showFilterLink) {
@@ -294,6 +301,8 @@ public class AnalysisController extends BasicController implements TooledControl
 	}
 
 	private void cleanUp() {
+		removeAsListenerAndDispose(printSelectionCtrl);
+		printSelectionCtrl = null;
 		removeAsListenerAndDispose(presentationDeleteCtrl);
 		removeAsListenerAndDispose(presentationCtrl);
 		removeAsListenerAndDispose(calloutCtrl);
@@ -360,6 +369,7 @@ public class AnalysisController extends BasicController implements TooledControl
 			doOpenOverviewReport(ureq);
 			break;
 		}
+		showPrintLink();
 	}
 	
 	private void doOpenOverviewReport(UserRequest ureq) {
@@ -499,15 +509,22 @@ public class AnalysisController extends BasicController implements TooledControl
 		initPresentationTools();
 		stackPanel.changeDisplayname(presentation.getFormEntry().getDisplayname());
 	}
-	
-	private void doPrint(UserRequest ureq) {
+
+	private void showPrintLink() {
 		Link selectedButton = segmentButtonsCmp.getSelectedButton();
-		if (selectedButton == overviewReportLink
-				|| selectedButton == tableReportLink
-				|| selectedButton == diagramReportLink
-				|| selectedButton == sessionSelectionLink) {
-			doOpenPrintSelection(ureq);
-		} else if (selectedButton == heatMapLink) {
+		boolean popupPrint = selectedButton == heatMapLink || selectedButton == trendDiagramLink;
+		if (printLink != null) {
+			printLink.setVisible(!popupPrint);
+		}
+		if (printPopupLink != null) {
+			printPopupLink.setVisible(popupPrint);
+		}
+		stackPanel.setDirty(true);
+	}
+	
+	private void doPopupPrint(UserRequest ureq) {
+		Link selectedButton = segmentButtonsCmp.getSelectedButton();
+		if (selectedButton == heatMapLink) {
 			doPrintHeatmap(ureq);
 		} else if (selectedButton == trendDiagramLink) {
 			doPrintTrendDiagram(ureq);
