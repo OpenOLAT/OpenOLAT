@@ -2646,7 +2646,7 @@ create table o_cur_curriculum_element (
   fk_group bigint not null,
   fk_parent bigint,
   fk_curriculum bigint not null,
-  fk_curriculum_parent bigint not null,
+  fk_curriculum_parent bigint,
   fk_type bigint,
   primary key (id)
 );
