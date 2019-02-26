@@ -23,6 +23,7 @@ import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static org.olat.core.gui.translator.TranslatorHelper.translateAll;
+import static org.olat.modules.quality.analysis.LegendItem.item;
 import static org.olat.modules.quality.analysis.ui.AnalysisUIFactory.getGroupBy;
 import static org.olat.modules.quality.analysis.ui.AnalysisUIFactory.getKey;
 import static org.olat.modules.quality.analysis.ui.AnalysisUIFactory.toLongOrZero;
@@ -74,6 +75,7 @@ import org.olat.modules.quality.analysis.AvailableAttributes;
 import org.olat.modules.quality.analysis.GroupBy;
 import org.olat.modules.quality.analysis.GroupByKey;
 import org.olat.modules.quality.analysis.GroupedStatistic;
+import org.olat.modules.quality.analysis.LegendItem;
 import org.olat.modules.quality.analysis.MultiGroupBy;
 import org.olat.modules.quality.analysis.MultiKey;
 import org.olat.modules.quality.analysis.QualityAnalysisService;
@@ -183,6 +185,10 @@ public abstract class GroupByController extends FormBasicController implements F
 		this.insufficientOnly = insufficientOnly;
 		updateUI();
 	}
+	
+	boolean getInsufficientOnly() {
+		return insufficientOnly;
+	}
 
 	public void setMultiGroupBy(MultiGroupBy multiGroupBy) {
 		this.multiGroupBy = multiGroupBy;
@@ -224,7 +230,7 @@ public abstract class GroupByController extends FormBasicController implements F
 	
 	protected abstract boolean showTemporalConfig();
 	
-	protected abstract boolean showLegend();
+	protected abstract boolean showLegendQuestions();
 	
 	protected abstract void loadStatistics();
 
@@ -412,12 +418,21 @@ public abstract class GroupByController extends FormBasicController implements F
 		
 		// legend
 		if (legendLayout != null) flc.remove(legendLayout);
-		if (showLegend()) {
+		if (showLegendQuestions()) {
 			String legendPage = velocity_root + "/heatmap_legend.html";
 			legendLayout = FormLayoutContainer.createCustomFormLayout("legend", getTranslator(), legendPage);
+			legendLayout.contextPut("items", getLegendItems());
+			legendLayout.contextPut("title", translate("heatmap.legend.questions"));
 			flc.add("legend", legendLayout);
-			legendLayout.contextPut("sliders", sliders);
 		}
+	}
+
+	private List<LegendItem> getLegendItems() {
+		List<LegendItem> items = new ArrayList<>(sliders.size());
+		for (SliderWrapper slider : sliders) {
+			items.add(item(slider.getLabelCode(), slider.getLabel()));
+		}
+		return items;
 	}
 
 	@Override

@@ -64,7 +64,7 @@ public class TrendController extends GroupByController {
 	}
 
 	@Override
-	protected boolean showLegend() {
+	protected boolean showLegendQuestions() {
 		return false;
 	}
 

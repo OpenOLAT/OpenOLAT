@@ -1,9 +1,9 @@
 <div class='o_qual_hm_legend'>
-	#if(!$r.isEmpty($sliders))
-		<h5>$r.translate("heatmap.legend.questions")</h5>
+	#if(!$r.isEmpty($items))
+		<h5>$title</h5>
 		<ul class='list-unstyled'>
-		#foreach($slider in $sliders)
-			<li><span class='ident'>$slider.labelCode: </span>$slider.label</li>
+		#foreach($item in $items)
+			<li><span class='ident'>$item.code: </span>$item.label</li>
 		#end
 		</ul>
 	#end

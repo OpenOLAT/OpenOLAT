@@ -67,7 +67,7 @@ public class HeatMapController extends GroupByController {
 	}
 
 	@Override
-	protected boolean showLegend() {
+	protected boolean showLegendQuestions() {
 		return true;
 	}
 	

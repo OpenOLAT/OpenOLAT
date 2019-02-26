@@ -35,6 +35,7 @@ import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.forms.model.xml.Rubric.NameDisplay;
 import org.olat.modules.forms.model.xml.Slider;
 import org.olat.modules.forms.ui.EvaluationFormFormatter;
+import org.olat.modules.quality.QualityContextRole;
 import org.olat.modules.quality.analysis.AvailableAttributes;
 import org.olat.modules.quality.analysis.GroupBy;
 import org.olat.modules.quality.analysis.TemporalGroupBy;
@@ -84,6 +85,16 @@ class AnalysisUIFactory {
 	
 	static String formatSliderLabel(Slider slider) {
 		return EvaluationFormFormatter.formatSliderLabel(slider);
+	}
+
+	static String translateRole(Translator translator, QualityContextRole role) {
+		switch (role) {
+		case owner: return translator.translate("filter.context.role.owner");
+		case coach: return translator.translate("filter.context.role.coach");
+		case participant: return translator.translate("filter.context.role.participant");
+		case none: return translator.translate("filter.context.role.none");
+		default: return role.toString();
+		}
 	}
 
 	static String getKey(GroupBy groupBy) {

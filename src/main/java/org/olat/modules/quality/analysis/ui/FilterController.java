@@ -23,6 +23,7 @@ import static java.util.stream.Collectors.toList;
 import static org.olat.core.gui.components.util.KeyValues.VALUE_ASC;
 import static org.olat.core.gui.components.util.KeyValues.entry;
 import static org.olat.core.gui.translator.TranslatorHelper.translateAll;
+import static org.olat.modules.quality.analysis.ui.AnalysisUIFactory.translateRole;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -513,22 +514,12 @@ public class FilterController extends FormBasicController {
 		KeyValues kv = new KeyValues();
 		for (QualityContextRole role: QualityContextRole.values()) {
 			if (roles.contains(role)) {
-				kv.add(entry(role.name(), translateRole(role)));
+				kv.add(entry(role.name(), translateRole(getTranslator(), role)));
 			}
 		}
 		contextRoleEl.setKeysAndValues(kv.keys(), kv.values());
 		for (String key : selectedKeys) {
 			contextRoleEl.select(key, true);
-		}
-	}
-
-	private String translateRole(QualityContextRole role) {
-		switch (role) {
-		case owner: return getTranslator().translate("filter.context.role.owner");
-		case coach: return getTranslator().translate("filter.context.role.coach");
-		case participant: return getTranslator().translate("filter.context.role.participant");
-		case none: return getTranslator().translate("filter.context.role.none");
-		default: return role.toString();
 		}
 	}
 
