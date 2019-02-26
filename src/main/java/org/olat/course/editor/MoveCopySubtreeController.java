@@ -45,26 +45,23 @@ import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.activity.CourseLoggingAction;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
-import org.olat.core.util.nodes.INode;
 import org.olat.core.util.tree.TreeHelper;
 import org.olat.core.util.tree.TreeVisitor;
-import org.olat.core.util.tree.Visitor;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.util.logging.activity.LoggingResourceable;
+
 /**
- * 
- * Description:<br>
- * TODO: guido Class Description for MoveCopySubtreeController
- * 
+ * @author: guido
  */
 public class MoveCopySubtreeController extends BasicController {
 
 	private MenuTree insertTree;
-	private Link selectButton, cancelButton;
+	private Link selectButton;
+	private Link cancelButton;
 	private InsertTreeModel insertModel;
 
 	private boolean copy;
@@ -164,13 +161,10 @@ public class MoveCopySubtreeController extends BasicController {
 
 			moveCopyFrom.setDirty(true);
 			//mark subtree as dirty
-			TreeVisitor tv = new TreeVisitor( new Visitor() {
-				@Override
-				public void visit(INode node) {
-					CourseEditorTreeNode cetn = (CourseEditorTreeNode)node;
-					cetn.setDirty(true);
-				}
-			},moveCopyFrom,true);
+			TreeVisitor tv = new TreeVisitor(node -> {
+				CourseEditorTreeNode cetn = (CourseEditorTreeNode)node;
+				cetn.setDirty(true);
+			}, moveCopyFrom, true);
 			tv.visitAll();					
 			CourseFactory.saveCourseEditorTreeModel(course.getResourceableId());
 			showInfo("movecopynode.info.condmoved");
@@ -182,8 +176,7 @@ public class MoveCopySubtreeController extends BasicController {
 	
 	private CourseNode getCourseNode(TreeNode tn) {
 		CourseEditorTreeNode ctn = (CourseEditorTreeNode) tn;
-		CourseNode cn = ctn.getCourseNode();
-		return cn;
+		return ctn.getCourseNode();
 	}
 
 	private void recursiveCopy(CourseEditorTreeNode copyFrom2, CourseEditorTreeNode insertParent, int pos, boolean firstIteration, ICourse course) {		

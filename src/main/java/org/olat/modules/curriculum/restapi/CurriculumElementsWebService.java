@@ -274,7 +274,7 @@ public class CurriculumElementsWebService {
 		}
 		CurriculumElement savedElement = curriculumService.updateCurriculumElement(elementToSave);
 		if(move) {
-			curriculumService.moveCurriculumElement(savedElement, parentElement);
+			curriculumService.moveCurriculumElement(savedElement, parentElement, null);
 			dbInstance.commit();
 			savedElement = curriculumService.getCurriculumElement(savedElement);
 		}

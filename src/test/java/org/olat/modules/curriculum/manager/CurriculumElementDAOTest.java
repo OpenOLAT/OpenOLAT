@@ -45,6 +45,7 @@ import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementImpl;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
+import org.olat.modules.curriculum.model.CurriculumImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -88,6 +89,42 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 		Assert.assertEquals("1. Element", element.getDisplayName());
 		Assert.assertEquals(curriculum, element.getCurriculum());
 		Assert.assertEquals(type, element.getType());
+	}
+	
+	/**
+	 * Check if the root elements come in curriculum list
+	 */
+	@Test
+	public void createCurriculumElement_rootElement() {
+		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-el-1", "Curriculum for element", "Curriculum", null);
+		CurriculumElementType type = curriculumElementTypeDao.createCurriculumElementType("typ-for-cur-el-1", "Type for", "First element", "AC-234");
+		CurriculumElement root1 = curriculumElementDao.createCurriculumElement("Element-1", "1. Element", new Date(), new Date(), null,
+				type, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		Assert.assertNotNull(root1);
+		dbInstance.commit();
+		curriculum = curriculumDao.loadByKey(curriculum.getKey());
+		CurriculumElement root2 = curriculumElementDao.createCurriculumElement("Element-2", "2. Element", new Date(), new Date(), null,
+				type, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		dbInstance.commit();
+		curriculum = curriculumDao.loadByKey(curriculum.getKey());
+		CurriculumElement root3 = curriculumElementDao.createCurriculumElement("Element-3", "3. Element", new Date(), new Date(), null,
+				type, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element3_1 = curriculumElementDao.createCurriculumElement("Element-2", "2. Element", new Date(), new Date(), root3,
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		dbInstance.commitAndCloseSession();
+
+		//check the curriculum to elements list
+		CurriculumImpl reloadedCurriculum = (CurriculumImpl)curriculumDao.loadByKey(curriculum.getKey());
+		List<CurriculumElement> rootElements = reloadedCurriculum.getRootElements();
+		Assert.assertEquals(3, rootElements.size());
+		Assert.assertEquals(root1, rootElements.get(0));
+		Assert.assertEquals(root2, rootElements.get(1));
+		Assert.assertEquals(root3, rootElements.get(2));
+		
+		//check the element to elements list
+		List<CurriculumElement> root3Children = curriculumElementDao.getChildren(root3);
+		Assert.assertEquals(1, root3Children.size());
+		Assert.assertEquals(element3_1, root3Children.get(0));
 	}
 	
 	@Test
@@ -358,7 +395,7 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void moveCurriculumElement() {
+	public void moveCurriculumElement_elementToOtherElement() {
 		Curriculum curriculum = curriculumDao.createAndPersist("cur-for-el-7", "Curriculum for element", "Curriculum", null);
 		CurriculumElement rootElement = curriculumElementDao.createCurriculumElement("Element-7", "7. Element", null, null, null,
 				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
@@ -375,7 +412,7 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		// move element1_1 under element2
-		curriculumElementDao.move(element1_1, element2);
+		curriculumElementDao.move(element1_1, element2, null);
 		dbInstance.commit();
 		
 		// check parent line of element1_1_2
@@ -396,6 +433,177 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 		Assert.assertTrue(descendants1_1.contains(element1_1_1));
 		Assert.assertTrue(descendants1_1.contains(element1_1_2));
 	}
+	
+	@Test
+	public void moveCurriculumElement_underSameElement() {
+		Curriculum curriculum = curriculumDao.createAndPersist("cur-for-el-8", "Curriculum for element", "Curriculum", null);
+		CurriculumElement rootElement = curriculumElementDao.createCurriculumElement("Element-8", "8. Element", null, null, null,
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element1_1 = curriculumElementDao.createCurriculumElement("Element-8-1-1", "8.1.1 Element", null, null, rootElement,
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element1_2 = curriculumElementDao.createCurriculumElement("Element-8-1-2", "8.1.2 Element", null, null, rootElement,
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element1_3 = curriculumElementDao.createCurriculumElement("Element-8-1-3", "8.1.3 Element", null, null, rootElement,
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element1_4 = curriculumElementDao.createCurriculumElement("Element-8-1-4", "8.1.4 Element", null, null, rootElement,
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element1_5 = curriculumElementDao.createCurriculumElement("Element-8-1-5", "8.1.5 Element", null, null, rootElement,
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		dbInstance.commitAndCloseSession();
+		
+		// move element1_1 at third posistion
+		curriculumElementDao.move(element1_2, rootElement, element1_4);
+		dbInstance.commit();
+		
+		CurriculumElementImpl element = (CurriculumElementImpl)curriculumElementDao.loadByKey(rootElement.getKey());
+		List<CurriculumElement> children = element.getChildren();
+		Assert.assertEquals(children.get(0), element1_1);
+		Assert.assertEquals(children.get(1), element1_3);
+		Assert.assertEquals(children.get(2), element1_4);
+		Assert.assertEquals(children.get(3), element1_2);
+		Assert.assertEquals(children.get(4), element1_5);
+	}
+	
+	@Test
+	public void moveCurriculumElement_underSameElement_v2() {
+		Curriculum curriculum = curriculumDao.createAndPersist("cur-for-el-8", "Curriculum for element", "Curriculum", null);
+		CurriculumElement rootElement = curriculumElementDao.createCurriculumElement("Element-8", "8. Element", null, null, null,
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element1_1 = curriculumElementDao.createCurriculumElement("Element-8-1-1", "8.1.1 Element", null, null, rootElement,
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element1_2 = curriculumElementDao.createCurriculumElement("Element-8-1-2", "8.1.2 Element", null, null, rootElement,
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element1_3 = curriculumElementDao.createCurriculumElement("Element-8-1-3", "8.1.3 Element", null, null, rootElement,
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element1_4 = curriculumElementDao.createCurriculumElement("Element-8-1-4", "8.1.4 Element", null, null, rootElement,
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element1_5 = curriculumElementDao.createCurriculumElement("Element-8-1-5", "8.1.5 Element", null, null, rootElement,
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		dbInstance.commitAndCloseSession();
+		
+		// move element1_5 at third position
+		curriculumElementDao.move(element1_5, rootElement, element1_2);
+		dbInstance.commit();
+		
+		CurriculumElementImpl element = (CurriculumElementImpl)curriculumElementDao.loadByKey(rootElement.getKey());
+		List<CurriculumElement> children = element.getChildren();
+		Assert.assertEquals(element1_1, children.get(0));
+		Assert.assertEquals(element1_2, children.get(1));
+		Assert.assertEquals(element1_5, children.get(2));
+		Assert.assertEquals(element1_3, children.get(3));
+		Assert.assertEquals(element1_4, children.get(4));
+	}
+
+	@Test
+	public void moveCurriculumElement_rootElement() {
+		Curriculum curriculum = curriculumDao.createAndPersist("cur-for-el-", "Curriculum for element", "Curriculum", null);
+
+		CurriculumElement element1 = curriculumElementDao.createCurriculumElement("Element-9-1", "9.1 Element", null, null, null,
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element2 = curriculumElementDao.createCurriculumElement("Element-9-2", "9.2 Element", null, null, null,
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element3 = curriculumElementDao.createCurriculumElement("Element-9-3", "9.3 Element", null, null, null,
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element4 = curriculumElementDao.createCurriculumElement("Element-9-4", "9.4 Element", null, null, null,
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element5 = curriculumElementDao.createCurriculumElement("Element-9-5", "9.5 Element", null, null, null,
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		dbInstance.commitAndCloseSession();
+		
+		// move element1_1 under element2
+		curriculumElementDao.move(element2, null, element4);
+		dbInstance.commit();
+		
+		// check parent line of element1_1_2
+		CurriculumImpl reloadedCurriculum = (CurriculumImpl)curriculumDao.loadByKey(curriculum.getKey());
+		List<CurriculumElement> rootElements = reloadedCurriculum.getRootElements();
+		Assert.assertEquals(element1, rootElements.get(0));
+		Assert.assertEquals(element3, rootElements.get(1));
+		Assert.assertEquals(element4, rootElements.get(2));
+		Assert.assertEquals(element2, rootElements.get(3));
+		Assert.assertEquals(element5, rootElements.get(4));
+	}
+	
+	@Test
+	public void moveCurriculumElement_rootToElement() {
+		Curriculum curriculum = curriculumDao.createAndPersist("cur-for-el-7", "Curriculum for element", "Curriculum", null);
+		CurriculumElement rootElement1 = curriculumElementDao.createCurriculumElement("Element-10-1", "10.1 Element", null, null, null,
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element1_1 = curriculumElementDao.createCurriculumElement("Element-10-1-1", "10.1.1 Element", null, null, rootElement1,
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element1_1_1 = curriculumElementDao.createCurriculumElement("Element-10-1-1-1", "10.1.1.1 Element", null, null, element1_1,
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element1_1_2 = curriculumElementDao.createCurriculumElement("Element-10-1-1-2", "10.1.1.2 Element", null, null, element1_1,
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element1_2 = curriculumElementDao.createCurriculumElement("Element-10-1-2", "10.1.2 Element", null, null, rootElement1,
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		dbInstance.commit();
+		Assert.assertNotNull(element1_2);
+		
+		curriculum = curriculumDao.loadByKey(curriculum.getKey());
+		CurriculumElement rootElement2 = curriculumElementDao.createCurriculumElement("Element-10-2", "10.2 Element", null, null, null,
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		dbInstance.commitAndCloseSession();
+		
+		// move element1_1 under element2
+		CurriculumElement reloadedElement1_1 = curriculumElementDao.loadByKey(element1_1.getKey());
+		curriculumElementDao.move(rootElement2, reloadedElement1_1, element1_1_1);
+		dbInstance.commit();
+		
+		// check children element1_1
+		CurriculumElementImpl reloadElement1_1 = (CurriculumElementImpl)curriculumElementDao.loadByKey(element1_1.getKey());
+		List<CurriculumElement> element11children = reloadElement1_1.getChildren();
+		Assert.assertEquals(3, element11children.size());
+		Assert.assertEquals(element1_1_1, element11children.get(0));
+		Assert.assertEquals(rootElement2, element11children.get(1));
+		Assert.assertEquals(element1_1_2, element11children.get(2));
+		
+		
+		// check children curriculum
+		CurriculumImpl reloadedCurriculum = (CurriculumImpl)curriculumDao.loadByKey(curriculum.getKey());
+		List<CurriculumElement> rootElements = reloadedCurriculum.getRootElements();
+		Assert.assertEquals(1, rootElements.size());
+		Assert.assertEquals(rootElement1, rootElements.get(0));
+	}
+	
+	@Test
+	public void moveCurriculumElement_elementToRoot() {
+		Curriculum curriculum = curriculumDao.createAndPersist("cur-for-el-7", "Curriculum for element", "Curriculum", null);
+		CurriculumElement rootElement1 = curriculumElementDao.createCurriculumElement("Element-10-1", "10.1 Element", null, null, null,
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element1_1 = curriculumElementDao.createCurriculumElement("Element-10-1-1", "10.1.1 Element", null, null, rootElement1,
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element1_1_1 = curriculumElementDao.createCurriculumElement("Element-10-1-1-1", "10.1.1.1 Element", null, null, element1_1,
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element1_1_2 = curriculumElementDao.createCurriculumElement("Element-10-1-1-2", "10.1.1.2 Element", null, null, element1_1,
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element1_1_3 = curriculumElementDao.createCurriculumElement("Element-10-1-1-3", "10.1.1.3 Element", null, null, element1_1,
+				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		dbInstance.commit();
+
+		
+		// move element1_1 under element2
+		CurriculumElement reloadedElement1_1_3 = curriculumElementDao.loadByKey(element1_1_3.getKey());
+		curriculumElementDao.move(reloadedElement1_1_3, null, rootElement1);
+		dbInstance.commit();
+		
+		// check children element1_1
+		CurriculumElementImpl reloadElement1_1 = (CurriculumElementImpl)curriculumElementDao.loadByKey(element1_1.getKey());
+		List<CurriculumElement> element11children = reloadElement1_1.getChildren();
+		Assert.assertEquals(2, element11children.size());
+		Assert.assertEquals(element1_1_1, element11children.get(0));
+		Assert.assertEquals(element1_1_2, element11children.get(1));
+		
+		
+		// check children curriculum
+		CurriculumImpl reloadedCurriculum = (CurriculumImpl)curriculumDao.loadByKey(curriculum.getKey());
+		List<CurriculumElement> rootElements = reloadedCurriculum.getRootElements();
+		Assert.assertEquals(2, rootElements.size());
+		Assert.assertEquals(rootElement1, rootElements.get(0));
+		Assert.assertEquals(element1_1_3, rootElements.get(1));
+	}
+	
+	
 	
 	@Test
 	public void getMembersIdentity() {

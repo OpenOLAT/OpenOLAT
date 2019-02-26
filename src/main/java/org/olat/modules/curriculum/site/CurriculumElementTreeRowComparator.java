@@ -17,15 +17,17 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.curriculum.ui;
+package org.olat.modules.curriculum.site;
 
 import java.text.Collator;
 import java.util.Locale;
 
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeNodeComparator;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
+import org.olat.modules.curriculum.ui.CurriculumElementRow;
 
 /**
+ * This is based of the position of the elements.
  * 
  * Initial date: 9 août 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
@@ -52,7 +54,13 @@ public class CurriculumElementTreeRowComparator extends FlexiTreeNodeComparator 
 		
 		int c = 0;
 		if(parentKey1 == null && parentKey2 == null) {
-			c = compareCurriculumElements(c1, c2);
+			Long pos1 = c1.getPosCurriculum();
+			Long pos2 = c2.getPosCurriculum();
+			if(pos1 == null || pos2 == null) {
+				c = compareNullObjects(pos1, pos2);
+			} else {
+				c = Long.compare(pos1.longValue(), pos2.longValue());
+			}
 		} else if(parentKey1 != null && parentKey1.equals(parentKey2)) {
 			Long pos1 = c1.getPos();
 			Long pos2 = c2.getPos();

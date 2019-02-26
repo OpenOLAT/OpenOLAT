@@ -171,6 +171,10 @@ public class CurriculumElementRow implements CurriculumElementRef, FlexiTreeTabl
 		return element.getPos();
 	}
 	
+	public Long getPosCurriculum() {
+		return element.getPosCurriculum();
+	}
+	
 	public long getNumOfResources() {
 		return numOfResources;
 	}

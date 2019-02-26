@@ -321,7 +321,7 @@ public class DataCollectionConfigurationController extends FormBasicController {
 				if (topicCurriculum != null) {
 					topicCurriculumEl.select(QualityUIFactory.getCurriculumKey(topicCurriculum), true);
 					List<CurriculumElement> curriculumElements = curriculumService.getCurriculumElements(topicCurriculum, CurriculumElementStatus.values());
-					CurriculumTreeModel curriculumTreeModel = new CurriculumTreeModel();
+					CurriculumTreeModel curriculumTreeModel = new CurriculumTreeModel(topicCurriculum);
 					curriculumTreeModel.loadTreeModel(curriculumElements);
 					KeysValues curriculumElementKeysValues = QualityUIFactory.getCurriculumElementKeysValues(curriculumTreeModel, topicCurriculumElement);
 					topicCurriculumElementEl.setKeysAndValues(curriculumElementKeysValues.getKeys(), curriculumElementKeysValues.getValues(), null);

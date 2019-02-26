@@ -19,7 +19,9 @@
  */
 package org.olat.modules.curriculum.model;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -29,6 +31,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.OrderColumn;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -39,6 +43,7 @@ import org.olat.basesecurity.model.OrganisationImpl;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Persistable;
 import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumManagedFlag;
 
 /**
@@ -88,6 +93,10 @@ public class CurriculumImpl implements Persistable, Curriculum {
 	@ManyToOne(targetEntity=OrganisationImpl.class,fetch=FetchType.LAZY,optional=true)
 	@JoinColumn(name="fk_organisation", nullable=true, insertable=true, updatable=true)
 	private Organisation organisation;
+	
+	@OneToMany(targetEntity=CurriculumElementImpl.class, mappedBy="curriculumParent", fetch=FetchType.LAZY)
+	@OrderColumn(name="pos_cur")
+	private List<CurriculumElement> rootElements;
 
 	@Override
 	public Long getKey() {
@@ -212,6 +221,17 @@ public class CurriculumImpl implements Persistable, Curriculum {
 	@Override
 	public void setOrganisation(Organisation organisation) {
 		this.organisation = organisation;
+	}
+
+	public List<CurriculumElement> getRootElements() {
+		if(rootElements == null) {
+			rootElements = new ArrayList<>();
+		}
+		return rootElements;
+	}
+
+	public void setRootElements(List<CurriculumElement> rootElements) {
+		this.rootElements = rootElements;
 	}
 
 	@Override

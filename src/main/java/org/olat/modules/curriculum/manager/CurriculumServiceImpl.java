@@ -361,10 +361,10 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	public CurriculumElement updateCurriculumElement(CurriculumElement element) {
 		return curriculumElementDao.update(element);
 	}
-
+	
 	@Override
-	public CurriculumElement moveCurriculumElement(CurriculumElement elementToMove, CurriculumElement newParent) {
-		return curriculumElementDao.move(elementToMove, newParent);
+	public CurriculumElement moveCurriculumElement(CurriculumElement elementToMove, CurriculumElement newParent, CurriculumElement siblingBefore) {
+		return curriculumElementDao.move(elementToMove, newParent, siblingBefore);
 	}
 
 	@Override

@@ -56,6 +56,7 @@
 		<class>org.olat.upgrade.model.InvitationUpgrade</class>
 		<class>org.olat.upgrade.model.UpgradeTaxonomyLevel</class>
 		<class>org.olat.upgrade.model.UpgradeQuestionItem</class>
+		<class>org.olat.upgrade.model.CurriculumElementPos</class>
 		<!-- End upgraders mapping -->
 
 

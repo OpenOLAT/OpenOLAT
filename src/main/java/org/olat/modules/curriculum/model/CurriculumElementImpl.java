@@ -26,7 +26,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -84,6 +83,11 @@ public class CurriculumElementImpl implements CurriculumElement, Persistable {
 	@Column(name="pos", insertable=false, updatable=false)
 	private Long pos;
 	
+	/** Only used for order by (hibernate hack) */
+	@GeneratedValue
+	@Column(name="pos_cur", insertable=false, updatable=false)
+	private Long posCurriculum;
+	
 	@Column(name="c_identifier", nullable=true, insertable=true, updatable=true)
 	private String identifier;
 	@Column(name="c_displayname", nullable=true, insertable=true, updatable=true)
@@ -120,14 +124,17 @@ public class CurriculumElementImpl implements CurriculumElement, Persistable {
 	@JoinColumn(name="fk_parent", nullable=true, insertable=true, updatable=true)
 	private CurriculumElement parent;
 	
-	@OneToMany(targetEntity=CurriculumElementImpl.class, mappedBy="parent", fetch=FetchType.LAZY,
-			orphanRemoval=true, cascade={CascadeType.REMOVE})
+	@OneToMany(targetEntity=CurriculumElementImpl.class, mappedBy="parent", fetch=FetchType.LAZY)
 	@OrderColumn(name="pos")
 	private List<CurriculumElement> children;
 	
 	@ManyToOne(targetEntity=CurriculumImpl.class)
 	@JoinColumn(name="fk_curriculum", nullable=true, insertable=true, updatable=true)
 	private Curriculum curriculum;
+	
+	@ManyToOne(targetEntity=CurriculumImpl.class)
+	@JoinColumn(name="fk_curriculum_parent", nullable=true, insertable=true, updatable=true)
+	private Curriculum curriculumParent;
 	
 	@ManyToOne(targetEntity=CurriculumElementTypeImpl.class,fetch=FetchType.LAZY,optional=true)
 	@JoinColumn(name="fk_type", nullable=true, insertable=true, updatable=true)
@@ -346,6 +353,16 @@ public class CurriculumElementImpl implements CurriculumElement, Persistable {
 	public void setPos(Long pos) {
 		this.pos = pos;
 	}
+	
+	
+
+	public Long getPosCurriculum() {
+		return posCurriculum;
+	}
+
+	public void setPosCurriculum(Long posCurriculum) {
+		this.posCurriculum = posCurriculum;
+	}
 
 	@Override
 	public Group getGroup() {
@@ -363,6 +380,14 @@ public class CurriculumElementImpl implements CurriculumElement, Persistable {
 
 	public void setParent(CurriculumElement parent) {
 		this.parent = parent;
+	}
+
+	public Curriculum getCurriculumParent() {
+		return curriculumParent;
+	}
+
+	public void setCurriculumParent(Curriculum curriculumParent) {
+		this.curriculumParent = curriculumParent;
 	}
 
 	public List<CurriculumElement> getChildren() {

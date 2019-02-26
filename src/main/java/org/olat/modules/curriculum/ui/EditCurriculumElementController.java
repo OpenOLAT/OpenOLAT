@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -91,6 +92,8 @@ public class EditCurriculumElementController extends FormBasicController {
 	private CurriculumElement parentElement;
 	private final CurriculumSecurityCallback secCallback;
 	
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private CurriculumService curriculumService;
 	
@@ -375,7 +378,8 @@ public class EditCurriculumElementController extends FormBasicController {
 			element.setLectures(lectures);
 			element = curriculumService.updateCurriculumElement(element);
 		}
-
+		
+		dbInstance.commitAndCloseSession(); // need to relaod properly the tree
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 	

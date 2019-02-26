@@ -25,6 +25,8 @@
 
 package org.olat.core.gui.components.tree;
 
+import org.olat.core.gui.components.tree.InsertionPoint.Position;
+
 /**
  * Description:<br>
  * 
@@ -33,6 +35,8 @@ package org.olat.core.gui.components.tree;
 public class TreePosition {
 
 	private TreeNode parent;
+	private TreeNode node;
+	private Position position;
 	private int childpos; // the position of the existing treenode to which to new
 												// node should be prepended (0 = at the beginning, also
 												// works if there are no children yet)
@@ -40,6 +44,13 @@ public class TreePosition {
 	public TreePosition(TreeNode parent, int childpos) {
 		this.parent = parent;
 		this.childpos = childpos;
+	}
+	
+	public TreePosition(TreeNode parent, TreeNode node, Position position, int childpos) {
+		this.node = node;
+		this.parent = parent;
+		this.childpos = childpos;
+		this.position = position;
 	}
 
 	/**
@@ -54,6 +65,14 @@ public class TreePosition {
 	 */
 	public TreeNode getParentTreeNode() {
 		return parent;
+	}
+	
+	public TreeNode getNode() {
+		return node;
+	}
+	
+	public Position getPosition() {
+		return position;
 	}
 
 }

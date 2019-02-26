@@ -27,12 +27,15 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.tree.GenericTreeNode;
+import org.olat.core.gui.components.tree.InsertionPoint.Position;
 import org.olat.core.gui.components.tree.MenuTreeItem;
 import org.olat.core.gui.components.tree.TreeNode;
+import org.olat.core.gui.components.tree.TreePosition;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -54,13 +57,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class MoveCurriculumElementController extends FormBasicController {
 	
 	private MenuTreeItem curriculumTreeEl;
-	private final CurriculumTreeModel curriculumModel = new CurriculumTreeModel();
+	private final CurriculumTreeModel curriculumModel;
 	
 	private final Curriculum curriculum;
 	private Set<CurriculumElementType> allowedTypes;
 	private List<CurriculumElement> curriculumElementsToMove;
 	private Set<TreeNode> targetableNodes = new HashSet<>();
 	
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private CurriculumService curriculumService;
 	
@@ -69,6 +74,7 @@ public class MoveCurriculumElementController extends FormBasicController {
 		super(ureq, wControl, "move_curriculum_element");
 		this.curriculum = curriculum;
 		this.curriculumElementsToMove = new ArrayList<>(curriculumElementsToMove);
+		curriculumModel = new CurriculumTreeModel(curriculum, curriculumElementsToMove);
 		allowedTypes = getAllowedTypes();
 		
 		initForm(ureq);
@@ -80,7 +86,8 @@ public class MoveCurriculumElementController extends FormBasicController {
 		
 		curriculumTreeEl = uifactory.addTreeMultiselect("elements", null, formLayout, curriculumModel, this);
 		curriculumTreeEl.setMultiSelect(false);
-		curriculumTreeEl.setRootVisible(false);
+		curriculumTreeEl.setRootVisible(true);
+		curriculumTreeEl.setInsertTool(true);
 
 		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 		uifactory.addFormSubmitButton("move.element", formLayout);
@@ -229,18 +236,44 @@ public class MoveCurriculumElementController extends FormBasicController {
 		if(isParent()) {
 			showWarning("error.target.no.parent");
 		} else {
-			TreeNode selectedNode = curriculumTreeEl.getSelectedNode();
-			if(selectedNode == curriculumModel.getRootNode()) {
-				for(CurriculumElement elementToMove:curriculumElementsToMove) {
-					curriculumService.moveCurriculumElement(elementToMove, null);
+			TreePosition tp = curriculumTreeEl.getInsertionPosition();
+			TreeNode parentNode = tp.getParentTreeNode();
+			CurriculumElement newParent = (CurriculumElement)parentNode.getUserObject();
+			if(newParent == curriculumModel.getRootNode()) {
+				newParent = null; // root element
+			}
+			
+			CurriculumElement siblingBefore;
+			if(tp.getNode() == null) {
+				siblingBefore = null;
+			} else if(tp.getPosition() == Position.down) {
+				siblingBefore = (CurriculumElement)tp.getNode().getUserObject();
+			} else if(tp.getPosition() == Position.up) {
+				TreeNode selectedNode = tp.getNode();
+				int index = -1;
+				for(int i=tp.getParentTreeNode().getChildCount(); i-->0; ) {
+					if(selectedNode.equals(tp.getParentTreeNode().getChildAt(i))) {
+						index = i;
+						break;
+					}
+				}
+				
+				if(index == 0) {
+					siblingBefore = null;
+				} else {
+					INode nodeBefore = tp.getParentTreeNode().getChildAt(index -1);
+					siblingBefore = (CurriculumElement)((TreeNode)nodeBefore).getUserObject();
 				}
 			} else {
-				CurriculumElement newParent = (CurriculumElement)selectedNode.getUserObject();
-				for(CurriculumElement elementToMove:curriculumElementsToMove) {
-					curriculumService.moveCurriculumElement(elementToMove, newParent);
-				}
+				siblingBefore = null;
+			}
+	
+			for(CurriculumElement elementToMove:curriculumElementsToMove) {
+				curriculumService.moveCurriculumElement(elementToMove, newParent, siblingBefore);
+				dbInstance.commit();
 			}
 		}
+		dbInstance.commitAndCloseSession();
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 }

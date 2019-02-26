@@ -78,7 +78,15 @@ public interface CurriculumElement extends CurriculumElementShort, CreateInfo, M
 	
 	public void setManagedFlags(CurriculumElementManagedFlag[] flags);
 	
+	/**
+	 * @return The position of an element as child of a parent element
+	 */
 	public Long getPos();
+	
+	/**
+	 * @return The position of a root element directly under the curriculum
+	 */
+	public Long getPosCurriculum();
 	
 	public Curriculum getCurriculum();
 	

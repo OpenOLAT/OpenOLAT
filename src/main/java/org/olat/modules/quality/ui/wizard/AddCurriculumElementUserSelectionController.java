@@ -106,7 +106,7 @@ public class AddCurriculumElementUserSelectionController extends StepFormBasicCo
 			Curriculum curriculum = curriculumService.getCurriculum(curriculumRef);
 			if (curriculum != null) {
 				List<CurriculumElement> curriculumElements = curriculumService.getCurriculumElements(curriculum, CurriculumElementStatus.notDeleted());
-				CurriculumTreeModel curriculumTreeModel = new CurriculumTreeModel();
+				CurriculumTreeModel curriculumTreeModel = new CurriculumTreeModel(curriculum);
 				curriculumTreeModel.loadTreeModel(curriculumElements);
 				KeysValues curriculumElementKeysValues = QualityUIFactory.getCurriculumElementKeysValues(curriculumTreeModel, null);
 				curriculumElementEl.setKeysAndValues(curriculumElementKeysValues.getKeys(), curriculumElementKeysValues.getValues(), null);

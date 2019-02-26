@@ -317,8 +317,9 @@ public interface CurriculumService {
 	 * 
 	 * @param elementToMove The element to move
 	 * @param newParent The new parent or null if root
+	 * @param siblingBefore The sibling before the new position or null if at the first place
 	 */
-	public CurriculumElement moveCurriculumElement(CurriculumElement elementToMove, CurriculumElement newParent);
+	public CurriculumElement moveCurriculumElement(CurriculumElement elementToMove, CurriculumElement newParent, CurriculumElement siblingBefore);
 	
 	/**
 	 * The list of members of the specified curriculum element.

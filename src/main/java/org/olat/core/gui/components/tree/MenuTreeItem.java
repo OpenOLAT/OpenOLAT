@@ -246,6 +246,10 @@ public class MenuTreeItem extends FormItemImpl {
 	public void setRootVisible(boolean rootVisible) {
 		treeCmp.setRootVisible(rootVisible);
 	}
+	
+	public void setInsertTool(boolean enabled) {
+		treeCmp.enableInsertTool(enabled);
+	}
 
 	public void setSelectedNode(TreeNode node) {
 		treeCmp.setSelectedNode(node);

@@ -84,6 +84,7 @@ import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
+import org.olat.modules.curriculum.site.CurriculumElementTreeRowComparator;
 import org.olat.modules.curriculum.ui.CurriculumComposerTableModel.ElementCols;
 import org.olat.modules.curriculum.ui.copy.CopySettingsController;
 import org.olat.modules.curriculum.ui.event.SelectReferenceEvent;
@@ -293,9 +294,8 @@ public class CurriculumComposerController extends FormBasicController implements
 			}
 		}
 		Collections.sort(rows, new CurriculumElementTreeRowComparator(getLocale()));
-		
 		tableModel.setObjects(rows);
-		tableEl.reset(false, true, true);
+		tableEl.reset(true, true, true);
 	}
 	
 	private CurriculumElementRow forgeRow(CurriculumElementInfos element) {

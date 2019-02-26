@@ -438,22 +438,18 @@ public class MenuTree extends AbstractComponent {
 	public TreePosition getInsertionPosition() {
 		if(insertionPoint == null) return null;
 
-		int position;
-		TreeNode parent;
 		TreeNode node = treeModel.getNodeById(insertionPoint.getNodeId());
 		if(insertionPoint.getPosition() == Position.under) {
-			parent = node;
-			position = 0;
+			return new TreePosition(node, 0);
 		} else if(insertionPoint.getPosition() == Position.up) {
-			parent = (TreeNode)node.getParent();
-			position = node.getPosition();
+			TreeNode parent = (TreeNode)node.getParent();
+			return new TreePosition(parent, node, Position.up, node.getPosition());
 		} else if(insertionPoint.getPosition() == Position.down) {
-			parent = (TreeNode)node.getParent();
-			position = node.getPosition() + 1;
-		} else {
-			return null;
+			TreeNode parent = (TreeNode)node.getParent();
+			int position = node.getPosition() + 1;
+			return new TreePosition(parent, node, Position.down, position);
 		}
-		return new TreePosition(parent, position);
+		return null;
 	}
 
 	/**

@@ -2631,6 +2631,7 @@ create table o_cur_curriculum_element (
   creationdate datetime not null,
   lastmodified datetime not null,
   pos bigint,
+  pos_cur bigint,
   c_identifier varchar(64),
   c_displayname varchar(255) not null,
   c_description mediumtext,
@@ -2645,6 +2646,7 @@ create table o_cur_curriculum_element (
   fk_group bigint not null,
   fk_parent bigint,
   fk_curriculum bigint not null,
+  fk_curriculum_parentbigint not null,
   fk_type bigint,
   primary key (id)
 );

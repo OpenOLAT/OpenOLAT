@@ -108,7 +108,7 @@ class CurriculumElementSelectionController extends FormBasicController {
 			if (curriculum != null) {
 				List<CurriculumElement> curriculumElements = curriculumService.getCurriculumElements(curriculum,
 						CurriculumElementStatus.notDeleted());
-				CurriculumTreeModel curriculumTreeModel = new CurriculumTreeModel();
+				CurriculumTreeModel curriculumTreeModel = new CurriculumTreeModel(curriculum);
 				curriculumTreeModel.loadTreeModel(curriculumElements);
 				KeysValues curriculumElementKeysValues = QualityUIFactory
 						.getCurriculumElementKeysValues(curriculumTreeModel, null);

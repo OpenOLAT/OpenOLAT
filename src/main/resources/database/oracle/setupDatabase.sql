@@ -2713,6 +2713,7 @@ create table o_cur_curriculum_element (
   creationdate date not null,
   lastmodified date not null,
   pos number(20),
+  pos_cur number(20),
   c_identifier varchar(64),
   c_displayname varchar(255) not null,
   c_description CLOB,
@@ -2727,6 +2728,7 @@ create table o_cur_curriculum_element (
   fk_group number(20) not null,
   fk_parent number(20),
   fk_curriculum number(20) not null,
+  fk_curriculum_parent number(20),
   fk_type number(20),
   primary key (id)
 );

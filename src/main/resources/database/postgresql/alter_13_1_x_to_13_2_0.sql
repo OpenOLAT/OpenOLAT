@@ -65,3 +65,11 @@ alter table o_cur_curriculum_element add c_lectures varchar(16);
 alter table o_cur_element_type add c_lectures varchar(16);
 
 
+-- curriculum element
+alter table o_cur_curriculum_element add pos_cur int8;
+alter table o_cur_curriculum_element add fk_curriculum_parent int8;
+alter table o_cur_curriculum_element add constraint cur_el_to_pcur_idx foreign key (fk_curriculum_parent) references o_cur_curriculum (id);
+create index idx_cur_el_to_pcur_idx on o_cur_curriculum_element (fk_curriculum_parent);
+
+
+
