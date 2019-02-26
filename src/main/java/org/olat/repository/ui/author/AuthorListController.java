@@ -934,13 +934,7 @@ public class AuthorListController extends FormBasicController implements Activat
 			if(entry == null) {
 				deleted = true;
 			} else {
-				boolean isManager = repositoryService.hasRoleExpanded(getIdentity(), row,
-						OrganisationRoles.administrator.name(), OrganisationRoles.learnresourcemanager.name());
-				boolean isOwner = isManager || repositoryService.hasRole(ureq.getIdentity(), row, GroupRoles.owner.name());
-				boolean isAuthor = isManager || repositoryService.hasRoleExpanded(getIdentity(), row, OrganisationRoles.author.name());
-				
-				boolean copyManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.copy);
-				boolean canCopy = (isAuthor || isOwner) && (entry.getCanCopy() || isOwner) && !copyManaged;
+				boolean canCopy = repositoryService.canCopy(entry, getIdentity());
 				if(canCopy) {
 					copyableRows.add(row);
 				}

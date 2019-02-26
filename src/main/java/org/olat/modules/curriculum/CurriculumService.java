@@ -226,7 +226,7 @@ public interface CurriculumService {
 	 * @return The root element
 	 */
 	public CurriculumElement cloneCurriculumElement(Curriculum curriculum, CurriculumElement parentElement,
-			CurriculumElement elementToClone, CurriculumCopySettings settings);
+			CurriculumElement elementToClone, CurriculumCopySettings settings, Identity identity);
 	
 	
 	public CurriculumElement getCurriculumElement(CurriculumElementRef element);

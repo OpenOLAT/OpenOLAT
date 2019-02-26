@@ -29,7 +29,7 @@ public class CurriculumCopySettings {
 	
 	private boolean copyDates;
 	private boolean copyTaxonomy;
-	private boolean copyLinkToResources;
+	private CopyResources copyResources;
 	
 	public CurriculumCopySettings() {
 		//
@@ -43,12 +43,12 @@ public class CurriculumCopySettings {
 		this.copyDates = copyDates;
 	}
 
-	public boolean isCopyLinkToResources() {
-		return copyLinkToResources;
+	public CopyResources getCopyResources() {
+		return copyResources;
 	}
 
-	public void setCopyLinkToResources(boolean copyLinkToResources) {
-		this.copyLinkToResources = copyLinkToResources;
+	public void setCopyResources(CopyResources copyResources) {
+		this.copyResources = copyResources;
 	}
 
 	public boolean isCopyTaxonomy() {
@@ -59,8 +59,20 @@ public class CurriculumCopySettings {
 		this.copyTaxonomy = copyTaxonomy;
 	}
 	
-	
-	
-	
-
+	public enum CopyResources {
+		dont,
+		relation,
+		resource;
+		
+		public static CopyResources valueOf(String val, CopyResources def) {
+			if(val == null) return def;
+			
+			for(CopyResources value:values()) {
+				if(val.equals(value.name())) {
+					return value;
+				}
+			}
+			return def;
+		}
+	}
 }

@@ -34,6 +34,7 @@ import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OrganisationDataDeletable;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
@@ -80,6 +81,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryAllowToLeaveOptions;
 import org.olat.repository.RepositoryEntryAuthorView;
 import org.olat.repository.RepositoryEntryDataDeletable;
+import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryRelationType;
@@ -257,6 +259,19 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 
 		autoAccessManager.grantAccess(re);
 		return re;
+	}
+	
+	
+
+	@Override
+	public boolean canCopy(RepositoryEntry entryToCopy, Identity identity) {
+		boolean isManager = hasRoleExpanded(identity, entryToCopy,
+				OrganisationRoles.administrator.name(), OrganisationRoles.learnresourcemanager.name());
+		boolean isOwner = isManager || hasRole(identity, entryToCopy, GroupRoles.owner.name());
+		boolean isAuthor = isManager || hasRoleExpanded(identity, entryToCopy, OrganisationRoles.author.name());
+		
+		boolean copyManaged = RepositoryEntryManagedFlag.isManaged(entryToCopy, RepositoryEntryManagedFlag.copy);
+		return (isAuthor || isOwner) && (entryToCopy.getCanCopy() || isOwner) && !copyManaged;
 	}
 
 	@Override

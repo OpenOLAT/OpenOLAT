@@ -506,7 +506,7 @@ public class CurriculumComposerController extends FormBasicController implements
 			copyCtrl = new CopySettingsController(ureq, getWindowControl(), element);
 			listenTo(copyCtrl);
 			
-			String title = translate("copy.element", new String[] { StringHelper.escapeHtml(element.getDisplayName() )});
+			String title = translate("copy.element.title", new String[] { StringHelper.escapeHtml(element.getDisplayName() )});
 			cmc = new CloseableModalController(getWindowControl(), "close", copyCtrl.getInitialComponent(), true, title);
 			listenTo(cmc);
 			cmc.activate();

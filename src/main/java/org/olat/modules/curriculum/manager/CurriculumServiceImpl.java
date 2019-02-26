@@ -58,6 +58,7 @@ import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumCopySettings;
+import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyResources;
 import org.olat.modules.curriculum.model.CurriculumElementImpl;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
@@ -75,6 +76,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryStatusEnum;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.manager.RepositoryEntryDAO;
 import org.olat.repository.manager.RepositoryEntryMyCourseQueries;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
@@ -263,12 +265,12 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 
 	@Override
 	public CurriculumElement cloneCurriculumElement(Curriculum curriculum, CurriculumElement parentElement,
-			CurriculumElement elementToClone, CurriculumCopySettings settings) {
-		return cloneCurriculumElementRec(curriculum, parentElement, elementToClone, settings, 0);
+			CurriculumElement elementToClone, CurriculumCopySettings settings, Identity identity) {
+		return cloneCurriculumElementRec(curriculum, parentElement, elementToClone, settings, identity, 0);
 	}
 	
 	private CurriculumElement cloneCurriculumElementRec(Curriculum curriculum, CurriculumElement parentElement,
-			CurriculumElement elementToClone, CurriculumCopySettings settings, int depth) {
+			CurriculumElement elementToClone, CurriculumCopySettings settings, Identity identity, int depth) {
 		
 		Date beginDate = null;
 		Date endDate = null;
@@ -287,10 +289,19 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 				beginDate, endDate, parentElement, elementToClone.getType(), elementToClone.getCalendars(), elementToClone.getLectures(),
 				curriculum);
 		
-		if(settings.isCopyLinkToResources()) {
+		if(settings.getCopyResources() == CopyResources.relation) {
 			List<RepositoryEntry> entries = getRepositoryEntries(elementToClone);
 			for(RepositoryEntry entry:entries) {
 				repositoryEntryRelationDao.createRelation(clone.getGroup(), entry);
+			}
+		} else if(settings.getCopyResources() == CopyResources.resource) {
+			List<RepositoryEntry> entries = getRepositoryEntries(elementToClone);
+			RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);// prevent service to service link at startup
+			for(RepositoryEntry entry:entries) {
+				if(repositoryService.canCopy(entry, identity)) {
+					RepositoryEntry entryCopy = repositoryService.copy(entry, identity, entry.getDisplayname());
+					repositoryEntryRelationDao.createRelation(clone.getGroup(), entryCopy);
+				}
 			}
 		}
 		
@@ -304,7 +315,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		
 		List<CurriculumElement> childrenToClone = getCurriculumElements(elementToClone);
 		for(CurriculumElement childToClone:childrenToClone) {
-			cloneCurriculumElementRec(curriculum, clone, childToClone, settings, depth);
+			cloneCurriculumElementRec(curriculum, clone, childToClone, settings, identity, depth);
 		}
 		return clone;
 	}
