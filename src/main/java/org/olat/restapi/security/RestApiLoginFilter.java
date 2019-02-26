@@ -106,7 +106,7 @@ public class RestApiLoginFilter implements Filter {
 				String requestURI = httpRequest.getRequestURI();
 				RestModule restModule = (RestModule)CoreSpringFactory.getBean("restModule");
 				if(restModule == null || !restModule.isEnabled() && !isRequestURIAlwaysEnabled(requestURI)) {
-					httpResponse.sendError(403);
+					httpResponse.setStatus(HttpServletResponse.SC_FORBIDDEN);
 					return;
 				}
 
@@ -135,14 +135,14 @@ public class RestApiLoginFilter implements Filter {
 						followBasicAuthenticated(request, response, chain);
 					} else  {
 						httpResponse.setHeader("WWW-Authenticate", "Basic realm=\"" + BASIC_AUTH_REALM + "\"");
-						httpResponse.sendError(401);
+						httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 					}
 				}
 			} catch (Exception e) {
 				log.error("", e);
 				try {
 					HttpServletResponse httpResponse = (HttpServletResponse)response;
-					httpResponse.sendError(500);
+					httpResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 				} catch (Exception ex) {
 					log.error("", ex);
 				}
@@ -270,7 +270,7 @@ public class RestApiLoginFilter implements Filter {
 			//upon creation URL is checked for
 			ureq = new UserRequestImpl(requestURI, request, response);
 		} catch(NumberFormatException nfe) {
-			response.sendError(401);
+			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 			return;
 		}
 
@@ -301,7 +301,7 @@ public class RestApiLoginFilter implements Filter {
 			String requestURI = request.getRequestURI();
 			ureq = new UserRequestImpl(requestURI, request, response);
 		} catch(NumberFormatException nfe) {
-			response.sendError(401);
+			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 			return;
 		}
 		request.setAttribute(RestSecurityHelper.SEC_USER_REQUEST, ureq);
@@ -341,7 +341,7 @@ public class RestApiLoginFilter implements Filter {
 			ureq = new UserRequestImpl(requestURI, request, response);
 			ureq.getUserSession().putEntryInNonClearedStore(SYSTEM_MARKER, Boolean.TRUE);
 		} catch(NumberFormatException nfe) {
-			response.sendError(401);
+			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 			return;
 		}
 		request.setAttribute(RestSecurityHelper.SEC_USER_REQUEST, ureq);
@@ -359,7 +359,7 @@ public class RestApiLoginFilter implements Filter {
 				String requestURI = request.getRequestURI();
 				ureq = new UserRequestImpl(requestURI, request, response);
 			} catch(Exception e) {
-				response.sendError(500);
+				response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 				return;
 			}
 
@@ -374,9 +374,9 @@ public class RestApiLoginFilter implements Filter {
 					synchronized(uress) {
 						chain.doFilter(request, response);
 					}
-				} else response.sendError(401);
-			} else response.sendError(401);
-		} else response.sendError(401);
+				} else response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+			} else response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+		} else response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 	}
 
 	private void followSession(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
@@ -389,7 +389,7 @@ public class RestApiLoginFilter implements Filter {
 				String requestURI = request.getRequestURI();
 				ureq = new UserRequestImpl(requestURI, request, response);
 			} catch(NumberFormatException nfe) {
-				response.sendError(401);
+				response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 				return;
 			}
 			request.setAttribute(RestSecurityHelper.SEC_USER_REQUEST, ureq);
@@ -401,7 +401,7 @@ public class RestApiLoginFilter implements Filter {
 				}
 			}
 		} else {
-			response.sendError(401);
+			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 		}
 	}
 
