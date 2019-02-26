@@ -53,6 +53,7 @@ public class IdentityToIdentityRelationVO {
 	public static IdentityToIdentityRelationVO valueOf(IdentityToIdentityRelation relation) {
 		IdentityToIdentityRelationVO relationVo = new IdentityToIdentityRelationVO();
 		relationVo.setKey(relation.getKey());
+		relationVo.setExternalId(relation.getExternalId());
 		relationVo.setIdentitySourceKey(relation.getSource().getKey());
 		relationVo.setIdentityTargetKey(relation.getTarget().getKey());
 		relationVo.setExternalId(relation.getExternalId());
