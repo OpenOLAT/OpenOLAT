@@ -43,6 +43,8 @@ public class PdfModule extends AbstractSpringModule implements ConfigOnOff {
 	
 	@Value("${pdf.service.enabled:false}")
 	private boolean enabled;
+	@Value("${pdf.service.spi:}")
+	private String pdfSpiId;
 	
 	@Autowired
 	private List<PdfSPI> pdfSpies;
@@ -69,7 +71,7 @@ public class PdfModule extends AbstractSpringModule implements ConfigOnOff {
 			enabled = "true".equals(enabledObj);
 		}
 		
-		String spiObj = getStringPropertyValue(PDF_SPI, true);
+		String spiObj = getStringPropertyValue(PDF_SPI, pdfSpiId);
 		if(StringHelper.containsNonWhitespace(spiObj)) {
 			for(PdfSPI spi:pdfSpies) {
 				if(spiObj.equals(spi.getId())) {
@@ -100,8 +102,10 @@ public class PdfModule extends AbstractSpringModule implements ConfigOnOff {
 	public void setPdfServiceProvider(PdfSPI pdfSpi) {
 		this.pdfSpi = pdfSpi;
 		if (pdfSpi == null) {
+			pdfSpiId = null;
 			removeProperty(PDF_SPI, true);
 		} else {
+			pdfSpiId = pdfSpi.getId();
 			setStringProperty(PDF_SPI, pdfSpi.getId(), true);			
 		}
 	}
