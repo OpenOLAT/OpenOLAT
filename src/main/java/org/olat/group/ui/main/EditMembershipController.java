@@ -34,6 +34,7 @@ import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement.Layout;
 import org.olat.core.gui.components.form.flexible.impl.Form;
@@ -50,6 +51,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -96,6 +98,9 @@ public class EditMembershipController extends FormBasicController {
 	private FlexiTableElement groupTableEl;
 	private FlexiTableElement curriculumTableEl;
 	private MultipleSelectionElement repoRightsEl;
+	private FormLink selectAllCurriculumOwnersButton;
+	private FormLink selectAllCurriculumCoachesButton;
+	private FormLink selectAllCurriculumParticipantsButton;
 	private EditGroupMembershipTableDataModel groupTableDataModel;
 	private EditCurriculumMembershipTableDataModel curriculumTableDataModel;
 	
@@ -389,6 +394,16 @@ public class EditMembershipController extends FormBasicController {
 		curriculumTableEl = uifactory.addTableElement(getWindowControl(), "curriculumList", curriculumTableDataModel, getTranslator(), formLayout);
 		curriculumTableEl.setCustomizeColumns(false);
 		curriculumTableEl.setNumOfRowsEnabled(false);
+		
+		selectAllCurriculumOwnersButton = uifactory.addFormLink("select.all.curriculum.owners", formLayout, Link.BUTTON_SMALL);
+		selectAllCurriculumOwnersButton.setIconLeftCSS("o_icon o_icon_check_on");
+		selectAllCurriculumOwnersButton.setUserObject(Boolean.TRUE);
+		selectAllCurriculumCoachesButton = uifactory.addFormLink("select.all.curriculum.coaches", formLayout, Link.BUTTON_SMALL);
+		selectAllCurriculumCoachesButton.setIconLeftCSS("o_icon o_icon_check_on");
+		selectAllCurriculumCoachesButton.setUserObject(Boolean.TRUE);
+		selectAllCurriculumParticipantsButton = uifactory.addFormLink("select.all.curriculum.participants", formLayout, Link.BUTTON_SMALL);
+		selectAllCurriculumParticipantsButton.setIconLeftCSS("o_icon o_icon_check_on");
+		selectAllCurriculumParticipantsButton.setUserObject(Boolean.TRUE);
 
 		if(withButtons) {
 			FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
@@ -446,8 +461,39 @@ public class EditMembershipController extends FormBasicController {
 					}
 				}
 			}
+		} else if(selectAllCurriculumOwnersButton == source) {
+			toogleCurriculumMembership(selectAllCurriculumOwnersButton, GroupRoles.owner,
+					"select.all.curriculum.owners", "deselect.all.curriculum.owners");
+		} else if(selectAllCurriculumCoachesButton == source) {
+			toogleCurriculumMembership(selectAllCurriculumCoachesButton, GroupRoles.coach,
+					"select.all.curriculum.coaches", "deselect.all.curriculum.coaches");
+		} else if(selectAllCurriculumParticipantsButton == source) {
+			toogleCurriculumMembership(selectAllCurriculumParticipantsButton, GroupRoles.participant,
+					"select.all.curriculum.participants", "deselect.all.curriculum.participants");
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+	
+	private void toogleCurriculumMembership(FormLink link, GroupRoles role, String selectI18nKey, String deselectI18nKey) {
+		Boolean enabled = (Boolean)link.getUserObject();
+		
+		List<MemberCurriculumOption> memberOptions = curriculumTableDataModel.getObjects();
+		for(MemberCurriculumOption memberOption:memberOptions) {
+			MultipleSelectionElement element = memberOption.getSelection(role);
+			if(element.isEnabled()) {
+				element.select(keys[0], enabled.booleanValue());
+			}
+		}
+		
+		boolean newValue = !enabled.booleanValue();
+		link.setUserObject(Boolean.valueOf(newValue));
+		if(newValue) {
+			link.setIconLeftCSS("o_icon o_icon_check_on");
+			link.setI18nKey(selectI18nKey);
+		} else {
+			link.setIconLeftCSS("o_icon o_icon_check_off");
+			link.setI18nKey(deselectI18nKey);
+		}
 	}
 
 	public void collectRepoChanges(MemberPermissionChangeEvent e) {
@@ -541,7 +587,16 @@ public class EditMembershipController extends FormBasicController {
 
 		public void setParticipant(MultipleSelectionElement participant) {
 			this.participant = participant;
-		}	
+		}
+		
+		public MultipleSelectionElement getSelection(GroupRoles role) {
+			switch(role) {
+				case owner: return owner;
+				case coach: return coach;
+				case participant: return participant;
+				default: return null;
+			}
+		}
 	}
 
 	private static class MemberGroupOption {
