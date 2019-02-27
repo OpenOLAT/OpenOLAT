@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.chart.BarSeries;
+import org.olat.core.gui.components.chart.BarSeries.BarPoint;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -88,7 +89,10 @@ public abstract class RubricBarChartsController extends FormBasicController {
 		ResponsiveBarChartComponent chart = new ResponsiveBarChartComponent(barChartName);
 		chart.setYLegend(translate("chart.count"));
 		BarSeries barSeries = createBarSeries(sliderStatistic);
+		Double max = barSeries.getPoints().stream().map(BarPoint::getValue).max(Double::compare).orElse(1.0);
 		chart.addSeries(barSeries);
+		chart.setYMax(max);
+		chart.setYMin(0.0);
 		flc.put(barChartName, chart);
 		return barChartName;
 	}

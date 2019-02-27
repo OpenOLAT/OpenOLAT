@@ -57,6 +57,8 @@ public class BarChartController extends BasicController {
 		ResponsiveBarChartComponent chart = new ResponsiveBarChartComponent("o_eve_bc_" + CodeHelper.getRAMUniqueID());
 		chart.setYLegend(translate("chart.count"));
 		chart.addSeries(codedBarSeries);
+		Double max = codedBarSeries.getPoints().stream().map(BarPoint::getValue).max(Double::compare).orElse(1.0);
+		chart.setYMax(max);
 		mainVC.put("chart", chart);
 		mainVC.contextPut("legend", legend);
 		
