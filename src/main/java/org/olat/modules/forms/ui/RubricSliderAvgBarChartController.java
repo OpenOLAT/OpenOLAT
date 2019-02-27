@@ -36,6 +36,7 @@ import org.olat.modules.forms.RubricStatistic;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.SliderStatistic;
 import org.olat.modules.forms.model.xml.Rubric;
+import org.olat.modules.forms.model.xml.Rubric.NameDisplay;
 import org.olat.modules.forms.model.xml.Slider;
 import org.olat.modules.forms.ui.component.ResponsiveBarChartComponent;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,6 +64,10 @@ public class RubricSliderAvgBarChartController extends BasicController {
 		List<LegendEntry> legend = createLegend(sliders);
 		
 		VelocityContainer mainVC = createVelocityContainer("bar_chart");
+		String title = rubric.getNameDisplays().contains(NameDisplay.report)
+				? rubric.getName()
+				: translate("report.overview.total.title");
+		mainVC.contextPut("title", title);
 		ResponsiveBarChartComponent chart = new ResponsiveBarChartComponent("o_eve_bc_" + CodeHelper.getRAMUniqueID());
 		double yMin = rubric.getScaleType().getStepValue(rubric.getSteps(), 1);
 		double yMax = rubric.getScaleType().getStepValue(rubric.getSteps(), rubric.getSteps());

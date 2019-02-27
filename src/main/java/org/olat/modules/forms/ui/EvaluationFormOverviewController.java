@@ -71,8 +71,7 @@ public class EvaluationFormOverviewController extends BasicController {
 		List<Figure> allFigures = new ArrayList<>();
 		if (figures != null) {
 			allFigures.addAll(figures.getCustomFigures());
-		}
-		
+		}	
 		
 		EvaluationFormStatistic statistic = evaluationFormManager.getSessionsStatistic(filter);
 		

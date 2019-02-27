@@ -12,7 +12,6 @@
 </div>
 
 #if($r.available("report") && $r.visible("report"))
-	<h4>$r.translate("report.overview.total.title")</h4>
 	<div class="o_eva_rubric">$r.render("report")</div>
 #end
 #if($r.available("durationHistogram") && $r.visible("durationHistogram"))
