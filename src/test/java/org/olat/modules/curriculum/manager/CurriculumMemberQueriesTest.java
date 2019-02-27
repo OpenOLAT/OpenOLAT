@@ -28,6 +28,7 @@ import org.olat.core.id.Identity;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumLectures;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
@@ -74,8 +75,8 @@ public class CurriculumMemberQueriesTest extends OlatTestCase {
 	public void getCurriculumElementMembers() {
 		Identity supervisor = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-supervisor-1");
 		Curriculum curriculum = curriculumService.createCurriculum("cur-for-el-4", "Curriculum for element", "Curriculum", null);
-		CurriculumElement element = curriculumService.createCurriculumElement("Element-4", "4. Element", null, null, null, null,
-				CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-4", "4. Element", CurriculumElementStatus.active,
+				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
 		curriculumService.addMember(element, supervisor, CurriculumRoles.curriculummanager);
 		dbInstance.commitAndCloseSession();
 		

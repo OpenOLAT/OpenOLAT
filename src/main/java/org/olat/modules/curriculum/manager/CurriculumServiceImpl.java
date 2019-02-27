@@ -257,10 +257,11 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 
 	@Override
-	public CurriculumElement createCurriculumElement(String identifier, String displayName, Date beginDate, Date endDate,
-			CurriculumElementRef parentRef, CurriculumElementType elementType,
+	public CurriculumElement createCurriculumElement(String identifier, String displayName,  CurriculumElementStatus status,
+			Date beginDate, Date endDate, CurriculumElementRef parentRef, CurriculumElementType elementType,
 			CurriculumCalendars calendars, CurriculumLectures lectures, Curriculum curriculum) {
-		return curriculumElementDao.createCurriculumElement(identifier, displayName, beginDate, endDate, parentRef, elementType, calendars, lectures, curriculum);
+		return curriculumElementDao.createCurriculumElement(identifier, displayName, status,
+				beginDate, endDate, parentRef, elementType, calendars, lectures, curriculum);
 	}
 
 	@Override
@@ -285,7 +286,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 			displayName += " (Copy)";
 		}
 		
-		CurriculumElement clone = curriculumElementDao.createCurriculumElement(identifier, displayName,
+		CurriculumElement clone = curriculumElementDao.createCurriculumElement(identifier, displayName, CurriculumElementStatus.active,
 				beginDate, endDate, parentElement, elementToClone.getType(), elementToClone.getCalendars(), elementToClone.getLectures(),
 				curriculum);
 		

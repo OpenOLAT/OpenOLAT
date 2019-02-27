@@ -164,6 +164,10 @@ public class CurriculumElementWithViewsRow implements CurriculumElementWithView,
 		return element == null ? null : element.getExternalId();
 	}
 	
+	public CurriculumElementStatus getCurriculumElementStatus() {
+		return element == null ? null : element.getElementStatus();
+	}
+	
 	public String getCurriculumElementDisplayName() {
 		return repositoryEntry == null || singleEntry ? element.getDisplayName() : null;
 	}

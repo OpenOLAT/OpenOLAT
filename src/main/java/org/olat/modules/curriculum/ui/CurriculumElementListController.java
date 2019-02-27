@@ -39,6 +39,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -173,12 +174,22 @@ public class CurriculumElementListController extends FormBasicController impleme
 		tableEl.setCustomizeColumns(true);
 		tableEl.setEmtpyTableMessageKey("table.curriculum.empty");
 		tableEl.setCssDelegate(this);
+		tableEl.setFilters("activity", getFilters(), false);
+		tableEl.setSelectedFilterKey("active");
 		
 		VelocityContainer row = createVelocityContainer("curriculum_element_row");
 		row.setDomReplacementWrapperRequired(false); // sets its own DOM id in velocity container
 		tableEl.setRowRenderer(row, this);
 		
-		tableEl.setAndLoadPersistedPreferences(ureq, "my-curriculum-elements-v2-" + curriculum.getKey());
+		tableEl.setAndLoadPersistedPreferences(ureq, "my-curriculum-elements-v3-" + curriculum.getKey());
+	}
+	
+	private List<FlexiTableFilter> getFilters() {
+		List<FlexiTableFilter> filters = new ArrayList<>(5);
+		filters.add(new FlexiTableFilter(translate("filter.active"), "active"));
+		filters.add(FlexiTableFilter.SPACER);
+		filters.add(new FlexiTableFilter(translate("show.all"), "all", true));
+		return filters;
 	}
 
 	@Override
@@ -288,22 +299,9 @@ public class CurriculumElementListController extends FormBasicController impleme
 		Collections.sort(rows, new CurriculumElementViewsRowComparator(getLocale()));
 		
 		removeByPermissions(rows);
-		removeDeactivated(rows);
 
 		tableModel.setObjects(rows);
 		tableEl.reset(true, true, true);
-	}
-	
-	private void removeDeactivated(List<CurriculumElementWithViewsRow> rows) {
-		for(Iterator<CurriculumElementWithViewsRow> it=rows.iterator(); it.hasNext(); ) {
-			CurriculumElementWithViewsRow row = it.next();
-			for(CurriculumElementWithViewsRow parent=row; parent.getParent() != null; parent=parent.getParent()) {
-				if(!parent.isActive()) {
-					it.remove();
-					break;
-				}
-			}
-		}
 	}
 	
 	private void removeByPermissions(List<CurriculumElementWithViewsRow> rows) {

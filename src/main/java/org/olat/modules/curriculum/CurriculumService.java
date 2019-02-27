@@ -213,7 +213,8 @@ public interface CurriculumService {
 	public boolean deleteCurriculumElementType(CurriculumElementTypeRef typeRef);
 	
 	
-	public CurriculumElement createCurriculumElement(String identifier, String displayName, Date beginDate, Date endDate,
+	public CurriculumElement createCurriculumElement(String identifier, String displayName,
+			CurriculumElementStatus status, Date beginDate, Date endDate,
 			CurriculumElementRef parent, CurriculumElementType elementType, CurriculumCalendars calendars,
 			CurriculumLectures lectures, Curriculum curriculum);
 	

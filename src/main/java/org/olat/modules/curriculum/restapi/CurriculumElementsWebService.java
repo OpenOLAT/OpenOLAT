@@ -246,7 +246,7 @@ public class CurriculumElementsWebService {
 		boolean move = false;
 		if(curriculumElement.getKey() == null) {
 			elementToSave = curriculumService.createCurriculumElement(curriculumElement.getIdentifier(), curriculumElement.getDisplayName(),
-					curriculumElement.getBeginDate(), curriculumElement.getEndDate(), parentElement, type,
+					null, curriculumElement.getBeginDate(), curriculumElement.getEndDate(), parentElement, type,
 					CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
 		} else {
 			elementToSave = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(curriculumElement.getKey()));

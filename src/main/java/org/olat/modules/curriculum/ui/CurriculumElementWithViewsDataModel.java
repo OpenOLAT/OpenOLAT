@@ -26,6 +26,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTreeTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.modules.curriculum.CurriculumElementStatus;
 
 /**
  * 
@@ -41,7 +42,41 @@ public class CurriculumElementWithViewsDataModel extends DefaultFlexiTreeTableDa
 	
 	@Override
 	public void filter(String searchString, List<FlexiTableFilter> filters) {
-		setObjects(new ArrayList<>(backupRows));
+		if(filters != null && !filters.isEmpty() && filters.get(0) != null) {
+			FlexiTableFilter filter = filters.get(0);
+			if(filter == null || filter.isShowAll()) {
+				setUnfilteredObjects();
+			} else {
+				List<CurriculumElementWithViewsRow> filteredRows = new ArrayList<>(backupRows.size());
+				// curriculum element inactive -> all repo are inactives
+				// parent inactive, child is active -> parent is forced active
+				for(CurriculumElementWithViewsRow row:backupRows) {
+					boolean accept = active(row);
+					if(accept) {
+						filteredRows.add(row);
+					}
+				}
+				setFilteredObjects(filteredRows);
+			}
+		} else {
+			setUnfilteredObjects();
+		}
+	}
+	
+	private boolean active(CurriculumElementWithViewsRow row) {
+		boolean active = true;
+		if(row.isCurriculumElementOnly() || row.isCurriculumElementWithEntry()) {
+			active = row.getCurriculumElementStatus() == CurriculumElementStatus.active;
+		}
+			
+		if(active) {
+			for(CurriculumElementWithViewsRow parent=row.getParent(); parent != null; parent=parent.getParent()) {
+				if(row.isCurriculumElementOnly() || row.isCurriculumElementWithEntry()) {
+					active &= row.getCurriculumElementStatus() == CurriculumElementStatus.active;
+				}
+			}
+		}
+		return active;
 	}
 	
 	@Override

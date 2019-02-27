@@ -30,6 +30,7 @@ import org.olat.core.id.Organisation;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumLectures;
 import org.olat.modules.curriculum.CurriculumService;
@@ -96,8 +97,8 @@ public class CurriculumElementHandlerTest extends OlatTestCase {
 		String value = random();
 		Organisation organisation = organisationService.getDefaultOrganisation();
 		Curriculum curriculum = curriculumService.createCurriculum(random(), value, null, organisation);
-		CurriculumElement element = curriculumService.createCurriculumElement(random(), random(), null, null, null,
-				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement(random(), random(), CurriculumElementStatus.active,
+				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
 		String template = "$" + CurriculumElementHandler.CURRICULUM_DISPLAY_NAME;
 		
 		String merged = titleCreator.merge(template, asList(element));
@@ -134,7 +135,7 @@ public class CurriculumElementHandlerTest extends OlatTestCase {
 	private CurriculumElement createCurriculumElement() {
 		Organisation organisation = organisationService.getDefaultOrganisation();
 		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), null, organisation);
-		return curriculumService.createCurriculumElement(random(), random(),
+		return curriculumService.createCurriculumElement(random(), random(), CurriculumElementStatus.active,
 				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
 	}
 	

@@ -36,6 +36,7 @@ import org.olat.core.id.Organisation;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumLectures;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
@@ -228,8 +229,8 @@ public class CurriculumDAOTest extends OlatTestCase {
 		Identity manager = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-manager-1");
 		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-course-owner-1");
 		Curriculum curriculum = curriculumDao.createAndPersist("Curriculum for owners", "Owners", "Short desc.", null);
-		CurriculumElement element = curriculumService.createCurriculumElement("Element-1", "1. Element", new Date(), new Date(),
-				null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-1", "1. Element",  CurriculumElementStatus.active,
+				new Date(), new Date(), null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
 		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(owner);
 		curriculumService.addRepositoryEntry(element, entry, true);
 		dbInstance.commit();
@@ -277,8 +278,8 @@ public class CurriculumDAOTest extends OlatTestCase {
 		// add a curriculum with a coach in an element
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-manager-1");
 		Curriculum curriculum = curriculumService.createCurriculum("CUR-MY-1", "My Curriculum 1", "Short desc.", null);
-		CurriculumElement element = curriculumService.createCurriculumElement("Element-1", "1. Element", new Date(), new Date(), null,
-				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-1", "1. Element",  CurriculumElementStatus.active,
+				new Date(), new Date(), null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
 		dbInstance.commitAndCloseSession();
 		curriculumService.addMember(element, id, CurriculumRoles.participant);
 		dbInstance.commitAndCloseSession();
@@ -311,8 +312,8 @@ public class CurriculumDAOTest extends OlatTestCase {
 		// make a curriculum with an element with a course
 		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-owner-1");
 		Curriculum curriculum = curriculumService.createCurriculum("CUR-1", "Curriculum 1", "Short desc.", null);
-		CurriculumElement element = curriculumService.createCurriculumElement("Element-1", "1. Element", new Date(), new Date(),
-				null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-1", "1. Element", CurriculumElementStatus.active,
+				new Date(), new Date(), null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
 		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(owner);
 		curriculumService.addRepositoryEntry(element, entry, true);
 		dbInstance.commit();

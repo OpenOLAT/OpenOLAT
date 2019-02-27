@@ -43,6 +43,7 @@ import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementManagedFlag;
+import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumElementTypeRef;
 import org.olat.modules.curriculum.CurriculumElementTypeToType;
@@ -76,6 +77,10 @@ public class EditCurriculumElementController extends FormBasicController {
 	private static final String[] lecturesTypedKeys = new String[] {
 			CurriculumLectures.enabled.name(), CurriculumLectures.disabled.name(), CurriculumLectures.inherited.name()
 		};
+	
+	private static final String[] statusKey = new String[] {
+			CurriculumElementStatus.active.name(), CurriculumElementStatus.inactive.name(), CurriculumElementStatus.deleted.name()
+		};
 
 	private DateChooser endEl;
 	private DateChooser beginEl;
@@ -83,6 +88,7 @@ public class EditCurriculumElementController extends FormBasicController {
 	private TextElement displayNameEl;
 	private RichTextElement descriptionEl;
 
+	private SingleSelection statusEl;
 	private SingleSelection lecturesEnabledEl;
 	private SingleSelection calendarsEnabledEl;
 	private SingleSelection curriculumElementTypeEl;
@@ -152,6 +158,17 @@ public class EditCurriculumElementController extends FormBasicController {
 		displayNameEl = uifactory.addTextElement("displayName", "curriculum.element.displayName", 255, displayName, formLayout);
 		displayNameEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.displayName) && secCallback.canEditCurriculumElement());
 		displayNameEl.setMandatory(true);
+		
+		String[] statusValues = new String[] {
+			translate("status.active"), translate("status.inactive"), translate("status.deleted")
+		};
+		statusEl = uifactory.addRadiosHorizontal("status", "curriculum.element.status", formLayout, statusKey, statusValues);
+		statusEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.status) && secCallback.canEditCurriculumElement() );
+		if(element == null || element.getElementStatus() == null) {
+			statusEl.select(CurriculumElementStatus.active.name(), true);
+		} else {
+			statusEl.select(element.getElementStatus().name(), true);
+		}
 		
 		List<CurriculumElementType> types = getTypes();
 		String[] typeKeys = new String[types.size() + 1];
@@ -354,6 +371,12 @@ public class EditCurriculumElementController extends FormBasicController {
 			allOk &= false;
 		}
 		
+		statusEl.clearError();
+		if(!statusEl.isOneSelected()) {
+			statusEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
+		
 		return allOk;
 	}
 
@@ -362,10 +385,11 @@ public class EditCurriculumElementController extends FormBasicController {
 		CurriculumElementType elementType = getSelectedType();
 		CurriculumLectures lectures = CurriculumLectures.valueOf(lecturesEnabledEl.getSelectedKey());
 		CurriculumCalendars calendars = CurriculumCalendars.valueOf(calendarsEnabledEl.getSelectedKey());
+		CurriculumElementStatus status = CurriculumElementStatus.valueOf(statusEl.getSelectedKey());
 		if(element == null) {
 			//create a new one
 			element = curriculumService.createCurriculumElement(identifierEl.getValue(), displayNameEl.getValue(),
-					beginEl.getDate(), endEl.getDate(), parentElement, elementType, calendars, lectures, curriculum);
+					status, beginEl.getDate(), endEl.getDate(), parentElement, elementType, calendars, lectures, curriculum);
 		} else {
 			element = curriculumService.getCurriculumElement(element);
 			element.setIdentifier(identifierEl.getValue());
@@ -376,6 +400,7 @@ public class EditCurriculumElementController extends FormBasicController {
 			element.setType(elementType);
 			element.setCalendars(calendars);
 			element.setLectures(lectures);
+			element.setElementStatus(status);
 			element = curriculumService.updateCurriculumElement(element);
 		}
 		

@@ -80,7 +80,8 @@ public class CurriculumElementDAO {
 	@Autowired
 	private GroupDAO groupDao;
 	
-	public CurriculumElement createCurriculumElement(String identifier, String displayName, Date beginDate, Date endDate,
+	public CurriculumElement createCurriculumElement(String identifier, String displayName, CurriculumElementStatus status,
+			Date beginDate, Date endDate,
 			CurriculumElementRef parentRef, CurriculumElementType elementType,
 			CurriculumCalendars calendars, CurriculumLectures lectures,  Curriculum curriculum) {
 		CurriculumElementImpl element = new CurriculumElementImpl();
@@ -94,7 +95,11 @@ public class CurriculumElementDAO {
 		element.setType(elementType);
 		element.setCalendars(calendars);
 		element.setLectures(lectures);
-		element.setStatus(CurriculumElementStatus.active.name());
+		if(status == null) {
+			element.setStatus(CurriculumElementStatus.active.name());
+		} else {
+			element.setStatus(status.name());
+		}
 		element.setGroup(groupDao.createGroup());
 		CurriculumElement parent = parentRef == null ? null : loadByKey(parentRef.getKey());
 		element.setParent(parent);

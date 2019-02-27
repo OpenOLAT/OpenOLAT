@@ -54,6 +54,7 @@ import org.olat.course.ICourse;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumLectures;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.lecture.LectureBlock;
@@ -481,8 +482,8 @@ public class LecturesBlocksTest extends OlatJerseyTestCase {
 		dbInstance.commit();
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		Curriculum curriculum = curriculumService.createCurriculum("add-group", "Add group REST", "", defOrganisation);
-		CurriculumElement curriculumElement = curriculumService.createCurriculumElement("add-group", "Add element group", null, null, null,
-				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement curriculumElement = curriculumService.createCurriculumElement("add-group", "Add element group", CurriculumElementStatus.active,
+				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
 		curriculumService.addRepositoryEntry(curriculumElement, entry, true);
 		dbInstance.commit();
 
@@ -518,8 +519,8 @@ public class LecturesBlocksTest extends OlatJerseyTestCase {
 		dbInstance.commit();
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		Curriculum curriculum = curriculumService.createCurriculum("rm-group", "Remove group REST", "", defOrganisation);
-		CurriculumElement curriculumElement = curriculumService.createCurriculumElement("rm-group", "Remove element group", null, null, null,
-				null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement curriculumElement = curriculumService.createCurriculumElement("rm-group", "Remove element group", CurriculumElementStatus.active,
+				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
 		curriculumService.addRepositoryEntry(curriculumElement, entry, true);
 		dbInstance.commit();
 		lectureService.save(block, Collections.singletonList(curriculumElement.getGroup()));
