@@ -698,6 +698,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_eva_end_show:before { content: $fa-var-arrows-h; }
 .o_icon_eva_end_hide:before { content: $fa-var-long-arrow-right; }
 .o_icon_eva_export:before { content: $fa-var-download; }
+.o_icon_eva_pdf:before { content: $fa-var-file-pdf-o; }
 .o_icon_eva_print:before { content: $fa-var-print; }
 .o_icon_eva_session_info:before { content: $fa-var-info; }
 .o_icon_eva_mc:before { content: $fa-var-check-square-o; }
@@ -711,6 +712,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_qual_ana_pres_edit:before { content: $fa-var-thumb-tack;}
 .o_icon_qual_ana_export:before { content: $fa-var-download;}
 .o_icon_qual_ana_pres_delete:before { content: $fa-var-ban;}
+.o_icon_qual_ana_pdf:before { content: $fa-var-file-pdf-o;}
 .o_icon_qual_ana_print:before { content: $fa-var-print;}
 .o_icon_qual_ana_show_filter:before { content: $fa-var-toggle-off;}
 .o_icon_qual_ana_trend:before { content: $fa-var-line-chart; }

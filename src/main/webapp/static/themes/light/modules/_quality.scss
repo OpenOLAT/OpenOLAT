@@ -152,7 +152,9 @@
 	}
 }
 
-.o_qual_hm_basecolor { background-color: $o-qual-hm-base-background-color;}
+.o_qual_hm_basecolor {
+	background-color: $o-qual-hm-base-background-color;
+}
 .o_qual_hm {
 	.o_circle_container {
 		display: flex;
@@ -273,6 +275,25 @@
 		}
 		&.o_rubric_sufficient {
 			background-color: $o-evaluation-sufficient-color !important;
+		}
+		&.o_qual_hm_basecolor {
+			background-color: $o-qual-hm-base-background-color !important;
+		}
+	}
+	.o_qual_trend {
+		-webkit-print-color-adjust: exact;
+		color-adjust: exact;
+		.o_rubric_insufficient::before {
+			color: $o-evaluation-insufficient-color !important;
+		}
+		.o_rubric_neutral::before {
+			color: $o-evaluation-neutral-color !important;
+		}
+		.o_rubric_sufficient::before {
+			color: $o-evaluation-sufficient-color !important;
+		}
+		.o_qual_ana_unrated::before {
+			color: $o-qual-hm-base-background-color !important;
 		}
 	}
 }

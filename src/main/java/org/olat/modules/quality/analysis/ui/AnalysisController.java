@@ -21,8 +21,9 @@ package org.olat.modules.quality.analysis.ui;
 
 import java.util.Comparator;
 
-import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
+import org.olat.core.commons.services.pdf.PdfModule;
+import org.olat.core.commons.services.pdf.PdfService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -41,6 +42,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormSession;
@@ -58,6 +60,7 @@ import org.olat.modules.forms.model.xml.SingleChoice;
 import org.olat.modules.forms.ui.EvaluationFormExcelExport;
 import org.olat.modules.forms.ui.EvaluationFormOverviewController;
 import org.olat.modules.forms.ui.EvaluationFormPrintSelectionController;
+import org.olat.modules.forms.ui.EvaluationFormPrintSelectionController.Target;
 import org.olat.modules.forms.ui.EvaluationFormReportController;
 import org.olat.modules.forms.ui.EvaluationFormSessionSelectionController;
 import org.olat.modules.forms.ui.LegendNameGenerator;
@@ -99,6 +102,7 @@ public class AnalysisController extends BasicController implements TooledControl
 	private Link deletePresentationLink;
 	private Link printLink;
 	private Link printPopupLink;
+	private Link pdfLink;
 	private Link exportLink;
 	private Link showFilterLink;
 	private Link hideFilterLink;
@@ -132,6 +136,10 @@ public class AnalysisController extends BasicController implements TooledControl
 	private QualityAnalysisService analysisService;
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
+	@Autowired
+	private PdfModule pdfModule;
+	@Autowired
+	private PdfService pdfService;
 
 	protected AnalysisController(UserRequest ureq, WindowControl wControl, MainSecurityCallback secCallback,
 			TooledStackedPanel stackPanel, AnalysisPresentation presentation) {
@@ -196,10 +204,18 @@ public class AnalysisController extends BasicController implements TooledControl
 		printLink = LinkFactory.createToolLink("analysis.print", translate("analysis.print"), this);
 		printLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_ana_print");
 		stackPanel.addTool(printLink, Align.right);
+		
 		printPopupLink = LinkFactory.createToolLink("analysis.print.popup", translate("analysis.print"), this);
 		printPopupLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_ana_print");
 		printPopupLink.setPopup(new LinkPopupSettings(950, 750, "report-hm"));
 		stackPanel.addTool(printPopupLink, Align.right);
+		
+		if (pdfModule.isEnabled()) {
+			pdfLink = LinkFactory.createToolLink("analysis.pdf", translate("analysis.pdf"), this);
+			pdfLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_ana_pdf");
+			stackPanel.addTool(pdfLink, Align.right);
+		}
+		
 		exportLink = LinkFactory.createToolLink("analysis.export", translate("analysis.export"), this);
 		exportLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_ana_export");
 		stackPanel.addTool(exportLink, Align.right);
@@ -223,6 +239,8 @@ public class AnalysisController extends BasicController implements TooledControl
 			doOpenPrintSelection(ureq);
 		} else if (source == printPopupLink) {
 			doPopupPrint(ureq);
+		} else if (source == pdfLink) {
+			doExportPdf(ureq);
 		} else if (source == exportLink) {
 			doExport(ureq);
 		} else if (source == showFilterLink) {
@@ -522,65 +540,83 @@ public class AnalysisController extends BasicController implements TooledControl
 		stackPanel.setDirty(true);
 	}
 	
-	private void doPopupPrint(UserRequest ureq) {
-		Link selectedButton = segmentButtonsCmp.getSelectedButton();
-		if (selectedButton == heatMapLink) {
-			doPrintHeatmap(ureq);
-		} else if (selectedButton == trendDiagramLink) {
-			doPrintTrendDiagram(ureq);
-		}
+	private void doOpenPrintSelection(UserRequest ureq) {
+		doOpenPrintSelection(ureq, printLink, Target.PRINT);
 	}
 
-	private void doOpenPrintSelection(UserRequest ureq) {
-		if (printSelectionCtrl == null) {
-			printSelectionCtrl = new EvaluationFormPrintSelectionController(ureq, getWindowControl(), form, storage, getReportSessionFilter(),
-					getReportFigures(), getReportHelper());
-			listenTo(printSelectionCtrl);
-		}
+	private void doOpenPrintSelection(UserRequest ureq, Link targetLink, Target target) {
+		removeAsListenerAndDispose(printSelectionCtrl);
+		printSelectionCtrl = new EvaluationFormPrintSelectionController(ureq, getWindowControl(), form, storage, getReportSessionFilter(),
+				getReportFigures(), getReportHelper(), target);
+		listenTo(printSelectionCtrl);
 
 		removeAsListenerAndDispose(calloutCtrl);
 		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				printSelectionCtrl.getInitialComponent(), printLink, "", true, null);
+				printSelectionCtrl.getInitialComponent(), targetLink, "", true, null);
 		listenTo(calloutCtrl);
 		calloutCtrl.activate();
 	}
 	
-	private void doPrintHeatmap(UserRequest ureq) {
-		ControllerCreator ctrlCreator = new ControllerCreator() {
-			@Override
-			public Controller createController(UserRequest lureq, WindowControl lwControl) {
-				GroupByController groupByCtrl = new HeatMapController(ureq, getWindowControl(), form,
-						availableAttributes, presentation.getHeatMapGrouping(),
-						presentation.getHeatMapInsufficientOnly(), presentation.getTemporalGroupBy(),
-						presentation.getTrendDifference(), presentation.getRubricId());
-				GroupByPrintController printCtrl = new GroupByPrintController(ureq, getWindowControl(), groupByCtrl,
-						presentation.getSearchParams(), presentation.getFormEntry().getDisplayname());
-				LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, lwControl, printCtrl);
-				layoutCtr.addDisposableChildController(printCtrl); // dispose controller on layout dispose
-				return layoutCtr;
-			}
-		};
-		ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createPrintPopupLayout(ctrlCreator);
-		openInNewBrowserWindow(ureq, layoutCtrlr);
+	private void doPopupPrint(UserRequest ureq) {
+		ControllerCreator printControllerCreator = getPrintControllerCreator();
+		if (printControllerCreator != null) {
+			ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createPrintPopupLayout(printControllerCreator);
+			openInNewBrowserWindow(ureq, layoutCtrlr);
+		}
 	}
 	
-	private void doPrintTrendDiagram(UserRequest ureq) {
-		ControllerCreator ctrlCreator = new ControllerCreator() {
-			@Override
-			public Controller createController(UserRequest lureq, WindowControl lwControl) {
-				GroupByController groupByCtrl = new TrendController(ureq, getWindowControl(), form,
-						availableAttributes, presentation.getHeatMapGrouping(),
-						presentation.getHeatMapInsufficientOnly(), presentation.getTemporalGroupBy(),
-						presentation.getTrendDifference(), presentation.getRubricId());
-				GroupByPrintController printCtrl = new GroupByPrintController(ureq, getWindowControl(), groupByCtrl,
-						presentation.getSearchParams(), presentation.getFormEntry().getDisplayname());
-				LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, lwControl, printCtrl);
-				layoutCtr.addDisposableChildController(printCtrl); // dispose controller on layout dispose
-				return layoutCtr;
-			}
+	private void doExportPdf(UserRequest ureq) {
+		Link selectedButton = segmentButtonsCmp.getSelectedButton();
+		if (selectedButton == overviewReportLink
+				|| selectedButton == tableReportLink
+				|| selectedButton == diagramReportLink
+				|| selectedButton == sessionSelectionLink) {
+			doOpenPrintSelection(ureq, pdfLink, Target.PDF);
+		} else {
+			doExportAnalysis(ureq);
+		}
+	}
+
+	private void doExportAnalysis(UserRequest ureq) {
+		ControllerCreator printControllerCreator = getPrintControllerCreator();
+		if (printControllerCreator != null) {
+			String title = presentation.getFormEntry().getDisplayname();
+			MediaResource resource = pdfService.convert(title, getIdentity(), printControllerCreator, getWindowControl());
+			ureq.getDispatchResult().setResultingMediaResource(resource);
+		}
+	}
+
+	private ControllerCreator getPrintControllerCreator() {
+		ControllerCreator printControllerCreator = null;
+		Link selectedButton = segmentButtonsCmp.getSelectedButton();
+		if (selectedButton == heatMapLink) {
+			printControllerCreator = getHeatMapControllerCreator();
+		} else if (selectedButton == trendDiagramLink) {
+			printControllerCreator = getTrendControllerCreator();
+		}
+		return printControllerCreator;
+	}
+
+	private ControllerCreator getHeatMapControllerCreator() {
+		return (lureq, lwControl) -> {
+			GroupByController groupByCtrl = new HeatMapController(lureq, lwControl, form,
+					availableAttributes, presentation.getHeatMapGrouping(),
+					presentation.getHeatMapInsufficientOnly(), presentation.getTemporalGroupBy(),
+					presentation.getTrendDifference(), presentation.getRubricId());
+			return new GroupByPrintController(lureq, lwControl, groupByCtrl,
+					presentation.getSearchParams(), presentation.getFormEntry().getDisplayname());
 		};
-		ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createPrintPopupLayout(ctrlCreator);
-		openInNewBrowserWindow(ureq, layoutCtrlr);
+	}
+	
+	private ControllerCreator getTrendControllerCreator() {
+		return (lureq, lwControl) -> {
+			GroupByController groupByCtrl = new TrendController(lureq, lwControl, form,
+					availableAttributes, presentation.getHeatMapGrouping(),
+					presentation.getHeatMapInsufficientOnly(), presentation.getTemporalGroupBy(),
+					presentation.getTrendDifference(), presentation.getRubricId());
+			return new GroupByPrintController(lureq, lwControl, groupByCtrl,
+					presentation.getSearchParams(), presentation.getFormEntry().getDisplayname());
+		};
 	}
 
 	private void doExport(UserRequest ureq) {

@@ -21,6 +21,7 @@ package org.olat.modules.forms.ui;
 
 import java.util.Comparator;
 
+import org.olat.core.commons.services.pdf.PdfModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -36,6 +37,8 @@ import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.Figures;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.model.xml.Form;
+import org.olat.modules.forms.ui.EvaluationFormPrintSelectionController.Target;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -47,9 +50,11 @@ import org.olat.modules.forms.model.xml.Form;
 public class EvaluationFormReportsController extends BasicController {
 
 	private static final String CMD_PRINT = "report.print";
+	private static final String CMD_PDF = "report.pdf";
 	private static final String CMD_EXPORT = "report.export";
 
 	private Link printLink;
+	private Link pdfLink;
 	private Link exportLink;
 
 	private EvaluationFormReportSegmentsController segmentsController;
@@ -61,6 +66,9 @@ public class EvaluationFormReportsController extends BasicController {
 	private final SessionFilter filter;
 	private final Figures figures;
 	private final ReportHelper reportHelper;
+	
+	@Autowired
+	private PdfModule pdfModule;
 
 	public EvaluationFormReportsController(UserRequest ureq, WindowControl wControl, Form form, DataStorage storage, SessionFilter filter) {
 		this(ureq, wControl, form, storage, filter, null);
@@ -88,6 +96,11 @@ public class EvaluationFormReportsController extends BasicController {
 
 		printLink = LinkFactory.createButtonSmall(CMD_PRINT, mainVC, this);
 		printLink.setIconLeftCSS("o_icon o_icon-fw o_icon_eva_print");
+		
+		if (pdfModule.isEnabled()) {
+			pdfLink = LinkFactory.createButtonSmall(CMD_PDF, mainVC, this);
+			pdfLink.setIconLeftCSS("o_icon o_icon-fw o_icon_eva_pdf");
+		}
 
 		exportLink = LinkFactory.createButtonSmall(CMD_EXPORT, mainVC, this);
 		exportLink.setIconLeftCSS("o_icon o_icon-fw o_icon_eva_export");
@@ -107,6 +120,8 @@ public class EvaluationFormReportsController extends BasicController {
 			String cmd = link.getCommand();
 			if (cmd.equals(CMD_PRINT)) {
 				doOpenPrintSelection(ureq);
+			} else if (cmd.equals(CMD_PDF)) {
+				doOpenPdfSelection(ureq);
 			} else if (cmd.equals(CMD_EXPORT)) {
 				doExport(ureq);
 			}
@@ -136,17 +151,24 @@ public class EvaluationFormReportsController extends BasicController {
 		removeAsListenerAndDispose(calloutCtrl);
 		calloutCtrl = null;
 	}
-
+	
 	private void doOpenPrintSelection(UserRequest ureq) {
-		if (printSelectionCtrl == null) {
-			printSelectionCtrl = new EvaluationFormPrintSelectionController(ureq, getWindowControl(), form, storage, filter,
-					figures, reportHelper);
-			listenTo(printSelectionCtrl);
-		}
+		doOpenPrintSelection(ureq, printLink, Target.PRINT);
+	}
+
+	private void doOpenPdfSelection(UserRequest ureq) {
+		doOpenPrintSelection(ureq, pdfLink, Target.PDF);
+	}
+
+	private void doOpenPrintSelection(UserRequest ureq, Link targetLink, Target target) {
+		removeAsListenerAndDispose(printSelectionCtrl);
+		printSelectionCtrl = new EvaluationFormPrintSelectionController(ureq, getWindowControl(), form, storage,
+				filter, figures, reportHelper, target);
+		listenTo(printSelectionCtrl);
 
 		removeAsListenerAndDispose(calloutCtrl);
 		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				printSelectionCtrl.getInitialComponent(), printLink, "", true, null);
+				printSelectionCtrl.getInitialComponent(), targetLink, "", true, null);
 		listenTo(calloutCtrl);
 		calloutCtrl.activate();
 	}

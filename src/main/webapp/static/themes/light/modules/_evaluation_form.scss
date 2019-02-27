@@ -356,12 +356,23 @@
 	.o_evaluation_block {
 		page-break-inside : avoid;
 	}
+	.o_evaluation_duration {
+		page-break-before: always;
+	}
 	.o_evaluation_discrete_radio .o_slider .o_evaluation_steps div.radio {
 		-webkit-print-color-adjust: exact;
 		color-adjust: exact;
 		background-color: $o-evaluation-step-background-color !important;
 	}
-	
+	.o_icon_rubric_insufficient::before {
+		color: $o-evaluation-insufficient-color !important;
+	}
+	.o_icon_rubric_neutral::before {
+		color: $o-evaluation-neutral-color !important;
+	}
+	.o_icon_rubric_sufficient::before {
+		color: $o-evaluation-sufficient-color !important;
+	}
 }
 
 .o_eva_report_print {
@@ -377,6 +388,14 @@
 	}
 	.o_eva_content {
 		margin-top: 4em;
+	}
+		
+	.o_eva_overview {
+		.panel {
+			table {
+				margin: 0px 0px 1px 0px;
+			}
+		}
 	}
 }
 

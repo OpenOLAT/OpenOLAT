@@ -5,6 +5,9 @@
 			#if($r.available("report.print"))
 				$r.render("report.print")
 			#end
+			#if($r.available("report.pdf"))
+				$r.render("report.pdf")
+			#end
 			#if($r.available("report.export"))
 				$r.render("report.export")
 			#end
