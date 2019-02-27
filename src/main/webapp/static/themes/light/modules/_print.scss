@@ -38,6 +38,13 @@
 	.o_noprint { 
 		display: none !important;
 	} 
+	
+	/* Do not use bootstrap size width. It is too small for landscape layout */
+	.o_container_offcanvas {
+		max-width: 100%;
+		margin-left: 5px;
+		margin-right: 5px;
+	}
 
 	/* Page breaks */	
 	.o_print_break_avoid {
