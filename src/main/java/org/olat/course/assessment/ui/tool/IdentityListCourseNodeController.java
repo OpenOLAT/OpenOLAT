@@ -370,6 +370,9 @@ public class IdentityListCourseNodeController extends FormBasicController
 					if(assessableNode.getMaxScoreConfiguration() != null) {
 						columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.max, new ScoreCellRenderer()));
 					}
+					if(assessableNode.hasPassedConfigured() && assessableNode.getCutValueConfiguration() != null) {
+						columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, IdentityCourseElementCols.cut, new ScoreCellRenderer()));
+					}
 				}
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.score, new ScoreCellRenderer()));
 			}
