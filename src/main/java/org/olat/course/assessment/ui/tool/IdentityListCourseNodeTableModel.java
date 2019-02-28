@@ -55,6 +55,7 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 	
 	private Float minScore;
 	private Float maxScore;
+	private Float cutValue;
 	private final AssessableCourseNode courseNode;
 	private List<AssessedIdentityElementRow> backups;
 	private ConcurrentMap<Long, CertificateLight> certificateMap;
@@ -67,6 +68,7 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 		if(courseNode != null && !(courseNode instanceof STCourseNode) && courseNode.hasScoreConfigured()) {
 			maxScore = courseNode.getMaxScoreConfiguration();
 			minScore = courseNode.getMinScoreConfiguration();
+			cutValue = courseNode.getCutValueConfiguration();
 		}
 	}
 	
@@ -139,6 +141,7 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 				case score: return row.getScore();
 				case min: return minScore;
 				case max: return maxScore;
+				case cut: return cutValue;
 				case status: return "";
 				case passed: return row.getPassed();
 				case numOfAssessmentDocs: {
@@ -190,7 +193,8 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 		numOfAssessmentDocs("table.header.num.assessmentDocs"),
 		currentCompletion("table.header.completion"),
 		tools("table.header.tools"),
-		details("table.header.details");
+		details("table.header.details"),
+		cut("table.header.cut");
 		
 		private final String i18nKey;
 		
