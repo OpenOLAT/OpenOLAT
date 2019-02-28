@@ -203,11 +203,18 @@ public class MessageVO {
 	public void setAttachments(FileVO[] attachments) {
 		this.attachments = attachments;
 	}
+	
+	@Override
+	public int hashCode() {
+		return getKey() == null ? -54236 : getKey().hashCode();
+	}
 
+	@Override
 	public String toString() {
 		return "messageVO[key=" + key + ":title=" + title +"]";
 	}
 	
+	@Override
 	public boolean equals(Object obj) {
 		if(this == obj) {
 			return true;

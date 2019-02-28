@@ -127,6 +127,11 @@ public class PoolItemShortView implements QuestionItem2Pool {
 	public boolean equalsByPersistableKey(Persistable persistable) {
 		return equals(persistable);
 	}
+	
+	@Override
+	public int hashCode() {
+		return getKey() == null ? 56477 : getKey().hashCode();
+	}
 
 	@Override
 	public boolean equals(Object obj) {

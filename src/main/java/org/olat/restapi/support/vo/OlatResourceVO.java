@@ -83,6 +83,11 @@ public class OlatResourceVO {
 	}
 	
 	@Override
+	public int hashCode() {
+		return getKey() == null ? -20161 : getKey().hashCode();
+	}
+	
+	@Override
 	public boolean equals(Object obj) {
 		if(obj == this) {
 			return true;

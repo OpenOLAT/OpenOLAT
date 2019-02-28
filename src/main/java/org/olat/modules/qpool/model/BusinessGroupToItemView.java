@@ -128,8 +128,8 @@ public class BusinessGroupToItemView implements QuestionItem2Resource {
 	}
 
 	@Override
-	public boolean equalsByPersistableKey(Persistable persistable) {
-		return equals(persistable);
+	public int hashCode() {
+		return getKey() == null ? 56477 : getKey().hashCode();
 	}
 
 	@Override
@@ -142,5 +142,10 @@ public class BusinessGroupToItemView implements QuestionItem2Resource {
 			return getKey() != null && getKey().equals(q.getKey());
 		}
 		return false;
+	}
+
+	@Override
+	public boolean equalsByPersistableKey(Persistable persistable) {
+		return equals(persistable);
 	}
 }

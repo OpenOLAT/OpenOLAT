@@ -220,6 +220,11 @@ public class RepositoryEntryVO {
 	}
 	
 	@Override
+	public int hashCode() {
+		return getKey() == null ? -9331238 : getKey().hashCode();
+	}
+	
+	@Override
 	public boolean equals(Object obj) {
 		if(obj == this) {
 			return true;

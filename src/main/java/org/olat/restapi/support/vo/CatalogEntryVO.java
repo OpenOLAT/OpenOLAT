@@ -125,6 +125,11 @@ public class CatalogEntryVO {
 	}
 	
 	@Override
+	public int hashCode() {
+		return getKey() == null ? -761258 : getKey().hashCode();
+	}
+	
+	@Override
 	public boolean equals(Object obj) {
 		if(this == obj) {
 			return true;

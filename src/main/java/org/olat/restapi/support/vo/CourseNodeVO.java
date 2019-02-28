@@ -106,7 +106,13 @@ public class CourseNodeVO {
 	public void setLearningObjectives(String learningObjectives) {
 		this.learningObjectives = learningObjectives;
 	}
+	
+	@Override
+	public int hashCode() {
+		return id == null ? 623576 : id.hashCode();
+	}
 
+	@Override
 	public boolean equals(Object obj) {
 		if(this == obj) {
 			return true;
