@@ -26,6 +26,7 @@ import org.olat.core.gui.control.generic.wizard.BasicStep;
 import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.id.Identity;
 import org.olat.course.member.wizard.ImportMemberBySearchController;
 
 /**
@@ -35,10 +36,10 @@ import org.olat.course.member.wizard.ImportMemberBySearchController;
  *
  */
 public class ImportRelation_1b_Step extends BasicStep {
-	
-	public ImportRelation_1b_Step(UserRequest ureq) {
+
+	public ImportRelation_1b_Step(UserRequest ureq, Identity editedIdentity) {
 		super(ureq);
-		setNextStep(new ImportRelation_2_Step(ureq));
+		setNextStep(new ImportRelation_2_Step(ureq, editedIdentity));
 		setI18nTitleAndDescr("add.import.title", "add.import.title");
 	}
 

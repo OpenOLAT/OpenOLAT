@@ -119,7 +119,7 @@ public class RelationRoleImpl implements RelationRole, Persistable {
 	public void setRole(String role) {
 		this.role = role;
 	}
-	
+
 	@Override
 	public String getExternalId() {
 		return externalId;

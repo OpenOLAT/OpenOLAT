@@ -34,29 +34,33 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class IdentityRelationRow extends UserPropertiesRow {
+public class IdentityRelationRow {
 
-	private final RelationRole relationRole;
 	private final Long relationKey;
-	private final boolean asSource;
+	private final String relationLabel;
+	private final RelationRole relationRole;
 	private final IdentityToIdentityRelationManagedFlag[] managedFlags;
 	
-	public IdentityRelationRow(boolean asSource, Long relationKey, Identity identity, RelationRole relationRole,
-			IdentityToIdentityRelationManagedFlag[] managedFlags, List<UserPropertyHandler> userPropertyHandlers,
-			Locale locale) {
-		super(identity, userPropertyHandlers, locale);
+	private final UserPropertiesRow sourceIdentity;
+	private final UserPropertiesRow targetIdentity;
+	
+	public IdentityRelationRow(Long relationKey, Identity sourceIdentity, Identity targetIdentity,
+			RelationRole relationRole, String relationLabel, IdentityToIdentityRelationManagedFlag[] managedFlags,
+			List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		this.relationRole = relationRole;
 		this.relationKey = relationKey;
 		this.managedFlags = managedFlags;
-		this.asSource = asSource;
+		this.relationLabel = relationLabel;
+		this.sourceIdentity = new UserPropertiesRow(sourceIdentity, userPropertyHandlers, locale);
+		this.targetIdentity = new UserPropertiesRow(targetIdentity, userPropertyHandlers, locale);
 	}
-	
-	public boolean isAsSource() {
-		return asSource;
-	}
-	
+
 	public  Long getRelationKey() {
 		return relationKey;
+	}
+	
+	public String getRelationLabel() {
+		return relationLabel;
 	}
 	
 	public String getRelationRoleName() {
@@ -69,5 +73,30 @@ public class IdentityRelationRow extends UserPropertiesRow {
 	
 	public IdentityToIdentityRelationManagedFlag[] getManagedFlags() {
 		return managedFlags;
+	}
+
+	public UserPropertiesRow getSourceIdentity() {
+		return sourceIdentity;
+	}
+
+	public UserPropertiesRow getTargetIdentity() {
+		return targetIdentity;
+	}
+
+	@Override
+	public int hashCode() {
+		return relationKey.hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj) {
+			return true;
+		}
+		if(obj instanceof IdentityRelationRow) {
+			IdentityRelationRow row = (IdentityRelationRow)obj;
+			return relationKey.equals(row.relationKey);
+		}
+		return false;
 	}
 }

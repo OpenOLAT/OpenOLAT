@@ -21,6 +21,8 @@ package org.olat.user.ui.role;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -32,6 +34,7 @@ import org.olat.basesecurity.RelationRoleToRight;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -40,6 +43,9 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.i18n.I18nItem;
+import org.olat.core.util.i18n.I18nManager;
+import org.olat.core.util.i18n.I18nModule;
 import org.olat.user.UserModule;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -51,17 +57,27 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class EditRelationRoleController extends FormBasicController {
 	
+	private final String[] predefinedLabelKeys = new String[] {
+		"", "supervisor", "legalRepresentative", "tutor", "parent",
+		"teacher", "expert", "legalGardian", "employer", "sportsClub"
+	};
+	
 	private TextElement roleEl;
+	private SingleSelection predefinedLabelEl;
 	private MultipleSelectionElement rightsEl;
 	
 	private RelationRole relationRole;
 	private List<RelationRight> rights;
-	
+
+	@Autowired
+	private I18nModule i18nModule;
+	@Autowired
+	private I18nManager i18nManager;
 	@Autowired
 	private IdentityRelationshipService identityRelationsService;
 
 	public EditRelationRoleController(UserRequest ureq, WindowControl wControl) {
-		this(ureq, wControl, null);
+		this(ureq, wControl,null);
 	}
 	
 	public EditRelationRoleController(UserRequest ureq, WindowControl wControl, RelationRole relationRole) {
@@ -74,8 +90,20 @@ public class EditRelationRoleController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		String name = relationRole == null ? null : relationRole.getRole();
-		roleEl = uifactory.addTextElement("role.name", 128, name, formLayout);
+		roleEl = uifactory.addTextElement("role.identifier", 128, name, formLayout);
 		roleEl.setEnabled(!RelationRoleManagedFlag.isManaged(relationRole, RelationRoleManagedFlag.name));
+		
+		String[] predefinedLabelValues = new String[predefinedLabelKeys.length];
+		predefinedLabelValues[0] = translate("no.predefined.label");
+		for(int i=1; i<predefinedLabelKeys.length; i++) {
+			predefinedLabelValues[i] = translate(RelationRolesAndRightsUIFactory.TRANS_ROLE_PREFIX.concat(predefinedLabelKeys[i]));
+		}
+		
+		if(relationRole == null || relationRole.getKey() == null) {
+			predefinedLabelEl = uifactory.addDropdownSingleselect("predefined.labels", formLayout,
+					predefinedLabelKeys, predefinedLabelValues);
+			predefinedLabelEl.select(predefinedLabelKeys[0], true);
+		}
 		
 		String[] rightKeys = new String[rights.size()];
 		String[] rightValues = new String[rights.size()];
@@ -127,12 +155,44 @@ public class EditRelationRoleController extends FormBasicController {
 		List<RelationRight> selectedRights = rights.stream()
 				.filter(r -> selectedRightKeys.contains(r.getRight())).collect(Collectors.toList());
 		if(relationRole == null) {
-			identityRelationsService.createRole(roleEl.getValue(), selectedRights);
+			relationRole = identityRelationsService.createRole(roleEl.getValue(), selectedRights);
+			copyTranslations();
 		} else {
-			identityRelationsService.updateRole(relationRole, selectedRights);
+			relationRole = identityRelationsService.updateRole(relationRole, selectedRights);
 		}
 		
 		fireEvent(ureq, Event.DONE_EVENT);
+	}
+	
+	private void copyTranslations() {
+		if(predefinedLabelEl == null || !predefinedLabelEl.isOneSelected()
+				|| !StringHelper.containsNonWhitespace(predefinedLabelEl.getSelectedKey())) return;
+		
+		String i18nPartialKey = predefinedLabelEl.getSelectedKey();
+		
+		String[] prefix = new String[] {
+				RelationRolesAndRightsUIFactory.TRANS_ROLE_PREFIX,
+				RelationRolesAndRightsUIFactory.TRANS_ROLE_CONTRA_PREFIX,
+				RelationRolesAndRightsUIFactory.TRANS_ROLE_DESCRIPTION_PREFIX,
+				RelationRolesAndRightsUIFactory.TRANS_ROLE_CONTRA_DESCRIPTION_PREFIX
+		};
+
+		Collection<String> enabledLocaleKeys = i18nModule.getEnabledLanguageKeys();
+		Map<Locale, Locale> allOverlays = i18nModule.getOverlayLocales();
+
+		for(String p:prefix) {
+			String predfinedI18nKey = p.concat(i18nPartialKey);
+			String customI18nKey = p.concat(relationRole.getKey().toString());
+			for(String enabledLocaleKey:enabledLocaleKeys) {
+				Locale loc = i18nManager.getLocaleOrNull(enabledLocaleKey);
+				String translation = Util.createPackageTranslator(UserModule.class, loc).translate(predfinedI18nKey);
+				if(translation.length() < 256 && !translation.startsWith(p)) {
+					Locale overlayLocale = allOverlays.get(loc);
+					I18nItem item = i18nManager.getI18nItem(UserModule.class.getPackage().getName(), customI18nKey, overlayLocale);
+					i18nManager.saveOrUpdateI18nItem(item, translation);
+				}
+			}
+		}
 	}
 
 	@Override

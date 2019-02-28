@@ -19,8 +19,9 @@
  */
 package org.olat.user.ui.identity;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.basesecurity.IdentityRelationshipService;
@@ -34,7 +35,9 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
+import org.olat.user.UserManager;
 import org.olat.user.UserModule;
 import org.olat.user.ui.role.RelationRolesAndRightsUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,29 +50,41 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class RelationRolesController extends StepFormBasicController {
 	
+	private static final String CONTRA_MARKER = "contra_marker_xxx_";
+	
 	private MultipleSelectionElement relationRoleEl;
 	
+	private final Identity editedIdentity;
 	private List<RelationRole> availableRoles;
 	
 	@Autowired
+	private UserManager userManager;
+	@Autowired
 	private IdentityRelationshipService identityRelationsService;
 	
-	public RelationRolesController(UserRequest ureq, WindowControl wControl, Form rootForm,
+	public RelationRolesController(UserRequest ureq, WindowControl wControl, Identity editedIdentity, Form rootForm,
 			StepsRunContext runContext) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_DEFAULT, null);
 		setTranslator(Util.createPackageTranslator(UserModule.class, getLocale(), getTranslator()));
+		this.editedIdentity = editedIdentity;
 		availableRoles = identityRelationsService.getAvailableRoles();
 		initForm (ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		String[] roleKeys = new String[availableRoles.size()];
-		String[] roleValues = new String[availableRoles.size()];
+		String targetFullname = userManager.getUserDisplayName(editedIdentity);
+		setFormDescription("relation.roles.description", new String[] { targetFullname });
+		
+		String[] roleKeys = new String[availableRoles.size() * 2];
+		String[] roleValues = new String[availableRoles.size() * 2];
 		
 		for(int i=availableRoles.size(); i-->0; ) {
-			roleKeys[i] = availableRoles.get(i).getKey().toString();
-			roleValues[i] = RelationRolesAndRightsUIFactory.getTranslatedRole(getTranslator(), availableRoles.get(i));
+			int pos = i * 2;
+			roleKeys[pos] = availableRoles.get(i).getKey().toString();
+			roleKeys[pos + 1] = CONTRA_MARKER.concat(roleKeys[pos]);
+			roleValues[pos] = RelationRolesAndRightsUIFactory.getTranslatedRole(getTranslator(), availableRoles.get(i));
+			roleValues[pos + 1] = RelationRolesAndRightsUIFactory.getTranslatedContraRole(getTranslator(), availableRoles.get(i));
 		}
 		relationRoleEl = uifactory.addCheckboxesVertical("relation.roles", formLayout, roleKeys, roleValues, 2);
 	}
@@ -94,14 +109,23 @@ public class RelationRolesController extends StepFormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		Set<Long> selectedKeys = relationRoleEl.getSelectedKeys().stream()
-				.map(Long::valueOf)
-				.collect(Collectors.toSet());
+		Collection<String> selectedKeys = relationRoleEl.getSelectedKeys();
+		List<Long> selectedRoleKeys = new ArrayList<>();
+		List<Long> selectedContraRoleKeys = new ArrayList<>();
+		for(String selectedKey:selectedKeys) {
+			if(selectedKey.startsWith(CONTRA_MARKER)) {
+				selectedContraRoleKeys.add(Long.valueOf(selectedKey.substring(CONTRA_MARKER.length())));
+			} else {
+				selectedRoleKeys.add(Long.valueOf(selectedKey));
+			}
+		}
 		List<RelationRole> selectedRoles = availableRoles.stream()
-				.filter(role -> selectedKeys.contains(role.getKey()))
+				.filter(role -> selectedRoleKeys.contains(role.getKey()))
 				.collect(Collectors.toList());
-
-		addToRunContext("relationRoles", selectedRoles);
+		List<RelationRole> selectedContraRoles = availableRoles.stream()
+				.filter(role -> selectedContraRoleKeys.contains(role.getKey()))
+				.collect(Collectors.toList());
+		addToRunContext("relationRoles", new UserRelationRoles(selectedRoles, selectedContraRoles));
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}
 }

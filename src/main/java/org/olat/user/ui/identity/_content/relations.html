@@ -1,17 +1,14 @@
-#if($r.available("add.as.source") || $r.available("import.as.source") || $r.available("add.as.target"))
+#if($r.available("add.relations") || $r.available("import.relations"))
 <div class="o_button_group o_button_group_right">
-	#if($r.available("add.as.source") || $r.available("import.as.source"))
+	#if($r.available("add.relations") || $r.available("import.relations"))
 	<div class="btn-group">
-	#if($r.available("add.as.source"))
-		$r.render("add.as.source")
+	#if($r.available("add.relations"))
+		$r.render("add.relations")
 	#end
-	#if($r.available("import.as.source"))
-		$r.render("import.as.source")
+	#if($r.available("import.relations"))
+		$r.render("import.relations")
 	#end
 	</div>
-	#end
-	#if($r.available("add.as.target"))
-		$r.render("add.as.target")
 	#end
 </div>
 #end

@@ -26,6 +26,7 @@ import org.olat.core.gui.control.generic.wizard.BasicStep;
 import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.id.Identity;
 
 /**
  * 
@@ -34,9 +35,12 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
  *
  */
 public class ImportRelation_3_Step extends BasicStep {
+
+	private final Identity editedIdentity;
 	
-	public ImportRelation_3_Step(UserRequest ureq) {
+	public ImportRelation_3_Step(UserRequest ureq, Identity editedIdentity) {
 		super(ureq);
+		this.editedIdentity = editedIdentity;
 		setNextStep(NOSTEP);
 		setI18nTitleAndDescr("add.roles.title", "add.roles.title");
 	}
@@ -48,6 +52,6 @@ public class ImportRelation_3_Step extends BasicStep {
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
-		return new RelationRolesController(ureq, wControl, form, runContext);
+		return new RelationRolesController(ureq, wControl, editedIdentity, form, runContext);
 	}
 }

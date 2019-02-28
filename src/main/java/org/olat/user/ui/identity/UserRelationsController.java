@@ -22,13 +22,11 @@ package org.olat.user.ui.identity;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.IdentityRelationshipService;
 import org.olat.basesecurity.IdentityToIdentityRelation;
 import org.olat.basesecurity.IdentityToIdentityRelationManagedFlag;
-import org.olat.basesecurity.RelationRole;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -52,11 +50,14 @@ import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
+import org.olat.core.util.Util;
 import org.olat.course.assessment.ui.tool.AssessmentToolConstants;
 import org.olat.user.UserManager;
+import org.olat.user.UserModule;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.olat.user.ui.identity.UserRelationsTableModel.RelationCols;
 import org.olat.user.ui.role.ManagedCellRenderer;
+import org.olat.user.ui.role.RelationRolesAndRightsUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -67,12 +68,12 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class UserRelationsController extends FormBasicController {
 	
-	public static final int USER_PROPS_OFFSET = 500;
+	public static final int USER_SOURCE_PROPS_OFFSET = 500;
+	public static final int USER_TARGET_PROPS_OFFSET = 1500;
 	public static final String usageIdentifyer = UserRelationsController.class.getCanonicalName();
 
-	private FormLink addAsSourceButton;
-	private FormLink importAsSourceButton;
-	private FormLink addAsTargetButton;
+	private FormLink addRelationsButton;
+	private FormLink importRelationsButton;
 	private FormLink removeButton;
 	
 	private FlexiTableElement tableEl;
@@ -82,7 +83,6 @@ public class UserRelationsController extends FormBasicController {
 	private StepsMainRunController importRelationsWizard;
 	private ConfirmRemoveRelationController confirmRemoveRelationsCtrl;
 	
-	private final boolean asSource;
 	private final boolean canModify;
 	private final Identity editedIdentity;
 	private final boolean isAdministrativeUser;
@@ -95,11 +95,9 @@ public class UserRelationsController extends FormBasicController {
 	@Autowired
 	private IdentityRelationshipService identityRelationsService;
 	
-	public UserRelationsController(UserRequest ureq, WindowControl wControl, Identity editedIdentity,
-			boolean source, boolean canModify) {
-		super(ureq, wControl, "relations");
+	public UserRelationsController(UserRequest ureq, WindowControl wControl, Identity editedIdentity, boolean canModify) {
+		super(ureq, wControl, "relations", Util.createPackageTranslator(UserModule.class, ureq.getLocale()));
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
-		this.asSource = source;
 		this.canModify = canModify;
 		this.editedIdentity = editedIdentity;
 		
@@ -113,17 +111,12 @@ public class UserRelationsController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(canModify) {
-			if(asSource) {
-				importAsSourceButton = uifactory.addFormLink("import.as.source", formLayout, Link.BUTTON);
-				importAsSourceButton.setIconLeftCSS("o_icon o_icon-fw o_icon_import");
+			importRelationsButton = uifactory.addFormLink("import.relations", formLayout, Link.BUTTON);
+			importRelationsButton.setIconLeftCSS("o_icon o_icon-fw o_icon_import");
 				
-				addAsSourceButton = uifactory.addFormLink("add.as.source", formLayout, Link.BUTTON);
-				addAsSourceButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add_member");
-			} else {
-				addAsTargetButton = uifactory.addFormLink("add.as.target", formLayout, Link.BUTTON);
-				addAsTargetButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add_member");
-			}
-			
+			addRelationsButton = uifactory.addFormLink("add.relations", formLayout, Link.BUTTON);
+			addRelationsButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add_member");
+
 			removeButton = uifactory.addFormLink("remove", formLayout, Link.BUTTON);
 		}
 		
@@ -134,10 +127,10 @@ public class UserRelationsController extends FormBasicController {
 		}
 		//add the table
 		if(isAdministrativeUser) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RelationCols.username));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RelationCols.sourceUsername));
 		}
 		
-		int colIndex = USER_PROPS_OFFSET;
+		int colIndex = USER_SOURCE_PROPS_OFFSET;
 		for (int i = 0; i < userPropertyHandlers.size(); i++) {
 			UserPropertyHandler userPropertyHandler	= userPropertyHandlers.get(i);
 			boolean visible = UserManager.getInstance().isMandatoryUserProperty(AssessmentToolConstants.usageIdentifyer , userPropertyHandler);
@@ -146,6 +139,19 @@ public class UserRelationsController extends FormBasicController {
 		}
 
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RelationCols.role));
+		
+		if(isAdministrativeUser) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RelationCols.targetUsername));
+		}
+		
+		colIndex = USER_TARGET_PROPS_OFFSET;
+		for (int i = 0; i < userPropertyHandlers.size(); i++) {
+			UserPropertyHandler userPropertyHandler	= userPropertyHandlers.get(i);
+			boolean visible = UserManager.getInstance().isMandatoryUserProperty(AssessmentToolConstants.usageIdentifyer , userPropertyHandler);
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(visible, userPropertyHandler.i18nColumnDescriptorLabelKey(), colIndex, null, true, "userProp-" + colIndex));
+			colIndex++;
+		}
+
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("remove", RelationCols.remove.ordinal(), "remove",
 				new BooleanCellRenderer(
 						new StaticFlexiCellRenderer(translate("remove"), "remove"), null)));
@@ -158,12 +164,21 @@ public class UserRelationsController extends FormBasicController {
 	}
 	
 	protected void loadModel() {
-		List<IdentityToIdentityRelation> relations = asSource ? identityRelationsService.getRelationsAsSource(editedIdentity)
-				: identityRelationsService.getRelationsAsTarget(editedIdentity);
-		List<IdentityRelationRow> rows = relations.stream()
-				.map(rel -> new IdentityRelationRow(!asSource, rel.getKey(), asSource ? rel.getTarget() : rel.getSource(),
-						rel.getRole(), rel.getManagedFlags(), userPropertyHandlers, getLocale()))
-				.collect(Collectors.toList());
+		List<IdentityToIdentityRelation> asSourceRelations = identityRelationsService.getRelationsAsSource(editedIdentity);
+		List<IdentityToIdentityRelation> asTargetRelations = identityRelationsService.getRelationsAsTarget(editedIdentity);
+		List<IdentityRelationRow> rows = new ArrayList<>(asSourceRelations.size() + asTargetRelations.size());
+		for(IdentityToIdentityRelation rel:asSourceRelations) {
+			String relationName = RelationRolesAndRightsUIFactory
+					.getTranslatedRoleDescription(rel.getRole(), getLocale());
+			rows.add(new IdentityRelationRow(rel.getKey(), editedIdentity, rel.getTarget(), rel.getRole(),
+					relationName, rel.getManagedFlags(), userPropertyHandlers, getLocale()));
+		}
+		for(IdentityToIdentityRelation rel:asTargetRelations) {
+			String relationName = RelationRolesAndRightsUIFactory
+					.getTranslatedRoleDescription(rel.getRole(), getLocale());
+			rows.add(new IdentityRelationRow(rel.getKey(), rel.getSource(), editedIdentity, rel.getRole(),
+					relationName, rel.getManagedFlags(), userPropertyHandlers, getLocale()));
+		}
 		tableModel.setObjects(rows);
 		tableEl.reset(true, true, true);
 	}
@@ -207,12 +222,10 @@ public class UserRelationsController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(importAsSourceButton == source) {
-			doImportRelationsAsSource(ureq);
-		} else if(addAsSourceButton == source) {
-			doAddRelationsAsSource(ureq);
-		} else if(addAsTargetButton == source) {
-			doAddRelationsAsTarget(ureq);
+		if(importRelationsButton == source) {
+			doImportRelations(ureq);
+		} else if(addRelationsButton == source) {
+			doAddRelations(ureq);
 		} else if(removeButton == source) {
 			doConfirmRemove(ureq);
 		} else if(tableEl == source) {
@@ -260,7 +273,7 @@ public class UserRelationsController extends FormBasicController {
 		if(relationsToRemove.isEmpty()) {
 			showWarning("warning.at.least.one.relation");
 		} else {
-			confirmRemoveRelationsCtrl = new ConfirmRemoveRelationController(ureq, getWindowControl(), editedIdentity, relationsToRemove);
+			confirmRemoveRelationsCtrl = new ConfirmRemoveRelationController(ureq, getWindowControl(), relationsToRemove);
 			listenTo(confirmRemoveRelationsCtrl);
 			String title = translate("confirm.remove.relation.title");
 			cmc = new CloseableModalController(getWindowControl(), "close", confirmRemoveRelationsCtrl.getInitialComponent(), true, title);
@@ -269,12 +282,12 @@ public class UserRelationsController extends FormBasicController {
 		}
 	}
 	
-	private void doAddRelationsAsTarget(UserRequest ureq) {
+	private void doAddRelations(UserRequest ureq) {
 		removeAsListenerAndDispose(importRelationsWizard);
 
-		Step start = new ImportRelation_1b_Step(ureq);
+		Step start = new ImportRelation_1b_Step(ureq, editedIdentity);
 		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
-			doAddRelationsAsTarget(runContext);
+			doAddRelations(runContext);
 			if(runContext.containsKey("notFounds")) {
 				showWarning("user.notfound", runContext.get("notFounds").toString());
 			}
@@ -287,59 +300,31 @@ public class UserRelationsController extends FormBasicController {
 		getWindowControl().pushAsModalDialog(importRelationsWizard.getInitialComponent());
 	}
 	
-	private void doAddRelationsAsTarget(StepsRunContext runContext) {
+	private void doImportRelations(UserRequest ureq) {
+		removeAsListenerAndDispose(importRelationsWizard);
+
+		Step start = new ImportRelation_1a_Step(ureq, editedIdentity);
+		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
+			doAddRelations(runContext);
+			if(runContext.containsKey("notFounds")) {
+				showWarning("user.notfound", runContext.get("notFounds").toString());
+			}
+			return StepsMainRunController.DONE_MODIFIED;
+		};
+		
+		importRelationsWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
+				translate("import.relations"), "o_sel_import_realtions_wizard");
+		listenTo(importRelationsWizard);
+		getWindowControl().pushAsModalDialog(importRelationsWizard.getInitialComponent());
+	}
+	
+	private void doAddRelations(StepsRunContext runContext) {
 		@SuppressWarnings("unchecked")
 		List<Identity> relations = (List<Identity>)runContext.get("members");
-		@SuppressWarnings("unchecked")
-		List<RelationRole> relationRoles = (List<RelationRole>)runContext.get("relationRoles");
-		for(Identity source:relations) {
-			identityRelationsService.addRelations(source, editedIdentity, relationRoles);
-		}
-	}
-	
-	private void doAddRelationsAsSource(UserRequest ureq) {
-		removeAsListenerAndDispose(importRelationsWizard);
-
-		Step start = new ImportRelation_1b_Step(ureq);
-		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
-			doAddRelationsAsSource(runContext);
-			if(runContext.containsKey("notFounds")) {
-				showWarning("user.notfound", runContext.get("notFounds").toString());
-			}
-			return StepsMainRunController.DONE_MODIFIED;
-		};
-		
-		importRelationsWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
-				translate("import.relations"), "o_sel_import_realtions_wizard");
-		listenTo(importRelationsWizard);
-		getWindowControl().pushAsModalDialog(importRelationsWizard.getInitialComponent());
-	}
-	
-	private void doImportRelationsAsSource(UserRequest ureq) {
-		removeAsListenerAndDispose(importRelationsWizard);
-
-		Step start = new ImportRelation_1a_Step(ureq);
-		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
-			doAddRelationsAsSource(runContext);
-			if(runContext.containsKey("notFounds")) {
-				showWarning("user.notfound", runContext.get("notFounds").toString());
-			}
-			return StepsMainRunController.DONE_MODIFIED;
-		};
-		
-		importRelationsWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
-				translate("import.relations"), "o_sel_import_realtions_wizard");
-		listenTo(importRelationsWizard);
-		getWindowControl().pushAsModalDialog(importRelationsWizard.getInitialComponent());
-	}
-	
-	private void doAddRelationsAsSource(StepsRunContext runContext) {
-		@SuppressWarnings("unchecked")
-		List<Identity> relations = (List<Identity>)runContext.get("members");
-		@SuppressWarnings("unchecked")
-		List<RelationRole> relationRoles = (List<RelationRole>)runContext.get("relationRoles");
-		for(Identity target:relations) {
-			identityRelationsService.addRelations(editedIdentity, target, relationRoles);
+		UserRelationRoles relationRoles = (UserRelationRoles)runContext.get("relationRoles");
+		for(Identity relation:relations) {
+			identityRelationsService.addRelations(relation, editedIdentity, relationRoles.getSelectedRoles());
+			identityRelationsService.addRelations(editedIdentity, relation, relationRoles.getSelectedContraRoles());
 		}
 	}
 }

@@ -44,6 +44,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.util.Util;
 import org.olat.core.util.i18n.ui.SingleKeyTranslatorController;
 import org.olat.user.UserModule;
 import org.olat.user.ui.role.RelationRolesTableModel.RelationRoleCols;
@@ -71,8 +72,7 @@ public class RelationRolesAdminController extends FormBasicController {
 	private IdentityRelationshipService identityRelationsService;
 	
 	public RelationRolesAdminController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, "relation_roles");
-		
+		super(ureq, wControl, "relation_roles", Util.createPackageTranslator(UserModule.class, ureq.getLocale()));
 		initForm(ureq);
 		loadModel();
 	}
@@ -85,14 +85,21 @@ public class RelationRolesAdminController extends FormBasicController {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, RelationRoleCols.key));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RelationRoleCols.managed, new ManagedCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RelationRoleCols.identifier));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RelationRoleCols.role));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("translate", translate("translate"), "translate"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.translate", translate("table.header.translate"), "translate_role"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RelationRoleCols.descriptionRole));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.translate", translate("table.header.translate"), "translate_description"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RelationRoleCols.roleContra));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.translate", translate("table.header.translate"), "translate_role_contra"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RelationRoleCols.descriptionContraRole));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.translate", translate("table.header.translate"), "translate_description_contra"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit", translate("edit"), "edit"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("delete", RelationRoleCols.delete.ordinal(), "delete",
 				new BooleanCellRenderer(
 						new StaticFlexiCellRenderer(translate("delete"), "delete"), null)));
 		
-		tableModel = new RelationRolesTableModel(columnsModel, getLocale());
+		tableModel = new RelationRolesTableModel(columnsModel, getTranslator(), getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 24, false, getTranslator(), formLayout);
 	}
 
@@ -153,11 +160,17 @@ public class RelationRolesAdminController extends FormBasicController {
 				RelationRoleRow row = tableModel.getObject(se.getIndex());
 				if("edit".equals(se.getCommand())) {
 					doEditRole(ureq, row);
-				} else if("translate".equals(se.getCommand())) {
-					doTranslate(ureq, row);
 				} else if("delete".equals(se.getCommand())) {
 					doConfirmDelete(ureq, row);
-				}
+				} else if("translate_role".equals(se.getCommand())) {
+					doTranslate(ureq, RelationRolesAndRightsUIFactory.TRANS_ROLE_PREFIX , row);
+				} else if("translate_role_contra".equals(se.getCommand())) {
+					doTranslate(ureq, RelationRolesAndRightsUIFactory.TRANS_ROLE_CONTRA_PREFIX , row);
+				} else if("translate_description".equals(se.getCommand())) {
+					doTranslate(ureq, RelationRolesAndRightsUIFactory.TRANS_ROLE_DESCRIPTION_PREFIX , row);
+				} else if("translate_description_contra".equals(se.getCommand())) {
+					doTranslate(ureq, RelationRolesAndRightsUIFactory.TRANS_ROLE_CONTRA_DESCRIPTION_PREFIX , row);
+				} 
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -196,8 +209,8 @@ public class RelationRolesAdminController extends FormBasicController {
 		}
 	}
 	
-	private void doTranslate(UserRequest ureq, RelationRoleRow relationRole) {
-		String i18nKey = RelationRolesAndRightsUIFactory.TRANS_ROLE_PREFIX + relationRole.getKey();
+	private void doTranslate(UserRequest ureq, String prefix, RelationRoleRow relationRole) {
+		String i18nKey = prefix.concat(relationRole.getKey().toString());
 
 		String[] keys2Translate = { i18nKey };
 		translatorCtrl = new SingleKeyTranslatorController(ureq, getWindowControl(), keys2Translate, UserModule.class);

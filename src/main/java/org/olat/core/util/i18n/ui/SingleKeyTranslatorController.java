@@ -155,12 +155,9 @@ public class SingleKeyTranslatorController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-
 		// save new values
 		for (I18nRowBundle bundle : bundles) {
 			String newValue = textElements.get(bundle.getLanguageKey()).getValue();
-			// getLogger().info("saving new value for language " +
-			// bundle.getLanguageKey() + ":: " + newValue);
 			for (String itemKey : this.i18nItemKeys) {
 				I18nItem item = i18nMng.getI18nItem(translatorBaseClass.getPackage().getName(), itemKey, bundle.getOverlayLocale());
 				i18nMng.saveOrUpdateI18nItem(item, newValue);
@@ -172,7 +169,7 @@ public class SingleKeyTranslatorController extends FormBasicController {
 
 	@Override
 	protected void doDispose() {
-		// TODO Auto-generated method stub
+		//
 	}
 
 	/**

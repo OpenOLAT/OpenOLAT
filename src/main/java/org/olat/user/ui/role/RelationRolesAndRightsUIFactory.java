@@ -39,6 +39,9 @@ import org.olat.user.UserModule;
 public class RelationRolesAndRightsUIFactory {
 	
 	public static final String TRANS_ROLE_PREFIX = "relation.role.";
+	public static final String TRANS_ROLE_CONTRA_PREFIX = "relation.role.contra.";
+	public static final String TRANS_ROLE_DESCRIPTION_PREFIX = "relation.role.description.";
+	public static final String TRANS_ROLE_CONTRA_DESCRIPTION_PREFIX = "relation.role.contra.description.";
 	
 	public static String getTranslatedRight(RelationRight right, Locale locale) {
 		IdentityRelationshipService relationshipService = CoreSpringFactory.getImpl(IdentityRelationshipService.class);
@@ -48,15 +51,45 @@ public class RelationRolesAndRightsUIFactory {
 	
 	public static String getTranslatedRole(RelationRole role, Locale locale) {
 		Translator translator = Util.createPackageTranslator(UserModule.class, locale);
-		return getTranslatedRole(translator, role);
+		return getTranslated(translator, TRANS_ROLE_PREFIX, role);
 	}
 
 	public static String getTranslatedRole(Translator translator, RelationRole role) {
-		String translatedRole = translator.translate(TRANS_ROLE_PREFIX + role.getKey());
-		if (translatedRole.length() > 256 || translatedRole.startsWith(RelationRolesAndRightsUIFactory.TRANS_ROLE_PREFIX)) {
+		return getTranslated(translator, TRANS_ROLE_PREFIX, role);
+	}
+	
+	public static String getTranslatedContraRole(RelationRole role, Locale locale) {
+		Translator translator = Util.createPackageTranslator(UserModule.class, locale);
+		return getTranslated(translator, TRANS_ROLE_CONTRA_PREFIX, role);
+	}
+
+	public static String getTranslatedContraRole(Translator translator, RelationRole role) {
+		return getTranslated(translator, TRANS_ROLE_CONTRA_PREFIX, role);
+	}
+	
+	public static String getTranslatedRoleDescription(RelationRole role, Locale locale) {
+		Translator translator = Util.createPackageTranslator(UserModule.class, locale);
+		return getTranslated(translator, TRANS_ROLE_DESCRIPTION_PREFIX, role);
+	}
+	
+	public static String getTranslatedRoleDescription(Translator translator, RelationRole role) {
+		return getTranslated(translator, TRANS_ROLE_DESCRIPTION_PREFIX, role);
+	}
+	
+	public static String getTranslatedContraDescription(RelationRole role, Locale locale) {
+		Translator translator = Util.createPackageTranslator(UserModule.class, locale);
+		return getTranslated(translator, TRANS_ROLE_CONTRA_DESCRIPTION_PREFIX, role);
+	}
+	
+	public static String getTranslatedContraDescription(Translator translator, RelationRole role) {
+		return getTranslated(translator, TRANS_ROLE_CONTRA_DESCRIPTION_PREFIX, role);
+	}
+
+	private static String getTranslated(Translator translator, String prefix, RelationRole role) {
+		String translatedRole = translator.translate(prefix.concat(role.getKey().toString()));
+		if (translatedRole.length() > 256 || translatedRole.startsWith(prefix)) {
 			translatedRole = role.getRole();
 		}
 		return translatedRole;
 	}
-	
 }

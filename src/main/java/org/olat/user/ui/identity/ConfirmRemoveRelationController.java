@@ -33,7 +33,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.id.Identity;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -44,7 +43,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ConfirmRemoveRelationController extends FormBasicController {
 	
-	private final Identity editedIdentity;
 	private List<IdentityRelationRow> relationsToRemove;
 	
 	@Autowired
@@ -53,9 +51,8 @@ public class ConfirmRemoveRelationController extends FormBasicController {
 	private IdentityRelationshipService identityRelationsService;
 	
 	public ConfirmRemoveRelationController(UserRequest ureq, WindowControl wControl,
-			Identity editedIdentity, List<IdentityRelationRow> relationsToRemove) {
+			List<IdentityRelationRow> relationsToRemove) {
 		super(ureq, wControl, "confirm_remove");
-		this.editedIdentity = editedIdentity;
 		this.relationsToRemove = relationsToRemove;
 		initForm(ureq);
 	}
@@ -84,12 +81,9 @@ public class ConfirmRemoveRelationController extends FormBasicController {
 		int count = 0;
 		for(IdentityRelationRow relationToRemove:relationsToRemove) {
 			RelationRole relationRole = relationToRemove.getRelationRole();
-			IdentityRef relation = new IdentityRefImpl(relationToRemove.getIdentityKey());
-			if(relationToRemove.isAsSource()) {
-				identityRelationsService.removeRelation(relation, editedIdentity, relationRole);
-			} else {
-				identityRelationsService.removeRelation(editedIdentity, relation, relationRole);
-			}
+			IdentityRef source = new IdentityRefImpl(relationToRemove.getSourceIdentity().getIdentityKey());
+			IdentityRef target = new IdentityRefImpl(relationToRemove.getTargetIdentity().getIdentityKey());
+			identityRelationsService.removeRelation(source, target, relationRole);
 			if(++count % 20 == 0) {
 				dbInstance.commit();
 			}

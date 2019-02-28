@@ -66,16 +66,24 @@ implements SortableFlexiTableDataModel<IdentityRelationRow> {
 			switch(RelationCols.values()[col]) {
 				case key: return row.getRelationKey();
 				case managed: return row.getManagedFlags().length > 0;
-				case username: return row.getIdentityName();
-				case role: return row.getRelationRoleName();
+				case sourceUsername: return row.getSourceIdentity().getIdentityName();
+				case targetUsername: return row.getTargetIdentity().getIdentityName();
+				case role: return row.getRelationLabel();
 				case remove: return !IdentityToIdentityRelationManagedFlag
 						.isManaged(row.getManagedFlags(), IdentityToIdentityRelationManagedFlag.delete);
 				default: return "ERROR";
 			}
 		}
 		
-		int pos = col - UserRelationsController.USER_PROPS_OFFSET;
-		return row.getIdentityProp(pos);
+		if(col >= UserRelationsController.USER_SOURCE_PROPS_OFFSET && col < UserRelationsController.USER_TARGET_PROPS_OFFSET) {
+			int pos = col - UserRelationsController.USER_SOURCE_PROPS_OFFSET;
+			return row.getSourceIdentity().getIdentityProp(pos);
+		}
+		if(col >= UserRelationsController.USER_TARGET_PROPS_OFFSET) {
+			int pos = col - UserRelationsController.USER_TARGET_PROPS_OFFSET;
+			return row.getTargetIdentity().getIdentityProp(pos);
+		}
+		return "ERROR";
 	}
 
 	@Override
@@ -87,7 +95,8 @@ implements SortableFlexiTableDataModel<IdentityRelationRow> {
 		
 		key("table.header.key"),
 		managed("table.header.managed"),
-		username("table.header.username"),
+		sourceUsername("table.header.username"),
+		targetUsername("table.header.username"),
 		role("table.header.role"),
 		remove("remove");
 		

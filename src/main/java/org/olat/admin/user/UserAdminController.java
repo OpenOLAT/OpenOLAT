@@ -77,7 +77,7 @@ import org.olat.user.PropFoundEvent;
 import org.olat.user.UserManager;
 import org.olat.user.UserPropertiesController;
 import org.olat.user.ui.data.UserDataExportController;
-import org.olat.user.ui.identity.UserRelationsOverviewController;
+import org.olat.user.ui.identity.UserRelationsController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -125,7 +125,7 @@ public class UserAdminController extends BasicController implements Activateable
 	// controllers used in tabbed pane
 	private TabbedPane userTabP;
 	private Controller prefsCtr, propertiesCtr, pwdCtr, quotaCtr, rolesCtr, userShortDescrCtr;
-	private UserRelationsOverviewController relationsCtrl;
+	private UserRelationsController relationsCtrl;
 	private DisplayPortraitController portraitCtr;
 	private UserAuthenticationsEditorController authenticationsCtr;
 	private Link backLink;
@@ -449,7 +449,7 @@ public class UserAdminController extends BasicController implements Activateable
 		if (isUserManagerOf || isRolesManagerOf || isAdminOf || isPrincipalOf) {
 			userTabP.addTab(translate(NLS_EDIT_RELATIONS),  uureq -> {
 				boolean canModify = isUserManagerOf || isRolesManagerOf || isAdminOf;
-				relationsCtrl = new UserRelationsOverviewController(uureq, getWindowControl(), identity, canModify);
+				relationsCtrl = new UserRelationsController(uureq, getWindowControl(), identity, canModify);
 				listenTo(relationsCtrl);
 				return relationsCtrl.getInitialComponent();
 			});
