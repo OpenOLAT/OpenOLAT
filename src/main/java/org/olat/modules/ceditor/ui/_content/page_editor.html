@@ -1,4 +1,6 @@
 $r.render("page_editor")
-<div class="o_button_group">
-	$r.render("add.element")
-</div>
+#if($r.available("add.element"))
+	<div class="o_button_group o_ce_add_main_btns">
+		$r.render("add.element")
+	</div>
+#end

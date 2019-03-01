@@ -67,7 +67,7 @@ public class PageEditorController extends BasicController {
 	private PageEditorModel editorModel;
 	private final VelocityContainer mainVC;
 	private final PageEditorComponent editorCmp;
-	private final Link addElementButton;
+	private Link addElementButton;
 	
 	private CloseableModalController cmc;
 	private PageElementAddController addCtrl;
@@ -95,9 +95,11 @@ public class PageEditorController extends BasicController {
 		editorCmp.addListener(this);
 		mainVC.put("page_editor", editorCmp);
 		
-		addElementButton = LinkFactory.createButton("add.element", mainVC, this);
-		addElementButton.setIconLeftCSS("o_icon o_icon-lg o_icon_add");
-		addElementButton.setElementCssClass("o_sel_add_element_main");
+		if (provider.getCreateHandlers() != null && provider.getCreateHandlers().size() > 0) {
+			addElementButton = LinkFactory.createButton("add.element", mainVC, this);
+			addElementButton.setIconLeftCSS("o_icon o_icon-lg o_icon_add");
+			addElementButton.setElementCssClass("o_sel_add_element_main");
+		}
 		
 		loadModel(ureq);
 		putInitialPanel(mainVC);
