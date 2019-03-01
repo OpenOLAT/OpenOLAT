@@ -244,13 +244,23 @@
 
 			wrap = $('<div></div>').css({
 				display:'block',
-				background:'url("'+this.src+'")',
+				"background-image":'url("'+this.src+'")',
 				"background-size": this.width + 'px ' + this.height + 'px',
 				position:'relative',
 				padding:0,
 				width:this.width,
 				height:this.height
 				});
+			
+			try {// try again
+				var imageSrc = this.src;
+				wrap.each(function(index, el) {
+					el.style.setProperty("background-image", "url('" + imageSrc + "')", "important");
+				});
+			} catch(e) {
+				if(window.console) console.log(e);
+			}
+			
 			if(options.wrapClass) {
 				if(options.wrapClass === true) {
 					wrap.addClass($(this).attr('class'));

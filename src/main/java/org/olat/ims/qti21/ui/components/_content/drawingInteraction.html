@@ -50,7 +50,7 @@
 	#set($widthWithBorder = $r.parseInt(${interaction.object.width}) + 2)
 	#set($heightWithBorder = $r.parseInt(${interaction.object.height}) + 2)
 	<div id="sketch_${responseIdentifier}" class="sketch" style="border:1px solid black; width:${widthWithBorder}px; height:${heightWithBorder}px;" draggable="false" ondragstart="return false;">
-		<canvas id="paint_${responseIdentifier}" width="${interaction.object.width}" height="${interaction.object.height}" style="background:url('${r.convertLinkFull($interaction.object.data)}')" draggable="false" ondragstart="return false;"></canvas>
+		<canvas id="paint_${responseIdentifier}" width="${interaction.object.width}" height="${interaction.object.height}" style="background:url('${r.convertLinkFull($interaction.object.data)}') !important;" draggable="false" ondragstart="return false;"></canvas>
 	</div>
 	<script type='text/javascript'>
 	jQuery(function() {
