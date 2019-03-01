@@ -1432,6 +1432,11 @@ ul.testPartDrilldown {
 }
 
 @media print {
+	canvas, div.hotspotInteraction>div>div {
+		-webkit-print-color-adjust: exact;
+        color-adjust: exact;
+	}
+
 	.choiceInteraction {
 		label {
 			font-weight: normal;
