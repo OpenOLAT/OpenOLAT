@@ -196,6 +196,27 @@ public class FilterController extends FormBasicController {
 
 		setSelectionValues();
 	}
+	
+	void setReadOnly(boolean readOnly) {
+		boolean enabled = !readOnly;
+		dateRangeFromEl.setEnabled(enabled);
+		dateRangeToEl.setEnabled(enabled);
+		topicIdentityEl.setEnabled(enabled);
+		topicOrganisationEl.setEnabled(enabled);
+		topicCurriculumEl.setEnabled(enabled);
+		topicCurriculumElementEl.setEnabled(enabled);
+		topicRepositoryEl.setEnabled(enabled);
+		contextExecutorOrganisationEl.setEnabled(enabled);
+		contextCurriculumEl.setEnabled(enabled);
+		contextCurriculumElementEl.setEnabled(enabled);
+		contextCurriculumElementTypeEl.setEnabled(enabled);
+		contextCurriculumOrganisationEl.setEnabled(enabled);
+		contextTaxonomyLevelEl.setEnabled(enabled);
+		contextLocationEl.setEnabled(enabled);
+		seriesIndexEl.setEnabled(enabled);
+		contextRoleEl.setEnabled(enabled);
+		withUserInformationsEl.setEnabled(enabled);
+	}
 
 	private void setSelectionValues() {
 		setTopicIdentityValues();

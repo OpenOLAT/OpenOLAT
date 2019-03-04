@@ -241,6 +241,7 @@ public class AnalysisListController extends FormBasicController implements Flexi
 		listenTo(analysisCtrl);
 		String title = getBreadcrumbTitle(presentation);
 		stackPanel.pushController(title, analysisCtrl);
+		analysisCtrl.activate(ureq, null, null);
 	}
 	
 	private String getBreadcrumbTitle(AnalysisPresentation presentation) {

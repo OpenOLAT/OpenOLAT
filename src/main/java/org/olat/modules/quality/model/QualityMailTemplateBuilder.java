@@ -21,6 +21,7 @@ package org.olat.modules.quality.model;
 
 import static org.olat.core.util.StringHelper.blankIfNull;
 
+import java.io.File;
 import java.util.Date;
 import java.util.Locale;
 
@@ -56,6 +57,7 @@ public class QualityMailTemplateBuilder {
 	private String url;
 	private String invitation;
 	private String result;
+	private File reportPdf;
 	
 	public static QualityMailTemplateBuilder builder(String subject, String body, Locale locale) {
 		return new QualityMailTemplateBuilder(subject, body, locale);
@@ -128,8 +130,14 @@ public class QualityMailTemplateBuilder {
 		return this;
 	}
 	
+	public QualityMailTemplateBuilder withReportPfd(File reportPdf) {
+		this.reportPdf = reportPdf;
+		return this;
+	}
+	
 	public MailTemplate build() {
-		MailTemplate mailTempl = new MailTemplate(subject, body, null) {
+		File[] attachments = reportPdf != null? new File[] { reportPdf }: null;
+		MailTemplate mailTempl = new MailTemplate(subject, body, attachments ) {
 			@Override
 			public void putVariablesInMailContext(VelocityContext context, Identity identity) {	
 				context.put("firstname", blankIfNull(firstname));
