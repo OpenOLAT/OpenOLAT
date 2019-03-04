@@ -34,6 +34,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.panel.MainPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -54,7 +55,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class GroupByPrintController extends BasicController {
+public class FilteredPrintController extends BasicController {
 	
 	@Autowired
 	private BaseSecurity securityManager;
@@ -69,18 +70,17 @@ public class GroupByPrintController extends BasicController {
 	@Autowired
 	private TaxonomyService taxonomyService;
 
-	protected GroupByPrintController(UserRequest ureq, WindowControl wControl, GroupByController groupByCtrl,
-			AnalysisSearchParameter searchParams, String formName) {
+	protected FilteredPrintController(UserRequest ureq, WindowControl wControl, Controller controller,
+			AnalysisSearchParameter searchParams, boolean insufficientOnly, String title) {
 		super(ureq, wControl);
 		VelocityContainer mainVC = createVelocityContainer("groupby_print");
 		
-		groupByCtrl.onFilter(ureq, searchParams);
-		mainVC.contextPut("formName", formName);
-		mainVC.put("groupBy", groupByCtrl.getInitialComponent());
+		mainVC.contextPut("mainTitle", title);
+		mainVC.put("ctrl", controller.getInitialComponent());
 		
 		String legendFiltersPage = velocity_root + "/heatmap_legend.html";
 		FormLayoutContainer legendFiltersLayout = FormLayoutContainer.createCustomFormLayout("legendFilters", getTranslator(), legendFiltersPage);
-		legendFiltersLayout.contextPut("items", getLegendFilters(searchParams, groupByCtrl.getInsufficientOnly()));
+		legendFiltersLayout.contextPut("items", getLegendFilters(searchParams, insufficientOnly));
 		legendFiltersLayout.contextPut("title", translate("heatmap.legend.filters"));
 		mainVC.put("legendFilters", legendFiltersLayout.getComponent());
 		

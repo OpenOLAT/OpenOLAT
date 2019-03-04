@@ -61,6 +61,7 @@ import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.modules.curriculum.model.CurriculumRefImpl;
@@ -261,6 +262,19 @@ public abstract class GroupByController extends FormBasicController implements F
 		if (detailColsCtrl != null) {
 			detailColsCtrl.setShowFilter(show);
 		}
+	}
+
+	public ControllerCreator getControllerCreator() {
+//		if (stackPanel.getLastController() == trendCtrl) {
+//			return (lureq, lwControl) -> {
+//				GroupByController groupByCtrl = new TrendController(lureq, lwControl, stackPanel, null, form,
+//						availableAttributes, presentation.getHeatMapGrouping(), presentation.getHeatMapInsufficientOnly(),
+//						presentation.getTemporalGroupBy(), presentation.getTrendDifference(), presentation.getRubricId());
+//				return new FilteredPrintController(lureq, lwControl, groupByCtrl, presentation.getSearchParams(),
+//						presentation.getFormEntry().getDisplayname());
+//			};
+//		}
+		return null;
 	}
 
 	@Override
@@ -678,8 +692,8 @@ public abstract class GroupByController extends FormBasicController implements F
 
 		detailColsCtrl.setShowFilter(showFilter);
 		toolComponents.setPrintVisibility(false);
-		toolComponents.setPrintPopupVisibility(false);
-		toolComponents.setPdfVisibility(false);
+		toolComponents.setPrintPopupVisibility(true);
+		toolComponents.setPdfVisibility(true);
 		toolComponents.setExportVisibility(false);
 	}
 

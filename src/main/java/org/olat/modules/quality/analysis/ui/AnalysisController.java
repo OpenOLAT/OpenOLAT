@@ -196,6 +196,16 @@ public class AnalysisController extends BasicController implements TooledControl
 	}
 	
 	private void initOutputTools() {
+		exportLink = LinkFactory.createToolLink("analysis.export", translate("analysis.export"), this);
+		exportLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_ana_export");
+		stackPanel.addTool(exportLink, Align.right, true);
+		
+		if (pdfModule.isEnabled()) {
+			pdfLink = LinkFactory.createToolLink("analysis.pdf", translate("analysis.pdf"), this);
+			pdfLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_ana_pdf");
+			stackPanel.addTool(pdfLink, Align.right, true);
+		}
+		
 		printLink = LinkFactory.createToolLink("analysis.print", translate("analysis.print"), this);
 		printLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_ana_print");
 		stackPanel.addTool(printLink, Align.right, true);
@@ -204,16 +214,6 @@ public class AnalysisController extends BasicController implements TooledControl
 		printPopupLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_ana_print");
 		printPopupLink.setPopup(new LinkPopupSettings(950, 750, "report-hm"));
 		stackPanel.addTool(printPopupLink, Align.right, true);
-		
-		if (pdfModule.isEnabled()) {
-			pdfLink = LinkFactory.createToolLink("analysis.pdf", translate("analysis.pdf"), this);
-			pdfLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_ana_pdf");
-			stackPanel.addTool(pdfLink, Align.right, true);
-		}
-		
-		exportLink = LinkFactory.createToolLink("analysis.export", translate("analysis.export"), this);
-		exportLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_ana_export");
-		stackPanel.addTool(exportLink, Align.right, true);
 		
 		toolComponents = new ToolComponents(stackPanel, printLink, printPopupLink, pdfLink, exportLink);
 	}
@@ -621,7 +621,9 @@ public class AnalysisController extends BasicController implements TooledControl
 			GroupByController groupByCtrl = new HeatMapController(lureq, lwControl, stackPanel, null, form,
 					availableAttributes, presentation.getHeatMapGrouping(), presentation.getHeatMapInsufficientOnly(),
 					presentation.getTemporalGroupBy(), presentation.getTrendDifference(), presentation.getRubricId());
-			return new GroupByPrintController(lureq, lwControl, groupByCtrl, presentation.getSearchParams(),
+			groupByCtrl.onFilter(lureq, presentation.getSearchParams());
+			boolean insufficientOnly = groupByCtrl.getInsufficientOnly();
+			return new FilteredPrintController(lureq, lwControl, groupByCtrl, presentation.getSearchParams(), insufficientOnly,
 					presentation.getFormEntry().getDisplayname());
 		};
 	}
@@ -631,7 +633,9 @@ public class AnalysisController extends BasicController implements TooledControl
 			GroupByController groupByCtrl = new TrendController(lureq, lwControl, stackPanel, null, form,
 					availableAttributes, presentation.getHeatMapGrouping(), presentation.getHeatMapInsufficientOnly(),
 					presentation.getTemporalGroupBy(), presentation.getTrendDifference(), presentation.getRubricId());
-			return new GroupByPrintController(lureq, lwControl, groupByCtrl, presentation.getSearchParams(),
+			groupByCtrl.onFilter(lureq, presentation.getSearchParams());
+			boolean insufficientOnly = groupByCtrl.getInsufficientOnly();
+			return new FilteredPrintController(lureq, lwControl, groupByCtrl, presentation.getSearchParams(), insufficientOnly,
 					presentation.getFormEntry().getDisplayname());
 		};
 	}
