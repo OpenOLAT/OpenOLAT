@@ -76,6 +76,7 @@ public class OLATUpgrade_13_1_0 extends OLATUpgrade {
 			return false;
 		}
 		
+		
 		boolean allOk = true;
 		allOk &= cleanMetadataTmp(upgradeManager, uhd);
 		allOk &= cleanMetadataPathErrors(upgradeManager, uhd);
@@ -107,6 +108,8 @@ public class OLATUpgrade_13_1_0 extends OLATUpgrade {
 		boolean allOk = true;
 		if (!uhd.getBooleanDataValue(CLEAN_META_TMP)) {
 			try {
+				dbInstance.commitAndCloseSession();
+				
 				File tmp = new File(FolderConfig.getCanonicalMetaRoot(), "tmp");
 				deleteDirectory(tmp);
 			} catch (Exception e) {
@@ -135,6 +138,8 @@ public class OLATUpgrade_13_1_0 extends OLATUpgrade {
 		boolean allOk = true;
 		if (!uhd.getBooleanDataValue(CLEAN_META_PATH_ERRORS)) {
 			try {
+				dbInstance.commitAndCloseSession();
+				
 				File metaForum = new File(FolderConfig.getCanonicalRoot(), ".metaforum");
 				deleteDirectory(metaForum);
 				File metaLevels = new File(FolderConfig.getCanonicalRoot(), ".metalevels");
@@ -170,6 +175,8 @@ public class OLATUpgrade_13_1_0 extends OLATUpgrade {
 			try {
 				int count = 0;
 				Set<Long> keys = getAllForumKeys();
+				dbInstance.commitAndCloseSession();
+				
 				File forumsMetadata = new File(FolderConfig.getCanonicalMetaRoot(), "forum");
 				String[] directories = forumsMetadata.list();
 				if(directories != null) {
@@ -213,6 +220,8 @@ public class OLATUpgrade_13_1_0 extends OLATUpgrade {
 			try {
 				int count = 0;
 				Set<Long> keys = getAllCourseResourceIds();
+				dbInstance.commitAndCloseSession();
+				
 				File coursesMetadata = new File(FolderConfig.getCanonicalMetaRoot(), "course");
 				String[] directories = coursesMetadata.list();
 				if(directories != null) {
@@ -259,6 +268,8 @@ public class OLATUpgrade_13_1_0 extends OLATUpgrade {
 			try {
 				int count = 0;
 				Set<Long> keys = getAllResourceIds();
+				dbInstance.commitAndCloseSession();
+				
 				File repositoryMetadata = new File(FolderConfig.getCanonicalMetaRoot(), "repository");
 				String[] directories = repositoryMetadata.list();
 				if(directories != null) {
@@ -304,6 +315,8 @@ public class OLATUpgrade_13_1_0 extends OLATUpgrade {
 			try {
 				int count = 0;
 				Set<String> usernames = getAllUsernames();
+				dbInstance.commitAndCloseSession();
+				
 				File homesMetadata = new File(FolderConfig.getCanonicalMetaRoot(), "homes");
 				String[] homes = homesMetadata.list();
 				if(homes != null) {
@@ -338,6 +351,8 @@ public class OLATUpgrade_13_1_0 extends OLATUpgrade {
 			try {
 				int count = 0;
 				Set<String> usernames = getAllUsernames();
+				dbInstance.commitAndCloseSession();
+				
 				File homepagesMetadata = new File(FolderConfig.getCanonicalMetaRoot(), "homepages");
 				String[] homepages = homepagesMetadata.list();
 				if(homepages != null) {
@@ -381,6 +396,8 @@ public class OLATUpgrade_13_1_0 extends OLATUpgrade {
 			try {
 				int count = 0;
 				Set<Long> groupIds = getAllGroupIds();
+				dbInstance.commitAndCloseSession();
+				
 				File ctsMetadata = new File(FolderConfig.getCanonicalMetaRoot(), "cts");
 				File ctsFoldersMetadata = new File(new File(ctsMetadata, "folders"), "BusinessGroup");
 				String[] ctsFolders = ctsFoldersMetadata.list();

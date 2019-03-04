@@ -107,7 +107,9 @@ public class PdfDeliveryDispatcher implements Dispatcher {
 		UserRequest ureq = new UserRequestImpl("pdfd", request, response);
 		UserSession usess = ureq.getUserSession();
 		if(usess.getIdentity() == null) {
-			usess.setIdentity(delivery.getIdentity());
+			if(delivery.getIdentity() != null) {
+				usess.setIdentity(delivery.getIdentity());
+			}
 			usess.setRoles(Roles.userRoles());
 		}
 		
