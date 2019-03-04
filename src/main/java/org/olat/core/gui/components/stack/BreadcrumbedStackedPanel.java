@@ -94,6 +94,7 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Bre
 	 * Get a string with all css classes to be applied to this DOM element
 	 * @return
 	 */
+	@Override
 	public String getCssClass() {
 		return cssClass;
 	}
@@ -104,6 +105,7 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Bre
 	 * 
 	 * @param cssClass
 	 */
+	@Override
 	public void setCssClass(String cssClass) {
 		this.cssClass = cssClass;
 	}

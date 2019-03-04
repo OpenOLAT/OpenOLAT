@@ -57,7 +57,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
-import org.olat.core.gui.components.stack.BreadcrumbPanel;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -80,6 +80,7 @@ import org.olat.modules.quality.analysis.MultiGroupBy;
 import org.olat.modules.quality.analysis.MultiKey;
 import org.olat.modules.quality.analysis.QualityAnalysisService;
 import org.olat.modules.quality.analysis.TemporalGroupBy;
+import org.olat.modules.quality.analysis.ui.AnalysisController.ToolComponents;
 import org.olat.modules.quality.model.QualityDataCollectionRefImpl;
 import org.olat.modules.quality.ui.DataCollectionReportController;
 import org.olat.modules.taxonomy.model.TaxonomyLevelRefImpl;
@@ -101,7 +102,8 @@ public abstract class GroupByController extends FormBasicController implements F
 			GroupBy.TOPIC_ORGANISATION, GroupBy.TOPIC_CURRICULUM, GroupBy.TOPIC_CURRICULUM_ELEMENT,
 			GroupBy.TOPIC_REPOSITORY);
 	
-	private BreadcrumbPanel stackPanel;
+	private TooledStackedPanel stackPanel;
+	private ToolComponents toolComponents;
 	private FormLayoutContainer groupingCont;
 	private SingleSelection groupEl1;
 	private SingleSelection groupEl2;
@@ -114,6 +116,9 @@ public abstract class GroupByController extends FormBasicController implements F
 	private FlexiTableElement tableEl;
 	private FormLayoutContainer legendLayout;
 	
+	private Analysis2ColController detailColsCtrl;
+	private FilterController filterCtrl;
+	private Boolean showFilter;
 	private Controller trendCtrl;
 	private Controller detailCtrl;
 	
@@ -135,10 +140,13 @@ public abstract class GroupByController extends FormBasicController implements F
 	@Autowired
 	private QualityService qualityService;
 	
-	public GroupByController(UserRequest ureq, WindowControl wControl, Form evaluationForm,
-			AvailableAttributes availableAttributes, MultiGroupBy multiGroupBy, Boolean insufficientOnly,
-			TemporalGroupBy temporalGroupBy, TrendDifference trendDifference, String rubricId) {
+	public GroupByController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+			FilterController filterCtrl, Form evaluationForm, AvailableAttributes availableAttributes,
+			MultiGroupBy multiGroupBy, Boolean insufficientOnly, TemporalGroupBy temporalGroupBy,
+			TrendDifference trendDifference, String rubricId) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
+		this.stackPanel = stackPanel;
+		this.filterCtrl = filterCtrl;
 		this.availableAttributes = availableAttributes;
 		this.multiGroupBy = multiGroupBy;
 		this.groupByNames = new GroupByNameCache(getLocale());
@@ -239,6 +247,21 @@ public abstract class GroupByController extends FormBasicController implements F
 	protected abstract List<? extends GroupedStatistic> getGroupedStatistcList(MultiKey multiKey);
 
 	protected abstract Set<MultiKey> getStatisticsMultiKeys();
+
+	void setToolComponents(ToolComponents toolComponents) {
+		this.toolComponents = toolComponents;
+		toolComponents.setPrintVisibility(false);
+		toolComponents.setPrintPopupVisibility(true);
+		toolComponents.setPdfVisibility(true);
+		toolComponents.setExportVisibility(true);
+	}
+
+	void setShowFilter(Boolean show) {
+		this.showFilter = show;
+		if (detailColsCtrl != null) {
+			detailColsCtrl.setShowFilter(show);
+		}
+	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
@@ -433,11 +456,6 @@ public abstract class GroupByController extends FormBasicController implements F
 			items.add(item(slider.getLabelCode(), slider.getLabel()));
 		}
 		return items;
-	}
-
-	@Override
-	public void setBreadcrumbPanel(BreadcrumbPanel stackPanel) {
-		this.stackPanel = stackPanel;
 	}
 
 	@Override
@@ -652,8 +670,17 @@ public abstract class GroupByController extends FormBasicController implements F
 		AnalysisSearchParameter trendSearchParameter = getTrendSearchParams(multiKey);
 		trendCtrl = new SliderTrendController(ureq, getWindowControl(), sliders, trendSearchParameter);
 		listenTo(trendCtrl);
-		stackPanel.changeDisplayname(translate("analysis.trend"));
-		stackPanel.pushController(getTrendTitle(multiKey), trendCtrl);
+		
+		filterCtrl.setReadOnly(true);
+		detailColsCtrl = new Analysis2ColController(ureq, getWindowControl(), trendCtrl, filterCtrl);
+		String detailTrend = translate("analysis.trend.breadcrumb", new String[] {getTrendTitle(multiKey)});
+		stackPanel.pushController(detailTrend, detailColsCtrl);
+
+		detailColsCtrl.setShowFilter(showFilter);
+		toolComponents.setPrintVisibility(false);
+		toolComponents.setPrintPopupVisibility(false);
+		toolComponents.setPdfVisibility(false);
+		toolComponents.setExportVisibility(false);
 	}
 
 	private AnalysisSearchParameter getTrendSearchParams(MultiKey multiKey) {
@@ -778,8 +805,18 @@ public abstract class GroupByController extends FormBasicController implements F
 			QualityDataCollection dataCollection = qualityService.loadDataCollectionByKey(() -> key);
 			detailCtrl = new DataCollectionReportController(ureq, getWindowControl(), dataCollection);
 			listenTo(detailCtrl);
-			stackPanel.changeDisplayname(translate("analysis.details"));
-			stackPanel.pushController(dataCollection.getTitle(), detailCtrl);
+			
+			filterCtrl.setReadOnly(true);
+			detailColsCtrl = new Analysis2ColController(ureq, getWindowControl(), detailCtrl, filterCtrl);
+
+			String detailTrend = translate("analysis.trend.breadcrumb", new String[] { dataCollection.getTitle() });
+			stackPanel.pushController(detailTrend, detailColsCtrl);
+
+			detailColsCtrl.setShowFilter(showFilter);
+			toolComponents.setPrintVisibility(false);
+			toolComponents.setPrintPopupVisibility(false);
+			toolComponents.setPdfVisibility(false);
+			toolComponents.setExportVisibility(false);
 		}
 	}
 	

@@ -20,6 +20,7 @@
 package org.olat.modules.quality.analysis.ui;
 
 import java.util.Comparator;
+import java.util.List;
 
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.commons.services.pdf.PdfModule;
@@ -29,12 +30,14 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.link.LinkPopupSettings;
+import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.panel.SimpleStackedPanel;
+import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
 import org.olat.core.gui.components.stack.ButtonGroupComponent;
 import org.olat.core.gui.components.stack.TooledController;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
-import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -42,7 +45,10 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormSession;
@@ -85,11 +91,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class AnalysisController extends BasicController implements TooledController {
+public class AnalysisController extends BasicController implements TooledController, Activateable2 {
 	
-	private static final String SEGMENTS_CMP = "presentation";
-
-	private final VelocityContainer mainVC;
 	private final ButtonGroupComponent segmentButtonsCmp;
 	private final Link overviewReportLink;
 	private final Link tableReportLink;
@@ -106,16 +109,16 @@ public class AnalysisController extends BasicController implements TooledControl
 	private Link exportLink;
 	private Link showFilterLink;
 	private Link hideFilterLink;
-
+	private ToolComponents toolComponents;
+	
+	private Analysis2ColController colsCtrl;
 	private Controller overviewCtrl;
 	private Controller tableReportCtrl;
 	private Controller diagramReportCtrl;
 	private EvaluationFormSessionSelectionController sessionSelectionCtrl;
-	private BreadcrumbedStackedPanel heatMapPanel;
 	private HeatMapController heatMapCtrl;
-	private BreadcrumbedStackedPanel trendPanel;
 	private TrendController trendDiagramCtrl;
-	private Controller filterCtrl;
+	private FilterController filterCtrl;
 	private CloseableModalController cmc;
 	private PresentationController presentationCtrl;
 	private PresentationDeleteConfirmationController presentationDeleteCtrl;
@@ -164,16 +167,13 @@ public class AnalysisController extends BasicController implements TooledControl
 		segmentButtonsCmp.addButton(heatMapLink, false);
 		trendDiagramLink = LinkFactory.createLink("segments.trend.link", getTranslator(), this);
 		segmentButtonsCmp.addButton(trendDiagramLink, false);
-
-		mainVC = createVelocityContainer("analysis");
-		putInitialPanel(mainVC);
 		
 		availableAttributes = analysisService.getAvailableAttributes(presentation.getSearchParams());
 		filterCtrl= new FilterController(ureq, wControl, form, presentation.getSearchParams(), availableAttributes);
 		listenTo(filterCtrl);
-		mainVC.put("filter", filterCtrl.getInitialComponent());
 		
-		doOpenSegment(ureq, presentation.getAnalysisSegment());
+		StackedPanel mainPanel = putInitialPanel(new SimpleStackedPanel("analysisSegments"));
+		mainPanel.setContent(new Panel("empty"));
 	}
 
 	@Override
@@ -182,50 +182,49 @@ public class AnalysisController extends BasicController implements TooledControl
 		initOutputTools();
 		initFilterTools();
 		stackPanel.addTool(segmentButtonsCmp, true);
-		showPrintLink();
 	}
 
 	private void initPresentationTools() {
-		stackPanel.removeTool(editPresentationLink);
-		if (secCallback.canEditPresentations()) {
-			editPresentationLink = LinkFactory.createToolLink("presentation.edit", translate("presentation.edit"), this);
-			editPresentationLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_ana_pres_edit");
-			stackPanel.addTool(editPresentationLink, Align.left);
-		}
-		stackPanel.removeTool(deletePresentationLink);
-		if (secCallback.canDeletePresentation(presentation)) {
-			deletePresentationLink = LinkFactory.createToolLink("presentation.delete", translate("presentation.delete"), this);
-			deletePresentationLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_ana_pres_delete");
-			stackPanel.addTool(deletePresentationLink, Align.left);
-		}
+		editPresentationLink = LinkFactory.createToolLink("presentation.edit", translate("presentation.edit"), this);
+		editPresentationLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_ana_pres_edit");
+		stackPanel.addTool(editPresentationLink, Align.left, true);
+		
+		deletePresentationLink = LinkFactory.createToolLink("presentation.delete", translate("presentation.delete"), this);
+		deletePresentationLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_ana_pres_delete");
+		stackPanel.addTool(deletePresentationLink, Align.left, true);
+		doShowHildePresentationLinks();
 	}
 	
 	private void initOutputTools() {
 		printLink = LinkFactory.createToolLink("analysis.print", translate("analysis.print"), this);
 		printLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_ana_print");
-		stackPanel.addTool(printLink, Align.right);
+		stackPanel.addTool(printLink, Align.right, true);
 		
 		printPopupLink = LinkFactory.createToolLink("analysis.print.popup", translate("analysis.print"), this);
 		printPopupLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_ana_print");
 		printPopupLink.setPopup(new LinkPopupSettings(950, 750, "report-hm"));
-		stackPanel.addTool(printPopupLink, Align.right);
+		stackPanel.addTool(printPopupLink, Align.right, true);
 		
 		if (pdfModule.isEnabled()) {
 			pdfLink = LinkFactory.createToolLink("analysis.pdf", translate("analysis.pdf"), this);
 			pdfLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_ana_pdf");
-			stackPanel.addTool(pdfLink, Align.right);
+			stackPanel.addTool(pdfLink, Align.right, true);
 		}
 		
 		exportLink = LinkFactory.createToolLink("analysis.export", translate("analysis.export"), this);
 		exportLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_ana_export");
-		stackPanel.addTool(exportLink, Align.right);
+		stackPanel.addTool(exportLink, Align.right, true);
+		
+		toolComponents = new ToolComponents(stackPanel, printLink, printPopupLink, pdfLink, exportLink);
 	}
 	
 	private void initFilterTools() {
 		showFilterLink = LinkFactory.createToolLink("filter.show", translate("filter.show"), this);
 		showFilterLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_ana_show_filter");
+		stackPanel.addTool(showFilterLink, Align.right, true);
 		hideFilterLink = LinkFactory.createToolLink("filter.hide", translate("filter.hide"), this);
 		hideFilterLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_ana_hide_filter");
+		stackPanel.addTool(hideFilterLink, Align.right, true);
 		doHideFilter();
 	}
 
@@ -362,8 +361,15 @@ public class AnalysisController extends BasicController implements TooledControl
 		doOpenSegment(ureq, presentation.getAnalysisSegment());
 	}
 	
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		doOpenSegment(ureq, presentation.getAnalysisSegment());
+	}
+	
 	private void doOpenSegment(UserRequest ureq, AnalysisSegment segment) {
 		presentation.setAnalysisSegment(segment);
+		
+		Boolean showFilter = colsCtrl != null? colsCtrl.getShowFilter(): Boolean.FALSE;
 		switch (segment) {
 		case OVERVIEW:
 			doOpenOverviewReport(ureq);
@@ -387,15 +393,28 @@ public class AnalysisController extends BasicController implements TooledControl
 			doOpenOverviewReport(ureq);
 			break;
 		}
-		showPrintLink();
+		filterCtrl.setReadOnly(false);
+		colsCtrl.setShowFilter(showFilter);
+	}
+	
+	private void setEvaluationFormToolComponents() {
+		toolComponents.setPrintVisibility(true);
+		toolComponents.setPrintPopupVisibility(false);
+		toolComponents.setPdfVisibility(true);
+		toolComponents.setExportVisibility(true);
 	}
 	
 	private void doOpenOverviewReport(UserRequest ureq) {
 		removeAsListenerAndDispose(overviewCtrl);
 		
 		overviewCtrl = new EvaluationFormOverviewController(ureq, getWindowControl(), form, storage, getReportSessionFilter(), getReportFigures());
-		mainVC.put(SEGMENTS_CMP, overviewCtrl.getInitialComponent());
+		listenTo(overviewCtrl);
+		
+		colsCtrl = new Analysis2ColController(ureq, getWindowControl(), overviewCtrl, filterCtrl);
+		stackPanel.popUpToController(this);
+		stackPanel.pushController(translate("segments.table.overview"), colsCtrl);
 		segmentButtonsCmp.setSelectedButton(overviewReportLink);
+		setEvaluationFormToolComponents();
 	}
 
 	private void doOpenTableReport(UserRequest ureq) {
@@ -407,8 +426,12 @@ public class AnalysisController extends BasicController implements TooledControl
 		provider.put(MultipleChoice.TYPE, new MultipleChoiceTableHandler());
 		tableReportCtrl = new EvaluationFormReportController(ureq, getWindowControl(), form, storage, getReportSessionFilter(), provider, getReportHelper(), null);
 		listenTo(tableReportCtrl);
-		mainVC.put(SEGMENTS_CMP, tableReportCtrl.getInitialComponent());
+		
+		colsCtrl = new Analysis2ColController(ureq, getWindowControl(), tableReportCtrl, filterCtrl);
+		stackPanel.popUpToController(this);
+		stackPanel.pushController(translate("segments.table.report"), colsCtrl);
 		segmentButtonsCmp.setSelectedButton(tableReportLink);
+		setEvaluationFormToolComponents();
 	}
 	
 	private void doOpenDiagramReport(UserRequest ureq) {
@@ -417,52 +440,60 @@ public class AnalysisController extends BasicController implements TooledControl
 		DefaultReportProvider provider = new DefaultReportProvider(storage);
 		diagramReportCtrl = new EvaluationFormReportController(ureq, getWindowControl(), form, storage, getReportSessionFilter(), provider, getReportHelper(), null);
 		listenTo(diagramReportCtrl);
-		mainVC.put(SEGMENTS_CMP, diagramReportCtrl.getInitialComponent());
+		
+		colsCtrl = new Analysis2ColController(ureq, getWindowControl(), diagramReportCtrl, filterCtrl);
+		stackPanel.popUpToController(this);
+		stackPanel.pushController(translate("segments.diagram.report"), colsCtrl);
 		segmentButtonsCmp.setSelectedButton(diagramReportLink);
+		setEvaluationFormToolComponents();
 	}
 
 	private void doOpenSessionSelection(UserRequest ureq) {
 		removeAsListenerAndDispose(sessionSelectionCtrl);
-		
-		sessionSelectionCtrl = new EvaluationFormSessionSelectionController(ureq, getWindowControl(), form, storage, getReportSessionFilter(), getReportHelper(), null);
-		BreadcrumbedStackedPanel stackedSessionPanel = new BreadcrumbedStackedPanel("forms", getTranslator(), sessionSelectionCtrl);
+
+		sessionSelectionCtrl = new EvaluationFormSessionSelectionController(ureq, getWindowControl(), form,
+				storage, getReportSessionFilter(), getReportHelper(), null);
+		BreadcrumbedStackedPanel stackedSessionPanel = new BreadcrumbedStackedPanel("forms", getTranslator(),
+				sessionSelectionCtrl);
 		stackedSessionPanel.pushController(translate("analysis.session.forms"), sessionSelectionCtrl);
 		sessionSelectionCtrl.setBreadcrumbPanel(stackedSessionPanel);
-		mainVC.put(SEGMENTS_CMP, stackedSessionPanel);
+		
+		colsCtrl = new Analysis2ColController(ureq, getWindowControl(), sessionSelectionCtrl, filterCtrl);
+		stackPanel.popUpToController(this);
+		stackPanel.pushController(translate("segments.session.selection"), colsCtrl);
 		segmentButtonsCmp.setSelectedButton(sessionSelectionLink);
+		setEvaluationFormToolComponents();
 	}
 	
 	private void doOpenHeatMap(UserRequest ureq) {
 		if (heatMapCtrl == null) {
-			heatMapCtrl = new HeatMapController(ureq, getWindowControl(), form, availableAttributes,
-					presentation.getHeatMapGrouping(), presentation.getHeatMapInsufficientOnly(),
+			heatMapCtrl = new HeatMapController(ureq, getWindowControl(), stackPanel, filterCtrl, form,
+					availableAttributes, presentation.getHeatMapGrouping(), presentation.getHeatMapInsufficientOnly(),
 					presentation.getTemporalGroupBy(), presentation.getTrendDifference(), presentation.getRubricId());
 			listenTo(heatMapCtrl);
-			heatMapCtrl.onFilter(ureq, presentation.getSearchParams());
-			heatMapPanel = new BreadcrumbedStackedPanel("heatMapDetails", getTranslator(), heatMapCtrl);
-			heatMapPanel.pushController(translate("analysis.details"), heatMapCtrl);
-			heatMapCtrl.setBreadcrumbPanel(heatMapPanel);
-		} else {
-			heatMapCtrl.onFilter(ureq, presentation.getSearchParams());
 		}
-		mainVC.put(SEGMENTS_CMP, heatMapPanel);
+		heatMapCtrl.onFilter(ureq, presentation.getSearchParams());
+		heatMapCtrl.setToolComponents(toolComponents);
+		
+		colsCtrl = new Analysis2ColController(ureq, getWindowControl(), heatMapCtrl, filterCtrl);
+		stackPanel.popUpToController(this);
+		stackPanel.pushController(translate("segments.heatmap.link"), colsCtrl);
 		segmentButtonsCmp.setSelectedButton(heatMapLink);
 	}
 	
 	private void doOpenTrendDiagram(UserRequest ureq) {
 		if (trendDiagramCtrl == null) {
-			trendDiagramCtrl = new TrendController(ureq, getWindowControl(), form, availableAttributes,
+			trendDiagramCtrl = new TrendController(ureq, getWindowControl(), stackPanel, filterCtrl, form, availableAttributes,
 					presentation.getHeatMapGrouping(), presentation.getHeatMapInsufficientOnly(),
 					presentation.getTemporalGroupBy(), presentation.getTrendDifference(), presentation.getRubricId());
 			listenTo(trendDiagramCtrl);
-			trendDiagramCtrl.onFilter(ureq, presentation.getSearchParams());
-			trendPanel = new BreadcrumbedStackedPanel("trendDetails", getTranslator(), trendDiagramCtrl);
-			trendPanel.pushController(translate("analysis.details"), trendDiagramCtrl);
-			trendDiagramCtrl.setBreadcrumbPanel(trendPanel);
-		} else {
-			trendDiagramCtrl.onFilter(ureq, presentation.getSearchParams());
 		}
-		mainVC.put(SEGMENTS_CMP, trendPanel);
+		trendDiagramCtrl.onFilter(ureq, presentation.getSearchParams());
+		trendDiagramCtrl.setToolComponents(toolComponents);
+
+		colsCtrl = new Analysis2ColController(ureq, getWindowControl(), trendDiagramCtrl, filterCtrl);
+		stackPanel.popUpToController(this);
+		stackPanel.pushController(translate("segments.trend.link"), colsCtrl);
 		segmentButtonsCmp.setSelectedButton(trendDiagramLink);
 	}
 	
@@ -500,7 +531,7 @@ public class AnalysisController extends BasicController implements TooledControl
 		presentation = analysisService.savePresentation(editetPresentation);
 		// refresh to avoid LazyInitializationException if access formEntry
 		presentation = analysisService.loadPresentationByKey(presentation);
-		initPresentationTools();
+		doShowHildePresentationLinks();
 		stackPanel.changeDisplayname(presentation.getName());
 	}
 
@@ -524,20 +555,8 @@ public class AnalysisController extends BasicController implements TooledControl
 		clone.setName(null);
 		analysisService.deletePresentation(presentation);
 		presentation = clone;
-		initPresentationTools();
+		doShowHildePresentationLinks();
 		stackPanel.changeDisplayname(presentation.getFormEntry().getDisplayname());
-	}
-
-	private void showPrintLink() {
-		Link selectedButton = segmentButtonsCmp.getSelectedButton();
-		boolean popupPrint = selectedButton == heatMapLink || selectedButton == trendDiagramLink;
-		if (printLink != null) {
-			printLink.setVisible(!popupPrint);
-		}
-		if (printPopupLink != null) {
-			printPopupLink.setVisible(popupPrint);
-		}
-		stackPanel.setDirty(true);
 	}
 	
 	private void doOpenPrintSelection(UserRequest ureq) {
@@ -599,23 +618,21 @@ public class AnalysisController extends BasicController implements TooledControl
 
 	private ControllerCreator getHeatMapControllerCreator() {
 		return (lureq, lwControl) -> {
-			GroupByController groupByCtrl = new HeatMapController(lureq, lwControl, form,
-					availableAttributes, presentation.getHeatMapGrouping(),
-					presentation.getHeatMapInsufficientOnly(), presentation.getTemporalGroupBy(),
-					presentation.getTrendDifference(), presentation.getRubricId());
-			return new GroupByPrintController(lureq, lwControl, groupByCtrl,
-					presentation.getSearchParams(), presentation.getFormEntry().getDisplayname());
+			GroupByController groupByCtrl = new HeatMapController(lureq, lwControl, stackPanel, null, form,
+					availableAttributes, presentation.getHeatMapGrouping(), presentation.getHeatMapInsufficientOnly(),
+					presentation.getTemporalGroupBy(), presentation.getTrendDifference(), presentation.getRubricId());
+			return new GroupByPrintController(lureq, lwControl, groupByCtrl, presentation.getSearchParams(),
+					presentation.getFormEntry().getDisplayname());
 		};
 	}
-	
+
 	private ControllerCreator getTrendControllerCreator() {
 		return (lureq, lwControl) -> {
-			GroupByController groupByCtrl = new TrendController(lureq, lwControl, form,
-					availableAttributes, presentation.getHeatMapGrouping(),
-					presentation.getHeatMapInsufficientOnly(), presentation.getTemporalGroupBy(),
-					presentation.getTrendDifference(), presentation.getRubricId());
-			return new GroupByPrintController(lureq, lwControl, groupByCtrl,
-					presentation.getSearchParams(), presentation.getFormEntry().getDisplayname());
+			GroupByController groupByCtrl = new TrendController(lureq, lwControl, stackPanel, null, form,
+					availableAttributes, presentation.getHeatMapGrouping(), presentation.getHeatMapInsufficientOnly(),
+					presentation.getTemporalGroupBy(), presentation.getTrendDifference(), presentation.getRubricId());
+			return new GroupByPrintController(lureq, lwControl, groupByCtrl, presentation.getSearchParams(),
+					presentation.getFormEntry().getDisplayname());
 		};
 	}
 
@@ -625,16 +642,46 @@ public class AnalysisController extends BasicController implements TooledControl
 		ureq.getDispatchResult().setResultingMediaResource(export.createMediaResource());
 	}
 	
+	private void doShowHildePresentationLinks() {
+		if (secCallback.canEditPresentations()) {
+			editPresentationLink.setVisible(true);
+		} else {
+			editPresentationLink.setVisible(false);
+		}
+		if (secCallback.canDeletePresentation(presentation)) {
+			deletePresentationLink.setVisible(true);
+		} else {
+			deletePresentationLink.setVisible(false);
+		}
+		stackPanel.setDirty(true);
+	}
+
 	private void doShowFilter() {
-		stackPanel.addTool(hideFilterLink, Align.right);
-		stackPanel.removeTool(showFilterLink);
-		mainVC.contextPut("filterSwitch", Boolean.TRUE);
+		showFilterLink.setVisible(false);
+		hideFilterLink.setVisible(true);
+		stackPanel.setDirty(true);
+		if (colsCtrl != null) {
+			setShowFilter(Boolean.TRUE);
+		}
 	}
 	
 	private void doHideFilter() {
-		stackPanel.addTool(showFilterLink, Align.right);
-		stackPanel.removeTool(hideFilterLink);
-		mainVC.contextPut("filterSwitch", Boolean.FALSE);
+		showFilterLink.setVisible(true);
+		hideFilterLink.setVisible(false);
+		stackPanel.setDirty(true);
+		if (colsCtrl != null) {
+			setShowFilter(Boolean.FALSE);
+		}
+	}
+
+	private void setShowFilter(Boolean show) {
+		colsCtrl.setShowFilter(show);
+		if (heatMapCtrl != null) {
+			heatMapCtrl.setShowFilter(show);
+		}
+		if (trendDiagramCtrl != null) {
+			trendDiagramCtrl.setShowFilter(show);
+		}
 	}
 
 	private SessionFilter getReportSessionFilter() {
@@ -668,6 +715,52 @@ public class AnalysisController extends BasicController implements TooledControl
 			reportFigures = figuresBuilder.build();
 		}
 		return reportFigures;
+	}
+	
+	static final class ToolComponents {
+
+		private final TooledStackedPanel stackPanel;
+		private final Link printLink;
+		private final Link printPopupLink;
+		private final Link pdfLink;
+		private final Link exportLink;
+		
+		private ToolComponents(TooledStackedPanel stackPanel, Link printLink, Link printPopupLink, Link pdfLink, Link exportLink) {
+			this.stackPanel = stackPanel;
+			this.printLink = printLink;
+			this.printPopupLink = printPopupLink;
+			this.pdfLink = pdfLink;
+			this.exportLink = exportLink;
+		}
+		
+		void setPrintVisibility(boolean visible) {
+			if (printLink != null) {
+				printLink.setVisible(visible);
+				stackPanel.setDirty(true);
+			}
+		}
+		
+		void setPrintPopupVisibility(boolean visible) {
+			if (printPopupLink != null) {
+				printPopupLink.setVisible(visible);
+				stackPanel.setDirty(true);
+			}
+		}
+		
+		void setPdfVisibility(boolean visible) {
+			if (pdfLink != null) {
+				pdfLink.setVisible(visible);
+				stackPanel.setDirty(true);
+			}
+		}
+		
+		void setExportVisibility(boolean visible) {
+			if (exportLink != null) {
+				exportLink.setVisible(visible);
+				stackPanel.setDirty(true);
+			}
+		}
+		
 	}
 	
 }

@@ -26,6 +26,7 @@ import java.util.Set;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.quality.analysis.AvailableAttributes;
@@ -51,11 +52,12 @@ public class TrendController extends GroupByController {
 	@Autowired
 	private QualityAnalysisService analysisService;
 
-	public TrendController(UserRequest ureq, WindowControl wControl, Form evaluationForm,
-			AvailableAttributes availableAttributes, MultiGroupBy multiGroupBy, Boolean insufficientOnly,
-			TemporalGroupBy temporalGroupBy, TrendDifference trendDifference, String rubricId) {
-		super(ureq, wControl, evaluationForm, availableAttributes, multiGroupBy, insufficientOnly, temporalGroupBy,
-				trendDifference, rubricId);
+	public TrendController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+			FilterController filterCtrl, Form evaluationForm, AvailableAttributes availableAttributes,
+			MultiGroupBy multiGroupBy, Boolean insufficientOnly, TemporalGroupBy temporalGroupBy,
+			TrendDifference trendDifference, String rubricId) {
+		super(ureq, wControl, stackPanel, filterCtrl, evaluationForm, availableAttributes, multiGroupBy,
+				insufficientOnly, temporalGroupBy, trendDifference, rubricId);
 	}
 
 	@Override
