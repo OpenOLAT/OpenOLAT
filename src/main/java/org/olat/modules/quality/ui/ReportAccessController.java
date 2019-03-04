@@ -419,6 +419,8 @@ public abstract class ReportAccessController extends FormBasicController {
 		for (Identity identity : identities) {
 			qualityService.addReportMember(reference, identity);
 		}
+		QualityReportAccess reportAccess = qualityService.loadMembersReportAccess(reference);
+		updateCache(reportAccess);
 		loadMembersModel(true);
 	}
 	
@@ -442,6 +444,8 @@ public abstract class ReportAccessController extends FormBasicController {
 			IdentityRefImpl identityRef = new IdentityRefImpl(row.getIdentityKey());
 			qualityService.removeReportMember(reference, identityRef);
 		}
+		QualityReportAccess reportAccess = qualityService.loadMembersReportAccess(reference);
+		updateCache(reportAccess);
 		loadMembersModel(true);
 	}
 
