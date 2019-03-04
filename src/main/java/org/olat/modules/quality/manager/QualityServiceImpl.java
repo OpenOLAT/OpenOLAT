@@ -277,7 +277,7 @@ public class QualityServiceImpl
 		try {
 			QualityDataCollectionStatus previousStatus = dataCollection.getStatus();
 			updatedDataCollection = dataCollectionDao.updateDataCollectionStatus(dataCollection, status);
-			if (QualityDataCollectionStatus.FINISHED.equals(status) && !QualityDataCollectionStatus.FINISHED.equals(previousStatus)) {
+			if (hasChangedToFinished(status, previousStatus)) {
 				reportAccessDao.deleteUnappropriated(of(updatedDataCollection));
 				sendReportAccessMails(dataCollection);
 			}
@@ -288,9 +288,18 @@ public class QualityServiceImpl
 		return updatedDataCollection;
 	}
 
+	private boolean hasChangedToFinished(QualityDataCollectionStatus status,
+			QualityDataCollectionStatus previousStatus) {
+		return QualityDataCollectionStatus.FINISHED.equals(status) && !QualityDataCollectionStatus.FINISHED.equals(previousStatus);
+	}
+
 	private void sendReportAccessMails(QualityDataCollection dataCollection) {
 		List<RubricStatistic> rubricStatistics = getRubricsStatistics(dataCollection);
-		
+		Set<Identity> recipients = getReportAccessRecipients(dataCollection, rubricStatistics);
+		qualityMailing.sendReportAccessEmail(dataCollection, recipients, rubricStatistics);
+	}
+	
+	private Set<Identity> getReportAccessRecipients(QualityDataCollection dataCollection, List<RubricStatistic> rubricStatistics) {
 		QualityReportAccessSearchParams searchParams = new QualityReportAccessSearchParams();
 		searchParams.setReference(of(dataCollection));
 		List<QualityReportAccess> reportAccesses = reportAccessDao.load(searchParams);
@@ -304,7 +313,7 @@ public class QualityServiceImpl
 			}
 		}
 		
-		qualityMailing.sendReportAccessEmail(dataCollection, recipients, rubricStatistics);
+		return recipients;
 	}
 
 	private boolean containsTrigger(List<RubricStatistic> rubricStatistics, EmailTrigger emailTrigger) {

@@ -19,32 +19,62 @@
  */
 package org.olat.modules.quality.manager;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.pdf.PdfModule;
+import org.olat.core.commons.services.pdf.PdfService;
+import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.gui.util.WindowControlMocker;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nManager;
+import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
+import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.forms.EvaluationFormDispatcher;
+import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
+import org.olat.modules.forms.EvaluationFormPrintSelection;
+import org.olat.modules.forms.EvaluationFormSession;
+import org.olat.modules.forms.EvaluationFormSurvey;
+import org.olat.modules.forms.Figures;
 import org.olat.modules.forms.RubricRating;
 import org.olat.modules.forms.RubricStatistic;
+import org.olat.modules.forms.SessionFilter;
+import org.olat.modules.forms.SessionFilterFactory;
+import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.model.xml.Rubric.NameDisplay;
 import org.olat.modules.forms.ui.EvaluationFormFormatter;
+import org.olat.modules.forms.ui.EvaluationFormPrintControllerCreator;
+import org.olat.modules.forms.ui.LegendNameGenerator;
+import org.olat.modules.forms.ui.NameShuffleAnonymousComparator;
+import org.olat.modules.forms.ui.ReportHelper;
+import org.olat.modules.forms.ui.SessionInformationLegendNameGenerator;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityDataCollectionStatus;
 import org.olat.modules.quality.QualityDataCollectionTopicType;
@@ -54,6 +84,7 @@ import org.olat.modules.quality.QualityExecutorParticipation;
 import org.olat.modules.quality.QualityExecutorParticipationSearchParams;
 import org.olat.modules.quality.QualityReminder;
 import org.olat.modules.quality.model.QualityMailTemplateBuilder;
+import org.olat.modules.quality.ui.FiguresFactory;
 import org.olat.modules.quality.ui.QualityMainController;
 import org.olat.modules.quality.ui.QualityUIContextsBuilder;
 import org.olat.modules.quality.ui.QualityUIContextsBuilder.Attribute;
@@ -82,6 +113,14 @@ class QualityMailing {
 	private QualityParticipationDAO participationDao;
 	@Autowired
 	private QualityDataCollectionDAO dataCollectionDao;
+	@Autowired
+	private EvaluationFormManager evaluationFormManager;
+	@Autowired
+	private PdfModule pdfModule;
+	@Autowired
+	private PdfService pdfService;
+	@Autowired
+	private I18nModule i18nModule;
 
 	void sendReminderMail(QualityReminder reminder, QualityReminder invitation, EvaluationFormParticipation participation) {
 		if (participation.getExecutor() != null) {
@@ -174,13 +213,27 @@ class QualityMailing {
 
 	void sendReportAccessEmail(QualityDataCollection dataCollection, Collection<Identity> recipients,
 			List<RubricStatistic> rubricStatistics) {
+		Path tempDir = Paths.get(WebappHelper.getTmpDir()).resolve(CodeHelper.getUniqueID());
+		try {
+			Files.createDirectories(tempDir);
+		} catch (Exception e) {
+			log.error("Creation of temp directory for PDF report in quality e-mail failed! Path: " + tempDir, e);
+		}
+		
 		for (Identity recipient : recipients) {
-			sendReportAccessEmail(dataCollection, recipient, rubricStatistics);
+			sendReportAccessEmail(dataCollection, recipient, rubricStatistics, tempDir);
+		}
+		
+		try {
+			Files.delete(tempDir);
+		} catch (IOException e) {
+			// It is just a temp dir
 		}
 	}
 	
-	private void sendReportAccessEmail(QualityDataCollection dataCollection, Identity recipient, List<RubricStatistic> rubricStatistics) {
-		MailTemplate template = createReportAccessMailTemplate(dataCollection, recipient, rubricStatistics);
+	private void sendReportAccessEmail(QualityDataCollection dataCollection, Identity recipient,
+			List<RubricStatistic> rubricStatistics, Path tempDir) {
+		MailTemplate template = createReportAccessMailTemplate(dataCollection, recipient, rubricStatistics, tempDir);
 		
 		MailerResult result = new MailerResult();
 		MailManager mailManager = CoreSpringFactory.getImpl(MailManager.class);
@@ -199,7 +252,7 @@ class QualityMailing {
 	}
 
 	private MailTemplate createReportAccessMailTemplate(QualityDataCollection dataCollection, Identity recipient,
-			List<RubricStatistic> rubricStatistics) {
+			List<RubricStatistic> rubricStatistics, Path tempDir) {
 		Locale locale = I18nManager.getInstance().getLocaleOrDefault(recipient.getUser().getPreferences().getLanguage());
 		Translator translator = Util.createPackageTranslator(QualityMainController.class, locale);
 		
@@ -241,6 +294,9 @@ class QualityMailing {
 		
 		String result = getResult(translator, rubricStatistics);
 		mailBuilder.withResult(result);
+		
+		File reportPdf = getReportPdf(dataCollection, recipient, tempDir, locale);
+		mailBuilder.withReportPfd(reportPdf);
 		
 		return mailBuilder.build();
 	}
@@ -314,6 +370,64 @@ class QualityMailing {
 		default: 
 			return "report.access.rating.not.rated";
 		}
+	}
+	
+	private File getReportPdf(QualityDataCollection dataCollection, Identity recipient, Path tempDir, Locale locale) {
+		if (tempDir == null || !tempDir.toFile().exists()) return null;
+		
+		String localeKey = i18nModule.getLocaleKey(locale);
+		File reportPdf = tempDir.resolve("report_" + localeKey + ".pdf").toFile();
+		if (!reportPdf.exists()) {
+			reportPdf = createPdfOverviewReport(dataCollection, recipient, reportPdf, locale);
+		}
+		if (reportPdf.exists()) {
+			//check if file has content
+			if (reportPdf.length() > 0) {
+				return reportPdf;
+			}
+			reportPdf.delete();
+		}
+		return null;
+	}
+
+	
+	private File createPdfOverviewReport(QualityDataCollection dataCollection, Identity recipient, File reportPdf, Locale locale) {
+		if (pdfModule.isEnabled()) {
+			EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(dataCollection, null);
+			Form form = evaluationFormManager.loadForm(survey.getFormEntry());
+			DataStorage storage = evaluationFormManager.loadStorage(survey.getFormEntry());
+			SessionFilter filter = SessionFilterFactory.createSelectDone(survey);
+			EvaluationFormPrintSelection printSelection = new EvaluationFormPrintSelection();
+			printSelection.setOverview(true);
+			printSelection.setTables(true);
+			
+			ControllerCreator controllerCreator = getControllerCreator(dataCollection, form, storage, filter, printSelection, locale);
+			try (OutputStream out = new FileOutputStream(reportPdf)) {
+				WindowControl bwControl = new WindowControlMocker();
+				pdfService.convert(recipient, controllerCreator, bwControl, out);
+				return reportPdf;
+			} catch (IOException e) {
+				log.error("Error while saving quality overview report! Path: " + reportPdf.getAbsolutePath(), e);
+			}
+		}
+		return null;
+	}
+	
+	private ControllerCreator getControllerCreator(QualityDataCollection dataCollection, Form form, DataStorage storage,
+			SessionFilter filter, EvaluationFormPrintSelection printSelection, Locale locale) {
+		QualityDataCollectionViewSearchParams searchParams = new QualityDataCollectionViewSearchParams();
+		searchParams.setDataCollectionRef(dataCollection);
+		Translator translator = Util.createPackageTranslator(QualityMainController.class, locale);
+		QualityDataCollectionView dataCollectionView = dataCollectionDao.loadDataCollections(translator, searchParams, 0, -1).get(0);
+		
+		Figures figures = FiguresFactory.createOverviewFigures(dataCollection, dataCollectionView, locale);
+		
+		Comparator<EvaluationFormSession> comparator = new NameShuffleAnonymousComparator();
+		LegendNameGenerator legendNameGenerator = new SessionInformationLegendNameGenerator(filter);
+		ReportHelper reportHelper = ReportHelper.builder(locale).withLegendNameGenrator(legendNameGenerator)
+				.withSessionComparator(comparator).withColors().build();
+		
+		return new EvaluationFormPrintControllerCreator(form, storage, filter, figures, reportHelper, printSelection);
 	}
 
 }

@@ -175,10 +175,7 @@ public class EvaluationFormPrintSelectionController extends FormBasicController 
 	}
 	
 	private ControllerCreator getControllerCreator() {
-		return (lureq, lwControl) -> {
-			return new EvaluationFormPrintController(lureq, lwControl, form, storage,
-					filter, figures, reportHelper, printSelection);
-		};
+		return new EvaluationFormPrintControllerCreator(form, storage, filter, figures, reportHelper, printSelection);
 	}
 
 	@Override
