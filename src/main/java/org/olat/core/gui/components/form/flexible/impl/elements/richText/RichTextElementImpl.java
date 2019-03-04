@@ -195,12 +195,19 @@ public class RichTextElementImpl extends AbstractTextElement implements
 		String paramId = component.getFormDispatchId();
 		String cmd = getRootForm().getRequestParameter("cmd");
 		String submitValue = getRootForm().getRequestParameter(paramId);
+		String sizeParamId = "rtinye_".concat(paramId);
+		String size = getRootForm().getRequestParameter(sizeParamId);
+		
 		if(StringHelper.containsNonWhitespace(submitValue)) {
 			if(renderingMode == TextMode.oneLine) {
 				submitValue = TextMode.fromOneLine(submitValue); 
 			} else if(renderingMode == TextMode.multiLine) {
 				submitValue = TextMode.fromMultiLine(submitValue);
 			}
+		}
+		
+		if(StringHelper.containsNonWhitespace(size)) {
+			setCurrentHeight(size);
 		}
 		
 		String dispatchUri = getRootForm().getRequestParameter("dispatchuri");
@@ -254,6 +261,15 @@ public class RichTextElementImpl extends AbstractTextElement implements
 		if (configuration != null) {
 			configuration.dispose();
 			configuration = null;
+		}
+	}
+	
+	private void setCurrentHeight(String size) {
+		try {
+			int height = Double.valueOf(size).intValue();
+			component.setCurrentHeight(height);
+		} catch (NumberFormatException e) {
+			//can happen, don't make a drama of it
 		}
 	}
 
