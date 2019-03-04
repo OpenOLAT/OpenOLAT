@@ -37,49 +37,52 @@ import org.olat.core.gui.control.guistack.GuiStack;
 import org.olat.core.gui.control.info.WindowControlInfo;
 import org.olat.core.gui.control.util.ZIndexWrapper;
 import org.olat.core.gui.control.winmgr.Command;
+import org.olat.core.gui.control.winmgr.WindowManagerImpl;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.event.GenericEventListener;
 
 public class WindowControlMocker implements WindowControl{
+	
+	private final WindowBackOfficeMocker windowBackOffice = new WindowBackOfficeMocker();
 
 	public WindowControlMocker() {
-
+		//
 	}
 
 	@Override
 	public void pushToMainArea(Component comp) {
-		
+		//
 	}
 
 	@Override
 	public void pushAsModalDialog(Component comp) {
-		
+		//
 	}
 
 	@Override
 	public void pushAsCallout(Component comp, String targetId, CalloutSettings settings) {
-		
+		//
 	}
 
 	@Override
 	public void pop() {
-		
+		//
 	}
 
 	@Override
 	public void setInfo(String string) {
-		
+		//
 	}
 
 	@Override
 	public void setError(String string) {
-		
+		//
 	}
 
 	@Override
 	public void setWarning(String string) {
-		
+		//
 	}
 
 	@Override
@@ -89,17 +92,17 @@ public class WindowControlMocker implements WindowControl{
 
 	@Override
 	public void makeFlat() {
-		
+		//
 	}
 
 	@Override
 	public BusinessControl getBusinessControl() {
 		
-		BusinessControl control = new BusinessControl() {
+		return new BusinessControl() {
 
 			@Override
 			public String getAsString() {
-				return null;
+				return "";
 			}
 
 			@Override
@@ -124,64 +127,57 @@ public class WindowControlMocker implements WindowControl{
 
 			@Override
 			public void setCurrentContextEntry(ContextEntry cw) {
+				//
 			}
 
 			@Override
 			public void dropLauncherEntries() {
-
+				//
 			}
 
 			@Override
 			public boolean hasContextEntry() {
 				return false;
 			}
-			
 		};
-		
-		return control;
-		
 	}
 
 	@Override
 	public WindowBackOffice getWindowBackOffice() {
-		return null;
+		return windowBackOffice;
 	}
 
-	public class WindowBackOfficeMocker implements WindowBackOffice {
+	public static class WindowBackOfficeMocker implements WindowBackOffice {
+		
+		private final WindowManager windowManager = new WindowManagerImpl();
 
 		@Override
 		public void dispose() {
-			// TODO Auto-generated method stub
-			
+			//
 		}
 
 		@Override
 		public WindowManager getWindowManager() {
-			// TODO Auto-generated method stub
-			return null;
+			return windowManager;
 		}
 
 		@Override
 		public Window getWindow() {
-			// TODO Auto-generated method stub
 			return null;
 		}
 
 		@Override
 		public ChiefController getChiefController() {
-			// TODO Auto-generated method stub
 			return null;
 		}
 
 		@Override
 		public Controller createDevelopmentController(UserRequest ureq, WindowControl windowControl) {
-			// TODO Auto-generated method stub
 			return null;
 		}
 
 		@Override
 		public GlobalSettings getGlobalSettings() {
-			// TODO Auto-generated method stub
 			return null;
 		}
 
@@ -228,7 +224,7 @@ public class WindowControlMocker implements WindowControl{
 
 		@Override
 		public List<ZIndexWrapper> getGuiMessages() {
-			return null;
+			return Collections.emptyList();
 		}
 
 		@Override
