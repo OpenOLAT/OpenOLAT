@@ -119,11 +119,15 @@ public class CourseReminderListController extends FormBasicController implements
 				true, ReminderCols.lastModified.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReminderCols.send.i18nKey(), ReminderCols.send.ordinal(),
 				true, ReminderCols.send.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReminderCols.tools.i18nKey(), ReminderCols.tools.ordinal()));
+		DefaultFlexiColumnModel toolsCol = new DefaultFlexiColumnModel(ReminderCols.tools.i18nKey(), ReminderCols.tools.ordinal());
+		toolsCol.setAlwaysVisible(true);
+		toolsCol.setExportable(false);
+		columnsModel.addFlexiColumnModel(toolsCol);
 		
 		tableModel = new CourseReminderTableModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		updateModel();
+		tableEl.setAndLoadPersistedPreferences(ureq, "course-reminder-list");
 	}
 	
 	private void updateModel() {
@@ -142,7 +146,7 @@ public class CourseReminderListController extends FormBasicController implements
 		}
 		tableModel.setObjects(rows);
 		tableEl.reset();
-		tableEl.setVisible(rows.size() > 0);
+		tableEl.setVisible(!rows.isEmpty());
 	}
 	
 	@Override

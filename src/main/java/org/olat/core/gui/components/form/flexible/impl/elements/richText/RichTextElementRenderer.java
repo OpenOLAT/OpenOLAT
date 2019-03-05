@@ -213,6 +213,9 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 			configurations.append("maxSize:").append(te.getMaxLength()).append("\n");
 		}
 		
+		Integer currentHeight = teC.getCurrentHeight();
+		
+		sb.append("<input type='hidden' id='rtinye_").append(teC.getFormDispatchId()).append("' name='rtinye_").append(teC.getFormDispatchId()).append("' value='' />");
 		sb.append("<script type='text/javascript'>/* <![CDATA[ */\n");
 		//file browser url
 		sb.append("  BTinyHelper.editorMediaUris.put('").append(domID).append("','");
@@ -220,13 +223,21 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 		sb.append("');\n");
 		sb.append(" setTimeout(function() { jQuery('#").append(domID).append("').tinymce({\n")//delay for firefox + tinymce 4.5 + jQuery 3.3.1
 		  .append("    selector: '#").append(domID).append("',\n")
-		  .append("    script_url: '").append(baseUrl.toString()).append("',\n")
-		  .append("    setup: function(ed){\n")
+		  .append("    script_url: '").append(baseUrl.toString()).append("',\n");
+		if(currentHeight != null && currentHeight.intValue() > 20) {
+			sb.append("    height: ").append(currentHeight).append(",\n");
+		}
+		sb.append("    setup: function(ed){\n")
 		  .append("      ed.on('init', function(e) {\n")
 		  .append("        ").append(onInit.get(0).replace(".curry(", "(")).append(";\n")
 		  .append("      });\n")
 		  .append("      ed.on('change', function(e) {\n")
 		  .append("        BTinyHelper.triggerOnChange('").append(domID).append("');\n")
+		  .append("      });\n")
+		  .append("      ed.on('ResizeEditor', function(e) {\n")
+		  .append("        try {\n")
+		  .append("          jQuery('#rtinye_").append(teC.getFormDispatchId()).append("').val(ed.contentAreaContainer.clientHeight);\n")
+		  .append("        } catch(e) { }\n")
 		  .append("      });\n");
 		if(config.isSendOnBlur()) {
 			sb.append("      ed.on('blur', function(e) {\n")

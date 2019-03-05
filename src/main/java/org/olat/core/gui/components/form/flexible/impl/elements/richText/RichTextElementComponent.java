@@ -57,7 +57,9 @@ class RichTextElementComponent extends FormBaseComponentImpl {
 	private static final ComponentRenderer RENDERER = new RichTextElementRenderer();
 
 	private final RichTextElementImpl element;
-	private int cols, rows;
+	private int cols;
+	private int rows;
+	private Integer currentHeight;
 	private TextMode currentTextMode;
 
 	/**
@@ -82,9 +84,6 @@ class RichTextElementComponent extends FormBaseComponentImpl {
 		return element;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.Component#getHTMLRendererSingleton()
-	 */
 	@Override
 	public ComponentRenderer getHTMLRendererSingleton() {
 		return RENDERER;
@@ -104,6 +103,14 @@ class RichTextElementComponent extends FormBaseComponentImpl {
 
 	public void setRows(int rows) {
 		this.rows = rows;
+	}
+	
+	protected Integer getCurrentHeight() {
+		return currentHeight;
+	}
+
+	protected void setCurrentHeight(Integer currentHeight) {
+		this.currentHeight = currentHeight;
 	}
 
 	protected TextMode getCurrentTextMode() {

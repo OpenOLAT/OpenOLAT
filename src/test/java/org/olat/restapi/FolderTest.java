@@ -20,9 +20,15 @@
 package org.olat.restapi;
 
 import static org.junit.Assert.assertEquals;
-import static org.olat.core.util.vfs.restapi.VFSWebservice.normalize;
+
+import java.util.Arrays;
+import java.util.Collection;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
+import org.olat.core.util.vfs.restapi.VFSWebservice;
 /**
  * 
  * <h3>Description:</h3>
@@ -30,13 +36,30 @@ import org.junit.Test;
  * Initial Date:  28 jan. 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, www.frentix.com
  */
+@RunWith(Parameterized.class)
 public class FolderTest {
+	
+	@Parameters
+    public static Collection<Object[]> data() {
+        return Arrays.asList(new Object[][] {
+                { "HASTDJUR", "HÄSTDJUR" },
+        		{ "HASTDJUR", "HÄSTDJÜR" },
+        		{ "HAST_DJUR", "HÄST_DJUR" },
+        		{ "This_is_a_funky_String", "Tĥïŝ ĩš â fůňķŷ Šťŕĭńġ" }
+        });
+    }
+    
+    private String expected;
+    private String string;
+    
+    public FolderTest(String expected, String string) {
+    	this.expected = expected;
+    	this.string = string;
+    }
 
 	@Test
 	public void testNormalizer() {
-		assertEquals("HASTDJUR", normalize("HÄSTDJUR"));
-		assertEquals("HASTDJUR", normalize("HÄSTDJÜR"));
-		assertEquals("HAST_DJUR", normalize("HÄST_DJUR"));
-		assertEquals("This_is_a_funky_String", normalize("Tĥïŝ ĩš â fůňķŷ Šťŕĭńġ"));
+		String normalized = VFSWebservice.normalize(string);
+		assertEquals(expected, normalized);
 	}
 }

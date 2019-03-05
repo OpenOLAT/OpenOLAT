@@ -136,12 +136,16 @@ public class CourseReminderLogsController extends FormBasicController {
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SendCols.sendTime.i18nKey(), SendCols.sendTime.ordinal(),
 				true, SendCols.sendTime.name()));
-		//user properties
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("resend", translate("resend"), "resend"));
+
+		DefaultFlexiColumnModel resendCol = new DefaultFlexiColumnModel("resend", translate("resend"), "resend");
+		resendCol.setAlwaysVisible(true);
+		resendCol.setExportable(false);
+		columnsModel.addFlexiColumnModel(resendCol);
 		
 		tableModel = new CourseSendReminderTableModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setElementCssClass("o_sel_course_sent_reminder_log_list");
+		tableEl.setAndLoadPersistedPreferences(ureq, "course-reminders-logs");
 		updateModel();
 	}
 	

@@ -34,6 +34,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -42,6 +43,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.FileElementEvent
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.ValidationStatus;
@@ -74,6 +76,7 @@ public class DrawingEditorController extends FormBasicController {
 	
 	private TextElement titleEl;
 	private RichTextElement textEl;
+	private SingleSelection resizeEl;
 	private FileElement backgroundEl;
 	
 	private final File itemFile;
@@ -144,6 +147,15 @@ public class DrawingEditorController extends FormBasicController {
 		backgroundEl.setDeleteEnabled(true);
 		backgroundEl.limitToMimeType(mimeTypes, "error.mimetype", new String[]{ mimeTypes.toString() });
 		
+		String[] resizeKeys = new String[] { "no" };
+		String[] resizeValues = new String[] { translate("form.imd.background.resize.no") };
+		resizeEl = uifactory.addRadiosHorizontal("form.imd.background.resize", formLayout, resizeKeys, resizeValues);
+		resizeEl.setVisible(false);
+		resizeEl.setEnabled(!readOnly);
+		if(initialBackgroundImage != null) {
+			Size size = imageService.getSize(new LocalFileImpl(initialBackgroundImage), null);
+			optimizeResizeEl(size, false);
+		}
 
 		// Submit Button
 		FormLayoutContainer buttonsContainer = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
@@ -222,6 +234,8 @@ public class DrawingEditorController extends FormBasicController {
 					backgroundEl.setUploadFileName(uniqueFilename);
 					backgroundImage = backgroundEl.moveUploadFileTo(itemFile.getParentFile());
 					backgroundEl.setInitialFile(backgroundImage);
+					Size size = imageService.getSize(new LocalFileImpl(backgroundImage), null);
+					optimizeResizeEl(size, true);
 				}
 			}
 		}
@@ -244,7 +258,18 @@ public class DrawingEditorController extends FormBasicController {
 		if(objectImg != null) {
 			String filename = objectImg.getName();
 			String mimeType = WebappHelper.getMimeType(filename);
-			Size size = imageService.getSize(new LocalFileImpl(objectImg), null);
+			Size currentSize = imageService.getSize(new LocalFileImpl(objectImg), null);
+			
+			Size size = currentSize;
+			if(resizeEl.isVisible() && !resizeEl.isSelected(0)) {
+				int maxSize = Integer.parseInt(resizeEl.getSelectedKey());
+				if(maxSize < currentSize.getHeight() || maxSize < currentSize.getWidth()) {
+					String extension = FileUtils.getFileSuffix(filename);
+					size = imageService.scaleImage(objectImg, extension, objectImg, maxSize, maxSize, false);
+					optimizeResizeEl(size, false);
+				}
+			}
+			
 			int height = -1;
 			int width = -1;
 			if(size != null) {
@@ -259,5 +284,43 @@ public class DrawingEditorController extends FormBasicController {
 		itemBuilder.setQuestion(questionText);
 		
 		fireEvent(ureq, new AssessmentItemEvent(AssessmentItemEvent.ASSESSMENT_ITEM_CHANGED, itemBuilder.getAssessmentItem(), QTI21QuestionType.drawing));
+	}
+	
+	private void optimizeResizeEl(Size size, boolean selectSize) {
+		List<String> keys = new ArrayList<>();
+		List<String> values = new ArrayList<>();
+
+		String selectedSize = null;
+		for(BackgroundSize availableSize:BackgroundSize.values()) {
+			int proposedSize = availableSize.size();
+			if(proposedSize <= size.getHeight() || proposedSize <= size.getWidth()) {
+				String s = Integer.toString(availableSize.size());
+				keys.add(s);
+				values.add(s + " x " + s);
+				if((proposedSize == size.getHeight() && proposedSize >= size.getWidth())
+						|| (proposedSize == size.getWidth() && proposedSize >= size.getHeight())) {
+					selectedSize = s;
+				}
+			}
+		}
+		if(selectedSize == null) {
+			keys.add(0, "no");
+			values.add(0, translate("form.imd.background.resize.no"));
+		}
+		resizeEl.setKeysAndValues(keys.toArray(new String[keys.size()]), values.toArray(new String[values.size()]), null);
+
+		if(keys.size() == 1) {
+			resizeEl.select(keys.get(0), true);
+			resizeEl.setVisible(false);
+		} else {
+			if(selectedSize != null) {
+				resizeEl.select(selectedSize, true);
+			} else if(selectSize && keys.size() > 1 && keys.get(1).equals(Integer.toString(BackgroundSize.s1024.size()))) {
+				resizeEl.select(Integer.toString(BackgroundSize.s1024.size()), true);
+			} else {
+				resizeEl.select(keys.get(0), true);
+			}
+			resizeEl.setVisible(true);
+		}
 	}
 }

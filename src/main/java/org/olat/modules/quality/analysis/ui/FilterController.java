@@ -513,7 +513,8 @@ public class FilterController extends FormBasicController {
 
 		AnalysisSearchParameter clonedSearchParams = searchParams.clone();
 		clonedSearchParams.setSeriesIndexes(null);
-		int maxSerieIndex = analysisService.loadMaxSeriesIndex(clonedSearchParams);
+		Integer maxSerieIndex = analysisService.loadMaxSeriesIndex(clonedSearchParams);
+		maxSerieIndex = maxSerieIndex != null? maxSerieIndex: 0;
 		KeyValues keyValues = new KeyValues();
 		for (int i = 1; i <= maxSerieIndex; i++) {
 			String key = String.valueOf(i);

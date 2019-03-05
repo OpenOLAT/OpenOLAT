@@ -217,7 +217,7 @@
 	}
 }
 	
-.o_qual_group_by_print {
+.o_qual_filtered_print {
 	#o_print_brand {
 		position: absolute;
 		top: 1cm;	
@@ -232,6 +232,7 @@
 		margin-top: 4em;
 	}
 	.o_groupby_config,
+	.o_slider_trend_config,
 	.o_qual_hm tr td:last-child,
 	.o_qual_hm tr th:last-child {
 		display:none;
