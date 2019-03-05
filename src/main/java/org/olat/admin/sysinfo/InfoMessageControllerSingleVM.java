@@ -66,11 +66,6 @@ public class InfoMessageControllerSingleVM extends BasicController {
 	@Autowired
 	private CustomStaticFolderManager staticFolderMgr;
 	
-	/**
-	 * 
-	 * @param ureq
-	 * @param control
-	 */
 	public InfoMessageControllerSingleVM(UserRequest ureq, WindowControl control) {
 		super(ureq, control);
 		infoMsgView = createVelocityContainer("infomsg");
@@ -110,10 +105,10 @@ public class InfoMessageControllerSingleVM extends BasicController {
 		// /customizing/static/
 		staticFolderCtrl = new FolderRunController(staticFolderMgr.getRootContainer(), true, ureq, control);
 		listenTo(staticFolderCtrl);
-		infoMsgEdit.put("staticFolder", staticFolderCtrl.getInitialComponent());
+		infoMsgView.put("staticFolder", staticFolderCtrl.getInitialComponent());
 		
 		String url = Settings.getServerContextPathURI() + "/raw/static/";
-		infoMsgEdit.contextPut("extlink", url);
+		infoMsgView.contextPut("extlink", url);
 
 		container = putInitialPanel(infoMsgView);
 	}

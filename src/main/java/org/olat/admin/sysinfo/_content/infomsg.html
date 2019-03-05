@@ -69,3 +69,11 @@
 	</fieldset>
 </div>
 #end
+
+#if($r.available("staticFolder"))
+<div class="o_block_large">
+	<legend>$r.translate("staticFolder")</legend>
+	<div class="o_copy_code o_nowrap"><input type="text" value="$extlink" onclick="this.select()"/></div>
+	$r.render("staticFolder")
+</div>
+#end
