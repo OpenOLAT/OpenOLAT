@@ -598,8 +598,8 @@ public class HotspotEditorController extends FormBasicController {
 		} else {
 			if(selectedSize != null) {
 				resizeEl.select(selectedSize, true);
-			} else if(selectSize && keys.size() > 1 && keys.get(1).equals(Integer.toString(BackgroundSize.s1024.size))) {
-				resizeEl.select(Integer.toString(BackgroundSize.s1024.size), true);
+			} else if(selectSize && keys.size() > 1 && keys.get(1).equals(Integer.toString(BackgroundSize.s1024.size()))) {
+				resizeEl.select(Integer.toString(BackgroundSize.s1024.size()), true);
 			} else {
 				resizeEl.select(keys.get(0), true);
 			}
@@ -777,22 +777,6 @@ public class HotspotEditorController extends FormBasicController {
 		if(translateY > 0) {
 			coords.set(1, (topY - translateY));
 			coords.set(3, (bottomY - translateY));
-		}
-	}
-	
-	public enum BackgroundSize {
-		s1024(1024),
-		s800(800),
-		s480(480);
-		
-		private final int size;
-		
-		private BackgroundSize(int size) {
-			this.size = size;
-		}
-		
-		public int size() {
-			return size;
 		}
 	}
 }

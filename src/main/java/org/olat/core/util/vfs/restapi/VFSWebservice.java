@@ -525,7 +525,7 @@ public class VFSWebservice {
 		for(PathSegment seg:path) {
 			String segPath = seg.getPath();
 			for(VFSItem item : directory.getItems(new SystemItemFilter())) {
-				if(normalize(item.getName()).equals(segPath)) {
+				if(item.getName().equals(segPath) || normalize(item.getName()).equals(segPath)) {
 					if(item instanceof VFSLeaf) {
 						if(path.get(path.size() - 1) == seg) {
 							resolvedItem = item;
