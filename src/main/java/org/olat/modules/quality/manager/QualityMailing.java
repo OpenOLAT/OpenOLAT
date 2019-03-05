@@ -267,8 +267,9 @@ class QualityMailing {
 		searchParams.setDataCollectionRef(dataCollection);
 		List<QualityDataCollectionView> dataCollectionViews = dataCollectionDao.loadDataCollections(translator, searchParams, 0, -1);
 		
+		QualityDataCollectionView dataCollectionView = null;
 		if (!dataCollectionViews.isEmpty()) {
-			QualityDataCollectionView dataCollectionView = dataCollectionViews.get(0);
+			dataCollectionView = dataCollectionViews.get(0);
 			mailBuilder.withStart(dataCollectionView.getStart())
 					.withDeadline(dataCollectionView.getDeadline())
 					.withTopic(dataCollectionView.getTopic())
@@ -295,7 +296,7 @@ class QualityMailing {
 		String result = getResult(translator, rubricStatistics);
 		mailBuilder.withResult(result);
 		
-		File reportPdf = getReportPdf(dataCollection, recipient, tempDir, locale);
+		File reportPdf = getReportPdf(dataCollection, dataCollectionView, recipient, tempDir, locale);
 		mailBuilder.withReportPfd(reportPdf);
 		
 		return mailBuilder.build();
@@ -372,13 +373,24 @@ class QualityMailing {
 		}
 	}
 	
-	private File getReportPdf(QualityDataCollection dataCollection, Identity recipient, Path tempDir, Locale locale) {
+	private File getReportPdf(QualityDataCollection dataCollection, QualityDataCollectionView dataCollectionView, Identity recipient, Path tempDir, Locale locale) {
+		if (!pdfModule.isEnabled()) return null;
 		if (tempDir == null || !tempDir.toFile().exists()) return null;
+		
+		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(dataCollection, null);
+		Form form = evaluationFormManager.loadForm(survey.getFormEntry());
+		DataStorage storage = evaluationFormManager.loadStorage(survey.getFormEntry());
+		SessionFilter filter = SessionFilterFactory.createSelectDone(survey);
+		LegendNameGenerator legendNameGenerator = new SessionInformationLegendNameGenerator(filter);
+		EvaluationFormPrintSelection printSelection = new EvaluationFormPrintSelection();
+		printSelection.setOverview(true);
+		printSelection.setTables(true);
 		
 		String localeKey = i18nModule.getLocaleKey(locale);
 		File reportPdf = tempDir.resolve("report_" + localeKey + ".pdf").toFile();
 		if (!reportPdf.exists()) {
-			reportPdf = createPdfOverviewReport(dataCollection, recipient, reportPdf, locale);
+			reportPdf = createPdfOverviewReport(dataCollection, dataCollectionView, form, storage, filter,
+					legendNameGenerator, printSelection, recipient, reportPdf, locale);
 		}
 		if (reportPdf.exists()) {
 			//check if file has content
@@ -389,44 +401,29 @@ class QualityMailing {
 		}
 		return null;
 	}
-
 	
-	private File createPdfOverviewReport(QualityDataCollection dataCollection, Identity recipient, File reportPdf, Locale locale) {
-		if (pdfModule.isEnabled()) {
-			EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(dataCollection, null);
-			Form form = evaluationFormManager.loadForm(survey.getFormEntry());
-			DataStorage storage = evaluationFormManager.loadStorage(survey.getFormEntry());
-			SessionFilter filter = SessionFilterFactory.createSelectDone(survey);
-			EvaluationFormPrintSelection printSelection = new EvaluationFormPrintSelection();
-			printSelection.setOverview(true);
-			printSelection.setTables(true);
-			
-			ControllerCreator controllerCreator = getControllerCreator(dataCollection, form, storage, filter, printSelection, locale);
-			try (OutputStream out = new FileOutputStream(reportPdf)) {
-				WindowControl bwControl = new WindowControlMocker();
-				pdfService.convert(recipient, controllerCreator, bwControl, out);
-				return reportPdf;
-			} catch (IOException e) {
-				log.error("Error while saving quality overview report! Path: " + reportPdf.getAbsolutePath(), e);
-			}
+	private File createPdfOverviewReport(QualityDataCollection dataCollection, QualityDataCollectionView dataCollectionView, Form form, DataStorage storage, SessionFilter filter, LegendNameGenerator legendNameGenerator, EvaluationFormPrintSelection printSelection, Identity recipient, File reportPdf, Locale locale) {
+		ControllerCreator controllerCreator = getControllerCreator(dataCollection, dataCollectionView, form, storage,
+				filter, legendNameGenerator, printSelection, locale);
+		try (OutputStream out = new FileOutputStream(reportPdf)) {
+			WindowControl bwControl = new WindowControlMocker();
+			pdfService.convert(recipient, controllerCreator, bwControl, out);
+			return reportPdf;
+		} catch (IOException e) {
+			log.error("Error while saving quality overview report! Path: " + reportPdf.getAbsolutePath(), e);
 		}
 		return null;
 	}
 	
-	private ControllerCreator getControllerCreator(QualityDataCollection dataCollection, Form form, DataStorage storage,
-			SessionFilter filter, EvaluationFormPrintSelection printSelection, Locale locale) {
-		QualityDataCollectionViewSearchParams searchParams = new QualityDataCollectionViewSearchParams();
-		searchParams.setDataCollectionRef(dataCollection);
-		Translator translator = Util.createPackageTranslator(QualityMainController.class, locale);
-		QualityDataCollectionView dataCollectionView = dataCollectionDao.loadDataCollections(translator, searchParams, 0, -1).get(0);
+	private ControllerCreator getControllerCreator(QualityDataCollection dataCollection,
+			QualityDataCollectionView dataCollectionView, Form form, DataStorage storage, SessionFilter filter,
+			LegendNameGenerator legendNameGenerator, EvaluationFormPrintSelection printSelection, Locale locale) {
 		
 		Figures figures = FiguresFactory.createOverviewFigures(dataCollection, dataCollectionView, locale);
-		
 		Comparator<EvaluationFormSession> comparator = new NameShuffleAnonymousComparator();
-		LegendNameGenerator legendNameGenerator = new SessionInformationLegendNameGenerator(filter);
 		ReportHelper reportHelper = ReportHelper.builder(locale).withLegendNameGenrator(legendNameGenerator)
 				.withSessionComparator(comparator).withColors().build();
-		
+
 		return new EvaluationFormPrintControllerCreator(form, storage, filter, figures, reportHelper, printSelection);
 	}
 
