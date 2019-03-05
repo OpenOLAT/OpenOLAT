@@ -73,7 +73,7 @@ public class FilteredPrintController extends BasicController {
 	protected FilteredPrintController(UserRequest ureq, WindowControl wControl, Controller controller,
 			AnalysisSearchParameter searchParams, boolean insufficientOnly, String title) {
 		super(ureq, wControl);
-		VelocityContainer mainVC = createVelocityContainer("groupby_print");
+		VelocityContainer mainVC = createVelocityContainer("filtered_print");
 		
 		mainVC.contextPut("mainTitle", title);
 		mainVC.put("ctrl", controller.getInitialComponent());

@@ -609,9 +609,15 @@ public class AnalysisController extends BasicController implements TooledControl
 		ControllerCreator printControllerCreator = null;
 		Link selectedButton = segmentButtonsCmp.getSelectedButton();
 		if (selectedButton == heatMapLink) {
-			printControllerCreator = getHeatMapControllerCreator();
+			printControllerCreator = heatMapCtrl.getDetailsControllerCreator(presentation.getFormEntry().getDisplayname());
+			if (printControllerCreator == null) {
+				printControllerCreator = getHeatMapControllerCreator();
+			}
 		} else if (selectedButton == trendDiagramLink) {
-			printControllerCreator = getTrendControllerCreator();
+			printControllerCreator = trendDiagramCtrl.getDetailsControllerCreator(presentation.getFormEntry().getDisplayname());
+			if (printControllerCreator == null) {
+				printControllerCreator = getTrendControllerCreator();
+			}
 		}
 		return printControllerCreator;
 	}
