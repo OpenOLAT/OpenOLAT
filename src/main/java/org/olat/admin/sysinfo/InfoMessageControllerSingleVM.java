@@ -76,6 +76,9 @@ public class InfoMessageControllerSingleVM extends BasicController {
 		Property p = pm.findProperty(null, null, null, AdminModule.SYSTEM_PROPERTY_CATEGORY, AdminModule.PROPERTY_MAINTENANCE_MESSAGE);
 		String adminToken = (p == null ? "" : p.getStringValue());
 		infoMsgView.contextPut("admintoken", adminToken);
+		String protocol = Settings.getURIScheme().substring(0, Settings.getURIScheme().length()-1);
+		String changeUrl = Settings.getServerContextPathURI() + "admin.html?token=TOKEN&cmd=setinfomessage&msg=Lorem Ipsum";
+		infoMsgView.contextPut("admintokenusage", translate("infomsg.token.usage", new String[] { protocol, changeUrl }));
 		
 		infomsgEditButton = LinkFactory.createButton("infomsgEdit", infoMsgView, this);
 		infomsgClearButton = LinkFactory.createButton("infomsgClear", infoMsgView, this);
