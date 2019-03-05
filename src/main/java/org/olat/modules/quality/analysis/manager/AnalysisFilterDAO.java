@@ -361,7 +361,8 @@ public class AnalysisFilterDAO {
 		TypedQuery<Integer> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Integer.class);
 		appendParameters(query, searchParams);
-		return query.getResultList().get(0);
+		List<Integer> resultList = query.getResultList();
+		return !resultList.isEmpty()? resultList.get(0): null;
 	}
 
 	List<Long> loadSessionKeys(AnalysisSearchParameter searchParams) {
