@@ -447,6 +447,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.quality.manager.QualityServiceImplTest.class,
 	org.olat.modules.webFeed.manager.FeedManagerImplTest.class,
 	org.olat.modules.webFeed.manager.RomeFeedFetcherTest.class,
+	org.olat.modules.wopi.manager.WopiXStreamTest.class,
 	org.olat.resource.accesscontrol.provider.auto.manager.AutoAccessManagerImplTest.class,
 	org.olat.resource.accesscontrol.provider.auto.manager.ExternalIdHandlerTest.class,
 	org.olat.resource.accesscontrol.provider.auto.manager.ExternalRefHandlerTest.class,
