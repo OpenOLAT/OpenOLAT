@@ -82,6 +82,7 @@ import org.olat.modules.quality.analysis.MultiKey;
 import org.olat.modules.quality.analysis.QualityAnalysisService;
 import org.olat.modules.quality.analysis.TemporalGroupBy;
 import org.olat.modules.quality.analysis.ui.AnalysisController.ToolComponents;
+import org.olat.modules.quality.analysis.ui.GroupByNameCache.Name;
 import org.olat.modules.quality.model.QualityDataCollectionRefImpl;
 import org.olat.modules.quality.ui.DataCollectionReportController;
 import org.olat.modules.taxonomy.model.TaxonomyLevelRefImpl;
@@ -559,7 +560,7 @@ public abstract class GroupByController extends FormBasicController implements F
 		for (MultiKey multiKey : keys) {
 			if (MultiKey.none().equals(multiKey)) continue;
 			
-			List<String> groupNames = getGroupNames(multiKey, groupNameNA);
+			List<String> groupNames = getGroupNames(multiKey, groupNameNA, true);
 			
 			List<? extends GroupedStatistic> rowStatistics = getGroupedStatistcList(multiKey);
 			GroupByRow row = new GroupByRow(multiKey, groupNames, rowStatistics);
@@ -578,23 +579,24 @@ public abstract class GroupByController extends FormBasicController implements F
 		tableEl.reset(true, true, true);
 	}
 
-	private List<String> getGroupNames(MultiKey multiKey, String groupNameNA) {
+	private List<String> getGroupNames(MultiKey multiKey, String groupNameNA, boolean formatted) {
 		List<String> groupNames = new ArrayList<>(3);
 		if (multiGroupBy.getGroupBy1() != null) {
-			groupNames.add(getGroupName(multiKey, 1, groupNameNA));
+			groupNames.add(getGroupName(multiKey, 1, groupNameNA, formatted));
 		}
 		if (multiGroupBy.getGroupBy2() != null) {
-			groupNames.add(getGroupName(multiKey, 2, groupNameNA));
+			groupNames.add(getGroupName(multiKey, 2, groupNameNA, formatted));
 		}
 		if (multiGroupBy.getGroupBy3() != null) {
-			groupNames.add(getGroupName(multiKey, 3, groupNameNA));
+			groupNames.add(getGroupName(multiKey, 3, groupNameNA, formatted));
 		}
 		return groupNames;
 	}
 
-	private String getGroupName(MultiKey mKey, int index, String groupNameNA) {
+	private String getGroupName(MultiKey mKey, int index, String groupNameNA, boolean formatted) {
 		GroupByKey groupByAndKey = getGroupByAndKey(multiGroupBy, mKey, index);
-		String groupName = groupByNames.getName(groupByAndKey);
+		Name name = groupByNames.getName(groupByAndKey);
+		String groupName = formatted? name.getFormatedName(): name.getPlainName();
 		return StringHelper.containsNonWhitespace(groupName)? groupName: groupNameNA;
 	}
 
@@ -803,7 +805,7 @@ public abstract class GroupByController extends FormBasicController implements F
 
 	private String getTrendTitle(MultiKey multiKey) {
 		String groupNameNA = translate("heatmap.not.specified");
-		return getGroupNames(multiKey, groupNameNA)
+		return getGroupNames(multiKey, groupNameNA, false)
 				.stream()
 				.collect(Collectors.joining(", "));
 	}

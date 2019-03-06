@@ -356,9 +356,6 @@
 	.o_evaluation_block {
 		page-break-inside : avoid;
 	}
-	.o_evaluation_duration {
-		page-break-before: always;
-	}
 	.o_evaluation_discrete_radio .o_slider .o_evaluation_steps div.radio {
 		-webkit-print-color-adjust: exact;
 		color-adjust: exact;
@@ -386,6 +383,7 @@
 			width: 100%;
 		}
 	}
+	
 	.o_eva_content {
 		margin-top: 4em;
 	}
@@ -396,6 +394,10 @@
 				margin: 0px 0px 1px 0px;
 			}
 		}
+	}
+	
+	.o_evaluation_duration {
+		display:none;
 	}
 }
 
