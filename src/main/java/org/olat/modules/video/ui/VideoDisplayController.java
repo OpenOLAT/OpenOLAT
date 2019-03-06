@@ -441,7 +441,7 @@ public class VideoDisplayController extends BasicController {
 
 	@Override
 	protected void doDispose() {
-
+		//
 	}
 
 	@Override
@@ -488,6 +488,7 @@ public class VideoDisplayController extends BasicController {
 				String markerId = ureq.getParameter("markerId");
 				loadMarker(ureq, currentTime, markerId);
 				break;
+			default: // do nothing
 		}
 		updateGUIPreferences(ureq, src);
 	}

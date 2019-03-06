@@ -57,12 +57,13 @@ public class VideoMetadataDAO {
 	 * @return the videometadata or null
 	 */
 	VideoMetaImpl getVideoMetadata(OLATResource videoResource) {
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(128);
 		sb.append("select meta from videometadata as meta")
-			.append(" where meta.videoResource=:videoresource");
+		  .append(" inner join fetch meta.videoResource as vResource")
+		  .append(" where vResource.key=:resourceKey");
 		List<VideoMetaImpl> metadata = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(),VideoMetaImpl.class)
-				.setParameter("videoresource", videoResource)
+				.setParameter("resourceKey", videoResource.getKey())
 				.getResultList();
 		return metadata.isEmpty() ? null :  metadata.get(0);
 	}
