@@ -130,7 +130,7 @@ public class TabbedPaneController extends BasicController implements ControllerE
 
 		userDeleteTabP.addTab(translate("delete.workflow.tab.status.email"), uureq -> {
 			if(userDeleteStatusCtr == null) {
-				userDeleteStatusCtr = new StatusController(ureq, getWindowControl(), manageableOrganisations);
+				userDeleteStatusCtr = new StatusController(uureq, getWindowControl(), manageableOrganisations);
 				listenTo(userDeleteStatusCtr);
 			}
 			return userDeleteStatusCtr.getInitialComponent();
@@ -138,7 +138,7 @@ public class TabbedPaneController extends BasicController implements ControllerE
 
 		userDeleteTabP.addTab(translate("delete.workflow.tab.select.delete"), uureq -> {
 			if(readyToDeleteCtr == null) {
-				readyToDeleteCtr = new ReadyToDeleteController(ureq, getWindowControl(), manageableOrganisations);
+				readyToDeleteCtr = new ReadyToDeleteController(uureq, getWindowControl(), manageableOrganisations);
 				listenTo(readyToDeleteCtr);
 			}
 			return readyToDeleteCtr.getInitialComponent();

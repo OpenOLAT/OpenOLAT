@@ -734,8 +734,10 @@ public class VideoManagerImpl implements VideoManager {
 		entry = repositoryManager.setExpenditureOfWork(entry, durationStr);
 		
 		VideoMeta meta = getVideoMetadata(entry.getOlatResource());
-		meta.setLength(durationStr);
-		videoMetadataDao.updateVideoMetadata(meta);
+		if(meta != null && meta.getVideoResource() != null) {
+			meta.setLength(durationStr);
+			videoMetadataDao.updateVideoMetadata(meta);
+		}
 		return entry;
 	}
 
@@ -857,7 +859,7 @@ public class VideoManagerImpl implements VideoManager {
 			sourceMeta = videoMetadataDao.copyVideoMetadata(targetEntry, sourceMeta);
 		}
 		// 3) Trigger transcoding in background
-		if (videoModule.isTranscodingEnabled() && !StringHelper.containsNonWhitespace(sourceMeta.getUrl())) {
+		if (videoModule.isTranscodingEnabled() && sourceMeta != null && !StringHelper.containsNonWhitespace(sourceMeta.getUrl())) {
 			startTranscodingProcess(targetResource);
 		}
 	}

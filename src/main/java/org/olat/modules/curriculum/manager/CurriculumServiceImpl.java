@@ -260,6 +260,9 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	public CurriculumElement createCurriculumElement(String identifier, String displayName,  CurriculumElementStatus status,
 			Date beginDate, Date endDate, CurriculumElementRef parentRef, CurriculumElementType elementType,
 			CurriculumCalendars calendars, CurriculumLectures lectures, Curriculum curriculum) {
+		if(parentRef == null) {
+			curriculum = getCurriculum(curriculum);
+		}
 		return curriculumElementDao.createCurriculumElement(identifier, displayName, status,
 				beginDate, endDate, parentRef, elementType, calendars, lectures, curriculum);
 	}
