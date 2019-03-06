@@ -22,6 +22,7 @@ package org.olat.modules.portfolio.ui.wizard;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -134,7 +135,8 @@ public class RepositoryEntryMembersController extends StepFormBasicController {
 	
 	private void loadModel() {
 		List<Identity> members = repositoryService.getMembers(entry, RepositoryEntryRelationType.all, role.name());
-		userTableModel.setObjects(members);
+		List<Identity> deduplicatedMembers = new ArrayList<>(new HashSet<>(members));
+		userTableModel.setObjects(deduplicatedMembers);
 		tableEl.reset(true, true, true);
 	}
 
