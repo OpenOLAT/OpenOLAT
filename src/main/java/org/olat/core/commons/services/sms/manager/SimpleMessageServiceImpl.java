@@ -29,6 +29,10 @@ import org.olat.core.commons.services.sms.SimpleMessageException;
 import org.olat.core.commons.services.sms.SimpleMessageModule;
 import org.olat.core.commons.services.sms.SimpleMessageService;
 import org.olat.core.commons.services.sms.model.MessageStatistics;
+import org.olat.core.commons.services.sms.ui.AbstractSMSConfigurationController;
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.impl.Form;
+import org.olat.core.gui.control.WindowControl;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
@@ -84,7 +88,7 @@ public class SimpleMessageServiceImpl implements SimpleMessageService {
 		number = number.replace("+", "").replace(" ", "");
 		if(StringHelper.isLong(number)) {
 			try {
-				Long phone = new Long(number);
+				Long phone = Long.valueOf(number);
 				return phone > 0;
 			} catch (NumberFormatException e) {
 				//
@@ -134,8 +138,15 @@ public class SimpleMessageServiceImpl implements SimpleMessageService {
 	public MessagesSPI getMessagesSpi() {
 		if(Settings.isDebuging()) return new DevNullProvider();
 
-		if(messageModule.isEnabled() && messagesSpiList.size() > 0) {
-			return messagesSpiList.get(0);
+		if(messageModule.isEnabled() && !messagesSpiList.isEmpty()) {
+			String providerId = messageModule.getProviderId();
+			if(StringHelper.containsNonWhitespace(providerId) && !"devnull".equals(providerId)) {
+				for(MessagesSPI spi:messagesSpiList) {
+					if(providerId.equalsIgnoreCase(spi.getId())) {
+						return spi;
+					}
+				}
+			}
 		}
 		return new DevNullProvider();
 	}
@@ -155,6 +166,11 @@ public class SimpleMessageServiceImpl implements SimpleMessageService {
 		@Override
 		public boolean isValid() {
 			return true;
+		}
+
+		@Override
+		public AbstractSMSConfigurationController getConfigurationController(UserRequest ureq, WindowControl wControl, Form form) {
+			return null;
 		}
 
 		@Override

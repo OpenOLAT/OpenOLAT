@@ -42,13 +42,16 @@ import org.springframework.stereotype.Service;
 @Service
 public class SimpleMessageModule extends AbstractSpringModule implements ConfigOnOff {
 	
-	public static final String SMS_ENABLED = "message.enabled";
-	public static final String RESET_PASSWORD_ENABLED = "message.reset.password.enabled";
+	private static final String SMS_ENABLED = "message.enabled";
+	private static final String PROVIDER_ID = "message.provider.id";
+	private static final String RESET_PASSWORD_ENABLED = "message.reset.password.enabled";
 	
 	@Value("${message.enabled:false}")
 	private boolean enabled;
 	@Value("${message.reset.password.enabled:true}")
 	private boolean resetPassword;
+	@Value("${message.provider:WebSMS}")
+	private String providerId;
 	
 
 	@Autowired
@@ -66,10 +69,12 @@ public class SimpleMessageModule extends AbstractSpringModule implements ConfigO
 			enabled = "true".equals(enabledObj);
 		}
 		
-		String resetPasswordEnabledObj = getStringPropertyValue(RESET_PASSWORD_ENABLED, true);
-		if(StringHelper.containsNonWhitespace(resetPasswordEnabledObj)) {
-			resetPassword = "true".equals(resetPasswordEnabledObj);
+		String resetEnabledObj = getStringPropertyValue(RESET_PASSWORD_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(resetEnabledObj)) {
+			resetPassword = "true".equals(resetEnabledObj);
 		}
+		
+		providerId = getStringPropertyValue(PROVIDER_ID, providerId);
 		
 		if(enabled) {//check
 			enableSmsUserProperty();
@@ -127,6 +132,12 @@ public class SimpleMessageModule extends AbstractSpringModule implements ConfigO
 		setStringProperty(RESET_PASSWORD_ENABLED, Boolean.toString(resetPassword), true);
 	}
 	
+	public String getProviderId() {
+		return providerId == null ? null : providerId.toLowerCase();
+	}
 	
-	
+	public void setProviderId(String providerId) {
+		this.providerId = providerId;
+		setStringProperty(PROVIDER_ID, providerId, true);
+	}
 }
