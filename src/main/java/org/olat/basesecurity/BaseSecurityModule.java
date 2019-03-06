@@ -106,6 +106,7 @@ public class BaseSecurityModule extends AbstractSpringModule {
 	private static final String USERSEARCH_MAXRESULTS = "userSearchMaxResults";
 	
 	private static final String RELATION_ROLE_MANAGED = "relationRoleManaged";
+	private static final String RELATION_ROLE_ENABLED = "relationRoleEnabled";
 
 	private static final String USERINFOS_TUNNEL_CBB = "userInfosTunnelCourseBuildingBlock";
 	/** The feature is enabled, always */
@@ -213,6 +214,8 @@ public class BaseSecurityModule extends AbstractSpringModule {
 	@Value("${usersearch.autocomplete.systemadmins:enabled}")
 	private String userSearchAutocompleteForSystemAdmins;
 	
+	@Value("${relation.role.enabled:enabled}")
+	private String relationRoleEnabled;
 	@Value("${managed.relation.role:enabled}")
 	private String relationRoleManaged;
 	
@@ -298,7 +301,9 @@ public class BaseSecurityModule extends AbstractSpringModule {
 		userSearchAutocompleteForSystemAdmins = getStringPropertyValue(USERSEARCHAUTOCOMPLETE_SYSTEMADMINS, userSearchAutocompleteForSystemAdmins);
 
 		// other stuff
-		relationRoleManaged = getStringPropertyValue(USERSEARCHAUTOCOMPLETE_USERS, relationRoleManaged);
+		relationRoleManaged = getStringPropertyValue(RELATION_ROLE_MANAGED, relationRoleManaged);
+		relationRoleEnabled = getStringPropertyValue(RELATION_ROLE_ENABLED, relationRoleEnabled);
+
 		userSearchMaxResults = getStringPropertyValue(USERSEARCH_MAXRESULTS, userSearchMaxResults);
 		userInfosTunnelCourseBuildingBlock = getStringPropertyValue(USERINFOS_TUNNEL_CBB, userInfosTunnelCourseBuildingBlock);
 		wikiEnabled = getStringPropertyValue(WIKI_ENABLED, wikiEnabled);
@@ -539,6 +544,15 @@ public class BaseSecurityModule extends AbstractSpringModule {
 	public void setRelationRoleManaged(boolean managed) {
 		relationRoleManaged = managed ? "enabled" : "disabled";
 		setStringProperty(RELATION_ROLE_MANAGED, relationRoleManaged, true);
+	}
+	
+	public boolean isRelationRoleEnabled() {
+		return "enabled".equals(relationRoleEnabled);
+	}
+
+	public void setRelationRoleEnabled(boolean enabled) {
+		relationRoleEnabled = enabled ? "enabled" : "disabled";
+		setStringProperty(RELATION_ROLE_ENABLED, relationRoleEnabled, true);
 	}
 
 	public boolean isWikiEnabled() {

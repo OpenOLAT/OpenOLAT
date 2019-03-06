@@ -68,7 +68,7 @@ public class CurriculumAdminConfigurationController extends FormBasicController 
 		
 		curriculumMyCoursesEl = uifactory.addCheckboxesHorizontal("curriculum.in.my.courses.enabled", formLayout, onKeys, onValues);
 		curriculumMyCoursesEl.addActionListener(FormEvent.ONCHANGE);
-		if(curriculumModule.isEnabled()) {
+		if(curriculumModule.isCurriculumInMyCourses()) {
 			curriculumMyCoursesEl.select(onKeys[0], true);
 		}
 	}
