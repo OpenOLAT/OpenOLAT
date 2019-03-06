@@ -22,6 +22,7 @@ package org.olat.user.ui.role;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.IdentityRelationshipService;
 import org.olat.basesecurity.RelationRole;
 import org.olat.core.gui.UserRequest;
@@ -29,6 +30,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
@@ -58,10 +60,13 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class RelationRolesAdminController extends FormBasicController {
 	
+	private static final String[] onKeys = new String[] { "on" };
+	
 	private FlexiTableElement tableEl;
 	private RelationRolesTableModel tableModel;
 	
 	private FormLink addRoleButton;
+	private MultipleSelectionElement enableEl;
 	
 	private CloseableModalController cmc;
 	private DialogBoxController confirmDeleteCtrl;
@@ -69,16 +74,26 @@ public class RelationRolesAdminController extends FormBasicController {
 	private SingleKeyTranslatorController translatorCtrl;
 	
 	@Autowired
+	private BaseSecurityModule securityModule;
+	@Autowired
 	private IdentityRelationshipService identityRelationsService;
 	
 	public RelationRolesAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "relation_roles", Util.createPackageTranslator(UserModule.class, ureq.getLocale()));
 		initForm(ureq);
 		loadModel();
+		updateEnableDisable();
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		String[] onValues = new String[] { translate("on") };
+		enableEl = uifactory.addCheckboxesHorizontal("relations.enable", formLayout, onKeys, onValues);
+		enableEl.addActionListener(FormEvent.ONCHANGE);
+		if(securityModule.isRelationRoleEnabled()) {
+			enableEl.select(onKeys[0], true);
+		}
+
 		addRoleButton = uifactory.addFormLink("add.role", formLayout, Link.BUTTON);
 		addRoleButton.setIconLeftCSS("o_icon o_icon_add");
 		
@@ -101,6 +116,12 @@ public class RelationRolesAdminController extends FormBasicController {
 		
 		tableModel = new RelationRolesTableModel(columnsModel, getTranslator(), getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 24, false, getTranslator(), formLayout);
+	}
+	
+	private void updateEnableDisable() {
+		boolean enabled = enableEl.isAtLeastSelected(1);
+		tableEl.setVisible(enabled);
+		addRoleButton.setVisible(enabled);
 	}
 
 	@Override
@@ -154,6 +175,9 @@ public class RelationRolesAdminController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(addRoleButton == source) {
 			doAddRole(ureq);
+		} else if(enableEl == source) {
+			securityModule.setRelationRoleEnabled(enableEl.isAtLeastSelected(1));
+			updateEnableDisable();
 		} else if(tableEl == source) {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;

@@ -17,29 +17,32 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.commons.services.sms;
+package org.olat.core.commons.services.sms.ui;
 
-import org.olat.core.commons.services.sms.ui.AbstractSMSConfigurationController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.WindowControl;
 
 /**
  * 
- * Initial date: 3 févr. 2017<br>
+ * Initial date: 6 mars 2019<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface MessagesSPI {
-
-	public String getId();
+public abstract class AbstractSMSConfigurationController extends FormBasicController {
 	
-	public String getName();
-	
-	public boolean isValid();
-	
-	public AbstractSMSConfigurationController getConfigurationController(UserRequest ureq, WindowControl wControl, Form form);
+	public AbstractSMSConfigurationController(UserRequest ureq, WindowControl wControl, Form form) {
+		super(ureq, wControl, LAYOUT_DEFAULT, null, form);
+	}
 
-	public boolean send(String messageId, String text, String recipient) throws SimpleMessageException;
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		return super.validateFormLogic(ureq);
+	}
 
+	@Override
+	protected void formOK(UserRequest ureq) {
+		//
+	}
 }

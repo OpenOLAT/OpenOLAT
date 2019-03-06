@@ -30,6 +30,7 @@ import java.util.List;
 import org.olat.admin.user.course.CourseOverviewController;
 import org.olat.admin.user.groups.GroupOverviewController;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.modules.bc.FolderConfig;
@@ -144,6 +145,8 @@ public class UserAdminController extends BasicController implements Activateable
 	private UserManager userManager;
 	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private BaseSecurityModule securityModule;
 	@Autowired
 	private LDAPLoginModule ldapLoginModule;
 	@Autowired
@@ -446,7 +449,7 @@ public class UserAdminController extends BasicController implements Activateable
 			return rolesCtr.getInitialComponent();
 		});
 		
-		if (isUserManagerOf || isRolesManagerOf || isAdminOf || isPrincipalOf) {
+		if (securityModule.isRelationRoleEnabled() && (isUserManagerOf || isRolesManagerOf || isAdminOf || isPrincipalOf)) {
 			userTabP.addTab(translate(NLS_EDIT_RELATIONS),  uureq -> {
 				boolean canModify = isUserManagerOf || isRolesManagerOf || isAdminOf;
 				relationsCtrl = new UserRelationsController(uureq, getWindowControl(), identity, canModify);

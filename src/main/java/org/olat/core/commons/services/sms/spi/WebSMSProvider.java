@@ -33,10 +33,16 @@ import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.olat.core.commons.services.sms.MessagesSPI;
+import org.olat.core.commons.services.sms.ui.WebSMSConfigurationController;
+import org.olat.core.configuration.AbstractSpringModule;
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.impl.Form;
+import org.olat.core.gui.control.WindowControl;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
-import org.springframework.beans.factory.InitializingBean;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -48,10 +54,13 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service("messagesSpiWebSMS")
-public class WebSMSProvider implements MessagesSPI, InitializingBean {
+public class WebSMSProvider extends AbstractSpringModule implements MessagesSPI {
 	
 	private static final OLog log = Tracing.createLoggerFor(WebSMSProvider.class);
 	private final BasicCredentialsProvider provider = new BasicCredentialsProvider();
+	
+	private static final String NAME = "websms.username";
+	private static final String CREDENTIALS = "websms.password";
 	
 	@Value("${websms.url:https://api.websms.com/rest/smsmessaging/text}")
 	private String url;
@@ -63,6 +72,11 @@ public class WebSMSProvider implements MessagesSPI, InitializingBean {
 	
 	private boolean test = false;
 	
+	@Autowired
+	public WebSMSProvider(CoordinatorManager coordinatorManager) {
+		super(coordinatorManager);
+	}
+	
 	/**
 	 * Method means for unit tests. The changes are not persisted.
 	 * 
@@ -72,6 +86,24 @@ public class WebSMSProvider implements MessagesSPI, InitializingBean {
 	protected void setCredentials(String username, String password) {
 		this.username = username;
 		this.password = password;
+		provider.setCredentials(new AuthScope("api.websms.com", 443),
+				new UsernamePasswordCredentials(username, password));
+	}
+	
+	@Override
+	public void init() {
+		updateProperties();
+	}
+
+	@Override
+	protected void initFromChangedProperties() {
+		updateProperties();
+	}
+
+	private void updateProperties() {
+		username = getStringPropertyValue(NAME, username);
+		password = getStringPropertyValue(CREDENTIALS, password);
+
 		provider.setCredentials(new AuthScope("api.websms.com", 443),
 				new UsernamePasswordCredentials(username, password));
 	}
@@ -94,11 +126,28 @@ public class WebSMSProvider implements MessagesSPI, InitializingBean {
 	public boolean isValid() {
 		return StringHelper.containsNonWhitespace(username) && StringHelper.containsNonWhitespace(password);
 	}
+	
+	public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
+		setSecretStringProperty(NAME, username, true);
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+		setSecretStringProperty(CREDENTIALS, password, true);
+	}
 
 	@Override
-	public void afterPropertiesSet() throws Exception {
-		provider.setCredentials(new AuthScope("api.websms.com", 443),
-				new UsernamePasswordCredentials(username, password));
+	public WebSMSConfigurationController getConfigurationController(UserRequest ureq, WindowControl wControl, Form form) {
+		return new WebSMSConfigurationController(ureq, wControl, form);
 	}
 
 	@Override
@@ -109,7 +158,7 @@ public class WebSMSProvider implements MessagesSPI, InitializingBean {
 				.build()) {
 			
 			String phone = recipient.replace("+", "").replace(" ", "");
-			String objectStr = jsonPayload(messageId, text, new Long(phone));
+			String objectStr = jsonPayload(messageId, text, Long.valueOf(phone));
 			HttpEntity smsEntity = new StringEntity(objectStr, ContentType.APPLICATION_JSON);
 			send.setEntity(smsEntity);
 			CloseableHttpResponse response = httpclient.execute(send);
