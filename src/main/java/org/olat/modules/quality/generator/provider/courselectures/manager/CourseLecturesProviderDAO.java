@@ -215,16 +215,16 @@ public class CourseLecturesProviderDAO {
 			sb.append("                 and dc.fk_generator = :excludeGeneratorRepoKey");
 			sb.append("              )");
 		}
-		if (searchParams.getFrom() != null) {
-			sb.and().append("lb.l_end_date > :from");
-		}
-		if (searchParams.getTo() != null) {
-			sb.and().append("lb.l_end_date <= :to");
-		}
 		return sb;
 	}
 
 	private void appendWhereNative(QueryBuilder sb, SearchParameters searchParams) {
+		if (searchParams.getFrom() != null) {
+			sb.and().append("lecture_end_date > :from");
+		}
+		if (searchParams.getTo() != null) {
+			sb.and().append("lecture_end_date <= :to");
+		}
 		if (searchParams.getTeacherRef() != null) {
 			sb.and().append("teacher_key = :teacherKey");
 		}

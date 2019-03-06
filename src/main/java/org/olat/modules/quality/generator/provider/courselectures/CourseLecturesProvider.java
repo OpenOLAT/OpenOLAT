@@ -138,9 +138,17 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 
 		List<Organisation> organisations = generatorService.loadGeneratorOrganisations(generator);
 		SearchParameters searchParams = getSeachParameters(generator, configs, organisations, fromDate, toDate);
-		Long count = providerDao.loadLectureBlockCount(searchParams);
+		Long count = loadLectureBlockCount(generator, searchParams);
 		
 		return translator.translate("generate.info", new String[] { String.valueOf(count)});
+	}
+
+	private Long loadLectureBlockCount(QualityGenerator generator, SearchParameters searchParams) {
+		if(log.isDebug()) log.debug("Generator " + generator + " searches with " + searchParams);
+		
+		Long count = providerDao.loadLectureBlockCount(searchParams);
+		if(log.isDebug()) log.debug("Generator " + generator + " found " + count + " entries");
+		return count;
 	}
 
 	@Override
@@ -160,7 +168,7 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 			Date fromDate, Date toDate) {
 		List<Organisation> organisations = generatorService.loadGeneratorOrganisations(generator);
 		SearchParameters searchParams = getSeachParameters(generator, configs, organisations, fromDate, toDate);
-		List<LectureBlockInfo> infos = providerDao.loadLectureBlockInfo(searchParams);
+		List<LectureBlockInfo> infos = loadLectureBlockInfo(generator, searchParams);
 		
 		List<QualityDataCollection> dataCollections = new ArrayList<>();
 		for (LectureBlockInfo lectureBlockInfo: infos) {
@@ -169,6 +177,14 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 			dataCollections.add(dataCollection);
 		}
 		return dataCollections;
+	}
+
+	private List<LectureBlockInfo> loadLectureBlockInfo(QualityGenerator generator, SearchParameters searchParams) {
+		if(log.isDebug()) log.debug("Generator " + generator + " searches with " + searchParams);
+		
+		List<LectureBlockInfo> blockInfos = providerDao.loadLectureBlockInfo(searchParams);
+		if(log.isDebug()) log.debug("Generator " + generator + " found " + blockInfos.size() + " entries");
+		return blockInfos;
 	}
 	
 	private QualityDataCollection generateDataCollection(QualityGenerator generator, QualityGeneratorConfigs configs,

@@ -235,31 +235,37 @@ public class CourseLecturesProviderDAOTest extends OlatTestCase {
 	@Test
 	public void shouldFilterLectureBlockInfosByEndDate() {
 		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("");
-		RepositoryEntry course1 = JunitTestHelper.createAndPersistRepositoryEntry();
-		RepositoryEntry course2 = JunitTestHelper.createAndPersistRepositoryEntry();
-		RepositoryEntry otherEndDate = JunitTestHelper.createAndPersistRepositoryEntry();
-		Date start1 = nextHour();
+		RepositoryEntry course = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry courseToLessLectures = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry courseAfterToDate = JunitTestHelper.createAndPersistRepositoryEntry();
+		Date start11 = nextHour();
 		Date from = nextHour();
-		Date end1 = nextHour();
-		createLectureBlock(course1, teacher, 1, start1, end1);
-		Date start2 = nextHour();
-		Date end2 = nextHour();
+		Date end11 = nextHour();
+		createLectureBlock(course, teacher, 1, start11, end11);
+		Date start21 = nextHour();
+		Date end21 = nextHour();
+		createLectureBlock(courseToLessLectures, teacher, 1, start21, end21);
+		Date start12 = nextHour();
+		Date end12 = nextHour();
 		Date to = nextHour();
-		createLectureBlock(course2, teacher, 1, start2, end2);
+		createLectureBlock(course, teacher, 1, start12, end12);
 		Date otherStart = nextHour();
 		Date otherEnd = nextHour();
-		createLectureBlock(otherEndDate, teacher, 1, otherStart, otherEnd);
+		createLectureBlock(courseAfterToDate, teacher, 3, otherStart, otherEnd);
 		dbInstance.commitAndCloseSession();
 
 		SearchParameters searchParams = new SearchParameters();
 		searchParams.setTeacherRef(teacher);
 		searchParams.setFrom(from);
 		searchParams.setTo(to);
+		searchParams.setSelectingLecture(2);
 		List<LectureBlockInfo> infos = sut.loadLectureBlockInfo(searchParams);
 
 		assertThat(infos).extracting(LectureBlockInfo::getCourseRepoKey)
-				.containsExactlyInAnyOrder(course1.getKey(), course2.getKey())
-				.doesNotContain(otherEndDate.getKey());
+				.containsExactlyInAnyOrder(course.getKey())
+				.doesNotContain(
+						courseToLessLectures.getKey(),
+						courseAfterToDate.getKey());
 	}
 
 	@Test

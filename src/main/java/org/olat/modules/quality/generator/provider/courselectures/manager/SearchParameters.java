@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.OrganisationRef;
@@ -173,6 +174,49 @@ public class SearchParameters {
 
 	public void setTo(Date to) {
 		this.to = to;
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("SearchParameters [minTotalLectures=");
+		builder.append(minTotalLectures);
+		builder.append(", maxTotalLectures=");
+		builder.append(maxTotalLectures);
+		builder.append(", selectingLecture=");
+		builder.append(selectingLecture);
+		builder.append(", lastLectureBlock=");
+		builder.append(lastLectureBlock);
+		builder.append(", finishedDataCollectionForGeneratorAndTopicIdentityRef=");
+		builder.append(finishedDataCollectionForGeneratorAndTopicIdentityRef);
+		builder.append(", finishedDataCollectionForGeneratorAndTopicRepositoryRef=");
+		builder.append(finishedDataCollectionForGeneratorAndTopicRepositoryRef);
+		builder.append(", excludeGeneratorAndTopicIdentityRef=");
+		builder.append(excludeGeneratorAndTopicIdentityRef);
+		builder.append(", excludeGeneratorAndTopicRepositoryRef=");
+		builder.append(excludeGeneratorAndTopicRepositoryRef);
+		builder.append(", teacherRef=");
+		builder.append(teacherRef);
+		builder.append(", courseRefs=");
+		builder.append(courseRefs);
+		builder.append(", curriculumElementRefs={");
+		builder.append(curriculumElementRefs.stream()
+				.map(CurriculumElementRef::getKey)
+				.map(k -> k.toString())
+				.collect(Collectors.joining(", ")));
+		builder.append("]");
+		builder.append(", organisationRefs={");
+		builder.append(organisationRefs.stream()
+				.map(OrganisationRef::getKey)
+				.map(k -> k.toString())
+				.collect(Collectors.joining(", ")));
+		builder.append("]");
+		builder.append(", from=");
+		builder.append(from);
+		builder.append(", to=");
+		builder.append(to);
+		builder.append("]");
+		return builder.toString();
 	}
 
 }
