@@ -50,7 +50,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 class GroupByNameCache {
 	
-	private Map<GroupBy, Map<String, String>> cache = new HashMap<>();
+	private Map<GroupBy, Map<String, Name>> cache = new HashMap<>();
 
 	private final AnalysisSearchParameter searchParams;
 	private final Locale locale;
@@ -76,19 +76,23 @@ class GroupByNameCache {
 				&& !formEntryRef.getKey().equals(searchParams.getFormEntryRef().getKey());
 	}
 	
-	String getName(GroupByKey groupByKey) {
+	Name getName(GroupByKey groupByKey) {
 		if (groupByKey == null) return null;
 		
 		GroupBy groupBy = groupByKey.getGroupBy();
-		Map<String, String> names = cache.get(groupBy);
+		Map<String, Name> names = cache.get(groupBy);
 		if (names == null) {
 			names = load(groupBy);
 			cache.put(groupBy, names);
 		}
-		return names.get(groupByKey.getKey());
+		Name name = names.get(groupByKey.getKey());
+		if (name == null ) {
+			name = new UnformatedName(null);
+		}
+		return name;
 	}
 	
-	private Map<String, String> load(GroupBy groupBy) {
+	private Map<String, Name> load(GroupBy groupBy) {
 		switch (groupBy) {
 		case TOPIC_IDENTITY:
 			return loadTopicIdentityGroupNames();
@@ -119,142 +123,206 @@ class GroupByNameCache {
 		}
 	}
 
-	private Map<String, String> loadTopicIdentityGroupNames() {
-		Map<String, String> keyToName = new HashMap<>();
+	private Map<String, Name> loadTopicIdentityGroupNames() {
+		Map<String, Name> keyToName = new HashMap<>();
 		List<IdentityShort> identities = analysisService.loadTopicIdentity(searchParams);
 		for (IdentityShort identity : identities) {
 			String key = identity.getKey().toString();
 			String value = identity.getLastName() + " " + identity.getFirstName();
-			keyToName.put(key, value);
+			keyToName.put(key, new UnformatedName(value));
 		}
 		return keyToName;
 	}
 
-	private Map<String, String> loadTopicOrganisationGroupNames() {
-		Map<String, String> keyToName = new HashMap<>();
+	private Map<String, Name> loadTopicOrganisationGroupNames() {
+		Map<String, Name> keyToName = new HashMap<>();
 		List<Organisation> organisations = analysisService.loadTopicOrganisations(searchParams, false);
 		for (Organisation organisation : organisations) {
 			String key = organisation.getKey().toString();
 			String value = organisation.getDisplayName();
-			keyToName.put(key, value);
+			keyToName.put(key, new UnformatedName(value));
 		}
 		return keyToName;
 	}
 
-	private Map<String, String> loadTopicCurriculumGroupNames() {
-		Map<String, String> keyToName = new HashMap<>();
+	private Map<String, Name> loadTopicCurriculumGroupNames() {
+		Map<String, Name> keyToName = new HashMap<>();
 		List<Curriculum> curriculums = analysisService.loadTopicCurriculums(searchParams);
 		for (Curriculum curriculum : curriculums) {
 			String key = curriculum.getKey().toString();
 			String value = curriculum.getDisplayName();
-			keyToName.put(key, value);
+			keyToName.put(key, new UnformatedName(value));
 		}
 		return keyToName;
 	}
 
-	private Map<String, String> loadTopicCurriculumElementGroupNames() {
-		Map<String, String> keyToName = new HashMap<>();
+	private Map<String, Name> loadTopicCurriculumElementGroupNames() {
+		Map<String, Name> keyToName = new HashMap<>();
 		List<CurriculumElement> curriculumElements = analysisService.loadTopicCurriculumElements(searchParams);
 		for (CurriculumElement curriculumElement : curriculumElements) {
 			String key = curriculumElement.getKey().toString();
 			String value = curriculumElement.getDisplayName();
-			keyToName.put(key, value);
+			keyToName.put(key, new UnformatedName(value));
 		}
 		return keyToName;
 	}
 
-	private Map<String, String> loadTopicRepositoryEntryGroupNames() {
-		Map<String, String> keyToName = new HashMap<>();
+	private Map<String, Name> loadTopicRepositoryEntryGroupNames() {
+		Map<String, Name> keyToName = new HashMap<>();
 		List<RepositoryEntry> entries = analysisService.loadTopicRepositoryEntries(searchParams);
 		for (RepositoryEntry entry : entries) {
 			String key = entry.getKey().toString();
 			String value = entry.getDisplayname();
-			keyToName.put(key, value);
+			keyToName.put(key, new UnformatedName(value));
 		}
 		return keyToName;
 	}
 
-	private Map<String, String> loadContextExecutorOrganisationGroupNames() {
-		Map<String, String> keyToName = new HashMap<>();
+	private Map<String, Name> loadContextExecutorOrganisationGroupNames() {
+		Map<String, Name> keyToName = new HashMap<>();
 		List<Organisation> elements = analysisService.loadContextExecutorOrganisations(searchParams, false);
 		for (Organisation element : elements) {
 			String key = element.getKey().toString();
 			String value = element.getDisplayName();
-			keyToName.put(key, value);
+			keyToName.put(key, new UnformatedName(value));
 		}
 		return keyToName;
 	}
 
-	private Map<String, String> loadContextCurriculumGroupNames() {
-		Map<String, String> keyToName = new HashMap<>();
+	private Map<String, Name> loadContextCurriculumGroupNames() {
+		Map<String, Name> keyToName = new HashMap<>();
 		List<Curriculum> elements = analysisService.loadContextCurriculums(searchParams);
 		for (Curriculum element : elements) {
 			String key = element.getKey().toString();
 			String value = element.getDisplayName();
-			keyToName.put(key, value);
+			keyToName.put(key, new UnformatedName(value));
 		}
 		return keyToName;
 	}
 
-	private Map<String, String> loadContextCurriculumElementGroupNames() {
-		Map<String, String> keyToName = new HashMap<>();
+	private Map<String, Name> loadContextCurriculumElementGroupNames() {
+		Map<String, Name> keyToName = new HashMap<>();
 		List<CurriculumElement> elements = analysisService.loadContextCurriculumElements(searchParams, false);
 		for (CurriculumElement element : elements) {
 			String key = element.getKey().toString();
 			String value = element.getDisplayName();
-			keyToName.put(key, value);
+			keyToName.put(key, new UnformatedName(value));
 		}
 		return keyToName;
 	}
 	
-	private Map<String, String> loadContextCurriculumOrganisationGroupNames() {
-		Map<String, String> keyToName = new HashMap<>();
+	private Map<String, Name> loadContextCurriculumOrganisationGroupNames() {
+		Map<String, Name> keyToName = new HashMap<>();
 		List<Organisation> elements = analysisService.loadContextCurriculumOrganisations(searchParams, false);
 		for (Organisation element : elements) {
 			String key = element.getKey().toString();
 			String value = element.getDisplayName();
-			keyToName.put(key, value);
+			keyToName.put(key, new UnformatedName(value));
 		}
 		return keyToName;
 	}
 
-	private Map<String, String> loadContextTaxonomyLevelGroupNames() {
-		Map<String, String> keyToName = new HashMap<>();
+	private Map<String, Name> loadContextTaxonomyLevelGroupNames() {
+		Map<String, Name> keyToName = new HashMap<>();
 		List<TaxonomyLevel> elements = analysisService.loadContextTaxonomyLevels(searchParams, false);
 		for (TaxonomyLevel element : elements) {
 			String key = element.getKey().toString();
 			String value = element.getDisplayName();
-			keyToName.put(key, value);
+			keyToName.put(key, new UnformatedName(value));
 		}
 		return keyToName;
 	}
 
-	private Map<String, String> loadContextLocationGroupNames() {
-		Map<String, String> keyToName = new HashMap<>();
+	private Map<String, Name> loadContextLocationGroupNames() {
+		Map<String, Name> keyToName = new HashMap<>();
 		List<String> contextLocations = analysisService.loadContextLocations(searchParams);
 		for (String location: contextLocations) {
 			String key = location;
 			String value = location;
-			keyToName.put(key, value);
+			keyToName.put(key, new UnformatedName(value));
 		}
 		return keyToName;
 	}
 	
-	private Map<String, String> loadDataCollectionGroupNames() {
-		Map<String, String> keyToName = new HashMap<>();
+	private Map<String, Name> loadDataCollectionGroupNames() {
+		Map<String, Name> keyToName = new HashMap<>();
 		List<QualityDataCollection> dataCollections = analysisService.loadDataCollections(searchParams);
 		for (QualityDataCollection dataCollection : dataCollections) {
 			String key = dataCollection.getKey().toString();
-			String period = EvaluationFormFormatter.period(dataCollection.getStart(), dataCollection.getDeadline(), locale);
-			StringBuilder sb = new StringBuilder();
-			sb.append(StringHelper.escapeHtml(dataCollection.getTitle()));
-			if (period != null) {
-				sb.append("<small> (").append(StringHelper.escapeHtml(period)).append(")</small>");
-			}
-			String value = sb.toString();
-			keyToName.put(key, value);
+			String plainName = getPlainDataCollectionName(dataCollection);
+			String formatedName = getFormatedDataCollectionName(dataCollection);
+			keyToName.put(key, new FormatedName(plainName, formatedName));
 		}
 		return keyToName;
+	}
+	
+	private String getPlainDataCollectionName(QualityDataCollection dataCollection) {
+		String period = EvaluationFormFormatter.period(dataCollection.getStart(), dataCollection.getDeadline(), locale);
+		StringBuilder sb = new StringBuilder();
+		sb.append(dataCollection.getTitle());
+		if (period != null) {
+			sb.append(" (").append(StringHelper.escapeHtml(period)).append(")");
+		}
+		return sb.toString();
+	}
+	
+	private String getFormatedDataCollectionName(QualityDataCollection dataCollection) {
+		String period = EvaluationFormFormatter.period(dataCollection.getStart(), dataCollection.getDeadline(), locale);
+		StringBuilder sb = new StringBuilder();
+		sb.append(StringHelper.escapeHtml(dataCollection.getTitle()));
+		if (period != null) {
+			sb.append("<small> (").append(StringHelper.escapeHtml(period)).append(")</small>");
+		}
+		return sb.toString();
+	}
+
+	static interface Name {
+		
+		String getPlainName();
+		
+		String getFormatedName();
+	}
+	
+	static class UnformatedName implements Name {
+		
+		private String plainName;
+
+		private UnformatedName(String plainName) {
+			this.plainName = plainName;
+		}
+
+		@Override
+		public String getPlainName() {
+			return plainName;
+		}
+
+		@Override
+		public String getFormatedName() {
+			return plainName;
+		}
+		
+	}
+	
+	static class FormatedName implements Name {
+		
+		private String plainName;
+		private String formatedName;
+		
+		private FormatedName(String plainName, String formatedName) {
+			this.plainName = plainName;
+			this.formatedName = formatedName;
+		}
+
+		@Override
+		public String getPlainName() {
+			return plainName;
+		}
+
+		@Override
+		public String getFormatedName() {
+			return formatedName;
+		}
+		
 	}
 
 }
