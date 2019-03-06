@@ -61,6 +61,7 @@ import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.modules.curriculum.model.CurriculumRefImpl;
@@ -116,11 +117,12 @@ public abstract class GroupByController extends FormBasicController implements F
 	private FlexiTableElement tableEl;
 	private FormLayoutContainer legendLayout;
 	
-	private Analysis2ColController detailColsCtrl;
 	private FilterController filterCtrl;
 	private Boolean showFilter;
-	private Controller trendCtrl;
-	private Controller detailCtrl;
+	private Analysis2ColController sliderTrendColsCtrl;
+	private SliderTrendController sliderTrendCtrl;
+	private Analysis2ColController dataCollectionColsCtrl;
+	private Controller dataCollectionCtrl;
 	
 	// This list is the master for the sort order of the questions (sliders).
 	private final List<SliderWrapper> sliders;
@@ -258,9 +260,22 @@ public abstract class GroupByController extends FormBasicController implements F
 
 	void setShowFilter(Boolean show) {
 		this.showFilter = show;
-		if (detailColsCtrl != null) {
-			detailColsCtrl.setShowFilter(show);
+		if (sliderTrendColsCtrl != null) {
+			sliderTrendColsCtrl.setShowFilter(show);
 		}
+	}
+
+	public ControllerCreator getDetailsControllerCreator(String formDisplayName) {
+		Controller lastController = stackPanel.getLastController();
+		if (lastController == sliderTrendColsCtrl) {
+			return (lureq, lwControl) -> {
+				String detailsTitle = stackPanel.getBreadCrumbs().get(stackPanel.getBreadCrumbs().size()-1).getCustomDisplayText();
+				String title = translate("analysis.details.print.title", new String[] {formDisplayName, detailsTitle});
+				return new FilteredPrintController(lureq, lwControl, sliderTrendCtrl, sliderTrendCtrl.getSearchParams(),
+						false, title);
+			};
+		}
+		return null;
 	}
 
 	@Override
@@ -668,18 +683,18 @@ public abstract class GroupByController extends FormBasicController implements F
 	private void doShowTrend(UserRequest ureq, GroupByRow row) {
 		MultiKey multiKey = row.getMultiKey();
 		AnalysisSearchParameter trendSearchParameter = getTrendSearchParams(multiKey);
-		trendCtrl = new SliderTrendController(ureq, getWindowControl(), sliders, trendSearchParameter);
-		listenTo(trendCtrl);
+		sliderTrendCtrl = new SliderTrendController(ureq, getWindowControl(), sliders, trendSearchParameter);
+		listenTo(sliderTrendCtrl);
 		
 		filterCtrl.setReadOnly(true);
-		detailColsCtrl = new Analysis2ColController(ureq, getWindowControl(), trendCtrl, filterCtrl);
+		sliderTrendColsCtrl = new Analysis2ColController(ureq, getWindowControl(), sliderTrendCtrl, filterCtrl);
 		String detailTrend = translate("analysis.trend.breadcrumb", new String[] {getTrendTitle(multiKey)});
-		stackPanel.pushController(detailTrend, detailColsCtrl);
+		stackPanel.pushController(detailTrend, sliderTrendColsCtrl);
 
-		detailColsCtrl.setShowFilter(showFilter);
+		sliderTrendColsCtrl.setShowFilter(showFilter);
 		toolComponents.setPrintVisibility(false);
-		toolComponents.setPrintPopupVisibility(false);
-		toolComponents.setPdfVisibility(false);
+		toolComponents.setPrintPopupVisibility(true);
+		toolComponents.setPdfVisibility(true);
 		toolComponents.setExportVisibility(false);
 	}
 
@@ -803,16 +818,16 @@ public abstract class GroupByController extends FormBasicController implements F
 				&& StringHelper.containsNonWhitespace(groupByKey.getKey())) {
 			Long key = Long.valueOf(groupByKey.getKey());
 			QualityDataCollection dataCollection = qualityService.loadDataCollectionByKey(() -> key);
-			detailCtrl = new DataCollectionReportController(ureq, getWindowControl(), dataCollection);
-			listenTo(detailCtrl);
+			dataCollectionCtrl = new DataCollectionReportController(ureq, getWindowControl(), dataCollection);
+			listenTo(dataCollectionCtrl);
 			
 			filterCtrl.setReadOnly(true);
-			detailColsCtrl = new Analysis2ColController(ureq, getWindowControl(), detailCtrl, filterCtrl);
+			dataCollectionColsCtrl = new Analysis2ColController(ureq, getWindowControl(), dataCollectionCtrl, filterCtrl);
 
 			String detailTrend = translate("analysis.trend.breadcrumb", new String[] { dataCollection.getTitle() });
-			stackPanel.pushController(detailTrend, detailColsCtrl);
+			stackPanel.pushController(detailTrend, dataCollectionColsCtrl);
 
-			detailColsCtrl.setShowFilter(showFilter);
+			dataCollectionColsCtrl.setShowFilter(showFilter);
 			toolComponents.setPrintVisibility(false);
 			toolComponents.setPrintPopupVisibility(false);
 			toolComponents.setPdfVisibility(false);

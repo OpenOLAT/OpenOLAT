@@ -78,6 +78,10 @@ public class SliderTrendController extends FormBasicController {
 		initForm(ureq);
 	}
 
+	public AnalysisSearchParameter getSearchParams() {
+		return searchParams;
+	}
+
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		String groupPage = velocity_root + "/slider_trend_grouping.html";
