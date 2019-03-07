@@ -33,11 +33,10 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.Util;
 import org.olat.ims.qti.statistics.QTIType;
 import org.olat.ims.qti.statistics.model.StatisticsItem;
-import org.olat.ims.qti.statistics.ui.ResponseInfos;
-import org.olat.ims.qti.statistics.ui.Series;
 import org.olat.ims.qti21.QTI21StatisticsManager;
 import org.olat.ims.qti21.manager.CorrectResponsesUtil;
 import org.olat.ims.qti21.model.statistics.ChoiceStatistics;
+import org.olat.ims.qti21.ui.components.FlowComponent;
 import org.olat.ims.qti21.ui.statistics.QTI21AssessmentItemStatisticsController;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticResourceResult;
 import org.olat.ims.qti21.ui.statistics.SeriesFactory;
@@ -60,6 +59,10 @@ import uk.ac.ed.ph.jqtiplus.value.Cardinality;
  */
 public abstract class ChoiceInteractionStatisticsController extends BasicController {
 	
+	protected final VelocityContainer mainVC;
+	
+	protected int count = 0;
+	protected final String mapperUri;
 	protected final Interaction interaction;
 	protected final AssessmentItemRef itemRef;
 	protected final AssessmentItem assessmentItem;
@@ -70,14 +73,15 @@ public abstract class ChoiceInteractionStatisticsController extends BasicControl
 	
 	public ChoiceInteractionStatisticsController(UserRequest ureq, WindowControl wControl,
 			AssessmentItemRef itemRef, AssessmentItem assessmentItem, Interaction interaction,
-			StatisticsItem itemStats, QTI21StatisticResourceResult resourceResult) {
+			StatisticsItem itemStats, QTI21StatisticResourceResult resourceResult, String mapperUri) {
 		super(ureq, wControl, Util.createPackageTranslator(QTI21AssessmentItemStatisticsController.class, ureq.getLocale()));
 		this.interaction = interaction;
 		this.itemRef = itemRef;
 		this.assessmentItem = assessmentItem;
 		this.resourceResult = resourceResult;
+		this.mapperUri = mapperUri;
 		
-		VelocityContainer mainVC = createVelocityContainer("statistics_interaction");
+		mainVC = createVelocityContainer("statistics_interaction");
 		Series series;
 		if(isMultipleChoice()) {
 			series = getMultipleChoice(itemStats);
@@ -126,8 +130,8 @@ public abstract class ChoiceInteractionStatisticsController extends BasicControl
 		List<ResponseInfos> responseInfos = new ArrayList<>();
 		for (ChoiceStatistics statisticResponse:statisticResponses) {
 			Choice choice = statisticResponse.getChoice();
-			String text = getAnswerText(choice);
-			double ans_count = statisticResponse.getCount();
+			FlowComponent text = getAnswerText(choice);
+			double ansCount = statisticResponse.getCount();
 			numOfResults += statisticResponse.getCount();
 			boolean correct = correctAnswers.contains(choice.getIdentifier());
 
@@ -147,7 +151,7 @@ public abstract class ChoiceInteractionStatisticsController extends BasicControl
 			}
 
 			String label = Integer.toString(++i);
-			d1.add(ans_count, label, cssColor);
+			d1.add(ansCount, label, cssColor);
 
 			responseInfos.add(new ResponseInfos(label, text, points, correct, survey, false));
 		}
@@ -157,7 +161,7 @@ public abstract class ChoiceInteractionStatisticsController extends BasicControl
 			if(notAnswered > 0) {
 				String label = Integer.toString(++i);
 				String text = translate("user.not.answer");
-				responseInfos.add(new ResponseInfos(label, text, null, false, survey, false));
+				responseInfos.add(new ResponseInfos(label, text, null, null, null, false, survey, false));
 				d1.add(notAnswered, label, "bar_grey");
 			}
 		}
@@ -185,7 +189,7 @@ public abstract class ChoiceInteractionStatisticsController extends BasicControl
 		List<ResponseInfos> responseInfos = new ArrayList<>();
 		for(ChoiceStatistics statisticResponse:statisticResponses) {
 			Choice choice = statisticResponse.getChoice();
-			String text = getAnswerText(choice);
+			FlowComponent text = getAnswerText(choice);
 			boolean correct = correctAnswers.contains(choice.getIdentifier());
 			double answersPerAnswerOption = statisticResponse.getCount();
 
@@ -238,7 +242,7 @@ public abstract class ChoiceInteractionStatisticsController extends BasicControl
 	
 	protected abstract List<ChoiceStatistics> getChoiceInteractionStatistics();
 	
-	protected abstract String getAnswerText(Choice choice);
+	protected abstract FlowComponent getAnswerText(Choice choice);
 
 
 }

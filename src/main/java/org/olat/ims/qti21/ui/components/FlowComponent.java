@@ -40,7 +40,7 @@ import uk.ac.ed.ph.jqtiplus.state.ItemSessionState;
  */
 public class FlowComponent extends AssessmentObjectComponent {
 	
-	private final static FlowComponentRenderer RENDERER = new FlowComponentRenderer();
+	private static final FlowComponentRenderer RENDERER = new FlowComponentRenderer();
 	
 	private ResolvedAssessmentTest resolvedAssessmentTest;
 	private final File assessmentItemFile;
@@ -50,6 +50,13 @@ public class FlowComponent extends AssessmentObjectComponent {
 	private List<Block> blocks;
 	private List<FlowStatic> flowStatics;
 	private List<InlineStatic> inlineStatics;
+	
+	public FlowComponent(String name, File assessmentItemFile) {
+		super(name);
+		qtiItem = null;
+		this.assessmentItemFile = assessmentItemFile;
+		setDomReplacementWrapperRequired(false);
+	}
 	
 	public FlowComponent(String name, File assessmentItemFile, FlowFormItem qtiItem) {
 		super(name);
@@ -116,9 +123,7 @@ public class FlowComponent extends AssessmentObjectComponent {
 			relativePathString = relativePath.toString();
 		}
 		
-		if(relativePathString.isEmpty()) {
-			return relativePathString;
-		} else if(relativePathString.endsWith("/")) {
+		if(relativePathString.isEmpty() || relativePathString.endsWith("/")) {
 			return relativePathString;
 		}
 		return relativePathString.concat("/");
