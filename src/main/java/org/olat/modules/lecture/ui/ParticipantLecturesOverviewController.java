@@ -330,7 +330,7 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 				List<LectureBlockStatistics> subStatistics = statistics.stream()
 						.filter(s -> includedKeys.contains(s.getRepoKey()))
 						.collect(Collectors.toList());
-				AggregatedLectureBlocksStatistics subTotal = lectureService.aggregatedStatistics(statistics);
+				AggregatedLectureBlocksStatistics subTotal = lectureService.aggregatedStatistics(subStatistics);
 				aggregatedElement.getTable().setStatistics(subStatistics, subTotal);
 			}
 		}
