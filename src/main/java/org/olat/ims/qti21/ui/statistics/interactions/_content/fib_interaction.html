@@ -1,13 +1,13 @@
 <div class="o_qti_statistics_interaction">
 	<h4>$r.translate("chart.responses")</h4>
 	$r.render("questionChart")
-	<ul>
+	<ul class="o_qti_statistics_answers">
 	#foreach($responseInfo in $series.responseInfos)
 		<li class="o_qti_statistics-correct">
 			<strong>$responseInfo.label</strong>
 			<span class="o_qti_statistics_answer"><strong>$responseInfo.text</strong></span>
 			#if($responseInfo.wrongAnswersAvailable)
-				<p class="o_qti_statistics_wrong_answer">#if($responseInfo.survey)
+				<p class="o_qti_statistics_wrong_answer">FIB #if($responseInfo.survey)
 				<i>$r.translate("fib.answer")</i>
 				#else
 				<i>$r.translate("fib.wrong.answer")</i>

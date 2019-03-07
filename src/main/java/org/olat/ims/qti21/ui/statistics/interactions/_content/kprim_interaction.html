@@ -1,14 +1,20 @@
 <div class="o_qti_statistics_interaction">
 	<h4>$r.translate("chart.responses")</h4>
 	$r.render("questionChart")
-	<ul>
+	<ul class="o_qti_statistics_answers">
 	#foreach($responseInfo in $series.responseInfos)
 		#if($responseInfo.correct)
 			<li class="o_qti_statistics-kplus">
 		#else
 			<li class="o_qti_statistics-kminus">
 		#end
-			<strong>$responseInfo.label</strong> <span class="o_qti_statistics_answer">$responseInfo.text</span>
+			<strong>$responseInfo.label</strong> <span class="o_qti_statistics_answer">
+			#if($r.isNotNull($responseInfo.textComponent))
+				$r.render($responseInfo.textComponent)
+			#else
+				$responseInfo.text
+			#end
+			</span>
 		 </li>
 	#end
 	</ul>

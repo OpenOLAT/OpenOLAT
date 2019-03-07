@@ -23,11 +23,9 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.util.Formatter;
-import org.olat.core.util.StringHelper;
 import org.olat.ims.qti.statistics.model.StatisticsItem;
 import org.olat.ims.qti21.model.statistics.ChoiceStatistics;
-import org.olat.ims.qti21.model.xml.AssessmentHtmlBuilder;
+import org.olat.ims.qti21.ui.components.FlowComponent;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticResourceResult;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
@@ -46,10 +44,9 @@ public class SimpleChoiceInteractionStatisticsController extends ChoiceInteracti
 	
 	public SimpleChoiceInteractionStatisticsController(UserRequest ureq, WindowControl wControl,
 			AssessmentItemRef itemRef, AssessmentItem assessmentItem, ChoiceInteraction interaction,
-			StatisticsItem itemStats, QTI21StatisticResourceResult resourceResult) {
-		super(ureq, wControl, itemRef, assessmentItem, interaction, itemStats, resourceResult);
+			StatisticsItem itemStats, QTI21StatisticResourceResult resourceResult, String mapperUri) {
+		super(ureq, wControl, itemRef, assessmentItem, interaction, itemStats, resourceResult, mapperUri);
 	}
-
 
 	@Override
 	protected List<ChoiceStatistics> getChoiceInteractionStatistics() {
@@ -58,12 +55,21 @@ public class SimpleChoiceInteractionStatisticsController extends ChoiceInteracti
 	}
 
 	@Override
-	protected String getAnswerText(Choice choice) {
+	protected FlowComponent getAnswerText(Choice choice) {
+		String cmpId = "sc_" + (count++);
+		FlowComponent cmp = new FlowComponent(cmpId, resourceResult.getAssessmentItemFile(itemRef));
+		cmp.setMapperUri(mapperUri);
+		cmp.setFlowStatics(((SimpleChoice)choice).getFlowStatics());
+		cmp.setResolvedAssessmentTest(resourceResult.getResolvedAssessmentTest());
+		mainVC.put(cmpId, cmp);
+		
+		/*
 		String text = choice.getLabel();
 		if(!StringHelper.containsNonWhitespace(text)) {
 			text = new AssessmentHtmlBuilder().flowStaticString(((SimpleChoice)choice).getFlowStatics());
 			text = Formatter.formatLatexFormulas(text);
 		}
-		return text;
+		*/
+		return cmp;
 	}
 }

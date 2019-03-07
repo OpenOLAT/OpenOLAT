@@ -74,7 +74,8 @@ public class QTI21AssessmentItemStatisticsController extends BasicController {
 	private final VelocityContainer mainVC;
 	
 	private UserFilterController filterCtrl;
-	
+
+	private final String mapperUri;
 	private final AssessmentItem item;
 	private final AssessmentItemRef itemRef;
 	private final QTI21StatisticSearchParams searchParams;
@@ -86,7 +87,8 @@ public class QTI21AssessmentItemStatisticsController extends BasicController {
 	private QTI21StatisticsManager qtiStatisticsManager;
 	
 	public QTI21AssessmentItemStatisticsController(UserRequest ureq, WindowControl wControl,
-			AssessmentItemRef itemRef, ResolvedAssessmentItem resolvedAssessmentItem, String sectionTitle, QTI21StatisticResourceResult resourceResult,
+			AssessmentItemRef itemRef, ResolvedAssessmentItem resolvedAssessmentItem,
+			String sectionTitle, QTI21StatisticResourceResult resourceResult,
 			boolean withFilter, boolean printMode) {
 		super(ureq, wControl);
 		
@@ -94,14 +96,14 @@ public class QTI21AssessmentItemStatisticsController extends BasicController {
 		this.itemRef = itemRef;
 		this.resourceResult = resourceResult;
 		searchParams = resourceResult.getSearchParams();
-		
+
 		mainVC = createVelocityContainer("statistics_item");
 		mainVC.put("d3loader", new StatisticsComponent("d3loader"));
 		mainVC.contextPut("title", item.getTitle());
 		if(StringHelper.containsNonWhitespace(sectionTitle)) {
 			mainVC.contextPut("sectionTitle", sectionTitle);
 		}
-		mainVC.contextPut("printMode", new Boolean(printMode));
+		mainVC.contextPut("printMode", Boolean.valueOf(printMode));
 		
 		QTI21QuestionType type = QTI21QuestionType.getTypeRelax(item);
 		if(type != null) {
@@ -121,6 +123,7 @@ public class QTI21AssessmentItemStatisticsController extends BasicController {
 		itemBodyCtrl = new QTI21ItemBodyController(ureq, getWindowControl(), itemRef, resolvedAssessmentItem, resourceResult);
 		listenTo(itemBodyCtrl);
 		mainVC.put("question", itemBodyCtrl.getInitialComponent());
+		mapperUri = itemBodyCtrl.getMapperUri();
 		
 		putInitialPanel(mainVC);
 		updateData(ureq);
@@ -155,7 +158,7 @@ public class QTI21AssessmentItemStatisticsController extends BasicController {
 			}
 		}
 		
-		if(textEntryInteractions.size() > 0) {
+		if(!textEntryInteractions.isEmpty()) {
 			Controller interactionCtrl = new TextEntryInteractionsStatisticsController(ureq, getWindowControl(), itemRef, item, textEntryInteractions, resourceResult);
 			listenTo(interactionCtrl);
 			String componentId = "interaction" + counter++;
@@ -171,26 +174,24 @@ public class QTI21AssessmentItemStatisticsController extends BasicController {
 		
 		if(interaction instanceof ChoiceInteraction) {
 			interactionCtrl = new SimpleChoiceInteractionStatisticsController(ureq, getWindowControl(),
-					itemRef, item, (ChoiceInteraction)interaction, itemStats, resourceResult);
+					itemRef, item, (ChoiceInteraction)interaction, itemStats, resourceResult, mapperUri);
 		} else if(interaction instanceof MatchInteraction) {
 			String responseIdentifier = interaction.getResponseIdentifier().toString();
 			if(responseIdentifier.startsWith("KPRIM_") 
 					|| QTI21QuestionType.hasClass(interaction, QTI21Constants.CSS_MATCH_KPRIM)) {
 				interactionCtrl = new KPrimStatisticsController(ureq, getWindowControl(),
-						itemRef, item, (MatchInteraction)interaction, resourceResult);
+						itemRef, item, (MatchInteraction)interaction, resourceResult, mapperUri);
 			} else {
 				interactionCtrl = new MatchStatisticsController(ureq, getWindowControl(),
-						itemRef, item, (MatchInteraction)interaction, resourceResult);
+						itemRef, item, (MatchInteraction)interaction, resourceResult, mapperUri);
 			}
 		} else if(interaction instanceof HotspotInteraction) {
 			interactionCtrl = new HotspotInteractionStatisticsController(ureq, getWindowControl(),
 					itemRef, item, (HotspotInteraction)interaction, itemStats, resourceResult);
 		} else if(interaction instanceof HottextInteraction) {
 			interactionCtrl = new HottextInteractionStatisticsController(ureq, getWindowControl(),
-					itemRef, item, (HottextInteraction)interaction, itemStats, resourceResult);
+					itemRef, item, (HottextInteraction)interaction, itemStats, resourceResult, mapperUri);
 		}
-		
-		
 
 		if(interactionCtrl == null) {
 			interactionCtrl = new UnsupportedInteractionController(ureq, getWindowControl(),

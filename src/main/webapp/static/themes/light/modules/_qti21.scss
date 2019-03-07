@@ -1330,16 +1330,13 @@ ul.testPartDrilldown {
 }
 
 /* Statistics */
-.o_qti_statistics_answer {
+/* Override the same for QTI 1.2 */
+ul.o_qti_statistics_answers li span.o_qti_statistics_answer {
 	background: #F5F5F5;
-	padding: 1px 2px;
+	padding: 1px 3px;
 	width: 90%;
-	
-	p {
-		display: inline-block;
-	}
+	display: inline-block;
 }
-
 
 /* Results reporting / detailed assessment results */
 .o_assessment_test_results {

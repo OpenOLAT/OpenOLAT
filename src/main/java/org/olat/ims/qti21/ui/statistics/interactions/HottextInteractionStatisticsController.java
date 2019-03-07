@@ -23,11 +23,9 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.util.Formatter;
-import org.olat.core.util.StringHelper;
 import org.olat.ims.qti.statistics.model.StatisticsItem;
 import org.olat.ims.qti21.model.statistics.ChoiceStatistics;
-import org.olat.ims.qti21.model.xml.AssessmentHtmlBuilder;
+import org.olat.ims.qti21.ui.components.FlowComponent;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticResourceResult;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
@@ -44,14 +42,11 @@ import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
  */
 public class HottextInteractionStatisticsController extends ChoiceInteractionStatisticsController {
 	
-	
 	public HottextInteractionStatisticsController(UserRequest ureq, WindowControl wControl,
 			AssessmentItemRef itemRef, AssessmentItem assessmentItem, HottextInteraction interaction,
-			StatisticsItem itemStats, QTI21StatisticResourceResult resourceResult) {
-		super(ureq, wControl, itemRef, assessmentItem, interaction, itemStats, resourceResult);
+			StatisticsItem itemStats, QTI21StatisticResourceResult resourceResult, String mapperUri) {
+		super(ureq, wControl, itemRef, assessmentItem, interaction, itemStats, resourceResult, mapperUri);
 	}
-
-
 	
 	@Override
 	protected List<ChoiceStatistics> getChoiceInteractionStatistics() {
@@ -61,12 +56,20 @@ public class HottextInteractionStatisticsController extends ChoiceInteractionSta
 	}
 
 	@Override
-	protected String getAnswerText(Choice choice) {
-		String text = choice.getLabel();
+	protected FlowComponent getAnswerText(Choice choice) {
+		String cmpId = "hot_" + (count++);
+		FlowComponent cmp = new FlowComponent(cmpId, resourceResult.getAssessmentItemFile(itemRef));
+		cmp.setMapperUri(mapperUri);
+		cmp.setInlineStatics(((Hottext)choice).getInlineStatics());
+		cmp.setResolvedAssessmentTest(resourceResult.getResolvedAssessmentTest());
+		mainVC.put(cmpId, cmp);
+		
+		/*String text = choice.getLabel();
 		if(!StringHelper.containsNonWhitespace(text)) {
 			text = new AssessmentHtmlBuilder().inlineStaticString(((Hottext)choice).getInlineStatics());
 			text = Formatter.formatLatexFormulas(text);
-		}
-		return text;
+		}*/
+		
+		return cmp;
 	}
 }

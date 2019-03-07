@@ -33,8 +33,8 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.Util;
 import org.olat.ims.qti21.QTI21StatisticsManager;
 import org.olat.ims.qti21.model.statistics.MatchStatistics;
-import org.olat.ims.qti21.model.xml.AssessmentHtmlBuilder;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
+import org.olat.ims.qti21.ui.components.FlowComponent;
 import org.olat.ims.qti21.ui.statistics.QTI21AssessmentItemStatisticsController;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticResourceResult;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,13 +54,14 @@ import uk.ac.ed.ph.jqtiplus.types.Identifier;
  */
 public class MatchStatisticsController extends BasicController {
 	
+	private int count = 0;
 	private final VelocityContainer mainVC;
 	
+	private final String mapperUri;
 	private final MatchInteraction interaction;
 	private final AssessmentItemRef itemRef;
 	private final AssessmentItem assessmentItem;
 	private final QTI21StatisticResourceResult resourceResult;
-	private final AssessmentHtmlBuilder assessmentHtmlBuilder;
 	
 	private final List<ChoiceWrapper> sourceWrappers = new ArrayList<>();
 	private final List<ChoiceWrapper> targetWrappers = new ArrayList<>();
@@ -71,13 +72,13 @@ public class MatchStatisticsController extends BasicController {
 	
 	public MatchStatisticsController(UserRequest ureq, WindowControl wControl,
 			AssessmentItemRef itemRef, AssessmentItem assessmentItem, MatchInteraction interaction,
-			QTI21StatisticResourceResult resourceResult) {
+			QTI21StatisticResourceResult resourceResult, String mapperUri) {
 		super(ureq, wControl, Util.createPackageTranslator(QTI21AssessmentItemStatisticsController.class, ureq.getLocale()));
 		this.interaction = interaction;
 		this.itemRef = itemRef;
 		this.assessmentItem = assessmentItem;
 		this.resourceResult = resourceResult;
-		assessmentHtmlBuilder = new AssessmentHtmlBuilder();
+		this.mapperUri = mapperUri;
 		
 		mainVC = createVelocityContainer("match_interaction");
 		
@@ -230,13 +231,18 @@ public class MatchStatisticsController extends BasicController {
 	public class ChoiceWrapper {
 		private final Identifier choiceIdentifier;
 		private final SimpleAssociableChoice choice;
-		private final String summary;
+		private final FlowComponent summary;
 		
 		public ChoiceWrapper(SimpleAssociableChoice choice) {
 			this.choice = choice;
 			this.choiceIdentifier = choice.getIdentifier();
-			summary = assessmentHtmlBuilder.flowStaticString(choice.getFlowStatics());
 			
+			String summaryName = "sum_" + (count++);
+			summary = new FlowComponent(summaryName, resourceResult.getAssessmentItemFile(itemRef));
+			summary.setMapperUri(mapperUri);
+			summary.setFlowStatics(choice.getFlowStatics());
+			summary.setResolvedAssessmentTest(resourceResult.getResolvedAssessmentTest());
+			mainVC.put(summaryName, summary);
 		}
 
 		public Identifier getChoiceIdentifier() {
@@ -247,7 +253,7 @@ public class MatchStatisticsController extends BasicController {
 			return choice;
 		}
 
-		public String getSummary() {
+		public FlowComponent getSummary() {
 			return summary;
 		}
 	}

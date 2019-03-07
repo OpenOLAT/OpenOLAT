@@ -25,6 +25,8 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Formatter;
+import org.olat.core.util.WebappHelper;
 
 import uk.ac.ed.ph.jqtiplus.node.content.variable.PrintedVariable;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
@@ -60,6 +62,11 @@ public class ItemBodyResultComponentRenderer extends AssessmentObjectComponentRe
 		
 		assessmentItem.getItemBody().getBlocks().forEach(block
 				-> renderBlock(assessmentRenderer, sb, cmp, resolvedAssessmentItem, itemSessionState, block, ubu, translator));
+		
+		if(assessmentRenderer.isMathJax()
+        		|| (WebappHelper.isMathJaxMarkers() && (sb.contains("\\(") || sb.contains("\\[") || sb.contains("$$")))) {
+			sb.append(Formatter.elementLatexFormattingScript("o_c".concat(cmp.getDispatchID())));
+		}
 	}
 
 	@Override
