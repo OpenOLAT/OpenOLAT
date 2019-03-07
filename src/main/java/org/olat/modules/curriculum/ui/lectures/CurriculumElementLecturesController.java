@@ -66,7 +66,7 @@ public class CurriculumElementLecturesController extends BasicController {
 	
 	private static final String PROPS_IDENTIFIER = LecturesSearchFormController.PROPS_IDENTIFIER;
 	
-	private final LecturesListController lecturesListCtlr;
+	private LecturesListController lecturesListCtlr;
 
 	private final boolean adminProps;
 	private final List<UserPropertyHandler> userPropertyHandlers;
@@ -89,6 +89,8 @@ public class CurriculumElementLecturesController extends BasicController {
 		Roles roles = ureq.getUserSession().getRoles();
 		adminProps = securityModule.isUserAllowedAdminProps(roles);
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(PROPS_IDENTIFIER, adminProps);
+
+		VelocityContainer mainVC = createVelocityContainer("curriculum_lectures");
 		
 		boolean all = lectureModule.isOwnerCanViewAllCoursesInCurriculum() || secCallback.canViewAllLectures();
 		
@@ -104,14 +106,18 @@ public class CurriculumElementLecturesController extends BasicController {
 		calculateWarningRates(rawStatistics, aggregatedStatistics);
 		
 		List<RepositoryEntryRef> filterByEntry = new ArrayList<>(entries);
-		
+
 		Curriculum curriculum = element.getCurriculum();
-		lecturesListCtlr = new LecturesListController(ureq, getWindowControl(), toolbarPanel,
-				aggregatedStatistics, filterByEntry, curriculum, element, userPropertyHandlers, PROPS_IDENTIFIER);
-		listenTo(lecturesListCtlr);
+		if(filterByEntry.isEmpty()) {
+			mainVC.contextPut("hasLectures", Boolean.FALSE);
+		} else {
+			lecturesListCtlr = new LecturesListController(ureq, getWindowControl(), toolbarPanel,
+					aggregatedStatistics, filterByEntry, curriculum, element, userPropertyHandlers, PROPS_IDENTIFIER);
+			listenTo(lecturesListCtlr);
+			mainVC.contextPut("hasLectures", Boolean.TRUE);
+			mainVC.put("lectures", lecturesListCtlr.getInitialComponent());
+		}
 		
-		VelocityContainer mainVC = createVelocityContainer("curriculum_lectures");
-		mainVC.put("lectures", lecturesListCtlr.getInitialComponent());
 		mainVC.contextPut("elementName", element.getDisplayName());
 		mainVC.contextPut("elementIdentifier", element.getIdentifier());
 		Formatter formatter = Formatter.getInstance(getLocale());
