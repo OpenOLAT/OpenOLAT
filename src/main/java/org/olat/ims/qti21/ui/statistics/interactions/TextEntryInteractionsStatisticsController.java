@@ -32,8 +32,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.Util;
 import org.olat.ims.qti.statistics.QTIType;
-import org.olat.ims.qti.statistics.ui.ResponseInfos;
-import org.olat.ims.qti.statistics.ui.Series;
 import org.olat.ims.qti21.QTI21StatisticsManager;
 import org.olat.ims.qti21.model.statistics.AbstractTextEntryInteractionStatistics;
 import org.olat.ims.qti21.model.statistics.TextEntryInteractionStatistics;
@@ -123,7 +121,7 @@ public class TextEntryInteractionsStatisticsController extends BasicController {
 			}
 			
 			Float score = entry.getPoints() == null ? null : entry.getPoints().floatValue();
-			responseInfos.add(new ResponseInfos(label, text.toString(), entry.getWrongAnswers(), score, true, survey, false));
+			responseInfos.add(new ResponseInfos(label, text.toString(), null, entry.getWrongAnswers(), score, true, survey, false));
 		}
 		
 		List<BarSeries> serieList = Collections.singletonList(d1);

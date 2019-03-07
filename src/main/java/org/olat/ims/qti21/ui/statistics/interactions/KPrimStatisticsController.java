@@ -29,14 +29,11 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
 import org.olat.ims.qti.statistics.QTIType;
-import org.olat.ims.qti.statistics.ui.ResponseInfos;
-import org.olat.ims.qti.statistics.ui.Series;
 import org.olat.ims.qti21.QTI21StatisticsManager;
 import org.olat.ims.qti21.model.statistics.KPrimStatistics;
-import org.olat.ims.qti21.model.xml.AssessmentHtmlBuilder;
+import org.olat.ims.qti21.ui.components.FlowComponent;
 import org.olat.ims.qti21.ui.statistics.QTI21AssessmentItemStatisticsController;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticResourceResult;
 import org.olat.ims.qti21.ui.statistics.SeriesFactory;
@@ -57,26 +54,29 @@ import uk.ac.ed.ph.jqtiplus.types.Identifier;
  */
 public class KPrimStatisticsController extends BasicController {
 	
+	private final VelocityContainer mainVC;
+	
+	private int count = 0;
+	private final String mapperUri;
 	private final MatchInteraction interaction;
 	private final AssessmentItemRef itemRef;
 	private final AssessmentItem assessmentItem;
 	private final QTI21StatisticResourceResult resourceResult;
-	private final AssessmentHtmlBuilder assessmentHtmlBuilder;
 	
 	@Autowired
 	private QTI21StatisticsManager qtiStatisticsManager;
 	
 	public KPrimStatisticsController(UserRequest ureq, WindowControl wControl,
 			AssessmentItemRef itemRef, AssessmentItem assessmentItem, MatchInteraction interaction,
-			QTI21StatisticResourceResult resourceResult) {
+			QTI21StatisticResourceResult resourceResult, String mapperUri) {
 		super(ureq, wControl, Util.createPackageTranslator(QTI21AssessmentItemStatisticsController.class, ureq.getLocale()));
 		this.interaction = interaction;
 		this.itemRef = itemRef;
 		this.assessmentItem = assessmentItem;
 		this.resourceResult = resourceResult;
-		assessmentHtmlBuilder = new AssessmentHtmlBuilder();
+		this.mapperUri = mapperUri;
 		
-		VelocityContainer mainVC = createVelocityContainer("kprim_interaction");
+		mainVC = createVelocityContainer("kprim_interaction");
 		Series series = getKPrim();
 		VelocityContainer vc = createVelocityContainer("hbar_item");
 		vc.contextPut("series", series);
@@ -100,7 +100,6 @@ public class KPrimStatisticsController extends BasicController {
 		List<KPrimStatistics> statisticResponses = qtiStatisticsManager
 				.getKPrimStatistics(itemRef.getIdentifier().toString(), assessmentItem, interaction, resourceResult.getSearchParams());
 
-		//TODO String mediaBaseURL = resourceResult.getMediaBaseURL();
 		boolean survey = QTIType.survey.equals(resourceResult.getType());
 		int numOfParticipants = resourceResult.getQTIStatisticAssessment().getNumOfParticipants();
 		List<SimpleMatchSet> matchSets = interaction.getSimpleMatchSets();
@@ -125,11 +124,15 @@ public class KPrimStatisticsController extends BasicController {
 			d2.add(wrong, label);
 			d3.add(notanswered, label);
 			
-			String text = "";
+			FlowComponent text = null;
 			for(SimpleAssociableChoice choice:fourMatchSet.getSimpleAssociableChoices()) {
 				if(choice.getIdentifier().equals(choiceIdentifier)) {
-					String textFlow = assessmentHtmlBuilder.flowStaticString(choice.getFlowStatics());
-					text = Formatter.formatLatexFormulas(textFlow);
+					String textName = "kprims_" + (count++);
+					text = new FlowComponent(textName, resourceResult.getAssessmentItemFile(itemRef));
+					text.setFlowStatics(choice.getFlowStatics());
+					text.setMapperUri(mapperUri);
+					text.setResolvedAssessmentTest(resourceResult.getResolvedAssessmentTest());
+					mainVC.put(textName, text);
 				}
 			}
 			responseInfos.add(new ResponseInfos(label, text, null, correctRight, survey, true));

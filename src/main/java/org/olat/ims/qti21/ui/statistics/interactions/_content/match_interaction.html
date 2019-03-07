@@ -5,14 +5,14 @@
 			<tr>
 				<th></th>
 				#foreach($targetChoice in $targetChoices)
-					<th>$r.formatLatexFormulas(${targetChoice.getSummary()})</th>
+					<th>$r.render(${targetChoice.getSummary()})</th>
 				#end
 			</tr>
 		</thead>
 		<tbody>
 		#foreach($sourceChoice in $sourceChoices)
 			<tr>
-				<th>$r.formatLatexFormulas(${sourceChoice.getSummary()})</th>
+				<th>$r.render(${sourceChoice.getSummary()})</th>
 				#foreach($targetChoice in $targetChoices)
 					<td>
 					#set($scoreWrapper = $r.get("${sourceChoice.getChoiceIdentifier().toString()}-${targetChoice.getChoiceIdentifier().toString()}"))

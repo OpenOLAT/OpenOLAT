@@ -16,7 +16,7 @@
 	#if($r.available("questionChart"))
 		$r.render("questionChart")
 	#end
-	<ul>
+	<ul class="o_qti_statistics_answers">
 	#foreach($responseInfo in $series.responseInfos)
 		#if($responseInfo.survey)
 			<li class="o_qti_statistics-survey-item">
@@ -36,7 +36,13 @@
 		<strong>$responseInfo.label.</strong> 
 		#if($r.isNotNull($responseInfo.points)) $r.translate("answer.points", $responseInfo.formattedPoints) #end
 		#if($responseInfo.wrongAnswersAvailable)
-			<span class="o_qti_statistics_answer"><strong>$responseInfo.text</strong></span>
+			<span class="o_qti_statistics_answer">
+			#if($r.isNotNull($responseInfo.textComponent))
+				$r.render($responseInfo.textComponent)
+			#else
+				<strong>$responseInfo.text</strong>
+			#end
+			</span>
 			<p class="o_qti_statistics_wrong_answer">#if($responseInfo.survey)
 			<i>$r.translate("fib.answer")</i>
 			#else
@@ -44,7 +50,12 @@
 			#end
 			$responseInfo.formattedWrongAnswers</p>
 		#else
-			<span class="o_qti_statistics_answer">$responseInfo.text</span>
+			<span class="o_qti_statistics_answer">
+			#if($r.isNotNull($responseInfo.textComponent))
+				$r.render($responseInfo.textComponent)
+			#else
+				$responseInfo.text
+			#end</span>
 		#end
 		 </li>
 	#end 	

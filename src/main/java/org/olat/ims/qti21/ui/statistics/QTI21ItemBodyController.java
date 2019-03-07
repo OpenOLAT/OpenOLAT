@@ -88,6 +88,10 @@ public class QTI21ItemBodyController extends FormBasicController {
 
 		initForm(ureq);
 	}
+	
+	public String getMapperUri() {
+		return mapperUri;
+	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {

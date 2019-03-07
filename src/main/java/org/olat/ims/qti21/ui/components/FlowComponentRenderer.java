@@ -27,6 +27,8 @@ import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.Formatter;
+import org.olat.core.util.WebappHelper;
 
 import uk.ac.ed.ph.jqtiplus.node.content.variable.PrintedVariable;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
@@ -70,6 +72,11 @@ public class FlowComponentRenderer extends AssessmentObjectComponentRenderer {
 			} catch (Exception e) {
 				log.error("", e);
 			}
+		}
+		
+		if(aRenderer.isMathJax()
+        		|| (WebappHelper.isMathJaxMarkers() && (target.contains("\\(") || target.contains("\\[") || target.contains("$$")))) {
+			target.append(Formatter.elementLatexFormattingScript("o_c".concat(avc.getDispatchID())));
 		}
 	}
 
