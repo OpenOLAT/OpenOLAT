@@ -22,9 +22,9 @@ package org.olat.ims.qti21.ui.statistics.interactions;
 import java.util.Collections;
 import java.util.List;
 
+import org.olat.core.gui.components.Component;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentHelper;
-import org.olat.ims.qti21.ui.components.FlowComponent;
 
 /**
  * 
@@ -36,7 +36,7 @@ public class ResponseInfos {
 	
 	private final String label;
 	private final String text;
-	private final FlowComponent textComponent;
+	private final Component textComponent;
 	private final Float points;
 	private final boolean correct;
 	private final boolean survey;
@@ -44,11 +44,11 @@ public class ResponseInfos {
 	
 	private final List<String> wrongAnswers;
 	
-	public ResponseInfos(String label, FlowComponent textComponent, Float points, boolean correct, boolean survey, boolean kprim) {
+	public ResponseInfos(String label, Component textComponent, Float points, boolean correct, boolean survey, boolean kprim) {
 		this(label, null, textComponent, Collections.<String>emptyList(),  points, correct, survey, kprim);
 	}
 	
-	public ResponseInfos(String label, String text, FlowComponent textComponent, List<String> wrongAnswers, Float points,
+	public ResponseInfos(String label, String text, Component textComponent, List<String> wrongAnswers, Float points,
 			boolean correct, boolean survey, boolean kprim) {
 		this.label = label;
 		this.text = text;
@@ -68,7 +68,7 @@ public class ResponseInfos {
 		return text;
 	}
 	
-	public FlowComponent getTextComponent() {
+	public Component getTextComponent() {
 		return textComponent;
 	}
 

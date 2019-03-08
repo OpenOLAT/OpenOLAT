@@ -141,7 +141,7 @@
 		undo_arr.push(empty_canv); //NEWTHING
 		
 		jQuery(tmp_canvas).on('mousedown touchstart', function(e) {
-			if(isDoubleTouch(e)) {
+			if(isDoubleTouch(e) || isRightClick(e)) {
 				return;
 			}
 			
@@ -476,10 +476,24 @@
 			}
 			return false;
 		}
+		
+		function isRightClick(e) {
+			try {
+				console.log(e);
+				if(!(typeof e == "undefined")
+						&& !(typeof e.which == "undefined")
+						&& (e.which == 2 || e.which == 3)) {
+					return true;
+				}
+			} catch(ex) {
+				if(window.console) console.log(ex);
+			}
+			return false;
+		}
 
 		function onPaint(e) {
 			if(!(typeof e == "undefined")) {
-				if(isDoubleTouch(e)) {
+				if(isDoubleTouch(e) || isRightClick(e)) {
 					return;
 				}
 				e.preventDefault();
