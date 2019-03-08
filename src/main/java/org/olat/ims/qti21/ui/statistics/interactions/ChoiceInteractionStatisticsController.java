@@ -36,7 +36,6 @@ import org.olat.ims.qti.statistics.model.StatisticsItem;
 import org.olat.ims.qti21.QTI21StatisticsManager;
 import org.olat.ims.qti21.manager.CorrectResponsesUtil;
 import org.olat.ims.qti21.model.statistics.ChoiceStatistics;
-import org.olat.ims.qti21.ui.components.FlowComponent;
 import org.olat.ims.qti21.ui.statistics.QTI21AssessmentItemStatisticsController;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticResourceResult;
 import org.olat.ims.qti21.ui.statistics.SeriesFactory;
@@ -130,7 +129,7 @@ public abstract class ChoiceInteractionStatisticsController extends BasicControl
 		List<ResponseInfos> responseInfos = new ArrayList<>();
 		for (ChoiceStatistics statisticResponse:statisticResponses) {
 			Choice choice = statisticResponse.getChoice();
-			FlowComponent text = getAnswerText(choice);
+			Component text = getAnswerText(choice);
 			double ansCount = statisticResponse.getCount();
 			numOfResults += statisticResponse.getCount();
 			boolean correct = correctAnswers.contains(choice.getIdentifier());
@@ -189,7 +188,7 @@ public abstract class ChoiceInteractionStatisticsController extends BasicControl
 		List<ResponseInfos> responseInfos = new ArrayList<>();
 		for(ChoiceStatistics statisticResponse:statisticResponses) {
 			Choice choice = statisticResponse.getChoice();
-			FlowComponent text = getAnswerText(choice);
+			Component text = getAnswerText(choice);
 			boolean correct = correctAnswers.contains(choice.getIdentifier());
 			double answersPerAnswerOption = statisticResponse.getCount();
 
@@ -242,7 +241,7 @@ public abstract class ChoiceInteractionStatisticsController extends BasicControl
 	
 	protected abstract List<ChoiceStatistics> getChoiceInteractionStatistics();
 	
-	protected abstract FlowComponent getAnswerText(Choice choice);
+	protected abstract Component getAnswerText(Choice choice);
 
 
 }

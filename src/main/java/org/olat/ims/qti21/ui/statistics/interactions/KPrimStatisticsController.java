@@ -131,7 +131,6 @@ public class KPrimStatisticsController extends BasicController {
 					text = new FlowComponent(textName, resourceResult.getAssessmentItemFile(itemRef));
 					text.setFlowStatics(choice.getFlowStatics());
 					text.setMapperUri(mapperUri);
-					text.setResolvedAssessmentTest(resourceResult.getResolvedAssessmentTest());
 					mainVC.put(textName, text);
 				}
 			}
