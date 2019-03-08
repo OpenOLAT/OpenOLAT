@@ -46,7 +46,8 @@ import net.fortuna.ical4j.model.property.ExDate;
 
 public class CalendarUtils {
 	private static final OLog log = Tracing.createLoggerFor(CalendarUtils.class);
-	private static final SimpleDateFormat ical4jFormatter = new SimpleDateFormat("yyyyMMdd");
+	private static final SimpleDateFormat ical4jDateFormatter = new SimpleDateFormat("yyyyMMdd");
+	private static final SimpleDateFormat ical4jDateTimeFormatter = new SimpleDateFormat("yyyyMMdd'T'HHmmss");
 	private static final SimpleDateFormat occurenceDateTimeFormat = new SimpleDateFormat("yyyyMMdd'T'HHmmss");
 
 	private static final DateFormat iso8601Date = new SimpleDateFormat("yyyy-MM-dd");
@@ -191,10 +192,22 @@ public class CalendarUtils {
 	public static net.fortuna.ical4j.model.Date createDate(Date date) {
 		try {
 			String toString;
-			synchronized(ical4jFormatter) {//cluster_OK only to optimize memory/speed
-				toString = ical4jFormatter.format(date);
+			synchronized(ical4jDateFormatter) {//cluster_OK only to optimize memory/speed
+				toString = ical4jDateFormatter.format(date);
 			}
 			return new net.fortuna.ical4j.model.Date(toString);
+		} catch (ParseException e) {
+			return null;
+		}
+	}
+	
+	public static net.fortuna.ical4j.model.DateTime createDateTime(Date date) {
+		try {
+			String toString;
+			synchronized(ical4jDateTimeFormatter) {//cluster_OK only to optimize memory/speed
+				toString = ical4jDateTimeFormatter.format(date);
+			}
+			return new net.fortuna.ical4j.model.DateTime(toString);
 		} catch (ParseException e) {
 			return null;
 		}
@@ -204,8 +217,8 @@ public class CalendarUtils {
 		try {
 			String toString;
 			if(allDay) {
-				synchronized(ical4jFormatter) {//cluster_OK only to optimize memory/speed
-					toString = ical4jFormatter.format(date);
+				synchronized(ical4jDateFormatter) {//cluster_OK only to optimize memory/speed
+					toString = ical4jDateFormatter.format(date);
 				}
 			} else {
 				synchronized(occurenceDateTimeFormat) {//cluster_OK only to optimize memory/speed
