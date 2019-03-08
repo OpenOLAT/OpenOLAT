@@ -16,14 +16,14 @@
 		<thead>
 			<tr>
 			#if($r.classContains($interaction,"choiceright"))
-				<th class="o_qti_item_kprim_text"/>
+				<th class="o_qti_item_kprim_text"> </th>
 			#end
             #foreach($choice2 in $orderedSet2)
             	#set($set2Identifier = $r.toString($choice2.identifier))
 				<th class="o_qti_item_kprim_input o_qti_item_kprim_input_${set2Identifier}">$r.renderKprimSpecialFlowStatics($choice2.getFlowStatics())</th>
 			#end
 			#if(!$r.classContains($interaction,"choiceright"))
-				<th class="o_qti_item_kprim_text"/>
+				<th class="o_qti_item_kprim_text"> </th>
 			#end
 			</tr>
         </thead>
