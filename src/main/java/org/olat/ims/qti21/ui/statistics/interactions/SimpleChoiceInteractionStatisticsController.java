@@ -22,7 +22,10 @@ package org.olat.ims.qti21.ui.statistics.interactions;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.text.TextFactory;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.StringHelper;
 import org.olat.ims.qti.statistics.model.StatisticsItem;
 import org.olat.ims.qti21.model.statistics.ChoiceStatistics;
 import org.olat.ims.qti21.ui.components.FlowComponent;
@@ -55,21 +58,20 @@ public class SimpleChoiceInteractionStatisticsController extends ChoiceInteracti
 	}
 
 	@Override
-	protected FlowComponent getAnswerText(Choice choice) {
+	protected Component getAnswerText(Choice choice) {
 		String cmpId = "sc_" + (count++);
-		FlowComponent cmp = new FlowComponent(cmpId, resourceResult.getAssessmentItemFile(itemRef));
-		cmp.setMapperUri(mapperUri);
-		cmp.setFlowStatics(((SimpleChoice)choice).getFlowStatics());
-		cmp.setResolvedAssessmentTest(resourceResult.getResolvedAssessmentTest());
-		mainVC.put(cmpId, cmp);
-		
-		/*
 		String text = choice.getLabel();
-		if(!StringHelper.containsNonWhitespace(text)) {
-			text = new AssessmentHtmlBuilder().flowStaticString(((SimpleChoice)choice).getFlowStatics());
-			text = Formatter.formatLatexFormulas(text);
+		
+		Component textCmp;
+		if(StringHelper.containsNonWhitespace(text)) {
+			textCmp = TextFactory.createTextComponentFromString(cmpId, text, null, true, null);
+		} else {
+			FlowComponent cmp = new FlowComponent(cmpId, resourceResult.getAssessmentItemFile(itemRef));
+			cmp.setMapperUri(mapperUri);
+			cmp.setFlowStatics(((SimpleChoice)choice).getFlowStatics());
+			textCmp = cmp;
 		}
-		*/
-		return cmp;
+		mainVC.put(cmpId, textCmp);
+		return textCmp;
 	}
 }

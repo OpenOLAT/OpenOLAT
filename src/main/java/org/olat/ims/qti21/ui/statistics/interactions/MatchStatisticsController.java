@@ -241,7 +241,6 @@ public class MatchStatisticsController extends BasicController {
 			summary = new FlowComponent(summaryName, resourceResult.getAssessmentItemFile(itemRef));
 			summary.setMapperUri(mapperUri);
 			summary.setFlowStatics(choice.getFlowStatics());
-			summary.setResolvedAssessmentTest(resourceResult.getResolvedAssessmentTest());
 			mainVC.put(summaryName, summary);
 		}
 
