@@ -398,9 +398,16 @@ public class RepositoryEntryMyCourseQueries {
 		}
 
 		//make sure that in all case the role is mandatory
-		sb.append(" exists (select rel.key from repoentrytogroup as rel, bgroupmember as membership")
-		  .append("    where rel.entry.key=v.key and rel.group.key=membership.group.key and membership.identity.key=:identityKey")
-		  .append("    and (");
+		if(dbInstance.isMySQL()) {
+			sb.append(" v.key in (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
+			  .append("    where rel.group.key=membership.group.key and membership.identity.key=:identityKey")
+			  .append("    and (");
+		} else {
+			sb.append(" exists (select rel.key from repoentrytogroup as rel, bgroupmember as membership")
+			  .append("    where rel.entry.key=v.key and rel.group.key=membership.group.key and membership.identity.key=:identityKey")
+			  .append("    and (");
+		}
+		
 		boolean or = false;
 		if(inRoles.contains(GroupRoles.owner)) {
 			sb.append(" (membership.role='").append(GroupRoles.owner).append("' and v.status ").in(RepositoryEntryStatusEnum.preparationToClosed()).append(")");

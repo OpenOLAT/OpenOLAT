@@ -334,10 +334,16 @@ public class RepositoryEntryAuthorQueries {
 	}
 	
 	private boolean appendAccessSubSelect(QueryBuilder sb, SearchAuthorRepositoryEntryViewParams params) {
-		if(params.isOwnedResourcesOnly()) {
+		if(dbInstance.isMySQL()) {
+			sb.append(" v.key in (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
+			  .append("     where rel.group.key=membership.group.key and rel.entry.key=v.key and membership.identity.key=:identityKey");
+		} else {
 			sb.append(" exists (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
-			  .append("    where rel.entry.key=v.key and rel.group.key=membership.group.key and membership.identity.key=:identityKey")
-			  .append("      and membership.role='").append(GroupRoles.owner.name()).append("'")
+			  .append("     where rel.group.key=membership.group.key and rel.entry.key=v.key and membership.identity.key=:identityKey");
+		}
+		
+		if(params.isOwnedResourcesOnly()) {
+			sb.append("      and membership.role='").append(GroupRoles.owner.name()).append("'")
 			  .append(" )");
 			if(params.isDeleted()) {
 				sb.append(" and v.status='").append(RepositoryEntryStatusEnum.trash).append("'");
@@ -347,19 +353,13 @@ public class RepositoryEntryAuthorQueries {
 		} else {
 			Roles roles = params.getRoles();
 			if(roles == null) {
-				sb.append(" exists (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
-				  .append("     where rel.group.key=membership.group.key and rel.entry.key=v.key and membership.identity.key=:identityKey")
-				  .append("     and membership.role not ").in(OrganisationRoles.guest, OrganisationRoles.invitee, GroupRoles.waiting)
+				sb.append(" and membership.role not ").in(OrganisationRoles.guest, OrganisationRoles.invitee, GroupRoles.waiting)
 				  .append(") and (v.allUsers=true or v.bookable=true) and v.status ").in(RepositoryEntryStatusEnum.publishedAndClosed());
 			} else if(params.isDeleted() && (roles.isAdministrator() || roles.isLearnResourceManager())) {
-				sb.append(" exists (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
-				  .append("     where rel.group.key=membership.group.key and rel.entry.key=v.key and membership.identity.key=:identityKey")
-				  .append("     and membership.role ").in(OrganisationRoles.administrator, OrganisationRoles.principal, OrganisationRoles.learnresourcemanager, GroupRoles.owner)
+				sb.append("     and membership.role ").in(OrganisationRoles.administrator, OrganisationRoles.principal, OrganisationRoles.learnresourcemanager, GroupRoles.owner)
 				  .append(") and v.status ").in(RepositoryEntryStatusEnum.trash);
 			} else {
-				sb.append(" exists (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
-				  .append("   where rel.group.key=membership.group.key and rel.entry.key=v.key and membership.identity.key=:identityKey")
-				  .append("   and (")
+				sb.append("   and (")
 				  // owner, principal, learn resource manager and administrator which can see all
 				  .append("     ( membership.role ").in(OrganisationRoles.administrator, OrganisationRoles.principal, OrganisationRoles.learnresourcemanager, GroupRoles.owner)
 				  .append("       and v.status ").in(RepositoryEntryStatusEnum.preparationToClosed()).append(" )")

@@ -1183,7 +1183,7 @@ public class RepositoryManager {
 			author = '%' + author + '%';
 			sb.append(" and exists (select rel from repoentrytogroup as rel, bgroup as baseGroup, bgroupmember as membership, ")
 			  .append(IdentityImpl.class.getName()).append(" as identity, ").append(UserImpl.class.getName()).append(" as user")
-		      .append("    where rel.entry=v and rel.group=baseGroup and membership.group=baseGroup and membership.identity=identity and user.identity.key=identity.key")
+		      .append("    where rel.entry.key=v.key and rel.group.key=baseGroup.key and membership.group.key=baseGroup.key and membership.identity=identity and user.identity.key=identity.key")
 		         .append("      and membership.role='").append(GroupRoles.owner.name()).append("'")
 		         .append("      and (user.firstName like :author or user.lastName like :author or identity.name like :author)")
 		         .append("  )");
@@ -1751,10 +1751,15 @@ public class RepositoryManager {
 	public List<RepositoryEntry> getParticipantRepositoryEntry(IdentityRef identity, int maxResults, RepositoryEntryOrder... orderby) {
 		QueryBuilder sb = new QueryBuilder(512);
 		sb.append("select v from repositoryentry as v")
-		  .append(" inner join fetch v.olatResource as res")
-		  .append(" where exists (select rel from repoentrytogroup as rel, bgroupmember as membership")
-		  .append("   where rel.entry.key=v.key and rel.group.key=membership.group.key and membership.identity.key=:identityKey")
-		  .append("   and (")
+		  .append(" inner join fetch v.olatResource as res");
+		if(dbInstance.isMySQL()) {
+			sb.append(" where v.key in (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership")
+			  .append("   where rel.group.key=membership.group.key and membership.identity.key=:identityKey");
+		} else {
+			sb.append(" where exists (select rel from repoentrytogroup as rel, bgroupmember as membership")
+			  .append("   where rel.entry.key=v.key and rel.group.key=membership.group.key and membership.identity.key=:identityKey");
+		}
+		sb.append("   and (")
 		  .append("     membership.role='").append(GroupRoles.participant.name()).append("'")
 		  .append("     or ")
 		  .append("     ((v.allUsers=true or v.bookable=true) and membership.role not ").in(OrganisationRoles.guest, OrganisationRoles.invitee, GroupRoles.waiting).append(")")
