@@ -482,6 +482,43 @@ public class RepositoryManagerTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void getParticipantRepositoryEntry_notPublished() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("re-stud-le-");
+		RepositoryEntry reNotPublished = JunitTestHelper.createAndPersistRepositoryEntry(true);
+		repositoryEntryRelationDao.addRole(id, reNotPublished, GroupRoles.participant.name());
+		repositoryManager.setAccess(reNotPublished, RepositoryEntryStatusEnum.coachpublished, true, true);
+		dbInstance.commitAndCloseSession();
+
+		List<RepositoryEntry> entries = repositoryManager.getParticipantRepositoryEntry(id, -1, RepositoryEntryOrder.nameAsc);
+		Assert.assertNotNull(entries);
+		Assert.assertFalse(entries.contains(reNotPublished));
+		
+		// check access
+		for(RepositoryEntry entry:entries) {
+			RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(id, Roles.userRoles(), entry);
+			Assert.assertTrue(reSecurity.canLaunch());
+		}
+	}
+	
+	@Test
+	public void getParticipantRepositoryEntry_forAll() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("re-stud-le-");
+		RepositoryEntry reNotPublished = JunitTestHelper.createAndPersistRepositoryEntry(true);
+		repositoryManager.setAccess(reNotPublished, RepositoryEntryStatusEnum.published, true, true);
+		dbInstance.commitAndCloseSession();
+
+		List<RepositoryEntry> entries = repositoryManager.getParticipantRepositoryEntry(id, -1, RepositoryEntryOrder.nameAsc);
+		Assert.assertNotNull(entries);
+		Assert.assertTrue(entries.contains(reNotPublished));
+		
+		// check access
+		for(RepositoryEntry entry:entries) {
+			RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(id, Roles.userRoles(), entry);
+			Assert.assertTrue(reSecurity.canLaunch());
+		}
+	}
+	
+	@Test
 	public void getParticipantRepositoryEntryWithGroups() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("re-stud-ld-");
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
