@@ -127,25 +127,25 @@
 		<ul class="pagination">
 			<li>
 				#if ( $helper.hasOlderItems($items) )
-					$r.getComponent("feed.older.items").setEnabled($true)
+					$r.getComponent("feed.older.items").setEnabled(true)
 				#else
-					$r.getComponent("feed.older.items").setEnabled($false)
+					$r.getComponent("feed.older.items").setEnabled(false)
 				#end
 				$r.render("feed.older.items")
 			</li>
 			<li>
 				#if ( $helper.hasNewerItems() )
-					$r.getComponent("feed.startpage").setEnabled($true)
+					$r.getComponent("feed.startpage").setEnabled(true)
 				#else
-					$r.getComponent("feed.startpage").setEnabled($false)
+					$r.getComponent("feed.startpage").setEnabled(false)
 				#end
 				$r.render("feed.startpage")
 			</li>
 			<li>
 				#if ( $helper.hasNewerItems() )
-					$r.getComponent("feed.newer.items").setEnabled($true)
+					$r.getComponent("feed.newer.items").setEnabled(true)
 				#else
-					$r.getComponent("feed.newer.items").setEnabled($false)
+					$r.getComponent("feed.newer.items").setEnabled(false)
 				#end
 				$r.render("feed.newer.items")
 			</li>
