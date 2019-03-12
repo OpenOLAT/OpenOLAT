@@ -51,16 +51,15 @@ import org.olat.core.gui.render.StringOutput;
 public class TotalAwareColumnDescriptor extends DefaultColumnDescriptor {
 
 	public TotalAwareColumnDescriptor(String headerKey, int dataColumn, String action, Locale locale, int alignment) {
-		super(headerKey, dataColumn, action, locale, alignment);
+		super(headerKey, dataColumn, action, locale, alignment, alignment);
 	}
 	
 	@Override
 	public String getAction(int row) {
 		if (row==table.getTableDataModel().getRowCount()-1) {
 			return super.getAction(row);
-		} else {
-			return null;
 		}
+		return null;
 	}
 	
 	@Override

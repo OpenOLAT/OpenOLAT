@@ -89,7 +89,7 @@ public class DailyStatisticManager implements IStatisticManager {
 			log.warn("createColumnDescriptor: ParseException while parsing "+headerId+".", pe);
 		}
 		TotalAwareColumnDescriptor cd = new TotalAwareColumnDescriptor(header, column, 
-				StatisticDisplayController.CLICK_TOTAL_ACTION+column, ureq.getLocale(), ColumnDescriptor.ALIGNMENT_RIGHT);	
+				StatisticDisplayController.CLICK_TOTAL_ACTION+column, ureq.getLocale(), ColumnDescriptor.ALIGNMENT_RIGHT);
 		cd.setTranslateHeaderKey(false);
 		return cd;
 	}

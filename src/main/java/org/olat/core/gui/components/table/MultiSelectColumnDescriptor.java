@@ -115,6 +115,7 @@ class MultiSelectColumnDescriptor implements ColumnDescriptor {
 		}
 	}
 	
+	@Override
 	public String getHeaderKey() {
 		// render as checkbox icon to minimize used space for header
 		Translator trans = (table != null ? table.getTranslator() : null);		
@@ -122,42 +123,57 @@ class MultiSelectColumnDescriptor implements ColumnDescriptor {
 		return "<i class='o_icon o_icon_checkbox_checked o_icon-lg' title=\"" + choice + "\"> </i>";
 	}
 	
+	@Override
 	public boolean translateHeaderKey() {
 		return false;
 	}
 
+	@Override
 	public int getAlignment() {
 		return ColumnDescriptor.ALIGNMENT_LEFT;
 	}
 
+	@Override
+	public int getHeaderAlignment() {
+		return getAlignment();
+	}
+
+	@Override
 	public String getAction(final int row) {
 		return null;
 	}
 
+	@Override
 	public String getPopUpWindowAttributes() {
 		return null;
 	}
 
+	@Override
 	public boolean isPopUpWindowAction() {
 		return false;
 	}
 
+	@Override
 	public boolean isSortingAllowed() {
 		return true;
 	}
 
+	@Override
 	public void modelChanged() {
 		// nothing to do here
 	}
 
+	@Override
 	public void otherColumnDescriptorSorted() {
 		// nothing to do here
 	}
 
+	@Override
 	public void setTable(final Table table) {
 		this.table = table;
 	}
 
+	@Override
 	public void sortingAboutToStart() {
 		// nothing to do here
 	}

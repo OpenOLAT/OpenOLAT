@@ -40,6 +40,7 @@ import org.olat.core.gui.render.StringOutput;
 public class StaticColumnDescriptor implements ColumnDescriptor {
 	private String headerKey;
 	private int alignment;
+	private int headerAlignment;
 	private String action;
 	private String cellValue;
 	private boolean popUpWindowAction;
@@ -57,18 +58,15 @@ public class StaticColumnDescriptor implements ColumnDescriptor {
 		this.headerKey = headerKey;
 		this.cellValue = cellValue;
 		this.alignment = ALIGNMENT_LEFT;
+		this.headerAlignment = ALIGNMENT_LEFT;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.table.ColumnDescriptor#getHeaderKey()
-	 */
+	@Override
 	public String getHeaderKey() {
 		return headerKey;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.table.ColumnDescriptor#translateHeaderKey()
-	 */
+	@Override
 	public boolean translateHeaderKey() {
 		return translateHeaderKey;
 	}
@@ -89,90 +87,72 @@ public class StaticColumnDescriptor implements ColumnDescriptor {
 		return -1;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.table.ColumnDescriptor#getAlignment()
-	 */
+	@Override
 	public int getAlignment() {
 		return alignment;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.table.ColumnDescriptor#renderValue(org.olat.core.gui.render.StringOutput, int, org.olat.core.gui.render.Renderer)
-	 */
+	@Override
+	public int getHeaderAlignment() {
+		return headerAlignment;
+	}
+
+
+	@Override
 	public void renderValue(final StringOutput so, final int row, final Renderer renderer) {
 		so.append(cellValue);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.table.ColumnDescriptor#compareTo(int, int)
-	 */
 	@Override
 	public int compareTo(final int rowa, final int rowb) {
 		//dummy order but fixed
 		return rowb - rowa;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.table.ColumnDescriptor#setTable(org.olat.core.gui.components.table.Table)
-	 */
+	@Override
 	public void setTable(final Table arg0) {
 	// not needed here, ignore
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.table.ColumnDescriptor#getAction(int)
-	 */
+	@Override
 	public String getAction(final int row) {
 		return action;
 	}
 
-	/**
-	 * Sets the alignment.
-	 * 
-	 * @param alignment The alignment to set
-	 */
 	public void setAlignment(final int alignment) {
 		this.alignment = alignment;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.table.ColumnDescriptor#modelChanged()
-	 */
+	public void setheaderAlignment(final int headerAlignment) {
+		this.headerAlignment = headerAlignment;
+	}
+
+	@Override
 	public void modelChanged() {
 	//
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.table.ColumnDescriptor#sortingAboutToStart()
-	 */
+	@Override
 	public void sortingAboutToStart() {
 	//
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.table.ColumnDescriptor#otherColumnDescriptorSorted()
-	 */
+	@Override
 	public void otherColumnDescriptorSorted() {
 	//
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.table.ColumnDescriptor#isSortingAllowed()
-	 */
+	@Override
 	public boolean isSortingAllowed() {
 		return false;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.table.ColumnDescriptor#isPopUpWindowAction()
-	 */
+	@Override
 	public boolean isPopUpWindowAction() {
 		return popUpWindowAction;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.table.ColumnDescriptor#getPopUpWindowAttributes()
-	 */
+	@Override
 	public String getPopUpWindowAttributes() {
 		return popUpWindowAttributes;
 	}
