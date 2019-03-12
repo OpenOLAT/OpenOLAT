@@ -765,6 +765,27 @@ public class CurriculumElementDAO {
 				.getResultList();
 	}
 	
+	public List<Identity> getMembers(List<CurriculumElementRef> elements, String... roles) {
+		if(elements == null || elements.isEmpty()) return new ArrayList<>();
+		
+		List<Long> elementKeys = elements.stream()
+				.map(CurriculumElementRef::getKey).collect(Collectors.toList());
+		List<String> roleList = CurriculumRoles.toList(roles);
+		
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select ident from curriculumelement el")
+		  .append(" inner join el.group baseGroup")
+		  .append(" inner join baseGroup.members membership")
+		  .append(" inner join membership.identity ident")
+		  .append(" inner join fetch ident.user identUser")
+		  .append(" where el.key in (:elementKeys) and membership.role in (:roles)");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Identity.class)
+				.setParameter("elementKeys", elementKeys)
+				.setParameter("roles", roleList)
+				.getResultList();
+	}
+	
 	public List<CurriculumElementMembership> getMembershipInfos(List<CurriculumRef> curriculums, Collection<CurriculumElement> elements, Identity... identities) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select el.key, membership from curriculumelement el")

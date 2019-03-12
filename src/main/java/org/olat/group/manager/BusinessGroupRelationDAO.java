@@ -321,7 +321,7 @@ public class BusinessGroupRelationDAO {
 	}
 	
 	public List<Identity> getMembers(List<? extends BusinessGroupRef> groups, String... roles) {
-		if(groups == null || groups.isEmpty()) return Collections.emptyList();
+		if(groups == null || groups.isEmpty()) return new ArrayList<>();
 		
 		StringBuilder sb = new StringBuilder();
 		sb.append("select ident from businessgroup as bgroup ")
@@ -345,7 +345,7 @@ public class BusinessGroupRelationDAO {
 	}
 	
 	public List<Long> getMemberKeys(List<? extends BusinessGroupRef> groups, String... roles) {
-		if(groups == null || groups.isEmpty()) return Collections.emptyList();
+		if(groups == null || groups.isEmpty()) return new ArrayList<>();
 		
 		StringBuilder sb = new StringBuilder();
 		sb.append("select membership.identity.key from businessgroup as bgroup ")

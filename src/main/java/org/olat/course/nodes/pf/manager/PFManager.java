@@ -64,6 +64,8 @@ import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroupRef;
 import org.olat.group.manager.BusinessGroupRelationDAO;
+import org.olat.modules.curriculum.CurriculumElementRef;
+import org.olat.modules.curriculum.manager.CurriculumElementDAO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
@@ -92,6 +94,8 @@ public class PFManager {
 
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private CurriculumElementDAO curriculumElementDao;
 	@Autowired
 	private BusinessGroupRelationDAO businessGroupRelationDao;
 	@Autowired
@@ -556,10 +560,15 @@ public class PFManager {
 		return getParticipants(pfNode, userPropertyHandlers, locale, identityList, courseEnv);
 	}
 	
-	public List<DropBoxRow> getParticipants(List<BusinessGroupRef> businessGroupRefs, PFCourseNode pfNode, List<UserPropertyHandler> userPropertyHandlers, 
+	public List<DropBoxRow> getParticipants(List<BusinessGroupRef> businessGroupRefs, List<CurriculumElementRef> curriculumElements,
+			PFCourseNode pfNode, List<UserPropertyHandler> userPropertyHandlers, 
 			Locale locale, CourseEnvironment courseEnv) {
+		List<Identity> allIdentities = new ArrayList<>(32);
 		List<Identity> identityList = businessGroupRelationDao.getMembers(businessGroupRefs, GroupRoles.participant.name());
-		return getParticipants(pfNode, userPropertyHandlers, locale, identityList, courseEnv);
+		allIdentities.addAll(identityList);
+		List<Identity> identityElementList = curriculumElementDao.getMembers(curriculumElements, GroupRoles.participant.name());
+		allIdentities.addAll(identityElementList);
+		return getParticipants(pfNode, userPropertyHandlers, locale, allIdentities, courseEnv);
 	}
 	
 	private List<DropBoxRow> getParticipants(PFCourseNode pfNode, List<UserPropertyHandler> userPropertyHandlers, 

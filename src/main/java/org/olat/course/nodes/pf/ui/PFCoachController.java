@@ -68,10 +68,12 @@ import org.olat.course.nodes.pf.manager.PFView;
 import org.olat.course.nodes.pf.ui.DropBoxTableModel.DropBoxCols;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupRef;
 import org.olat.group.model.BusinessGroupRefImpl;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementRef;
+import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.resource.OLATResource;
 import org.olat.user.HomePageConfig;
 import org.olat.user.HomePageDisplayController;
@@ -89,6 +91,8 @@ public class PFCoachController extends FormBasicController implements Controller
 	protected static final String USER_PROPS_ID = PFCoachController.class.getCanonicalName();
 
 	protected static final int USER_PROPS_OFFSET = 500;
+	private static final String CURRICULUM_EL_PREFIX = "curriculumelement-";
+	private static final String BUSINESS_GROUP_PREFIX = "businessgroup-";
 	
 	private PFCourseNode pfNode;
 	
@@ -293,26 +297,35 @@ public class PFCoachController extends FormBasicController implements Controller
 	}
 	
 	private void initFilters() {
-		List<FlexiTableFilter> groupFilters = new ArrayList<>();
+		List<FlexiTableFilter> filters = new ArrayList<>();
 		
-		List<BusinessGroup> coachedGroups = null;
-		if(userCourseEnv.isAdmin()) {
-			coachedGroups = courseEnv.getCourseGroupManager().getAllBusinessGroups();
-		} else if(userCourseEnv instanceof UserCourseEnvironmentImpl) {
-			UserCourseEnvironmentImpl uce = (UserCourseEnvironmentImpl)userCourseEnv;
-			coachedGroups = uce.getCoachedGroups(); 
-		}
+		List<BusinessGroup> coachedGroups = userCourseEnv.isAdmin()
+				? courseEnv.getCourseGroupManager().getAllBusinessGroups() : userCourseEnv.getCoachedGroups(); 
+		List<CurriculumElement> coachedElements = userCourseEnv.isAdmin()
+				? courseEnv.getCourseGroupManager().getAllCurriculumElements() : userCourseEnv.getCoachedCurriculumElements();
+		
 		if(coachedGroups != null) {
 			for(BusinessGroup coachedGroup:coachedGroups) {
 				String groupName = StringHelper.escapeHtml(coachedGroup.getName());
-				groupFilters.add(new FlexiTableFilter(groupName, coachedGroup.getKey().toString(), "o_icon o_icon_group"));
+				filters.add(new FlexiTableFilter(groupName, BUSINESS_GROUP_PREFIX.concat(coachedGroup.getKey().toString()), "o_icon o_icon_group"));
 			}
 		}
 		
-		if(!groupFilters.isEmpty()) {
-			groupFilters.add(FlexiTableFilter.SPACER);
-			groupFilters.add(new FlexiTableFilter(translate("show.all"), "", true));
-			dropboxTable.setExtendedFilterButton(translate("filter.groups"), groupFilters);
+		if(!coachedElements.isEmpty()) {
+			if(!filters.isEmpty()) {
+				filters.add(FlexiTableFilter.SPACER);
+			}
+
+			for(CurriculumElement coachedElement: coachedElements) {
+				String groupName = StringHelper.escapeHtml(coachedElement.getDisplayName());
+				filters.add(new FlexiTableFilter(groupName, CURRICULUM_EL_PREFIX.concat(coachedElement.getKey().toString()), "o_icon o_icon_curriculum_element"));
+			}
+		}
+		
+		if(!filters.isEmpty()) {
+			filters.add(FlexiTableFilter.SPACER);
+			filters.add(new FlexiTableFilter(translate("show.all"), "", true));
+			dropboxTable.setExtendedFilterButton(translate("filter.groups"), filters);
 		}
 	}
 	
@@ -323,12 +336,18 @@ public class PFCoachController extends FormBasicController implements Controller
 			rows = pfManager.getParticipants(getIdentity(), pfNode, userPropertyHandlers, getLocale(), courseEnv, userCourseEnv.isAdmin());
 		} else {
 			List<BusinessGroupRef> businessGroups = new ArrayList<>(extendedFilters.size());
+			List<CurriculumElementRef> curriculumElements = new ArrayList<>(extendedFilters.size());
 			for(FlexiTableFilter extendedFilter:extendedFilters) {
-				if(StringHelper.isLong(extendedFilter.getFilter())) {
-					businessGroups.add(new BusinessGroupRefImpl(Long.parseLong(extendedFilter.getFilter())));
+				String filter = extendedFilter.getFilter();
+				if(filter.startsWith(BUSINESS_GROUP_PREFIX)) {
+					String key = filter.substring(BUSINESS_GROUP_PREFIX.length(), filter.length());
+					businessGroups.add(new BusinessGroupRefImpl(Long.valueOf(key)));
+				} else if(filter.startsWith(CURRICULUM_EL_PREFIX)) {
+					String key = filter.substring(CURRICULUM_EL_PREFIX.length(), filter.length());
+					curriculumElements.add(new CurriculumElementRefImpl(Long.valueOf(key)));
 				}
 			}
-			rows = pfManager.getParticipants(businessGroups, pfNode, userPropertyHandlers, getLocale(), courseEnv);
+			rows = pfManager.getParticipants(businessGroups, curriculumElements, pfNode, userPropertyHandlers, getLocale(), courseEnv);
 		}
 		
 		tableModel.setObjects(rows);
