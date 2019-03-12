@@ -75,6 +75,8 @@ public interface ColumnDescriptor {
 	 * @return
 	 */
 	int getAlignment();
+	
+	int getHeaderAlignment();
 
 	/**
 	 * @param sb
@@ -141,5 +143,6 @@ public interface ColumnDescriptor {
 	 *         should be used
 	 */
 	String getPopUpWindowAttributes();
+
 
 }

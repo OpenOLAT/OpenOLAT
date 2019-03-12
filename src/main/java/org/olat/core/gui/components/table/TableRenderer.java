@@ -329,7 +329,9 @@ public class TableRenderer extends DefaultComponentRenderer {
 				header = cd.getHeaderKey();
 			}
 
-			target.append("<th>");
+			int alignment = cd.getHeaderAlignment();
+			String cssHeaderClass = (alignment == ColumnDescriptor.ALIGNMENT_LEFT ? "text-left" : (alignment == ColumnDescriptor.ALIGNMENT_RIGHT ? "text-right" : "text-center"));
+			target.append("<th class='").append(cssHeaderClass).append("'>");
 			// header either a link or not
 			if (table.isSortingEnabled() && cd.isSortingAllowed()) {
 				target.append("<a class='o_orderby' ");
