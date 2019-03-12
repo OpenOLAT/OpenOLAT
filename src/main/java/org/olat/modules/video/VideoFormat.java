@@ -70,7 +70,7 @@ public enum VideoFormat {
 				return VideoFormat.youtube;
 			} else if(host.endsWith("vimeo.com")) {
 				return VideoFormat.vimeo;
-			} else if(host.endsWith("panopto.eu")) {
+			} else if(url.indexOf("/Panopto/") > 0) {
 				return VideoFormat.panopto;
 			} else if(url.endsWith(".mp4")) {
 				return VideoFormat.mp4;
