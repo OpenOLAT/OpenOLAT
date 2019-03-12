@@ -1,5 +1,9 @@
-<ul class="list-unstyled">
+<ul class="o_dropdown list-unstyled">
 #foreach($filter in $filters)
+	#if($filter.filter.filter == "oo-spacer-xx")
+	<li class='divider'></li>
+	#else
 	<li>#if($filter.selected)<i class="o_icon o_icon_check"> </i> #end$r.render($filter.componentName)</li>
+	#end
 #end
 </ul>

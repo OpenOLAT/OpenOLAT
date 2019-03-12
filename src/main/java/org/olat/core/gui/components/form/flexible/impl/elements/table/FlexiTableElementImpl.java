@@ -612,7 +612,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			extendedFilterButton.setElementCssClass("o_sel_flexi_extendedsearch");
 		} else {
 			extendedFilterButton = null;
-			extendedFilters = null;
+			this.extendedFilters = null;
 		}
 	}
 	
