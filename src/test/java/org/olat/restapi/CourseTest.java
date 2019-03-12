@@ -75,6 +75,7 @@ import org.olat.repository.RepositoryService;
 import org.olat.repository.model.SearchRepositoryEntryParameters;
 import org.olat.restapi.support.vo.CourseConfigVO;
 import org.olat.restapi.support.vo.CourseVO;
+import org.olat.restapi.support.vo.RepositoryEntryAccessVO;
 import org.olat.restapi.support.vo.RepositoryEntryVO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatJerseyTestCase;
@@ -564,6 +565,32 @@ public class CourseTest extends OlatJerseyTestCase {
 		dbInstance.commit();
 		Assert.assertTrue(isParticipant1);
 		Assert.assertTrue(isParticipant2);
+	}
+	
+	@Test
+	public void getAccess() throws IOException, URISyntaxException {
+		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin);
+		ICourse course = CourseFactory.loadCourse(courseEntry);
+		dbInstance.closeSession();
+		Assert.assertEquals(RepositoryEntryStatusEnum.published, courseEntry.getEntryStatus());
+		Assert.assertTrue(courseEntry.isAllUsers());
+		Assert.assertFalse(courseEntry.isGuests());
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
+				.path(course.getResourceableId().toString()).path("access").build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		RepositoryEntryAccessVO accessVo = conn.parse(response, RepositoryEntryAccessVO.class);
+		conn.shutdown();
+		
+		//check
+		Assert.assertNotNull(accessVo);
+		Assert.assertEquals(courseEntry.getKey(), accessVo.getRepoEntryKey());
+		Assert.assertEquals(courseEntry.getStatus(), accessVo.getStatus());
+		Assert.assertEquals(courseEntry.isAllUsers(), accessVo.isAllUsers());
+		Assert.assertEquals(courseEntry.isGuests(), accessVo.isGuests());
 	}
 	
 	@Test

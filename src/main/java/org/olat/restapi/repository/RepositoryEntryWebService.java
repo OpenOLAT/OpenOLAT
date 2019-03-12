@@ -793,6 +793,17 @@ public class RepositoryEntryWebService {
 		return Response.ok().build();
 	}
 	
+	/**
+	 * Get the access configuration of the repository entry.
+	 * 
+	 * @response.representation.200.qname {http://www.example.com}repositoryEntryAccessVO
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc The access configuration of the repository entry
+	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_REPOACCESS}
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The repository entry not found
+	 * @return It returns the <code>RepositoryEntryAccessVO</code> object representing the access configuration of the repository entry.
+	 */
 	@GET
 	@Path("access")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
@@ -804,6 +815,20 @@ public class RepositoryEntryWebService {
 		return Response.ok(accessVo).build();
 	}
 	
+	/**
+	 * Update the access configuration of the repository entry. Attention! It's
+	 * a low level method which only change the status without the stuff
+	 * done by the change status methods. Use it only if you know what you do.
+	 * 
+	 * @response.representation.200.qname {http://www.example.com}repositoryEntryAccessVO
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc The access configuration of the repository entry
+	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_REPOACCESS}
+	 * @response.representation.400.doc The acces object doesn't match the url used to change it
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The repository entry not found
+	 * @return It returns the <code>RepositoryEntryAccessVO</code> object representing the access configuration of the repository entry.
+	 */
 	@POST
 	@Path("access")
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})

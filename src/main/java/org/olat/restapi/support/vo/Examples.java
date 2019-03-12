@@ -23,6 +23,7 @@ package org.olat.restapi.support.vo;
 import java.util.Calendar;
 
 import org.olat.repository.CatalogEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.restapi.support.ObjectFactory;
 
 
@@ -38,8 +39,11 @@ public class Examples {
 	public static final ErrorVO SAMPLE_ERRORVO = new ErrorVO();
 	public static final ErrorVOes SAMPLE_ERRORVOes = new ErrorVOes();
 	
+	public static final OlatResourceVO SAMPLE_OLATRESOURCEVO = new OlatResourceVO();
+	
 	public static final RepositoryEntryVO SAMPLE_REPOENTRYVO = new RepositoryEntryVO();
 	public static final RepositoryEntryVOes SAMPLE_REPOENTRYVOes = new RepositoryEntryVOes();
+	public static final RepositoryEntryAccessVO SAMPLE_REPOACCESS = new RepositoryEntryAccessVO();
 	
 	public static final AuthenticationVO SAMPLE_AUTHVO = new AuthenticationVO();
 	public static final AuthenticationVOes SAMPLE_AUTHVOes = new AuthenticationVOes();
@@ -94,6 +98,10 @@ public class Examples {
   	SAMPLE_ERRORVO.setCode("org.olat.restapi:error");
   	SAMPLE_ERRORVO.setTranslation("Hello world, there is an error");
   	SAMPLE_ERRORVOes.getErrors().add(SAMPLE_ERRORVO);
+  	
+  	SAMPLE_OLATRESOURCEVO.setKey(264278l);
+  	SAMPLE_OLATRESOURCEVO.setResourceableId(66365742l);
+  	SAMPLE_OLATRESOURCEVO.setResourceableTypeName("CourseModule");
 
   	SAMPLE_REPOENTRYVO.setKey(479286l);
   	SAMPLE_REPOENTRYVO.setSoftkey("internal_cp");
@@ -106,6 +114,11 @@ public class Examples {
   	SAMPLE_REPOENTRYVO.setManagedFlags("title.description");
   	SAMPLE_REPOENTRYVOes.setRepositoryEntries(new RepositoryEntryVO[]{SAMPLE_REPOENTRYVO});
   	SAMPLE_REPOENTRYVOes.setTotalCount(1);
+  	
+  	SAMPLE_REPOACCESS.setRepoEntryKey(479286l);
+  	SAMPLE_REPOACCESS.setStatus(RepositoryEntryStatusEnum.published.name());
+  	SAMPLE_REPOACCESS.setAllUsers(true);
+  	SAMPLE_REPOACCESS.setGuests(false);
   	
   	Calendar cal = Calendar.getInstance();
   	SAMPLE_LIFECYCLE.setKey(2873423876l);
