@@ -17,14 +17,9 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.wopi.collabora;
+package org.olat.modules.wopi;
 
-import java.io.File;
-
-import org.olat.core.id.OLATResourceable;
-import org.olat.core.util.resource.OresHelper;
-import org.olat.modules.wopi.Access;
-import org.olat.modules.wopi.Discovery;
+import org.olat.core.id.Identity;
 
 /**
  * 
@@ -32,18 +27,16 @@ import org.olat.modules.wopi.Discovery;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface CollaboraService {
-	
-	public static final OLATResourceable REFRESH_EVENT_ORES = OresHelper
-			.createOLATResourceableType(CollaboraRefreshDiscoveryEvent.class.getSimpleName() + ":RefreshDiscovery");
+public interface Access {
 
-	boolean fileExists(String fileId);
+	String getFileId();
 
-	File getFile(String fileId);
+	String getToken();
 
-	Access getAccess(String accessToken);
+	String getProviderType();
 	
-	public Discovery getDiscovery();
+	Identity getOwner();
 	
-	public String getEditorBaseUrl(File file);
+	Identity getAccessIdenity();
+
 }

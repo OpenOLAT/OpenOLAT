@@ -19,15 +19,21 @@
  */
 package org.olat.modules.wopi.collabora.manager;
 
+import java.io.File;
+
 import javax.annotation.PostConstruct;
 
 import org.olat.core.gui.control.Event;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
+import org.olat.modules.wopi.Access;
+import org.olat.modules.wopi.Action;
 import org.olat.modules.wopi.Discovery;
 import org.olat.modules.wopi.WopiDiscoveryClient;
+import org.olat.modules.wopi.WopiService;
 import org.olat.modules.wopi.collabora.CollaboraModule;
 import org.olat.modules.wopi.collabora.CollaboraRefreshDiscoveryEvent;
 import org.olat.modules.wopi.collabora.CollaboraService;
@@ -45,10 +51,12 @@ public class CollaboraServiceImpl implements CollaboraService, GenericEventListe
 
 	private static final OLog log = Tracing.createLoggerFor(CollaboraServiceImpl.class);
 	
-	private Discovery discoveryImpl;
+	private Discovery discovery;
 	
 	@Autowired
 	private CollaboraModule collaboraModule;
+	@Autowired
+	private WopiService wopiService;
 	@Autowired
 	private WopiDiscoveryClient discoveryClient;
 	
@@ -58,27 +66,34 @@ public class CollaboraServiceImpl implements CollaboraService, GenericEventListe
 	}
 
 	@Override
+	public boolean fileExists(String fileId) {
+		return wopiService.fileExists(fileId);
+	}
+
+	@Override
+	public File getFile(String fileId) {
+		return wopiService.getFile(fileId);
+	}
+
+	@Override
+	public Access getAccess(String accessToken) {
+		return wopiService.getAccess(accessToken);
+	}
+
+	@Override
 	public Discovery getDiscovery() {
-		if (discoveryImpl == null) {
+		if (discovery == null) {
 			String discoveryUrl = getDiscoveryUrl();
-			discoveryImpl = discoveryClient.getDiscovery(discoveryUrl);
+			discovery = discoveryClient.getDiscovery(discoveryUrl);
 			log.info("Recieved new WOPI discovery from " + discoveryUrl);
 		}
-		return discoveryImpl;
+		return discovery;
 	}
 
 	private String getDiscoveryUrl() {
 		return collaboraModule.getBaseUrl() + discoveryClient.getRegularDiscoveryPath();
 	}
 	
-//	public void refreshDiscovery() {
-//		deleteDiscovery();
-//		
-//		// Notify other cluster nodes to refresh the discovery
-//		CollaboraRefreshDiscoveryEvent event = new CollaboraRefreshDiscoveryEvent();
-//		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(event, REFRESH_EVENT_ORES);
-//	}
-
 	@Override
 	public void event(Event event) {
 		if (event instanceof CollaboraRefreshDiscoveryEvent) {
@@ -87,8 +102,15 @@ public class CollaboraServiceImpl implements CollaboraService, GenericEventListe
 	}
 
 	private void deleteDiscovery() {
-		discoveryImpl = null;
+		discovery = null;
 		log.info("Deleted WOPI discovery. It will be refreshed with the next access.");
+	}
+
+	@Override
+	public String getEditorBaseUrl(File file) {
+		String suffix = FileUtils.getFileSuffix(file.getName());
+		Action action = wopiService.getAction(getDiscovery(), "edit", suffix);
+		return action != null? action.getUrlSrc(): null;
 	}
 
 }

@@ -64,7 +64,7 @@ public class QTIResultSet extends PersistentObject {
 	}
 	
 	/**
-	 * @see org.olat.core.commons.persistence.Auditable#getLastModified()
+	 * @see org.olat.core.commons.persistence.Auditable#getLastModifiedTime()
 	 */
 	public Date getLastModified() {
 		return lastModified;

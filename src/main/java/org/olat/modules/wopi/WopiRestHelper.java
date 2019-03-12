@@ -17,33 +17,30 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.wopi.collabora;
+package org.olat.modules.wopi;
 
 import java.io.File;
+import java.time.Instant;
+import java.util.List;
 
-import org.olat.core.id.OLATResourceable;
-import org.olat.core.util.resource.OresHelper;
-import org.olat.modules.wopi.Access;
-import org.olat.modules.wopi.Discovery;
+import javax.ws.rs.core.HttpHeaders;
 
 /**
  * 
- * Initial date: 6 Mar 2019<br>
+ * Initial date: 11 Mar 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface CollaboraService {
+public class WopiRestHelper {
 	
-	public static final OLATResourceable REFRESH_EVENT_ORES = OresHelper
-			.createOLATResourceableType(CollaboraRefreshDiscoveryEvent.class.getSimpleName() + ":RefreshDiscovery");
+	public static String getFirstRequestHeader(HttpHeaders httpHeaders, String headerKey) {
+		List<String> requestHeader = httpHeaders.getRequestHeader(headerKey);
+		return requestHeader != null && !requestHeader.isEmpty()? requestHeader.get(0): null;
+	}
 
-	boolean fileExists(String fileId);
+	public static String getLastModifiedAsIso6801(File file) {
+		long lastModified = file.lastModified();
+		return Instant.ofEpochMilli(lastModified).toString();
+	}
 
-	File getFile(String fileId);
-
-	Access getAccess(String accessToken);
-	
-	public Discovery getDiscovery();
-	
-	public String getEditorBaseUrl(File file);
 }

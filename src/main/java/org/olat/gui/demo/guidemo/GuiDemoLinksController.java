@@ -30,6 +30,8 @@ import java.util.Collections;
 import java.util.List;
 
 import org.olat.admin.user.UserSearchController;
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -37,6 +39,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.link.LinkPopupSettings;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.text.TextComponent;
 import org.olat.core.gui.components.text.TextFactory;
@@ -50,9 +53,12 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.dev.controller.SourceViewController;
 import org.olat.core.logging.OLATRuntimeException;
+import org.olat.modules.wopi.collabora.CollaboraService;
+import org.olat.modules.wopi.collabora.ui.CollaboraEditorController;
 
 
 public class GuiDemoLinksController extends BasicController {
@@ -72,6 +78,7 @@ public class GuiDemoLinksController extends BasicController {
 	private Link iconButton;
 	private Link buttonLongTrans;
 	private Link buttonCloseIcon;
+	private Link collaboraButton;
 	
 	private List<UpDownWrapper> upDowns;
 	
@@ -107,6 +114,9 @@ public class GuiDemoLinksController extends BasicController {
 		iconButton = LinkFactory.createCustomLink("sonne", "cmd.sonne", "", Link.NONTRANSLATED, mainVC, this);
 		iconButton.setCustomEnabledLinkCSS("demoext_bild");
 		iconButton.setCustomDisabledLinkCSS("demoext_bild");
+		
+		collaboraButton = LinkFactory.createCustomLink("button.collabora", "button.collabora", "button.collabora", Link.BUTTON, mainVC, this);
+		collaboraButton.setPopup(new LinkPopupSettings(1200, 1200, "collabora"));
 		
 		buttonLongTrans = LinkFactory.createButton("button.long.trans", mainVC, this);
 		
@@ -204,11 +214,22 @@ public class GuiDemoLinksController extends BasicController {
 			showInfo("info.button.long.trans", ureq.getIdentity().getName());			
 		} else if (source == buttonCloseIcon){
 			showInfo("info.button.close.icon", ureq.getIdentity().getName());			
+		} else if (source == collaboraButton) {
+			doOpenCollabora(ureq);
 		} else if (event instanceof UpDownEvent) {
 			UpDownEvent ude = (UpDownEvent) event;
 			doMoveUpDownWrapper(source, ude.getDirection());
 			mainVC.setDirty(true);
 		}
+	}
+
+	private void doOpenCollabora(UserRequest ureq) {
+		ControllerCreator controllerCreator = (lureq, lwControl) -> {
+			CollaboraService collaboraService = CoreSpringFactory.getImpl(CollaboraService.class);
+			return new CollaboraEditorController(ureq, lwControl, collaboraService.getAccess("dummy"));
+		};
+		ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createPrintPopupLayout(controllerCreator );
+		openInNewBrowserWindow(ureq, layoutCtrlr);
 	}
 
 	private void doMoveUpDownWrapper(Component source, Direction direction) {
