@@ -658,7 +658,21 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 		Assert.assertEquals(coach.getKey(), members.get(0));
 	}
 	
-	
+	@Test
+	public void getMembers() {
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-supervisor-1");
+		Curriculum curriculum = curriculumService.createCurriculum("cur-for-el-24b", "Curriculum for element", "Curriculum", null);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-24b", "4. Element (b)", CurriculumElementStatus.active,
+				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		curriculumService.addMember(element, coach, CurriculumRoles.coach);
+		dbInstance.commitAndCloseSession();
+		
+		List<CurriculumElementRef> elements = Collections.singletonList(element);
+		List<Identity> members = curriculumElementDao.getMembers(elements, CurriculumRoles.coach.name());
+		Assert.assertNotNull(members);
+		Assert.assertEquals(1, members.size());
+		Assert.assertEquals(coach, members.get(0));
+	}
 	
 	@Test
 	public void getMembershipInfos_elements() {

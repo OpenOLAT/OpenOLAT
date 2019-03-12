@@ -34,6 +34,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -43,6 +44,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
@@ -57,6 +59,7 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.UserConstants;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.nodes.PFCourseNode;
 import org.olat.course.nodes.pf.manager.FileSystemExport;
@@ -65,6 +68,12 @@ import org.olat.course.nodes.pf.manager.PFView;
 import org.olat.course.nodes.pf.ui.DropBoxTableModel.DropBoxCols;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupRef;
+import org.olat.group.model.BusinessGroupRefImpl;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementRef;
+import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.resource.OLATResource;
 import org.olat.user.HomePageConfig;
 import org.olat.user.HomePageDisplayController;
@@ -82,6 +91,8 @@ public class PFCoachController extends FormBasicController implements Controller
 	protected static final String USER_PROPS_ID = PFCoachController.class.getCanonicalName();
 
 	protected static final int USER_PROPS_OFFSET = 500;
+	private static final String CURRICULUM_EL_PREFIX = "curriculumelement-";
+	private static final String BUSINESS_GROUP_PREFIX = "businessgroup-";
 	
 	private PFCourseNode pfNode;
 	
@@ -108,9 +119,9 @@ public class PFCoachController extends FormBasicController implements Controller
 	@Autowired
 	private UserManager userManager;
 	@Autowired
-	private BaseSecurityModule securityModule;
-	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private BaseSecurityModule securityModule;
 	
 	public PFCoachController(UserRequest ureq, WindowControl wControl, PFCourseNode sfNode, 
 			UserCourseEnvironment userCourseEnv, PFView pfView) {
@@ -193,6 +204,8 @@ public class PFCoachController extends FormBasicController implements Controller
 				} else if ("firstName".equals(se.getCommand()) || "lastName".equals(se.getCommand())) {
 					doOpenHomePage(ureq, currentObject.getIdentity());
 				} 
+			} else if(event instanceof FlexiTableSearchEvent) {
+				loadModel(true);
 			}
 		}
 	}
@@ -270,10 +283,10 @@ public class PFCoachController extends FormBasicController implements Controller
 		dropboxTable.setSelectAllEnable(true);
 		dropboxTable.setExportEnabled(true);
 		dropboxTable.setSortSettings(options);
+		initFilters();
 		dropboxTable.setAndLoadPersistedPreferences(ureq, "participant-folder_coach_" + pfView.name());
 		dropboxTable.setEmtpyTableMessageKey("table.empty");
 		
-
 		
 		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonGroupLayout.setElementCssClass("o_button_group");
@@ -283,8 +296,60 @@ public class PFCoachController extends FormBasicController implements Controller
 		uploadAllLink = uifactory.addFormLink("upload.link", buttonGroupLayout, Link.BUTTON);
 	}
 	
+	private void initFilters() {
+		List<FlexiTableFilter> filters = new ArrayList<>();
+		
+		List<BusinessGroup> coachedGroups = userCourseEnv.isAdmin()
+				? courseEnv.getCourseGroupManager().getAllBusinessGroups() : userCourseEnv.getCoachedGroups(); 
+		List<CurriculumElement> coachedElements = userCourseEnv.isAdmin()
+				? courseEnv.getCourseGroupManager().getAllCurriculumElements() : userCourseEnv.getCoachedCurriculumElements();
+		
+		if(coachedGroups != null) {
+			for(BusinessGroup coachedGroup:coachedGroups) {
+				String groupName = StringHelper.escapeHtml(coachedGroup.getName());
+				filters.add(new FlexiTableFilter(groupName, BUSINESS_GROUP_PREFIX.concat(coachedGroup.getKey().toString()), "o_icon o_icon_group"));
+			}
+		}
+		
+		if(!coachedElements.isEmpty()) {
+			if(!filters.isEmpty()) {
+				filters.add(FlexiTableFilter.SPACER);
+			}
+
+			for(CurriculumElement coachedElement: coachedElements) {
+				String groupName = StringHelper.escapeHtml(coachedElement.getDisplayName());
+				filters.add(new FlexiTableFilter(groupName, CURRICULUM_EL_PREFIX.concat(coachedElement.getKey().toString()), "o_icon o_icon_curriculum_element"));
+			}
+		}
+		
+		if(!filters.isEmpty()) {
+			filters.add(FlexiTableFilter.SPACER);
+			filters.add(new FlexiTableFilter(translate("show.all"), "", true));
+			dropboxTable.setExtendedFilterButton(translate("filter.groups"), filters);
+		}
+	}
+	
 	private void loadModel(boolean full) {
-		List<DropBoxRow> rows = pfManager.getParticipants(getIdentity(), pfNode, userPropertyHandlers, getLocale(), courseEnv, userCourseEnv.isAdmin());
+		List<FlexiTableFilter> extendedFilters = dropboxTable.getSelectedExtendedFilters();
+		List<DropBoxRow> rows;
+		if(extendedFilters == null || extendedFilters.isEmpty() || extendedFilters.get(0).isShowAll()) {	
+			rows = pfManager.getParticipants(getIdentity(), pfNode, userPropertyHandlers, getLocale(), courseEnv, userCourseEnv.isAdmin());
+		} else {
+			List<BusinessGroupRef> businessGroups = new ArrayList<>(extendedFilters.size());
+			List<CurriculumElementRef> curriculumElements = new ArrayList<>(extendedFilters.size());
+			for(FlexiTableFilter extendedFilter:extendedFilters) {
+				String filter = extendedFilter.getFilter();
+				if(filter.startsWith(BUSINESS_GROUP_PREFIX)) {
+					String key = filter.substring(BUSINESS_GROUP_PREFIX.length(), filter.length());
+					businessGroups.add(new BusinessGroupRefImpl(Long.valueOf(key)));
+				} else if(filter.startsWith(CURRICULUM_EL_PREFIX)) {
+					String key = filter.substring(CURRICULUM_EL_PREFIX.length(), filter.length());
+					curriculumElements.add(new CurriculumElementRefImpl(Long.valueOf(key)));
+				}
+			}
+			rows = pfManager.getParticipants(businessGroups, curriculumElements, pfNode, userPropertyHandlers, getLocale(), courseEnv);
+		}
+		
 		tableModel.setObjects(rows);
 		dropboxTable.reset(full, full, true);
 		flc.contextPut("hasParticipants", tableModel.getRowCount() > 0);
