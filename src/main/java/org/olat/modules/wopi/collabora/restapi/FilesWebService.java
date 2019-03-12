@@ -47,6 +47,7 @@ import javax.ws.rs.core.Response.Status;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.wopi.Access;
+import org.olat.modules.wopi.collabora.CollaboraModule;
 import org.olat.modules.wopi.collabora.CollaboraService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -67,6 +68,8 @@ public class FilesWebService {
 	private static final OLog log = Tracing.createLoggerFor(FilesWebService.class);
 	
 	@Autowired
+	private CollaboraModule collaboraModule;
+	@Autowired 
 	private CollaboraService collaboraService;
 	
 	@GET
@@ -77,6 +80,10 @@ public class FilesWebService {
 			@Context HttpHeaders httpHeaders) {
 		log.debug("WOPI REST CheckFileInfo request for file: " + fileId);
 		logRequestHeaders(httpHeaders);
+		
+		if (!collaboraModule.isEnabled()) {
+			return Response.serverError().status(Status.FORBIDDEN).build();
+		}
 		
 		if (!collaboraService.fileExists(fileId)) {
 			log.debug("File not found. File ID: " + fileId);
@@ -119,6 +126,10 @@ public class FilesWebService {
 		log.debug("WOPI REST GetFile request for file: " + fileId);
 		logRequestHeaders(httpHeaders);
 		
+		if (!collaboraModule.isEnabled()) {
+			return Response.serverError().status(Status.FORBIDDEN).build();
+		}
+		
 		if (!collaboraService.fileExists(fileId)) {
 			log.debug("File not found. File ID: " + fileId);
 			return Response.serverError().status(Status.NOT_FOUND).build();
@@ -149,6 +160,10 @@ public class FilesWebService {
 			InputStream fileInputStream) {
 		log.debug("WOPI REST PutFile request for file: " + fileId);
 		logRequestHeaders(httpHeaders);
+		
+		if (!collaboraModule.isEnabled()) {
+			return Response.serverError().status(Status.FORBIDDEN).build();
+		}
 		
 		if (!collaboraService.fileExists(fileId)) {
 			log.debug("File not found. File ID: " + fileId);
