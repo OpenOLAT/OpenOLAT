@@ -117,6 +117,16 @@ ul.o_dropdown {
 			background-color: $dropdown-link-hover-bg;
 		}
 	}
+	
+	> li > i.o_icon_check {
+		display: inline-block;
+		padding-left: 14px;
+	}
+	
+	> li > i.o_icon_check + a {
+		display: inline-block;
+		padding-left: 5px;
+	}
 }
 
 /* SCORM module */

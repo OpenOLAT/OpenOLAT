@@ -62,6 +62,8 @@ import org.olat.course.nodes.pf.ui.DropBoxRow;
 import org.olat.course.nodes.pf.ui.PFRunController;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.group.BusinessGroupRef;
+import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
@@ -90,6 +92,8 @@ public class PFManager {
 
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private BusinessGroupRelationDAO businessGroupRelationDao;
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 	
@@ -538,18 +542,28 @@ public class PFManager {
 	/**
 	 * Gets the participants for different group or course coaches as TableModel. 
 	 *
-	 * @param id the identity
-	 * @param pfNode 
-	 * @param userPropertyHandlers 
-	 * @param locale 
-	 * @param courseEnv
-	 * @param admin
-	 * @return the participants
+	 * @param id The identity of the user who searches
+	 * @param pfNode  The course element
+	 * @param userPropertyHandlers The list of properties to hold
+	 * @param locale The locale
+	 * @param courseEnv The course environment
+	 * @param admin If the user is an administrator
+	 * @return the participants The list of dropbox
 	 */
 	public List<DropBoxRow> getParticipants(Identity id, PFCourseNode pfNode, List<UserPropertyHandler> userPropertyHandlers, 
 			Locale locale, CourseEnvironment courseEnv, boolean admin) {
-
 		List<Identity> identityList = getParticipants(id, courseEnv, admin);
+		return getParticipants(pfNode, userPropertyHandlers, locale, identityList, courseEnv);
+	}
+	
+	public List<DropBoxRow> getParticipants(List<BusinessGroupRef> businessGroupRefs, PFCourseNode pfNode, List<UserPropertyHandler> userPropertyHandlers, 
+			Locale locale, CourseEnvironment courseEnv) {
+		List<Identity> identityList = businessGroupRelationDao.getMembers(businessGroupRefs, GroupRoles.participant.name());
+		return getParticipants(pfNode, userPropertyHandlers, locale, identityList, courseEnv);
+	}
+	
+	private List<DropBoxRow> getParticipants(PFCourseNode pfNode, List<UserPropertyHandler> userPropertyHandlers, 
+			Locale locale, List<Identity> identityList, CourseEnvironment courseEnv) {
 
 		Set<Identity> duplicates = new HashSet<>();
 		List<DropBoxRow> participants = new ArrayList<>(identityList.size());

@@ -68,7 +68,9 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 		if(courseNode != null && !(courseNode instanceof STCourseNode) && courseNode.hasScoreConfigured()) {
 			maxScore = courseNode.getMaxScoreConfiguration();
 			minScore = courseNode.getMinScoreConfiguration();
-			cutValue = courseNode.getCutValueConfiguration();
+			if (courseNode.hasPassedConfigured()) {
+				cutValue = courseNode.getCutValueConfiguration();
+			}
 		}
 	}
 	

@@ -219,24 +219,28 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 	protected void renderHeaderSearch(Renderer renderer, StringOutput sb, FlexiTableElementImpl ftE, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
 
-		if(ftE.isSearchEnabled()) {
+		if(ftE.isSearchEnabled() || ftE.getExtendedFilterButton() != null) {
 			Form theForm = ftE.getRootForm();
 			String dispatchId = ftE.getFormDispatchId();
+			boolean searchInput = ftE.getSearchElement() != null;
 			
 			sb.append("<div class='o_table_search input-group o_noprint'>");
-			renderFormItem(renderer, sb, ftE.getSearchElement(), ubu, translator, renderResult, args);
-			sb.append("<div class='input-group-btn'>");
-			// reset quick search
-			String id = ftE.getSearchElement().getFormDispatchId();
-			sb.append("<a href=\"javascript:jQuery('#").append(id).append("').val('');")
-			  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, true, true, true,
-					  new NameValuePair("reset-search", "true")))
-			  .append("\" class='btn o_reset_quick_search'><i class='o_icon o_icon_remove_filters'> </i></a>");
-						
-			renderFormItem(renderer, sb, ftE.getSearchButton(), ubu, translator, renderResult, args);
-			if(ftE.getExtendedSearchButton() != null) {
-				renderFormItem(renderer, sb, ftE.getExtendedSearchButton(), ubu, translator, renderResult, args);
+			if(searchInput) {
+				renderFormItem(renderer, sb, ftE.getSearchElement(), ubu, translator, renderResult, args);
+				sb.append("<div class='input-group-btn'>");
+				// reset quick search
+				String id = ftE.getSearchElement().getFormDispatchId();
+				sb.append("<a href=\"javascript:jQuery('#").append(id).append("').val('');")
+				  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, true, true, true,
+						  new NameValuePair("reset-search", "true")))
+				  .append("\" class='btn o_reset_quick_search'><i class='o_icon o_icon_remove_filters'> </i></a>");
+							
+				renderFormItem(renderer, sb, ftE.getSearchButton(), ubu, translator, renderResult, args);
+				if(ftE.getExtendedSearchButton() != null) {
+					renderFormItem(renderer, sb, ftE.getExtendedSearchButton(), ubu, translator, renderResult, args);
+				}
 			}
+			
 			StringBuilder filterIndication = new StringBuilder();
 			if(ftE.getExtendedFilterButton() != null) {
 				ftE.getSelectedExtendedFilters().forEach(filter -> {
@@ -246,10 +250,10 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 				
 				renderFormItem(renderer, sb, ftE.getExtendedFilterButton(), ubu, translator, renderResult, args);
 			}
-			sb.append("</div>");
+			sb.append("</div>", searchInput);// close the div input-group-btn
 			sb.append("</div>");
 			if(filterIndication.length() > 0) {
-				sb.append("<div class='o_table_tools_indications'>").append(filterIndication)
+				sb.append("<div class='o_table_tools_indications").append("_filter_only", !searchInput).append("'>").append(filterIndication)
 				// remove filter
 				  .append("<a href=\"javascript:")
 				  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, true, true, true,

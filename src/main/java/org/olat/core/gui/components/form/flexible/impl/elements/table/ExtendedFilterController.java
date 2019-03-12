@@ -85,7 +85,13 @@ public class ExtendedFilterController extends FormBasicController {
 			Object uobject = link.getUserObject();
 			if(uobject instanceof FlexiTableFilter) {
 				FlexiTableFilter filter = (FlexiTableFilter)uobject;
-				filter.setSelected(!filter.isSelected());
+				if(filter.isShowAll()) {
+					for(FlexiTableFilter f:filters) {
+						f.setSelected(false);
+					}
+				} else {
+					filter.setSelected(!filter.isSelected());
+				}
 			}
 		}
 		fireEvent(ureq, Event.DONE_EVENT);
