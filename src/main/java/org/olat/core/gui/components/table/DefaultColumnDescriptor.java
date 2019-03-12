@@ -51,6 +51,7 @@ public class DefaultColumnDescriptor implements ColumnDescriptor {
 	private String action;
 	private String headerKey;
 	private int alignment;
+	private int headerAlignment;
 	private boolean popUpWindowAction;
 	private String popUpWindowAttributes;
 	//protected to allow overriding of compare method
@@ -81,24 +82,28 @@ public class DefaultColumnDescriptor implements ColumnDescriptor {
 	 * @param alignment left, middle or right; constants in ColumnDescriptor
 	 */
 	public DefaultColumnDescriptor(final String headerKey, final int dataColumn, final String action, final Locale locale, final int alignment) {
+		this(headerKey, dataColumn, action, locale, alignment, ColumnDescriptor.ALIGNMENT_LEFT);
+	}
+	
+	public DefaultColumnDescriptor(final String headerKey, final int dataColumn, final String action, final Locale locale, final int alignment, final int headerAlignment) {
 		this.dataColumn = dataColumn;
 		this.headerKey = headerKey;
 		this.action = action;
 		this.locale = locale;
 		this.alignment = alignment;
+		this.headerAlignment = headerAlignment;
 		if (locale != null) {
 			formatter = Formatter.getInstance(locale);
 			collator = Collator.getInstance(locale);
 		}
 	}
 	
-	/**
-	 * @see org.olat.core.gui.components.table.ColumnDescriptor#getHeaderKey()
-	 */
+	@Override
 	public String getHeaderKey() {
 		return headerKey;
 	}
 	
+	@Override
 	public boolean translateHeaderKey() {
 		return translateHeaderKey;
 	}
@@ -120,9 +125,7 @@ public class DefaultColumnDescriptor implements ColumnDescriptor {
 		return table.getTableDataModel().getValueAt(table.getSortedRow(row),dataColumn);
 	}
 	
-	/**
-	 * @see org.olat.core.gui.components.table.ColumnDescriptor#renderValue(org.olat.core.gui.render.StringOutput, int, org.olat.core.gui.render.Renderer)
-	 */
+	@Override
 	public void renderValue(final StringOutput sb, final int row, final Renderer renderer) {
 		Object val = getModelData(row);
 		if (val == null) {
@@ -153,11 +156,14 @@ public class DefaultColumnDescriptor implements ColumnDescriptor {
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.table.ColumnDescriptor#getAlignment()
-	 */
+	@Override
 	public int getAlignment() {
 		return alignment;
+	}
+
+	@Override
+	public int getHeaderAlignment() {
+		return headerAlignment;
 	}
 
 	/**
@@ -233,92 +239,63 @@ public class DefaultColumnDescriptor implements ColumnDescriptor {
 		return ba? (bb? 0: -1):(bb? 1: 0);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.table.ColumnDescriptor#setTable(org.olat.core.gui.components.table.Table)
-	 */
+	@Override
 	public void setTable(final Table table) {
 		this.table = table;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.table.ColumnDescriptor#getAction(int)
-	 */
+	@Override
 	public String getAction(final int row) {
 		return action;
 	}
 	
-	
-
-
-	/**
-	 * Sets the alignment.
-	 * @param alignment The alignment to set
-	 */
 	public void setAlignment(final int alignment) {
 		this.alignment= alignment;
 	}
+	
+	public void setHeaderAlignment(final int headerAlignment) {
+		this.headerAlignment= headerAlignment;
+	}
 
-	/**
-	 * @return Table
-	 */
 	protected Table getTable() {
 		return table;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.table.ColumnDescriptor#modelChanged()
-	 */
+	@Override
 	public void modelChanged() {
 	    // empty
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.table.ColumnDescriptor#sortingAboutToStart()
-	 */
+	@Override
 	public void sortingAboutToStart() {
 		// empty
 	}
 
-	/**
-	 * @return int
-	 */
 	@Override
 	public int getDataColumn() {
 		return dataColumn;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.table.ColumnDescriptor#otherColumnDescriptorSorted()
-	 */
+	@Override
 	public void otherColumnDescriptorSorted() {
 		// empty
 	}
 
-
-	/**
-	 * @see org.olat.core.gui.components.table.ColumnDescriptor#isSortingAllowed()
-	 */
+	@Override
 	public boolean isSortingAllowed() {
 		return true;
 	}
 
-	/**
-	 * @return Locale
-	 */
 	public Locale getLocale() {
 		return locale;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.table.ColumnDescriptor#isPopUpWindowAction()
-	 */
+	@Override
 	public boolean isPopUpWindowAction() {
 		return popUpWindowAction;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.table.ColumnDescriptor#getPopUpWindowAttributes()
-	 */
+	@Override
 	public String getPopUpWindowAttributes() {
 		return popUpWindowAttributes;
 	}

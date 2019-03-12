@@ -48,6 +48,7 @@ public class ChecklistMultiSelectColumnDescriptor implements ColumnDescriptor {
 		return column;
 	}
 
+	@Override
 	public void renderValue(StringOutput sb, int row, Renderer renderer) {
 		// add checkbox
 		int currentPosInModel = table.getSortedRow(row);
@@ -63,6 +64,7 @@ public class ChecklistMultiSelectColumnDescriptor implements ColumnDescriptor {
 		}
 	}
 
+	@Override
 	public int compareTo(int rowa, int rowb) {
 		boolean rowaChecked = (Boolean) table.getTableDataModel().getValueAt(rowa, column);
 		boolean rowbChecked = (Boolean) table.getTableDataModel().getValueAt(rowb, column);
@@ -71,54 +73,71 @@ public class ChecklistMultiSelectColumnDescriptor implements ColumnDescriptor {
 		return 0;
 	}
 
+	@Override
 	public boolean equals(Object object) {
 		if (object instanceof ChecklistMultiSelectColumnDescriptor)
 			return true;
 		return false;
 	}
 	
+	@Override
 	public String getHeaderKey() {
 		return this.headerKey;
 	}
 	
+	@Override
 	public boolean translateHeaderKey() {
 		return false;
 	}
 
+	@Override
 	public int getAlignment() {
 		return ColumnDescriptor.ALIGNMENT_CENTER;
 	}
+	
+	@Override
+	public int getHeaderAlignment() {
+		return ColumnDescriptor.ALIGNMENT_LEFT;
+	}
 
+	@Override
 	public String getAction(int row) {
 		// no action
 		return null;
 	}
 
+	@Override
 	public String getPopUpWindowAttributes() {
 		// no PopuWindow
 		return null;
 	}
 
+	@Override
 	public boolean isPopUpWindowAction() {
 		return false;
 	}
 
+	@Override
 	public boolean isSortingAllowed() {
 		return true;
 	}
 
+	@Override
 	public void modelChanged() {
 		// nothing to do here
 	}
 
+	@Override
 	public void otherColumnDescriptorSorted() {
 		// nothing to do here
 	}
 
+	@Override
 	public void setTable(Table table) {
 		this.table = table;
 	}
 
+	@Override
 	public void sortingAboutToStart() {
 		// nothing to do here
 	}

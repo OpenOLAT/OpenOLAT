@@ -188,18 +188,20 @@ public class StatisticDisplayController extends BasicController {
 			tableController.addColumnDescriptor(statisticManager.createColumnDescriptor(ureq, aColumnId, aHeader));
 		}
 		
-		tableController.addColumnDescriptor(new CustomRenderColumnDescriptor("stat.table.header.total", column, 
-				StatisticDisplayController.CLICK_TOTAL_ACTION+column, ureq.getLocale(), ColumnDescriptor.ALIGNMENT_RIGHT, new TotalColumnRenderer()) {
+		CustomRenderColumnDescriptor columnDescriptor = new CustomRenderColumnDescriptor("stat.table.header.total",
+				column, StatisticDisplayController.CLICK_TOTAL_ACTION + column, ureq.getLocale(),
+				ColumnDescriptor.ALIGNMENT_RIGHT, new TotalColumnRenderer()) {
 			@Override
 			public String getAction(int row) {
-				if (row==table.getTableDataModel().getRowCount()-1) {
+				if (row == table.getTableDataModel().getRowCount() - 1) {
 					return super.getAction(row);
-				} else {
-					return null;
 				}
+				return null;
 			}
-			
-		});
+
+		};
+		columnDescriptor.setHeaderAlignment(ColumnDescriptor.ALIGNMENT_RIGHT);
+		tableController.addColumnDescriptor(columnDescriptor);
 		
 		tableController.setTableDataModel(result);
 		
