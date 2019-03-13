@@ -43,21 +43,23 @@ public class EvaluationFormPrintControllerCreator implements ControllerCreator {
 	private final Figures figures;
 	private final ReportHelper reportHelper;
 	private final EvaluationFormPrintSelection printSelection;
+	private final String title;
 
 	public EvaluationFormPrintControllerCreator(Form form, DataStorage storage, SessionFilter filter, Figures figures,
-			ReportHelper reportHelper, EvaluationFormPrintSelection printSelection) {
+			ReportHelper reportHelper, EvaluationFormPrintSelection printSelection, String title) {
 		this.form = form;
 		this.storage = storage;
 		this.filter = filter;
 		this.figures = figures;
 		this.reportHelper = reportHelper;
 		this.printSelection = printSelection;
+		this.title = title;
 	}
 
 	@Override
 	public Controller createController(UserRequest lureq, WindowControl lwControl) {
 		return new EvaluationFormPrintController(lureq, lwControl, form, storage,
-				filter, figures, reportHelper, printSelection);
+				filter, figures, reportHelper, printSelection, title);
 	}
 
 }

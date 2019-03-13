@@ -69,9 +69,9 @@ public class EvaluationFormPrintController extends BasicController {
 	@Autowired
 	private EvaluationFormsModule evaluationFormsModule;
 
-	public EvaluationFormPrintController(UserRequest ureq, WindowControl wControl, Form form, DataStorage storage, SessionFilter filter,
-			Figures figures, ReportHelper reportHelper,
-			EvaluationFormPrintSelection printSelection) {
+	public EvaluationFormPrintController(UserRequest ureq, WindowControl wControl, Form form, DataStorage storage,
+			SessionFilter filter, Figures figures, ReportHelper reportHelper,
+			EvaluationFormPrintSelection printSelection, String title) {
 		super(ureq, wControl);
 		this.form = form;
 		this.storage = storage;
@@ -79,6 +79,7 @@ public class EvaluationFormPrintController extends BasicController {
 		this.reportHelper = reportHelper;
 
 		mainVC = createVelocityContainer("report_print");
+		mainVC.contextPut("mainTitle", title);
 		if (printSelection.isOverview()) {
 			Controller overviewCtrl = new EvaluationFormOverviewController(ureq, getWindowControl(), form, storage, filter, figures);
 			mainVC.put("overview", overviewCtrl.getInitialComponent());

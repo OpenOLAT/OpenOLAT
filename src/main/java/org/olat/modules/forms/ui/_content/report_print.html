@@ -3,20 +3,23 @@
 		<span class="o_navbar-brand"></span>
 	</div>
 	<div class="o_eva_content">
+		#if($r.isNotNull($mainTitle))
+			<h2>$mainTitle</h2>
+		#end
 		#if($r.available("overview"))
-			<h1>$r.translate("report.print.title.overview")</h1> 
+			<h3>$r.translate("report.print.title.overview")</h3> 
 			<div class="o_print_overview o_print_break_after">$r.render("overview")</div>
 		#end
 		#if($r.available("tables"))
-			<h1>$r.translate("report.print.title.tables")</h1> 
+			<h3>$r.translate("report.print.title.tables")</h3> 
 			<div class="o_print_tables o_print_break_after">$r.render("tables")</div>
 		#end
 		#if($r.available("diagrams"))
-			<h1>$r.translate("report.print.title.diagrams")</h1> 
+			<h3>$r.translate("report.print.title.diagrams")</h3> 
 			<div class="o_print_diagrams o_print_break_after">$r.render("diagrams")</div>
 		#end
 		#foreach($sessionWrapper in $sessionWrappers)
-			<h1>$sessionWrapper.getLegendName()</h1> 
+			<h3>$sessionWrapper.getLegendName()</h3> 
 			<div class="o_print_session o_print_break_after">$r.render("$sessionWrapper.getComponentName()")</div>
 		#end
 	</div>
