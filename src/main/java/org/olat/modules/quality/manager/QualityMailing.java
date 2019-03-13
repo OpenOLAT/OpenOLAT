@@ -23,13 +23,16 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -46,6 +49,7 @@ import org.olat.core.id.User;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
@@ -104,6 +108,7 @@ class QualityMailing {
 
 	private static final OLog log = Tracing.createLoggerFor(QualityMailing.class);
 	
+	private static final SimpleDateFormat FILE_DATE_PREFIX = new SimpleDateFormat("yyyyMMdd");
 	private static final Collection<QualityDataCollectionStatus> STATUS_FILTER = Arrays.asList(
 			QualityDataCollectionStatus.READY,
 			QualityDataCollectionStatus.RUNNING,
@@ -387,8 +392,9 @@ class QualityMailing {
 		printSelection.setTables(true);
 		
 		String localeKey = i18nModule.getLocaleKey(locale);
-		File reportPdf = tempDir.resolve("report_" + localeKey + ".pdf").toFile();
-		if (!reportPdf.exists()) {
+		File reportPdf = getPdfOverviewReport(tempDir, localeKey);
+		if (reportPdf == null || !reportPdf.exists()) {
+			reportPdf = tempDir.resolve(getFileName(dataCollection, localeKey)).toFile();
 			reportPdf = createPdfOverviewReport(dataCollection, dataCollectionView, form, storage, filter,
 					legendNameGenerator, printSelection, recipient, reportPdf, locale);
 		}
@@ -401,8 +407,35 @@ class QualityMailing {
 		}
 		return null;
 	}
+
+	private static File getPdfOverviewReport(Path tempDir, String localeKey) {
+		try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(tempDir, "*" + localeKey + ".pdf")) {
+			for (Path path : directoryStream) {
+				 // return first, it exists maximal one
+				return path.toFile();
+			}
+		} catch (IOException e) {
+			log.error("", e);
+		}
+		return null;
+	}
 	
-	private File createPdfOverviewReport(QualityDataCollection dataCollection, QualityDataCollectionView dataCollectionView, Form form, DataStorage storage, SessionFilter filter, LegendNameGenerator legendNameGenerator, EvaluationFormPrintSelection printSelection, Identity recipient, File reportPdf, Locale locale) {
+	private static String getFileName(QualityDataCollection dataCollection, String localeKey) {
+		Date now = new Date();
+		StringBuilder sb = new StringBuilder();
+		sb.append(FILE_DATE_PREFIX.format(now));
+		sb.append("_");
+		sb.append(FileUtils.normalizeFilename(dataCollection.getTitle()));
+		sb.append("_");
+		sb.append(localeKey);
+		sb.append(".pdf");
+		return sb.toString();
+	}
+
+	private File createPdfOverviewReport(QualityDataCollection dataCollection,
+			QualityDataCollectionView dataCollectionView, Form form, DataStorage storage, SessionFilter filter,
+			LegendNameGenerator legendNameGenerator, EvaluationFormPrintSelection printSelection, Identity recipient,
+			File reportPdf, Locale locale) {
 		ControllerCreator controllerCreator = getControllerCreator(dataCollection, dataCollectionView, form, storage,
 				filter, legendNameGenerator, printSelection, locale);
 		try (OutputStream out = new FileOutputStream(reportPdf)) {
