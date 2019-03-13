@@ -99,6 +99,7 @@ import org.olat.restapi.support.ObjectFactory;
 import org.olat.restapi.support.vo.CourseConfigVO;
 import org.olat.restapi.support.vo.CourseVO;
 import org.olat.restapi.support.vo.OlatResourceVO;
+import org.olat.restapi.support.vo.RepositoryEntryAccessVO;
 import org.olat.user.restapi.OrganisationVO;
 import org.olat.user.restapi.UserVO;
 import org.olat.user.restapi.UserVOFactory;
@@ -151,12 +152,23 @@ public class CourseWebService {
 		this.courseOres = courseOres;
 	}
 	
+	/**
+	 * To access the group web-service for the specified course.
+	 * 
+	 * @return The group web service
+	 */
 	@Path("groups")
 	public CourseGroupWebService getCourseGroupWebService() {
 		RepositoryEntry re = repositoryManager.lookupRepositoryEntry(courseOres, false);
 		return new CourseGroupWebService(re, courseOres);
 	}
 	
+	/**
+	 * To access the calendar web-service of the specified course.
+	 * 
+	 * @param request The HTTP request
+	 * @return The calendar web service
+	 */
 	@Path("calendar")
 	public CalWebService getCourseCalendarWebService(@Context HttpServletRequest request) {
 		if(calendarModule.isEnabled()
@@ -182,6 +194,13 @@ public class CourseWebService {
 		return null;
 	}
 	
+	/**
+	 * To access the vitero booking web-service of the specified course
+	 * and course element.
+	 * 
+	 * @param subIdentifier The identifier of the course element
+	 * @return The vitero booking web-service
+	 */
 	@Path("vitero/{subIdentifier}")
 	public ViteroBookingWebService getViteroWebService(@PathParam("subIdentifier") String subIdentifier) {
 		ViteroBookingWebService service = new ViteroBookingWebService(courseOres, subIdentifier);
@@ -189,6 +208,13 @@ public class CourseWebService {
 		return service;
 	}
 	
+	/**
+	 * To get the GoToMeeting web service of the specified course
+	 * and course element.
+	 * 
+	 * @param subIdentifier The identifier of the course element
+	 * @return The GoToMeeting web service
+	 */
 	@Path("gotomeeting/{subIdentifier}")
 	public GoToTrainingWebService getGoToMeetingWebService(@PathParam("subIdentifier") String subIdentifier) {
 		RepositoryEntry courseRe = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
@@ -213,6 +239,7 @@ public class CourseWebService {
 
 	/**
 	 * Publish the course.
+	 * 
 	 * @response.representation.200.qname {http://www.example.com}courseVO
 	 * @response.representation.200.mediaType application/xml, application/json
 	 * @response.representation.200.doc The metadatas of the created course
@@ -253,6 +280,30 @@ public class CourseWebService {
 		CourseVO vo = ObjectFactory.get(course);
 		return Response.ok(vo).build();
 	}
+	
+	/**
+	 * Get the access configuration of the course by id.
+	 * 
+	 * @response.representation.200.qname {http://www.example.com}repositoryEntryAccessVO
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc The access configuration of the course
+	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_REPOACCESS}
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The course not found
+	 * @param request The HTTP request
+	 * @return It returns the <code>RepositoryEntryAccessVO</code> object representing the access configuration of the course.
+	 */
+	@GET
+	@Path("access")
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response getAccess(@Context HttpServletRequest request) {
+		if(!isAuthor(request) && !isManager(request)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		RepositoryEntryAccessVO accessVo = RepositoryEntryAccessVO.valueOf(entry);
+		return Response.ok(accessVo).build();
+	}
 
 	/**
 	 * Get the metadatas of the course by id
@@ -260,19 +311,34 @@ public class CourseWebService {
 	 * @response.representation.200.mediaType application/xml, application/json
 	 * @response.representation.200.doc The metadatas of the created course
 	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSEVO}
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
 	 * @response.representation.404.doc The course not found
+	 * @param request The HTTP request
 	 * @return It returns the <code>CourseVO</code> object representing the course.
 	 */
 	@GET
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response findById(@Context HttpServletRequest httpRequest) {
-		if (!isCourseAccessible(course, httpRequest)) {
+	public Response findById(@Context HttpServletRequest request) {
+		if (!isCourseAccessible(course, request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		CourseVO vo = ObjectFactory.get(course);
 		return Response.ok(vo).build();
 	}
 	
+
+	/**
+	 * Get the OLAT resource of the course specified by its id.
+	 * 
+	 * @response.representation.200.qname {http://www.example.com}olatResourceVO
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc The OLAT resource of the course
+	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_OLATRESOURCEVO}
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The course not found
+	 * @param request The HTTP request
+	 * @return It returns the <code>CourseVO</code> object representing the course.
+	 */
 	@GET
 	@Path("resource")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
@@ -290,6 +356,7 @@ public class CourseWebService {
 	 * @response.representation.200.doc The course as a ZIP file
 	 * @response.representation.401.doc Not authorized to export the course
 	 * @response.representation.404.doc The course not found
+	 * @param request The HTTP request
 	 * @return It returns the <code>CourseVO</code> object representing the course.
 	 */
 	@GET
