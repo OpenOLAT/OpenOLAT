@@ -51,7 +51,6 @@ public class MemberView extends UserPropertiesRow {
 	private Date creationDate;
 	private Date lastModified;
 	
-	private boolean pending;
 	private boolean managedMembersRepo;
 	private final CourseMembership membership = new CourseMembership();
 	
@@ -158,14 +157,6 @@ public class MemberView extends UserPropertiesRow {
 
 	public void setManagedMembersRepo(boolean managedMembersRepo) {
 		this.managedMembersRepo = managedMembersRepo;
-	}
-	
-	public boolean isPending() {
-		return pending;
-	}
-
-	public void setPending(boolean pending) {
-		this.pending = pending;
 	}
 
 	public static class BusinessGroupShortImpl implements BusinessGroupShort {
