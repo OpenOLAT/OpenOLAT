@@ -1,6 +1,6 @@
-<div class="o_evaluation_block o_evaluation_rubric_diagrams">
+<div class="o_evaluation_block o_evaluation_rubric_diagrams o_print_break_avoid">
 	#foreach($slider in $rubricWrapper.getSliders())
-		<div class="o_slider clearfix #if($rubricWrapper.isContinous()) o_continous #end">
+		<div class="o_slider clearfix #if($rubricWrapper.isContinous()) o_continous #end o_print_break_avoid">
 			<div class="row">
 				#if ($rubricWrapper.isWithEndLabel())
 					<div class="col-sm-6">

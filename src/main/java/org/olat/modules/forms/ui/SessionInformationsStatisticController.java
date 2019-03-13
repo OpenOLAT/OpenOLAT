@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -68,7 +69,9 @@ public class SessionInformationsStatisticController extends FormBasicController 
 		String numAnonymousSession = String.valueOf(anonymous);
 		String numberOfParticipants = translate("session.informations.report.number.participants",
 				new String[] { numSesions, numAnonymousSession });
-		uifactory.addStaticTextElement("sis_" + CodeHelper.getRAMUniqueID(), null, numberOfParticipants, formLayout);
+		StaticTextElement numberOfParticipantsEl = uifactory.addStaticTextElement("sis_" + CodeHelper.getRAMUniqueID(),
+				null, numberOfParticipants, formLayout);
+		numberOfParticipantsEl.setElementCssClass("o_participated_users");
 	}
 
 	@Override
