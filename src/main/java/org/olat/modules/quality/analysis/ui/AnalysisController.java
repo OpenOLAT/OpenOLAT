@@ -33,7 +33,6 @@ import org.olat.core.gui.components.link.LinkPopupSettings;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.panel.SimpleStackedPanel;
 import org.olat.core.gui.components.panel.StackedPanel;
-import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
 import org.olat.core.gui.components.stack.ButtonGroupComponent;
 import org.olat.core.gui.components.stack.TooledController;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
@@ -68,7 +67,6 @@ import org.olat.modules.forms.ui.EvaluationFormOverviewController;
 import org.olat.modules.forms.ui.EvaluationFormPrintSelectionController;
 import org.olat.modules.forms.ui.EvaluationFormPrintSelectionController.Target;
 import org.olat.modules.forms.ui.EvaluationFormReportController;
-import org.olat.modules.forms.ui.EvaluationFormSessionSelectionController;
 import org.olat.modules.forms.ui.LegendNameGenerator;
 import org.olat.modules.forms.ui.NameShuffleAnonymousComparator;
 import org.olat.modules.forms.ui.ReportHelper;
@@ -115,7 +113,7 @@ public class AnalysisController extends BasicController implements TooledControl
 	private Controller overviewCtrl;
 	private Controller tableReportCtrl;
 	private Controller diagramReportCtrl;
-	private EvaluationFormSessionSelectionController sessionSelectionCtrl;
+	private AnalysisSessionSelectionController sessionSelectionCtrl;
 	private HeatMapController heatMapCtrl;
 	private TrendController trendDiagramCtrl;
 	private FilterController filterCtrl;
@@ -438,7 +436,8 @@ public class AnalysisController extends BasicController implements TooledControl
 		removeAsListenerAndDispose(diagramReportCtrl);
 		
 		DefaultReportProvider provider = new DefaultReportProvider(storage);
-		diagramReportCtrl = new EvaluationFormReportController(ureq, getWindowControl(), form, storage, getReportSessionFilter(), provider, getReportHelper(), null);
+		diagramReportCtrl = new EvaluationFormReportController(ureq, getWindowControl(), form, storage,
+				getReportSessionFilter(), provider, getReportHelper(), null);
 		listenTo(diagramReportCtrl);
 		
 		colsCtrl = new Analysis2ColController(ureq, getWindowControl(), diagramReportCtrl, filterCtrl);
@@ -451,12 +450,8 @@ public class AnalysisController extends BasicController implements TooledControl
 	private void doOpenSessionSelection(UserRequest ureq) {
 		removeAsListenerAndDispose(sessionSelectionCtrl);
 
-		sessionSelectionCtrl = new EvaluationFormSessionSelectionController(ureq, getWindowControl(), form,
-				storage, getReportSessionFilter(), getReportHelper(), null);
-		BreadcrumbedStackedPanel stackedSessionPanel = new BreadcrumbedStackedPanel("forms", getTranslator(),
-				sessionSelectionCtrl);
-		stackedSessionPanel.pushController(translate("analysis.session.forms"), sessionSelectionCtrl);
-		sessionSelectionCtrl.setBreadcrumbPanel(stackedSessionPanel);
+		sessionSelectionCtrl = new AnalysisSessionSelectionController(ureq, getWindowControl(), form,
+				storage, getReportSessionFilter(), getReportHelper(), stackPanel, filterCtrl, toolComponents);
 		
 		colsCtrl = new Analysis2ColController(ureq, getWindowControl(), sessionSelectionCtrl, filterCtrl);
 		stackPanel.popUpToController(this);
@@ -686,6 +681,9 @@ public class AnalysisController extends BasicController implements TooledControl
 
 	private void setShowFilter(Boolean show) {
 		colsCtrl.setShowFilter(show);
+		if (sessionSelectionCtrl != null) {
+			sessionSelectionCtrl.setShowFilter(show);
+		}
 		if (heatMapCtrl != null) {
 			heatMapCtrl.setShowFilter(show);
 		}

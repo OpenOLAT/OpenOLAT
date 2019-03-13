@@ -39,7 +39,7 @@ public class Analysis2ColController extends BasicController {
 	
 	private Boolean showFilter = Boolean.FALSE;
 	
-	protected Analysis2ColController(UserRequest ureq, WindowControl wControl, Controller presentationCtrl, FilterController filterCtrl) {
+	public Analysis2ColController(UserRequest ureq, WindowControl wControl, Controller presentationCtrl, FilterController filterCtrl) {
 		super(ureq, wControl);
 		mainVC = createVelocityContainer("analysis_filter");
 		putInitialPanel(mainVC);
@@ -47,7 +47,6 @@ public class Analysis2ColController extends BasicController {
 		mainVC.put("presentation", presentationCtrl.getInitialComponent());
 		mainVC.put("filter", filterCtrl.getInitialComponent());
 	}
-	
 	
 	Boolean getShowFilter() {
 		return showFilter;
