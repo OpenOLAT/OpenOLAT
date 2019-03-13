@@ -53,7 +53,7 @@ import org.springframework.stereotype.Service;
 @Service
 class EdusharingHttpClient {
 	
-	private static final OLog log = Tracing.createLoggerFor(EdusharingServiceImpl.class);
+	private static final OLog log = Tracing.createLoggerFor(EdusharingHttpClient.class);
 	
 	private static final int TIMEOUT_5000_MILLIS = 5000;
 	private static final RequestConfig REQUEST_CONFIG = RequestConfig.custom()
