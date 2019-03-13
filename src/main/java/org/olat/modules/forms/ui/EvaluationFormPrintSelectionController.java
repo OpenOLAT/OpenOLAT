@@ -79,20 +79,28 @@ public class EvaluationFormPrintSelectionController extends FormBasicController 
 	private final ReportHelper reportHelper;
 	private final Target target;
 	private final EvaluationFormPrintSelection printSelection;
+	private final String title;
 	
 	@Autowired
 	private PdfModule pdfModule;
 	@Autowired
 	private PdfService pdfService;
-
+	
 	public EvaluationFormPrintSelectionController(UserRequest ureq, WindowControl wControl, Form form,
 			DataStorage storage, SessionFilter filter, Figures figures, ReportHelper reportHelper, Target target) {
+		this(ureq, wControl, form, storage, filter, figures, reportHelper, target, null);
+	}
+
+	public EvaluationFormPrintSelectionController(UserRequest ureq, WindowControl wControl, Form form,
+			DataStorage storage, SessionFilter filter, Figures figures, ReportHelper reportHelper, Target target,
+			String title) {
 		super(ureq, wControl, "report_print_selection");
 		this.form = form;
 		this.storage = storage;
 		this.filter = filter;
 		this.figures = figures;
 		this.reportHelper = reportHelper;
+		this.title = title;
 		this.target = target;
 		this.printSelection = new EvaluationFormPrintSelection();
 		this.printSelection.setOverview(true);
@@ -175,7 +183,7 @@ public class EvaluationFormPrintSelectionController extends FormBasicController 
 	}
 	
 	private ControllerCreator getControllerCreator() {
-		return new EvaluationFormPrintControllerCreator(form, storage, filter, figures, reportHelper, printSelection);
+		return new EvaluationFormPrintControllerCreator(form, storage, filter, figures, reportHelper, printSelection, title);
 	}
 
 	@Override

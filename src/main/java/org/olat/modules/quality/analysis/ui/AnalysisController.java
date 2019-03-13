@@ -566,7 +566,7 @@ public class AnalysisController extends BasicController implements TooledControl
 	private void doOpenPrintSelection(UserRequest ureq, Link targetLink, Target target) {
 		removeAsListenerAndDispose(printSelectionCtrl);
 		printSelectionCtrl = new EvaluationFormPrintSelectionController(ureq, getWindowControl(), form, storage, getReportSessionFilter(),
-				getReportFigures(), getReportHelper(), target);
+				getReportFigures(), getReportHelper(), target, presentation.getFormEntry().getDisplayname());
 		listenTo(printSelectionCtrl);
 
 		removeAsListenerAndDispose(calloutCtrl);

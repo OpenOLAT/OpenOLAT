@@ -424,7 +424,8 @@ class QualityMailing {
 		ReportHelper reportHelper = ReportHelper.builder(locale).withLegendNameGenrator(legendNameGenerator)
 				.withSessionComparator(comparator).withColors().build();
 
-		return new EvaluationFormPrintControllerCreator(form, storage, filter, figures, reportHelper, printSelection);
+		return new EvaluationFormPrintControllerCreator(form, storage, filter, figures, reportHelper, printSelection,
+				dataCollection.getTitle());
 	}
 
 }
