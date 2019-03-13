@@ -285,7 +285,7 @@ public class MemberViewQueries {
 		
 		List<Identity> identities = query.getResultList();
 		for(Identity identity:identities) {
-			views.computeIfAbsent(identity, id -> new MemberView(id, userPropertyHandlers, locale)).setPending(true);
+			views.computeIfAbsent(identity, id -> new MemberView(id, userPropertyHandlers, locale)).getMemberShip().setPending(true);
 		}
 	}
 	

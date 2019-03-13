@@ -37,6 +37,7 @@ import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
 
@@ -178,7 +179,7 @@ public class LocalizedXSLTransformer {
 			log.error("Could not convert xsl to string!", e);
 		}
 		String replacedOutput = evaluateValue(xslAsString, vcContext);
-		TransformerFactory tfactory = TransformerFactory.newInstance();
+		TransformerFactory tfactory = newTransformerFactory();
 		XMLReader reader;
 		try {
 			reader = XMLReaderFactory.createXMLReader();
@@ -190,6 +191,24 @@ public class LocalizedXSLTransformer {
 		} catch (TransformerConfigurationException e) {
 			throw new OLATRuntimeException("Could not initialize transformer (wrong config)!", e);
 		}
+	}
+	
+	/**
+	 * The method try to find the Xalan implementation of the JDK because the styelsheet
+	 * was with this one develop and not the Saxon XSLT 2.0 or 3.0 engine which lead to
+	 * some compatibility issue with special HTML entity (example: 129).
+	 * 
+	 * @return Try to get the embedded Xalan implementation which is a pure XSLT 1.0 engine.
+	 */
+	private TransformerFactory newTransformerFactory() {
+		TransformerFactory tfactory = null;
+		try {
+			tfactory = TransformerFactory.newInstance("com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl", null);
+		} catch (TransformerFactoryConfigurationError e) {
+			log.error("", e);
+			tfactory = TransformerFactory.newInstance();
+		}
+		return tfactory;
 	}
 
 	/**
