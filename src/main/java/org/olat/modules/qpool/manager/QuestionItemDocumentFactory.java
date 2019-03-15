@@ -195,7 +195,7 @@ public class QuestionItemDocumentFactory {
 			}
 			TaxonomyLevel taxonomyLevel = item.getTaxonomyLevel();
 			if (taxonomyLevel != null) {
-				String materializedPathKeys = taxonomyLevel.getMaterializedPathKeys().replaceAll(" ", "_").replaceAll("/", "_");
+				String materializedPathKeys = taxonomyLevel.getMaterializedPathKeys().replaceAll("/", "_");
 				TextField field = new TextField(QItemDocument.TAXONOMIC_PATH_FIELD, materializedPathKeys, Field.Store.YES);
 				document.add(field);
 			}

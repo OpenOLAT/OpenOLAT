@@ -438,7 +438,7 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 
 		@Override
 		public String getValue(FormItem item) {
-			return super.getValue(item).replaceAll(" ", "_").replaceAll("/", "_") + "*";
+			return super.getValue(item).replaceAll("/", "_") + "*";
 		}
 		
 	}
