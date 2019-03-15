@@ -78,7 +78,7 @@ public class DataCollectionReportController extends FormBasicController {
 		Figures figures = FiguresFactory.createOverviewFigures(dataCollection, dataCollectionView, getLocale());
 		
 		reportsCtrl = new EvaluationFormReportsController(ureq, getWindowControl(), form, storage,
-				filter, ReportSegment.OVERVIEW, reportHeaderCtrl.getInitialComponent(), figures);
+				filter, ReportSegment.OVERVIEW, reportHeaderCtrl.getInitialComponent(), figures, dataCollection.getTitle());
 		flc.put("report", reportsCtrl.getInitialComponent());
 	}
 	
