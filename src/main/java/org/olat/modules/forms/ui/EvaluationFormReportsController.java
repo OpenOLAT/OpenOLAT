@@ -66,6 +66,7 @@ public class EvaluationFormReportsController extends BasicController {
 	private final SessionFilter filter;
 	private final Figures figures;
 	private final ReportHelper reportHelper;
+	private final String title;
 	
 	@Autowired
 	private PdfModule pdfModule;
@@ -76,16 +77,17 @@ public class EvaluationFormReportsController extends BasicController {
 
 	public EvaluationFormReportsController(UserRequest ureq, WindowControl wControl, Form form, DataStorage storage, SessionFilter filter,
 			ReportSegment show) {
-		this(ureq, wControl, form, storage, filter, show, null, null);
+		this(ureq, wControl, form, storage, filter, show, null, null, null);
 	}
 
 	public EvaluationFormReportsController(UserRequest ureq, WindowControl wControl, Form form, DataStorage storage, SessionFilter filter,
-			ReportSegment show, Component formHeader, Figures figures) {
+			ReportSegment show, Component formHeader, Figures figures, String title) {
 		super(ureq, wControl);
 		this.form = form;
 		this.storage = storage;
 		this.filter = filter;
 		this.figures = figures;
+		this.title = title;
 
 		Comparator<EvaluationFormSession> comparator = new NameShuffleAnonymousComparator();
 		LegendNameGenerator legendNameGenerator = new SessionInformationLegendNameGenerator(filter);
@@ -163,7 +165,7 @@ public class EvaluationFormReportsController extends BasicController {
 	private void doOpenPrintSelection(UserRequest ureq, Link targetLink, Target target) {
 		removeAsListenerAndDispose(printSelectionCtrl);
 		printSelectionCtrl = new EvaluationFormPrintSelectionController(ureq, getWindowControl(), form, storage,
-				filter, figures, reportHelper, target);
+				filter, figures, reportHelper, target, title);
 		listenTo(printSelectionCtrl);
 
 		removeAsListenerAndDispose(calloutCtrl);
