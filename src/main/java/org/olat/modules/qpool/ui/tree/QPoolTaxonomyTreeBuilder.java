@@ -59,6 +59,7 @@ public class QPoolTaxonomyTreeBuilder {
 	private String[] selectableKeys;
 	private String[] selectableValues;
 	private String[] taxonomicPaths;
+	private String[] taxonomicKeyPaths;
 	private List<TaxonomyLevel> treeTaxonomyLevels;
 	
 	@Autowired
@@ -125,6 +126,7 @@ public class QPoolTaxonomyTreeBuilder {
 		selectableKeys = new String[0];
 		selectableValues = new String[0];
 		taxonomicPaths = new String[0];
+		taxonomicKeyPaths = new String[0];
 		treeTaxonomyLevels = new ArrayList<>();
 	}
 	
@@ -144,6 +146,10 @@ public class QPoolTaxonomyTreeBuilder {
 	
 	public String[] getTaxonomicPaths() {
 		return taxonomicPaths;
+	}
+	
+	public String[] getTaxonomicKeyPaths() {
+		return taxonomicKeyPaths;
 	}
 
 	public List<TaxonomyLevel> getTreeTaxonomyLevels() {
@@ -195,13 +201,15 @@ public class QPoolTaxonomyTreeBuilder {
 		selectableKeys = new String[selectableTaxonomyLevels.size()];
 		selectableValues = new String[selectableTaxonomyLevels.size()];
 		taxonomicPaths = new String[selectableTaxonomyLevels.size()];
+		taxonomicKeyPaths = new String[selectableTaxonomyLevels.size()];
 		for(int i=selectableTaxonomyLevels.size(); i-->0; ) {
 			TaxonomyLevel level = selectableTaxonomyLevels.get(i);
 			selectableKeys[i] = Long.toString(level.getKey());
 			selectableValues[i] = computeIntendention(level, new StringBuilder()).append(level.getDisplayName()).toString();
 			taxonomicPaths[i] = level.getMaterializedPathIdentifiers();
+			taxonomicKeyPaths[i] = level.getMaterializedPathKeys();
 		}
-		addEmptyEntry();	
+		addEmptyEntry();
 	}
 
 	private StringBuilder computeIntendention(TaxonomyLevel level, StringBuilder intendation) {
@@ -218,17 +226,21 @@ public class QPoolTaxonomyTreeBuilder {
 			String[] movedKeys = new String[selectableKeys.length + 1];
 			String[] movedValues = new String[selectableValues.length + 1];
 			String[] movedTaxonomicPaths = new String[taxonomicPaths.length + 1];
+			String[] movedTaxonomicKeyPaths = new String[taxonomicKeyPaths.length + 1];
 			movedKeys[0] = "-1";
 			movedValues[0] = "-";
 			movedTaxonomicPaths[0] = "/";
+			movedTaxonomicKeyPaths[0] = "/";
 			for (int i=selectableKeys.length; i-->0;) {
 				movedKeys[i+1] = selectableKeys[i];
 				movedValues[i+1] = selectableValues[i];
 				movedTaxonomicPaths[i+1] = taxonomicPaths[i];
+				movedTaxonomicKeyPaths[i+1] = taxonomicKeyPaths[i];
 			}
 			selectableKeys = movedKeys;
 			selectableValues = movedValues;
 			taxonomicPaths = movedTaxonomicPaths;
+			taxonomicKeyPaths = movedTaxonomicKeyPaths;
 		}
 	}
 	
