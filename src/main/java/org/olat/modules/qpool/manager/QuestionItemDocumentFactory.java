@@ -39,6 +39,7 @@ import org.olat.modules.qpool.QuestionItemFull;
 import org.olat.modules.qpool.QuestionPoolModule;
 import org.olat.modules.qpool.model.QItemDocument;
 import org.olat.modules.qpool.model.QuestionItemImpl;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.resource.OLATResource;
 import org.olat.search.model.AbstractOlatDocument;
 import org.olat.search.model.OlatDocument;
@@ -183,7 +184,7 @@ public class QuestionItemDocumentFactory {
 			if(StringHelper.containsNonWhitespace(path)) {
 				for(StringTokenizer tokenizer = new StringTokenizer(path, "/"); tokenizer.hasMoreTokens(); ) {
 					String nextToken = tokenizer.nextToken();
-					document.add(new TextField(QItemDocument.TAXONOMIC_PATH_FIELD, nextToken, Field.Store.NO));
+					document.add(new TextField(QItemDocument.TAXONOMIC_IDENTIFIER_FIELD, nextToken, Field.Store.NO));
 				}
 				if(item instanceof QuestionItemImpl) {
 					Long key = ((QuestionItemImpl)item).getTaxonomyLevel().getKey();
@@ -191,6 +192,12 @@ public class QuestionItemDocumentFactory {
 					TextField field = new TextField(QItemDocument.TAXONOMIC_FIELD, key.toString(), Field.Store.YES);
 					document.add(field);
 				}
+			}
+			TaxonomyLevel taxonomyLevel = item.getTaxonomyLevel();
+			if (taxonomyLevel != null) {
+				String materializedPathKeys = taxonomyLevel.getMaterializedPathKeys().replaceAll(" ", "_").replaceAll("/", "_");
+				TextField field = new TextField(QItemDocument.TAXONOMIC_PATH_FIELD, materializedPathKeys, Field.Store.YES);
+				document.add(field);
 			}
 		}
 		return document;
