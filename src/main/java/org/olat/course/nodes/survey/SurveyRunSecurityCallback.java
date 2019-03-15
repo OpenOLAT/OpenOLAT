@@ -94,7 +94,7 @@ public class SurveyRunSecurityCallback {
 			return true;
 		}
 		
-		if (moduleConfiguration.getBooleanSafe(SurveyCourseNode.CONFIG_KEY_REPORT_FOR_OWNER)
+		if (moduleConfiguration.getBooleanSafe(SurveyCourseNode.CONFIG_KEY_REPORT_FOR_COACH)
 				&& userCourseEnv.isCoach()) {
 			return true;
 		}
