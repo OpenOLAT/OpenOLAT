@@ -353,9 +353,6 @@
 
 /* Print styles */
 @media print {
-	.o_evaluation_block {
-		page-break-inside : avoid;
-	}
 	.o_evaluation_discrete_radio .o_slider .o_evaluation_steps div.radio {
 		-webkit-print-color-adjust: exact;
 		color-adjust: exact;
