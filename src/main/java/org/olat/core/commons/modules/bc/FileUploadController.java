@@ -44,6 +44,8 @@ import org.olat.core.commons.modules.bc.meta.MetaInfoFormController;
 import org.olat.core.commons.modules.bc.version.RevisionListController;
 import org.olat.core.commons.modules.bc.version.VersionCommentController;
 import org.olat.core.commons.services.image.ImageService;
+import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -79,7 +81,6 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSLockManager;
 import org.olat.core.util.vfs.VFSManager;
-import org.olat.core.util.vfs.meta.MetaInfo;
 import org.olat.core.util.vfs.version.Versionable;
 import org.olat.core.util.vfs.version.Versions;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -151,6 +152,8 @@ public class FileUploadController extends FormBasicController {
 	private ImageService imageHelper;
 	@Autowired
 	private VFSLockManager vfsLockManager;
+	@Autowired
+	private VFSRepositoryService vfsRepositoryService;
 
 	private String subfolderPath;
 	private TextElement targetSubPath ;
@@ -729,12 +732,14 @@ public class FileUploadController extends FormBasicController {
 	private void finishSuccessfullUpload(String filePath, VFSItem item, UserRequest ureq) {
 		if (item instanceof VFSLeaf && item.canMeta() == VFSConstants.YES) {
 			// create meta data
-			MetaInfo meta = item.getMetaInfo();
+			VFSMetadata meta = item.getMetaInfo();
 			if (metaDataCtr != null) {
 				meta = metaDataCtr.getMetaInfo(meta);
 			}
 			meta.setAuthor(getIdentity());
-			meta.clearThumbnails();//clear write the meta
+			//clear write the meta
+			vfsRepositoryService.updateMetadata(meta);
+			vfsRepositoryService.resetThumbnails((VFSLeaf)item);
 		}
 		
 		if(item == null) {
@@ -885,8 +890,7 @@ public class FileUploadController extends FormBasicController {
 			return validateFilename(metaDataCtr.getFilename(), metaDataCtr.getFilenameEl());
 		}
 
-		boolean allOk = validateFilename(fileEl);
-		return allOk;
+		return validateFilename(fileEl);
 	}
 	
 	private boolean validateFilename(FileElement itemEl) {

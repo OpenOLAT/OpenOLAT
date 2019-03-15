@@ -31,9 +31,11 @@ import java.io.InputStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderLoggingAction;
 import org.olat.core.commons.modules.bc.FolderManager;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -53,7 +55,6 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
-import org.olat.core.util.vfs.meta.MetaInfo;
 
 public class CmdServeResource implements FolderCommand {
 	
@@ -89,9 +90,7 @@ public class CmdServeResource implements FolderCommand {
 			if(vfsItem == null) {
 				folderComponent.updateChildren();
 			} else if (vfsItem.canMeta() == VFSConstants.YES) {
-				MetaInfo meta = vfsItem.getMetaInfo();
-				meta.increaseDownloadCount();
-				meta.write();
+				CoreSpringFactory.getImpl(VFSRepositoryService.class).increaseDownloadCount(vfsItem);
 			}
 		}
 

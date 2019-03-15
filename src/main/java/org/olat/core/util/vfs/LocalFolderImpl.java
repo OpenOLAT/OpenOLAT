@@ -36,6 +36,7 @@ import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -204,10 +205,12 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 			if(s instanceof Versionable && ((Versionable)s).getVersions().isVersioned()) {
 				((Versionable)s).getVersions().copy(this);
 			}
-			
-			boolean copyMetaData = source.canMeta() == VFSConstants.YES && canMeta() == VFSConstants.YES;
-			if(copyMetaData) {
-				source.getMetaInfo().moveCopyToDir(this, false);
+
+			if(s.canMeta() == VFSConstants.YES) {
+				VFSItem target = resolve(sourcename);
+				if(target instanceof VFSLeaf && target.canMeta() == VFSConstants.YES) {
+					CoreSpringFactory.getImpl(VFSRepositoryService.class).copyTo(s, (VFSLeaf)target, this);
+				}
 			}
 		} else {
 			throw new RuntimeException("neither a leaf nor a container!");
@@ -259,7 +262,7 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 		}
 		// Versioning makes a copy of the metadata, delete metadata after it
 		if(canMeta() == VFSConstants.YES) {
-			getMetaInfo().deleteAll();
+			CoreSpringFactory.getImpl(VFSRepositoryService.class).deleteMetadata(getMetaInfo());
 		}
 
 		// now delete the directory itself
@@ -278,7 +281,7 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 		}
 		
 		if(canMeta() == VFSConstants.YES) {
-			getMetaInfo().deleteAll();
+			CoreSpringFactory.getImpl(VFSRepositoryService.class).deleteMetadata(getMetaInfo());
 		}
 		CoreSpringFactory.getImpl(VersionsManager.class).delete(this, true);
 		// now delete the directory itself

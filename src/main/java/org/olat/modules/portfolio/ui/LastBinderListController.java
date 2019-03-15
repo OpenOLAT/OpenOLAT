@@ -43,7 +43,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.model.BinderStatistics;
-import org.olat.modules.portfolio.ui.BinderListController.ImageMapper;
 import org.olat.modules.portfolio.ui.BindersDataModel.PortfolioCols;
 import org.olat.modules.portfolio.ui.event.OpenBinderEvent;
 import org.olat.modules.portfolio.ui.event.OpenMyBindersEvent;

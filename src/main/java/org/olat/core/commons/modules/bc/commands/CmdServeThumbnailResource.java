@@ -26,7 +26,9 @@
 
 package org.olat.core.commons.modules.bc.commands;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -39,11 +41,16 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
-import org.olat.core.util.vfs.meta.MetaInfo;
 
 public class CmdServeThumbnailResource implements FolderCommand {
 	
 	private int status = FolderCommandStatus.STATUS_SUCCESS;
+	
+	private final VFSRepositoryService vfsRepositoryservice;
+	
+	public CmdServeThumbnailResource() {
+		vfsRepositoryservice = CoreSpringFactory.getImpl(VFSRepositoryService.class);
+	}
 	
 	@Override
 	public Controller execute(FolderComponent folderComponent, UserRequest ureq, WindowControl wControl, Translator translator) {
@@ -63,12 +70,9 @@ public class CmdServeThumbnailResource implements FolderCommand {
 			}
 			
 			if(vfsLeaf != null && vfsLeaf.canMeta() == VFSConstants.YES) {
-				MetaInfo info = vfsLeaf.getMetaInfo();
-				if(info != null && info.isThumbnailAvailable()) {
-					VFSLeaf thumbnail = info.getThumbnail(200, 200, false);
-					if(thumbnail != null) {
-						mr = new VFSMediaResource(thumbnail);
-					}
+				VFSLeaf thumbnail = vfsRepositoryservice.getThumbnail(vfsLeaf, 200, 200, false);
+				if(thumbnail != null) {
+					mr = new VFSMediaResource(thumbnail);
 				}
 			}
 			if(mr == null) {

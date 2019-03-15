@@ -26,8 +26,8 @@
 
 package org.olat.core.util.vfs;
 
+import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
-import org.olat.core.util.vfs.meta.MetaInfo;
 
 
 /**
@@ -138,7 +138,7 @@ public interface VFSItem {
 	/**
 	 * @return The metadata if the item can metadata or null if not
 	 */
-	public MetaInfo getMetaInfo();
+	public VFSMetadata getMetaInfo();
 	
 	/**
 	 * Get the local security callback for this item.

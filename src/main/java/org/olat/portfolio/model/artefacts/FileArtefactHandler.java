@@ -22,6 +22,7 @@ package org.olat.portfolio.model.artefacts;
 
 import org.apache.lucene.document.Document;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -32,7 +33,6 @@ import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
-import org.olat.core.util.vfs.meta.MetaInfo;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.portfolio.EPAbstractHandler;
@@ -69,7 +69,7 @@ public class FileArtefactHandler extends EPAbstractHandler<FileArtefact> {
 			VFSItem fileSource = (VFSItem) source;
 			((FileArtefact) artefact).setFilename(fileSource.getName());
 			
-			MetaInfo meta = null;
+			VFSMetadata meta = null;
 			if(fileSource.canMeta() == VFSConstants.YES) {
 				meta = fileSource.getMetaInfo();
 			}
@@ -90,7 +90,8 @@ public class FileArtefactHandler extends EPAbstractHandler<FileArtefact> {
 			String finalBusinessPath = null;
 			String sourceInfo = null;
 			// used to rebuild businessPath and source for a file:
-			if (pathElements[1].equals("homes") && meta != null && pathElements[2].equals(meta.getAuthor())) {
+			String author = meta != null && meta.getAuthor() != null ? meta.getAuthor().getKey().toString() : null;
+			if (pathElements[1].equals("homes") && meta != null && pathElements[2].equals(author)) {
 				// from users briefcase
 				String lastParts = "/";
 				for (int i = 4; i < (pathElements.length - 1); i++) {
@@ -103,19 +104,19 @@ public class FileArtefactHandler extends EPAbstractHandler<FileArtefact> {
 				for (int i = 5; i < (pathElements.length - 1); i++) {
 					lastParts = lastParts + pathElements[i] + "/";
 				}
-				BusinessGroup bGroup = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(new Long(pathElements[4]));
+				BusinessGroup bGroup = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(Long.valueOf(pathElements[4]));
 				if (bGroup != null) {
 					sourceInfo = bGroup.getName() + " -> " + lastParts + " -> " + fileSource.getName();
 				}
 				finalBusinessPath = "[BusinessGroup:" + pathElements[4] + "][toolfolder:0][path=" + lastParts + fileSource.getName() + ":0]";
 			} else if (pathElements[4].equals("coursefolder")) {
 				// the course folder
-				sourceInfo = RepositoryManager.getInstance().lookupDisplayNameByOLATResourceableId(new Long(pathElements[2]))
+				sourceInfo = RepositoryManager.getInstance().lookupDisplayNameByOLATResourceableId(Long.valueOf(pathElements[2]))
 						+ " -> " + fileSource.getName();
 
 			} else if (pathElements[1].equals("course") && pathElements[3].equals("foldernodes")) {
 				// folders inside a course
-				sourceInfo = RepositoryManager.getInstance().lookupDisplayNameByOLATResourceableId(new Long(pathElements[2]))
+				sourceInfo = RepositoryManager.getInstance().lookupDisplayNameByOLATResourceableId(Long.valueOf(pathElements[2]))
 						+ " -> " + pathElements[4] + " -> " + fileSource.getName();
 				finalBusinessPath = "[RepositoryEntry:" + pathElements[2] + "][CourseNode:" + pathElements[4] + "]";
 			}

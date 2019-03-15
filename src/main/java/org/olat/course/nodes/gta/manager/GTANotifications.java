@@ -33,6 +33,7 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.services.notifications.Publisher;
 import org.olat.core.commons.services.notifications.Subscriber;
 import org.olat.core.commons.services.notifications.model.SubscriptionListItem;
+import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -44,7 +45,6 @@ import org.olat.core.util.io.SystemFilenameFilter;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
-import org.olat.core.util.vfs.meta.MetaInfo;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
@@ -824,8 +824,8 @@ class GTANotifications {
 		String author = null;
 		VFSItem item = container.resolve(file.getName());
 		if(item.canMeta() == VFSConstants.YES) {
-			MetaInfo info = item.getMetaInfo();
-			Long identityKey = info.getAuthorIdentityKey();
+			VFSMetadata info = item.getMetaInfo();
+			Identity identityKey = info.getAuthor();
 			if(identityKey != null) {
 				author = userManager.getUserDisplayName(identityKey);
 			}		

@@ -17,16 +17,15 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.commons.modules.bc.meta;
+package org.olat.core.commons.services.vfs.manager;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.UUID;
 
+import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,43 +34,56 @@ import org.olat.core.commons.services.license.License;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.license.LicenseType;
 import org.olat.core.commons.services.license.manager.LicenseCleaner;
+import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
-import org.olat.core.util.vfs.VFSTest;
-import org.olat.core.util.vfs.meta.MetaInfo;
-import org.olat.core.util.vfs.meta.MetaInfoFactory;
-import org.olat.core.util.vfs.meta.MetaInfoFileImpl;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
- * Initial date: 05.03.2018<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * Initial date: 12 mars 2019<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class MetaInfoFactoryTest extends OlatTestCase {
+public class VFSRepositoryServiceTest extends OlatTestCase {
 	
-	private static final OLog log = Tracing.createLoggerFor(MetaInfoFactoryTest.class);
-	private static final String VFS_META_DIR = "/vfsmetatest";
+	private static final OLog log = Tracing.createLoggerFor(VFSRepositoryServiceTest.class);
+	private static final String VFS_TEST_DIR = "/vfsrepotest";
 	
 	@Autowired
 	private DB dbInstance;
 	@Autowired
-	private MetaInfoFactory metaInfoFactory;
-	@Autowired
 	private LicenseService licenseService;
 	@Autowired
 	private LicenseCleaner licenseCleaner;
+	@Autowired
+	private VFSRepositoryService vfsRepositoryService;
 	
 	@Before
 	public void cleanUp() {
 		licenseCleaner.deleteAll();
+	}
+	
+	@Test
+	public void getMetadataFor_file() {
+		VFSLeaf leaf = createFile();
+		
+		// create metadata
+		VFSMetadata metadata = vfsRepositoryService.getMetadataFor(leaf);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(metadata);
+		Assert.assertNotNull(metadata.getKey());
+		Assert.assertNotNull(metadata.getCreationDate());
+		Assert.assertNotNull(metadata.getLastModified());
+		Assert.assertNotNull(metadata.getFileLastModified());
+		Assert.assertEquals(leaf.getName(), metadata.getFilename());
+		Assert.assertFalse(metadata.isDirectory());	
 	}
 	
 	@Test
@@ -82,34 +94,35 @@ public class MetaInfoFactoryTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		String licensor = "licensor";
 		String name = licenseType.getName();
-		File file = new File("");
-		MetaInfo meta = new MetaInfoFileImpl(file);
+		
+		VFSLeaf file = createFile();
+		VFSMetadata meta = vfsRepositoryService.getMetadataFor(file);
 		meta.setLicenseTypeName(name);
 		meta.setLicensor(licensor);
-		
-		License license = metaInfoFactory.getLicense(meta);
+		License license = vfsRepositoryService.getLicense(meta);
 
 		assertThat(license.getLicensor()).isEqualTo(licensor);
 		LicenseType loadedLicenseType = license.getLicenseType();
 		assertThat(loadedLicenseType).isEqualTo(licenseType);
 	}
-
+	
 	@Test
 	public void shouldCreateNonExistingLicenseType() {
 		String typeName = "name";
 		LicenseType licenseType = licenseService.createLicenseType(typeName);
 		licenseType = licenseService.saveLicenseType(licenseType);
 		dbInstance.commitAndCloseSession();
+		
 		String licensor = "licensor";
 		String name = "new";
 		String text = "text";
-		File file = new File("");
-		MetaInfo meta = new MetaInfoFileImpl(file);
+		VFSLeaf file = createFile();
+		VFSMetadata meta = vfsRepositoryService.getMetadataFor(file);
+
 		meta.setLicenseTypeName(name);
 		meta.setLicensor(licensor);
 		meta.setLicenseText(text);
-		
-		License license = metaInfoFactory.getLicense(meta);
+		License license = vfsRepositoryService.getLicense(meta);
 
 		assertThat(license.getLicensor()).isEqualTo(licensor);
 		LicenseType loadedLicenseType = license.getLicenseType();
@@ -123,36 +136,45 @@ public class MetaInfoFactoryTest extends OlatTestCase {
 	@Test
 	public void readWriteBinary() {
 		String filename = UUID.randomUUID() + ".txt";
-		VFSContainer testContainer = VFSManager.olatRootContainer(VFS_META_DIR, null);
+		VFSContainer testContainer = VFSManager.olatRootContainer(VFS_TEST_DIR, null);
 		VFSLeaf leaf = testContainer.createChildLeaf(filename);
 		Assert.assertEquals(VFSConstants.YES, leaf.canMeta());
-		prepareFile(leaf);
+		copyTestTxt(leaf);
 		
-		MetaInfo metaInfo = leaf.getMetaInfo();
+		VFSMetadata metaInfo = leaf.getMetaInfo();
 		metaInfo.setComment("A little comment");
-		metaInfo.write();
+		vfsRepositoryService.updateMetadata(metaInfo);
 		
-		byte[] binaryData = metaInfo.readBinary();
+		byte[] binaryData = MetaInfoReader.toBinaries(metaInfo);
 		Assert.assertNotNull(binaryData);
 		Assert.assertTrue(binaryData.length > 0);
 		
 		
 		String secondFilename = UUID.randomUUID() + ".txt";
 		VFSLeaf secondLeaf = testContainer.createChildLeaf(secondFilename);
-		prepareFile(secondLeaf);
+		copyTestTxt(secondLeaf);
 
-		MetaInfo secondMetaInfo = leaf.getMetaInfo();
-		secondMetaInfo.writeBinary(binaryData);
+		VFSMetadata secondMetaInfo = leaf.getMetaInfo();
+		vfsRepositoryService.copyBinaries(secondMetaInfo, binaryData);
 		String comment = secondMetaInfo.getComment();
 		Assert.assertEquals("A little comment", comment);
 	}
 	
-	private void prepareFile(VFSLeaf file) {
+	private VFSLeaf createFile() {
+		String filename = UUID.randomUUID() + ".txt";
+		VFSContainer testContainer = VFSManager.olatRootContainer(VFS_TEST_DIR, null);
+		VFSLeaf firstLeaf = testContainer.createChildLeaf(filename);
+		copyTestTxt(firstLeaf);
+		return firstLeaf;
+	}
+	
+	private int copyTestTxt(VFSLeaf file) {
 		try(OutputStream out = file.getOutputStream(false);
-				InputStream in = VFSTest.class.getResourceAsStream("test.txt")) {
-			FileUtils.cpio(in, out, "");
-		} catch(IOException e) {
+				InputStream in = VFSRepositoryServiceTest.class.getResourceAsStream("test.txt")) {
+			return IOUtils.copy(in, out);
+		} catch(Exception e) {
 			log.error("", e);
+			return -1;
 		}
 	}
 }

@@ -1212,7 +1212,7 @@ public class WebDAVDispatcherImpl
 
             // Generating lock id
             
-            String lockToken = lockManager.generateLockToken(lock, usess.getIdentity().getKey());
+            String lockToken = lockManager.generateLockToken(lock, usess.getIdentity());
             if (resource.isDirectory() && lock.getDepth() == maxDepth) {
 
                 // Locking a collection (and all its member resources)

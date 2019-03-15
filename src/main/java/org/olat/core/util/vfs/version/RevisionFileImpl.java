@@ -21,9 +21,9 @@ package org.olat.core.util.vfs.version;
 
 import java.io.InputStream;
 
+import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.meta.MetaInfo;
 
 /**
  * 
@@ -48,7 +48,7 @@ public class RevisionFileImpl implements VFSRevision {
 	private VFSContainer container;
 	private String revisionNr;
 	private String filename;
-	private MetaInfo metadata;
+	private VFSMetadata metadata;
 
 	/**
 	 * Only for the VersionsFileManager or XStream
@@ -140,11 +140,11 @@ public class RevisionFileImpl implements VFSRevision {
 		this.name = name;
 	}
 
-	public MetaInfo getMetadata() {
+	public VFSMetadata getMetadata() {
 		return metadata;
 	}
 
-	public void setMetadata(MetaInfo metadata) {
+	public void setMetadata(VFSMetadata metadata) {
 		this.metadata = metadata;
 	}
 

@@ -60,7 +60,7 @@ public class LazyRepositoryEdusharingProvider implements VFSEdusharingProvider {
 
 	@Override
 	public void setSubPath(VFSItem item) {
-		this.subPath = "file-meta-uuid-" + item.getMetaInfo().getUUID();
+		this.subPath = "file-meta-uuid-" + item.getMetaInfo().getUuid();
 	}
 
 	@Override

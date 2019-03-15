@@ -34,6 +34,8 @@ import javax.servlet.http.HttpServletRequest;
 import org.olat.commons.info.InfoMessage;
 import org.olat.commons.info.InfoMessageFrontendManager;
 import org.olat.commons.info.manager.MailFormatter;
+import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.date.DateComponentFactory;
@@ -73,7 +75,6 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
-import org.olat.core.util.vfs.meta.MetaInfo;
 import org.olat.course.nodes.info.InfoCourseNodeConfiguration;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.ModuleConfiguration;
@@ -122,6 +123,8 @@ public class InfoDisplayController extends FormBasicController {
 	private UserManager userManager;
 	@Autowired
 	private InfoMessageFrontendManager infoMessageManager;
+	@Autowired
+	private VFSRepositoryService vfsRepositoryService;
 	
 	private LockResult lockEntry;
 	private MailFormatter sendMailFormatter;
@@ -538,14 +541,12 @@ public class InfoDisplayController extends FormBasicController {
 					Long infoKey = Long.valueOf(Long.parseLong(query[1]));
 					VFSLeaf attachment = infoKeyToAttachment.get(infoKey);
 					if(attachment != null && attachment.canMeta() == VFSConstants.YES) {
-						MetaInfo meta = attachment.getMetaInfo();
-						if (meta.getUUID().equals(query[2])) {
-							if (meta.isThumbnailAvailable()) {
-								VFSLeaf thumb = meta.getThumbnail(200, 200, false);
-								if(thumb != null) {
-									// Positive lookup, send as response
-									return new VFSMediaResource(thumb);
-								}
+						VFSMetadata meta = attachment.getMetaInfo();
+						if (meta.getUuid().equals(query[2])) {
+							VFSLeaf thumb = vfsRepositoryService.getThumbnail(attachment, meta, 200, 200, false);
+							if(thumb != null) {
+								// Positive lookup, send as response
+								return new VFSMediaResource(thumb);
 							}
 						}
 					}	

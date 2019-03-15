@@ -154,7 +154,7 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 		for(RepositoryEntryMyView entry:repoEntries) {
 			RepositoryEntryRow row = new RepositoryEntryRow(entry);
 
-			VFSLeaf image = repositoryManager.getImage(entry);
+			VFSLeaf image = repositoryManager.getImage(entry.getKey(), entry.getOlatResource());
 			if(image != null) {
 				row.setThumbnailRelPath(uifactory.getMapperThumbnailUrl() + "/" + image.getName());
 			}

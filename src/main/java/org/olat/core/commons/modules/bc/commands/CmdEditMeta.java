@@ -26,7 +26,6 @@
 
 package org.olat.core.commons.modules.bc.commands;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderEvent;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
 import org.olat.core.commons.modules.bc.components.ListRenderer;
@@ -34,6 +33,8 @@ import org.olat.core.commons.modules.bc.meta.MetaInfoController;
 import org.olat.core.commons.modules.bc.meta.MetaInfoFormController;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
+import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.Controller;
@@ -52,7 +53,7 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLockManager;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
-import org.olat.core.util.vfs.meta.MetaInfo;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class CmdEditMeta extends BasicController implements FolderCommand {
 
@@ -64,11 +65,13 @@ public class CmdEditMeta extends BasicController implements FolderCommand {
 	private FolderComponent folderComponent;
 	private Translator translator;
 
-	private final VFSLockManager vfsLockManager;
+	@Autowired
+	private VFSLockManager vfsLockManager;
+	@Autowired
+	private VFSRepositoryService vfsRepositoryService;
 
 	protected CmdEditMeta(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, Util.createPackageTranslator(MetaInfoController.class, ureq.getLocale()));
-		vfsLockManager = CoreSpringFactory.getImpl(VFSLockManager.class);
 	}
 
 	/**
@@ -147,10 +150,10 @@ public class CmdEditMeta extends BasicController implements FolderCommand {
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == metaInfoCtr && event == Event.DONE_EVENT) {
-			MetaInfo meta = metaInfoCtr.getMetaInfo();
+			VFSMetadata meta = metaInfoCtr.getMetaInfo();
 			String fileName = metaInfoCtr.getFilename();
 			if(meta != null) {
-				meta.write();
+				vfsRepositoryService.updateMetadata(meta);
 				if (metaInfoCtr.isFileRenamed()) {
 					// IMPORTANT: First rename the meta data because underlying file
 					// has to exist in order to work properly on it's meta data.

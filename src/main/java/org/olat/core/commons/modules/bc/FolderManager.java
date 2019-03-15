@@ -31,6 +31,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.helpers.Settings;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.LocalFolderImpl;
@@ -40,7 +41,6 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.filters.SystemItemFilter;
-import org.olat.core.util.vfs.meta.MetaInfo;
 
 /**
  * Initial Date:  18.12.2002
@@ -90,7 +90,7 @@ public class FolderManager {
 			if(leaf.canMeta() == VFSConstants.YES) {
 				long lastModified = leaf.getLastModified();
 				if (lastModified > newerThan) {
-					MetaInfo meta = leaf.getMetaInfo();
+					VFSMetadata meta = leaf.getMetaInfo();
 					String bcrootPath = relPath.getRelPath();
 					String bcRelPath = bcrootPath.substring(basePathlen);
 					fileInfos.add(new FileInfo(bcRelPath, meta, new Date(lastModified)));

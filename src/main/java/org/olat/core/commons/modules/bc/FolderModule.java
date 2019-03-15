@@ -27,6 +27,7 @@
 package org.olat.core.commons.modules.bc;
 
 import java.io.File;
+import java.nio.file.Path;
 
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.helpers.Settings;
@@ -143,6 +144,10 @@ public class FolderModule extends AbstractSpringModule {
 	
 	public String getCanonicalRoot() {
 		return FolderConfig.getCanonicalRoot();
+	}
+	
+	public Path getCanonicalRootPath() {
+		return FolderConfig.getCanonicalRootPath();
 	}
 	
 	public String getCanonicalTmpDir() {

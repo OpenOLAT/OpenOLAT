@@ -22,9 +22,10 @@ package org.olat.core.util.vfs.restapi;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.StreamingOutput;
 
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.VFSLeaf;
 
@@ -37,6 +38,8 @@ import org.olat.core.util.vfs.VFSLeaf;
  */
 public class VFSStreamingOutput implements StreamingOutput {
 	
+	private static final OLog log = Tracing.createLoggerFor(VFSStreamingOutput.class);
+	
 	private final VFSLeaf leaf;
 	
 	public VFSStreamingOutput(VFSLeaf leaf) {
@@ -44,9 +47,11 @@ public class VFSStreamingOutput implements StreamingOutput {
 	}
 
 	@Override
-	public void write(OutputStream output) throws WebApplicationException {
-		InputStream in = leaf.getInputStream();
-		FileUtils.copy(in, output);
-		FileUtils.closeSafely(in);
+	public void write(OutputStream output) {
+		try(InputStream in = leaf.getInputStream()) {
+			FileUtils.copy(in, output);
+		} catch(Exception e) {
+			log.error("", e);
+		}
 	}
 }

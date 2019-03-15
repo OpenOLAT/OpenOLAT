@@ -27,6 +27,7 @@ import java.io.OutputStream;
 import java.nio.file.Path;
 
 import org.olat.core.commons.modules.bc.FolderConfig;
+import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.util.vfs.JavaIOItem;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
@@ -34,7 +35,6 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
-import org.olat.core.util.vfs.meta.MetaInfo;
 
 /**
  * An implementation of the VFSLEaf for a pure java.io.File with
@@ -154,7 +154,7 @@ public class VFSJavaIOFile implements VFSLeaf, JavaIOItem {
 	}
 
 	@Override
-	public MetaInfo getMetaInfo() {
+	public VFSMetadata getMetaInfo() {
 		return null;
 	}
 

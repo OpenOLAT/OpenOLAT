@@ -49,6 +49,9 @@ import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
+import org.olat.core.commons.services.vfs.manager.MetaInfoReader;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLATRuntimeException;
@@ -66,7 +69,6 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSLockManager;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.filters.SystemItemFilter;
-import org.olat.core.util.vfs.meta.MetaInfo;
 import org.olat.core.util.vfs.version.Versionable;
 
 /**
@@ -149,12 +151,15 @@ public class ZipUtil {
 	 * @param targetDir	The directory to unzip the file to
 	 * @param the identity of who unzip the file
 	 * @param versioning enabled or not
-	 * @return	True if successfull, false otherwise
+	 * @return	True if successful, false otherwise
 	 */
 	public static boolean unzip(VFSLeaf zipLeaf, VFSContainer targetDir, Identity identity, boolean versioning) {
-		InputStream in = zipLeaf.getInputStream();
-		boolean unzipped = unzip(in, targetDir, identity, versioning);
-		FileUtils.closeSafely(in);
+		boolean unzipped = false;
+		try(InputStream in = zipLeaf.getInputStream()) {
+			unzipped = unzip(in, targetDir, identity, versioning);
+		} catch(Exception e) {
+			log.error("", e);
+		}
 		return unzipped;
 	}	
 
@@ -164,9 +169,12 @@ public class ZipUtil {
 	 * @param targetDir	The directory to unzip the file to
 	 * @param the identity of who unzip the file
 	 * @param versioning enabled or not
-	 * @return	True if successfull, false otherwise
+	 * @return	True if successful, false otherwise
 	 */
 	private static boolean unzip(InputStream in, VFSContainer targetDir, Identity identity, boolean versioning) {
+		
+		VFSRepositoryService vfsRepositoryService = CoreSpringFactory.getImpl(VFSRepositoryService.class);
+		
 		try(ZipInputStream oZip = new ZipInputStream(in)) {
 			// unzip files
 			ZipEntry oEntr = oZip.getNextEntry();
@@ -202,9 +210,9 @@ public class ZipUtil {
 							VFSLeaf newEntry = (VFSLeaf)createIn.resolve(name);
 							if(newEntry == null) {
 								newEntry = createIn.createChildLeaf(name);
-								OutputStream out = newEntry.getOutputStream(false);
-								if (!FileUtils.copy(oZip, out)) return false;
-								FileUtils.closeSafely(out);
+								if (!copy(oZip, newEntry)) {
+									return false;
+								}
 							} else if (newEntry instanceof Versionable) {
 								Versionable versionable = (Versionable)newEntry;
 								if(versionable.getVersions().isVersioned()) {
@@ -212,25 +220,25 @@ public class ZipUtil {
 								}
 							}
 							if(newEntry != null && identity != null && newEntry.canMeta() == VFSConstants.YES) {
-								MetaInfo info = newEntry.getMetaInfo();
+								VFSMetadata info = newEntry.getMetaInfo();
 								if(info != null) {
 									info.setAuthor(identity);
-									info.write();
+									vfsRepositoryService.updateMetadata(info);
 								}
 							}
 							
 						} else {
 							VFSLeaf newEntry = createIn.createChildLeaf(name);
 							if (newEntry != null) {
-								OutputStream out = newEntry.getOutputStream(false);
-								if (!FileUtils.copy(oZip, out)) return false;
-								FileUtils.closeSafely(out);
+								if (!copy(oZip, newEntry)) {
+									return false;
+								}
 					
 								if(identity != null && newEntry.canMeta() == VFSConstants.YES) {
-									MetaInfo info = newEntry.getMetaInfo();
+									VFSMetadata info = newEntry.getMetaInfo();
 									if(info != null) {
 										info.setAuthor(identity);
-										info.write();
+										vfsRepositoryService.updateMetadata(info);
 									}
 								}
 							}
@@ -245,6 +253,15 @@ public class ZipUtil {
 		}
 		return true;
 	} // unzip
+	
+	private static boolean copy(ZipInputStream oZip, VFSLeaf newEntry) {
+		try(OutputStream out = newEntry.getOutputStream(false)) {
+			return FileUtils.copy(oZip, out);
+		} catch(Exception e) {
+			log.error("", e);
+			return false;
+		}
+	}
 	
 	/**
 	 * Unzip a file to a directory using the versioning system of VFS and a ZIP
@@ -322,7 +339,7 @@ public class ZipUtil {
 							VFSLeaf newEntry = (VFSLeaf)createIn.resolve(name);
 							if(newEntry == null) {
 								newEntry = createIn.createChildLeaf(name);
-								if (!VFSManager.copyContent(new ShieldInputStream(oZip), newEntry)) {
+								if (!copyShielded(oZip, newEntry)) {
 									return false;
 								}
 							} else if (newEntry instanceof Versionable) {
@@ -335,7 +352,7 @@ public class ZipUtil {
 						} else {
 							VFSLeaf newEntry = createIn.createChildLeaf(name);
 							if (newEntry != null) {
-								if (!VFSManager.copyContent(new ShieldInputStream(oZip), newEntry)) {
+								if (!copyShielded(oZip, newEntry)) {
 									return false;
 								}
 								unzipMetadata(identity, extra, newEntry);
@@ -352,22 +369,41 @@ public class ZipUtil {
 		return true;
 	} // unzip
 	
+	private static boolean copyShielded(net.sf.jazzlib.ZipInputStream oZip, VFSLeaf newEntry) {
+		try(InputStream in = new ShieldInputStream(oZip)) {
+			return VFSManager.copyContent(in, newEntry);
+		} catch(Exception e) {
+			log.error("", e);
+			return false;
+		}
+	}
+	
+	private static boolean copyShielded(VFSLeaf leaf, ZipOutputStream out) {
+		try(OutputStream sout = new ShieldOutputStream(out)) {
+			return VFSManager.copyContent(leaf, sout);
+		} catch(Exception e) {
+			log.error("", e);
+			return false;
+		}
+	}
+	
 	private static void unzipMetadata(Identity identity, byte[] extra, VFSLeaf newEntry) {
 		if(newEntry.canMeta() != VFSConstants.YES
 				|| ((extra == null || extra.length == 0) && identity == null)) {
 			return;
 		}
 		
-		MetaInfo info = newEntry.getMetaInfo();
+		VFSRepositoryService vfsRepositoryService = CoreSpringFactory.getImpl(VFSRepositoryService.class);
+		VFSMetadata info = vfsRepositoryService.getMetadataFor(newEntry);
 		if(info == null) {
 			return;
 		}
 		if(extra != null) {
-			info.writeBinary(extra);
+			vfsRepositoryService.copyBinaries(info, extra);
 		} else {
 			info.setAuthor(identity);
-			info.write();
 		}
+		vfsRepositoryService.updateMetadata(info);
 	}
 	
 	/**
@@ -511,6 +547,9 @@ public class ZipUtil {
 			// try it windows style, backslash is also valid format
 			st = new StringTokenizer(subDirPath, "\\", false);
 		}
+		
+		VFSRepositoryService vfsRepositoryService = CoreSpringFactory.getImpl(VFSRepositoryService.class);
+		
 		VFSContainer currentPath = base;
 		while (st.hasMoreTokens()) {
 			String nextSubpath = st.nextToken();
@@ -522,10 +561,10 @@ public class ZipUtil {
 				vfsSubpath = currentPath.createChildContainer(nextSubpath);
 				if (vfsSubpath == null) return null;
 				if (identity != null && vfsSubpath.canMeta() == VFSConstants.YES) {
-					MetaInfo info = vfsSubpath.getMetaInfo();
+					VFSMetadata info = vfsSubpath.getMetaInfo();
 					if(info != null) {
 						info.setAuthor(identity);
-						info.write();
+						vfsRepositoryService.updateMetadata(info);
 					}
 				}
 			}
@@ -658,11 +697,11 @@ public class ZipUtil {
 				VFSLeaf leaf = (VFSLeaf)vfsItem;
 				ZipEntry entry = new ZipEntry(itemName);
 				if(leaf.canMeta() == VFSConstants.YES) {
-					byte[] metadata = leaf.getMetaInfo().readBinary();
+					byte[] metadata = MetaInfoReader.toBinaries(leaf.getMetaInfo());
 					entry.setExtra(metadata);
 				}
 				out.putNextEntry(entry);
-				VFSManager.copyContent(leaf, new ShieldOutputStream(out));
+				copyShielded(leaf, out);
 				out.closeEntry();
 			}
 		} catch (IOException ioe) {

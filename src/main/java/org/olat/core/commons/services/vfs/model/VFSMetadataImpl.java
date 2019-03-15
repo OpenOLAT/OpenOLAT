@@ -1,0 +1,524 @@
+/**
+ * <a href="http://www.openolat.org">
+ * OpenOLAT - Online Learning and Training</a><br>
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at the
+ * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Initial code contributed and copyrighted by<br>
+ * frentix GmbH, http://www.frentix.com
+ * <p>
+ */
+package org.olat.core.commons.services.vfs.model;
+
+import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+
+import org.olat.basesecurity.IdentityImpl;
+import org.olat.core.commons.services.license.LicenseType;
+import org.olat.core.commons.services.license.model.LicenseTypeImpl;
+import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.gui.util.CSSHelper;
+import org.olat.core.id.Identity;
+import org.olat.core.id.Persistable;
+
+/**
+ * 
+ * Initial date: 11 mars 2019<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
+ */
+@Entity(name="filemetadata")
+@Table(name="o_vfs_metadata")
+public class VFSMetadataImpl implements Persistable, VFSMetadata {
+
+	private static final long serialVersionUID = 1360000029480576628L;
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name="id", nullable=false, unique=true, insertable=true, updatable=false)
+	private Long key;
+	
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="creationdate", nullable=false, insertable=true, updatable=false)
+	private Date creationDate;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="lastmodified", nullable=false, insertable=true, updatable=true)
+	private Date lastModified;
+	
+	@Column(name="f_uuid", nullable=false, insertable=true, updatable=true)
+	private String uuid;
+	@Column(name="f_filename", nullable=false, insertable=true, updatable=true)
+	private String filename;
+	@Column(name="f_relative_path", nullable=false, insertable=true, updatable=true)
+	private String relativePath;
+	@Column(name="f_directory", nullable=false, insertable=true, updatable=true)
+	private boolean directory;
+	@Column(name="f_lastmodified", nullable=false, insertable=true, updatable=true)
+	private Date fileLastModified;
+	@Column(name="f_size", nullable=false, insertable=true, updatable=true)
+	private long fileSize;
+	@Column(name="f_uri", nullable=false, insertable=true, updatable=true)
+	private String uri;
+	@Column(name="f_uri_protocol", nullable=false, insertable=true, updatable=true)
+	private String protocol;
+
+	@Column(name="f_cannot_thumbnails", nullable=true, insertable=true, updatable=true)
+	private Boolean cannotGenerateThumbnails;
+	@Column(name="f_download_count", nullable=true, insertable=true, updatable=true)
+	private int downloadCount;
+	
+	@Column(name="f_comment", nullable=true, insertable=true, updatable=true)
+	private String comment;
+	@Column(name="f_title", nullable=true, insertable=true, updatable=true)
+	private String title;
+	@Column(name="f_publisher", nullable=true, insertable=true, updatable=true)
+	private String publisher;
+	@Column(name="f_creator", nullable=true, insertable=true, updatable=true)
+	private String creator;
+	@Column(name="f_source", nullable=true, insertable=true, updatable=true)
+	private String source;
+	@Column(name="f_city", nullable=true, insertable=true, updatable=true)
+	private String city;
+	@Column(name="f_pages", nullable=true, insertable=true, updatable=true)
+	private String pages;
+	@Column(name="f_language", nullable=true, insertable=true, updatable=true)
+	private String language;
+	@Column(name="f_url", nullable=true, insertable=true, updatable=true)
+	private String url;
+	@Column(name="f_pub_month", nullable=true, insertable=true, updatable=true)
+	private String pubMonth;
+	@Column(name="f_pub_year", nullable=true, insertable=true, updatable=true)
+	private String pubYear;
+
+	@ManyToOne(targetEntity=LicenseTypeImpl.class, optional=true)
+	@JoinColumn(name="fk_license_type", nullable=true, insertable=true, updatable=true)
+	private LicenseType licenseType;
+	@Column(name="f_license_type_name", nullable=true, insertable=true, updatable=true)
+	private String licenseTypeName;
+	@Column(name="f_license_text", nullable=true, insertable=true, updatable=true)
+	private String licenseText;
+	@Column(name="f_licensor", nullable=true, insertable=true, updatable=true)
+	private String licensor;
+
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="f_locked_date", nullable=true, insertable=true, updatable=true)
+	private Date lockedDate;
+	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_locked_identity", nullable=true, insertable=true, updatable=true)
+	private Identity lockedBy;
+	@Column(name="f_locked", nullable=true, insertable=true, updatable=true)
+	private boolean locked;
+	
+	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_author", nullable=true, insertable=true, updatable=true)
+	private Identity author;
+	
+	@Column(name="f_m_path_keys", nullable=true, insertable=true, updatable=true)
+	private String materializedPathKeys;
+	
+	@ManyToOne(targetEntity=VFSMetadataImpl.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_parent", nullable=true, insertable=true, updatable=true)
+	private VFSMetadata parent;
+
+	@Override
+	public Long getKey() {
+		return key;
+	}
+	
+	public void setKey(Long key) {
+		this.key = key;
+	}
+	
+	@Override
+	public Date getCreationDate() {
+		return creationDate;
+	}
+	
+	public void setCreationDate(Date date) {
+		creationDate = date;
+	}
+	
+	@Override
+	public Date getLastModified() {
+		return lastModified;
+	}
+	
+	@Override
+	public void setLastModified(Date date) {
+		lastModified = date;
+	}
+
+	@Override
+	public String getFilename() {
+		return filename;
+	}
+
+	public void setFilename(String filename) {
+		this.filename = filename;
+	}
+
+	@Override
+	public Date getFileLastModified() {
+		return fileLastModified;
+	}
+	
+	public void setFileLastModified(Date date) {
+		fileLastModified = date;
+	}
+
+	@Override
+	public long getFileSize() {
+		return fileSize;
+	}
+
+	public void setFileSize(long fileSize) {
+		this.fileSize = fileSize;
+	}
+
+	@Override
+	public boolean isDirectory() {
+		return directory;
+	}
+
+	public void setDirectory(boolean directory) {
+		this.directory = directory;
+	}
+
+	@Override
+	public String getIconCssClass() {
+		String cssClass;
+		if (isDirectory()) {
+			cssClass =  CSSHelper.CSS_CLASS_FILETYPE_FOLDER;
+		} else {
+			cssClass = CSSHelper.createFiletypeIconCssClassFor(getFilename());
+		}
+		return cssClass;
+	}
+
+	@Override
+	public String getRelativePath() {
+		return relativePath;
+	}
+
+	public void setRelativePath(String relativePath) {
+		this.relativePath = relativePath;
+	}
+
+	@Override
+	public String getUri() {
+		return uri;
+	}
+
+	public void setUri(String uri) {
+		this.uri = uri;
+	}
+
+	@Override
+	public String getProtocol() {
+		return protocol;
+	}
+
+	public void setProtocol(String protocol) {
+		this.protocol = protocol;
+	}
+
+	@Override
+	public int getDownloadCount() {
+		return downloadCount;
+	}
+
+	public void setDownloadCount(int downloadCount) {
+		this.downloadCount = downloadCount;
+	}
+
+	@Override
+	public String getComment() {
+		return comment;
+	}
+
+	@Override
+	public void setComment(String comment) {
+		this.comment = comment;
+	}
+
+	@Override
+	public String getCreator() {
+		return creator;
+	}
+
+	@Override
+	public void setCreator(String creator) {
+		this.creator = creator;
+	}
+
+	@Override
+	public String getCity() {
+		return city;
+	}
+
+	@Override
+	public void setCity(String city) {
+		this.city = city;
+	}
+
+	@Override
+	public String getLanguage() {
+		return language;
+	}
+
+	@Override
+	public void setLanguage(String language) {
+		this.language = language;
+	}
+
+	@Override
+	public String getUuid() {
+		return uuid;
+	}
+
+	public void setUuid(String uuid) {
+		this.uuid = uuid;
+	}
+
+	@Override
+	public String getTitle() {
+		return title;
+	}
+
+	@Override
+	public void setTitle(String title) {
+		this.title = title;
+	}
+
+	@Override
+	public String getPublisher() {
+		return publisher;
+	}
+
+	@Override
+	public void setPublisher(String publisher) {
+		this.publisher = publisher;
+	}
+
+	@Override
+	public String getSource() {
+		return source;
+	}
+
+	@Override
+	public void setSource(String source) {
+		this.source = source;
+	}
+
+	@Override
+	public String getPages() {
+		return pages;
+	}
+
+	@Override
+	public void setPages(String pages) {
+		this.pages = pages;
+	}
+
+	@Override
+	public String getUrl() {
+		return url;
+	}
+
+	@Override
+	public void setUrl(String url) {
+		this.url = url;
+	}
+
+	public String getPubMonth() {
+		return pubMonth;
+	}
+
+	public void setPubMonth(String pubMonth) {
+		this.pubMonth = pubMonth;
+	}
+
+	public String getPubYear() {
+		return pubYear;
+	}
+
+	public void setPubYear(String pubYear) {
+		this.pubYear = pubYear;
+	}
+
+	@Override
+	public String[] getPublicationDate() {
+		return new String[] { pubYear, pubMonth };
+	}
+	
+	@Override
+	public void setPublicationDate(String month, String year) {
+		setPubMonth(month);
+		setPubYear(year);
+	}
+
+	@Override
+	public LicenseType getLicenseType() {
+		return licenseType;
+	}
+
+	@Override
+	public void setLicenseType(LicenseType licenseType) {
+		this.licenseType = licenseType;
+	}
+
+	@Override
+	public String getLicenseTypeName() {
+		return licenseTypeName;
+	}
+
+	@Override
+	public void setLicenseTypeName(String licenseTypeName) {
+		this.licenseTypeName = licenseTypeName;
+	}
+
+	@Override
+	public String getLicenseText() {
+		return licenseText;
+	}
+
+	@Override
+	public void setLicenseText(String licenseText) {
+		this.licenseText = licenseText;
+	}
+
+	@Override
+	public String getLicensor() {
+		return licensor;
+	}
+
+	@Override
+	public void setLicensor(String licensor) {
+		this.licensor = licensor;
+	}
+
+	@Override
+	public Identity getAuthor() {
+		return author;
+	}
+
+	@Override
+	public void setAuthor(Identity author) {
+		this.author = author;
+	}
+
+	@Override
+	public Date getLockedDate() {
+		return lockedDate;
+	}
+
+	@Override
+	public void setLockedDate(Date lockedDate) {
+		this.lockedDate = lockedDate;
+	}
+
+	@Override
+	public Identity getLockedBy() {
+		return lockedBy;
+	}
+
+	@Override
+	public void setLockedBy(Identity lockedBy) {
+		this.lockedBy = lockedBy;
+	}
+
+	@Override
+	public boolean isLocked() {
+		return locked;
+	}
+
+	@Override
+	public void setLocked(boolean locked) {
+		this.locked = locked;
+	}
+
+	public Boolean getCannotGenerateThumbnails() {
+		return cannotGenerateThumbnails;
+	}
+
+	public void setCannotGenerateThumbnails(Boolean cannotGenerateThumbnails) {
+		this.cannotGenerateThumbnails = cannotGenerateThumbnails;
+	}
+
+	public String getMaterializedPathKeys() {
+		return materializedPathKeys;
+	}
+
+	public void setMaterializedPathKeys(String materializedPathKeys) {
+		this.materializedPathKeys = materializedPathKeys;
+	}
+
+	public VFSMetadata getParent() {
+		return parent;
+	}
+
+	public void setParent(VFSMetadata parent) {
+		this.parent = parent;
+	}
+
+	@Override
+	public void copyValues(VFSMetadata fromMeta) {
+		setAuthor(fromMeta.getAuthor());
+		setComment(fromMeta.getComment());
+		setCity(fromMeta.getCity());
+		setCreator(fromMeta.getCreator());
+		setLanguage(fromMeta.getLanguage());
+		setPages(fromMeta.getPages());
+		setPublicationDate(fromMeta.getPublicationDate()[1], fromMeta.getPublicationDate()[0]);
+		setPublisher(fromMeta.getPublisher());
+		setSource(fromMeta.getSource());
+		setTitle(fromMeta.getTitle());
+		setUrl(fromMeta.getUrl());
+		setLicenseType(fromMeta.getLicenseType());
+		setLicenseTypeName(fromMeta.getLicenseTypeName());
+		setLicensor(fromMeta.getLicensor());
+		setLicenseText(fromMeta.getLicenseText());
+	}
+
+	@Override
+	public int hashCode() {
+		return getKey() == null ? 7386459 : getKey().hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj) {
+			return true;
+		}
+		if(obj instanceof VFSMetadataImpl) {
+			VFSMetadataImpl meta = (VFSMetadataImpl)obj;
+			return getKey().equals(meta.getKey());
+		}
+		return false;
+	}
+
+	@Override
+	public boolean equalsByPersistableKey(Persistable persistable) {
+		return equals(persistable);
+	}
+}

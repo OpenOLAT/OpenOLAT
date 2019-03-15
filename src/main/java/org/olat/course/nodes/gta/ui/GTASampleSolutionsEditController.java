@@ -25,6 +25,8 @@ import java.util.List;
 
 import org.olat.core.commons.editor.htmleditor.HTMLEditorController;
 import org.olat.core.commons.editor.htmleditor.WysiwygFactory;
+import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -49,7 +51,6 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
-import org.olat.core.util.vfs.meta.MetaInfo;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.model.Solution;
@@ -66,7 +67,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class GTASampleSolutionsEditController extends FormBasicController {
 	
-	private FormLink addSolutionLink, createSolutionLink;
+	private FormLink addSolutionLink;
+	private FormLink createSolutionLink;
 	private SolutionTableModel solutionModel;
 	private FlexiTableElement solutionTable;
 	
@@ -74,7 +76,8 @@ public class GTASampleSolutionsEditController extends FormBasicController {
 	private EditSolutionController addSolutionCtrl;
 	private EditSolutionController editSolutionCtrl;
 	private NewSolutionController newSolutionCtrl;
-	private HTMLEditorController newSolutionEditorCtrl, editSolutionEditorCtrl;
+	private HTMLEditorController newSolutionEditorCtrl;
+	private HTMLEditorController editSolutionEditorCtrl;
 	
 	private final File solutionDir;
 	private final boolean readOnly;
@@ -88,6 +91,8 @@ public class GTASampleSolutionsEditController extends FormBasicController {
 	private UserManager userManager;
 	@Autowired
 	private GTAManager gtaManager;
+	@Autowired
+	private VFSRepositoryService vfsRepositoryService;
 	
 	public GTASampleSolutionsEditController(UserRequest ureq, WindowControl wControl, GTACourseNode gtaNode,
 			CourseEnvironment courseEnv, boolean readOnly) {
@@ -139,9 +144,9 @@ public class GTASampleSolutionsEditController extends FormBasicController {
 			
 			VFSItem item = solutionContainer.resolve(filename);
 			if(item.canMeta() == VFSConstants.YES) {
-				MetaInfo metaInfo = item.getMetaInfo();
-				if(metaInfo.getAuthorIdentityKey() != null) {
-					author = userManager.getUserDisplayName(metaInfo.getAuthorIdentityKey());
+				VFSMetadata metaInfo = item.getMetaInfo();
+				if(metaInfo.getAuthor() != null) {
+					author = userManager.getUserDisplayName(metaInfo.getAuthor());
 				}
 			}
 			
@@ -295,9 +300,9 @@ public class GTASampleSolutionsEditController extends FormBasicController {
 			item = solutionContainer.createChildLeaf(documentName);
 		}
 		if(item.canMeta() == VFSConstants.YES) {
-			MetaInfo metaInfo = item.getMetaInfo();
+			VFSMetadata metaInfo = item.getMetaInfo();
 			metaInfo.setAuthor(getIdentity());
-			metaInfo.write();
+			vfsRepositoryService.updateMetadata(metaInfo);
 		}
 
 		newSolutionEditorCtrl = WysiwygFactory.createWysiwygController(ureq, getWindowControl(),

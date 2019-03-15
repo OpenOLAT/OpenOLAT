@@ -39,6 +39,7 @@ import java.nio.file.Path;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -140,7 +141,7 @@ public class LocalFileImpl extends LocalImpl implements VFSLeaf, Versionable {
 			CoreSpringFactory.getImpl(VersionsManager.class).rename(this, newname);
 		}
 		if(canMeta() == VFSConstants.YES) {
-			getMetaInfo().rename(newname);
+			CoreSpringFactory.getImpl(VFSRepositoryService.class).rename(getMetaInfo(), newname);
 		}
 		boolean ren = f.renameTo(nf);
 		if (ren) {
@@ -162,7 +163,7 @@ public class LocalFileImpl extends LocalImpl implements VFSLeaf, Versionable {
 		}
 		// Versioning makes a copy of the metadata, delete metadata after it
 		if(canMeta() == VFSConstants.YES) {
-			getMetaInfo().delete();
+			CoreSpringFactory.getImpl(VFSRepositoryService.class).deleteMetadata(getMetaInfo());
 		}
 		return deleteBasefile();
 	}
@@ -170,7 +171,7 @@ public class LocalFileImpl extends LocalImpl implements VFSLeaf, Versionable {
 	@Override
 	public VFSStatus deleteSilently() {
 		if(canMeta() == VFSConstants.YES) {
-			getMetaInfo().delete();
+			CoreSpringFactory.getImpl(VFSRepositoryService.class).deleteMetadata(getMetaInfo());
 		}
 		CoreSpringFactory.getImpl(VersionsManager.class).delete(this, true);
 		return deleteBasefile();

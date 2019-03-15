@@ -30,6 +30,7 @@ import org.olat.core.commons.services.webdav.servlets.FastHttpDateFormat;
 import org.olat.core.commons.services.webdav.servlets.WebDAVDispatcherImpl;
 import org.olat.core.commons.services.webdav.servlets.WebResource;
 import org.olat.core.commons.services.webdav.servlets.XMLWriter;
+import org.olat.core.id.Identity;
 
 /**
  * Holds a lock information.
@@ -44,7 +45,7 @@ public class LockInfo {
     private String scope = "exclusive";
     private int depth = 0;
     private String owner = "";
-    private Vector<String> tokens = new Vector<String>();
+    private Vector<String> tokens = new Vector<>();
     private long expiresAt = 0;
     private Date creationDate = new Date();
     
@@ -55,6 +56,12 @@ public class LockInfo {
 
     public LockInfo(Long lockedBy, boolean webdavLock, boolean vfsLock) {
     	this.lockedBy = lockedBy;
+    	this.vfsLock = vfsLock;
+    	this.webdavLock = webdavLock;
+    }
+    
+    public LockInfo(Identity lockedBy, boolean webdavLock, boolean vfsLock) {
+    	this.lockedBy = lockedBy == null ? null : lockedBy.getKey();
     	this.vfsLock = vfsLock;
     	this.webdavLock = webdavLock;
     }

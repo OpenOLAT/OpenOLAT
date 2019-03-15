@@ -38,8 +38,10 @@ import java.util.zip.Adler32;
 import java.util.zip.Checksum;
 
 import org.apache.commons.io.FileUtils;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
+import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
+import org.olat.core.commons.services.vfs.manager.VFSXStream;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -61,15 +63,8 @@ import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.filters.SystemItemFilter;
 import org.olat.core.util.vfs.filters.VFSItemSuffixFilter;
 import org.olat.core.util.vfs.filters.VFSLeafFilter;
-import org.olat.core.util.vfs.meta.MetaInfo;
-import org.olat.core.util.vfs.meta.MetaInfoFactory;
-import org.olat.core.util.vfs.meta.MetaInfoFileImpl;
-import org.olat.core.util.xml.XStreamHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.security.ExplicitTypePermission;
 
 /**
  * 
@@ -90,32 +85,13 @@ public class VersionsFileManager implements VersionsManager {
 
 	private static final Versions NOT_VERSIONED = new NotVersioned();
 	private static final Pattern TAG_PATTERN = Pattern.compile("\\s*[<>]\\s*");
-	private static XStream mystream;
-	static {
-		mystream = XStreamHelper.createXStreamInstance();
-		XStream.setupDefaultSecurity(mystream);
-		Class<?>[] types = new Class[] {
-				VersionsFileImpl.class, Versions.class, RevisionFileImpl.class, VFSRevision.class,
-				MetaInfoFileImpl.class, MetaInfoFileImpl.Thumbnail.class
-			};
-		mystream.addPermission(new ExplicitTypePermission(types));
-		
-		mystream.alias("versions", VersionsFileImpl.class);
-		mystream.alias("revision", RevisionFileImpl.class);
-		mystream.omitField(VersionsFileImpl.class, "currentVersion");
-		mystream.omitField(VersionsFileImpl.class, "versionFile");
-		mystream.omitField(RevisionFileImpl.class, "current");
-		mystream.omitField(RevisionFileImpl.class, "container");
-		mystream.omitField(RevisionFileImpl.class, "file");
-		
-		mystream.alias("metadata", MetaInfoFileImpl.class);
-		mystream.alias("thumbnail", MetaInfoFileImpl.Thumbnail.class);
-	}
 
 	private File rootFolder;
 	private File rootVersionFolder;
 	private VFSContainer rootVersionsContainer;
 	
+	@Autowired
+	private VFSRepositoryService vfsRepositoryService;
 	@Autowired
 	private FolderVersioningConfigurator versioningConfigurator;
 
@@ -211,7 +187,7 @@ public class VersionsFileManager implements VersionsManager {
 
 		try {
 			VFSContainer fVersionContainer = fVersions.getParentContainer();
-			VersionsFileImpl versions = (VersionsFileImpl) XStreamHelper.readObject(mystream, fVersions);
+			VersionsFileImpl versions = (VersionsFileImpl) VFSXStream.read(fVersions);
 			versions.setVersionFile(fVersions);
 			versions.setCurrentVersion((Versionable) leaf);
 			if (versions.getRevisionNr() == null || versions.getRevisionNr().length() == 0) {
@@ -284,7 +260,7 @@ public class VersionsFileManager implements VersionsManager {
 		}
 
 		targetVersionsImpl.setRevisionNr(getNextRevisionNr(targetVersionsImpl));
-		XStreamHelper.writeObject(mystream, fTargetVersions, targetVersionsImpl);
+		VFSXStream.write(fTargetVersions, targetVersionsImpl);
 
 		return allOk;
 	}
@@ -317,15 +293,17 @@ public class VersionsFileManager implements VersionsManager {
 		newRevision.setUuid(revUuid);
 
 		//copy -> the files revision
-		InputStream revisionIn = revision.getInputStream();
-
-		VFSLeaf target = fNewVersions.getParentContainer().createChildLeaf(uuid);
-		if (VFSManager.copyContent(revisionIn, target)) {
-			targetVersions.setComment(revision.getComment());
-			targetVersions.getRevisions().add(newRevision);
-			targetVersions.setRevisionNr(getNextRevisionNr(targetVersions));
-			targetVersions.setAuthor(revision.getAuthor());
-			return true;
+		try(InputStream revisionIn = revision.getInputStream()) {
+			VFSLeaf target = fNewVersions.getParentContainer().createChildLeaf(uuid);
+			if (VFSManager.copyContent(revisionIn, target)) {
+				targetVersions.setComment(revision.getComment());
+				targetVersions.getRevisions().add(newRevision);
+				targetVersions.setRevisionNr(getNextRevisionNr(targetVersions));
+				targetVersions.setAuthor(revision.getAuthor());
+				return true;
+			}
+		} catch(Exception e) {
+			log.error("", e);
 		}
 		return false;
 	}
@@ -400,37 +378,39 @@ public class VersionsFileManager implements VersionsManager {
 		
 		if (restoredItem instanceof VFSLeaf) {
 			VFSLeaf restoredLeaf = (VFSLeaf) restoredItem;
-			InputStream inStream = revision.getInputStream();
-			if (VFSManager.copyContent(inStream, restoredLeaf)) {
-				VFSLeaf versionFile = getCanonicalVersionXmlFile(restoredLeaf, true);
-				Versions versions = readVersions(restoredLeaf, versionFile);
-				if (versions instanceof VersionsFileImpl) {
-					versions.getRevisions().remove(revision);
-					((VersionsFileImpl) versions).setRevisionNr(getNextRevisionNr(versions));
-					if (revision instanceof RevisionFileImpl) {
-						VFSLeaf fileToDelete = ((RevisionFileImpl)revision).getFile();
-						if(fileToDelete != null) {
-							fileToDelete.deleteSilently();
+			try(InputStream inStream = revision.getInputStream()) {
+				if (VFSManager.copyContent(inStream, restoredLeaf)) {
+					VFSLeaf versionFile = getCanonicalVersionXmlFile(restoredLeaf, true);
+					Versions versions = readVersions(restoredLeaf, versionFile);
+					if (versions instanceof VersionsFileImpl) {
+						versions.getRevisions().remove(revision);
+						((VersionsFileImpl) versions).setRevisionNr(getNextRevisionNr(versions));
+						if (revision instanceof RevisionFileImpl) {
+							VFSLeaf fileToDelete = ((RevisionFileImpl)revision).getFile();
+							if(fileToDelete != null) {
+								fileToDelete.deleteSilently();
+							}
 						}
 					}
-				}
-				if (restoreDeletedFile && revision instanceof RevisionFileImpl) {
-					MetaInfo versionedMetadata = ((RevisionFileImpl)revision).getMetadata();
-					MetaInfoFileImpl metadata = (MetaInfoFileImpl)restoredItem.getMetaInfo();
-					if(versionedMetadata != null && metadata != null) {
-						metadata.copyValues(versionedMetadata);
-						// make sure the restored file is not locked
-						metadata.setLocked(false);
-						metadata.setLockedBy(null);
-						metadata.setLockedDate(null);
-						// restore last values
-						metadata.setUUID(versionedMetadata.getUUID());
-						metadata.setDownloadCount(versionedMetadata.getDownloadCount());
-						metadata.write();
+					if (restoreDeletedFile && revision instanceof RevisionFileImpl) {
+						VFSMetadata versionedMetadata = ((RevisionFileImpl)revision).getMetadata();
+						VFSMetadata metadata = restoredItem.getMetaInfo();
+						if(versionedMetadata != null && metadata != null) {
+							metadata.copyValues(versionedMetadata);
+							// make sure the restored file is not locked
+							metadata.setLocked(false);
+							metadata.setLockedBy(null);
+							metadata.setLockedDate(null);
+							// restore last values
+							metadata.setUuid(versionedMetadata.getUuid());
+							vfsRepositoryService.updateMetadata(metadata);
+						}
 					}
+					VFSXStream.write(versionFile, versions);
+					return true;
 				}
-				XStreamHelper.writeObject(mystream, versionFile, versions);
-				return true;
+			} catch(Exception e) {
+				log.error("", e);
 			}
 		}
 		return false;
@@ -478,7 +458,7 @@ public class VersionsFileManager implements VersionsManager {
 		}
 
 		VFSLeaf versionFile = getCanonicalVersionXmlFile(currentFile, true);
-		XStreamHelper.writeObject(mystream, versionFile, versions);
+		VFSXStream.write(versionFile, versions);
 		if (currentVersion.getVersions() instanceof VersionsFileImpl) {
 			((VersionsFileImpl) currentVersion.getVersions()).update(versions);
 		}
@@ -509,7 +489,7 @@ public class VersionsFileManager implements VersionsManager {
 						File dir = ((JavaIOItem)container).getBasefile();
 						File file = new File(dir, originFilename);
 						if(!file.exists()) {
-							CoreSpringFactory.getImpl(MetaInfoFactory.class).deleteMetaFile(file);
+							vfsRepositoryService.deleteMetadata(file);
 						}
 					}
 				}
@@ -651,24 +631,24 @@ public class VersionsFileManager implements VersionsManager {
 		
 		String versionNr = getNextRevisionNr(versions);
 		String currentAuthor = versions.getAuthor();
-		long lastModifiedDate = 0;
+		Date lastModifiedDate = null;
 		
-		MetaInfo metaInfo = null;
+		VFSMetadata metaInfo = null;
 		if (currentFile.canMeta() == VFSConstants.YES) {
 			metaInfo = currentFile.getMetaInfo();
 			if(metaInfo != null) {
-				metaInfo.clearThumbnails();
-				if(currentAuthor == null) { 
-					currentAuthor = metaInfo.getAuthor();
+				vfsRepositoryService.resetThumbnails(currentFile);
+				if(currentAuthor == null && metaInfo.getAuthor() != null) { 
+					currentAuthor = metaInfo.getAuthor().getName();
 				}
 				lastModifiedDate = metaInfo.getLastModified();
 			}
 		}
 		
-		if(lastModifiedDate <= 0) {
+		if(lastModifiedDate == null) {
 			Calendar cal = Calendar.getInstance();
 			cal.setTime(new Date());
-			lastModifiedDate = cal.getTimeInMillis();
+			lastModifiedDate = cal.getTime();
 		}
 
 		RevisionFileImpl newRevision = new RevisionFileImpl();
@@ -678,13 +658,13 @@ public class VersionsFileManager implements VersionsManager {
 		newRevision.setRevisionNr(versionNr);
 		newRevision.setComment(versions.getComment());
 		newRevision.setAuthor(currentAuthor);
-		newRevision.setLastModified(lastModifiedDate);
-		newRevision.setMetadata(metaInfo);
+		newRevision.setLastModified(lastModifiedDate.getTime());
+		//TODO metadata newRevision.setMetadata(metaInfo);
 
 		if (versions.getRevisions().isEmpty() && currentVersion instanceof VFSItem) {
-			MetaInfo currentMeta = ((VFSItem)currentVersion).getMetaInfo();
-			if(currentMeta != null) {
-				versions.setCreator(currentMeta.getAuthor());
+			VFSMetadata currentMeta = ((VFSItem)currentVersion).getMetaInfo();
+			if(currentMeta != null && currentMeta.getAuthor() != null) {
+				versions.setCreator(currentMeta.getAuthor().getName());
 			}
 		}
 
@@ -705,7 +685,7 @@ public class VersionsFileManager implements VersionsManager {
 			versions.setComment(comment);
 			versions.getRevisions().add(newRevision);
 			versions.setRevisionNr(getNextRevisionNr(versions));
-			XStreamHelper.writeObject(mystream, versionFile, versions);
+			VFSXStream.write(versionFile, versions);
 			if (currentVersion.getVersions() instanceof VersionsFileImpl) {
 				((VersionsFileImpl) currentVersion.getVersions()).update(versions);
 			}
@@ -802,7 +782,7 @@ public class VersionsFileManager implements VersionsManager {
 			versions.setRevisionNr(getNextRevisionNr(versions));
 			VFSLeaf fVersions = localVersionContainer.createChildLeaf(fVersion.getName());
 			if(fVersions != null) {
-				XStreamHelper.writeObject(mystream, fVersions, versions);
+				VFSXStream.write(fVersions, versions);
 			}
 			return fVersions;
 		}
@@ -1063,7 +1043,7 @@ public class VersionsFileManager implements VersionsManager {
 	private Versions isOrphan(VFSLeaf potentialOrphan) {
 		try {
 			if(potentialOrphan.exists()) {
-				return (VersionsFileImpl) XStreamHelper.readObject(mystream, potentialOrphan);
+				return (VersionsFileImpl) VFSXStream.read(potentialOrphan);
 			}
 			return null;
 		} catch (Exception e) {

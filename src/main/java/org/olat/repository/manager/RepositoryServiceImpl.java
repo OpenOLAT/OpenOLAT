@@ -19,7 +19,6 @@
  */
 package org.olat.repository.manager;
 
-import java.io.File;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
@@ -37,7 +36,6 @@ import org.olat.basesecurity.OrganisationDataDeletable;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.mark.MarkManager;
@@ -59,7 +57,6 @@ import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -386,14 +383,15 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 
 	@Override
 	public VFSLeaf getIntroductionImage(RepositoryEntry re) {
-		VFSContainer repositoryHome = new LocalFolderImpl(new File(FolderConfig.getCanonicalRepositoryHome()));
+		RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(re);
+		VFSContainer mediaContainer = handler.getMediaContainer(re);
 		String imageName = re.getResourceableId() + ".jpg";
-		VFSItem image = repositoryHome.resolve(imageName);
+		VFSItem image = mediaContainer.resolve(imageName);
 		if(image instanceof VFSLeaf) {
 			return (VFSLeaf)image;
 		}
 		imageName = re.getResourceableId() + ".png";
-		image = repositoryHome.resolve(imageName);
+		image = mediaContainer.resolve(imageName);
 		if(image instanceof VFSLeaf) {
 			return (VFSLeaf)image;
 		}

@@ -28,7 +28,7 @@ package org.olat.core.commons.modules.bc;
 
 import java.util.Date;
 
-import org.olat.core.util.vfs.meta.MetaInfo;
+import org.olat.core.commons.services.vfs.VFSMetadata;
 
 /**
  * Initial Date:  11.02.2005 <br>
@@ -37,14 +37,14 @@ import org.olat.core.util.vfs.meta.MetaInfo;
  */
 public class FileInfo {
 	private String relPath;
-	private MetaInfo metaInfo;
+	private VFSMetadata metaInfo;
 	private Date lastModified;
 	/**
 	 * @param relPath e.g. chapter1/info.pdf -> will be used as title in notifications
 	 * @param metaInfo
 	 * @param lastModified
 	 */
-	public FileInfo(String relPath, MetaInfo metaInfo, Date lastModified) {
+	public FileInfo(String relPath, VFSMetadata metaInfo, Date lastModified) {
 		this.relPath = relPath;
 		this.metaInfo = metaInfo;
 		this.lastModified = lastModified;
@@ -54,7 +54,7 @@ public class FileInfo {
 	 * @return the author
 	 */
 	public Long getAuthorIdentityKey() {
-		return metaInfo == null ? null : metaInfo.getAuthorIdentityKey();
+		return metaInfo == null || metaInfo.getAuthor() == null ? null : metaInfo.getAuthor().getKey();
 	}
 
 	/**
@@ -75,7 +75,7 @@ public class FileInfo {
 	 * Get the file meta info or NULL if no meta info exists
 	 * @return
 	 */
-	public MetaInfo getMetaInfo() {
+	public VFSMetadata getMetaInfo() {
 		return metaInfo;
 	}
 }

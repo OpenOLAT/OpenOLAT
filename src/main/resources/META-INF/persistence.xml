@@ -65,7 +65,7 @@
 		<class>org.olat.basesecurity.model.GrantImpl</class>
 		<class>org.olat.basesecurity.model.GroupMembershipImpl</class>
 		<class>org.olat.basesecurity.model.UserProperty</class>
-		<class>org.olat.basesecurity.model.IdentityLastLoginImpl</class><class>org.olat.basesecurity.model.AuthenticationHistoryImpl</class>
+		<class>org.olat.basesecurity.model.IdentityLastLoginImpl</class>
 		<class>org.olat.basesecurity.model.AuthenticationHistoryImpl</class>
 		<class>org.olat.basesecurity.model.OrganisationTypeImpl</class>
 		<class>org.olat.basesecurity.model.OrganisationTypeToTypeImpl</class>
@@ -92,6 +92,9 @@
 		<class>org.olat.core.commons.services.commentAndRating.model.UserRatingImpl</class>
 		<class>org.olat.core.commons.services.commentAndRating.model.UserCommentImpl</class>
 		<class>org.olat.core.commons.services.sms.model.MessageLogImpl</class>
+		<class>org.olat.core.commons.services.vfs.model.VFSMetadataImpl</class>
+		<class>org.olat.core.commons.services.vfs.model.VFSMetadataDownloadCount</class>
+		<class>org.olat.core.commons.services.vfs.model.VFSThumbnailMetadataImpl</class>
 		<class>org.olat.course.assessment.model.AssessmentModeImpl</class>
 		<class>org.olat.course.assessment.model.AssessmentModeToAreaImpl</class>
 		<class>org.olat.course.assessment.model.AssessmentModeToGroupImpl</class>

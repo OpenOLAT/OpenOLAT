@@ -32,6 +32,8 @@ import java.util.List;
 import org.olat.core.commons.editor.htmleditor.HTMLEditorController;
 import org.olat.core.commons.editor.htmleditor.WysiwygFactory;
 import org.olat.core.commons.modules.singlepage.SinglePageController;
+import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -59,7 +61,6 @@ import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSManager;
-import org.olat.core.util.vfs.meta.MetaInfo;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.Task;
@@ -102,9 +103,11 @@ class SubmitDocumentsController extends FormBasicController {
 	private final Date deadline;
 	
 	@Autowired
+	private GTAManager gtaManager;
+	@Autowired
 	private UserManager userManager;
 	@Autowired
-	private GTAManager gtaManager;
+	private VFSRepositoryService vfsRepositoryService;
 	
 	public SubmitDocumentsController(UserRequest ureq, WindowControl wControl, Task assignedTask,
 			File documentsDir, VFSContainer documentsContainer, int maxDocs, GTACourseNode cNode,
@@ -184,9 +187,9 @@ class SubmitDocumentsController extends FormBasicController {
 			String uploadedBy = null;
 			VFSItem item = documentsContainer.resolve(filename);
 			if(item.canMeta() == VFSConstants.YES) {
-				MetaInfo metaInfo = item.getMetaInfo();
-				if(metaInfo != null && metaInfo.getAuthorIdentityKey() != null) {
-					uploadedBy = userManager.getUserDisplayName(metaInfo.getAuthorIdentityKey());
+				VFSMetadata metaInfo = item.getMetaInfo();
+				if(metaInfo != null) {
+					uploadedBy = userManager.getUserDisplayName(metaInfo.getAuthor());
 				}
 			}
 			
@@ -417,9 +420,9 @@ class SubmitDocumentsController extends FormBasicController {
 			
 			VFSItem downloadedFile = documentsContainer.resolve(filename);
 			if(downloadedFile != null && downloadedFile.canMeta() == VFSConstants.YES) {
-				MetaInfo  metadata = downloadedFile.getMetaInfo();
+				VFSMetadata  metadata = downloadedFile.getMetaInfo();
 				metadata.setAuthor(ureq.getIdentity());
-				metadata.write();
+				vfsRepositoryService.updateMetadata(metadata);
 			}
 		} catch (IOException e) {
 			logError("", e);
@@ -475,9 +478,9 @@ class SubmitDocumentsController extends FormBasicController {
 			// add missing identity in meta info
 			item = documentsContainer.resolve(documentName);
 			if(item != null && item.canMeta() == VFSConstants.YES) {
-				MetaInfo  metadata = item.getMetaInfo();
+				VFSMetadata  metadata = item.getMetaInfo();
 				metadata.setAuthor(ureq.getIdentity());
-				metadata.write();
+				vfsRepositoryService.updateMetadata(metadata);
 			}				
 	
 			newDocumentEditorCtrl = WysiwygFactory.createWysiwygController(ureq, getWindowControl(),

@@ -22,8 +22,8 @@ package org.olat.core.util.vfs;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
-import org.olat.core.util.vfs.meta.MetaInfo;
 
 /**
  * <h3>Description:</h3>
@@ -154,7 +154,7 @@ public class NamedLeaf implements VFSLeaf {
 	}
 
 	@Override
-	public MetaInfo getMetaInfo() {
+	public VFSMetadata getMetaInfo() {
 		return delegate.getMetaInfo();
 	}
 

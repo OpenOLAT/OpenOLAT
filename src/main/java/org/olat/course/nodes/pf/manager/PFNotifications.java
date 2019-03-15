@@ -37,13 +37,13 @@ import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.Publisher;
 import org.olat.core.commons.services.notifications.Subscriber;
 import org.olat.core.commons.services.notifications.model.SubscriptionListItem;
+import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
-import org.olat.core.util.vfs.meta.MetaInfo;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.groupsandrights.CourseGroupManager;
@@ -125,7 +125,7 @@ public class PFNotifications {
 		SubscriptionListItem subListItem;
 		for (Iterator<FileInfo> it_infos = fInfos.iterator(); it_infos.hasNext();) {
 			FileInfo fi = it_infos.next();
-			MetaInfo metaInfo = fi.getMetaInfo();
+			VFSMetadata metaInfo = fi.getMetaInfo();
 			String filePath = fi.getRelPath();
 			Date modDate = fi.getLastModified();
 			String action = "upload";
@@ -154,7 +154,7 @@ public class PFNotifications {
 			if (metaInfo != null) {
 				iconCssClass = metaInfo.getIconCssClass();
 			}
-			if (metaInfo != null && !metaInfo.getName().startsWith(".")) {
+			if (metaInfo != null && !metaInfo.getFilename().startsWith(".")) {
 				subListItem = new SubscriptionListItem(desc, urlToSend, businessPath, modDate, iconCssClass);
 				items.add(subListItem);
 			}

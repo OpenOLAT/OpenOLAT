@@ -30,11 +30,11 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
-import org.olat.core.util.vfs.meta.MetaInfo;
 
 /**
  * Initial Date: 23.06.2005 <br>
@@ -313,7 +313,7 @@ public class MergeSource extends AbstractVirtualContainer {
 	}
 
 	@Override
-	public MetaInfo getMetaInfo() {
+	public VFSMetadata getMetaInfo() {
 		return null;
 	}
 

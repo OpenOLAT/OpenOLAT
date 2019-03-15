@@ -37,6 +37,8 @@ import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.license.ui.LicenseUIFactory;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
+import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -55,7 +57,6 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
-import org.olat.core.util.vfs.meta.MetaInfo;
 import org.olat.core.util.vfs.util.ContainerAndFile;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -83,6 +84,8 @@ public class CmdCreateFile extends FormBasicController implements FolderCommand 
 	private LicenseModule licenseModule;
 	@Autowired
 	private FolderLicenseHandler licenseHandler;
+	@Autowired
+	private VFSRepositoryService vfsRepositoryService;
 
 	protected CmdCreateFile(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -192,16 +195,16 @@ public class CmdCreateFile extends FormBasicController implements FolderCommand 
 			notifyFinished(ureq);
 		} else {
 			if(item.canMeta() == VFSConstants.YES) {
-				MetaInfo meta = item.getMetaInfo();
+				VFSMetadata meta = item.getMetaInfo();
 				meta.setAuthor(ureq.getIdentity());
 				if (licenseModule.isEnabled(licenseHandler)) {
 					License license = licenseService.createDefaultLicense(licenseHandler, getIdentity());
-					meta.setLicenseTypeKey(String.valueOf(license.getLicenseType().getKey()));
+					meta.setLicenseType(license.getLicenseType());
 					meta.setLicenseTypeName(license.getLicenseType().getName());
 					meta.setLicensor(license.getLicensor());
 					meta.setLicenseText(LicenseUIFactory.getLicenseText(license));
 				}
-				meta.write();
+				vfsRepositoryService.updateMetadata(meta);
 			}
 
 			// start HTML editor with the folders root folder as base and the file

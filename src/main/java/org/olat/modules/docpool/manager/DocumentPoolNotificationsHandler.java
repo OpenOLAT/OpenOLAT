@@ -36,6 +36,7 @@ import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.notifications.SubscriptionInfo;
 import org.olat.core.commons.services.notifications.model.SubscriptionListItem;
 import org.olat.core.commons.services.notifications.model.TitleItem;
+import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.components.tree.TreeModel;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -48,7 +49,6 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.tree.TreeVisitor;
 import org.olat.core.util.vfs.VFSContainer;
-import org.olat.core.util.vfs.meta.MetaInfo;
 import org.olat.modules.docpool.DocumentPoolModule;
 import org.olat.modules.docpool.ui.DocumentPoolMainController;
 import org.olat.modules.taxonomy.Taxonomy;
@@ -154,7 +154,7 @@ public class DocumentPoolNotificationsHandler implements NotificationsHandler {
 				// skip this file, continue with next item in folder
 				continue;
 			}						
-			MetaInfo metaInfo = infos.getMetaInfo();
+			VFSMetadata metaInfo = infos.getMetaInfo();
 			String iconCssClass =  null;
 			if (metaInfo != null) {
 				if (metaInfo.getTitle() != null) {

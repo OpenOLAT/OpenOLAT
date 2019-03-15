@@ -43,6 +43,8 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.notifications.ui.ContextualSubscriptionController;
+import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -74,7 +76,6 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.callbacks.FullAccessWithQuotaCallback;
-import org.olat.core.util.vfs.meta.MetaInfo;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
@@ -108,6 +109,8 @@ public class DropboxController extends BasicController {
 
 	@Autowired
 	private QuotaManager quotaManager;
+	@Autowired
+	private VFSRepositoryService vfsRepositoryService;
 	
 	// Constructor for ProjectBrokerDropboxController
 	protected DropboxController(UserRequest ureq, WindowControl wControl) {
@@ -258,9 +261,9 @@ public class DropboxController extends BasicController {
 				}
 				
 				if(fOut.canMeta() == VFSConstants.YES) {
-					MetaInfo info = fOut.getMetaInfo();
+					VFSMetadata info = fOut.getMetaInfo();
 					info.setAuthor(ureq.getIdentity());
-					info.write();
+					vfsRepositoryService.updateMetadata(info);
 				}
 					
 				if (success) {

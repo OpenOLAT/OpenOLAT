@@ -29,6 +29,8 @@ package org.olat.core.commons.modules.bc.commands;
 
 import org.olat.core.commons.modules.bc.FolderEvent;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
+import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -42,7 +44,7 @@ import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
-import org.olat.core.util.vfs.meta.MetaInfo;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * A panel with a FolderComponent and a CreateFolderForm.
@@ -58,6 +60,9 @@ public class CmdCreateFolder extends FormBasicController implements FolderComman
 	private String folderName;
 	private String target;
 	private TextElement textElement;
+	
+	@Autowired
+	private VFSRepositoryService vfsRepositoryService;
   
 	public CmdCreateFolder(UserRequest ureq, WindowControl wControl) {			
 		super(ureq, wControl);
@@ -131,9 +136,9 @@ public class CmdCreateFolder extends FormBasicController implements FolderComman
 		VFSItem item = currentContainer.createChildContainer(name);
 		if (item instanceof VFSContainer && item.canMeta() == VFSConstants.YES) {
 			// update meta data
-			MetaInfo meta = item.getMetaInfo();
+			VFSMetadata meta = item.getMetaInfo();
 			meta.setAuthor(ureq.getIdentity());
-			meta.write();
+			vfsRepositoryService.updateMetadata(meta);
 			status = FolderCommandStatus.STATUS_FAILED;
 			
 			fireEvent(ureq, new FolderEvent(FolderEvent.NEW_FOLDER_EVENT, folderName));	

@@ -47,14 +47,12 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
-import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.fileresource.types.VideoFileResource;
@@ -224,9 +222,9 @@ public class VideoListingController extends FormBasicController implements Activ
 				int start = relPath.lastIndexOf("/");
 				if (start != -1) {
 					relPath = relPath.substring(start+1);
-					long id = Long.parseLong(relPath);
-					OLATResourceable videoResource = OresHelper.createOLATResourceableInstance("RepositoryEntry", id);
-					VFSLeaf imageFile = repositoryManager.getImage(videoResource);
+					Long id = Long.valueOf(relPath);
+					RepositoryEntry entry = repositoryService.loadByKey(id);
+					VFSLeaf imageFile = repositoryManager.getImage(entry);
 					return new VFSMediaResource(imageFile);
 				}
 			}

@@ -32,6 +32,8 @@ import java.util.List;
 import org.olat.core.commons.modules.bc.FileSelection;
 import org.olat.core.commons.modules.bc.FolderEvent;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
+import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -48,7 +50,7 @@ import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.meta.MetaInfo;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -66,6 +68,9 @@ public class CmdZip extends FormBasicController implements FolderCommand {
 	private VFSContainer currentContainer;
 	private FileSelection selection;
 	private TextElement textElement;
+	
+	@Autowired
+	private VFSRepositoryService vfsRepositoryService;
 	
 	protected CmdZip(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -172,9 +177,9 @@ public class CmdZip extends FormBasicController implements FolderCommand {
 			fireEvent(ureq, FOLDERCOMMAND_FINISHED);
 		} else {
 			if(zipFile.canMeta() == VFSConstants.YES) {
-				MetaInfo info = zipFile.getMetaInfo();
+				VFSMetadata info = zipFile.getMetaInfo();
 				info.setAuthor(ureq.getIdentity());
-				info.write();
+				vfsRepositoryService.updateMetadata(info);
 			}
 			
 			fireEvent(ureq, new FolderEvent(FolderEvent.ZIP_EVENT, selection.renderAsHtml()));				

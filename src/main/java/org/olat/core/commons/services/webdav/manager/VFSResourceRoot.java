@@ -33,6 +33,8 @@ import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.license.ui.LicenseUIFactory;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
+import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.commons.services.webdav.servlets.WebResource;
 import org.olat.core.commons.services.webdav.servlets.WebResourceRoot;
 import org.olat.core.id.Identity;
@@ -47,7 +49,6 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
-import org.olat.core.util.vfs.meta.MetaInfo;
 import org.olat.core.util.vfs.version.Versionable;
 import org.olat.core.util.vfs.version.VersionsManager;
 
@@ -222,12 +223,14 @@ public class VFSResourceRoot implements WebResourceRoot  {
 		}
 		
 		if(identity != null && childLeaf.canMeta() == VFSConstants.YES) {
-			MetaInfo infos = childLeaf.getMetaInfo();
-			if(infos != null && !infos.hasAuthorIdentity()) {
+			VFSMetadata infos = childLeaf.getMetaInfo();
+			if(infos != null && infos.getAuthor() != null) {
 				infos.setAuthor(identity);
 				addLicense(infos, identity);
-				infos.clearThumbnails();
-				//infos.write(); the clearThumbnails call write()
+				
+				VFSRepositoryService vfsRepositoryService = CoreSpringFactory.getImpl(VFSRepositoryService.class);
+				vfsRepositoryService.updateMetadata(infos);
+				vfsRepositoryService.resetThumbnails(childLeaf);
 			}
 		}
 		
@@ -243,13 +246,13 @@ public class VFSResourceRoot implements WebResourceRoot  {
 		return true;
 	}
 
-	private void addLicense(MetaInfo meta, Identity identity) {
+	private void addLicense(VFSMetadata meta, Identity identity) {
 		LicenseService licenseService = CoreSpringFactory.getImpl(LicenseService.class);
 		LicenseModule licenseModule = CoreSpringFactory.getImpl(LicenseModule.class);
 		FolderLicenseHandler licenseHandler = CoreSpringFactory.getImpl(FolderLicenseHandler.class);
 		if (licenseModule.isEnabled(licenseHandler)) {
 			License license = licenseService.createDefaultLicense(licenseHandler, identity);
-			meta.setLicenseTypeKey(String.valueOf(license.getLicenseType().getKey()));
+			meta.setLicenseType(license.getLicenseType());
 			meta.setLicenseTypeName(license.getLicenseType().getName());
 			meta.setLicensor(license.getLicensor());
 			meta.setLicenseText(LicenseUIFactory.getLicenseText(license));

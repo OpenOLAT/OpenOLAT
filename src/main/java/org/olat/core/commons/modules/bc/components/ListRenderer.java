@@ -27,8 +27,11 @@
 package org.olat.core.commons.modules.bc.components;
 
 import java.text.DateFormat;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FileSelection;
@@ -39,6 +42,8 @@ import org.olat.core.commons.services.license.License;
 import org.olat.core.commons.services.license.LicenseHandler;
 import org.olat.core.commons.services.license.LicenseModule;
 import org.olat.core.commons.services.license.ui.LicenseRenderer;
+import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
 import org.olat.core.gui.control.winmgr.AJAXFlags;
 import org.olat.core.gui.render.StringOutput;
@@ -59,8 +64,6 @@ import org.olat.core.util.vfs.VFSLockManager;
 import org.olat.core.util.vfs.VirtualContainer;
 import org.olat.core.util.vfs.filters.SystemItemFilter;
 import org.olat.core.util.vfs.lock.LockInfo;
-import org.olat.core.util.vfs.meta.MetaInfo;
-import org.olat.core.util.vfs.meta.MetaInfoFactory;
 import org.olat.core.util.vfs.version.Versionable;
 import org.olat.core.util.vfs.version.Versions;
 import org.olat.user.UserManager;
@@ -89,6 +92,7 @@ public class ListRenderer {
 	/** View thumbnail */
 	public static final String PARAM_SERV_THUMBNAIL = "servthumb";
 
+	private VFSRepositoryService vfsRepositoryService;
 	private VFSLockManager lockManager;
 	private UserManager userManager;
 	boolean licensesEnabled ;
@@ -117,6 +121,10 @@ public class ListRenderer {
 		if(userManager == null) {
 			userManager = CoreSpringFactory.getImpl(UserManager.class);
 		}
+		if(vfsRepositoryService == null) {
+			vfsRepositoryService = CoreSpringFactory.getImpl(VFSRepositoryService.class);
+		}
+		
 		LicenseModule licenseModule = CoreSpringFactory.getImpl(LicenseModule.class);
 		LicenseHandler licenseHandler = CoreSpringFactory.getImpl(FolderLicenseHandler.class);
 		licensesEnabled = licenseModule.isEnabled(licenseHandler);
@@ -130,7 +138,8 @@ public class ListRenderer {
 			return;
 		}
 
-		boolean canVersion = FolderConfig.versionsEnabled(fc.getCurrentContainer());
+		VFSContainer currentContainer = fc.getCurrentContainer();
+		boolean canVersion = FolderConfig.versionsEnabled(currentContainer);
 		String sortOrder = fc.getCurrentSortOrder();
 		boolean sortAsc = fc.isCurrentSortAsc();
 		String sortCss = (sortAsc ? "o_orderby_asc" : "o_orderby_desc");
@@ -171,9 +180,17 @@ public class ListRenderer {
 
 		sb.append("<tbody>");
 		
+		String relPath = currentContainer.getRelPath();
+		Map<String,VFSMetadata> metadatas = Collections.emptyMap();
+		if(relPath != null) {
+			List<VFSMetadata> m = vfsRepositoryService.getChildren(relPath);
+			metadatas = m.stream().collect(Collectors.toMap(VFSMetadata::getFilename, v -> v, (u, v) -> u));
+		}
+		
 		for (int i = 0; i < children.size(); i++) {
 			VFSItem child = children.get(i);
-			appendRenderedFile(fc, child, currentContainerPath, sb, ubu, translator, iframePostEnabled, canVersion, i);
+			VFSMetadata metadata = metadatas.get(child.getName());
+			appendRenderedFile(fc, child, metadata, currentContainerPath, sb, ubu, translator, iframePostEnabled, canVersion, i);
 		}		
 		sb.append("</tbody></table>");
 	} // getRenderedDirectoryContent
@@ -184,7 +201,7 @@ public class ListRenderer {
 	 * @param	f			The file or folder to render
 	 * @param	sb		StringOutput to append generated html code
 	 */
-	private void appendRenderedFile(FolderComponent fc, VFSItem child, String currentContainerPath, StringOutput sb, URLBuilder ubu, Translator translator,
+	private void appendRenderedFile(FolderComponent fc, VFSItem child, VFSMetadata metadata, String currentContainerPath, StringOutput sb, URLBuilder ubu, Translator translator,
 			boolean iframePostEnabled, boolean canContainerVersion, int pos) {
 	
 		// assume full access unless security callback tells us something different.
@@ -208,13 +225,7 @@ public class ListRenderer {
 			leaf = (VFSLeaf)child;
 		}
 		boolean isContainer = (leaf == null); // if not a leaf, it must be a container...
-		
-		MetaInfo metaInfo = null;
-		if(child.canMeta() == VFSConstants.YES) {
-			metaInfo = child.getMetaInfo();
-		}
-		
-		boolean lockedForUser = lockManager.isLockedForMe(child, metaInfo, fc.getIdentityEnvironnement().getIdentity(), fc.getIdentityEnvironnement().getRoles());
+		boolean lockedForUser = lockManager.isLockedForMe(child, metadata, fc.getIdentityEnvironnement().getIdentity(), fc.getIdentityEnvironnement().getRoles());
 		
 		String name = child.getName();
 		boolean xssErrors = StringHelper.xssScanForErrors(name);
@@ -289,23 +300,23 @@ public class ListRenderer {
 		}
 
 		//file metadata as tooltip
-		if (metaInfo != null) {
+		if (metadata != null) {
 			boolean hasMeta = false;
 			sb.append("<div id='o_sel_doc_tooltip_").append(pos).append("' class='o_bc_meta' style='display:none;'>");
-			if (StringHelper.containsNonWhitespace(metaInfo.getTitle())) {
-				String title = StringHelper.escapeHtml(metaInfo.getTitle());
+			if (StringHelper.containsNonWhitespace(metadata.getTitle())) {
+				String title = StringHelper.escapeHtml(metadata.getTitle());
 				sb.append("<h5>").append(Formatter.escapeDoubleQuotes(title)).append("</h5>");
 				hasMeta = true;
 			}
-			if (StringHelper.containsNonWhitespace(metaInfo.getComment())) {
+			if (StringHelper.containsNonWhitespace(metadata.getComment())) {
 				sb.append("<div class=\"o_comment\">");
-				String comment = StringHelper.escapeHtml(metaInfo.getComment());
+				String comment = StringHelper.escapeHtml(metadata.getComment());
 				sb.append(Formatter.escapeDoubleQuotes(comment));			
 				sb.append("</div>");
 				hasMeta = true;
 			}
 			
-			if(metaInfo.isThumbnailAvailable() && !xssErrors) {
+			if(!isContainer && !xssErrors && vfsRepositoryService.isThumbnailAvailable(leaf, metadata) ) {
 				sb.append("<div class='o_thumbnail' style='background-image:url("); 
 				ubu.buildURI(sb, new String[] { PARAM_SERV_THUMBNAIL}, new String[] { "x" }, pathAndName, AJAXFlags.MODE_NORMAL);
 				sb.append("); background-repeat:no-repeat; background-position:50% 50%;'></div>");
@@ -313,14 +324,13 @@ public class ListRenderer {
 			}
 
 			// first try author info from metadata (creator)
-			String author = metaInfo.getCreator();
+			String author = metadata.getCreator();
 			// fallback use file author (uploader)
 			if(StringHelper.containsNonWhitespace(author)) {
 				//
 			} else {
-				author = metaInfo.getAuthor();
-				if(!"-".equals(author)) {
-					author = UserManager.getInstance().getUserDisplayName(author);
+				if(metadata.getAuthor() != null) {
+					author = userManager.getUserDisplayName(metadata.getAuthor());
 				} else {
 					author = null;
 				}		
@@ -379,25 +389,23 @@ public class ListRenderer {
 		
 		// license
 		if (licensesEnabled) {
-			MetaInfoFactory metaInfoFactory = CoreSpringFactory.getImpl(MetaInfoFactory.class);
-			License license = metaInfoFactory.getLicense(metaInfo);
+			License license = vfsRepositoryService.getLicense(metadata);
 			LicenseRenderer licenseRenderer = new LicenseRenderer(translator.getLocale());
 			licenseRenderer.render(sb, license, true);
 			sb.append("</td><td>");
 		}
 
 		if(canContainerVersion) {
-			if (canVersion)
-				if (versions != null) {
-					sb.append("<span class='text-muted small'>");
-					sb.append(versions.getRevisionNr());
-					sb.append("</span>");					
-				}
+			if (canVersion && versions != null) {
+				sb.append("<span class='text-muted small'>")
+				  .append(versions.getRevisionNr())
+				  .append("</span>");					
+			}
 			sb.append("</td><td>");
 		}
 		
 		//locked
-		boolean locked = lockManager.isLocked(child, metaInfo);
+		boolean locked = lockManager.isLocked(child, metadata);
 		if(locked) {
 			LockInfo lock = lockManager.getLock(child);
 			sb.append("<i class=\"o_icon o_icon_locked\" title=\"");

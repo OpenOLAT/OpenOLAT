@@ -26,11 +26,13 @@ import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
-import org.olat.core.util.vfs.meta.MetaInfo;
 import org.olat.test.OlatTestCase;
+import org.springframework.beans.factory.annotation.Autowired;
 
 
 /**
@@ -45,6 +47,9 @@ public class VFSTest extends OlatTestCase {
 	
 	private static final String VFS_TEST_DIR = "/vfstest";
 	
+	@Autowired
+	private VFSRepositoryService vfsRepositoryService;
+	
 	/**
 	 * Test the copyFrom method (inclusive copy of metadata)
 	 */
@@ -56,10 +61,10 @@ public class VFSTest extends OlatTestCase {
 		Assert.assertEquals(VFSConstants.YES, firstLeaf.canMeta());
 		prepareFile(firstLeaf);
 		
-		MetaInfo metaInfo = firstLeaf.getMetaInfo();
+		VFSMetadata metaInfo = firstLeaf.getMetaInfo();
 		metaInfo.setComment("A comment");
 		metaInfo.setCreator("Me");
-		Assert.assertTrue(metaInfo.write());
+		Assert.assertNotNull(vfsRepositoryService.updateMetadata(metaInfo));
 		
 		VFSContainer targetContainer = VFSManager.olatRootContainer(VFS_TEST_DIR + "/vfstarger" + UUID.randomUUID(), null);
 		Assert.assertEquals(VFSConstants.YES, targetContainer.canMeta());
@@ -71,7 +76,7 @@ public class VFSTest extends OlatTestCase {
 		VFSLeaf copiedLeaf = (VFSLeaf)copiedItem;
 		Assert.assertEquals(VFSConstants.YES, copiedLeaf.canMeta());
 		
-		MetaInfo copiedMetaInfo = copiedLeaf.getMetaInfo();
+		VFSMetadata copiedMetaInfo = copiedLeaf.getMetaInfo();
 		Assert.assertEquals("A comment", copiedMetaInfo.getComment());
 		Assert.assertEquals("Me", copiedMetaInfo.getCreator());
 	}
@@ -84,10 +89,10 @@ public class VFSTest extends OlatTestCase {
 		Assert.assertEquals(VFSConstants.YES, firstLeaf.canMeta());
 		prepareFile(firstLeaf);
 		
-		MetaInfo metaInfo = firstLeaf.getMetaInfo();
+		VFSMetadata metaInfo = firstLeaf.getMetaInfo();
 		metaInfo.setComment("my old comment");
 		metaInfo.setCreator("Always Me");
-		Assert.assertTrue(metaInfo.write());
+		Assert.assertNotNull(vfsRepositoryService.updateMetadata(metaInfo));
 		
 		String newName = UUID.randomUUID() + ".txt";
 		VFSStatus renamedStatus = firstLeaf.rename(newName);
@@ -97,7 +102,7 @@ public class VFSTest extends OlatTestCase {
 		Assert.assertTrue(renamedItem instanceof VFSLeaf);
 		VFSLeaf renamedLeaf = (VFSLeaf)renamedItem;
 		
-		MetaInfo renamedMetaInfo = renamedLeaf.getMetaInfo();
+		VFSMetadata renamedMetaInfo = renamedLeaf.getMetaInfo();
 		Assert.assertEquals("my old comment", renamedMetaInfo.getComment());
 		Assert.assertEquals("Always Me", renamedMetaInfo.getCreator());
 	}

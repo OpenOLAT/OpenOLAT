@@ -23,7 +23,7 @@ import java.text.Collator;
 import java.util.Comparator;
 import java.util.Locale;
 
-import org.olat.core.util.vfs.meta.MetaInfo;
+import org.olat.core.commons.services.vfs.VFSMetadata;
 
 /**
  * Compares the title of two MetaInfo objects based on a given collator
@@ -33,7 +33,7 @@ import org.olat.core.util.vfs.meta.MetaInfo;
  * 
  * @author gwassmann
  */
-public class MetaTitleComparator implements Comparator<MetaInfo> {
+public class MetaTitleComparator implements Comparator<VFSMetadata> {
 	private final Collator collator;
 
 	public MetaTitleComparator(Collator collator) {
@@ -45,7 +45,7 @@ public class MetaTitleComparator implements Comparator<MetaInfo> {
 	}
 
 	@Override
-	public int compare(MetaInfo m1, MetaInfo m2) {
+	public int compare(VFSMetadata m1, VFSMetadata m2) {
 		if(m1 == null) return -1;
 		if(m2 == null) return 1;
 		

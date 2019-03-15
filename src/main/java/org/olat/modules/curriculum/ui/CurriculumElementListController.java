@@ -289,7 +289,7 @@ public class CurriculumElementListController extends FormBasicController impleme
 		rows.forEach(row -> {
 			row.setParent(keyToRow.get(row.getParentKey()));
 			if(row.getOlatResource() != null) {
-				VFSLeaf image = repositoryManager.getImage(row.getRepositoryEntryResourceable());
+				VFSLeaf image = repositoryManager.getImage(row.getRepositoryEntryResourceable().getResourceableId(), row.getOlatResource());
 				if(image != null) {
 					row.setThumbnailRelPath(mapperThumbnailKey.getUrl() + "/" + image.getName());
 				}

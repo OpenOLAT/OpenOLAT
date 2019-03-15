@@ -28,12 +28,12 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
-import org.olat.core.util.vfs.meta.MetaInfo;
 
 /**
  * This TreeModel is intended for OlatRootFolderImpl and OlatRootFileImpl.
@@ -109,13 +109,13 @@ public class OlatRootFolderTreeModel extends GenericTreeModel {
 	 */
 	private OlatRootFolderTreeNode createNode(VFSItem item) {
 		OlatRootFolderTreeNode node = new OlatRootFolderTreeNode(item, this);
-		MetaInfo meta = item.getMetaInfo();
+		VFSMetadata meta = item.getMetaInfo();
 		if (meta != null) {
 			String title = meta.getTitle();
 			if (StringHelper.containsNonWhitespace(title)) {
 				node.setTitle(title);
 			} else {
-				node.setTitle(meta.getName());
+				node.setTitle(meta.getFilename());
 			}
 		}
 		node.setUserObject(item.getRelPath());

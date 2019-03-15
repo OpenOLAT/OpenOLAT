@@ -28,6 +28,8 @@ import java.util.Set;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.image.Size;
+import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -40,7 +42,6 @@ import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.meta.MetaInfo;
 import org.olat.modules.ceditor.InteractiveAddPageElementHandler;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementAddController;
@@ -91,6 +92,8 @@ public class ImageHandler extends AbstractMediaHandler implements PageElementSto
 	private MediaDAO mediaDao;
 	@Autowired
 	private PortfolioFileStorage fileStorage;
+	@Autowired
+	private VFSRepositoryService VFSRepositoryService;
 	
 	public ImageHandler() {
 		super(IMAGE_TYPE);
@@ -129,8 +132,7 @@ public class ImageHandler extends AbstractMediaHandler implements PageElementSto
 			VFSContainer storageContainer = fileStorage.getMediaContainer(media);
 			VFSItem item = storageContainer.resolve(media.getRootFilename());
 			if(item instanceof VFSLeaf && item.canMeta() == VFSConstants.YES) {
-				MetaInfo metaInfo = item.getMetaInfo();
-				thumbnail = metaInfo.getThumbnail(size.getHeight(), size.getWidth(), true);
+				thumbnail = VFSRepositoryService.getThumbnail((VFSLeaf)item, size.getHeight(), size.getWidth(), true);
 			}
 		}
 		
@@ -147,7 +149,7 @@ public class ImageHandler extends AbstractMediaHandler implements PageElementSto
 		String title = null;
 		String description = null;
 		if (mediaObject instanceof VFSLeaf && ((VFSLeaf)mediaObject).canMeta() == VFSConstants.YES) {
-			MetaInfo meta = ((VFSLeaf)mediaObject).getMetaInfo();
+			VFSMetadata meta = ((VFSLeaf)mediaObject).getMetaInfo();
 			title = meta.getTitle();
 			description = meta.getComment();
 		}

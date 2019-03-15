@@ -47,6 +47,8 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
+import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
@@ -61,7 +63,6 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSLockManager;
 import org.olat.core.util.vfs.callbacks.ReadOnlyCallback;
 import org.olat.core.util.vfs.filters.SystemItemFilter;
-import org.olat.core.util.vfs.meta.MetaInfo;
 import org.olat.core.util.vfs.version.Versionable;
 import org.olat.course.ICourse;
 import org.olat.course.config.CourseConfig;
@@ -108,6 +109,8 @@ public class CourseResourceFolderWebService {
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private VFSRepositoryService vfsRepositoryService;
 
 	/**
 	 * The version of the resources folders Web Service
@@ -371,9 +374,9 @@ public class CourseResourceFolderWebService {
 		}
 
 		if(newFile.canMeta() == VFSConstants.YES ) {
-			MetaInfo infos = newFile.getMetaInfo();
+			VFSMetadata infos = newFile.getMetaInfo();
 			infos.setAuthor(ureq.getIdentity());
-			infos.write();
+			vfsRepositoryService.updateMetadata(infos);
 		}
 
 		return Response.ok().build();

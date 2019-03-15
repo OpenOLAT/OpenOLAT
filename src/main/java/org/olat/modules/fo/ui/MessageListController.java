@@ -35,6 +35,8 @@ import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkResourceStat;
 import org.olat.core.commons.services.mark.MarkingService;
+import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -80,7 +82,6 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.core.util.vfs.filters.VFSItemMetaFilter;
-import org.olat.core.util.vfs.meta.MetaInfo;
 import org.olat.course.nodes.FOCourseNode;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.ForumCallback;
@@ -183,6 +184,8 @@ public class MessageListController extends BasicController implements GenericEve
 	private PortfolioV2Module portfolioModule;
 	@Autowired
 	private ForumMediaHandler forumMediaHandler;
+	@Autowired
+	private VFSRepositoryService vfsRepositoryService;
 	
 	public MessageListController(UserRequest ureq, WindowControl wControl,
 			Forum forum, ForumCallback foCallback) {
@@ -438,7 +441,7 @@ public class MessageListController extends BasicController implements GenericEve
 		}
 		
 		List<MarkResourceStat> statList = markingService.getMarkManager().getStats(forumOres, subPaths, getIdentity());
-		Map<String,MarkResourceStat> stats = new HashMap<String,MarkResourceStat>(statList.size() * 2 + 1);
+		Map<String,MarkResourceStat> stats = new HashMap<>(statList.size() * 2 + 1);
 		for(MarkResourceStat stat:statList) {
 			stats.put(stat.getSubPath(), stat);
 		}
@@ -1491,14 +1494,12 @@ public class MessageListController extends BasicController implements GenericEve
 					if (view != null) {
 						List<VFSItem> attachments = view.getAttachments();
 						for (VFSItem vfsItem : attachments) {
-							MetaInfo meta = vfsItem.getMetaInfo();
-							if (meta != null && meta.getUUID().equals(query[2])) {
-								if (meta.isThumbnailAvailable()) {
-									VFSLeaf thumb = meta.getThumbnail(200, 200, false);
-									if(thumb != null) {
-										// Positive lookup, send as response
-										return new VFSMediaResource(thumb);
-									}
+							VFSMetadata meta = vfsItem.getMetaInfo();
+							if (meta instanceof VFSLeaf && meta.getUuid().equals(query[2])) {
+								VFSLeaf thumb = vfsRepositoryService.getThumbnail((VFSLeaf)vfsItem, meta, 200, 200, false);
+								if(thumb != null) {
+									// Positive lookup, send as response
+									return new VFSMediaResource(thumb);
 								}
 								break;
 							}

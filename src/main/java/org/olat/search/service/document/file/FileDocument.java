@@ -29,11 +29,12 @@ import java.io.IOException;
 import java.util.Calendar;
 import java.util.Date;
 
+import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.id.User;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.meta.MetaInfo;
 import org.olat.search.model.OlatDocument;
 import org.olat.search.service.SearchResourceContext;
 import org.olat.search.service.SimpleDublinCoreMetadataFieldsProvider;
@@ -47,11 +48,11 @@ public abstract class FileDocument extends OlatDocument {
 	private static final long serialVersionUID = -8977326187286155071L;
 	// Must correspond with LocalString_xx.properties
 	// Do not use '_' because we want to seach for certain documenttype and lucene haev problems with '_' 
-	public final static String TYPE = "type.file";
+	public static final String TYPE = "type.file";
 	
 	protected void init(SearchResourceContext leafResourceContext, VFSLeaf leaf) throws IOException,DocumentException,DocumentAccessException {
 		// Load metadata for this file
-		MetaInfo meta = null;
+		VFSMetadata meta = null;
 		if (leaf.canMeta() == VFSConstants.YES) {
 			meta = leaf.getMetaInfo();
 		}
@@ -131,7 +132,23 @@ public abstract class FileDocument extends OlatDocument {
 			addMetadata(SimpleDublinCoreMetadataFieldsProvider.DC_SOURCE, meta.getSource());
 			addMetadata(SimpleDublinCoreMetadataFieldsProvider.DC_SOURCE, meta.getUrl());
 			// use creator and author as olat author 
-			setAuthor((meta.getCreator() == null ? meta.getAuthor() : meta.getAuthor() + " " + meta.getCreator()));
+			StringBuilder authors = new StringBuilder(64);
+			if(meta.getAuthor() != null) {
+				User user = meta.getAuthor().getUser();
+				if(StringHelper.containsNonWhitespace(user.getFirstName())) {
+					authors.append(user.getFirstName());
+				}
+				if(StringHelper.containsNonWhitespace(user.getLastName())) {
+					if(authors.length() > 0) authors.append(" ");
+					authors.append(user.getLastName());
+				}
+			}
+			
+			if(meta.getCreator() != null) {
+				if(authors.length() > 0) authors.append(" ");
+				authors.append(authors);
+			}
+			setAuthor(authors.toString());
 			addMetadata(SimpleDublinCoreMetadataFieldsProvider.DC_CREATOR, meta.getCreator());
 		}
 		// Add file type
@@ -140,8 +157,8 @@ public abstract class FileDocument extends OlatDocument {
 		
 		// License
 		String licenseTypeKey = "";
-		if (meta != null && StringHelper.containsNonWhitespace(meta.getLicenseTypeKey())) {
-			licenseTypeKey = meta.getLicenseTypeKey();
+		if (meta != null && meta.getLicenseType() != null) {
+			licenseTypeKey = meta.getLicenseType().getKey().toString();
 		}
 		setLicenseTypeKey(licenseTypeKey);
 	}

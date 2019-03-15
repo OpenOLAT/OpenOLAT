@@ -29,11 +29,7 @@ package org.olat.core.util.vfs.util;
 import org.olat.core.util.vfs.VFSContainer;
 
 /**
- * Description:<br>
- * TODO: HP_Besitzer Class Description for ContainerAndFile
- * 
- * <P>
- * Initial Date:  15.03.2006 <br>
+ * Initial Date:  15.03.2006
  *
  * @author HP_Besitzer
  */

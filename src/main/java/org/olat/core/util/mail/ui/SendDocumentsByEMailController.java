@@ -22,6 +22,7 @@ package org.olat.core.util.mail.ui;
 import java.io.File;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
@@ -36,6 +37,7 @@ import org.olat.core.commons.modules.bc.commands.FolderCommand;
 import org.olat.core.commons.modules.bc.commands.FolderCommandHelper;
 import org.olat.core.commons.modules.bc.commands.FolderCommandStatus;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
+import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -72,7 +74,6 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
-import org.olat.core.util.vfs.meta.MetaInfo;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -110,8 +111,7 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 	private BaseSecurity securityManager;
 
 	public SendDocumentsByEMailController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, null, Util.createPackageTranslator(MetaInfo.class, ureq.getLocale(),
-				Util.createPackageTranslator(MailModule.class, ureq.getLocale())));
+		super(ureq, wControl, null, Util.createPackageTranslator(MailModule.class, ureq.getLocale()));
 		setBasePackage(MailModule.class);
 
 		allowAttachments = !FolderConfig.getSendDocumentLinkOnly();
@@ -229,7 +229,7 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 		attachments = new ArrayList<>();
 		long fileSize = 0l;
 		for (VFSLeaf file : files) {
-			MetaInfo infos = null;
+			VFSMetadata infos = null;
 			if (file.canMeta() == VFSConstants.YES) {
 				infos = file.getMetaInfo();
 			}
@@ -270,7 +270,7 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 		bodyElement.setValue(bodySb.toString());
 	}
 
-	protected void appendToSubject(VFSLeaf file, MetaInfo infos, StringBuilder sb) {
+	protected void appendToSubject(VFSLeaf file, VFSMetadata infos, StringBuilder sb) {
 		if (sb.length() > 0)
 			sb.append(", ");
 		if (infos != null && StringHelper.containsNonWhitespace(infos.getTitle())) {
@@ -280,11 +280,11 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 		}
 	}
 
-	protected void appendMetadatas(VFSLeaf file, MetaInfo infos, StringBuilder sb) {
+	protected void appendMetadatas(VFSLeaf file, VFSMetadata infos, StringBuilder sb) {
 		if (infos == null) {
 			appendMetadata("mf.filename", file.getName(), sb);
 		} else {
-			appendMetadata("mf.filename", infos.getName(), sb);
+			appendMetadata("mf.filename", infos.getFilename(), sb);
 			String title = infos.getTitle();
 			if (StringHelper.containsNonWhitespace(title)) {
 				appendMetadata("mf.title", title, sb);
@@ -322,15 +322,15 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 			if (StringHelper.containsNonWhitespace(url)) {
 				appendMetadata("mf.url", url, sb);
 			}
-			String author = userManager.getUserDisplayName(infos.getAuthorIdentityKey());
+			String author = userManager.getUserDisplayName(infos.getAuthor());
 			if (StringHelper.containsNonWhitespace(author)) {
 				appendMetadata("mf.author", author, sb);
 			}
 			String size = Formatter.formatBytes(file.getSize());
 			appendMetadata("mf.size", size, sb);
-			long lastModifiedDate = infos.getLastModified();
-			if (lastModifiedDate > 0) {
-				appendMetadata("mf.lastModified", StringHelper.formatLocaleDate(lastModifiedDate, getLocale()), sb);
+			Date lastModifiedDate = infos.getFileLastModified();
+			if (lastModifiedDate != null) {
+				appendMetadata("mf.lastModified", Formatter.getInstance(getLocale()).formatDate(lastModifiedDate), sb);
 			}
 			String type = FolderHelper.extractFileType(file.getName(), getLocale());
 			if (StringHelper.containsNonWhitespace(type)) {
@@ -347,7 +347,7 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 		sb.append(translate(i18nKey)).append(": ").append(value).append('\n');
 	}
 
-	protected void appendPublicationDate(MetaInfo infos, StringBuilder sb) {
+	protected void appendPublicationDate(VFSMetadata infos, StringBuilder sb) {
 		String[] publicationDate = infos.getPublicationDate();
 		if (publicationDate == null || publicationDate.length != 2)
 			return;
@@ -411,7 +411,7 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 
 		List<Identity> invalidTos = getInvalidToAddressesFromTextBoxList();
 		userListBox.clearError();
-		if (invalidTos.size() > 0) {
+		if (!invalidTos.isEmpty()) {
 			String[] invalidTosArray = new String[invalidTos.size()];
 			userListBox.setErrorKey("mailhelper.error.addressinvalid", invalidTos.toArray(invalidTosArray));
 			allOk &= false;

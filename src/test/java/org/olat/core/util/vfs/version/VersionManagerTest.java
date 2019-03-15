@@ -40,6 +40,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
@@ -47,7 +49,6 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.filters.SystemItemFilter;
-import org.olat.core.util.vfs.meta.MetaInfo;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,6 +72,8 @@ public class VersionManagerTest extends OlatTestCase {
 	private VersionsFileManager versionsManager;
 	@Autowired
 	private SimpleVersionConfig versioningConfigurator;
+	@Autowired
+	private VFSRepositoryService vfsRepositoryService;
 	
 	@Before
 	public void setUp() throws Exception {
@@ -118,10 +121,7 @@ public class VersionManagerTest extends OlatTestCase {
 		VFSContainer rootTest = VFSManager.olatRootContainer("/test", null);
 		String filename = getRandomName();
 		VFSLeaf file = rootTest.createChildLeaf(filename);
-		OutputStream out = file.getOutputStream(false);
-		InputStream in = VersionManagerTest.class.getResourceAsStream("test.txt");
-		int byteCopied = IOUtils.copy(in, out);
-		in.close();
+		int byteCopied = copyTestTxt(file);
 		assertFalse(byteCopied == 0);
 		assertTrue(file instanceof Versionable);
 		
@@ -153,7 +153,7 @@ public class VersionManagerTest extends OlatTestCase {
 		
 		VFSRevision revision0 = revisions.get(0);
 		//we don't set an author for the original file
-		assertEquals("-", revision0.getAuthor());
+		assertNull(null, revision0.getAuthor());
 		VFSRevision revision1 = revisions.get(1);
 		assertEquals(id2.getName(), revision1.getAuthor());
 		VFSRevision revision2 = revisions.get(2);
@@ -175,10 +175,7 @@ public class VersionManagerTest extends OlatTestCase {
 		VFSContainer rootTest = VFSManager.olatRootContainer("/test_" + UUID.randomUUID(), null);
 		String filename = getRandomName();
 		VFSLeaf file = rootTest.createChildLeaf(filename);
-		OutputStream out = file.getOutputStream(false);
-		InputStream in = VersionManagerTest.class.getResourceAsStream("test.txt");
-		int byteCopied = IOUtils.copy(in, out);
-		in.close();
+		int byteCopied = copyTestTxt(file);
 		assertFalse(byteCopied == 0);
 		assertTrue(file instanceof Versionable);
 		
@@ -212,10 +209,7 @@ public class VersionManagerTest extends OlatTestCase {
 		VFSContainer rootTest = VFSManager.olatRootContainer("/test_" + UUID.randomUUID(), null);
 		String filename = getRandomName();
 		VFSLeaf file = rootTest.createChildLeaf(filename);
-		OutputStream out = file.getOutputStream(false);
-		InputStream in = VersionManagerTest.class.getResourceAsStream("test.txt");
-		int byteCopied = IOUtils.copy(in, out);
-		in.close();
+		int byteCopied = copyTestTxt(file);
 		assertFalse(byteCopied == 0);
 		assertTrue(file instanceof Versionable);
 		
@@ -239,10 +233,7 @@ public class VersionManagerTest extends OlatTestCase {
 		VFSContainer rootTest = VFSManager.olatRootContainer("/ver-" + UUID.randomUUID(), null);
 		String filename = getRandomName();
 		VFSLeaf file = rootTest.createChildLeaf(filename);
-		OutputStream out = file.getOutputStream(false);
-		InputStream in = VersionManagerTest.class.getResourceAsStream("test.txt");
-		int byteCopied = IOUtils.copy(in, out);
-		in.close();
+		int byteCopied = copyTestTxt(file);
 		assertFalse(byteCopied == 0);
 		assertTrue(file instanceof Versionable);
 		
@@ -291,10 +282,7 @@ public class VersionManagerTest extends OlatTestCase {
 		VFSContainer rootTest = VFSManager.olatRootContainer("/ver-" + UUID.randomUUID(), null);
 		String filename = getRandomName();
 		VFSLeaf file = rootTest.createChildLeaf(filename);
-		OutputStream out = file.getOutputStream(false);
-		InputStream in = VersionManagerTest.class.getResourceAsStream("test.txt");
-		int byteCopied = IOUtils.copy(in, out);
-		in.close();
+		int byteCopied = copyTestTxt(file);
 		assertFalse(byteCopied == 0);
 		assertTrue(file instanceof Versionable);
 		
@@ -355,10 +343,7 @@ public class VersionManagerTest extends OlatTestCase {
 		VFSContainer rootTest = VFSManager.olatRootContainer("/ver-" + UUID.randomUUID(), null);
 		String filename = getRandomName();
 		VFSLeaf file = rootTest.createChildLeaf(filename);
-		OutputStream out = file.getOutputStream(false);
-		InputStream in = new ByteArrayInputStream("Hello original".getBytes());
-		int byteCopied = IOUtils.copy(in, out);
-		in.close();
+		int byteCopied = copyTestTxt(file);
 		assertFalse(byteCopied == 0);
 		assertTrue(file instanceof Versionable);
 		
@@ -424,19 +409,16 @@ public class VersionManagerTest extends OlatTestCase {
 		VFSContainer rootTest = VFSManager.olatRootContainer("/test2", null);
 		String filename = getRandomName();
 		VFSLeaf file = rootTest.createChildLeaf(filename);
-		OutputStream out = file.getOutputStream(false);
-		InputStream in = VersionManagerTest.class.getResourceAsStream("test.txt");
-		int byteCopied = IOUtils.copy(in, out);
-		in.close();
+		int byteCopied = copyTestTxt(file);
 		assertFalse(byteCopied == 0);
 		assertTrue(file instanceof Versionable);
 		assertEquals(VFSConstants.YES, file.canMeta());
 		
 		//set the author
-		MetaInfo metaInfo = file.getMetaInfo();
+		VFSMetadata metaInfo = file.getMetaInfo();
 		metaInfo.setAuthor(id1);
 		metaInfo.setCreator(id1.getName());
-		metaInfo.write();
+		metaInfo = vfsRepositoryService.updateMetadata(metaInfo);
 		
 		//save a first version -> id2
 		Versionable versionedFile1 = (Versionable)file;
@@ -483,19 +465,16 @@ public class VersionManagerTest extends OlatTestCase {
 		VFSContainer rootTest = VFSManager.olatRootContainer("/test2", null);
 		String filename = getRandomName();
 		VFSLeaf file = rootTest.createChildLeaf(filename);
-		OutputStream out = file.getOutputStream(false);
-		InputStream in = VersionManagerTest.class.getResourceAsStream("test.txt");
-		int byteCopied = IOUtils.copy(in, out);
-		in.close();
+		int byteCopied = copyTestTxt(file);
 		assertFalse(byteCopied == 0);
 		assertTrue(file instanceof Versionable);
 		assertEquals(VFSConstants.YES, file.canMeta());
 		
 		//set the author
-		MetaInfo metaInfo = file.getMetaInfo();
+		VFSMetadata metaInfo = file.getMetaInfo();
 		metaInfo.setAuthor(id1);
 		metaInfo.setCreator(id1.getName());
-		metaInfo.write();
+		metaInfo = vfsRepositoryService.updateMetadata(metaInfo);
 		
 		//save a first version -> id2
 		Versionable versionedFile1 = (Versionable)file;
@@ -550,19 +529,16 @@ public class VersionManagerTest extends OlatTestCase {
 		VFSContainer rootTest = VFSManager.olatRootContainer("/test2", null);
 		String filename = getRandomName();
 		VFSLeaf file = rootTest.createChildLeaf(filename);
-		OutputStream out = file.getOutputStream(false);
-		InputStream in = VersionManagerTest.class.getResourceAsStream("test.txt");
-		int byteCopied = IOUtils.copy(in, out);
-		in.close();
+		int byteCopied = copyTestTxt(file);
 		assertFalse(byteCopied == 0);
 		assertTrue(file instanceof Versionable);
 		assertEquals(VFSConstants.YES, file.canMeta());
 		
 		//set the author
-		MetaInfo metaInfo = file.getMetaInfo();
+		VFSMetadata metaInfo = file.getMetaInfo();
 		metaInfo.setAuthor(id1);
 		metaInfo.setCreator(id1.getName());
-		metaInfo.write();
+		metaInfo = vfsRepositoryService.updateMetadata(metaInfo);
 		
 		//save a first version of file A -> id2
 		Versionable versionedFile1 = (Versionable)file;
@@ -616,6 +592,15 @@ public class VersionManagerTest extends OlatTestCase {
 		//current
 		assertEquals(id1.getName(), versions.getCreator());
 		assertEquals(id2.getName(), versions.getAuthor());
+	}
+	
+	private int copyTestTxt(VFSLeaf file) {
+		try(OutputStream out = file.getOutputStream(false);
+				InputStream in = VersionManagerTest.class.getResourceAsStream("test.txt")) {
+			return IOUtils.copy(in, out);
+		} catch(IOException e) {
+			return -1;
+		}
 	}
 	
 	private String getRandomName() {

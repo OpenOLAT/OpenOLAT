@@ -23,6 +23,7 @@ import java.io.File;
 
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -32,7 +33,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.util.vfs.meta.MetaInfoFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -47,7 +47,7 @@ public class BriefcaseAdminController extends FormBasicController {
 	@Autowired
 	private TaskExecutorManager taskExecutor;
 	@Autowired
-	private MetaInfoFactory metaInfoFactory;
+	private VFSRepositoryService vfsRepositoryService;
 
 	public BriefcaseAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "bc_admin");
@@ -88,23 +88,10 @@ public class BriefcaseAdminController extends FormBasicController {
 			logInfo("Start reset of thumbnails", null);
 			
 			String metaRoot = FolderConfig.getCanonicalMetaRoot();
-			File metaRootFile = new File(metaRoot);
-			resetThumbnails(metaRootFile);
+			vfsRepositoryService.resetThumbnails(new File(metaRoot));
 			flc.contextPut("recalculating", Boolean.FALSE);
 			
 			logInfo("Finished reset of thumbnails in " + (System.currentTimeMillis() - start) + " (ms)", null);
-		}
-			
-		private void resetThumbnails(File directory) {
-			for(File file:directory.listFiles()) {
-				if(file.isHidden()) {
-					//do nothing
-				} else if(file.isDirectory()) {
-					resetThumbnails(file);
-				} else if(file.getName().endsWith(".xml")) {
-					metaInfoFactory.resetThumbnails(file);
-				}
-			}
 		}
 	}
 }

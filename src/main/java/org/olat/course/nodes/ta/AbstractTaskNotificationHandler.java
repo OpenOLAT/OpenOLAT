@@ -44,6 +44,7 @@ import org.olat.core.commons.services.notifications.manager.NotificationsUpgrade
 import org.olat.core.commons.services.notifications.model.SubscriptionListItem;
 import org.olat.core.commons.services.notifications.model.TitleItem;
 import org.olat.core.commons.services.notifications.ui.ContextualSubscriptionController;
+import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
@@ -53,7 +54,6 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.core.util.vfs.meta.MetaInfo;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 
@@ -101,7 +101,7 @@ public abstract class AbstractTaskNotificationHandler {
 				SubscriptionListItem subListItem;
 				for (Iterator<FileInfo> it_infos = fInfos.iterator(); it_infos.hasNext();) {
 					FileInfo fi = it_infos.next();
-					MetaInfo metaInfo = fi.getMetaInfo();
+					VFSMetadata metaInfo = fi.getMetaInfo();
 					String filePath = fi.getRelPath();
 					if(logDebug) log.debug("filePath=", filePath);
 					String fullUserName = getUserNameFromFilePath(metaInfo, filePath);
@@ -134,12 +134,11 @@ public abstract class AbstractTaskNotificationHandler {
 	 * @param filePath E.g. '/username/abgabe.txt'
 	 * @return 'firstname lastname'
 	 */
-	protected String getUserNameFromFilePath(MetaInfo info, String filePath) {
+	protected String getUserNameFromFilePath(VFSMetadata info, String filePath) {
 		// remove first '/'
 		try {
 			if(info != null) {
-				Long identityKey = info.getAuthorIdentityKey();
-				return NotificationHelper.getFormatedName(identityKey);
+				return NotificationHelper.getFormatedName(info.getAuthor());
 			}
 
 			String path = filePath.substring(1);

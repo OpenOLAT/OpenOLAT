@@ -30,6 +30,8 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -40,7 +42,6 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
-import org.olat.core.util.vfs.meta.MetaInfo;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentManager;
@@ -374,8 +375,8 @@ public class ConvertToGTACourseNode {
 		VFSItem sourceItem = source.resolve(name);
 		VFSItem targetItem = target.resolve(name);
 		if(sourceItem.canMeta() == VFSConstants.YES && targetItem.canMeta() == VFSConstants.YES) {
-			MetaInfo metaSource = sourceItem.getMetaInfo();
-			MetaInfo metaTarget = targetItem.getMetaInfo();
+			VFSMetadata metaSource = sourceItem.getMetaInfo();
+			VFSMetadata metaTarget = targetItem.getMetaInfo();
 			
 			if(metaSource != null) {
 				if(taskDef != null) {
@@ -391,7 +392,7 @@ public class ConvertToGTACourseNode {
 				
 				if(metaTarget != null) {
 					metaTarget.copyValues(metaSource);
-					metaTarget.write();
+					CoreSpringFactory.getImpl(VFSRepositoryService.class).updateMetadata(metaTarget);
 				}	
 			}	
 		}

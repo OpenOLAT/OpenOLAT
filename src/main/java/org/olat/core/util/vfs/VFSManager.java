@@ -36,7 +36,9 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
@@ -57,6 +59,11 @@ public class VFSManager {
 	 */
 	public static LocalFileImpl olatRootLeaf(String fileRelPath) {
 		File file = new File(FolderConfig.getCanonicalRoot() + fileRelPath);
+		return new LocalFileImpl(file, null);
+	}
+	
+	public static LocalFileImpl olatRootLeaf(String relPath, String filename) {
+		File file = new File(FolderConfig.getCanonicalRoot() + relPath, filename);
 		return new LocalFileImpl(file, null);
 	}
 	
@@ -723,8 +730,7 @@ public class VFSManager {
 			}
 			
 			if(withMetadata && source.canMeta() == VFSConstants.YES && target.canMeta() == VFSConstants.YES) {
-				VFSContainer parentTargetContainer = target.getParentContainer();
-				source.getMetaInfo().moveCopyToDir(parentTargetContainer, false);
+				CoreSpringFactory.getImpl(VFSRepositoryService.class).copyTo(source, target, target.getParentContainer());
 			}
 		} else {
 			// source or target is null

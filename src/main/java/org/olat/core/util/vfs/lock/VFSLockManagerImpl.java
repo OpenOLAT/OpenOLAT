@@ -28,6 +28,9 @@ import java.util.UUID;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.commons.services.webdav.manager.VFSResource;
 import org.olat.core.commons.services.webdav.servlets.WebResource;
 import org.olat.core.helpers.Settings;
@@ -37,12 +40,16 @@ import org.olat.core.util.vfs.LocalImpl;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLockManager;
-import org.olat.core.util.vfs.meta.MetaInfo;
-import org.olat.core.util.vfs.meta.MetaInfoFileImpl;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service("vfsLockManager")
 public class VFSLockManagerImpl implements VFSLockManager {
+	
+	@Autowired
+	private DB dbInstance;
+	@Autowired
+	private VFSRepositoryService fileService;
 
     /**
      * Repository of the locks put on single resources.
@@ -70,6 +77,9 @@ public class VFSLockManagerImpl implements VFSLockManager {
      * Value : LockInfo
      */
     private Vector<LockInfo> collectionLocks = new Vector<>();
+    
+    @Autowired
+    private VFSRepositoryService vfsRepositoryService;
 
 	@Override
 	public boolean isLocked(VFSItem item) {
@@ -77,7 +87,7 @@ public class VFSLockManagerImpl implements VFSLockManager {
 	}
 
 	@Override
-	public boolean isLocked(VFSItem item, MetaInfo loadedInfo) {
+	public boolean isLocked(VFSItem item, VFSMetadata loadedInfo) {
 		File file = extractFile(item);
     	if(file != null && fileLocks.containsKey(file)) {
     		LockInfo lock = fileLocks.get(file);
@@ -89,7 +99,7 @@ public class VFSLockManagerImpl implements VFSLockManager {
             }
     	}
 
-		Long lockedBy = getMetaLockedBy(item, loadedInfo);
+		Identity lockedBy = getMetaLockedBy(item, loadedInfo);
 		return (lockedBy != null);
 	}
 	
@@ -102,7 +112,7 @@ public class VFSLockManagerImpl implements VFSLockManager {
 	 * @return true If the lock owner is someone else or if it's a WebDAV lock
 	 */
 	@Override
-	public boolean isLockedForMe(VFSItem item, MetaInfo loadedInfo, Identity me, Roles roles) {
+	public boolean isLockedForMe(VFSItem item, VFSMetadata loadedInfo, Identity me, Roles roles) {
 		File file = extractFile(item);
     	if(file != null && fileLocks.containsKey(file)) {
     		LockInfo lock = fileLocks.get(file);
@@ -115,13 +125,13 @@ public class VFSLockManagerImpl implements VFSLockManager {
             }
     	}
 
-		Long lockedBy = getMetaLockedBy(item, loadedInfo);
-		return (lockedBy != null && !lockedBy.equals(me.getKey()));
+		Identity lockedBy = getMetaLockedBy(item, loadedInfo);
+		return (lockedBy != null && !lockedBy.getKey().equals(me.getKey()));
 	}
 
-	private Long getMetaLockedBy(VFSItem item, MetaInfo loadedInfo) {
-		MetaInfoFileImpl info = loadedInfo == null ? getMetaInfo(item) : (MetaInfoFileImpl)loadedInfo;
-		Long lockedBy = null;
+	private Identity getMetaLockedBy(VFSItem item, VFSMetadata loadedInfo) {
+		VFSMetadata info = loadedInfo == null ? getMetaInfo(item) : loadedInfo;
+		Identity lockedBy = null;
 		if(info != null) {
 			if(!info.isLocked()) {
 				return null;
@@ -131,22 +141,24 @@ public class VFSLockManagerImpl implements VFSLockManager {
 		return lockedBy;
 	}
 	
-	private MetaInfoFileImpl getMetaInfo(VFSItem item) {
-		MetaInfo info = null;
+	private VFSMetadata getMetaInfo(VFSItem item) {
+		VFSMetadata info = null;
 		if (item != null && item.canMeta() == VFSConstants.YES) {
-			info = item.getMetaInfo();
+			info = fileService.getMetadataFor(item);
 		}
-		return (MetaInfoFileImpl)info;
+		return info;
 	}
 	
     @Override
 	public boolean lock(VFSItem item, Identity identity, Roles roles) {
 		if (item != null && item.canMeta() == VFSConstants.YES) {
-			MetaInfoFileImpl info = (MetaInfoFileImpl)item.getMetaInfo();
-			info.setLockedBy(identity.getKey());
+			VFSMetadata info = item.getMetaInfo();
+			info.setLockedBy(identity);
 			info.setLockedDate(new Date());
 			info.setLocked(true);
-			info.write();
+			vfsRepositoryService.updateMetadata(info);
+			dbInstance.commit();
+			System.out.println("lock:" + info.getKey());
 			
 			File file = extractFile(item);
 			if(file != null && fileLocks.containsKey(file)) {
@@ -169,13 +181,14 @@ public class VFSLockManagerImpl implements VFSLockManager {
 	@Override
 	public boolean unlock(VFSItem item, Identity identity, Roles roles) {
 		if (item != null && item.canMeta() == VFSConstants.YES) {
-			MetaInfoFileImpl info = (MetaInfoFileImpl)item.getMetaInfo();
+			VFSMetadata info = item.getMetaInfo();
 			if(info == null) return false;
 			
 			info.setLockedBy(null);
 			info.setLockedDate(null);
 			info.setLocked(false);
-			info.write();
+			vfsRepositoryService.updateMetadata(info);
+			dbInstance.commit();
 			
 			boolean unlocked = false;
 			File file = extractFile(item);
@@ -223,7 +236,7 @@ public class VFSLockManagerImpl implements VFSLockManager {
      */
     public LockInfo getVFSLock(WebResource resource) {
     	VFSItem item = extractItem(resource);
-		MetaInfoFileImpl info = getMetaInfo(item);
+    	VFSMetadata info = getMetaInfo(item);
     	if(info != null && info.isLocked()) {
         	File file = extractFile(item);
         	LockInfo lock = null;
@@ -237,7 +250,7 @@ public class VFSLockManagerImpl implements VFSLockManager {
 	    		lock = new LockInfo(info.getLockedBy(), false, true);
 	    		lock.setWebResource(resource);
 	    		lock.setCreationDate(info.getLockedDate());
-	    		lock.setOwner(Settings.getServerContextPathURI() + "/Identity/" + info.getLockedBy());
+	    		lock.setOwner(Settings.getServerContextPathURI() + "/Identity/" + info.getLockedBy().getKey());
 	    		lock.setDepth(1);
 	    		lock.addToken(generateLockToken(lock, info.getLockedBy()));
 	    		fileLocks.put(file, lock);
@@ -257,11 +270,11 @@ public class VFSLockManagerImpl implements VFSLockManager {
     		}
     	}
     	
-    	MetaInfoFileImpl info = getMetaInfo(item);
+    	VFSMetadata info = getMetaInfo(item);
     	if(info != null && info.isLocked()) {
     		LockInfo lock = new LockInfo(info.getLockedBy(), false, true);
     		lock.setCreationDate(info.getLockedDate());
-    		lock.setOwner(Settings.getServerContextPathURI() + "/Identity/" + info.getLockedBy());
+    		lock.setOwner(Settings.getServerContextPathURI() + "/Identity/" + info.getLockedBy().getKey());
     		lock.setDepth(1);
     		lock.addToken(generateLockToken(lock, info.getLockedBy()));
     		fileLocks.put(file, lock);
@@ -276,7 +289,7 @@ public class VFSLockManagerImpl implements VFSLockManager {
 	 * + time in milliseconds seems to disturb the WebDAV client of Mac OS X 10.9
 	 */
 	@Override
-    public String generateLockToken(LockInfo lock, Long identityKey) {
+    public String generateLockToken(LockInfo lock, Identity identity) {
     	return UUID.randomUUID().toString();
     }
     
@@ -367,8 +380,8 @@ public class VFSLockManagerImpl implements VFSLockManager {
     	//check if someone else as not set a lock on the resource
     	if(resource instanceof VFSResource) {
     		VFSResource vfsResource = (VFSResource)resource;
-    		Long lockedBy = getMetaLockedBy(vfsResource.getItem(), null);
-    		if(lockedBy != null && !lockedBy.equals(identity.getKey())) {
+    		Identity lockedBy = getMetaLockedBy(vfsResource.getItem(), null);
+    		if(lockedBy != null && !lockedBy.getKey().equals(identity.getKey())) {
     			return true;
     		}
     	}

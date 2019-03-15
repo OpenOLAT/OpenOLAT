@@ -22,6 +22,7 @@ package org.olat.repository.ui;
 import javax.servlet.http.HttpServletRequest;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
@@ -30,7 +31,6 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
-import org.olat.core.util.vfs.meta.MetaInfo;
 import org.olat.repository.manager.CatalogManager;
 
 
@@ -43,6 +43,7 @@ import org.olat.repository.manager.CatalogManager;
 public class CatalogEntryImageMapper implements Mapper {
 	
 	private CatalogManager catalogManager;
+	private VFSRepositoryService vfsRepositoryService;
 	
 	public CatalogEntryImageMapper() {
 		catalogManager = CoreSpringFactory.getImpl(CatalogManager.class);
@@ -60,8 +61,7 @@ public class CatalogEntryImageMapper implements Mapper {
 		MediaResource resource = null;
 		if(image instanceof  VFSLeaf) {
 			if(image.canMeta() == VFSConstants.YES) {
-				MetaInfo info = image.getMetaInfo();
-				VFSLeaf thumbnail = info.getThumbnail(180, 180, true);
+				VFSLeaf thumbnail = vfsRepositoryService.getThumbnail((VFSLeaf)image, 180, 180, true);
 				if(thumbnail != null) {
 					resource = new VFSMediaResource(thumbnail);
 				}

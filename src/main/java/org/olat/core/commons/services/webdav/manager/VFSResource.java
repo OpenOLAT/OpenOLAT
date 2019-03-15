@@ -25,6 +25,8 @@ import java.nio.file.Files;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Date;
 
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.commons.services.webdav.servlets.ConcurrentDateFormat;
 import org.olat.core.commons.services.webdav.servlets.WebResource;
 import org.olat.core.logging.OLog;
@@ -34,7 +36,6 @@ import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.meta.MetaInfo;
 
 /**
  * 
@@ -151,9 +152,7 @@ public class VFSResource implements WebResource {
 	public void increaseDownloadCount() {
 		try {
 			if (item instanceof VFSLeaf && item.canMeta() == VFSConstants.YES) {
-				MetaInfo meta = item.getMetaInfo();
-				meta.increaseDownloadCount();
-				meta.write();
+				CoreSpringFactory.getImpl(VFSRepositoryService.class).increaseDownloadCount(item);
 			}
 		} catch (Exception e) {
 			log.error("Cannot increase download counter: " + item, e);

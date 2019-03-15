@@ -35,6 +35,8 @@ import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
+import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.Controller;
@@ -55,7 +57,7 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
-import org.olat.core.util.vfs.meta.MetaInfo;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class CmdUnzip extends BasicController implements FolderCommand {
 
@@ -63,6 +65,9 @@ public class CmdUnzip extends BasicController implements FolderCommand {
 	
 	private Translator translator;
 	private DialogBoxController lockedFiledCtr;
+	
+	@Autowired
+	private VFSRepositoryService vfsRepositoryService;
 	
 	public CmdUnzip(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -201,10 +206,10 @@ public class CmdUnzip extends BasicController implements FolderCommand {
 				return false;
 			}
 		} else if (zipContainer.canMeta() == VFSConstants.YES) {
-			MetaInfo info = zipContainer.getMetaInfo();
+			VFSMetadata info = zipContainer.getMetaInfo();
 			if(info != null && ureq.getIdentity() != null) {
 				info.setAuthor(ureq.getIdentity());
-				info.write();
+				vfsRepositoryService.updateMetadata(info);
 			}
 		}
 		

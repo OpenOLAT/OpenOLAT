@@ -35,6 +35,8 @@ import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.license.LicenseType;
 import org.olat.core.commons.services.license.ui.LicenseSelectionConfig;
 import org.olat.core.commons.services.license.ui.LicenseUIFactory;
+import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -61,8 +63,6 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSLockManager;
 import org.olat.core.util.vfs.lock.LockInfo;
-import org.olat.core.util.vfs.meta.MetaInfo;
-import org.olat.core.util.vfs.meta.MetaInfoFactory;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -76,7 +76,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class MetaInfoFormController extends FormBasicController {
 	private VFSItem item;
-	//private MetaInfo meta;
 	private FormLink moreMetaDataLink;
 	private String initialFilename;
 	private TextElement filename, title, publisher, creator, sourceEl, city, pages, language, url, comment, publicationMonth, publicationYear;
@@ -96,7 +95,7 @@ public class MetaInfoFormController extends FormBasicController {
 	@Autowired
 	private VFSLockManager vfsLockManager;
 	@Autowired
-	private MetaInfoFactory metaInfoFactory;
+	private VFSRepositoryService vfsRepositoryService;
 	@Autowired
 	private LicenseModule licenseModule;
 	@Autowired
@@ -187,7 +186,7 @@ public class MetaInfoFormController extends FormBasicController {
 		}
 		setFormContextHelp("Folders#_metadata");
 		
-		MetaInfo meta = item == null ? null : item.getMetaInfo();
+		VFSMetadata meta = item == null ? null : item.getMetaInfo();
 
 		// title
 		String titleVal = (meta != null ? meta.getTitle() : null);
@@ -206,7 +205,7 @@ public class MetaInfoFormController extends FormBasicController {
 		
 		// license
 		if (licenseModule.isEnabled(licenseHandler)) {
-			License license = metaInfoFactory.getOrCreateLicense(meta, getIdentity());
+			License license = vfsRepositoryService.getOrCreateLicense(meta, getIdentity());
 
 			LicenseSelectionConfig licenseSelectionConfig = LicenseUIFactory
 					.createLicenseSelectionConfig(licenseHandler, license.getLicenseType());
@@ -272,7 +271,8 @@ public class MetaInfoFormController extends FormBasicController {
 		url = uifactory.addTextElement("url", "mf.url", -1, urlVal, formLayout);	
 
 		/* static fields */
-		String sizeText, typeText;
+		String sizeText;
+		String typeText;
 		if (item instanceof VFSLeaf) {
 			sizeText = Formatter.formatBytes(((VFSLeaf) item).getSize());
 			typeText = FolderHelper.extractFileType(item.getName(), getLocale());
@@ -299,7 +299,7 @@ public class MetaInfoFormController extends FormBasicController {
 
 		if (!isSubform) {
 
-			if(meta != null && !meta.isDirectory()) {
+			if(meta != null && !(item instanceof VFSContainer)) {
 				LockInfo lock = vfsLockManager.getLock(item);
 				//locked
 				String lockedTitle = getTranslator().translate("mf.locked");
@@ -331,14 +331,14 @@ public class MetaInfoFormController extends FormBasicController {
 			}
 			
 			// username
-			String author = userManager.getUserDisplayName(meta == null ? null : meta.getAuthorIdentityKey());
+			String author = userManager.getUserDisplayName(meta == null ? null : meta.getAuthor());
 			uifactory.addStaticTextElement("mf.author", StringHelper.escapeHtml(author), formLayout);
 
 			// filesize
 			uifactory.addStaticTextElement("mf.size", StringHelper.escapeHtml(sizeText), formLayout);
 
 			// last modified date
-			String lastModified = meta == null ? "" : StringHelper.formatLocaleDate(meta.getLastModified(), getLocale());
+			String lastModified = meta == null ? "" : Formatter.getInstance(getLocale()).formatDate(meta.getFileLastModified());
 			uifactory.addStaticTextElement("mf.lastModified", lastModified, formLayout);
 
 			// file type
@@ -362,7 +362,7 @@ public class MetaInfoFormController extends FormBasicController {
 			formLayout.add(extUrlCont);
 		}
 
-		if (!isSubform && meta != null && meta.isDirectory()) {
+		if (!isSubform && meta != null && item instanceof VFSContainer) {
 			// Don't show any meta data except title and comment if the item is
 			// a directory.
 			// Hide the metadata.
@@ -384,13 +384,13 @@ public class MetaInfoFormController extends FormBasicController {
 	/**
 	 * @return True if one or more metadata fields are non-emtpy.
 	 */
-	private boolean hasMetadata(MetaInfo meta) {
+	private boolean hasMetadata(VFSMetadata meta) {
 		if (meta != null) { return StringHelper.containsNonWhitespace(meta.getCreator())
 				|| StringHelper.containsNonWhitespace(meta.getPublisher()) || StringHelper.containsNonWhitespace(meta.getSource())
 				|| StringHelper.containsNonWhitespace(meta.getCity()) || StringHelper.containsNonWhitespace(meta.getPublicationDate()[0])
 				|| StringHelper.containsNonWhitespace(meta.getPublicationDate()[1]) || StringHelper.containsNonWhitespace(meta.getPages())
 				|| StringHelper.containsNonWhitespace(meta.getLanguage()) || StringHelper.containsNonWhitespace(meta.getUrl())
-				|| StringHelper.containsNonWhitespace(meta.getLicenseTypeKey()) || StringHelper.containsNonWhitespace(meta.getLicenseTypeName())
+				|| meta.getLicenseType() != null || StringHelper.containsNonWhitespace(meta.getLicenseTypeName())
 				|| StringHelper.containsNonWhitespace(meta.getLicenseText()) || StringHelper.containsNonWhitespace(meta.getLicensor());
 				}
 		return false;
@@ -432,7 +432,7 @@ public class MetaInfoFormController extends FormBasicController {
 		filename.setValue(name);
 	}
 	
-	public MetaInfo getMetaInfo(MetaInfo meta) {
+	public VFSMetadata getMetaInfo(VFSMetadata meta) {
 		meta.setCreator(creator.getValue());
 		meta.setComment(comment.getValue());
 		meta.setTitle(title.getValue());
@@ -444,7 +444,7 @@ public class MetaInfoFormController extends FormBasicController {
 		meta.setUrl(url.getValue());
 		meta.setPages(pages.getValue());
 		License license = getLicenseFromFormItems();
-		meta.setLicenseTypeKey(license.getLicenseType() != null? String.valueOf(license.getLicenseType().getKey()): "");
+		meta.setLicenseType(license.getLicenseType() == null ? null : license.getLicenseType());
 		meta.setLicenseTypeName(license.getLicenseType() != null? license.getLicenseType().getName(): "");
 		meta.setLicensor(license.getLicensor() != null? license.getLicensor(): "");
 		meta.setLicenseText(LicenseUIFactory.getLicenseText(license));
@@ -478,7 +478,7 @@ public class MetaInfoFormController extends FormBasicController {
 	/**
 	 * @return The updated MeatInfo object
 	 */
-	public MetaInfo getMetaInfo() {
+	public VFSMetadata getMetaInfo() {
 		if (!isSubform && (item instanceof VFSLeaf) && (locked != null && locked.isEnabled())) {
 			//isSubForm
 			boolean alreadyLocked = vfsLockManager.isLocked(item);
@@ -492,7 +492,7 @@ public class MetaInfoFormController extends FormBasicController {
 			}
 		}
 		
-		MetaInfo meta = item == null ? null : item.getMetaInfo();
+		VFSMetadata meta = item == null ? null : item.getMetaInfo();
 		if(meta == null) {
 			return null;
 		}
@@ -501,7 +501,7 @@ public class MetaInfoFormController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean valid = true;
+		boolean valid = super.validateFormLogic(ureq);
 
 		// validate publication month
 		String monthStr = publicationMonth.getValue();

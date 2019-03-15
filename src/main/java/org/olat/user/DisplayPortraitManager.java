@@ -37,6 +37,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.services.image.ImageService;
 import org.olat.core.commons.services.image.Size;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.media.FileMediaResource;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.ServletUtil;
@@ -53,6 +54,7 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.user.manager.ManifestBuilder;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -94,6 +96,10 @@ public class DisplayPortraitManager implements UserDataDeletable, UserDataExport
 	
 	public static final int WIDTH_LOGO_BIG = HEIGHT_BIG * 4;  // 4-8 kbytes (jpeg)
 	public static final int WIDTH_LOGO_SMALL = HEIGHT_SMALL * 4; // 2-4
+	
+	
+	@Autowired
+	private VFSRepositoryService vfsRepositoryService;
 
 	public MediaResource getSmallPortraitResource(String username) {
 		return getPortraitResource(username, PORTRAIT_SMALL_FILENAME);
@@ -307,7 +313,7 @@ public class DisplayPortraitManager implements UserDataDeletable, UserDataExport
 		
 		VFSLeaf vfsPortrait = getLargestVFSPortrait(username);
 		if(vfsPortrait.canMeta() == VFSConstants.YES) {
-			vfsPortrait.getMetaInfo().clearThumbnails();
+			vfsRepositoryService.resetThumbnails(vfsPortrait);
 		}
 	}
 

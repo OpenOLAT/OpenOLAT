@@ -26,11 +26,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.commons.services.image.Size;
-import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -72,10 +68,7 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.VFSMediaResource;
-import org.olat.core.util.vfs.meta.MetaInfo;
 import org.olat.course.nodes.PortfolioCourseNode;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderConfiguration;
@@ -116,7 +109,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class BinderListController extends FormBasicController
 	implements Activateable2, TooledController, FlexiTableComponentDelegate {
 	
-	private static final Size BACKGROUND_SIZE = new Size(400, 230, false);
 	
 	private int counter = 1;
 	private Link newBinderLink;
@@ -780,44 +772,6 @@ public class BinderListController extends FormBasicController
 	private void doExportBinderAsCP(UserRequest ureq, BinderRow row) {
 		MediaResource resource = new ExportBinderAsCPResource(row, ureq, getLocale());
 		ureq.getDispatchResult().setResultingMediaResource(resource);
-	}
-
-	public static class ImageMapper implements Mapper {
-		
-		private final BindersDataModel binderModel;
-		
-		public ImageMapper(BindersDataModel model) {
-			this.binderModel = model;
-		}
-
-		@Override
-		public MediaResource handle(String relPath, HttpServletRequest request) {
-			String row = relPath;
-			if(row.startsWith("/")) {
-				row = row.substring(1, row.length());
-			}
-			int index = row.indexOf('/');
-			if(index > 0) {
-				row = row.substring(0, index);
-				Long key = Long.valueOf(row); 
-				List<BinderRow> rows = binderModel.getObjects();
-				for(BinderRow prow:rows) {
-					if(key.equals(prow.getKey())) {
-						VFSLeaf image = prow.getBackgroundImage();
-						if(image.canMeta() == VFSConstants.YES) {
-							MetaInfo info = image.getMetaInfo();
-							VFSLeaf thumbnail = info.getThumbnail(BACKGROUND_SIZE.getWidth(), BACKGROUND_SIZE.getHeight(), true);
-							if(thumbnail != null) {
-								image = thumbnail;
-							}
-						}
-						return new VFSMediaResource(image);
-					}
-				}
-			}
-			
-			return null;
-		}
 	}
 	
 	private static class BinderCssDelegate extends DefaultFlexiTableCssDelegate {

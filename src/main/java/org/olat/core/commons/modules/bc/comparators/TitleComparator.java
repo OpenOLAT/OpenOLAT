@@ -23,9 +23,9 @@ import java.text.Collator;
 import java.util.Comparator;
 import java.util.Locale;
 
+import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSItem;
-import org.olat.core.util.vfs.meta.MetaInfo;
 
 /**
  * Compare the title, the filename and the last modification date
@@ -63,7 +63,7 @@ public class TitleComparator implements Comparator<VFSItem> {
 		if(item == null) return null;
 		
 		String name = null;
-		MetaInfo m = item.getMetaInfo();
+		VFSMetadata m = item.getMetaInfo();
 		if(m != null) {
 			name = m.getTitle();
 		}

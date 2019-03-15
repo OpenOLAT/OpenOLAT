@@ -37,6 +37,7 @@ import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.notifications.NotificationsManager;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.helpers.Settings;
@@ -115,13 +116,15 @@ public class FeedManagerImpl extends FeedManager {
 	@Autowired
 	private QuotaManager quotaManager;
 	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
 	private FeedFileStorge feedFileStorage;
 	@Autowired
 	private ExternalFeedFetcher externalFeedFetcher;
 	@Autowired
 	private NotificationsManager notificationsManager;
 	@Autowired
-	private BaseSecurity securityManager;
+	private VFSRepositoryService vfsRepositoryService;
 
 	/**
 	 * spring only
@@ -654,9 +657,8 @@ public class FeedManagerImpl extends FeedManager {
 			VFSItem item =feedFileStorage.getOrCreateFeedMediaContainer(feed);
 			item = item.resolve(fileName);
 			if (thumbnailSize != null && thumbnailSize.getHeight() > 0 && thumbnailSize.getWidth() > 0
-					&& item.canMeta() == VFSConstants.YES) {
-				item = item.getMetaInfo().getThumbnail(thumbnailSize.getWidth(),
-						thumbnailSize.getHeight(), false);
+					&& item instanceof VFSLeaf && item.canMeta() == VFSConstants.YES) {
+				item = vfsRepositoryService.getThumbnail((VFSLeaf)item, thumbnailSize.getWidth(), thumbnailSize.getHeight(), false);
 			}
 			if (item instanceof VFSLeaf) {
 				mediaResource = (VFSLeaf) item;

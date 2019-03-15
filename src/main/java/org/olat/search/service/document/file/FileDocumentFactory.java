@@ -32,12 +32,12 @@ import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.LocalImpl;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.meta.MetaInfo;
 import org.olat.search.QueryException;
 import org.olat.search.SearchModule;
 import org.olat.search.SearchService;
@@ -113,8 +113,8 @@ public class FileDocumentFactory {
 					Date indexLastModification = DateTools.stringToDate(timestamp);
 					Date docLastModificationDate = new Date(leaf.getLastModified());
 					if(leaf.canMeta() == VFSConstants.YES) {
-						MetaInfo metaInfo = leaf.getMetaInfo();
-						Date metaDate = metaInfo.getMetaLastModified();
+						VFSMetadata metaInfo = leaf.getMetaInfo();
+						Date metaDate = metaInfo.getLastModified();
 						if(metaDate != null && metaDate.after(docLastModificationDate)) {
 							docLastModificationDate = metaDate;
 						}

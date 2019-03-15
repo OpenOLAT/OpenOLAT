@@ -26,8 +26,8 @@
 
 package org.olat.core.util.vfs;
 
+import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
-import org.olat.core.util.vfs.meta.MetaInfo;
 
 
 /**
@@ -121,7 +121,7 @@ public abstract class AbstractVirtualContainer implements VFSContainer {
 	}
 
 	@Override
-	public MetaInfo getMetaInfo() {
+	public VFSMetadata getMetaInfo() {
 		return null;
 	}
 

@@ -44,6 +44,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.services.image.ImageService;
 import org.olat.core.commons.services.image.Size;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLog;
@@ -115,6 +116,8 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 	private RepositoryService repositoryService;
 	@Autowired
 	private OrganisationService organisationService;
+	@Autowired
+	private VFSRepositoryService vfsRepositoryService;
 
 
 	/**
@@ -748,7 +751,7 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 		VFSLeaf imgFile =  getImage(entry);
 		if (imgFile != null) {
 			if(imgFile.canMeta() == VFSConstants.YES) {
-				imgFile.getMetaInfo().clearThumbnails();
+				vfsRepositoryService.resetThumbnails(imgFile);
 			}
 			imgFile.delete();
 		}
@@ -758,7 +761,7 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 		VFSLeaf currentImage = getImage(re);
 		if(currentImage != null) {
 			if(currentImage.canMeta() == VFSConstants.YES) {
-				currentImage.getMetaInfo().clearThumbnails();
+				vfsRepositoryService.resetThumbnails(currentImage);
 			}
 			currentImage.delete();
 		}

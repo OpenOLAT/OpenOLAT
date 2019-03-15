@@ -23,16 +23,16 @@ import java.io.File;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.util.vfs.LocalFolderImpl;
-import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
-import org.olat.core.util.vfs.meta.MetaInfo;
 
 /**
  * 
@@ -43,6 +43,12 @@ import org.olat.core.util.vfs.meta.MetaInfo;
 public class RepositoryEntryImageMapper implements Mapper {
 	
 	private VFSContainer rootContainer;
+	
+	private VFSRepositoryService vfsRepositoryService;
+	
+	public RepositoryEntryImageMapper() {
+		vfsRepositoryService = CoreSpringFactory.getImpl(VFSRepositoryService.class);
+	}
 
 	@Override
 	public MediaResource handle(String relPath, HttpServletRequest request) {
@@ -56,13 +62,10 @@ public class RepositoryEntryImageMapper implements Mapper {
 		MediaResource resource = null;
 		VFSItem image = rootContainer.resolve(relPath);
 		if(image instanceof VFSLeaf) {
-			if(image.canMeta() == VFSConstants.YES) {
-				MetaInfo info = image.getMetaInfo();
-				//121 is needed to fill the div
-				VFSLeaf thumbnail = info.getThumbnail(180, 120, true);
-				if(thumbnail != null) {
-					resource = new VFSMediaResource(thumbnail);
-				}	
+			//121 is needed to fill the div
+			VFSLeaf thumbnail = vfsRepositoryService.getThumbnail((VFSLeaf)image, 180, 120, true);
+			if(thumbnail != null) {
+				resource = new VFSMediaResource(thumbnail);
 			}
 			
 			if(resource == null) {

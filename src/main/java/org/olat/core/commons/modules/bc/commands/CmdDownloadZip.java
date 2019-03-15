@@ -28,8 +28,10 @@ import java.util.zip.ZipOutputStream;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FileSelection;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -45,7 +47,6 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
-import org.olat.core.util.vfs.meta.MetaInfo;
 
 /**
  * 
@@ -186,9 +187,7 @@ public class CmdDownloadZip implements FolderCommand {
 						vfsFiles.add(item);
 						// update download counter
 						if (item.canMeta() == VFSConstants.YES) {
-							MetaInfo meta = item.getMetaInfo();
-							meta.increaseDownloadCount();
-							meta.write();
+							CoreSpringFactory.getImpl(VFSRepositoryService.class).increaseDownloadCount(item);
 						}
 					}
 				}

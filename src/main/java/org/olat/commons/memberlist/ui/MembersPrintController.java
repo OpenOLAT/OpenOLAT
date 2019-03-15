@@ -32,6 +32,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.commons.memberlist.model.CurriculumElementInfos;
 import org.olat.commons.memberlist.model.CurriculumMemberInfos;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -50,7 +51,6 @@ import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
-import org.olat.core.util.vfs.meta.MetaInfo;
 import org.olat.course.nodes.members.Member;
 import org.olat.user.DisplayPortraitManager;
 import org.olat.user.UserManager;
@@ -73,9 +73,12 @@ public class MembersPrintController extends BasicController {
 	@Autowired
 	private UserManager userManager;
 	@Autowired
+	private BaseSecurityModule securityModule;
+	@Autowired
 	private DisplayPortraitManager portraitManager;
 	@Autowired
-	private BaseSecurityModule securityModule;
+	private VFSRepositoryService vfsRepositoryService;
+	
 	
 	public MembersPrintController(UserRequest ureq, WindowControl wControl, Translator translator, List<Identity> owners,
 			List<Identity> coaches, List<Identity> participants, List<Identity> waiting, Map<Long,CurriculumMemberInfos> curriculumInfos,
@@ -193,8 +196,7 @@ public class MembersPrintController extends BasicController {
 					String username = userManager.getUsername(key);
 					VFSLeaf portrait = portraitManager.getLargestVFSPortrait(username);
 					if(portrait.canMeta() == VFSConstants.YES) {
-						MetaInfo meta = portrait.getMetaInfo();
-						portrait = meta.getThumbnail(300, 300, false);
+						portrait = vfsRepositoryService.getThumbnail(portrait, 300, 300, false);
 					}
 					
 					if(portrait != null) {

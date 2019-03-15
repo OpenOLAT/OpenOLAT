@@ -24,6 +24,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 
+import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
@@ -40,8 +42,8 @@ import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSManager;
-import org.olat.core.util.vfs.meta.MetaInfo;
 import org.olat.course.nodes.gta.model.Solution;
+import org.springframework.beans.factory.annotation.Autowired;
 
 
 /**
@@ -60,6 +62,9 @@ public class EditSolutionController extends FormBasicController {
 	private final File solutionDir;
 	private final VFSContainer solutionContainer;
 	private final String filenameToReplace;
+	
+	@Autowired
+	private VFSRepositoryService vfsRepositoryService;
 
 	public EditSolutionController(UserRequest ureq, WindowControl wControl,
 			File solutionDir, VFSContainer solutionContainer) {
@@ -172,9 +177,9 @@ public class EditSolutionController extends FormBasicController {
 
 				VFSItem uploadedItem = solutionContainer.resolve(filename);
 				if(uploadedItem.canMeta() == VFSConstants.YES) {
-					MetaInfo metaInfo = uploadedItem.getMetaInfo();
+					VFSMetadata metaInfo = uploadedItem.getMetaInfo();
 					metaInfo.setAuthor(ureq.getIdentity());
-					metaInfo.write();
+					vfsRepositoryService.updateMetadata(metaInfo);
 				}
 			} catch(Exception ex) {
 				logError("", ex);
