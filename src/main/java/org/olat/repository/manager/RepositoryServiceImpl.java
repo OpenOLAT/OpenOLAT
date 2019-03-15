@@ -382,7 +382,15 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	}
 
 	@Override
-	public VFSLeaf getIntroductionImage(RepositoryEntry re) {
+	public VFSLeaf getIntroductionImage(RepositoryEntryRef ref) {
+		RepositoryEntry re;
+		if(ref instanceof RepositoryEntry) {
+			re = (RepositoryEntry)ref;
+		} else {
+			re = repositoryEntryDAO.loadByKey(ref.getKey());
+		}
+		
+		
 		RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(re);
 		VFSContainer mediaContainer = handler.getMediaContainer(re);
 		String imageName = re.getResourceableId() + ".jpg";

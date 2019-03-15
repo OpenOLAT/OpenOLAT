@@ -331,7 +331,7 @@ public class MetaInfoReader {
 		private int maxHeight;
 		private int finalWidth;
 		private int finalHeight;
-		private boolean fill = false;
+		private Boolean fill;
 		private File thumbnailFile;
 		
 		public int getMaxWidth() {
@@ -366,11 +366,11 @@ public class MetaInfoReader {
 			this.finalHeight = finalHeight;
 		}
 		
-		public boolean isFill() {
+		public Boolean getFill() {
 			return fill;
 		}
 
-		public void setFill(boolean fill) {
+		public void setFill(Boolean fill) {
 			this.fill = fill;
 		}
 

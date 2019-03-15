@@ -19,6 +19,13 @@
  */
 package org.olat.core.commons.services.vfs;
 
+import java.io.File;
+import java.nio.file.Path;
+
+import org.olat.core.commons.modules.bc.FolderConfig;
+import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSStatus;
+
 /**
  * 
  * Initial date: 11 mars 2019<br>
@@ -26,5 +33,18 @@ package org.olat.core.commons.services.vfs;
  *
  */
 public class VFSRepositoryModule {
+	
+	public static final VFSStatus canMeta(File file) {
+		Path bFile = file.toPath();
+		Path bcRoot = FolderConfig.getCanonicalRootPath();
+		String filename = file.getName();
+		return bFile.startsWith(bcRoot)
+				&& !bFile.startsWith(FolderConfig.getCanonicalMetaRootPath())
+				&& !bFile.startsWith(FolderConfig.getCanonicalVersionRootPath())
+				&& !bFile.startsWith(FolderConfig.getCanonicalTmpPath())
+				&& !file.isHidden()
+				&& !filename.startsWith("._oo_")
+				? VFSConstants.YES : VFSConstants.NO;
+	}
 
 }

@@ -90,7 +90,7 @@ public interface RepositoryService {
 	
 	public List<RepositoryEntry> loadRepositoryEntries(int firstResult, int maxResult);
 
-	public VFSLeaf getIntroductionImage(RepositoryEntry re);
+	public VFSLeaf getIntroductionImage(RepositoryEntryRef re);
 
 	public VFSLeaf getIntroductionMovie(RepositoryEntry re);
 

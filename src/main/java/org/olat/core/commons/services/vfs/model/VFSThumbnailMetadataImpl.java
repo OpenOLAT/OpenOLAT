@@ -74,7 +74,7 @@ public class VFSThumbnailMetadataImpl implements Persistable, VFSThumbnailMetada
 	@Column(name="f_final_height", nullable=false, insertable=true, updatable=true)
 	private int finalHeight;
 	@Column(name="f_fill", nullable=false, insertable=true, updatable=true)
-	private boolean fill = false;
+	private boolean fill;
 	@Column(name="f_filename", nullable=false, insertable=true, updatable=true)
 	private String filename;
 	

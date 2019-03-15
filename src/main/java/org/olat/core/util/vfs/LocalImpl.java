@@ -27,11 +27,10 @@
 package org.olat.core.util.vfs;
 
 import java.io.File;
-import java.nio.file.Path;
 
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.VFSRepositoryModule;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 
@@ -137,14 +136,7 @@ public abstract class LocalImpl implements VFSItem, JavaIOItem {
 	
 	@Override
 	public VFSStatus canMeta() {
-		File f = getBasefile();
-		Path bFile = f.toPath();
-		Path bcRoot = FolderConfig.getCanonicalRootPath();
-		return bFile.startsWith(bcRoot)
-				&& !bFile.startsWith(FolderConfig.getCanonicalMetaRootPath())
-				&& !bFile.startsWith(FolderConfig.getCanonicalVersionRootPath())
-				&& !f.isHidden()
-				? VFSConstants.YES : VFSConstants.NO;
+		return VFSRepositoryModule.canMeta(getBasefile());
 	}
 
 	@Override

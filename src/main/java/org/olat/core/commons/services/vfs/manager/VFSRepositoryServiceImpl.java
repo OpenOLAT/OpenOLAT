@@ -41,6 +41,8 @@ import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.FolderLicenseHandler;
 import org.olat.core.commons.modules.bc.FolderModule;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.image.ImageService;
+import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.license.License;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.license.LicenseType;
@@ -59,6 +61,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.LocalFileImpl;
+import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -81,6 +84,8 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService {
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private ImageService imageService;
 	@Autowired
 	private FolderModule folderModule;
 	@Autowired
@@ -126,6 +131,26 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService {
 		return metadata;
 	}
 	
+	@Override
+	public VFSItem getItemFor(VFSMetadata metadata) {
+		if(metadata == null) return null;
+		
+		File file = toFile(metadata);
+		if(file.isDirectory()) {
+			return new LocalFolderImpl(file);
+		}
+		return new LocalFileImpl(file);
+	}
+
+	@Override
+	public VFSItem getItemFor(String uuid) {
+		VFSMetadata metadata = metadataDao.getMetadata(uuid);
+		if(metadata == null) {
+			return null;
+		}
+		return getItemFor(metadata);
+	}
+
 	/**
 	 * This method doesn't create missing database entry.
 	 * 
@@ -150,6 +175,11 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService {
 	private File toFile(VFSItem item) {
 		String relPath = item.getRelPath();
 		return relPath == null ? null : VFSManager.olatRootFile(relPath);
+	}
+	
+	private File toFile(VFSMetadata metadata) {
+		Path path = Paths.get(folderModule.getCanonicalRoot(), metadata.getRelativePath(), metadata.getFilename());
+		return path.toFile();
 	}
 
 	@Override
@@ -176,12 +206,35 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService {
 		return folderModule.getCanonicalRootPath().relativize(file.toPath()).toString();
 	}
 	
-	private String getRelativePath(VFSItem item) {
-		String relativePath = item.getRelPath();
-		if(!relativePath.equals(CANONICAL_ROOT_REL_PATH) && relativePath.startsWith("/")) {
+	private String getContainerRelativePath(VFSLeaf leaf) {
+		String relativePath = null;
+		
+		VFSContainer parent = leaf.getParentContainer();
+		if(parent != null && parent.getRelPath() != null) {
+			relativePath = parent.getRelPath();
+		} else {
+			String leafRelPath = leaf.getRelPath();
+			if(leafRelPath != null) {
+				Path leafPath = Paths.get(this.folderModule.getCanonicalRoot(), leafRelPath);
+				relativePath = getRelativePath(leafPath.getParent().toFile());
+			}
+		}
+		
+		if(relativePath != null && !relativePath.equals(CANONICAL_ROOT_REL_PATH) && relativePath.startsWith("/")) {
 			relativePath = relativePath.substring(1, relativePath.length());
 		}
 		return relativePath;
+	}
+	
+	private VFSContainer getSecureParentContainer(VFSLeaf leaf) {
+		VFSContainer parent = leaf.getParentContainer();
+		if(parent != null) {
+			return parent;
+		}
+		
+		Path leafPath = Paths.get(this.folderModule.getCanonicalRoot(), leaf.getRelPath());
+		File relativePath = leafPath.getParent().toFile();
+		return new LocalFolderImpl(relativePath);
 	}
 	
 	@Override
@@ -260,8 +313,8 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService {
 	public VFSLeaf getThumbnail(VFSLeaf file, VFSMetadata metadata, int maxWidth, int maxHeight, boolean fill) {
 		VFSLeaf thumbnailLeaf = null;
 		
-		VFSContainer parentContainer = file.getParentContainer();
-		String relativePath = getRelativePath(parentContainer);
+		VFSContainer parentContainer = getSecureParentContainer(file);
+		String relativePath = getContainerRelativePath(file);
 		if(relativePath != null) {
 			VFSThumbnailMetadata thumbnail = thumbnailDao.findThumbnail(relativePath, file.getName(), fill, maxWidth, maxHeight);
 			if(thumbnail == null) {
@@ -280,14 +333,21 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService {
 	public VFSLeaf getThumbnail(VFSLeaf file, int maxWidth, int maxHeight, boolean fill) {
 		VFSLeaf thumbnailLeaf = null;
 		
-		VFSContainer parentContainer = file.getParentContainer();
-		String relativePath = getRelativePath(parentContainer);
+		VFSContainer parentContainer = getSecureParentContainer(file);
+		String relativePath = getContainerRelativePath(file);
 		if(relativePath != null) {
 			VFSThumbnailMetadata thumbnail = thumbnailDao.findThumbnail(relativePath, file.getName(), fill, maxWidth, maxHeight);
 			if(thumbnail == null) {
 				VFSMetadata metadata = metadataDao.getMetadata(relativePath, file.getName(), false);
+				if(metadata == null) {// fallback and generated the needed database entries
+					metadata = getMetadataFor(file);
+				}
 				thumbnailLeaf = generateThumbnail(file, metadata, fill, maxWidth, maxHeight);
 			} else {
+				if(parentContainer == null) {
+					
+				}
+				
 				VFSItem item = parentContainer.resolve(thumbnail.getFilename());
 				if(item instanceof VFSLeaf) {
 					thumbnailLeaf = (VFSLeaf)item;
@@ -304,9 +364,22 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService {
 		String thumbnailExtension = preferedThumbnailType(extension);
 		String thumbnailName = generateFilenameForThumbnail(nameOnly, thumbnailExtension, fill, maxWidth, maxHeight);
 		
-		VFSContainer parentContainer = file.getParentContainer();
+		VFSContainer parentContainer = getSecureParentContainer(file);
 		VFSLeaf thumbnailLeaf = parentContainer.createChildLeaf(thumbnailName);
-		if(thumbnailService.isThumbnailPossible(thumbnailLeaf)) {
+		if(thumbnailLeaf == null) {
+			// ooops, a thumbnail without a database entry
+			VFSItem thumbnailItem = parentContainer.resolve(thumbnailName);
+			if(thumbnailItem instanceof VFSLeaf) {
+				thumbnailLeaf = (VFSLeaf)thumbnailItem;
+				String suffix = FileUtils.getFileSuffix(thumbnailLeaf.getName());
+				Size finalSize = imageService.getSize(thumbnailLeaf, suffix);
+				thumbnailDao.createThumbnailMetadata(metadata, thumbnailName, thumbnailLeaf.getSize(),
+						fill, maxWidth, maxHeight, finalSize.getWidth(), finalSize.getHeight());
+				dbInstance.commit();
+				return thumbnailLeaf;
+			}
+		}
+		if(thumbnailLeaf != null && thumbnailService.isThumbnailPossible(thumbnailLeaf)) {
 			try {
 				FinalSize finalSize = thumbnailService.generateThumbnail(file, thumbnailLeaf, maxWidth, maxHeight, fill);
 				if(finalSize == null) {
@@ -364,8 +437,8 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService {
 
 	@Override
 	public void resetThumbnails(VFSLeaf file) {
-		VFSContainer parentContainer = file.getParentContainer();
-		String relativePath = getRelativePath(parentContainer);
+		VFSContainer parentContainer = getSecureParentContainer(file);
+		String relativePath = getContainerRelativePath(file);
 		if(relativePath == null) return;
 		
 		List<VFSThumbnailMetadata> thumbnails = thumbnailDao.findThumbnails(relativePath, file.getName());
@@ -576,9 +649,10 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService {
 			try {
 				File thumbnailFile = thumbnail.getThumbnailFile();
 				if(thumbnailFile.exists()) {
-					String filename = generateFilenameForThumbnail(file, thumbnail.isFill(), thumbnail.getMaxWidth(), thumbnail.getMaxHeight());
+					boolean fill = isFill(thumbnailFile);
+					String filename = generateFilenameForThumbnail(file, fill, thumbnail.getMaxWidth(), thumbnail.getMaxHeight());
 					thumbnailDao.createThumbnailMetadata(metadata, filename, thumbnailFile.length(),
-							thumbnail.isFill(), thumbnail.getMaxWidth(), thumbnail.getMaxHeight(),
+							fill, thumbnail.getMaxWidth(), thumbnail.getMaxHeight(),
 							thumbnail.getFinalWidth(), thumbnail.getFinalHeight());
 					File target = new File(file.getParentFile(), filename);
 					Files.move(thumbnailFile.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
@@ -587,6 +661,13 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService {
 				log.error("", e);
 			}
 		}
+	}
+	
+	private boolean isFill(File file) {
+		String name = file.getName().toLowerCase();
+		String extension = FileUtils.getFileSuffix(name);
+		String fillExtension = "xfill.".concat(extension);
+		return name.endsWith(fillExtension);
 	}
 	
 	private String getCanonicalMetaPath(File originFile) {

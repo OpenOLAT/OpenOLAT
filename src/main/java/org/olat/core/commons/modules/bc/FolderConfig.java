@@ -181,6 +181,10 @@ public class FolderConfig {
 		return getCanonicalRoot() + TMP_DIR;
 	}
 	
+	public static Path getCanonicalTmpPath() {
+		return Paths.get(getCanonicalRoot(), TMP_DIR);
+	}
+	
 	/**
 	 * Returns relative tmp dir.
 	 * @return String

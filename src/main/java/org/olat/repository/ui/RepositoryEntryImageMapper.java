@@ -19,20 +19,21 @@
  */
 package org.olat.repository.ui;
 
-import java.io.File;
-
 import javax.servlet.http.HttpServletRequest;
 
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.media.MediaResource;
-import org.olat.core.util.vfs.LocalFolderImpl;
-import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.gui.media.NotFoundMediaResource;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
+import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryService;
+import org.olat.repository.model.RepositoryEntryRefImpl;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -42,35 +43,45 @@ import org.olat.core.util.vfs.VFSMediaResource;
  */
 public class RepositoryEntryImageMapper implements Mapper {
 	
-	private VFSContainer rootContainer;
-	
+	@Autowired
+	private RepositoryService repositoryService;
+	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
 	
 	public RepositoryEntryImageMapper() {
-		vfsRepositoryService = CoreSpringFactory.getImpl(VFSRepositoryService.class);
+		CoreSpringFactory.autowireObject(this);
 	}
 
 	@Override
 	public MediaResource handle(String relPath, HttpServletRequest request) {
-		if(rootContainer == null) {
-			rootContainer = new LocalFolderImpl(new File(FolderConfig.getCanonicalRepositoryHome()));
-		}
-		
 		if(relPath.startsWith("/")) {
 			relPath = relPath.substring(1, relPath.length());
 		}
+		
+		int lastIndex = relPath.lastIndexOf('.');
+		if(lastIndex >= 0) {
+			relPath = relPath.substring(0, lastIndex);
+		}
+		
 		MediaResource resource = null;
-		VFSItem image = rootContainer.resolve(relPath);
-		if(image instanceof VFSLeaf) {
-			//121 is needed to fill the div
-			VFSLeaf thumbnail = vfsRepositoryService.getThumbnail((VFSLeaf)image, 180, 120, true);
-			if(thumbnail != null) {
-				resource = new VFSMediaResource(thumbnail);
+		if(StringHelper.isLong(relPath)) {
+			RepositoryEntryRef re = new RepositoryEntryRefImpl(Long.valueOf(relPath));
+			VFSItem image = repositoryService.getIntroductionImage(re);
+			if(image instanceof VFSLeaf) {
+				//121 is needed to fill the div
+				VFSLeaf thumbnail = vfsRepositoryService.getThumbnail((VFSLeaf)image, 180, 120, true);
+				if(thumbnail != null) {
+					resource = new VFSMediaResource(thumbnail);
+				}
+				
+				if(resource == null) {
+					resource = new VFSMediaResource((VFSLeaf)image);
+				}
+			} else {
+				resource = new NotFoundMediaResource();
 			}
-			
-			if(resource == null) {
-				resource = new VFSMediaResource((VFSLeaf)image);
-			}
+		} else {
+			resource = new NotFoundMediaResource();
 		}
 		return resource;
 	}

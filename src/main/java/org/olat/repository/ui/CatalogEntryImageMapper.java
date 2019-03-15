@@ -32,6 +32,7 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.repository.manager.CatalogManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 
 /**
@@ -42,11 +43,13 @@ import org.olat.repository.manager.CatalogManager;
  */
 public class CatalogEntryImageMapper implements Mapper {
 	
+	@Autowired
 	private CatalogManager catalogManager;
+	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
 	
 	public CatalogEntryImageMapper() {
-		catalogManager = CoreSpringFactory.getImpl(CatalogManager.class);
+		CoreSpringFactory.autowireObject(this);
 	}
 
 	@Override

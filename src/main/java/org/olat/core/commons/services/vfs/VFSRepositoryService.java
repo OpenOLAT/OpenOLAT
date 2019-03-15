@@ -40,6 +40,10 @@ public interface VFSRepositoryService {
 	
 	public VFSMetadata getMetadataFor(File file);
 	
+	public VFSItem getItemFor(VFSMetadata metdata);
+	
+	public VFSItem getItemFor(String uuid);
+	
 	/**
 	 * The list of direct children in the specified
 	 * relative path.
