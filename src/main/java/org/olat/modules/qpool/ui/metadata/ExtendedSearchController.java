@@ -22,8 +22,6 @@ package org.olat.modules.qpool.ui.metadata;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.olat.core.commons.services.license.LicenseModule;
 import org.olat.core.commons.services.license.ui.LicenseSelectionConfig;
@@ -434,21 +432,15 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 		@Override
 		public FormItem createItem(String startValue) {
 			qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsSelection(getIdentity(), false, allTaxonomyLevels);
-			return createItem(qpoolTaxonomyTreeBuilder.getTaxonomicPaths(),
+			return createItem(qpoolTaxonomyTreeBuilder.getTaxonomicKeyPaths(),
 					qpoolTaxonomyTreeBuilder.getSelectableValues(), startValue);
 		}
-		
+
 		@Override
-		public List<String> getQueries(FormItem item) {
-			String val = getValue(item);
-			if(StringHelper.containsNonWhitespace(val)) {
-				String[] levels = val.substring(1).split("/");
-				return Stream.of(levels)
-						.map(level -> append(getDocAttribute(), ":(", level, ") "))
-						.collect(Collectors.toList());
-			}
-			return Collections.emptyList();
+		public String getValue(FormItem item) {
+			return super.getValue(item).replaceAll(" ", "_").replaceAll("/", "_") + "*";
 		}
+		
 	}
 	
 	public class LicenseQueryParameter extends SingleChoiceQueryParameter {
