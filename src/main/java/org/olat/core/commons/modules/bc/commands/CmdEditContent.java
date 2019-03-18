@@ -32,7 +32,7 @@ import java.util.List;
 import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.commons.editor.htmleditor.HTMLEditorController;
 import org.olat.core.commons.editor.htmleditor.WysiwygFactory;
-import org.olat.core.commons.editor.plaintexteditor.PlainTextEditorController;
+import org.olat.core.commons.editor.plaintexteditor.TextEditorController;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
 import org.olat.core.commons.modules.bc.components.ListRenderer;
 import org.olat.core.commons.modules.bc.version.VersionCommentController;
@@ -150,7 +150,7 @@ public class CmdEditContent extends BasicController implements FolderCommand {
 			}
 		}
 		else {
-			editorc = new PlainTextEditorController(ureq, getWindowControl(), (VFSLeaf)currentItem, "utf-8", true, false, null);
+			editorc = new TextEditorController(ureq, getWindowControl(), (VFSLeaf)currentItem, "utf-8", false);
 		}
 		listenTo(editorc);
 		putInitialPanel(editorc.getInitialComponent());
@@ -239,6 +239,7 @@ public class CmdEditContent extends BasicController implements FolderCommand {
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
 	 */
+	@Override
 	protected void doDispose() {
 		// auto dispose by basic controller
 	}

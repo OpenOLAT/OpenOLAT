@@ -78,7 +78,7 @@ public class FolderCommandFactory {
 		else if (command.equals(COMMAND_SERV)) cmd = new CmdServeResource();
 		else if (command.equals(COMMAND_SERV_THUMBNAIL)) cmd = new CmdServeThumbnailResource();
 		else if (command.equals(COMMAND_EDIT)) cmd = new CmdEditMeta(ureq, wControl);
-		else if (command.equals(COMMAND_EDIT_CONTENT)) cmd = new CmdEditContent(ureq, wControl);
+		else if (command.equals(COMMAND_EDIT_CONTENT)) cmd = new CmdOpenContent(ureq, wControl);
 		else if (command.equals(COMMAND_EDIT_QUOTA)) cmd = new CmdEditQuota(ureq, wControl);
 		else if (command.equals(COMMAND_DEL)) cmd = new CmdDelete(ureq, wControl);
 		else if (command.equals(COMMAND_MAIL)) {

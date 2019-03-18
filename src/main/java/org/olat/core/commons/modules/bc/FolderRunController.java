@@ -36,9 +36,9 @@ import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.commons.modules.bc.commands.CmdCreateFile;
 import org.olat.core.commons.modules.bc.commands.CmdCreateFolder;
 import org.olat.core.commons.modules.bc.commands.CmdDelete;
-import org.olat.core.commons.modules.bc.commands.CmdEditContent;
 import org.olat.core.commons.modules.bc.commands.CmdEditQuota;
 import org.olat.core.commons.modules.bc.commands.CmdMoveCopy;
+import org.olat.core.commons.modules.bc.commands.CmdOpenContent;
 import org.olat.core.commons.modules.bc.commands.FolderCommand;
 import org.olat.core.commons.modules.bc.commands.FolderCommandFactory;
 import org.olat.core.commons.modules.bc.commands.FolderCommandStatus;
@@ -376,7 +376,7 @@ public class FolderRunController extends BasicController implements Activateable
 											.getCurrentContainerPath()
 											+ ((folderComponent.getCurrentContainerPath().length() > 1) ? File.separator:"")
 											+ ((CmdCreateFolder) source).getFolderName()));
-				} else if (source instanceof CmdEditContent) {
+				} else if (source instanceof CmdOpenContent) {
 					ThreadLocalUserActivityLogger
 					.log(
 							FolderLoggingAction.FILE_EDIT,
@@ -385,7 +385,7 @@ public class FolderRunController extends BasicController implements Activateable
 									.wrapBCFile(folderComponent
 											.getCurrentContainerPath()
 											+ ((folderComponent.getCurrentContainerPath().length() > 1) ? File.separator:"")
-											+ ((CmdEditContent) source).getFileName()));
+											+ ((CmdOpenContent) source).getFileName()));
 				} else if (source instanceof CmdDelete) {
 					Iterator<String> it = ((CmdDelete) source).getFileSelection().getFiles().iterator();
 					while(it.hasNext()) {

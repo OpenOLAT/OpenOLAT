@@ -27,7 +27,7 @@ package org.olat.core.commons.modules.bc.commands;
 
 import org.olat.core.commons.editor.htmleditor.HTMLEditorController;
 import org.olat.core.commons.editor.htmleditor.WysiwygFactory;
-import org.olat.core.commons.editor.plaintexteditor.PlainTextEditorController;
+import org.olat.core.commons.editor.plaintexteditor.TextEditorController;
 import org.olat.core.commons.modules.bc.FolderEvent;
 import org.olat.core.commons.modules.bc.FolderLicenseHandler;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
@@ -135,6 +135,7 @@ public class CmdCreateFile extends FormBasicController implements FolderCommand 
 				
 	}
 	
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == editorCtr) {
 			if (event == Event.DONE_EVENT) {
@@ -227,10 +228,10 @@ public class CmdCreateFile extends FormBasicController implements FolderCommand 
 				writableRootContainer = folderComponent.getCurrentContainer(); 
 			}
 			if (relFilePath.endsWith(".html") || relFilePath.endsWith(".htm")) {
-				editorCtr = WysiwygFactory.createWysiwygController(ureq, getWindowControl(), writableRootContainer, relFilePath, true, true);				
+				editorCtr = WysiwygFactory.createWysiwygController(ureq, getWindowControl(), writableRootContainer, relFilePath, true, true);
 				((HTMLEditorController)editorCtr).setNewFile(true);
 			} else {
-				editorCtr = new PlainTextEditorController(ureq, getWindowControl(), (VFSLeaf)writableRootContainer.resolve(relFilePath), "utf-8", true, true, null);
+				editorCtr = new TextEditorController(ureq, getWindowControl(), (VFSLeaf)writableRootContainer.resolve(relFilePath), "utf-8", false);
 			}
 
 			listenTo(editorCtr);

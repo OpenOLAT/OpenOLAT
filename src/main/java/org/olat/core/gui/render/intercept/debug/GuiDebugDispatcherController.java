@@ -32,7 +32,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.olat.core.commons.editor.plaintexteditor.PlainTextEditorController;
+import org.olat.core.commons.editor.plaintexteditor.TextEditorController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentRenderer;
@@ -65,14 +65,10 @@ public class GuiDebugDispatcherController extends BasicController implements Int
 	
 	private URLBuilder debugURLBuilder;
 	private DelegatingComponent dc;
-	private Map<String, Component> idToComponent = new HashMap<String, Component>();
-	private PlainTextEditorController vcEditorController;
+	private Map<String, Component> idToComponent = new HashMap<>();
+	private TextEditorController vcEditorController;
 	private StackedPanel mainP;
 
-	/**
-	 * @param ureq
-	 * @param wControl needed for subsequent debug-actions e.g. on a modal screen
-	 */
 	public GuiDebugDispatcherController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 
@@ -103,11 +99,6 @@ public class GuiDebugDispatcherController extends BasicController implements Int
 		mainP.setDomReplaceable(false);
 	}
 	
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == dc) {
@@ -129,24 +120,18 @@ public class GuiDebugDispatcherController extends BasicController implements Int
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == vcEditorController) {
-			// saving was already done by editor, just pop
-			getWindowControl().pop();
+			if (event == Event.DONE_EVENT) {
+				// saving was already done by editor, just pop
+				getWindowControl().pop();
+			}
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
 	@Override
 	protected void doDispose() {
 		//
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.olat.core.gui.render.debug.DebugHandler#createDebugComponentRenderer(org.olat.core.gui.components.ComponentRenderer)
-	 */
 	@Override
 	public ComponentRenderer createInterceptComponentRenderer(final ComponentRenderer originalRenderer) {
 		return new ComponentRenderer() {
@@ -239,11 +224,6 @@ public class GuiDebugDispatcherController extends BasicController implements Int
 	}
 
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.olat.core.gui.render.debug.DebugHandler#createDebugHandlerRenderInstance()
-	 */
 	@Override
 	public InterceptHandlerInstance createInterceptHandlerInstance() {
 		// clear all previous data and return this.
@@ -254,9 +234,6 @@ public class GuiDebugDispatcherController extends BasicController implements Int
 		return this;
 	}
 
-	/**
-	 * @param showDebugInfo
-	 */
 	public void setShowDebugInfo(boolean showDebugInfo) {
 		if (showDebugInfo) {
 			mainP.setContent(dc);
