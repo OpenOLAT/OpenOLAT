@@ -1008,7 +1008,7 @@ public class WebDAVDispatcherImpl
         }
 
     	UserSession usess = webDAVManager.getUserSession(req);
-        LockInfo lock = new LockInfo(usess.getIdentity().getKey(), true, false);
+        LockInfo lock = new LockInfo(usess.getIdentity().getKey(), true, false, false);
 
         // Parsing lock request
 

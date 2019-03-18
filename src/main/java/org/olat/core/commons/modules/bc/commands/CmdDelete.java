@@ -47,6 +47,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLockApplicationType;
 import org.olat.core.util.vfs.VFSLockManager;
 
 public class CmdDelete extends BasicController implements FolderCommand {
@@ -92,7 +93,7 @@ public class CmdDelete extends BasicController implements FolderCommand {
 		List<String> lockedFiles = new ArrayList<>();
 		for (String file : selection.getFiles()) {
 			VFSItem item = container.resolve(file);
-			if (lockManager.isLockedForMe(item, getIdentity(), roles)) {
+			if (lockManager.isLockedForMe(item, getIdentity(), roles, VFSLockApplicationType.vfs)) {
 				lockedFiles.add(file);
 			}
 		}

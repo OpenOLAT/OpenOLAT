@@ -60,6 +60,7 @@ import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSLockApplicationType;
 import org.olat.core.util.vfs.VFSLockManager;
 import org.olat.core.util.vfs.callbacks.ReadOnlyCallback;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
@@ -343,7 +344,7 @@ public class CourseResourceFolderWebService {
 			}
 
 			//check if it's locked
-			boolean locked = vfsLockManager.isLockedForMe(existingVFSItem, ureq.getIdentity(), ureq.getUserSession().getRoles());
+			boolean locked = vfsLockManager.isLockedForMe(existingVFSItem, ureq.getIdentity(), ureq.getUserSession().getRoles(), VFSLockApplicationType.vfs);
 			if(locked) {
 				return Response.serverError().status(Status.UNAUTHORIZED).build();
 			}

@@ -50,6 +50,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLockApplicationType;
 import org.olat.core.util.vfs.VFSLockManager;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
@@ -104,7 +105,7 @@ public class CmdEditMeta extends BasicController implements FolderCommand {
 
 		removeAsListenerAndDispose(metaCtr);
 		removeAsListenerAndDispose(metaInfoCtr);
-		if(vfsLockManager.isLockedForMe(currentItem, getIdentity(), ureq.getUserSession().getRoles())) {
+		if(vfsLockManager.isLockedForMe(currentItem, getIdentity(), ureq.getUserSession().getRoles(), VFSLockApplicationType.vfs)) {
 			//readonly
 			String resourceUrl = getResourceURL(wControl);
 			metaCtr = new MetaInfoController(ureq, wControl, currentItem, resourceUrl);

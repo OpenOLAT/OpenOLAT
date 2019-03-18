@@ -37,7 +37,7 @@ public interface VFSLockManager {
 	 * @param item
 	 * @return True if the item has a VFS or WebDAv lock
 	 */
-	public boolean isLocked(VFSItem item);
+	public boolean isLocked(VFSItem item, VFSLockApplicationType type);
 	
 	/**
 	 * This method is used as an optimization of the isLocked() to prevent
@@ -47,7 +47,7 @@ public interface VFSLockManager {
 	 * @param loadedInfo The up-to-date meta info
 	 * @return
 	 */
-	public boolean isLocked(VFSItem item, VFSMetadata loadedInfo);
+	public boolean isLocked(VFSItem item, VFSMetadata loadedInfo, VFSLockApplicationType type);
 	
 	/**
 	 * 
@@ -56,7 +56,7 @@ public interface VFSLockManager {
 	 * @param roles
 	 * @return true if there is a lock owned by someone else, or there is a WebDAV lock on the item
 	 */
-	public boolean isLockedForMe(VFSItem item, Identity me, Roles roles);
+	public boolean isLockedForMe(VFSItem item, Identity me, Roles roles, VFSLockApplicationType type);
 	
 	/**
 	 * 
@@ -66,11 +66,11 @@ public interface VFSLockManager {
 	 * @param roles
 	 * @return true if there is a lock owned by someone else, or there is a WebDAV lock on the item
 	 */
-	public boolean isLockedForMe(VFSItem item, VFSMetadata loadedInfo, Identity me, Roles roles);
+	public boolean isLockedForMe(VFSItem item, VFSMetadata loadedInfo, Identity me, Roles roles, VFSLockApplicationType type);
 	
 	public LockInfo getLock(VFSItem item);
 	
-	public boolean lock(VFSItem item, Identity identity, Roles roles);
+	public boolean lock(VFSItem item, Identity identity, Roles roles, VFSLockApplicationType type);
 	
 	/**
 	 * 
@@ -81,7 +81,7 @@ public interface VFSLockManager {
 	 * @param roles
 	 * @return True if and only if the VFS lock was unlocked and there isn't any WedDAV lock
 	 */
-	public boolean unlock(VFSItem item, Identity identity, Roles roles);
+	public boolean unlock(VFSItem item, Identity identity, Roles roles, VFSLockApplicationType type);
 	
 	/**
 	 * Method the generate the Lock-Token

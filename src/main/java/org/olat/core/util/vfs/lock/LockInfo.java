@@ -21,7 +21,6 @@ package org.olat.core.util.vfs.lock;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
@@ -45,25 +44,28 @@ public class LockInfo {
     private String scope = "exclusive";
     private int depth = 0;
     private String owner = "";
-    private Vector<String> tokens = new Vector<>();
+    private List<String> tokens = new Vector<>();
     private long expiresAt = 0;
     private Date creationDate = new Date();
     
-    private boolean webdavLock;
     private boolean vfsLock;
+    private boolean webdavLock;
+    private boolean collaborationLock;
     
     private final Long lockedBy;
 
-    public LockInfo(Long lockedBy, boolean webdavLock, boolean vfsLock) {
+    public LockInfo(Long lockedBy, boolean webdavLock, boolean vfsLock, boolean collaborationLock) {
     	this.lockedBy = lockedBy;
     	this.vfsLock = vfsLock;
     	this.webdavLock = webdavLock;
+    	this.collaborationLock = collaborationLock;
     }
     
-    public LockInfo(Identity lockedBy, boolean webdavLock, boolean vfsLock) {
+    public LockInfo(Identity lockedBy, boolean webdavLock, boolean vfsLock, boolean collaborationLock) {
     	this.lockedBy = lockedBy == null ? null : lockedBy.getKey();
     	this.vfsLock = vfsLock;
     	this.webdavLock = webdavLock;
+    	this.collaborationLock = collaborationLock;
     }
 
     public Long getLockedBy() {
@@ -132,6 +134,14 @@ public class LockInfo {
 
 	public void setVfsLock(boolean vfsLock) {
 		this.vfsLock = vfsLock;
+	}
+
+	public boolean isCollaborationLock() {
+		return collaborationLock;
+	}
+
+	public void setCollaborationLock(boolean collaborationLock) {
+		this.collaborationLock = collaborationLock;
 	}
 
 	public long getExpiresAt() {
@@ -214,10 +224,9 @@ public class LockInfo {
         generatedXML.writeElement("D", "timeout", XMLWriter.CLOSING);
 
         generatedXML.writeElement("D", "locktoken", XMLWriter.OPENING);
-        Enumeration<String> tokensList = tokens.elements();
-        while (tokensList.hasMoreElements()) {
+        for (String token: tokens) {
             generatedXML.writeElement("D", "href", XMLWriter.OPENING);
-            generatedXML.writeText("opaquelocktoken:" + tokensList.nextElement());
+            generatedXML.writeText("opaquelocktoken:" + token);
             generatedXML.writeElement("D", "href", XMLWriter.CLOSING);
         }
         generatedXML.writeElement("D", "locktoken", XMLWriter.CLOSING);
@@ -241,10 +250,8 @@ public class LockInfo {
         result.append(owner);
         result.append("\nExpiration:");
         result.append(FastHttpDateFormat.formatDate(expiresAt, null));
-        Enumeration<String> tokensList = tokens.elements();
-        while (tokensList.hasMoreElements()) {
-            result.append("\nToken:");
-            result.append(tokensList.nextElement());
+        for (String token:tokens) {
+            result.append("\nToken:").append(token);
         }
         result.append("\n");
         return result.toString();

@@ -51,6 +51,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSLockApplicationType;
 import org.olat.core.util.vfs.VFSLockManager;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
@@ -105,7 +106,7 @@ public class CmdEditContent extends BasicController implements FolderCommand {
 			return null;
 		}
 		
-		if(vfsLockManager.isLockedForMe(currentItem, ureq.getIdentity(), ureq.getUserSession().getRoles())) {
+		if(vfsLockManager.isLockedForMe(currentItem, ureq.getIdentity(), ureq.getUserSession().getRoles(), VFSLockApplicationType.vfs)) {
 			List<String> lockedFiles = Collections.singletonList(currentItem.getName());
 			String msg = FolderCommandHelper.renderLockedMessageAsHtml(translator, lockedFiles);
 			List<String> buttonLabels = Collections.singletonList(translator.translate("ok"));
@@ -184,7 +185,7 @@ public class CmdEditContent extends BasicController implements FolderCommand {
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == editorc) {
 			if (event == Event.DONE_EVENT) {
-				boolean lock = vfsLockManager.isLocked(currentItem);
+				boolean lock = vfsLockManager.isLocked(currentItem, VFSLockApplicationType.vfs);
 				if(lock) {
 					unlockCtr = new VersionCommentController(ureq,getWindowControl(), true, false);
 					listenTo(unlockCtr);
@@ -207,7 +208,7 @@ public class CmdEditContent extends BasicController implements FolderCommand {
 			fireEvent(ureq, FOLDERCOMMAND_FINISHED);
 		} else if (source == unlockCtr) {
 			if(!unlockCtr.keepLocked()) {
-				vfsLockManager.unlock(currentItem, getIdentity(), ureq.getUserSession().getRoles());
+				vfsLockManager.unlock(currentItem, getIdentity(), ureq.getUserSession().getRoles(), VFSLockApplicationType.vfs);
 			}
 			cleanUpUnlockDialog();
 			fireEvent(ureq, FOLDERCOMMAND_FINISHED);

@@ -53,6 +53,7 @@ import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSLockApplicationType;
 import org.olat.core.util.vfs.VFSLockManager;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.lock.LockInfo;
@@ -469,7 +470,7 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		createFile(folderContainer, "tolock.txt");
 		VFSItem itemToLock = folderContainer.resolve("tolock.txt");
 		Assert.assertNotNull(itemToLock);
-		boolean locked = lockManager.lock(itemToLock, assistant, Roles.authorRoles());
+		boolean locked = lockManager.lock(itemToLock, assistant, Roles.authorRoles(), VFSLockApplicationType.vfs);
 		Assert.assertTrue(locked);
 		
 		//author make a propfind in the locked resource
@@ -528,7 +529,7 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 
 		//check vfs lock
 		Roles adminRoles = Roles.administratorRoles();
-		boolean lockedForMe = lockManager.isLockedForMe(item, user, adminRoles);
+		boolean lockedForMe = lockManager.isLockedForMe(item, user, adminRoles, VFSLockApplicationType.vfs);
 		Assert.assertTrue(lockedForMe);
 		LockInfo lock = lockManager.getLock(item);
 		Assert.assertNotNull(lock);
@@ -542,7 +543,7 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		Assert.assertEquals(1, lock.getTokensSize());
 		
 		//try to unlock which should not be possible
-		boolean unlocked = lockManager.unlock(item, user, adminRoles);
+		boolean unlocked = lockManager.unlock(item, user, adminRoles, VFSLockApplicationType.vfs);
 		Assert.assertFalse(unlocked);
 		//check that nothing changed
 		LockInfo lockAfterUnlock = lockManager.getLock(item);

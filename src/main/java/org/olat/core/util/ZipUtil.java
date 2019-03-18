@@ -66,6 +66,7 @@ import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSLockApplicationType;
 import org.olat.core.util.vfs.VFSLockManager;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
@@ -454,7 +455,7 @@ public class ZipUtil {
 						}
 						
 						VFSLeaf newEntry = (VFSLeaf)createIn.resolve(name);
-						if(vfsLockManager.isLockedForMe(newEntry, identity, isAdmin)) {
+						if(vfsLockManager.isLockedForMe(newEntry, identity, isAdmin, VFSLockApplicationType.vfs)) {
 							lockedFiles.add(name);
 						}
 					}
@@ -517,7 +518,7 @@ public class ZipUtil {
 						}
 						
 						VFSLeaf newEntry = (VFSLeaf)createIn.resolve(name);
-						if(vfsLockManager.isLockedForMe(newEntry, identity, roles)) {
+						if(vfsLockManager.isLockedForMe(newEntry, identity, roles, VFSLockApplicationType.vfs)) {
 							lockedFiles.add(name);
 						}
 					}

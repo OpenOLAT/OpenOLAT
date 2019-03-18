@@ -31,6 +31,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLockApplicationType;
 import org.olat.core.util.vfs.VFSLockManager;
 import org.olat.core.util.vfs.version.Versionable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -91,7 +92,7 @@ public class CmdViewRevisions extends BasicController implements FolderCommand {
 
 		setTranslator(translator);
 		
-		boolean locked = vfsLockManager.isLockedForMe(currentItem, ureq.getIdentity(), ureq.getUserSession().getRoles());
+		boolean locked = vfsLockManager.isLockedForMe(currentItem, ureq.getIdentity(), ureq.getUserSession().getRoles(), VFSLockApplicationType.vfs);
 		revisionListCtr = new RevisionListController(ureq, wControl, (Versionable)currentItem, locked);
 		listenTo(revisionListCtr);
 		putInitialPanel(revisionListCtr.getInitialComponent());

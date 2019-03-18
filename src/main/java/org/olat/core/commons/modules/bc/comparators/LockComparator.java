@@ -25,6 +25,7 @@ import java.util.Comparator;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSLockApplicationType;
 import org.olat.core.util.vfs.VFSLockManager;
 
 /**
@@ -45,10 +46,10 @@ public class LockComparator implements Comparator<VFSItem> {
 		lockManager = CoreSpringFactory.getImpl(VFSLockManager.class);
 	}
 	
-	
+	@Override
 	public int compare(VFSItem o1, VFSItem o2) {
-		boolean l1 = lockManager.isLocked(o1);
-		boolean l2 = lockManager.isLocked(o2);
+		boolean l1 = lockManager.isLocked(o1, VFSLockApplicationType.vfs);
+		boolean l2 = lockManager.isLocked(o2, VFSLockApplicationType.vfs);
 		
 		if(l1 && !l2) return sortAsc ? -1 : 1;
 		if(!l1 && l2) return sortAsc ? 1 : -1;

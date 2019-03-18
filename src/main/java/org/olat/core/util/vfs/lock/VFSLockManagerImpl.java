@@ -39,6 +39,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.util.vfs.LocalImpl;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLockApplicationType;
 import org.olat.core.util.vfs.VFSLockManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -82,12 +83,12 @@ public class VFSLockManagerImpl implements VFSLockManager {
     private VFSRepositoryService vfsRepositoryService;
 
 	@Override
-	public boolean isLocked(VFSItem item) {
-		return isLocked(item, null);
+	public boolean isLocked(VFSItem item, VFSLockApplicationType type) {
+		return isLocked(item, null, type);
 	}
 
 	@Override
-	public boolean isLocked(VFSItem item, VFSMetadata loadedInfo) {
+	public boolean isLocked(VFSItem item, VFSMetadata loadedInfo, VFSLockApplicationType type) {
 		File file = extractFile(item);
     	if(file != null && fileLocks.containsKey(file)) {
     		LockInfo lock = fileLocks.get(file);
@@ -104,24 +105,28 @@ public class VFSLockManagerImpl implements VFSLockManager {
 	}
 	
 	@Override
-	public boolean isLockedForMe(VFSItem item, Identity me, Roles roles) {
-		return isLockedForMe(item, null, me, roles);
+	public boolean isLockedForMe(VFSItem item, Identity me, Roles roles, VFSLockApplicationType type) {
+		return isLockedForMe(item, null, me, roles, type);
 	}
 
 	/**
 	 * @return true If the lock owner is someone else or if it's a WebDAV lock
 	 */
 	@Override
-	public boolean isLockedForMe(VFSItem item, VFSMetadata loadedInfo, Identity me, Roles roles) {
+	public boolean isLockedForMe(VFSItem item, VFSMetadata loadedInfo, Identity me, Roles roles, VFSLockApplicationType type) {
 		File file = extractFile(item);
     	if(file != null && fileLocks.containsKey(file)) {
     		LockInfo lock = fileLocks.get(file);
-    		if (lock != null && lock.hasExpired()) {
+    		if(lock == null) {
+    			return false;
+    		} else if (lock != null && lock.hasExpired()) {
     			//LOCK resourceLocks.remove(lock.getWebPath());
                 fileLocks.remove(file);
+            } else if(lock.isCollaborationLock() && type == VFSLockApplicationType.collaboration) {
+            	return false;
             } else {
         		Long lockedBy = lock.getLockedBy();
-            	return (lockedBy != null && !lockedBy.equals(me.getKey())) || lock.isWebDAVLock();
+            	return (lockedBy != null && !lockedBy.equals(me.getKey())) || lock.isWebDAVLock() || lock.isCollaborationLock();
             }
     	}
 
@@ -150,21 +155,26 @@ public class VFSLockManagerImpl implements VFSLockManager {
 	}
 	
     @Override
-	public boolean lock(VFSItem item, Identity identity, Roles roles) {
+	public boolean lock(VFSItem item, Identity identity, Roles roles, VFSLockApplicationType type) {
 		if (item != null && item.canMeta() == VFSConstants.YES) {
-			VFSMetadata info = item.getMetaInfo();
-			info.setLockedBy(identity);
-			info.setLockedDate(new Date());
-			info.setLocked(true);
-			vfsRepositoryService.updateMetadata(info);
-			dbInstance.commit();
-			System.out.println("lock:" + info.getKey());
+			if(type == VFSLockApplicationType.vfs) {
+				VFSMetadata info = item.getMetaInfo();
+				info.setLockedBy(identity);
+				info.setLockedDate(new Date());
+				info.setLocked(true);
+				vfsRepositoryService.updateMetadata(info);
+				dbInstance.commit();
+			}
 			
 			File file = extractFile(item);
 			if(file != null && fileLocks.containsKey(file)) {
 				LockInfo lock = fileLocks.get(file);
 				if(lock != null) {
-					lock.setVfsLock(true);
+					if(type == VFSLockApplicationType.collaboration) {
+						lock.setCollaborationLock(true);
+					} else if(type == VFSLockApplicationType.vfs) {
+						lock.setVfsLock(true);
+					}
 				}
 			}
 			
@@ -179,7 +189,7 @@ public class VFSLockManagerImpl implements VFSLockManager {
      * 
      */
 	@Override
-	public boolean unlock(VFSItem item, Identity identity, Roles roles) {
+	public boolean unlock(VFSItem item, Identity identity, Roles roles, VFSLockApplicationType type) {
 		if (item != null && item.canMeta() == VFSConstants.YES) {
 			VFSMetadata info = item.getMetaInfo();
 			if(info == null) return false;
@@ -196,6 +206,10 @@ public class VFSLockManagerImpl implements VFSLockManager {
 				LockInfo lock = fileLocks.get(file);
 				if(lock.isWebDAVLock()) {
 					lock.setVfsLock(false);
+					lock.setCollaborationLock(false);
+				} else if(lock.isCollaborationLock()) {
+					lock.setVfsLock(false);
+					lock.setWebDAVLock(false);
 				} else {
 					if(lock.getWebPath() != null) {
 						//LOCK resourceLocks.remove(lock.getWebPath());
@@ -247,7 +261,7 @@ public class VFSLockManagerImpl implements VFSLockManager {
         		}        		
         	}
         	if(lock == null){
-	    		lock = new LockInfo(info.getLockedBy(), false, true);
+	    		lock = new LockInfo(info.getLockedBy(), false, true, false);
 	    		lock.setWebResource(resource);
 	    		lock.setCreationDate(info.getLockedDate());
 	    		lock.setOwner(Settings.getServerContextPathURI() + "/Identity/" + info.getLockedBy().getKey());
@@ -272,7 +286,7 @@ public class VFSLockManagerImpl implements VFSLockManager {
     	
     	VFSMetadata info = getMetaInfo(item);
     	if(info != null && info.isLocked()) {
-    		LockInfo lock = new LockInfo(info.getLockedBy(), false, true);
+    		LockInfo lock = new LockInfo(info.getLockedBy(), false, true, false);
     		lock.setCreationDate(info.getLockedDate());
     		lock.setOwner(Settings.getServerContextPathURI() + "/Identity/" + info.getLockedBy().getKey());
     		lock.setDepth(1);
@@ -281,6 +295,10 @@ public class VFSLockManagerImpl implements VFSLockManager {
     		return lock;
     	}
     	return null;
+	}
+	
+	public LockInfo getCollaborationLock() {
+		return null;
 	}
 
 	/**
@@ -333,6 +351,7 @@ public class VFSLockManagerImpl implements VFSLockManager {
 	    	if(lock != null) {
 	    		if(lock.isVfsLock()) {
 	    			lock.setWebDAVLock(false);
+	    			lock.setCollaborationLock(false);
 	    		} else {
 					fileLocks.remove(file);
 	    		}

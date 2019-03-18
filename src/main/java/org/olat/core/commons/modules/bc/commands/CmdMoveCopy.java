@@ -51,6 +51,7 @@ import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSLockApplicationType;
 import org.olat.core.util.vfs.VFSLockManager;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSStatus;
@@ -240,7 +241,7 @@ public class CmdMoveCopy extends DefaultController implements FolderCommand {
 					return null;
 				}
 			}
-			if (vfsLockManager.isLockedForMe(vfsSource, ureq.getIdentity(), ureq.getUserSession().getRoles())) {
+			if (vfsLockManager.isLockedForMe(vfsSource, ureq.getIdentity(), ureq.getUserSession().getRoles(), VFSLockApplicationType.vfs)) {
 				abortFailed(ureq, "lock.title");
 				return null;
 			}

@@ -48,6 +48,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSLockApplicationType;
 import org.olat.core.util.vfs.VFSLockManager;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.version.Versionable;
@@ -210,9 +211,9 @@ public class FileCopyController extends LinkChooserController {
 		} else if (source == commentVersionCtr) {
 			String comment = commentVersionCtr.getComment();
 			Roles roles = ureq.getUserSession().getRoles();
-			boolean locked = vfsLockManager.isLocked(existingVFSItem);
+			boolean locked = vfsLockManager.isLocked(existingVFSItem, VFSLockApplicationType.vfs);
 			if(locked && !commentVersionCtr.keepLocked()) {
-				vfsLockManager.unlock(existingVFSItem, getIdentity(), roles);
+				vfsLockManager.unlock(existingVFSItem, getIdentity(), roles, VFSLockApplicationType.vfs);
 			}
 			
 			commentVersionDialogBox.deactivate();
@@ -230,7 +231,7 @@ public class FileCopyController extends LinkChooserController {
 		} else if (source == unlockCtr) {
 			// Overwrite...
 			if(!unlockCtr.keepLocked()) {
-				vfsLockManager.unlock(existingVFSItem, getIdentity(), ureq.getUserSession().getRoles());
+				vfsLockManager.unlock(existingVFSItem, getIdentity(), ureq.getUserSession().getRoles(), VFSLockApplicationType.vfs);
 			}
 			
 			unlockDialogBox.deactivate();
@@ -257,7 +258,7 @@ public class FileCopyController extends LinkChooserController {
 					if(maxNumOfRevisions < 0 || maxNumOfRevisions > versions.getRevisions().size()) {
 						
 						removeAsListenerAndDispose(commentVersionCtr);
-						boolean locked = vfsLockManager.isLocked(existingVFSItem);
+						boolean locked = vfsLockManager.isLocked(existingVFSItem, VFSLockApplicationType.vfs);
 						commentVersionCtr = new VersionCommentController(ureq,getWindowControl(), locked, true);
 						listenTo(commentVersionCtr);
 						
@@ -298,7 +299,7 @@ public class FileCopyController extends LinkChooserController {
 	
 	private void fileAlreadyExists(UserRequest ureq) {
 		renamedFilename =  proposedRenamedFilename(existingVFSItem);
-		boolean locked = vfsLockManager.isLockedForMe(existingVFSItem, getIdentity(), ureq.getUserSession().getRoles());
+		boolean locked = vfsLockManager.isLockedForMe(existingVFSItem, getIdentity(), ureq.getUserSession().getRoles(), VFSLockApplicationType.vfs);
 		if (locked) {
 			//the file is locked and cannot be overwritten
 			removeAsListenerAndDispose(lockedFileDialog);

@@ -60,6 +60,7 @@ import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSLockApplicationType;
 import org.olat.core.util.vfs.VFSLockManager;
 import org.olat.core.util.vfs.VirtualContainer;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
@@ -234,7 +235,9 @@ public class ListRenderer {
 			leaf = (VFSLeaf)child;
 		}
 		boolean isContainer = (leaf == null); // if not a leaf, it must be a container...
-		boolean lockedForUser = lockManager.isLockedForMe(child, metadata, fc.getIdentityEnvironnement().getIdentity(), fc.getIdentityEnvironnement().getRoles());
+		boolean lockedForUser = lockManager.isLockedForMe(child, metadata,
+				fc.getIdentityEnvironnement().getIdentity(), fc.getIdentityEnvironnement().getRoles(),
+				VFSLockApplicationType.vfs);
 		
 		String name = child.getName();
 		boolean xssErrors = StringHelper.xssScanForErrors(name);
@@ -414,7 +417,7 @@ public class ListRenderer {
 		}
 		
 		//locked
-		boolean locked = lockManager.isLocked(child, metadata);
+		boolean locked = lockManager.isLocked(child, metadata, VFSLockApplicationType.vfs);
 		if(locked) {
 			LockInfo lock = lockManager.getLock(child);
 			sb.append("<i class=\"o_icon o_icon_locked\" title=\"");
@@ -427,6 +430,9 @@ public class ListRenderer {
 				String msg = translator.translate("Locked", new String[]{fullname, date});
 				if(lock.isWebDAVLock()) {
 					msg += " (WebDAV)";
+				} else if(lock.isCollaborationLock()) {
+					msg += " (<i class='o_icon o_icon_edit'> </i>)";
+					
 				}
 				sb.append(msg);
 			}

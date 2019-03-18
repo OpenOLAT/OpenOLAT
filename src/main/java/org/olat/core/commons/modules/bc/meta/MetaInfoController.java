@@ -49,6 +49,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSLockApplicationType;
 import org.olat.core.util.vfs.VFSLockManager;
 import org.olat.core.util.vfs.lock.LockInfo;
 import org.olat.user.UserManager;
@@ -233,7 +234,7 @@ public class MetaInfoController extends FormBasicController {
 			String lockedTitle = getTranslator().translate("mf.locked");
 			String unlockedTitle = getTranslator().translate("mf.unlocked");
 			locked = uifactory.addRadiosHorizontal("locked","mf.locked",formLayout, new String[]{"lock","unlock"}, new String[]{lockedTitle, unlockedTitle});
-			if(vfsLockManager.isLocked(item)) {
+			if(vfsLockManager.isLocked(item, VFSLockApplicationType.vfs)) {
 				locked.select("lock", true);
 			} else {
 				locked.select("unlock", true);
@@ -252,6 +253,8 @@ public class MetaInfoController extends FormBasicController {
 				lockedDetails = getTranslator().translate("mf.locked.description", new String[]{user, date});
 				if(lock.isWebDAVLock()) {
 					lockedDetails += " (WebDAV)";
+				} else if(lock.isCollaborationLock()) {
+					lockedDetails += " (<i class='o_icon o_icon_edit'> </i>)";
 				}
 			} else {
 				lockedDetails = getTranslator().translate("mf.unlocked.description");

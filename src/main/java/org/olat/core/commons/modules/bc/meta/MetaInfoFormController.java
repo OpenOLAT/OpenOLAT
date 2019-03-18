@@ -61,6 +61,7 @@ import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSLockApplicationType;
 import org.olat.core.util.vfs.VFSLockManager;
 import org.olat.core.util.vfs.lock.LockInfo;
 import org.olat.user.UserManager;
@@ -306,12 +307,12 @@ public class MetaInfoFormController extends FormBasicController {
 				String unlockedTitle = getTranslator().translate("mf.unlocked");
 				locked = uifactory.addRadiosHorizontal("locked","mf.locked",formLayout, new String[]{"lock","unlock"}, new String[]{lockedTitle, unlockedTitle});
 				locked.setHelpText(getTranslator().translate("mf.locked.help"));
-				if(vfsLockManager.isLocked(item)) {
+				if(vfsLockManager.isLocked(item, VFSLockApplicationType.vfs)) {
 					locked.select("lock", true);
 				} else {
 					locked.select("unlock", true);
 				}
-				boolean lockForMe = vfsLockManager.isLockedForMe(item, getIdentity(), roles);
+				boolean lockForMe = vfsLockManager.isLockedForMe(item, getIdentity(), roles, VFSLockApplicationType.vfs);
 				locked.setEnabled(!lockForMe);
 				
 				//locked by
@@ -481,13 +482,13 @@ public class MetaInfoFormController extends FormBasicController {
 	public VFSMetadata getMetaInfo() {
 		if (!isSubform && (item instanceof VFSLeaf) && (locked != null && locked.isEnabled())) {
 			//isSubForm
-			boolean alreadyLocked = vfsLockManager.isLocked(item);
+			boolean alreadyLocked = vfsLockManager.isLocked(item, VFSLockApplicationType.vfs);
 			boolean currentlyLocked = locked.isSelected(0);
 			if(!currentlyLocked || !alreadyLocked) {
 				if(currentlyLocked) {
-					vfsLockManager.lock(item, getIdentity(), roles);
+					vfsLockManager.lock(item, getIdentity(), roles, VFSLockApplicationType.vfs);
 				} else {
-					vfsLockManager.unlock(item, getIdentity(), roles);
+					vfsLockManager.unlock(item, getIdentity(), roles, VFSLockApplicationType.vfs);
 				}
 			}
 		}
