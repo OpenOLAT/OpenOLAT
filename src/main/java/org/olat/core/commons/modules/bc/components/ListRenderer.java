@@ -164,12 +164,21 @@ public class ListRenderer {
 			   .append(translator.translate("versions")).append("\"></i></a>");
 		}
 
+		// lock
 		sb.append("</th><th><a class='o_orderby ").append(sortCss,FolderComponent.SORT_LOCK.equals(sortOrder)).append("' ");
-		ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, false, false, new NameValuePair(PARAM_SORTID, FolderComponent.SORT_LOCK))
-		   .append("><i class=\"o_icon o_icon_locked  o_icon-lg\" title=\"")
-		   .append(translator.translate("lock.title")).append("\"></i></a>")
+		ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, false, false, new NameValuePair(PARAM_SORTID, FolderComponent.SORT_LOCK));
+		sb.append("><i class=\"o_icon o_icon_locked  o_icon-lg\" title=\"");
+		sb.append(translator.translate("lock.title")).append("\"></i></a>");
+		
+		// open
+		sb.append("<th>");
+		sb.append("<i class=\"o_icon o_icon_edit o_icon-lg\"");
+		sb.append(" title=\"").append(translator.translate("header.open")).append("\">");
+		sb.append("</i>");
+		sb.append("</th>");
+		
 		// meta data column
-		  .append("</th><th><i class=\"o_icon o_icon_edit_metadata o_icon-lg\" title=\"")
+		sb.append("</th><th><i class=\"o_icon o_icon_edit_metadata o_icon-lg\" title=\"")
 		  .append(translator.translate("mf.edit")).append("\"></i></th></tr></thead>");
 				
 		// render directory contents
@@ -424,6 +433,15 @@ public class ListRenderer {
 			sb.append("\">&#160;</i>");
 		}
 		sb.append("</td><td>");
+		
+		// open
+		if (canOpen(child, metadata, lockedForUser)) {
+			sb.append("<a ");
+			ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, false, false, new NameValuePair(PARAM_CONTENTEDITID, pos));
+			sb.append(" title=\"").append(StringHelper.escapeHtml(translator.translate("mf.open")));
+			sb.append("\"><i class=\"o_icon o_icon-fw o_icon_edit\"></i></a>");
+		}
+		sb.append("</td><td>");
 
 		// Info link
 		if (canWrite) {
@@ -432,14 +450,6 @@ public class ListRenderer {
 				actionCount++;
 			}
 			
-			String nameLowerCase = name.toLowerCase();
-			boolean isLeaf= (child instanceof VFSLeaf); // OO-57 only display edit link if it's not a folder
-			boolean isEditable =  (isLeaf && !lockedForUser && !xssErrors &&
-					(nameLowerCase.endsWith(".html") || nameLowerCase.endsWith(".htm")
-							|| nameLowerCase.endsWith(".txt") || nameLowerCase.endsWith(".css")
-							|| nameLowerCase.endsWith(".csv	")));
-			if(isEditable) actionCount++;
-
 			boolean canMetaData = canMetaInfo(child);
 			if (canMetaData) actionCount++;
 
@@ -461,12 +471,6 @@ public class ListRenderer {
 					sb.append("<li><a ");
 					ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, false, false, new NameValuePair(PARAM_EDTID, pos))
 					   .append("><i class=\"o_icon o_icon-fw o_icon_edit_metadata\"></i> ").append(StringHelper.escapeHtml(translator.translate("mf.edit"))).append("</a></li>");
-				}
-				// content edit action
-				if (isEditable) {
-					sb.append("<li><a ");
-					ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, false, false, new NameValuePair(PARAM_CONTENTEDITID, pos))
-					   .append("><i class=\"o_icon o_icon-fw o_icon_edit_file\"></i> ").append(StringHelper.escapeHtml(translator.translate("editor"))).append("</a></li>");
 				}
 			
 				// versions action
@@ -491,6 +495,20 @@ public class ListRenderer {
 		sb.append("</td></tr>");
 	}
 	
+	private boolean canOpen(VFSItem child, VFSMetadata metadata, boolean lockedForUser) {
+		boolean isLeaf= (child instanceof VFSLeaf);
+		if (!isLeaf) return false;
+
+		String nameLowerCase = metadata.getFilename().toLowerCase();
+		//TODO uh move to fileeditor, delete parameter
+		boolean isEditable =  (isLeaf && //!lockedForUser && !xssErrors &&
+				(nameLowerCase.endsWith(".html") || nameLowerCase.endsWith(".htm")
+						|| nameLowerCase.endsWith(".txt") || nameLowerCase.endsWith(".css")
+						|| nameLowerCase.endsWith(".csv	")));
+		
+		return isEditable;
+	}
+
 	private boolean canMetaInfo(VFSItem item) {
 		if (item instanceof NamedContainerImpl) {
 			item = ((NamedContainerImpl)item).getDelegate();
