@@ -1,3 +1,23 @@
-<div class="o_collabora_iframe">
-	<iframe id="collaboraiframe" src="$url" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"/>
+<div class="o_collabora">
+	<iframe id="$id" src="$url" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
+	<script type="text/javascript">
+	/* <![CDATA[ */
+		jQuery('$id').ready(function(){
+			window.addEventListener('message', function(e){
+				try {
+					var msg = JSON.parse(e.data);
+					var msgId = msg.MessageId;
+					var args = msg.Values;
+					var deprecated = !!args.Deprecated;
+				} catch(exc) {
+					msgId = e.data;
+				}
+				
+				if (msgId === 'UI_Close' || msgId === 'close' /* deprecated */) {
+					$r.backgroundCommand("close");
+				}
+			});
+		});
+	/* ]]> */
+	</script>
 </div>

@@ -153,7 +153,7 @@ public class FolderComponent extends AbstractComponent {
 		if (ureq.getParameter(ListRenderer.PARAM_EDTID) != null) {
 			fireEvent(ureq, new Event(FolderCommandFactory.COMMAND_EDIT));
 			return;
-		} else if (ureq.getParameter(ListRenderer.PARAM_CONTENTEDITID) != null) {
+		} else if (ureq.getParameter(ListRenderer.PARAM_CONTENT_EDIT_ID) != null) {
 			fireEvent(ureq, new Event(FolderCommandFactory.COMMAND_EDIT_CONTENT));
 			return;
 		} else if (ureq.getParameter(ListRenderer.PARAM_SERV) != null) {

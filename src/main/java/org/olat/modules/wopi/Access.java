@@ -33,10 +33,8 @@ public interface Access {
 
 	String getToken();
 
-	String getProviderType();
-	
 	Identity getOwner();
 	
-	Identity getAccessIdenity();
+	Identity getAccessIdentity();
 
 }

@@ -17,31 +17,59 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.wopi;
+package org.olat.modules.wopi.model;
 
-import java.io.File;
-
-import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.id.Identity;
+import org.olat.modules.wopi.Access;
 
 /**
  * 
- * Initial date: 6 Mar 2019<br>
+ * Initial date: 18 Mar 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface WopiService {
-
-	boolean fileExists(String fileId);
-
-	File getFile(String fileId);
-
-	Access createAccess(VFSMetadata vfsMetadata, Identity identity);
-
-	Access getAccess(String accessToken);
+public class AccessImpl implements Access {
 	
-	boolean hasAction(Discovery discovery, String actionName, String suffix);
+	private String fileId;
+	private String token;
+	private Identity owner;
+	private Identity accessIdentity;
 
-	Action getAction(Discovery discovery, String actionName, String suffix);
+	@Override
+	public String getFileId() {
+		return fileId;
+	}
+
+	public void setFileId(String fileId) {
+		this.fileId = fileId;
+	}
+
+	@Override
+	public String getToken() {
+		return token;
+	}
+
+	public void setToken(String token) {
+		this.token = token;
+	}
+
+	@Override
+	public Identity getOwner() {
+		return owner;
+	}
+
+	public void setOwner(Identity owner) {
+		this.owner = owner;
+	}
+
+	@Override
+	public Identity getAccessIdentity() {
+		return accessIdentity;
+	}
+	
+	public void setAccessIdentity(Identity accessIdentity) {
+		this.accessIdentity = accessIdentity;
+	}
+
 
 }

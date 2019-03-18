@@ -42,7 +42,7 @@ public interface VFSLeafEditor {
 	
 	String getDisplayName(Locale locale);
 	
-	boolean isEditableFormat(VFSLeaf vfsLeaf);
+	boolean isSupportingFormat(VFSLeaf vfsLeaf);
 	
 	Controller getRunController(UserRequest ureq, WindowControl wControl, VFSLeaf vfsLeaf,
 			FolderComponent folderComponent, Identity identity);

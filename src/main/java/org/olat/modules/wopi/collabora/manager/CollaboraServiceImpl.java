@@ -23,7 +23,9 @@ import java.io.File;
 
 import javax.annotation.PostConstruct;
 
+import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.control.Event;
+import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
@@ -76,6 +78,11 @@ public class CollaboraServiceImpl implements CollaboraService, GenericEventListe
 	}
 
 	@Override
+	public Access createAccess(VFSMetadata vfsMetadata, Identity identity) {
+		return wopiService.createAccess(vfsMetadata, identity);
+	}
+
+	@Override
 	public Access getAccess(String accessToken) {
 		return wopiService.getAccess(accessToken);
 	}
@@ -111,6 +118,11 @@ public class CollaboraServiceImpl implements CollaboraService, GenericEventListe
 		String suffix = FileUtils.getFileSuffix(file.getName());
 		Action action = wopiService.getAction(getDiscovery(), "edit", suffix);
 		return action != null? action.getUrlSrc(): null;
+	}
+
+	@Override
+	public boolean accepts(String suffix) {
+		return wopiService.hasAction(getDiscovery(), "edit", suffix);
 	}
 
 }

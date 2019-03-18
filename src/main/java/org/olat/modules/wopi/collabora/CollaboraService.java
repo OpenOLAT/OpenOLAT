@@ -21,6 +21,8 @@ package org.olat.modules.wopi.collabora;
 
 import java.io.File;
 
+import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.wopi.Access;
@@ -40,10 +42,14 @@ public interface CollaboraService {
 	boolean fileExists(String fileId);
 
 	File getFile(String fileId);
+	
+	Access createAccess(VFSMetadata vfsMetadata, Identity identity);
 
 	Access getAccess(String accessToken);
 	
-	public Discovery getDiscovery();
+	Discovery getDiscovery();
 	
-	public String getEditorBaseUrl(File file);
+	String getEditorBaseUrl(File file);
+	
+	boolean accepts(String suffix);
 }

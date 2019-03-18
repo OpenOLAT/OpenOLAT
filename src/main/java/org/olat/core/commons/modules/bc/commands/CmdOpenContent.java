@@ -19,12 +19,14 @@
  */
 package org.olat.core.commons.modules.bc.commands;
 
-import org.olat.core.commons.editor.fileeditor.FileEditor;
+import java.util.Optional;
+
 import org.olat.core.commons.modules.bc.components.FolderComponent;
 import org.olat.core.commons.modules.bc.components.ListRenderer;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.vfs.VFSLeafEditor;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.ChiefController;
@@ -40,6 +42,7 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -54,6 +57,9 @@ public class CmdOpenContent extends BasicController implements FolderCommand {
 	
 	private FolderComponent folderComponent;
 	private Controller editCtrl;
+	
+	@Autowired
+	private VFSRepositoryService vfsService;
 
 	protected CmdOpenContent(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -64,8 +70,9 @@ public class CmdOpenContent extends BasicController implements FolderCommand {
 	public Controller execute(FolderComponent folderComponent, UserRequest ureq, WindowControl wControl,
 			Translator translator) {
 		this.folderComponent = folderComponent;
-		String pos = ureq.getParameter(ListRenderer.PARAM_CONTENTEDITID);
-		if (!StringHelper.containsNonWhitespace(pos)) {
+		String pos = ureq.getParameter(ListRenderer.PARAM_CONTENT_EDIT_ID);
+		String editorType = ureq.getParameter(ListRenderer.PARAM_CONTENT_EDITOR);
+		if (!StringHelper.containsNonWhitespace(pos) || !StringHelper.containsNonWhitespace(editorType)) {
 			// somehow parameter did not make it to us
 			status = FolderCommandStatus.STATUS_FAILED;
 			getWindowControl().setError(translator.translate("failed"));
@@ -96,8 +103,14 @@ public class CmdOpenContent extends BasicController implements FolderCommand {
 		}
 		
 		VFSLeaf vfsLeaf = (VFSLeaf)currentItem;
-		VFSLeafEditor editor = new FileEditor();
-		editCtrl = editor.getRunController(ureq, wControl, vfsLeaf, folderComponent, getIdentity());
+		Optional<VFSLeafEditor> editor = vfsService.getEditor(editorType);
+		if (!editor.isPresent()) {
+			status = FolderCommandStatus.STATUS_FAILED;
+			getWindowControl().setError(translator.translate("failed"));
+			return null;
+		}
+		
+		editCtrl = editor.get().getRunController(ureq, wControl, vfsLeaf, folderComponent, getIdentity());
 		listenTo(editCtrl);
 		
 		ChiefController cc = getWindowControl().getWindowBackOffice().getChiefController();
@@ -126,7 +139,6 @@ public class CmdOpenContent extends BasicController implements FolderCommand {
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
-	
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {

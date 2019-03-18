@@ -21,6 +21,7 @@ package org.olat.core.commons.services.vfs;
 
 import java.io.File;
 import java.util.List;
+import java.util.Optional;
 
 import org.olat.core.commons.services.license.License;
 import org.olat.core.id.Identity;
@@ -133,5 +134,16 @@ public interface VFSRepositoryService {
 	public License getLicense(VFSMetadata meta);
 	
 	public License getOrCreateLicense(VFSMetadata meta, Identity itentity);
+	
+
+	public Optional<VFSLeafEditor> getEditor(String editorType);
+	
+	/**
+	 * Get all enabled editors which support the file of the vfsLeaf. Support means usually edit or read.
+	 *
+	 * @param vfsLeaf
+	 * @return
+	 */
+	public List<VFSLeafEditor> getEditors(VFSLeaf vfsLeaf);
 
 }

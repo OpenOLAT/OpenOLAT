@@ -25,6 +25,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.CodeHelper;
 import org.olat.modules.wopi.Access;
 
 /**
@@ -45,13 +46,16 @@ public class CollaboraEditorController extends BasicController {
 				.withLang(ureq.getLocale().getLanguage())
 				.build();
 		
+		mainVC.contextPut("id", "o_" + CodeHelper.getRAMUniqueID());
 		mainVC.contextPut("url", url);
 		putInitialPanel(mainVC);
 	}
 	
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		//
+		if ("close".equals(event.getCommand())) {
+			fireEvent(ureq, Event.DONE_EVENT);
+		}
 	}
 
 	@Override

@@ -20,15 +20,28 @@
 package org.olat.modules.wopi.manager;
 
 import java.io.File;
+import java.net.URL;
+import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
+import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.wopi.Access;
 import org.olat.modules.wopi.Action;
 import org.olat.modules.wopi.App;
 import org.olat.modules.wopi.Discovery;
 import org.olat.modules.wopi.NetZone;
 import org.olat.modules.wopi.WopiService;
+import org.olat.modules.wopi.model.AccessImpl;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -39,51 +52,58 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class WopiServiceImpl implements WopiService {
+	
+	private static final OLog log = Tracing.createLoggerFor(WopiServiceImpl.class);
+	
+	private Map<String, Access> accesses = new HashMap<>();
+	
+	@Autowired
+	private VFSRepositoryService vfsService;
 
 	@Override
 	public boolean fileExists(String fileId) {
-		// TODO uh real implementation
-		return true;
+		return vfsService.getItemFor(fileId) != null? true: false;
 	}
 
 	@Override
 	public File getFile(String fileId) {
-		return new File("/Users/urshensler/tmp/document.docx");
+		VFSItem item = vfsService.getItemFor(fileId);
+		if (item instanceof VFSLeaf) {
+			VFSLeaf vfsLeaf = (VFSLeaf) item;
+			String uri = vfsLeaf.getMetaInfo().getUri();
+			try {
+				return Paths.get(new URL(uri).toURI()).toFile();
+			} catch (Exception e) {
+				log.error("", e);
+			}
+		}
+		return null;
+	}
+
+	@Override
+	public Access createAccess(VFSMetadata vfsMetadata, Identity identity) {
+		String token = UUID.randomUUID().toString().replaceAll("-", "");
+		String fileId = vfsMetadata.getUuid();
+		Identity owner = vfsMetadata.getAuthor();
+		
+		AccessImpl access = new AccessImpl();
+		access.setToken(token);
+		access.setFileId(fileId);
+		access.setOwner(owner);
+		access.setAccessIdentity(identity);
+		accesses.put(token, access);
+		return access;
 	}
 
 	@Override
 	public Access getAccess(String accessToken) {
-		// TODO uh real implementation
-		return new Access() {
-			
-			@Override
-			public String getToken() {
-				return "123";
-			}
-			
-			@Override
-			public String getProviderType() {
-				return "collabora";
-			}
+		return accesses.get(accessToken);
+	}
 
-			@Override
-			public Identity getOwner() {
-				// TODO uh Auto-generated method stub
-				return null;
-			}
-
-			@Override
-			public Identity getAccessIdenity() {
-				// TODO uh Auto-generated method stub
-				return null;
-			}
-
-			@Override
-			public String getFileId() {
-				// TODO uh Auto-generated method stub
-				return null;
-			}
-		};
+	@Override
+	public boolean hasAction(Discovery discovery, String actionName, String suffix) {
+		Action action = getAction(discovery, actionName, suffix);
+		return action != null? true: false;
 	}
 
 	@Override

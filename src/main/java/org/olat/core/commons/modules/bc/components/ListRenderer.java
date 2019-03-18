@@ -42,6 +42,7 @@ import org.olat.core.commons.services.license.License;
 import org.olat.core.commons.services.license.LicenseHandler;
 import org.olat.core.commons.services.license.LicenseModule;
 import org.olat.core.commons.services.license.ui.LicenseRenderer;
+import org.olat.core.commons.services.vfs.VFSLeafEditor;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
@@ -81,7 +82,8 @@ public class ListRenderer {
 	/** Edit parameter identifier. */
 	public static final String PARAM_EDTID = "fcedt";
 	/** Edit parameter identifier. */
- 	public static final String PARAM_CONTENTEDITID = "contentedit";
+ 	public static final String PARAM_CONTENT_EDIT_ID = "contentedit";
+ 	public static final String PARAM_CONTENT_EDITOR = "contenteditor";
  	/** Serve resource identifier */
  	public static final String PARAM_SERV = "serv";
 	/** Sort parameter identifier. */
@@ -441,11 +443,36 @@ public class ListRenderer {
 		sb.append("</td><td>");
 		
 		// open
-		if (canOpen(child, metadata, lockedForUser)) {
-			sb.append("<a ");
-			ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, false, false, new NameValuePair(PARAM_CONTENTEDITID, pos));
-			sb.append(" title=\"").append(StringHelper.escapeHtml(translator.translate("mf.open")));
-			sb.append("\"><i class=\"o_icon o_icon-fw o_icon_edit\"></i></a>");
+		if (!xssErrors) {
+			List<VFSLeafEditor> editors = getLeafEditors(child);
+			if (editors.size() == 1) {
+				sb.append("<a ");
+				ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, false, false,
+						new NameValuePair(PARAM_CONTENT_EDIT_ID, pos),
+						new NameValuePair(PARAM_CONTENT_EDITOR, editors.get(0).getType()));
+				sb.append(" title=\"").append(StringHelper.escapeHtml(translator.translate("mf.open")));
+				sb.append("\"><i class=\"o_icon o_icon-fw o_icon_edit\"></i></a>");
+			} else if (editors.size() >= 2) {
+				sb.append("<a id='o_sel_editor_").append(pos).append("' href='javascript:;'><i class='o_icon o_icon_edit'></i></a>");
+				sb.append("<div id='o_sel_editor_pop_").append(pos).append("' style='display:none;'><ul class='list-unstyled'>");
+				for (VFSLeafEditor editor : editors) {
+					sb.append("<li><a ");
+					ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, false, false,
+							new NameValuePair(PARAM_CONTENT_EDIT_ID, pos),
+							new NameValuePair(PARAM_CONTENT_EDITOR, editor.getType()));
+					sb.append(">");
+					sb.append(StringHelper.escapeHtml(translator.translate("mf.open.in", new String[] {editor.getDisplayName(translator.getLocale())} )));
+					sb.append("</a></li>");
+				}
+				sb.append("</ul></div>");
+				sb.append("<script type='text/javascript'>")
+				  .append("/* <![CDATA[ */")
+				  .append("jQuery(function() {\n")
+				  .append("  o_popover('o_sel_editor_").append(pos).append("','o_sel_editor_pop_").append(pos).append("','bottom');\n")
+				  .append("});")
+				  .append("/* ]]> */")
+				  .append("</script>");
+			}
 		}
 		sb.append("</td><td>");
 
@@ -501,20 +528,14 @@ public class ListRenderer {
 		sb.append("</td></tr>");
 	}
 	
-	private boolean canOpen(VFSItem child, VFSMetadata metadata, boolean lockedForUser) {
-		boolean isLeaf= (child instanceof VFSLeaf);
-		if (!isLeaf) return false;
-
-		String nameLowerCase = metadata.getFilename().toLowerCase();
-		//TODO uh move to fileeditor, delete parameter
-		boolean isEditable =  (isLeaf && //!lockedForUser && !xssErrors &&
-				(nameLowerCase.endsWith(".html") || nameLowerCase.endsWith(".htm")
-						|| nameLowerCase.endsWith(".txt") || nameLowerCase.endsWith(".css")
-						|| nameLowerCase.endsWith(".csv	")));
-		
-		return isEditable;
+	private List<VFSLeafEditor> getLeafEditors(VFSItem child) {
+		if (child instanceof VFSLeaf) {
+			VFSLeaf vfsLeaf = (VFSLeaf) child;
+			return vfsRepositoryService.getEditors(vfsLeaf);
+		}
+		return Collections.emptyList();
 	}
-
+	
 	private boolean canMetaInfo(VFSItem item) {
 		if (item instanceof NamedContainerImpl) {
 			item = ((NamedContainerImpl)item).getDelegate();

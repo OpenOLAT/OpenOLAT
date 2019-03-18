@@ -33,8 +33,10 @@ import java.util.Date;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.modules.bc.FolderConfig;
@@ -49,6 +51,7 @@ import org.olat.core.commons.services.license.LicenseType;
 import org.olat.core.commons.services.thumbnail.CannotGenerateThumbnailException;
 import org.olat.core.commons.services.thumbnail.FinalSize;
 import org.olat.core.commons.services.thumbnail.ThumbnailService;
+import org.olat.core.commons.services.vfs.VFSLeafEditor;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSMetadataRef;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
@@ -109,6 +112,8 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	private CoordinatorManager coordinatorManager;
 	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private List<VFSLeafEditor> vfsLeafEditors;
 	
 	@Override
 	public void afterPropertiesSet() throws Exception {
@@ -736,4 +741,21 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		}
 		return canonicalMetaPath;
 	}
+
+	@Override
+	public Optional<VFSLeafEditor> getEditor(String editorType) {
+		return vfsLeafEditors.stream()
+				.filter(VFSLeafEditor::isEnable)
+				.filter(editor -> editor.getType().equals(editorType))
+				.findFirst();
+	}
+
+	@Override
+	public List<VFSLeafEditor> getEditors(VFSLeaf vfsLeaf) {
+		return vfsLeafEditors.stream()
+				.filter(VFSLeafEditor::isEnable)
+				.filter(editor -> editor.isSupportingFormat(vfsLeaf))
+				.collect(Collectors.toList());
+	}
+	
 }

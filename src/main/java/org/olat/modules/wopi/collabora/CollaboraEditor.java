@@ -17,10 +17,8 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.commons.editor.fileeditor;
+package org.olat.modules.wopi.collabora;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.commons.modules.bc.components.FolderComponent;
@@ -33,6 +31,9 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.modules.wopi.Access;
+import org.olat.modules.wopi.collabora.ui.CollaboraEditorController;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -42,24 +43,26 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class FileEditor implements VFSLeafEditor {
-	
-	private static final List<String> HTML_EDITOR_SUFFIX = Arrays.asList("html", "htm");
-	private static final List<String> TEXT_EDITOR_SUFFIX = Arrays.asList("txt", "css", "csv");
+public class CollaboraEditor implements VFSLeafEditor {
+
+	@Autowired
+	private CollaboraModule collaboraModule;
+	@Autowired
+	private CollaboraService collaboraService;
 
 	@Override
 	public boolean isEnable() {
-		return true;
+		return collaboraModule.isEnabled();
 	}
 
 	@Override
 	public String getType() {
-		return "OpenOLAT";
+		return "collabora";
 	}
 
 	@Override
 	public String getDisplayName(Locale locale) {
-		Translator translator = Util.createPackageTranslator(FileEditor.class, locale);
+		Translator translator = Util.createPackageTranslator(CollaboraEditorController.class, locale);
 		return translator.translate("editor.display.name");
 	}
 
@@ -67,13 +70,14 @@ public class FileEditor implements VFSLeafEditor {
 	public boolean isSupportingFormat(VFSLeaf vfsLeaf) {
 		String fileName = vfsLeaf.getName();
 		String suffix = FileUtils.getFileSuffix(fileName);
-		return HTML_EDITOR_SUFFIX.contains(suffix) || TEXT_EDITOR_SUFFIX.contains(suffix)? true: false;
+		return collaboraService.accepts(suffix);
 	}
 
 	@Override
 	public Controller getRunController(UserRequest ureq, WindowControl wControl, VFSLeaf vfsLeaf,
 			FolderComponent folderComponent, Identity identity) {
-		return new FileEditorController(ureq, wControl, folderComponent, vfsLeaf);
+		Access access = collaboraService.createAccess(vfsLeaf.getMetaInfo(), identity);
+		return new CollaboraEditorController(ureq, wControl, access);
 	}
 
 }
