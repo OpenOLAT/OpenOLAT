@@ -25,8 +25,6 @@
 
 package org.olat.course.nodes.projectbroker.service;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
@@ -42,7 +40,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.FileUtils;
 import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.SyncerCallback;
@@ -52,6 +49,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.ProjectBrokerCourseNode;
 import org.olat.course.nodes.projectbroker.ProjectBrokerDropboxController;
@@ -451,28 +449,22 @@ public class ProjectBrokerManagerImpl implements ProjectBrokerManager {
 		VFSContainer uploadVFSContainer = VFSManager.olatRootContainer(getAttamchmentRelativeRootPath(project,courseEnv,cNode), null);
 		log.debug("saveAttachedFile uploadVFSContainer.relPath=" + uploadVFSContainer.getRelPath());
 		// only one attachment, delete other file 
-		for (Iterator<VFSItem> iterator = uploadVFSContainer.getItems().iterator(); iterator.hasNext();) {
+		for (Iterator<VFSItem> iterator = uploadVFSContainer.getItems(new VFSSystemItemFilter()).iterator(); iterator.hasNext();) {
 			VFSItem item =  iterator.next();
 			// Project.getAttachmentFileName is the previous file-name, will not be deleted; student could have open detail-project page with previous attachemnt-link 
-      if (!item.getName().equals(project.getAttachmentFileName())) {
-        item.delete();
-      }
+			if (!item.getName().equals(project.getAttachmentFileName())) {
+				item.delete();
+			}
 		}
 		VFSLeaf newFile = (VFSLeaf)uploadVFSContainer.resolve(fileName);
 		if (newFile == null) {
 			newFile = uploadVFSContainer.createChildLeaf(fileName);
 		}
-		BufferedInputStream in = new BufferedInputStream(uploadedItem.getInputStream());
-		BufferedOutputStream out = new BufferedOutputStream(newFile.getOutputStream(false));
-		boolean success = false;
-		if (in != null) {
-			success = FileUtils.copy(in, out);					
-		}
-		FileUtils.closeSafely(in);
-		FileUtils.closeSafely(out);	
+		boolean success = VFSManager.copyContent(uploadedItem, newFile, true);
 		log.debug("saveAttachedFile success=" + success);
 	}
 
+	@Override
 	public boolean isCustomFieldValueValid(String value, String valueList) {
 		StringTokenizer tok = new StringTokenizer(valueList,ProjectBrokerManager.CUSTOMFIELD_LIST_DELIMITER);
 		if (tok.hasMoreTokens()) {
@@ -489,11 +481,12 @@ public class ProjectBrokerManagerImpl implements ProjectBrokerManager {
 		}
 	}
 
+	@Override
 	public String getAttamchmentRelativeRootPath(Project project, CourseEnvironment courseEnv, CourseNode cNode) {
 		 return getAttachmentBasePathRelToFolderRoot(courseEnv, cNode) + File.separator + project.getKey();
 	}
 
-
+	@Override
 	public String getAttachmentBasePathRelToFolderRoot(CourseEnvironment courseEnvironment, CourseNode courseNode) {
 		return courseEnvironment.getCourseBaseContainer().getRelPath() + File.separator + ATTACHEMENT_DIR_NAME + File.separator + courseNode.getIdent();
 	}
@@ -620,12 +613,14 @@ public class ProjectBrokerManagerImpl implements ProjectBrokerManager {
 		}
 		return null;
 	}
-	
+
+	@Override
 	public void saveProjectBrokerId(Long projectBrokerId, CoursePropertyManager cpm, CourseNode courseNode) {
 		Property projectBrokerKeyProperty = cpm.createCourseNodePropertyInstance(courseNode, null, null, ProjectBrokerCourseNode.CONF_PROJECTBROKER_KEY, null, projectBrokerId, null, null);
 		cpm.saveProperty(projectBrokerKeyProperty);	
 	}
 
+	@Override
 	public boolean existProjectName(Long projectBrokerId, String newProjectTitle) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select count(project.key) from ").append(ProjectImpl.class.getName()).append(" as project")

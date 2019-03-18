@@ -367,8 +367,9 @@ public class WikiManager {
 				} else {
 					if (leaf.getName().contains(WikiManager.WIKI_FILE_SUFFIX+"-") || leaf.getName().contains(WikiManager.WIKI_PROPERTIES_SUFFIX+"-")) {
 						leaf.delete(); // delete version history
-					} else
-					mediaCtn.copyFrom(leaf);
+					} else {
+						mediaCtn.copyFrom(leaf);
+					}
 				}
 			}
 			unzippedDir.delete();

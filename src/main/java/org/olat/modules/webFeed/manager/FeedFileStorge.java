@@ -44,6 +44,7 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.filters.VFSItemMetaFilter;
+import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.modules.webFeed.Enclosure;
@@ -537,10 +538,8 @@ public class FeedFileStorge {
 	public void deleteFeedMedia(Feed feed) {
 		VFSContainer feedMediaContainer = getOrCreateFeedMediaContainer(feed);
 		if (feedMediaContainer != null) {
-			for (VFSItem fileItem : feedMediaContainer.getItems()) {
-				if (!fileItem.getName().startsWith(".")) {
-					fileItem.delete();
-				}
+			for (VFSItem fileItem : feedMediaContainer.getItems(new VFSSystemItemFilter())) {
+				fileItem.delete();
 			}
 		}
 	}

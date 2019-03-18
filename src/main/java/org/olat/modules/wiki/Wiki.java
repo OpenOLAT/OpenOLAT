@@ -310,10 +310,12 @@ public class Wiki implements WikiContainer, Serializable {
 	
 	protected List<VFSItem> getMediaFileList() {
 		List<VFSItem> allFiles = mediaContainer.getItems();
-		List<VFSItem> mediaFilesOnly = new ArrayList<VFSItem>();
+		List<VFSItem> mediaFilesOnly = new ArrayList<>();
 		for (Iterator<VFSItem> iter = allFiles.iterator(); iter.hasNext();) {
 			VFSItem element = iter.next();
-			if(!element.getName().endsWith(WikiMainController.METADATA_SUFFIX)) mediaFilesOnly.add(element);
+			if(!element.getName().endsWith(WikiMainController.METADATA_SUFFIX)) {//TODO metadata
+				mediaFilesOnly.add(element);
+			}
 		}
 		return mediaFilesOnly;
 	}

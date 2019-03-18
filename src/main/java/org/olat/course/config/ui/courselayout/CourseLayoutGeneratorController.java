@@ -179,10 +179,9 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 		} 
 		
 		// add css from hidden coursecss-folder
-		VFSContainer coursecssCont = (VFSContainer) courseEnvironment.getCourseFolderContainer().resolve(CourseLayoutHelper.COURSEFOLDER_CSS_BASE);
-		if (coursecssCont != null) {
-			coursecssCont.setDefaultItemFilter(new VFSItemSuffixFilter(new String[]{"css"}));
-			List<VFSItem> coursecssStyles = coursecssCont.getItems();
+		VFSItem coursecssCont = courseEnvironment.getCourseFolderContainer().resolve(CourseLayoutHelper.COURSEFOLDER_CSS_BASE);
+		if (coursecssCont instanceof VFSContainer) {
+			List<VFSItem> coursecssStyles = ((VFSContainer)coursecssCont).getItems(new VFSItemSuffixFilter(new String[]{ "css" }));
 			if (coursecssStyles != null) {
 				for (VFSItem vfsItem : coursecssStyles) {
 					keys.add(CourseLayoutHelper.COURSEFOLDER_CSS_BASE + "/" + vfsItem.getName());

@@ -115,7 +115,7 @@ public class ForumUserDataManager implements UserDataExportable {
 			List<File> attachments;
 			File msgContainer = forumManager.getMessageDirectory(forum.getKey(), message.getKey(), false);
 			if(msgContainer != null && msgContainer.exists()) {
-				File[] attachmentArr = msgContainer.listFiles(new SystemFileFilter(true, false));
+				File[] attachmentArr = msgContainer.listFiles(SystemFileFilter.FILES_ONLY);
 				attachments = Arrays.asList(attachmentArr);
 				if(!attachments.isEmpty()) {
 					File messageAttachementDir = new File(forumArchive, name);

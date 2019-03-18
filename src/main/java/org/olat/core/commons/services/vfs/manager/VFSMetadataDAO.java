@@ -141,6 +141,23 @@ public class VFSMetadataDAO {
 		return metadata == null || metadata.isEmpty() ? null : metadata.get(0);
 	}
 	
+	public VFSMetadata loadMetadata(Long metadataKey) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select metadata from filemetadata metadata")
+		  .append(" left join fetch metadata.author as author")
+		  .append(" left join fetch author.user as authorUser")
+		  .append(" left join fetch metadata.licenseType as licenseType")
+		  .append(" where metadata.key=:metadataKey");
+
+		List<VFSMetadata> metadata = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), VFSMetadata.class)
+			.setParameter("metadataKey", metadataKey)
+			.setFirstResult(0)
+			.setMaxResults(1)
+			.getResultList();
+		return metadata == null || metadata.isEmpty() ? null : metadata.get(0);
+	}
+	
 	/**
 	 * This is an exact match to find the direct children of a specific
 	 * directory.
@@ -183,6 +200,25 @@ public class VFSMetadataDAO {
 			.getResultList();
 	}
 	
+	public void increaseDownloadCount(String relativePath, String filename) {
+		String updateQuery = "update vfsmetadatadownloadcount set downloadCount=downloadCount+1 where filename=:filename and relativePath=:relativePath";
+		dbInstance.getCurrentEntityManager()
+			.createQuery(updateQuery)
+			.setParameter("filename", filename)
+			.setParameter("relativePath", relativePath)
+			.executeUpdate();
+	}
+	
+	public void updateMetadata(long fileSize, String relativePath, String filename) {
+		String updateQuery = "update vfsmetadatafilesaved set fileLastModified=now(), fileSize=:fileSize where filename=:filename and relativePath=:relativePath";
+		dbInstance.getCurrentEntityManager()
+			.createQuery(updateQuery)
+			.setParameter("filename", filename)
+			.setParameter("relativePath", relativePath)
+			.setParameter("fileSize", fileSize)
+			.executeUpdate();
+	}
+	
 	public VFSMetadata updateMetadata(VFSMetadata metadata) {
 		((VFSMetadataImpl)metadata).setLastModified(new Date());
 		return dbInstance.getCurrentEntityManager().merge(metadata);
@@ -192,13 +228,6 @@ public class VFSMetadataDAO {
 		dbInstance.getCurrentEntityManager().remove(metadata);
 	}
 	
-	public void increaseDownloadCount(String relativePath, String filename) {
-		String updateQuery = "update vfsmetadatadownloadcount set downloadCount=downloadCount+1 where filename=:filename and relativePath=:relativePath";
-		dbInstance.getCurrentEntityManager()
-			.createQuery(updateQuery)
-			.setParameter("filename", filename)
-			.setParameter("relativePath", relativePath)
-			.executeUpdate();
-	}
+
 
 }

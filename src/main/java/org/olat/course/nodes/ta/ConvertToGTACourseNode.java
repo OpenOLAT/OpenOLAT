@@ -42,6 +42,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentManager;
@@ -173,7 +174,7 @@ public class ConvertToGTACourseNode {
 					VFSContainer sumbitContainer = gtaManager.getSubmitContainer(courseEnv, gtaNode, assessedIdentity);
 					
 					boolean dropped = false;
-					for(VFSItem dropppedItem:userDropContainer.getItems()) {
+					for(VFSItem dropppedItem:userDropContainer.getItems(new VFSSystemItemFilter())) {
 						if(dropppedItem instanceof VFSLeaf) {
 							VFSLeaf submittedDocument = sumbitContainer.createChildLeaf(dropppedItem.getName());
 							VFSManager.copyContent((VFSLeaf)dropppedItem, submittedDocument, true);
@@ -202,7 +203,7 @@ public class ConvertToGTACourseNode {
 					VFSContainer correctionContainer = gtaManager.getCorrectionContainer(courseEnv, gtaNode, assessedIdentity);
 					
 					boolean returned = false;
-					for(VFSItem returnedItem:userContainer.getItems()) {
+					for(VFSItem returnedItem:userContainer.getItems(new VFSSystemItemFilter())) {
 						if(returnedItem instanceof VFSLeaf) {
 							VFSLeaf correctionDocument = correctionContainer.createChildLeaf(returnedItem.getName());
 							VFSManager.copyContent((VFSLeaf)returnedItem, correctionDocument, true);
@@ -291,7 +292,7 @@ public class ConvertToGTACourseNode {
 		VFSContainer solutionDirectory = gtaManager.getSolutionsContainer(courseEnv, gtaNode);
 		SolutionList solutionList = new SolutionList();
 		
-		for(VFSItem solution:solutionContainer.getItems()) {
+		for(VFSItem solution:solutionContainer.getItems(new VFSSystemItemFilter())) {
 			if(solution instanceof VFSLeaf) {
 				VFSLeaf solutionDocument = solutionDirectory.createChildLeaf(solution.getName());
 				VFSManager.copyContent((VFSLeaf)solution, solutionDocument, true);

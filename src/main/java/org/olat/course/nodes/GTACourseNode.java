@@ -59,7 +59,7 @@ import org.olat.core.util.ZipUtil;
 import org.olat.core.util.io.ShieldOutputStream;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
-import org.olat.core.util.vfs.filters.SystemItemFilter;
+import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.archiver.ScoreAccountingHelper;
@@ -584,7 +584,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Persi
 			VFSContainer solutions = gtaManager.getSolutionsContainer(course.getCourseEnvironment(), this);
 			if (solutions.exists()) {
 				String solutionDirName = dirName + "/solutions";
-				for(VFSItem solution:solutions.getItems(new SystemItemFilter())) {
+				for(VFSItem solution:solutions.getItems(new VFSSystemItemFilter())) {
 					ZipUtil.addToZip(solution, solutionDirName, exportStream);
 				}
 			}

@@ -46,7 +46,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
-import org.olat.core.util.vfs.filters.SystemItemFilter;
+import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
 import org.olat.modules.edusharing.VFSEdusharingProvider;
 
@@ -300,7 +300,7 @@ public class LinkFileCombiCalloutController extends BasicController {
 		calloutCtr.deactivate();
 		Controller toolCtr = null;
 		if(tool.equals("chooseLink")) {
-			VFSItemFilter filter = new SystemItemFilter();
+			VFSItemFilter filter = new VFSSystemItemFilter();
 			FileChooserController fileChooserCtr = FileChooserUIFactory.createFileChooserController(ureq, getWindowControl(), baseContainer, filter, true);
 			fileChooserCtr.setShowTitle(true);
 			fileChooserCtr.selectPath(relFilePath);

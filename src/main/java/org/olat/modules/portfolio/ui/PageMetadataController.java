@@ -50,6 +50,7 @@ import org.olat.core.gui.media.FileMediaResource;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.io.SystemFileFilter;
 import org.olat.modules.portfolio.Assignment;
 import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.Category;
@@ -221,7 +222,7 @@ public class PageMetadataController extends BasicController {
 
 			File storage = fileStorage.getAssignmentDirectory(assignment);
 			if(storage != null) {
-				documents = Arrays.<File>asList(storage.listFiles());
+				documents = Arrays.<File>asList(storage.listFiles(SystemFileFilter.DIRECTORY_FILES));
 				if(!documents.isEmpty()) {
 					needMapper = true;
 				}

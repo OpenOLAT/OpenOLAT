@@ -42,6 +42,7 @@ import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.config.CourseConfig;
@@ -185,7 +186,7 @@ public class GlossaryManagerImpl implements GlossaryManager {
 			File tmpDir = new File(WebappHelper.getTmpDir());
 			File fExportZIP = File.createTempFile(exportFileName, ".zip", tmpDir);
 			VFSContainer glossaryRoot = getGlossaryRootFolder(res);
-			ZipUtil.zip(glossaryRoot.getItems(), new LocalFileImpl(fExportZIP), false);
+			ZipUtil.zip(glossaryRoot.getItems(new VFSSystemItemFilter()), new LocalFileImpl(fExportZIP), false);
 			return new CleanupAfterDeliveryFileMediaResource(fExportZIP);
 		} catch (IOException e) {
 			log.error("Cannot export glossar: " + res, e);

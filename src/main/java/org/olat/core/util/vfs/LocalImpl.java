@@ -99,6 +99,11 @@ public abstract class LocalImpl implements VFSItem, JavaIOItem {
 	}
 
 	@Override
+	public boolean isHidden() {
+		return basefile != null && basefile.isHidden();
+	}
+
+	@Override
 	public String getName() {
 		return basefile.getName();
 	}

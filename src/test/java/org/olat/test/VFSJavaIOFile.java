@@ -63,6 +63,11 @@ public class VFSJavaIOFile implements VFSLeaf, JavaIOItem {
 	}
 
 	@Override
+	public boolean isHidden() {
+		return file != null && file.isHidden();
+	}
+
+	@Override
 	public File getBasefile() {
 		return file;
 	}

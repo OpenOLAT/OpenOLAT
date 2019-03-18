@@ -110,4 +110,44 @@ public class VFSMetadataDAOTest extends OlatTestCase {
 		Assert.assertEquals(uriProtocol, metadata.getProtocol());
 	}
 
+	@Test
+	public void incrementDownloadCounter() {
+		String uuid = UUID.randomUUID().toString();
+		String relativePath = "/bcroot/hello/world/";
+		String filename = uuid + ".pdf";
+		String uri = "file:///Users/frentix/Documents/bcroot/hello/world/image.jpg";
+		String uriProtocol = "file";
+		VFSMetadata metadata = vfsMetadataDao.createMetadata(uuid, relativePath, filename, new Date(), 18l, false, uri, uriProtocol, null);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(metadata);
+		
+		vfsMetadataDao.increaseDownloadCount(relativePath, filename);
+		dbInstance.commitAndCloseSession();
+		
+		VFSMetadata loadedMetadata = vfsMetadataDao.loadMetadata(metadata.getKey());
+		
+		Assert.assertEquals(metadata, loadedMetadata);
+		Assert.assertEquals(1, loadedMetadata.getDownloadCount());
+	}
+	
+	@Test
+	public void updateFileSize() {
+		String uuid = UUID.randomUUID().toString();
+		String relativePath = "/bcroot/hello/world/";
+		String filename = uuid + ".pdf";
+		String uri = "file:///Users/frentix/Documents/bcroot/hello/world/image.jpg";
+		String uriProtocol = "file";
+		VFSMetadata metadata = vfsMetadataDao.createMetadata(uuid, relativePath, filename, new Date(), 18l, false, uri, uriProtocol, null);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(metadata);
+		
+		vfsMetadataDao.updateMetadata(12345l, relativePath, filename);
+		dbInstance.commitAndCloseSession();
+		
+		VFSMetadata loadedMetadata = vfsMetadataDao.loadMetadata(metadata.getKey());
+		
+		Assert.assertEquals(metadata, loadedMetadata);
+		Assert.assertEquals(12345l, loadedMetadata.getFileSize());
+	}
+
 }

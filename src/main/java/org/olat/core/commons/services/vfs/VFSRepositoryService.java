@@ -62,6 +62,8 @@ public interface VFSRepositoryService {
 	 */
 	public List<VFSMetadata> getChildren(VFSMetadataRef parentMetadata);
 	
+	public void itemSaved(VFSLeaf leaf);
+	
 	public VFSMetadata updateMetadata(VFSMetadata data);
 	
 	public void deleteMetadata(VFSMetadata data);

@@ -68,7 +68,7 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSLockManager;
 import org.olat.core.util.vfs.VFSManager;
-import org.olat.core.util.vfs.filters.SystemItemFilter;
+import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.core.util.vfs.version.Versionable;
 
 /**
@@ -641,7 +641,7 @@ public class ZipUtil {
 	 */
 	public static boolean zip(VFSContainer container, OutputStream out) {
 		try(ZipOutputStream zipOut = new ZipOutputStream(new BufferedOutputStream(out, FileUtils.BSIZE))) {
-			List<VFSItem> items=container.getItems(new SystemItemFilter());
+			List<VFSItem> items=container.getItems(new VFSSystemItemFilter());
 			for(VFSItem item:items) {
 				addToZip(item, "", zipOut);
 			}

@@ -177,7 +177,7 @@ class SubmitDocumentsController extends FormBasicController {
 	}
 	
 	private void updateModel() {
-		File[] documents = documentsDir.listFiles(new SystemFileFilter(true, false));
+		File[] documents = documentsDir.listFiles(SystemFileFilter.FILES_ONLY);
 		if(documents == null) {
 			documents = new File[0];
 		}

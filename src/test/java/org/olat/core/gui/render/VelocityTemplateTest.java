@@ -35,6 +35,7 @@ import org.junit.Test;
 import org.olat.core.gui.render.velocity.VelocityModule;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.io.SystemFileFilter;
 
 /**
  * This test parse all velocity templates and check if they
@@ -68,7 +69,7 @@ public class VelocityTemplateTest {
 	private void testTemplates(String dir, File file, List<Exception> exs) {
 		String name = file.getName();
 		if("_content".equals(name)) {
-			File[] templates = file.listFiles();
+			File[] templates = file.listFiles(SystemFileFilter.DIRECTORY_FILES);
 			for(File template:templates) {
 				String templateName = template.getName();
 				if(templateName.endsWith(".html")) {
@@ -84,7 +85,7 @@ public class VelocityTemplateTest {
 				}
 			}
 		} else if(file.isDirectory()) {
-			File[] files = file.listFiles();
+			File[] files = file.listFiles(SystemFileFilter.DIRECTORY_FILES);
 			for(File child:files) {
 				String subDir = dir + child.getName() + "/";
 				testTemplates(subDir, child, exs);

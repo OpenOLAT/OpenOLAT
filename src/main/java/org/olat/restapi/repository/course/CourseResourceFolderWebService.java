@@ -62,7 +62,7 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSLockManager;
 import org.olat.core.util.vfs.callbacks.ReadOnlyCallback;
-import org.olat.core.util.vfs.filters.SystemItemFilter;
+import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.core.util.vfs.version.Versionable;
 import org.olat.course.ICourse;
 import org.olat.course.config.CourseConfig;
@@ -439,7 +439,7 @@ public class CourseResourceFolderWebService {
 			return response.build();
 		} 
 
-		List<VFSItem> items = container.getItems(new SystemItemFilter());
+		List<VFSItem> items = container.getItems(new VFSSystemItemFilter());
 		int count=0;
 		LinkVO[] links = new LinkVO[items.size()];
 		for(VFSItem item:items) {

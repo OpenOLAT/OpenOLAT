@@ -136,7 +136,7 @@ public class GTAUserDataManager implements DeletableGroupData, UserDataExportabl
 	}
 	
 	private void copyDirContentToDir(File source, File target) {
-		File[] sourceFiles = source.listFiles(new SystemFileFilter(true, true));
+		File[] sourceFiles = source.listFiles(SystemFileFilter.FILES_ONLY);
 		if(sourceFiles != null && sourceFiles.length > 0) {
 			target.mkdirs();
 			for(File sourceFile:sourceFiles) {

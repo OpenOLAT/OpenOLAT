@@ -93,6 +93,7 @@
 		<class>org.olat.core.commons.services.commentAndRating.model.UserCommentImpl</class>
 		<class>org.olat.core.commons.services.sms.model.MessageLogImpl</class>
 		<class>org.olat.core.commons.services.vfs.model.VFSMetadataImpl</class>
+		<class>org.olat.core.commons.services.vfs.model.VFSMetadataFileSaved</class>
 		<class>org.olat.core.commons.services.vfs.model.VFSMetadataDownloadCount</class>
 		<class>org.olat.core.commons.services.vfs.model.VFSThumbnailMetadataImpl</class>
 		<class>org.olat.course.assessment.model.AssessmentModeImpl</class>

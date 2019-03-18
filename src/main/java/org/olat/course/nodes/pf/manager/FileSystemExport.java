@@ -46,6 +46,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.io.SystemFileFilter;
 import org.olat.course.nodes.PFCourseNode;
 import org.olat.course.nodes.pf.ui.PFRunController;
 import org.olat.course.run.environment.CourseEnvironment;
@@ -144,12 +145,10 @@ public class FileSystemExport implements MediaResource {
 				idKeys.add(identity.getKey().toString());
 			}
 		} else {
-			File[] listOfFiles = sourceFolder.toFile().listFiles();
-			if(listOfFiles != null) {
-				for (File file : listOfFiles) {
-					if (file.isDirectory()) {
-						idKeys.add(file.getName());
-					}
+			File[] listOfDirectories = sourceFolder.toFile().listFiles(SystemFileFilter.DIRECTORY_ONLY);
+			if(listOfDirectories != null) {
+				for (File file : listOfDirectories) {
+					idKeys.add(file.getName());
 				}
 			}
 		}
@@ -162,7 +161,7 @@ public class FileSystemExport implements MediaResource {
 						if (relPath.contains(key) && StringHelper.isLong(key)) {
 							String exportFolderName = userManager.getUserDisplayName(Long.parseLong(key)).replace(", ", "_")
 									+ "_" + key;
-							return relPath.replace(key.toString(), exportFolderName);
+							return relPath.replace(key, exportFolderName);
 						}
 					}
 					return null;

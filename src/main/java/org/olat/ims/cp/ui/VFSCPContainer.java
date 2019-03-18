@@ -73,6 +73,11 @@ public class VFSCPContainer extends AbstractVirtualContainer implements VFSConta
 	public boolean exists() {
 		return true;
 	}
+	
+	@Override
+	public boolean isHidden() {
+		return false;
+	}
 
 	@Override
 	public boolean isSame(VFSItem vfsItem) {

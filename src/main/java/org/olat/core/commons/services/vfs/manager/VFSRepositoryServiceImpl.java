@@ -55,11 +55,16 @@ import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.commons.services.vfs.VFSThumbnailMetadata;
 import org.olat.core.commons.services.vfs.manager.MetaInfoReader.Thumbnail;
 import org.olat.core.commons.services.vfs.model.VFSMetadataImpl;
+import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.event.GenericEventListener;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSConstants;
@@ -67,6 +72,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -77,9 +83,10 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class VFSRepositoryServiceImpl implements VFSRepositoryService {
+public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEventListener, InitializingBean {
 	
 	private static final OLog log = Tracing.createLoggerFor(VFSRepositoryServiceImpl.class);
+	private final OLATResourceable fileSizeSubscription = OresHelper.createOLATResourceableType("UpdateFileSizeAsync");
 	private static final String CANONICAL_ROOT_REL_PATH = "/";
 	
 	@Autowired
@@ -99,7 +106,33 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService {
 	@Autowired
 	private ThumbnailService thumbnailService;
 	@Autowired
+	private CoordinatorManager coordinatorManager;
+	@Autowired
 	private BaseSecurity securityManager;
+	
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		coordinatorManager.getCoordinator().getEventBus().registerFor(this, null, fileSizeSubscription);
+	}
+
+	@Override
+	public void event(Event event) {
+		if(event instanceof AsyncFileSizeUpdateEvent) {
+			processFileSizeUpdateEvent((AsyncFileSizeUpdateEvent)event);
+		}	
+	}
+	
+	private void processFileSizeUpdateEvent(AsyncFileSizeUpdateEvent event) {
+		File file = toFile(event.getRelativePath(), event.getFilename());
+		if(file.exists()) {
+			try {
+				metadataDao.updateMetadata(file.length(), event.getRelativePath(), event.getFilename());
+				dbInstance.commit();
+			} catch (Exception e) {
+				log.error("Cannot update file size of: " + event.getRelativePath() + " " + event.getFilename(), e);
+			}
+		}
+	}
 
 	@Override
 	public VFSMetadata getMetadataFor(VFSItem path) {
@@ -127,6 +160,9 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService {
 			
 			VFSMetadata parent = getMetadataFor(file.getParentFile());
 			metadata = metadataDao.createMetadata(uuid, relativePath, filename, new Date(), size, directory, uri, "file", parent);
+		} else if(file.isFile() && file.length() != metadata.getFileSize()) {
+			AsyncFileSizeUpdateEvent event = new AsyncFileSizeUpdateEvent(relativePath, filename);
+			coordinatorManager.getCoordinator().getEventBus().fireEventToListenersOf(event, fileSizeSubscription);
 		}
 		return metadata;
 	}
@@ -169,7 +205,12 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService {
 		}
 		
 		String filename = file.getName();
-		return metadataDao.getMetadata(relativePath, filename, file.isDirectory());
+		VFSMetadata metadata = metadataDao.getMetadata(relativePath, filename, file.isDirectory());
+		if(metadata != null && !metadata.isDirectory() && metadata.getFileSize() != file.length()) {
+			AsyncFileSizeUpdateEvent event = new AsyncFileSizeUpdateEvent(relativePath, filename);
+			coordinatorManager.getCoordinator().getEventBus().fireEventToListenersOf(event, fileSizeSubscription);
+		}
+		return metadata;
 	}
 	
 	private File toFile(VFSItem item) {
@@ -178,7 +219,11 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService {
 	}
 	
 	private File toFile(VFSMetadata metadata) {
-		Path path = Paths.get(folderModule.getCanonicalRoot(), metadata.getRelativePath(), metadata.getFilename());
+		return toFile(metadata.getRelativePath(), metadata.getFilename());
+	}
+	
+	private File toFile(String relativePath, String filename) {
+		Path path = Paths.get(folderModule.getCanonicalRoot(), relativePath, filename);
 		return path.toFile();
 	}
 
@@ -240,6 +285,14 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService {
 	@Override
 	public VFSMetadata updateMetadata(VFSMetadata data) {
 		return metadataDao.updateMetadata(data);
+	}
+
+	@Override
+	public void itemSaved(VFSLeaf leaf) {
+		if(leaf == null || leaf.canMeta() != VFSConstants.YES) return; // nothing to do
+		
+		String relativePath = getContainerRelativePath(leaf);
+		metadataDao.updateMetadata(leaf.getSize(), relativePath, leaf.getName());
 	}
 
 	@Override
@@ -344,10 +397,6 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService {
 				}
 				thumbnailLeaf = generateThumbnail(file, metadata, fill, maxWidth, maxHeight);
 			} else {
-				if(parentContainer == null) {
-					
-				}
-				
 				VFSItem item = parentContainer.resolve(thumbnail.getFilename());
 				if(item instanceof VFSLeaf) {
 					thumbnailLeaf = (VFSLeaf)item;

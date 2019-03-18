@@ -54,6 +54,11 @@ public class VFSMediaFilesContainer extends AbstractVirtualContainer implements 
 	public boolean exists() {
 		return rootContainer != null && rootContainer.exists();
 	}
+	
+	@Override
+	public boolean isHidden() {
+		return rootContainer != null && rootContainer.isHidden();
+	}
 
 	@Override
 	public boolean isSame(VFSItem vfsItem) {

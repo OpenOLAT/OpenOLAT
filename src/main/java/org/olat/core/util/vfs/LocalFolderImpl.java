@@ -41,7 +41,7 @@ import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
-import org.olat.core.util.vfs.filters.SystemItemFilter;
+import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
 import org.olat.core.util.vfs.version.Versionable;
 import org.olat.core.util.vfs.version.VersionsManager;
@@ -142,7 +142,7 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 	@Override
 	public VFSStatus copyContentOf(VFSContainer container) {
 		VFSStatus status = VFSConstants.YES;
-		for(VFSItem item:container.getItems(new SystemItemFilter())) {
+		for(VFSItem item:container.getItems(new VFSSystemItemFilter())) {
 			status = copyFrom(item, true);
 		}
 		return status;

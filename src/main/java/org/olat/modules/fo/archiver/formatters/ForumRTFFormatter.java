@@ -57,6 +57,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.modules.fo.archiver.MessageNode;
 import org.olat.modules.fo.manager.ForumManager;
 
@@ -74,18 +75,18 @@ public class ForumRTFFormatter extends ForumFormatter {
 	private VFSItem vfsFil = null;
 	private VFSContainer tempContainer;
 	
-	final Pattern PATTERN_HTML_BOLD = Pattern.compile("<strong>(.*?)</strong>", Pattern.CASE_INSENSITIVE);
-	final Pattern PATTERN_HTML_ITALIC = Pattern.compile("<em>(.*?)</em>", Pattern.CASE_INSENSITIVE);
-	final Pattern PATTERN_HTML_BREAK = Pattern.compile("<br />", Pattern.CASE_INSENSITIVE);
-	final Pattern PATTERN_HTML_PARAGRAPH = Pattern.compile("<p>(.*?)</p>", Pattern.CASE_INSENSITIVE);
-	final Pattern PATTERN_HTML_AHREF = Pattern.compile("<a href=\"([^\"]+)\"[^>]*>(.*?)</a>", Pattern.CASE_INSENSITIVE);
-	final Pattern PATTERN_HTML_LIST = Pattern.compile("<li>(.*?)</li>", Pattern.CASE_INSENSITIVE);
-	final Pattern HTML_SPACE_PATTERN = Pattern.compile("&nbsp;");
+	private final Pattern PATTERN_HTML_BOLD = Pattern.compile("<strong>(.*?)</strong>", Pattern.CASE_INSENSITIVE);
+	private final Pattern PATTERN_HTML_ITALIC = Pattern.compile("<em>(.*?)</em>", Pattern.CASE_INSENSITIVE);
+	private final Pattern PATTERN_HTML_BREAK = Pattern.compile("<br />", Pattern.CASE_INSENSITIVE);
+	private final Pattern PATTERN_HTML_PARAGRAPH = Pattern.compile("<p>(.*?)</p>", Pattern.CASE_INSENSITIVE);
+	private final Pattern PATTERN_HTML_AHREF = Pattern.compile("<a href=\"([^\"]+)\"[^>]*>(.*?)</a>", Pattern.CASE_INSENSITIVE);
+	private final Pattern PATTERN_HTML_LIST = Pattern.compile("<li>(.*?)</li>", Pattern.CASE_INSENSITIVE);
+	private final Pattern HTML_SPACE_PATTERN = Pattern.compile("&nbsp;");
 	
-	final Pattern PATTERN_CSS_O_FOQUOTE = Pattern.compile("<div class=\"o_quote_wrapper\">\\s*<div class=\"b_quote_author mceNonEditable\">(.*?)</div>\\s*<blockquote class=\"b_quote\">\\s*(.*?)\\s*</blockquote>\\s*</div>", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+	private final Pattern PATTERN_CSS_O_FOQUOTE = Pattern.compile("<div class=\"o_quote_wrapper\">\\s*<div class=\"b_quote_author mceNonEditable\">(.*?)</div>\\s*<blockquote class=\"b_quote\">\\s*(.*?)\\s*</blockquote>\\s*</div>", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 
-	final Pattern PATTERN_THREEPOINTS = Pattern.compile("&#8230;", Pattern.CASE_INSENSITIVE);
-	final String THREEPOINTS = "...";
+	private final Pattern PATTERN_THREEPOINTS = Pattern.compile("&#8230;", Pattern.CASE_INSENSITIVE);
+	private final String THREEPOINTS = "...";
 	
 	//TODO: (LD) translate this!
 	private String HIDDEN_STR = "VERBORGEN";
@@ -170,8 +171,8 @@ public class ForumRTFFormatter extends ForumFormatter {
 		sb.append(" \\par}");
 		// attachment(s)
 		VFSContainer msgContainer = forumManager.getMessageContainer(getForumKey(), mn.getKey());
-		List<VFSItem> attachments = msgContainer.getItems();
-		if (attachments != null && attachments.size() > 0){
+		List<VFSItem> attachments = msgContainer.getItems(new VFSSystemItemFilter());
+		if (attachments != null && !attachments.isEmpty()){
 			VFSItem item = container.resolve("attachments");
 			if (item == null){
 				item = container.createChildContainer("attachments");
@@ -191,10 +192,7 @@ public class ForumRTFFormatter extends ForumFormatter {
 		sb.append("{\\pard \\brdrb\\brdrs\\brdrw10 \\par}");
 	}
 
-	/**
-	 * 
-	 * @see org.olat.modules.fo.archiver.formatters.ForumFormatter#openThread()
-	 */
+	@Override
 	public void openThread() {
 		super.openThread();
 		if(filePerThread){
@@ -205,10 +203,7 @@ public class ForumRTFFormatter extends ForumFormatter {
 		sb.append("{\\pard \\brdrb \\brdrs \\brdrdb \\brsp20 \\par}{\\pard\\par}");
 	}
 
-	/**
-	 * 
-	 * @see org.olat.modules.fo.archiver.formatters.ForumFormatter#getThreadResult()
-	 */
+	@Override
 	public StringBuilder closeThread() {
 		boolean append = !filePerThread;
 		String footerThread = "{\\pard \\brdrb \\brdrs \\brdrw20 \\brsp20 \\par}{\\pard\\par}";
@@ -223,11 +218,8 @@ public class ForumRTFFormatter extends ForumFormatter {
 		}
 		return super.closeThread();
 	}
-	
-	/**
-	 * 
-	 * @see org.olat.modules.fo.archiver.formatters.ForumFormatter#openForum()
-	 */
+
+	@Override
 	public void openForum(){
 		if(!filePerThread){
 			//make one ForumFile
@@ -247,11 +239,7 @@ public class ForumRTFFormatter extends ForumFormatter {
 		}
 	}
 
-	
-	/**
-	 * 
-	 * @see org.olat.modules.fo.archiver.formatters.ForumFormatter#closeForum()
-	 */
+	@Override
 	public StringBuilder closeForum(){
 		if(!filePerThread){
 			boolean append = !filePerThread;

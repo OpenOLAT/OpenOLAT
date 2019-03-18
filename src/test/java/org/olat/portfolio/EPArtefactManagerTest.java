@@ -36,6 +36,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.modules.fo.portfolio.ForumArtefact;
 import org.olat.portfolio.manager.EPArtefactManager;
 import org.olat.portfolio.manager.EPFrontendManager;
@@ -121,7 +122,7 @@ public class EPArtefactManagerTest extends OlatTestCase {
 		AbstractArtefact artefact3 = epFrontendManager.createAndPersistArtefact(ident1, "Forum");
 		VFSContainer artCont = epFrontendManager.getArtefactContainer(artefact3);
 		artCont.createChildLeaf("testfile.txt");
-		assertEquals(1, artCont.getItems().size());
+		assertEquals(1, artCont.getItems(new VFSSystemItemFilter()).size());
 		Long artKey3 = artefact3.getKey();
 		epFrontendManager.deleteArtefact(artefact3);
 		VFSItem item = epFrontendManager.getArtefactsRoot().resolve(artKey3.toString());

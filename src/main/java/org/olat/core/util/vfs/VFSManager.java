@@ -780,7 +780,9 @@ public class VFSManager {
 	public static boolean copyContent(File source, VFSLeaf target) {
 		try(InputStream in = new FileInputStream(source);
 				BufferedInputStream bis = new BufferedInputStream(in, FileUtils.BSIZE)) {
-			return copyContent(bis, target);
+			boolean ok = copyContent(bis, target);
+			CoreSpringFactory.getImpl(VFSRepositoryService.class).itemSaved(target);
+			return ok;
 		} catch(IOException ex) {
 			log.error("", ex);
 			return false;
@@ -801,6 +803,7 @@ public class VFSManager {
 			try(InputStream in = new BufferedInputStream(inStream);
 					OutputStream out = new BufferedOutputStream(target.getOutputStream(false))) {
 				FileUtils.cpio(in, out, "");
+				CoreSpringFactory.getImpl(VFSRepositoryService.class).itemSaved(target);
 				successful = true;
 			} catch (IOException e) {
 				// something went wrong.

@@ -45,7 +45,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.callbacks.ReadOnlyCallback;
-import org.olat.core.util.vfs.filters.SystemItemFilter;
+import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.core.util.vfs.restapi.VFSWebservice;
 import org.olat.modules.sharedfolder.SharedFolderManager;
 import org.olat.repository.RepositoryEntry;
@@ -180,7 +180,7 @@ public class SharedFolderWebService {
 			return response.build();
 		} 
 
-		List<VFSItem> items = container.getItems(new SystemItemFilter());
+		List<VFSItem> items = container.getItems(new VFSSystemItemFilter());
 		int count=0;
 		LinkVO[] links = new LinkVO[items.size()];
 		for(VFSItem item:items) {

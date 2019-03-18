@@ -49,7 +49,7 @@ import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSManager;
-import org.olat.core.util.vfs.filters.SystemItemFilter;
+import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.condition.Condition;
@@ -148,7 +148,7 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 			if(rootFolder == null) {
 				return super.createPeekViewRunController(ureq, wControl, userCourseEnv, ne);
 			}
-			rootFolder.setDefaultItemFilter(new SystemItemFilter());
+			rootFolder.setDefaultItemFilter(new VFSSystemItemFilter());
 			return new BCPeekviewController(ureq, wControl, rootFolder, getIdent(), 4);
 		} else {
 			// use standard peekview

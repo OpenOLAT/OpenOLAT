@@ -95,6 +95,8 @@ public interface VFSItem {
 	 */
 	public boolean exists();
 	
+	public boolean isHidden();
+	
 	/**
 	 * @return if can write
 	 */

@@ -34,7 +34,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.tree.TreeVisitor;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
-import org.olat.core.util.vfs.filters.SystemItemFilter;
+import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.PFCourseNode;
@@ -96,7 +96,7 @@ public class PFUserDataManager implements UserDataExportable {
 	private void exportPFNode(Identity identity, PFCourseNode pfNode, ICourse course, File pfArchiveDirectory) {
 		VFSContainer dropBox = pfManager.resolveDropFolder(course.getCourseEnvironment(), pfNode, identity);
 		if(dropBox != null) {
-			List<VFSItem> droppedItems = dropBox.getItems(new SystemItemFilter());
+			List<VFSItem> droppedItems = dropBox.getItems(new VFSSystemItemFilter());
 			if(!droppedItems.isEmpty()) {
 				String name = StringHelper.transformDisplayNameToFileSystemName(course.getCourseTitle()) +
 						"_" + StringHelper.transformDisplayNameToFileSystemName(getNodeName(pfNode));

@@ -57,7 +57,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.filters.SystemItemFilter;
+import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 
 
 /**
@@ -164,7 +164,7 @@ public class FileUtils {
 			}
 		} else if(source instanceof VFSContainer) {
 			target.mkdir();
-			List<VFSItem> items = ((VFSContainer)source).getItems(new SystemItemFilter());
+			List<VFSItem> items = ((VFSContainer)source).getItems(new VFSSystemItemFilter());
 			for(VFSItem item:items) {
 				copyItemToDir(item, target, wt);
 			}

@@ -76,6 +76,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
@@ -858,9 +859,8 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Persis
 			}
 			projectBrokerManager.updateProject(project);
 
-			// get the attachment directory within the project
-			// directory
-			File attachmentDir = new File(projectDir, "attachment");// .getParentFile().listFiles(attachmentFilter);
+			// get the attachment directory within the project directory
+			File attachmentDir = new File(projectDir, "attachment");
 			if (attachmentDir.exists()) {
 				File[] attachment = attachmentDir.listFiles();
 				if (attachment.length > 0) {
@@ -972,9 +972,9 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Persis
 		// copy dropboxes to tmp dir
 		if (dropboxDir.exists()) {
 			//OLAT-6426 archive only dropboxes of users that handed in at least one file -> prevent empty folders in archive 
-			for(VFSItem themaItem: dropboxDir.getItems()) {
+			for(VFSItem themaItem: dropboxDir.getItems(new VFSSystemItemFilter())) {
 				if (!(themaItem instanceof VFSContainer)) continue;
-				List<VFSItem> userFolderArray = ((VFSContainer)themaItem).getItems();
+				List<VFSItem> userFolderArray = ((VFSContainer)themaItem).getItems(new VFSSystemItemFilter());
 				for (VFSItem userFolder : userFolderArray){
 					if (!VFSManager.isDirectoryAndNotEmpty(userFolder)) continue;
 					String path  = exportDirName + "/dropboxes/" + themaItem.getName();
@@ -985,9 +985,9 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Persis
 			
 		// copy returnboxes to tmp dir
 		if (returnboxDir.exists()) {
-			for (VFSItem themaItem:returnboxDir.getItems()) {
+			for (VFSItem themaItem:returnboxDir.getItems(new VFSSystemItemFilter())) {
 				if (!(themaItem instanceof VFSContainer)) continue;
-				List<VFSItem> userFolderArray = ((VFSContainer)themaItem).getItems();
+				List<VFSItem> userFolderArray = ((VFSContainer)themaItem).getItems(new VFSSystemItemFilter());
 				for (VFSItem userFolder : userFolderArray){
 					if (!VFSManager.isDirectoryAndNotEmpty(userFolder)) continue;
 					String path = exportDirName + "/returnboxes/" + themaItem.getName();

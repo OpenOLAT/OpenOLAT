@@ -116,7 +116,9 @@ public class FileUploadController extends FormBasicController {
 	private VFSContainer uploadVFSContainer;
 	private String uploadRelPath = null;
 	private RevisionListController revisionListCtr;
-	private CloseableModalController revisionListDialogBox, commentVersionDialogBox, unlockDialogBox;
+	private CloseableModalController unlockDialogBox;
+	private CloseableModalController revisionListDialogBox;
+	private CloseableModalController commentVersionDialogBox;
 	private VersionCommentController commentVersionCtr;
 	private VersionCommentController unlockCtr;
 	private DialogBoxController overwriteDialog;
@@ -905,19 +907,11 @@ public class FileUploadController extends FormBasicController {
 			if (!StringHelper.containsNonWhitespace(filename)) {
 				itemEl.setErrorKey("NoFileChosen", null);
 				allOk &= false;
-			}
-			
-			if(uriValidation) {
-				try {
-					new URI(filename);
-				} catch(Exception e) {
-					itemEl.setErrorKey("cfile.name.notvalid.uri", null);
-					allOk &= false;
-				}
-			}	
-			if(!FileUtils.validateFilename(filename)) {
+			} else if(!FileUtils.validateFilename(filename)) {
 				itemEl.setErrorKey("cfile.name.notvalid", null);
 				allOk &= false;
+			} else {
+				allOk &= validateUri(filename, itemEl);
 			}
 			allOk &= validateQuota(itemEl);
 		}
@@ -933,22 +927,30 @@ public class FileUploadController extends FormBasicController {
 		if (!StringHelper.containsNonWhitespace(filename)) {
 			itemEl.setErrorKey("NoFileChosen", null);
 			allOk &= false;
+		} else if(!FileUtils.validateFilename(filename)) {
+			itemEl.setErrorKey("cfile.name.notvalid", null);
+			allOk &= false;
+		} else {
+			allOk &= validateUri(filename, itemEl);
 		}
+		
+		allOk &= validateQuota(fileEl);
+		return allOk;
+	}
+	
+	private boolean validateUri(String filename, FormItem itemEl) {
+		boolean allOk = true;
 		
 		if(uriValidation) {
 			try {
-				new URI(filename);
+				URI uri = new URI(filename);
+				uri.normalize();
 			} catch(Exception e) {
 				itemEl.setErrorKey("cfile.name.notvalid.uri", null);
 				allOk &= false;
 			}
-		}	
-		if(!FileUtils.validateFilename(filename)) {
-			itemEl.setErrorKey("cfile.name.notvalid", null);
-			allOk &= false;
 		}
 		
-		allOk &= validateQuota(fileEl);
 		return allOk;
 	}
 	

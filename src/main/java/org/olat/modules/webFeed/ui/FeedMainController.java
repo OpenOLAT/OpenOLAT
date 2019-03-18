@@ -356,7 +356,7 @@ public class FeedMainController extends BasicController implements Activateable2
 			FeedChangedEvent fce = (FeedChangedEvent) event;
 			if (fce.getFeedKey().equals(feed.getKey())) {
 				feed = feedManager.loadFeed(feed);
-				vcInfo.contextPut("supressCache", "&" + ZonedDateTime.now().toInstant().toEpochMilli());
+				vcInfo.contextPut("suppressCache", "&" + ZonedDateTime.now().toInstant().toEpochMilli());
 				vcInfo.contextPut("feed", feed);
 				vcInfo.setDirty(true);
 			}

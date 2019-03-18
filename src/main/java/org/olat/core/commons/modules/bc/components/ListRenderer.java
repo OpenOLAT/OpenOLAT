@@ -62,7 +62,7 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSLockManager;
 import org.olat.core.util.vfs.VirtualContainer;
-import org.olat.core.util.vfs.filters.SystemItemFilter;
+import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.core.util.vfs.lock.LockInfo;
 import org.olat.core.util.vfs.version.Versionable;
 import org.olat.core.util.vfs.version.Versions;
@@ -379,7 +379,7 @@ public class ListRenderer {
 		} else if (child instanceof VFSContainer) {
 			try {
 				sb.append("<span class='text-muted small'>")
-				  .append(((VFSContainer) child).getItems(new SystemItemFilter()).size())
+				  .append(((VFSContainer) child).getItems(new VFSSystemItemFilter()).size())
 				  .append(" ").append(translator.translate("mf.elements")).append("</span>");
 			} catch (Exception e) {
 				log.error("", e);

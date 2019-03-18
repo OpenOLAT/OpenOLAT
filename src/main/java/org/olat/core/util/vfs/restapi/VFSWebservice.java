@@ -63,7 +63,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSStatus;
-import org.olat.core.util.vfs.filters.SystemItemFilter;
+import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.restapi.support.MultipartReader;
 import org.olat.restapi.support.vo.File64VO;
 import org.olat.restapi.support.vo.FileMetadataVO;
@@ -427,7 +427,7 @@ public class VFSWebservice {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		} else if (vItem instanceof VFSContainer) {
 			VFSContainer directory = (VFSContainer)vItem;
-			List<VFSItem> items = directory.getItems(new SystemItemFilter());
+			List<VFSItem> items = directory.getItems(new VFSSystemItemFilter());
 			int count=0;
 			FileVO[] links = new FileVO[items.size()];
 			for(VFSItem item:items) {
@@ -488,7 +488,7 @@ public class VFSWebservice {
 		a_a:
 		for(PathSegment seg:path) {
 			String segPath = seg.getPath();
-			for(VFSItem item : directory.getItems(new SystemItemFilter())) {
+			for(VFSItem item : directory.getItems(new VFSSystemItemFilter())) {
 				if(item instanceof VFSLeaf) {
 					//
 				} else if (item instanceof VFSContainer && normalize(item.getName()).equals(segPath)) {
@@ -524,7 +524,7 @@ public class VFSWebservice {
 		a_a:
 		for(PathSegment seg:path) {
 			String segPath = seg.getPath();
-			for(VFSItem item : directory.getItems(new SystemItemFilter())) {
+			for(VFSItem item : directory.getItems(new VFSSystemItemFilter())) {
 				if(item.getName().equals(segPath) || normalize(item.getName()).equals(segPath)) {
 					if(item instanceof VFSLeaf) {
 						if(path.get(path.size() - 1) == seg) {

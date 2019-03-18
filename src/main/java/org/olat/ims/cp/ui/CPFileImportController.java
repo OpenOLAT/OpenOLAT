@@ -259,7 +259,7 @@ public class CPFileImportController extends FormBasicController {
 	 * @return true if there is a leaf inside container that should be added
 	 */
 	private boolean containsItemsToAdd(VFSContainer container, Collection<String> menuItemTypes) {
-		LinkedList<VFSItem> queue = new LinkedList<VFSItem>();
+		LinkedList<VFSItem> queue = new LinkedList<>();
 		// enqueue root node
 		queue.add(container);
 		do {

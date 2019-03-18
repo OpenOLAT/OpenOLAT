@@ -22,7 +22,7 @@ package org.olat.core.util.vfs.filters;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
 
-public class SystemItemFilter implements VFSItemFilter {
+public class VFSSystemItemFilter implements VFSItemFilter {
 	
 	@Override
 	public boolean accept(VFSItem vfsItem) {

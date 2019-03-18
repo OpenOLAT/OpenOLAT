@@ -90,6 +90,11 @@ public class VFSRootCPContainer extends AbstractVirtualContainer implements VFSC
 	}
 
 	@Override
+	public boolean isHidden() {
+		return rootContainer != null && rootContainer.isHidden();
+	}
+
+	@Override
 	public boolean isSame(VFSItem vfsItem) {
 		if(this == vfsItem) {
 			return true;

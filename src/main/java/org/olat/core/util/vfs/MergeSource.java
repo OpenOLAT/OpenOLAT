@@ -77,6 +77,11 @@ public class MergeSource extends AbstractVirtualContainer {
 	}
 
 	@Override
+	public boolean isHidden() {
+		return false;
+	}
+
+	@Override
 	public String getRelPath() {
 		if(rootWriteContainer != null) {
 			return rootWriteContainer.getRelPath();

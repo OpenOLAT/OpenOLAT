@@ -35,7 +35,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
-import org.olat.core.util.vfs.filters.SystemItemFilter;
+import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.modules.portfolio.Media;
 import org.olat.modules.portfolio.MediaRenderingHints;
 import org.olat.modules.portfolio.ui.MediaMetadataController;
@@ -71,7 +71,7 @@ public class ForumMessageMediaController extends BasicController {
 
 		if (StringHelper.containsNonWhitespace(media.getStoragePath())) {
 			VFSContainer attachmentsContainer = VFSManager.olatRootContainer("/" + media.getStoragePath(), null);
-			List<VFSItem> attachments = attachmentsContainer.getItems(new SystemItemFilter());
+			List<VFSItem> attachments = attachmentsContainer.getItems(new VFSSystemItemFilter());
 			int i=1; //vc-shift!
 			for (VFSItem attachment : attachments) {
 				if(attachment instanceof VFSLeaf) {

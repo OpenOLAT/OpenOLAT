@@ -56,6 +56,12 @@ public class NamedContainerImpl extends AbstractVirtualContainer {
 		VFSContainer d = getDelegate();
 		return d != null && d.exists();
 	}
+	
+	@Override
+	public boolean isHidden() {
+		VFSContainer d = getDelegate();
+		return d != null && d.isHidden();
+	}
 
 	public VFSContainer getDelegate() {
 		return delegate;

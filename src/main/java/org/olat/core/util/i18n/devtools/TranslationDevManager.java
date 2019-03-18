@@ -42,7 +42,6 @@ import java.util.regex.Pattern;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.manager.BasicManager;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.i18n.I18nItem;
@@ -62,7 +61,7 @@ import org.springframework.stereotype.Service;
  * @author Roman Haag, frentix GmbH, roman.haag@frentix.com
  */
 @Service("translationDevManager")
-public class TranslationDevManager extends BasicManager {
+public class TranslationDevManager {
 	private static final OLog log = Tracing.createLoggerFor(TranslationDevManager.class);
 
 	private StringBuffer logText = new StringBuffer();
@@ -140,7 +139,7 @@ public class TranslationDevManager extends BasicManager {
 						if (matchedKey.equals(origKey) 
 								&& ( (matchedBundle== null && bundleName.equals(originBundleName)  ) 
 								|| originBundleName.equals(matchedBundle)) ){
-							StringBuffer newValue = new StringBuffer();
+							StringBuilder newValue = new StringBuilder();
 							newValue.append(value.substring(0, matcher.start()));
 							newValue.append("$");
 							if (movePackage){
@@ -427,9 +426,9 @@ public class TranslationDevManager extends BasicManager {
 	 */
 	public void removeDeletedKeys(boolean reallyRemoveIt, String[] referenceLanguages, Set<String> languages ) {
 		// first get all available keys from de and en language
-		Set<String> validCombinedKeys = new HashSet<String>();
+		Set<String> validCombinedKeys = new HashSet<>();
 		//copy list to prevent concurrent modification exception
-		List<String> allBundles = new ArrayList<String>(i18nModule.getBundleNamesContainingI18nFiles());
+		List<String> allBundles = new ArrayList<>(i18nModule.getBundleNamesContainingI18nFiles());
 		for (String bundleName : allBundles) {
 			for (String refLangKey : referenceLanguages) {
 				Properties properties = i18nMgr.getPropertiesWithoutResolvingRecursively(i18nMgr.getLocaleOrNull(refLangKey), bundleName);
@@ -463,7 +462,7 @@ public class TranslationDevManager extends BasicManager {
 				Properties properties = i18nMgr.getPropertiesWithoutResolvingRecursively(locale, bundleName);				
 				int propCount = properties.size();
 				// copy keys to prevent concurrent modification
-				Set<String> availableKeys = new HashSet<String>();
+				Set<String> availableKeys = new HashSet<>();
 				for (Object key : properties.keySet()) {
 					availableKeys.add((String)key);
 				}
@@ -502,7 +501,7 @@ public class TranslationDevManager extends BasicManager {
 	 * reallyCopy: set to true to create Props/keys in Head, false: only log them
 	 */
 	public void getLostTranslationsFromBranch(boolean reallyCopy, String[] referenceLanguages, String pathToOlatBranch, String pathToCoreBranch){
-		List<String> allBundles = new ArrayList<String>(i18nModule.getBundleNamesContainingI18nFiles());
+		List<String> allBundles = new ArrayList<>(i18nModule.getBundleNamesContainingI18nFiles());
 		
 		Set<String> allLangs = getAllLanguages();
 		//loop over all langs
@@ -520,7 +519,7 @@ public class TranslationDevManager extends BasicManager {
 			if (isRefLang) continue;
 
 			// load current language
-	    Locale locale = i18nMgr.getLocaleOrNull(langKey);
+			Locale locale = i18nMgr.getLocaleOrNull(langKey);
 			for (String bundleName : allBundles) {
 				int bundleCounter = 0;
 				//get valid keys from ref langs and this bundle
@@ -558,11 +557,9 @@ public class TranslationDevManager extends BasicManager {
 				Properties targetProperties = i18nMgr.getPropertiesWithoutResolvingRecursively(locale, bundleName);
 				Set<Object> targetLangBundleKeys = targetProperties.keySet();
 				Properties oldProps = new Properties();
-				FileInputStream is;
-				try {
-					is = new FileInputStream(bundleToUse);
+				
+				try(FileInputStream is = new FileInputStream(bundleToUse)) {
 					oldProps.load(is);
-					is.close();
 				} catch (Exception e) {
 					log.error("", e);
 				}
@@ -615,7 +612,7 @@ public class TranslationDevManager extends BasicManager {
 		//prepare exclusion list
 		String exKeys = FileUtils.load(new File(i18nModule.getTransToolApplicationLanguagesSrcDir() + "/org/olat/core/util/i18n/devtools/exclusionKeys.txt"), "UTF-8");
 		String[] exArray = exKeys.split("\n");
-		List<String> exList = new ArrayList<String>(Arrays.asList(exArray));
+		List<String> exList = new ArrayList<>(Arrays.asList(exArray));
 
 		Set<String> allLangs = getAllLanguages();
 		for (String langKey : allLangs) {
@@ -672,9 +669,9 @@ public class TranslationDevManager extends BasicManager {
 	// do this only for reference language!
 	public List<I18nItem> getDouplicateKeys(){
 		Locale refLocale = i18nModule.getDefaultLocale();
-		List<I18nItem> doupList = new ArrayList<I18nItem>();
+		List<I18nItem> doupList = new ArrayList<>();
 		List<String> allBundles = i18nModule.getBundleNamesContainingI18nFiles();
-		Map<String, String> tempKeyMap = new HashMap<String, String>();
+		Map<String, String> tempKeyMap = new HashMap<>();
 		
 		for (String bundleName : allBundles) {
 			Properties properties = i18nMgr.getPropertiesWithoutResolvingRecursively(refLocale, bundleName);
@@ -699,9 +696,9 @@ public class TranslationDevManager extends BasicManager {
 	//do this only for reference language!
 	public List<I18nItem> getDouplicateValues(){
 		Locale refLocale = i18nModule.getDefaultLocale();
-		List<I18nItem> doupList = new ArrayList<I18nItem>();
+		List<I18nItem> doupList = new ArrayList<>();
 		List<String> allBundles = i18nModule.getBundleNamesContainingI18nFiles();
-		Map<String, String> tempKeyMap = new HashMap<String, String>();
+		Map<String, String> tempKeyMap = new HashMap<>();
 		
 		for (String bundleName : allBundles) {
 			Properties properties = i18nMgr.getPropertiesWithoutResolvingRecursively(refLocale, bundleName);
@@ -767,19 +764,12 @@ public class TranslationDevManager extends BasicManager {
 			if (!dest.getParentFile().exists()) dest.getParentFile().mkdirs();
 			dest.createNewFile();
 		}
-		InputStream in = null;
-		OutputStream out = null;
-		try {
-			in = new FileInputStream(source);
-			out = new FileOutputStream(dest);
-			byte[] buf = new byte[1024];
-			int len;
-			while ((len = in.read(buf)) > 0) {
-				out.write(buf, 0, len);
-			}
-		} finally {
-			in.close();
-			out.close();
+		
+		try(InputStream in = new FileInputStream(source);
+				OutputStream out = new FileOutputStream(dest)) {
+			FileUtils.copy(in, out);
+		} catch(Exception e) {
+			log.error("", e);
 		}
 	}
 }

@@ -54,7 +54,11 @@ public class NamedLeaf implements VFSLeaf {
 		return delegate != null && delegate.exists();
 	}
 
-	//fxdiff FXOLAT-125: virtual file system for CP
+	@Override
+	public boolean isHidden() {
+		return delegate != null && delegate.isHidden();
+	}
+
 	public VFSLeaf getDelegate() {
 		return delegate;
 	}

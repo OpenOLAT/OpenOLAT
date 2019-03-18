@@ -67,6 +67,7 @@ import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.course.ICourse;
 import org.olat.course.archiver.ScoreAccountingHelper;
 import org.olat.course.assessment.AssessmentManager;
@@ -874,7 +875,7 @@ public class TACourseNode extends GenericCourseNode implements PersistentAssessa
 
 			// copy solutions to tmp dir
 			if (solutionDir.exists()) {
-				for(VFSItem child:solutionDir.getItems()) {
+				for(VFSItem child:solutionDir.getItems(new VFSSystemItemFilter())) {
 					dataFound = true;
 					ZipUtil.addToZip(child, dirName + "/solutions", exportStream);
 				}
@@ -883,7 +884,7 @@ public class TACourseNode extends GenericCourseNode implements PersistentAssessa
 			// copy dropboxes to tmp dir
 			if (dropboxDir.exists()) {
 				//OLAT-6362 archive only dropboxes of users that handed in at least one file -> prevent empty folders in archive
-				List<VFSItem> dropBoxContent = dropboxDir.getItems();
+				List<VFSItem> dropBoxContent = dropboxDir.getItems(new VFSSystemItemFilter());
 				for (VFSItem file:dropBoxContent) {
 					if((dropboxNames == null || dropboxNames.contains(file.getName())) && VFSManager.isDirectoryAndNotEmpty(file)){
 						dataFound = true;
@@ -911,7 +912,7 @@ public class TACourseNode extends GenericCourseNode implements PersistentAssessa
 			// copy returnboxes
 			if (returnboxDir.exists()) {
 				//OLAT-6362 archive only existing returnboxes -> prevent empty folders in archive
-				List<VFSItem> returnBoxContent = returnboxDir.getItems();
+				List<VFSItem> returnBoxContent = returnboxDir.getItems(new VFSSystemItemFilter());
 				for (VFSItem file : returnBoxContent) {
 					if((dropboxNames == null || dropboxNames.contains(file.getName())) && VFSManager.isDirectoryAndNotEmpty(file)){
 						dataFound = true;

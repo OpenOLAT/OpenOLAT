@@ -76,6 +76,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.callbacks.FullAccessWithQuotaCallback;
+import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
@@ -267,7 +268,7 @@ public class DropboxController extends BasicController {
 				}
 					
 				if (success) {
-					int numFiles = fDropbox.getItems().size();
+					int numFiles = fDropbox.getItems(new VFSSystemItemFilter()).size();
 					myContent.contextPut("numfiles", new String[] {Integer.toString(numFiles)});
 					// assemble confirmation
 					String confirmation = getConfirmation(ureq, fOut.getName());

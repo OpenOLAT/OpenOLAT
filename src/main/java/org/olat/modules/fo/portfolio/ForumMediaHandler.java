@@ -40,7 +40,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
-import org.olat.core.util.vfs.filters.SystemItemFilter;
+import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.Message;
@@ -161,7 +161,7 @@ public class ForumMediaHandler extends AbstractMediaHandler {
 		ThreadLocalUserActivityLogger.log(PortfolioLoggingAction.PORTFOLIO_MEDIA_ADDED, getClass(),
 				LoggingResourceable.wrap(media));
 		
-		List<VFSItem> items = artefactFolder.getItems(new SystemItemFilter());
+		List<VFSItem> items = artefactFolder.getItems(new VFSSystemItemFilter());
 		if(items.size() > 0) {
 			File mediaDir = fileStorage.generateMediaSubDirectory(media);
 			String storagePath = fileStorage.getRelativePath(mediaDir);
@@ -189,7 +189,7 @@ public class ForumMediaHandler extends AbstractMediaHandler {
 		if(StringHelper.containsNonWhitespace(media.getStoragePath())) {
 			File mediaDir = fileStorage.getMediaDirectory(media);
 			if(mediaDir != null && mediaDir.exists()) {
-				File[] attachmentArr = mediaDir.listFiles(new SystemFileFilter(true, false));
+				File[] attachmentArr = mediaDir.listFiles(SystemFileFilter.FILES_ONLY);
 				attachments = Arrays.asList(attachmentArr);
 			}
 		}

@@ -28,6 +28,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.modules.fo.Message;
 import org.olat.modules.fo.manager.ForumManager;
 import org.olat.portfolio.EPAbstractHandler;
@@ -43,10 +44,7 @@ import org.olat.portfolio.model.artefacts.AbstractArtefact;
  * @author Roman Haag, roman.haag@frentix.com, http://www.frentix.com
  */
 public class ForumArtefactHandler extends EPAbstractHandler<ForumArtefact> {
-	
-	/**
-	 * @see org.olat.portfolio.EPAbstractHandler#prefillArtefactAccordingToSource(org.olat.portfolio.model.artefacts.AbstractArtefact, java.lang.Object)
-	 */
+
 	@Override
 	public void prefillArtefactAccordingToSource(AbstractArtefact artefact, Object source) {
 		super.prefillArtefactAccordingToSource(artefact, source);
@@ -59,8 +57,8 @@ public class ForumArtefactHandler extends EPAbstractHandler<ForumArtefact> {
 			
 			VFSContainer msgContainer = fMgr.getMessageContainer(fm.getForum().getKey(), fm.getKey());
 			if (msgContainer != null) {
-				List<VFSItem> foAttach = msgContainer.getItems();
-				if (foAttach.size()!=0){
+				List<VFSItem> foAttach = msgContainer.getItems(new VFSSystemItemFilter());
+				if (!foAttach.isEmpty()){
 					artefact.setFileSourceContainer(msgContainer);
 				}
 			}
@@ -72,8 +70,7 @@ public class ForumArtefactHandler extends EPAbstractHandler<ForumArtefact> {
 
 	@Override
 	public ForumArtefact createArtefact() {
-		ForumArtefact artefact = new ForumArtefact();
-		return artefact;
+		return new ForumArtefact();
 	}
 
 	@Override

@@ -58,7 +58,7 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSMediaResource;
-import org.olat.core.util.vfs.filters.SystemItemFilter;
+import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.modules.forms.handler.EvaluationFormResource;
 import org.olat.modules.portfolio.Assignment;
 import org.olat.modules.portfolio.AssignmentType;
@@ -329,12 +329,12 @@ public class AssignmentEditController extends FormBasicController {
 		List<VFSItem> files = new ArrayList<>();
 		if(assignment != null && StringHelper.containsNonWhitespace(assignment.getStorage())) {
 			documentContainer = fileStorage.getAssignmentContainer(assignment);
-			files.addAll(documentContainer.getItems(new SystemItemFilter()));
+			files.addAll(documentContainer.getItems(new VFSSystemItemFilter()));
 		}
 
 		// add files from TempFolder
 		if(tempUploadFolder != null) {
-			files.addAll(tempUploadFolder.getItems(new SystemItemFilter()));
+			files.addAll(tempUploadFolder.getItems(new VFSSystemItemFilter()));
 		}
 		
 		Collections.sort(files, new Comparator<VFSItem>(){
@@ -477,7 +477,7 @@ public class AssignmentEditController extends FormBasicController {
 		
 		VFSContainer container = portfolioFileStorage.getAssignmentContainer(assignment);
 		if (container != null) {
-			List<VFSItem> tmpFList = tempUploadFolder.getItems(new SystemItemFilter());
+			List<VFSItem> tmpFList = tempUploadFolder.getItems(new VFSSystemItemFilter());
 			for (VFSItem file : tmpFList) {
 				VFSLeaf leaf = (VFSLeaf) file;
 				VFSLeaf storedFile = container.createChildLeaf(leaf.getName());

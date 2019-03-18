@@ -164,7 +164,7 @@ public class BlogEntryMediaHandler extends AbstractMediaHandler {
 	@Override
 	public void export(Media media, ManifestBuilder manifest, File mediaArchiveDirectory, Locale locale) {
 		File mediaDir = fileStorage.getMediaDirectory(media);
-		File[] files = mediaDir.listFiles(new SystemFileFilter(true, false));
+		File[] files = mediaDir.listFiles(SystemFileFilter.FILES_ONLY);
 		List<File> attachments = files == null ? Collections.emptyList() : Arrays.asList(files);
 		super.exportContent(media, null, attachments, mediaArchiveDirectory, locale);
 	}

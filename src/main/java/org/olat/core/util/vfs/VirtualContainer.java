@@ -47,6 +47,11 @@ public class VirtualContainer extends AbstractVirtualContainer {
 		return true;
 	}
 
+	@Override
+	public boolean isHidden() {
+		return false;
+	}
+
 	/**
 	 * Add a VFSItem to this CirtualContainer.
 	 * @param vfsItem

@@ -233,7 +233,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 			
 			//update counter
 			AssessmentEntry nodeAssessment = getOrCreate(assessedIdentity, courseNode);
-			File[] docs = directory.listFiles(new SystemFileFilter(true, false));
+			File[] docs = directory.listFiles(SystemFileFilter.FILES_ONLY);
 			int numOfDocs = docs == null ? 0 : docs.length;
 			nodeAssessment.setNumberOfAssessmentDocuments(numOfDocs);
 			assessmentService.updateAssessmentEntry(nodeAssessment);
@@ -261,7 +261,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 			//update counter
 			File directory = getAssessmentDocumentsDirectory(courseNode, assessedIdentity);
 			AssessmentEntry nodeAssessment = getOrCreate(assessedIdentity, courseNode);
-			File[] docs = directory.listFiles(new SystemFileFilter(true, false));
+			File[] docs = directory.listFiles(SystemFileFilter.FILES_ONLY);
 			int numOfDocs = docs == null ? 0 : docs.length;
 			nodeAssessment.setNumberOfAssessmentDocuments(numOfDocs);
 			assessmentService.updateAssessmentEntry(nodeAssessment);
@@ -550,7 +550,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 	@Override
 	public List<File> getIndividualAssessmentDocuments(CourseNode courseNode, Identity identity) {
 		File directory = getAssessmentDocumentsDirectory(courseNode, identity);
-		File[] documents = directory.listFiles(new SystemFileFilter(true, false));
+		File[] documents = directory.listFiles(SystemFileFilter.FILES_ONLY);
 		List<File> documentList = new ArrayList<>();
 		if(documents != null && documents.length > 0) {
 			for(File document:documents) {

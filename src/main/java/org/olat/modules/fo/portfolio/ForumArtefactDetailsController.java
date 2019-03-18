@@ -35,6 +35,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.filters.VFSItemMetaFilter;
+import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
 
@@ -58,8 +59,8 @@ public class ForumArtefactDetailsController extends BasicController {
 		EPFrontendManager ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
 		vC.contextPut("text", ePFMgr.getArtefactFullTextContent(fArtefact));
 		VFSContainer artContainer = ePFMgr.getArtefactContainer(artefact);
-		if (artContainer!=null && artContainer.getItems().size()!=0){
-			List<VFSItem> attachments = new ArrayList<VFSItem>(artContainer.getItems(new VFSItemMetaFilter()));
+		if (artContainer != null && !artContainer.getItems(new VFSSystemItemFilter()).isEmpty()){
+			List<VFSItem> attachments = new ArrayList<>(artContainer.getItems(new VFSItemMetaFilter()));
 			int i=1; //vc-shift!
 			for (VFSItem vfsItem : attachments) {
 				VFSLeaf file = (VFSLeaf) vfsItem;

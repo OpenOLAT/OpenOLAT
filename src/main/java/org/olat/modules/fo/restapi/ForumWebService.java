@@ -73,7 +73,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
-import org.olat.core.util.vfs.filters.SystemItemFilter;
+import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.core.util.vfs.restapi.VFSStreamingOutput;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.Message;
@@ -604,7 +604,7 @@ public class ForumWebService {
 	private FileVO[] getAttachments(Message mess, UriInfo uriInfo) {
 		VFSContainer container = fom.getMessageContainer(mess.getForum().getKey(), mess.getKey());
 		List<FileVO> attachments = new ArrayList<>();
-		for(VFSItem item: container.getItems(new SystemItemFilter())) {
+		for(VFSItem item: container.getItems(new VFSSystemItemFilter())) {
 			UriBuilder attachmentUri = uriInfo.getBaseUriBuilder().path("repo")
 					.path("forums").path(mess.getForum().getKey().toString())
 					.path("posts").path(mess.getKey().toString())

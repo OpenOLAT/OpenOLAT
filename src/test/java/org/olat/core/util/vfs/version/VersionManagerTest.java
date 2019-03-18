@@ -48,7 +48,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
-import org.olat.core.util.vfs.filters.SystemItemFilter;
+import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -257,7 +257,7 @@ public class VersionManagerTest extends OlatTestCase {
 		//check if there is only one backup file
 		VFSContainer versionContainer = versionsManager.getCanonicalVersionFolder(file.getParentContainer(), false);
 		Assert.assertNotNull(versionContainer);
-		List<VFSItem> items = versionContainer.getItems(new SystemItemFilter());
+		List<VFSItem> items = versionContainer.getItems(new VFSSystemItemFilter());
 		Assert.assertNotNull(items);
 		Assert.assertEquals(2, items.size());
 		
@@ -324,7 +324,7 @@ public class VersionManagerTest extends OlatTestCase {
 		//check if there is only one backup file
 		VFSContainer versionContainer = versionsManager.getCanonicalVersionFolder(file.getParentContainer(), false);
 		Assert.assertNotNull(versionContainer);
-		List<VFSItem> items = versionContainer.getItems(new SystemItemFilter());
+		List<VFSItem> items = versionContainer.getItems(new VFSSystemItemFilter());
 		Assert.assertNotNull(items);
 		Assert.assertEquals(2, items.size());
 	}
@@ -398,7 +398,7 @@ public class VersionManagerTest extends OlatTestCase {
 		//check if there is only one backup file
 		VFSContainer versionContainer = versionsManager.getCanonicalVersionFolder(file.getParentContainer(), false);
 		Assert.assertNotNull(versionContainer);
-		List<VFSItem> items = versionContainer.getItems(new SystemItemFilter());
+		List<VFSItem> items = versionContainer.getItems(new VFSSystemItemFilter());
 		Assert.assertNotNull(items);
 		Assert.assertEquals(2, items.size());
 	}

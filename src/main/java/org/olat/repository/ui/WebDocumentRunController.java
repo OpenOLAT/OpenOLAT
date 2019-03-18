@@ -41,6 +41,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
+import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
@@ -114,12 +115,9 @@ public class WebDocumentRunController extends BasicController {
 				.getFileResourceRootImpl(resource);
 		
 		LocalFileImpl document = null;
-		for(VFSItem item:fResourceFileroot.getItems()) {
+		for(VFSItem item:fResourceFileroot.getItems(new VFSSystemItemFilter())) {
 			if(item instanceof VFSLeaf && item instanceof LocalImpl) {
-				LocalFileImpl localItem = (LocalFileImpl)item;
-				if(localItem != null && !localItem.getBasefile().isHidden()) {
-					document = (LocalFileImpl)item;
-				}
+				document = (LocalFileImpl)item;
 			}	
 		}
 		return document;

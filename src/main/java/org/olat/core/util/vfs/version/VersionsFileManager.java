@@ -60,7 +60,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
-import org.olat.core.util.vfs.filters.SystemItemFilter;
+import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.core.util.vfs.filters.VFSItemSuffixFilter;
 import org.olat.core.util.vfs.filters.VFSLeafFilter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -891,7 +891,7 @@ public class VersionsFileManager implements VersionsManager {
 	
 	private int countDirectories(VFSContainer container) {
 		int count = 1;//itself
-		List<VFSItem> children = container.getItems(new SystemItemFilter());
+		List<VFSItem> children = container.getItems(new VFSSystemItemFilter());
 		for(VFSItem child:children) {
 			if(child instanceof VFSContainer) {
 				count += countDirectories((VFSContainer)child);
@@ -933,7 +933,7 @@ public class VersionsFileManager implements VersionsManager {
 	}
 	
 	private void pruneVersionHistory(VFSContainer container, long maxHistoryLength, ProgressDelegate progress, int count) {
-		List<VFSItem> children = container.getItems(new SystemItemFilter());
+		List<VFSItem> children = container.getItems(new VFSSystemItemFilter());
 		for(VFSItem child:children) {
 			if(child instanceof VFSContainer) {
 				if(progress != null) progress.setActual(++count);

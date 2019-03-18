@@ -40,7 +40,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
-import org.olat.core.util.vfs.filters.SystemItemFilter;
+import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 
 /**
  * Initial Date:  18.12.2002
@@ -99,7 +99,7 @@ public class FolderManager {
 		} else if(relPath instanceof VFSContainer) {
 			// is a folder
 			VFSContainer container = (VFSContainer)relPath;
-			for (VFSItem item : container.getItems(new SystemItemFilter())) {
+			for (VFSItem item : container.getItems(new VFSSystemItemFilter())) {
 				getFileInfosRecursively(item, fileInfos, newerThan, basePathlen);
 			}
 		}

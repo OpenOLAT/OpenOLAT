@@ -58,6 +58,7 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.filters.VFSItemExcludePrefixFilter;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
+import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.core.util.vfs.version.Versionable;
 
 /**
@@ -364,7 +365,7 @@ public class FolderComponent extends AbstractComponent {
 		if (filter != null) {
 			children = currentContainer.getItems(filter);
 		} else {
-			children = currentContainer.getItems();			
+			children = currentContainer.getItems(new VFSSystemItemFilter());			
 		}
 		// OLAT-5256: filter .nfs files
 		for(Iterator<VFSItem> it = children.iterator(); it.hasNext(); ) {
