@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.license.LicenseModule;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.license.LicenseType;
@@ -83,6 +84,8 @@ public class AuthorSearchController extends FormBasicController implements Exten
 	private boolean cancelAllowed;
 	private boolean enabled = true;
 	
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private RepositoryHandlerFactory repositoryHandlerFactory;
 	@Autowired
@@ -295,10 +298,18 @@ public class AuthorSearchController extends FormBasicController implements Exten
 	protected boolean validateFormLogic(UserRequest ureq) {
 		if(!enabled) return true;
 		
+		author.clearError();
 		if (displayName.isEmpty() && author.isEmpty() && description.isEmpty() && (id != null && id.isEmpty()))	{
 			showWarning("cif.error.allempty");
 			return false;
 		}
+		
+		int maxSize = dbInstance.isMySQL() ? 5 : 3;
+		if(StringHelper.containsNonWhitespace(author.getValue()) && author.getValue().length() < maxSize) {
+			author.setErrorKey("form.error.tooshort", new String[] { Integer.toString(maxSize) });
+			return false;
+		}
+		
 		return true;
 	}
 
@@ -316,10 +327,8 @@ public class AuthorSearchController extends FormBasicController implements Exten
 	
 	@Override
 	protected void formInnerEvent (UserRequest ureq, FormItem source, FormEvent event) {
-		if(enabled) {
-			if (source == searchButton) {
-				fireSearchEvent(ureq);
-			}
+		if(enabled && source == searchButton && validateFormLogic(ureq)) {
+			fireSearchEvent(ureq);
 		}
 	}
 	

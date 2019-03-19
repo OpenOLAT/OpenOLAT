@@ -106,6 +106,29 @@ public class RepositoryEntryAuthorQueriesTest extends OlatTestCase {
 	}
 	
 	/**
+	 * Search by author
+	 */
+	@Test
+	public void searchViews_preparation_byAuthor() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndAuthor("view-3-");
+		RepositoryEntry reOwner = JunitTestHelper.createAndPersistRepositoryEntry(true);
+		repositoryManager.setAccess(reOwner, RepositoryEntryStatusEnum.preparation, false, false);
+		repositoryEntryRelationDao.addRole(id, reOwner, GroupRoles.owner.name());
+		RepositoryEntry reNotOwner = JunitTestHelper.createAndPersistRepositoryEntry(true);
+		repositoryManager.setAccess(reNotOwner, RepositoryEntryStatusEnum.preparation, false, false);
+		
+		dbInstance.commitAndCloseSession();
+		
+		SearchAuthorRepositoryEntryViewParams params = new SearchAuthorRepositoryEntryViewParams(id, Roles.authorRoles());
+		String firstName = id.getUser().getFirstName();
+		params.setAuthor(firstName.substring(1, 6));
+
+		RepositoryEntryAuthorViewResults results = repositoryEntryAuthorViewQueries.searchViews(params, 0, -1);
+		Assert.assertTrue(contains(reOwner, results));
+		Assert.assertFalse(contains(reNotOwner, results));
+	}
+	
+	/**
 	 * Check the visibility of entries in preparation status.
 	 */
 	@Test

@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import javax.persistence.FlushModeType;
 import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.GroupRoles;
@@ -100,6 +101,14 @@ public class RepositoryEntryAuthorQueries {
 				inMemoryTypes = params.getResourceTypes();
 			}
 		}
+		
+		if(StringHelper.containsNonWhitespace(params.getAuthor()) && dbInstance.isMySQL()) {
+			List<Long> repoKeys = getAuthorRepoKeys(params.getAuthor());
+			if(repoKeys.isEmpty()) {
+				return new RepositoryEntryAuthorViewResults(Collections.emptyList(), true);
+			}
+			params.setAuthorEntryKeys(repoKeys);
+		}
 
 		TypedQuery<Object[]> query = createViewQuery(params, inMemoryTypes != null, Object[].class);
 		query.setFirstResult(firstResult);
@@ -140,7 +149,28 @@ public class RepositoryEntryAuthorQueries {
 			
 			views.add(new RepositoryEntryAuthorImpl(re, hasMarks, offers, references, deletedByName, lectureEnabled, rollCallEnabled));
 		}
-		return new RepositoryEntryAuthorViewResults(views, inMemoryTypes != null);
+		return new RepositoryEntryAuthorViewResults(views, inMemoryTypes != null || maxResults <= 0);
+	}
+	
+	private List<Long> getAuthorRepoKeys(String author) {
+		StringBuilder sb = new StringBuilder(512);
+		sb.append("select distinct rel.entry.key from repoentrytogroup as rel")
+		  .append(" inner join rel.group as rGroup")
+		  .append(" inner join rGroup.members as membership")
+		  .append(" inner join membership.identity as ident")
+		  .append(" inner join ident.user as user")
+          .append(" where membership.role='owner' and ");
+		PersistenceHelper.appendFuzzyLike(sb, "user.firstName", "author", dbInstance.getDbVendor());
+		sb.append(" or ");
+		PersistenceHelper.appendFuzzyLike(sb, "user.lastName", "author", dbInstance.getDbVendor());
+		sb.append(" or ");
+		PersistenceHelper.appendFuzzyLike(sb, "ident.name", "author", dbInstance.getDbVendor());
+		sb.append(" ");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setFlushMode(FlushModeType.COMMIT)
+				.setParameter("author", PersistenceHelper.makeFuzzyQueryString(author))
+				.getResultList();
 	}
 
 	protected <T> TypedQuery<T> createViewQuery(SearchAuthorRepositoryEntryViewParams params, boolean inMemoryTypes,
@@ -219,9 +249,11 @@ public class RepositoryEntryAuthorQueries {
 			sb.append("    and license.licenseType.key in (:licenseTypeKeys))");
 		}
 		
-		String author = params.getAuthor();
-		if (StringHelper.containsNonWhitespace(author)) { // fuzzy author search
-			author = PersistenceHelper.makeFuzzyQueryString(author);
+		String author = null;
+		if(params.getAuthorEntryKeys() != null && !params.getAuthorEntryKeys().isEmpty()) {
+			sb.append(" and v.key in (:authorEntryKeys)");
+		} else if (StringHelper.containsNonWhitespace(params.getAuthor())) { // fuzzy author search
+			author = PersistenceHelper.makeFuzzyQueryString(params.getAuthor());
 
 			sb.append(" and v.key in (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership, ")
 			     .append(IdentityImpl.class.getName()).append(" as identity, ").append(UserImpl.class.getName()).append(" as user")
@@ -321,7 +353,10 @@ public class RepositoryEntryAuthorQueries {
 		if(quickText != null) {
 			dbQuery.setParameter("quickText", quickText);
 		}
-		if (StringHelper.containsNonWhitespace(author)) { // fuzzy author search
+		
+		if(params.getAuthorEntryKeys() != null && !params.getAuthorEntryKeys().isEmpty()) {
+			dbQuery.setParameter("authorEntryKeys", params.getAuthorEntryKeys());
+		} else if (StringHelper.containsNonWhitespace(author)) { // fuzzy author search
 			dbQuery.setParameter("author", author);
 		}
 		if (StringHelper.containsNonWhitespace(displayname)) {

@@ -45,6 +45,7 @@ public class SearchAuthorRepositoryEntryViewParams {
 	private String idAndRefs;
 	private String idRefsAndTitle;
 	private String author;
+	private List<Long> authorEntryKeys;
 	private String displayname;
 	private String description;
 	
@@ -88,6 +89,15 @@ public class SearchAuthorRepositoryEntryViewParams {
 
 	public void setAuthor(String author) {
 		this.author = author;
+		authorEntryKeys = null;
+	}
+
+	public List<Long> getAuthorEntryKeys() {
+		return authorEntryKeys;
+	}
+
+	public void setAuthorEntryKeys(List<Long> authorEntryKeys) {
+		this.authorEntryKeys = authorEntryKeys;
 	}
 
 	public String getDisplayname() {
@@ -123,7 +133,7 @@ public class SearchAuthorRepositoryEntryViewParams {
 	}
 
 	public boolean isResourceTypesDefined() {
-		return resourceTypes != null && resourceTypes.size() > 0;
+		return resourceTypes != null && !resourceTypes.isEmpty();
 	}
 
 	public List<String> getResourceTypes() {
