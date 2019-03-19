@@ -66,7 +66,7 @@ public interface QTI21StatisticsManager {
 	 * @param resSubPath
 	 * @return
 	 */
-	public StatisticAssessment getAssessmentStatistics(QTI21StatisticSearchParams searchParams);
+	public StatisticAssessment getAssessmentStatistics(QTI21StatisticSearchParams searchParams, Double cutValue);
 	
 	
 	public StatisticsItem getAssessmentItemStatistics(String itemRefIdent, double maxScore, QTI21StatisticSearchParams searchParams);

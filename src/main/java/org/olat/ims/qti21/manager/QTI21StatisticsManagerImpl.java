@@ -166,7 +166,7 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 	}
 
 	@Override
-	public StatisticAssessment getAssessmentStatistics(QTI21StatisticSearchParams searchParams) {
+	public StatisticAssessment getAssessmentStatistics(QTI21StatisticSearchParams searchParams, Double cutValue) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select asession.score, asession.manualScore, asession.passed, asession.duration from qtiassessmenttestsession asession ");
 		decorateRSet(sb, searchParams, true);
@@ -188,6 +188,8 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 		double minDuration = Double.MAX_VALUE;
 		double maxDuration = 0d;
 		
+		BigDecimal cutBigValue = cutValue == null ? null : BigDecimal.valueOf(cutValue.doubleValue());
+		
 		int dataPos = 0;
 		boolean hasScore = false;
 		for(Object[] rawData:rawDatas) {
@@ -208,6 +210,9 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 			}
 			
 			Boolean passed = (Boolean)rawData[pos++];
+			if(cutBigValue != null && score != null) {
+				passed = score.compareTo(cutBigValue) >= 0;
+			}
 			if(passed != null) {
 				if(passed.booleanValue()) {
 					numOfPassed++;
