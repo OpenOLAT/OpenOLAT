@@ -160,9 +160,11 @@ public class PortfolioHomeController extends BasicController implements Activate
 			BinderListController bindersCtrl = doOpenMyBinders(ureq);
 			if(!portfolioModule.isLearnerCanCreateBinders() && bindersCtrl.getNumOfBinders() == 1) {
 				BinderRow row = bindersCtrl.getFirstBinder();
-				OLATResourceable resource = OresHelper.createOLATResourceableInstance(Binder.class, row.getKey());
-				List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromString(resource);
-				bindersCtrl.activate(ureq, entries, null);
+				if(row != null && row.getKey() != null) {
+					OLATResourceable resource = OresHelper.createOLATResourceableInstance(Binder.class, row.getKey());
+					List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromString(resource);
+					bindersCtrl.activate(ureq, entries, null);
+				}
 			}
 		} else if(myEntriesLink == source) {
 			doOpenMyPages(ureq);
@@ -175,7 +177,7 @@ public class PortfolioHomeController extends BasicController implements Activate
 		} else if(createNewEntryLink == source) {
 			doNewEntry(ureq);
 		} else if(showHelpLink == source) {
-
+			// do nothing
 		} else if(goToTrashLink == source) {
 			doDeletedPages(ureq);
 		} else if(stackPanel == source) {

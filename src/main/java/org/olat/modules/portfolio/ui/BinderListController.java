@@ -165,8 +165,12 @@ public class BinderListController extends FormBasicController
 	}
 	
 	public BinderRow getFirstBinder() {
-		if(model.getRowCount() > 0) {
-			return model.getObject(0);
+		int numOfRows = model.getRowCount();
+		for(int i=0; i<numOfRows; i++) {
+			BinderRow row = model.getObject(i);
+			if(row.getKey() != null) {
+				return row;
+			}
 		}
 		return null;
 	}
