@@ -22,16 +22,18 @@ package org.olat.modules.wopi.manager;
 import java.io.File;
 import java.net.URL;
 import java.nio.file.Paths;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
+
+import javax.annotation.PostConstruct;
 
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.cache.CacheWrapper;
+import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.wopi.Access;
@@ -55,11 +57,18 @@ public class WopiServiceImpl implements WopiService {
 	
 	private static final OLog log = Tracing.createLoggerFor(WopiServiceImpl.class);
 	
-	private Map<String, Access> accesses = new HashMap<>();
+	private CacheWrapper<String, Access> accessCache;
 	
+	@Autowired
+	private CoordinatorManager coordinator;
 	@Autowired
 	private VFSRepositoryService vfsService;
 
+	@PostConstruct
+	public void init() {
+		accessCache = coordinator.getCoordinator().getCacher().getCache(WopiService.class.getSimpleName(), "access");
+	}
+	
 	@Override
 	public boolean fileExists(String fileId) {
 		return vfsService.getItemFor(fileId) != null? true: false;
@@ -91,13 +100,13 @@ public class WopiServiceImpl implements WopiService {
 		access.setFileId(fileId);
 		access.setOwner(owner);
 		access.setAccessIdentity(identity);
-		accesses.put(token, access);
+		accessCache.put(token, access);
 		return access;
 	}
 
 	@Override
 	public Access getAccess(String accessToken) {
-		return accesses.get(accessToken);
+		return accessCache.get(accessToken);
 	}
 
 	@Override
