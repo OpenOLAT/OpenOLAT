@@ -84,6 +84,7 @@ public class TableRunController extends BasicController implements PageRunElemen
 		int i = 0;
 		if(settings.isColumnHeaders()) {
 			headerRows.add(loadColumns(i, content, settings));
+			i++;
 		}
 
 		for( ; i<numOfRows; i++) {
