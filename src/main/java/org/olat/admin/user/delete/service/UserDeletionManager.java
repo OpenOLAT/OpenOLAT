@@ -180,7 +180,7 @@ public class UserDeletionManager {
 		StringBuilder sb = new StringBuilder(512);
 		sb.append("select ident from ").append(IdentityImpl.class.getName()).append(" as ident")
 		  .append(" inner join fetch ident.user as user")
-		  .append(" where ident.status=").append(Identity.STATUS_ACTIV).append(" and (ident.lastLogin = null or ident.lastLogin < :lastLogin)")
+		  .append(" where ident.status=").append(Identity.STATUS_ACTIV).append(" and ((ident.lastLogin = null and ident.creationDate < :lastLogin) or ident.lastLogin < :lastLogin)")
 		  .append(" and exists (select orgtomember.key from bgroupmember as orgtomember ")
 		  .append("  inner join organisation as org on (org.group.key=orgtomember.group.key)")
 		  .append("  where orgtomember.identity.key=ident.key and org.key in (:organisationKeys) and orgtomember.role='").append(OrganisationRoles.user).append("')");

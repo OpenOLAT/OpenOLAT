@@ -293,8 +293,8 @@ public class TableEditorController extends FormBasicController implements PageEl
 				if(!dirty) {
 					col.getText().getComponent().setDirty(false);
 				}
-				boolean header = (settings.isRowHeaders() && i == 0)
-						|| (settings.isColumnHeaders() && col.getColumn() == 0);
+				boolean header = (settings.isColumnHeaders() && i == 0)
+						|| (settings.isRowHeaders() && col.getColumn() == 0);
 				col.setHeader(header);
 			}
 		}
