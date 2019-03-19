@@ -21,6 +21,7 @@ package org.olat.modules.wopi;
 
 import java.io.File;
 import java.time.Instant;
+import java.util.Date;
 import java.util.List;
 
 import javax.ws.rs.core.HttpHeaders;
@@ -40,6 +41,11 @@ public class WopiRestHelper {
 
 	public static String getLastModifiedAsIso6801(File file) {
 		long lastModified = file.lastModified();
+		return Instant.ofEpochMilli(lastModified).toString();
+	}
+	
+	public static String getAsIso6801(Date date) {
+		long lastModified = date.getTime();
 		return Instant.ofEpochMilli(lastModified).toString();
 	}
 

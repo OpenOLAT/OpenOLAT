@@ -19,6 +19,7 @@
  */
 package org.olat.modules.wopi.collabora.restapi;
 
+import static org.olat.modules.wopi.WopiRestHelper.getAsIso6801;
 import static org.olat.modules.wopi.WopiRestHelper.getFirstRequestHeader;
 import static org.olat.modules.wopi.WopiRestHelper.getLastModifiedAsIso6801;
 
@@ -44,11 +45,13 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.wopi.Access;
 import org.olat.modules.wopi.collabora.CollaboraModule;
 import org.olat.modules.wopi.collabora.CollaboraService;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -71,6 +74,8 @@ public class FilesWebService {
 	private CollaboraModule collaboraModule;
 	@Autowired 
 	private CollaboraService collaboraService;
+	@Autowired
+	private UserManager userManager;
 	
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
@@ -96,15 +101,15 @@ public class FilesWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
-		File file = collaboraService.getFile(fileId);
+		VFSMetadata metadata = collaboraService.getMetadata(fileId);
 		CheckFileInfoVO checkFileInfoVO = CheckFileInfoVO.builder()
-				.withBaseFileName(file.getName()) // suffix is mandatory
-				.withOwnerId("1")
-				.withSize(file.length())
-				.withUserId("2")
-				.withUserFriendlyName("Alice")
+				.withBaseFileName(metadata.getFilename()) // suffix is mandatory
+				.withOwnerId(metadata.getAuthor().getKey().toString())
+				.withSize(metadata.getFileSize())
+				.withUserId(access.getIdentity().getKey().toString())
+				.withUserFriendlyName(userManager.getUserDisplayName(access.getIdentity()))
 				.withVersion(UUID.randomUUID().toString())
-				.withLastModifiedTime(getLastModifiedAsIso6801(file))
+				.withLastModifiedTime(getAsIso6801(metadata.getLastModified()))
 				.withUserCanWrite(Boolean.TRUE)
 				.withDisablePrint(Boolean.FALSE)
 				.withUserCanNotWriteRelative(Boolean.TRUE)

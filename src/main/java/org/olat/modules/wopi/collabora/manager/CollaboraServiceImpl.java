@@ -78,6 +78,11 @@ public class CollaboraServiceImpl implements CollaboraService, GenericEventListe
 	}
 
 	@Override
+	public VFSMetadata getMetadata(String fileId) {
+		return wopiService.getMetadata(fileId);
+	}
+
+	@Override
 	public Access createAccess(VFSMetadata vfsMetadata, Identity identity) {
 		return wopiService.createAccess(vfsMetadata, identity);
 	}
@@ -85,6 +90,11 @@ public class CollaboraServiceImpl implements CollaboraService, GenericEventListe
 	@Override
 	public Access getAccess(String accessToken) {
 		return wopiService.getAccess(accessToken);
+	}
+
+	@Override
+	public void deleteAccess(Access access) {
+		wopiService.deleteAccess(access.getToken());
 	}
 
 	@Override

@@ -42,14 +42,19 @@ public interface CollaboraService {
 	boolean fileExists(String fileId);
 
 	File getFile(String fileId);
+
+	VFSMetadata getMetadata(String fileId);
 	
 	Access createAccess(VFSMetadata vfsMetadata, Identity identity);
 
 	Access getAccess(String accessToken);
+	
+	void deleteAccess(Access access);
 	
 	Discovery getDiscovery();
 	
 	String getEditorBaseUrl(File file);
 	
 	boolean accepts(String suffix);
+
 }

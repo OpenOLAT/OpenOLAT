@@ -19,6 +19,7 @@
  */
 package org.olat.modules.wopi.model;
 
+import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.id.Identity;
 import org.olat.modules.wopi.Access;
 
@@ -32,8 +33,8 @@ public class AccessImpl implements Access {
 	
 	private String fileId;
 	private String token;
-	private Identity owner;
-	private Identity accessIdentity;
+	private Identity identity;
+	private VFSMetadata vfsMetadata;
 
 	@Override
 	public String getFileId() {
@@ -54,22 +55,21 @@ public class AccessImpl implements Access {
 	}
 
 	@Override
-	public Identity getOwner() {
-		return owner;
+	public Identity getIdentity() {
+		return identity;
 	}
-
-	public void setOwner(Identity owner) {
-		this.owner = owner;
+	
+	public void setIdentity(Identity identity) {
+		this.identity = identity;
 	}
 
 	@Override
-	public Identity getAccessIdentity() {
-		return accessIdentity;
-	}
-	
-	public void setAccessIdentity(Identity accessIdentity) {
-		this.accessIdentity = accessIdentity;
+	public VFSMetadata getVfsMetadata() {
+		return vfsMetadata;
 	}
 
+	public void setVfsMetadata(VFSMetadata vfsMetadata) {
+		this.vfsMetadata = vfsMetadata;
+	}
 
 }

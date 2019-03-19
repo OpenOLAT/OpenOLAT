@@ -19,6 +19,7 @@
  */
 package org.olat.modules.wopi;
 
+import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.id.Identity;
 
 /**
@@ -33,8 +34,8 @@ public interface Access {
 
 	String getToken();
 
-	Identity getOwner();
+	Identity getIdentity();
 	
-	Identity getAccessIdentity();
+	VFSMetadata getVfsMetadata();
 
 }

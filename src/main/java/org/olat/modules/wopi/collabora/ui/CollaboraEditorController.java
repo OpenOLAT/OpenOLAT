@@ -27,6 +27,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.CodeHelper;
 import org.olat.modules.wopi.Access;
+import org.olat.modules.wopi.collabora.CollaboraService;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -36,8 +38,14 @@ import org.olat.modules.wopi.Access;
  */
 public class CollaboraEditorController extends BasicController {
 	
+	private final Access access;
+
+	@Autowired
+	private CollaboraService collaboraService;
+	
 	public CollaboraEditorController(UserRequest ureq, WindowControl wControl, Access access) {
 		super(ureq, wControl);
+		this.access = access;
 		
 		VelocityContainer mainVC = createVelocityContainer("collabora");
 		
@@ -54,6 +62,7 @@ public class CollaboraEditorController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if ("close".equals(event.getCommand())) {
+			collaboraService.deleteAccess(access);
 			fireEvent(ureq, Event.DONE_EVENT);
 		}
 	}

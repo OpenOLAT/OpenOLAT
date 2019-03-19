@@ -36,10 +36,14 @@ public interface WopiService {
 
 	File getFile(String fileId);
 
+	VFSMetadata getMetadata(String fileId);
+
 	Access createAccess(VFSMetadata vfsMetadata, Identity identity);
 
 	Access getAccess(String accessToken);
 	
+	void deleteAccess(String accessToken);
+
 	boolean hasAction(Discovery discovery, String actionName, String suffix);
 
 	Action getAction(Discovery discovery, String actionName, String suffix);

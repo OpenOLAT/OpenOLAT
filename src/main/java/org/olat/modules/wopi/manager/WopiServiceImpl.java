@@ -90,16 +90,20 @@ public class WopiServiceImpl implements WopiService {
 	}
 
 	@Override
+	public VFSMetadata getMetadata(String fileId) {
+		File file = getFile(fileId);
+		return vfsService.getMetadataFor(file);
+	}
+
+	@Override
 	public Access createAccess(VFSMetadata vfsMetadata, Identity identity) {
 		String token = UUID.randomUUID().toString().replaceAll("-", "");
 		String fileId = vfsMetadata.getUuid();
-		Identity owner = vfsMetadata.getAuthor();
 		
 		AccessImpl access = new AccessImpl();
 		access.setToken(token);
 		access.setFileId(fileId);
-		access.setOwner(owner);
-		access.setAccessIdentity(identity);
+		access.setIdentity(identity);
 		accessCache.put(token, access);
 		return access;
 	}
@@ -107,6 +111,11 @@ public class WopiServiceImpl implements WopiService {
 	@Override
 	public Access getAccess(String accessToken) {
 		return accessCache.get(accessToken);
+	}
+	
+	@Override
+	public void deleteAccess(String accessToken) {
+		accessCache.remove(accessToken);
 	}
 
 	@Override
