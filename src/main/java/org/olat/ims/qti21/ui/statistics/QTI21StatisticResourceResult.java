@@ -46,6 +46,7 @@ import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.QTI21StatisticsManager;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
+import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.repository.RepositoryEntry;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
@@ -136,9 +137,15 @@ public class QTI21StatisticResourceResult implements StatisticResourceResult {
 	
 	public StatisticAssessment getQTIStatisticAssessment() {
 		if(statisticAssessment == null) {
-			statisticAssessment = qtiStatisticsManager.getAssessmentStatistics(searchParams);
+			Double cutValue = getCutValue();
+			statisticAssessment = qtiStatisticsManager.getAssessmentStatistics(searchParams, cutValue);
 		}
 		return statisticAssessment;
+	}
+	
+	public Double getCutValue() {
+		AssessmentTest assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
+		return QtiNodesExtractor.extractCutValue(assessmentTest);
 	}
 	
 	public File getAssessmentItemFile(AssessmentItemRef itemRef) {
