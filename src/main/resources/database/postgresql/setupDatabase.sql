@@ -48,7 +48,7 @@ create table o_bs_group_member (
    id int8 not null,
    creationdate timestamp not null,
    lastmodified timestamp not null,
-   g_role varchar(50) not null,
+   g_role varchar(24) not null,
    g_inheritance_mode varchar(16) default 'none' not null,
    fk_group_id int8 not null,
    fk_identity_id int8 not null,
@@ -2961,7 +2961,7 @@ alter table o_bs_group_member add constraint member_identity_ctx foreign key (fk
 alter table o_bs_group_member add constraint member_group_ctx foreign key (fk_group_id) references o_bs_group (id);
 create index member_to_identity_idx on o_bs_group_member (fk_identity_id);
 create index member_to_group_idx on o_bs_group_member (fk_group_id);
-create index member_to_grp_role_idx on o_bs_group_member (g_role);
+create index group_role_member_idx on o_bs_group_member (fk_group_id,g_role,fk_identity_id);
 
 alter table o_re_to_group add constraint re_to_group_group_ctx foreign key (fk_group_id) references o_bs_group (id);
 alter table o_re_to_group add constraint re_to_group_re_ctx foreign key (fk_entry_id) references o_repositoryentry (repositoryentry_id);

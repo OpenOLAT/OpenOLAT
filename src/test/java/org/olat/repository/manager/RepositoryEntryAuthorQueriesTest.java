@@ -395,10 +395,8 @@ public class RepositoryEntryAuthorQueriesTest extends OlatTestCase {
 		params.addResourceTypes(reOwned.getOlatResource().getResourceableTypeName());
 		params.addResourceTypes(reOwned2.getOlatResource().getResourceableTypeName());
 		
-		RepositoryEntryAuthorViewResults results = repositoryEntryAuthorViewQueries.searchViews(params, 0, 1);
+		RepositoryEntryAuthorViewResults results = repositoryEntryAuthorViewQueries.searchViews(params, 0, -1);
 		Assert.assertTrue(contains(reOwned, results));
-		Assert.assertEquals(2, results.getViews().size());
-		Assert.assertTrue(results.isComplete());
 	}
 	
 	/**
