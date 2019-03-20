@@ -76,7 +76,7 @@ import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryAllowToLeaveOptions;
-import org.olat.repository.RepositoryEntryAuthorView;
+import org.olat.repository.RepositoryEntryAuthorViewResults;
 import org.olat.repository.RepositoryEntryDataDeletable;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryEntryMyView;
@@ -821,7 +821,7 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	}
 
 	@Override
-	public List<RepositoryEntryAuthorView> searchAuthorView(SearchAuthorRepositoryEntryViewParams params,
+	public RepositoryEntryAuthorViewResults searchAuthorView(SearchAuthorRepositoryEntryViewParams params,
 			int firstResult, int maxResults) {
 		return authorViewQueries.searchViews(params, firstResult, maxResults);
 	}

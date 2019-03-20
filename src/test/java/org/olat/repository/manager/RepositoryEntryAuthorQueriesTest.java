@@ -30,6 +30,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryAuthorView;
+import org.olat.repository.RepositoryEntryAuthorViewResults;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
@@ -70,8 +71,9 @@ public class RepositoryEntryAuthorQueriesTest extends OlatTestCase {
 			= new SearchAuthorRepositoryEntryViewParams(id, roles);
 		params.setMarked(Boolean.TRUE);
 		
-		List<RepositoryEntryAuthorView> views = repositoryEntryAuthorViewQueries.searchViews(params, 0, 10);
-		Assert.assertNotNull(views);
+		RepositoryEntryAuthorViewResults results = repositoryEntryAuthorViewQueries.searchViews(params, 0, 10);
+		Assert.assertNotNull(results);
+		Assert.assertNotNull(results.getViews());
 	}
 	
 	@Test
@@ -83,8 +85,9 @@ public class RepositoryEntryAuthorQueriesTest extends OlatTestCase {
 			= new SearchAuthorRepositoryEntryViewParams(id, null);
 		params.setMarked(Boolean.TRUE);
 		
-		List<RepositoryEntryAuthorView> views = repositoryEntryAuthorViewQueries.searchViews(params, 0, 10);
-		Assert.assertNotNull(views);
+		RepositoryEntryAuthorViewResults results = repositoryEntryAuthorViewQueries.searchViews(params, 0, 10);
+		Assert.assertNotNull(results);
+		Assert.assertNotNull(results.getViews());
 	}
 	
 	@Test
@@ -97,8 +100,32 @@ public class RepositoryEntryAuthorQueriesTest extends OlatTestCase {
 			= new SearchAuthorRepositoryEntryViewParams(id, roles);
 		params.setDeleted(true);
 		
-		List<RepositoryEntryAuthorView> views = repositoryEntryAuthorViewQueries.searchViews(params, 0, 10);
-		Assert.assertNotNull(views);
+		RepositoryEntryAuthorViewResults results = repositoryEntryAuthorViewQueries.searchViews(params, 0, 10);
+		Assert.assertNotNull(results);
+		Assert.assertNotNull(results.getViews());
+	}
+	
+	/**
+	 * Search by author
+	 */
+	@Test
+	public void searchViews_preparation_byAuthor() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndAuthor("view-3-");
+		RepositoryEntry reOwner = JunitTestHelper.createAndPersistRepositoryEntry(true);
+		repositoryManager.setAccess(reOwner, RepositoryEntryStatusEnum.preparation, false, false);
+		repositoryEntryRelationDao.addRole(id, reOwner, GroupRoles.owner.name());
+		RepositoryEntry reNotOwner = JunitTestHelper.createAndPersistRepositoryEntry(true);
+		repositoryManager.setAccess(reNotOwner, RepositoryEntryStatusEnum.preparation, false, false);
+		
+		dbInstance.commitAndCloseSession();
+		
+		SearchAuthorRepositoryEntryViewParams params = new SearchAuthorRepositoryEntryViewParams(id, Roles.authorRoles());
+		String firstName = id.getUser().getFirstName();
+		params.setAuthor(firstName.substring(1, 6));
+
+		RepositoryEntryAuthorViewResults results = repositoryEntryAuthorViewQueries.searchViews(params, 0, -1);
+		Assert.assertTrue(contains(reOwner, results));
+		Assert.assertFalse(contains(reNotOwner, results));
 	}
 	
 	/**
@@ -117,9 +144,9 @@ public class RepositoryEntryAuthorQueriesTest extends OlatTestCase {
 		
 		SearchAuthorRepositoryEntryViewParams params = new SearchAuthorRepositoryEntryViewParams(id, Roles.authorRoles());
 
-		List<RepositoryEntryAuthorView> views = repositoryEntryAuthorViewQueries.searchViews(params, 0, -1);
-		Assert.assertTrue(contains(reOwner, views));
-		Assert.assertFalse(contains(reNotOwner, views));
+		RepositoryEntryAuthorViewResults results = repositoryEntryAuthorViewQueries.searchViews(params, 0, -1);
+		Assert.assertTrue(contains(reOwner, results));
+		Assert.assertFalse(contains(reNotOwner, results));
 	}
 	
 	/**
@@ -147,12 +174,12 @@ public class RepositoryEntryAuthorQueriesTest extends OlatTestCase {
 		
 		SearchAuthorRepositoryEntryViewParams params = new SearchAuthorRepositoryEntryViewParams(id, Roles.authorRoles());
 
-		List<RepositoryEntryAuthorView> views = repositoryEntryAuthorViewQueries.searchViews(params, 0, -1);
-		Assert.assertTrue(contains(reOwner, views));
-		Assert.assertFalse(contains(reNotOwner, views));
-		Assert.assertTrue(contains(reNotOwnerButCopy, views));
-		Assert.assertTrue(contains(reNotOwnerButReference, views));
-		Assert.assertTrue(contains(reNotOwnerButDownload, views));
+		RepositoryEntryAuthorViewResults results = repositoryEntryAuthorViewQueries.searchViews(params, 0, -1);
+		Assert.assertTrue(contains(reOwner, results));
+		Assert.assertFalse(contains(reNotOwner, results));
+		Assert.assertTrue(contains(reNotOwnerButCopy, results));
+		Assert.assertTrue(contains(reNotOwnerButReference, results));
+		Assert.assertTrue(contains(reNotOwnerButDownload, results));
 	}
 	
 	/**
@@ -174,10 +201,10 @@ public class RepositoryEntryAuthorQueriesTest extends OlatTestCase {
 		SearchAuthorRepositoryEntryViewParams params = new SearchAuthorRepositoryEntryViewParams(id, Roles.authorRoles());
 		params.setIdAndRefs(reOwner.getKey().toString());
 
-		List<RepositoryEntryAuthorView> views = repositoryEntryAuthorViewQueries.searchViews(params, 0, -1);
-		Assert.assertTrue(contains(reOwner, views));
-		Assert.assertFalse(contains(reNotOwner, views));
-		Assert.assertFalse(contains(reNotOwnerButCopy, views));
+		RepositoryEntryAuthorViewResults results = repositoryEntryAuthorViewQueries.searchViews(params, 0, -1);
+		Assert.assertTrue(contains(reOwner, results));
+		Assert.assertFalse(contains(reNotOwner, results));
+		Assert.assertFalse(contains(reNotOwnerButCopy, results));
 	}
 	
 	/**
@@ -215,14 +242,14 @@ public class RepositoryEntryAuthorQueriesTest extends OlatTestCase {
 		
 		SearchAuthorRepositoryEntryViewParams params = new SearchAuthorRepositoryEntryViewParams(id, Roles.authorRoles());
 		
-		List<RepositoryEntryAuthorView> views = repositoryEntryAuthorViewQueries.searchViews(params, 0, -1);
-		Assert.assertFalse(contains(rePreparation, views));
-		Assert.assertTrue(contains(reReview, views));
-		Assert.assertTrue(contains(reCoachPublished, views));
-		Assert.assertTrue(contains(rePublished, views));
-		Assert.assertTrue(contains(reClosed, views));
-		Assert.assertFalse(contains(reTrash, views));
-		Assert.assertFalse(contains(reDeleted, views));
+		RepositoryEntryAuthorViewResults results = repositoryEntryAuthorViewQueries.searchViews(params, 0, -1);
+		Assert.assertFalse(contains(rePreparation, results));
+		Assert.assertTrue(contains(reReview, results));
+		Assert.assertTrue(contains(reCoachPublished, results));
+		Assert.assertTrue(contains(rePublished, results));
+		Assert.assertTrue(contains(reClosed, results));
+		Assert.assertFalse(contains(reTrash, results));
+		Assert.assertFalse(contains(reDeleted, results));
 	}
 	
 	/**
@@ -253,14 +280,14 @@ public class RepositoryEntryAuthorQueriesTest extends OlatTestCase {
 		
 		SearchAuthorRepositoryEntryViewParams params = new SearchAuthorRepositoryEntryViewParams(id, Roles.authorRoles());
 		
-		List<RepositoryEntryAuthorView> views = repositoryEntryAuthorViewQueries.searchViews(params, 0, -1);
-		Assert.assertFalse(contains(rePreparation, views));
-		Assert.assertFalse(contains(reReview, views));
-		Assert.assertFalse(contains(reCoachPublished, views));
-		Assert.assertTrue(contains(rePublished, views));
-		Assert.assertTrue(contains(reClosed, views));
-		Assert.assertFalse(contains(reTrash, views));
-		Assert.assertFalse(contains(reDeleted, views));
+		RepositoryEntryAuthorViewResults results = repositoryEntryAuthorViewQueries.searchViews(params, 0, -1);
+		Assert.assertFalse(contains(rePreparation, results));
+		Assert.assertFalse(contains(reReview, results));
+		Assert.assertFalse(contains(reCoachPublished, results));
+		Assert.assertTrue(contains(rePublished, results));
+		Assert.assertTrue(contains(reClosed, results));
+		Assert.assertFalse(contains(reTrash, results));
+		Assert.assertFalse(contains(reDeleted, results));
 	}
 	
 	/**
@@ -300,14 +327,14 @@ public class RepositoryEntryAuthorQueriesTest extends OlatTestCase {
 		params.setDeleted(true);
 		params.setOwnedResourcesOnly(true);
 		
-		List<RepositoryEntryAuthorView> views = repositoryEntryAuthorViewQueries.searchViews(params, 0, -1);
-		Assert.assertFalse(contains(rePreparation, views));
-		Assert.assertFalse(contains(reReview, views));
-		Assert.assertFalse(contains(reCoachPublished, views));
-		Assert.assertFalse(contains(rePublished, views));
-		Assert.assertFalse(contains(reClosed, views));
-		Assert.assertTrue(contains(reTrash, views));
-		Assert.assertFalse(contains(reDeleted, views));
+		RepositoryEntryAuthorViewResults results = repositoryEntryAuthorViewQueries.searchViews(params, 0, -1);
+		Assert.assertFalse(contains(rePreparation, results));
+		Assert.assertFalse(contains(reReview, results));
+		Assert.assertFalse(contains(reCoachPublished, results));
+		Assert.assertFalse(contains(rePublished, results));
+		Assert.assertFalse(contains(reClosed, results));
+		Assert.assertTrue(contains(reTrash, results));
+		Assert.assertFalse(contains(reDeleted, results));
 	}
 	
 	/**
@@ -337,14 +364,41 @@ public class RepositoryEntryAuthorQueriesTest extends OlatTestCase {
 		
 		SearchAuthorRepositoryEntryViewParams params = new SearchAuthorRepositoryEntryViewParams(id, Roles.authorRoles());
 		
-		List<RepositoryEntryAuthorView> views = repositoryEntryAuthorViewQueries.searchViews(params, 0, -1);
-		Assert.assertTrue(contains(rePreparation, views));
-		Assert.assertTrue(contains(reReview, views));
-		Assert.assertTrue(contains(reCoachPublished, views));
-		Assert.assertTrue(contains(rePublished, views));
-		Assert.assertTrue(contains(reClosed, views));
-		Assert.assertFalse(contains(reTrash, views));
-		Assert.assertFalse(contains(reDeleted, views));
+		RepositoryEntryAuthorViewResults results = repositoryEntryAuthorViewQueries.searchViews(params, 0, -1);
+		Assert.assertTrue(contains(rePreparation, results));
+		Assert.assertTrue(contains(reReview, results));
+		Assert.assertTrue(contains(reCoachPublished, results));
+		Assert.assertTrue(contains(rePublished, results));
+		Assert.assertTrue(contains(reClosed, results));
+		Assert.assertFalse(contains(reTrash, results));
+		Assert.assertFalse(contains(reDeleted, results));
+	}
+	
+	/**
+	 * Check the visibility of entries with different status as an author.
+	 */
+	@Test
+	public void searchViews_status_asOwner() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndLearnResourceManager("view-4-");
+		
+		// a set of entries with every possible status
+		RepositoryEntry reOwned = JunitTestHelper.createAndPersistRepositoryEntry(true);
+		reOwned = repositoryManager.setAccess(reOwned, RepositoryEntryStatusEnum.preparation, true, true);
+		repositoryEntryRelationDao.addRole(id, reOwned, GroupRoles.owner.name());
+		RepositoryEntry reOwned2 = JunitTestHelper.createAndPersistRepositoryEntry(true);
+		reOwned2 = repositoryManager.setAccess(reOwned2, RepositoryEntryStatusEnum.preparation, true, true);
+		repositoryEntryRelationDao.addRole(id, reOwned2, GroupRoles.owner.name());
+		dbInstance.commitAndCloseSession();
+		
+		SearchAuthorRepositoryEntryViewParams params = new SearchAuthorRepositoryEntryViewParams(id, Roles.authorRoles());
+		params.setOwnedResourcesOnly(true);
+		params.addResourceTypes(reOwned.getOlatResource().getResourceableTypeName());
+		params.addResourceTypes(reOwned2.getOlatResource().getResourceableTypeName());
+		
+		RepositoryEntryAuthorViewResults results = repositoryEntryAuthorViewQueries.searchViews(params, 0, 1);
+		Assert.assertTrue(contains(reOwned, results));
+		Assert.assertEquals(2, results.getViews().size());
+		Assert.assertTrue(results.isComplete());
 	}
 	
 	/**
@@ -374,14 +428,14 @@ public class RepositoryEntryAuthorQueriesTest extends OlatTestCase {
 		
 		SearchAuthorRepositoryEntryViewParams params = new SearchAuthorRepositoryEntryViewParams(id, Roles.administratorRoles());
 		
-		List<RepositoryEntryAuthorView> views = repositoryEntryAuthorViewQueries.searchViews(params, 0, -1);
-		Assert.assertTrue(contains(rePreparation, views));
-		Assert.assertTrue(contains(reReview, views));
-		Assert.assertTrue(contains(reCoachPublished, views));
-		Assert.assertTrue(contains(rePublished, views));
-		Assert.assertTrue(contains(reClosed, views));
-		Assert.assertFalse(contains(reTrash, views));
-		Assert.assertFalse(contains(reDeleted, views));
+		RepositoryEntryAuthorViewResults results = repositoryEntryAuthorViewQueries.searchViews(params, 0, -1);
+		Assert.assertTrue(contains(rePreparation, results));
+		Assert.assertTrue(contains(reReview, results));
+		Assert.assertTrue(contains(reCoachPublished, results));
+		Assert.assertTrue(contains(rePublished, results));
+		Assert.assertTrue(contains(reClosed, results));
+		Assert.assertFalse(contains(reTrash, results));
+		Assert.assertFalse(contains(reDeleted, results));
 	}
 	
 	/**
@@ -412,14 +466,14 @@ public class RepositoryEntryAuthorQueriesTest extends OlatTestCase {
 		SearchAuthorRepositoryEntryViewParams params = new SearchAuthorRepositoryEntryViewParams(id, Roles.administratorRoles());
 		params.setDeleted(true);
 		
-		List<RepositoryEntryAuthorView> views = repositoryEntryAuthorViewQueries.searchViews(params, 0, -1);
-		Assert.assertFalse(contains(rePreparation, views));
-		Assert.assertFalse(contains(reReview, views));
-		Assert.assertFalse(contains(reCoachPublished, views));
-		Assert.assertFalse(contains(rePublished, views));
-		Assert.assertFalse(contains(reClosed, views));
-		Assert.assertTrue(contains(reTrash, views));
-		Assert.assertFalse(contains(reDeleted, views));
+		RepositoryEntryAuthorViewResults results = repositoryEntryAuthorViewQueries.searchViews(params, 0, -1);
+		Assert.assertFalse(contains(rePreparation, results));
+		Assert.assertFalse(contains(reReview, results));
+		Assert.assertFalse(contains(reCoachPublished, results));
+		Assert.assertFalse(contains(rePublished, results));
+		Assert.assertFalse(contains(reClosed, results));
+		Assert.assertTrue(contains(reTrash, results));
+		Assert.assertFalse(contains(reDeleted, results));
 	}
 	
 	/**
@@ -436,8 +490,8 @@ public class RepositoryEntryAuthorQueriesTest extends OlatTestCase {
 		SearchAuthorRepositoryEntryViewParams params = new SearchAuthorRepositoryEntryViewParams(id, Roles.authorRoles());
 		params.setOwnedResourcesOnly(true);
 
-		List<RepositoryEntryAuthorView> views = repositoryEntryAuthorViewQueries.searchViews(params, 0, -1);
-		Assert.assertTrue(contains(reOwner, views));
+		RepositoryEntryAuthorViewResults results = repositoryEntryAuthorViewQueries.searchViews(params, 0, -1);
+		Assert.assertTrue(contains(reOwner, results));
 	}
 	
 	@Test
@@ -453,15 +507,20 @@ public class RepositoryEntryAuthorQueriesTest extends OlatTestCase {
 		for(OrderBy orderBy:OrderBy.values()) {
 			params.setOrderBy(orderBy);
 			params.setOrderByAsc(true);
-			List<RepositoryEntryAuthorView> viewAsc = repositoryEntryAuthorViewQueries.searchViews(params, 0, 10);
-			Assert.assertNotNull(viewAsc);
+			RepositoryEntryAuthorViewResults resultsAsc = repositoryEntryAuthorViewQueries.searchViews(params, 0, 10);
+			Assert.assertNotNull(resultsAsc);
+			Assert.assertNotNull(resultsAsc.getViews());
 			params.setOrderByAsc(false);
-			List<RepositoryEntryAuthorView> viewDesc = repositoryEntryAuthorViewQueries.searchViews(params, 0, 10);
-			Assert.assertNotNull(viewDesc);
+			RepositoryEntryAuthorViewResults resultsDesc = repositoryEntryAuthorViewQueries.searchViews(params, 0, 10);
+			Assert.assertNotNull(resultsDesc);
+			Assert.assertNotNull(resultsDesc.getViews());
 		}
 	}
 	
-	private final boolean contains(RepositoryEntry re, List<RepositoryEntryAuthorView> views) {
+	private final boolean contains(RepositoryEntry re, RepositoryEntryAuthorViewResults results) {
+		if(results == null || results.getViews() == null) return false;
+		
+		List<RepositoryEntryAuthorView> views = results.getViews();
 		for(RepositoryEntryAuthorView view:views) {
 			if(re.getKey().equals(view.getKey())) {
 				return true;

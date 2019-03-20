@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import javax.persistence.FlushModeType;
 import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.GroupRoles;
@@ -41,6 +42,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryAuthorView;
+import org.olat.repository.RepositoryEntryAuthorViewResults;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.model.RepositoryEntryAuthorImpl;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
@@ -78,21 +80,39 @@ public class RepositoryEntryAuthorQueries {
 			log.error("No identity defined for query");
 			return 0;
 		}
-		
-		TypedQuery<Number> query = createViewQuery(params, Number.class);
+
+		TypedQuery<Number> query = createViewQuery(params, false, Number.class);
 		Number count = query.getSingleResult();
 		return count == null ? 0 : count.intValue();
 	}
 
-	public List<RepositoryEntryAuthorView> searchViews(SearchAuthorRepositoryEntryViewParams params, int firstResult, int maxResults) {
+	public RepositoryEntryAuthorViewResults searchViews(SearchAuthorRepositoryEntryViewParams params, int firstResult, int maxResults) {
 		if(params.getIdentity() == null) {
 			log.error("No identity defined for query");
-			return Collections.emptyList();
+			return new RepositoryEntryAuthorViewResults(Collections.emptyList(), true);
+		}
+		
+		List<String> inMemoryTypes = null;
+		if(params.isOwnedResourcesOnly() && params.isResourceTypesDefined()) {
+			maxResults = -1;
+			if(params.getResourceTypes().size() == 1) {
+				inMemoryTypes = Collections.singletonList(params.getResourceTypes().get(0));
+			} else {
+				inMemoryTypes = params.getResourceTypes();
+			}
+		}
+		
+		if(StringHelper.containsNonWhitespace(params.getAuthor()) && dbInstance.isMySQL()) {
+			List<Long> repoKeys = getAuthorRepoKeys(params.getAuthor());
+			if(repoKeys.isEmpty()) {
+				return new RepositoryEntryAuthorViewResults(Collections.emptyList(), true);
+			}
+			params.setAuthorEntryKeys(repoKeys);
 		}
 
-		TypedQuery<Object[]> query = createViewQuery(params, Object[].class);
+		TypedQuery<Object[]> query = createViewQuery(params, inMemoryTypes != null, Object[].class);
 		query.setFirstResult(firstResult);
-		if(maxResults > 0) {
+		if(maxResults > 0 && inMemoryTypes == null) {
 			query.setMaxResults(maxResults);
 		}
 		
@@ -100,6 +120,10 @@ public class RepositoryEntryAuthorQueries {
 		List<RepositoryEntryAuthorView> views = new ArrayList<>(objects.size());
 		for(Object[] object:objects) {
 			RepositoryEntry re = (RepositoryEntry)object[0];
+			if(inMemoryTypes != null &&!inMemoryTypes.contains(re.getOlatResource().getResourceableTypeName())) {
+				continue;
+			}
+			
 			Number numOfMarks = (Number)object[1];
 			boolean hasMarks = numOfMarks != null && numOfMarks.longValue() > 0;
 			Number numOffers = (Number)object[2];
@@ -125,10 +149,31 @@ public class RepositoryEntryAuthorQueries {
 			
 			views.add(new RepositoryEntryAuthorImpl(re, hasMarks, offers, references, deletedByName, lectureEnabled, rollCallEnabled));
 		}
-		return views;
+		return new RepositoryEntryAuthorViewResults(views, inMemoryTypes != null || maxResults <= 0);
+	}
+	
+	private List<Long> getAuthorRepoKeys(String author) {
+		StringBuilder sb = new StringBuilder(512);
+		sb.append("select distinct rel.entry.key from repoentrytogroup as rel")
+		  .append(" inner join rel.group as rGroup")
+		  .append(" inner join rGroup.members as membership")
+		  .append(" inner join membership.identity as ident")
+		  .append(" inner join ident.user as user")
+          .append(" where membership.role='owner' and ");
+		PersistenceHelper.appendFuzzyLike(sb, "user.firstName", "author", dbInstance.getDbVendor());
+		sb.append(" or ");
+		PersistenceHelper.appendFuzzyLike(sb, "user.lastName", "author", dbInstance.getDbVendor());
+		sb.append(" or ");
+		PersistenceHelper.appendFuzzyLike(sb, "ident.name", "author", dbInstance.getDbVendor());
+		sb.append(" ");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setFlushMode(FlushModeType.COMMIT)
+				.setParameter("author", PersistenceHelper.makeFuzzyQueryString(author))
+				.getResultList();
 	}
 
-	protected <T> TypedQuery<T> createViewQuery(SearchAuthorRepositoryEntryViewParams params,
+	protected <T> TypedQuery<T> createViewQuery(SearchAuthorRepositoryEntryViewParams params, boolean inMemoryTypes,
 			Class<T> type) {
 
 		IdentityRef identity = params.getIdentity();
@@ -188,7 +233,7 @@ public class RepositoryEntryAuthorQueries {
 			sb.append(" exists (select ref.key from references as ref where ref.target.key=res.key)");
 		}
 
-		if (params.isResourceTypesDefined()) {
+		if (params.isResourceTypesDefined() && !inMemoryTypes) {
 			sb.append(" and res.resName in (:resourcetypes)");
 		}
 		if(params.getMarked() != null && params.getMarked().booleanValue()) {
@@ -204,9 +249,11 @@ public class RepositoryEntryAuthorQueries {
 			sb.append("    and license.licenseType.key in (:licenseTypeKeys))");
 		}
 		
-		String author = params.getAuthor();
-		if (StringHelper.containsNonWhitespace(author)) { // fuzzy author search
-			author = PersistenceHelper.makeFuzzyQueryString(author);
+		String author = null;
+		if(params.getAuthorEntryKeys() != null && !params.getAuthorEntryKeys().isEmpty()) {
+			sb.append(" and v.key in (:authorEntryKeys)");
+		} else if (StringHelper.containsNonWhitespace(params.getAuthor())) { // fuzzy author search
+			author = PersistenceHelper.makeFuzzyQueryString(params.getAuthor());
 
 			sb.append(" and v.key in (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership, ")
 			     .append(IdentityImpl.class.getName()).append(" as identity, ").append(UserImpl.class.getName()).append(" as user")
@@ -284,7 +331,7 @@ public class RepositoryEntryAuthorQueries {
 
 		TypedQuery<T> dbQuery = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), type);
-		if (params.isResourceTypesDefined()) {
+		if (params.isResourceTypesDefined() && !inMemoryTypes) {
 			dbQuery.setParameter("resourcetypes", resourceTypes);
 		}
 		if(id != null) {
@@ -306,7 +353,10 @@ public class RepositoryEntryAuthorQueries {
 		if(quickText != null) {
 			dbQuery.setParameter("quickText", quickText);
 		}
-		if (StringHelper.containsNonWhitespace(author)) { // fuzzy author search
+		
+		if(params.getAuthorEntryKeys() != null && !params.getAuthorEntryKeys().isEmpty()) {
+			dbQuery.setParameter("authorEntryKeys", params.getAuthorEntryKeys());
+		} else if (StringHelper.containsNonWhitespace(author)) { // fuzzy author search
 			dbQuery.setParameter("author", author);
 		}
 		if (StringHelper.containsNonWhitespace(displayname)) {
