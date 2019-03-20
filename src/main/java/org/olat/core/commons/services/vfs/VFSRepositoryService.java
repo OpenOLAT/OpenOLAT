@@ -136,6 +136,8 @@ public interface VFSRepositoryService {
 	public License getOrCreateLicense(VFSMetadata meta, Identity itentity);
 	
 
+	public boolean hasEditor(String suffix);
+	
 	public Optional<VFSLeafEditor> getEditor(String editorType);
 	
 	/**

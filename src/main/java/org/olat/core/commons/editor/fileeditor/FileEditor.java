@@ -30,7 +30,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
-import org.olat.core.util.FileUtils;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.springframework.stereotype.Service;
@@ -64,9 +63,7 @@ public class FileEditor implements VFSLeafEditor {
 	}
 
 	@Override
-	public boolean isSupportingFormat(VFSLeaf vfsLeaf) {
-		String fileName = vfsLeaf.getName();
-		String suffix = FileUtils.getFileSuffix(fileName);
+	public boolean isSupportingFormat(String suffix) {
 		return HTML_EDITOR_SUFFIX.contains(suffix) || TEXT_EDITOR_SUFFIX.contains(suffix)? true: false;
 	}
 

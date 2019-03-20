@@ -17,34 +17,19 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.commons.services.vfs;
+package org.olat.core.commons.services.filetemplate;
 
-import java.util.Locale;
-
-import org.olat.core.commons.modules.bc.components.FolderComponent;
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.WindowControl;
-import org.olat.core.id.Identity;
-import org.olat.core.util.vfs.VFSLeaf;
+import java.io.InputStream;
 
 /**
+ * Provides content for a file, e.g. an empty Word document.
  * 
- * Initial date: 13 Mar 2019<br>
+ * Initial date: 20 Mar 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface VFSLeafEditor {
+public interface ContentProvider {
 	
-	boolean isEnable();
-	
-	String getType();
-	
-	String getDisplayName(Locale locale);
-	
-	boolean isSupportingFormat(String suffix);
-	
-	Controller getRunController(UserRequest ureq, WindowControl wControl, VFSLeaf vfsLeaf,
-			FolderComponent folderComponent, Identity identity);
+	public InputStream getContent();
 
 }

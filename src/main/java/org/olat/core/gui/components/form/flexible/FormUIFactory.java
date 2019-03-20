@@ -575,15 +575,6 @@ public class FormUIFactory {
 		return addTextElement(i18nLabel, i18nLabel, maxLen, initialValue, formLayout);
 	}
 	
-	/**
-	 * 
-	 * @param name
-	 * @param maxLen
-	 * @param initialValue
-	 * @param i18nLabel
-	 * @param formLayout
-	 * @return
-	 */
 	public TextElement addTextElement(String name, final String i18nLabel, final int maxLen, String initialValue,
 			FormItemContainer formLayout) {
 		String val = initialValue == null ? "" : initialValue;

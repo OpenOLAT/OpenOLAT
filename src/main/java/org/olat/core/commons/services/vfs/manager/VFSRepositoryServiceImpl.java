@@ -743,6 +743,15 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	}
 
 	@Override
+	public boolean hasEditor(String suffix) {
+		return vfsLeafEditors.stream()
+				.filter(VFSLeafEditor::isEnable)
+				.filter(editor -> editor.isSupportingFormat(suffix))
+				.findFirst()
+				.isPresent();
+	}
+
+	@Override
 	public Optional<VFSLeafEditor> getEditor(String editorType) {
 		return vfsLeafEditors.stream()
 				.filter(VFSLeafEditor::isEnable)
@@ -752,9 +761,11 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 
 	@Override
 	public List<VFSLeafEditor> getEditors(VFSLeaf vfsLeaf) {
+		String fileName = vfsLeaf.getName();
+		String suffix = FileUtils.getFileSuffix(fileName).toLowerCase();
 		return vfsLeafEditors.stream()
 				.filter(VFSLeafEditor::isEnable)
-				.filter(editor -> editor.isSupportingFormat(vfsLeaf))
+				.filter(editor -> editor.isSupportingFormat(suffix))
 				.collect(Collectors.toList());
 	}
 	

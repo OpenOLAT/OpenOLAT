@@ -17,34 +17,40 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.commons.services.vfs;
-
-import java.util.Locale;
-
-import org.olat.core.commons.modules.bc.components.FolderComponent;
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.WindowControl;
-import org.olat.core.id.Identity;
-import org.olat.core.util.vfs.VFSLeaf;
+package org.olat.core.commons.services.filetemplate;
 
 /**
  * 
- * Initial date: 13 Mar 2019<br>
+ * Initial date: 19 Mar 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface VFSLeafEditor {
+public class FileType {
 	
-	boolean isEnable();
+	private final String suffix;
+	private final String name;
+	private final ContentProvider contentProvider;
 	
-	String getType();
+	public static FileType of(String suffix, String name, ContentProvider contentProvider) {
+		return new FileType(suffix, name, contentProvider);
+	}
 	
-	String getDisplayName(Locale locale);
-	
-	boolean isSupportingFormat(String suffix);
-	
-	Controller getRunController(UserRequest ureq, WindowControl wControl, VFSLeaf vfsLeaf,
-			FolderComponent folderComponent, Identity identity);
+	private FileType(String suffix, String name, ContentProvider contentProvider) {
+		this.suffix = suffix;
+		this.name = name;
+		this.contentProvider = contentProvider;
+	}
+
+	public String getSuffix() {
+		return suffix;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public ContentProvider getContentProvider() {
+		return contentProvider;
+	}
 
 }
