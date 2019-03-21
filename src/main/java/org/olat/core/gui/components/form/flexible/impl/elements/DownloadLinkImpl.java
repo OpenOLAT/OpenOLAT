@@ -26,6 +26,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.download.DownloadComponent;
 import org.olat.core.gui.components.form.flexible.elements.DownloadLink;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.util.vfs.VFSLeaf;
 
 /**
@@ -73,6 +74,11 @@ public class DownloadLinkImpl extends FormItemImpl implements DownloadLink {
 	@Override
 	public void setDownloadItem(VFSLeaf downloadItem) {
 		downloadCmp.setDownloadItem(downloadItem, true);
+	}
+
+	@Override
+	public void setDownloadMedia(MediaResource mediaResource) {
+		downloadCmp.setMediaResource(mediaResource);
 	}
 
 	@Override

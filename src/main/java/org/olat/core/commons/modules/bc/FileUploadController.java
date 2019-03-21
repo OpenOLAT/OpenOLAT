@@ -41,11 +41,13 @@ import java.util.regex.Pattern;
 
 import org.olat.core.commons.modules.bc.commands.FolderCommandStatus;
 import org.olat.core.commons.modules.bc.meta.MetaInfoFormController;
-import org.olat.core.commons.modules.bc.version.RevisionListController;
-import org.olat.core.commons.modules.bc.version.VersionCommentController;
 import org.olat.core.commons.services.image.ImageService;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
+import org.olat.core.commons.services.vfs.VFSRevision;
+import org.olat.core.commons.services.vfs.VFSVersionModule;
+import org.olat.core.commons.services.vfs.ui.version.RevisionListController;
+import org.olat.core.commons.services.vfs.ui.version.VersionCommentController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -82,8 +84,6 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSLockApplicationType;
 import org.olat.core.util.vfs.VFSLockManager;
 import org.olat.core.util.vfs.VFSManager;
-import org.olat.core.util.vfs.version.Versionable;
-import org.olat.core.util.vfs.version.Versions;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -155,6 +155,8 @@ public class FileUploadController extends FormBasicController {
 	private ImageService imageHelper;
 	@Autowired
 	private VFSLockManager vfsLockManager;
+	@Autowired
+	private VFSVersionModule versionsModule;
 	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
 
@@ -431,7 +433,7 @@ public class FileUploadController extends FormBasicController {
 			if(FolderCommandStatus.STATUS_CANCELED == revisionListCtr.getStatus()) {
 				//don't want to delete revisions, clean the temporary file
 				doCancel(ureq);
-			} else if (existingVFSItem instanceof Versionable && ((Versionable)existingVFSItem).getVersions().isVersioned()) {
+			} else if (existingVFSItem.canVersion() == VFSConstants.YES) {
 				doFinishRevisionList(ureq);
 			}
 		}
@@ -449,7 +451,7 @@ public class FileUploadController extends FormBasicController {
 	}
 	
 	private void doFinishOverwrite(UserRequest ureq) {
-		if (existingVFSItem instanceof Versionable && ((Versionable)existingVFSItem).getVersions().isVersioned()) {
+		if (existingVFSItem.canVersion() == VFSConstants.YES) {
 			//new version
 			int maxNumOfRevisions = getMaxNumOfRevisionsOfExistingVFSItem();
 			if(maxNumOfRevisions == 0) {
@@ -496,12 +498,11 @@ public class FileUploadController extends FormBasicController {
 		}
 		
 		//ok, new version of the file
-		Versionable existingVersionableItem = (Versionable)existingVFSItem;
-		boolean ok = existingVersionableItem.getVersions().addVersion(ureq.getIdentity(), comment, newFile.getInputStream());
-		if(ok) {
-			newFile.deleteSilently();
-			//what can i do if existingVFSItem is a container
-			if(existingVFSItem instanceof VFSLeaf) {
+		if(existingVFSItem instanceof VFSLeaf && existingVFSItem.canVersion() == VFSConstants.YES) {
+			boolean ok = vfsRepositoryService.addVersion((VFSLeaf)existingVFSItem, ureq.getIdentity(), comment, newFile.getInputStream());
+			if(ok) {
+				newFile.deleteSilently();
+				//what can i do if existingVFSItem is a container
 				newFile = (VFSLeaf)existingVFSItem;
 			}
 		}
@@ -513,28 +514,30 @@ public class FileUploadController extends FormBasicController {
 			existingVFSItem = existingVFSItem.getParentContainer().resolve(existingVFSItem.getName());
 		}
 		
-		Versionable versionable = (Versionable)existingVFSItem;
-		Versions versions = versionable.getVersions();
+		VFSMetadata metadata = vfsRepositoryService.getMetadataFor(existingVFSItem);
+		List<VFSRevision> revisions = vfsRepositoryService.getRevisions(metadata);
 		int maxNumOfRevisions = getMaxNumOfRevisionsOfExistingVFSItem();
-		if(maxNumOfRevisions < 0 || maxNumOfRevisions > versions.getRevisions().size()) {
+		if(maxNumOfRevisions < 0 || maxNumOfRevisions > revisions.size()) {
 			askForComment(ureq);
 		} else {
-			askToReduceRevisionList(ureq, versionable);
+			askToReduceRevisionList(ureq, (VFSLeaf)existingVFSItem);
 		}
 	}
 	
 	private int getMaxNumOfRevisionsOfExistingVFSItem() {
-		String relPath = existingVFSItem.getRelPath();
-		return FolderConfig.versionsAllowed(relPath);
+		return versionsModule.getMaxNumberOfVersions();
 	}
 	
-	private void askToReduceRevisionList(UserRequest ureq, Versionable versionable) {
+	private void askToReduceRevisionList(UserRequest ureq, VFSLeaf versionable) {
 		removeAsListenerAndDispose(revisionListCtr);
 		removeAsListenerAndDispose(revisionListDialogBox);
 		
-		Versions versions = versionable.getVersions();
 		int maxNumOfRevisions = getMaxNumOfRevisionsOfExistingVFSItem();
-		String[] params = new String[]{ Integer.toString(maxNumOfRevisions), Integer.toString(versions.getRevisions().size()) };
+		VFSMetadata metadata = vfsRepositoryService.getMetadataFor(versionable);
+		List<VFSRevision> revisions = vfsRepositoryService.getRevisions(metadata);
+		
+		int numOfRevisions = revisions.size();
+		String[] params = new String[]{ Integer.toString(maxNumOfRevisions), Integer.toString(numOfRevisions) };
 		String title = translate("ul.tooManyRevisions.title", params);
 		String description = translate("ul.tooManyRevisions.description", params);
 		
@@ -627,7 +630,7 @@ public class FileUploadController extends FormBasicController {
 				if (locked) {
 					//the file is locked and cannot be overwritten
 					lockedFileDialog(ureq, renamedFilename);
-				} else if (existingVFSItem instanceof Versionable && ((Versionable)existingVFSItem).getVersions().isVersioned()) {
+				} else if (existingVFSItem.canVersion() == VFSConstants.YES) {
 					uploadVersionedFile(ureq, renamedFilename);
 				} else {
 					askOverwriteOrRename(ureq, renamedFilename);
@@ -651,19 +654,19 @@ public class FileUploadController extends FormBasicController {
 	}
 	
 	private void uploadVersionedFile(UserRequest ureq, String renamedFilename) {
-		Versionable versionable = (Versionable)existingVFSItem;
-		Versions versions = versionable.getVersions();
+		VFSMetadata metadata = vfsRepositoryService.getMetadataFor(existingVFSItem);
+		List<VFSRevision> revisions = vfsRepositoryService.getRevisions(metadata);
 		int maxNumOfRevisions = getMaxNumOfRevisionsOfExistingVFSItem();
 		if(maxNumOfRevisions == 0) {
 			//it's possible if someone change the configuration
 			// let calling method decide what to do.
 			askOverwriteOrRename(ureq, renamedFilename);
-		} else if(versions.getRevisions().isEmpty() || maxNumOfRevisions < 0 || maxNumOfRevisions > versions.getRevisions().size()) {
+		} else if(revisions.isEmpty() || maxNumOfRevisions < 0 || maxNumOfRevisions > revisions.size()) {
 			// let calling method decide what to do.
 			askNewVersionOrRename(ureq, renamedFilename);
 		} else {
 			//too many revisions
-			askToReduceRevisionList(ureq, versionable);
+			askToReduceRevisionList(ureq, (VFSLeaf)existingVFSItem);
 		}
 	}
 	

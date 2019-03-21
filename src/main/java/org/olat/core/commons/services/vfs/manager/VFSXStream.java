@@ -19,6 +19,7 @@
  */
 package org.olat.core.commons.services.vfs.manager;
 
+import java.io.File;
 import java.io.InputStream;
 
 import org.olat.basesecurity.BaseSecurity;
@@ -28,12 +29,12 @@ import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.license.LicenseType;
 import org.olat.core.commons.services.license.model.LicenseTypeImpl;
 import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.VFSRevision;
 import org.olat.core.commons.services.vfs.model.VFSMetadataImpl;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.version.RevisionFileImpl;
-import org.olat.core.util.vfs.version.VFSRevision;
-import org.olat.core.util.vfs.version.Versions;
 import org.olat.core.util.vfs.version.VersionsFileImpl;
 import org.olat.core.util.xml.XStreamHelper;
 
@@ -54,7 +55,7 @@ public class VFSXStream {
 		mystream = XStreamHelper.createXStreamInstance();
 		XStream.setupDefaultSecurity(mystream);
 		Class<?>[] types = new Class[] {
-				VersionsFileImpl.class, Versions.class, RevisionFileImpl.class, VFSRevision.class,
+				VersionsFileImpl.class, RevisionFileImpl.class, VFSRevision.class,
 				VFSMetadata.class, VFSMetadataImpl.class, Identity.class, IdentityImpl.class,
 				LicenseType.class, LicenseTypeImpl.class
 			};
@@ -77,18 +78,23 @@ public class VFSXStream {
 		mystream.omitField(VFSMetadataImpl.class, "thumbnails");
 
 		mystream.registerLocalConverter(VFSMetadataImpl.class, "licenseType", new LicenseTypeConverter());
-		mystream.registerLocalConverter(VFSMetadataImpl.class, "author", new IdentityConverter());	
+		mystream.registerLocalConverter(VFSMetadataImpl.class, "author", new IdentityConverter());
+		mystream.registerLocalConverter(RevisionFileImpl.class, "author", new IdentityConverter());	
 	}
 	
 	public static final Object read(InputStream in) {
 		return XStreamHelper.readObject(mystream, in);
 	}
 	
+	public static final Object read(File file) {
+		return XStreamHelper.readObject(mystream, file);
+	}
+	
 	public static final Object read(VFSLeaf leaf) {
 		return XStreamHelper.readObject(mystream, leaf);
 	}
 	
-	public static final void write(VFSLeaf leaf, Versions versions) {
+	public static final void write(VFSLeaf leaf, VersionsFileImpl versions) {
 		XStreamHelper.writeObject(mystream, leaf, versions);
 	}
 	
@@ -132,8 +138,15 @@ public class VFSXStream {
 
 		@Override
 		public Object fromString(String str) {
-			Long identityKey = Long.valueOf(str);
-			return CoreSpringFactory.getImpl(BaseSecurity.class).loadIdentityByKey(identityKey);
+			Identity identity = null;
+			if(StringHelper.isLong(str)) {
+				Long identityKey = Long.valueOf(str);
+				identity = CoreSpringFactory.getImpl(BaseSecurity.class).loadIdentityByKey(identityKey);
+			}
+			if(identity == null) {
+				identity = CoreSpringFactory.getImpl(BaseSecurity.class).findIdentityByName(str);
+			}
+			return identity;
 		}	
 	}
 }

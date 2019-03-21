@@ -138,6 +138,11 @@ public interface VFSItem {
 	public VFSStatus canMeta();
 	
 	/**
+	 * @return true if the file can be versioned
+	 */
+	public VFSStatus canVersion();
+	
+	/**
 	 * @return The metadata if the item can metadata or null if not
 	 */
 	public VFSMetadata getMetaInfo();

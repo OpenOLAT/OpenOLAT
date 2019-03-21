@@ -31,7 +31,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.olat.core.commons.modules.bc.FileSelection;
-import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
@@ -154,8 +153,7 @@ public class CmdUnzip extends BasicController implements FolderCommand {
 			return Collections.emptyList();
 		}
 	
-		boolean versioning = FolderConfig.versionsEnabled(currentContainer);
-		if(!versioning) {
+		if(currentContainer.canVersion() != VFSConstants.YES) {
 			//this command don't overwrite existing folders
 			return Collections.emptyList();
 		}
@@ -182,7 +180,7 @@ public class CmdUnzip extends BasicController implements FolderCommand {
 		// we make a new folder with the same name as the zip file
 		String sZipContainer = name.substring(0, name.length() - 4);
 		
-		boolean versioning = FolderConfig.versionsEnabled(currentContainer);
+		boolean versioning = currentContainer.canVersion() == VFSConstants.YES;
 		
 		VFSContainer zipContainer = currentContainer.createChildContainer(sZipContainer);
 		if (zipContainer == null) {

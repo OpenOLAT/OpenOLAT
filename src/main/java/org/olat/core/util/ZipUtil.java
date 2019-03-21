@@ -70,7 +70,6 @@ import org.olat.core.util.vfs.VFSLockApplicationType;
 import org.olat.core.util.vfs.VFSLockManager;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
-import org.olat.core.util.vfs.version.Versionable;
 
 /**
  * Initial Date:  04.12.2002
@@ -214,11 +213,8 @@ public class ZipUtil {
 								if (!copy(oZip, newEntry)) {
 									return false;
 								}
-							} else if (newEntry instanceof Versionable) {
-								Versionable versionable = (Versionable)newEntry;
-								if(versionable.getVersions().isVersioned()) {
-									versionable.getVersions().addVersion(identity, "", oZip);
-								}
+							} else if (newEntry.canVersion() == VFSConstants.YES) {
+								vfsRepositoryService.addVersion(newEntry, identity, "", oZip);
 							}
 							if(newEntry != null && identity != null && newEntry.canMeta() == VFSConstants.YES) {
 								VFSMetadata info = newEntry.getMetaInfo();
@@ -305,6 +301,8 @@ public class ZipUtil {
 	 */
 	private static boolean unzipNonStrict(InputStream in, VFSContainer targetDir, Identity identity, boolean versioning) {
 		try(net.sf.jazzlib.ZipInputStream oZip = new net.sf.jazzlib.ZipInputStream(in)) {
+			VFSRepositoryService vfsRepositoryService = CoreSpringFactory.getImpl(VFSRepositoryService.class);
+			
 			// unzip files
 			net.sf.jazzlib.ZipEntry oEntr = oZip.getNextEntry();
 			while (oEntr != null) {
@@ -343,11 +341,8 @@ public class ZipUtil {
 								if (!copyShielded(oZip, newEntry)) {
 									return false;
 								}
-							} else if (newEntry instanceof Versionable) {
-								Versionable versionable = (Versionable)newEntry;
-								if(versionable.getVersions().isVersioned()) {
-									versionable.getVersions().addVersion(identity, "", oZip);
-								}
+							} else if (newEntry.canVersion() == VFSConstants.YES) {
+								vfsRepositoryService.addVersion(newEntry, identity, "", oZip);
 							}
 							unzipMetadata(identity, extra, newEntry);
 						} else {

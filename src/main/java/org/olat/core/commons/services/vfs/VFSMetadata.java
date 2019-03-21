@@ -34,12 +34,23 @@ import org.olat.core.id.ModifiedInfo;
  */
 public interface VFSMetadata extends VFSMetadataRef, ModifiedInfo, CreateInfo {
 	
+	public boolean isDeleted();
+	
 	public String getUuid();
 	
 	public void setUuid(String id);
 	
+	/**
+	 * The relative path in bcroot doesn't start with /. / is reserved
+	 * for the bcroot directory itself.
+	 * 
+	 * @return The relative path of the file without the filename
+	 */
 	public String getRelativePath();
 	
+	/**
+	 * @return The name of the file
+	 */
 	public String getFilename();
 	
 	public Date getFileLastModified();
@@ -52,6 +63,13 @@ public interface VFSMetadata extends VFSMetadataRef, ModifiedInfo, CreateInfo {
 	
 	public String getUri();
 	
+	/**
+	 * Return the protocol used to save and retrive the file.
+	 * "file" ist for the standard operations done by OpenOLAT
+	 * VFS implementation.
+	 * 
+	 * @return the procotole
+	 */
 	public String getProtocol();
 	
 	public Identity getAuthor();
@@ -67,6 +85,7 @@ public interface VFSMetadata extends VFSMetadataRef, ModifiedInfo, CreateInfo {
 	public void setComment(String text);
 	
 	public int getDownloadCount();
+
 	
 	public String getCreator();
 	
@@ -83,8 +102,7 @@ public interface VFSMetadata extends VFSMetadataRef, ModifiedInfo, CreateInfo {
 	public String[] getPublicationDate();
 	
 	public void setPublicationDate(String month, String year);
-	
-	
+
 	public String getUrl();
 
 	public void setUrl(String url);
@@ -101,9 +119,14 @@ public interface VFSMetadata extends VFSMetadataRef, ModifiedInfo, CreateInfo {
 	
 	public void setPages(String pages);
 	
-	
+	/**
+	 * @return true if the thumbnails cannot be generated for this file.
+	 */
 	public Boolean getCannotGenerateThumbnails();
 	
+	/**
+	 * @param val true if the thumbnails cannot be generated for this file.
+	 */
 	public void setCannotGenerateThumbnails(Boolean val);
 	
 	
@@ -122,12 +145,17 @@ public interface VFSMetadata extends VFSMetadataRef, ModifiedInfo, CreateInfo {
 	public String getLicensor();
 	
 	public void setLicensor(String licensor);
-	
-	
+
+	/**
+	 * @return true if the file is locked (VFS).
+	 */
 	public boolean isLocked();
 	
 	public void setLocked(boolean locked);
 	
+	/**
+	 * @return The person who locked the file or null
+	 */
 	public Identity getLockedBy();
 	
 	public void setLockedBy(Identity lockedBy);
@@ -135,6 +163,16 @@ public interface VFSMetadata extends VFSMetadataRef, ModifiedInfo, CreateInfo {
 	public Date getLockedDate();
 	
 	public void setLockedDate(Date date);
+	
+	
+	public int getRevisionNr();
+	
+	public void setRevisionNr(int nr);
+	
+	public String getRevisionComment();
+	
+	public void setRevisionComment(String text);
+	
 	
 	public void copyValues(VFSMetadata metadata);
 

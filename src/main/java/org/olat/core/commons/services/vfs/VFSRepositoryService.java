@@ -20,6 +20,7 @@
 package org.olat.core.commons.services.vfs;
 
 import java.io.File;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Optional;
 
@@ -67,6 +68,9 @@ public interface VFSRepositoryService {
 	
 	public VFSMetadata updateMetadata(VFSMetadata data);
 	
+
+	public void markAsDeleted(VFSItem item, Identity author);
+	
 	public void deleteMetadata(VFSMetadata data);
 	
 	public void deleteMetadata(File file);
@@ -80,7 +84,14 @@ public interface VFSRepositoryService {
 	 */
 	public void copyTo(VFSLeaf source, VFSLeaf target, VFSContainer parentTarget);
 	
-	public VFSMetadata rename(VFSMetadata data, String newName);
+	/**
+	 * This rename the metadata and the versions but not the file itself.
+	 * 
+	 * @param item The item which is renamed.
+	 * @param newName
+	 * @return
+	 */
+	public VFSMetadata rename(VFSItem item, String newName);
 	
 	public void increaseDownloadCount(VFSItem item);
 	
@@ -129,6 +140,50 @@ public interface VFSRepositoryService {
 	 */
 	public void resetThumbnails(File file);
 	
+	/**
+	 * Get the list of revisions for a specific file.
+	 * 
+	 * @param metadata The metadata object of the file.
+	 * @return A list of revisions if the file is versioned.
+	 */
+	public List<VFSRevision> getRevisions(VFSMetadataRef metadata);
+	
+	public List<VFSRevision> getRevisions(List<VFSMetadataRef> metadatas);
+	
+	
+	public boolean addVersion(VFSLeaf currentFile, Identity identity, String comment, InputStream newFile);
+
+	/**
+	 * Restore the specified revision and replace the current file. If the
+	 * current file doesn't exist, it will recreate it.
+	 * 
+	 * @param identity The identity who make the operation
+	 * @param revision The revision to restore
+	 * @param comment A comment
+	 * @return true if successful
+	 */
+	public boolean restoreRevision(Identity identity, VFSRevision revision, String comment);
+
+	/**
+	 * Delete definitively the revisions of a file.
+	 * 
+	 * @param identity The identity who makes the operation
+	 * @param revisions The revisions to delete
+	 * @return true if ssuccessful
+	 */
+	public boolean deleteRevisions(Identity identity, List<VFSRevision> revisions);
+	
+	/**
+	 * Move the metadata and revisions from a path to the other.
+	 * 
+	 * @param currentFile The current file
+	 * @param targetFile The target file where to move the metadata
+	 * @param author The user which moved the data
+	 * @return The merged metadata
+	 */
+	public VFSMetadata move(VFSLeaf currentFile, VFSLeaf targetFile, Identity author);
+	
+	public File getRevisionFile(VFSRevision revision);
 	
 	
 	public License getLicense(VFSMetadata meta);

@@ -64,7 +64,6 @@ import org.olat.core.util.vfs.VFSLockApplicationType;
 import org.olat.core.util.vfs.VFSLockManager;
 import org.olat.core.util.vfs.callbacks.ReadOnlyCallback;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
-import org.olat.core.util.vfs.version.Versionable;
 import org.olat.course.ICourse;
 import org.olat.course.config.CourseConfig;
 import org.olat.modules.sharedfolder.SharedFolderManager;
@@ -349,32 +348,29 @@ public class CourseResourceFolderWebService {
 				return Response.serverError().status(Status.UNAUTHORIZED).build();
 			}
 
-			if (existingVFSItem instanceof Versionable && ((Versionable)existingVFSItem).getVersions().isVersioned()) {
-				Versionable existingVersionableItem = (Versionable)existingVFSItem;
-				boolean ok = existingVersionableItem.getVersions().addVersion(ureq.getIdentity(), "REST upload", file);
-				if(ok) {
-					log.audit("");
-				}
-				newFile = (VFSLeaf)existingVersionableItem;
+			if (existingVFSItem instanceof VFSLeaf && existingVFSItem.canVersion() == VFSConstants.YES) {
+				VFSLeaf existingLeaf = (VFSLeaf)existingVFSItem;
+				vfsRepositoryService.addVersion(existingLeaf, ureq.getIdentity(), "REST upload", file);
+				newFile = existingLeaf;
 			} else {
 				existingVFSItem.delete();
 				newFile = container.createChildLeaf(filename);
 				OutputStream out = ((VFSLeaf)newFile).getOutputStream(false);
-				FileUtils.copy(file, out);
+				FileUtils.copy(file, out);//TODO metadata use VFSManager ?
 				FileUtils.closeSafely(out);
 				FileUtils.closeSafely(file);
 			}
 		} else if (file != null) {
 			newFile = container.createChildLeaf(filename);
 			OutputStream out = ((VFSLeaf)newFile).getOutputStream(false);
-			FileUtils.copy(file, out);
+			FileUtils.copy(file, out);//TODO metadata use VFSManager ?
 			FileUtils.closeSafely(out);
 			FileUtils.closeSafely(file);
 		} else {
 			newFile = container.createChildContainer(filename);
 		}
 
-		if(newFile.canMeta() == VFSConstants.YES ) {
+		if(newFile.canMeta() == VFSConstants.YES) {
 			VFSMetadata infos = newFile.getMetaInfo();
 			infos.setAuthor(ureq.getIdentity());
 			vfsRepositoryService.updateMetadata(infos);

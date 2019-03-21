@@ -166,6 +166,11 @@ public class NamedContainerImpl extends AbstractVirtualContainer {
 	}
 
 	@Override
+	public VFSStatus canVersion() {
+		return getDelegate().canVersion();
+	}
+
+	@Override
 	public VFSMetadata getMetaInfo() {
 		return getDelegate().getMetaInfo();
 	}

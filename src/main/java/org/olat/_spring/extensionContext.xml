@@ -383,25 +383,6 @@
 			</list>
 		</property>
 	</bean>
-	<!--  the version ("versionisierung") menu-entry -->
-	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints" >
-		<property name="order" value="7204" />
-		<property name="navigationKey" value="versioning" />
-		<property name="actionController">	
-			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
-				<property name="className" value="org.olat.admin.version.VersionAdminController"/>
-			</bean>
-		</property>
-		<property name="translationPackage" value="org.olat.admin" />
-		<property name="i18nActionKey" value="menu.versions"/>
-		<property name="i18nDescriptionKey" value="menu.versions.alt"/>
-		<property name="parentTreeNodeIdentifier" value="sysconfigParent" /> 
-		<property name="extensionPoints">
-			<list>	
-				<value>org.olat.admin.SystemAdminMainController</value>		
-			</list>
-		</property>
-	</bean>
 	<!-- Security admin. panel -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
 		<property name="order" value="8805" />

@@ -35,7 +35,6 @@ import java.util.stream.Collectors;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FileSelection;
-import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.FolderLicenseHandler;
 import org.olat.core.commons.modules.bc.FolderManager;
 import org.olat.core.commons.services.license.License;
@@ -45,6 +44,7 @@ import org.olat.core.commons.services.license.ui.LicenseRenderer;
 import org.olat.core.commons.services.vfs.VFSLeafEditor;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
+import org.olat.core.commons.services.vfs.VFSRevision;
 import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
 import org.olat.core.gui.control.winmgr.AJAXFlags;
 import org.olat.core.gui.render.StringOutput;
@@ -66,8 +66,6 @@ import org.olat.core.util.vfs.VFSLockManager;
 import org.olat.core.util.vfs.VirtualContainer;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.core.util.vfs.lock.LockInfo;
-import org.olat.core.util.vfs.version.Versionable;
-import org.olat.core.util.vfs.version.Versions;
 import org.olat.user.UserManager;
 
 /**
@@ -142,7 +140,7 @@ public class ListRenderer {
 		}
 
 		VFSContainer currentContainer = fc.getCurrentContainer();
-		boolean canVersion = FolderConfig.versionsEnabled(currentContainer);
+		boolean canVersion = currentContainer.canVersion() == VFSConstants.YES;
 		String sortOrder = fc.getCurrentSortOrder();
 		boolean sortAsc = fc.isCurrentSortAsc();
 		String sortCss = (sortAsc ? "o_orderby_asc" : "o_orderby_desc");
@@ -222,15 +220,11 @@ public class ListRenderer {
 		canWrite = canWrite && !(fc.getCurrentContainer() instanceof VirtualContainer);
 		boolean isAbstract = (child instanceof AbstractVirtualContainer);
 
-		Versions versions = null;
-		if(canContainerVersion && child instanceof Versionable) {
-			Versionable versionable = (Versionable)child;
-			Versions possibleVersions = versionable.getVersions();
-			if(possibleVersions.isVersioned()) {
-				versions = possibleVersions;
-			}
+		List<VFSRevision> revisions = null;
+		if(canContainerVersion && child.canVersion() == VFSConstants.YES) {
+			revisions = vfsRepositoryService.getRevisions(metadata);
 		}
-		boolean canVersion = versions != null && !versions.getRevisions().isEmpty();
+		boolean canVersion = revisions != null && !revisions.isEmpty();
 
 		VFSLeaf leaf = null;
 		if (child instanceof VFSLeaf) {
@@ -410,9 +404,9 @@ public class ListRenderer {
 		}
 
 		if(canContainerVersion) {
-			if (canVersion && versions != null) {
+			if (canVersion && revisions != null) {
 				sb.append("<span class='text-muted small'>")
-				  .append(versions.getRevisionNr())
+				  .append(metadata.getRevisionNr())
 				  .append("</span>");					
 			}
 			sb.append("</td><td>");

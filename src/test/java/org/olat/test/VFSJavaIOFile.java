@@ -159,6 +159,11 @@ public class VFSJavaIOFile implements VFSLeaf, JavaIOItem {
 	}
 
 	@Override
+	public VFSStatus canVersion() {
+		return VFSConstants.NO;
+	}
+
+	@Override
 	public VFSMetadata getMetaInfo() {
 		return null;
 	}

@@ -28,6 +28,7 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.BlogFileResource;
 import org.olat.fileresource.types.FeedFileResource;
@@ -499,7 +500,7 @@ public class FeedFileStorgeTest extends OlatTestCase {
 		sut.deleteFeedXML(feed);
 
 		// check if there is no file in the feed container
-		assertThat(sut.getOrCreateFeedContainer(feed).getItems().size()).isEqualTo(0);
+		assertThat(sut.getOrCreateFeedContainer(feed).getItems(new VFSSystemItemFilter()).size()).isEqualTo(0);
 
 		fileResourceManager.deleteFileResource(resource);
 	}
@@ -714,7 +715,7 @@ public class FeedFileStorgeTest extends OlatTestCase {
 		sut.deleteItemXML(item);
 
 		// check if there is no file in the item container
-		assertThat(sut.getOrCreateItemContainer(item).getItems().size()).isEqualTo(0);
+		assertThat(sut.getOrCreateItemContainer(item).getItems(new VFSSystemItemFilter()).size()).isEqualTo(0);
 
 		fileResourceManager.deleteFileResource(resource);
 	}

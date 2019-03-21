@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import org.olat.core.commons.modules.bc.FolderConfig;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -37,8 +38,9 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.version.Versionable;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -56,6 +58,9 @@ public class TextEditorController extends FormBasicController {
 	private final VFSLeaf vfsLeaf;
 	private final String encoding;
 	private final boolean readonly;
+	
+	@Autowired
+	private VFSRepositoryService vfsRepositoryService;
 
 	public TextEditorController(UserRequest ureq, WindowControl wControl, VFSLeaf vfsLeaf, String encoding, boolean readonly) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
@@ -109,9 +114,9 @@ public class TextEditorController extends FormBasicController {
 
 	private void doSave() {
 		String content = contentEl.getValue();
-		if(vfsLeaf instanceof Versionable && ((Versionable)vfsLeaf).getVersions().isVersioned()) {
+		if(vfsLeaf.canVersion() == VFSConstants.YES) {
 			try (InputStream inStream = FileUtils.getInputStream(content, encoding)) {
-				((Versionable)vfsLeaf).getVersions().addVersion(getIdentity(), "", inStream);
+				vfsRepositoryService.addVersion(vfsLeaf, getIdentity(), "", inStream);
 			} catch (IOException e) {
 				logError("", e);
 			}

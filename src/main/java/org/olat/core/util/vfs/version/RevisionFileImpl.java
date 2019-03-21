@@ -19,9 +19,10 @@
  */
 package org.olat.core.util.vfs.version;
 
-import java.io.InputStream;
+import java.util.Date;
 
 import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 
@@ -36,9 +37,9 @@ import org.olat.core.util.vfs.VFSLeaf;
  * 
  * @author srosse
  */
-public class RevisionFileImpl implements VFSRevision {
+public class RevisionFileImpl {
 
-	private String author;
+	private Identity author;
 	private String comment;
 	private String name;
 	private String uuid;
@@ -46,7 +47,7 @@ public class RevisionFileImpl implements VFSRevision {
 
 	private VFSLeaf file;
 	private VFSContainer container;
-	private String revisionNr;
+	private int revisionNr;
 	private String filename;
 	private VFSMetadata metadata;
 
@@ -83,12 +84,11 @@ public class RevisionFileImpl implements VFSRevision {
 		this.container = container;
 	}
 
-	@Override
-	public String getAuthor() {
+	public Identity getAuthor() {
 		return author;
 	}
 
-	public void setAuthor(String author) {
+	public void setAuthor(Identity author) {
 		this.author = author;
 	}
 
@@ -100,7 +100,6 @@ public class RevisionFileImpl implements VFSRevision {
 		this.filename = filename;
 	}
 
-	@Override
 	public String getComment() {
 		return comment;
 	}
@@ -109,28 +108,23 @@ public class RevisionFileImpl implements VFSRevision {
 		this.comment = comment;
 	}
 
-	@Override
 	public long getSize() {
 		VFSLeaf f = getFile();
 		return f == null ? -1l : f.getSize();
 	}
 
-	@Override
-	public InputStream getInputStream() {
-		VFSLeaf f = getFile();
-		return f == null ? null : f.getInputStream();
+	public Date getFileLastModified() {
+		return new Date(lastModified);
 	}
-
-	@Override
-	public long getLastModified() {
-		return lastModified;
+	
+	public void setFileLastModified(Date date) {
+		lastModified = date == null ? -1l : date.getTime();
 	}
 
 	public void setLastModified(long lastModified) {
 		this.lastModified = lastModified;
 	}
 
-	@Override
 	public String getName() {
 		if (name == null || name.length() == 0) { return getFilename(); }
 		return name;
@@ -148,12 +142,11 @@ public class RevisionFileImpl implements VFSRevision {
 		this.metadata = metadata;
 	}
 
-	@Override
-	public String getRevisionNr() {
+	public int getRevisionNr() {
 		return revisionNr;
 	}
 
-	public void setRevisionNr(String revisionNr) {
+	public void setRevisionNr(int revisionNr) {
 		this.revisionNr = revisionNr;
 	}
 

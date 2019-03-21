@@ -143,6 +143,11 @@ public abstract class LocalImpl implements VFSItem, JavaIOItem {
 	public VFSStatus canMeta() {
 		return VFSRepositoryModule.canMeta(getBasefile());
 	}
+	
+	@Override
+	public VFSStatus canVersion() {
+		return VFSConstants.NO;
+	}
 
 	@Override
 	public VFSMetadata getMetaInfo() {

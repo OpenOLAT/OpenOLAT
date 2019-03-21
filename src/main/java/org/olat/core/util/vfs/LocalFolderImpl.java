@@ -36,15 +36,16 @@ import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
+import org.olat.core.commons.services.vfs.VFSRepositoryModule;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
+import org.olat.core.id.Identity;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.FileUtils;
-import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
-import org.olat.core.util.vfs.version.Versionable;
-import org.olat.core.util.vfs.version.VersionsManager;
+import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 
 /**
  * Description:<br>
@@ -201,14 +202,10 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 			} catch (Exception e) {
 				return VFSConstants.ERROR_FAILED;
 			}
-			
-			if(s instanceof Versionable && ((Versionable)s).getVersions().isVersioned()) {
-				((Versionable)s).getVersions().copy(this);
-			}
 
-			if(s.canMeta() == VFSConstants.YES) {
+			if(s.canMeta() == VFSConstants.YES || s.canVersion() == VFSConstants.YES) {
 				VFSItem target = resolve(sourcename);
-				if(target instanceof VFSLeaf && target.canMeta() == VFSConstants.YES) {
+				if(target instanceof VFSLeaf && (target.canMeta() == VFSConstants.YES || s.canVersion() == VFSConstants.YES)) {
 					CoreSpringFactory.getImpl(VFSRepositoryService.class).copyTo(s, (VFSLeaf)target, this);
 				}
 			}
@@ -225,13 +222,19 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 			return VFSConstants.NO_SECURITY_DENIED;
 		return VFSConstants.YES;
 	}
+	
+	@Override
+	public VFSStatus canVersion() {
+		return VFSRepositoryModule.canVersion(getBasefile());
+	}
 
 	@Override
 	public VFSStatus rename(String newname) {
+		CoreSpringFactory.getImpl(VFSRepositoryService.class).rename(this, newname);
+		
 		File f = getBasefile();
 		File par = f.getParentFile();
 		File nf = new File(par, newname);
-		CoreSpringFactory.getImpl(VersionsManager.class).rename(this, newname);
 		boolean ren = f.renameTo(nf);
 		if (ren) {
 			// f.renameTo() does NOT modify the path contained in the object f!!
@@ -256,15 +259,11 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 			child.delete();
 		}
 		
-		VersionsManager versionsManager = CoreSpringFactory.getImpl(VersionsManager.class);
-		if(versionsManager.isEnabled()) {
-			versionsManager.delete(this, false);
-		}
 		// Versioning makes a copy of the metadata, delete metadata after it
 		if(canMeta() == VFSConstants.YES) {
-			CoreSpringFactory.getImpl(VFSRepositoryService.class).deleteMetadata(getMetaInfo());
+			Identity identity = ThreadLocalUserActivityLogger.getLoggedIdentity();
+			CoreSpringFactory.getImpl(VFSRepositoryService.class).markAsDeleted(this, identity);
 		}
-
 		// now delete the directory itself
 		return deleteBasefile();
 	}
@@ -283,7 +282,6 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 		if(canMeta() == VFSConstants.YES) {
 			CoreSpringFactory.getImpl(VFSRepositoryService.class).deleteMetadata(getMetaInfo());
 		}
-		CoreSpringFactory.getImpl(VersionsManager.class).delete(this, true);
 		// now delete the directory itself
 		return deleteBasefile();
 	}

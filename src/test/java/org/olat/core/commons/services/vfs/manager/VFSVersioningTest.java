@@ -1,0 +1,637 @@
+/**
+ * <a href="http://www.openolat.org">
+ * OpenOLAT - Online Learning and Training</a><br>
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at the
+ * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Initial code contributed and copyrighted by<br>
+ * frentix GmbH, http://www.frentix.com
+ * <p>
+ */
+package org.olat.core.commons.services.vfs.manager;
+
+import static org.junit.Assert.assertEquals;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.Callable;
+
+import org.apache.commons.io.IOUtils;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
+import org.olat.core.commons.services.vfs.VFSRevision;
+import org.olat.core.commons.services.vfs.VFSVersionModule;
+import org.olat.core.commons.services.vfs.model.VFSRevisionImpl;
+import org.olat.core.id.Identity;
+import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.vfs.filters.VFSItemFilter;
+import org.olat.test.JunitTestHelper;
+import org.olat.test.OlatTestCase;
+import org.springframework.beans.factory.annotation.Autowired;
+
+/**
+ * 
+ * Initial date: 20 mars 2019<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
+ */
+public class VFSVersioningTest extends OlatTestCase {
+	
+	@Autowired
+	private DB dbInstance;
+	@Autowired
+	private VFSVersionModule versionsModule;
+	@Autowired
+	private VFSRepositoryService vfsRepositoryService;
+	
+	@Before
+	public void setUp() throws Exception {
+		waitForCondition(new SetMaxNumberOfVersions(versionsModule, 10l), 2000);
+	}
+	
+	@After
+	public void resetMaxVersions() {
+		int maxNumberOfVersions = versionsModule.getMaxNumberOfVersions();
+		if(maxNumberOfVersions != 10) {
+			versionsModule.setMaxNumberOfVersions(10);
+			waitForCondition(new SetMaxNumberOfVersions(versionsModule, 10l), 2000);
+		}
+	}
+	
+	@Test
+	public void addVersions() throws IOException {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("vers-1");
+		
+		//create a file
+		VFSContainer rootTest = VFSManager.olatRootContainer("/test", null);
+		String filename = UUID.randomUUID().toString() + ".txt";
+		VFSLeaf file = rootTest.createChildLeaf(filename);
+		int byteCopied = copyTestTxt(file);
+		Assert.assertFalse(byteCopied == 0);
+		VFSMetadata data = vfsRepositoryService.getMetadataFor(file);
+		data.setAuthor(id);
+		vfsRepositoryService.updateMetadata(data);
+		dbInstance.commitAndCloseSession();
+		
+		//save a first version
+		InputStream in1 = new ByteArrayInputStream("Hello version 1".getBytes());
+		vfsRepositoryService.addVersion(file, id, "Version 1", in1);
+		in1.close();
+		
+		//save a second version
+		InputStream in2 = new ByteArrayInputStream("Hello version 2".getBytes());
+		vfsRepositoryService.addVersion(file, id, "Version 2", in2);
+		in2.close();
+		
+		//save a third version
+		InputStream in3 = new ByteArrayInputStream("Hello version 3".getBytes());
+		vfsRepositoryService.addVersion(file, id, "Version 3", in3);
+		in3.close();
+
+		//make the checks
+		VFSItem retrievedFile = rootTest.resolve(filename);
+		VFSMetadata metadata = vfsRepositoryService.getMetadataFor(retrievedFile);
+		List<VFSRevision> revisions = vfsRepositoryService.getRevisions(metadata);	
+		Assert.assertNotNull(revisions);
+		Assert.assertEquals(3, revisions.size());
+		
+		VFSRevision revision0 = revisions.get(0);
+		//we don't set an author for the original file
+		Assert.assertEquals(id, revision0.getAuthor());//TODO remove the first author
+		VFSRevision revision1 = revisions.get(1);
+		Assert.assertEquals(id, revision1.getAuthor());
+		VFSRevision revision2 = revisions.get(2);
+		Assert.assertEquals(id, revision2.getAuthor());
+
+		//check the comments
+		Assert.assertNull(revision0.getRevisionComment());	
+		Assert.assertEquals("Version 1", revision1.getRevisionComment());
+		Assert.assertEquals("Version 2", revision2.getRevisionComment());
+		Assert.assertEquals("Version 3", metadata.getRevisionComment());
+	}
+	
+	@Test
+	public void addVersions_overflow_lowLevel() throws IOException {
+		versionsModule.setMaxNumberOfVersions(3);
+		waitForCondition(new SetMaxNumberOfVersions(versionsModule, 3l), 2000);
+		
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("vers-2");
+		
+		//create a file
+		VFSContainer rootTest = VFSManager.olatRootContainer("/test_" + UUID.randomUUID(), null);
+		String filename = UUID.randomUUID().toString() + ".txt";
+		VFSLeaf file = rootTest.createChildLeaf(filename);
+		int byteCopied = copyTestTxt(file);
+		Assert.assertFalse(byteCopied == 0);
+		
+		//save a first version
+		for(int i=0; i<5; i++) {
+			InputStream inv = new ByteArrayInputStream(("Hello version " + i).getBytes());
+			vfsRepositoryService.addVersion(file, id2, "Version " + (1 +i), inv);
+			inv.close();
+		}
+
+		VFSItem retrievedFile = rootTest.resolve(filename);
+		VFSMetadata metadata = vfsRepositoryService.getMetadataFor(retrievedFile);
+		List<VFSRevision> revisions = vfsRepositoryService.getRevisions(metadata);
+		Assert.assertNotNull(revisions);
+		Assert.assertEquals(3, revisions.size());
+		Assert.assertEquals(3, revisions.get(0).getRevisionNr());
+		Assert.assertEquals(4, revisions.get(1).getRevisionNr());
+		Assert.assertEquals(5, revisions.get(2).getRevisionNr());
+
+		Assert.assertEquals("Version 5", metadata.getRevisionComment());
+		Assert.assertEquals(id2, revisions.get(2).getAuthor());
+	}
+	
+	@Test
+	public void addVersions_overflow_lowLevel_deactivated() throws IOException {
+		versionsModule.setMaxNumberOfVersions(0);
+		waitForCondition(new SetMaxNumberOfVersions(versionsModule,  0l), 2000);
+		
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("vers-");
+		
+		//create a file
+		VFSContainer rootTest = VFSManager.olatRootContainer("/test_" + UUID.randomUUID(), null);
+		String filename = UUID.randomUUID().toString() + ".txt";
+		VFSLeaf file = rootTest.createChildLeaf(filename);
+		int byteCopied = copyTestTxt(file);
+		Assert.assertFalse(byteCopied == 0);
+		
+		//save a first version
+		for(int i=0; i<5; i++) {
+			InputStream inv = new ByteArrayInputStream(("Hello version " + i).getBytes());
+			vfsRepositoryService.addVersion(file, id, "Version " + (1 +i), inv);
+			inv.close();
+		}
+
+		VFSItem retrievedFile = rootTest.resolve(filename);
+		VFSMetadata metadata = vfsRepositoryService.getMetadataFor(retrievedFile);	
+		List<VFSRevision> revisions = vfsRepositoryService.getRevisions(metadata);
+		Assert.assertNotNull(revisions);
+		Assert.assertTrue(revisions.isEmpty());
+	}
+	
+	@Test
+	public void versionChecksum() throws IOException {
+		VFSContainer rootTest = VFSManager.olatRootContainer("/ver-" + UUID.randomUUID(), null);
+		String filename = UUID.randomUUID().toString() + ".txt";
+		VFSLeaf file = rootTest.createChildLeaf(filename);
+		int byteCopied = copyTestTxt(file);
+		Assert.assertFalse(byteCopied == 0);
+		
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("vers-4");
+
+		//save a first version
+		InputStream in1 = VFSVersioningTest.class.getResourceAsStream("test.txt");
+		vfsRepositoryService.addVersion(file, id, "Version 1", in1);
+		in1.close();
+		
+		//save a second version
+		InputStream in2 = VFSVersioningTest.class.getResourceAsStream("test.txt");
+		vfsRepositoryService.addVersion(file, id, "Version 2", in2);
+		in2.close();
+		
+		//save a third version
+		InputStream in3 = VFSVersioningTest.class.getResourceAsStream("test.txt");
+		vfsRepositoryService.addVersion(file, id, "Version 3", in2);
+		in3.close();
+		
+		//check if there is only one backup file
+		VFSContainer versionContainer = file.getParentContainer();
+		List<VFSItem> items = versionContainer.getItems(new VersionsFilter(filename));
+		Assert.assertEquals(1, items.size());// TODO metadata was 2 but 1 seems correcter
+		
+		//check number of versions
+		VFSItem reloadFile = rootTest.resolve(filename);
+		VFSMetadata metadata = vfsRepositoryService.getMetadataFor(reloadFile);
+		List<VFSRevision> revisions = vfsRepositoryService.getRevisions(metadata);
+		Assert.assertNotNull(revisions);
+		Assert.assertEquals(3, revisions.size());
+	}
+	
+	@Test
+	public void container_copyFrom() throws IOException {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("vers-11");
+		
+		//create a file
+		VFSContainer rootTest = VFSManager.olatRootContainer("/test_" + UUID.randomUUID(), null);
+		VFSContainer targetRootTest = rootTest.createChildContainer("Copy");
+		String filename = UUID.randomUUID().toString() + ".txt";
+		VFSLeaf file = rootTest.createChildLeaf(filename);
+		int byteCopied = copyTestTxt(file);
+		Assert.assertFalse(byteCopied == 0);
+		
+		//save a first version
+		for(int i=0; i<2; i++) {
+			InputStream inv = new ByteArrayInputStream(("Hello version " + i).getBytes());
+			vfsRepositoryService.addVersion(file, id, "Version " + (1 +i), inv);
+			inv.close();
+		}
+
+		targetRootTest.copyFrom(file);
+		dbInstance.commitAndCloseSession();
+		
+		VFSItem targetFile = targetRootTest.resolve(filename);
+		VFSMetadata targetMetadata = vfsRepositoryService.getMetadataFor(targetFile);
+		List<VFSRevision> revisions = vfsRepositoryService.getRevisions(targetMetadata);
+		Assert.assertNotNull(revisions);
+		Assert.assertEquals(2, revisions.size());
+		for(VFSRevision revision:revisions) {
+			VFSItem revFile = targetRootTest.resolve(((VFSRevisionImpl)revision).getFilename());
+			Assert.assertNotNull(revFile);
+			Assert.assertTrue(revFile.exists());
+			Assert.assertTrue(revFile instanceof VFSLeaf);
+			Assert.assertTrue(((VFSLeaf)revFile).getSize() > 4);
+		}
+	}
+	
+	/**
+	 * The test create an original file and 3 revisions with exactly
+	 * the same content. We delete the original and the first version.
+	 * We check that version 2 and 3 survives and that the file exists.
+	 * 
+	 * @throws IOException
+	 */
+	@Test
+	public void deleteVersions_withSameFile() throws IOException {
+		VFSContainer rootTest = VFSManager.olatRootContainer("/ver-" + UUID.randomUUID(), null);
+		String filename = UUID.randomUUID().toString() + ".txt";
+		VFSLeaf file = rootTest.createChildLeaf(filename);
+		int byteCopied = copyTestTxt(file);
+		Assert.assertFalse(byteCopied == 0);
+		
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("vers-5");
+		
+		//save a first version
+		InputStream in1 = VFSVersioningTest.class.getResourceAsStream("test.txt");
+		vfsRepositoryService.addVersion(file, id, "Version 1", in1);
+		in1.close();
+		
+		//save a second version
+		InputStream in2 = VFSVersioningTest.class.getResourceAsStream("test.txt");
+		vfsRepositoryService.addVersion(file, id, "Version 2", in2);
+		in2.close();
+		
+		//save a third version
+		InputStream in3 = VFSVersioningTest.class.getResourceAsStream("test.txt");
+		vfsRepositoryService.addVersion(file, id, "Version 3", in2);
+		in3.close();
+		
+		//delete revisions
+		VFSItem reloadFile = rootTest.resolve(filename);
+		VFSMetadata metadata = vfsRepositoryService.getMetadataFor(reloadFile);
+		List<VFSRevision> revisions = vfsRepositoryService.getRevisions(metadata);
+		vfsRepositoryService.deleteRevisions(id, revisions.subList(0, 2));
+		dbInstance.commitAndCloseSession();
+		
+		//check number of versions
+		List<VFSRevision> trimmedRevisions = vfsRepositoryService.getRevisions(metadata);
+
+		Assert.assertNotNull(trimmedRevisions);
+		Assert.assertEquals(1, trimmedRevisions.size());
+		//check surviving versions
+		Assert.assertEquals("Version 2", trimmedRevisions.get(0).getRevisionComment());
+		Assert.assertEquals("Version 3", metadata.getRevisionComment());
+		//check that the last backup file exists
+		VFSRevisionImpl revision2 = (VFSRevisionImpl)trimmedRevisions.get(0);
+		VFSItem revision2File =  reloadFile.getParentContainer().resolve(revision2.getFilename());
+		Assert.assertNotNull(revision2File);
+		Assert.assertTrue(revision2File.exists());
+		Assert.assertTrue(revision2File instanceof VFSLeaf);
+		
+		//check if there is only one backup file
+		VFSContainer versionContainer = reloadFile.getParentContainer();
+		List<VFSItem> items = versionContainer.getItems(new VersionsFilter(filename));
+		Assert.assertEquals(1, items.size());
+	}
+	
+	/**
+	 * The test create an original file and 5 versions. It manually
+	 * delete the physical back up file. We delete the versions
+	 * of the orginal, 1 and 2. At the end, there is only version 4
+	 * and 5.
+	 * 
+	 * 
+	 * @throws IOException
+	 */
+	@Test
+	public void deleteVersions_withMissingRevisionFile() throws IOException {
+		VFSContainer rootTest = VFSManager.olatRootContainer("/ver-" + UUID.randomUUID(), null);
+		String filename = UUID.randomUUID().toString() + ".txt";
+		VFSLeaf file = rootTest.createChildLeaf(filename);
+		int byteCopied = copyTestTxt(file);
+		Assert.assertFalse(byteCopied == 0);
+		
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("vers-6");
+		
+		//save a first version
+		InputStream in1 = new ByteArrayInputStream("Hello version 1".getBytes());
+		vfsRepositoryService.addVersion(file, id2, "Version 1", in1);
+		in1.close();
+		
+		//save a second version
+		InputStream in2 = new ByteArrayInputStream("Hello version 2".getBytes());
+		vfsRepositoryService.addVersion(file, id2, "Version 2", in2);
+		in2.close();
+		
+		//save a third version
+		InputStream in3 = new ByteArrayInputStream("Hello version 3".getBytes());
+		vfsRepositoryService.addVersion(file, id2, "Version 3", in3);
+		in3.close();
+		
+		//save a fourth version
+		InputStream in4 = new ByteArrayInputStream("Hello version 4".getBytes());
+		vfsRepositoryService.addVersion(file, id2, "Version 4", in4);
+		in4.close();
+		
+		//save a fourth version
+		InputStream in5 = new ByteArrayInputStream("Hello version 5".getBytes());
+		vfsRepositoryService.addVersion(file, id2, "Version 5", in5);
+		in5.close();
+		
+		dbInstance.commitAndCloseSession();
+		
+		//delete a specific
+		VFSMetadata metadata = vfsRepositoryService.getMetadataFor(file);
+		List<VFSRevision> revisions = vfsRepositoryService.getRevisions(metadata);
+		VFSRevision rev4 = revisions.get(3);
+		VFSRevisionImpl toDeleteVersionImpl = (VFSRevisionImpl)rev4;
+		VFSItem itemToDelete = file.getParentContainer().resolve(toDeleteVersionImpl.getFilename());
+		itemToDelete.deleteSilently();
+		
+		//delete revisions
+		List<VFSRevision> toDelete = new ArrayList<>(revisions.subList(0, 3));
+		vfsRepositoryService.deleteRevisions(id2, toDelete);
+		
+		dbInstance.commitAndCloseSession();
+		
+		//check number of versions
+		VFSItem reloadFile = rootTest.resolve(filename);
+		VFSMetadata reloadedMetadata = vfsRepositoryService.getMetadataFor(reloadFile);
+		List<VFSRevision> reloadedRevisions = vfsRepositoryService.getRevisions(reloadedMetadata);
+
+		Assert.assertNotNull(reloadedRevisions);
+		Assert.assertEquals(1, reloadedRevisions.size());
+		VFSRevision revision = reloadedRevisions.get(0);
+		Assert.assertEquals("Version 4", revision.getRevisionComment());
+		Assert.assertEquals("Version 5", reloadedMetadata.getRevisionComment());
+		
+		//check if there is only one backup file
+		VFSContainer versionContainer = file.getParentContainer();
+		List<VFSItem> items = versionContainer.getItems(new VersionsFilter(filename));
+		Assert.assertEquals(1, items.size());
+	}
+	
+	@Test
+	public void verionsWithAuthorsAndCreators() throws IOException {
+		//create a file
+		VFSContainer rootTest = VFSManager.olatRootContainer("/ver" + UUID.randomUUID(), null);
+		String filename = UUID.randomUUID().toString() + ".txt";
+		VFSLeaf file = rootTest.createChildLeaf(filename);
+		int byteCopied = copyTestTxt(file);
+		Assert.assertFalse(byteCopied == 0);
+		Assert.assertEquals(VFSConstants.YES, file.canMeta());
+		
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("vers-7");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("vers-8");
+		
+		//set the author
+		VFSMetadata metadata = vfsRepositoryService.getMetadataFor(file);
+		metadata.setAuthor(id1);
+		metadata.setCreator(id1.getName());
+		metadata = vfsRepositoryService.updateMetadata(metadata);
+		dbInstance.commitAndCloseSession();
+		
+		//save a first version -> id2
+		InputStream in1 = new ByteArrayInputStream("Hello version 1".getBytes());
+		vfsRepositoryService.addVersion(file, id2, "Version 1", in1);
+		in1.close();
+		
+		//save a second version -> id1
+		InputStream in2 = new ByteArrayInputStream("Hello version 2".getBytes());
+		vfsRepositoryService.addVersion(file, id1, "Version 2", in2);
+		in2.close();
+		
+		//save a third version -> id2
+		InputStream in3 = new ByteArrayInputStream("Hello version 3".getBytes());
+		vfsRepositoryService.addVersion(file, id2, "Version 3", in3);
+		in3.close();
+
+		//make the checks
+		VFSItem retrievedFile = rootTest.resolve(filename);
+		metadata = vfsRepositoryService.getMetadataFor(file);	
+		List<VFSRevision> revisions = vfsRepositoryService.getRevisions(metadata);
+		Assert.assertNotNull(revisions);
+		Assert.assertEquals(3, revisions.size());
+		Assert.assertEquals(VFSConstants.YES, retrievedFile.canMeta());
+		
+		VFSRevision revision0 = revisions.get(0);
+		//we don't set an author for the original file
+		Assert.assertEquals(id1, revision0.getAuthor());
+		VFSRevision revision1 = revisions.get(1);
+		Assert.assertEquals(id2, revision1.getAuthor());
+		VFSRevision revision2 = revisions.get(2);
+		Assert.assertEquals(id1, revision2.getAuthor());
+		//current
+		Assert.assertEquals(id2, metadata.getAuthor());
+	}
+	
+	@Test
+	public void deleteLeaf() throws IOException {
+		//create a file
+		VFSContainer rootTest = VFSManager.olatRootContainer("/ver" + UUID.randomUUID(), null);
+		String filename = UUID.randomUUID().toString() + ".txt";
+		VFSLeaf file = rootTest.createChildLeaf(filename);
+		int byteCopied = copyTestTxt(file);
+		Assert.assertFalse(byteCopied == 0);
+		Assert.assertEquals(VFSConstants.YES, file.canMeta());
+		
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("vers-12");
+		
+		//save a first version -> id
+		InputStream in1 = new ByteArrayInputStream("Hello version 1".getBytes());
+		vfsRepositoryService.addVersion(file, id, "Version 1", in1);
+		in1.close();
+		
+		dbInstance.commitAndCloseSession();
+		VFSMetadata metadata = vfsRepositoryService.getMetadataFor(file);
+		
+		
+		// make sure the version is there
+		List<VFSItem> revFiles = file.getParentContainer().getItems(new VersionsFilter(filename));
+		Assert.assertEquals(1, revFiles.size());
+		
+		// delete all metadata and versions
+		file.deleteSilently();
+		dbInstance.commitAndCloseSession();
+		
+		List<VFSRevision> revisions = vfsRepositoryService.getRevisions(metadata);
+		Assert.assertTrue(revisions.isEmpty());
+		List<VFSItem> deletedRevFiles = file.getParentContainer().getItems(new VersionsFilter(filename));
+		Assert.assertTrue(deletedRevFiles.isEmpty());
+	}
+	
+	@Test
+	public void rename_leaf() throws IOException {
+		//create a file
+		VFSContainer rootTest = VFSManager.olatRootContainer("/ver" + UUID.randomUUID(), null);
+		String filename = UUID.randomUUID().toString() + ".txt";
+		VFSLeaf file = rootTest.createChildLeaf(filename);
+		int byteCopied = copyTestTxt(file);
+		Assert.assertFalse(byteCopied == 0);
+		Assert.assertEquals(VFSConstants.YES, file.canMeta());
+		
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("vers-12");
+		
+		//save a first version -> id
+		InputStream in1 = new ByteArrayInputStream("Hello, move me".getBytes());
+		vfsRepositoryService.addVersion(file, id, "Version 1", in1);
+		in1.close();
+		dbInstance.commitAndCloseSession();
+		
+		VFSMetadata metadata = vfsRepositoryService.getMetadataFor(file);
+
+		// make sure the version is there
+		List<VFSItem> revFiles = file.getParentContainer().getItems(new VersionsFilter(filename));
+		Assert.assertEquals(1, revFiles.size());
+		
+		// delete all metadata and versions
+		String newName = "IMoved.txt";
+		file.rename(newName);
+		dbInstance.commitAndCloseSession();
+		
+		List<VFSRevision> revisions = vfsRepositoryService.getRevisions(metadata);
+		Assert.assertEquals(1, revisions.size());
+		List<VFSItem> movedRevFiles = file.getParentContainer().getItems(new VersionsFilter(newName));
+		Assert.assertEquals(1, movedRevFiles.size());
+		Assert.assertEquals(((VFSRevisionImpl)revisions.get(0)).getFilename(), movedRevFiles.get(0).getName());
+	}
+	
+	@Test
+	public void testMove() throws IOException {
+		//create a file
+		VFSContainer rootTest = VFSManager.olatRootContainer("/ver" + UUID.randomUUID(), null);
+		String filename = UUID.randomUUID().toString() + ".txt";
+		VFSLeaf file = rootTest.createChildLeaf(filename);
+		int byteCopied = copyTestTxt(file);
+		Assert.assertFalse(byteCopied == 0);
+		Assert.assertEquals(VFSConstants.YES, file.canMeta());
+		
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("vers-9");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("vers-10");
+		
+		
+		//set the author
+		VFSMetadata metadata = vfsRepositoryService.getMetadataFor(file);
+		metadata.setAuthor(id1);
+		metadata.setCreator(id1.getName());
+		metadata = vfsRepositoryService.updateMetadata(metadata);
+		
+		//save a first version -> id2
+		InputStream in1 = new ByteArrayInputStream("Hello version 1".getBytes());
+		vfsRepositoryService.addVersion(file, id2, "Version 1", in1);
+		in1.close();
+		
+		//save a second version -> id1
+		InputStream in2 = new ByteArrayInputStream("Hello version 2".getBytes());
+		vfsRepositoryService.addVersion(file, id1, "Version 2", in2);
+		in2.close();
+		
+		//move the file
+		VFSLeaf retrievedLeaf = (VFSLeaf)rootTest.resolve(filename);
+		String copyFilename = UUID.randomUUID().toString() + ".txt";
+		VFSLeaf copyFile = rootTest.createChildLeaf(copyFilename);
+		OutputStream copyOutput = copyFile.getOutputStream(false);
+		InputStream copyInput = retrievedLeaf.getInputStream();
+		IOUtils.copy(copyInput, copyOutput);
+		copyOutput.close();
+		copyInput.close();
+		//move the revisions
+		vfsRepositoryService.move(retrievedLeaf, copyFile, id2);
+		
+		//check if the revisions are moved
+		VFSLeaf retirevedCopyFile = (VFSLeaf)rootTest.resolve(copyFilename);
+		VFSMetadata metadataCopy = vfsRepositoryService.getMetadataFor(retirevedCopyFile);	
+		List<VFSRevision> revisions = vfsRepositoryService.getRevisions(metadataCopy);
+		Assert.assertNotNull(revisions);
+		Assert.assertEquals(2, revisions.size());
+		
+		VFSRevision revision0 = revisions.get(0);
+		//we don't set an author for the original file
+		assertEquals(id1, revision0.getAuthor());
+		VFSRevision revision1 = revisions.get(1);
+		assertEquals(id2, revision1.getAuthor());
+		//current
+		assertEquals(id1.getName(), metadataCopy.getCreator());
+		assertEquals(id2, metadataCopy.getAuthor());
+	}
+	
+	private int copyTestTxt(VFSLeaf file) {
+		try(OutputStream out = file.getOutputStream(false);
+				InputStream in = VFSVersioningTest.class.getResourceAsStream("test.txt")) {
+			return IOUtils.copy(in, out);
+		} catch(IOException e) {
+			return -1;
+		}
+	}
+	
+
+	private static class SetMaxNumberOfVersions implements Callable<Boolean> {
+		
+		private final Long maxNumOfVersions;
+		private final VFSVersionModule versionConfig;
+		
+		public SetMaxNumberOfVersions(VFSVersionModule versionConfig, Long maxNumOfVersions) {
+			this.versionConfig = versionConfig;
+			this.maxNumOfVersions = maxNumOfVersions;
+		}
+
+		@Override
+		public Boolean call() throws Exception {
+			int currentValue = versionConfig.getMaxNumberOfVersions();
+			return currentValue == maxNumOfVersions.longValue();
+		}
+	}
+	
+	private static class VersionsFilter implements VFSItemFilter {
+		
+		private final String filename;
+		
+		public VersionsFilter(String filename) {
+			this.filename = filename;
+		}
+
+		@Override
+		public boolean accept(VFSItem item) {
+			if(item instanceof VFSLeaf && item.isHidden() && item.getName().endsWith(filename)) {
+				return true;
+			}
+			return false;
+		}
+		
+	}
+}

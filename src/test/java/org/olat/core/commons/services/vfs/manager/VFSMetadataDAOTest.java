@@ -141,7 +141,7 @@ public class VFSMetadataDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(metadata);
 		
-		vfsMetadataDao.updateMetadata(12345l, relativePath, filename);
+		vfsMetadataDao.updateMetadata(12345l, new Date(),relativePath, filename);
 		dbInstance.commitAndCloseSession();
 		
 		VFSMetadata loadedMetadata = vfsMetadataDao.loadMetadata(metadata.getKey());

@@ -67,6 +67,8 @@ public class VFSMetadataImpl implements Persistable, VFSMetadata {
 	
 	@Column(name="f_uuid", nullable=false, insertable=true, updatable=true)
 	private String uuid;
+	@Column(name="f_deleted", nullable=false, insertable=true, updatable=true)
+	private boolean deleted;
 	@Column(name="f_filename", nullable=false, insertable=true, updatable=true)
 	private String filename;
 	@Column(name="f_relative_path", nullable=false, insertable=true, updatable=true)
@@ -129,6 +131,11 @@ public class VFSMetadataImpl implements Persistable, VFSMetadata {
 	@Column(name="f_locked", nullable=true, insertable=true, updatable=true)
 	private boolean locked;
 	
+	@Column(name="f_revision_nr", nullable=true, insertable=true, updatable=true)
+	private int revisionNr;
+	@Column(name="f_revision_comment", nullable=true, insertable=true, updatable=true)
+	private String revisionComment;
+	
 	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=true)
 	@JoinColumn(name="fk_author", nullable=true, insertable=true, updatable=true)
 	private Identity author;
@@ -166,6 +173,15 @@ public class VFSMetadataImpl implements Persistable, VFSMetadata {
 	@Override
 	public void setLastModified(Date date) {
 		lastModified = date;
+	}
+
+	@Override
+	public boolean isDeleted() {
+		return deleted;
+	}
+
+	public void setDeleted(boolean deleted) {
+		this.deleted = deleted;
 	}
 
 	@Override
@@ -457,10 +473,12 @@ public class VFSMetadataImpl implements Persistable, VFSMetadata {
 		this.locked = locked;
 	}
 
+	@Override
 	public Boolean getCannotGenerateThumbnails() {
 		return cannotGenerateThumbnails;
 	}
 
+	@Override
 	public void setCannotGenerateThumbnails(Boolean cannotGenerateThumbnails) {
 		this.cannotGenerateThumbnails = cannotGenerateThumbnails;
 	}
@@ -471,6 +489,26 @@ public class VFSMetadataImpl implements Persistable, VFSMetadata {
 
 	public void setMaterializedPathKeys(String materializedPathKeys) {
 		this.materializedPathKeys = materializedPathKeys;
+	}
+
+	@Override
+	public int getRevisionNr() {
+		return revisionNr;
+	}
+
+	@Override
+	public void setRevisionNr(int revisionNr) {
+		this.revisionNr = revisionNr;
+	}
+
+	@Override
+	public String getRevisionComment() {
+		return revisionComment;
+	}
+
+	@Override
+	public void setRevisionComment(String revisionComment) {
+		this.revisionComment = revisionComment;
 	}
 
 	public VFSMetadata getParent() {

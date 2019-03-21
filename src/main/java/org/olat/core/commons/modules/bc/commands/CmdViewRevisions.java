@@ -21,7 +21,7 @@ package org.olat.core.commons.modules.bc.commands;
 
 import org.olat.core.commons.modules.bc.components.FolderComponent;
 import org.olat.core.commons.modules.bc.components.ListRenderer;
-import org.olat.core.commons.modules.bc.version.RevisionListController;
+import org.olat.core.commons.services.vfs.ui.version.RevisionListController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.Controller;
@@ -30,10 +30,10 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLockApplicationType;
 import org.olat.core.util.vfs.VFSLockManager;
-import org.olat.core.util.vfs.version.Versionable;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -84,7 +84,7 @@ public class CmdViewRevisions extends BasicController implements FolderCommand {
 		if(status == FolderCommandStatus.STATUS_FAILED) {
 			return null;
 		}
-		if (!(currentItem instanceof Versionable)) {
+		if (currentItem.canVersion() != VFSConstants.YES) {
 			status = FolderCommandStatus.STATUS_FAILED;
 			getWindowControl().setError(translator.translate("failed"));
 			return null;
@@ -93,7 +93,7 @@ public class CmdViewRevisions extends BasicController implements FolderCommand {
 		setTranslator(translator);
 		
 		boolean locked = vfsLockManager.isLockedForMe(currentItem, ureq.getIdentity(), ureq.getUserSession().getRoles(), VFSLockApplicationType.vfs);
-		revisionListCtr = new RevisionListController(ureq, wControl, (Versionable)currentItem, locked);
+		revisionListCtr = new RevisionListController(ureq, wControl, currentItem, locked);
 		listenTo(revisionListCtr);
 		putInitialPanel(revisionListCtr.getInitialComponent());
 		return this;

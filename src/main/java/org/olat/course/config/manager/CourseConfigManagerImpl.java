@@ -25,17 +25,17 @@
 
 package org.olat.course.config.manager;
 
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Hashtable;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.version.Versionable;
-import org.olat.core.util.vfs.version.VersionsManager;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.ICourse;
 import org.olat.course.config.CourseConfig;
@@ -106,9 +106,9 @@ public class CourseConfigManagerImpl implements CourseConfigManager {
 		if (configFile == null) {
 			// create new config file
 			configFile = course.getCourseBaseContainer().createChildLeaf(COURSECONFIG_XML);
-		} else if(configFile.exists() && configFile instanceof Versionable) {
-			try {
-				CoreSpringFactory.getImpl(VersionsManager.class).addToRevisions((Versionable)configFile, null, "");
+		} else if(configFile.exists() && configFile.canVersion() == VFSConstants.YES) {
+			try(InputStream in = configFile.getInputStream()) {
+				CoreSpringFactory.getImpl(VFSRepositoryService.class).addVersion(configFile, null, "", in);
 			} catch (Exception e) {
 				log.error("Cannot versioned CourseConfig.xml", e);
 			}

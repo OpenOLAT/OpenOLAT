@@ -1,0 +1,10 @@
+$r.render("table")
+<div class="o_button_group">
+	$r.render("cancel")
+	#if($r.available("version.restore"))
+		$r.render("version.restore")
+	#end
+	#if($r.available("delete"))
+		$r.render("delete")
+	#end
+</div>

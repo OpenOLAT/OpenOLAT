@@ -35,7 +35,6 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
-import org.olat.core.util.vfs.version.FolderVersioningConfigurator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -66,9 +65,6 @@ public class FolderModule extends AbstractSpringModule {
 	private boolean sendDocToExtern;
 	@Value("${folder.force.download:true}")
 	private String forceDownload;
-	
-	@Autowired
-	private FolderVersioningConfigurator versioning;
 	
 	@Autowired
 	public FolderModule(CoordinatorManager coordinatorManager) {
@@ -114,7 +110,6 @@ public class FolderModule extends AbstractSpringModule {
 
 	@Override
 	public void init() {
-		FolderConfig.setVersioningConfigurator(versioning);
 		updateProperties();
 	}
 	
@@ -123,14 +118,6 @@ public class FolderModule extends AbstractSpringModule {
 		if(StringHelper.containsNonWhitespace(enabled)) {
 			forceDownload = enabled;
 		}
-	}
-
-	/**
-	 * [used by spring]
-	 * @param versioning
-	 */
-	public void setVersioning(FolderVersioningConfigurator versioning) {
-		this.versioning = versioning;
 	}
 
 	public boolean isForceDownload() {

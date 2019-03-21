@@ -140,34 +140,22 @@ public class MergeSource extends AbstractVirtualContainer {
 	public boolean isContainersChild(VFSContainer container) {
 		return mergedContainersChildren.contains(container);
 	}
-	
-	/**
-	 * @see org.olat.core.util.vfs.VFSItem#getParent()
-	 */
+
 	@Override
 	public VFSContainer getParentContainer() {
 		return parentContainer;
 	}
 	
-	/**
-	 * @see org.olat.core.util.vfs.VFSItem#setParentContainer(org.olat.core.util.vfs.VFSContainer)
-	 */
 	@Override
 	public void setParentContainer(VFSContainer parentContainer) {
 		this.parentContainer = parentContainer;
 	}
-	
-	/**
-	 * @see org.olat.core.util.vfs.VFSContainer#getItems()
-	 */
+
 	@Override
 	public List<VFSItem> getItems() {
 		return getItems(null);
 	}
 
-	/**
-	 * @see org.olat.core.util.vfs.VFSContainer#getItems(org.olat.core.util.vfs.filters.VFSItemFilter)
-	 */
 	@Override
 	public List<VFSItem> getItems(VFSItemFilter filter) {
 		// remember: security callback and parent was already set during add to this MergeSource
@@ -194,18 +182,12 @@ public class MergeSource extends AbstractVirtualContainer {
 		return all;
 	}
 
-	/**
-	 * @see org.olat.core.util.vfs.VFSItem#canCopyTo()
-	 */
 	@Override
 	public VFSStatus canWrite() {
 		if (rootWriteContainer == null) return VFSConstants.NO;
 		return rootWriteContainer.canWrite();
 	}
 
-	/**
-	 * @see org.olat.core.util.vfs.VFSContainer#createChildContainer(java.lang.String)
-	 */
 	@Override
 	public VFSContainer createChildContainer(String name) {
 		if (canWrite() != VFSConstants.YES) return null;
@@ -314,12 +296,17 @@ public class MergeSource extends AbstractVirtualContainer {
 	
 	@Override
 	public VFSStatus canMeta() {
-		return VFSConstants.NO;
+		return rootWriteContainer == null ? VFSConstants.NO : rootWriteContainer.canVersion();
+	}
+
+	@Override
+	public VFSStatus canVersion() {
+		return rootWriteContainer == null ? VFSConstants.NO: rootWriteContainer.canVersion();
 	}
 
 	@Override
 	public VFSMetadata getMetaInfo() {
-		return null;
+		return rootWriteContainer == null ? null : rootWriteContainer.getMetaInfo();
 	}
 
 	@Override

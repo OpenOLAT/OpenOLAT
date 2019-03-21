@@ -49,8 +49,6 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
-import org.olat.core.util.vfs.version.Versionable;
-import org.olat.core.util.vfs.version.VersionsManager;
 
 
 /**
@@ -173,11 +171,11 @@ public class VFSResourceRoot implements WebResourceRoot  {
 				childLeaf = (VFSLeaf)file;
 				
 				//versioning
-				if(childLeaf instanceof Versionable && ((Versionable)childLeaf).getVersions().isVersioned()) {
-					if(childLeaf.getSize() == 0) {
-						CoreSpringFactory.getImpl(VersionsManager.class).createVersionsFor(childLeaf, true);
-					} else {
-						CoreSpringFactory.getImpl(VersionsManager.class).addToRevisions((Versionable)childLeaf, identity, "");
+				if(childLeaf.canVersion() == VFSConstants.YES) {
+					try(InputStream in=childLeaf.getInputStream()) {
+						CoreSpringFactory.getImpl(VFSRepositoryService.class).addVersion(childLeaf, identity, "", in);
+					} catch(IOException e) {
+						log.error("", e);
 					}
 				}
 			} else {
@@ -223,35 +221,28 @@ public class VFSResourceRoot implements WebResourceRoot  {
 		}
 		
 		if(identity != null && childLeaf.canMeta() == VFSConstants.YES) {
-			VFSMetadata infos = childLeaf.getMetaInfo();
-			if(infos != null && infos.getAuthor() != null) {
-				infos.setAuthor(identity);
-				addLicense(infos, identity);
-				
-				VFSRepositoryService vfsRepositoryService = CoreSpringFactory.getImpl(VFSRepositoryService.class);
-				vfsRepositoryService.updateMetadata(infos);
-				vfsRepositoryService.resetThumbnails(childLeaf);
+			VFSRepositoryService vfsRepositoryService = CoreSpringFactory.getImpl(VFSRepositoryService.class);
+			VFSMetadata metadata;
+			if(movedFrom instanceof VFSResource && ((VFSResource)movedFrom).getItem() instanceof VFSLeaf) {
+				VFSLeaf from = (VFSLeaf)((VFSResource)movedFrom).getItem();
+				metadata = CoreSpringFactory.getImpl(VFSRepositoryService.class).move(from, childLeaf, identity);
+			} else {
+				metadata = vfsRepositoryService.getMetadataFor(childLeaf);
+				metadata.setAuthor(identity);
+				metadata = vfsRepositoryService.updateMetadata(metadata);
 			}
+			addLicense(metadata, identity);
+			vfsRepositoryService.resetThumbnails(childLeaf);
 		}
-		
-		if(movedFrom instanceof VFSResource) {
-			VFSResource vfsResource = (VFSResource)movedFrom;
-			if(vfsResource.getItem() instanceof Versionable
-					&& ((Versionable)vfsResource.getItem()).getVersions().isVersioned()) {
-				VFSLeaf currentVersion = (VFSLeaf)vfsResource.getItem();
-				CoreSpringFactory.getImpl(VersionsManager.class).move(currentVersion, childLeaf, identity);
-			}
-		}
-		
 		return true;
 	}
 
-	private void addLicense(VFSMetadata meta, Identity identity) {
+	private void addLicense(VFSMetadata meta, Identity id) {
 		LicenseService licenseService = CoreSpringFactory.getImpl(LicenseService.class);
 		LicenseModule licenseModule = CoreSpringFactory.getImpl(LicenseModule.class);
 		FolderLicenseHandler licenseHandler = CoreSpringFactory.getImpl(FolderLicenseHandler.class);
 		if (licenseModule.isEnabled(licenseHandler)) {
-			License license = licenseService.createDefaultLicense(licenseHandler, identity);
+			License license = licenseService.createDefaultLicense(licenseHandler, id);
 			meta.setLicenseType(license.getLicenseType());
 			meta.setLicenseTypeName(license.getLicenseType().getName());
 			meta.setLicensor(license.getLicensor());

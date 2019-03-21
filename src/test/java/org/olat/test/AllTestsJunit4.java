@@ -98,10 +98,11 @@ import org.junit.runners.Suite;
 	org.olat.commons.coordinate.cluster.lock.LockTest.class,
 	org.olat.commons.coordinate.CoordinatorTest.class,
 	org.olat.core.commons.services.csp.manager.CSPManagerTest.class,
-	org.olat.core.commons.services.vfs.manager.VFSMetadataDAOTest.class,
-	org.olat.core.commons.services.vfs.manager.VFSRepositoryServiceTest.class,
-	org.olat.core.commons.services.vfs.manager.VFSThumbnailDAOTest.class,
 	org.olat.core.commons.services.vfs.manager.VFSXStreamTest.class,
+	org.olat.core.commons.services.vfs.manager.VFSMetadataDAOTest.class,
+	org.olat.core.commons.services.vfs.manager.VFSRevisionDAOTest.class,
+	org.olat.core.commons.services.vfs.manager.VFSThumbnailDAOTest.class,
+	org.olat.core.commons.services.vfs.manager.VFSRepositoryServiceTest.class,
 	org.olat.core.commons.services.help.ConfluenceHelperTest.class,
 	org.olat.core.commons.services.help.spi.ConfluenceLinkSPITest.class,
 	org.olat.core.commons.services.license.manager.LicenseTypeActivationDAOTest.class,
@@ -420,7 +421,6 @@ import org.junit.runners.Suite;
 	org.olat.resource.accesscontrol.ACTransactionManagerTest.class,
 	org.olat.resource.accesscontrol.ACReservationDAOTest.class,
 	org.olat.resource.accesscontrol.provider.auto.manager.AdvanceOrderDAOTest.class,
-	org.olat.core.util.vfs.version.VersionManagerTest.class,
 	/**
 	 * Pure JUnit test without need of framework
 	 */

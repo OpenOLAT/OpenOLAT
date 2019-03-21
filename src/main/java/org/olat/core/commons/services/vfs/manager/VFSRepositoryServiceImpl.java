@@ -21,6 +21,7 @@ package org.olat.core.commons.services.vfs.manager;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -29,14 +30,20 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Deque;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import java.util.zip.Adler32;
+import java.util.zip.Checksum;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.modules.bc.FolderConfig;
@@ -55,9 +62,12 @@ import org.olat.core.commons.services.vfs.VFSLeafEditor;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSMetadataRef;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
+import org.olat.core.commons.services.vfs.VFSRevision;
 import org.olat.core.commons.services.vfs.VFSThumbnailMetadata;
+import org.olat.core.commons.services.vfs.VFSVersionModule;
 import org.olat.core.commons.services.vfs.manager.MetaInfoReader.Thumbnail;
 import org.olat.core.commons.services.vfs.model.VFSMetadataImpl;
+import org.olat.core.commons.services.vfs.model.VFSRevisionImpl;
 import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -67,6 +77,7 @@ import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
+import org.olat.core.util.io.ShieldInputStream;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
@@ -75,6 +86,8 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.vfs.version.RevisionFileImpl;
+import org.olat.core.util.vfs.version.VersionsFileImpl;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -99,11 +112,15 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	@Autowired
 	private FolderModule folderModule;
 	@Autowired
+	private VFSRevisionDAO revisionDao;
+	@Autowired
 	private VFSMetadataDAO metadataDao;
 	@Autowired
 	private VFSThumbnailDAO thumbnailDao;
 	@Autowired
 	private LicenseService licenseService;
+	@Autowired
+	private VFSVersionModule versionModule;
 	@Autowired
 	private FolderLicenseHandler licenseHandler;
 	@Autowired
@@ -131,7 +148,8 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		File file = toFile(event.getRelativePath(), event.getFilename());
 		if(file.exists()) {
 			try {
-				metadataDao.updateMetadata(file.length(), event.getRelativePath(), event.getFilename());
+				Date lastModified = new Date(file.lastModified());
+				metadataDao.updateMetadata(file.length(), lastModified, event.getRelativePath(), event.getFilename());
 				dbInstance.commit();
 			} catch (Exception e) {
 				log.error("Cannot update file size of: " + event.getRelativePath() + " " + event.getFilename(), e);
@@ -169,6 +187,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 			AsyncFileSizeUpdateEvent event = new AsyncFileSizeUpdateEvent(relativePath, filename);
 			coordinatorManager.getCoordinator().getEventBus().fireEventToListenersOf(event, fileSizeSubscription);
 		}
+		dbInstance.commit();
 		return metadata;
 	}
 	
@@ -211,7 +230,8 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		
 		String filename = file.getName();
 		VFSMetadata metadata = metadataDao.getMetadata(relativePath, filename, file.isDirectory());
-		if(metadata != null && !metadata.isDirectory() && metadata.getFileSize() != file.length()) {
+		if(metadata != null && !metadata.isDirectory()
+				&& (metadata.getFileSize() != file.length() || file.lastModified() != metadata.getFileLastModified().getTime())) {
 			AsyncFileSizeUpdateEvent event = new AsyncFileSizeUpdateEvent(relativePath, filename);
 			coordinatorManager.getCoordinator().getEventBus().fireEventToListenersOf(event, fileSizeSubscription);
 		}
@@ -297,7 +317,8 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		if(leaf == null || leaf.canMeta() != VFSConstants.YES) return; // nothing to do
 		
 		String relativePath = getContainerRelativePath(leaf);
-		metadataDao.updateMetadata(leaf.getSize(), relativePath, leaf.getName());
+		Date lastModified = new Date(leaf.getLastModified());
+		metadataDao.updateMetadata(leaf.getSize(), lastModified, relativePath, leaf.getName());
 	}
 
 	@Override
@@ -310,6 +331,24 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 			}
 			thumbnailDao.removeThumbnail(thumbnail);
 		}
+		
+		List<VFSRevision> revisions = getRevisions(data);
+		for(VFSRevision revision:revisions) {
+			File revFile = getRevisionFile(revision);
+			if(revFile != null && revFile.exists()) {
+				try {
+					Files.delete(revFile.toPath());
+				} catch (IOException e) {
+					log.error("Cannot delete thumbnail: " + revFile, e);
+				}
+			}
+			revisionDao.deleteRevision(revision);
+		}
+		
+		List<VFSMetadata> children = getChildren(data);
+		for(VFSMetadata child:children) {
+			deleteMetadata(child);
+		}
 		metadataDao.removeMetadata(data);
 	}
 
@@ -319,6 +358,18 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		if(metadata != null) {
 			deleteMetadata(metadata);
 		}
+	}
+
+	@Override
+	public void markAsDeleted(VFSItem item, Identity author) {
+		if(item.canMeta() != VFSConstants.YES) return;
+		
+		VFSMetadataImpl metadata = (VFSMetadataImpl)getMetadataFor(item);
+		metadata.setDeleted(true);
+		if(item instanceof VFSLeaf && item.canMeta() == VFSConstants.YES) {
+			addToRevisions((VFSLeaf)item, metadata, author, "");
+		}
+		metadataDao.updateMetadata(metadata);
 	}
 
 	@Override
@@ -340,23 +391,61 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 				VFSMetadata targetMetadata = loadMetadata(targetFile);
 				if(targetMetadata == null) {
 					VFSMetadata parentMetadata = getMetadataFor(parentTarget);
-					String relativePath = this.getRelativePath(targetFile.getParentFile());
+					String relativePath = getRelativePath(targetFile.getParentFile());
 					targetMetadata = metadataDao.createMetadata(UUID.randomUUID().toString(), relativePath, targetFile.getName(),
 							new Date(), targetFile.length(), false, targetFile.toURI().toString(), "file", parentMetadata);
 				}
 				targetMetadata.copyValues(sourceMetadata);
+				if(source.canVersion() == VFSConstants.YES || target.canVersion() == VFSConstants.YES) {
+					targetMetadata.setRevisionComment(sourceMetadata.getRevisionComment());
+					targetMetadata.setRevisionNr(sourceMetadata.getRevisionNr());
+					copy(sourceMetadata, targetMetadata);
+				}
 				metadataDao.updateMetadata(targetMetadata);
 			}
 		}
 	}
+	
+	private boolean copy(VFSMetadata sourceMetadata, VFSMetadata targetMetadata) {
+		List<VFSRevision> sourceRevisions = getRevisions(sourceMetadata);
+
+		boolean allOk = true;
+		for (VFSRevision sourceRevision : sourceRevisions) {
+			VFSLeaf sourceRevFile = getRevisionLeaf(sourceMetadata, (VFSRevisionImpl)sourceRevision);
+			if(sourceRevFile != null && sourceRevFile.exists()) {
+				VFSRevision targetRevision = revisionDao.createRevisionCopy(sourceRevision.getAuthor(), sourceRevision.getRevisionComment(),
+						sourceRevision, targetMetadata);
+				VFSLeaf targetRevFile = getRevisionLeaf(targetMetadata, (VFSRevisionImpl)targetRevision);
+				VFSManager.copyContent(sourceRevFile, targetRevFile, false);
+			}
+		}
+		return allOk;
+	}
 
 	@Override
-	public VFSMetadata rename(VFSMetadata data, String newName) {
-		((VFSMetadataImpl)data).setFilename(newName);
-		Path newFile = Paths.get(folderModule.getCanonicalRoot(), data.getRelativePath(), newName);
+	public VFSMetadata rename(VFSItem item, String newName) {
+		VFSMetadata metadata = getMetadataFor(item);
+
+		((VFSMetadataImpl)metadata).setFilename(newName);
+		Path newFile = Paths.get(folderModule.getCanonicalRoot(), metadata.getRelativePath(), newName);
 		String uri = newFile.toFile().toURI().toString();
-		((VFSMetadataImpl)data).setUri(uri);
-		return metadataDao.updateMetadata(data);
+		((VFSMetadataImpl)metadata).setUri(uri);
+			
+		if(item instanceof VFSContainer) {
+			//TODO rename container ???
+		}
+		
+		List<VFSRevision> revisions = getRevisions(metadata);
+		for(VFSRevision revision:revisions) {
+			VFSLeaf revFile = getRevisionLeaf(metadata, (VFSRevisionImpl)revision);
+			if(revFile != null && revFile.exists()) {
+				String newRevFilename = generateFilenameForRevision(newName, revision.getRevisionNr());
+				revFile.rename(newRevFilename);
+				((VFSRevisionImpl)revision).setFilename(newRevFilename);
+				revisionDao.updateRevision(revision);
+			}
+		}
+		return metadataDao.updateMetadata(metadata);
 	}
 
 	@Override
@@ -530,6 +619,283 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		}
 	}
 	
+	@Override
+	public List<VFSRevision> getRevisions(VFSMetadataRef metadata) {
+		return revisionDao.getRevisions(metadata);
+	}
+
+	@Override
+	public List<VFSRevision> getRevisions(List<VFSMetadataRef> metadatas) {
+		return revisionDao.getRevisions(metadatas);
+	}
+
+	@Override
+	public boolean restoreRevision(Identity identity, VFSRevision revision, String comment) {
+		VFSMetadata metadata = ((VFSRevisionImpl)revision).getMetadata();
+
+		File currentFile = toFile(metadata);
+		if(!currentFile.exists()) {
+			// restore a deleted file
+			metadata = metadataDao.loadMetadata(metadata.getKey());
+			((VFSMetadataImpl)metadata).setDeleted(false);
+			metadata = metadataDao.updateMetadata(metadata);
+			try {
+				VFSLeaf revFile = getRevisionLeaf(metadata, ((VFSRevisionImpl)revision));
+				if (FileUtils.copyToFile(revFile.getInputStream(), currentFile, "Restore")) {
+					deleteRevisions(metadata, Collections.singletonList(revision));
+					return true;
+				}
+			} catch (IOException e) {
+				log.error("", e);
+			}
+		} else {
+		
+			String fileRelativePath = getRelativePath(currentFile);
+			VFSLeaf currentLeaf = VFSManager.olatRootLeaf(fileRelativePath);
+			// add current version to versions file
+			if (addToRevisions(currentLeaf, metadata, identity, comment)) {
+				// copy the content of the new file to the old
+				VFSLeaf revFile = getRevisionLeaf(metadata, ((VFSRevisionImpl)revision));
+				if (VFSManager.copyContent(revFile.getInputStream(), currentLeaf)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+	@Override
+	public boolean addVersion(VFSLeaf currentFile, Identity identity, String comment, InputStream newFile) {
+		boolean allOk = false;
+		VFSMetadata metadata = getMetadataFor(currentFile);
+		if (addToRevisions(currentFile, metadata, identity, comment)) {
+			// copy the content of the new file to the old
+			if(newFile instanceof net.sf.jazzlib.ZipInputStream || newFile instanceof java.util.zip.ZipInputStream) {
+				newFile = new ShieldInputStream(newFile);
+			}
+			allOk = VFSManager.copyContent(newFile, currentFile);
+		} else {
+			log.error("Cannot create a version of this file: " + currentFile);
+		}
+		dbInstance.commit();
+		return allOk;
+	}
+	
+	public boolean addToRevisions(VFSLeaf currentLeaf, VFSMetadata metadata, Identity identity, String comment) {
+		int maxNumOfVersions = versionModule.getMaxNumberOfVersions();
+		if(maxNumOfVersions == 0) {
+			return true;//deactivated, return all ok
+		}
+
+		File currentFile = toFile(currentLeaf);
+		VFSContainer versionContainer = currentLeaf.getParentContainer();
+
+		// read from the
+		List<VFSRevision> revisions = revisionDao.getRevisions(metadata);
+		VFSRevisionImpl lastRevision = (VFSRevisionImpl)getLastRevision(revisions);
+		int versionNr = getNextRevisionNr(revisions);
+		
+		boolean sameFile = isSameFile(currentLeaf, metadata, revisions);
+		String uuid = sameFile && lastRevision != null ? lastRevision.getFilename()
+				: generateFilenameForRevision(currentFile, versionNr);
+
+		Date lastModifiedDate = metadata.getFileLastModified();
+		if(lastModifiedDate == null) {
+			lastModifiedDate = new Date(currentFile.lastModified());
+		}
+		long fileSize = metadata.getFileSize();
+		if(fileSize <= 0l) {
+			fileSize = currentFile.length();
+		}
+
+		VFSRevision newRevision = revisionDao.createRevision(metadata.getAuthor(), uuid, versionNr,
+				fileSize, lastModifiedDate, metadata.getRevisionComment(), metadata);
+		revisions.add(newRevision);
+
+		if(!sameFile) {
+			resetThumbnails(currentLeaf);
+		}
+
+		if (sameFile || VFSManager.copyContent(currentLeaf, versionContainer.createChildLeaf(uuid), false)) {
+			if(maxNumOfVersions >= 0 && revisions.size() > maxNumOfVersions) {
+				int numOfVersionsToDelete = Math.min(revisions.size(), (revisions.size() - maxNumOfVersions));
+				if(numOfVersionsToDelete > 0) {
+					List<VFSRevision> versionsToDelete = revisions.subList(0, numOfVersionsToDelete);
+					deleteRevisions(metadata, revisions, versionsToDelete);
+				}
+			}
+			metadata.setRevisionComment(comment);
+			metadata.setRevisionNr(getNextRevisionNr(revisions));
+			metadata.setAuthor(identity);//TODO dedicated author
+			updateMetadata(metadata);
+			return true;
+		} else {
+			log.error("Cannot create a version of this file: " + currentLeaf);
+		}
+		return false;
+	}
+	
+	@Override
+	public boolean deleteRevisions(Identity identity, List<VFSRevision> revisions) {
+		if(revisions == null || revisions.isEmpty()) return true;// ok, nothing to do
+		
+		VFSMetadata metadata = ((VFSRevisionImpl)revisions.get(0)).getMetadata();
+		List<VFSRevision> allRevisions = revisionDao.getRevisions(metadata);
+		return deleteRevisions(metadata, allRevisions, revisions);
+	}
+	
+	private boolean deleteRevisions(VFSMetadata metadata, List<VFSRevision> versionsToDelete) {
+		List<VFSRevision> allRevisions = revisionDao.getRevisions(metadata);
+		return deleteRevisions(metadata, allRevisions, versionsToDelete);
+	}
+	
+	private boolean deleteRevisions(VFSMetadata metadata, List<VFSRevision> allVersions, List<VFSRevision> versionsToDelete) {
+		List<VFSRevision> toDelete = new ArrayList<>(versionsToDelete);
+		Map<String,VFSRevisionImpl> filenamesToDelete = new HashMap<>(allVersions.size());
+		for (VFSRevision versionToDelete : versionsToDelete) {
+			VFSRevisionImpl versionImpl = (VFSRevisionImpl) versionToDelete;
+			for (Iterator<VFSRevision> allVersionIt = allVersions.iterator(); allVersionIt.hasNext();) {
+				VFSRevisionImpl allVersionImpl = (VFSRevisionImpl) allVersionIt.next();
+				if (allVersionImpl.getKey().equals(versionImpl.getKey())) {
+					allVersionIt.remove();
+					break;
+				}
+			}
+			String fileToDelete = versionImpl.getFilename();
+			if (fileToDelete != null) {
+				filenamesToDelete.put(fileToDelete, versionImpl);
+			}
+		}
+
+		File directory = toFile(metadata).getParentFile();
+		List<VFSRevisionImpl> missingFiles = new ArrayList<>();
+		for(VFSRevision survivingVersion:allVersions) {
+			VFSRevisionImpl survivingVersionImpl = (VFSRevisionImpl)survivingVersion;
+			String revFilename = survivingVersionImpl.getFilename();
+			if(revFilename == null || !new File(directory, revFilename).exists()) {
+				missingFiles.add(survivingVersionImpl);//file is missing
+			} else if(filenamesToDelete.containsKey(revFilename)) {
+				filenamesToDelete.remove(revFilename);
+			}
+		}
+
+		toDelete.addAll(missingFiles);
+		for(VFSRevision versionToDelete:toDelete) {
+			revisionDao.deleteRevision(versionToDelete);
+		}
+		
+		for(String fileToDelete:filenamesToDelete.keySet()) {
+			try {
+				File file = new File(directory, fileToDelete);
+				Files.deleteIfExists(file.toPath());
+			} catch (IOException e) {
+				log.error("Cannot the version of a file", e);
+			}
+		}
+		return true;
+	}
+	
+	private VFSRevision getLastRevision(List<VFSRevision> revisions) {
+		VFSRevision last = null;
+		for (VFSRevision version : revisions) {
+			if (last == null || version.getRevisionNr() > last.getRevisionNr()) {
+				last = version;
+			}
+		}
+		return last;
+	}
+	
+	private int getNextRevisionNr(List<VFSRevision> revisions) {
+		int maxNumber = 0;
+		for (VFSRevision version : revisions) {
+			int versionNr = version.getRevisionNr();
+			if (versionNr > 0 && versionNr > maxNumber) {
+				maxNumber = versionNr;
+			}
+		}
+		return maxNumber + 1;
+	}
+	
+	private boolean isSameFile(VFSLeaf currentFile, VFSMetadata metadata, List<VFSRevision> revisions) {
+		boolean same = false;
+		if(!revisions.isEmpty()) {
+			VFSRevision lastRevision = getLastRevision(revisions);
+			if(lastRevision != null) {
+				long lastSize = lastRevision.getSize();
+				long currentSize = currentFile.getSize();
+				if(currentSize == lastSize && currentSize > 0
+						&& lastRevision instanceof VFSRevisionImpl
+						&& currentFile instanceof LocalFileImpl) {
+					VFSRevisionImpl lastRev = ((VFSRevisionImpl)lastRevision);
+					LocalFileImpl current = (LocalFileImpl)currentFile;
+						//can be the same file
+					try {
+						VFSLeaf lastRevFile = getRevisionLeaf(metadata, lastRev);
+						Checksum cm1 = org.apache.commons.io.FileUtils.checksum(toFile(lastRevFile), new Adler32());
+						Checksum cm2 = org.apache.commons.io.FileUtils.checksum(toFile(current) , new Adler32());
+						same = cm1.getValue() == cm2.getValue();
+					} catch (IOException e) {
+						log.debug("Error calculating the checksum of files");
+					}	
+				}
+			}
+		}
+		return same;
+	}
+	
+	private VFSLeaf getRevisionLeaf(VFSMetadata metadata, VFSRevisionImpl rev) {
+		return VFSManager.olatRootLeaf("/" + metadata.getRelativePath(), rev.getFilename());
+	}
+	
+	private Path getRevisionPath(String relativePath, String revFilename) {
+		return Paths.get(folderModule.getCanonicalRoot(), relativePath, revFilename);
+	}
+	
+	@Override
+	public File getRevisionFile(VFSRevision revision) {
+		VFSRevisionImpl rev = (VFSRevisionImpl)revision;
+		return getRevisionPath(rev.getMetadata().getRelativePath(), rev.getFilename()).toFile();
+	}
+
+	@Override
+	public VFSMetadata move(VFSLeaf currentLeaf, VFSLeaf targetLeaf,  Identity author) {
+		VFSMetadata metadata = getMetadataFor(currentLeaf);
+
+		File currentFile = toFile(currentLeaf);
+		String currentRelativePath = getRelativePath(currentFile.getParentFile());
+
+		File targetFile = toFile(targetLeaf);
+		String targetRelativePath = getRelativePath(targetFile.getParentFile());
+		String newTargetName = targetFile.getName();
+		((VFSMetadataImpl)metadata).setFilename(newTargetName);
+		((VFSMetadataImpl)metadata).setRelativePath(targetRelativePath);
+		((VFSMetadataImpl)metadata).setUri(targetFile.toURI().toString());
+		VFSMetadata targetParent = getMetadataFor(targetFile.getParentFile());
+		((VFSMetadataImpl)metadata).setParent(targetParent);
+		((VFSMetadataImpl)metadata).setAuthor(author);
+
+		List<VFSRevision> revisions = getRevisions(metadata);
+		for(VFSRevision revision:revisions) {
+			VFSRevisionImpl revImpl = (VFSRevisionImpl)revision;
+			Path path = getRevisionPath(currentRelativePath, revImpl.getFilename());
+			File revFile = path.toFile();
+			if(revFile.exists()) {
+				String newRevFilename = generateFilenameForRevision(newTargetName, revision.getRevisionNr());
+				Path targetRevPath = getRevisionPath(targetRelativePath, newRevFilename);
+				try {
+					Files.move(path, targetRevPath, StandardCopyOption.REPLACE_EXISTING);
+				} catch (IOException e) {
+					log.error("", e);
+				}
+				((VFSRevisionImpl)revision).setFilename(newRevFilename);
+				revisionDao.updateRevision(revision);
+			}
+		}
+		
+		metadata = metadataDao.updateMetadata(metadata);
+		return metadata;
+	}
+
 	/**
 	 * Get the license of the MetaInfo
 	 *
@@ -668,9 +1034,15 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 					xmlMetadata = metaReader.getMetadata();
 					thumbnails = metaReader.getThumbnails();
 				}
+
 				metadata = metadataDao.createMetadata(xmlMetadata, relativePath, file.getName(), fileLastModified,
 						size, directory, file.toURI().toString(), "file", parent);
 				migrateThumbnails(metadata, file, thumbnails);
+				
+				File versionFile = getVersionFile(file);
+				if(versionFile != null) {
+					migrateVersions(file, versionFile, metadata);
+				}
 			}
 		} 
 		
@@ -692,6 +1064,28 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		StringBuilder sb = new StringBuilder(128);
 		sb.append("._oo_th_").append(fill).append("_").append(maxWidth).append("_").append(maxHeight)
 		  .append("_").append(name).append(".").append(extension);
+		return sb.toString();
+	}
+	
+	/**
+	 * @param filename The original file
+	 * @param revisionNr The version number
+	 * @return A name like ._oo_vr_filename.ext
+	 */
+	private String generateFilenameForRevision(File file, int revisionNr) {
+		StringBuilder sb = new StringBuilder(128);
+		sb.append("._oo_vr_").append(revisionNr).append("_").append(file.getName());
+		return sb.toString();
+	}
+	
+	/**
+	 * @param filename The original filename
+	 * @param revisionNr The version number
+	 * @return A name like ._oo_vr_filename.ext
+	 */
+	private String generateFilenameForRevision(String filename, int revisionNr) {
+		StringBuilder sb = new StringBuilder(128);
+		sb.append("._oo_vr_").append(revisionNr).append("_").append(filename);
 		return sb.toString();
 	}
 	
@@ -740,6 +1134,54 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 			canonicalMetaPath = metaSb.toString();
 		}
 		return canonicalMetaPath;
+	}
+	
+	private VFSMetadata migrateVersions(File file, File versionFile, VFSMetadata metadata) {
+		VersionsFileImpl versions = (VersionsFileImpl)VFSXStream.read(versionFile);
+		List<VFSRevision> revisions = versions.getRevisions();
+		if(revisions == null || revisions.isEmpty()) {
+			return metadata;
+		}
+		
+		metadata.setRevisionComment(versions.getComment());
+		metadata.setRevisionNr(versions.getRevisionNr());
+		metadata = metadataDao.updateMetadata(metadata);
+		
+		for(VFSRevision revision:revisions) {
+			RevisionFileImpl revisionFile = (RevisionFileImpl)revision;
+			String filename = revisionFile.getFilename();
+			File oldOne = new File(versionFile.getParentFile(), filename);
+			if(oldOne.exists()) {
+				try {
+					String newRevisionFilename = generateFilenameForRevision(file, revisionFile.getRevisionNr());
+					revisionDao.createRevision(revisionFile.getAuthor(), newRevisionFilename, revisionFile.getRevisionNr(),
+							oldOne.length(), revisionFile.getFileLastModified(), revisionFile.getComment(), metadata);
+					File target = new File(file.getParentFile(), newRevisionFilename);
+					Files.move(oldOne.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
+				} catch (IOException e) {
+					log.error("", e);
+				}
+			}
+		}
+		return metadata;
+	}
+		
+	/**
+	 * @param file The regular file
+	 * @return The XML versions file
+	 */
+	private File getVersionFile(File file) {
+		if (file == null || !file.exists()) {
+			return null;
+		}
+		String relPath = getRelativePath(file);
+		if (relPath == null) {// cannot handle
+			return null;
+		}
+		
+		File versionFolder = new File(FolderConfig.getCanonicalVersionRoot(), relPath);
+		File fVersion = new File(versionFolder.getParentFile(), file.getName() + ".xml");
+		return fVersion.exists() ? fVersion : null;
 	}
 
 	@Override

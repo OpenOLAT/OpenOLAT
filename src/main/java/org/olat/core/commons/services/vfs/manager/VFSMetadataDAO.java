@@ -209,13 +209,14 @@ public class VFSMetadataDAO {
 			.executeUpdate();
 	}
 	
-	public void updateMetadata(long fileSize, String relativePath, String filename) {
-		String updateQuery = "update vfsmetadatafilesaved set fileLastModified=now(), fileSize=:fileSize where filename=:filename and relativePath=:relativePath";
+	public void updateMetadata(long fileSize, Date lastModified, String relativePath, String filename) {
+		String updateQuery = "update vfsmetadatafilesaved set fileLastModified=:lastModified, fileSize=:fileSize where filename=:filename and relativePath=:relativePath";
 		dbInstance.getCurrentEntityManager()
 			.createQuery(updateQuery)
 			.setParameter("filename", filename)
 			.setParameter("relativePath", relativePath)
 			.setParameter("fileSize", fileSize)
+			.setParameter("lastModified", lastModified)
 			.executeUpdate();
 	}
 	

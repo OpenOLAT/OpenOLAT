@@ -294,10 +294,7 @@ public abstract class AbstractSpringModule implements GenericEventListener, Init
 		// delegate to new property based config style
 		moduleConfigProperties.setIntPropertyDefault(key, value);		
 	}
-	
-	/**
-	 * @see org.olat.core.util.event.GenericEventListener#event(org.olat.core.gui.control.Event)
-	 */
+
 	@Override
 	public void event(Event event) {
 		if (event instanceof PersistedPropertiesChangedEvent) {

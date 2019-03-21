@@ -29,9 +29,6 @@ package org.olat.core.commons.modules.bc;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import org.olat.core.util.vfs.VFSContainer;
-import org.olat.core.util.vfs.version.FolderVersioningConfigurator;
-
 /**
  * Initial Date:  18.12.2002
  *
@@ -63,7 +60,6 @@ public class FolderConfig {
 	private static final String META_DIR = "/.meta";
 	private static final String TMP_DIR = "/tmp";
 	private static final String VERSION_DIR = "/.version";
-	private static FolderVersioningConfigurator versioningConfigurator;
 	private static boolean sendDocumentToExtern;
 	private static boolean sendDocumentLinkOnly;
 	
@@ -332,34 +328,5 @@ public class FolderConfig {
 	 */
 	public static boolean getSendDocumentLinkOnly() {
 		return sendDocumentLinkOnly;
-	}
-	
-	public static FolderVersioningConfigurator getVersioningConfigurator() {
-		return versioningConfigurator;
-	}
-
-	public static void setVersioningConfigurator(FolderVersioningConfigurator versioningConfigurator) {
-		FolderConfig.versioningConfigurator = versioningConfigurator;
-	}
-
-	/**
-	 * @return -1 if the number of revisions for the file is unlimited; 0 if versions are not allowed;
-	 * 	1 - n is the maximum allowed number of revisions
-	 */
-	public static int versionsAllowed(String relPath) {
-		if(versioningConfigurator == null) {
-			return 0;
-		}
-		return versioningConfigurator.versionAllowed(relPath);
-	}
-	
-	/**
-	 * @return true if versioning is enabled for the container
-	 */
-	public static boolean versionsEnabled(VFSContainer container) {
-		if(versioningConfigurator == null) {
-			return false;
-		}
-		return versioningConfigurator.versionEnabled(container);
 	}
 }

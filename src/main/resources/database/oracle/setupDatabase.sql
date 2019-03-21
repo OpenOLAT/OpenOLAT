@@ -1664,6 +1664,35 @@ create table o_vfs_thumbnail (
    primary key (id)
 );
 
+create table o_vfs_revision (
+   id number(20) generated always as identity,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   f_revision_size number(20) default 0 not null,
+   f_revision_nr number(20) default 0 not null,
+   f_revision_filename varchar(256) not null,
+   f_revision_comment varchar(32000),
+   f_revision_lastmodified timestamp not null,
+   f_comment varchar(32000),
+   f_title varchar(2000),
+   f_publisher varchar(2000),
+   f_creator varchar(2000),
+   f_source varchar(2000),
+   f_city varchar(256),
+   f_pages varchar(2000),
+   f_language varchar(16),
+   f_url varchar(1024),
+   f_pub_month varchar(16),
+   f_pub_year varchar(16),
+   f_license_type_name varchar(256),
+   f_license_text CLOB,
+   f_licensor varchar(4000),
+   fk_license_type number(20),
+   fk_author number(20),
+   fk_metadata number(20) not null,
+   primary key (id)
+);
+
 -- portfolio
 create table o_pf_binder (
    id number(20) GENERATED ALWAYS AS IDENTITY,
@@ -3627,6 +3656,13 @@ create index f_m_filename_idx on o_vfs_metadata (f_filename);
 
 alter table o_vfs_thumbnail add constraint fthumb_to_meta_idx foreign key (fk_metadata) references o_vfs_metadata (id);
 create index idx_fthumb_to_meta_idx on o_vfs_thumbnail (fk_metadata);
+
+alter table o_vfs_revision add constraint fvers_to_author_idx foreign key (fk_author) references o_bs_identity (id);
+create index idx_fvers_to_author_idx on o_vfs_revision (fk_author);
+alter table o_vfs_revision add constraint fvers_to_meta_idx foreign key (fk_metadata) references o_vfs_metadata (id);
+create index idx_fvers_to_meta_idx on o_vfs_revision (fk_metadata);
+alter table o_vfs_revision add constraint fvers_to_lic_type_idx foreign key (fk_license_type) references o_lic_license_type (id);
+create index idx_fvers_to_lic_type_idx on o_vfs_revision (fk_license_type);
 
 -- portfolio
 alter table o_pf_binder add constraint pf_binder_resource_idx foreign key (fk_olatresource_id) references o_olatresource (resource_id);

@@ -33,11 +33,8 @@ import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
-import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.VFSManager;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
-import org.olat.portfolio.model.artefacts.FileArtefact;
 
 /**
  * Description:<br>
@@ -127,9 +124,9 @@ public class EPCreateFileArtefactStepForm00 extends StepFormBasicController {
 	}
 	
 	private void saveUpload(){
-		VFSLeaf contFile = vfsTemp.createChildLeaf(fileupload.getUploadFileName());
-		VFSManager.copyContent(fileupload.getUploadInputStream(), contFile);
-		((FileArtefact) artefact).setFilename(fileupload.getUploadFileName());
+		//VFSLeaf contFile = vfsTemp.createChildLeaf(fileupload.getUploadFileName());
+		//VFSManager.copyContent(fileupload.getUploadInputStream(), contFile);
+		fileupload.moveUploadFileTo(vfsTemp);
 	}
 
 	/**

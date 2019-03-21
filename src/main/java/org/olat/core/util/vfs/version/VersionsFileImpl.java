@@ -19,13 +19,10 @@
  */
 package org.olat.core.util.vfs.version;
 
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.core.CoreSpringFactory;
-import org.olat.core.id.Identity;
-import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.commons.services.vfs.VFSRevision;
 import org.olat.core.util.vfs.VFSLeaf;
 
 /**
@@ -40,14 +37,14 @@ import org.olat.core.util.vfs.VFSLeaf;
  * 
  * @author srosse
  */
-public class VersionsFileImpl implements Versions {
+public class VersionsFileImpl {
 
 	private boolean versioned;
 	private String author;
 	private String creator;
-	private String revisionNr;
+	private int revisionNr;
 	private String comment;
-	private Versionable currentVersion;
+	private Object currentVersion;
 	private VFSLeaf versionFile;
 	private List<VFSRevision> revisions;
 
@@ -55,12 +52,11 @@ public class VersionsFileImpl implements Versions {
 	//
 	}
 
-	@Override
-	public String getRevisionNr() {
+	public int getRevisionNr() {
 		return revisionNr;
 	}
 
-	public void setRevisionNr(String revisionNr) {
+	public void setRevisionNr(int revisionNr) {
 		this.revisionNr = revisionNr;
 	}
 
@@ -72,40 +68,14 @@ public class VersionsFileImpl implements Versions {
 		this.versionFile = versionFile;
 	}
 
-	public Versionable getCurrentVersion() {
+	public Object getCurrentVersion() {
 		return currentVersion;
 	}
 
-	public void setCurrentVersion(Versionable currentVersion) {
+	public void setCurrentVersion(Object currentVersion) {
 		this.currentVersion = currentVersion;
 	}
 
-	@Override
-	public boolean addVersion(Identity identity, String comments, InputStream newVersion) {
-		return CoreSpringFactory.getImpl(VersionsManager.class).addVersion(getCurrentVersion(), identity, comments, newVersion);
-	}
-
-	@Override
-	public boolean move(VFSContainer container) {
-		return CoreSpringFactory.getImpl(VersionsManager.class).move(getCurrentVersion(), container);
-	}
-
-	@Override
-	public boolean copy(VFSContainer container) {
-		return CoreSpringFactory.getImpl(VersionsManager.class).copy(getCurrentVersion(), container);
-	}
-
-	@Override
-	public boolean restore(Identity identity, VFSRevision version, String comments) {
-		return CoreSpringFactory.getImpl(VersionsManager.class).restore(getCurrentVersion(), version, comments);
-	}
-
-	@Override
-	public boolean delete(Identity identity, List<VFSRevision> revisionsToDelete) {
-		return CoreSpringFactory.getImpl(VersionsManager.class).deleteRevisions(getCurrentVersion(), revisionsToDelete);
-	}
-
-	@Override
 	public List<VFSRevision> getRevisions() {
 		if (revisions == null) {
 			revisions = new ArrayList<>();
@@ -117,7 +87,6 @@ public class VersionsFileImpl implements Versions {
 		this.revisions = revisions;
 	}
 
-	@Override
 	public boolean isVersioned() {
 		return versioned;
 	}
@@ -126,7 +95,6 @@ public class VersionsFileImpl implements Versions {
 		this.versioned = versioned;
 	}
 
-	@Override
 	public String getAuthor() {
 		return author;
 	}
@@ -135,7 +103,6 @@ public class VersionsFileImpl implements Versions {
 		this.author = author;
 	}
 
-	@Override
 	public String getCreator() {
 		return creator;
 	}
@@ -144,26 +111,11 @@ public class VersionsFileImpl implements Versions {
 		this.creator = creator;
 	}
 
-	@Override
 	public String getComment() {
 		return comment;
 	}
 
 	public void setComment(String comment) {
 		this.comment = comment;
-	}
-
-	protected void update(Versions newVersions) {
-		if (newVersions instanceof VersionsFileImpl) {
-			VersionsFileImpl newVersionsImpl = (VersionsFileImpl) newVersions;
-			author = newVersionsImpl.getAuthor();
-			creator = newVersionsImpl.getCreator();
-			currentVersion = newVersionsImpl.getCurrentVersion();
-			revisionNr = newVersionsImpl.getRevisionNr();
-			comment = newVersionsImpl.getComment();
-		}
-
-		revisions = new ArrayList<>();
-		revisions.addAll(newVersions.getRevisions());
 	}
 }

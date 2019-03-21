@@ -113,7 +113,7 @@ public class VFSLockManagerImpl implements VFSLockManager {
 	 * @return true If the lock owner is someone else or if it's a WebDAV lock
 	 */
 	@Override
-	public boolean isLockedForMe(VFSItem item, VFSMetadata loadedInfo, Identity me, Roles roles, VFSLockApplicationType type) {
+	public boolean isLockedForMe(VFSItem item, VFSMetadata loadedInfo, Identity me, Roles roles, VFSLockApplicationType type) {//TODO metadata need the name/instance of the collaboration app.
 		File file = extractFile(item);
     	if(file != null && fileLocks.containsKey(file)) {
     		LockInfo lock = fileLocks.get(file);

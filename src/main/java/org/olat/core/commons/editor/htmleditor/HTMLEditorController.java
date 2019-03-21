@@ -26,6 +26,7 @@ import java.util.Date;
 
 import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.commons.modules.bc.FolderConfig;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -52,13 +53,14 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.LocalFileImpl;
+import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.version.Versionable;
 import org.olat.modules.edusharing.EdusharingFilter;
 import org.olat.modules.edusharing.VFSEdusharingProvider;
 import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -120,6 +122,11 @@ public class HTMLEditorController extends FormBasicController {
 	private String fileToLargeError = null;
 	private VFSEdusharingProvider edusharingProvider;
 	private Object userObject;
+	
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private VFSRepositoryService vfsRepositoryService;
 
 	/**
 	 * Factory method to create a file based HTML editor instance that uses
@@ -199,7 +206,7 @@ public class HTMLEditorController extends FormBasicController {
 			VelocityContainer vc = (VelocityContainer) flc.getComponent();
 			if (!lock.isSuccess()) {
 				vc.contextPut("locked", Boolean.TRUE);
-				String fullname = UserManager.getInstance().getUserDisplayName(lock.getOwner());
+				String fullname = userManager.getUserDisplayName(lock.getOwner());
 				vc.contextPut("lockOwner", fullname);
 				editable = false;
 				return;
@@ -390,11 +397,15 @@ public class HTMLEditorController extends FormBasicController {
 	 */
 	private String parsePage(VFSLeaf vfsLeaf) {
 		// Load data with given encoding
-		InputStream is = vfsLeaf.getInputStream();
-		if (is == null) { throw new AssertException("Could not open input stream for file::"
-				+ getFileDebuggingPath(this.baseContainer, this.fileRelPath)); }
-		this.charSet = SimpleHtmlParser.extractHTMLCharset(vfsLeaf);
-		String leafData = FileUtils.load(is, charSet);
+		String leafData = null;
+		try(InputStream is = vfsLeaf.getInputStream()) {
+			if (is == null) { throw new AssertException("Could not open input stream for file::"
+					+ getFileDebuggingPath(this.baseContainer, this.fileRelPath)); }
+			this.charSet = SimpleHtmlParser.extractHTMLCharset(vfsLeaf);
+			leafData = FileUtils.load(is, charSet);
+		} catch(IOException e) {
+			logError("", e);
+		}
 		if (leafData == null || leafData.length() == 0) {
 			leafData = "";
 		}
@@ -471,9 +482,9 @@ public class HTMLEditorController extends FormBasicController {
 		}
 		
 		// save the file
-		if(versionsEnabled && fileLeaf instanceof Versionable && ((Versionable)fileLeaf).getVersions().isVersioned()) {
+		if(versionsEnabled && fileLeaf.canVersion() == VFSConstants.YES) {
 			try(InputStream inStream = FileUtils.getInputStream(fileContent.toString(), charSet)) {
-				((Versionable)fileLeaf).getVersions().addVersion(getIdentity(), "", inStream);
+				vfsRepositoryService.addVersion(fileLeaf, getIdentity(), "", inStream);
 			} catch(IOException e) {
 				logError("", e);
 			}

@@ -59,7 +59,6 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.filters.VFSItemExcludePrefixFilter;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
-import org.olat.core.util.vfs.version.Versionable;
 
 /**
  * Initial Date:  Feb 11, 2004
@@ -287,6 +286,8 @@ public class FolderComponent extends AbstractComponent {
 			comparator = new Comparator<VFSItem>() {
 				@Override
 				public int compare(VFSItem o1, VFSItem o2) {
+					return o1.getName().compareTo(o2.getName());
+					/*
 					Versionable v1 = null;
 					Versionable v2 = null;
 					if (o1 instanceof Versionable) {
@@ -309,6 +310,7 @@ public class FolderComponent extends AbstractComponent {
 						return 1;
 					}
 					return (sortAsc) ? collator.compare(r1, r2) : collator.compare(r2, r1);
+					*/
 				}
 			};
 		}  else if (col.equals(SORT_LOCK)) {																							// sort after modification date (if same, then name)

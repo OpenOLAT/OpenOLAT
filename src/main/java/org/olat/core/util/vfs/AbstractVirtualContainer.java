@@ -119,6 +119,11 @@ public abstract class AbstractVirtualContainer implements VFSContainer {
 	public VFSStatus canMeta() {
 		return VFSConstants.NO;
 	}
+	
+	@Override
+	public VFSStatus canVersion() {
+		return VFSConstants.NO;
+	}
 
 	@Override
 	public VFSMetadata getMetaInfo() {

@@ -34,6 +34,23 @@ import org.olat.core.util.vfs.VFSStatus;
  */
 public class VFSRepositoryModule {
 	
+	public static final VFSStatus canVersion(File file) {
+		VFSStatus canMeta = canMeta(file);
+		if(canMeta == VFSConstants.YES) {
+			// version only works with metadata but not in: portfolio, scorm, forum...
+			Path bFile = file.toPath();
+			Path bcRoot = FolderConfig.getCanonicalRootPath();
+			return !bFile.startsWith(bcRoot.resolve("forum"))
+					&& !bFile.startsWith(bcRoot.resolve("portfolio"))
+					&& !bFile.startsWith(bcRoot.resolve("scorm"))
+					&& !bFile.startsWith(bcRoot.resolve("certificates"))
+					&& !bFile.startsWith(bcRoot.resolve("qtiassessment"))
+					&& !bFile.startsWith(bcRoot.resolve("transcodedVideos"))
+					? VFSConstants.YES : VFSConstants.NO;
+		}
+		return canMeta;
+	}
+	
 	public static final VFSStatus canMeta(File file) {
 		Path bFile = file.toPath();
 		Path bcRoot = FolderConfig.getCanonicalRootPath();
@@ -42,8 +59,10 @@ public class VFSRepositoryModule {
 				&& !bFile.startsWith(FolderConfig.getCanonicalMetaRootPath())
 				&& !bFile.startsWith(FolderConfig.getCanonicalVersionRootPath())
 				&& !bFile.startsWith(FolderConfig.getCanonicalTmpPath())
+				&& !bFile.startsWith(bcRoot.resolve("bulkassessment"))
 				&& !file.isHidden()
 				&& !filename.startsWith("._oo_")
+				&& !filename.equals("CourseConfig.xml")
 				? VFSConstants.YES : VFSConstants.NO;
 	}
 

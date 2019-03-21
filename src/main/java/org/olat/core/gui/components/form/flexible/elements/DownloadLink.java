@@ -22,6 +22,7 @@ package org.olat.core.gui.components.form.flexible.elements;
 import java.io.File;
 
 import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.util.vfs.VFSLeaf;
 
 /**
@@ -43,5 +44,7 @@ public interface DownloadLink extends FormItem {
 	public void setDownloadItem(File downloadItem);
 	
 	public void setDownloadItem(VFSLeaf downloadItem);
+	
+	public void setDownloadMedia(MediaResource mediaResource);
 
 }

@@ -26,11 +26,13 @@
 package org.olat.course;
 
 import java.io.File;
+import java.io.InputStream;
 import java.io.Serializable;
 
 import org.olat.admin.quota.QuotaConstants;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
@@ -49,8 +51,6 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.callbacks.FullAccessWithLazyQuotaCallback;
 import org.olat.core.util.vfs.callbacks.FullAccessWithQuotaCallback;
-import org.olat.core.util.vfs.version.Versionable;
-import org.olat.core.util.vfs.version.VersionsManager;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.config.CourseConfig;
@@ -446,18 +446,18 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 	 * @param obj
 	 */
 	private void writeObject(String fileName, Object obj) {
-		VFSItem vfsItem = getCourseBaseContainer().resolve(fileName);
+		VFSLeaf vfsItem =(VFSLeaf)getCourseBaseContainer().resolve(fileName);
 		if (vfsItem == null) {
 			vfsItem = getCourseBaseContainer().createChildLeaf(fileName);
-		} else if(vfsItem.exists() && vfsItem instanceof Versionable) {
-			try {
-				CoreSpringFactory.getImpl(VersionsManager.class).addToRevisions((Versionable)vfsItem, null, "");
+		} else if(vfsItem.exists()) {
+			try(InputStream in=vfsItem.getInputStream()) {
+				CoreSpringFactory.getImpl(VFSRepositoryService.class).addVersion(vfsItem, null, "", in);
 			} catch (Exception e) {
 				log.error("Cannot versioned " + fileName, e);
 			}
 		}
 		XStream xstream = CourseXStreamAliases.getWriteCourseXStream();
-		XStreamHelper.writeObject(xstream, (VFSLeaf)vfsItem, obj);
+		XStreamHelper.writeObject(xstream, vfsItem, obj);
 	}
 
 	/**

@@ -92,6 +92,7 @@ import org.olat.core.gui.components.tree.MenuTreeItem;
 import org.olat.core.gui.components.tree.TreeModel;
 import org.olat.core.gui.control.WindowBackOffice;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.themes.Theme;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
@@ -1121,6 +1122,17 @@ public class FormUIFactory {
 		DownloadLinkImpl fte = new DownloadLinkImpl(name);
 		fte.setLinkText(linkTitle);
 		fte.setDownloadItem(file);
+		setLabelIfNotNull(i18nLabel, fte);
+		if(formLayout != null) {
+			((FlexiTableElementImpl)formLayout).addFormItem(fte);
+		}
+		return fte;
+	}
+	
+	public DownloadLink addDownloadLink(String name,  String linkTitle, String i18nLabel, MediaResource resource, FlexiTableElement formLayout) {
+		DownloadLinkImpl fte = new DownloadLinkImpl(name);
+		fte.setLinkText(linkTitle);
+		fte.setDownloadMedia(resource);
 		setLabelIfNotNull(i18nLabel, fte);
 		if(formLayout != null) {
 			((FlexiTableElementImpl)formLayout).addFormItem(fte);

@@ -20,7 +20,7 @@
 package org.olat.core.commons.modules.bc.commands;
 
 import org.olat.core.commons.modules.bc.components.FolderComponent;
-import org.olat.core.commons.modules.bc.version.DeletedFileListController;
+import org.olat.core.commons.services.vfs.ui.version.DeletedFileListController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.Controller;

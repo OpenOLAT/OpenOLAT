@@ -28,7 +28,6 @@ package org.olat.core.commons.modules.bc.components;
 
 import java.util.List;
 
-import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.FolderRunController;
 import org.olat.core.commons.modules.bc.commands.FolderCommandFactory;
 import org.olat.core.gui.components.Component;
@@ -95,7 +94,7 @@ public class FolderComponentRenderer extends DefaultComponentRenderer {
 		}
 		
 		boolean canDelete = false;
-		boolean canVersion = FolderConfig.versionsEnabled(fc.getCurrentContainer());
+		boolean canVersion = fc.getCurrentContainer().canVersion() == VFSConstants.YES;
 		boolean canMail = fc.isCanMail();
 		
 		List<VFSItem> children = fc.getCurrentContainerChildren();

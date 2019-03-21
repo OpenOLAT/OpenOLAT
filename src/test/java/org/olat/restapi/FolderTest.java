@@ -28,7 +28,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-import org.olat.core.util.vfs.restapi.VFSWebservice;
+import org.olat.core.commons.services.vfs.restapi.VFSWebservice;
 /**
  * 
  * <h3>Description:</h3>

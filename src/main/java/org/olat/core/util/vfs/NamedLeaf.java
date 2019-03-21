@@ -151,6 +151,11 @@ public class NamedLeaf implements VFSLeaf {
 	public VFSItem resolve(String path) {
 		return delegate.resolve(delegate.getName());
 	}
+	
+	@Override
+	public VFSStatus canVersion() {
+		return delegate.canVersion();
+	}
 
 	@Override
 	public VFSStatus canMeta() {

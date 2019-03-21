@@ -34,6 +34,7 @@ import org.olat.core.commons.modules.bc.FolderEvent;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -57,7 +58,6 @@ import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
-import org.olat.core.util.vfs.version.Versionable;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class CmdMoveCopy extends DefaultController implements FolderCommand {
@@ -75,6 +75,8 @@ public class CmdMoveCopy extends DefaultController implements FolderCommand {
 	
 	@Autowired
 	private VFSLockManager vfsLockManager;
+	@Autowired
+	private VFSRepositoryService vfsRepositoryService;
 
 	protected CmdMoveCopy(WindowControl wControl, boolean move) {
 		super(wControl);
@@ -170,10 +172,10 @@ public class CmdMoveCopy extends DefaultController implements FolderCommand {
 		
 		for (VFSItem vfsSource:sources) {
 			VFSItem targetFile = target.resolve(vfsSource.getName());
-			if(vfsSource instanceof VFSLeaf && targetFile != null && targetFile instanceof Versionable
-					&& ((Versionable)targetFile).getVersions().isVersioned()) {
+			if(vfsSource instanceof VFSLeaf && targetFile != null && targetFile.canVersion() == VFSConstants.YES) {
 				//add a new version to the file
-				((Versionable)targetFile).getVersions().addVersion(null, "", ((VFSLeaf)vfsSource).getInputStream());
+				VFSLeaf sourceLeaf = (VFSLeaf)vfsSource;
+				vfsRepositoryService.addVersion(sourceLeaf, ureq.getIdentity(), "", sourceLeaf.getInputStream());
 			} else {
 				vfsStatus = target.copyFrom(vfsSource);
 			}

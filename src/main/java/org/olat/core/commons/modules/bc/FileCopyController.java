@@ -22,14 +22,20 @@ package org.olat.core.commons.modules.bc;
 
 import static java.util.Arrays.asList;
 
+import java.util.List;
+
 import org.olat.core.commons.controllers.linkchooser.FileLinkChooserController;
 import org.olat.core.commons.controllers.linkchooser.LinkChooserController;
 import org.olat.core.commons.controllers.linkchooser.URLChoosenEvent;
 import org.olat.core.commons.modules.bc.commands.FolderCommand;
 import org.olat.core.commons.modules.bc.commands.FolderCommandStatus;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
-import org.olat.core.commons.modules.bc.version.RevisionListController;
-import org.olat.core.commons.modules.bc.version.VersionCommentController;
+import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
+import org.olat.core.commons.services.vfs.VFSRevision;
+import org.olat.core.commons.services.vfs.VFSVersionModule;
+import org.olat.core.commons.services.vfs.ui.version.RevisionListController;
+import org.olat.core.commons.services.vfs.ui.version.VersionCommentController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -45,14 +51,13 @@ import org.olat.core.logging.activity.CoreLoggingResourceable;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Util;
+import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSLockApplicationType;
 import org.olat.core.util.vfs.VFSLockManager;
 import org.olat.core.util.vfs.VFSManager;
-import org.olat.core.util.vfs.version.Versionable;
-import org.olat.core.util.vfs.version.Versions;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -80,6 +85,10 @@ public class FileCopyController extends LinkChooserController {
 	
 	@Autowired
 	private VFSLockManager vfsLockManager;
+	@Autowired
+	private VFSVersionModule versionsModule;
+	@Autowired
+	private VFSRepositoryService vfsRepositoryService;
 	
 	public FileCopyController(UserRequest ureq, WindowControl wControl, VFSContainer rootDir,
 			FolderComponent folderComponent) {
@@ -129,10 +138,9 @@ public class FileCopyController extends LinkChooserController {
 			if (event instanceof ButtonClickedEvent) {
 				ButtonClickedEvent buttonClickedEvent = (ButtonClickedEvent) event;
 				if (buttonClickedEvent.getPosition() == 0) { //ok
-					if (existingVFSItem instanceof Versionable && ((Versionable)existingVFSItem).getVersions().isVersioned()) {
+					if (existingVFSItem.canVersion() == VFSConstants.YES) {
 						//new version
-						String relPath = existingVFSItem.getRelPath();
-						int maxNumOfRevisions = FolderConfig.versionsAllowed(relPath);
+						int maxNumOfRevisions = versionsModule.getMaxNumberOfVersions();
 						if(maxNumOfRevisions == 0) {
 							//someone play with the configuration
 							// Overwrite...
@@ -222,8 +230,7 @@ public class FileCopyController extends LinkChooserController {
 			}
 			
 			//ok, new version of the file
-			Versionable existingVersionableItem = (Versionable)existingVFSItem;
-			boolean ok = existingVersionableItem.getVersions().addVersion(ureq.getIdentity(), comment, sourceLeaf.getInputStream());
+			boolean ok = vfsRepositoryService.addVersion(existingVFSItem, ureq.getIdentity(), comment, sourceLeaf.getInputStream());
 			if(ok) {
 				newFile = existingVFSItem;
 			}
@@ -248,14 +255,14 @@ public class FileCopyController extends LinkChooserController {
 				//don't want to delete revisions
 				fireEvent(ureq, FolderCommand.FOLDERCOMMAND_FINISHED);
 			} else {
-				if (existingVFSItem instanceof Versionable && ((Versionable)existingVFSItem).getVersions().isVersioned()) {
-	
+				if (existingVFSItem.canVersion() == VFSConstants.YES) {
+
 					revisionListDialogBox.deactivate();
 	
-					Versionable versionable = (Versionable)existingVFSItem;
-					Versions versions = versionable.getVersions();
-					int maxNumOfRevisions = FolderConfig.versionsAllowed(null);
-					if(maxNumOfRevisions < 0 || maxNumOfRevisions > versions.getRevisions().size()) {
+					int maxNumOfRevisions = versionsModule.getMaxNumberOfVersions();
+					VFSMetadata metadata = vfsRepositoryService.getMetadataFor(existingVFSItem);
+					List<VFSRevision> revisions = vfsRepositoryService.getRevisions(metadata);
+					if(maxNumOfRevisions < 0 || maxNumOfRevisions > revisions.size()) {
 						
 						removeAsListenerAndDispose(commentVersionCtr);
 						boolean locked = vfsLockManager.isLocked(existingVFSItem, VFSLockApplicationType.vfs);
@@ -271,7 +278,7 @@ public class FileCopyController extends LinkChooserController {
 					} else {
 						
 						removeAsListenerAndDispose(revisionListCtr);
-						revisionListCtr = new RevisionListController(ureq,getWindowControl(),versionable, false);
+						revisionListCtr = new RevisionListController(ureq,getWindowControl(), existingVFSItem, false);
 						listenTo(revisionListCtr);
 						
 						removeAsListenerAndDispose(revisionListDialogBox);
@@ -308,11 +315,11 @@ public class FileCopyController extends LinkChooserController {
 					asList(translate("ul.overwrite.threeoptions.rename", renamedFilename), translate("ul.overwrite.threeoptions.cancel")));
 			listenTo(lockedFileDialog);
 			lockedFileDialog.activate();
-		} else if (existingVFSItem instanceof Versionable && ((Versionable)existingVFSItem).getVersions().isVersioned()) {
-			Versionable versionable = (Versionable)existingVFSItem;
-			Versions versions = versionable.getVersions();
-			String relPath = existingVFSItem.getRelPath();
-			int maxNumOfRevisions = FolderConfig.versionsAllowed(relPath);
+		} else if (existingVFSItem.canVersion() == VFSConstants.YES) {
+
+			int maxNumOfRevisions = versionsModule.getMaxNumberOfVersions();
+			VFSMetadata metadata = vfsRepositoryService.getMetadataFor(existingVFSItem);
+			List<VFSRevision> revisions = vfsRepositoryService.getRevisions(metadata);
 			if(maxNumOfRevisions == 0) {
 				//it's possible if someone change the configuration
 				// let calling method decide what to do.
@@ -325,7 +332,7 @@ public class FileCopyController extends LinkChooserController {
 				
 				overwriteDialog.activate();
 				
-			} else if(versions.getRevisions().isEmpty() || maxNumOfRevisions < 0 || maxNumOfRevisions > versions.getRevisions().size()) {
+			} else if(revisions.isEmpty() || maxNumOfRevisions < 0 || maxNumOfRevisions > revisions.size()) {
 				// let calling method decide what to do.
 				removeAsListenerAndDispose(overwriteDialog);
 				overwriteDialog = DialogBoxUIFactory.createGenericDialog(ureq, getWindowControl(), translate("ul.overwrite.threeoptions.title"),
@@ -338,11 +345,11 @@ public class FileCopyController extends LinkChooserController {
 				
 			} else {
 			
-				String title = translate("ul.tooManyRevisions.title", new String[]{Integer.toString(maxNumOfRevisions), Integer.toString(versions.getRevisions().size())});
-				String description = translate("ul.tooManyRevisions.description", new String[]{Integer.toString(maxNumOfRevisions), Integer.toString(versions.getRevisions().size())});
+				String title = translate("ul.tooManyRevisions.title", new String[]{Integer.toString(maxNumOfRevisions), Integer.toString(revisions.size())});
+				String description = translate("ul.tooManyRevisions.description", new String[]{Integer.toString(maxNumOfRevisions), Integer.toString(revisions.size())});
 				
 				removeAsListenerAndDispose(revisionListCtr);
-				revisionListCtr = new RevisionListController(ureq, getWindowControl(), versionable, null, description, false);
+				revisionListCtr = new RevisionListController(ureq, getWindowControl(), existingVFSItem, null, description, false);
 				listenTo(revisionListCtr);
 				
 				removeAsListenerAndDispose(revisionListDialogBox);
