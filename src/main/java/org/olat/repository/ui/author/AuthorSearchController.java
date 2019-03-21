@@ -301,13 +301,13 @@ public class AuthorSearchController extends FormBasicController implements Exten
 		author.clearError();
 		if (displayName.isEmpty() && author.isEmpty() && description.isEmpty() && (id != null && id.isEmpty()))	{
 			showWarning("cif.error.allempty");
-			return false;
+			//return false;
 		}
 		
 		int maxSize = dbInstance.isMySQL() ? 5 : 3;
 		if(StringHelper.containsNonWhitespace(author.getValue()) && author.getValue().length() < maxSize) {
 			author.setErrorKey("form.error.tooshort", new String[] { Integer.toString(maxSize) });
-			return false;
+			//return false;
 		}
 		
 		return true;
@@ -327,7 +327,7 @@ public class AuthorSearchController extends FormBasicController implements Exten
 	
 	@Override
 	protected void formInnerEvent (UserRequest ureq, FormItem source, FormEvent event) {
-		if(enabled && source == searchButton && validateFormLogic(ureq)) {
+		if(enabled && source == searchButton) {
 			fireSearchEvent(ureq);
 		}
 	}
