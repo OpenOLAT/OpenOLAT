@@ -487,10 +487,10 @@
 		#if($r.isNotNull($itemResult.interactionResults))
 			#if($r.isNotNull($itemResult.interactionResults.responseFormItem.name))
 				<h4>$r.translate("response")</h4>
-				<div>$r.render($itemResult.interactionResults.responseFormItem.name)</div>
+				<div id="o_c$itemResult.interactionResults.responseFormItem.component.dispatchID">$r.render($itemResult.interactionResults.responseFormItem.name)</div>
 			#end
 			#if($r.isNotNull($itemResult.interactionResults.solutionFormItem.name))
-				<div class="o_qti21_solution">
+				<div id="o_c$itemResult.interactionResults.solutionFormItem.component.dispatchID" class="o_qti21_solution">
 					<h4 onclick="jQuery('#collapse_${itemResult.interactionResults.solutionFormItem.name}').collapse('toggle')">
 						#if($toggleSolution)<i id="collapse_${itemResult.interactionResults.solutionFormItem.name}_toggler" class="o_icon o_icon-fw o_icon_open_togglebox"> </i>#end $r.translate("solution")</h4>
 					<div id="collapse_${itemResult.interactionResults.solutionFormItem.name}" class="#if($toggleSolution) collapse #end">$r.render($itemResult.interactionResults.solutionFormItem.name)</div>
@@ -563,5 +563,3 @@
 </script>
 #end
 </div> ## END of o_assessment_test_results
-$r.mathJax("o_assessment_test_results_${r.getCId()}")
-
