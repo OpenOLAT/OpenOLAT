@@ -530,7 +530,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		if (isAdministrator) {
 			appendNode("menu.authorgroup", "menu.authorgroup.alt", "authorgroup", "o_sel_useradmin_authorgroup", accessNode);
 			appendNode("menu.coauthors", "menu.coauthors.alt", "coauthors", "o_sel_useradmin_coauthors", accessNode);
-			appendNode("menu.resourceowners", "menu.resourceowners.alt", "resourceowners", "o_sel_useradmin_resourceowners", accessNode);
+			// too slow appendNode("menu.resourceowners", "menu.resourceowners.alt", "resourceowners", "o_sel_useradmin_resourceowners", accessNode);
 		}
 		
 		appendNode("menu.coursecoach", "menu.coursecoach.alt", "coursecoach", "o_sel_useradmin_coursecoach", accessNode);
