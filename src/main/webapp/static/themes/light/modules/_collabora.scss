@@ -7,3 +7,15 @@
 		border-width: 1px;
 	}
 }
+
+.o_web_content {
+	.o_collabora {
+		iframe {
+			width: 100%;
+			height: calc(100vh - 340px);
+			margin-top: 10px;
+			margin-bottom: 20px;
+			border-width: 1px;
+		}
+	}
+}

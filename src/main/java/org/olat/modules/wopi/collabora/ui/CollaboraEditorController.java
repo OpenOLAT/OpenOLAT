@@ -56,6 +56,7 @@ public class CollaboraEditorController extends BasicController {
 		
 		mainVC.contextPut("id", "o_" + CodeHelper.getRAMUniqueID());
 		mainVC.contextPut("url", url);
+		
 		putInitialPanel(mainVC);
 	}
 	

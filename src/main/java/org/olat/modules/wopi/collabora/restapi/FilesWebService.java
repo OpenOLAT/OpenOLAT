@@ -102,9 +102,10 @@ public class FilesWebService {
 		}
 		
 		VFSMetadata metadata = collaboraService.getMetadata(fileId);
+		String ownerId = metadata.getAuthor() != null? metadata.getAuthor().getKey().toString(): null;
 		CheckFileInfoVO checkFileInfoVO = CheckFileInfoVO.builder()
 				.withBaseFileName(metadata.getFilename()) // suffix is mandatory
-				.withOwnerId(metadata.getAuthor().getKey().toString())
+				.withOwnerId(ownerId)
 				.withSize(metadata.getFileSize())
 				.withUserId(access.getIdentity().getKey().toString())
 				.withUserFriendlyName(userManager.getUserDisplayName(access.getIdentity()))

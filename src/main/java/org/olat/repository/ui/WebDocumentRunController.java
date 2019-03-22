@@ -19,14 +19,19 @@
  */
 package org.olat.repository.ui;
 
+import java.util.List;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.olat.core.commons.services.image.Size;
+import org.olat.core.commons.services.vfs.VFSLeafEditor;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.commons.services.video.MovieService;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -55,6 +60,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class WebDocumentRunController extends BasicController {
 
+	@Autowired
+	private VFSRepositoryService vfsService;
 	@Autowired
 	private MovieService movieService;
 
@@ -89,6 +96,16 @@ public class WebDocumentRunController extends BasicController {
 				} else {
 					mainVC.contextPut("height", 480);
 					mainVC.contextPut("width", 640);
+				}
+			} else if (vfsService.hasEditor(extension)) {
+				List<VFSLeafEditor> editors = vfsService.getEditors(document);
+				if (editors.size() >= 1) {
+					VFSLeafEditor editor = editors.get(0);
+					// FolderComponent should be initialized to be safe. As of today the internal
+					// editor does not support these file types.
+					Controller editCtrl = editor.getRunController(ureq, wControl, document, null, getIdentity());
+					listenTo(editCtrl);
+					mainVC.put("content", editCtrl.getInitialComponent());
 				}
 			} else {
 				IFrameDisplayController idc = new IFrameDisplayController(ureq, getWindowControl(), document.getParentContainer(), null, null);
