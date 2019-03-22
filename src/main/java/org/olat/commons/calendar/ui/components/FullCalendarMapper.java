@@ -22,6 +22,7 @@ package org.olat.commons.calendar.ui.components;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -147,7 +148,8 @@ public class FullCalendarMapper implements Mapper {
 		} else {
 			jsonEvent.put("title", event.getSubject());
 		}
-		jsonEvent.put("allDay", Boolean.valueOf(event.isAllDayEvent()));
+		boolean allDay = event.isAllDayEvent();
+		jsonEvent.put("allDay", Boolean.valueOf(allDay));
 		
 		if(fcC.isDifferentiateManagedEvents()) {
 			applyManagedClassNames(jsonEvent, event, cal);
@@ -158,11 +160,21 @@ public class FullCalendarMapper implements Mapper {
 		jsonEvent.put("editable", Boolean.valueOf(cal.getAccess() == KalendarRenderWrapper.ACCESS_READ_WRITE));
 		
 		if(event.getBegin() != null) {
-			String start = formatDateTime(event.getBegin());
-			jsonEvent.put("start", start);
+			if(allDay) {
+				jsonEvent.put("start", formatDate(event.getBegin()));
+			} else {
+				jsonEvent.put("start", formatDateTime(event.getBegin()));
+			}
 		}
 		if(event.getEnd() != null) {
-			jsonEvent.put("end", formatDateTime(event.getEnd()));
+			if(allDay) {
+				Calendar calEnd = Calendar.getInstance();
+				calEnd.setTime(event.getEnd());
+				calEnd.add(Calendar.DATE, 1);
+				jsonEvent.put("end", formatDate(calEnd.getTime()));
+			} else {
+				jsonEvent.put("end", formatDateTime(event.getEnd()));
+			}
 		}
 		if(event.getLocation() != null) {
 			jsonEvent.put("location", event.getLocation());
@@ -221,6 +233,12 @@ public class FullCalendarMapper implements Mapper {
 	private String formatDateTime(Date date) {
 		synchronized(formatDateTime) {
 			return formatDateTime.format(date);
+		}
+	}
+	
+	private String formatDate(Date date) {
+		synchronized(formatDate) {
+			return formatDate.format(date);
 		}
 	}
 	
