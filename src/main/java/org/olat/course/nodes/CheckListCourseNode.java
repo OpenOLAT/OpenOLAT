@@ -329,7 +329,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 
 	@Override
 	public boolean hasCommentConfigured() {
-		return true;
+		return getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD, false);
 	}
 	
 	@Override

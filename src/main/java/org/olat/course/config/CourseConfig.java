@@ -602,6 +602,7 @@ public class CourseConfig implements Serializable, Cloneable {
 		clone.setCssLayoutRef((String) configuration.get(KEY_CSS_FILEREF));
 		clone.setEfficencyStatementIsEnabled(isEfficencyStatementEnabled());
 		clone.setGlossarySoftKey(getGlossarySoftKey());
+		clone.setGlossaryIsEnabled(isGlossaryEnabled());
 		clone.setSharedFolderSoftkey(getSharedFolderSoftkey());
 		clone.setSharedFolderReadOnlyMount(isSharedFolderReadOnlyMount());
 		clone.setAutomaticCertificationEnabled(isAutomaticCertificationEnabled());
