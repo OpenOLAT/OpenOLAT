@@ -84,6 +84,8 @@ public class VFSRevisionDAO {
 	}
 	
 	public List<VFSRevision> getRevisions(VFSMetadataRef metadata) {
+		if(metadata == null) return new ArrayList<>();
+		
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select rev from vfsrevision rev")
 		  .append(" left join fetch rev.author as author")

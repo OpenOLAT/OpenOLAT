@@ -225,7 +225,7 @@ public class MetaInfoReader {
 			} else if ("thumbnails".equals(qName)) {
 				String valueStr = attributes.getValue("cannotGenerateThumbnail");
 				if(StringHelper.containsNonWhitespace(valueStr)) {
-					meta.setCannotGenerateThumbnails(Boolean.valueOf(valueStr).booleanValue());
+					meta.setCannotGenerateThumbnails(Boolean.parseBoolean(valueStr));
 				}
 			}else if ("thumbnail".equals(qName)) {
 				Thumbnail thumbnail = new Thumbnail();
@@ -252,7 +252,7 @@ public class MetaInfoReader {
 			if(current == null) return;
 			
 			if("comment".equals(qName)) {
-				meta.setComment(current.toString());
+				meta.setComment(cutLenght(current.toString(), 32000));
 			} else if ("author".equals(qName)) {
 				Long authorKey = getLong();
 				if(authorKey != null) {
@@ -264,30 +264,30 @@ public class MetaInfoReader {
 					meta.setLockedBy(securityManager.loadIdentityByKey(lockedByKey));
 				}
 			} else if ("title".equals(qName)) {
-				meta.setTitle(current.toString());
+				meta.setTitle(cutLenght(current.toString(), 2000));
 			} else if ("publisher".equals(qName)) {
-				meta.setPublisher(current.toString());
+				meta.setPublisher(cutLenght(current.toString(), 2000));
 			} else if ("source".equals(qName)) {
-				meta.setSource(current.toString());
+				meta.setSource(cutLenght(current.toString(), 2000));
 			} else if ("city".equals(qName)) {
-				meta.setCity(current.toString());
+				meta.setCity(cutLenght(current.toString(), 256));
 			} else if ("pages".equals(qName)) {
-				meta.setPages(current.toString());
+				meta.setPages(cutLenght(current.toString(), 2000));
 			} else if ("language".equals(qName)) {
-				meta.setLanguage(current.toString());
+				meta.setLanguage(cutLenght(current.toString(), 16));
 			} else if ("downloadCount".equals(qName)) {
 				Long key = getLong();
 				if(key != null) {
 					meta.setDownloadCount(key.intValue());
 				}
 			} else if ("month".equals(qName)) {
-				meta.setPubMonth(current.toString());
+				meta.setPubMonth(cutLenght(current.toString(), 16));
 			} else if ("year".equals(qName)) {
-				meta.setPubYear(current.toString());
+				meta.setPubYear(cutLenght(current.toString(), 16));
 			} else if (qName.equals("creator")) {
-				meta.setCreator(current.toString());
+				meta.setCreator(cutLenght(current.toString(), 2000));
 			} else if (qName.equals("url")) {
-				meta.setUrl(current.toString());
+				meta.setUrl(cutLenght(current.toString(), 1000));
 			} else if (qName.equals("licenseTypeKey")) {
 				//
 			} else if (qName.equals("licenseTypeName")) {
@@ -299,7 +299,7 @@ public class MetaInfoReader {
 			} else if (qName.equals("licenseText")) {
 				meta.setLicenseText(current.toString());
 			} else if (qName.equals("licensor")) {
-				meta.setLicensor(current.toString());
+				meta.setLicensor(cutLenght(current.toString(), 4000));
 			} else if (qName.equals("thumbnail")) {
 				if(fMeta != null) {
 					String finalName = current.toString();
@@ -320,6 +320,13 @@ public class MetaInfoReader {
 				//nothing to say
 			}
 			return null;
+		}
+		
+		private String cutLenght(String text, int maxLength) {
+			if(text == null || text.length() < maxLength) {
+				return text;
+			}
+			return text.substring(0, maxLength - 2);
 		}
 	}
 	

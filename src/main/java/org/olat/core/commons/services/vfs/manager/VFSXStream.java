@@ -139,12 +139,14 @@ public class VFSXStream {
 		@Override
 		public Object fromString(String str) {
 			Identity identity = null;
-			if(StringHelper.isLong(str)) {
-				Long identityKey = Long.valueOf(str);
-				identity = CoreSpringFactory.getImpl(BaseSecurity.class).loadIdentityByKey(identityKey);
-			}
-			if(identity == null) {
-				identity = CoreSpringFactory.getImpl(BaseSecurity.class).findIdentityByName(str);
+			if(StringHelper.containsNonWhitespace(str) && !"-".equals(str)) {
+				if(StringHelper.isLong(str)) {
+					Long identityKey = Long.valueOf(str);
+					identity = CoreSpringFactory.getImpl(BaseSecurity.class).loadIdentityByKey(identityKey);
+				}
+				if(identity == null && !"-".equals(str)) {
+					identity = CoreSpringFactory.getImpl(BaseSecurity.class).findIdentityByName(str);
+				}
 			}
 			return identity;
 		}	

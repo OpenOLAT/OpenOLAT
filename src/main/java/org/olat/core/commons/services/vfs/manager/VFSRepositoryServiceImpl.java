@@ -1138,7 +1138,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	
 	private VFSMetadata migrateVersions(File file, File versionFile, VFSMetadata metadata) {
 		VersionsFileImpl versions = (VersionsFileImpl)VFSXStream.read(versionFile);
-		List<VFSRevision> revisions = versions.getRevisions();
+		List<RevisionFileImpl> revisions = versions.getRevisions();
 		if(revisions == null || revisions.isEmpty()) {
 			return metadata;
 		}
@@ -1147,15 +1147,14 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		metadata.setRevisionNr(versions.getRevisionNr());
 		metadata = metadataDao.updateMetadata(metadata);
 		
-		for(VFSRevision revision:revisions) {
-			RevisionFileImpl revisionFile = (RevisionFileImpl)revision;
-			String filename = revisionFile.getFilename();
+		for(RevisionFileImpl revision:revisions) {
+			String filename = revision.getFilename();
 			File oldOne = new File(versionFile.getParentFile(), filename);
 			if(oldOne.exists()) {
 				try {
-					String newRevisionFilename = generateFilenameForRevision(file, revisionFile.getRevisionNr());
-					revisionDao.createRevision(revisionFile.getAuthor(), newRevisionFilename, revisionFile.getRevisionNr(),
-							oldOne.length(), revisionFile.getFileLastModified(), revisionFile.getComment(), metadata);
+					String newRevisionFilename = generateFilenameForRevision(file, revision.getRevisionNr());
+					revisionDao.createRevision(revision.getAuthor(), newRevisionFilename, revision.getRevisionNr(),
+							oldOne.length(), revision.getFileLastModified(), revision.getComment(), metadata);
 					File target = new File(file.getParentFile(), newRevisionFilename);
 					Files.move(oldOne.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
 				} catch (IOException e) {

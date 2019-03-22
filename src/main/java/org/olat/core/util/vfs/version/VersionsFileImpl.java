@@ -22,7 +22,6 @@ package org.olat.core.util.vfs.version;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.core.commons.services.vfs.VFSRevision;
 import org.olat.core.util.vfs.VFSLeaf;
 
 /**
@@ -46,7 +45,7 @@ public class VersionsFileImpl {
 	private String comment;
 	private Object currentVersion;
 	private VFSLeaf versionFile;
-	private List<VFSRevision> revisions;
+	private List<RevisionFileImpl> revisions;
 
 	public VersionsFileImpl() {
 	//
@@ -76,14 +75,14 @@ public class VersionsFileImpl {
 		this.currentVersion = currentVersion;
 	}
 
-	public List<VFSRevision> getRevisions() {
+	public List<RevisionFileImpl> getRevisions() {
 		if (revisions == null) {
 			revisions = new ArrayList<>();
 		}
 		return revisions;
 	}
 
-	public void setRevisions(List<VFSRevision> revisions) {
+	public void setRevisions(List<RevisionFileImpl> revisions) {
 		this.revisions = revisions;
 	}
 

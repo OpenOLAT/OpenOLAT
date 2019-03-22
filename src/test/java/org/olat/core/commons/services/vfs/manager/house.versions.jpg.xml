@@ -61,5 +61,27 @@
         <thumbnails/>
       </metadata>
     </revision>
+    <revision>
+      <author>-</author>
+      <comment>A new pink one</comment>
+      <name>house.jpg</name>
+      <uuid>acba63ce-de13-4759-bf85-a26f1833edd2</uuid>
+      <lastModified>1552487917000</lastModified>
+      <revisionNr>3</revisionNr>
+      <filename>c4087cf5-0ed6-4ed8-a97c-1317c963a0a8_house.jpg</filename>
+      <metadata class="metadata">
+        <uuid>e3d63dc8595942b2801d0af9c1f61dd3</uuid>
+        <authorIdentKey>720898</authorIdentKey>
+        <comment></comment>
+        <licenseTypeKey>1</licenseTypeKey>
+        <licenseTypeName>no.license</licenseTypeName>
+        <downloadCount>2</downloadCount>
+        <locked>false</locked>
+        <originFile>/HotCoffee/olatdatas/openolat_110_postgresql/bcroot/homes/kanu/public/house.jpg</originFile>
+        <metaFile>/HotCoffee/olatdatas/openolat_110_postgresql/bcroot/.meta/homes/kanu/public/house.jpg.xml</metaFile>
+        <cannotGenerateThumbnail>false</cannotGenerateThumbnail>
+        <thumbnails/>
+      </metadata>
+    </revision>
   </revisions>
 </versions>
