@@ -498,8 +498,7 @@ public class UserAdminController extends BasicController implements Activateable
 
 	private boolean isPasswordChangesAllowed(Identity identity) {
 		if (managerRoles.isManagerOf(OrganisationRoles.administrator, editedRoles)
-				|| managerRoles.isManagerOf(OrganisationRoles.rolesmanager, editedRoles)
-				|| managerRoles.isManagerOf(OrganisationRoles.usermanager, editedRoles)) {
+				|| managerRoles.isManagerOf(OrganisationRoles.rolesmanager, editedRoles)) {
 			// show pwd form only if user has also right to create new passwords in case
 			// of a user that has no password yet
 			if(ldapLoginModule.isLDAPEnabled() && ldapLoginManager.isIdentityInLDAPSecGroup(identity)) {
