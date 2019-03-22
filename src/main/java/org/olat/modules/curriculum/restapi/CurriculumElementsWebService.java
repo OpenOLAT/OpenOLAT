@@ -91,7 +91,7 @@ public class CurriculumElementsWebService {
 	@Autowired
 	private CurriculumElementToTaxonomyLevelDAO curriculumElementToTaxonomyLevelDao;
 	
-	private final Curriculum curriculum;
+	private Curriculum curriculum;
 	
 	public CurriculumElementsWebService(Curriculum curriculum) {
 		this.curriculum = curriculum;
@@ -244,6 +244,7 @@ public class CurriculumElementsWebService {
 		}
 		
 		boolean move = false;
+		boolean moveAsCurriculumRoot = false;
 		if(curriculumElement.getKey() == null) {
 			elementToSave = curriculumService.createCurriculumElement(curriculumElement.getIdentifier(), curriculumElement.getDisplayName(),
 					null, curriculumElement.getBeginDate(), curriculumElement.getEndDate(), parentElement, type,
@@ -258,6 +259,10 @@ public class CurriculumElementsWebService {
 			if(parentElement != null && elementToSave.getParent() != null
 					&& !elementToSave.getParent().getKey().equals(parentElement.getKey())) {
 				move = true;
+			} else if(parentElement == null && elementToSave.getParent() == null
+					&& (elementToSave.getCurriculum() != null && !elementToSave.getCurriculum().getKey().equals(curriculum.getKey()))) {
+				// this is a root curriculum element and it get a new curriculum as home
+				moveAsCurriculumRoot = true;
 			}
 		}
 		
@@ -277,6 +282,11 @@ public class CurriculumElementsWebService {
 			curriculumService.moveCurriculumElement(savedElement, parentElement, null);
 			dbInstance.commit();
 			savedElement = curriculumService.getCurriculumElement(savedElement);
+		} else if(moveAsCurriculumRoot) {
+			dbInstance.commit();// make sure all is flushed on the database before such a move
+			curriculum = curriculumService.getCurriculum(curriculum);
+			System.out.println(curriculum.getDisplayName());
+			savedElement = curriculumService.moveCurriculumElement(savedElement, curriculum);
 		}
 		return savedElement;
 	}

@@ -603,7 +603,108 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 		Assert.assertEquals(element1_1_3, rootElements.get(1));
 	}
 	
+	@Test
+	public void moveRootCurriculumElement_curriculumToCurriculum() {
+		Curriculum curriculum = curriculumDao.createAndPersist("cur-start-", "Curriculum to start", "Curriculum", null);
+		Curriculum targetCurriculum = curriculumDao.createAndPersist("cur-new-home-", "Curriculum as new home", "Curriculum", null);
+
+		CurriculumElement element1 = curriculumElementDao.createCurriculumElement("Element-1", "1. Element", CurriculumElementStatus.active,
+				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element1_1 = curriculumElementDao.createCurriculumElement("Element-1-1", "1.1. Element", CurriculumElementStatus.active,
+				null, null, element1, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element1_2 = curriculumElementDao.createCurriculumElement("Element-1-2", "1.2. Element", CurriculumElementStatus.active,
+				null, null, element1, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element1_2_1 = curriculumElementDao.createCurriculumElement("Element-1-2-1", "1.2.1. Element", CurriculumElementStatus.active,
+				null, null, element1_2, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element1_2_2 = curriculumElementDao.createCurriculumElement("Element-1-2-2", "1.2.2 Element", CurriculumElementStatus.active,
+				null, null, element1_2, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		dbInstance.commitAndCloseSession();
+		
+		// move element1 under its new curriculum
+		curriculumElementDao.move(element1, targetCurriculum);
+		dbInstance.commitAndCloseSession();
+		
+		// check the source curriculum
+		CurriculumImpl reloadedCurriculum = (CurriculumImpl)curriculumDao.loadByKey(curriculum.getKey());
+		List<CurriculumElement> rootElements = reloadedCurriculum.getRootElements();
+		Assert.assertTrue(rootElements.isEmpty());
+		
+		// check the target curriculum
+		CurriculumImpl reloadedTargetCurriculum = (CurriculumImpl)curriculumDao.loadByKey(targetCurriculum.getKey());
+		List<CurriculumElement> targetRootElements = reloadedTargetCurriculum.getRootElements();
+		Assert.assertEquals(1, targetRootElements.size());
+		Assert.assertTrue(targetRootElements.contains(element1));
+		
+		List<CurriculumElement> movedElements = curriculumElementDao.loadElements(reloadedTargetCurriculum, CurriculumElementStatus.values());
+		Assert.assertTrue(movedElements.contains(element1));
+		Assert.assertTrue(movedElements.contains(element1_1));
+		Assert.assertTrue(movedElements.contains(element1_2));
+		Assert.assertTrue(movedElements.contains(element1_2_1));
+		Assert.assertTrue(movedElements.contains(element1_2_2));
+	}
 	
+	@Test
+	public void moveRootCurriculumElement_curriculumToCurriculum_v2() {
+		Curriculum curriculum = curriculumDao.createAndPersist("cur-start-", "Curriculum to start", "Curriculum", null);
+		Curriculum targetCurriculum = curriculumDao.createAndPersist("cur-new-home-", "Curriculum as new home", "Curriculum", null);
+
+		CurriculumElement element1 = curriculumElementDao.createCurriculumElement("Element-1", "1. Element", CurriculumElementStatus.active,
+				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element1_1 = curriculumElementDao.createCurriculumElement("Element-1-1", "1.1. Element", CurriculumElementStatus.active,
+				null, null, element1, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element1_2 = curriculumElementDao.createCurriculumElement("Element-1-2", "1.2. Element", CurriculumElementStatus.active,
+				null, null, element1, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element1_2_1 = curriculumElementDao.createCurriculumElement("Element-1-2-1", "1.2.1. Element", CurriculumElementStatus.active,
+				null, null, element1_2, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement element1_2_2 = curriculumElementDao.createCurriculumElement("Element-1-2-2", "1.2.2 Element", CurriculumElementStatus.active,
+				null, null, element1_2, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		
+		CurriculumElement stayingElement1 = curriculumElementDao.createCurriculumElement("T-Element-1", "1. Element", CurriculumElementStatus.active,
+				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		CurriculumElement stayingElement1_1 = curriculumElementDao.createCurriculumElement("T-Element-1-1", "1.1. Element", CurriculumElementStatus.active,
+				null, null, stayingElement1, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		
+		CurriculumElement targetElement1 = curriculumElementDao.createCurriculumElement("T-Element-1", "1. Element", CurriculumElementStatus.active,
+				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, targetCurriculum);
+		CurriculumElement targetElement1_1 = curriculumElementDao.createCurriculumElement("T-Element-1-1", "1.1. Element", CurriculumElementStatus.active,
+				null, null, targetElement1, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, targetCurriculum);
+		dbInstance.commitAndCloseSession();
+		
+		// move element1 under its new curriculum
+		curriculumElementDao.move(element1, targetCurriculum);
+		dbInstance.commitAndCloseSession();
+		
+		// check the source curriculum
+		CurriculumImpl reloadedCurriculum = (CurriculumImpl)curriculumDao.loadByKey(curriculum.getKey());
+		List<CurriculumElement> rootElements = reloadedCurriculum.getRootElements();
+		Assert.assertEquals(1, rootElements.size());
+		Assert.assertTrue(rootElements.contains(stayingElement1));
+		
+		// check the target curriculum
+		CurriculumImpl reloadedTargetCurriculum = (CurriculumImpl)curriculumDao.loadByKey(targetCurriculum.getKey());
+		List<CurriculumElement> targetRootElements = reloadedTargetCurriculum.getRootElements();
+		Assert.assertEquals(2, targetRootElements.size());
+		Assert.assertTrue(targetRootElements.contains(targetElement1));
+		Assert.assertTrue(targetRootElements.contains(element1));
+		
+		List<CurriculumElement> targetElements = curriculumElementDao.loadElements(reloadedTargetCurriculum, CurriculumElementStatus.values());
+		Assert.assertEquals(7, targetElements.size());
+		// current ones
+		Assert.assertTrue(targetElements.contains(targetElement1));
+		Assert.assertTrue(targetElements.contains(targetElement1_1));
+		// moved ones
+		Assert.assertTrue(targetElements.contains(element1));
+		Assert.assertTrue(targetElements.contains(element1_1));
+		Assert.assertTrue(targetElements.contains(element1_2));
+		Assert.assertTrue(targetElements.contains(element1_2_1));
+		Assert.assertTrue(targetElements.contains(element1_2_2));
+		
+		List<CurriculumElement> stayingElements = curriculumElementDao.loadElements(curriculum, CurriculumElementStatus.values());
+		Assert.assertEquals(2, stayingElements.size());
+		// current ones
+		Assert.assertTrue(stayingElements.contains(stayingElement1));
+		Assert.assertTrue(stayingElements.contains(stayingElement1_1));
+	}
 	
 	@Test
 	public void getMembersIdentity() {

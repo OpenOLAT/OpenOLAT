@@ -383,6 +383,13 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 
 	@Override
+	public CurriculumElement moveCurriculumElement(CurriculumElement rootElement, Curriculum curriculum) {
+		CurriculumElement element = curriculumElementDao.move(rootElement, curriculum);
+		dbInstance.commit();
+		return element;
+	}
+
+	@Override
 	public List<CurriculumElement> getCurriculumElements(CurriculumRef curriculum, CurriculumElementStatus[] status) {
 		return curriculumElementDao.loadElements(curriculum, status);
 	}
