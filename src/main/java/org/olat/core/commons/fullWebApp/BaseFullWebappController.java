@@ -974,6 +974,10 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 	
 	@Override
 	public boolean wishReload(UserRequest ureq, boolean erase) {
+		if(Window.NO_RESPONSE_VALUE_MARKER.equals(ureq.getParameter(Window.NO_RESPONSE_PARAMETER_MARKER))) {
+			return false;// background request cannot change screen size, need to wait async
+		}
+
 		boolean screen = getScreenMode().wishScreenModeSwitch(erase);
 		if(screen && StringHelper.containsNonWhitespace(getScreenMode().getBusinessPath())) {
 			String businessPath;
