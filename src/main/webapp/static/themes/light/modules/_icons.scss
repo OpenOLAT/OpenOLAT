@@ -90,6 +90,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_compulsory:before { content: $fa-var-asterisk; }
 .o_icon_content_popup:before { content: $fa-var-external-link; }
 .o_icon_correct_answer:before { content: $fa-var-check; color: $brand-success; }
+.o_icon_correct_response:before { content: $fa-var-check-circle-o; color: $brand-success; }
 .o_icon_correction:before { content: $fa-var-pencil;}
 .o_icon_customize:before { content: $fa-var-gear;}
 .o_icon_delete_item:before { content: $fa-var-trash;}
@@ -129,6 +130,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_impress:before { content: $fa-var-info-circle; }
 .o_icon_important:before { content: $fa-var-exclamation-triangle; color: $brand-warning;}
 .o_icon_import:before { content: $fa-var-upload; }
+.o_icon_incorrect_response:before { content: $fa-var-times-circle-o; color: $brand-danger; }
 .o_icon_info:before { content: $fa-var-info-circle; color: $brand-info}
 .o_icon_info_msg:before { content: $fa-var-exclamation-circle; color: $brand-danger}
 .o_icon_info_resource:before { content: $fa-var-info-circle;}

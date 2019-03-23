@@ -177,16 +177,14 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 		AssessmentTestSession testSession = correction.getTestSession();
 		TestSessionState testSessionState = correction.getTestSessionState();
 		
-		
-		
-		answerItem = initFormExtendedTextInteraction(testPlanNodeKey, testSessionState, testSession, formLayout);	
+		answerItem = initFormInteraction(testPlanNodeKey, testSessionState, testSession, formLayout, true);	
 		formLayout.add("answer", answerItem);
 		
 		viewSolutionButton = uifactory.addFormLink("view.solution", formLayout);
 		viewSolutionButton.setIconLeftCSS("o_icon o_icon_open_togglebox");
 		viewSolutionButton.setVisible(hasSolution());
 		
-		solutionItem = initFormExtendedTextInteraction(testPlanNodeKey, testSessionState, testSession, formLayout);	
+		solutionItem = initFormInteraction(testPlanNodeKey, testSessionState, testSession, formLayout, false);	
 		solutionItem.setVisible(false);
 		solutionItem.setShowSolution(true);
 		formLayout.add("solution", solutionItem);
@@ -347,8 +345,9 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 		return sb.toString();
 	}
 	
-	private ItemBodyResultFormItem initFormExtendedTextInteraction(TestPlanNodeKey testPlanNodeKey,
-			TestSessionState testSessionState, AssessmentTestSession assessmentTestSession, FormItemContainer layoutCont) {
+	private ItemBodyResultFormItem initFormInteraction(TestPlanNodeKey testPlanNodeKey,
+			TestSessionState testSessionState, AssessmentTestSession assessmentTestSession,
+			FormItemContainer layoutCont, boolean correctionHelp) {
 		
 		ItemSessionState sessionState = testSessionState.getItemSessionStates().get(testPlanNodeKey);
 
@@ -360,6 +359,7 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 		responseFormItem.setResourceLocator(inputResourceLocator);
 		responseFormItem.setAssessmentObjectUri(assessmentObjectUri);
 		responseFormItem.setMapperUri(mapperUri);
+		responseFormItem.setCorrectionHelp(correctionHelp);
 		layoutCont.add(responseFormItem);
 		return responseFormItem;
 	}
