@@ -1110,6 +1110,9 @@ public class AssessmentTestDisplayController extends BasicController implements 
     //        final String candidateComment)       
 	private void handleResponse(UserRequest ureq, Map<Identifier, ResponseInput> stringResponseMap,
 			Map<Identifier, ResponseInput> fileResponseMap, String candidateComment) {
+		if(checkConcurrentExit(ureq)) {
+			return;
+		}
 
 		NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
 		TestSessionState testSessionState = testSessionController.getTestSessionState();
@@ -1254,7 +1257,6 @@ public class AssessmentTestDisplayController extends BasicController implements 
         candidateSession = qtiService.updateAssessmentTestSession(candidateSession);
         
         addToHistory(ureq, this);
-        checkConcurrentExit(ureq);
 	}
 	
 	private void collectOutcomeVariablesForItemSession(ItemResult resultNode, AssessmentItemSession itemSession) {

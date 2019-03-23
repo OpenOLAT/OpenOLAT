@@ -39,6 +39,8 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.ims.qti21.AssessmentTestSession;
+import org.olat.ims.qti21.manager.CorrectResponsesUtil;
+import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.AbstractEntry;
 import org.olat.ims.qti21.ui.CandidateSessionContext;
 
 import uk.ac.ed.ph.jqtiplus.attribute.value.StringMultipleAttribute;
@@ -67,6 +69,7 @@ import uk.ac.ed.ph.jqtiplus.node.item.interaction.OrderInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.Prompt;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.SliderInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.StringInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.TextEntryInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.Choice;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.GapChoice;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.GapImg;
@@ -587,16 +590,30 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 	public String getResponseValueAsBase64(Identifier identifier) {
 		AssessmentTestSession assessmentTestSession = avc.getCandidateSessionContext().getCandidateSession();
 		return AssessmentRenderFunctions.getResponseValueAsBase64(assessmentItem, assessmentTestSession, itemSessionState, identifier, isSolutionMode());
-		
 	}
 	
 	public ResponseDeclaration getResponseDeclaration(Identifier identifier) {
 		return AssessmentRenderFunctions.getResponseDeclaration(assessmentItem, identifier);
 	}
 	
+	public Boolean isCorrectTextEntry(TextEntryInteraction textEntry) {
+		if(textEntry == null) return null;
+		
+		Value val = getResponseValue(textEntry.getResponseIdentifier());
+		if(val == null) {
+			val = NullValue.INSTANCE;
+		}
+		
+		String stringuifiedResponses = toString(val);
+		AbstractEntry correctAnswers = CorrectResponsesUtil.getCorrectTextResponses(assessmentItem, textEntry);
+		stringuifiedResponses = CorrectResponsesUtil.stripResponse(stringuifiedResponses);
+		boolean correct = correctAnswers.match(stringuifiedResponses);
+		return Boolean.valueOf(correct);
+	}
+	
 	public String renderClassAttr(BodyElement block) {
 		List<String> classAttr = block.getClassAttr();
-		if(classAttr != null && classAttr.size() > 0) {
+		if(classAttr != null && !classAttr.isEmpty()) {
 			for(String attr:classAttr) {
 				if(target.getLastChar() != ' ') target.append(" ");
 				target.append(attr);
