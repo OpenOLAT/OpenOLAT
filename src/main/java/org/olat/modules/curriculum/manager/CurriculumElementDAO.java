@@ -184,6 +184,34 @@ public class CurriculumElementDAO {
 		return dbInstance.getCurrentEntityManager().merge(element);
 	}
 	
+	public CurriculumElement move(CurriculumElement rootElementToMove, Curriculum newCurriculum) {
+		CurriculumElementImpl rootElement = (CurriculumElementImpl)rootElementToMove;
+		List<CurriculumElement> descendants = getDescendants(rootElement);// load the descendants with the old curriculum
+		descendants.remove(rootElementToMove);
+
+		CurriculumImpl oldCurriculum = loadCurriculumByKey(rootElement);
+		if(oldCurriculum == null) return rootElement;
+		oldCurriculum.getRootElements().remove(rootElement);
+		rootElement.setPosCurriculum(null);
+		rootElement.setCurriculumParent(null);
+		rootElement = dbInstance.getCurrentEntityManager().merge(rootElement);
+		dbInstance.getCurrentEntityManager().merge(oldCurriculum);
+
+		CurriculumImpl curriculum = loadCurriculumByKey(newCurriculum.getKey());
+		curriculum.getRootElements().add(rootElement);
+		rootElement.setCurriculum(curriculum);
+		rootElement.setPosCurriculum(Long.valueOf(curriculum.getRootElements().size()));
+		rootElement.setCurriculumParent(curriculum);
+		rootElement = dbInstance.getCurrentEntityManager().merge(rootElement);
+		curriculum = dbInstance.getCurrentEntityManager().merge(curriculum);
+		
+		for(CurriculumElement descendant:descendants) {
+			((CurriculumElementImpl)descendant).setCurriculum(curriculum);
+			dbInstance.getCurrentEntityManager().merge(descendant);
+		}
+		return rootElement;
+	}	
+	
 	public CurriculumElement move(CurriculumElement elementToMove, CurriculumElement newParentElement, CurriculumElement siblingBefore) {
 		CurriculumElement parentElement = elementToMove.getParent();
 		CurriculumElementImpl element = (CurriculumElementImpl)elementToMove;
@@ -191,14 +219,14 @@ public class CurriculumElementDAO {
 		if(parentElement == null && newParentElement == null) {
 			// reorder curriculum children
 			
-			CurriculumImpl curriculum = loadCurriculunByKey(element);
+			CurriculumImpl curriculum = loadCurriculumByKey(element);
 			List<CurriculumElement> rootElements = curriculum.getRootElements();
 			reorderList(element, rootElements, siblingBefore);
 			dbInstance.getCurrentEntityManager().merge(curriculum);
 		} else if(parentElement == null) {
 			// move from curriculum as root to a curriculum element
 			
-			CurriculumImpl curriculum = loadCurriculunByKey(element);
+			CurriculumImpl curriculum = loadCurriculumByKey(element);
 			List<CurriculumElement> rootElements = curriculum.getRootElements();
 			element.setCurriculumParent(null);
 			rootElements.remove(element);
@@ -218,7 +246,7 @@ public class CurriculumElementDAO {
 			element.setParent(null);
 			dbInstance.getCurrentEntityManager().merge(parentElement);	
 			
-			CurriculumImpl curriculum = loadCurriculunByKey(element);
+			CurriculumImpl curriculum = loadCurriculumByKey(element);
 			element.setCurriculumParent(curriculum);
 			List<CurriculumElement> rootElements = curriculum.getRootElements();
 			reorderList(element, rootElements, siblingBefore);
@@ -291,14 +319,18 @@ public class CurriculumElementDAO {
 		}
 	}
 	
-	private CurriculumImpl loadCurriculunByKey(CurriculumElement element) {
+	private CurriculumImpl loadCurriculumByKey(CurriculumElement element) {
+		return loadCurriculumByKey(element.getCurriculum().getKey());
+	}
+	
+	private CurriculumImpl loadCurriculumByKey(Long curriculumKey) {
 		StringBuilder sb = new StringBuilder(128);
 		sb.append("select cur from curriculum cur")
 		  .append(" where cur.key=:key");
 		
 		List<CurriculumImpl> curriculums = dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), CurriculumImpl.class)
-			.setParameter("key", element.getCurriculum().getKey())
+			.setParameter("key", curriculumKey)
 			.getResultList();
 		return curriculums == null || curriculums.isEmpty() ? null : curriculums.get(0);
 	}

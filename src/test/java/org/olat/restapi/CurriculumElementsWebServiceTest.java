@@ -57,8 +57,11 @@ import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumLectures;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.manager.CurriculumDAO;
+import org.olat.modules.curriculum.manager.CurriculumElementDAO;
 import org.olat.modules.curriculum.manager.CurriculumElementToTaxonomyLevelDAO;
 import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
+import org.olat.modules.curriculum.model.CurriculumImpl;
 import org.olat.modules.curriculum.model.CurriculumMember;
 import org.olat.modules.curriculum.model.SearchMemberParameters;
 import org.olat.modules.curriculum.restapi.CurriculumElementMemberVO;
@@ -92,9 +95,13 @@ public class CurriculumElementsWebServiceTest extends OlatJerseyTestCase {
 	@Autowired
 	private TaxonomyDAO taxonomyDao;
 	@Autowired
+	private CurriculumDAO curriculumDao;
+	@Autowired
 	private TaxonomyLevelDAO taxonomyLevelDao;
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private CurriculumElementDAO curriculumElementDao;
 	@Autowired
 	private OrganisationService organisationService;
 
@@ -319,6 +326,71 @@ public class CurriculumElementsWebServiceTest extends OlatJerseyTestCase {
 		Assert.assertEquals(2, savedElement.getManagedFlags().length);
 		Assert.assertEquals(curriculum, savedElement.getCurriculum());
 		Assert.assertEquals(type, savedElement.getType());
+	}
+	
+
+	@Test
+	public void updateCurriculumElement_moveToOtherCurriculum()
+	throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		Organisation organisation = organisationService.createOrganisation("REST Parent Organisation 25", "REST-p-25-organisation", "", defOrganisation, null);
+		Curriculum sourceCurriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Source Curriculum", "A source curriculum", organisation);
+		Curriculum targetCurriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Target Curriculum", "A target curriculum", organisation);
+		CurriculumElement element1 = curriculumService.createCurriculumElement("Element-25", "Element2 5", CurriculumElementStatus.active,
+				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, sourceCurriculum);
+		CurriculumElement element1_1 = curriculumService.createCurriculumElement("Element-25-1", "Element 25-1", CurriculumElementStatus.active,
+				null, null, element1, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, sourceCurriculum);
+		
+		dbInstance.commitAndCloseSession();
+		
+		CurriculumElementVO vo = new CurriculumElementVO();
+		vo.setKey(element1.getKey());
+		vo.setDisplayName("REST updated element");
+		vo.setCurriculumKey(targetCurriculum.getKey());
+
+		URI request = UriBuilder.fromUri(getContextURI()).path("curriculum").path(targetCurriculum.getKey().toString())
+				.path("elements").build();
+		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
+		conn.addJsonEntity(method, vo);
+		
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		
+		// checked VO
+		CurriculumElementVO savedVo = conn.parse(response, CurriculumElementVO.class);
+		Assert.assertNotNull(savedVo);
+		Assert.assertNotNull(savedVo.getKey());
+		Assert.assertEquals("REST updated element", savedVo.getDisplayName());
+		Assert.assertEquals(targetCurriculum.getKey(), savedVo.getCurriculumKey());
+		Assert.assertNull(savedVo.getParentElementKey());
+		
+		// checked database
+		CurriculumElement savedElement = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(savedVo.getKey()));
+		Assert.assertNotNull(savedElement);
+		Assert.assertEquals(savedVo.getKey(), savedElement.getKey());
+		Assert.assertEquals("REST updated element", savedElement.getDisplayName());
+		Assert.assertEquals(targetCurriculum, savedElement.getCurriculum());
+
+		// check the source curriculum (low level to make sure the position are rights)
+		CurriculumImpl reloadedCurriculum = (CurriculumImpl)curriculumDao.loadByKey(sourceCurriculum.getKey());
+		List<CurriculumElement> rootElements = reloadedCurriculum.getRootElements();
+		Assert.assertTrue(rootElements.isEmpty());
+
+		// check the target curriculum (low level to make sure the position are rights)
+		CurriculumImpl reloadedTargetCurriculum = (CurriculumImpl)curriculumDao.loadByKey(targetCurriculum.getKey());
+		List<CurriculumElement> targetRootElements = reloadedTargetCurriculum.getRootElements();
+		Assert.assertEquals(1, targetRootElements.size());
+		Assert.assertTrue(targetRootElements.contains(element1));
+		
+		List<CurriculumElement> movedElements = curriculumElementDao.loadElements(reloadedTargetCurriculum, CurriculumElementStatus.values());
+		Assert.assertTrue(movedElements.contains(element1));
+		Assert.assertTrue(movedElements.contains(element1_1));
+		
+		List<CurriculumElement> sourceElements = curriculumElementDao.loadElements(sourceCurriculum, CurriculumElementStatus.values());
+		Assert.assertTrue(sourceElements.isEmpty());
 	}
 	
 	/**

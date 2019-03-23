@@ -323,6 +323,16 @@ public interface CurriculumService {
 	public CurriculumElement moveCurriculumElement(CurriculumElement elementToMove, CurriculumElement newParent, CurriculumElement siblingBefore);
 	
 	/**
+	 * Move a root curriculum element from a curriculum to an other. This operation
+	 * is committed asap.
+	 * 
+	 * @param rootElement The curriculum element (must be a root one)
+	 * @param curriculum The target curriculum
+	 * @return The update element
+	 */
+	public CurriculumElement moveCurriculumElement(CurriculumElement rootElement, Curriculum curriculum);
+	
+	/**
 	 * The list of members of the specified curriculum element.
 	 * 
 	 * @param element The curriculum element

@@ -56,9 +56,10 @@ public abstract class AssessmentObjectComponent extends AbstractComponent implem
 	
 	private Context context;
 	
-	private boolean hideFeedbacks = false;
-	private boolean maxScoreAssessmentItem = false;
 	private final boolean mathAssess;
+	private boolean hideFeedbacks = false;
+	private boolean correctionHelp = false;
+	private boolean maxScoreAssessmentItem = false;
 	
 	private String mapperUri;
 	private String submissionMapperUri;
@@ -116,6 +117,14 @@ public abstract class AssessmentObjectComponent extends AbstractComponent implem
 
 	public void setMaxScoreAssessmentItem(boolean maxScoreAssessmentItem) {
 		this.maxScoreAssessmentItem = maxScoreAssessmentItem;
+	}
+
+	public boolean isCorrectionHelp() {
+		return correctionHelp;
+	}
+
+	public void setCorrectionHelp(boolean correctionHelp) {
+		this.correctionHelp = correctionHelp;
 	}
 
 	public abstract String getResponseUniqueIdentifier(ItemSessionState itemSessionState, Interaction interaction);

@@ -115,6 +115,14 @@ public abstract class AssessmentObjectFormItem extends FormItemImpl implements F
 		getComponent().setCandidateSessionContext(candidateSessionContext);
 	}
 	
+	public boolean isCorrectionHelp() {
+		return getComponent().isCorrectionHelp();
+	}
+	
+	public void setCorrectionHelp(boolean enable) {
+		getComponent().setCorrectionHelp(enable);
+	}
+	
 	protected Map<Identifier, StringResponseData> extractStringResponseData() {
         final Map<Identifier, StringResponseData> responseMap = new HashMap<>();
 
