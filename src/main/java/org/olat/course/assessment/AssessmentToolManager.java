@@ -64,13 +64,6 @@ public interface AssessmentToolManager {
 	 */
 	public AssessmentMembersStatistics getNumberOfParticipants(Identity coach, SearchAssessedIdentityParams params);
 	
-	/**
-	 * The number of user who launched the course / resource
-	 * @param coach
-	 * @param params
-	 * @return
-	 */
-	public int getNumberOfInitialLaunches(Identity coach, SearchAssessedIdentityParams params);
 	
 	public List<Identity> getAssessedIdentities(Identity coach, SearchAssessedIdentityParams params);
 	
