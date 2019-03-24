@@ -29,6 +29,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.support.ui.Select;
 
 /**
  * 
@@ -86,8 +87,18 @@ public class FolderPage {
 		browser.findElement(newFileBy).click();
 		OOGraphene.waitBusy(browser);
 		
+		By typeBy = By.cssSelector(".o_sel_folder_new_file_type select");
+		OOGraphene.waitElement(typeBy, browser);
+		Select selectType = new Select(browser.findElement(typeBy));
+		List<WebElement> typeEls = selectType.getOptions();
+		for(WebElement typeEl:typeEls) {
+			if(typeEl.getText().toLowerCase().contains("html")) {
+				selectType.selectByValue(typeEl.getAttribute("value"));
+				break;
+			}
+		}
+		
 		By filenameBy = By.cssSelector(".o_sel_folder_new_file_name input[type='text']");
-		OOGraphene.waitElement(filenameBy, browser);
 		browser.findElement(filenameBy).sendKeys(name);
 		
 		By createBy = By.cssSelector(".o_sel_folder_new_file button.btn-primary");

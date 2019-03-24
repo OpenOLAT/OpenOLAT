@@ -69,6 +69,8 @@ public class CreateFileController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_folder_new_file");
+		
 		KeyValues fileTypeKV = new KeyValues();
 		for (int i = 0; i < fileTypes.size(); i++) {
 			FileType fileType = fileTypes.get(i);
@@ -76,9 +78,11 @@ public class CreateFileController extends FormBasicController {
 			fileTypeKV.add(entry(String.valueOf(i), name));
 		}
 		fileTypeEl = uifactory.addDropdownSingleselect("create.file.type", formLayout, fileTypeKV.keys(), fileTypeKV.values());
+		fileTypeEl.setElementCssClass("o_sel_folder_new_file_type");
 		fileTypeEl.setMandatory(true);
 		
 		fileNameEl = uifactory.addTextElement("create.file.name", -1, "", formLayout);
+		fileNameEl.setElementCssClass("o_sel_folder_new_file_name");
 		fileNameEl.setDisplaySize(100);
 		fileNameEl.setMandatory(true);
 		

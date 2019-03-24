@@ -225,7 +225,7 @@ public class BusinessGroupTest extends Deployments {
 			.createDirectory(directoryName)
 			.assertOnDirectory(directoryName)
 			.createHTMLFile("New file", "Some really cool content.")
-			.assertOnFile("new file.html");
+			.assertOnFile("New file.html");
 		
 		//check forum
 		String threadBodyMarker = UUID.randomUUID().toString();
