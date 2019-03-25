@@ -99,7 +99,12 @@ public class CancelRollCallConfirmationController extends FormBasicController {
 			}
 		}
 		if(!found) {
-			effectiveEndReasonEl.select(reasonKeyList.get(0), true);
+			if(reasonKeyList.isEmpty()) {
+				effectiveEndReasonEl.setEnabled(false);
+				effectiveEndReasonEl.setVisible(false);
+			} else {
+				effectiveEndReasonEl.select(reasonKeyList.get(0), true);
+			}
 		}
 
 		
@@ -120,7 +125,7 @@ public class CancelRollCallConfirmationController extends FormBasicController {
 		boolean allOk = true;
 		
 		effectiveEndReasonEl.clearError();
-		if(!effectiveEndReasonEl.isOneSelected()) {
+		if(effectiveEndReasonEl.isEnabled() && !effectiveEndReasonEl.isOneSelected()) {
 			effectiveEndReasonEl.setErrorKey("error.reason.mandatory", null);
 			allOk &= false;
 		}
@@ -131,9 +136,11 @@ public class CancelRollCallConfirmationController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		String before = lectureService.toAuditXml(lectureBlock);
-		Long reasonKey = new Long(effectiveEndReasonEl.getSelectedKey());
-		Reason selectedReason = lectureService.getReason(reasonKey);
-		lectureBlock.setReasonEffectiveEnd(selectedReason);
+		if(effectiveEndReasonEl.isEnabled()) {
+			Long reasonKey = Long.valueOf(effectiveEndReasonEl.getSelectedKey());
+			Reason selectedReason = lectureService.getReason(reasonKey);
+			lectureBlock.setReasonEffectiveEnd(selectedReason);
+		}
 		lectureBlock = lectureService.cancel(lectureBlock);
 		String after = lectureService.toAuditXml(lectureBlock);
 		lectureService.auditLog(LectureBlockAuditLog.Action.cancelLectureBlock, before, after, null, lectureBlock, null, lectureBlock.getEntry(), null, getIdentity());
