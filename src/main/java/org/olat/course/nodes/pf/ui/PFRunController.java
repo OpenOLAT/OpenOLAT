@@ -105,7 +105,6 @@ public class PFRunController extends BasicController {
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-	
 		if (source == coachController) {
 			if (event instanceof PFEvent) {
 				segmentView.select(participantLink);
@@ -114,10 +113,6 @@ public class PFRunController extends BasicController {
 			} else if (event == Event.CHANGED_EVENT) {
 				doOpenCoachView(ureq);
 			} 			
-		} else if (source == participantController) {
-			if (event == Event.CHANGED_EVENT) {
-				doOpenParticipantsView(ureq, ureq.getIdentity(), PFView.displayDrop);
-			} 
 		} 
 		super.event(ureq, source, event);
 	}

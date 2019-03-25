@@ -26,7 +26,6 @@ import org.olat.core.commons.services.notifications.ui.ContextualSubscriptionCon
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -99,8 +98,6 @@ public class PFParticipantController extends BasicController {
 		
 	}
 
-
-
 	@Override
 	protected void doDispose() {
 		
@@ -111,13 +108,6 @@ public class PFParticipantController extends BasicController {
 		
 	}
 	
-	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == folderRunController) {
-			fireEvent(ureq, Event.CHANGED_EVENT);
-		} 
-		super.event(ureq, source, event);
-	}
 
 	/**
 	 * Remove the subscription panel but let the subscription context active
