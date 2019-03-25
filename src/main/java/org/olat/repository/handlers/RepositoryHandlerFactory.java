@@ -79,8 +79,8 @@ public class RepositoryHandlerFactory {
 		registerHandler(new GlossaryHandler(), 41);
 		registerHandler(new PortfolioHandler(), 42);
 		
-		registerHandler(new WebDocumentHandler(DocFileResource.TYPE_NAME), 10001);
-		registerHandler(new WebDocumentHandler(XlsFileResource.TYPE_NAME), 10002);
+		registerHandler(new WebDocumentHandler(DocFileResource.TYPE_NAME, new WordCreateDelegate()), 10001);
+		registerHandler(new WebDocumentHandler(XlsFileResource.TYPE_NAME, new ExcelCreateDelegate()), 10002);
 		registerHandler(new WebDocumentHandler(PowerpointFileResource.TYPE_NAME), 10003);
 		registerHandler(new WebDocumentHandler(PdfFileResource.TYPE_NAME), 10010);
 		registerHandler(new WebDocumentHandler(ImageFileResource.TYPE_NAME), 10011);

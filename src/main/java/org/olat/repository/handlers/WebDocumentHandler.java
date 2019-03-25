@@ -80,28 +80,34 @@ import org.olat.resource.OLATResourceManager;
  * 
  */
 public class WebDocumentHandler extends FileHandler {
-	
+
 	private static final OLog log = Tracing.createLoggerFor(WebDocumentHandler.class);
 	private final String supportedType;
-
+	private final WebDocumentCreateDelegate createDelegate;
+	
 	public WebDocumentHandler(String type) {
-		supportedType = type;
+		this(type, new NullCreateDelegate());
+	}
+	
+	public WebDocumentHandler(String type, WebDocumentCreateDelegate createDelegate) {
+		this.supportedType = type;
+		this.createDelegate = createDelegate;
 	}
 	
 	@Override
 	public boolean supportCreate() {
-		return false;
+		return createDelegate.supportCreate();
 	}
 
 	@Override
 	public String getCreateLabelI18nKey() {
-		return null;
+		return createDelegate.getCreateLabelI18nKey();
 	}
 	
 	@Override
 	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description,
 			Object createObject, Organisation organisation, Locale locale) {
-		return null;
+		return createDelegate.createResource(initialAuthor, displayname, description, createObject, organisation, locale);
 	}
 	
 	@Override
@@ -283,5 +289,33 @@ public class WebDocumentHandler extends FileHandler {
 	@Override
 	public boolean isLocked(OLATResourceable ores) {
 		return false;
+	}
+	
+
+	
+	/**
+	 * 
+	 * Initial date: 25 Mar 2019<br>
+	 * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+	 *
+	 */
+	private static class NullCreateDelegate implements WebDocumentCreateDelegate {
+
+		@Override
+		public boolean supportCreate() {
+			return false;
+		}
+
+		@Override
+		public String getCreateLabelI18nKey() {
+			return null;
+		}
+		
+		@Override
+		public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description,
+				Object createObject, Organisation organisation, Locale locale) {
+			return null;
+		}
+
 	}
 }
