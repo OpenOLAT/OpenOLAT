@@ -75,6 +75,7 @@ import org.olat.core.util.mail.MailPackage;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ImsCPFileResource;
 import org.olat.modules.lecture.restapi.LectureBlocksWebService;
+import org.olat.modules.reminder.restapi.RemindersWebService;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
@@ -173,6 +174,21 @@ public class RepositoryEntryResource {
 	    RepositoryEntry re = lookupRepositoryEntry(repoEntryKey);
 	    if(re == null) return null;
 		LectureBlocksWebService service = new LectureBlocksWebService(re);
+		CoreSpringFactory.autowireObject(service);
+		return service;
+	}
+	
+	/**
+	 * To get the web service for the reminders of a specific learning resource.
+	 * @response.representation.200.doc A web service to manage the reminders
+	 * @param repoEntryKey The primary key of the learning resource 
+	 * @return The web service for reminders.
+	 */
+	@Path("reminders")
+	public RemindersWebService getRemindersWebService(@PathParam("repoEntryKey")String repoEntryKey) {
+	    RepositoryEntry re = lookupRepositoryEntry(repoEntryKey);
+	    if(re == null) return null;
+	    RemindersWebService service = new RemindersWebService(re);
 		CoreSpringFactory.autowireObject(service);
 		return service;
 	}

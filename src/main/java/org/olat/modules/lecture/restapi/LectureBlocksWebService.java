@@ -97,7 +97,7 @@ public class LectureBlocksWebService {
 	 * Create or update a lecture block.
 	 * @response.representation.200.qname {http://www.example.com}lectureBlocksVO
 	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The updated configuration
+	 * @response.representation.200.doc The updated lecture block
 	 * @response.representation.200.example {@link org.olat.modules.lecture.restapi.Examples#SAMPLE_LECTUREBLOCKVO}
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
 	 * @response.representation.404.doc The course not found
