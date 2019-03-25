@@ -28,6 +28,7 @@ package org.olat.core.commons.editor.fileeditor;
 
 import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.commons.editor.htmleditor.HTMLEditorController;
+import org.olat.core.commons.editor.htmleditor.HTMLReadOnlyController;
 import org.olat.core.commons.editor.htmleditor.WysiwygFactory;
 import org.olat.core.commons.editor.plaintexteditor.TextEditorController;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
@@ -77,42 +78,47 @@ public class FileEditorController extends BasicController {
 //		}
 		
 
-		// start HTML editor with the folders root folder as base and the file
-		// path as a relative path from the root directory. But first check if the 
-		// root directory is wirtable at all (e.g. not the case in users personal 
-		// briefcase), and seach for the next higher directory that is writable.
-		String relFilePath = "/" + vfsLeaf.getName();
-		// add current container path if not at root level
-		if (!folderComponent.getCurrentContainerPath().equals("/")) { 
-			relFilePath = folderComponent.getCurrentContainerPath() + relFilePath;
-		}
-		VFSContainer writableRootContainer = folderComponent.getRootContainer();
-		ContainerAndFile result = VFSManager.findWritableRootFolderFor(writableRootContainer, relFilePath);
-		if (result != null) {
-			if(vfsLeaf.getParentContainer() != null) {
-				writableRootContainer = vfsLeaf.getParentContainer();
-				relFilePath = vfsLeaf.getName();
-			} else {
-				writableRootContainer = result.getContainer();
-			}
-		} else {
-			// use fallback that always work: current directory and current file
-			relFilePath = vfsLeaf.getName();
-			writableRootContainer = folderComponent.getCurrentContainer(); 
-		}
+		
 		// launch plaintext or html editor depending on file type
-		if (relFilePath.endsWith(".html") || relFilePath.endsWith(".htm")) {
-			CustomLinkTreeModel customLinkTreeModel = folderComponent.getCustomLinkTreeModel(); 
-			if (customLinkTreeModel != null) {
-				editCtrl = WysiwygFactory.createWysiwygControllerWithInternalLink(ureq, getWindowControl(), writableRootContainer, relFilePath, true, customLinkTreeModel);
-				((HTMLEditorController)editCtrl).setNewFile(false);
-			} else {				
-				editCtrl = WysiwygFactory.createWysiwygController(ureq, getWindowControl(), writableRootContainer, relFilePath, true, true);
-				((HTMLEditorController)editCtrl).setNewFile(false);
+		if (vfsLeaf.getName().endsWith(".html") || vfsLeaf.getName().endsWith(".htm")) {
+			if (secCallback.canEdit()) {
+				// start HTML editor with the folders root folder as base and the file
+				// path as a relative path from the root directory. But first check if the 
+				// root directory is wirtable at all (e.g. not the case in users personal 
+				// briefcase), and seach for the next higher directory that is writable.
+				String relFilePath = "/" + vfsLeaf.getName();
+				// add current container path if not at root level
+				if (!folderComponent.getCurrentContainerPath().equals("/")) { 
+					relFilePath = folderComponent.getCurrentContainerPath() + relFilePath;
+				}
+				VFSContainer writableRootContainer = folderComponent.getRootContainer();
+				ContainerAndFile result = VFSManager.findWritableRootFolderFor(writableRootContainer, relFilePath);
+				if (result != null) {
+					if(vfsLeaf.getParentContainer() != null) {
+						writableRootContainer = vfsLeaf.getParentContainer();
+						relFilePath = vfsLeaf.getName();
+					} else {
+						writableRootContainer = result.getContainer();
+					}
+				} else {
+					// use fallback that always work: current directory and current file
+					relFilePath = vfsLeaf.getName();
+					writableRootContainer = folderComponent.getCurrentContainer(); 
+				}
+				CustomLinkTreeModel customLinkTreeModel = folderComponent.getCustomLinkTreeModel();
+				if (customLinkTreeModel != null) {
+					editCtrl = WysiwygFactory.createWysiwygControllerWithInternalLink(ureq, getWindowControl(), writableRootContainer, relFilePath, true, customLinkTreeModel);
+					((HTMLEditorController)editCtrl).setNewFile(false);
+				} else {				
+					editCtrl = WysiwygFactory.createWysiwygController(ureq, getWindowControl(), writableRootContainer, relFilePath, true, true);
+					((HTMLEditorController)editCtrl).setNewFile(false);
+				}
+			} else {
+				editCtrl = new HTMLReadOnlyController(ureq, getWindowControl(), vfsLeaf.getParentContainer(), vfsLeaf.getName(), secCallback.canClose());
 			}
 		}
 		else {
-			editCtrl = new TextEditorController(ureq, getWindowControl(), vfsLeaf, "utf-8", false);
+			editCtrl = new TextEditorController(ureq, getWindowControl(), vfsLeaf, "utf-8", !secCallback.canEdit());
 		}
 		listenTo(editCtrl);
 		

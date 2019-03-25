@@ -99,17 +99,6 @@ public class SinglePageController extends BasicController implements CloneableCo
 	private VFSContainer g_new_rootContainer;
 	private Long courseRepoKey;
 	
-	/**
-	 * 
-	 * @param ureq
-	 * @param wControl
-	 * @param inIframe
-	 * @param rootContainer
-	 * @param fileName
-	 * @param currentUri
-	 * @param allowRelativeLinks
-	 * @param showHomeLink
-	 */
 	public SinglePageController(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer, String fileName,
 			boolean allowRelativeLinks) {
 		//default behavior is to show the home link in a single page

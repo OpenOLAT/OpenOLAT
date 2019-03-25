@@ -112,7 +112,11 @@ public class CmdOpenContent extends BasicController implements FolderCommand {
 			return null;
 		}
 		
-		VFSLeafEditorSecurityCallback secCallback = VFSLeafEditorSecurityCallbackBuilder.builder().build();
+		VFSContainer container = VFSManager.findInheritingSecurityCallbackContainer(folderComponent.getCurrentContainer());
+		VFSSecurityCallback containerSecCallback = container.getLocalSecurityCallback();
+		VFSLeafEditorSecurityCallback secCallback = VFSLeafEditorSecurityCallbackBuilder.builder()
+				.canEdit(containerSecCallback.canWrite())
+				.build();
 		editCtrl = editor.get().getRunController(ureq, wControl, vfsLeaf, folderComponent, getIdentity(), secCallback);
 		listenTo(editCtrl);
 		
