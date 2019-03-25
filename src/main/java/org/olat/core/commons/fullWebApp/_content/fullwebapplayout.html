@@ -40,6 +40,10 @@ o_info.i18n_noresponse = "$r.escapeDoubleQuotes($r.translate("server.no.response
 o_info.i18n_topnav_more = "$r.escapeDoubleQuotes($r.translate("header.topnav.more"))";
 o_info.oo_noresponse_title = "$r.escapeJavaScript($r.translateWithPackage("org.olat.login","timeout.title"))";
 o_info.oo_noresponse = "$r.escapeJavaScript($r.translateWithPackage("org.olat.login","timeout.message"))";
+## edu-sharing
+#if($edusharingEnabled)
+o_info.edusharing_enabled = true;
+#end
 ## Initialize zindex manager
 o_info.zseed = 0;
 #if($enforceTopFrame)

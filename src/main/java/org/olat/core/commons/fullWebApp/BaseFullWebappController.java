@@ -115,6 +115,7 @@ import org.olat.course.assessment.ui.mode.AssessmentModeGuardController;
 import org.olat.course.assessment.ui.mode.ChooseAssessmentModeEvent;
 import org.olat.gui.control.UserToolsMenuController;
 import org.olat.home.HomeSite;
+import org.olat.modules.edusharing.EdusharingModule;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -199,6 +200,8 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 	private UserManager userManager;
 	@Autowired
 	private AnalyticsModule analyticsModule;
+	@Autowired
+	private EdusharingModule edusharingModule;
 	
 	public BaseFullWebappController(UserRequest ureq, BaseFullWebappControllerParts baseFullWebappControllerParts) {
 		// only-use-in-super-call, since we define our own
@@ -375,6 +378,11 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 			if(analyticsSPI != null) {
 				mainVc.contextPut("analytics",analyticsSPI.analyticsInitPageJavaScript());
 			}
+		}
+		
+		// Enable edu-sharing html snippet replacement
+		if (edusharingModule.isEnabled()) {
+			mainVc.contextPut("edusharingEnabled", Boolean.TRUE);
 		}
 		
 		// content panel
@@ -1054,6 +1062,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		}
 	}
 
+	@Override
 	public void removeDTab(UserRequest ureq, DTab delt) {
 		// remove from tab list and mapper table
 		synchronized (dtabs) {//o_clusterOK dtabs are per user session only - user session is always in the same vm
