@@ -113,7 +113,7 @@ public class BCCourseNodeRunController extends BasicController implements Activa
 			if(item == null){
 				noFolder = true;
 				BCCourseNodeNoFolderForm noFolderForm = new BCCourseNodeNoFolderForm(ureq, getWindowControl());
-				setInitialComponent(noFolderForm.getInitialComponent());
+				putInitialPanel(noFolderForm.getInitialComponent());
 			} else if(item instanceof VFSContainer){
 				target = new NamedContainerImpl(courseNode.getShortTitle(), (VFSContainer) item);
 			}
@@ -138,7 +138,7 @@ public class BCCourseNodeRunController extends BasicController implements Activa
 			if(item == null) {
 				noFolder = true;
 				BCCourseNodeNoFolderForm noFolderForm = new BCCourseNodeNoFolderForm(ureq, getWindowControl());
-				setInitialComponent(noFolderForm.getInitialComponent());
+				putInitialPanel(noFolderForm.getInitialComponent());
 				scallback = new ReadOnlyCallback();
 			} else {
 				target = new NamedContainerImpl(courseNode.getShortTitle(), item);
