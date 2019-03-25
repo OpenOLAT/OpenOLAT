@@ -26,6 +26,8 @@ import org.olat.core.commons.modules.bc.components.ListRenderer;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.vfs.VFSLeafEditor;
+import org.olat.core.commons.services.vfs.VFSLeafEditorSecurityCallback;
+import org.olat.core.commons.services.vfs.VFSLeafEditorSecurityCallbackBuilder;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -110,7 +112,8 @@ public class CmdOpenContent extends BasicController implements FolderCommand {
 			return null;
 		}
 		
-		editCtrl = editor.get().getRunController(ureq, wControl, vfsLeaf, folderComponent, getIdentity());
+		VFSLeafEditorSecurityCallback secCallback = VFSLeafEditorSecurityCallbackBuilder.builder().build();
+		editCtrl = editor.get().getRunController(ureq, wControl, vfsLeaf, folderComponent, getIdentity(), secCallback);
 		listenTo(editCtrl);
 		
 		ChiefController cc = getWindowControl().getWindowBackOffice().getChiefController();

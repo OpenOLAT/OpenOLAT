@@ -36,7 +36,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 class CollaboraEditorUrlBuilder {
 	
-	// Source: https://github.com/LibreOffice/online/blob/master/loleaflet/js/main.js
+	// Source: https://github.com/LibreOffice/online/blob/master/loleaflet/src/main.js
 	
 	private final String fileId;
 	private final String accessToken;
@@ -103,6 +103,7 @@ class CollaboraEditorUrlBuilder {
 		}
 		
 		if (closeButton) {
+			// Apparently that parameter is ignored. The close button is always visible!
 			url.append("?closebutton=1");
 		}
 		

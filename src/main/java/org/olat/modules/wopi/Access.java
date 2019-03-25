@@ -37,5 +37,7 @@ public interface Access {
 	Identity getIdentity();
 	
 	VFSMetadata getVfsMetadata();
+	
+	boolean canClose();
 
 }

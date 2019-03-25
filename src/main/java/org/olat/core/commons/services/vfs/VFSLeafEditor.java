@@ -45,6 +45,6 @@ public interface VFSLeafEditor {
 	boolean isSupportingFormat(String suffix);
 	
 	Controller getRunController(UserRequest ureq, WindowControl wControl, VFSLeaf vfsLeaf,
-			FolderComponent folderComponent, Identity identity);
+			FolderComponent folderComponent, Identity identity, VFSLeafEditorSecurityCallback securityCallback);
 
 }

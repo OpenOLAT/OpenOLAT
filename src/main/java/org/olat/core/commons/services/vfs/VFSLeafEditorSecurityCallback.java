@@ -17,36 +17,16 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.wopi;
-
-import java.io.File;
-
-import org.olat.core.commons.services.vfs.VFSLeafEditorSecurityCallback;
-import org.olat.core.commons.services.vfs.VFSMetadata;
-import org.olat.core.id.Identity;
+package org.olat.core.commons.services.vfs;
 
 /**
  * 
- * Initial date: 6 Mar 2019<br>
+ * Initial date: 22 Mar 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface WopiService {
-
-	boolean fileExists(String fileId);
-
-	File getFile(String fileId);
-
-	VFSMetadata getMetadata(String fileId);
-
-	Access createAccess(VFSMetadata vfsMetadata, Identity identity, VFSLeafEditorSecurityCallback secCallback);
-
-	Access getAccess(String accessToken);
+public interface VFSLeafEditorSecurityCallback {
 	
-	void deleteAccess(String accessToken);
-
-	boolean hasAction(Discovery discovery, String actionName, String suffix);
-
-	Action getAction(Discovery discovery, String actionName, String suffix);
+	boolean canClose();
 
 }

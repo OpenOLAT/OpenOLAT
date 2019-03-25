@@ -27,6 +27,7 @@ import java.util.UUID;
 
 import javax.annotation.PostConstruct;
 
+import org.olat.core.commons.services.vfs.VFSLeafEditorSecurityCallback;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.id.Identity;
@@ -96,7 +97,7 @@ public class WopiServiceImpl implements WopiService {
 	}
 
 	@Override
-	public Access createAccess(VFSMetadata vfsMetadata, Identity identity) {
+	public Access createAccess(VFSMetadata vfsMetadata, Identity identity, VFSLeafEditorSecurityCallback secCallback) {
 		String token = UUID.randomUUID().toString().replaceAll("-", "");
 		String fileId = vfsMetadata.getUuid();
 		
@@ -104,6 +105,7 @@ public class WopiServiceImpl implements WopiService {
 		access.setToken(token);
 		access.setFileId(fileId);
 		access.setIdentity(identity);
+		access.setCanClose(secCallback.canClose());
 		accessCache.put(token, access);
 		return access;
 	}

@@ -23,6 +23,7 @@ import java.io.File;
 
 import javax.annotation.PostConstruct;
 
+import org.olat.core.commons.services.vfs.VFSLeafEditorSecurityCallback;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;
@@ -83,8 +84,8 @@ public class CollaboraServiceImpl implements CollaboraService, GenericEventListe
 	}
 
 	@Override
-	public Access createAccess(VFSMetadata vfsMetadata, Identity identity) {
-		return wopiService.createAccess(vfsMetadata, identity);
+	public Access createAccess(VFSMetadata vfsMetadata, Identity identity, VFSLeafEditorSecurityCallback secCallback) {
+		return wopiService.createAccess(vfsMetadata, identity, secCallback);
 	}
 
 	@Override

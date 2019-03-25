@@ -31,6 +31,7 @@ import org.olat.core.commons.editor.htmleditor.HTMLEditorController;
 import org.olat.core.commons.editor.htmleditor.WysiwygFactory;
 import org.olat.core.commons.editor.plaintexteditor.TextEditorController;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
+import org.olat.core.commons.services.vfs.VFSLeafEditorSecurityCallback;
 import org.olat.core.commons.services.vfs.ui.version.VersionCommentController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -61,7 +62,8 @@ public class FileEditorController extends BasicController {
 	@Autowired
 	private VFSLockManager vfsLockManager;
 	
-	protected FileEditorController(UserRequest ureq, WindowControl wControl, FolderComponent folderComponent, VFSLeaf vfsLeaf) {
+	protected FileEditorController(UserRequest ureq, WindowControl wControl, FolderComponent folderComponent,
+			VFSLeaf vfsLeaf, VFSLeafEditorSecurityCallback secCallback) {
 		super(ureq, wControl);
 		this.vfsLeaf = vfsLeaf;
 		

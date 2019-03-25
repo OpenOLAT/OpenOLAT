@@ -52,6 +52,7 @@ public class CollaboraEditorController extends BasicController {
 		String url = CollaboraEditorUrlBuilder
 				.builder(access.getFileId(), access.getToken())
 				.withLang(ureq.getLocale().getLanguage())
+				.withCloseButton(access.canClose())
 				.build();
 		
 		mainVC.contextPut("id", "o_" + CodeHelper.getRAMUniqueID());
@@ -63,14 +64,16 @@ public class CollaboraEditorController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if ("close".equals(event.getCommand())) {
-			collaboraService.deleteAccess(access);
-			fireEvent(ureq, Event.DONE_EVENT);
+			// Suppress close event, because we can not hide close button
+			if (access.canClose()) {
+				fireEvent(ureq, Event.DONE_EVENT);
+			}
 		}
 	}
 
 	@Override
 	protected void doDispose() {
-		//
+		collaboraService.deleteAccess(access);
 	}
 
 }

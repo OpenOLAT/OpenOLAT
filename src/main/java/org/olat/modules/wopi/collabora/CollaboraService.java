@@ -21,6 +21,7 @@ package org.olat.modules.wopi.collabora;
 
 import java.io.File;
 
+import org.olat.core.commons.services.vfs.VFSLeafEditorSecurityCallback;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -45,7 +46,7 @@ public interface CollaboraService {
 
 	VFSMetadata getMetadata(String fileId);
 	
-	Access createAccess(VFSMetadata vfsMetadata, Identity identity);
+	Access createAccess(VFSMetadata vfsMetadata, Identity identity, VFSLeafEditorSecurityCallback securityCallback);
 
 	Access getAccess(String accessToken);
 	

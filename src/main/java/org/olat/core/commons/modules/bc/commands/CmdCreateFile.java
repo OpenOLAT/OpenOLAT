@@ -39,6 +39,8 @@ import org.olat.core.commons.services.license.ui.LicenseUIFactory;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.vfs.VFSLeafEditor;
+import org.olat.core.commons.services.vfs.VFSLeafEditorSecurityCallback;
+import org.olat.core.commons.services.vfs.VFSLeafEditorSecurityCallbackBuilder;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
@@ -185,7 +187,8 @@ public class CmdCreateFile extends BasicController implements FolderCommand {
 			return;
 		}
 		
-		editorCtr = editors.get(0).getRunController(ureq, getWindowControl(), vfsLeaf, folderComponent, getIdentity());
+		VFSLeafEditorSecurityCallback secCallback = VFSLeafEditorSecurityCallbackBuilder.builder().build();
+		editorCtr = editors.get(0).getRunController(ureq, getWindowControl(), vfsLeaf, folderComponent, getIdentity(), secCallback);
 		listenTo(editorCtr);
 		
 		ChiefController cc = getWindowControl().getWindowBackOffice().getChiefController();
