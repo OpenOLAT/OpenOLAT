@@ -2096,20 +2096,11 @@ var BDebugger = {
 var OOEdusharing = {
 		
 	start: function() {
-		var url = o_info.uriprefix.replace("auth", "edusharing") + "enabled";
-		jQuery.ajax({
-			type: "GET",
-			url: url,
-			dataType : 'text',
-			success : function(){
-				OOEdusharing.render();
-				jQuery(document).on("oo.dom.replacement.after", OOEdusharing.render);
-				OOEdusharing.enableMetadataToggler();
-			},
-			error : function(XMLHttpRequest, textStatus, errorThrown) {
-				// Unbind. Not needed as long this method is only triggered on document ready.
-			}
-		})
+		if (o_info.edusharing_enabled) {
+			OOEdusharing.render();
+			jQuery(document).on("oo.dom.replacement.after", OOEdusharing.render);
+			OOEdusharing.enableMetadataToggler();
+		}
 	},
 		
 	replaceWithSpinner: function(node, width, height) {

@@ -108,11 +108,7 @@ public class EdusharingDispatcher implements Dispatcher {
 
 		try {
 			String command = getCommand(request);
-			if ("enabled".equals(command)) {
-				// If module is not enabled, an error is triggered above
-				response.setStatus(HttpServletResponse.SC_OK);
-				response.setContentType("text/plain");
-			} else if (METADATA_PATH.equals(command)) {
+			if (METADATA_PATH.equals(command)) {
 				buildMetadata(ureq, response);
 			} else if (ureq.getUserSession().isAuthenticated()) {
 				switch (command) {
