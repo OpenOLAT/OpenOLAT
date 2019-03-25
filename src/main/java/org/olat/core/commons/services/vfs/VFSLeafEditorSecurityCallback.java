@@ -27,6 +27,8 @@ package org.olat.core.commons.services.vfs;
  */
 public interface VFSLeafEditorSecurityCallback {
 	
-	boolean canClose();
+	boolean canEdit();
 
+	boolean canClose();
+	
 }

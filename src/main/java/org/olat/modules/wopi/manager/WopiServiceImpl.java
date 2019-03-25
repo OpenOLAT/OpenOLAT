@@ -105,6 +105,7 @@ public class WopiServiceImpl implements WopiService {
 		access.setToken(token);
 		access.setFileId(fileId);
 		access.setIdentity(identity);
+		access.setCanEdit(secCallback.canEdit());
 		access.setCanClose(secCallback.canClose());
 		accessCache.put(token, access);
 		return access;

@@ -51,6 +51,7 @@ import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -67,7 +68,8 @@ public class WebDocumentRunController extends BasicController {
 	@Autowired
 	private MovieService movieService;
 
-	public WebDocumentRunController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
+	public WebDocumentRunController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry,
+			RepositoryEntrySecurity reSecurity) {
 		super(ureq, wControl);
 
 		VelocityContainer mainVC = createVelocityContainer("web_content");
@@ -100,10 +102,12 @@ public class WebDocumentRunController extends BasicController {
 					mainVC.contextPut("width", 640);
 				}
 			} else if (vfsService.hasEditor(extension)) {
+				VFSLeafEditorSecurityCallback secCallback = VFSLeafEditorSecurityCallbackBuilder.builder()
+						.canEdit(reSecurity.isOwner() || reSecurity.isCoach())
+						.build();
 				List<VFSLeafEditor> editors = vfsService.getEditors(document);
 				if (editors.size() >= 1) {
 					VFSLeafEditor editor = editors.get(0);
-					VFSLeafEditorSecurityCallback secCallback = VFSLeafEditorSecurityCallbackBuilder.builder().build();
 					// FolderComponent should be initialized to be safe. As of today the internal
 					// editor does not support these file types.
 					Controller editCtrl = editor.getRunController(ureq, wControl, document, null, getIdentity(), secCallback);

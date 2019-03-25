@@ -111,7 +111,7 @@ public class FilesWebService {
 				.withUserFriendlyName(userManager.getUserDisplayName(access.getIdentity()))
 				.withVersion(UUID.randomUUID().toString())
 				.withLastModifiedTime(getAsIso6801(metadata.getLastModified()))
-				.withUserCanWrite(Boolean.TRUE)
+				.withUserCanWrite(access.canEdit())
 				.withDisablePrint(Boolean.FALSE)
 				.withUserCanNotWriteRelative(Boolean.TRUE)
 				.build();

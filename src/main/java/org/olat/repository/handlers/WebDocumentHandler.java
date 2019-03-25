@@ -249,7 +249,7 @@ public class WebDocumentHandler extends FileHandler {
 					RepositoryEntry entry, RepositoryEntrySecurity rereSecurity, AssessmentMode assessmentMode) {
 				CoreSpringFactory.getImpl(UserCourseInformationsManager.class)
 					.updateUserCourseInformations(entry.getOlatResource(), uureq.getIdentity());
-				return new WebDocumentRunController(uureq, wwControl, entry);
+				return new WebDocumentRunController(uureq, wwControl, entry, reSecurity);
 			}
 		});
 	}
@@ -264,6 +264,7 @@ public class WebDocumentHandler extends FileHandler {
 		return null;
 	}
 
+	@Override
 	protected String getDeletedFilePrefix() {
 		return "del_webdoc_"; 
 	}

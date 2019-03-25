@@ -34,6 +34,7 @@ public class AccessImpl implements Access {
 	private String fileId;
 	private String token;
 	private Identity identity;
+	private boolean canEdit;
 	private boolean canClose;
 	private VFSMetadata vfsMetadata;
 
@@ -62,6 +63,15 @@ public class AccessImpl implements Access {
 	
 	public void setIdentity(Identity identity) {
 		this.identity = identity;
+	}
+
+	@Override
+	public boolean canEdit() {
+		return canEdit;
+	}
+
+	public void setCanEdit(boolean canEdit) {
+		this.canEdit = canEdit;
 	}
 
 	@Override

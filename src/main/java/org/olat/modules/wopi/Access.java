@@ -38,6 +38,8 @@ public interface Access {
 	
 	VFSMetadata getVfsMetadata();
 	
+	boolean canEdit();
+
 	boolean canClose();
 
 }

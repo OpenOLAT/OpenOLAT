@@ -27,7 +27,19 @@ package org.olat.core.commons.services.vfs;
  */
 public class VFSLeafEditorSecurityCallbackBuilder {
 	
+	private boolean canEdit = true;
 	private boolean canClose = true;
+	
+	/**
+	 * Default: true
+	 *
+	 * @param canEdit
+	 * @return
+	 */
+	public VFSLeafEditorSecurityCallbackBuilder canEdit(boolean canEdit) {
+		this.canEdit = canEdit;
+		return this;
+	}
 	
 	/**
 	 * Default: true
@@ -42,6 +54,7 @@ public class VFSLeafEditorSecurityCallbackBuilder {
 	
 	public VFSLeafEditorSecurityCallback build() {
 		VFSLeafEditorSecurityCallbackImpl secCallback = new VFSLeafEditorSecurityCallbackImpl();
+		secCallback.setCanEdit(this.canEdit);
 		secCallback.setCanClose(this.canClose);
 		return secCallback;
 	}
@@ -55,8 +68,18 @@ public class VFSLeafEditorSecurityCallbackBuilder {
 	
 	private static class VFSLeafEditorSecurityCallbackImpl implements VFSLeafEditorSecurityCallback {
 
+		private boolean canEdit;
 		private boolean canClose;
 		
+		@Override
+		public boolean canEdit() {
+			return canEdit;
+		}
+
+		private void setCanEdit(boolean canEdit) {
+			this.canEdit = canEdit;
+		}
+
 		@Override
 		public boolean canClose() {
 			return canClose;
