@@ -1,0 +1,20 @@
+<rules>
+  <rules>
+    <rule>
+      <type>DateRuleSPI</type>
+      <operator>&gt;</operator>
+      <rightOperand>2015-05-13T00:00:00</rightOperand>
+    </rule>
+    <rule>
+      <type>BusinessGroupRoleRuleSPI</type>
+      <operator>=</operator>
+      <rightOperand>128286721</rightOperand>
+    </rule>
+    <rule>
+      <type>PassedRuleSPI</type>
+      <leftOperand>91610795686842</leftOperand>
+      <operator>=</operator>
+      <rightOperand>passed</rightOperand>
+    </rule>
+  </rules>
+</rules>

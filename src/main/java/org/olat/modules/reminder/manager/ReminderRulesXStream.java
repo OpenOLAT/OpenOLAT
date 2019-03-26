@@ -48,6 +48,10 @@ public class ReminderRulesXStream {
 		return (ReminderRules)ruleXStream.fromXML(rulesXml);
 	}
 	
+	public static ReminderRules toRules(InputStream in) {
+		return (ReminderRules)ruleXStream.fromXML(in);
+	}
+	
 	public static String toXML(ReminderRules rules) {
 		return ruleXStream.toXML(rules);
 	}
