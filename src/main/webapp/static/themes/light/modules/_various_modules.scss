@@ -194,6 +194,23 @@ ul.o_dropdown {
 	}
 }
 
+/* VFS */
+.o_vfseditor {
+	margin-top: 10px;
+	
+	.o_vfseditor_config {
+		.navbar-right {
+			margin-right: 0px;
+		}
+	}
+}
+
+.o_web_content {
+	.o_vfseditor {
+		margin-top: 0px;
+	}
+}
+
 /* notifications and subscription */
 .o_notifications_news_wrapper {
 	.o_notifications_news_subscription {

@@ -1,10 +1,12 @@
-.o_collabora {
-	iframe {
-		width: 100%;
-		height: calc(100vh - 130px);
-		margin-top: 10px;
-		margin-bottom: 20px;
-		border-width: 1px;
+.o_vfseditor {
+	.o_collabora {
+		iframe {
+			width: 100%;
+			height: calc(100vh - 160px);
+			margin-top: 10px;
+			margin-bottom: 20px;
+			border-width: 1px;
+		}
 	}
 }
 

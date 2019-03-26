@@ -1,0 +1,13 @@
+<div class="o_vfseditor">
+	$r.render("config")
+	#if($r.available("editor"))
+		$r.render("editor")
+	#else
+		<div class="o_warning">
+			$r.translate("error.no.editor")
+		</div>
+		#if($r.available("editor.close"))
+			<div class="o_button_group">$r.render("editor.close")</div>
+		#end
+	#end
+</div>

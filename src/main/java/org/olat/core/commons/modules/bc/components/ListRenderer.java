@@ -81,7 +81,6 @@ public class ListRenderer {
 	public static final String PARAM_EDTID = "fcedt";
 	/** Edit parameter identifier. */
  	public static final String PARAM_CONTENT_EDIT_ID = "contentedit";
- 	public static final String PARAM_CONTENT_EDITOR = "contenteditor";
  	/** Serve resource identifier */
  	public static final String PARAM_SERV = "serv";
 	/** Sort parameter identifier. */
@@ -439,33 +438,12 @@ public class ListRenderer {
 		// open
 		if (!xssErrors) {
 			List<VFSLeafEditor> editors = getLeafEditors(child);
-			if (editors.size() == 1) {
+			if (editors.size() >= 1) {
 				sb.append("<a ");
 				ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, false, false,
-						new NameValuePair(PARAM_CONTENT_EDIT_ID, pos),
-						new NameValuePair(PARAM_CONTENT_EDITOR, editors.get(0).getType()));
+						new NameValuePair(PARAM_CONTENT_EDIT_ID, pos));
 				sb.append(" title=\"").append(StringHelper.escapeHtml(translator.translate("mf.open")));
 				sb.append("\"><i class=\"o_icon o_icon-fw o_icon_edit\"></i></a>");
-			} else if (editors.size() >= 2) {
-				sb.append("<a id='o_sel_editor_").append(pos).append("' href='javascript:;'><i class='o_icon o_icon_edit'></i></a>");
-				sb.append("<div id='o_sel_editor_pop_").append(pos).append("' style='display:none;'><ul class='list-unstyled'>");
-				for (VFSLeafEditor editor : editors) {
-					sb.append("<li><a ");
-					ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, false, false,
-							new NameValuePair(PARAM_CONTENT_EDIT_ID, pos),
-							new NameValuePair(PARAM_CONTENT_EDITOR, editor.getType()));
-					sb.append(">");
-					sb.append(StringHelper.escapeHtml(translator.translate("mf.open.in", new String[] {editor.getDisplayName(translator.getLocale())} )));
-					sb.append("</a></li>");
-				}
-				sb.append("</ul></div>");
-				sb.append("<script type='text/javascript'>")
-				  .append("/* <![CDATA[ */")
-				  .append("jQuery(function() {\n")
-				  .append("  o_popover('o_sel_editor_").append(pos).append("','o_sel_editor_pop_").append(pos).append("','bottom');\n")
-				  .append("});")
-				  .append("/* ]]> */")
-				  .append("</script>");
 			}
 		}
 		sb.append("</td><td>");

@@ -28,6 +28,7 @@ import org.olat.core.commons.services.vfs.VFSLeafEditor;
 import org.olat.core.commons.services.vfs.VFSLeafEditorSecurityCallback;
 import org.olat.core.commons.services.vfs.VFSLeafEditorSecurityCallbackBuilder;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
+import org.olat.core.commons.services.vfs.ui.editor.VFSLeafEditorController;
 import org.olat.core.commons.services.video.MovieService;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
@@ -107,10 +108,9 @@ public class WebDocumentRunController extends BasicController {
 						.build();
 				List<VFSLeafEditor> editors = vfsService.getEditors(document);
 				if (editors.size() >= 1) {
-					VFSLeafEditor editor = editors.get(0);
 					// FolderComponent should be initialized to be safe. As of today the internal
 					// editor does not support these file types.
-					Controller editCtrl = editor.getRunController(ureq, wControl, document, null, getIdentity(), secCallback);
+					Controller editCtrl = new VFSLeafEditorController(ureq, wControl, document, null, secCallback);
 					listenTo(editCtrl);
 					mainVC.put("content", editCtrl.getInitialComponent());
 				}
