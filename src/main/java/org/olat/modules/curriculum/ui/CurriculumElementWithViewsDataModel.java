@@ -68,10 +68,9 @@ public class CurriculumElementWithViewsDataModel extends DefaultFlexiTreeTableDa
 		if(row.isCurriculumElementOnly() || row.isCurriculumElementWithEntry()) {
 			active = row.getCurriculumElementStatus() == CurriculumElementStatus.active;
 		}
-			
 		if(active) {
 			for(CurriculumElementWithViewsRow parent=row.getParent(); parent != null; parent=parent.getParent()) {
-				if(row.isCurriculumElementOnly() || row.isCurriculumElementWithEntry()) {
+				if(parent.isCurriculumElementOnly() || parent.isCurriculumElementWithEntry()) {
 					active &= row.getCurriculumElementStatus() == CurriculumElementStatus.active;
 				}
 			}

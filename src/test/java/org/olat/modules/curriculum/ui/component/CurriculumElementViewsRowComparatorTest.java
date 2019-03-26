@@ -143,6 +143,57 @@ public class CurriculumElementViewsRowComparatorTest extends OlatTestCase {
 		Assert.assertEquals(entry2.getKey(), rows.get(3).getRepositoryEntryKey());
 	}
 	
+	@Test
+	public void testRepositoryEntryClosed_underParent() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("sort-cur-el");
+
+		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-el-1", "Curriculum for element", "Curriculum", null);
+		CurriculumElement element = curriculumElementDao.createCurriculumElement("Element-1", "1. Element", CurriculumElementStatus.inactive,
+				new Date(), new Date(), null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		dbInstance.commitAndCloseSession();
+
+		RepositoryEntry entry1 = JunitTestHelper.deployBasicCourse(author, "1 course", RepositoryEntryStatusEnum.closed, false, false);
+		RepositoryEntry entry2 = JunitTestHelper.deployBasicCourse(author, "2 course", RepositoryEntryStatusEnum.trash, false, false);
+		RepositoryEntry entry3 = JunitTestHelper.deployBasicCourse(author, "3 course", RepositoryEntryStatusEnum.published, false, false);
+		RepositoryEntry entry4 = JunitTestHelper.deployBasicCourse(author, "4 course", RepositoryEntryStatusEnum.published, false, false);
+		// add the course and a participant to the curriculum
+		curriculumService.addRepositoryEntry(element, entry1, false);
+		curriculumService.addRepositoryEntry(element, entry2, false);
+		curriculumService.addRepositoryEntry(element, entry3, false);
+		curriculumService.addRepositoryEntry(element, entry4, false);
+		dbInstance.commitAndCloseSession();
+		
+
+		CurriculumElementWithViewsRow parent = new CurriculumElementWithViewsRow(element, null, 4);
+		
+		CurriculumElementWithViewsRow row1 = new CurriculumElementWithViewsRow(element, null,
+				new RepositoryEntryMyCourseImpl(entry1, null, false, 0, 0), false);
+		row1.setParent(parent);
+		CurriculumElementWithViewsRow row2 = new CurriculumElementWithViewsRow(element, null,
+				new RepositoryEntryMyCourseImpl(entry2, null, false, 0, 0), false);
+		row2.setParent(parent);
+		CurriculumElementWithViewsRow row3 = new CurriculumElementWithViewsRow(element, null,
+				new RepositoryEntryMyCourseImpl(entry3, null, false, 0, 0), false);
+		row3.setParent(parent);
+		CurriculumElementWithViewsRow row4 = new CurriculumElementWithViewsRow(element, null,
+				new RepositoryEntryMyCourseImpl(entry4, null, false, 0, 0), false);
+		row4.setParent(parent);
+
+		List<CurriculumElementWithViewsRow> rows = new ArrayList<>();
+		rows.add(parent);
+		rows.add(row1);
+		rows.add(row2);
+		rows.add(row3);
+		rows.add(row4);
+		
+		Collections.sort(rows, new CurriculumElementViewsRowComparator(Locale.ENGLISH));
+
+		Assert.assertEquals(entry3.getKey(), rows.get(1).getRepositoryEntryKey());
+		Assert.assertEquals(entry4.getKey(), rows.get(2).getRepositoryEntryKey());
+		Assert.assertEquals(entry1.getKey(), rows.get(3).getRepositoryEntryKey());
+		Assert.assertEquals(entry2.getKey(), rows.get(4).getRepositoryEntryKey());
+	}
+	
 	/**
 	 * Simulate a list of repository entries under their own curriculum element.
 	 * 
@@ -172,7 +223,7 @@ public class CurriculumElementViewsRowComparatorTest extends OlatTestCase {
 		curriculumService.addRepositoryEntry(element3, entry3, false);
 		curriculumService.addRepositoryEntry(element4, entry4, false);
 		dbInstance.commitAndCloseSession();
-		
+
 		CurriculumElementWithViewsRow row1 = new CurriculumElementWithViewsRow(element1, null,
 				new RepositoryEntryMyCourseImpl(entry1, null, false, 0, 0), true);
 		CurriculumElementWithViewsRow row2 = new CurriculumElementWithViewsRow(element2, null,
