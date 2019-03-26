@@ -50,7 +50,6 @@ import org.olat.core.util.mail.MailContextImpl;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
-import org.olat.core.util.xml.XStreamHelper;
 import org.olat.modules.reminder.Reminder;
 import org.olat.modules.reminder.ReminderRule;
 import org.olat.modules.reminder.ReminderService;
@@ -69,8 +68,6 @@ import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.thoughtworks.xstream.XStream;
-
 /**
  * 
  * Initial date: 08.04.2015<br>
@@ -81,13 +78,6 @@ import com.thoughtworks.xstream.XStream;
 public class ReminderServiceImpl implements ReminderService {
 	
 	private static final OLog log = Tracing.createLoggerFor(ReminderServiceImpl.class);
-	private static final XStream ruleXStream = XStreamHelper.createXStreamInstance();
-	static {
-		ruleXStream.alias("rule", org.olat.modules.reminder.model.ReminderRuleImpl.class);
-		ruleXStream.alias("rules", org.olat.modules.reminder.model.ReminderRules.class);
-		ruleXStream.alias("reminders", org.olat.modules.reminder.model.ImportExportReminders.class);
-		ruleXStream.alias("reminder", org.olat.modules.reminder.model.ImportExportReminder.class);
-	}
 	
 	
 	@Autowired
@@ -174,12 +164,12 @@ public class ReminderServiceImpl implements ReminderService {
 
 	@Override
 	public String toXML(ReminderRules rules) {
-		return ruleXStream.toXML(rules);
+		return ReminderRulesXStream.toXML(rules);
 	}
 	
 	@Override
 	public ReminderRules toRules(String rulesXml) {
-		return (ReminderRules)ruleXStream.fromXML(rulesXml);
+		return ReminderRulesXStream.toRules(rulesXml);
 	}
 	
 	@Override
@@ -192,7 +182,7 @@ public class ReminderServiceImpl implements ReminderService {
 					ImportExportReminder exportReminder = new ImportExportReminder(reminder);
 					exportReminders.getReminders().add(exportReminder);
 				}
-				ruleXStream.toXML(exportReminders, fOut);
+				ReminderRulesXStream.toXML(exportReminders, fOut);
 			} catch(Exception e) {
 				log.error("", e);
 			}
@@ -205,7 +195,7 @@ public class ReminderServiceImpl implements ReminderService {
 		List<Reminder> reminders = new ArrayList<>();
 		if(reminderFile.exists()) {
 			try(InputStream in = new FileInputStream(reminderFile)) {
-				ImportExportReminders importReminders = (ImportExportReminders)ruleXStream.fromXML(in);
+				ImportExportReminders importReminders = ReminderRulesXStream.fromXML(in);
 				List<ImportExportReminder> importReminderList = importReminders.getReminders();
 				for(ImportExportReminder importReminder:importReminderList) {
 					Reminder reminder = reminderDao.createReminder(newEntry, creator);

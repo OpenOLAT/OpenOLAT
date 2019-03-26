@@ -80,6 +80,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.modules.gotomeeting.restapi.GoToTrainingWebService;
 import org.olat.modules.lecture.restapi.LectureBlocksWebService;
+import org.olat.modules.reminder.restapi.RemindersWebService;
 import org.olat.modules.vitero.restapi.ViteroBookingWebService;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
@@ -233,6 +234,20 @@ public class CourseWebService {
 		RepositoryEntry courseRe = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		boolean administrator = isManagerWithLectures(request);
 		LectureBlocksWebService service = new LectureBlocksWebService(courseRe, administrator);
+		CoreSpringFactory.autowireObject(service);
+		return service;
+	}
+	
+	/**
+	 * To get the web service for the reminders of a specific course.
+	 * 
+	 * @return The web service for reminders.
+	 */
+	@Path("reminders")
+	public RemindersWebService getRemindersWebService(@Context HttpServletRequest request) {
+		RepositoryEntry courseRe = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		boolean administrator = isManager(request);
+		RemindersWebService service = new RemindersWebService(courseRe, administrator);
 		CoreSpringFactory.autowireObject(service);
 		return service;
 	}

@@ -1,0 +1,28 @@
+<reminders>
+  <reminders>
+    <reminder>
+      <description>XML Reminder</description>
+      <configuration>&lt;rules&gt;
+  &lt;rules&gt;
+    &lt;rule&gt;
+      &lt;type&gt;DateRuleSPI&lt;/type&gt;
+      &lt;operator&gt;&amp;gt;&lt;/operator&gt;
+      &lt;rightOperand&gt;2020-03-01T00:00:00&lt;/rightOperand&gt;
+    &lt;/rule&gt;
+    &lt;rule&gt;
+      &lt;type&gt;BeforeDateRuleSPI&lt;/type&gt;
+      &lt;operator&gt;&amp;lt;&lt;/operator&gt;
+      &lt;rightOperand&gt;2020-03-26T00:00:00&lt;/rightOperand&gt;
+    &lt;/rule&gt;
+    &lt;rule&gt;
+      &lt;type&gt;RepositoryEntryRoleRuleSPI&lt;/type&gt;
+      &lt;operator&gt;=&lt;/operator&gt;
+      &lt;rightOperand&gt;coach&lt;/rightOperand&gt;
+    &lt;/rule&gt;
+  &lt;/rules&gt;
+&lt;/rules&gt;</configuration>
+      <emailSubject>E-mail subject</emailSubject>
+      <emailBody>&lt;p&gt;E-mail body&lt;/p&gt;</emailBody>
+    </reminder>
+  </reminders>
+</reminders>

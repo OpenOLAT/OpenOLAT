@@ -78,13 +78,7 @@ public class CurriculumElementViewsRowComparator extends FlexiTreeNodeComparator
 		int c = 0;
 		if((c1.isCurriculumElementOnly() || c1.isCurriculumElementWithEntry()) && (c2.isCurriculumElementOnly() || c2.isCurriculumElementWithEntry())) {
 			// compare by position
-			Long pos1 = c1.getCurriculumElementPos();
-			Long pos2 = c2.getCurriculumElementPos();
-			if(pos1 == null || pos2 == null) {
-				c = compareNullObjects(pos1, pos2);
-			} else {
-				c = Long.compare(pos1.longValue(), pos2.longValue());
-			}	
+			c = compareCurriculumElements(c1, c2);
 		} else if(c1.isCurriculumElementOnly() || c1.isCurriculumElementWithEntry()) {
 			c = 1;
 		} else if(c2.isCurriculumElementOnly() || c2.isCurriculumElementWithEntry()) {
@@ -96,11 +90,14 @@ public class CurriculumElementViewsRowComparator extends FlexiTreeNodeComparator
 	}
 	
 	private int compareCurriculumElements(CurriculumElementWithViewsRow c1, CurriculumElementWithViewsRow c2) {
-		int c = 0;
-		if(c1.getCurriculumElementBeginDate() == null || c2.getCurriculumElementBeginDate() == null) {
-			c = compareNullObjects(c1.getCurriculumElementBeginDate(), c2.getCurriculumElementBeginDate());
-		} else {
-			c = c1.getCurriculumElementBeginDate().compareTo(c2.getCurriculumElementBeginDate());
+		int c = compareClosed(c1, c2);
+		
+		if(c == 0) {
+			if(c1.getCurriculumElementBeginDate() == null || c2.getCurriculumElementBeginDate() == null) {
+				c = compareNullObjects(c1.getCurriculumElementBeginDate(), c2.getCurriculumElementBeginDate());
+			} else {
+				c = c1.getCurriculumElementBeginDate().compareTo(c2.getCurriculumElementBeginDate());
+			}
 		}
 		
 		if(c == 0) {
@@ -126,11 +123,14 @@ public class CurriculumElementViewsRowComparator extends FlexiTreeNodeComparator
 	}
 	
 	private int compareRepositoryEntry(CurriculumElementWithViewsRow c1, CurriculumElementWithViewsRow c2) {
-		int c = 0;
-		if(c1.getRepositoryEntryDisplayName() == null || c2.getRepositoryEntryDisplayName() == null) {
-			c = compareNullObjects(c1.getRepositoryEntryDisplayName(), c2.getRepositoryEntryDisplayName());
-		} else {
-			c = collator.compare(c1.getRepositoryEntryDisplayName(), c2.getRepositoryEntryDisplayName());
+		int c = compareClosed(c1, c2);
+		
+		if(c == 0) {
+			if(c1.getRepositoryEntryDisplayName() == null || c2.getRepositoryEntryDisplayName() == null) {
+				c = compareNullObjects(c1.getRepositoryEntryDisplayName(), c2.getRepositoryEntryDisplayName());
+			} else {
+				c = collator.compare(c1.getRepositoryEntryDisplayName(), c2.getRepositoryEntryDisplayName());
+			}
 		}
 		
 		if(c == 0) {
@@ -147,17 +147,23 @@ public class CurriculumElementViewsRowComparator extends FlexiTreeNodeComparator
 		return c;
 	}
 	
+	private int compareClosed(CurriculumElementWithViewsRow c1, CurriculumElementWithViewsRow c2) {
+		int c = 0;
+		if(c1.isClosedOrInactive() && !c2.isClosedOrInactive()) {
+			c = 1;
+		} else if(!c1.isClosedOrInactive() && c2.isClosedOrInactive()) {
+			c = -1;
+		}
+		return c;
+	}
+	
 	private int compareDisplayName(CurriculumElementWithViewsRow c1, CurriculumElementWithViewsRow c2) {
 		String d1 = getDisplayName(c1);
 		String d2 = getDisplayName(c2);
 		if(d1 == null || d2 == null) {
 			return compareNullObjects(d1, d2);
 		}
-		int c = d1.compareTo(d2);
-		if(c == 0) {
-			
-		}
-		return c;
+		return d1.compareTo(d2);
 	}
 	
 	private String getDisplayName(CurriculumElementWithViewsRow row) {
