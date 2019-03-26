@@ -81,6 +81,7 @@ import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.restapi.CurriculumElementVO;
 import org.olat.modules.lecture.restapi.LectureBlocksWebService;
+import org.olat.modules.reminder.restapi.RemindersWebService;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.model.TaxonomyLevelRefImpl;
@@ -199,6 +200,19 @@ public class RepositoryEntryWebService {
 	throws WebApplicationException {
 		boolean administrator = isLectureManager(request);
 		LectureBlocksWebService service = new LectureBlocksWebService(entry, administrator);
+		CoreSpringFactory.autowireObject(service);
+		return service;
+	}
+	
+	/**
+	 * To get the web service for the reminders of a specific course.
+	 * 
+	 * @return The web service for reminders.
+	 */
+	@Path("reminders")
+	public RemindersWebService getRemindersWebService(@Context HttpServletRequest request) {
+		boolean administrator = isAuthorEditor(request);
+		RemindersWebService service = new RemindersWebService(entry, administrator);
 		CoreSpringFactory.autowireObject(service);
 		return service;
 	}
