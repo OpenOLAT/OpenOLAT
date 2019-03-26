@@ -406,6 +406,18 @@ public class CurriculumElementWithViewsRow implements CurriculumElementWithView,
 	public void setAccessTypes(List<PriceMethod> accessTypes) {
 		this.accessTypes = accessTypes;
 	}
+	
+	public boolean isClosedOrInactive() {
+		if(isCurriculumElementOnly()) {
+			return element.getElementStatus() == CurriculumElementStatus.inactive || element.getElementStatus() == CurriculumElementStatus.deleted;
+		}
+		if(isRepositoryEntryOnly()) {
+			return status != null && status.decommissioned();
+		}
+		return (status != null && status.decommissioned())
+				|| (element != null &&  element.getElementStatus() != null
+				&& (element.getElementStatus() == CurriculumElementStatus.inactive || element.getElementStatus() == CurriculumElementStatus.deleted));
+	}
 
 	@Override
 	public CurriculumElementWithViewsRow getParent() {
