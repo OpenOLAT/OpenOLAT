@@ -351,7 +351,7 @@ public class BusinessControlFactory {
 	 * @return
 	 */
 	public List<ContextEntry> createCEListFromResourceType(String resourceType) {
-		List<ContextEntry> entries = new ArrayList<ContextEntry>(3);
+		List<ContextEntry> entries = new ArrayList<>(3);
 		if(StringHelper.containsNonWhitespace(resourceType)) {
 			OLATResourceable ores = OresHelper.createOLATResourceableInstanceWithoutCheck(resourceType, 0l);
 			ContextEntry entry = createContextEntry(ores);
@@ -366,7 +366,7 @@ public class BusinessControlFactory {
 	 * @return
 	 */
 	public List<ContextEntry> createCEListFromString(String businessControlString) {
-		List<ContextEntry> entries = new ArrayList<ContextEntry>();
+		List<ContextEntry> entries = new ArrayList<>();
 		if(!StringHelper.containsNonWhitespace(businessControlString)) {
 			return entries;
 		}
