@@ -10,6 +10,11 @@
 <script type='text/javascript'>
 /* <![CDATA[ */
     ## Execute deferred. Gives browser the time to finish the page rendering first before executing the print dialog. 
-	jQuery(function() {window.print();});
+	jQuery(function() {
+		setTimeout(function() {
+			window.focus();
+			window.print();
+		},1500);
+	});
 /* ]]> */
 </script>
