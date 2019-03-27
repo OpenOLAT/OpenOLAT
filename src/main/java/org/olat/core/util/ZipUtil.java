@@ -450,7 +450,7 @@ public class ZipUtil {
 						}
 						
 						VFSLeaf newEntry = (VFSLeaf)createIn.resolve(name);
-						if(vfsLockManager.isLockedForMe(newEntry, identity, isAdmin, VFSLockApplicationType.vfs)) {
+						if(vfsLockManager.isLockedForMe(newEntry, identity, isAdmin, VFSLockApplicationType.vfs, null)) {
 							lockedFiles.add(name);
 						}
 					}
@@ -513,7 +513,7 @@ public class ZipUtil {
 						}
 						
 						VFSLeaf newEntry = (VFSLeaf)createIn.resolve(name);
-						if(vfsLockManager.isLockedForMe(newEntry, identity, roles, VFSLockApplicationType.vfs)) {
+						if(vfsLockManager.isLockedForMe(newEntry, identity, roles, VFSLockApplicationType.vfs, null)) {
 							lockedFiles.add(name);
 						}
 					}

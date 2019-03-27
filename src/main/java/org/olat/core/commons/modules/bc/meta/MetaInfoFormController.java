@@ -307,12 +307,12 @@ public class MetaInfoFormController extends FormBasicController {
 				String unlockedTitle = getTranslator().translate("mf.unlocked");
 				locked = uifactory.addRadiosHorizontal("locked","mf.locked",formLayout, new String[]{"lock","unlock"}, new String[]{lockedTitle, unlockedTitle});
 				locked.setHelpText(getTranslator().translate("mf.locked.help"));
-				if(vfsLockManager.isLocked(item, VFSLockApplicationType.vfs)) {
+				if(vfsLockManager.isLocked(item, VFSLockApplicationType.vfs, null)) {
 					locked.select("lock", true);
 				} else {
 					locked.select("unlock", true);
 				}
-				boolean lockForMe = vfsLockManager.isLockedForMe(item, getIdentity(), roles, VFSLockApplicationType.vfs);
+				boolean lockForMe = vfsLockManager.isLockedForMe(item, getIdentity(), roles, VFSLockApplicationType.vfs, null);
 				locked.setEnabled(!lockForMe);
 				
 				//locked by
@@ -482,11 +482,11 @@ public class MetaInfoFormController extends FormBasicController {
 	public VFSMetadata getMetaInfo() {
 		if (!isSubform && (item instanceof VFSLeaf) && (locked != null && locked.isEnabled())) {
 			//isSubForm
-			boolean alreadyLocked = vfsLockManager.isLocked(item, VFSLockApplicationType.vfs);
+			boolean alreadyLocked = vfsLockManager.isLocked(item, VFSLockApplicationType.vfs, null);
 			boolean currentlyLocked = locked.isSelected(0);
 			if(!currentlyLocked || !alreadyLocked) {
 				if(currentlyLocked) {
-					vfsLockManager.lock(item, getIdentity(), roles, VFSLockApplicationType.vfs);
+					vfsLockManager.lock(item, getIdentity(), roles, VFSLockApplicationType.vfs, null);
 				} else {
 					vfsLockManager.unlock(item, getIdentity(), roles, VFSLockApplicationType.vfs);
 				}

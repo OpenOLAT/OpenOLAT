@@ -93,7 +93,7 @@ public class CmdDelete extends BasicController implements FolderCommand {
 		List<String> lockedFiles = new ArrayList<>();
 		for (String file : selection.getFiles()) {
 			VFSItem item = container.resolve(file);
-			if (lockManager.isLockedForMe(item, getIdentity(), roles, VFSLockApplicationType.vfs)) {
+			if (lockManager.isLockedForMe(item, getIdentity(), roles, VFSLockApplicationType.vfs, null)) {
 				lockedFiles.add(file);
 			}
 		}

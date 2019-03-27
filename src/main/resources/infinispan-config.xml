@@ -34,6 +34,24 @@
 			<expiration max-idle="-1" interval="5000" />
 		</local-cache>
 		
+		<local-cache name="VFSLockManager@lock-nulls" simple-cache="true" statistics="true" statistics-available="true">
+			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
+			<transaction mode="NONE" auto-commit="true" />
+			<memory>
+				<object size="50000"  strategy="REMOVE" />
+			</memory>
+			<expiration max-idle="21600000" interval="5000" />
+		</local-cache>
+		
+		<local-cache name="VFSLockManager@file-locks" simple-cache="true" statistics="true" statistics-available="true">
+			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
+			<transaction mode="NONE" auto-commit="true" />
+			<memory>
+				<object size="50000"  strategy="REMOVE" />
+			</memory>
+			<expiration max-idle="21600000" interval="5000" />
+		</local-cache>
+		
 		<local-cache name="CalendarManager@calendar" simple-cache="true" statistics="true" statistics-available="true">
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />

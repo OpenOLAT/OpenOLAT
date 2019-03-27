@@ -232,7 +232,7 @@ public class ListRenderer {
 		boolean isContainer = (leaf == null); // if not a leaf, it must be a container...
 		boolean lockedForUser = lockManager.isLockedForMe(child, metadata,
 				fc.getIdentityEnvironnement().getIdentity(), fc.getIdentityEnvironnement().getRoles(),
-				VFSLockApplicationType.vfs);
+				VFSLockApplicationType.vfs, null);
 		
 		String name = child.getName();
 		boolean xssErrors = StringHelper.xssScanForErrors(name);
@@ -412,7 +412,7 @@ public class ListRenderer {
 		}
 		
 		//locked
-		boolean locked = lockManager.isLocked(child, metadata, VFSLockApplicationType.vfs);
+		boolean locked = lockManager.isLocked(child, metadata, VFSLockApplicationType.vfs, null);
 		if(locked) {
 			LockInfo lock = lockManager.getLock(child);
 			sb.append("<i class=\"o_icon o_icon_locked\" title=\"");

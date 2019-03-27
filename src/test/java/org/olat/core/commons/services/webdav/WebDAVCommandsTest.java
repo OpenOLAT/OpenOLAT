@@ -57,6 +57,7 @@ import org.olat.core.util.vfs.VFSLockApplicationType;
 import org.olat.core.util.vfs.VFSLockManager;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.lock.LockInfo;
+import org.olat.core.util.vfs.lock.LockResult;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.repository.RepositoryEntry;
@@ -470,8 +471,8 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		createFile(folderContainer, "tolock.txt");
 		VFSItem itemToLock = folderContainer.resolve("tolock.txt");
 		Assert.assertNotNull(itemToLock);
-		boolean locked = lockManager.lock(itemToLock, assistant, Roles.authorRoles(), VFSLockApplicationType.vfs);
-		Assert.assertTrue(locked);
+		LockResult locked = lockManager.lock(itemToLock, assistant, Roles.authorRoles(), VFSLockApplicationType.vfs, null);
+		Assert.assertTrue(locked.isAcquired());
 		
 		//author make a propfind in the locked resource
 		WebDAVConnection conn = new WebDAVConnection();
@@ -529,7 +530,7 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 
 		//check vfs lock
 		Roles adminRoles = Roles.administratorRoles();
-		boolean lockedForMe = lockManager.isLockedForMe(item, user, adminRoles, VFSLockApplicationType.vfs);
+		boolean lockedForMe = lockManager.isLockedForMe(item, user, adminRoles, VFSLockApplicationType.vfs, null);
 		Assert.assertTrue(lockedForMe);
 		LockInfo lock = lockManager.getLock(item);
 		Assert.assertNotNull(lock);

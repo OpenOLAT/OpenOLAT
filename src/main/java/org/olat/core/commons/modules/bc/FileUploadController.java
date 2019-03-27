@@ -468,7 +468,7 @@ public class FileUploadController extends FormBasicController {
 			}
 		} else {
 			//if the file is locked, ask for unlocking it
-			if(vfsLockManager.isLocked(existingVFSItem, VFSLockApplicationType.vfs)) {
+			if(vfsLockManager.isLocked(existingVFSItem, VFSLockApplicationType.vfs, null)) {
 				askForUnlock(ureq);
 				
 			} else {
@@ -487,7 +487,7 @@ public class FileUploadController extends FormBasicController {
 		String comment = commentVersionCtr.getComment();
 		
 		Roles roles = ureq.getUserSession().getRoles();
-		boolean locked = vfsLockManager.isLocked(existingVFSItem, VFSLockApplicationType.vfs);
+		boolean locked = vfsLockManager.isLocked(existingVFSItem, VFSLockApplicationType.vfs, null);
 		if(locked && !commentVersionCtr.keepLocked()) {
 			vfsLockManager.unlock(existingVFSItem, getIdentity(), roles, VFSLockApplicationType.vfs);
 		}
@@ -565,7 +565,7 @@ public class FileUploadController extends FormBasicController {
 		removeAsListenerAndDispose(commentVersionCtr);
 		removeAsListenerAndDispose(commentVersionDialogBox);
 
-		boolean locked = vfsLockManager.isLocked(existingVFSItem, VFSLockApplicationType.vfs);
+		boolean locked = vfsLockManager.isLocked(existingVFSItem, VFSLockApplicationType.vfs, null);
 		commentVersionCtr = new VersionCommentController(ureq, getWindowControl(), locked, true);
 		listenTo(commentVersionCtr);
 		String title = commentVersionCtr.getAndRemoveFormTitle();
@@ -626,7 +626,8 @@ public class FileUploadController extends FormBasicController {
 			FileUtils.deleteFile(uploadedFile);
 			
 			if (success) {
-				boolean locked = vfsLockManager.isLockedForMe(existingVFSItem, getIdentity(), ureq.getUserSession().getRoles(), VFSLockApplicationType.vfs);
+				boolean locked = vfsLockManager.isLockedForMe(existingVFSItem, getIdentity(), ureq.getUserSession().getRoles(),
+						VFSLockApplicationType.vfs, null);
 				if (locked) {
 					//the file is locked and cannot be overwritten
 					lockedFileDialog(ureq, renamedFilename);

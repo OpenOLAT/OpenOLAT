@@ -105,7 +105,7 @@ public class CmdEditMeta extends BasicController implements FolderCommand {
 
 		removeAsListenerAndDispose(metaCtr);
 		removeAsListenerAndDispose(metaInfoCtr);
-		if(vfsLockManager.isLockedForMe(currentItem, getIdentity(), ureq.getUserSession().getRoles(), VFSLockApplicationType.vfs)) {
+		if(vfsLockManager.isLockedForMe(currentItem, getIdentity(), ureq.getUserSession().getRoles(), VFSLockApplicationType.vfs, null)) {
 			//readonly
 			String resourceUrl = getResourceURL(wControl);
 			metaCtr = new MetaInfoController(ureq, wControl, currentItem, resourceUrl);

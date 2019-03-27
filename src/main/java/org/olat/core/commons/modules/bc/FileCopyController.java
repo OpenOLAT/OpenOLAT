@@ -153,7 +153,7 @@ public class FileCopyController extends LinkChooserController {
 							
 							removeAsListenerAndDispose(commentVersionCtr);
 							
-							boolean locked = vfsLockManager.isLocked(existingVFSItem, null);
+							boolean locked = vfsLockManager.isLocked(existingVFSItem, null, null);
 							commentVersionCtr = new VersionCommentController(ureq,getWindowControl(), locked, true);
 							listenTo(commentVersionCtr);
 							
@@ -165,7 +165,7 @@ public class FileCopyController extends LinkChooserController {
 						}
 					} else {
 						//if the file is locked, ask for unlocking it
-						if(vfsLockManager.isLocked(existingVFSItem, null)) {
+						if(vfsLockManager.isLocked(existingVFSItem, null, null)) {
 							
 							removeAsListenerAndDispose(unlockCtr);
 							unlockCtr = new VersionCommentController(ureq,getWindowControl(), true, false);
@@ -219,7 +219,7 @@ public class FileCopyController extends LinkChooserController {
 		} else if (source == commentVersionCtr) {
 			String comment = commentVersionCtr.getComment();
 			Roles roles = ureq.getUserSession().getRoles();
-			boolean locked = vfsLockManager.isLocked(existingVFSItem, VFSLockApplicationType.vfs);
+			boolean locked = vfsLockManager.isLocked(existingVFSItem, VFSLockApplicationType.vfs, null);
 			if(locked && !commentVersionCtr.keepLocked()) {
 				vfsLockManager.unlock(existingVFSItem, getIdentity(), roles, VFSLockApplicationType.vfs);
 			}
@@ -265,7 +265,7 @@ public class FileCopyController extends LinkChooserController {
 					if(maxNumOfRevisions < 0 || maxNumOfRevisions > revisions.size()) {
 						
 						removeAsListenerAndDispose(commentVersionCtr);
-						boolean locked = vfsLockManager.isLocked(existingVFSItem, VFSLockApplicationType.vfs);
+						boolean locked = vfsLockManager.isLocked(existingVFSItem, VFSLockApplicationType.vfs, null);
 						commentVersionCtr = new VersionCommentController(ureq,getWindowControl(), locked, true);
 						listenTo(commentVersionCtr);
 						
@@ -306,7 +306,8 @@ public class FileCopyController extends LinkChooserController {
 	
 	private void fileAlreadyExists(UserRequest ureq) {
 		renamedFilename =  proposedRenamedFilename(existingVFSItem);
-		boolean locked = vfsLockManager.isLockedForMe(existingVFSItem, getIdentity(), ureq.getUserSession().getRoles(), VFSLockApplicationType.vfs);
+		boolean locked = vfsLockManager.isLockedForMe(existingVFSItem, getIdentity(), ureq.getUserSession().getRoles(),
+				VFSLockApplicationType.vfs, null);
 		if (locked) {
 			//the file is locked and cannot be overwritten
 			removeAsListenerAndDispose(lockedFileDialog);

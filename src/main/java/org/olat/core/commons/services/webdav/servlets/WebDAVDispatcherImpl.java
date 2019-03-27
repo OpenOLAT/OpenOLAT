@@ -32,6 +32,7 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Stack;
@@ -59,6 +60,7 @@ import org.olat.core.util.UserSession;
 import org.olat.core.util.vfs.QuotaExceededException;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.lock.LockInfo;
+import org.olat.core.util.vfs.lock.LockResult;
 import org.olat.core.util.vfs.lock.VFSLockManagerImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -558,11 +560,9 @@ public class WebDAVDispatcherImpl
             if (slash != -1) {
                 String parentPath = path.substring(0, slash);
                 WebResource parentResource = resources.getResource(parentPath);
-                Vector<String> currentLockNullResources = lockManager.getLockNullResource(parentResource);
+                List<String> currentLockNullResources = lockManager.getLockNullResource(parentResource);
                 if (currentLockNullResources != null) {
-                    Enumeration<String> lockNullResourcesList = currentLockNullResources.elements();
-                    while (lockNullResourcesList.hasMoreElements()) {
-                        String lockNullPath = lockNullResourcesList.nextElement();
+                    for(String lockNullPath:currentLockNullResources) {
                         if (lockNullPath.equals(path)) {
                             resp.setStatus(WebdavStatus.SC_MULTI_STATUS);
                             resp.setContentType("text/xml; charset=UTF-8");
@@ -631,11 +631,9 @@ public class WebDAVDispatcherImpl
                         lockPath = lockPath.substring(0, lockPath.length() - 1);
                     }
                     
-                    Vector<String> currentLockNullResources = lockManager.getLockNullResource(resource);
+                    List<String> currentLockNullResources = lockManager.getLockNullResource(resource);
                     if (currentLockNullResources != null) {
-                        Enumeration<String> lockNullResourcesList = currentLockNullResources.elements();
-                        while (lockNullResourcesList.hasMoreElements()) {
-                            String lockNullPath = lockNullResourcesList.nextElement();
+                        for(String lockNullPath : currentLockNullResources) {
                             parseLockNullProperties(req, generatedXML, lockNullPath, type, properties);
                         }
                     }
@@ -644,7 +642,7 @@ public class WebDAVDispatcherImpl
                 if (stack.isEmpty()) {
                     depth--;
                     stack = stackBelow;
-                    stackBelow = new Stack<String>();
+                    stackBelow = new Stack<>();
                 }
 
                 generatedXML.sendData();
@@ -1006,9 +1004,18 @@ public class WebDAVDispatcherImpl
             resp.sendError(WebdavStatus.SC_FORBIDDEN);
         	return;
         }
-
+        
+        
+        final WebResource resource = resources.getResource(path);
     	UserSession usess = webDAVManager.getUserSession(req);
-        LockInfo lock = new LockInfo(usess.getIdentity().getKey(), true, false, false);
+        LockResult lockResult = lockManager.lock(resource, usess.getIdentity(), usess.getRoles());
+        if(!lockResult.isAcquired()) {
+            resp.sendError(WebdavStatus.SC_LOCKED);
+            return;
+        }
+
+        LockInfo lock = lockResult.getLockInfo();
+        lock.setWebResource(resource);
 
         // Parsing lock request
 
@@ -1203,8 +1210,7 @@ public class WebDAVDispatcherImpl
 
         }
 
-        final WebResource resource = resources.getResource(path);
-        lock.setWebResource(resource);
+       
 
         Iterator<LockInfo> locksList = null;
 
@@ -1219,7 +1225,7 @@ public class WebDAVDispatcherImpl
 
                 // Checking if a child resource of this collection is
                 // already locked
-                Vector<String> lockPaths = new Vector<String>();
+                List<String> lockPaths = new Vector<>();
                 locksList = lockManager.getCollectionLocks();
                 while (locksList.hasNext()) {
                     LockInfo currentLock = locksList.next();
@@ -1232,10 +1238,10 @@ public class WebDAVDispatcherImpl
                          ((currentLock.isExclusive()) ||
                           (lock.isExclusive())) ) {
                         // A child collection of this collection is locked
-                        lockPaths.addElement(currentLock.getWebPath());
+                        lockPaths.add(currentLock.getWebPath());
                     }
                 }
-                locksList = lockManager.getResourceLocks();
+                locksList = lockManager.getResourceLocks().iterator();
                 while (locksList.hasNext()) {
                     LockInfo currentLock = locksList.next();
                     if (currentLock.hasExpired()) {
@@ -1247,7 +1253,7 @@ public class WebDAVDispatcherImpl
                          ((currentLock.isExclusive()) ||
                           (lock.isExclusive())) ) {
                         // A child resource of this collection is locked
-                        lockPaths.addElement(currentLock.getWebPath());
+                        lockPaths.add(currentLock.getWebPath());
                     }
                 }
 
@@ -1256,7 +1262,7 @@ public class WebDAVDispatcherImpl
                     // One of the child paths was locked
                     // We generate a multistatus error report
 
-                    Enumeration<String> lockPathsList = lockPaths.elements();
+                    Iterator<String> lockPathsList = lockPaths.iterator();
 
                     resp.setStatus(WebdavStatus.SC_CONFLICT);
 
@@ -1264,10 +1270,10 @@ public class WebDAVDispatcherImpl
                     generatedXML.writeXMLHeader();
                     generatedXML.writeElement("D", DEFAULT_NAMESPACE, "multistatus", XMLWriter.OPENING);
 
-                    while (lockPathsList.hasMoreElements()) {
+                    while (lockPathsList.hasNext()) {
                         generatedXML.writeElement("D", "response", XMLWriter.OPENING);
                         generatedXML.writeElement("D", "href", XMLWriter.OPENING);
-                        generatedXML.writeText(lockPathsList.nextElement());
+                        generatedXML.writeText(lockPathsList.next());
                         generatedXML.writeElement("D", "href", XMLWriter.CLOSING);
                         generatedXML.writeElement("D", "status", XMLWriter.OPENING);
                         generatedXML.writeText("HTTP/1.1 " + WebdavStatus.SC_LOCKED + " " + WebdavStatus.getStatusText(WebdavStatus.SC_LOCKED));
@@ -1316,50 +1322,27 @@ public class WebDAVDispatcherImpl
                 }
 
             } else {
-
                 // Locking a single resource
-
                 // Retrieving an already existing lock on that resource
-            	WebResource lockedResource = resources.getResource(lock.getWebPath());
-                LockInfo presentLock = lockManager.getResourceLock(lockedResource);
-                if (presentLock != null) {
-
-                    if ((presentLock.isExclusive()) || (lock.isExclusive())) {
-                        // If either lock is exclusive, the lock can't be
-                        // granted
-                        resp.sendError(WebdavStatus.SC_PRECONDITION_FAILED);
-                        return;
-                    } else {
-                    	presentLock.setWebDAVLock(true);
-                        presentLock.addToken(lockToken);
-                        lock = presentLock;
+                lock.addToken(lockToken);
+                // Checking if a resource exists at this path
+                if (!resource.exists()) {
+                    // "Creating" a lock-null resource
+                    int slash = lock.getWebPath().lastIndexOf('/');
+                    String parentPath = lock.getWebPath().substring(0, slash);
+                    WebResource parentResource = resources.getResource(parentPath);
+                    List<String> lockNulls = lockManager.getLockNullResource(parentResource);
+                    if (lockNulls == null) {
+                        lockNulls = new Vector<>();
+                        lockManager.putLockNullResource(parentPath, lockNulls);
                     }
 
-                } else {
+                    lockNulls.add(lock.getWebPath());
 
-                    lock.addToken(lockToken);
-                    lockManager.putResourceLock(lockedResource, lock);
-
-                    // Checking if a resource exists at this path
-                    if (!resource.exists()) {
-
-                        // "Creating" a lock-null resource
-                        int slash = lock.getWebPath().lastIndexOf('/');
-                        String parentPath = lock.getWebPath().substring(0, slash);
-                        WebResource parentResource = resources.getResource(parentPath);
-                        Vector<String> lockNulls = lockManager.getLockNullResource(parentResource);
-                        if (lockNulls == null) {
-                            lockNulls = new Vector<String>();
-                            lockManager.putLockNullResource(parentPath, lockNulls);
-                        }
-
-                        lockNulls.addElement(lock.getWebPath());
-
-                    }
-                    // Add the Lock-Token header as by RFC 2518 8.10.1
-                    // - only do this for newly created locks
-                    resp.addHeader("Lock-Token", "<opaquelocktoken:" + lockToken + ">");
                 }
+                // Add the Lock-Token header as by RFC 2518 8.10.1
+                // - only do this for newly created locks
+                resp.addHeader("Lock-Token", "<opaquelocktoken:" + lockToken + ">");
             }
         }
 
@@ -1371,7 +1354,7 @@ public class WebDAVDispatcherImpl
 
             // Checking resource locks
 
-            LockInfo toRenew = lockManager.getResourceLock(resource);
+            LockInfo toRenew = lockManager.getLock(resource);
             if (toRenew != null) {
                 // At least one of the tokens of the locks must have been given
             	Iterator<String> tokenList = toRenew.tokens();
@@ -1452,7 +1435,7 @@ public class WebDAVDispatcherImpl
         	log.debug("Unlock the ressource: " + path);
         }
 
-        LockInfo lock = lockManager.getResourceLock(resource);
+        LockInfo lock = lockManager.getLock(resource);
         if (lock != null) {
 
             // At least one of the tokens of the locks must have been given
@@ -2264,7 +2247,7 @@ public class WebDAVDispatcherImpl
         final WebResource resource = resources.getResource(path);
         
         // Retrieving the lock associated with the lock-null resource
-        LockInfo lock = lockManager.getResourceLock(resource);
+        LockInfo lock = lockManager.getLock(resource);
 
         if (lock == null)
             return;
@@ -2481,7 +2464,7 @@ public class WebDAVDispatcherImpl
      */
     private boolean generateLockDiscovery(final WebResource resource, final String path, XMLWriter generatedXML) {
     	
-        LockInfo resourceLock = lockManager.getResourceLock(resource);
+        LockInfo resourceLock = lockManager.getLock(resource);
         Iterator<LockInfo> collectionLocksList = lockManager.getCollectionLocks();
 
         boolean wroteStart = false;
@@ -2491,7 +2474,7 @@ public class WebDAVDispatcherImpl
             generatedXML.writeElement("D", "lockdiscovery", XMLWriter.OPENING);
             resourceLock.toXML(generatedXML);
         } else {
-        	LockInfo ooLock = lockManager.getVFSLock(resource);
+        	LockInfo ooLock = lockManager.getLock(resource);
         	if(ooLock != null) {
         		wroteStart = true;
         		generatedXML.writeElement("D", "lockdiscovery", XMLWriter.OPENING);

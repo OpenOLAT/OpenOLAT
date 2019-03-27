@@ -243,7 +243,7 @@ public class CmdMoveCopy extends DefaultController implements FolderCommand {
 					return null;
 				}
 			}
-			if (vfsLockManager.isLockedForMe(vfsSource, ureq.getIdentity(), ureq.getUserSession().getRoles(), VFSLockApplicationType.vfs)) {
+			if (vfsLockManager.isLockedForMe(vfsSource, ureq.getIdentity(), ureq.getUserSession().getRoles(), VFSLockApplicationType.vfs, null)) {
 				abortFailed(ureq, "lock.title");
 				return null;
 			}

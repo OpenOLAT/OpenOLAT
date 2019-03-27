@@ -234,7 +234,7 @@ public class MetaInfoController extends FormBasicController {
 			String lockedTitle = getTranslator().translate("mf.locked");
 			String unlockedTitle = getTranslator().translate("mf.unlocked");
 			locked = uifactory.addRadiosHorizontal("locked","mf.locked",formLayout, new String[]{"lock","unlock"}, new String[]{lockedTitle, unlockedTitle});
-			if(vfsLockManager.isLocked(item, VFSLockApplicationType.vfs)) {
+			if(vfsLockManager.isLocked(item, VFSLockApplicationType.vfs, null)) {
 				locked.select("lock", true);
 			} else {
 				locked.select("unlock", true);

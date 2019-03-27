@@ -138,7 +138,7 @@ public class FileEditorController extends BasicController {
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == editCtrl) {
 			if (event == Event.DONE_EVENT) {
-				boolean lock = vfsLockManager.isLocked(vfsLeaf, VFSLockApplicationType.vfs);
+				boolean lock = vfsLockManager.isLocked(vfsLeaf, VFSLockApplicationType.vfs, null);
 				if(lock) {
 					unlockCtr = new VersionCommentController(ureq,getWindowControl(), true, false);
 					listenTo(unlockCtr);

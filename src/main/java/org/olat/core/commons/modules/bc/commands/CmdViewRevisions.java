@@ -92,7 +92,8 @@ public class CmdViewRevisions extends BasicController implements FolderCommand {
 
 		setTranslator(translator);
 		
-		boolean locked = vfsLockManager.isLockedForMe(currentItem, ureq.getIdentity(), ureq.getUserSession().getRoles(), VFSLockApplicationType.vfs);
+		boolean locked = vfsLockManager.isLockedForMe(currentItem, ureq.getIdentity(), ureq.getUserSession().getRoles(),
+				VFSLockApplicationType.vfs, null);
 		revisionListCtr = new RevisionListController(ureq, wControl, currentItem, locked);
 		listenTo(revisionListCtr);
 		putInitialPanel(revisionListCtr.getInitialComponent());

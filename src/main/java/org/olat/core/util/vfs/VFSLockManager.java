@@ -23,6 +23,7 @@ import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.util.vfs.lock.LockInfo;
+import org.olat.core.util.vfs.lock.LockResult;
 
 /**
  * The manager which locks / unlokcs the files
@@ -37,7 +38,7 @@ public interface VFSLockManager {
 	 * @param item
 	 * @return True if the item has a VFS or WebDAv lock
 	 */
-	public boolean isLocked(VFSItem item, VFSLockApplicationType type);
+	public boolean isLocked(VFSItem item, VFSLockApplicationType type, String appName);
 	
 	/**
 	 * This method is used as an optimization of the isLocked() to prevent
@@ -47,7 +48,7 @@ public interface VFSLockManager {
 	 * @param loadedInfo The up-to-date meta info
 	 * @return
 	 */
-	public boolean isLocked(VFSItem item, VFSMetadata loadedInfo, VFSLockApplicationType type);
+	public boolean isLocked(VFSItem item, VFSMetadata loadedInfo, VFSLockApplicationType type, String appName);
 	
 	/**
 	 * 
@@ -56,7 +57,7 @@ public interface VFSLockManager {
 	 * @param roles
 	 * @return true if there is a lock owned by someone else, or there is a WebDAV lock on the item
 	 */
-	public boolean isLockedForMe(VFSItem item, Identity me, Roles roles, VFSLockApplicationType type);
+	public boolean isLockedForMe(VFSItem item, Identity me, Roles roles, VFSLockApplicationType type, String appName);
 	
 	/**
 	 * 
@@ -66,11 +67,20 @@ public interface VFSLockManager {
 	 * @param roles
 	 * @return true if there is a lock owned by someone else, or there is a WebDAV lock on the item
 	 */
-	public boolean isLockedForMe(VFSItem item, VFSMetadata loadedInfo, Identity me, Roles roles, VFSLockApplicationType type);
+	public boolean isLockedForMe(VFSItem item, VFSMetadata loadedInfo, Identity me, Roles roles, VFSLockApplicationType type, String appName);
 	
 	public LockInfo getLock(VFSItem item);
 	
-	public boolean lock(VFSItem item, Identity identity, Roles roles, VFSLockApplicationType type);
+	/**
+	 * 
+	 * @param item
+	 * @param identity
+	 * @param roles
+	 * @param type
+	 * @param appName
+	 * @return
+	 */
+	public LockResult lock(VFSItem item, Identity identity, Roles roles, VFSLockApplicationType type, String appName);
 	
 	/**
 	 * 
