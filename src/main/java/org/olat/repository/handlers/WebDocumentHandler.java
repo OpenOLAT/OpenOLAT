@@ -84,14 +84,16 @@ public class WebDocumentHandler extends FileHandler {
 	private static final OLog log = Tracing.createLoggerFor(WebDocumentHandler.class);
 	private final String supportedType;
 	private final WebDocumentCreateDelegate createDelegate;
+	private final WebDocumentEditDelegate editDelegate;
 	
 	public WebDocumentHandler(String type) {
-		this(type, new NullCreateDelegate());
+		this(type, new NullCreateDelegate(), new NullEditDelegate());
 	}
 	
-	public WebDocumentHandler(String type, WebDocumentCreateDelegate createDelegate) {
+	public WebDocumentHandler(String type, WebDocumentCreateDelegate createDelegate, WebDocumentEditDelegate editDelegate) {
 		this.supportedType = type;
 		this.createDelegate = createDelegate;
+		this.editDelegate = editDelegate;
 	}
 	
 	@Override
@@ -234,7 +236,7 @@ public class WebDocumentHandler extends FileHandler {
 
 	@Override
 	public EditionSupport supportsEdit(OLATResourceable resource) {
-		return EditionSupport.no;
+		return editDelegate.supportsEdit();
 	}
 	
 	@Override
@@ -262,7 +264,7 @@ public class WebDocumentHandler extends FileHandler {
 
 	@Override
 	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbar) {
-		throw new AssertException("a web document is not editable!!! res-id:"+re.getResourceableId());
+		return editDelegate.createEditorController(re, ureq, wControl, toolbar);
 	}
 	
 	@Override
@@ -317,5 +319,20 @@ public class WebDocumentHandler extends FileHandler {
 			return null;
 		}
 
+	}
+	
+	private static class NullEditDelegate implements WebDocumentEditDelegate {
+
+		@Override
+		public EditionSupport supportsEdit() {
+			return EditionSupport.no;
+		}
+
+		@Override
+		public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl wControl,
+				TooledStackedPanel toolbar) {
+			throw new AssertException("This web document is not editable!!! res-id: " + re.getResourceableId());
+		}
+		
 	}
 }

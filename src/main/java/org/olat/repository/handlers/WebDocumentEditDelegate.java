@@ -19,38 +19,22 @@
  */
 package org.olat.repository.handlers;
 
-import java.io.InputStream;
-
-import org.olat.core.commons.services.filetemplate.ContentProviderFactory;
-import org.olat.core.id.OLATResourceable;
-import org.olat.fileresource.types.DocFileResource;
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.WindowControl;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
- * Initial date: 25 Mar 2019<br>
+ * Initial date: 27 Mar 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class WordCreateDelegate extends AbstractCreateDelegate {
-
-	@Override
-	public String getCreateLabelI18nKey() {
-		return "new.word";
-	}
-
-	@Override
-	protected OLATResourceable getOLATResourceable() {
-		return new DocFileResource();
-	}
-
-	@Override
-	protected String getSuffix() {
-		return "docx";
-	}
-
-	@Override
-	protected InputStream getContent() {
-		return ContentProviderFactory.emptyDocx().getContent();
-	}
+public interface WebDocumentEditDelegate {
+	
+	public EditionSupport supportsEdit();
+	
+	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbar);
 
 }

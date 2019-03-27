@@ -104,14 +104,14 @@ public class WebDocumentRunController extends BasicController {
 				}
 			} else if (vfsService.hasEditor(extension)) {
 				VFSLeafEditorSecurityCallback secCallback = VFSLeafEditorSecurityCallbackBuilder.builder()
-						.canEdit(reSecurity.isOwner() || reSecurity.isCoach())
+						.canEdit(false)
 						.canClose(false)
 						.build();
 				List<VFSLeafEditor> editors = vfsService.getEditors(document);
 				if (editors.size() >= 1) {
 					// FolderComponent should be initialized to be safe. As of today the internal
 					// editor does not support these file types.
-					Controller editCtrl = new VFSLeafEditorController(ureq, wControl, document, null, secCallback);
+					Controller editCtrl = new VFSLeafEditorController(ureq, wControl, document, null, secCallback, "o_web_document");
 					listenTo(editCtrl);
 					mainVC.put("content", editCtrl.getInitialComponent());
 				}

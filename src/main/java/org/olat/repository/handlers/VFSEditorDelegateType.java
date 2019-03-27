@@ -21,36 +21,22 @@ package org.olat.repository.handlers;
 
 import java.io.InputStream;
 
-import org.olat.core.commons.services.filetemplate.ContentProviderFactory;
 import org.olat.core.id.OLATResourceable;
-import org.olat.fileresource.types.XlsFileResource;
 
 /**
  * 
- * Initial date: 25 Mar 2019<br>
+ * Initial date: 27 Mar 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class ExcelCreateDelegate extends AbstractCreateDelegate {
-
-	@Override
-	protected OLATResourceable getOLATResourceable() {
-		return new XlsFileResource();
-	}
+public interface VFSEditorDelegateType {
 	
-	@Override
-	public String getCreateLabelI18nKey() {
-		return "new.excel";
-	}
+	public String getCreateLabelI18nKey();
 	
-	@Override
-	protected String getSuffix() {
-		return "xlsx";
-	}
+	public OLATResourceable getOLATResourceable();
+	
+	public String getSuffix();
 
-	@Override
-	protected InputStream getContent() {
-		return ContentProviderFactory.emptyXlsx().getContent();
-	}
+	public InputStream getContent();
 
 }

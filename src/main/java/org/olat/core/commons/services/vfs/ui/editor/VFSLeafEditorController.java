@@ -49,12 +49,18 @@ public class VFSLeafEditorController extends BasicController {
 	
 	public VFSLeafEditorController(UserRequest ureq, WindowControl wControl, VFSLeaf vfsLeaf,
 			FolderComponent folderComponent, VFSLeafEditorSecurityCallback secCallback) {
+		this(ureq, wControl, vfsLeaf, folderComponent, secCallback, null);
+	}
+	
+	public VFSLeafEditorController(UserRequest ureq, WindowControl wControl, VFSLeaf vfsLeaf,
+			FolderComponent folderComponent, VFSLeafEditorSecurityCallback secCallback, String cssClass) {
 		super(ureq, wControl);
 		this.vfsLeaf = vfsLeaf;
 		this.folderComponent = folderComponent;
 		this.secCallback = secCallback;
 		
 		mainVC = createVelocityContainer("editor_main");
+		mainVC.contextPut("cssClass", cssClass);
 		
 		configCtrl = new VFSLeafConfigController(ureq, wControl, vfsLeaf, secCallback);
 		listenTo(configCtrl);
