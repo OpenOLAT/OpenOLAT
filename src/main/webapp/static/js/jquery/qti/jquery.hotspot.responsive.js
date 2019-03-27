@@ -18,63 +18,102 @@
 		}, options );
 
 		var $img = this;
+		var loaded = null;
+		var windowWidth = 0;
 
 		var rwdImageMap = function() {
 			$img.each(function() {
 				if (typeof($(this).attr('usemap')) == 'undefined')
 					return;
 
+				var recalculateMap = function(that, $that) {
+					// Since WebKit doesn't know the height until after the image has loaded, perform everything in an onload copy
+					$('<img />').on('load', function() {
+						var attrW = 'width',
+							attrH = 'height';
+						
+						var $this = $(this);
+						if (!$that.data(attrW)) // size are backuped
+							$that.data(attrW, $that.attr(attrW));
+						if (!$that.data(attrH)) // size are backuped
+							$that.data(attrH, $that.attr(attrH));
+						
+						var w = $that.data(attrW),
+							h = $that.data(attrH);
+	
+						if (!w || !h) {
+							var temp = new Image();
+							temp.src = $that.attr('src');
+							if (!w) {
+								w = temp.width;
+								$that.data(attrW, h);
+							}
+							if (!h) {
+								h = temp.height;
+								$that.data(attrH, h);
+							}
+						}
+	
+						var containerWidth = $that.closest(".o_oo_hotcontainer").width();
+						
+						var tw = $that.width(),
+							th = $that.height();
+						if(containerWidth < w) {
+							var ratio = h / w;
+							tw = containerWidth;
+							th = ((containerWidth * ratio)|0);
+							$that.width(tw);
+							$that.height(th);
+						}
+					
+						var wPercent = tw/100,
+							hPercent = th/100,
+							map = $that.attr('usemap').replace('#', ''),
+							c = 'coords';
+	
+						$('map[name="' + map + '"]').find('area').each(function() {
+							var $this = $(this);
+							if (!$this.data(c)) // coords are backuped
+								$this.data(c, $this.attr(c));
+							
+							var coords = $this.data(c).split(','),
+								coordsPercent = new Array(coords.length);
+	
+							for (var i = 0; i < coordsPercent.length; ++i) {
+								if (i % 2 === 0)
+									coordsPercent[i] = parseInt(((coords[i]/w)*100)*wPercent);
+								else
+									coordsPercent[i] = parseInt(((coords[i]/h)*100)*hPercent);
+							}
+							$this.attr(c, coordsPercent.toString());
+						});
+						
+						loaded = true;
+						
+						$that.maphilight({
+							fillColor:  settings.fillColor,
+							fillOpacity: settings.fillOpacity,
+							strokeColor: settings.strokeColor,
+							strokeOpacity: settings.strokeOpacity,
+							strokeWidth: 3,
+							alwaysOn: true
+						});
+						
+					}).attr('src', $that.attr('src'));
+				};
+				
 				var that = this,
 					$that = $(that);
-
-				// Since WebKit doesn't know the height until after the image has loaded, perform everything in an onload copy
-				$('<img />').on('load', function() {
-					var attrW = 'width',
-						attrH = 'height',
-						w = $that.attr(attrW),
-						h = $that.attr(attrH);
-
-					if (!w || !h) {
-						var temp = new Image();
-						temp.src = $that.attr('src');
-						if (!w)
-							w = temp.width;
-						if (!h)
-							h = temp.height;
+				
+				if(loaded) {
+					if(windowWidth != window.innerWidth) {
+						recalculateMap(that, $that);
+						windowWidth = window.innerWidth;
 					}
-
-					var wPercent = $that.width()/100,
-						hPercent = $that.height()/100,
-						map = $that.attr('usemap').replace('#', ''),
-						c = 'coords';
-
-					$('map[name="' + map + '"]').find('area').each(function() {
-						var $this = $(this);
-						if (!$this.data(c))
-							$this.data(c, $this.attr(c));
-
-						var coords = $this.data(c).split(','),
-							coordsPercent = new Array(coords.length);
-
-						for (var i = 0; i < coordsPercent.length; ++i) {
-							if (i % 2 === 0)
-								coordsPercent[i] = parseInt(((coords[i]/w)*100)*wPercent);
-							else
-								coordsPercent[i] = parseInt(((coords[i]/h)*100)*hPercent);
-						}
-						$this.attr(c, coordsPercent.toString());
-					});
-					
-					$that.maphilight({
-						fillColor:  settings.fillColor,
-						fillOpacity: settings.fillOpacity,
-						strokeColor: settings.strokeColor,
-						strokeOpacity: settings.strokeOpacity,
-						strokeWidth: 3,
-						alwaysOn: true
-					});
-					
-				}).attr('src', $that.attr('src'));
+				} else {
+					windowWidth = window.innerWidth;
+					recalculateMap(that, $that);
+				}
 			});
 		};
 		$(window).resize(rwdImageMap).trigger('resize');

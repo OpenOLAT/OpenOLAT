@@ -212,7 +212,7 @@ command to compress them (execution time ca. 1-2 minutes) and refresh your Eclip
 
 ```bash
 mvn clean package
-mvn compile -compressjs,tomcat
+mvn compile -Pcompressjs,tomcat
 ```
 
 ### Themes
