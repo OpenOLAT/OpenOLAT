@@ -129,12 +129,19 @@ public class CollaboraServiceImpl implements CollaboraService, GenericEventListe
 	public String getEditorBaseUrl(File file) {
 		String suffix = FileUtils.getFileSuffix(file.getName());
 		Action action = wopiService.getAction(getDiscovery(), "edit", suffix);
+		if (action == null) {
+			action = wopiService.getAction(getDiscovery(), "view", suffix);
+		}
 		return action != null? action.getUrlSrc(): null;
 	}
 
 	@Override
 	public boolean accepts(String suffix, Mode mode) {
-		return wopiService.hasAction(getDiscovery(), "edit", suffix);
+		boolean accepts = wopiService.hasAction(getDiscovery(), "edit", suffix);
+		if (!accepts && Mode.VIEW.equals(mode)) {
+			accepts = wopiService.hasAction(getDiscovery(), "view", suffix);
+		}
+		return accepts;
 	}
 
 }
