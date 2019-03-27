@@ -99,16 +99,16 @@ class CollaboraEditorUrlBuilder {
 		}
 		
 		if (StringHelper.containsNonWhitespace(permission)) {
-			url.append("?permission=").append(permission);
+			url.append("&permission=").append(permission);
 		}
 		
 		if (closeButton) {
 			// Apparently that parameter is ignored. The close button is always visible!
-			url.append("?closebutton=1");
+			url.append("&closebutton=1");
 		}
 		
 		if (debug) {
-			url.append("?debug=1");
+			url.append("&debug=1");
 		}
 		
 		return url.toString();
