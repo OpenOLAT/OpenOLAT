@@ -234,7 +234,7 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 	
 	@Override
 	public void setFocusOnEvent(String eventId, String recurenceId) {
-		if  (eventId.length() > 0) {
+		if(StringHelper.containsNonWhitespace(eventId)) {
 			for(KalendarRenderWrapper wrapper:calendarWrappers) {
 				KalendarEvent event = wrapper.getKalendar().getEvent(eventId, recurenceId);
 				if(event != null) {

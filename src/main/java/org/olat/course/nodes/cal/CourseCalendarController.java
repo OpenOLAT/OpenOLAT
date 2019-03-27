@@ -67,9 +67,7 @@ public class CourseCalendarController extends DefaultController implements Clone
 				courseEnv.getCourseEnvironment().getCourseGroupManager().getCourseResource(), false);
 		calendarController.setDifferentiateManagedEvent(CourseCalendars.needToDifferentiateManagedEvents(calendars));
 		setInitialComponent(calendarController.getInitialComponent());
-	}
-	
-	
+	}	
 
 	public CourseCalendarSubscription getCalendarSubscription() {
 		return calendarSubscription;
