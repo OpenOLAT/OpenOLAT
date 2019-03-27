@@ -36,13 +36,15 @@ import org.olat.core.util.vfs.VFSLeaf;
  */
 public interface VFSLeafEditor {
 	
+	public enum Mode {EDIT, VIEW};
+	
 	boolean isEnable();
 	
 	String getType();
 	
 	String getDisplayName(Locale locale);
 	
-	boolean isSupportingFormat(String suffix);
+	boolean isSupportingFormat(String suffix, Mode mode);
 	
 	Controller getRunController(UserRequest ureq, WindowControl wControl, VFSLeaf vfsLeaf,
 			FolderComponent folderComponent, Identity identity, VFSLeafEditorSecurityCallback securityCallback);

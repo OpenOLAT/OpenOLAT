@@ -19,6 +19,8 @@
  */
 package org.olat.core.commons.services.vfs;
 
+import org.olat.core.commons.services.vfs.VFSLeafEditor.Mode;
+
 /**
  * 
  * Initial date: 22 Mar 2019<br>
@@ -27,7 +29,7 @@ package org.olat.core.commons.services.vfs;
  */
 public interface VFSLeafEditorSecurityCallback {
 	
-	boolean canEdit();
+	Mode getMode();
 
 	boolean canClose();
 	

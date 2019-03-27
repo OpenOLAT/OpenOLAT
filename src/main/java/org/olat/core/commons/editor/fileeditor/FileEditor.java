@@ -64,7 +64,8 @@ public class FileEditor implements VFSLeafEditor {
 	}
 
 	@Override
-	public boolean isSupportingFormat(String suffix) {
+	public boolean isSupportingFormat(String suffix, Mode mode) {
+		// Both the HTML editor and the text editor supports view and edit
 		return HTML_EDITOR_SUFFIX.contains(suffix) || TEXT_EDITOR_SUFFIX.contains(suffix)? true: false;
 	}
 

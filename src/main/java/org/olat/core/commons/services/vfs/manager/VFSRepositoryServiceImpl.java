@@ -59,6 +59,7 @@ import org.olat.core.commons.services.thumbnail.CannotGenerateThumbnailException
 import org.olat.core.commons.services.thumbnail.FinalSize;
 import org.olat.core.commons.services.thumbnail.ThumbnailService;
 import org.olat.core.commons.services.vfs.VFSLeafEditor;
+import org.olat.core.commons.services.vfs.VFSLeafEditor.Mode;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSMetadataRef;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
@@ -1184,12 +1185,19 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	}
 
 	@Override
-	public boolean hasEditor(String suffix) {
+	public boolean hasEditor(String suffix, Mode mode) {
 		return vfsLeafEditors.stream()
 				.filter(VFSLeafEditor::isEnable)
-				.filter(editor -> editor.isSupportingFormat(suffix))
+				.filter(editor -> editor.isSupportingFormat(suffix, mode))
 				.findFirst()
 				.isPresent();
+	}
+	
+	@Override
+	public boolean hasEditor(VFSLeaf vfsLeaf, Mode mode) {
+		String suffix = getSuffix(vfsLeaf);
+		return hasEditor(suffix, mode);
+		
 	}
 
 	@Override
@@ -1201,13 +1209,18 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	}
 
 	@Override
-	public List<VFSLeafEditor> getEditors(VFSLeaf vfsLeaf) {
-		String fileName = vfsLeaf.getName();
-		String suffix = FileUtils.getFileSuffix(fileName).toLowerCase();
+	public List<VFSLeafEditor> getEditors(VFSLeaf vfsLeaf, Mode mode) {
+		String suffix = getSuffix(vfsLeaf);
 		return vfsLeafEditors.stream()
 				.filter(VFSLeafEditor::isEnable)
-				.filter(editor -> editor.isSupportingFormat(suffix))
+				.filter(editor -> editor.isSupportingFormat(suffix, mode))
 				.collect(Collectors.toList());
+	}
+
+	private String getSuffix(VFSLeaf vfsLeaf) {
+		String fileName = vfsLeaf.getName();
+		String suffix = FileUtils.getFileSuffix(fileName).toLowerCase();
+		return suffix;
 	}
 	
 }

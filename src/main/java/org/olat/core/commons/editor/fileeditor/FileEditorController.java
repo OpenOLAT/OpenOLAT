@@ -32,6 +32,7 @@ import org.olat.core.commons.editor.htmleditor.HTMLReadOnlyController;
 import org.olat.core.commons.editor.htmleditor.WysiwygFactory;
 import org.olat.core.commons.editor.plaintexteditor.TextEditorController;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
+import org.olat.core.commons.services.vfs.VFSLeafEditor.Mode;
 import org.olat.core.commons.services.vfs.VFSLeafEditorSecurityCallback;
 import org.olat.core.commons.services.vfs.ui.version.VersionCommentController;
 import org.olat.core.gui.UserRequest;
@@ -80,8 +81,9 @@ public class FileEditorController extends BasicController {
 
 		
 		// launch plaintext or html editor depending on file type
+		boolean isEdit = Mode.EDIT.equals(secCallback.getMode());
 		if (vfsLeaf.getName().endsWith(".html") || vfsLeaf.getName().endsWith(".htm")) {
-			if (secCallback.canEdit()) {
+			if (isEdit) {
 				// start HTML editor with the folders root folder as base and the file
 				// path as a relative path from the root directory. But first check if the 
 				// root directory is wirtable at all (e.g. not the case in users personal 
@@ -118,7 +120,7 @@ public class FileEditorController extends BasicController {
 			}
 		}
 		else {
-			editCtrl = new TextEditorController(ureq, getWindowControl(), vfsLeaf, "utf-8", !secCallback.canEdit());
+			editCtrl = new TextEditorController(ureq, getWindowControl(), vfsLeaf, "utf-8", !isEdit);
 		}
 		listenTo(editCtrl);
 		

@@ -22,6 +22,7 @@ package org.olat.core.commons.services.filetemplate;
 import static org.olat.core.commons.services.filetemplate.ContentProviderFactory.empty;
 import static org.olat.core.commons.services.filetemplate.ContentProviderFactory.emptyDocx;
 import static org.olat.core.commons.services.filetemplate.ContentProviderFactory.emptyXlsx;
+import static org.olat.core.commons.services.vfs.VFSLeafEditor.Mode.EDIT;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,19 +57,19 @@ public class FileTypes {
 		
 		VFSRepositoryService vfsService = CoreSpringFactory.getImpl(VFSRepositoryService.class);
 		
-		if (vfsService.hasEditor("txt")) {
+		if (vfsService.hasEditor("txt", EDIT)) {
 			builder.addTxt();
 		}
-		if (vfsService.hasEditor("html")) {
+		if (vfsService.hasEditor("html", EDIT)) {
 			builder.addHtml();
 		}
-		if (vfsService.hasEditor("css")) {
+		if (vfsService.hasEditor("css", EDIT)) {
 			builder.addCss();
 		}
-		if (vfsService.hasEditor("docx")) {
+		if (vfsService.hasEditor("docx", EDIT)) {
 			builder.addDocx();
 		}
-		if (vfsService.hasEditor("xlsx")) {
+		if (vfsService.hasEditor("xlsx", EDIT)) {
 			builder.addXlsx();
 		}
 			

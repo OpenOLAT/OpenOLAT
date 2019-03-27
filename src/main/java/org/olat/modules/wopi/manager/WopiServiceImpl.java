@@ -27,6 +27,7 @@ import java.util.UUID;
 
 import javax.annotation.PostConstruct;
 
+import org.olat.core.commons.services.vfs.VFSLeafEditor.Mode;
 import org.olat.core.commons.services.vfs.VFSLeafEditorSecurityCallback;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
@@ -105,7 +106,7 @@ public class WopiServiceImpl implements WopiService {
 		access.setToken(token);
 		access.setFileId(fileId);
 		access.setIdentity(identity);
-		access.setCanEdit(secCallback.canEdit());
+		access.setCanEdit(Mode.EDIT.equals(secCallback.getMode()));
 		access.setCanClose(secCallback.canClose());
 		accessCache.put(token, access);
 		return access;

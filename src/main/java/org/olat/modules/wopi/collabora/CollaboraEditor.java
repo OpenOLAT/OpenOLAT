@@ -67,8 +67,8 @@ public class CollaboraEditor implements VFSLeafEditor {
 	}
 
 	@Override
-	public boolean isSupportingFormat(String suffix) {
-		return collaboraService.accepts(suffix);
+	public boolean isSupportingFormat(String suffix, Mode mode) {
+		return collaboraService.accepts(suffix, mode);
 	}
 
 	@Override

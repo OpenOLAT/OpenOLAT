@@ -179,7 +179,7 @@ public class CmdCreateFile extends BasicController implements FolderCommand {
 	
 	@SuppressWarnings("deprecation")
 	private void doEdit(UserRequest ureq) {
-		List<VFSLeafEditor> editors = vfsRepositoryService.getEditors(vfsLeaf);
+		List<VFSLeafEditor> editors = vfsRepositoryService.getEditors(vfsLeaf, VFSLeafEditor.Mode.EDIT);
 		// Not able to decide which editor to use -> show the folder list
 		if (editors.size() != 1) {
 			fireEvent(ureq, new FolderEvent(FolderEvent.NEW_FILE_EVENT, fileName));

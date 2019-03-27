@@ -23,8 +23,10 @@ import org.olat.core.commons.modules.bc.components.FolderComponent;
 import org.olat.core.commons.modules.bc.components.ListRenderer;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
+import org.olat.core.commons.services.vfs.VFSLeafEditor;
 import org.olat.core.commons.services.vfs.VFSLeafEditorSecurityCallback;
 import org.olat.core.commons.services.vfs.VFSLeafEditorSecurityCallbackBuilder;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.commons.services.vfs.ui.editor.VFSLeafEditorController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -41,6 +43,7 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -55,6 +58,9 @@ public class CmdOpenContent extends BasicController implements FolderCommand {
 	
 	private FolderComponent folderComponent;
 	private Controller editCtrl;
+	
+	@Autowired
+	private VFSRepositoryService vfsService;
 	
 	protected CmdOpenContent(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -100,7 +106,7 @@ public class CmdOpenContent extends BasicController implements FolderCommand {
 		VFSContainer container = VFSManager.findInheritingSecurityCallbackContainer(folderComponent.getCurrentContainer());
 		VFSSecurityCallback containerSecCallback = container.getLocalSecurityCallback();
 		VFSLeafEditorSecurityCallback secCallback = VFSLeafEditorSecurityCallbackBuilder.builder()
-				.canEdit(containerSecCallback.canWrite())
+				.withMode(getMode(vfsLeaf, containerSecCallback.canWrite()))
 				.build();
 		editCtrl = new VFSLeafEditorController(ureq, getWindowControl(), vfsLeaf, folderComponent, secCallback);
 		listenTo(editCtrl);
@@ -110,6 +116,13 @@ public class CmdOpenContent extends BasicController implements FolderCommand {
 		cc.getScreenMode().setMode(Mode.full, businessPath);
 		getWindowControl().pushToMainArea(editCtrl.getInitialComponent());
 		return this;
+	}
+	
+	private VFSLeafEditor.Mode getMode(VFSLeaf vfsLeaf, boolean canWrite) {
+		if (canWrite && vfsService.hasEditor(vfsLeaf, VFSLeafEditor.Mode.EDIT)) {
+			return VFSLeafEditor.Mode.EDIT;
+		}
+		return VFSLeafEditor.Mode.VIEW;
 	}
 
 	@Override

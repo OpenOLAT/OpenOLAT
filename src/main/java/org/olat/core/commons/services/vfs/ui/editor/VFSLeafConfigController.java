@@ -66,7 +66,7 @@ public class VFSLeafConfigController extends BasicController implements Activate
 			VFSLeafEditorSecurityCallback secCallback) {
 		super(ureq, wControl);
 		this.guiEditorKey = getGuiPrefixKey(vfsLeaf);
-		editors = vfsService.getEditors(vfsLeaf);
+		editors = vfsService.getEditors(vfsLeaf, secCallback.getMode());
 		
 		VelocityContainer mainVC = createVelocityContainer("editor_config");
 		

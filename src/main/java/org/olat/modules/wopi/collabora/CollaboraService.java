@@ -21,6 +21,7 @@ package org.olat.modules.wopi.collabora;
 
 import java.io.File;
 
+import org.olat.core.commons.services.vfs.VFSLeafEditor.Mode;
 import org.olat.core.commons.services.vfs.VFSLeafEditorSecurityCallback;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.id.Identity;
@@ -56,6 +57,6 @@ public interface CollaboraService {
 	
 	String getEditorBaseUrl(File file);
 	
-	boolean accepts(String suffix);
+	boolean accepts(String suffix, Mode mode);
 
 }

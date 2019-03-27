@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.olat.core.commons.services.license.License;
+import org.olat.core.commons.services.vfs.VFSLeafEditor.Mode;
 import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -191,7 +192,9 @@ public interface VFSRepositoryService {
 	public License getOrCreateLicense(VFSMetadata meta, Identity itentity);
 	
 
-	public boolean hasEditor(String suffix);
+	public boolean hasEditor(VFSLeaf vfsLeaf, Mode mode);
+	
+	public boolean hasEditor(String suffix, Mode mode);
 	
 	public Optional<VFSLeafEditor> getEditor(String editorType);
 	
@@ -201,6 +204,6 @@ public interface VFSRepositoryService {
 	 * @param vfsLeaf
 	 * @return
 	 */
-	public List<VFSLeafEditor> getEditors(VFSLeaf vfsLeaf);
+	public List<VFSLeafEditor> getEditors(VFSLeaf vfsLeaf, Mode mode);
 
 }

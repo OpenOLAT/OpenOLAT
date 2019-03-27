@@ -41,7 +41,7 @@ import org.olat.core.commons.services.license.License;
 import org.olat.core.commons.services.license.LicenseHandler;
 import org.olat.core.commons.services.license.LicenseModule;
 import org.olat.core.commons.services.license.ui.LicenseRenderer;
-import org.olat.core.commons.services.vfs.VFSLeafEditor;
+import org.olat.core.commons.services.vfs.VFSLeafEditor.Mode;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.commons.services.vfs.VFSRevision;
@@ -437,13 +437,13 @@ public class ListRenderer {
 		
 		// open
 		if (!xssErrors) {
-			List<VFSLeafEditor> editors = getLeafEditors(child);
-			if (editors.size() >= 1) {
+			String openIcon = getOpenIconCss(child, canWrite);
+			if (openIcon != null) {
 				sb.append("<a ");
 				ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, false, false,
 						new NameValuePair(PARAM_CONTENT_EDIT_ID, pos));
 				sb.append(" title=\"").append(StringHelper.escapeHtml(translator.translate("mf.open")));
-				sb.append("\"><i class=\"o_icon o_icon-fw o_icon_edit\"></i></a>");
+				sb.append("\"><i class=\"o_icon o_icon-fw ").append(openIcon).append("\"></i></a>");
 			}
 		}
 		sb.append("</td><td>");
@@ -500,12 +500,16 @@ public class ListRenderer {
 		sb.append("</td></tr>");
 	}
 	
-	private List<VFSLeafEditor> getLeafEditors(VFSItem child) {
+	private String getOpenIconCss(VFSItem child, boolean canWrite) {
 		if (child instanceof VFSLeaf) {
 			VFSLeaf vfsLeaf = (VFSLeaf) child;
-			return vfsRepositoryService.getEditors(vfsLeaf);
+			if (canWrite && vfsRepositoryService.hasEditor(vfsLeaf, Mode.EDIT)) {
+				return "o_icon_edit";
+			} else if (vfsRepositoryService.hasEditor(vfsLeaf, Mode.VIEW)) {
+				return "o_icon_preview";
+			}
 		}
-		return Collections.emptyList();
+		return null;
 	}
 	
 	private boolean canMetaInfo(VFSItem item) {

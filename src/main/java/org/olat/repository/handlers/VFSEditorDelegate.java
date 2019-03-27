@@ -24,6 +24,7 @@ import java.util.Locale;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.commons.services.vfs.VFSLeafEditor.Mode;
 import org.olat.core.commons.services.vfs.VFSLeafEditorSecurityCallback;
 import org.olat.core.commons.services.vfs.VFSLeafEditorSecurityCallbackBuilder;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
@@ -71,12 +72,12 @@ public class VFSEditorDelegate implements WebDocumentCreateDelegate, WebDocument
 	
 	@Override
 	public boolean supportCreate() {
-		return hasEditor();
+		return canEdit();
 	}
 
-	private boolean hasEditor() {
+	private boolean canEdit() {
 		VFSRepositoryService vfsService = CoreSpringFactory.getImpl(VFSRepositoryService.class);
-		return vfsService.hasEditor(type.getSuffix());
+		return vfsService.hasEditor(type.getSuffix(), Mode.EDIT);
 	}
 	
 	@Override
@@ -98,7 +99,7 @@ public class VFSEditorDelegate implements WebDocumentCreateDelegate, WebDocument
 	
 	@Override
 	public EditionSupport supportsEdit() {
-		return hasEditor()? EditionSupport.yes: EditionSupport.no;
+		return canEdit()? EditionSupport.yes: EditionSupport.no;
 	}
 
 	@Override
@@ -119,7 +120,7 @@ public class VFSEditorDelegate implements WebDocumentCreateDelegate, WebDocument
 		}
 		
 		VFSLeafEditorSecurityCallback secCallback = VFSLeafEditorSecurityCallbackBuilder.builder()
-				.canEdit(true)
+				.withMode(Mode.EDIT)
 				.canClose(false)
 				.build();
 		// FolderComponent should be initialized to be safe. As of today the internal

@@ -23,6 +23,7 @@ import java.io.File;
 
 import javax.annotation.PostConstruct;
 
+import org.olat.core.commons.services.vfs.VFSLeafEditor.Mode;
 import org.olat.core.commons.services.vfs.VFSLeafEditorSecurityCallback;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.control.Event;
@@ -132,7 +133,7 @@ public class CollaboraServiceImpl implements CollaboraService, GenericEventListe
 	}
 
 	@Override
-	public boolean accepts(String suffix) {
+	public boolean accepts(String suffix, Mode mode) {
 		return wopiService.hasAction(getDiscovery(), "edit", suffix);
 	}
 

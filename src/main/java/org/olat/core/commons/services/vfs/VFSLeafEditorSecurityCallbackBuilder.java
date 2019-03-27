@@ -19,6 +19,8 @@
  */
 package org.olat.core.commons.services.vfs;
 
+import org.olat.core.commons.services.vfs.VFSLeafEditor.Mode;
+
 /**
  * 
  * Initial date: 22 Mar 2019<br>
@@ -27,17 +29,17 @@ package org.olat.core.commons.services.vfs;
  */
 public class VFSLeafEditorSecurityCallbackBuilder {
 	
-	private boolean canEdit = true;
+	private Mode mode = Mode.VIEW;
 	private boolean canClose = true;
 	
 	/**
-	 * Default: true
+	 * Default: VIEW
 	 *
-	 * @param canEdit
+	 * @param mode
 	 * @return
 	 */
-	public VFSLeafEditorSecurityCallbackBuilder canEdit(boolean canEdit) {
-		this.canEdit = canEdit;
+	public VFSLeafEditorSecurityCallbackBuilder withMode(Mode mode) {
+		this.mode = mode;
 		return this;
 	}
 	
@@ -54,7 +56,7 @@ public class VFSLeafEditorSecurityCallbackBuilder {
 	
 	public VFSLeafEditorSecurityCallback build() {
 		VFSLeafEditorSecurityCallbackImpl secCallback = new VFSLeafEditorSecurityCallbackImpl();
-		secCallback.setCanEdit(this.canEdit);
+		secCallback.setMode(this.mode);
 		secCallback.setCanClose(this.canClose);
 		return secCallback;
 	}
@@ -68,16 +70,16 @@ public class VFSLeafEditorSecurityCallbackBuilder {
 	
 	private static class VFSLeafEditorSecurityCallbackImpl implements VFSLeafEditorSecurityCallback {
 
-		private boolean canEdit;
+		private Mode mode;
 		private boolean canClose;
-		
+
 		@Override
-		public boolean canEdit() {
-			return canEdit;
+		public Mode getMode() {
+			return mode;
 		}
 
-		private void setCanEdit(boolean canEdit) {
-			this.canEdit = canEdit;
+		public void setMode(Mode mode) {
+			this.mode = mode;
 		}
 
 		@Override
