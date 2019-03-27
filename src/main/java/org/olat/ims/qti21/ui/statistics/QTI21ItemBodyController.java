@@ -67,6 +67,8 @@ public class QTI21ItemBodyController extends FormBasicController {
 	private final ItemSessionController itemSessionController;
 	private final ResolvedAssessmentItem resolvedAssessmentItem;
 	
+	private ItemBodyResultFormItem questionItem;
+	
 	@Autowired
 	private QTI21Service qtiService;
 	
@@ -92,10 +94,14 @@ public class QTI21ItemBodyController extends FormBasicController {
 	public String getMapperUri() {
 		return mapperUri;
 	}
+	
+	public String getInteractionsComponentId() {
+		return questionItem.getComponent().getDispatchID();
+	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		ItemBodyResultFormItem questionItem = new ItemBodyResultFormItem("question", resolvedAssessmentItem);
+		questionItem = new ItemBodyResultFormItem("question", resolvedAssessmentItem);
 		questionItem.setItemSessionState(itemSessionController.getItemSessionState());
 		questionItem.setCandidateSessionContext(new TerminatedStaticCandidateSessionContext(new InMemoryAssessmentTestSession()));
 		questionItem.setResourceLocator(inputResourceLocator);

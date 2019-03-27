@@ -123,6 +123,7 @@ public class QTI21AssessmentItemStatisticsController extends BasicController {
 		itemBodyCtrl = new QTI21ItemBodyController(ureq, getWindowControl(), itemRef, resolvedAssessmentItem, resourceResult);
 		listenTo(itemBodyCtrl);
 		mainVC.put("question", itemBodyCtrl.getInitialComponent());
+		mainVC.contextPut("questionComponentId", itemBodyCtrl.getInteractionsComponentId());
 		mapperUri = itemBodyCtrl.getMapperUri();
 		
 		putInitialPanel(mainVC);

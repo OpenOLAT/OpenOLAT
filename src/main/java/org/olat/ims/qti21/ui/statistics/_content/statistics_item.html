@@ -1,3 +1,4 @@
+<div id="o_c$questionComponentId">
 #if($r.available("filter"))
 <div class="o_button_group o_button_group_right">
 	$r.render("filter")
@@ -52,4 +53,5 @@
 	#foreach($interactionId in $interactionIds)
 		$r.render($interactionId)
 	#end
+</div>
 </div>
