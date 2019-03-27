@@ -105,6 +105,7 @@ public class WebDocumentRunController extends BasicController {
 			} else if (vfsService.hasEditor(extension)) {
 				VFSLeafEditorSecurityCallback secCallback = VFSLeafEditorSecurityCallbackBuilder.builder()
 						.canEdit(reSecurity.isOwner() || reSecurity.isCoach())
+						.canClose(false)
 						.build();
 				List<VFSLeafEditor> editors = vfsService.getEditors(document);
 				if (editors.size() >= 1) {

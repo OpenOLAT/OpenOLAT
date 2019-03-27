@@ -24,8 +24,6 @@ import org.olat.core.commons.services.vfs.VFSLeafEditor;
 import org.olat.core.commons.services.vfs.VFSLeafEditorSecurityCallback;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -42,7 +40,6 @@ import org.olat.core.util.vfs.VFSLeaf;
 public class VFSLeafEditorController extends BasicController {
 	
 	private VelocityContainer mainVC;
-	private Link closeButton;
 	private VFSLeafConfigController configCtrl;
 	private Controller editorCtrl;
 
@@ -64,10 +61,6 @@ public class VFSLeafEditorController extends BasicController {
 		mainVC.put("config", configCtrl.getInitialComponent());
 		configCtrl.activate(ureq, null, null);
 		
-		if (secCallback.canClose()) {
-			closeButton = LinkFactory.createButton("editor.close", mainVC, this);
-		}
-		
 		putInitialPanel(mainVC);
 	}
 
@@ -78,6 +71,8 @@ public class VFSLeafEditorController extends BasicController {
 				VFSEditorSelectionEvent esEvent = (VFSEditorSelectionEvent) event;
 				VFSLeafEditor editor = esEvent.getEditor();
 				doOpenEditor(ureq, editor);
+			} else if (event == Event.DONE_EVENT) {
+				fireEvent(ureq, event);
 			}
 		} else if (source == editorCtrl) {
 			fireEvent(ureq, event);
@@ -96,9 +91,7 @@ public class VFSLeafEditorController extends BasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if (source == closeButton) {
-			fireEvent(ureq, Event.DONE_EVENT);
-		}
+		//
 	}
 
 	@Override

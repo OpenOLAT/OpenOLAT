@@ -2,7 +2,7 @@
 	.o_collabora {
 		iframe {
 			width: 100%;
-			height: calc(100vh - 160px);
+			height: calc(100vh - 183px);
 			margin-top: 10px;
 			margin-bottom: 20px;
 			border-width: 1px;
@@ -14,7 +14,7 @@
 	.o_collabora {
 		iframe {
 			width: 100%;
-			height: calc(100vh - 340px);
+			height: calc(100vh - 355px);  // 387px would be good to avoid scroll bars if editor selection is shown
 			margin-top: 10px;
 			margin-bottom: 20px;
 			border-width: 1px;

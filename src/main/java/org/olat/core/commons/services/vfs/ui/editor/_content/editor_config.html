@@ -1,9 +1,18 @@
 <div class="o_vfseditor_config">
-	#if($r.available("editor.selection"))
-		<ul class="nav navbar-nav navbar-right"">
-			<li>
-				$r.render("editor.selection")
-			</li>
-		</ul>
-	#end
+	<div class="navbar-collapse">
+		#if($r.available("backLink"))
+			<ul class="nav navbar-nav navbar-left">
+				<li>
+					$r.render("backLink")
+				</li>
+			</ul>
+		#end
+		#if($r.available("editor.selection"))
+			<ul class="nav navbar-nav navbar-right">
+				<li>
+					$r.render("editor.selection")
+				</li>
+			</ul>
+		#end
+	</div>
 </div>

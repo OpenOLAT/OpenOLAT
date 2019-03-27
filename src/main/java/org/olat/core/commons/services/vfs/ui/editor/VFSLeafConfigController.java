@@ -54,6 +54,7 @@ public class VFSLeafConfigController extends BasicController implements Activate
 	private static final String GUIPREF_KEY_EDITOR = "editor";
 
 	private Dropdown editorDropdown;
+	private Link backButton;
 	
 	private final String guiEditorKey;
 	private final List<VFSLeafEditor> editors;
@@ -68,6 +69,10 @@ public class VFSLeafConfigController extends BasicController implements Activate
 		editors = vfsService.getEditors(vfsLeaf);
 		
 		VelocityContainer mainVC = createVelocityContainer("editor_config");
+		
+		if (secCallback.canClose()) {
+			backButton = LinkFactory.createLinkBack(mainVC, this);
+		}
 		
 		if (editors.size() > 1) {
 			editorDropdown = new Dropdown("editor.selection", null, false, getTranslator());
@@ -106,7 +111,9 @@ public class VFSLeafConfigController extends BasicController implements Activate
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if (source instanceof Link) {
+		if (source == backButton) {
+			fireEvent(ureq, Event.DONE_EVENT);
+		} else if (source instanceof Link) {
 			Link link = (Link)source;
 			VFSLeafEditor editor = (VFSLeafEditor) link.getUserObject();
 			doSelectEditor(ureq, editor);
