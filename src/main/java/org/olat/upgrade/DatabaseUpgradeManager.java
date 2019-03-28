@@ -25,6 +25,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
@@ -34,7 +36,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.StartupException;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.xml.XStreamHelper;
@@ -52,6 +56,8 @@ import org.springframework.core.io.Resource;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class DatabaseUpgradeManager extends UpgradeManagerImpl {
+	
+	private static final OLog log = Tracing.createLoggerFor(DatabaseUpgradeManager.class);
 
 	private String dbVendor;
 	private boolean autoUpgradeDatabase = true;
@@ -61,7 +67,6 @@ public class DatabaseUpgradeManager extends UpgradeManagerImpl {
 	public DatabaseUpgradeManager() {
 		INSTALLED_UPGRADES_XML = "installed_database_upgrades.xml";
 	}
-	
 	
 	public String getDbVendor() {
 		return dbVendor;
@@ -100,32 +105,57 @@ public class DatabaseUpgradeManager extends UpgradeManagerImpl {
 		if (autoUpgradeDatabase) {
 			runAlterDbStatements();
 		} else {
-			logInfo("Auto upgrade of the database is disabled. Make sure you do it manually by applying the " +
+			log.info("Auto upgrade of the database is disabled. Make sure you do it manually by applying the " +
 					"alter*.sql scripts and adding an entry to system/installed_upgrades.xml file.");
 		}
 	}
-
-	/**
-	 * @see org.olat.upgrade.UpgradeManager#runAlterDbStatements()
-	 */
-	public void runAlterDbStatements() {
+	
+	private void runSetupDbStatements() {
 		Dialect dialect;
 		//only run upgrades on mysql or postgresql
 		if (getDbVendor().contains("mysql")) dialect = Dialect.mysql;
 		else if (getDbVendor().contains("postgresql")) dialect = Dialect.postgresql;
 		else return;
+
+		try(Connection connection=getDataSource().getConnection();
+				Statement statement = connection.createStatement()) {
 			
-		Statement statement = null;
-		try {
+			ResultSet rs = connection.getMetaData().getTables(null, null, "oc_lock", null);
+			boolean hasTable = rs.next();
+			rs.close();
 			
-			logAudit("+--------------------------------------------------------------+");
-			logAudit("+... Pure database upgrade: starting alter DB statements ...+");
-			logAudit("+ If it fails, do it manually by applying the content of the alter_X_to_Y.sql files.+");
-			logAudit("+ For each file you upgraded to add an entry like this to the [pathToOlat]/olatdata/system/installed_database_upgrades.xml: +");
-			logAudit("+ <entry><string>Database update</string><boolean>true</boolean></entry>+");
-			logAudit("+--------------------------------------------------------------+");
+			if(!hasTable) {
+				log.audit("+------------------------------------------------------------------------------+");
+				log.audit("+ Setup database: starting...                                                  +");
+				log.audit("+ If it fails, do it manually by applying the content of the setupDatabase.sql.+");
+				log.audit("+------------------------------------------------------------------------------+");
+				loadAndExecuteSqlStatements(statement, "setupDatabase.sql", dialect);
+			}
+		} catch (SQLException e) {
+			log.error("Could not upgrade your database! Please do it manually and add ", e);
+			throw new StartupException("Could not execute alter db statements. Please do it manually.", e);
+		} catch (Throwable e) {
+			log.warn("Error executing alter DB statements::", e);
+			abort(e);
+		}
+	}
+
+	private void runAlterDbStatements() {
+		Dialect dialect;
+		//only run upgrades on mysql or postgresql
+		if (getDbVendor().contains("mysql")) dialect = Dialect.mysql;
+		else if (getDbVendor().contains("postgresql")) dialect = Dialect.postgresql;
+		else return;
+
+		try(Connection connection=getDataSource().getConnection();
+				Statement statement = connection.createStatement()) {
 			
-			statement  = getDataSource().getConnection().createStatement();
+			log.audit("+--------------------------------------------------------------+");
+			log.audit("+ ... Pure database upgrade: starting alter DB statements ...  +");
+			log.audit("+ If it fails, do it manually by applying the content of the alter_X_to_Y.sql files.+");
+			log.audit("+ For each file you upgraded to add an entry like this to the [pathToOlat]/olatdata/system/installed_database_upgrades.xml: +");
+			log.audit("+ <entry><string>Database update</string><boolean>true</boolean></entry>+");
+			log.audit("+--------------------------------------------------------------+");
 			
 			Iterator<OLATUpgrade> iter = upgrades.iterator();
 			OLATUpgrade upgrade = null;
@@ -143,27 +173,16 @@ public class DatabaseUpgradeManager extends UpgradeManagerImpl {
 						loadAndExecuteSqlStatements(statement, alterDbStatementsFilename, dialect);
 						uhd.setBooleanDataValue(OLATUpgrade.TASK_DP_UPGRADE, true);
 						setUpgradesHistory(uhd, upgrade.getVersion());
-						logAudit("Successfully executed alter DB statements for Version::" + upgrade.getVersion());
+						log.audit("Successfully executed alter DB statements for Version::" + upgrade.getVersion());
 					}
 				}
 			}
-			
-		}	catch (SQLException e) {
-			logError("Could not upgrade your database! Please do it manually and add ", e);
+		} catch (SQLException e) {
+			log.error("Could not upgrade your database! Please do it manually and add ", e);
 			throw new StartupException("Could not execute alter db statements. Please do it manually.", e);
-			
 		} catch (Throwable e) {
-			logWarn("Error executing alter DB statements::", e);
+			log.warn("Error executing alter DB statements::", e);
 			abort(e);
-		} finally {
-			try {
-				if (statement != null) {
-					statement.close();
-				}
-			} catch (SQLException e2){
-				logWarn("Could not close sql statement", e2);
-				throw new StartupException("Could not close sql statements.", e2);
-			}
 		}
 	}
 	
@@ -191,37 +210,37 @@ public class DatabaseUpgradeManager extends UpgradeManagerImpl {
 			
 			StringTokenizer tokenizer = new StringTokenizer(sb.toString(), ";");
 			String sql = null;
-				while (tokenizer.hasMoreTokens()) {
-					try {
-						String token = tokenizer.nextToken();
-						if(!StringHelper.containsNonWhitespace(token)) {
-							continue;
-						}
-						
-						sql = token + ";".toLowerCase();
-						
-						if (sql.startsWith("update") || sql.startsWith("delete") || sql.startsWith("alter") || sql.startsWith("insert")) {
-							statement.executeUpdate(sql);
-						} else {
-							statement.execute(sql);
-						}
-						logInfo("Successfully upgraded database with the following sql: "+sql);
-					} catch (SQLException e) {
-						if(isErrorFatal(dialect, sql, e)) {
-							throw new StartupException("Fatal error trying to update database.", e);
-						}
-					} catch (Exception e) {
-						//handle non sql errors
-						logError("Could not upgrade your database!",e);
-						throw new StartupException("Could not add alter db statements to batch.", e);
+			while (tokenizer.hasMoreTokens()) {
+				try {
+					String token = tokenizer.nextToken();
+					if(!StringHelper.containsNonWhitespace(token)) {
+						continue;
 					}
+					
+					sql = token + ";".toLowerCase();
+					
+					if (sql.startsWith("update") || sql.startsWith("delete") || sql.startsWith("alter") || sql.startsWith("insert")) {
+						statement.executeUpdate(sql);
+					} else {
+						statement.execute(sql);
+					}
+					log.info("Successfully upgraded database with the following sql: "+sql);
+				} catch (SQLException e) {
+					if(isErrorFatal(dialect, sql, e)) {
+						throw new StartupException("Fatal error trying to update database.", e);
+					}
+				} catch (Exception e) {
+					//handle non sql errors
+					log.error("Could not upgrade your database!",e);
+					throw new StartupException("Could not add alter db statements to batch.", e);
 				}
+			}
 			in.close();
 		} catch (FileNotFoundException e1) {
-			logError("could not find deleteDatabase.sql file!", e1);
+			log.error("could not find deleteDatabase.sql file!", e1);
 			abort(e1);
 		} catch (IOException e) {
-			logError("could not read deleteDatabase.sql file!", e);
+			log.error("could not read deleteDatabase.sql file!", e);
 			abort(e);
 		}
 	}
@@ -236,12 +255,12 @@ public class DatabaseUpgradeManager extends UpgradeManagerImpl {
 	}
 	
 	private boolean isMysqlErrorFatal(String sql, SQLException e) {
-		logError("Error while trying to upgrade the database with:("+sql+"). We will continue with upgrading but check the errors manually! Error says:", e);
+		log.error("Error while trying to upgrade the database with:("+sql+"). We will continue with upgrading but check the errors manually! Error says:", e);
 		return false;
 	}
 	
 	private boolean isPostgresqlErrorFatal(String sql, SQLException e) {
-		logError("Error while trying to upgrade the database with:("+sql+"). We will continue with upgrading but check the errors manually! Error says:", e);
+		log.error("Error while trying to upgrade the database with:("+sql+"). We will continue with upgrading but check the errors manually! Error says:", e);
 		return false;
 	}
 	
@@ -263,22 +282,25 @@ public class DatabaseUpgradeManager extends UpgradeManagerImpl {
 				uhd.setInstallationComplete(true);
 				setUpgradesHistory(uhd, upgrade.getVersion());
 			}
-			logInfo("This looks like a new install, will not do any database upgrades.");
+			log.info("This looks like a new install, will not do any database upgrades.");
+			if(autoUpgradeDatabase) {
+				runSetupDbStatements();
+			}
 		} else {
 			if (upgradesHistoriesFile.exists()) {
-				upgradesHistories = (Map<String, UpgradeHistoryData>) XStreamHelper.readObject(upgradesHistoriesFile);
+				upgradesHistories = (Map<String, UpgradeHistoryData>) XStreamHelper.readObject(upgradesXStream, upgradesHistoriesFile);
 			}
 			if (upgradesHistories == null) {
 				upgradesHistories = new HashMap<String, UpgradeHistoryData>();
 			}
 			
 			if (stdUpgradesHistoriesFile.exists()) {
-				Set<String> versions = new HashSet<String>();
+				Set<String> versions = new HashSet<>();
 				for(OLATUpgrade upgrade:upgradesDefinitions.getUpgrades()) {
 					versions.add(upgrade.getVersion());
 				}
 
-				Map<String, UpgradeHistoryData> stdUpgradesHistories = (Map<String, UpgradeHistoryData>) XStreamHelper.readObject(stdUpgradesHistoriesFile);
+				Map<String, UpgradeHistoryData> stdUpgradesHistories = (Map<String, UpgradeHistoryData>) XStreamHelper.readObject(upgradesXStream, stdUpgradesHistoriesFile);
 				for(Map.Entry<String, UpgradeHistoryData> entry: stdUpgradesHistories.entrySet()) {
 					String version = entry.getKey();
 					UpgradeHistoryData data = entry.getValue();
@@ -289,11 +311,6 @@ public class DatabaseUpgradeManager extends UpgradeManagerImpl {
 				}
 			}
 		}
-	}
-
-	@Override
-	public void doPreSystemInitUpgrades() {
-		//
 	}
 
 	@Override

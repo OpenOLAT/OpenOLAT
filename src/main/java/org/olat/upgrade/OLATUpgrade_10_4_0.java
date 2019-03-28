@@ -67,7 +67,7 @@ public class OLATUpgrade_10_4_0 extends OLATUpgrade {
 		xstream.alias("org.olat.commons.calendar.model.KalendarConfig", KalendarConfig.class);
 	}
 
-	private final static String KALENDAR_GUI_MARKER = "org.olat.commons.calendar.model.KalendarConfig::";
+	private static final String KALENDAR_GUI_MARKER = "org.olat.commons.calendar.model.KalendarConfig::";
 
 	@Autowired
 	private DB dbInstance;
@@ -87,11 +87,6 @@ public class OLATUpgrade_10_4_0 extends OLATUpgrade {
 	@Override
 	public String getVersion() {
 		return VERSION;
-	}
-	
-	@Override
-	public boolean doPreSystemInitUpgrade(UpgradeManager upgradeManager) {
-		return false;
 	}
 
 	@Override

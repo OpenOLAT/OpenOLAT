@@ -49,11 +49,6 @@ public class OLATUpgrade_13_0_0_beta7 extends OLATUpgrade {
 	}
 
 	@Override
-	public boolean doPreSystemInitUpgrade(UpgradeManager upgradeManager) {
-		return false;
-	}
-
-	@Override
 	public boolean doPostSystemInitUpgrade(UpgradeManager upgradeManager) {
 		UpgradeHistoryData uhd = upgradeManager.getUpgradesHistory(VERSION);
 		if (uhd == null) {

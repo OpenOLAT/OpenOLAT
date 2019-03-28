@@ -56,11 +56,6 @@ public class OLATUpgrade_11_0_6 extends OLATUpgrade {
 	public String getVersion() {
 		return VERSION;
 	}
-	
-	@Override
-	public boolean doPreSystemInitUpgrade(UpgradeManager upgradeManager) {
-		return false;
-	}
 
 	@Override
 	public boolean doPostSystemInitUpgrade(UpgradeManager upgradeManager) {

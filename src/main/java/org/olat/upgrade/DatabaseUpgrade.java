@@ -32,12 +32,6 @@ public class DatabaseUpgrade extends OLATUpgrade {
 		return version;
 	}
 
-	
-	@Override
-	public boolean doPreSystemInitUpgrade(UpgradeManager upgradeManager) {
-		return false;
-	}
-
 	@Override
 	public boolean doPostSystemInitUpgrade(UpgradeManager upgradeManager) {
 		return false;

@@ -51,17 +51,6 @@ public abstract class OLATUpgrade {
 	 * @return String representing the unique version identifyer of this upgrade
 	 */
 	public abstract String getVersion();
-
-	/**
-	 * Method is executed after initializing the OLATContext but prior to any 
-	 * other modules and prior to the OLAT extensions. This means that the database
-	 * is not yet initialized, however you could do some native JDBC queries 
-	 * @param upgradeManager
-	 * @return true if anything has been upgraded, false if nothing has been 
-	 * upgraded (e.g. since the upgrade is already installed). false does not indicate
-	 * a failure! In case of failure, throw an exception!
-	 */
-	public abstract boolean doPreSystemInitUpgrade(UpgradeManager upgradeManager);
 	
 	/**
 	 * Method is executed after every module and every extension is initialized but 
