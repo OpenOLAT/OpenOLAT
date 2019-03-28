@@ -269,10 +269,13 @@ public class WebDAVDispatcherImpl
 	@Override
 	public void execute(HttpServletRequest req, HttpServletResponse resp)
 	throws ServletException, IOException {
+		
+		System.out.println(req.getMethod() + " " + req.getRequestURI());
+		
 		if (webDAVManager == null) {
-			resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
+			resp.setStatus(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
 		} else if(webDAVModule == null || !webDAVModule.isEnabled()) {
-			resp.sendError(WebdavStatus.SC_FORBIDDEN);
+			resp.setStatus(WebdavStatus.SC_FORBIDDEN);
 		} else if (webDAVManager.handleAuthentication(req, resp)) {
 			webdavService(req, resp);
 		} else {
@@ -294,7 +297,7 @@ public class WebDAVDispatcherImpl
         // WebdavServlet remounts the webapp under a new path, so this check is
         // necessary on all methods (including GET).
         if (isSpecialPath(path)) {
-            resp.sendError(WebdavStatus.SC_NOT_FOUND);
+            resp.setStatus(WebdavStatus.SC_NOT_FOUND);
             return;
         }
 
@@ -516,11 +519,11 @@ public class WebDAVDispatcherImpl
                 }
             } catch (SAXException e) {
                 // Something went wrong - bad request
-                resp.sendError(WebdavStatus.SC_BAD_REQUEST);
+                resp.setStatus(WebdavStatus.SC_BAD_REQUEST);
                 return;
             } catch (IOException e) {
                 // Something went wrong - bad request
-                resp.sendError(WebdavStatus.SC_BAD_REQUEST);
+                resp.setStatus(WebdavStatus.SC_BAD_REQUEST);
                 return;
             }
         }
@@ -581,7 +584,7 @@ public class WebDAVDispatcherImpl
         }
 
         if (!resource.exists()) {
-            resp.sendError(HttpServletResponse.SC_NOT_FOUND, path);
+        	resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
             return;
         }
 
@@ -664,14 +667,14 @@ public class WebDAVDispatcherImpl
             throws IOException {
 
         if (isLocked(req)) {
-            resp.sendError(WebdavStatus.SC_LOCKED);
+            resp.setStatus(WebdavStatus.SC_LOCKED);
             return;
         }
 
         String path = getRelativePath(req);
         WebResourceRoot resources = getResources(req);
         if(!resources.canWrite(path)) {
-            resp.sendError(WebdavStatus.SC_FORBIDDEN);
+            resp.setStatus(WebdavStatus.SC_FORBIDDEN);
         	return;
         }
         
@@ -719,7 +722,7 @@ public class WebDAVDispatcherImpl
         throws ServletException, IOException {
 
         if (isLocked(req)) {
-            resp.sendError(WebdavStatus.SC_LOCKED);
+            resp.setStatus(WebdavStatus.SC_LOCKED);
             return;
         }
 
@@ -735,7 +738,7 @@ public class WebDAVDispatcherImpl
 
             resp.addHeader("Allow", methodsAllowed.toString());
 
-            resp.sendError(WebdavStatus.SC_METHOD_NOT_ALLOWED);
+            resp.setStatus(WebdavStatus.SC_METHOD_NOT_ALLOWED);
             return;
         }
 
@@ -745,12 +748,12 @@ public class WebDAVDispatcherImpl
                 // Document document =
                 documentBuilder.parse(new InputSource(req.getInputStream()));
                 // TODO : Process this request body
-                resp.sendError(WebdavStatus.SC_NOT_IMPLEMENTED);
+                resp.setStatus(WebdavStatus.SC_NOT_IMPLEMENTED);
                 return;
 
             } catch(SAXException saxe) {
                 // Parse error - assume invalid content
-                resp.sendError(WebdavStatus.SC_UNSUPPORTED_MEDIA_TYPE);
+                resp.setStatus(WebdavStatus.SC_UNSUPPORTED_MEDIA_TYPE);
                 return;
             }
         }
@@ -760,7 +763,7 @@ public class WebDAVDispatcherImpl
             // Removing any lock-null resource which would be present
             lockManager.removeLockNullResource(resource);
         } else {
-            resp.sendError(WebdavStatus.SC_CONFLICT,
+            resp.setStatus(WebdavStatus.SC_CONFLICT,
                            WebdavStatus.getStatusText
                            (WebdavStatus.SC_CONFLICT));
         }
@@ -774,14 +777,14 @@ public class WebDAVDispatcherImpl
         throws ServletException, IOException {
 
         if (isLocked(req)) {
-            resp.sendError(WebdavStatus.SC_LOCKED);
+            resp.setStatus(WebdavStatus.SC_LOCKED);
             return;
         }
         
         String path = this.getRelativePath(req);
         WebResourceRoot resources = this.getResources(req);
         if(!resources.canDelete(path)) {
-            resp.sendError(WebdavStatus.SC_FORBIDDEN);
+            resp.setStatus(WebdavStatus.SC_FORBIDDEN);
             return;
         }
 
@@ -825,14 +828,14 @@ public class WebDAVDispatcherImpl
         throws ServletException, IOException {
 
         if (isLocked(req)) {
-            resp.sendError(WebdavStatus.SC_LOCKED);
+            resp.setStatus(WebdavStatus.SC_LOCKED);
             return;
         }
 
         final String path = getRelativePath(req);
         final WebResourceRoot resources = getResources(req);
     	if (!resources.canWrite(path)) {
-    		resp.sendError(WebdavStatus.SC_FORBIDDEN);
+    		resp.setStatus(WebdavStatus.SC_FORBIDDEN);
     		return;
     	}
        
@@ -871,10 +874,10 @@ public class WebDAVDispatcherImpl
                     resp.setHeader("Location", location);
                 }
             } else {
-                resp.sendError(HttpServletResponse.SC_CONFLICT);
+                resp.setStatus(HttpServletResponse.SC_CONFLICT);
             }
         } catch(QuotaExceededException e) {
-            resp.sendError(WebdavStatus.SC_INSUFFICIENT_STORAGE);
+            resp.setStatus(WebdavStatus.SC_INSUFFICIENT_STORAGE);
         } finally {
             if (resourceInputStream != null) {
                 try {
@@ -958,7 +961,7 @@ public class WebDAVDispatcherImpl
     	if (resources.canWrite(path)) {
     		copyResource(req, resp, false);
     	} else {
-    		resp.sendError(WebdavStatus.SC_FORBIDDEN);
+    		resp.setStatus(WebdavStatus.SC_FORBIDDEN);
     	}
     }
 
@@ -970,14 +973,14 @@ public class WebDAVDispatcherImpl
             throws IOException {
 
         if (isLocked(req)) {
-            resp.sendError(WebdavStatus.SC_LOCKED);
+            resp.setStatus(WebdavStatus.SC_LOCKED);
             return;
         }
 
         String path = getRelativePath(req);
         WebResourceRoot resources = this.getResources(req);
         if(!resources.canRename(path)) {
-            resp.sendError(WebdavStatus.SC_FORBIDDEN);
+            resp.setStatus(WebdavStatus.SC_FORBIDDEN);
             return;
         }
         
@@ -994,14 +997,14 @@ public class WebDAVDispatcherImpl
         throws ServletException, IOException {
 
         if(isLocked(req)) {
-            resp.sendError(WebdavStatus.SC_LOCKED);
+            resp.setStatus(WebdavStatus.SC_LOCKED);
             return;
         }
 
         final String path = getRelativePath(req);
         final WebResourceRoot resources = getResources(req);
         if(!resources.canWrite(path)) {
-            resp.sendError(WebdavStatus.SC_FORBIDDEN);
+            resp.setStatus(WebdavStatus.SC_FORBIDDEN);
         	return;
         }
         
@@ -1010,7 +1013,7 @@ public class WebDAVDispatcherImpl
     	UserSession usess = webDAVManager.getUserSession(req);
         LockResult lockResult = lockManager.lock(resource, usess.getIdentity(), usess.getRoles());
         if(!lockResult.isAcquired()) {
-            resp.sendError(WebdavStatus.SC_LOCKED);
+            resp.setStatus(WebdavStatus.SC_LOCKED);
             return;
         }
 
@@ -1299,11 +1302,11 @@ public class WebDAVDispatcherImpl
                     if (currentLock.getWebPath().equals(lock.getWebPath())) {
 
                         if (currentLock.isExclusive()) {
-                            resp.sendError(WebdavStatus.SC_LOCKED);
+                            resp.setStatus(WebdavStatus.SC_LOCKED);
                             return;
                         } else {
                             if (lock.isExclusive()) {
-                                resp.sendError(WebdavStatus.SC_LOCKED);
+                                resp.setStatus(WebdavStatus.SC_LOCKED);
                                 return;
                             }
                         }
@@ -1415,7 +1418,7 @@ public class WebDAVDispatcherImpl
             throws IOException {
     	
         if (isLocked(req)) {
-            resp.sendError(WebdavStatus.SC_LOCKED);
+            resp.setStatus(WebdavStatus.SC_LOCKED);
             return;
         }
 
@@ -1535,7 +1538,7 @@ public class WebDAVDispatcherImpl
         // Parsing destination header
     	String destinationPath = getDestinationPath(req);
     	if (destinationPath == null) {
-            resp.sendError(WebdavStatus.SC_BAD_REQUEST);
+            resp.setStatus(WebdavStatus.SC_BAD_REQUEST);
             return false;
         }
 
@@ -1553,14 +1556,14 @@ public class WebDAVDispatcherImpl
 
         // Check destination path to protect special subdirectories
         if (isSpecialPath(destinationPath)) {
-            resp.sendError(WebdavStatus.SC_FORBIDDEN);
+            resp.setStatus(WebdavStatus.SC_FORBIDDEN);
             return false;
         }
 
         String path = getRelativePath(req);
 
         if (destinationPath.equals(path)) {
-            resp.sendError(WebdavStatus.SC_FORBIDDEN);
+            resp.setStatus(WebdavStatus.SC_FORBIDDEN);
             return false;
         }
 
@@ -1593,7 +1596,7 @@ public class WebDAVDispatcherImpl
         } else {
             // If the destination exists, then it's a conflict
             if (destination.exists()) {
-                resp.sendError(WebdavStatus.SC_PRECONDITION_FAILED);
+                resp.setStatus(WebdavStatus.SC_PRECONDITION_FAILED);
                 return false;
             }
         }
@@ -1606,7 +1609,7 @@ public class WebDAVDispatcherImpl
 
         if ((!result) || (!errorList.isEmpty())) {
             if (errorList.size() == 1) {
-                resp.sendError(errorList.elements().nextElement().intValue());
+                resp.setStatus(errorList.elements().nextElement().intValue());
             } else {
                 sendReport(req, resp, errorList);
             }
@@ -1799,23 +1802,23 @@ public class WebDAVDispatcherImpl
         final WebResource resource = resources.getResource(path);
         UserSession usess = webDAVManager.getUserSession(req);
         if (lockManager.isLocked(resource, ifHeader + lockTokenHeader, usess.getIdentity())) {
-            resp.sendError(WebdavStatus.SC_LOCKED);
+            resp.setStatus(WebdavStatus.SC_LOCKED);
             return false;
         }
 
         if (!resource.exists()) {
-            resp.sendError(WebdavStatus.SC_NOT_FOUND);
+            resp.setStatus(WebdavStatus.SC_NOT_FOUND);
             return false;
         }
 
         if (!resource.isDirectory()) {
             if (!resources.delete(resource)) {
-                resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
+                resp.setStatus(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
                 return false;
             }
         } else {
 
-            Hashtable<String,Integer> errorList = new Hashtable<String,Integer>();
+            Hashtable<String,Integer> errorList = new Hashtable<>();
 
             deleteCollection(req, path, errorList);
             if (!resources.delete(resource)) {

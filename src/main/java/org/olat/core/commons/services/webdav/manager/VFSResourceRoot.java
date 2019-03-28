@@ -49,6 +49,7 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
+import org.olat.core.util.vfs.filters.VFSItemFilter;
 
 
 /**
@@ -129,7 +130,7 @@ public class VFSResourceRoot implements WebResourceRoot  {
 		VFSItem file = resolveFile(path);
 		if(file instanceof VFSContainer) {
 			VFSContainer container = (VFSContainer)file;
-			return container.getItems();
+			return container.getItems(new WebDAVFileSystemFilter());
 		} else {
 			return Collections.emptyList();
 		}
@@ -316,5 +317,13 @@ public class VFSResourceRoot implements WebResourceRoot  {
 		if (name == null) name = "";
 		if (name.length() > 0 && name.charAt(0) == '/') name = name.substring(1);
 		return base.resolve(name);
+	}
+	
+	private static class WebDAVFileSystemFilter implements VFSItemFilter {
+		@Override
+		public boolean accept(VFSItem vfsItem) {
+			String name = vfsItem.getName();
+			return !name.startsWith("._oo_");
+		}
 	}
 }
