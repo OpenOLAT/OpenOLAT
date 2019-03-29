@@ -181,6 +181,8 @@ public class CertificatePDFFormWorker {
 		fillField("expenditureOfWorks", expenditureOfWorks, acroForm);
 		String mainLanguage = entry.getMainLanguage();
 		fillField("mainLanguage", mainLanguage, acroForm);
+		String location = entry.getLocation();
+		fillField("location", location, acroForm);
 		
 		if (entry.getLifecycle() != null) {
 			Formatter format = Formatter.getInstance(locale);
