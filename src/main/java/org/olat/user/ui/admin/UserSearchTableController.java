@@ -402,7 +402,7 @@ public class UserSearchTableController extends FormBasicController implements Ac
 		final UserBulkChanges userBulkChanges = new UserBulkChanges();
 		Step start = new UserBulkChangeStep00(ureq, identities, userBulkChanges);
 		// callback executed in case wizard is finished.
-		StepRunnerCallback finish = (ureq1, wControl1, runContext) -> {
+		StepRunnerCallback finish = (uureq, wwControl, runContext) -> {
 			// all information to do now is within the runContext saved
 			boolean hasChanges = false;
 			try {
@@ -416,9 +416,10 @@ public class UserSearchTableController extends FormBasicController implements Ac
 					if (!attributeChangeMap.isEmpty() || !roleChangeMap.isEmpty()
 							|| !ownGroups.isEmpty() || !partGroups.isEmpty()
 							|| userBulkChanges.getStatus() != null){
-						Identity addingIdentity = ureq1.getIdentity();
+						Roles actingRoles = uureq.getUserSession().getRoles();
+						Identity actingIdentity = uureq.getIdentity();
 						userBulkChangesManager.changeSelectedIdentities(identities, userBulkChanges, notUpdatedIdentities,
-							isAdministrativeUser, getTranslator(), addingIdentity);
+							isAdministrativeUser, getTranslator(), actingIdentity, actingRoles);
 						hasChanges = true;
 					}
 					runContext.put("notUpdatedIdentities", notUpdatedIdentities);

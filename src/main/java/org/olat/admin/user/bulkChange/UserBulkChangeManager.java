@@ -39,6 +39,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Preferences;
+import org.olat.core.id.Roles;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.OLog;
@@ -108,7 +109,7 @@ public class UserBulkChangeManager implements InitializingBean {
 
 	public void changeSelectedIdentities(List<Identity> selIdentities, UserBulkChanges userBulkChanges,
 			List<String> notUpdatedIdentities, boolean isAdministrativeUser,
-			Translator trans, Identity actingIdentity) {
+			Translator trans, Identity actingIdentity, Roles actingRoles) {
 
 		Translator transWithFallback = userManager.getPropertyHandlerTranslator(trans);
 		String usageIdentifyer = UserBulkChangeStep00.class.getCanonicalName();
@@ -128,9 +129,17 @@ public class UserBulkChangeManager implements InitializingBean {
 			//reload identity from cache, to prevent stale object
 			identity = securityManager.loadIdentityByKey(identity.getKey());
 			User user = identity.getUser();
+			Roles roles = securityManager.getRoles(identity, true);
 			String oldEmail = user.getEmail();
 			String errorDesc = "";
 			boolean updateError = false;
+			
+			boolean canManagedCritical = actingRoles.isManagerOf(OrganisationRoles.administrator, roles)
+					|| actingRoles.isManagerOf(OrganisationRoles.rolesmanager, roles)
+					|| (actingRoles.isManagerOf(OrganisationRoles.usermanager, roles)
+							&& !roles.isAdministrator() && !roles.isSystemAdmin()
+							&& !roles.isRolesManager());
+
 			// change pwd
 			if (attributeChangeMap.containsKey(CRED_IDENTIFYER)) {
 				String newPwd = attributeChangeMap.get(CRED_IDENTIFYER);
@@ -142,7 +151,12 @@ public class UserBulkChangeManager implements InitializingBean {
 				} else {
 					newPwd = null;
 				}
-				olatAuthManager.changePasswordAsAdmin(identity, newPwd);
+				
+				if (canManagedCritical) {
+					olatAuthManager.changePasswordAsAdmin(identity, newPwd);
+				} else {
+					errorDesc = transWithFallback.translate("error.password");
+				}
 			}
 
 			// set language
@@ -213,7 +227,7 @@ public class UserBulkChangeManager implements InitializingBean {
 			
 
 			// set status
-			if (userBulkChanges.getStatus() != null) {
+			if (canManagedCritical && userBulkChanges.getStatus() != null) {
 				Integer status = userBulkChanges.getStatus();	
 				String newStatusText = getStatusText(status);
 				Integer oldStatus = identity.getStatus();
