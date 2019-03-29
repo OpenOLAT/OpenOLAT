@@ -26,6 +26,11 @@ import java.util.List;
 import org.olat.core.commons.editor.htmleditor.HTMLEditorController;
 import org.olat.core.commons.editor.htmleditor.WysiwygFactory;
 import org.olat.core.commons.services.notifications.NotificationsManager;
+import org.olat.core.commons.services.vfs.VFSLeafEditor.Mode;
+import org.olat.core.commons.services.vfs.VFSLeafEditorSecurityCallback;
+import org.olat.core.commons.services.vfs.VFSLeafEditorSecurityCallbackBuilder;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
+import org.olat.core.commons.services.vfs.ui.editor.VFSLeafEditorController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -35,7 +40,6 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -44,8 +48,10 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
+import org.olat.core.gui.control.ScreenMode;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
@@ -54,6 +60,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -87,8 +94,9 @@ abstract class AbstractAssignmentEditController extends FormBasicController {
 	private NewTaskController newTaskCtrl;
 	private DialogBoxController confirmDeleteCtrl;
 	private HTMLEditorController newTaskEditorCtrl;
-	private EditHTMLTaskController editTaskEditorCtrl;
+	private EditHTMLController editHtmlCtrl;
 	private EditTaskController addTaskCtrl, editTaskCtrl;
+	private VFSLeafEditorController vfsLeafEditorCtrl;
 	
 	private final File tasksFolder;
 	protected final boolean readOnly;
@@ -104,6 +112,8 @@ abstract class AbstractAssignmentEditController extends FormBasicController {
 	protected GTAManager gtaManager;
 	@Autowired
 	protected NotificationsManager notificationsManager;
+	@Autowired
+	protected VFSRepositoryService vfsService;
 	
 	public AbstractAssignmentEditController(UserRequest ureq, WindowControl wControl,
 			GTACourseNode gtaNode, ModuleConfiguration config, CourseEnvironment courseEnv, boolean readOnly) {
@@ -139,12 +149,12 @@ abstract class AbstractAssignmentEditController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TDCols.title.i18nKey(), TDCols.title.ordinal()));
 		fileExistsRenderer = new WarningFlexiCellRenderer();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TDCols.file.i18nKey(), TDCols.file.ordinal(), fileExistsRenderer));
+		
+		String openI18n = readOnly? "table.header.view": "table.header.edit";
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(openI18n, TDCols.mode.ordinal(), "open", new ModeCellRenderer("open")));
 		if(!readOnly) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.edit", TDCols.edit.ordinal(), "edit",
-					new BooleanCellRenderer(
-							new StaticFlexiCellRenderer(translate("edit"), "edit"),
-							new StaticFlexiCellRenderer(translate("replace"), "edit"))));
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.edit", translate("delete"), "delete"));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.metadata", translate("table.header.metadata"), "metadata"));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.delete", translate("table.header.delete"), "delete"));
 		}
 		
 		taskModel = new TaskDefinitionTableModel(columnsModel);
@@ -159,15 +169,35 @@ abstract class AbstractAssignmentEditController extends FormBasicController {
 		List<TaskDefinitionRow> rows = new ArrayList<>(taskDefinitions.size());
 		for(TaskDefinition def:taskDefinitions) {
 			DownloadLink downloadLink = null;
+			Mode mode = null;
 			VFSItem item = tasksContainer.resolve(def.getFilename());
 			if(item instanceof VFSLeaf) {
+				VFSLeaf vfsLeaf = (VFSLeaf)item;
 				downloadLink = uifactory
-					.addDownloadLink("file_" + (++linkCounter), def.getFilename(), null, (VFSLeaf)item, taskDefTableEl);
+					.addDownloadLink("file_" + (++linkCounter), def.getFilename(), null, vfsLeaf, taskDefTableEl);
+				mode = getOpenMode(vfsLeaf);
 			}
-			rows.add(new TaskDefinitionRow(def, downloadLink));
+			
+			TaskDefinitionRow row = new TaskDefinitionRow(def, downloadLink, mode);
+			rows.add(row);
 		}
 		taskModel.setObjects(rows);
 		taskDefTableEl.reset();
+	}
+	
+	private Mode getOpenMode(VFSLeaf vfsLeaf) {
+		if (FileUtils.getFileSuffix(vfsLeaf.getName()).equals("html")) {
+			if (!readOnly) {
+				return Mode.EDIT;
+			}
+			return Mode.VIEW;
+		}
+		if (!readOnly && vfsService.hasEditor(vfsLeaf, Mode.EDIT)) {
+			return Mode.EDIT;
+		} else if (vfsService.hasEditor(vfsLeaf, Mode.VIEW)) {
+			return Mode.VIEW;
+		}
+		return null;
 	}
 	
 	@Override
@@ -215,15 +245,14 @@ abstract class AbstractAssignmentEditController extends FormBasicController {
 			}
 			cmc.deactivate();
 			cleanUp();
-		} else if(editTaskEditorCtrl == source) {
-			if(event == Event.DONE_EVENT) {
-				gtaManager.updateTaskDefinition(null, editTaskEditorCtrl.getTask(), courseEnv, gtaNode);
-				updateModel();
-				//fireEvent(ureq, Event.DONE_EVENT);
-				gtaManager.markNews(courseEnv, gtaNode);
-			}
-			cmc.deactivate();
+		} else if(editHtmlCtrl == source) {
+			doCloseFullscreen();
 			cleanUp();
+		} else if (source == vfsLeafEditorCtrl) {
+			if(event == Event.DONE_EVENT) {
+				doCloseFullscreen();
+				cleanUp();
+			}
 		} else if(confirmDeleteCtrl == source) {
 			if(DialogBoxUIFactory.isOkEvent(event) || DialogBoxUIFactory.isYesEvent(event)) {
 				TaskDefinition row = (TaskDefinition)confirmDeleteCtrl.getUserObject();
@@ -238,10 +267,14 @@ abstract class AbstractAssignmentEditController extends FormBasicController {
 	
 	private void cleanUp() {
 		removeAsListenerAndDispose(confirmDeleteCtrl);
+		removeAsListenerAndDispose(vfsLeafEditorCtrl);
+		removeAsListenerAndDispose(editHtmlCtrl);
 		removeAsListenerAndDispose(editTaskCtrl);
 		removeAsListenerAndDispose(addTaskCtrl);
 		removeAsListenerAndDispose(cmc);
 		confirmDeleteCtrl = null;
+		vfsLeafEditorCtrl = null;
+		editHtmlCtrl = null;
 		editTaskCtrl = null;
 		addTaskCtrl = null;
 		cmc = null;
@@ -257,8 +290,10 @@ abstract class AbstractAssignmentEditController extends FormBasicController {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
 				TaskDefinitionRow row = taskModel.getObject(se.getIndex());
-				if("edit".equals(se.getCommand())) {
-					doEdit(ureq, row.getTaskDefinition());
+				if("open".equals(se.getCommand())) {
+					doOpen(ureq, row.getTaskDefinition(), row.getMode());
+				} else if("metadata".equals(se.getCommand())) {
+					doEditMetadata(ureq, row.getTaskDefinition());
 				} else if("delete".equals(se.getCommand())) {
 					if(gtaManager.isTaskInProcess(courseEnv.getCourseGroupManager().getCourseEntry(), gtaNode, row.getTaskDefinition().getFilename())) {
 						doConfirmDelete(ureq, row.getTaskDefinition());
@@ -270,7 +305,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController {
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
-	
+
 	private void doAddTask(UserRequest ureq) {
 		List<TaskDefinition> currentDefinitions = gtaManager.getTaskDefinitions(courseEnv, gtaNode);
 		addTaskCtrl = new EditTaskController(ureq, getWindowControl(), tasksFolder, currentDefinitions);
@@ -282,15 +317,15 @@ abstract class AbstractAssignmentEditController extends FormBasicController {
 		cmc.activate();
 	}
 	
-	private void doEdit(UserRequest ureq, TaskDefinition taskDef) {
+	private void doOpen(UserRequest ureq, TaskDefinition taskDef, Mode mode) {
 		if(taskDef.getFilename().endsWith(".html")) {
-			doEditTaskEditor(ureq, taskDef);
+			doEditHtml(ureq, taskDef);
 		} else {
-			doReplaceTask(ureq, taskDef);
+			doEditVfsEditor(ureq, taskDef, mode);
 		}	
 	}
-	
-	private void doReplaceTask(UserRequest ureq, TaskDefinition taskDef) {
+
+	private void doEditMetadata(UserRequest ureq, TaskDefinition taskDef) {
 		List<TaskDefinition> currentDefinitions = gtaManager.getTaskDefinitions(courseEnv, gtaNode);
 		editTaskCtrl = new EditTaskController(ureq, getWindowControl(), taskDef, tasksFolder, currentDefinitions);
 		listenTo(editTaskCtrl);
@@ -343,18 +378,47 @@ abstract class AbstractAssignmentEditController extends FormBasicController {
 		cmc.activate();
 	}
 	
-	private void doEditTaskEditor(UserRequest ureq, TaskDefinition taskDef) {
+	@SuppressWarnings("deprecation")
+	private void doEditHtml(UserRequest ureq, TaskDefinition taskDef) {
 		VFSItem htmlDocument = tasksContainer.resolve(taskDef.getFilename());
 		if(htmlDocument == null || !(htmlDocument instanceof VFSLeaf)) {
 			showError("error.missing.file");
 		} else {
-			editTaskEditorCtrl = new EditHTMLTaskController(ureq, getWindowControl(), taskDef, tasksContainer, courseRepoKey );
-			listenTo(editTaskEditorCtrl);
+			editHtmlCtrl = new EditHTMLController(ureq, getWindowControl(), tasksContainer,
+					(VFSLeaf) htmlDocument, courseRepoKey, readOnly);
+			listenTo(editHtmlCtrl);
 			
-			cmc = new CloseableModalController(getWindowControl(), "close", editTaskEditorCtrl.getInitialComponent());
-			listenTo(cmc);
-			cmc.activate();
+			ChiefController cc = getWindowControl().getWindowBackOffice().getChiefController();
+			String businessPath = editHtmlCtrl.getWindowControlForDebug().getBusinessControl().getAsString();
+			cc.getScreenMode().setMode(ScreenMode.Mode.full, businessPath);
+			getWindowControl().pushToMainArea(editHtmlCtrl.getInitialComponent());
 		}
+	}
+
+	@SuppressWarnings("deprecation")
+	private void doEditVfsEditor(UserRequest ureq, TaskDefinition taskDef, Mode mode) {
+		VFSItem vfsItem = tasksContainer.resolve(taskDef.getFilename());
+		if(vfsItem == null || !(vfsItem instanceof VFSLeaf)) {
+			showError("error.missing.file");
+		} else {
+			VFSLeafEditorSecurityCallback secCallback = VFSLeafEditorSecurityCallbackBuilder.builder()
+					.withMode(mode)
+					.build();
+			vfsLeafEditorCtrl = new VFSLeafEditorController(ureq, getWindowControl(), (VFSLeaf)vfsItem, null, secCallback);
+			listenTo(vfsLeafEditorCtrl);
+			
+			ChiefController cc = getWindowControl().getWindowBackOffice().getChiefController();
+			String businessPath = vfsLeafEditorCtrl.getWindowControlForDebug().getBusinessControl().getAsString();
+			cc.getScreenMode().setMode(ScreenMode.Mode.full, businessPath);
+			getWindowControl().pushToMainArea(vfsLeafEditorCtrl.getInitialComponent());
+		}
+	}
+	
+	private void doCloseFullscreen() {
+		getWindowControl().pop();
+		String businessPath = getWindowControl().getBusinessControl().getAsString();
+		getWindowControl().getWindowBackOffice().getChiefController().getScreenMode().setMode(ScreenMode.Mode.standard, businessPath);
+		cleanUp();
 	}
 	
 	private void doConfirmDelete(UserRequest ureq, TaskDefinition row) {
@@ -401,5 +465,36 @@ abstract class AbstractAssignmentEditController extends FormBasicController {
 				StringHelper.escapeHtml(target, filename);
 			}
 		}
+	}
+	
+
+	public class ModeCellRenderer extends StaticFlexiCellRenderer {
+
+		public ModeCellRenderer(String action) {
+			super("", action);
+		}
+
+		@Override
+		public void render(Renderer renderer, StringOutput target, Object cellValue, int row,
+				FlexiTableComponent source, URLBuilder ubu, Translator translator) {
+			if (cellValue instanceof Mode) {
+				Mode mode = (Mode) cellValue;
+				switch (mode) {
+				case EDIT:
+					setIconLeftCSS("o_icon_edit o_icon-lg");
+					break;
+				case VIEW:
+					setIconLeftCSS("o_icon_preview o_icon-lg");
+					break;
+				default:
+					setIconLeftCSS(null);
+					break;
+				}
+			} else {
+				setIconLeftCSS(null);
+			}
+			super.render(renderer, target, cellValue, row, source, ubu, translator);
+		}
+
 	}
 }

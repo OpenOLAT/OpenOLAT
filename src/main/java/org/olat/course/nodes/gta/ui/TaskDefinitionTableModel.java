@@ -47,7 +47,7 @@ public class TaskDefinitionTableModel extends DefaultFlexiTableDataModel<TaskDef
 		switch(TDCols.values()[col]) {
 			case title: return taskDef.getTitle();
 			case file: return  taskDefRow.getDownloadLink() == null ? taskDef.getFilename() : taskDefRow.getDownloadLink();
-			case edit: return taskDef.getFilename().endsWith(".html");
+			case mode: return taskDefRow.getMode();
 			default: return "ERROR";
 		}
 	}
@@ -55,7 +55,7 @@ public class TaskDefinitionTableModel extends DefaultFlexiTableDataModel<TaskDef
 	public enum TDCols {
 		title("task.title"),
 		file("task.file"),
-		edit("edit"),
+		mode("edit"),
 		uploadedBy("table.header.uploaded.by");
 		
 		private final String i18nKey;

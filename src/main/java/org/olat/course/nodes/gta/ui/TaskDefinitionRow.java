@@ -19,6 +19,7 @@
  */
 package org.olat.course.nodes.gta.ui;
 
+import org.olat.core.commons.services.vfs.VFSLeafEditor.Mode;
 import org.olat.core.gui.components.form.flexible.elements.DownloadLink;
 import org.olat.course.nodes.gta.model.TaskDefinition;
 
@@ -30,12 +31,14 @@ import org.olat.course.nodes.gta.model.TaskDefinition;
  */
 public class TaskDefinitionRow {
 	
-	private TaskDefinition taskDefinition;
-	private DownloadLink downloadLink;
+	private final TaskDefinition taskDefinition;
+	private final DownloadLink downloadLink;
+	private final Mode mode;
 	
-	public TaskDefinitionRow(TaskDefinition taskDefinition, DownloadLink downloadLink) {
+	public TaskDefinitionRow(TaskDefinition taskDefinition, DownloadLink downloadLink, Mode mode) {
 		this.taskDefinition = taskDefinition;
 		this.downloadLink = downloadLink;
+		this.mode = mode;
 	}
 	
 	public DownloadLink getDownloadLink() {
@@ -45,4 +48,9 @@ public class TaskDefinitionRow {
 	public TaskDefinition getTaskDefinition() {
 		return taskDefinition;
 	}
+
+	public Mode getMode() {
+		return mode;
+	}
+
 }
