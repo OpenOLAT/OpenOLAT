@@ -98,7 +98,7 @@ public class CertificatePhantomWorker {
 		File templateFile = certificatesManager.getTemplateFile(template);
 		File htmlCertificateFile = copyAndEnrichTemplate(templateFile);
 
-		List<String> cmds = new ArrayList<String>();
+		List<String> cmds = new ArrayList<>();
 		cmds.add("phantomjs");
 		cmds.add(certificatesManager.getRasterizePath().toFile().getAbsolutePath());
 		cmds.add(htmlCertificateFile.getAbsolutePath());
@@ -205,6 +205,8 @@ public class CertificatePhantomWorker {
 		context.put("expenditureOfWorks", expenditureOfWorks);
 		String mainLanguage = entry.getMainLanguage();
 		context.put("mainLanguage", mainLanguage);
+		String location = entry.getLocation();
+		context.put("location", location);
 		
 		if (entry.getLifecycle() != null) {
 			Formatter format = Formatter.getInstance(locale);
@@ -271,7 +273,7 @@ public class CertificatePhantomWorker {
 	}
 	
 	public static boolean checkPhantomJSAvailabilty() {
-		List<String> cmds = new ArrayList<String>();
+		List<String> cmds = new ArrayList<>();
 		cmds.add("phantomjs");
 		cmds.add("--help");
 		

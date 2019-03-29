@@ -20,12 +20,12 @@
 package org.olat.course.certificate.manager;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
-import java.io.FileOutputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.Date;
@@ -192,6 +192,8 @@ public class CertificatePdfServiceWorker {
 		context.put("expenditureOfWorks", expenditureOfWorks);
 		String mainLanguage = entry.getMainLanguage();
 		context.put("mainLanguage", mainLanguage);
+		String location = entry.getLocation();
+		context.put("location", location);
 		
 		if (entry.getLifecycle() != null) {
 			Formatter format = Formatter.getInstance(locale);
