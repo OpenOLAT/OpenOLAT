@@ -270,7 +270,7 @@ public class FolderRunController extends BasicController implements Activateable
 			CustomLinkTreeModel customLinkTreeModel, VFSContainer externContainerForCopy) {
 
 		super(ureq, wControl);
-
+	
 		folderContainer = createVelocityContainer("run");
 		editQuotaButton = LinkFactory.createButtonSmall("editQuota", folderContainer, this);
 

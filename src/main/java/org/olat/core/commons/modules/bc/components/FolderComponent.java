@@ -42,6 +42,8 @@ import org.olat.core.commons.modules.bc.commands.FolderCommandFactory;
 import org.olat.core.commons.modules.bc.comparators.LockComparator;
 import org.olat.core.commons.services.analytics.AnalyticsModule;
 import org.olat.core.commons.services.analytics.AnalyticsSPI;
+import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
@@ -53,6 +55,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.CoreLoggingResourceable;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Util;
+import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -90,6 +93,7 @@ public class FolderComponent extends AbstractComponent {
 	private IdentityEnvironment identityEnv;
 	private VFSContainer rootContainer;
 	private VFSContainer currentContainer;
+	private VFSMetadata currentMetadata;
 	private String currentContainerPath;
 	private String currentSortOrder;
 	// need to know our children in advance in order to be able to identify them later...
@@ -104,6 +108,7 @@ public class FolderComponent extends AbstractComponent {
 	private final VFSContainer externContainerForCopy;
 	
 	private final AnalyticsSPI analyticsSpi;
+	private final VFSRepositoryService vfsRepositoryService;
 
 	/**
 	 * Wraps the folder module as a component.
@@ -130,6 +135,9 @@ public class FolderComponent extends AbstractComponent {
 			VFSContainer rootContainer, VFSItemFilter filter,
 			CustomLinkTreeModel customLinkTreeModel, VFSContainer externContainerForCopy) {
 		super(name);
+		analyticsSpi = CoreSpringFactory.getImpl(AnalyticsModule.class).getAnalyticsProvider();
+		vfsRepositoryService = CoreSpringFactory.getImpl(VFSRepositoryService.class);
+		
 		this.identityEnv = ureq.getUserSession().getIdentityEnvironment();
 		this.filter = filter;
 		this.customLinkTreeModel = customLinkTreeModel;
@@ -144,7 +152,6 @@ public class FolderComponent extends AbstractComponent {
 		
 		dateTimeFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, locale);
 		
-		analyticsSpi = CoreSpringFactory.getImpl(AnalyticsModule.class).getAnalyticsProvider();
 	}
 	
 	@Override
@@ -387,18 +394,27 @@ public class FolderComponent extends AbstractComponent {
 	public boolean setCurrentContainerPath(String relPath) {
 		// get the container
 		setDirty(true);
+		currentMetadata = null;
+		
 		if (relPath == null) relPath = "/";
 		if (!(relPath.charAt(0) == '/')) relPath = "/" + relPath;
 		VFSItem vfsItem = rootContainer.resolve(relPath);
-		if (vfsItem == null || !(vfsItem instanceof VFSContainer)) {
+		if (!(vfsItem instanceof VFSContainer)) {
 			// unknown path, reset to root contaner...
 			currentContainer = rootContainer;
 			relPath = "";
 			return false;
 		}
 		
-		this.currentContainer = (VFSContainer)vfsItem;
-		this.currentContainerPath = relPath;
+		currentContainer = (VFSContainer)vfsItem;
+		if(currentContainer.canMeta() == VFSConstants.YES) {
+			currentMetadata = vfsRepositoryService.getMetadataFor(currentContainer);
+			if(currentMetadata != null && !"migrated".equals(currentMetadata.getMigrated())) {
+				vfsRepositoryService.migrate(currentContainer, currentMetadata);
+			}
+		}
+		
+		currentContainerPath = relPath;
 		updateChildren();
 		return true;
 	}

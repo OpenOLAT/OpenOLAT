@@ -63,6 +63,8 @@ public class VFSRepositoryModule {
 				&& !file.isHidden()
 				&& !filename.startsWith("._oo_")
 				&& !filename.equals("CourseConfig.xml")
+				&& !filename.equals(".DS_Store")
+				&& !filename.equals("__MACOSX")
 				? VFSConstants.YES : VFSConstants.NO;
 	}
 

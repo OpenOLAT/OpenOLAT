@@ -64,6 +64,15 @@ public abstract class OLATUpgrade {
 	public abstract boolean doPostSystemInitUpgrade(UpgradeManager upgradeManager);
 	
 	/**
+	 * Call the upgrader in the case of a brand new instance.
+	 * 
+	 * @return true if all ok
+	 */
+	public boolean doNewSystemInit() {
+		return true;
+	}
+	
+	/**
 	 * [used by spring] to inject alter db sql statements if available.
 	 * If a file is present it get's automatically executed
 	 * @param filename

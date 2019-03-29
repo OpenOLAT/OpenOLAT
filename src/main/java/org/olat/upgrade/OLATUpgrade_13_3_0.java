@@ -68,6 +68,7 @@ public class OLATUpgrade_13_3_0 extends OLATUpgrade {
 			// has never been called, initialize
 			uhd = new UpgradeHistoryData();
 		} else if (uhd.isInstallationComplete()) {
+			vfsRepositoryService.setMigrated(true);
 			return false;
 		}
 		
@@ -85,6 +86,12 @@ public class OLATUpgrade_13_3_0 extends OLATUpgrade {
 		return allOk;
 	}
 	
+	@Override
+	public boolean doNewSystemInit() {
+		vfsRepositoryService.setMigrated(true);
+		return super.doNewSystemInit();
+	}
+
 	/**
 	 * Migrate the images of learn resources and courses.
 	 * 
@@ -182,6 +189,7 @@ public class OLATUpgrade_13_3_0 extends OLATUpgrade {
 				//go through /bcroot/
 				File canonicalRoot = new File(FolderConfig.getCanonicalRoot());
 				vfsRepositoryService.migrateDirectories(canonicalRoot);
+				vfsRepositoryService.setMigrated(true);
 			} catch (IOException e) {
 				log.error("", e);
 				allOk = false;

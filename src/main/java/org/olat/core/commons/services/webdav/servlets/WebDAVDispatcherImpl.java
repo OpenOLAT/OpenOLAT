@@ -269,9 +269,6 @@ public class WebDAVDispatcherImpl
 	@Override
 	public void execute(HttpServletRequest req, HttpServletResponse resp)
 	throws ServletException, IOException {
-		
-		System.out.println(req.getMethod() + " " + req.getRequestURI());
-		
 		if (webDAVManager == null) {
 			resp.setStatus(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
 		} else if(webDAVModule == null || !webDAVModule.isEnabled()) {

@@ -62,6 +62,7 @@ import org.olat.core.commons.services.vfs.VFSLeafEditor;
 import org.olat.core.commons.services.vfs.VFSLeafEditor.Mode;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSMetadataRef;
+import org.olat.core.commons.services.vfs.VFSRepositoryModule;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.commons.services.vfs.VFSRevision;
 import org.olat.core.commons.services.vfs.VFSThumbnailMetadata;
@@ -105,6 +106,8 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	private static final OLog log = Tracing.createLoggerFor(VFSRepositoryServiceImpl.class);
 	private final OLATResourceable fileSizeSubscription = OresHelper.createOLATResourceableType("UpdateFileSizeAsync");
 	private static final String CANONICAL_ROOT_REL_PATH = "/";
+	
+	private boolean migrated = false;
 	
 	@Autowired
 	private DB dbInstance;
@@ -945,6 +948,28 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		return license;
 	}
 	
+	@Override
+	public void migrate(VFSContainer container, VFSMetadata metadata) {
+		//if(migrated) return;
+		
+		File directory = toFile(container);
+		if(VFSRepositoryModule.canMeta(directory) == VFSConstants.YES) {
+			try {
+				migrateDirectories(directory);
+			} catch (IOException e) {
+				log.error("", e);
+			}
+		} else if(metadata != null) {
+			((VFSMetadataImpl)metadata).setMigrated("migrated");
+			metadataDao.updateMetadata(metadata);
+			dbInstance.commit();
+		}
+	}
+	
+	public void setMigrated(boolean migrated) {
+		this.migrated = migrated;
+	}
+
 	public void migrateDirectories(File folder) throws IOException {
 		Deque<VFSMetadata> parentLine = new LinkedList<>();
 		AtomicInteger migrationCounter = new AtomicInteger(0);
@@ -953,19 +978,23 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 			@Override
 			public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
 				File directory = dir.toFile();
-				if(directory.isHidden() || directory.getName().equals("__MACOSX")) {
+				if(directory.isHidden() || VFSRepositoryModule.canMeta(directory) != VFSConstants.YES) {
 					return FileVisitResult.SKIP_SUBTREE;
 				}
 				VFSMetadata parent = parentLine.peekLast();
 				VFSMetadata metadata = migrateMetadata(dir.toFile(), parent);
 				parentLine.add(metadata);
+				if(metadata != null && "migrated".equals(metadata.getMigrated())) {
+					dbInstance.commitAndCloseSession();
+					return FileVisitResult.SKIP_SUBTREE;
+				}
 				return FileVisitResult.CONTINUE;
 			}
 
 			@Override
 			public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
 				File f = file.toFile();
-				if(!f.isHidden() && !f.getName().equals("__MACOSX")) {
+				if(!f.isHidden() && VFSRepositoryModule.canMeta(f) == VFSConstants.YES) {
 					migrateMetadata(file.toFile(), parentLine.getLast());
 					
 					migrationCounter.incrementAndGet();
@@ -983,7 +1012,11 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 
 			@Override
 			public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-				parentLine.pollLast();
+				VFSMetadata metadata = parentLine.pollLast();
+				if(metadata instanceof VFSMetadataImpl) {
+					((VFSMetadataImpl)metadata).setMigrated("migrated");
+					metadataDao.updateMetadata(metadata);
+				}
 				dbInstance.commitAndCloseSession();
 				return FileVisitResult.CONTINUE;
 			}
@@ -1035,9 +1068,12 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 					xmlMetadata = metaReader.getMetadata();
 					thumbnails = metaReader.getThumbnails();
 				}
-
-				metadata = metadataDao.createMetadata(xmlMetadata, relativePath, file.getName(), fileLastModified,
-						size, directory, file.toURI().toString(), "file", parent);
+				
+				metadata = metadataDao.getMetadata(relativePath, file.getName(), directory);
+				if(metadata == null) {
+					metadata = metadataDao.createMetadata(xmlMetadata, relativePath, file.getName(), fileLastModified,
+							size, directory, file.toURI().toString(), "file", parent);
+				}
 				migrateThumbnails(metadata, file, thumbnails);
 				
 				File versionFile = getVersionFile(file);
@@ -1048,8 +1084,11 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		} 
 		
 		if(metadata == null) {
-			metadata = metadataDao.createMetadata(UUID.randomUUID().toString(), relativePath, file.getName(), fileLastModified,
-					size, directory, file.toURI().toString(), "file", parent);
+			metadata = metadataDao.getMetadata(relativePath, file.getName(), directory);
+			if(metadata == null) {
+				metadata = metadataDao.createMetadata(UUID.randomUUID().toString(), relativePath, file.getName(), fileLastModified,
+						size, directory, file.toURI().toString(), "file", parent);
+			}
 		}
 		return metadata;
 	}
@@ -1100,11 +1139,15 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 				if(thumbnailFile.exists()) {
 					boolean fill = isFill(thumbnailFile);
 					String filename = generateFilenameForThumbnail(file, fill, thumbnail.getMaxWidth(), thumbnail.getMaxHeight());
-					thumbnailDao.createThumbnailMetadata(metadata, filename, thumbnailFile.length(),
-							fill, thumbnail.getMaxWidth(), thumbnail.getMaxHeight(),
-							thumbnail.getFinalWidth(), thumbnail.getFinalHeight());
-					File target = new File(file.getParentFile(), filename);
-					Files.move(thumbnailFile.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
+					
+					VFSThumbnailMetadata thumbnailMetadata = thumbnailDao.findThumbnail(metadata, fill, thumbnail.getMaxWidth(), thumbnail.getMaxHeight());
+					if(thumbnailMetadata == null) {
+						thumbnailDao.createThumbnailMetadata(metadata, filename, thumbnailFile.length(),
+								fill, thumbnail.getMaxWidth(), thumbnail.getMaxHeight(),
+								thumbnail.getFinalWidth(), thumbnail.getFinalHeight());
+						File target = new File(file.getParentFile(), filename);
+						Files.move(thumbnailFile.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
+					}
 				}
 			} catch (IOException e) {
 				log.error("", e);
@@ -1141,6 +1184,10 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		VersionsFileImpl versions = (VersionsFileImpl)VFSXStream.read(versionFile);
 		List<RevisionFileImpl> revisions = versions.getRevisions();
 		if(revisions == null || revisions.isEmpty()) {
+			return metadata;
+		}
+		List<VFSRevision> currentRevisions = revisionDao.getRevisions(metadata);
+		if(!currentRevisions.isEmpty()) {
 			return metadata;
 		}
 		
@@ -1222,5 +1269,4 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		String suffix = FileUtils.getFileSuffix(fileName).toLowerCase();
 		return suffix;
 	}
-	
 }

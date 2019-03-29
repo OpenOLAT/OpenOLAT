@@ -179,6 +179,7 @@ public abstract class UpgradeManager implements Initializable, GenericEventListe
 			uhd.setInstallationComplete(true);
 			uhd.setBooleanDataValue(OLATUpgrade.TASK_DP_UPGRADE, true);
 			setUpgradesHistory(uhd, upgrade.getVersion());
+			upgrade.doNewSystemInit();
 		}
 	}
 

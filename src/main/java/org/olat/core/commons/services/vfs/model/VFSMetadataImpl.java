@@ -140,6 +140,9 @@ public class VFSMetadataImpl implements Persistable, VFSMetadata {
 	@JoinColumn(name="fk_author", nullable=true, insertable=true, updatable=true)
 	private Identity author;
 	
+	@Column(name="f_migrated", nullable=true, insertable=true, updatable=true)
+	private String migrated;
+	
 	@Column(name="f_m_path_keys", nullable=true, insertable=true, updatable=true)
 	private String materializedPathKeys;
 	
@@ -489,6 +492,14 @@ public class VFSMetadataImpl implements Persistable, VFSMetadata {
 
 	public void setMaterializedPathKeys(String materializedPathKeys) {
 		this.materializedPathKeys = materializedPathKeys;
+	}
+
+	public String getMigrated() {
+		return migrated;
+	}
+
+	public void setMigrated(String migrated) {
+		this.migrated = migrated;
 	}
 
 	@Override

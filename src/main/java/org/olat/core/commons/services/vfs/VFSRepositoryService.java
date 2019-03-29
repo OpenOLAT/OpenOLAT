@@ -69,11 +69,28 @@ public interface VFSRepositoryService {
 	
 	public VFSMetadata updateMetadata(VFSMetadata data);
 	
-
+	/**
+	 * The file is marked as deleted, but stay in the file system.
+	 * 
+	 * @param item The item to mark as deleted
+	 * @param author The person wo deleted the file
+	 */
 	public void markAsDeleted(VFSItem item, Identity author);
 	
+	/**
+	 * Delete the metadata (but not the file), the thumbnails and versions
+	 * attached to this metadata.
+	 * 
+	 * @param data The metadata to remove
+	 */
 	public void deleteMetadata(VFSMetadata data);
 	
+	/**
+	 * Delete the metadata (but not the file), the thumbnails and versions
+	 * attached to this metadata.
+	 * 
+	 * @param data The metadata to remove
+	 */
 	public void deleteMetadata(File file);
 
 	/**
@@ -183,6 +200,8 @@ public interface VFSRepositoryService {
 	 * @return The merged metadata
 	 */
 	public VFSMetadata move(VFSLeaf currentFile, VFSLeaf targetFile, Identity author);
+	
+	public void migrate(VFSContainer container, VFSMetadata metadata);
 	
 	public File getRevisionFile(VFSRevision revision);
 	

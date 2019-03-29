@@ -32,6 +32,7 @@ create table o_vfs_metadata (
    f_locked bool default false,
    f_revision_nr bigint default 0 not null,
    f_revision_comment text(32000),
+   f_migrated varchar(12),
    f_m_path_keys varchar(1024),
    fk_locked_identity bigint,
    fk_license_type bigint,
@@ -49,6 +50,7 @@ alter table o_vfs_metadata add constraint fmeta_to_parent_idx foreign key (fk_pa
 create index f_m_path_keys_idx on o_vfs_metadata (f_m_path_keys(100));
 create index f_m_rel_path_idx on o_vfs_metadata (f_relative_path(255));
 create index f_m_filename_idx on o_vfs_metadata (f_filename(255));
+create index f_m_file_idx on o_vfs_metadata (f_relative_path(255),f_filename(255));
 
 
 create table o_vfs_thumbnail (
