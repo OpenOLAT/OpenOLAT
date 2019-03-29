@@ -19,6 +19,8 @@
  */
 package org.olat.course.nodes.gta.ui;
 
+import static org.olat.core.commons.services.vfs.VFSLeafEditor.Mode.EDIT;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -29,11 +31,15 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-import org.olat.core.commons.editor.htmleditor.HTMLEditorController;
-import org.olat.core.commons.editor.htmleditor.WysiwygFactory;
 import org.olat.core.commons.modules.singlepage.SinglePageController;
+import org.olat.core.commons.services.filetemplate.FileTypes;
+import org.olat.core.commons.services.filetemplate.FileTypes.Builder;
+import org.olat.core.commons.services.vfs.VFSLeafEditor.Mode;
+import org.olat.core.commons.services.vfs.VFSLeafEditorSecurityCallback;
+import org.olat.core.commons.services.vfs.VFSLeafEditorSecurityCallbackBuilder;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
+import org.olat.core.commons.services.vfs.ui.editor.VFSLeafEditorController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -41,29 +47,31 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
+import org.olat.core.gui.control.ScreenMode;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.io.SystemFileFilter;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
-import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.Task;
+import org.olat.course.nodes.gta.ui.component.ModeCellRenderer;
 import org.olat.course.nodes.gta.ui.events.SubmitEvent;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
@@ -87,7 +95,8 @@ class SubmitDocumentsController extends FormBasicController {
 	private DocumentUploadController uploadCtrl, replaceCtrl;
 	private DialogBoxController confirmDeleteCtrl;
 	private SinglePageController viewDocCtrl;
-	private HTMLEditorController newDocumentEditorCtrl, editDocumentEditorCtrl;
+	private EditHTMLController editHtmlCtrl;
+	private VFSLeafEditorController vfsLeafEditorCtrl;
 	
 	private final int maxDocs;
 	private final String docI18nKey;
@@ -107,7 +116,7 @@ class SubmitDocumentsController extends FormBasicController {
 	@Autowired
 	private UserManager userManager;
 	@Autowired
-	private VFSRepositoryService vfsRepositoryService;
+	private VFSRepositoryService vfsService;
 	
 	public SubmitDocumentsController(UserRequest ureq, WindowControl wControl, Task assignedTask,
 			File documentsDir, VFSContainer documentsContainer, int maxDocs, GTACourseNode cNode,
@@ -159,12 +168,12 @@ class SubmitDocumentsController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(docI18nKey, DocCols.document.ordinal()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DocCols.date.i18nKey(), DocCols.date.ordinal()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DocCols.uploadedBy.i18nKey(), DocCols.uploadedBy.ordinal()));
+		
+		String openI18n = readOnly? "table.header.view": "table.header.edit";
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(openI18n, DocCols.mode.ordinal(), "open", new ModeCellRenderer("open")));
 		if(!readOnly) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit", DocCols.edit.ordinal(), "edit",
-					new BooleanCellRenderer(
-							new StaticFlexiCellRenderer(translate("edit"), "edit"),
-							new StaticFlexiCellRenderer(translate("replace"), "edit"))));
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("delete", translate("delete"), "delete"));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.metadata", translate("table.header.metadata"), "metadata"));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.delete", translate("table.header.delete"), "delete"));
 		}
 		
 		model = new DocumentTableModel(columnsModel);
@@ -185,6 +194,8 @@ class SubmitDocumentsController extends FormBasicController {
 		for(File document:documents) {
 			String filename = document.getName();
 			String uploadedBy = null;
+			Mode openMode = null;
+			
 			VFSItem item = documentsContainer.resolve(filename);
 			if(item.canMeta() == VFSConstants.YES) {
 				VFSMetadata metaInfo = item.getMetaInfo();
@@ -200,7 +211,12 @@ class SubmitDocumentsController extends FormBasicController {
 			} else {
 				download = uifactory.addDownloadLink("view-" + CodeHelper.getRAMUniqueID(), filename, null, document, tableEl);
 			}
-			docList.add(new SubmittedSolution(document, uploadedBy, download));
+			
+			if(item instanceof VFSLeaf) {
+				VFSLeaf vfsLeaf = (VFSLeaf)item;
+				openMode = getOpenMode(vfsLeaf);
+			}
+			docList.add(new SubmittedSolution(document, uploadedBy, download, openMode));
 		}
 		model.setObjects(docList);
 		tableEl.reset();
@@ -225,6 +241,21 @@ class SubmitDocumentsController extends FormBasicController {
 		}
 		
 		flc.contextPut("hasDocuments", Boolean.valueOf(hasUploadDocuments()));
+	}
+	
+	private Mode getOpenMode(VFSLeaf vfsLeaf) {
+		if (FileUtils.getFileSuffix(vfsLeaf.getName()).equals("html")) {
+			if (!readOnly) {
+				return Mode.EDIT;
+			}
+			return Mode.VIEW;
+		}
+		if (!readOnly && vfsService.hasEditor(vfsLeaf, Mode.EDIT)) {
+			return Mode.EDIT;
+		} else if (vfsService.hasEditor(vfsLeaf, Mode.VIEW)) {
+			return Mode.VIEW;
+		}
+		return null;
 	}
 	
 	@Override
@@ -268,28 +299,29 @@ class SubmitDocumentsController extends FormBasicController {
 			String filename = newDocCtrl.getFilename();
 			cmc.deactivate();
 			cleanUp();
-			
 			if(event == Event.DONE_EVENT) {
-				doCreateDocumentEditor(ureq, filename);
+				fireEvent(ureq, new SubmitEvent(SubmitEvent.CREATE, filename));
+				gtaManager.markNews(courseEnv, gtaNode);
+				doOpen(ureq, filename, EDIT);
 				updateModel();
 			} 
 			checkDeadline(ureq);
-		} else if(newDocumentEditorCtrl == source) {
+		} else if(editHtmlCtrl == source) {
 			if(event == Event.DONE_EVENT) {
-				updateModel();
-				fireEvent(ureq, new SubmitEvent(SubmitEvent.CREATE, newDocumentEditorCtrl.getFilename()));
+				fireEvent(ureq, new SubmitEvent(SubmitEvent.UPDATE, editHtmlCtrl.getVfsLeaf().getName()));
 				gtaManager.markNews(courseEnv, gtaNode);
 			}
-			cmc.deactivate();
+			updateModel();
+			doCloseFullscreen();
 			cleanUp();
 			checkDeadline(ureq);
-		} else if(editDocumentEditorCtrl == source) {
+		} else if (source == vfsLeafEditorCtrl) {
 			if(event == Event.DONE_EVENT) {
-				updateModel();
-				fireEvent(ureq, new SubmitEvent(SubmitEvent.UPDATE, editDocumentEditorCtrl.getFilename()));
+				fireEvent(ureq, new SubmitEvent(SubmitEvent.UPDATE, vfsLeafEditorCtrl.getVfsLeaf().getName()));
 				gtaManager.markNews(courseEnv, gtaNode);
 			}
-			cmc.deactivate();
+			updateModel();
+			doCloseFullscreen();
 			cleanUp();
 			checkDeadline(ureq);
 		} else if(cmc == source) {
@@ -299,18 +331,27 @@ class SubmitDocumentsController extends FormBasicController {
 	}
 	
 	private void cleanUp() {
-		removeAsListenerAndDispose(newDocumentEditorCtrl);
 		removeAsListenerAndDispose(confirmDeleteCtrl);
+		removeAsListenerAndDispose(vfsLeafEditorCtrl);
+		removeAsListenerAndDispose(editHtmlCtrl);
 		removeAsListenerAndDispose(viewDocCtrl);
 		removeAsListenerAndDispose(uploadCtrl);
 		removeAsListenerAndDispose(newDocCtrl);
 		removeAsListenerAndDispose(cmc);
-		newDocumentEditorCtrl = null;
 		confirmDeleteCtrl = null;
+		vfsLeafEditorCtrl = null;
+		editHtmlCtrl = null;
 		viewDocCtrl = null;
 		uploadCtrl = null;
 		newDocCtrl = null;
 		cmc = null;
+	}
+	
+	private void doCloseFullscreen() {
+		getWindowControl().pop();
+		String businessPath = getWindowControl().getBusinessControl().getAsString();
+		getWindowControl().getWindowBackOffice().getChiefController().getScreenMode().setMode(ScreenMode.Mode.standard, businessPath);
+		cleanUp();
 	}
 
 	@Override
@@ -326,7 +367,7 @@ class SubmitDocumentsController extends FormBasicController {
 			}
 		} else if(createDocButton == source) {
 			if(checkOpen(ureq) && checkDeadline(ureq)) {
-				doChooseFilename(ureq);
+				doCreateDocument(ureq);
 			}
 		} else if(tableEl == source) {
 			if(checkOpen(ureq) && checkDeadline(ureq) && event instanceof SelectionEvent) {
@@ -334,8 +375,12 @@ class SubmitDocumentsController extends FormBasicController {
 				SubmittedSolution row = model.getObject(se.getIndex());
 				if("delete".equals(se.getCommand())) {
 					doConfirmDelete(ureq, row);
-				} else if("edit".equals(se.getCommand())) {
-					doEdit(ureq, row);
+				} else if("open".equals(se.getCommand())) {
+					String filename = row.getFile().getName();
+					Mode mode = row.getMode();
+					doOpen(ureq, filename, mode);
+				} else if("metadata".equals(se.getCommand())) {
+					doReplaceDocument(ureq, row);
 				}
 			}
 		} else if(source instanceof FormLink) {
@@ -387,11 +432,47 @@ class SubmitDocumentsController extends FormBasicController {
 		updateModel();
 	}
 	
-	private void doEdit(UserRequest ureq, SubmittedSolution row) {
-		if(row.getFile().getName().endsWith(".html")) {
-			doEditDocumentEditor(ureq, row);
+	private void doOpen(UserRequest ureq, String filename, Mode mode) {
+		if(filename.endsWith(".html")) {
+			doEditHtml(ureq, filename);
 		} else {
-			doReplaceDocument(ureq, row);
+			doEditVfsEditor(ureq, filename, mode);
+		}	
+	}
+	
+	@SuppressWarnings("deprecation")
+	private void doEditHtml(UserRequest ureq, String filename) {
+		VFSItem htmlDocument = documentsContainer.resolve(filename);
+		if(htmlDocument == null || !(htmlDocument instanceof VFSLeaf)) {
+			showError("error.missing.file");
+		} else {
+			editHtmlCtrl = new EditHTMLController(ureq, getWindowControl(), documentsContainer,
+					(VFSLeaf) htmlDocument, null, readOnly);
+			listenTo(editHtmlCtrl);
+			
+			ChiefController cc = getWindowControl().getWindowBackOffice().getChiefController();
+			String businessPath = editHtmlCtrl.getWindowControlForDebug().getBusinessControl().getAsString();
+			cc.getScreenMode().setMode(ScreenMode.Mode.full, businessPath);
+			getWindowControl().pushToMainArea(editHtmlCtrl.getInitialComponent());
+		}
+	}
+
+	@SuppressWarnings("deprecation")
+	private void doEditVfsEditor(UserRequest ureq, String filename, Mode mode) {
+		VFSItem vfsItem = documentsContainer.resolve(filename);
+		if(vfsItem == null || !(vfsItem instanceof VFSLeaf)) {
+			showError("error.missing.file");
+		} else {
+			VFSLeafEditorSecurityCallback secCallback = VFSLeafEditorSecurityCallbackBuilder.builder()
+					.withMode(mode)
+					.build();
+			vfsLeafEditorCtrl = new VFSLeafEditorController(ureq, getWindowControl(), (VFSLeaf)vfsItem, null, secCallback);
+			listenTo(vfsLeafEditorCtrl);
+			
+			ChiefController cc = getWindowControl().getWindowBackOffice().getChiefController();
+			String businessPath = vfsLeafEditorCtrl.getWindowControlForDebug().getBusinessControl().getAsString();
+			cc.getScreenMode().setMode(ScreenMode.Mode.full, businessPath);
+			getWindowControl().pushToMainArea(vfsLeafEditorCtrl.getInitialComponent());
 		}
 	}
 	
@@ -422,7 +503,7 @@ class SubmitDocumentsController extends FormBasicController {
 			if(downloadedFile != null && downloadedFile.canMeta() == VFSConstants.YES) {
 				VFSMetadata  metadata = downloadedFile.getMetaInfo();
 				metadata.setAuthor(ureq.getIdentity());
-				vfsRepositoryService.updateMetadata(metadata);
+				vfsService.updateMetadata(metadata);
 			}
 		} catch (IOException e) {
 			logError("", e);
@@ -447,13 +528,13 @@ class SubmitDocumentsController extends FormBasicController {
 		}
 	}
 	
-	private void doChooseFilename(UserRequest ureq) {
+	private void doCreateDocument(UserRequest ureq) {
 		if(newDocCtrl != null) return;
 		
 		if(maxDocs > 0 && maxDocs <= model.getRowCount()) {
 			showWarning("error.max.documents");
 		} else {
-			newDocCtrl = new NewDocumentController(ureq, getWindowControl(), documentsContainer);
+			newDocCtrl = new NewDocumentController(ureq, getWindowControl(), documentsContainer, htmlOffice());
 			listenTo(newDocCtrl);
 			
 			cmc = new CloseableModalController(getWindowControl(), "close", newDocCtrl.getInitialComponent());
@@ -462,59 +543,25 @@ class SubmitDocumentsController extends FormBasicController {
 		}
 	}
 	
-	private void doCreateDocumentEditor(UserRequest ureq, String documentName) {
-		if(newDocumentEditorCtrl != null) return;
-		
-		if(maxDocs > 0 && maxDocs <= model.getRowCount()) {
-			showWarning("error.max.documents");
-		} else {
-			VFSItem item = documentsContainer.resolve(documentName);
-			if(item == null) {
-				documentsContainer.createChildLeaf(documentName);
-			} else {
-				documentName = VFSManager.rename(documentsContainer, documentName);
-				documentsContainer.createChildLeaf(documentName);
-			}
-			// add missing identity in meta info
-			item = documentsContainer.resolve(documentName);
-			if(item != null && item.canMeta() == VFSConstants.YES) {
-				VFSMetadata  metadata = item.getMetaInfo();
-				metadata.setAuthor(ureq.getIdentity());
-				vfsRepositoryService.updateMetadata(metadata);
-			}				
-	
-			newDocumentEditorCtrl = WysiwygFactory.createWysiwygController(ureq, getWindowControl(),
-					documentsContainer, documentName, "media", true, true);
-			newDocumentEditorCtrl.getRichTextConfiguration().disableMedia();
-			newDocumentEditorCtrl.getRichTextConfiguration().setAllowCustomMediaFactory(false);
-			newDocumentEditorCtrl.setNewFile(true);
-			listenTo(newDocumentEditorCtrl);
-			
-			cmc = new CloseableModalController(getWindowControl(), "close", newDocumentEditorCtrl.getInitialComponent());
-			listenTo(cmc);
-			cmc.activate();
+	private FileTypes htmlOffice() {
+		Builder builder = FileTypes.builder(getLocale());
+		if (vfsService.hasEditor("html", EDIT)) {
+			builder.addHtml();
 		}
-	}
-	
-	private void doEditDocumentEditor(UserRequest ureq, SubmittedSolution row) {
-		String documentName = row.getFile().getName();
-
-		editDocumentEditorCtrl = WysiwygFactory.createWysiwygController(ureq, getWindowControl(),
-				documentsContainer, documentName, "media", true, true);
-		editDocumentEditorCtrl.getRichTextConfiguration().disableMedia();
-		editDocumentEditorCtrl.getRichTextConfiguration().setAllowCustomMediaFactory(false);
-		listenTo(editDocumentEditorCtrl);
-		
-		cmc = new CloseableModalController(getWindowControl(), "close", editDocumentEditorCtrl.getInitialComponent());
-		listenTo(cmc);
-		cmc.activate();
+		if (vfsService.hasEditor("docx", EDIT)) {
+			builder.addDocx();
+		}
+		if (vfsService.hasEditor("xlsx", EDIT)) {
+			builder.addXlsx();
+		}
+		return builder.build();
 	}
 	
 	public enum DocCols {
 		document("document"),
 		date("document.date"),
 		uploadedBy("table.header.uploaded.by"),
-		edit("edit");
+		mode("edit");
 		
 		private final String i18nKey;
 	
@@ -532,11 +579,13 @@ class SubmitDocumentsController extends FormBasicController {
 		private final File file;
 		private final String uploadedBy;
 		private final FormItem downloadLink;
+		private final Mode mode;
 		
-		public SubmittedSolution(File file, String uploadedBy, FormItem downloadLink) {
+		public SubmittedSolution(File file, String uploadedBy, FormItem downloadLink, Mode mode) {
 			this.file = file;
 			this.uploadedBy = uploadedBy;
 			this.downloadLink = downloadLink;
+			this.mode = mode;
 		}
 
 		public File getFile() {
@@ -550,6 +599,11 @@ class SubmitDocumentsController extends FormBasicController {
 		public FormItem getDownloadLink() {
 			return downloadLink;
 		}
+
+		public Mode getMode() {
+			return mode;
+		}
+
 	}
 	
 	private static class DocumentTableModel extends DefaultFlexiTableDataModel<SubmittedSolution>  {
@@ -574,7 +628,7 @@ class SubmitDocumentsController extends FormBasicController {
 					return cal.getTime();
 				}
 				case uploadedBy: return solution.getUploadedBy();
-				case edit: return solution.getFile().getName().endsWith(".html");
+				case mode: return solution.getMode();
 				default: return "ERROR";
 			}
 		}

@@ -70,6 +70,10 @@ public class VFSLeafEditorController extends BasicController {
 		putInitialPanel(mainVC);
 	}
 
+	public VFSLeaf getVfsLeaf() {
+		return vfsLeaf;
+	}
+
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == configCtrl) {

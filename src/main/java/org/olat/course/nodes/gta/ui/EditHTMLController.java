@@ -47,10 +47,12 @@ public class EditHTMLController extends BasicController {
 	private VelocityContainer mainVC;
 	private Link backButton;
 	private Controller editorCtrl;
+	private final VFSLeaf vfsLeaf;
 
 	public EditHTMLController(UserRequest ureq, WindowControl wControl, VFSContainer tasksContainer,
 			VFSLeaf vfsLeaf, Long courseRepoKey, boolean readOnly) {
 		super(ureq, wControl);
+		this.vfsLeaf = vfsLeaf;
 		
 		mainVC = createVelocityContainer("edit_html");
 		
@@ -59,7 +61,9 @@ public class EditHTMLController extends BasicController {
 		if (readOnly) {
 			editorCtrl = new HTMLReadOnlyController(ureq, getWindowControl(), vfsLeaf.getParentContainer(), vfsLeaf.getName(), true);
 		} else {
-			VFSEdusharingProvider edusharingProvider = new LazyRepositoryEdusharingProvider(courseRepoKey);
+			VFSEdusharingProvider edusharingProvider = courseRepoKey != null
+					? new LazyRepositoryEdusharingProvider(courseRepoKey)
+					: null;
 			HTMLEditorController htmlCtrl = WysiwygFactory.createWysiwygController(ureq, getWindowControl(),
 					tasksContainer, vfsLeaf.getName(), "media", true, true, edusharingProvider);
 			htmlCtrl.getRichTextConfiguration().disableMedia();
@@ -71,6 +75,10 @@ public class EditHTMLController extends BasicController {
 		mainVC.put("editor", editorCtrl.getInitialComponent());
 		
 		putInitialPanel(mainVC);
+	}
+
+	public VFSLeaf getVfsLeaf() {
+		return vfsLeaf;
 	}
 
 	@Override
