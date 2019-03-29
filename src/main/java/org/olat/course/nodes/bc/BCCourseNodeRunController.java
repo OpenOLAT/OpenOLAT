@@ -35,7 +35,6 @@ import org.olat.core.commons.modules.bc.FolderRunController;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -47,7 +46,6 @@ import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSManager;
-import org.olat.core.util.vfs.callbacks.ReadOnlyCallback;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.course.CourseModule;
 import org.olat.course.groupsandrights.CourseGroupManager;
@@ -114,6 +112,7 @@ public class BCCourseNodeRunController extends BasicController implements Activa
 				noFolder = true;
 				BCCourseNodeNoFolderForm noFolderForm = new BCCourseNodeNoFolderForm(ureq, getWindowControl());
 				putInitialPanel(noFolderForm.getInitialComponent());
+				return;
 			} else if(item instanceof VFSContainer){
 				target = new NamedContainerImpl(courseNode.getShortTitle(), (VFSContainer) item);
 			}
@@ -139,7 +138,7 @@ public class BCCourseNodeRunController extends BasicController implements Activa
 				noFolder = true;
 				BCCourseNodeNoFolderForm noFolderForm = new BCCourseNodeNoFolderForm(ureq, getWindowControl());
 				putInitialPanel(noFolderForm.getInitialComponent());
-				scallback = new ReadOnlyCallback();
+				return;
 			} else {
 				target = new NamedContainerImpl(courseNode.getShortTitle(), item);
 				
@@ -192,7 +191,8 @@ public class BCCourseNodeRunController extends BasicController implements Activa
 			frc = new FolderRunController(olatNamed, true, true, canMail, ureq, getWindowControl(), null, null, courseContainer);
 			putInitialPanel(frc.getInitialComponent());
 		} else {
-			putInitialPanel(new Panel("error"));
+			BCCourseNodeNoFolderForm noFolderForm = new BCCourseNodeNoFolderForm(ureq, getWindowControl());
+			putInitialPanel(noFolderForm.getInitialComponent());
 		}
 	}
 
