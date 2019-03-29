@@ -19,6 +19,7 @@
  */
 package org.olat.course.nodes.gta.ui;
 
+import org.olat.core.commons.services.vfs.VFSLeafEditor.Mode;
 import org.olat.core.gui.components.form.flexible.elements.DownloadLink;
 import org.olat.course.nodes.gta.model.Solution;
 
@@ -33,11 +34,13 @@ public class SolutionRow {
 	private final Solution solution;
 	private final String author;
 	private final DownloadLink downloadLink;
+	private final Mode mode;
 	
-	public SolutionRow(Solution solution, String author, DownloadLink downloadLink) {
+	public SolutionRow(Solution solution, String author, DownloadLink downloadLink, Mode mode) {
 		this.solution = solution;
 		this.author = author;
 		this.downloadLink = downloadLink;
+		this.mode = mode;
 	}
 
 	public Solution getSolution() {
@@ -50,5 +53,9 @@ public class SolutionRow {
 	
 	public DownloadLink getDownloadLink() {
 		return downloadLink;
+	}
+
+	public Mode getMode() {
+		return mode;
 	}
 }

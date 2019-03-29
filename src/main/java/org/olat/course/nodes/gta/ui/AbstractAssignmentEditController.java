@@ -25,7 +25,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.core.commons.editor.htmleditor.HTMLEditorController;
 import org.olat.core.commons.services.filetemplate.FileTypes;
 import org.olat.core.commons.services.filetemplate.FileTypes.Builder;
 import org.olat.core.commons.services.notifications.NotificationsManager;
@@ -49,7 +48,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.Controller;
@@ -73,6 +71,7 @@ import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.TaskList;
 import org.olat.course.nodes.gta.model.TaskDefinition;
 import org.olat.course.nodes.gta.ui.TaskDefinitionTableModel.TDCols;
+import org.olat.course.nodes.gta.ui.component.ModeCellRenderer;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -93,7 +92,6 @@ abstract class AbstractAssignmentEditController extends FormBasicController {
 	private CloseableModalController cmc;
 	private NewTaskController newTaskCtrl;
 	private DialogBoxController confirmDeleteCtrl;
-	private HTMLEditorController newTaskEditorCtrl;
 	private EditHTMLController editHtmlCtrl;
 	private EditTaskController addTaskCtrl, editTaskCtrl;
 	private VFSLeafEditorController vfsLeafEditorCtrl;
@@ -237,19 +235,17 @@ abstract class AbstractAssignmentEditController extends FormBasicController {
 				doOpen(ureq, newTask, EDIT);
 				updateModel();
 			} 
-		} else if(newTaskEditorCtrl == source) {
+		} else if(editHtmlCtrl == source) {
 			if(event == Event.DONE_EVENT) {
-				updateModel();
-				//fireEvent(ureq, Event.DONE_EVENT);
 				gtaManager.markNews(courseEnv, gtaNode);
 			}
-			cmc.deactivate();
-			cleanUp();
-		} else if(editHtmlCtrl == source) {
+			updateModel();
 			doCloseFullscreen();
 			cleanUp();
 		} else if (source == vfsLeafEditorCtrl) {
 			if(event == Event.DONE_EVENT) {
+				gtaManager.markNews(courseEnv, gtaNode);
+				updateModel();
 				doCloseFullscreen();
 				cleanUp();
 			}
@@ -455,36 +451,5 @@ abstract class AbstractAssignmentEditController extends FormBasicController {
 				StringHelper.escapeHtml(target, filename);
 			}
 		}
-	}
-	
-
-	public class ModeCellRenderer extends StaticFlexiCellRenderer {
-
-		public ModeCellRenderer(String action) {
-			super("", action);
-		}
-
-		@Override
-		public void render(Renderer renderer, StringOutput target, Object cellValue, int row,
-				FlexiTableComponent source, URLBuilder ubu, Translator translator) {
-			if (cellValue instanceof Mode) {
-				Mode mode = (Mode) cellValue;
-				switch (mode) {
-				case EDIT:
-					setIconLeftCSS("o_icon_edit o_icon-lg");
-					break;
-				case VIEW:
-					setIconLeftCSS("o_icon_preview o_icon-lg");
-					break;
-				default:
-					setIconLeftCSS(null);
-					break;
-				}
-			} else {
-				setIconLeftCSS(null);
-			}
-			super.render(renderer, target, cellValue, row, source, ubu, translator);
-		}
-
 	}
 }

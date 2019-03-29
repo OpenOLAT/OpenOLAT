@@ -47,7 +47,7 @@ public class SolutionTableModel extends DefaultFlexiTableDataModel<SolutionRow> 
 			case file: return solutionRow.getDownloadLink() == null
 					? solutionRow.getSolution().getFilename() : solutionRow.getDownloadLink();
 			case author: return solutionRow.getAuthor();
-			case edit: return solutionRow.getSolution().getFilename().endsWith(".html");
+			case mode: return solutionRow.getMode();
 			default: return "ERROR";
 		}
 	}
@@ -56,7 +56,7 @@ public class SolutionTableModel extends DefaultFlexiTableDataModel<SolutionRow> 
 		title("task.title"),
 		file("task.file"),
 		author("table.header.author"),
-		edit("table.header.edit");
+		mode("table.header.edit");
 		
 		private final String i18nKey;
 	

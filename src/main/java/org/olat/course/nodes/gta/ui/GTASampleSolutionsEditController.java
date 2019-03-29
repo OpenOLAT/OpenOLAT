@@ -19,14 +19,20 @@
  */
 package org.olat.course.nodes.gta.ui;
 
+import static org.olat.core.commons.services.vfs.VFSLeafEditor.Mode.EDIT;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.core.commons.editor.htmleditor.HTMLEditorController;
-import org.olat.core.commons.editor.htmleditor.WysiwygFactory;
+import org.olat.core.commons.services.filetemplate.FileTypes;
+import org.olat.core.commons.services.filetemplate.FileTypes.Builder;
+import org.olat.core.commons.services.vfs.VFSLeafEditor.Mode;
+import org.olat.core.commons.services.vfs.VFSLeafEditorSecurityCallback;
+import org.olat.core.commons.services.vfs.VFSLeafEditorSecurityCallbackBuilder;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
+import org.olat.core.commons.services.vfs.ui.editor.VFSLeafEditorController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -35,26 +41,27 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
+import org.olat.core.gui.control.ScreenMode;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.model.Solution;
 import org.olat.course.nodes.gta.ui.SolutionTableModel.SolCols;
+import org.olat.course.nodes.gta.ui.component.ModeCellRenderer;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,14 +83,15 @@ public class GTASampleSolutionsEditController extends FormBasicController {
 	private EditSolutionController addSolutionCtrl;
 	private EditSolutionController editSolutionCtrl;
 	private NewSolutionController newSolutionCtrl;
-	private HTMLEditorController newSolutionEditorCtrl;
-	private HTMLEditorController editSolutionEditorCtrl;
+	private EditHTMLController editHtmlCtrl;
+	private VFSLeafEditorController vfsLeafEditorCtrl;
 	
 	private final File solutionDir;
 	private final boolean readOnly;
 	private final GTACourseNode gtaNode;
 	private final CourseEnvironment courseEnv;
 	private final VFSContainer solutionContainer;
+	private final Long courseRepoKey;
 	
 	private int linkCounter = 0;
 	
@@ -92,7 +100,7 @@ public class GTASampleSolutionsEditController extends FormBasicController {
 	@Autowired
 	private GTAManager gtaManager;
 	@Autowired
-	private VFSRepositoryService vfsRepositoryService;
+	private VFSRepositoryService vfsService;
 	
 	public GTASampleSolutionsEditController(UserRequest ureq, WindowControl wControl, GTACourseNode gtaNode,
 			CourseEnvironment courseEnv, boolean readOnly) {
@@ -100,6 +108,7 @@ public class GTASampleSolutionsEditController extends FormBasicController {
 		this.gtaNode = gtaNode;
 		this.readOnly = readOnly;
 		this.courseEnv = courseEnv;
+		this.courseRepoKey = courseEnv.getCourseGroupManager().getCourseEntry().getKey();
 		solutionDir = gtaManager.getSolutionsDirectory(courseEnv, gtaNode);
 		solutionContainer = gtaManager.getSolutionsContainer(courseEnv, gtaNode);
 		initForm(ureq);
@@ -121,12 +130,12 @@ public class GTASampleSolutionsEditController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SolCols.title.i18nKey(), SolCols.title.ordinal()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SolCols.file.i18nKey(), SolCols.file.ordinal()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SolCols.author.i18nKey(), SolCols.author.ordinal()));
+		
+		String openI18n = readOnly? "table.header.view": "table.header.edit";
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(openI18n, SolCols.mode.ordinal(), "open", new ModeCellRenderer("open")));
 		if(!readOnly) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.edit", SolCols.edit.ordinal(), "edit",
-					new BooleanCellRenderer(
-							new StaticFlexiCellRenderer(translate("edit"), "edit"),
-							new StaticFlexiCellRenderer(translate("replace"), "edit"))));
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.edit", translate("delete"), "delete"));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.metadata", translate("table.header.metadata"), "metadata"));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.delete", translate("table.header.delete"), "delete"));
 		}
 
 		solutionModel = new SolutionTableModel(columnsModel);
@@ -141,6 +150,7 @@ public class GTASampleSolutionsEditController extends FormBasicController {
 		for(Solution solution:solutionList) {
 			String filename = solution.getFilename();
 			String author = null;
+			Mode openMode = null;
 			
 			VFSItem item = solutionContainer.resolve(filename);
 			if(item.canMeta() == VFSConstants.YES) {
@@ -152,14 +162,31 @@ public class GTASampleSolutionsEditController extends FormBasicController {
 			
 			DownloadLink downloadLink = null;
 			if(item instanceof VFSLeaf) {
+				VFSLeaf vfsLeaf = (VFSLeaf)item;
 				downloadLink = uifactory
-					.addDownloadLink("file_" + (++linkCounter), filename, null, (VFSLeaf)item, solutionTable);
+					.addDownloadLink("file_" + (++linkCounter), filename, null, vfsLeaf, solutionTable);
+				openMode = getOpenMode(vfsLeaf);
 			}
 
-			rows.add(new SolutionRow(solution, author, downloadLink));
+			rows.add(new SolutionRow(solution, author, downloadLink, openMode));
 		}
 		solutionModel.setObjects(rows);
 		solutionTable.reset();
+	}
+	
+	private Mode getOpenMode(VFSLeaf vfsLeaf) {
+		if (FileUtils.getFileSuffix(vfsLeaf.getName()).equals("html")) {
+			if (!readOnly) {
+				return Mode.EDIT;
+			}
+			return Mode.VIEW;
+		}
+		if (!readOnly && vfsService.hasEditor(vfsLeaf, Mode.EDIT)) {
+			return Mode.EDIT;
+		} else if (vfsService.hasEditor(vfsLeaf, Mode.VIEW)) {
+			return Mode.VIEW;
+		}
+		return null;
 	}
 	
 	@Override
@@ -195,23 +222,24 @@ public class GTASampleSolutionsEditController extends FormBasicController {
 			
 			if(event == Event.DONE_EVENT) {
 				gtaManager.addSolution(newSolution, courseEnv, gtaNode);
-				doCreateSolutionEditor(ureq, newSolution);
+				doOpen(ureq, newSolution, Mode.EDIT);
 				updateModel();
 				gtaManager.markNews(courseEnv, gtaNode);
 			}
-		} else if(newSolutionEditorCtrl == source) {
+		} else if(editHtmlCtrl == source) {
 			if(event == Event.DONE_EVENT) {
-				updateModel();
-				fireEvent(ureq, Event.DONE_EVENT);
 				gtaManager.markNews(courseEnv, gtaNode);
 			}
-			cmc.deactivate();
+			updateModel();
+			doCloseFullscreen();
 			cleanUp();
-		} else if(editSolutionEditorCtrl == source) {
-			// edit solution cannot update the title or the description
-			gtaManager.markNews(courseEnv, gtaNode);
-			cmc.deactivate();
-			cleanUp();
+		} else if (source == vfsLeafEditorCtrl) {
+			if(event == Event.DONE_EVENT) {
+				gtaManager.markNews(courseEnv, gtaNode);
+				updateModel();
+				doCloseFullscreen();
+				cleanUp();
+			}
 		} else if(cmc == source) {
 			cleanUp();
 		}
@@ -219,12 +247,23 @@ public class GTASampleSolutionsEditController extends FormBasicController {
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(vfsLeafEditorCtrl);
 		removeAsListenerAndDispose(editSolutionCtrl);
 		removeAsListenerAndDispose(addSolutionCtrl);
+		removeAsListenerAndDispose(editHtmlCtrl);
 		removeAsListenerAndDispose(cmc);
+		vfsLeafEditorCtrl = null;
 		editSolutionCtrl = null;
 		addSolutionCtrl = null;
+		editHtmlCtrl = null;
 		cmc = null;
+	}
+	
+	private void doCloseFullscreen() {
+		getWindowControl().pop();
+		String businessPath = getWindowControl().getBusinessControl().getAsString();
+		getWindowControl().getWindowBackOffice().getChiefController().getScreenMode().setMode(ScreenMode.Mode.standard, businessPath);
+		cleanUp();
 	}
 
 	@Override
@@ -237,8 +276,10 @@ public class GTASampleSolutionsEditController extends FormBasicController {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
 				SolutionRow row = solutionModel.getObject(se.getIndex());
-				if("edit".equals(se.getCommand())) {
-					doEdit(ureq, row.getSolution());
+				if("open".equals(se.getCommand())) {
+					doOpen(ureq, row.getSolution(), row.getMode());
+				} else if("metadata".equals(se.getCommand())) {
+					doEditmetadata(ureq, row.getSolution());
 				} else if("delete".equals(se.getCommand())) {
 					doDelete(ureq, row);
 				}
@@ -252,13 +293,48 @@ public class GTASampleSolutionsEditController extends FormBasicController {
 		//
 	}
 	
-	private void doEdit(UserRequest ureq, Solution solution) {
+	private void doOpen(UserRequest ureq, Solution solution, Mode mode) {
 		if(solution.getFilename().endsWith(".html")) {
-			doEditSolutionEditor(ureq, solution);
+			doEditHtml(ureq, solution);
 		} else {
-			doReplace(ureq, solution);
+			doEditVfsEditor(ureq, solution, mode);
+		}	
+	}
+	
+	@SuppressWarnings("deprecation")
+	private void doEditHtml(UserRequest ureq, Solution solution) {
+		VFSItem htmlDocument = solutionContainer.resolve(solution.getFilename());
+		if(htmlDocument == null || !(htmlDocument instanceof VFSLeaf)) {
+			showError("error.missing.file");
+		} else {
+			editHtmlCtrl = new EditHTMLController(ureq, getWindowControl(), solutionContainer,
+					(VFSLeaf) htmlDocument, courseRepoKey, readOnly);
+			listenTo(editHtmlCtrl);
+			
+			ChiefController cc = getWindowControl().getWindowBackOffice().getChiefController();
+			String businessPath = editHtmlCtrl.getWindowControlForDebug().getBusinessControl().getAsString();
+			cc.getScreenMode().setMode(ScreenMode.Mode.full, businessPath);
+			getWindowControl().pushToMainArea(editHtmlCtrl.getInitialComponent());
 		}
-		
+	}
+
+	@SuppressWarnings("deprecation")
+	private void doEditVfsEditor(UserRequest ureq, Solution solution, Mode mode) {
+		VFSItem vfsItem = solutionContainer.resolve(solution.getFilename());
+		if(vfsItem == null || !(vfsItem instanceof VFSLeaf)) {
+			showError("error.missing.file");
+		} else {
+			VFSLeafEditorSecurityCallback secCallback = VFSLeafEditorSecurityCallbackBuilder.builder()
+					.withMode(mode)
+					.build();
+			vfsLeafEditorCtrl = new VFSLeafEditorController(ureq, getWindowControl(), (VFSLeaf)vfsItem, null, secCallback);
+			listenTo(vfsLeafEditorCtrl);
+			
+			ChiefController cc = getWindowControl().getWindowBackOffice().getChiefController();
+			String businessPath = vfsLeafEditorCtrl.getWindowControlForDebug().getBusinessControl().getAsString();
+			cc.getScreenMode().setMode(ScreenMode.Mode.full, businessPath);
+			getWindowControl().pushToMainArea(vfsLeafEditorCtrl.getInitialComponent());
+		}
 	}
 
 	private void doAddSolution(UserRequest ureq) {
@@ -271,7 +347,7 @@ public class GTASampleSolutionsEditController extends FormBasicController {
 		cmc.activate();
 	}
 	
-	private void doReplace(UserRequest ureq, Solution solution) {
+	private void doEditmetadata(UserRequest ureq, Solution solution) {
 		editSolutionCtrl = new EditSolutionController(ureq, getWindowControl(), solution, solutionDir, solutionContainer);
 		listenTo(editSolutionCtrl);
 
@@ -282,7 +358,7 @@ public class GTASampleSolutionsEditController extends FormBasicController {
 	}
 	
 	private void doCreateSolution(UserRequest ureq) {
-		newSolutionCtrl = new NewSolutionController(ureq, getWindowControl(), solutionContainer);
+		newSolutionCtrl = new NewSolutionController(ureq, getWindowControl(), solutionContainer, htmlOffice());
 		listenTo(newSolutionCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), "close", newSolutionCtrl.getInitialComponent());
@@ -290,46 +366,18 @@ public class GTASampleSolutionsEditController extends FormBasicController {
 		cmc.activate();
 	}
 	
-	private void doCreateSolutionEditor(UserRequest ureq, Solution solution) {
-		String documentName = solution.getFilename();
-		VFSItem item = solutionContainer.resolve(documentName);
-		if(item == null) {
-			item = solutionContainer.createChildLeaf(documentName);
-		} else {
-			documentName = VFSManager.rename(solutionContainer, documentName);
-			item = solutionContainer.createChildLeaf(documentName);
+	private FileTypes htmlOffice() {
+		Builder builder = FileTypes.builder(getLocale());
+		if (vfsService.hasEditor("html", EDIT)) {
+			builder.addHtml();
 		}
-		if(item.canMeta() == VFSConstants.YES) {
-			VFSMetadata metaInfo = item.getMetaInfo();
-			metaInfo.setAuthor(getIdentity());
-			vfsRepositoryService.updateMetadata(metaInfo);
+		if (vfsService.hasEditor("docx", EDIT)) {
+			builder.addDocx();
 		}
-
-		newSolutionEditorCtrl = WysiwygFactory.createWysiwygController(ureq, getWindowControl(),
-				solutionContainer, documentName, "media", true, true);
-		newSolutionEditorCtrl.getRichTextConfiguration().disableMedia();
-		newSolutionEditorCtrl.getRichTextConfiguration().setAllowCustomMediaFactory(false);
-		newSolutionEditorCtrl.setNewFile(true);
-		newSolutionEditorCtrl.setUserObject(solution);
-		listenTo(newSolutionEditorCtrl);
-		
-		cmc = new CloseableModalController(getWindowControl(), "close", newSolutionEditorCtrl.getInitialComponent());
-		listenTo(cmc);
-		cmc.activate();
-	}
-	
-	private void doEditSolutionEditor(UserRequest ureq, Solution solution) {
-		String documentName = solution.getFilename();
-
-		editSolutionEditorCtrl = WysiwygFactory.createWysiwygController(ureq, getWindowControl(),
-				solutionContainer, documentName, "media", true, true);
-		editSolutionEditorCtrl.getRichTextConfiguration().disableMedia();
-		editSolutionEditorCtrl.getRichTextConfiguration().setAllowCustomMediaFactory(false);
-		listenTo(editSolutionEditorCtrl);
-		
-		cmc = new CloseableModalController(getWindowControl(), "close", editSolutionEditorCtrl.getInitialComponent());
-		listenTo(cmc);
-		cmc.activate();
+		if (vfsService.hasEditor("xlsx", EDIT)) {
+			builder.addXlsx();
+		}
+		return builder.build();
 	}
 	
 	private void doDelete(UserRequest ureq, SolutionRow solution) {
