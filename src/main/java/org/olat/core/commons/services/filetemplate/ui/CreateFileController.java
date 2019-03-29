@@ -135,7 +135,7 @@ public class CreateFileController extends FormBasicController {
 
 	private FileType getSelectedFileType() {
 		int index = fileTypeEl.getSelected();
-		return index >= -1? fileTypes.get(index): null;
+		return index > -1? fileTypes.get(index): null;
 	}
 
 	@Override

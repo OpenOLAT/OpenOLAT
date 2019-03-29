@@ -19,12 +19,15 @@
  */
 package org.olat.course.nodes.gta.ui;
 
+import static org.olat.core.commons.services.vfs.VFSLeafEditor.Mode.EDIT;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.commons.editor.htmleditor.HTMLEditorController;
-import org.olat.core.commons.editor.htmleditor.WysiwygFactory;
+import org.olat.core.commons.services.filetemplate.FileTypes;
+import org.olat.core.commons.services.filetemplate.FileTypes.Builder;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.vfs.VFSLeafEditor.Mode;
 import org.olat.core.commons.services.vfs.VFSLeafEditorSecurityCallback;
@@ -65,7 +68,6 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.TaskList;
@@ -73,8 +75,6 @@ import org.olat.course.nodes.gta.model.TaskDefinition;
 import org.olat.course.nodes.gta.ui.TaskDefinitionTableModel.TDCols;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
-import org.olat.modules.edusharing.VFSEdusharingProvider;
-import org.olat.repository.ui.settings.LazyRepositoryEdusharingProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -234,7 +234,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController {
 			
 			if(event == Event.DONE_EVENT) {
 				gtaManager.addTaskDefinition(newTask, courseEnv, gtaNode);
-				doCreateTaskEditor(ureq, newTask);
+				doOpen(ureq, newTask, EDIT);
 				updateModel();
 			} 
 		} else if(newTaskEditorCtrl == source) {
@@ -345,7 +345,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController {
 	}
 	
 	private void doCreateTask(UserRequest ureq) {
-		newTaskCtrl = new NewTaskController(ureq, getWindowControl(), tasksContainer);
+		newTaskCtrl = new NewTaskController(ureq, getWindowControl(), tasksContainer, htmlOffice());
 		listenTo(newTaskCtrl);
 
 		String title = translate("create.task");
@@ -354,28 +354,18 @@ abstract class AbstractAssignmentEditController extends FormBasicController {
 		cmc.activate();
 	}
 	
-	private void doCreateTaskEditor(UserRequest ureq, TaskDefinition taskDef) {
-		String documentName = taskDef.getFilename();
-		VFSItem item = tasksContainer.resolve(documentName);
-		if(item == null) {
-			tasksContainer.createChildLeaf(documentName);
-		} else {
-			documentName = VFSManager.rename(tasksContainer, documentName);
-			tasksContainer.createChildLeaf(documentName);
+	private FileTypes htmlOffice() {
+		Builder builder = FileTypes.builder(getLocale());
+		if (vfsService.hasEditor("html", EDIT)) {
+			builder.addHtml();
 		}
-
-		VFSEdusharingProvider edusharingProvider = new LazyRepositoryEdusharingProvider(courseRepoKey);
-		newTaskEditorCtrl = WysiwygFactory.createWysiwygController(ureq, getWindowControl(),
-				tasksContainer, documentName, "media", true, true, edusharingProvider);
-		newTaskEditorCtrl.getRichTextConfiguration().disableMedia();
-		newTaskEditorCtrl.getRichTextConfiguration().setAllowCustomMediaFactory(false);
-		newTaskEditorCtrl.setNewFile(true);
-		newTaskEditorCtrl.setUserObject(taskDef);
-		listenTo(newTaskEditorCtrl);
-		
-		cmc = new CloseableModalController(getWindowControl(), "close", newTaskEditorCtrl.getInitialComponent());
-		listenTo(cmc);
-		cmc.activate();
+		if (vfsService.hasEditor("docx", EDIT)) {
+			builder.addDocx();
+		}
+		if (vfsService.hasEditor("xlsx", EDIT)) {
+			builder.addXlsx();
+		}
+		return builder.build();
 	}
 	
 	@SuppressWarnings("deprecation")

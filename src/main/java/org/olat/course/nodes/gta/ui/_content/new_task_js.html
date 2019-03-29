@@ -1,13 +1,17 @@
 <script>
 /* <![CDATA[ */
 jQuery(function() {
-	jQuery('#$titleId').on('keyup', function() {
+	var setFilename = function() {
 		var copy = jQuery('#$filenameId').attr('data-copy');
 		if(copy != 'stop') {
 			var name = o_normalizeFilename(jQuery('#$titleId').val());
-			jQuery('#$filenameId').val(name + ".html");
+			var suffix = jQuery('#$filetypeId').find(":selected").attr('class');
+			suffix = typeof suffix !== 'undefined'? suffix: "$filetypeDefaultSuffix";
+			jQuery('#$filenameId').val(name + "." + suffix);
 		}
-	});
+	};
+	jQuery('#$titleId').on('keyup', function() {setFilename()});
+	jQuery('#$filetypeId').on('change', function() {setFilename()});
 	jQuery('#$filenameId').on('keyup', function() {
 		jQuery('#$filenameId').attr('data-copy', 'stop');
 	});
