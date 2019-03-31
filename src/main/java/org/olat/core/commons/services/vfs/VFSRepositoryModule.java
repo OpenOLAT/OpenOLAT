@@ -23,8 +23,13 @@ import java.io.File;
 import java.nio.file.Path;
 
 import org.olat.core.commons.modules.bc.FolderConfig;
+import org.olat.core.configuration.AbstractSpringModule;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSStatus;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * 
@@ -32,8 +37,44 @@ import org.olat.core.util.vfs.VFSStatus;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class VFSRepositoryModule {
+@Service
+public class VFSRepositoryModule extends AbstractSpringModule {
 	
+	private static final String MIGRATED_VFS = "vfs.migrated";
+	
+	private boolean migrated;
+	
+	@Autowired
+	public VFSRepositoryModule(CoordinatorManager coordinatorManager) {
+		super(coordinatorManager);
+	}
+	
+	@Override
+	public void init() {
+		updateProperties();
+	}
+
+	@Override
+	protected void initFromChangedProperties() {
+		updateProperties();
+	}
+	
+	private void updateProperties() {
+		String migratedObj = getStringPropertyValue(MIGRATED_VFS, true);
+		if(StringHelper.containsNonWhitespace(migratedObj)) {
+			migrated = "true".equals(migratedObj);
+		}
+	}
+	
+	public boolean isMigrated() {
+		return migrated;
+	}
+
+	public void setMigrated(boolean migrated) {
+		this.migrated = migrated;
+		setStringProperty(MIGRATED_VFS, migrated ? "true" : "false", true);
+	}
+
 	public static final VFSStatus canVersion(File file) {
 		VFSStatus canMeta = canMeta(file);
 		if(canMeta == VFSConstants.YES) {

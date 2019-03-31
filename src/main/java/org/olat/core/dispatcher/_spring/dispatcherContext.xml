@@ -27,6 +27,9 @@
 				<entry key="/remotelogin/">
 					<ref bean="remoteloginbean" />
 				</entry>
+				<entry key="/library/">
+					<ref bean="librarydispatcher" />
+				</entry>
 				<entry key="/auth/">
 					<!-- if you change /auth make sure you also modify olatcore/src/main/java/org/olat/core/gui/components/form/flexible/impl/elements/richText/_static/js/BTinyHelper.js accordingly -->
 					<ref bean="authbean" />
@@ -234,6 +237,7 @@
 	<bean id="remoteloginbean" class="org.olat.dispatcher.RemoteLoginformDispatcher">
 		<property name="userDeletionManager" ref="userDeletionManager" />
 	</bean>
+	<bean id="librarydispatcher" class="org.olat.modules.library.ui.LibraryDispatcher" />
 
 	<bean id="shibbean" class="org.olat.shibboleth.ShibbolethDispatcher">
 		<property name="shibbolethModule" ref="shibbolethModule"/>

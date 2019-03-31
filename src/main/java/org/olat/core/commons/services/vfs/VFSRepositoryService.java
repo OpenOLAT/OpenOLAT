@@ -43,6 +43,8 @@ public interface VFSRepositoryService {
 	
 	public VFSMetadata getMetadataFor(File file);
 	
+	public VFSMetadata getMetadataByUUID(String uuid);
+	
 	public VFSItem getItemFor(VFSMetadata metdata);
 	
 	public VFSItem getItemFor(String uuid);
@@ -64,6 +66,8 @@ public interface VFSRepositoryService {
 	 * @return A list of metadata
 	 */
 	public List<VFSMetadata> getChildren(VFSMetadataRef parentMetadata);
+	
+	public List<VFSMetadata> getMostDownloaded(VFSMetadata ancestorMetadata, int maxResults);
 	
 	public void itemSaved(VFSLeaf leaf);
 	

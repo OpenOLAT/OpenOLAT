@@ -32,6 +32,7 @@ import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.LocalFolderImpl;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
 
@@ -60,18 +61,18 @@ public class OlatRootFolderTreeModel extends GenericTreeModel {
 	private VFSItemFilter filter;
 	private Comparator<VFSItem> comparator;
 
-	public OlatRootFolderTreeModel(LocalFolderImpl root) {
+	public OlatRootFolderTreeModel(VFSContainer root) {
 		setRootNode(createNode(root));
 		getRootNode().getChildCount();
 	}
 
-	public OlatRootFolderTreeModel(LocalFolderImpl root, VFSItemFilter filter) {
+	public OlatRootFolderTreeModel(VFSContainer root, VFSItemFilter filter) {
 		this.filter = filter;
 		setRootNode(createNode(root));
 		getRootNode().getChildCount();
 	}
 
-	public OlatRootFolderTreeModel(LocalFolderImpl root,
+	public OlatRootFolderTreeModel(VFSContainer root,
 			VFSItemFilter filter, Comparator<VFSItem> comparator) {
 		this.filter = filter;
 		this.comparator = comparator;

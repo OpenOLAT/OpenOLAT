@@ -1,0 +1,15 @@
+<div class="o_button_group clearfix">
+	<div class="pull-left">
+		$r.render("backLink")
+	</div>
+	<div class="pull-right btn-group">
+	$r.render("orderByPublicationDateLink")
+	$r.render("orderByTitleLink")
+	$r.render("orderByRelevanceLink")
+	</div>
+</div>
+#if($empty)
+	<h3 class="b_with_small_icon_left f_search_results">$empty</h3>
+#else
+	$r.render("results")
+#end

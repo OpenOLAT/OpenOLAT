@@ -134,6 +134,7 @@
 				<ref bean="epDefaultMapIndexer" />
 				<ref bean="epStructuredMapIndexer" />
 				<ref bean="documentPoolIndexer" />
+				<ref bean="libraryIndexer" />
 			</list>
 		</property>
 	</bean>

@@ -36,6 +36,16 @@ import javax.servlet.http.HttpServletResponse;
  * @author Felix Jost
  */
 public class NotFoundMediaResource extends DefaultMediaResource {
+	
+	private final boolean sendErrorMsg;
+	
+	public NotFoundMediaResource() {
+		this(true);
+	}
+	
+	public NotFoundMediaResource(boolean sendErrorMsg) {
+		this.sendErrorMsg = sendErrorMsg;
+	}
 
 	@Override
 	public long getCacheControlDuration() {
@@ -45,7 +55,11 @@ public class NotFoundMediaResource extends DefaultMediaResource {
 	@Override
 	public void prepare(HttpServletResponse hres) {
 		try {
-			hres.sendError(HttpServletResponse.SC_NOT_FOUND);
+			if(sendErrorMsg) {
+				hres.sendError(HttpServletResponse.SC_NOT_FOUND);
+			} else {
+				hres.setStatus(HttpServletResponse.SC_NOT_FOUND);
+			}
 		} catch (IOException e) {
 			// we can do nothing better
 		}

@@ -107,8 +107,6 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	private final OLATResourceable fileSizeSubscription = OresHelper.createOLATResourceableType("UpdateFileSizeAsync");
 	private static final String CANONICAL_ROOT_REL_PATH = "/";
 	
-	private boolean migrated = false;
-	
 	@Autowired
 	private DB dbInstance;
 	@Autowired
@@ -121,6 +119,8 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	private VFSMetadataDAO metadataDao;
 	@Autowired
 	private VFSThumbnailDAO thumbnailDao;
+	@Autowired
+	private VFSRepositoryModule vfsModule;
 	@Autowired
 	private LicenseService licenseService;
 	@Autowired
@@ -159,6 +159,14 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 				log.error("Cannot update file size of: " + event.getRelativePath() + " " + event.getFilename(), e);
 			}
 		}
+	}
+	
+	@Override
+	public VFSMetadata getMetadataByUUID(String uuid) {
+		if(StringHelper.containsNonWhitespace(uuid)) {
+			return metadataDao.getMetadata(uuid);
+		}
+		return null;
 	}
 
 	@Override
@@ -268,6 +276,11 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	@Override
 	public List<VFSMetadata> getChildren(VFSMetadataRef parentMetadata) {
 		return metadataDao.getMetadatas(parentMetadata);
+	}
+
+	@Override
+	public List<VFSMetadata> getMostDownloaded(VFSMetadata ancestorMetadata, int maxResults) {
+		return metadataDao.getMostDownloaded(ancestorMetadata.getRelativePath(), maxResults);
 	}
 
 	/**
@@ -498,6 +511,8 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 				VFSItem item = parentContainer.resolve(thumbnail.getFilename());
 				if(item instanceof VFSLeaf) {
 					thumbnailLeaf = (VFSLeaf)item;
+				} else if(item == null) {
+					thumbnailDao.removeThumbnail(thumbnail);
 				}
 			}
 		}
@@ -506,10 +521,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	
 	private VFSLeaf generateThumbnail(VFSLeaf file, VFSMetadata metadata, boolean fill, int maxWidth, int maxHeight) {
 		String name = file.getName();
-		String extension = FileUtils.getFileSuffix(name);
-		String nameOnly = name.substring(0, name.length() - extension.length() - 1);
-		String thumbnailExtension = preferedThumbnailType(extension);
-		String thumbnailName = generateFilenameForThumbnail(nameOnly, thumbnailExtension, fill, maxWidth, maxHeight);
+		String thumbnailName = generateFilenameForThumbnail(name, fill, maxWidth, maxHeight);
 		
 		VFSContainer parentContainer = getSecureParentContainer(file);
 		VFSLeaf thumbnailLeaf = parentContainer.createChildLeaf(thumbnailName);
@@ -950,7 +962,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	
 	@Override
 	public void migrate(VFSContainer container, VFSMetadata metadata) {
-		//if(migrated) return;
+		if(vfsModule.isMigrated()) return;
 		
 		File directory = toFile(container);
 		if(VFSRepositoryModule.canMeta(directory) == VFSConstants.YES) {
@@ -964,10 +976,6 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 			metadataDao.updateMetadata(metadata);
 			dbInstance.commit();
 		}
-	}
-	
-	public void setMigrated(boolean migrated) {
-		this.migrated = migrated;
 	}
 
 	public void migrateDirectories(File folder) throws IOException {
@@ -1092,18 +1100,15 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		}
 		return metadata;
 	}
-	
-	private String generateFilenameForThumbnail(File file, boolean fill, int maxWidth, int maxHeight) {
+
+	private String generateFilenameForThumbnail(String originalFilename, boolean fill, int maxWidth, int maxHeight) {
+		String extension = FileUtils.getFileSuffix(originalFilename);
+		String nameOnly = originalFilename.substring(0, originalFilename.length() - extension.length() - 1);
+		String thumbnailExtension = preferedThumbnailType(extension);
+		
 		StringBuilder sb = new StringBuilder(128);
 		sb.append("._oo_th_").append(fill).append("_").append(maxWidth).append("_").append(maxHeight)
-		  .append("_").append(file.getName());
-		return sb.toString();
-	}
-	
-	private String generateFilenameForThumbnail(String name, String extension, boolean fill, int maxWidth, int maxHeight) {
-		StringBuilder sb = new StringBuilder(128);
-		sb.append("._oo_th_").append(fill).append("_").append(maxWidth).append("_").append(maxHeight)
-		  .append("_").append(name).append(".").append(extension);
+		  .append("_").append(nameOnly).append(".").append(thumbnailExtension);
 		return sb.toString();
 	}
 	
@@ -1132,20 +1137,20 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	private void migrateThumbnails(VFSMetadata metadata, File file, List<Thumbnail> thumbnails) {
 		if(thumbnails == null || thumbnails.isEmpty()) return;
 		
+		String name = file.getName();
 		// do copy them
 		for(Thumbnail thumbnail:thumbnails) {
 			try {
 				File thumbnailFile = thumbnail.getThumbnailFile();
 				if(thumbnailFile.exists()) {
 					boolean fill = isFill(thumbnailFile);
-					String filename = generateFilenameForThumbnail(file, fill, thumbnail.getMaxWidth(), thumbnail.getMaxHeight());
-					
+					String thumbnailName = generateFilenameForThumbnail(name, fill, thumbnail.getMaxWidth(), thumbnail.getMaxHeight());
 					VFSThumbnailMetadata thumbnailMetadata = thumbnailDao.findThumbnail(metadata, fill, thumbnail.getMaxWidth(), thumbnail.getMaxHeight());
 					if(thumbnailMetadata == null) {
-						thumbnailDao.createThumbnailMetadata(metadata, filename, thumbnailFile.length(),
+						thumbnailDao.createThumbnailMetadata(metadata, thumbnailName, thumbnailFile.length(),
 								fill, thumbnail.getMaxWidth(), thumbnail.getMaxHeight(),
 								thumbnail.getFinalWidth(), thumbnail.getFinalHeight());
-						File target = new File(file.getParentFile(), filename);
+						File target = new File(file.getParentFile(), thumbnailName);
 						Files.move(thumbnailFile.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
 					}
 				}

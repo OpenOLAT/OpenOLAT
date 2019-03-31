@@ -54,7 +54,13 @@
 	   <property name="enabled" value="${site.catalog.enable}"/>
 	   <property name="defaultSiteSecurityCallbackBeanId" value="restrictToGuestSiteSecurityCallback"/>
 	</bean>
-
+	
+	<bean id="frentixsites_library" class="org.olat.modules.library.site.LibrarySiteDef">
+		<property name="order" value="7" />
+		<property name="enabled" value="${sites.enable.library}"/>
+		<property name="defaultSiteSecurityCallbackBeanId" value="registredSiteSecurityCallback"/>
+	</bean>
+	
 	<bean id="olatsites_portfolio" class="org.olat.portfolio.site.EPSiteDef">
 	   <property name="order" value="7" />
 	   <property name="enabled" value="${site.portfolio.enable}"/>

@@ -27,8 +27,12 @@ import java.nio.file.StandardCopyOption;
 
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.vfs.VFSRepositoryModule;
 import org.olat.core.commons.services.vfs.manager.VFSRepositoryServiceImpl;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.library.LibraryModule;
+import org.olat.properties.Property;
+import org.olat.properties.PropertyManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,9 +48,14 @@ public class OLATUpgrade_13_3_0 extends OLATUpgrade {
 	private static final String VERSION = "OLAT_13.3.0";
 	private static final String MOVE_REPO_IMAGES = "MOVE REPO IMAGES";
 	private static final String MIGRATE_FILE_METADATA = "MIGRATE FILE METADATA";
+	private static final String MIGRATE_LIBRARY_CONFIGURATION = "MIGRATE LIBRARY CONFIGURATION";
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private LibraryModule libraryModule;
+	@Autowired
+	private VFSRepositoryModule vfsModule;
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
@@ -68,13 +77,16 @@ public class OLATUpgrade_13_3_0 extends OLATUpgrade {
 			// has never been called, initialize
 			uhd = new UpgradeHistoryData();
 		} else if (uhd.isInstallationComplete()) {
-			vfsRepositoryService.setMigrated(true);
+			if(!vfsModule.isMigrated()) {
+				vfsModule.setMigrated(true);
+			}
 			return false;
 		}
 		
 		boolean allOk = true;
+		allOk &= migrateLibrary(upgradeManager, uhd);
 		allOk &= migrateRepositoryImages(upgradeManager, uhd);
-		allOk &= migrateMetadata(upgradeManager, uhd);
+		allOk &= migrateMetadata(upgradeManager, uhd);// need to be the last
 
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
@@ -88,9 +100,33 @@ public class OLATUpgrade_13_3_0 extends OLATUpgrade {
 	
 	@Override
 	public boolean doNewSystemInit() {
-		vfsRepositoryService.setMigrated(true);
+		if(!vfsModule.isMigrated()) {
+			vfsModule.setMigrated(true);
+		}
 		return super.doNewSystemInit();
 	}
+	
+	private boolean migrateLibrary(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(MIGRATE_LIBRARY_CONFIGURATION)) {
+			try {
+				PropertyManager pm = PropertyManager.getInstance();
+				Property prop = pm.findProperty(null, null, null, "BAKS", "library.shared.folder");
+				if (prop != null && prop.getLongValue() != null) {
+					libraryModule.setLibraryEntryKey(prop.getLongValue().toString());
+
+				}
+			} catch (Exception e) {
+				log.error("", e);
+				allOk = false;
+			}
+			
+			uhd.setBooleanDataValue(MIGRATE_LIBRARY_CONFIGURATION, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		return allOk;
+	}
+	
 
 	/**
 	 * Migrate the images of learn resources and courses.
@@ -189,7 +225,7 @@ public class OLATUpgrade_13_3_0 extends OLATUpgrade {
 				//go through /bcroot/
 				File canonicalRoot = new File(FolderConfig.getCanonicalRoot());
 				vfsRepositoryService.migrateDirectories(canonicalRoot);
-				vfsRepositoryService.setMigrated(true);
+				vfsModule.setMigrated(true);
 			} catch (IOException e) {
 				log.error("", e);
 				allOk = false;

@@ -23,6 +23,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import javax.persistence.TemporalType;
+
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSMetadataRef;
@@ -197,6 +199,74 @@ public class VFSMetadataDAO {
 		return dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), VFSMetadata.class)
 			.setParameter("parentKey", parentMetadata.getKey())
+			.getResultList();
+	}
+	
+	/**
+	 * This is an exact match to find the direct children of a specific
+	 * directory.
+	 * 
+	 * @param relativePath The relative path
+	 * @return A list of metadata
+	 */
+	public List<VFSMetadata> getMostDownloaded(String relativePath, int maxResult) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select metadata from filemetadata metadata")
+		  .append(" left join fetch metadata.author as author")
+		  .append(" left join fetch author.user as authorUser")
+		  .append(" left join fetch metadata.licenseType as licenseType")
+		  .append(" where metadata.relativePath like :relativePath")
+		  .append(" and metadata.directory=false")
+		  .append(" order by metadata.downloadCount desc nulls last");
+
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), VFSMetadata.class)
+			.setParameter("relativePath", relativePath + "%")
+			.setFirstResult(0)
+			.setMaxResults(maxResult)
+			.getResultList();
+	}
+	
+	/**
+	 * This is an exact match to find the direct children of a specific
+	 * directory.
+	 * 
+	 * @param relativePath The relative path
+	 * @return A list of metadata
+	 */
+	public List<VFSMetadata> getNewest(String relativePath, int maxResult) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select metadata from filemetadata metadata")
+		  .append(" left join fetch metadata.author as author")
+		  .append(" left join fetch author.user as authorUser")
+		  .append(" left join fetch metadata.licenseType as licenseType")
+		  .append(" where metadata.relativePath like :relativePath")
+		  .append(" and metadata.directory=false")
+		  .append(" order by metadata.fileLastModified desc nulls last");
+
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), VFSMetadata.class)
+			.setParameter("relativePath", relativePath + "%")
+			.setFirstResult(0)
+			.setMaxResults(maxResult)
+			.getResultList();
+	}
+	
+	public List<VFSMetadata> getNewest(String relativePath, Date date) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select metadata from filemetadata metadata")
+		  .append(" left join fetch metadata.author as author")
+		  .append(" left join fetch author.user as authorUser")
+		  .append(" left join fetch metadata.licenseType as licenseType")
+		  .append(" where metadata.relativePath like :relativePath")
+		  .append(" and metadata.fileLastModified>=:date")
+		  .append(" and metadata.directory=false")
+		  .append(" order by metadata.fileLastModified desc nulls last");
+
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), VFSMetadata.class)
+			.setParameter("relativePath", relativePath + "%")
+			.setParameter("date", date, TemporalType.TIMESTAMP)
 			.getResultList();
 	}
 	

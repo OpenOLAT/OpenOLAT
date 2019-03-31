@@ -62,7 +62,8 @@ public class AuthorDeletedListController extends AuthorListController {
 
 	private DToolsController dToolsCtrl;
 	
-	private FormLink restoreButton, deletePermanentlyButton;
+	private FormLink restoreButton;
+	private FormLink deletePermanentlyButton;
 	
 	private ConfirmRestoreController confirmRestoreCtrl;
 	private ConfirmDeletePermanentlyController confirmDeletePermanentlyCtrl;
