@@ -21,8 +21,8 @@ package org.olat.modules.wopi.collabora;
 
 import java.util.Locale;
 
-import org.olat.core.commons.modules.bc.components.FolderComponent;
 import org.olat.core.commons.services.vfs.VFSLeafEditor;
+import org.olat.core.commons.services.vfs.VFSLeafEditorConfigs;
 import org.olat.core.commons.services.vfs.VFSLeafEditorSecurityCallback;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
@@ -72,8 +72,8 @@ public class CollaboraEditor implements VFSLeafEditor {
 	}
 
 	@Override
-	public Controller getRunController(UserRequest ureq, WindowControl wControl, VFSLeaf vfsLeaf,
-			FolderComponent folderComponent, Identity identity, VFSLeafEditorSecurityCallback securityCallback) {
+	public Controller getRunController(UserRequest ureq, WindowControl wControl, Identity identity, VFSLeaf vfsLeaf,
+			VFSLeafEditorSecurityCallback securityCallback, VFSLeafEditorConfigs configs) {
 		Access access = collaboraService.createAccess(vfsLeaf.getMetaInfo(), identity, securityCallback);
 		return new CollaboraEditorController(ureq, wControl, access);
 	}

@@ -27,6 +27,7 @@ package org.olat.core.commons.modules.bc.commands;
 
 import java.util.List;
 
+import org.olat.core.commons.editor.htmleditor.HTMLEditorConfig;
 import org.olat.core.commons.modules.bc.FolderEvent;
 import org.olat.core.commons.modules.bc.FolderLicenseHandler;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
@@ -39,6 +40,7 @@ import org.olat.core.commons.services.license.ui.LicenseUIFactory;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.vfs.VFSLeafEditor;
+import org.olat.core.commons.services.vfs.VFSLeafEditorConfigs;
 import org.olat.core.commons.services.vfs.VFSLeafEditorSecurityCallback;
 import org.olat.core.commons.services.vfs.VFSLeafEditorSecurityCallbackBuilder;
 import org.olat.core.commons.services.vfs.VFSMetadata;
@@ -192,7 +194,11 @@ public class CmdCreateFile extends BasicController implements FolderCommand {
 				.withMode(VFSLeafEditor.Mode.EDIT)
 				.canClose(true)
 				.build();
-		editorCtr = new VFSLeafEditorController(ureq, getWindowControl(), vfsLeaf, folderComponent, secCallback);
+		HTMLEditorConfig htmlEditorConfig = HTMLEditorConfig.builder(folderComponent).build();
+		VFSLeafEditorConfigs configs = VFSLeafEditorConfigs.builder()
+				.addConfig(htmlEditorConfig)
+				.build();
+		editorCtr = new VFSLeafEditorController(ureq, getWindowControl(), vfsLeaf, secCallback, configs);
 		listenTo(editorCtr);
 		
 		ChiefController cc = getWindowControl().getWindowBackOffice().getChiefController();

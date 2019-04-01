@@ -19,33 +19,55 @@
  */
 package org.olat.core.commons.services.vfs;
 
-import java.util.Locale;
-
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.WindowControl;
-import org.olat.core.id.Identity;
-import org.olat.core.util.vfs.VFSLeaf;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 
- * Initial date: 13 Mar 2019<br>
+ * Initial date: 31 Mar 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface VFSLeafEditor {
+public class VFSLeafEditorConfigs {
 	
-	public enum Mode {EDIT, VIEW};
+	public static interface Config {
+		public String getType();
+	}
 	
-	boolean isEnable();
+	private static final VFSLeafEditorConfigs NONE = VFSLeafEditorConfigs.builder().build();
 	
-	String getType();
-	
-	String getDisplayName(Locale locale);
-	
-	boolean isSupportingFormat(String suffix, Mode mode);
-	
-	Controller getRunController(UserRequest ureq, WindowControl wControl, Identity identity, VFSLeaf vfsLeaf,
-			VFSLeafEditorSecurityCallback securityCallback, VFSLeafEditorConfigs configs);
+	private Map<String, Config> configs;
 
+	private VFSLeafEditorConfigs(Builder builder) {
+		this.configs = new HashMap<>(builder.configs);
+	}
+	
+	public Config getConfig(String type) {
+		return this.configs.get(type);
+	}
+	
+	public static VFSLeafEditorConfigs none() {
+		return NONE;
+	}
+
+	public static Builder builder() {
+		return new Builder();
+	}
+
+	public static final class Builder {
+		private Map<String, Config> configs = new HashMap<>();
+
+		private Builder() {
+		}
+
+		public Builder addConfig(Config config) {
+			this.configs.put(config.getType(), config);
+			return this;
+		}
+
+		public VFSLeafEditorConfigs build() {
+			return new VFSLeafEditorConfigs(this);
+		}
+	}
+	
 }

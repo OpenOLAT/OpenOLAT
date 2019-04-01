@@ -35,6 +35,7 @@ import org.olat.core.commons.modules.singlepage.SinglePageController;
 import org.olat.core.commons.services.filetemplate.FileTypes;
 import org.olat.core.commons.services.filetemplate.FileTypes.Builder;
 import org.olat.core.commons.services.vfs.VFSLeafEditor.Mode;
+import org.olat.core.commons.services.vfs.VFSLeafEditorConfigs;
 import org.olat.core.commons.services.vfs.VFSLeafEditorSecurityCallback;
 import org.olat.core.commons.services.vfs.VFSLeafEditorSecurityCallbackBuilder;
 import org.olat.core.commons.services.vfs.VFSMetadata;
@@ -466,7 +467,8 @@ class SubmitDocumentsController extends FormBasicController {
 			VFSLeafEditorSecurityCallback secCallback = VFSLeafEditorSecurityCallbackBuilder.builder()
 					.withMode(mode)
 					.build();
-			vfsLeafEditorCtrl = new VFSLeafEditorController(ureq, getWindowControl(), (VFSLeaf)vfsItem, null, secCallback);
+			VFSLeafEditorConfigs configs = VFSLeafEditorConfigs.builder().build();
+			vfsLeafEditorCtrl = new VFSLeafEditorController(ureq, getWindowControl(), (VFSLeaf)vfsItem, secCallback, configs);
 			listenTo(vfsLeafEditorCtrl);
 			
 			ChiefController cc = getWindowControl().getWindowBackOffice().getChiefController();

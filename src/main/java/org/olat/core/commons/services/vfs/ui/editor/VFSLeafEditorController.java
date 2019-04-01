@@ -19,8 +19,8 @@
  */
 package org.olat.core.commons.services.vfs.ui.editor;
 
-import org.olat.core.commons.modules.bc.components.FolderComponent;
 import org.olat.core.commons.services.vfs.VFSLeafEditor;
+import org.olat.core.commons.services.vfs.VFSLeafEditorConfigs;
 import org.olat.core.commons.services.vfs.VFSLeafEditorSecurityCallback;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -44,20 +44,20 @@ public class VFSLeafEditorController extends BasicController {
 	private Controller editorCtrl;
 
 	private final VFSLeaf vfsLeaf;
-	private final FolderComponent folderComponent;
 	private final VFSLeafEditorSecurityCallback secCallback;
+	private final VFSLeafEditorConfigs configs;
 	
 	public VFSLeafEditorController(UserRequest ureq, WindowControl wControl, VFSLeaf vfsLeaf,
-			FolderComponent folderComponent, VFSLeafEditorSecurityCallback secCallback) {
-		this(ureq, wControl, vfsLeaf, folderComponent, secCallback, null);
+			VFSLeafEditorSecurityCallback secCallback, VFSLeafEditorConfigs configs) {
+		this(ureq, wControl, vfsLeaf, secCallback, configs, null);
 	}
 	
 	public VFSLeafEditorController(UserRequest ureq, WindowControl wControl, VFSLeaf vfsLeaf,
-			FolderComponent folderComponent, VFSLeafEditorSecurityCallback secCallback, String cssClass) {
+			VFSLeafEditorSecurityCallback secCallback, VFSLeafEditorConfigs configs, String cssClass) {
 		super(ureq, wControl);
 		this.vfsLeaf = vfsLeaf;
-		this.folderComponent = folderComponent;
 		this.secCallback = secCallback;
+		this.configs = configs;
 		
 		mainVC = createVelocityContainer("editor_main");
 		mainVC.contextPut("cssClass", cssClass);
@@ -94,7 +94,7 @@ public class VFSLeafEditorController extends BasicController {
 		removeAsListenerAndDispose(editorCtrl);
 		
 		if (editorCtrl != null) mainVC.remove("editor");
-		editorCtrl = editor.getRunController(ureq, getWindowControl(), vfsLeaf, folderComponent, getIdentity(), secCallback);
+		editorCtrl = editor.getRunController(ureq, getWindowControl(), getIdentity(), vfsLeaf, secCallback, configs);
 		listenTo(editorCtrl);
 		mainVC.put("editor", editorCtrl.getInitialComponent());
 	}

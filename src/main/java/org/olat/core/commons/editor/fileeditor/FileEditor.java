@@ -23,8 +23,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
-import org.olat.core.commons.modules.bc.components.FolderComponent;
 import org.olat.core.commons.services.vfs.VFSLeafEditor;
+import org.olat.core.commons.services.vfs.VFSLeafEditorConfigs;
 import org.olat.core.commons.services.vfs.VFSLeafEditorSecurityCallback;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
@@ -70,9 +70,9 @@ public class FileEditor implements VFSLeafEditor {
 	}
 
 	@Override
-	public Controller getRunController(UserRequest ureq, WindowControl wControl, VFSLeaf vfsLeaf,
-			FolderComponent folderComponent, Identity identity, VFSLeafEditorSecurityCallback secCallback) {
-		return new FileEditorController(ureq, wControl, folderComponent, vfsLeaf, secCallback);
+	public Controller getRunController(UserRequest ureq, WindowControl wControl, Identity identity, VFSLeaf vfsLeaf,
+			VFSLeafEditorSecurityCallback secCallback, VFSLeafEditorConfigs configs) {
+		return new FileEditorController(ureq, wControl, vfsLeaf, secCallback, configs);
 	}
 
 }

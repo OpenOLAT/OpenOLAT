@@ -19,6 +19,8 @@
  */
 package org.olat.repository.handlers;
 
+import static org.olat.core.commons.services.vfs.VFSLeafEditorConfigs.none;
+
 import java.io.File;
 import java.util.Locale;
 
@@ -123,9 +125,7 @@ public class VFSEditorDelegate implements WebDocumentCreateDelegate, WebDocument
 				.withMode(Mode.EDIT)
 				.canClose(false)
 				.build();
-		// FolderComponent should be initialized to be safe. As of today the internal
-		// editor does not support these file types.
-		return new VFSLeafEditorController(ureq, wControl, document, null, secCallback, "o_web_document_edit");
+		return new VFSLeafEditorController(ureq, wControl, document, secCallback, none(), "o_web_document_edit");
 	}
 	
 }

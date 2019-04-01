@@ -19,11 +19,13 @@
  */
 package org.olat.core.commons.modules.bc.commands;
 
+import org.olat.core.commons.editor.htmleditor.HTMLEditorConfig;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
 import org.olat.core.commons.modules.bc.components.ListRenderer;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.vfs.VFSLeafEditor;
+import org.olat.core.commons.services.vfs.VFSLeafEditorConfigs;
 import org.olat.core.commons.services.vfs.VFSLeafEditorSecurityCallback;
 import org.olat.core.commons.services.vfs.VFSLeafEditorSecurityCallbackBuilder;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
@@ -108,7 +110,11 @@ public class CmdOpenContent extends BasicController implements FolderCommand {
 		VFSLeafEditorSecurityCallback secCallback = VFSLeafEditorSecurityCallbackBuilder.builder()
 				.withMode(getMode(vfsLeaf, containerSecCallback.canWrite()))
 				.build();
-		editCtrl = new VFSLeafEditorController(ureq, getWindowControl(), vfsLeaf, folderComponent, secCallback);
+		HTMLEditorConfig htmlEditorConfig = HTMLEditorConfig.builder(folderComponent).build();
+		VFSLeafEditorConfigs configs = VFSLeafEditorConfigs.builder()
+				.addConfig(htmlEditorConfig)
+				.build();
+		editCtrl = new VFSLeafEditorController(ureq, getWindowControl(), vfsLeaf, secCallback, configs);
 		listenTo(editCtrl);
 		
 		ChiefController cc = getWindowControl().getWindowBackOffice().getChiefController();
