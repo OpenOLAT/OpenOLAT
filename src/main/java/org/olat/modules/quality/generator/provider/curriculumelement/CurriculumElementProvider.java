@@ -21,6 +21,7 @@ package org.olat.modules.quality.generator.provider.curriculumelement;
 
 import static java.util.Collections.singletonList;
 import static org.olat.modules.quality.generator.ProviderHelper.addDays;
+import static org.olat.modules.quality.generator.ProviderHelper.subtractDays;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -237,9 +238,9 @@ public class CurriculumElementProvider implements QualityGeneratorProvider {
 		searchParams.setCeTypeKey(ceTypeKey);
 
 		String dueDateDays = configs.getValue(CONFIG_KEY_DUE_DATE_DAYS);
-		Date dueDateFrom = addDays(fromDate, dueDateDays);
+		Date dueDateFrom = subtractDays(fromDate, dueDateDays);
 		searchParams.setFrom(dueDateFrom);
-		Date dueDateTo = addDays(toDate, dueDateDays);
+		Date dueDateTo = subtractDays(toDate, dueDateDays);
 		searchParams.setTo(dueDateTo);
 		
 		String dueDateType = configs.getValue(CONFIG_KEY_DUE_DATE_TYPE);
