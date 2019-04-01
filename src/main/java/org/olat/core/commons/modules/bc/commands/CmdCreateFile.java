@@ -45,13 +45,11 @@ import org.olat.core.commons.services.vfs.VFSLeafEditorSecurityCallback;
 import org.olat.core.commons.services.vfs.VFSLeafEditorSecurityCallbackBuilder;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
-import org.olat.core.commons.services.vfs.ui.editor.VFSLeafEditorController;
+import org.olat.core.commons.services.vfs.ui.editor.VFSLeafEditorFullscreenController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
-import org.olat.core.gui.control.ScreenMode.Mode;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
@@ -149,7 +147,6 @@ public class CmdCreateFile extends BasicController implements FolderCommand {
 			fireEvent(ureq, new FolderEvent(FolderEvent.NEW_FILE_EVENT, fileName));
 			fireEvent(ureq, FOLDERCOMMAND_FINISHED);
 			notifyFinished(ureq);
-			doCloseEditor();
 			cleanUp();
 		}
 	}
@@ -180,7 +177,6 @@ public class CmdCreateFile extends BasicController implements FolderCommand {
 		}
 	}
 	
-	@SuppressWarnings("deprecation")
 	private void doEdit(UserRequest ureq) {
 		List<VFSLeafEditor> editors = vfsRepositoryService.getEditors(vfsLeaf, VFSLeafEditor.Mode.EDIT);
 		// Not able to decide which editor to use -> show the folder list
@@ -198,20 +194,8 @@ public class CmdCreateFile extends BasicController implements FolderCommand {
 		VFSLeafEditorConfigs configs = VFSLeafEditorConfigs.builder()
 				.addConfig(htmlEditorConfig)
 				.build();
-		editorCtr = new VFSLeafEditorController(ureq, getWindowControl(), vfsLeaf, secCallback, configs);
+		editorCtr = new VFSLeafEditorFullscreenController(ureq, getWindowControl(), vfsLeaf, secCallback, configs);
 		listenTo(editorCtr);
-		
-		ChiefController cc = getWindowControl().getWindowBackOffice().getChiefController();
-		String businessPath = editorCtr.getWindowControlForDebug().getBusinessControl().getAsString();
-		cc.getScreenMode().setMode(Mode.full, businessPath);
-		getWindowControl().pushToMainArea(editorCtr.getInitialComponent());
-	}
-	
-	private void doCloseEditor() {
-		getWindowControl().pop();
-		String businessPath = getWindowControl().getBusinessControl().getAsString();
-		getWindowControl().getWindowBackOffice().getChiefController().getScreenMode().setMode(Mode.standard, businessPath);
-		cleanUp();
 	}
 	
 	private void cleanUp() {

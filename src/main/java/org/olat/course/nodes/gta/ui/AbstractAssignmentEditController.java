@@ -33,7 +33,7 @@ import org.olat.core.commons.services.vfs.VFSLeafEditorConfigs;
 import org.olat.core.commons.services.vfs.VFSLeafEditorSecurityCallback;
 import org.olat.core.commons.services.vfs.VFSLeafEditorSecurityCallbackBuilder;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
-import org.olat.core.commons.services.vfs.ui.editor.VFSLeafEditorController;
+import org.olat.core.commons.services.vfs.ui.editor.VFSLeafEditorFullscreenController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -95,7 +95,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController {
 	private DialogBoxController confirmDeleteCtrl;
 	private EditHTMLController editHtmlCtrl;
 	private EditTaskController addTaskCtrl, editTaskCtrl;
-	private VFSLeafEditorController vfsLeafEditorCtrl;
+	private VFSLeafEditorFullscreenController vfsLeafEditorCtrl;
 	
 	private final File tasksFolder;
 	protected final boolean readOnly;
@@ -247,7 +247,6 @@ abstract class AbstractAssignmentEditController extends FormBasicController {
 			if(event == Event.DONE_EVENT) {
 				gtaManager.markNews(courseEnv, gtaNode);
 				updateModel();
-				doCloseFullscreen();
 				cleanUp();
 			}
 		} else if(confirmDeleteCtrl == source) {
@@ -392,13 +391,8 @@ abstract class AbstractAssignmentEditController extends FormBasicController {
 					.withMode(mode)
 					.build();
 			VFSLeafEditorConfigs configs = VFSLeafEditorConfigs.builder().build();
-			vfsLeafEditorCtrl = new VFSLeafEditorController(ureq, getWindowControl(), (VFSLeaf)vfsItem, secCallback, configs);
+			vfsLeafEditorCtrl = new VFSLeafEditorFullscreenController(ureq, getWindowControl(), (VFSLeaf)vfsItem, secCallback, configs);
 			listenTo(vfsLeafEditorCtrl);
-			
-			ChiefController cc = getWindowControl().getWindowBackOffice().getChiefController();
-			String businessPath = vfsLeafEditorCtrl.getWindowControlForDebug().getBusinessControl().getAsString();
-			cc.getScreenMode().setMode(ScreenMode.Mode.full, businessPath);
-			getWindowControl().pushToMainArea(vfsLeafEditorCtrl.getInitialComponent());
 		}
 	}
 	

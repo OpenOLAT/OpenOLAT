@@ -29,13 +29,11 @@ import org.olat.core.commons.services.vfs.VFSLeafEditorConfigs;
 import org.olat.core.commons.services.vfs.VFSLeafEditorSecurityCallback;
 import org.olat.core.commons.services.vfs.VFSLeafEditorSecurityCallbackBuilder;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
-import org.olat.core.commons.services.vfs.ui.editor.VFSLeafEditorController;
+import org.olat.core.commons.services.vfs.ui.editor.VFSLeafEditorFullscreenController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
-import org.olat.core.gui.control.ScreenMode.Mode;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.translator.Translator;
@@ -114,13 +112,9 @@ public class CmdOpenContent extends BasicController implements FolderCommand {
 		VFSLeafEditorConfigs configs = VFSLeafEditorConfigs.builder()
 				.addConfig(htmlEditorConfig)
 				.build();
-		editCtrl = new VFSLeafEditorController(ureq, getWindowControl(), vfsLeaf, secCallback, configs);
+		editCtrl = new VFSLeafEditorFullscreenController(ureq, getWindowControl(), vfsLeaf, secCallback, configs);
 		listenTo(editCtrl);
 		
-		ChiefController cc = getWindowControl().getWindowBackOffice().getChiefController();
-		String businessPath = editCtrl.getWindowControlForDebug().getBusinessControl().getAsString();
-		cc.getScreenMode().setMode(Mode.full, businessPath);
-		getWindowControl().pushToMainArea(editCtrl.getInitialComponent());
 		return this;
 	}
 	
@@ -157,7 +151,7 @@ public class CmdOpenContent extends BasicController implements FolderCommand {
 			if (event == Event.DONE_EVENT) {
 				notifyFinished(ureq);
 			}
-			doCloseEditor();
+			cleanUp();
 			fireEvent(ureq, FOLDERCOMMAND_FINISHED);
 		}
 		super.event(ureq, source, event);
@@ -172,13 +166,6 @@ public class CmdOpenContent extends BasicController implements FolderCommand {
 				NotificationsManager.getInstance().markPublisherNews(subsContext, ureq.getIdentity(), true);
 			}
 		}
-	}
-	
-	private void doCloseEditor() {
-		getWindowControl().pop();
-		String businessPath = getWindowControl().getBusinessControl().getAsString();
-		getWindowControl().getWindowBackOffice().getChiefController().getScreenMode().setMode(Mode.standard, businessPath);
-		cleanUp();
 	}
 	
 	private void cleanUp() {

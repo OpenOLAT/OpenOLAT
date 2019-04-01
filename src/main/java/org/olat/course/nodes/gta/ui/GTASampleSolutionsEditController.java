@@ -33,7 +33,7 @@ import org.olat.core.commons.services.vfs.VFSLeafEditorSecurityCallback;
 import org.olat.core.commons.services.vfs.VFSLeafEditorSecurityCallbackBuilder;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
-import org.olat.core.commons.services.vfs.ui.editor.VFSLeafEditorController;
+import org.olat.core.commons.services.vfs.ui.editor.VFSLeafEditorFullscreenController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -85,7 +85,7 @@ public class GTASampleSolutionsEditController extends FormBasicController {
 	private EditSolutionController editSolutionCtrl;
 	private NewSolutionController newSolutionCtrl;
 	private EditHTMLController editHtmlCtrl;
-	private VFSLeafEditorController vfsLeafEditorCtrl;
+	private VFSLeafEditorFullscreenController vfsLeafEditorCtrl;
 	
 	private final File solutionDir;
 	private final boolean readOnly;
@@ -238,7 +238,6 @@ public class GTASampleSolutionsEditController extends FormBasicController {
 			if(event == Event.DONE_EVENT) {
 				gtaManager.markNews(courseEnv, gtaNode);
 				updateModel();
-				doCloseFullscreen();
 				cleanUp();
 			}
 		} else if(cmc == source) {
@@ -319,7 +318,6 @@ public class GTASampleSolutionsEditController extends FormBasicController {
 		}
 	}
 
-	@SuppressWarnings("deprecation")
 	private void doEditVfsEditor(UserRequest ureq, Solution solution, Mode mode) {
 		VFSItem vfsItem = solutionContainer.resolve(solution.getFilename());
 		if(vfsItem == null || !(vfsItem instanceof VFSLeaf)) {
@@ -330,13 +328,8 @@ public class GTASampleSolutionsEditController extends FormBasicController {
 					.build();
 			//TODO uh container to config
 			VFSLeafEditorConfigs configs = VFSLeafEditorConfigs.builder().build();
-			vfsLeafEditorCtrl = new VFSLeafEditorController(ureq, getWindowControl(), (VFSLeaf)vfsItem, secCallback, configs);
+			vfsLeafEditorCtrl = new VFSLeafEditorFullscreenController(ureq, getWindowControl(), (VFSLeaf)vfsItem, secCallback, configs);
 			listenTo(vfsLeafEditorCtrl);
-			
-			ChiefController cc = getWindowControl().getWindowBackOffice().getChiefController();
-			String businessPath = vfsLeafEditorCtrl.getWindowControlForDebug().getBusinessControl().getAsString();
-			cc.getScreenMode().setMode(ScreenMode.Mode.full, businessPath);
-			getWindowControl().pushToMainArea(vfsLeafEditorCtrl.getInitialComponent());
 		}
 	}
 
