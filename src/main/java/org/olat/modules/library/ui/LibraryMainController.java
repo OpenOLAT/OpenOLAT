@@ -76,7 +76,6 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.filters.VFSContainerFilter;
-import org.olat.fileresource.types.SharedFolderFileResource;
 import org.olat.modules.library.LibraryEvent;
 import org.olat.modules.library.LibraryManager;
 import org.olat.modules.library.LibraryModule;
@@ -86,7 +85,6 @@ import org.olat.modules.library.ui.event.OpenFolderEvent;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryService;
-import org.olat.repository.controllers.ReferencableEntriesSearchController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 
@@ -104,12 +102,14 @@ public class LibraryMainController extends MainLayoutBasicController implements 
 	private static final String GUI_CONF_LAYOUT_KEY = "library_layout_conf";
 	private static final String I18N_UPLOAD_FOLDER_DISPLAYNAME = "library.upload.folder.displayname";
 
+	private Link editLink;
+	private Link reviewLink;
+	private Link uploadLink;
 	private MenuTree menuTree;
 	private LibraryTreeModel treeModel;
 	private VelocityContainer overviewVC;
 	
 	private CatalogController catalogCtr;
-	private ReferencableEntriesSearchController chooseFolderCtr;
 	private CloseableModalController dialogCtr;
 	private FolderRunController editFolderCtr;
 	private NewCatalogItemController newCatalogItemCtr;
@@ -164,7 +164,7 @@ public class LibraryMainController extends MainLayoutBasicController implements 
 		mapperBaseURL = registerCacheableMapper(ureq, "LibrarySite", mapper);
 		thumbnailMapperBaseURL = registerCacheableMapper(ureq, "LibraryThumbnail", thumbnailMapper);
 		
-		initCtrs(ureq);
+		initCtrs(ureq, catalogEntry);
 	}
 
 	@Override
@@ -180,14 +180,12 @@ public class LibraryMainController extends MainLayoutBasicController implements 
 		}
 	}
 	
-	private Link configLink, editLink, reviewLink, uploadLink;
-
 	/**
 	 * Initialize the content
 	 * 
 	 * @param ureq
 	 */
-	public void initCtrs(UserRequest ureq) {
+	private void initCtrs(UserRequest ureq, RepositoryEntry catalogEntry) {
 		// Menu tree
 		menuTree = new MenuTree("menuTree");
 		menuTree.setExpandSelectedNode(false);
@@ -198,21 +196,16 @@ public class LibraryMainController extends MainLayoutBasicController implements 
 		overviewVC = createVelocityContainer("overview");
 		overviewVC.contextPut("cssIconClass", ICON_CSS_CLASS);
 		
-		RepositoryEntry repoEntry = libraryManager.getCatalogRepoEntry();
 		boolean isAdmin = ureq.getUserSession().getRoles().isAdministrator();
 		boolean isOwner = false;
-		if (repoEntry != null) {
-			isOwner = repositoryService.hasRoleExpanded(getIdentity(), repoEntry,
+		if (catalogEntry != null) {
+			isOwner = repositoryService.hasRoleExpanded(getIdentity(), catalogEntry,
 					OrganisationRoles.administrator.name(), OrganisationRoles.learnresourcemanager.name(),
 					GroupRoles.owner.name());
 		}
 
 		//admin tools
 		if (isAdmin || isOwner) {
-			if (isAdmin) {
-				configLink = LinkFactory.createButton("library.toolbox.configure", overviewVC, this);
-				configLink.setIconLeftCSS("o_icon o_icon_customize o_icon-lg");
-			}
 			// add edit link
 			editLink = LinkFactory.createButton("edit", overviewVC, this);
 			editLink.setIconLeftCSS("o_icon o_icon-lg o_icon_edit");
@@ -225,6 +218,8 @@ public class LibraryMainController extends MainLayoutBasicController implements 
 				reviewLink.setCustomDisplayText(translate("library.toolbox.review.singular"));
 			} else if (numNewItems > 1){
 				reviewLink.setCustomDisplayText(translate("library.toolbox.review.plural", Integer.toString(numNewItems)));
+			} else {
+				reviewLink.setVisible(false);
 			}
 		}
 		uploadLink = LinkFactory.createButton("library.toolbox.upload", overviewVC, this);
@@ -320,8 +315,6 @@ public class LibraryMainController extends MainLayoutBasicController implements 
 					}	
 				}
 			}
-		} else if (source == configLink) {
-			displaySearchController(ureq);
 		} else if (source == editLink) {
 			displayEditController(ureq);
 		} else if (source == uploadLink) {
@@ -407,24 +400,7 @@ public class LibraryMainController extends MainLayoutBasicController implements 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == dialogCtr) {
-			if (chooseFolderCtr != null) removeAsListenerAndDispose(chooseFolderCtr);
-			removeAsListenerAndDispose(dialogCtr);
-		} else if (source == chooseFolderCtr) {
-			if (event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED) {
-				
-				// remove old lockfile if any present
-				if (libraryManager.getSharedFolder()!=null){
-					libraryManager.removeExistingLockFile();
-				}				
-				// close and save
-				RepositoryEntry repoEntry = chooseFolderCtr.getSelectedEntry();
-				updateRepositoryEntry(ureq, repoEntry);
-				// display the overview panel
-				columnLayoutCtr.setCol3(overviewVC);
-			}
-			removeAsListenerAndDispose(chooseFolderCtr);
-			dialogCtr.deactivate();
-			removeAsListenerAndDispose(dialogCtr);
+			//
 		} else if (source == editLayoutCtr) {
 			if (event == Event.BACK_EVENT) {
 				removeAsListenerAndDispose(editLayoutCtr);
@@ -531,34 +507,6 @@ public class LibraryMainController extends MainLayoutBasicController implements 
 		}
 	}
 	
-	private void updateRepositoryEntry(UserRequest ureq, RepositoryEntry repoEntry) {
-		if(libraryOres != null) {
-			CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, libraryOres);
-		}
-
-		libraryManager.setCatalogRepoEntry(repoEntry);
-		// lock selected folder to prevent indexing twice (resourcefolder / library - Indexer)
-		libraryManager.lockFolderAndPreventDoubleIndexing();
-		libraryOres = OresHelper.createOLATResourceableInstance(LibrarySite.class, repoEntry.getOlatResource().getResourceableId());
-
-		basePath = "/repository/" + repoEntry.getOlatResource().getResourceableId() + "/" + libraryManager.getSharedFolder().getName();
-
-	//update tree
-		initializeMenuTreeAndCatalog(ureq);
-		//update repository entry for all controllers;
-		newCatalogItemCtr.updateRepositoryEntry(ureq, libraryOres);
-		catalogCtr.updateRepositoryEntry(libraryOres);
-		mostRatedFilesCtr.updateRepositoryEntry(ureq, libraryOres);
-		mostViewedFilesCtr.updateView(ureq.getLocale());
-		newestFilesCtr.updateView(ureq.getLocale());
-		
-		//update url mapper
-		final Mapper mapper = new LibraryMapper(libraryManager);
-		final Mapper thumbnailMapper = new LibraryThumbnailMapper(basePath);
-		mapperBaseURL = registerCacheableMapper(ureq, "LibrarySite", mapper);
-		thumbnailMapperBaseURL = registerCacheableMapper(ureq, "LibraryThumbnail", thumbnailMapper);
-	}
-	
 	private void openFile(UserRequest ureq, OpenFileEvent openFolderEvent) {
 		CatalogItem item = openFolderEvent.getItem();
 		String fileName = item.getName();
@@ -604,20 +552,6 @@ public class LibraryMainController extends MainLayoutBasicController implements 
 			// display the overview panel
 			columnLayoutCtr.setCol3(overviewVC);
 		}
-	}
-
-	/**
-	 * Displays the shared folder search controller
-	 * 
-	 * @param ureq
-	 */
-	private void displaySearchController(UserRequest ureq) {
-		String choose = translate("library.catalog.choose.folder.link");
-		chooseFolderCtr = new ReferencableEntriesSearchController(getWindowControl(), ureq, SharedFolderFileResource.TYPE_NAME, choose);
-		listenTo(chooseFolderCtr);
-		dialogCtr = new CloseableModalController(getWindowControl(), getTranslator().translate("close"), chooseFolderCtr.getInitialComponent());
-		listenTo(dialogCtr);
-		dialogCtr.activate();
 	}
 
 	/**
@@ -754,7 +688,7 @@ public class LibraryMainController extends MainLayoutBasicController implements 
 	}
 	
 	private void displayReviewController(UserRequest ureq) {
-		if ((libraryManager.getUploadFolder() != null) && (libraryManager.getUploadFolder().getItems().size() > 0)) {
+		if (libraryManager.getUploadFolder() != null && !libraryManager.getUploadFolder().getItems().isEmpty()) {
 			if (reviewController != null) {
 				removeAsListenerAndDispose(this.reviewController);
 			}

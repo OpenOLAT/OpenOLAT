@@ -51,6 +51,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.vfs.filters.VFSLeafButSystemFilter;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.modules.library.LibraryEvent;
 import org.olat.modules.library.LibraryManager;
@@ -118,6 +119,7 @@ public class LibraryManagerImpl implements LibraryManager, InitializingBean, Gen
 		// Instantiate handle for library upload folder, which is stored directly in
 		// the bcroot folder (hence the null parent argument).
 		uploadFolder = VFSManager.olatRootContainer(LIBRARY_UPLOAD_FOLDER_NAME, null);
+		uploadFolder.setDefaultItemFilter(new VFSLeafButSystemFilter());
 		
 		coordinator.getCoordinator().getEventBus().registerFor(this, null, IDENTITY_EVENT_CHANNEL);
 	}
@@ -309,9 +311,12 @@ public class LibraryManagerImpl implements LibraryManager, InitializingBean, Gen
 	 */
 	@Override
 	public void removeExistingLockFile(){
-		File lockFile = new File(getSharedFolder().getBasefile(), NO_FOLDER_INDEXING_LOCKFILE);
-		if (lockFile.exists()) {
-			lockFile.delete();
+		LocalFolderImpl folder = getSharedFolder();
+		if(folder != null && folder.exists()) {
+			File lockFile = new File(folder.getBasefile(), NO_FOLDER_INDEXING_LOCKFILE);
+			if (lockFile.exists()) {
+				lockFile.delete();
+			}
 		}
 	}
 	

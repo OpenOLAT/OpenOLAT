@@ -2,17 +2,14 @@
 	<div class="row">
 		<div class="col-sm-12 o_header_with_buttons">
 			<h2><i class="o_icon $cssIconClass"> </i> $r.translate("library.title")</h2>
-			#if($r.available("library.toolbox.review.singular") || $r.available("edit") || $r.available("library.toolbox.configure"))
+			#if($r.available("library.toolbox.review.singular") || $r.available("edit"))
 			<div class="o_button_group ">
-				<div class="btn-group">
+				<div class='#if($r.visible("library.toolbox.review.singular") && $r.visible("edit")) btn-group #end'>
 					#if($r.available("library.toolbox.review.singular"))
 						$r.render("library.toolbox.review.singular")
 					#end
 					#if($r.available("edit"))
 						$r.render("edit")
-					#end
-					#if($r.available("library.toolbox.configure"))
-						$r.render("library.toolbox.configure")
 					#end
 				</div>
 			</div>
