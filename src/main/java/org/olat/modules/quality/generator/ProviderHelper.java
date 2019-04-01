@@ -41,6 +41,14 @@ import org.olat.core.util.StringHelper;
 public class ProviderHelper {
 
 	private static final String DELIMITER = ",";
+	
+	public static Date subtractDays(Date date, String daysToAdd) {
+		int days = Integer.parseInt(daysToAdd);
+		Calendar c = Calendar.getInstance();
+		c.setTime(date);
+		c.add(Calendar.DATE, -days);
+		return c.getTime();
+	}
 
 	public static Date addDays(Date date, String daysToAdd) {
 		int days = Integer.parseInt(daysToAdd);
