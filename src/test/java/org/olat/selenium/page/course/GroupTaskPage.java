@@ -133,7 +133,7 @@ public class GroupTaskPage {
 		
 		OOGraphene.tinymceExec(text, browser);
 
-		By saveAndCloseDirtyBy = By.cssSelector(".o_gta_html_edit #o_button_saveclose a.btn.o_button_dirty");
+		By saveAndCloseDirtyBy = By.cssSelector(".o_htmleditor #o_button_saveclose a.btn.o_button_dirty");
 		OOGraphene.waitElement(saveAndCloseDirtyBy, browser);
 		browser.findElement(saveAndCloseDirtyBy).click();
 		OOGraphene.waitBusy(browser);
