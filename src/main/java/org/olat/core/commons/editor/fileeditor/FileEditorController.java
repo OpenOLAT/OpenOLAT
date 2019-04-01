@@ -32,7 +32,6 @@ import org.olat.core.commons.editor.htmleditor.HTMLEditorController;
 import org.olat.core.commons.editor.htmleditor.HTMLReadOnlyController;
 import org.olat.core.commons.editor.htmleditor.WysiwygFactory;
 import org.olat.core.commons.editor.plaintexteditor.TextEditorController;
-import org.olat.core.commons.modules.bc.components.FolderComponent;
 import org.olat.core.commons.services.vfs.VFSLeafEditor.Mode;
 import org.olat.core.commons.services.vfs.VFSLeafEditorConfigs;
 import org.olat.core.commons.services.vfs.VFSLeafEditorConfigs.Config;
@@ -50,12 +49,9 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSLockApplicationType;
 import org.olat.core.util.vfs.VFSLockManager;
-import org.olat.core.util.vfs.VFSManager;
-import org.olat.core.util.vfs.util.ContainerAndFile;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class FileEditorController extends BasicController {
@@ -91,47 +87,33 @@ public class FileEditorController extends BasicController {
 		// launch plaintext or html editor depending on file type
 		boolean isEdit = Mode.EDIT.equals(secCallback.getMode());
 		if (vfsLeaf.getName().endsWith(".html") || vfsLeaf.getName().endsWith(".htm")) {
-			Config config = configs.getConfig(HTMLEditorConfig.TYPE);
-			HTMLEditorConfig htmlEditorConfig = null;
-			if (!(config instanceof HTMLEditorConfig)) {
+			Config configObj = configs.getConfig(HTMLEditorConfig.TYPE);
+			HTMLEditorConfig config = null;
+			if (!(configObj instanceof HTMLEditorConfig)) {
 				log.error("FileEditor started without configuration! Displayd blank page. File: " + vfsLeaf + ", Identity: "
 					+ getIdentity());
 				editCtrl = new BlankController(ureq, wControl);
 			}
-			htmlEditorConfig = (HTMLEditorConfig) config;
+			config = (HTMLEditorConfig) configObj;
 			if (isEdit) {
-				// start HTML editor with the folders root folder as base and the file
-				// path as a relative path from the root directory. But first check if the 
-				// root directory is wirtable at all (e.g. not the case in users personal 
-				// briefcase), and seach for the next higher directory that is writable.
-				String relFilePath = "/" + vfsLeaf.getName();
-				// add current container path if not at root level
-				FolderComponent folderComponent = htmlEditorConfig.getFolderComponent();
-				if (!folderComponent.getCurrentContainerPath().equals("/")) { 
-					relFilePath = folderComponent.getCurrentContainerPath() + relFilePath;
-				}
-				VFSContainer writableRootContainer = folderComponent.getRootContainer();
-				ContainerAndFile result = VFSManager.findWritableRootFolderFor(writableRootContainer, relFilePath);
-				if (result != null) {
-					if(vfsLeaf.getParentContainer() != null) {
-						writableRootContainer = vfsLeaf.getParentContainer();
-						relFilePath = vfsLeaf.getName();
-					} else {
-						writableRootContainer = result.getContainer();
-					}
-				} else {
-					// use fallback that always work: current directory and current file
-					relFilePath = vfsLeaf.getName();
-					writableRootContainer = folderComponent.getCurrentContainer(); 
-				}
-				CustomLinkTreeModel customLinkTreeModel = folderComponent.getCustomLinkTreeModel();
+				HTMLEditorController htmlCtrl;
+				CustomLinkTreeModel customLinkTreeModel = config.getCustomLinkTreeModel();
 				if (customLinkTreeModel != null) {
-					editCtrl = WysiwygFactory.createWysiwygControllerWithInternalLink(ureq, getWindowControl(), writableRootContainer, relFilePath, true, customLinkTreeModel);
-					((HTMLEditorController)editCtrl).setNewFile(false);
-				} else {				
-					editCtrl = WysiwygFactory.createWysiwygController(ureq, getWindowControl(), writableRootContainer, relFilePath, true, true);
-					((HTMLEditorController)editCtrl).setNewFile(false);
+					htmlCtrl = WysiwygFactory.createWysiwygControllerWithInternalLink(ureq, getWindowControl(),
+							config.getVfsContainer(), config.getFilePath(), true, customLinkTreeModel,
+							config.getEdusharingProvider());
+				} else {
+					htmlCtrl = WysiwygFactory.createWysiwygController(ureq, getWindowControl(), config.getVfsContainer(),
+							config.getFilePath(), config.getMediaPath(), true, true, config.getEdusharingProvider());
 				}
+				
+				htmlCtrl.setNewFile(false);
+				htmlCtrl.getRichTextConfiguration().setAllowCustomMediaFactory(config.isAllowCustomMediaFactory());
+				if (config.isDisableMedia()) {
+					htmlCtrl.getRichTextConfiguration().disableMedia();
+				}
+				
+				editCtrl = htmlCtrl;
 			} else {
 				editCtrl = new HTMLReadOnlyController(ureq, getWindowControl(), vfsLeaf.getParentContainer(), vfsLeaf.getName(), secCallback.canClose());
 			}

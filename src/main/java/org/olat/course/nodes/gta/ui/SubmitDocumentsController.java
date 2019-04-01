@@ -20,6 +20,7 @@
 package org.olat.course.nodes.gta.ui;
 
 import static org.olat.core.commons.services.vfs.VFSLeafEditor.Mode.EDIT;
+import static org.olat.course.nodes.gta.ui.GTAUIFactory.htmlOffice;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,8 +33,6 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.core.commons.modules.singlepage.SinglePageController;
-import org.olat.core.commons.services.filetemplate.FileTypes;
-import org.olat.core.commons.services.filetemplate.FileTypes.Builder;
 import org.olat.core.commons.services.vfs.VFSLeafEditor.Mode;
 import org.olat.core.commons.services.vfs.VFSLeafEditorConfigs;
 import org.olat.core.commons.services.vfs.VFSLeafEditorSecurityCallback;
@@ -54,10 +53,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
-import org.olat.core.gui.control.ScreenMode;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
@@ -96,7 +93,6 @@ class SubmitDocumentsController extends FormBasicController {
 	private DocumentUploadController uploadCtrl, replaceCtrl;
 	private DialogBoxController confirmDeleteCtrl;
 	private SinglePageController viewDocCtrl;
-	private EditHTMLController editHtmlCtrl;
 	private VFSLeafEditorFullscreenController vfsLeafEditorCtrl;
 	
 	private final int maxDocs;
@@ -307,15 +303,6 @@ class SubmitDocumentsController extends FormBasicController {
 				updateModel();
 			} 
 			checkDeadline(ureq);
-		} else if(editHtmlCtrl == source) {
-			if(event == Event.DONE_EVENT) {
-				fireEvent(ureq, new SubmitEvent(SubmitEvent.UPDATE, editHtmlCtrl.getVfsLeaf().getName()));
-				gtaManager.markNews(courseEnv, gtaNode);
-			}
-			updateModel();
-			doCloseFullscreen();
-			cleanUp();
-			checkDeadline(ureq);
 		} else if (source == vfsLeafEditorCtrl) {
 			if(event == Event.DONE_EVENT) {
 				fireEvent(ureq, new SubmitEvent(SubmitEvent.UPDATE, vfsLeafEditorCtrl.getVfsLeaf().getName()));
@@ -333,27 +320,18 @@ class SubmitDocumentsController extends FormBasicController {
 	private void cleanUp() {
 		removeAsListenerAndDispose(confirmDeleteCtrl);
 		removeAsListenerAndDispose(vfsLeafEditorCtrl);
-		removeAsListenerAndDispose(editHtmlCtrl);
 		removeAsListenerAndDispose(viewDocCtrl);
 		removeAsListenerAndDispose(uploadCtrl);
 		removeAsListenerAndDispose(newDocCtrl);
 		removeAsListenerAndDispose(cmc);
 		confirmDeleteCtrl = null;
 		vfsLeafEditorCtrl = null;
-		editHtmlCtrl = null;
 		viewDocCtrl = null;
 		uploadCtrl = null;
 		newDocCtrl = null;
 		cmc = null;
 	}
 	
-	private void doCloseFullscreen() {
-		getWindowControl().pop();
-		String businessPath = getWindowControl().getBusinessControl().getAsString();
-		getWindowControl().getWindowBackOffice().getChiefController().getScreenMode().setMode(ScreenMode.Mode.standard, businessPath);
-		cleanUp();
-	}
-
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
@@ -433,31 +411,6 @@ class SubmitDocumentsController extends FormBasicController {
 	}
 	
 	private void doOpen(UserRequest ureq, String filename, Mode mode) {
-		if(filename.endsWith(".html")) {
-			doEditHtml(ureq, filename);
-		} else {
-			doEditVfsEditor(ureq, filename, mode);
-		}	
-	}
-	
-	@SuppressWarnings("deprecation")
-	private void doEditHtml(UserRequest ureq, String filename) {
-		VFSItem htmlDocument = documentsContainer.resolve(filename);
-		if(htmlDocument == null || !(htmlDocument instanceof VFSLeaf)) {
-			showError("error.missing.file");
-		} else {
-			editHtmlCtrl = new EditHTMLController(ureq, getWindowControl(), documentsContainer,
-					(VFSLeaf) htmlDocument, null, readOnly);
-			listenTo(editHtmlCtrl);
-			
-			ChiefController cc = getWindowControl().getWindowBackOffice().getChiefController();
-			String businessPath = editHtmlCtrl.getWindowControlForDebug().getBusinessControl().getAsString();
-			cc.getScreenMode().setMode(ScreenMode.Mode.full, businessPath);
-			getWindowControl().pushToMainArea(editHtmlCtrl.getInitialComponent());
-		}
-	}
-
-	private void doEditVfsEditor(UserRequest ureq, String filename, Mode mode) {
 		VFSItem vfsItem = documentsContainer.resolve(filename);
 		if(vfsItem == null || !(vfsItem instanceof VFSLeaf)) {
 			showError("error.missing.file");
@@ -465,7 +418,7 @@ class SubmitDocumentsController extends FormBasicController {
 			VFSLeafEditorSecurityCallback secCallback = VFSLeafEditorSecurityCallbackBuilder.builder()
 					.withMode(mode)
 					.build();
-			VFSLeafEditorConfigs configs = VFSLeafEditorConfigs.builder().build();
+			VFSLeafEditorConfigs configs = GTAUIFactory.getEditorConfig(documentsContainer, filename, null);
 			vfsLeafEditorCtrl = new VFSLeafEditorFullscreenController(ureq, getWindowControl(), (VFSLeaf)vfsItem, secCallback, configs);
 			listenTo(vfsLeafEditorCtrl);
 		}
@@ -529,27 +482,13 @@ class SubmitDocumentsController extends FormBasicController {
 		if(maxDocs > 0 && maxDocs <= model.getRowCount()) {
 			showWarning("error.max.documents");
 		} else {
-			newDocCtrl = new NewDocumentController(ureq, getWindowControl(), documentsContainer, htmlOffice());
+			newDocCtrl = new NewDocumentController(ureq, getWindowControl(), documentsContainer, htmlOffice(getLocale()));
 			listenTo(newDocCtrl);
 			
 			cmc = new CloseableModalController(getWindowControl(), "close", newDocCtrl.getInitialComponent());
 			listenTo(cmc);
 			cmc.activate();
 		}
-	}
-	
-	private FileTypes htmlOffice() {
-		Builder builder = FileTypes.builder(getLocale());
-		if (vfsService.hasEditor("html", EDIT)) {
-			builder.addHtml();
-		}
-		if (vfsService.hasEditor("docx", EDIT)) {
-			builder.addDocx();
-		}
-		if (vfsService.hasEditor("xlsx", EDIT)) {
-			builder.addXlsx();
-		}
-		return builder.build();
 	}
 	
 	public enum DocCols {

@@ -19,8 +19,10 @@
  */
 package org.olat.core.commons.editor.htmleditor;
 
-import org.olat.core.commons.modules.bc.components.FolderComponent;
+import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.commons.services.vfs.VFSLeafEditorConfigs;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.modules.edusharing.VFSEdusharingProvider;
 
 /**
  * 
@@ -32,10 +34,22 @@ public class HTMLEditorConfig implements VFSLeafEditorConfigs.Config {
 
 	public static final String TYPE = "oo-html-editor";
 	
-	private FolderComponent folderComponent;
+	private final VFSContainer vfsContainer;
+	private final String filePath;
+	private final String mediaPath;
+	private final CustomLinkTreeModel customLinkTreeModel;
+	private final VFSEdusharingProvider edusharingProvider;
+	private final boolean disableMedia;
+	private final boolean allowCustomMediaFactory;
 
 	private HTMLEditorConfig(Builder builder) {
-		this.folderComponent = builder.folderComponent;
+		this.vfsContainer = builder.vfsContainer;
+		this.filePath = builder.filePath;
+		this.mediaPath = builder.mediaPath;
+		this.customLinkTreeModel = builder.customLinkTreeModel;
+		this.edusharingProvider = builder.edusharingProvider;
+		this.disableMedia = builder.disableMedia;
+		this.allowCustomMediaFactory = builder.allowCustomMediaFactory;
 	}
 
 	@Override
@@ -43,19 +57,75 @@ public class HTMLEditorConfig implements VFSLeafEditorConfigs.Config {
 		return TYPE;
 	}
 
-	public FolderComponent getFolderComponent() {
-		return folderComponent;
+	public VFSContainer getVfsContainer() {
+		return vfsContainer;
 	}
 
-	public static Builder builder(FolderComponent folderComponent) {
-		return new Builder(folderComponent);
+	public String getFilePath() {
+		return filePath;
+	}
+
+	public String getMediaPath() {
+		return mediaPath;
+	}
+
+	public CustomLinkTreeModel getCustomLinkTreeModel() {
+		return customLinkTreeModel;
+	}
+
+	public VFSEdusharingProvider getEdusharingProvider() {
+		return edusharingProvider;
+	}
+
+	public boolean isDisableMedia() {
+		return disableMedia;
+	}
+
+	public boolean isAllowCustomMediaFactory() {
+		return allowCustomMediaFactory;
+	}
+
+	public static Builder builder(VFSContainer vfsContainer, String filePath) {
+		return new Builder(vfsContainer, filePath);
 	}
 
 	public static final class Builder {
-		private FolderComponent folderComponent;
+		private VFSContainer vfsContainer;
+		private String filePath;
+		private String mediaPath;
+		private CustomLinkTreeModel customLinkTreeModel;
+		private VFSEdusharingProvider edusharingProvider;
+		private boolean disableMedia;
+		private boolean allowCustomMediaFactory = true;
 
-		private Builder(FolderComponent folderComponent) {
-			this.folderComponent = folderComponent;
+		private Builder(VFSContainer vfsContainer, String filePath) {
+			this.vfsContainer = vfsContainer;
+			this.filePath = filePath;
+		}
+		
+		public Builder withMediaPath(String mediaPath) {
+			this.mediaPath = mediaPath;
+			return this;
+		}
+
+		public Builder withCustomLinkTreeModel(CustomLinkTreeModel customLinkTreeModel) {
+			this.customLinkTreeModel = customLinkTreeModel;
+			return this;
+		}
+
+		public Builder withEdusharingProvider(VFSEdusharingProvider edusharingProvider) {
+			this.edusharingProvider = edusharingProvider;
+			return this;
+		}
+
+		public Builder withDisableMedia(boolean disableMedia) {
+			this.disableMedia = disableMedia;
+			return this;
+		}
+
+		public Builder withAllowCustomMediaFactory(boolean allowCustomMediaFactory) {
+			this.allowCustomMediaFactory = allowCustomMediaFactory;
+			return this;
 		}
 
 		public HTMLEditorConfig build() {

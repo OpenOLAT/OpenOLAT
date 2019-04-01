@@ -20,13 +20,12 @@
 package org.olat.course.nodes.gta.ui;
 
 import static org.olat.core.commons.services.vfs.VFSLeafEditor.Mode.EDIT;
+import static org.olat.course.nodes.gta.ui.GTAUIFactory.htmlOffice;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.core.commons.services.filetemplate.FileTypes;
-import org.olat.core.commons.services.filetemplate.FileTypes.Builder;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.vfs.VFSLeafEditor.Mode;
 import org.olat.core.commons.services.vfs.VFSLeafEditorConfigs;
@@ -50,10 +49,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
-import org.olat.core.gui.control.ScreenMode;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
@@ -93,7 +90,6 @@ abstract class AbstractAssignmentEditController extends FormBasicController {
 	private CloseableModalController cmc;
 	private NewTaskController newTaskCtrl;
 	private DialogBoxController confirmDeleteCtrl;
-	private EditHTMLController editHtmlCtrl;
 	private EditTaskController addTaskCtrl, editTaskCtrl;
 	private VFSLeafEditorFullscreenController vfsLeafEditorCtrl;
 	
@@ -236,13 +232,6 @@ abstract class AbstractAssignmentEditController extends FormBasicController {
 				doOpen(ureq, newTask, EDIT);
 				updateModel();
 			} 
-		} else if(editHtmlCtrl == source) {
-			if(event == Event.DONE_EVENT) {
-				gtaManager.markNews(courseEnv, gtaNode);
-			}
-			updateModel();
-			doCloseFullscreen();
-			cleanUp();
 		} else if (source == vfsLeafEditorCtrl) {
 			if(event == Event.DONE_EVENT) {
 				gtaManager.markNews(courseEnv, gtaNode);
@@ -264,13 +253,11 @@ abstract class AbstractAssignmentEditController extends FormBasicController {
 	private void cleanUp() {
 		removeAsListenerAndDispose(confirmDeleteCtrl);
 		removeAsListenerAndDispose(vfsLeafEditorCtrl);
-		removeAsListenerAndDispose(editHtmlCtrl);
 		removeAsListenerAndDispose(editTaskCtrl);
 		removeAsListenerAndDispose(addTaskCtrl);
 		removeAsListenerAndDispose(cmc);
 		confirmDeleteCtrl = null;
 		vfsLeafEditorCtrl = null;
-		editHtmlCtrl = null;
 		editTaskCtrl = null;
 		addTaskCtrl = null;
 		cmc = null;
@@ -312,14 +299,6 @@ abstract class AbstractAssignmentEditController extends FormBasicController {
 		listenTo(cmc);
 		cmc.activate();
 	}
-	
-	private void doOpen(UserRequest ureq, TaskDefinition taskDef, Mode mode) {
-		if(taskDef.getFilename().endsWith(".html")) {
-			doEditHtml(ureq, taskDef);
-		} else {
-			doEditVfsEditor(ureq, taskDef, mode);
-		}	
-	}
 
 	private void doEditMetadata(UserRequest ureq, TaskDefinition taskDef) {
 		List<TaskDefinition> currentDefinitions = gtaManager.getTaskDefinitions(courseEnv, gtaNode);
@@ -341,7 +320,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController {
 	}
 	
 	private void doCreateTask(UserRequest ureq) {
-		newTaskCtrl = new NewTaskController(ureq, getWindowControl(), tasksContainer, htmlOffice());
+		newTaskCtrl = new NewTaskController(ureq, getWindowControl(), tasksContainer, htmlOffice(getLocale()));
 		listenTo(newTaskCtrl);
 
 		String title = translate("create.task");
@@ -349,40 +328,8 @@ abstract class AbstractAssignmentEditController extends FormBasicController {
 		listenTo(cmc);
 		cmc.activate();
 	}
-	
-	private FileTypes htmlOffice() {
-		Builder builder = FileTypes.builder(getLocale());
-		if (vfsService.hasEditor("html", EDIT)) {
-			builder.addHtml();
-		}
-		if (vfsService.hasEditor("docx", EDIT)) {
-			builder.addDocx();
-		}
-		if (vfsService.hasEditor("xlsx", EDIT)) {
-			builder.addXlsx();
-		}
-		return builder.build();
-	}
-	
-	@SuppressWarnings("deprecation")
-	private void doEditHtml(UserRequest ureq, TaskDefinition taskDef) {
-		VFSItem htmlDocument = tasksContainer.resolve(taskDef.getFilename());
-		if(htmlDocument == null || !(htmlDocument instanceof VFSLeaf)) {
-			showError("error.missing.file");
-		} else {
-			editHtmlCtrl = new EditHTMLController(ureq, getWindowControl(), tasksContainer,
-					(VFSLeaf) htmlDocument, courseRepoKey, readOnly);
-			listenTo(editHtmlCtrl);
-			
-			ChiefController cc = getWindowControl().getWindowBackOffice().getChiefController();
-			String businessPath = editHtmlCtrl.getWindowControlForDebug().getBusinessControl().getAsString();
-			cc.getScreenMode().setMode(ScreenMode.Mode.full, businessPath);
-			getWindowControl().pushToMainArea(editHtmlCtrl.getInitialComponent());
-		}
-	}
 
-	@SuppressWarnings("deprecation")
-	private void doEditVfsEditor(UserRequest ureq, TaskDefinition taskDef, Mode mode) {
+	private void doOpen(UserRequest ureq, TaskDefinition taskDef, Mode mode) {
 		VFSItem vfsItem = tasksContainer.resolve(taskDef.getFilename());
 		if(vfsItem == null || !(vfsItem instanceof VFSLeaf)) {
 			showError("error.missing.file");
@@ -390,17 +337,10 @@ abstract class AbstractAssignmentEditController extends FormBasicController {
 			VFSLeafEditorSecurityCallback secCallback = VFSLeafEditorSecurityCallbackBuilder.builder()
 					.withMode(mode)
 					.build();
-			VFSLeafEditorConfigs configs = VFSLeafEditorConfigs.builder().build();
+			VFSLeafEditorConfigs configs = GTAUIFactory.getEditorConfig(tasksContainer, taskDef.getFilename(), courseRepoKey);
 			vfsLeafEditorCtrl = new VFSLeafEditorFullscreenController(ureq, getWindowControl(), (VFSLeaf)vfsItem, secCallback, configs);
 			listenTo(vfsLeafEditorCtrl);
 		}
-	}
-	
-	private void doCloseFullscreen() {
-		getWindowControl().pop();
-		String businessPath = getWindowControl().getBusinessControl().getAsString();
-		getWindowControl().getWindowBackOffice().getChiefController().getScreenMode().setMode(ScreenMode.Mode.standard, businessPath);
-		cleanUp();
 	}
 	
 	private void doConfirmDelete(UserRequest ureq, TaskDefinition row) {

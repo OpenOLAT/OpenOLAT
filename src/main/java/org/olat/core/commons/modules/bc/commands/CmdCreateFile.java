@@ -61,6 +61,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
+import org.olat.core.util.vfs.util.ContainerAndFile;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -190,12 +191,41 @@ public class CmdCreateFile extends BasicController implements FolderCommand {
 				.withMode(VFSLeafEditor.Mode.EDIT)
 				.canClose(true)
 				.build();
-		HTMLEditorConfig htmlEditorConfig = HTMLEditorConfig.builder(folderComponent).build();
+		HTMLEditorConfig htmlEditorConfig = getHtmlEditorConfig();
 		VFSLeafEditorConfigs configs = VFSLeafEditorConfigs.builder()
 				.addConfig(htmlEditorConfig)
 				.build();
 		editorCtr = new VFSLeafEditorFullscreenController(ureq, getWindowControl(), vfsLeaf, secCallback, configs);
 		listenTo(editorCtr);
+	}
+
+	private HTMLEditorConfig getHtmlEditorConfig() {
+		// start HTML editor with the folders root folder as base and the file
+		// path as a relative path from the root directory. But first check if the 
+		// root directory is wirtable at all (e.g. not the case in users personal 
+		// briefcase), and seach for the next higher directory that is writable.
+		String relFilePath = "/" + vfsLeaf.getName();
+		// add current container path if not at root level
+		if (!folderComponent.getCurrentContainerPath().equals("/")) { 
+			relFilePath = folderComponent.getCurrentContainerPath() + relFilePath;
+		}
+		VFSContainer writableRootContainer = folderComponent.getRootContainer();
+		ContainerAndFile result = VFSManager.findWritableRootFolderFor(writableRootContainer, relFilePath);
+		if (result != null) {
+			if(vfsLeaf.getParentContainer() != null) {
+				writableRootContainer = vfsLeaf.getParentContainer();
+				relFilePath = vfsLeaf.getName();
+			} else {
+				writableRootContainer = result.getContainer();
+			}
+		} else {
+			// use fallback that always work: current directory and current file
+			relFilePath = vfsLeaf.getName();
+			writableRootContainer = folderComponent.getCurrentContainer(); 
+		}
+		return HTMLEditorConfig.builder(writableRootContainer, relFilePath)
+				.withCustomLinkTreeModel(folderComponent.getCustomLinkTreeModel())
+				.build();
 	}
 	
 	private void cleanUp() {
