@@ -96,10 +96,10 @@ public class DocumentUploadController extends FormBasicController {
 		boolean allOk = true;
 
 		fileEl.clearError();
-		if(fileEl.getUploadFile() == null) {
+		if(fileEl.getInitialFile() == null && fileEl.getUploadFile() == null) {
 			fileEl.setErrorKey("form.mandatory.hover", null);
 			allOk &= false;
-		} else if (!FileUtils.validateFilename(fileEl.getUploadFileName())) {
+		} else if (fileEl.getUploadFile() != null && !FileUtils.validateFilename(fileEl.getUploadFileName())) {
 			fileEl.setErrorKey("error.file.invalid", null);
 			allOk = false;
 		}
