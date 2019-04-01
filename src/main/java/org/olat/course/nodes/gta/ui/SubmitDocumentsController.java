@@ -284,10 +284,12 @@ class SubmitDocumentsController extends FormBasicController {
 			checkDeadline(ureq);
 		} else if(replaceCtrl == source) {
 			if(event == Event.DONE_EVENT) {
-				String filename = replaceCtrl.getUploadedFilename();
-				doReplace(ureq, replaceCtrl.getSolution(), replaceCtrl.getUploadedFile(), filename);
-				fireEvent(ureq, new SubmitEvent(SubmitEvent.UPDATE, filename));
-				gtaManager.markNews(courseEnv, gtaNode);
+				if (replaceCtrl.getUploadedFile() != null) {
+					String filename = replaceCtrl.getUploadedFilename();
+					doReplace(ureq, replaceCtrl.getSolution(), replaceCtrl.getUploadedFile(), filename);
+					fireEvent(ureq, new SubmitEvent(SubmitEvent.UPDATE, filename));
+					gtaManager.markNews(courseEnv, gtaNode);
+				}
 			}
 			cmc.deactivate();
 			cleanUp();
