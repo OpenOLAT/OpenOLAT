@@ -351,11 +351,13 @@ public class MultipleChoiceEditorController extends FormBasicController {
 		newChoice.getFlowStatics().add(firstChoiceText);
 		
 		wrapAnswer(ureq, newChoice);
+		recalculateUpDownLinks();
 		flc.setDirty(true);
 	}
 	
 	private void doRemoveSimpleChoice(SimpleChoiceWrapper choiceWrapper) {
 		choiceWrappers.remove(choiceWrapper);
+		recalculateUpDownLinks();
 		flc.setDirty(true);
 	}
 	
@@ -383,8 +385,8 @@ public class MultipleChoiceEditorController extends FormBasicController {
 		int numOfChoices = choiceWrappers.size();
 		for(int i=0; i<numOfChoices; i++) {
 			SimpleChoiceWrapper choiceWrapper = choiceWrappers.get(i);
-			choiceWrapper.getUp().setEnabled(i != 0);
-			choiceWrapper.getDown().setEnabled(i < (numOfChoices - 1));
+			choiceWrapper.getUp().setEnabled(i != 0 && !restrictedEdit && !readOnly);
+			choiceWrapper.getDown().setEnabled(i < (numOfChoices - 1) && !restrictedEdit && !readOnly);
 		}
 	}
 

@@ -335,11 +335,13 @@ public class SingleChoiceEditorController extends FormBasicController {
 		ChoiceInteraction interaction = itemBuilder.getChoiceInteraction();
 		SimpleChoice newChoice = AssessmentItemFactory.createSimpleChoice(interaction, translate("new.answer"), "sc");
 		wrapAnswer(ureq, newChoice);
+		recalculateUpDownLinks();
 		flc.setDirty(true);
 	}
 	
 	private void doRemoveSimpleChoice(SimpleChoiceWrapper choiceWrapper) {
 		choiceWrappers.remove(choiceWrapper);
+		recalculateUpDownLinks();
 		flc.setDirty(true);
 	}
 	
@@ -367,8 +369,8 @@ public class SingleChoiceEditorController extends FormBasicController {
 		int numOfChoices = choiceWrappers.size();
 		for(int i=0; i<numOfChoices; i++) {
 			SimpleChoiceWrapper choiceWrapper = choiceWrappers.get(i);
-			choiceWrapper.getUp().setEnabled(i != 0 && !restrictedEdit);
-			choiceWrapper.getDown().setEnabled(i < (numOfChoices - 1) && !restrictedEdit);
+			choiceWrapper.getUp().setEnabled(i != 0 && !restrictedEdit && !readOnly);
+			choiceWrapper.getDown().setEnabled(i < (numOfChoices - 1) && !restrictedEdit && !readOnly);
 		}
 	}
 
