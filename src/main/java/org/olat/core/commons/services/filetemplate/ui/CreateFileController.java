@@ -23,8 +23,11 @@ import static org.olat.core.gui.components.util.KeyValues.entry;
 
 import java.util.List;
 
+import org.olat.core.commons.modules.bc.meta.MetaInfoFormController;
 import org.olat.core.commons.services.filetemplate.FileType;
 import org.olat.core.commons.services.filetemplate.FileTypes;
+import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
@@ -37,9 +40,11 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -52,13 +57,18 @@ public class CreateFileController extends FormBasicController {
 	private SingleSelection fileTypeEl;
 	private TextElement fileNameEl;
 	
-	private final VFSContainer container;
+	private MetaInfoFormController metadataCtrl;
+
+	private final VFSContainer vfsContainer;
 	private final List<FileType> fileTypes;
 	private VFSLeaf vfsLeaf;
 	
-	public CreateFileController(UserRequest ureq, WindowControl wControl, VFSContainer container, FileTypes fileTypes) {
-		super(ureq, wControl);
-		this.container = container;
+	@Autowired
+	private VFSRepositoryService vfsService;
+	
+	public CreateFileController(UserRequest ureq, WindowControl wControl, VFSContainer vfsContainer, FileTypes fileTypes) {
+		super(ureq, wControl, "create_file");
+		this.vfsContainer = vfsContainer;
 		this.fileTypes = fileTypes.getFileTypes();
 		initForm(ureq);
 	}
@@ -71,23 +81,33 @@ public class CreateFileController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.setElementCssClass("o_sel_folder_new_file");
 		
+		FormLayoutContainer fileCont = FormLayoutContainer.createDefaultFormLayout("file", getTranslator());
+		formLayout.add(fileCont);
+		
 		KeyValues fileTypeKV = new KeyValues();
 		for (int i = 0; i < fileTypes.size(); i++) {
 			FileType fileType = fileTypes.get(i);
 			String name = fileType.getName() + " (." + fileType.getSuffix() + ")";
 			fileTypeKV.add(entry(String.valueOf(i), name));
 		}
-		fileTypeEl = uifactory.addDropdownSingleselect("create.file.type", formLayout, fileTypeKV.keys(), fileTypeKV.values());
+		fileTypeEl = uifactory.addDropdownSingleselect("create.file.type", fileCont, fileTypeKV.keys(), fileTypeKV.values());
 		fileTypeEl.setElementCssClass("o_sel_folder_new_file_type");
 		fileTypeEl.setMandatory(true);
 		
-		fileNameEl = uifactory.addTextElement("create.file.name", -1, "", formLayout);
+		fileNameEl = uifactory.addTextElement("create.file.name", -1, "", fileCont);
 		fileNameEl.setElementCssClass("o_sel_folder_new_file_name");
 		fileNameEl.setDisplaySize(100);
 		fileNameEl.setMandatory(true);
 		
-		FormLayoutContainer formButtons = FormLayoutContainer.createButtonLayout("formButton", getTranslator());
-		formLayout.add(formButtons);
+		// metadata
+		metadataCtrl = new MetaInfoFormController(ureq, getWindowControl(), mainForm, false);
+		formLayout.add("metadata", metadataCtrl.getFormItem());
+		listenTo(metadataCtrl);
+		
+		FormLayoutContainer butonsCont = FormLayoutContainer.createDefaultFormLayout("buttons", getTranslator());
+		formLayout.add(butonsCont);
+		FormLayoutContainer formButtons = FormLayoutContainer.createButtonLayout("formButtons", getTranslator());
+		butonsCont.add(formButtons);
 		uifactory.addFormSubmitButton("submit", "create.file.button", formButtons);
 		uifactory.addFormCancelButton("cancel", formButtons, ureq, getWindowControl());
 	}
@@ -121,7 +141,7 @@ public class CreateFileController extends FormBasicController {
 	}
 	
 	private boolean fileExists() {
-		return container.resolve(getFileName()) != null? true: false;
+		return vfsContainer.resolve(getFileName()) != null? true: false;
 	}
 	
 	private String getFileName() {
@@ -145,15 +165,37 @@ public class CreateFileController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		//create the file
 		String fileName = getFileName();
-		vfsLeaf = container.createChildLeaf(fileName);
-		FileType fileType = getSelectedFileType();
-		if (fileType != null) {
-			VFSManager.copyContent(fileType.getContentProvider().getContent(), vfsLeaf);
-		}
+		createFile(fileName);
+		createContent();
+		createMetadata();
 		
 		fireEvent(ureq, Event.DONE_EVENT);
+	}
+
+	private void createFile(String fileName) {
+		vfsLeaf = vfsContainer.createChildLeaf(fileName);
+	}
+
+	private void createContent() {
+		if (vfsLeaf != null) {
+			FileType fileType = getSelectedFileType();
+			if (fileType != null) {
+				VFSManager.copyContent(fileType.getContentProvider().getContent(), vfsLeaf);
+			}
+		}
+	}
+
+	private void createMetadata() {
+		if (vfsLeaf != null && vfsLeaf.canMeta() == VFSConstants.YES) {
+			VFSMetadata meta = vfsLeaf.getMetaInfo();
+			if (metadataCtrl != null) {
+				meta = metadataCtrl.getMetaInfo(meta);
+			}
+			meta.setAuthor(getIdentity());
+			vfsService.updateMetadata(meta);
+			vfsService.resetThumbnails(vfsLeaf);
+		}
 	}
 
 	@Override

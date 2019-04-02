@@ -84,8 +84,9 @@ public class MetaInfoFormController extends FormBasicController {
 	private TextElement licensorEl;
 	private TextAreaElement licenseFreetextEl;
 	private SingleSelection locked;
-	// Fields needed for upload dialog
+	
 	private boolean isSubform;
+	private boolean showFilename = true;
 	private Set<FormItem> metaFields;
 	private String resourceUrl;
 	
@@ -128,10 +129,11 @@ public class MetaInfoFormController extends FormBasicController {
 	 * @param uploadLimitKB
 	 * @param remainingQuotaKB
 	 */
-	public MetaInfoFormController(UserRequest ureq, WindowControl control, Form parentForm) {
+	public MetaInfoFormController(UserRequest ureq, WindowControl control, Form parentForm, boolean showFilename) {
 		super(ureq, control, FormBasicController.LAYOUT_DEFAULT, null, parentForm);
 		roles = ureq.getUserSession().getRoles();
-		isSubform = true;
+		this.isSubform = true;
+		this.showFilename = showFilename;
 		initForm(ureq);
 	}
 	
@@ -145,7 +147,7 @@ public class MetaInfoFormController extends FormBasicController {
 	 */
 	public MetaInfoFormController(UserRequest ureq, WindowControl wControl, Form parentForm, VFSItem vfsItem) {
 		super(ureq, wControl, FormBasicController.LAYOUT_DEFAULT, null, parentForm);
-		isSubform = true;
+		this.isSubform = true;
 		this.item = vfsItem;
 		roles = ureq.getUserSession().getRoles();
 		initForm(ureq);
@@ -199,6 +201,7 @@ public class MetaInfoFormController extends FormBasicController {
 		filename.setEnabled(item == null || item.canRename() == VFSConstants.YES);
 		filename.setNotEmptyCheck("mf.error.empty");
 		filename.setMandatory(true);
+		filename.setVisible(showFilename);
 
 		// comment/description
 		String commentVal = (meta != null ? meta.getComment() : null);

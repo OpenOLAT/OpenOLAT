@@ -286,8 +286,7 @@ public class FileUploadController extends FormBasicController {
 		
 		
 		if (showMetadata) {
-			metaDataCtr = new MetaInfoFormController(ureq, getWindowControl(),
-					mainForm);
+			metaDataCtr = new MetaInfoFormController(ureq, getWindowControl(), mainForm, true);
 			formLayout.add("metadata", metaDataCtr.getFormItem());
 			listenTo(metaDataCtr);
 		}
