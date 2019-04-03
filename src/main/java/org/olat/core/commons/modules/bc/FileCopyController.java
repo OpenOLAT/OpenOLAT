@@ -46,7 +46,6 @@ import org.olat.core.gui.control.generic.modal.ButtonClickedEvent;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.id.Roles;
 import org.olat.core.logging.activity.CoreLoggingResourceable;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.FileUtils;
@@ -218,10 +217,9 @@ public class FileCopyController extends LinkChooserController {
 			}
 		} else if (source == commentVersionCtr) {
 			String comment = commentVersionCtr.getComment();
-			Roles roles = ureq.getUserSession().getRoles();
 			boolean locked = vfsLockManager.isLocked(existingVFSItem, VFSLockApplicationType.vfs, null);
 			if(locked && !commentVersionCtr.keepLocked()) {
-				vfsLockManager.unlock(existingVFSItem, getIdentity(), roles, VFSLockApplicationType.vfs);
+				vfsLockManager.unlock(existingVFSItem, getIdentity(), VFSLockApplicationType.vfs);
 			}
 			
 			commentVersionDialogBox.deactivate();
@@ -238,7 +236,7 @@ public class FileCopyController extends LinkChooserController {
 		} else if (source == unlockCtr) {
 			// Overwrite...
 			if(!unlockCtr.keepLocked()) {
-				vfsLockManager.unlock(existingVFSItem, getIdentity(), ureq.getUserSession().getRoles(), VFSLockApplicationType.vfs);
+				vfsLockManager.unlock(existingVFSItem, getIdentity(), VFSLockApplicationType.vfs);
 			}
 			
 			unlockDialogBox.deactivate();
@@ -306,8 +304,7 @@ public class FileCopyController extends LinkChooserController {
 	
 	private void fileAlreadyExists(UserRequest ureq) {
 		renamedFilename =  proposedRenamedFilename(existingVFSItem);
-		boolean locked = vfsLockManager.isLockedForMe(existingVFSItem, getIdentity(), ureq.getUserSession().getRoles(),
-				VFSLockApplicationType.vfs, null);
+		boolean locked = vfsLockManager.isLockedForMe(existingVFSItem, getIdentity(), VFSLockApplicationType.vfs, null);
 		if (locked) {
 			//the file is locked and cannot be overwritten
 			removeAsListenerAndDispose(lockedFileDialog);

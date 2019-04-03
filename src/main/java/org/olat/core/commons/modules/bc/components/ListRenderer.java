@@ -230,9 +230,6 @@ public class ListRenderer {
 			leaf = (VFSLeaf)child;
 		}
 		boolean isContainer = (leaf == null); // if not a leaf, it must be a container...
-		boolean lockedForUser = lockManager.isLockedForMe(child, metadata,
-				fc.getIdentityEnvironnement().getIdentity(), fc.getIdentityEnvironnement().getRoles(),
-				VFSLockApplicationType.vfs, null);
 		
 		String name = child.getName();
 		boolean xssErrors = StringHelper.xssScanForErrors(name);

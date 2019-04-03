@@ -343,8 +343,7 @@ public class CourseResourceFolderWebService {
 			}
 
 			//check if it's locked
-			boolean locked = vfsLockManager.isLockedForMe(existingVFSItem, ureq.getIdentity(), ureq.getUserSession().getRoles(),
-					VFSLockApplicationType.vfs, null);
+			boolean locked = vfsLockManager.isLockedForMe(existingVFSItem, ureq.getIdentity(), VFSLockApplicationType.vfs, null);
 			if(locked) {
 				return Response.serverError().status(Status.UNAUTHORIZED).build();
 			}

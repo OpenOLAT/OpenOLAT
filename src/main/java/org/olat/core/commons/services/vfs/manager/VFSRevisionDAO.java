@@ -114,6 +114,66 @@ public class VFSRevisionDAO {
 			.getResultList();
 	}
 	
+	public List<Long> getMetadataWithMoreThan(long numOfRevisions) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select meta.key")
+		  .append(" from filemetadata meta")
+		  .append(" where :numOfRevisions < (select count(rev.key) from vfsrevision rev where rev.metadata.key=meta.key)");
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Long.class)
+			.setParameter("numOfRevisions", Long.valueOf(numOfRevisions))
+			.getResultList();
+	}
+	
+	public List<Long> getMetadataKeysOfDeletedFiles() {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select meta.key")
+		  .append(" from filemetadata meta")
+		  .append(" inner join vfsrevision rev on (rev.metadata.key=meta.key)")
+		  .append(" where meta.deleted=:deleted");
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Long.class)
+			.setParameter("deleted", Boolean.TRUE)
+			.getResultList();
+	}
+	
+	/**
+	 * @return A list of metadata of deleted files with revisions.
+	 */
+	public List<VFSMetadata> getMetadataOfDeletedFiles() {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select sum(rev.size) from vfsrevision rev")
+		  .append(" inner join rev.metadata meta")
+		  .append(" where meta.deleted=:deleted");
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), VFSMetadata.class)
+			.setParameter("deleted", Boolean.TRUE)
+			.getResultList();
+	}
+	
+	public long getRevisionsSizeOfDeletedFiles() {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select sum(rev.size) from vfsrevision rev")
+		  .append(" inner join rev.metadata meta")
+		  .append(" where meta.deleted=:deleted");
+		List<Long> size = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Long.class)
+			.setParameter("deleted", Boolean.TRUE)
+			.getResultList();
+		return size == null || size.isEmpty() || size.get(0) == null ? 0 : size.get(0).longValue();
+	}
+	
+
+	
+	public long calculateRevisionsSize() {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select sum(rev.size) from vfsrevision rev");
+		List<Long> size = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Long.class)
+			.getResultList();
+		return size == null || size.isEmpty() || size.get(0) == null ? -1l : size.get(0).longValue();
+	}
+	
 	public VFSRevision updateRevision(VFSRevision revision) {
 		return dbInstance.getCurrentEntityManager().merge(revision);
 	}

@@ -19,13 +19,15 @@
  */
 package org.olat.core.commons.services.vfs.manager;
 
+import java.util.Date;
 import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.id.Identity;
-import org.olat.core.id.Roles;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSLockApplicationType;
@@ -47,9 +49,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class VFSLockManagerTest extends OlatTestCase {
 	
 	@Autowired
+	private DB dbInstance;
+	@Autowired
 	private VFSMetadataDAO metadataDao;
 	@Autowired
 	private VFSLockManagerImpl lockManager;
+	@Autowired
+	private VFSRepositoryService vfsRepositoryService;
 	
 	/**
 	 * A new file cannot be locked
@@ -77,7 +83,6 @@ public class VFSLockManagerTest extends OlatTestCase {
 	@Test
 	public void isLockedForMe() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("lock-2");
-		Roles userRoles = Roles.userRoles();
 		
 		//create a file
 		String relativePath = "lock" + UUID.randomUUID();
@@ -86,11 +91,11 @@ public class VFSLockManagerTest extends OlatTestCase {
 		VFSLeaf file = rootTest.createChildLeaf(filename);
 		
 		// new file, no lock
-		boolean locked = lockManager.isLockedForMe(file, id, userRoles, null, null);
+		boolean locked = lockManager.isLockedForMe(file, id, null, null);
 		Assert.assertFalse(locked);
 
 		VFSMetadata metadata = metadataDao.getMetadata(relativePath, "lock.txt", false);
-		boolean lockedAlt = lockManager.isLockedForMe(file, metadata, id, userRoles, null, null);
+		boolean lockedAlt = lockManager.isLockedForMe(file, metadata, id, null, null);
 		Assert.assertFalse(lockedAlt);
 	}
 	
@@ -101,7 +106,6 @@ public class VFSLockManagerTest extends OlatTestCase {
 	public void lockVfs() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("lock-3");
 		Identity otherId = JunitTestHelper.createAndPersistIdentityAsRndUser("lock-4");
-		Roles userRoles = Roles.userRoles();
 		
 		//create a file
 		String relativePath = "lock" + UUID.randomUUID();
@@ -110,15 +114,15 @@ public class VFSLockManagerTest extends OlatTestCase {
 		VFSLeaf file = rootTest.createChildLeaf(filename);
 		
 		// lock the file
-		LockResult locked = lockManager.lock(file, id, userRoles, VFSLockApplicationType.vfs, null);
+		LockResult locked = lockManager.lock(file, id, VFSLockApplicationType.vfs, null);
 		Assert.assertTrue(locked.isAcquired());
 
 		VFSMetadata metadata = metadataDao.getMetadata(relativePath, "lock.txt", false);
-		boolean lockedAlt = lockManager.isLockedForMe(file, metadata, id, userRoles, null, null);
+		boolean lockedAlt = lockManager.isLockedForMe(file, metadata, id, null, null);
 		Assert.assertFalse(lockedAlt);
 		
 		// but other cannot
-		boolean lockedOther = lockManager.isLockedForMe(file, otherId, userRoles, null, null);
+		boolean lockedOther = lockManager.isLockedForMe(file, otherId, null, null);
 		Assert.assertTrue(lockedOther);
 	}
 	
@@ -129,7 +133,6 @@ public class VFSLockManagerTest extends OlatTestCase {
 	public void lockUnlockVfs() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("lock-3");
 		Identity otherId = JunitTestHelper.createAndPersistIdentityAsRndUser("lock-4");
-		Roles userRoles = Roles.userRoles();
 		
 		//create a file
 		String relativePath = "lock" + UUID.randomUUID();
@@ -138,19 +141,124 @@ public class VFSLockManagerTest extends OlatTestCase {
 		VFSLeaf file = rootTest.createChildLeaf(filename);
 		
 		// lock the file
-		LockResult locked = lockManager.lock(file, id, userRoles, VFSLockApplicationType.vfs, null);
+		LockResult locked = lockManager.lock(file, id, VFSLockApplicationType.vfs, null);
 		Assert.assertTrue(locked.isAcquired());
 
 		// but other cannot
-		boolean lockedOther = lockManager.isLockedForMe(file, otherId, userRoles, null, null);
+		boolean lockedOther = lockManager.isLockedForMe(file, otherId, null, null);
 		Assert.assertTrue(lockedOther);
 		
 		// first unlock it
-		boolean unlocked = lockManager.unlock(file, id, userRoles, VFSLockApplicationType.vfs);
+		boolean unlocked = lockManager.unlock(file, id, VFSLockApplicationType.vfs);
 		Assert.assertTrue(unlocked);
 		
 		// other can now
-		boolean unlockedOther = lockManager.isLockedForMe(file, otherId, userRoles, null, null);
+		boolean unlockedOther = lockManager.isLockedForMe(file, otherId, null, null);
 		Assert.assertFalse(unlockedOther);
 	}
+	
+	/**
+	 * Check the locks for VFS at metadata level
+	 */
+	@Test
+	public void lockUnlockVfs_metadata() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("lock-3");
+		
+		//create a file
+		String relativePath = "lock" + UUID.randomUUID();
+		VFSContainer rootTest = VFSManager.olatRootContainer("/" + relativePath, null);
+		String filename = "lock.txt";
+		VFSLeaf file = rootTest.createChildLeaf(filename);
+		
+		// First user lock via "GUI"
+		VFSMetadata metadata = vfsRepositoryService.getMetadataFor(file);
+		metadata.setLocked(true);
+		metadata.setLockedBy(id);
+		metadata.setLockedDate(new Date());
+		vfsRepositoryService.updateMetadata(metadata);
+		dbInstance.commitAndCloseSession();
+		
+		// re-lock the file
+		LockResult locked = lockManager.lock(file, id, VFSLockApplicationType.vfs, null);
+		Assert.assertTrue(locked.isAcquired());
+
+		// first unlock it
+		boolean unlocked = lockManager.unlock(file, id, VFSLockApplicationType.vfs);
+		Assert.assertTrue(unlocked);
+		
+		// check the metadata loose the lock informations
+		VFSMetadata reloadMetadata = vfsRepositoryService.getMetadataFor(file);
+		Assert.assertNull(reloadMetadata.getLockedBy());
+		Assert.assertNull(reloadMetadata.getLockedDate());
+	}
+	
+	/**
+	 * A shared lock for collaboration
+	 */
+	@Test
+	public void lockUnlockCollaboration() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("lock-3");
+		Identity otherId = JunitTestHelper.createAndPersistIdentityAsRndUser("lock-4");
+		
+		//create a file
+		String relativePath = "lock" + UUID.randomUUID();
+		VFSContainer rootTest = VFSManager.olatRootContainer("/" + relativePath, null);
+		String filename = "lock.txt";
+		VFSLeaf file = rootTest.createChildLeaf(filename);
+		
+		// lock the file
+		LockResult locked = lockManager.lock(file, id, VFSLockApplicationType.collaboration, "oo-collaboration");
+		Assert.assertTrue(locked.isAcquired());
+
+		// but other can if the same app
+		boolean lockedOther = lockManager.isLockedForMe(file, otherId, VFSLockApplicationType.collaboration, "oo-collaboration");
+		Assert.assertFalse(lockedOther);
+		// but only same app
+		boolean lockedOtherApp = lockManager.isLockedForMe(file, otherId, VFSLockApplicationType.collaboration, "notoo-collaboration");
+		Assert.assertTrue(lockedOtherApp);
+		
+		// first unlock it
+		boolean unlocked = lockManager.unlock(file, id, locked);
+		Assert.assertTrue(unlocked);
+		
+		// other can now
+		boolean unlockedOther = lockManager.isLockedForMe(file, otherId, VFSLockApplicationType.collaboration, "notoo-collaboration");
+		Assert.assertFalse(unlockedOther);
+	}
+	
+	/**
+	 * A shared lock for collaboration
+	 */
+	@Test
+	public void lockVfsAgainstCollaboration() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("lock-5");
+		Identity otherId = JunitTestHelper.createAndPersistIdentityAsRndUser("lock-6");
+		
+		//create a file
+		String relativePath = "lock" + UUID.randomUUID();
+		VFSContainer rootTest = VFSManager.olatRootContainer("/" + relativePath, null);
+		String filename = "lock.txt";
+		VFSLeaf file = rootTest.createChildLeaf(filename);
+		
+		// First user lock via "GUI"
+		VFSMetadata metadata = vfsRepositoryService.getMetadataFor(file);
+		metadata.setLocked(true);
+		metadata.setLockedBy(id);
+		metadata.setLockedDate(new Date());
+		vfsRepositoryService.updateMetadata(metadata);
+		dbInstance.commitAndCloseSession();
+		
+		// second user, try to lock the file
+		LockResult locked = lockManager.lock(file, otherId, VFSLockApplicationType.vfs, null);
+		Assert.assertFalse(locked.isAcquired());
+		// is locked
+		boolean lockedCollaboration = lockManager.isLockedForMe(file, otherId, VFSLockApplicationType.collaboration, "oo-collaboration");
+		Assert.assertTrue(lockedCollaboration);
+		// is locked
+		boolean lockedVfs = lockManager.isLockedForMe(file, otherId, VFSLockApplicationType.vfs, null);
+		Assert.assertTrue(lockedVfs);
+	}
+	
+	
+	
 }

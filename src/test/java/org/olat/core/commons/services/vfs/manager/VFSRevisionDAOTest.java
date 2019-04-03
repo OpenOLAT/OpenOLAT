@@ -19,6 +19,7 @@
  */
 package org.olat.core.commons.services.vfs.manager;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -27,7 +28,10 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.VFSMetadataRef;
 import org.olat.core.commons.services.vfs.VFSRevision;
+import org.olat.core.commons.services.vfs.model.VFSMetadataImpl;
+import org.olat.core.commons.services.vfs.model.VFSMetadataRefImpl;
 import org.olat.core.id.Identity;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -71,6 +75,115 @@ public class VFSRevisionDAOTest extends OlatTestCase {
 		Assert.assertNotNull(revisions);
 		Assert.assertEquals(1, revisions.size());
 		Assert.assertEquals(revision, revisions.get(0));
+	}
+	
+	@Test
+	public void getRevisions_collection() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("rev-1");
+		VFSMetadata metadata = vfsMetadataDao.createMetadata(UUID.randomUUID().toString(), "test/revs", "text.txt",
+				new Date(), 10l, false, "file:///text.tx", "file", null);
+		VFSRevision revision = revisionDao.createRevision(author, "._oo_vr_1_text.txt", 1, 25l, new Date(), "A comment", metadata);
+		dbInstance.commitAndCloseSession();
+		
+		List<VFSMetadataRef> metadataRefs = new ArrayList<>();
+		metadataRefs.add(metadata);
+		List<VFSRevision> revisions = revisionDao.getRevisions(metadataRefs);
+		Assert.assertNotNull(revisions);
+		Assert.assertEquals(1, revisions.size());
+		Assert.assertEquals(revision, revisions.get(0));
+	}
+	
+	@Test
+	public void getRevisions_emptyCollection() {
+		List<VFSMetadataRef> metadataRefs = new ArrayList<>();
+		List<VFSRevision> revisions = revisionDao.getRevisions(metadataRefs);
+		Assert.assertNotNull(revisions);
+		Assert.assertTrue(revisions.isEmpty());
+	}
+	
+	@Test
+	public void getMetadataWithMoreThan() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("rev-1");
+		VFSMetadata metadata = vfsMetadataDao.createMetadata(UUID.randomUUID().toString(), "test/revs", "text.txt",
+				new Date(), 10l, false, "file:///text.tx", "file", null);
+		VFSRevision revision1 = revisionDao.createRevision(author, "._oo_vr_1_text.txt", 1, 25l, new Date(), "A comment", metadata);
+		VFSRevision revision2 = revisionDao.createRevision(author, "._oo_vr_2_text.txt", 2, 26l, new Date(), "A comment", metadata);
+		VFSRevision revision3 = revisionDao.createRevision(author, "._oo_vr_3_text.txt", 3, 27l, new Date(), "A comment", metadata);
+		VFSRevision revision4 = revisionDao.createRevision(author, "._oo_vr_4_text.txt", 4, 28l, new Date(), "A comment", metadata);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(revision1);
+		Assert.assertNotNull(revision2);
+		Assert.assertNotNull(revision3);
+		Assert.assertNotNull(revision4);
+		
+		List<VFSMetadataRef> metadataRefs = new ArrayList<>();
+		metadataRefs.add(metadata);
+		List<Long> metadataWithRevs = revisionDao.getMetadataWithMoreThan(3);
+		Assert.assertNotNull(metadataWithRevs);
+		Assert.assertTrue(metadataWithRevs.contains(metadata.getKey()));
+		
+		for(Long metadataKey:metadataWithRevs) {
+			List<VFSRevision> revisions = revisionDao.getRevisions(new VFSMetadataRefImpl(metadataKey));
+			Assert.assertTrue(revisions.size() > 3);
+		}
+	}
+	
+	@Test
+	public void getMetadataOfDeletedFiles() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("rev-1");
+		VFSMetadata metadata = vfsMetadataDao.createMetadata(UUID.randomUUID().toString(), "test/revs", "text.txt",
+				new Date(), 10l, false, "file:///text.tx", "file", null);
+		VFSRevision revision = revisionDao.createRevision(author, "._oo_vr_1_text.txt", 1, 25l, new Date(), "A comment", metadata);
+		
+		VFSMetadata deletedMetadata = vfsMetadataDao.createMetadata(UUID.randomUUID().toString(), "test/revs", "text.txt",
+				new Date(), 10l, false, "file:///text.tx", "file", null);
+		VFSRevision deletedRevision = revisionDao.createRevision(author, "._oo_vr_1_text.txt", 1, 25l, new Date(), "A comment", deletedMetadata);
+		
+		VFSMetadata withoutMetadata = vfsMetadataDao.createMetadata(UUID.randomUUID().toString(), "test/revs", "text.txt",
+				new Date(), 10l, false, "file:///text.tx", "file", null);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(revision);
+		Assert.assertNotNull(deletedRevision);
+		// mark one as deleted
+		((VFSMetadataImpl)deletedMetadata).setDeleted(true);
+		deletedMetadata = vfsMetadataDao.updateMetadata(deletedMetadata);
+		dbInstance.commitAndCloseSession();
+		
+		List<Long> deletedMetadataKeys = revisionDao.getMetadataKeysOfDeletedFiles();
+		Assert.assertNotNull(deletedMetadataKeys);
+		Assert.assertFalse(deletedMetadataKeys.contains(metadata.getKey()));
+		Assert.assertTrue(deletedMetadataKeys.contains(deletedMetadata.getKey()));
+		Assert.assertFalse(deletedMetadataKeys.contains(withoutMetadata.getKey()));
+	}
+	
+	@Test
+	public void getRevisionsSizeOfDeletedFiles() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("rev-1");
+		VFSMetadata deletedMetadata = vfsMetadataDao.createMetadata(UUID.randomUUID().toString(), "test/revs", "text.txt",
+				new Date(), 10l, false, "file:///text.tx", "file", null);
+		VFSRevision deletedRevision = revisionDao.createRevision(author, "._oo_vr_1_text.txt", 1, 25l, new Date(), "A comment", deletedMetadata);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(deletedRevision);
+		// mark as deleted
+		((VFSMetadataImpl)deletedMetadata).setDeleted(true);
+		deletedMetadata = vfsMetadataDao.updateMetadata(deletedMetadata);
+		dbInstance.commitAndCloseSession();
+		
+		long size = revisionDao.getRevisionsSizeOfDeletedFiles();
+		Assert.assertTrue(size >= 25l);
+	}
+	
+	@Test
+	public void calculateRevisionsSize() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("rev-1");
+		VFSMetadata metadata = vfsMetadataDao.createMetadata(UUID.randomUUID().toString(), "test/revs", "text.txt",
+				new Date(), 10l, false, "file:///text.tx", "file", null);
+		VFSRevision revision1 = revisionDao.createRevision(author, "._oo_vr_1_text.txt", 1, 25l, new Date(), "A comment", metadata);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(revision1);
+		
+		long size = revisionDao.calculateRevisionsSize();
+		Assert.assertTrue(size >= 25l);
 	}
 
 }

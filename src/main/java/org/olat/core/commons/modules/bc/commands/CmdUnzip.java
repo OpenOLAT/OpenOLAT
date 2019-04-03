@@ -45,7 +45,6 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
-import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.ZipUtil;
@@ -91,8 +90,7 @@ public class CmdUnzip extends BasicController implements FolderCommand {
 			VFSItem vfsItem = currentContainer.resolve(sItem);
 			if (vfsItem instanceof VFSLeaf) {
 				try {
-					Roles roles = ureq.getUserSession().getRoles();
-					lockedFiles.addAll(checkLockedFiles((VFSLeaf)vfsItem, currentContainer, ureq.getIdentity(), roles));
+					lockedFiles.addAll(checkLockedFiles((VFSLeaf)vfsItem, currentContainer, ureq.getIdentity()));
 				} catch (Exception e) {
 					String name = vfsItem == null ? "NULL" : vfsItem.getName();
 					getWindowControl().setError(translator.translate("FileUnzipFailed", new String[]{name}));
@@ -147,7 +145,7 @@ public class CmdUnzip extends BasicController implements FolderCommand {
 		return null;
 	}
 	
-	private List<String> checkLockedFiles(VFSLeaf vfsItem, VFSContainer currentContainer, Identity identity, Roles roles) {
+	private List<String> checkLockedFiles(VFSLeaf vfsItem, VFSContainer currentContainer, Identity identity) {
 		String name = vfsItem.getName();
 		if (!name.toLowerCase().endsWith(".zip")) {
 			return Collections.emptyList();
@@ -163,7 +161,7 @@ public class CmdUnzip extends BasicController implements FolderCommand {
 		if(zipContainer == null) {
 			return Collections.emptyList();
 		} else if (zipContainer instanceof VFSContainer) {
-			return ZipUtil.checkLockedFileBeforeUnzipNonStrict(vfsItem, (VFSContainer)zipContainer, identity, roles);
+			return ZipUtil.checkLockedFileBeforeUnzipNonStrict(vfsItem, (VFSContainer)zipContainer, identity);
 		} else {
 			//replace a file with a folder ???
 			return Collections.emptyList();

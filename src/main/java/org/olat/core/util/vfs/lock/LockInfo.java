@@ -36,9 +36,6 @@ import org.olat.core.util.vfs.VFSLockApplicationType;
  */
 public class LockInfo {
 
-	//ten years is enough for a long loc
-    private static final long vfsExpireAt = (System.currentTimeMillis() + (10 *365 * 24 * 60 * 60 * 1000));
-
 	private String path = "/";
 	private String type = "write";
     private String scope = "exclusive";
@@ -168,9 +165,6 @@ public class LockInfo {
 	}
 
 	public long getExpiresAt() {
-		if(isVfsLock()) {
-			return vfsExpireAt;
-		}
 		return expiresAt;
 	}
 

@@ -409,7 +409,7 @@ public class FileUploadController extends FormBasicController {
 			// Overwrite...
 			String fileName = existingVFSItem.getName();
 			if(!unlockCtr.keepLocked()) {
-				vfsLockManager.unlock(existingVFSItem, getIdentity(), ureq.getUserSession().getRoles(), VFSLockApplicationType.vfs);
+				vfsLockManager.unlock(existingVFSItem, getIdentity(), VFSLockApplicationType.vfs);
 			}
 			unlockDialogBox.deactivate();
 			
@@ -488,7 +488,7 @@ public class FileUploadController extends FormBasicController {
 		Roles roles = ureq.getUserSession().getRoles();
 		boolean locked = vfsLockManager.isLocked(existingVFSItem, VFSLockApplicationType.vfs, null);
 		if(locked && !commentVersionCtr.keepLocked()) {
-			vfsLockManager.unlock(existingVFSItem, getIdentity(), roles, VFSLockApplicationType.vfs);
+			vfsLockManager.unlock(existingVFSItem, getIdentity(), VFSLockApplicationType.vfs);
 		}
 		
 		commentVersionDialogBox.deactivate();
@@ -625,8 +625,7 @@ public class FileUploadController extends FormBasicController {
 			FileUtils.deleteFile(uploadedFile);
 			
 			if (success) {
-				boolean locked = vfsLockManager.isLockedForMe(existingVFSItem, getIdentity(), ureq.getUserSession().getRoles(),
-						VFSLockApplicationType.vfs, null);
+				boolean locked = vfsLockManager.isLockedForMe(existingVFSItem, getIdentity(), VFSLockApplicationType.vfs, null);
 				if (locked) {
 					//the file is locked and cannot be overwritten
 					lockedFileDialog(ureq, renamedFilename);

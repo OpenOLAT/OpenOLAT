@@ -21,7 +21,6 @@ package org.olat.core.util.vfs;
 
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.id.Identity;
-import org.olat.core.id.Roles;
 import org.olat.core.util.vfs.lock.LockInfo;
 import org.olat.core.util.vfs.lock.LockResult;
 
@@ -57,7 +56,7 @@ public interface VFSLockManager {
 	 * @param roles
 	 * @return true if there is a lock owned by someone else, or there is a WebDAV lock on the item
 	 */
-	public boolean isLockedForMe(VFSItem item, Identity me, Roles roles, VFSLockApplicationType type, String appName);
+	public boolean isLockedForMe(VFSItem item, Identity me, VFSLockApplicationType type, String appName);
 	
 	/**
 	 * 
@@ -67,7 +66,7 @@ public interface VFSLockManager {
 	 * @param roles
 	 * @return true if there is a lock owned by someone else, or there is a WebDAV lock on the item
 	 */
-	public boolean isLockedForMe(VFSItem item, VFSMetadata loadedInfo, Identity me, Roles roles, VFSLockApplicationType type, String appName);
+	public boolean isLockedForMe(VFSItem item, VFSMetadata loadedInfo, Identity me, VFSLockApplicationType type, String appName);
 	
 	public LockInfo getLock(VFSItem item);
 	
@@ -80,7 +79,7 @@ public interface VFSLockManager {
 	 * @param appName
 	 * @return
 	 */
-	public LockResult lock(VFSItem item, Identity identity, Roles roles, VFSLockApplicationType type, String appName);
+	public LockResult lock(VFSItem item, Identity identity, VFSLockApplicationType type, String appName);
 	
 	/**
 	 * 
@@ -91,7 +90,9 @@ public interface VFSLockManager {
 	 * @param roles
 	 * @return True if and only if the VFS lock was unlocked and there isn't any WedDAV lock
 	 */
-	public boolean unlock(VFSItem item, Identity identity, Roles roles, VFSLockApplicationType type);
+	public boolean unlock(VFSItem item, Identity identity, VFSLockApplicationType type);
+	
+	public boolean unlock(VFSItem item, Identity identity, LockResult result);
 	
 	/**
 	 * Method the generate the Lock-Token

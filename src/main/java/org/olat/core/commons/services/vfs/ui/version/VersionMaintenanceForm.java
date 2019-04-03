@@ -19,10 +19,6 @@
  */
 package org.olat.core.commons.services.vfs.ui.version;
 
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-import java.util.Locale;
-
 import org.olat.admin.SystemAdminMainController;
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
@@ -43,6 +39,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
 import org.olat.core.util.async.ProgressDelegate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,26 +57,30 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class VersionMaintenanceForm extends FormBasicController implements ProgressDelegate {
 	
-	private FormLink cleanUpLink, pruneLink, showOrphanLink, orphanSize;
+	private FormLink pruneLink;
+	private FormLink orphanSize;
+	private FormLink cleanUpLink;
+	private FormLink showOrphanLink;
 	private StaticTextElement orphanSizeEl;
+	private StaticTextElement versionsSizeEl;
 	private CloseableModalController cmc;
-	private DialogBoxController confirmPrunehistoryBox;
+	private DialogBoxController confirmPruneHistoryBox;
 	private DialogBoxController confirmDeleteOrphansBox;
 	private ProgressController progressCtrl;
 	
 	@Autowired
 	private VFSVersionModule versionsModule;
 	@Autowired
-	private VFSRepositoryService versionsManager;
-	@Autowired
 	private TaskExecutorManager taskExecutorManager;
+	@Autowired
+	private VFSRepositoryService vfsRepositoryService;
 	
 	public VersionMaintenanceForm(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		// use combined translator from system admin main
 		setTranslator(Util.createPackageTranslator(SystemAdminMainController.class, ureq.getLocale(), getTranslator()));
-		
 		initForm(ureq);
+		loadModel();
 	}
 	
 	@Override
@@ -87,8 +88,9 @@ public class VersionMaintenanceForm extends FormBasicController implements Progr
 		// First add title and context help
 		setFormTitle("version.maintenance.title");
 		setFormDescription("version.maintenance.intro");
-
-		orphanSizeEl = uifactory.addStaticTextElement("version.orphan.size", "version.orphan.size", "???", formLayout);
+		
+		versionsSizeEl = uifactory.addStaticTextElement("version.size", "version.size", "", formLayout);
+		orphanSizeEl = uifactory.addStaticTextElement("version.orphan.size", "version.orphan.size", "", formLayout);
 		
 		FormLayoutContainer buttonsLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsLayout);
@@ -107,6 +109,13 @@ public class VersionMaintenanceForm extends FormBasicController implements Progr
 	protected void doDispose() {
 		//
 	}
+	
+	private void loadModel() {
+		long versionsSize = vfsRepositoryService.getRevisionsTotalSize();
+		versionsSizeEl.setValue(Formatter.formatBytes(versionsSize));
+		long versionsDeletedFiles = vfsRepositoryService.getRevisionsTotalSizeOfDeletedFiles();
+		orphanSizeEl.setValue(Formatter.formatBytes(versionsDeletedFiles));
+	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
@@ -117,7 +126,7 @@ public class VersionMaintenanceForm extends FormBasicController implements Progr
 			if (DialogBoxUIFactory.isYesEvent(event)) {
 				doDeleteOrphans(ureq);
 			}
-		} else if(source == confirmPrunehistoryBox) {
+		} else if(source == confirmPruneHistoryBox) {
 			if (DialogBoxUIFactory.isYesEvent(event)) {
 				doPruneHistory(ureq);
 			}
@@ -152,7 +161,7 @@ public class VersionMaintenanceForm extends FormBasicController implements Progr
 			confirmDeleteOrphansBox = activateYesNoDialog(ureq, null, text, confirmDeleteOrphansBox);
 		} else if(source == pruneLink) {
 			String text = translate("confirm.prune.history");
-			confirmPrunehistoryBox = activateYesNoDialog(ureq, null, text, confirmPrunehistoryBox);
+			confirmPruneHistoryBox = activateYesNoDialog(ureq, null, text, confirmPruneHistoryBox);
 		} else if (source == orphanSize) {
 			orphanSizeEl.setValue(translate("version.orphan.size.calculating"));
 			taskExecutorManager.execute(new Runnable() {
@@ -195,7 +204,6 @@ public class VersionMaintenanceForm extends FormBasicController implements Progr
 		progressCtrl.setMessage(translate("version.prune.history"));
 		progressCtrl.setPercentagesEnabled(false);
 		progressCtrl.setUnitLabel("");
-		//TODO metadata versions 
 		//progressCtrl.setMax(versionsManager.countDirectories());
 		listenTo(progressCtrl);
 
@@ -230,31 +238,11 @@ public class VersionMaintenanceForm extends FormBasicController implements Progr
 	}
 	
 	public final void calculateOrphanSize() {
-		long size = 0l;
-		//TODO metadata versions 
-		/*
-		List<OrphanVersion> orphans = new ArrayList<> ();//versionsManager.orphans();
-		for(OrphanVersion orphan:orphans) {
-			List<VFSRevision> revisions = orphan.getVersions().getRevisions();
-			if(revisions != null) {
-				for(VFSRevision revision:revisions) {
-					size += revision.getSize();
-				}
-			}
-		}
-		*/
+		long size = vfsRepositoryService.getRevisionsTotalSize();
+		String sizeStr =Formatter.formatBytes(size);
 
-		String unit = "KB";
-		double humanSize = size / 1024.0d;
-		if(humanSize > 1024) {
-			humanSize /= 1024;
-			unit = "MB";
-		}
-
-		DecimalFormat sizeFormat = new DecimalFormat("#0.#", new DecimalFormatSymbols(Locale.ENGLISH));
-		String readableSize = sizeFormat.format(humanSize) + " " + unit;
 		if(orphanSizeEl != null && !isDisposed()) {
-			orphanSizeEl.setValue(readableSize);
+			orphanSizeEl.setValue(sizeStr);
 		}
 	}
 	

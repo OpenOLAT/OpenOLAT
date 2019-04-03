@@ -43,7 +43,6 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.id.Roles;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -61,12 +60,10 @@ public class CmdDelete extends BasicController implements FolderCommand {
 	private DialogBoxController dialogCtr;
 	private DialogBoxController lockedFiledCtr;
 	
-	private final Roles roles;
 	private final VFSLockManager lockManager;
 	
 	protected CmdDelete(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		roles = ureq.getUserSession().getRoles();
 		lockManager = CoreSpringFactory.getImpl(VFSLockManager.class);
 	}
 
@@ -93,7 +90,7 @@ public class CmdDelete extends BasicController implements FolderCommand {
 		List<String> lockedFiles = new ArrayList<>();
 		for (String file : selection.getFiles()) {
 			VFSItem item = container.resolve(file);
-			if (lockManager.isLockedForMe(item, getIdentity(), roles, VFSLockApplicationType.vfs, null)) {
+			if (lockManager.isLockedForMe(item, getIdentity(), VFSLockApplicationType.vfs, null)) {
 				lockedFiles.add(file);
 			}
 		}

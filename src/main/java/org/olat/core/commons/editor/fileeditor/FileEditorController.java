@@ -153,7 +153,7 @@ public class FileEditorController extends BasicController {
 			fireEvent(ureq, Event.CANCELLED_EVENT);
 		} else if (source == unlockCtr) {
 			if(!unlockCtr.keepLocked()) {
-				vfsLockManager.unlock(vfsLeaf, getIdentity(), ureq.getUserSession().getRoles(), VFSLockApplicationType.vfs);
+				vfsLockManager.unlock(vfsLeaf, getIdentity(), VFSLockApplicationType.vfs);
 			}
 			cleanUpUnlockDialog();
 			fireEvent(ureq, Event.DONE_EVENT);

@@ -644,6 +644,16 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	public List<VFSRevision> getRevisions(List<VFSMetadataRef> metadatas) {
 		return revisionDao.getRevisions(metadatas);
 	}
+	
+	@Override
+	public long getRevisionsTotalSize() {
+		return revisionDao.calculateRevisionsSize();
+	}
+
+	@Override
+	public long getRevisionsTotalSizeOfDeletedFiles() {
+		return revisionDao.getRevisionsSizeOfDeletedFiles();
+	}
 
 	@Override
 	public boolean restoreRevision(Identity identity, VFSRevision revision, String comment) {

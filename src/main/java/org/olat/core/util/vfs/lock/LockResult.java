@@ -19,6 +19,8 @@
  */
 package org.olat.core.util.vfs.lock;
 
+import org.olat.core.util.vfs.VFSLockApplicationType;
+
 /**
  * 
  * Initial date: 26 mars 2019<br>
@@ -27,14 +29,18 @@ package org.olat.core.util.vfs.lock;
  */
 public class LockResult {
 	
-	public static final LockResult LOCK_FAILED = new LockResult(false, null);
+	public static final LockResult LOCK_FAILED = new LockResult(false, null, null, null);
 	
 	private final boolean acquired;
 	private final LockInfo lockInfo;
+	private final String token;
+	private final VFSLockApplicationType type;
 	
-	public LockResult(boolean acquired, LockInfo lockInfo) {
+	public LockResult(boolean acquired, LockInfo lockInfo, VFSLockApplicationType type, String token) {
 		this.acquired = acquired;
 		this.lockInfo = lockInfo;
+		this.token = token;
+		this.type = type;
 	}
 
 	public boolean isAcquired() {
@@ -43,5 +49,13 @@ public class LockResult {
 
 	public LockInfo getLockInfo() {
 		return lockInfo;
+	}
+	
+	public String getToken() {
+		return token;
+	}
+	
+	public VFSLockApplicationType getType() {
+		return type;
 	}
 }

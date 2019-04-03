@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.Vector;
 
+import org.olat.core.commons.modules.bc.FolderModule;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
@@ -35,12 +36,10 @@ import org.olat.core.commons.services.webdav.manager.VFSResource;
 import org.olat.core.commons.services.webdav.servlets.WebResource;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
-import org.olat.core.id.Roles;
 import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.vfs.LocalImpl;
 import org.olat.core.util.vfs.VFSConstants;
-import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLockApplicationType;
 import org.olat.core.util.vfs.VFSLockManager;
@@ -50,8 +49,14 @@ import org.springframework.stereotype.Service;
 @Service("vfsLockManager")
 public class VFSLockManagerImpl implements VFSLockManager {
 	
+	//one year is enough for a long loc
+    private static final long vfsExpireAt = (System.currentTimeMillis() + (365 * 24 * 60 * 60 * 1000));
+    private static final long collaborationExpireAt = (System.currentTimeMillis() + (24 * 60 * 60 * 1000));
+	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private FolderModule folderModule;
 	@Autowired
 	private VFSMetadataDAO metadataDao;
     @Autowired
@@ -103,41 +108,47 @@ public class VFSLockManagerImpl implements VFSLockManager {
 	}
 	
 	@Override
-	public boolean isLockedForMe(VFSItem item, Identity me, Roles roles, VFSLockApplicationType type, String appName) {
-		return isLockedForMe(item, null, me, roles, type, appName);
+	public boolean isLockedForMe(VFSItem item, Identity me, VFSLockApplicationType type, String appName) {
+		return isLockedForMe(item, null, me, type, appName);
 	}
 
 	/**
 	 * @return true If the lock owner is someone else or if it's a WebDAV lock
 	 */
 	@Override
-	public boolean isLockedForMe(VFSItem item, VFSMetadata loadedInfo, Identity me, Roles roles, VFSLockApplicationType type, String appName) {
+	public boolean isLockedForMe(VFSItem item, VFSMetadata loadedInfo, Identity me, VFSLockApplicationType type, String appName) {
 		LockInfo lock = getLockInfo(item, loadedInfo);
 		
 		boolean locked;
 		if(lock == null) {
 			locked = false;
 		} else if(lock.isLocked()) {
-			if(me != null && me.getKey().equals(lock.getLockedBy())) {
-				if(lock.isWebDAVLock()) {
-					locked = (type == VFSLockApplicationType.vfs || type == VFSLockApplicationType.collaboration);
-				} else if(lock.isCollaborationLock()) {
-					locked = (type == VFSLockApplicationType.vfs || type == VFSLockApplicationType.webdav);
-				} else if(lock.isVfsLock()) {
-					locked = (type == VFSLockApplicationType.webdav || type == VFSLockApplicationType.collaboration);
-				} else {
-					locked = false;
-				}
-			} else if(lock.isVfsLock() || lock.isWebDAVLock()) {
-				locked = true;// I can only if me is the user who locks
-			} else if(lock.isCollaborationLock() && type == VFSLockApplicationType.collaboration) {
-				locked = lock.getAppName() != null && !lock.getAppName().equals(appName);
-			} else {
-				locked = lock.isLocked();
-			}
+			locked = isLockedForMe(lock, me, type, appName);
     	} else {
     		locked = false;
     	}
+		return locked;
+	}
+	
+	private boolean isLockedForMe(LockInfo lock, Identity me, VFSLockApplicationType type, String appName) {
+		boolean locked;
+		if(me != null && me.getKey().equals(lock.getLockedBy())) {
+			if(lock.isWebDAVLock()) {
+				locked = (type == VFSLockApplicationType.vfs || type == VFSLockApplicationType.collaboration);
+			} else if(lock.isCollaborationLock()) {
+				locked = (type == VFSLockApplicationType.vfs || type == VFSLockApplicationType.webdav);
+			} else if(lock.isVfsLock()) {
+				locked = (type == VFSLockApplicationType.webdav || type == VFSLockApplicationType.collaboration);
+			} else {
+				locked = false;
+			}
+		} else if(lock.isVfsLock() || lock.isWebDAVLock()) {
+			locked = true;// I can only if me is the user who locks
+		} else if(lock.isCollaborationLock() && type == VFSLockApplicationType.collaboration) {
+			locked = lock.getAppName() != null && !lock.getAppName().equals(appName);
+		} else {
+			locked = lock.isLocked();
+		}
 		return locked;
 	}
 	
@@ -276,20 +287,25 @@ public class VFSLockManagerImpl implements VFSLockManager {
 	}
 	
     @Override
-	public LockResult lock(VFSItem item, Identity identity, Roles roles, VFSLockApplicationType type, String appName) {
+	public LockResult lock(VFSItem item, Identity identity, VFSLockApplicationType type, String appName) {
 		if (item == null || item.canMeta() != VFSConstants.YES) {
 			return LockResult.LOCK_FAILED;
 		}
 		
-		File file = extractFile(item);	
+		final File file = extractFile(item);	
+		final TokenWrapper generatedToken = new TokenWrapper();
 		LockInfo lockInfo = fileLocks.computeIfAbsent(file, f -> {
-			VFSMetadata metadata = metadataDao.getMetadata(item.getRelPath(), item.getName(), (item instanceof VFSContainer));
+			String relativePath = getMetadataRelativePath(f);
+			VFSMetadata metadata = metadataDao.getMetadata(relativePath, f.getName(), f.isDirectory());
 			if(metadata != null && metadata.isLocked()) {
 				LockInfo mLockInfo = new LockInfo(metadata.getLockedBy(), VFSLockApplicationType.vfs, null);
 				mLockInfo.setCreationDate(metadata.getLockedDate());
 				mLockInfo.setOwner(Settings.getServerContextPathURI() + "/Identity/" + metadata.getLockedBy().getKey());
 				mLockInfo.setDepth(1);
-				mLockInfo.addToken(generateLockToken(mLockInfo, metadata.getLockedBy()));
+				mLockInfo.setExpiresAt(vfsExpireAt);
+				String token = generateLockToken(mLockInfo, metadata.getLockedBy());
+				generatedToken.setToken(token);
+				mLockInfo.addToken(token);
 				return mLockInfo;
 			}
 			
@@ -309,19 +325,45 @@ public class VFSLockManagerImpl implements VFSLockManager {
 				loc.setCreationDate(new Date());
 				loc.setOwner(Settings.getServerContextPathURI() + "/Identity/" + loc.getLockedBy());
 				loc.setDepth(1);
-				loc.addToken(generateLockToken(loc, metadata.getLockedBy()));
+				if(type == VFSLockApplicationType.vfs) {
+					loc.setExpiresAt(vfsExpireAt);
+				} else if (type == VFSLockApplicationType.collaboration) {
+					loc.setExpiresAt(collaborationExpireAt);
+				}
+				String token = generateLockToken(loc, identity);
+				generatedToken.setToken(token);
+				loc.addToken(token);
 			}
 			return loc;
 		});
 		
-
-		return new LockResult(true, lockInfo);
+		boolean lockAcquired;
+		if(lockInfo == null) {
+			lockAcquired = false;
+		} else if(lockInfo.isLocked()) {
+			lockAcquired = !isLockedForMe(lockInfo, identity, type, appName);
+		} else {
+			lockAcquired = false;
+		}
+		return new LockResult(lockAcquired, lockInfo, type, generatedToken.getToken());
 	}
     
-    public LockResult lock(WebResource resource, Identity identity, Roles roles) {
+	/**
+	 * The relative path contains /bcroot/ saved in the metadata field "Relative path".
+	 * For a file ../bcroot/repository/432687436/_sharedfolder_/Image.jp will the emthod
+	 * return repository/432687436/_sharedfolder_/
+	 * 
+	 * @param file The file
+	 * @return A value compatible with the relative path saved in metadata to search it.
+	 */
+	private String getMetadataRelativePath(File file) {
+		return folderModule.getCanonicalRootPath().relativize(file.getParentFile().toPath()).toString();
+	}
+    
+    public LockResult lock(WebResource resource, Identity identity) {
     	if(resource instanceof VFSResource) {
     		VFSResource vfsResource = (VFSResource)resource;
-    		return lock(vfsResource.getItem(), identity, roles, VFSLockApplicationType.webdav, null);
+    		return lock(vfsResource.getItem(), identity, VFSLockApplicationType.webdav, null);
     	}
     	return LockResult.LOCK_FAILED;
     }
@@ -332,37 +374,64 @@ public class VFSLockManagerImpl implements VFSLockManager {
      * 
      */
 	@Override
-	public boolean unlock(VFSItem item, Identity identity, Roles roles, VFSLockApplicationType type) {
+	public boolean unlock(VFSItem item, Identity identity, VFSLockApplicationType type) {
 		if (item != null && item.canMeta() == VFSConstants.YES) {
 			VFSMetadata info = item.getMetaInfo();
 			if(info == null) return false;
-			
+			return unlock(item, info, type, null);
+		}
+		return false;
+	}
+	
+	@Override
+	public boolean unlock(VFSItem item, Identity identity, LockResult result) {
+		if (item != null && item.canMeta() == VFSConstants.YES) {
+			VFSMetadata info = item.getMetaInfo();
+			if(info == null) return false;
+			return unlock(item, info, result.getType(), result.getToken());
+		}
+		return false;
+	}
+	
+	private boolean unlock(VFSItem item, VFSMetadata info, VFSLockApplicationType type, String token) {
+		if(type == VFSLockApplicationType.vfs) {
 			info.setLockedBy(null);
 			info.setLockedDate(null);
 			info.setLocked(false);
 			vfsRepositoryService.updateMetadata(info);
 			dbInstance.commit();
-			
-			boolean unlocked = false;
-			File file = extractFile(item);
-			if(file != null && fileLocks.containsKey(file)) {
-				LockInfo lock = fileLocks.get(file);
-				if(lock.isWebDAVLock()) {
+		}
+		
+		boolean unlocked = false;
+		File file = extractFile(item);
+		if(file != null) {
+			LockInfo lock = fileLocks.get(file);
+			if(lock == null) {
+				unlocked = true;
+			} else {
+				if(token != null) {
+					lock.removeToken(token);
+				}
+				
+				if(lock.isWebDAVLock()) {// WebDAV make it alone
 					lock.setVfsLock(false);
 					lock.setCollaborationLock(false);
 				} else if(lock.isCollaborationLock()) {
 					lock.setVfsLock(false);
 					lock.setWebDAVLock(false);
+					if(lock.getTokensSize() == 0) {
+						fileLocks.remove(file);
+						unlocked = true;
+					}
 				} else {
 					fileLocks.remove(file);
 					unlocked = true;
 				}
-			} else {
-				unlocked = true;
 			}
-			return unlocked;
+		} else {
+			unlocked = true;
 		}
-		return false;
+		return unlocked;
 	}
 
 	public List<LockInfo> getResourceLocks() {
@@ -450,5 +519,18 @@ public class VFSLockManagerImpl implements VFSLockManager {
 	
 	public void removeCollectionLock(LockInfo collectionLock) {
 		collectionLocks.remove(collectionLock);
+	}
+	
+	private static class TokenWrapper {
+		
+		private String token;
+
+		public String getToken() {
+			return token;
+		}
+
+		public void setToken(String token) {
+			this.token = token;
+		}
 	}
 }

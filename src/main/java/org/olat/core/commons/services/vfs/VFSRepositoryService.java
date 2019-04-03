@@ -172,6 +172,14 @@ public interface VFSRepositoryService {
 	
 	public List<VFSRevision> getRevisions(List<VFSMetadataRef> metadatas);
 	
+	/**
+	 * 
+	 * @return the size in bytes
+	 */
+	public long getRevisionsTotalSize();
+	
+	public long getRevisionsTotalSizeOfDeletedFiles();
+	
 	
 	public boolean addVersion(VFSLeaf currentFile, Identity identity, String comment, InputStream newFile);
 

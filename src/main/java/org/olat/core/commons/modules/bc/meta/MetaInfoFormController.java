@@ -53,7 +53,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.folder.FolderHelper;
-import org.olat.core.id.Roles;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -90,8 +89,6 @@ public class MetaInfoFormController extends FormBasicController {
 	private Set<FormItem> metaFields;
 	private String resourceUrl;
 	
-	private final Roles roles;
-	
 	@Autowired
 	private UserManager userManager;
 	@Autowired
@@ -117,7 +114,6 @@ public class MetaInfoFormController extends FormBasicController {
 		this.item = item;
 		this.resourceUrl = resourceUrl;
 		// load the metainfo
-		roles = ureq.getUserSession().getRoles();
 		initForm(ureq);
 	}
 
@@ -131,7 +127,6 @@ public class MetaInfoFormController extends FormBasicController {
 	 */
 	public MetaInfoFormController(UserRequest ureq, WindowControl control, Form parentForm, boolean showFilename) {
 		super(ureq, control, FormBasicController.LAYOUT_DEFAULT, null, parentForm);
-		roles = ureq.getUserSession().getRoles();
 		this.isSubform = true;
 		this.showFilename = showFilename;
 		initForm(ureq);
@@ -149,7 +144,6 @@ public class MetaInfoFormController extends FormBasicController {
 		super(ureq, wControl, FormBasicController.LAYOUT_DEFAULT, null, parentForm);
 		this.isSubform = true;
 		this.item = vfsItem;
-		roles = ureq.getUserSession().getRoles();
 		initForm(ureq);
 	}
 	
@@ -315,7 +309,7 @@ public class MetaInfoFormController extends FormBasicController {
 				} else {
 					locked.select("unlock", true);
 				}
-				boolean lockForMe = vfsLockManager.isLockedForMe(item, getIdentity(), roles, VFSLockApplicationType.vfs, null);
+				boolean lockForMe = vfsLockManager.isLockedForMe(item, getIdentity(), VFSLockApplicationType.vfs, null);
 				locked.setEnabled(!lockForMe);
 				
 				//locked by
@@ -489,9 +483,9 @@ public class MetaInfoFormController extends FormBasicController {
 			boolean currentlyLocked = locked.isSelected(0);
 			if(!currentlyLocked || !alreadyLocked) {
 				if(currentlyLocked) {
-					vfsLockManager.lock(item, getIdentity(), roles, VFSLockApplicationType.vfs, null);
+					vfsLockManager.lock(item, getIdentity(), VFSLockApplicationType.vfs, null);
 				} else {
-					vfsLockManager.unlock(item, getIdentity(), roles, VFSLockApplicationType.vfs);
+					vfsLockManager.unlock(item, getIdentity(), VFSLockApplicationType.vfs);
 				}
 			}
 		}

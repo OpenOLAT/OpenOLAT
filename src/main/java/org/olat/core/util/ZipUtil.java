@@ -450,7 +450,7 @@ public class ZipUtil {
 						}
 						
 						VFSLeaf newEntry = (VFSLeaf)createIn.resolve(name);
-						if(vfsLockManager.isLockedForMe(newEntry, identity, isAdmin, VFSLockApplicationType.vfs, null)) {
+						if(vfsLockManager.isLockedForMe(newEntry, identity, VFSLockApplicationType.vfs, null)) {
 							lockedFiles.add(name);
 						}
 					}
@@ -473,7 +473,7 @@ public class ZipUtil {
 	 * @param roles
 	 * @return
 	 */
-	public static List<String> checkLockedFileBeforeUnzipNonStrict(VFSLeaf zipLeaf, VFSContainer targetDir, Identity identity, Roles roles) {
+	public static List<String> checkLockedFileBeforeUnzipNonStrict(VFSLeaf zipLeaf, VFSContainer targetDir, Identity identity) {
 		List<String> lockedFiles = new ArrayList<>();
 		VFSLockManager vfsLockManager = CoreSpringFactory.getImpl(VFSLockManager.class);
 		
@@ -513,7 +513,7 @@ public class ZipUtil {
 						}
 						
 						VFSLeaf newEntry = (VFSLeaf)createIn.resolve(name);
-						if(vfsLockManager.isLockedForMe(newEntry, identity, roles, VFSLockApplicationType.vfs, null)) {
+						if(vfsLockManager.isLockedForMe(newEntry, identity, VFSLockApplicationType.vfs, null)) {
 							lockedFiles.add(name);
 						}
 					}

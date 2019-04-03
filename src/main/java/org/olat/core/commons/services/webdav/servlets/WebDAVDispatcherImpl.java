@@ -1008,7 +1008,7 @@ public class WebDAVDispatcherImpl
         
         final WebResource resource = resources.getResource(path);
     	UserSession usess = webDAVManager.getUserSession(req);
-        LockResult lockResult = lockManager.lock(resource, usess.getIdentity(), usess.getRoles());
+        LockResult lockResult = lockManager.lock(resource, usess.getIdentity());
         if(!lockResult.isAcquired()) {
             resp.setStatus(WebdavStatus.SC_LOCKED);
             return;
