@@ -52,6 +52,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.Roles;
 import org.olat.core.id.context.StateMapped;
 import org.olat.core.util.StringHelper;
 import org.olat.login.LoginModule;
@@ -185,6 +186,7 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 	 */
 	public SearchIdentityParams getSearchIdentityParams() {
 		// get user attributes from form
+		String idVal = getStringValue("id");
 		String loginVal = getStringValue("login");
 		// when searching for deleted users, add wildcard to match with backup prefix
 		List<Integer> statusList = getStatus();
@@ -223,6 +225,7 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 				getUserLoginAfter(), getUserLoginBefore(), null);
 		params.setOrganisations(getOrganisations());
 		params.setExactStatusList(statusList);
+		params.setIdAndExternalIds(idVal);
 		return params;
 	}
 
@@ -343,6 +346,12 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.setElementCssClass("o_sel_user_search_form");
+		
+		Roles uroles = ureq.getUserSession().getRoles();
+		TextElement id = uifactory.addTextElement("id", "search.form.id", 128, "", formLayout);
+		id.setVisible(isAdministrativeUser || uroles.isAdministrator() || uroles.isSystemAdmin());
+		id.setElementCssClass("o_sel_user_search_id");
+		items.put("id", id);
 	
 		TextElement login = uifactory.addTextElement("login", "search.form.login", 128, "", formLayout);
 		login.setVisible(isAdministrativeUser);

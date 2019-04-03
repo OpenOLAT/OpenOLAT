@@ -34,6 +34,7 @@ import java.util.stream.Collectors;
 import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.GroupMembershipInheritance;
+import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.OrganisationStatus;
@@ -274,6 +275,24 @@ public class OrganisationDAO {
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Identity.class)
 				.setParameter("role", role)
+				.getResultList();
+	}
+	
+	/**
+	 * The method search identities, which are not deleted,
+	 * which a not part of an organization.
+	 * 
+	 * @return A list of identities
+	 */
+	public List<Identity> getIdentitiesWithoutOrganisations() {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select ident from ").append(IdentityImpl.class.getCanonicalName()).append(" as ident")
+		  .append(" where ident.status<199 and not exists (select membership.key from bgroupmember as membership")
+		  .append("  inner join organisation as org on (org.group.key=membership.group.key)")
+		  .append("  where membership.identity.key=ident.key")
+		  .append(" )");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Identity.class)
 				.getResultList();
 	}
 	

@@ -41,6 +41,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OrganisationRef;
+import org.olat.core.util.StringHelper;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -161,7 +162,8 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 				|| params.getStatus() != null || (params.getExactStatusList() != null && !params.getExactStatusList().isEmpty())
 				|| params.hasRoles() || params.hasExcludedRoles() || params.isAuthorAndCoAuthor()
 				|| params.getRepositoryEntryRole() != null || params.getBusinessGroupRole() != null
-				|| params.hasOrganisations() || params.hasOrganisationParents();
+				|| params.hasOrganisations() || params.hasOrganisationParents()
+				|| StringHelper.containsNonWhitespace(params.getIdAndExternalIds());
 	}
 	
 	private boolean createQueryPart(SearchIdentityParams params, StringBuilder sb, boolean needsAnd) {	
@@ -241,6 +243,15 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 		if(params.getIdentityKeys() != null && !params.getIdentityKeys().isEmpty()) {
 			needsAnd = checkAnd(sb, needsAnd);
 			sb.append("ident.key in (:identityKeys)");
+		}
+		
+		if(params.getIdAndExternalIds() != null) {
+			needsAnd = checkAnd(sb, needsAnd);
+			sb.append("(");
+			if(StringHelper.isLong(params.getIdAndExternalIds())) {
+				sb.append("ident.key=:idKey or user.key=:idKey or ");
+			}
+			sb.append("ident.externalId=:idAndRefs)");
 		}
 		
 		if(params.getManaged() != null) {
@@ -530,6 +541,16 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 			dbq.setParameter("statusList", params.getExactStatusList());
 		} else if (params.getStatus() != null) {
 			dbq.setParameter("status", params.getStatus());
+		}
+		
+		if(params.getIdAndExternalIds() != null) {
+		}
+		
+		if(params.getIdAndExternalIds() != null) {
+			if(StringHelper.isLong(params.getIdAndExternalIds())) {
+				dbq.setParameter("idKey", Long.valueOf(params.getIdAndExternalIds()));
+			}
+			dbq.setParameter("idAndRefs", params.getIdAndExternalIds());
 		}
 	}
 	

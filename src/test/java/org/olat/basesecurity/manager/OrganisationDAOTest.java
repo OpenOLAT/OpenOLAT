@@ -512,4 +512,24 @@ public class OrganisationDAOTest extends OlatTestCase {
 		boolean has = organisationDao.hasAnyRole(member, OrganisationRoles.usermanager.name());
 		Assert.assertTrue(has);
 	}
+	
+	@Test
+	public void getIdentitiesWithoutOrganisations() {
+		Identity member = JunitTestHelper.createAndPersistIdentityAsRndUser("Member-9");
+		Identity notMember = JunitTestHelper.createAndPersistIdentityAsRndUser("Member-10");
+		String identifier = UUID.randomUUID().toString();
+		Organisation organisation1 = organisationDao.createAndPersistOrganisation("Org 12", identifier, null, null, null);
+		dbInstance.commit();
+		// remove def. organisation and make some noise
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		organisationService.removeMember(defOrganisation, notMember);
+		organisationService.addMember(organisation1, member, OrganisationRoles.user);
+		dbInstance.commitAndCloseSession();
+		
+		// check
+		List<Identity> identities = organisationDao.getIdentitiesWithoutOrganisations();
+		Assert.assertFalse(identities.isEmpty());
+		Assert.assertFalse(identities.contains(member));
+		Assert.assertTrue(identities.contains(notMember));
+	}
 }

@@ -35,6 +35,7 @@ import org.olat.core.id.OrganisationRef;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class SearchIdentityParams {
+	private String idAndExternalIds;
 	private String login;
 	private Map<String, String> userProperties;
 	private boolean userPropertiesAsIntersectionSearch;
@@ -301,6 +302,14 @@ public class SearchIdentityParams {
 		this.status = status;
 	}
 	
+	public String getIdAndExternalIds() {
+		return idAndExternalIds;
+	}
+
+	public void setIdAndExternalIds(String idAndExternalIds) {
+		this.idAndExternalIds = idAndExternalIds;
+	}
+
 	public List<Integer> getExactStatusList() {
 		return exactStatusList;
 	}
