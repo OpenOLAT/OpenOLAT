@@ -22,8 +22,7 @@
 	<bean id="olatupgrades" class="org.olat.upgrade.UpgradesDefinitions" >
 		<property name="upgrades">
 			<list>
-				<!-- add upgrade bean here, if you need to run DB upgrades add the property "alterDbStatements" with the 
-				filename from the /database/[dialect]/ directory -->
+				<!-- add upgrade bean here -->
 				<bean id="upgrade_10_0_0" class="org.olat.upgrade.OLATUpgrade_10_0_0"/>
 				<bean id="upgrade_10_0_3" class="org.olat.upgrade.OLATUpgrade_10_0_3"/>
 				<bean id="upgrade_10_1_0" class="org.olat.upgrade.OLATUpgrade_10_1_0"/>
@@ -48,6 +47,7 @@
 				<bean id="upgrade_13_0_0_beta9" class="org.olat.upgrade.OLATUpgrade_13_0_0_beta9"/>
 				<bean id="upgrade_13_1_0" class="org.olat.upgrade.OLATUpgrade_13_1_0"/>
 				<bean id="upgrade_13_2_0" class="org.olat.upgrade.OLATUpgrade_13_2_0"/>
+				<bean id="upgrade_13_2_4" class="org.olat.upgrade.OLATUpgrade_13_2_4"/>
 			</list>
 		</property>
 	</bean>
