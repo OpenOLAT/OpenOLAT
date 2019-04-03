@@ -153,6 +153,9 @@ public class EditCurriculumElementController extends FormBasicController {
 		identifierEl = uifactory.addTextElement("identifier", "curriculum.element.identifier", 255, identifier, formLayout);
 		identifierEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.identifier) && secCallback.canEditCurriculumElement());
 		identifierEl.setMandatory(true);
+		if(identifierEl.isEnabled() && !StringHelper.containsNonWhitespace(identifier)) {
+			identifierEl.setFocus(true);
+		}
 
 		String displayName = element == null ? "" : element.getDisplayName();
 		displayNameEl = uifactory.addTextElement("displayName", "curriculum.element.displayName", 255, displayName, formLayout);
@@ -225,6 +228,7 @@ public class EditCurriculumElementController extends FormBasicController {
 		Date end = element == null ? null : element.getEndDate();
 		endEl = uifactory.addDateChooser("end", "curriculum.element.end", end, formLayout);
 		endEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.dates) && secCallback.canEditCurriculumElement());
+		endEl.setDefaultValue(beginEl);
 		
 		String description = element == null ? "" : element.getDescription();
 		descriptionEl = uifactory.addRichTextElementForStringDataCompact("curriculum.description", "curriculum.description", description, 10, 60, null,

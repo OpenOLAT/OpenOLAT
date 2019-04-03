@@ -192,6 +192,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_node_after:before { content: $fa-var-long-arrow-down; }
 .o_icon_node_before:before { content: $fa-var-long-arrow-up; }
 .o_icon_node_under:before { content: $fa-var-mail-reply; }
+.o_icon_node_up_down:before { content: $fa-var-arrows-v; }
 .o_icon_notes:before { content: $fa-var-sticky-note-o; }
 .o_icon_notification:before { content: $fa-var-rss;}
 .o_icon_ok:before { content: $fa-var-check; color: $brand-success}

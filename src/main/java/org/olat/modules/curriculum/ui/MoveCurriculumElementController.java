@@ -60,7 +60,8 @@ public class MoveCurriculumElementController extends FormBasicController {
 	private final CurriculumTreeModel curriculumModel;
 	
 	private final Curriculum curriculum;
-	private Set<CurriculumElementType> allowedTypes;
+	private Set<CurriculumElementType> allowedTypes = new HashSet<>();
+	private Set<CurriculumElementType> allowedSiblingTypes = new HashSet<>();
 	private List<CurriculumElement> curriculumElementsToMove;
 	private Set<TreeNode> targetableNodes = new HashSet<>();
 	
@@ -75,7 +76,7 @@ public class MoveCurriculumElementController extends FormBasicController {
 		this.curriculum = curriculum;
 		this.curriculumElementsToMove = new ArrayList<>(curriculumElementsToMove);
 		curriculumModel = new CurriculumTreeModel(curriculum, curriculumElementsToMove);
-		allowedTypes = getAllowedTypes();
+		initAllowedTypes();
 		
 		initForm(ureq);
 		loadModel();
@@ -137,6 +138,12 @@ public class MoveCurriculumElementController extends FormBasicController {
 				((GenericTreeNode)node).setIconCssClass("o_icon_node_under o_icon-rotate-180");
 				targetableNodes.add(node);
 				ok = true;
+			} else if(allowedSiblingTypes.contains(type)) {
+				openedNodes.add(node);
+				// CSS class used as marker for restrictions on insertion point in tree model
+				((GenericTreeNode)node).setIconCssClass("o_icon_node_up_down");
+				targetableNodes.add(node);
+				ok = true;
 			} else if(node.getChildCount() > 0) {
 				openedNodes.add(node);
 				ok = true;
@@ -150,7 +157,7 @@ public class MoveCurriculumElementController extends FormBasicController {
 		return ok;
 	}
 	
-	private Set<CurriculumElementType> getAllowedTypes() {
+	private void initAllowedTypes() {
 		List<CurriculumElementType> allTypes = new ArrayList<>(curriculumService.getCurriculumElementTypes());
 		Map<CurriculumElementType, Set<CurriculumElementType>> subToParentTypes = new HashMap<>();
 		for(CurriculumElementType type:allTypes) {
@@ -162,12 +169,14 @@ public class MoveCurriculumElementController extends FormBasicController {
 					.add(type);
 			}
 		}
-		
+
+		Set<CurriculumElementType> siblingTypes = new HashSet<>();
 		Set<CurriculumElementType> analyzedTypes = new HashSet<>();
 		for(CurriculumElement element:curriculumElementsToMove) {
 			CurriculumElementType levelType = element.getType();
 			if(levelType != null && !analyzedTypes.contains(levelType)) {
 				analyzedTypes.add(levelType);
+				siblingTypes.add(levelType);
 				
 				Set<CurriculumElementType> allowed = subToParentTypes.get(levelType);
 				if(allowed != null) {
@@ -176,7 +185,11 @@ public class MoveCurriculumElementController extends FormBasicController {
 			}
 		}
 
-		return new HashSet<>(allTypes);
+		allowedTypes = new HashSet<>(allTypes);
+		allowedSiblingTypes = new HashSet<>();
+		if(siblingTypes.size() == 1) {
+			allowedSiblingTypes.addAll(siblingTypes);
+		}
 	}
 	
 	@Override
@@ -197,6 +210,9 @@ public class MoveCurriculumElementController extends FormBasicController {
 			allOk &= false;
 		} else if(!targetableNodes.contains(curriculumTreeEl.getSelectedNode())) {
 			curriculumTreeEl.setErrorKey("error.target.not.allowed", null);
+			allOk &= false;
+		} else if(curriculumTreeEl.getInsertionPosition() == null) {
+			curriculumTreeEl.setErrorKey("error.target.no.insertion.point", null);
 			allOk &= false;
 		}
 
@@ -235,6 +251,8 @@ public class MoveCurriculumElementController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		if(isParent()) {
 			showWarning("error.target.no.parent");
+		} else if(curriculumTreeEl.getInsertionPosition() == null)  {
+			showWarning("error.target.no.insertion.point");
 		} else {
 			TreePosition tp = curriculumTreeEl.getInsertionPosition();
 			TreeNode parentNode = tp.getParentTreeNode();

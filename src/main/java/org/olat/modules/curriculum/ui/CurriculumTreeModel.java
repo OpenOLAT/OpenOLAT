@@ -133,6 +133,8 @@ public class CurriculumTreeModel extends GenericTreeModel implements InsertionTr
 			positions = new Position[] { Position.under };
 		} else if(isInParentLine(node)) {
 			positions = new Position[0];
+		} else if(node.getIconCssClass() != null && node.getIconCssClass().contains("o_icon_node_up_down")) {
+			positions = new Position[] { Position.up, Position.down };
 		} else {
 			positions = new Position[] { Position.up, Position.down, Position.under };
 		}
