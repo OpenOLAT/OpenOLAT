@@ -784,11 +784,11 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	}
 	
 	private void doRun(UserRequest ureq, RepositoryEntrySecurity security) {
-		if(ureq.getUserSession().getRoles().isOLATAdmin()) {
+		if(roles.isOLATAdmin() || roles.isInstitutionalResourceManager()) {
 			launchContent(ureq, security);
 		} else {
 			// guest are allowed to see resource with BARG 
-			if(re.getAccess() == RepositoryEntry.ACC_USERS_GUESTS && ureq.getUserSession().getRoles().isGuestOnly()) {
+			if(re.getAccess() == RepositoryEntry.ACC_USERS_GUESTS && roles.isGuestOnly()) {
 				launchContent(ureq, security);
 			} else {
 				AccessResult acResult = acService.isAccessible(re, getIdentity(), security.isMember(), false);
