@@ -19,8 +19,6 @@
  */
 package org.olat.modules.portfolio.ui;
 
-import static org.olat.core.commons.services.vfs.VFSLeafEditor.Mode.EDIT;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -31,11 +29,8 @@ import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 
 import org.olat.core.commons.persistence.SortKey;
-import org.olat.core.commons.services.filetemplate.FileType;
 import org.olat.core.commons.services.filetemplate.FileTypes;
-import org.olat.core.commons.services.filetemplate.FileTypes.Builder;
 import org.olat.core.commons.services.image.Size;
-import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -83,6 +78,7 @@ import org.olat.modules.portfolio.Media;
 import org.olat.modules.portfolio.MediaHandler;
 import org.olat.modules.portfolio.MediaLight;
 import org.olat.modules.portfolio.PortfolioService;
+import org.olat.modules.portfolio.handler.CreateFileHandler;
 import org.olat.modules.portfolio.model.CategoryLight;
 import org.olat.modules.portfolio.ui.MediaDataModel.MediaCols;
 import org.olat.modules.portfolio.ui.component.CategoriesCellRenderer;
@@ -121,7 +117,7 @@ public class MediaCenterController extends FormBasicController
 	
 	private int counter = 0;
 	private final boolean select;
-	private final List<FileType> editableFileTypes;
+	private final FileTypes editableFileTypes;
 	private List<FormLink> tagLinks;
 	private final TooledStackedPanel stackPanel;
 
@@ -143,15 +139,12 @@ public class MediaCenterController extends FormBasicController
 	private EPFrontendManager legacyEPFontentManager;
 	@Autowired
 	private PortfolioModule legacyPortfolioModule;
-	@Autowired
-	private VFSRepositoryService vfsService;
-
 	 
 	public MediaCenterController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "medias");
 		this.stackPanel = null;
 		this.select = true;
-		this.editableFileTypes = getEditableFileTypes();
+		this.editableFileTypes = CreateFileHandler.getEditableFileTypes(getLocale());
 		 
 		initForm(ureq);
 		loadModel();
@@ -161,23 +154,12 @@ public class MediaCenterController extends FormBasicController
 		super(ureq, wControl, "medias");
 		this.stackPanel = stackPanel;
 		this.select = false;
-		this.editableFileTypes = getEditableFileTypes();
+		this.editableFileTypes = CreateFileHandler.getEditableFileTypes(getLocale());
 		 
 		initForm(ureq);
 		loadModel();
 	}
 
-	private List<FileType> getEditableFileTypes() {
-		Builder builder = FileTypes.builder(getLocale());
-		if (vfsService.hasEditor("docx", EDIT)) {
-			builder.addDocx();
-		}
-		if (vfsService.hasEditor("xlsx", EDIT)) {
-			builder.addXlsx();
-		}
-		return builder.build().getFileTypes();
-	}
-	
 	@Override
 	public void initTools() {
 		if (editableFileTypes.isEmpty()) {

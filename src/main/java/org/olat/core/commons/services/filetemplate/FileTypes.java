@@ -51,6 +51,10 @@ public class FileTypes {
 	public List<FileType> getFileTypes() {
 		return fileTypes;
 	}
+
+	public boolean isEmpty() {
+		return fileTypes.isEmpty();
+	}
 	
 	public static Builder editables(Locale locale) {
 		Builder builder = new Builder(locale);

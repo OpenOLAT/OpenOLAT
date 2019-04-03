@@ -532,8 +532,8 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 				thumbnailLeaf = (VFSLeaf)thumbnailItem;
 				String suffix = FileUtils.getFileSuffix(thumbnailLeaf.getName());
 				Size finalSize = imageService.getSize(thumbnailLeaf, suffix);
-				thumbnailDao.createThumbnailMetadata(metadata, thumbnailName, thumbnailLeaf.getSize(),
-						fill, maxWidth, maxHeight, finalSize.getWidth(), finalSize.getHeight());
+//				thumbnailDao.createThumbnailMetadata(metadata, thumbnailName, thumbnailLeaf.getSize(),
+//						fill, maxWidth, maxHeight, finalSize.getWidth(), finalSize.getHeight());
 				dbInstance.commit();
 				return thumbnailLeaf;
 			}

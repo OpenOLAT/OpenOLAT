@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.olat.core.commons.services.filetemplate.FileType;
+import org.olat.core.commons.services.filetemplate.FileTypes;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
@@ -86,9 +87,9 @@ public class CreateFileMediaController extends FormBasicController implements Pa
 	@Autowired
 	private PortfolioService portfolioService;
 
-	public CreateFileMediaController(UserRequest ureq, WindowControl wControl, List<FileType> fileTypes) {
+	public CreateFileMediaController(UserRequest ureq, WindowControl wControl, FileTypes fileTypes) {
 		super(ureq, wControl);
-		this.fileTypes = fileTypes;
+		this.fileTypes = fileTypes.getFileTypes();
 		setTranslator(Util.createPackageTranslator(PortfolioHomeController.class, getLocale(), getTranslator()));
 		businessPath = "[HomeSite:" + getIdentity().getKey() + "][PortfolioV2:0][MediaCenter:0]";
 		initForm(ureq);

@@ -150,6 +150,7 @@ public class MediaImpl implements Persistable, CreateInfo, Media  {
 		return storagePath;
 	}
 
+	@Override
 	public void setStoragePath(String storagePath) {
 		this.storagePath = storagePath;
 	}
@@ -159,6 +160,7 @@ public class MediaImpl implements Persistable, CreateInfo, Media  {
 		return rootFilename;
 	}
 
+	@Override
 	public void setRootFilename(String rootFilename) {
 		this.rootFilename = rootFilename;
 	}
@@ -168,6 +170,7 @@ public class MediaImpl implements Persistable, CreateInfo, Media  {
 		return title;
 	}
 
+	@Override
 	public void setTitle(String title) {
 		this.title = title;
 	}
@@ -177,14 +180,17 @@ public class MediaImpl implements Persistable, CreateInfo, Media  {
 		return description;
 	}
 
+	@Override
 	public void setDescription(String description) {
 		this.description = description;
 	}
 
+	@Override
 	public String getContent() {
 		return content;
 	}
 
+	@Override
 	public void setContent(String content) {
 		this.content = content;
 	}
@@ -294,10 +300,12 @@ public class MediaImpl implements Persistable, CreateInfo, Media  {
 		this.language = language;
 	}
 
+	@Override
 	public String getMetadataXml() {
 		return metadataXml;
 	}
 
+	@Override
 	public void setMetadataXml(String metadataXml) {
 		this.metadataXml = metadataXml;
 	}

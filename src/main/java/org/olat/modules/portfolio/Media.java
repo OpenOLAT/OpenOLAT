@@ -48,6 +48,7 @@ public interface Media extends StoredData, MediaLight, DublinCoreMetadata {
 	@Override
 	public String getTitle();
 	
+	@Override
 	public void setTitle(String title);
 	
 	public void setDescription(String description);

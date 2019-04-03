@@ -27,7 +27,10 @@ import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.ui.UserCommentsAndRatingsController;
+import org.olat.core.commons.services.filetemplate.FileType;
 import org.olat.core.commons.services.pdf.PdfModule;
+import org.olat.core.commons.services.vfs.VFSLeafEditor.Mode;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.Dropdown;
@@ -85,6 +88,7 @@ import org.olat.modules.portfolio.PageStatus;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.handler.ContainerHandler;
+import org.olat.modules.portfolio.handler.CreateFileHandler;
 import org.olat.modules.portfolio.handler.EvaluationFormHandler;
 import org.olat.modules.portfolio.handler.HTMLRawPageElementHandler;
 import org.olat.modules.portfolio.handler.ParagraphPageElementHandler;
@@ -153,6 +157,8 @@ public class PageRunController extends BasicController implements TooledControll
 	private CoordinatorManager coordinator;
 	@Autowired
 	private PortfolioService portfolioService;
+	@Autowired
+	private VFSRepositoryService vfsRepositoryService;
 	
 	public PageRunController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			BinderSecurityCallback secCallback, Page page, boolean openEditMode) {
@@ -760,7 +766,12 @@ public class PageRunController extends BasicController implements TooledControll
 			TablePageElementHandler tableHandler = new TablePageElementHandler();
 			handlers.add(tableHandler);
 			creationHandlers.add(tableHandler);
-
+			
+			// Handler only to create files
+			if (isCreateFilePossible()) {
+				CreateFileHandler createFileHandler = new CreateFileHandler();
+				creationHandlers.add(createFileHandler);
+			}
 			List<MediaHandler> mediaHandlers = portfolioService.getMediaHandlers();
 			for(MediaHandler mediaHandler:mediaHandlers) {
 				if(mediaHandler instanceof PageElementHandler) {
@@ -789,7 +800,17 @@ public class PageRunController extends BasicController implements TooledControll
 			//handler for HTML code
 			HTMLRawPageElementHandler htlmRawHandler = new HTMLRawPageElementHandler();
 			handlers.add(htlmRawHandler);
-			creationHandlers.add(htlmRawHandler);// at the end, legacy
+			creationHandlers.add(htlmRawHandler);// at the end, legacy	
+		}
+
+		private boolean isCreateFilePossible() {
+			List<FileType> editableFileTypes = CreateFileHandler.getEditableFileTypes(getLocale()).getFileTypes();
+			for (FileType fileType: editableFileTypes) {
+				if (vfsRepositoryService.hasEditor(fileType.getSuffix(), Mode.EDIT)) {
+					return true;
+				}
+			}
+			return false;
 		}
 
 		@Override
