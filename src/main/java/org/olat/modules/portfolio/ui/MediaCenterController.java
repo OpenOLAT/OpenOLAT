@@ -19,6 +19,8 @@
  */
 package org.olat.modules.portfolio.ui;
 
+import static org.olat.core.commons.services.vfs.VFSLeafEditor.Mode.EDIT;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -29,10 +31,15 @@ import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.commons.services.filetemplate.FileType;
+import org.olat.core.commons.services.filetemplate.FileTypes;
+import org.olat.core.commons.services.filetemplate.FileTypes.Builder;
 import org.olat.core.commons.services.image.Size;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.dropdown.Dropdown;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -83,6 +90,7 @@ import org.olat.modules.portfolio.ui.event.MediaEvent;
 import org.olat.modules.portfolio.ui.event.MediaSelectionEvent;
 import org.olat.modules.portfolio.ui.media.CollectCitationMediaController;
 import org.olat.modules.portfolio.ui.media.CollectTextMediaController;
+import org.olat.modules.portfolio.ui.media.CreateFileMediaController;
 import org.olat.modules.portfolio.ui.model.MediaRow;
 import org.olat.modules.portfolio.ui.renderer.MediaTypeCellRenderer;
 import org.olat.portfolio.PortfolioModule;
@@ -109,16 +117,18 @@ public class MediaCenterController extends FormBasicController
 	private FormLink newMediaCallout;
 	private FlexiTableElement tableEl;
 	private String mapperThumbnailUrl;
-	private Link addFileLink, addMediaLink, addTextLink, addCitationLink, importArtefactV1Link;
+	private Link addFileLink, createFileLink, addMediaLink, addTextLink, addCitationLink, importArtefactV1Link;
 	
 	private int counter = 0;
 	private final boolean select;
+	private final List<FileType> editableFileTypes;
 	private List<FormLink> tagLinks;
 	private final TooledStackedPanel stackPanel;
 
 	private CloseableModalController cmc;
 	private MediaDetailsController detailsCtrl;
 	private MediaUploadController mediaUploadCtrl;
+	private CreateFileMediaController createFileCtrl;
 	private CollectTextMediaController textUploadCtrl;
 	private EPArtefactPoolRunController importArtefactv1Ctrl;
 	private CollectCitationMediaController citationUploadCtrl;
@@ -133,11 +143,15 @@ public class MediaCenterController extends FormBasicController
 	private EPFrontendManager legacyEPFontentManager;
 	@Autowired
 	private PortfolioModule legacyPortfolioModule;
+	@Autowired
+	private VFSRepositoryService vfsService;
+
 	 
 	public MediaCenterController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "medias");
 		this.stackPanel = null;
 		this.select = true;
+		this.editableFileTypes = getEditableFileTypes();
 		 
 		initForm(ureq);
 		loadModel();
@@ -147,16 +161,43 @@ public class MediaCenterController extends FormBasicController
 		super(ureq, wControl, "medias");
 		this.stackPanel = stackPanel;
 		this.select = false;
+		this.editableFileTypes = getEditableFileTypes();
 		 
 		initForm(ureq);
 		loadModel();
 	}
+
+	private List<FileType> getEditableFileTypes() {
+		Builder builder = FileTypes.builder(getLocale());
+		if (vfsService.hasEditor("docx", EDIT)) {
+			builder.addDocx();
+		}
+		if (vfsService.hasEditor("xlsx", EDIT)) {
+			builder.addXlsx();
+		}
+		return builder.build().getFileTypes();
+	}
 	
 	@Override
 	public void initTools() {
-		addFileLink = LinkFactory.createToolLink("add.file", translate("add.file"), this);
-		addFileLink.setIconLeftCSS("o_icon o_icon-lg o_icon_files");
-		stackPanel.addTool(addFileLink, Align.left);
+		if (editableFileTypes.isEmpty()) {
+			addFileLink = LinkFactory.createToolLink("add.file", translate("add.file"), this);
+			addFileLink.setIconLeftCSS("o_icon o_icon-lg o_icon_files");
+			stackPanel.addTool(addFileLink, Align.left);
+		} else {
+			Dropdown addDropdown = new Dropdown("add.file", "add.file", false, getTranslator());
+			addDropdown.setIconCSS("o_icon o_icon-lg o_icon_files");
+			
+			createFileLink = LinkFactory.createToolLink("create.file", translate("create.file"), this);
+			createFileLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
+			addDropdown.addComponent(createFileLink);
+			
+			addFileLink = LinkFactory.createToolLink("upload.file", translate("upload.file"), this);
+			addFileLink.setIconLeftCSS("o_icon o_icon-fw o_icon_upload");
+			addDropdown.addComponent(addFileLink);
+			
+			stackPanel.addTool(addDropdown, Align.left);
+		}
 
 		addMediaLink = LinkFactory.createToolLink("add.media", translate("add.media"), this);
 		addMediaLink.setIconLeftCSS("o_icon o_icon-lg o_icon_media");
@@ -372,7 +413,8 @@ public class MediaCenterController extends FormBasicController
 
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
-		if(mediaUploadCtrl == source || textUploadCtrl == source || citationUploadCtrl == source) {
+		if (createFileCtrl == source || mediaUploadCtrl == source || textUploadCtrl == source
+				|| citationUploadCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				loadModel();
 				tableEl.reloadData();
@@ -381,7 +423,9 @@ public class MediaCenterController extends FormBasicController
 			cleanUp();
 			
 			if(select || event == Event.DONE_EVENT) {
-				if(mediaUploadCtrl == source) {
+				if(createFileCtrl == source) {
+					doSelect(ureq, createFileCtrl.getMediaReference().getKey());
+				} else if(mediaUploadCtrl == source) {
 					doSelect(ureq, mediaUploadCtrl.getMediaReference().getKey());
 				} else if(textUploadCtrl == source) {
 					doSelect(ureq, textUploadCtrl.getMediaReference().getKey());
@@ -445,18 +489,22 @@ public class MediaCenterController extends FormBasicController
 		removeAsListenerAndDispose(importArtefactv1Ctrl);
 		removeAsListenerAndDispose(citationUploadCtrl);
 		removeAsListenerAndDispose(mediaUploadCtrl);
+		removeAsListenerAndDispose(createFileCtrl);
 		removeAsListenerAndDispose(textUploadCtrl);
 		removeAsListenerAndDispose(cmc);
 		importArtefactv1Ctrl = null;
 		citationUploadCtrl = null;
 		mediaUploadCtrl = null;
+		createFileCtrl = null;
 		textUploadCtrl = null;
 		cmc = null;
 	}
 
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		if(addFileLink == source) {
+		if(createFileLink == source) {
+			doCreateFile(ureq);
+		} else if(addFileLink == source) {
 			doAddMedia(ureq, "add.file");
 		} else if(addMediaLink == source) {
 			doAddMedia(ureq, "add.media");
@@ -494,6 +542,18 @@ public class MediaCenterController extends FormBasicController
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
+	}
+
+	private void doCreateFile(UserRequest ureq) {
+		if(createFileCtrl != null) return;
+		
+		createFileCtrl = new CreateFileMediaController(ureq, getWindowControl(), editableFileTypes);
+		listenTo(createFileCtrl);
+		
+		String title = translate("create.file.title");
+		cmc = new CloseableModalController(getWindowControl(), null, createFileCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
 	}
 	
 	private void doAddMedia(UserRequest ureq, String titleKey) {

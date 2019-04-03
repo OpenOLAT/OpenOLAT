@@ -17,6 +17,9 @@
 	<div class="o_download">
 		<a id="o_c8000010939" href="$mapperUri/$filename" target="_blank"><i class="o_icon o_icon-fw $cssClass"></i> $filename</a>
 		<span class="o_size">($size)</span>
+		#if($r.available("edit"))
+			$r.render("edit")
+		#end
 	</div>
 	#if($r.available("meta"))
 	<div class="panel panel-default o_artefact_metadata">

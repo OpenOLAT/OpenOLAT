@@ -61,6 +61,7 @@ import org.olat.modules.portfolio.manager.MetadataXStream;
 import org.olat.modules.portfolio.model.BinderPageUsage;
 import org.olat.modules.portfolio.model.StandardMediaRenderingHints;
 import org.olat.modules.portfolio.ui.event.MediaEvent;
+import org.olat.modules.portfolio.ui.media.FileMediaController;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -131,6 +132,10 @@ public class MediaDetailsController extends FormBasicController implements Activ
 			
 			mediaCtrl = handler.getMediaController(ureq, getWindowControl(), media, new StandardMediaRenderingHints());
 			if(mediaCtrl != null) {
+				// Move this to the MediaHandler if even more Media types are editable inline.
+				if (mediaCtrl instanceof FileMediaController && editable) {
+					((FileMediaController)mediaCtrl).setEditMode(editable);
+				}
 				listenTo(mediaCtrl);
 				layoutCont.put("media", mediaCtrl.getInitialComponent());
 			}

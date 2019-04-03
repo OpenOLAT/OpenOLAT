@@ -1248,6 +1248,8 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 
 	@Override
 	public boolean hasEditor(String suffix, Mode mode) {
+		if (mode == null) return false;
+		
 		return vfsLeafEditors.stream()
 				.filter(VFSLeafEditor::isEnable)
 				.filter(editor -> editor.isSupportingFormat(suffix, mode))
