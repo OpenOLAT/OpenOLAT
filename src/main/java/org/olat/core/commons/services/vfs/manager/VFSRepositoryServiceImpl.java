@@ -65,6 +65,7 @@ import org.olat.core.commons.services.vfs.VFSMetadataRef;
 import org.olat.core.commons.services.vfs.VFSRepositoryModule;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.commons.services.vfs.VFSRevision;
+import org.olat.core.commons.services.vfs.VFSRevisionRef;
 import org.olat.core.commons.services.vfs.VFSThumbnailMetadata;
 import org.olat.core.commons.services.vfs.VFSVersionModule;
 import org.olat.core.commons.services.vfs.manager.MetaInfoReader.Thumbnail;
@@ -167,6 +168,11 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 			return metadataDao.getMetadata(uuid);
 		}
 		return null;
+	}
+
+	@Override
+	public VFSMetadata getMetadata(VFSMetadataRef ref) {
+		return metadataDao.loadMetadata(ref.getKey());
 	}
 
 	@Override
@@ -532,10 +538,16 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 				thumbnailLeaf = (VFSLeaf)thumbnailItem;
 				String suffix = FileUtils.getFileSuffix(thumbnailLeaf.getName());
 				Size finalSize = imageService.getSize(thumbnailLeaf, suffix);
-//				thumbnailDao.createThumbnailMetadata(metadata, thumbnailName, thumbnailLeaf.getSize(),
-//						fill, maxWidth, maxHeight, finalSize.getWidth(), finalSize.getHeight());
-				dbInstance.commit();
-				return thumbnailLeaf;
+				if(finalSize != null) {
+					thumbnailDao.createThumbnailMetadata(metadata, thumbnailName, thumbnailLeaf.getSize(),
+							fill, maxWidth, maxHeight, finalSize.getWidth(), finalSize.getHeight());
+					dbInstance.commit();
+					return thumbnailLeaf;
+				}
+				if(thumbnailLeaf.exists()) {// unreadable image -> replace it
+					thumbnailLeaf.deleteSilently();
+					thumbnailLeaf = parentContainer.createChildLeaf(thumbnailName);	
+				}
 			}
 		}
 		if(thumbnailLeaf != null && thumbnailService.isThumbnailPossible(thumbnailLeaf)) {
@@ -646,6 +658,11 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	}
 	
 	@Override
+	public VFSRevision getRevision(VFSRevisionRef ref) {
+		return revisionDao.loadRevision(ref.getKey());
+	}
+
+	@Override
 	public long getRevisionsTotalSize() {
 		return revisionDao.calculateRevisionsSize();
 	}
@@ -653,6 +670,21 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	@Override
 	public long getRevisionsTotalSizeOfDeletedFiles() {
 		return revisionDao.getRevisionsSizeOfDeletedFiles();
+	}
+	
+	@Override
+	public List<VFSRevision> getRevisionsOfDeletedFiles() {
+		return revisionDao.getRevisionsOfDeletedFiles();
+	}
+
+	@Override
+	public List<VFSMetadataRef> getMetadataOfDeletedFiles() {
+		return revisionDao.getMetadataOfDeletedFiles();
+	}
+
+	@Override
+	public List<VFSMetadataRef> getMetadataWithMoreRevisionsThan(long numOfRevs) {
+		return revisionDao.getMetadataWithMoreThan(numOfRevs);
 	}
 
 	@Override

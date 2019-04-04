@@ -43,6 +43,8 @@ public interface VFSRepositoryService {
 	
 	public VFSMetadata getMetadataFor(File file);
 	
+	public VFSMetadata getMetadata(VFSMetadataRef ref);
+	
 	public VFSMetadata getMetadataByUUID(String uuid);
 	
 	public VFSItem getItemFor(VFSMetadata metdata);
@@ -172,6 +174,8 @@ public interface VFSRepositoryService {
 	
 	public List<VFSRevision> getRevisions(List<VFSMetadataRef> metadatas);
 	
+	public VFSRevision getRevision(VFSRevisionRef ref);
+	
 	/**
 	 * 
 	 * @return the size in bytes
@@ -179,6 +183,21 @@ public interface VFSRepositoryService {
 	public long getRevisionsTotalSize();
 	
 	public long getRevisionsTotalSizeOfDeletedFiles();
+	
+	/**
+	 * @return A list of metadata references of deleted files with revisions.
+	 */
+	public List<VFSMetadataRef> getMetadataOfDeletedFiles();
+	
+	/**
+	 * @return A list of metadata references of deleted files with revisions.
+	 */
+	public List<VFSRevision> getRevisionsOfDeletedFiles();
+	
+	/**
+	 * @return A list of metadata references of deleted files with more than the specified number of revisions.
+	 */
+	public List<VFSMetadataRef> getMetadataWithMoreRevisionsThan(long numOfRevs);
 	
 	
 	public boolean addVersion(VFSLeaf currentFile, Identity identity, String comment, InputStream newFile);

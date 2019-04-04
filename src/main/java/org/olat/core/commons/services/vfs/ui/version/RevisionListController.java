@@ -140,7 +140,7 @@ public class RevisionListController extends FormBasicController {
 
 		tableModel = new RevisionListDataModel(columnsModel, getTranslator());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 24, false, getTranslator(), formLayout);
-		tableEl.setEmtpyTableMessageKey(translate("version.noRevisions"));
+		tableEl.setEmtpyTableMessageKey("version.noRevisions");
 		FlexiTableSortOptions sortOptions = new FlexiTableSortOptions(true);
 		sortOptions.setDefaultOrderBy(new SortKey(RevisionCols.nr.name(), false));
 		tableEl.setSortSettings(sortOptions);
@@ -164,7 +164,7 @@ public class RevisionListController extends FormBasicController {
 		rows.add(new RevisionRow(metadata, download));
 		Collection<String> names = new HashSet<>();
 		for(VFSRevision revision:revisions) {
-			MediaResource revResource = new VFSRevisionMediaResource(revision, true);
+			MediaResource revResource = new VFSRevisionMediaResource(metadata, revision);
 			DownloadLink revDownload = uifactory.addDownloadLink("download" + (counter++), translate("download"), null, revResource, tableEl);
 			rows.add(new RevisionRow(revision, revDownload));
 		}

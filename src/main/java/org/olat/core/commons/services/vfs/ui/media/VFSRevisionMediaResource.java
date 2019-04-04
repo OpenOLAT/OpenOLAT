@@ -28,6 +28,7 @@ import java.util.Date;
 import javax.servlet.http.HttpServletResponse;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.commons.services.vfs.VFSRevision;
 import org.olat.core.gui.media.MediaResource;
@@ -38,23 +39,24 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.VFSConstants;
 
+/**
+ * 
+ * Initial date: 4 avr. 2019<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
+ */
 public class VFSRevisionMediaResource implements MediaResource {
 	
 	private static final String MIME_TYPE_OCTET_STREAM = "application/octet-stream";
 	private static final OLog log = Tracing.createLoggerFor(VFSRevisionMediaResource.class);
 
 	private String encoding;
-	private boolean forceDownload = false;
-	private boolean unknownMimeType = false;
 	private final VFSRevision revision;
-	
-	public VFSRevisionMediaResource(VFSRevision version) {
-		this(version,false);
-	}
-	
-	public VFSRevisionMediaResource(VFSRevision revision, boolean forceDownload) {
+	private final VFSMetadata metadata;
+
+	public VFSRevisionMediaResource(VFSMetadata metadata, VFSRevision revision) {
 		this.revision = revision;
-		this.forceDownload = forceDownload;
+		this.metadata = metadata;
 	}
 	
 	@Override
@@ -69,15 +71,13 @@ public class VFSRevisionMediaResource implements MediaResource {
 
 	@Override
 	public String getContentType() {
-		String mimeType = WebappHelper.getMimeType(revision.getName());
+		String mimeType = WebappHelper.getMimeType(metadata.getFilename());
 		if (mimeType == null) {
 			mimeType = MIME_TYPE_OCTET_STREAM;
-			unknownMimeType = true;
 		} else {
 			// if any encoding is set, append it for the browser
 			if (encoding != null) {
 				mimeType = mimeType + ";charset=" + encoding;
-				unknownMimeType = false;
 			}
 		}
 		return mimeType;
@@ -109,12 +109,8 @@ public class VFSRevisionMediaResource implements MediaResource {
 
 	@Override
 	public void prepare(HttpServletResponse hres) {
-		String filename = StringHelper.urlEncodeUTF8(revision.getName());
-		if (forceDownload || unknownMimeType) {
-			hres.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + filename);
-		} else {
-			hres.setHeader("Content-Disposition", "filename*=UTF-8''" + filename);
-		}
+		String filename = StringHelper.urlEncodeUTF8(metadata.getFilename());
+		hres.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + filename);
 	}
 
 	@Override

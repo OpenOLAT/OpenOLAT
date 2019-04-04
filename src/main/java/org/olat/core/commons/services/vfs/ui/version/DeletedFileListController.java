@@ -31,6 +31,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.commons.services.vfs.VFSRevision;
+import org.olat.core.commons.services.vfs.ui.media.VFSRevisionMediaResource;
 import org.olat.core.commons.services.vfs.ui.version.DeletedFileListDataModel.DeletedCols;
 import org.olat.core.commons.services.vfs.ui.version.RevisionListDataModel.RevisionCols;
 import org.olat.core.gui.UserRequest;
@@ -55,9 +56,9 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSManager;
-import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -116,7 +117,7 @@ public class DeletedFileListController extends FormBasicController {
 		
 		tableModel = new DeletedFileListDataModel(columnsModel, getTranslator());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 24, false, getTranslator(), formLayout);
-		tableEl.setEmtpyTableMessageKey(translate("version.noDeletedFiles"));
+		tableEl.setEmtpyTableMessageKey("version.noDeletedFiles");
 		tableEl.setMultiSelect(true);
 		FlexiTableSortOptions sortOptions = new FlexiTableSortOptions(true);
 		sortOptions.setDefaultOrderBy(new SortKey(RevisionCols.nr.name(), false));
@@ -200,8 +201,7 @@ public class DeletedFileListController extends FormBasicController {
 		
 		for(DeletedFileRow row:rows) {
 			if(row.getLastRevision() != null) {
-				VFSMediaResource resource = new VFSMediaResource(null);
-				resource.setDownloadable(true);
+				MediaResource resource = new VFSRevisionMediaResource(row.getMetadata(), row.getLastRevision());
 				DownloadLink download = uifactory.addDownloadLink("download" + (counter++), translate("download"), null, resource, tableEl);
 				row.setDownloadLink(download);
 			}

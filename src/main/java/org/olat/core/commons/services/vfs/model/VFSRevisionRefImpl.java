@@ -17,58 +17,44 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.commons.services.vfs;
+package org.olat.core.commons.services.vfs.model;
 
-import java.util.Date;
-
-import org.olat.core.id.Identity;
+import org.olat.core.commons.services.vfs.VFSRevisionRef;
 
 /**
  * 
- * Description:<br>
- * This interface describes a revision of a file
- * 
- * <P>
- * Initial Date: 21 sept. 2009 <br>
- * 
- * @author srosse
+ * Initial date: 3 avr. 2019<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
  */
-public interface VFSRevision {
-
-	/**
-	 * @return author of the revision
-	 */
-	public Identity getAuthor();
-
-	/**
-	 * @return timestamp of the creation of this revision
-	 */
-	public Date getFileLastModified();
+public class VFSRevisionRefImpl implements VFSRevisionRef {
 	
-	/**
-	 * @return The name of the file where this revision is stored.
-	 */
-	public String getFilename();
-
-	/**
-	 * @return the revision number
-	 */
-	public int getRevisionNr();
+	private final Long key;
 	
+	public VFSRevisionRefImpl(Long key) {
+		this.key = key;
+	}
 
-	public Date getCreationDate();
-
-	/**
-	 * @return comment
-	 */
-	public String getRevisionComment();
-
-
-	/**
-	 * @return size of the file
-	 */
-	public long getSize();
+	@Override
+	public Long getKey() {
+		return key;
+	}
 	
-	public VFSMetadata getMetadata();
+	@Override
+	public int hashCode() {
+		return key == null ? -3987129 : key.hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(obj == this) {
+			return true;
+		}
+		if(obj instanceof VFSRevisionRefImpl) {
+			VFSRevisionRefImpl ref = (VFSRevisionRefImpl)obj;
+			return key != null && key.equals(ref.key);
+		}
+		return false;
+	}
 
 }

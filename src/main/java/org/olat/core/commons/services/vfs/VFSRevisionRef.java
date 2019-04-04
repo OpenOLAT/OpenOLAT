@@ -19,56 +19,14 @@
  */
 package org.olat.core.commons.services.vfs;
 
-import java.util.Date;
-
-import org.olat.core.id.Identity;
-
 /**
  * 
- * Description:<br>
- * This interface describes a revision of a file
- * 
- * <P>
- * Initial Date: 21 sept. 2009 <br>
- * 
- * @author srosse
+ * Initial date: 3 avr. 2019<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
  */
-public interface VFSRevision {
-
-	/**
-	 * @return author of the revision
-	 */
-	public Identity getAuthor();
-
-	/**
-	 * @return timestamp of the creation of this revision
-	 */
-	public Date getFileLastModified();
+public interface VFSRevisionRef {
 	
-	/**
-	 * @return The name of the file where this revision is stored.
-	 */
-	public String getFilename();
-
-	/**
-	 * @return the revision number
-	 */
-	public int getRevisionNr();
-	
-
-	public Date getCreationDate();
-
-	/**
-	 * @return comment
-	 */
-	public String getRevisionComment();
-
-
-	/**
-	 * @return size of the file
-	 */
-	public long getSize();
-	
-	public VFSMetadata getMetadata();
+	public Long getKey();
 
 }

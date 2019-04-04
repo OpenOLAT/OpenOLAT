@@ -198,9 +198,6 @@ public class DownloadComponent extends AbstractComponent {
 		this.setDirty(true);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.Component#doDispatchRequest(org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void doDispatchRequest(UserRequest ureq) {
 		doDownload(ureq);
@@ -213,9 +210,6 @@ public class DownloadComponent extends AbstractComponent {
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.Component#getHTMLRendererSingleton()
-	 */
 	@Override
 	public ComponentRenderer getHTMLRendererSingleton() {
 		return RENDERER;
@@ -233,7 +227,7 @@ public class DownloadComponent extends AbstractComponent {
 		if (typePos > 0) {
 			return "o_filetype_" + fileName.substring(typePos + 1);
 		}
-		return null;
+		return CSSHelper.createFiletypeIconCssClassFor(fileName);
 	}
 
 }

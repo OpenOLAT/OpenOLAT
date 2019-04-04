@@ -118,18 +118,18 @@ public class VFSRevisionDAOTest extends OlatTestCase {
 		
 		List<VFSMetadataRef> metadataRefs = new ArrayList<>();
 		metadataRefs.add(metadata);
-		List<Long> metadataWithRevs = revisionDao.getMetadataWithMoreThan(3);
+		List<VFSMetadataRef> metadataWithRevs = revisionDao.getMetadataWithMoreThan(3);
 		Assert.assertNotNull(metadataWithRevs);
-		Assert.assertTrue(metadataWithRevs.contains(metadata.getKey()));
+		Assert.assertTrue(metadataWithRevs.contains(new VFSMetadataRefImpl(metadata.getKey())));
 		
-		for(Long metadataKey:metadataWithRevs) {
-			List<VFSRevision> revisions = revisionDao.getRevisions(new VFSMetadataRefImpl(metadataKey));
+		for(VFSMetadataRef metadataRef:metadataWithRevs) {
+			List<VFSRevision> revisions = revisionDao.getRevisions(metadataRef);
 			Assert.assertTrue(revisions.size() > 3);
 		}
 	}
 	
 	@Test
-	public void getMetadataOfDeletedFiles() {
+	public void getMetadataKeysOfDeletedFiles() {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("rev-1");
 		VFSMetadata metadata = vfsMetadataDao.createMetadata(UUID.randomUUID().toString(), "test/revs", "text.txt",
 				new Date(), 10l, false, "file:///text.tx", "file", null);
@@ -154,6 +154,42 @@ public class VFSRevisionDAOTest extends OlatTestCase {
 		Assert.assertFalse(deletedMetadataKeys.contains(metadata.getKey()));
 		Assert.assertTrue(deletedMetadataKeys.contains(deletedMetadata.getKey()));
 		Assert.assertFalse(deletedMetadataKeys.contains(withoutMetadata.getKey()));
+	}
+	
+	@Test
+	public void getMetadataOfDeletedFiles() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("rev-1");
+		VFSMetadata deletedMetadata = vfsMetadataDao.createMetadata(UUID.randomUUID().toString(), "test/revs", "text.txt",
+				new Date(), 10l, false, "file:///text.tx", "file", null);
+		VFSRevision deletedRevision = revisionDao.createRevision(author, "._oo_vr_1_text.txt", 1, 25l, new Date(), "A comment", deletedMetadata);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(deletedRevision);
+		// mark as deleted
+		((VFSMetadataImpl)deletedMetadata).setDeleted(true);
+		deletedMetadata = vfsMetadataDao.updateMetadata(deletedMetadata);
+		dbInstance.commitAndCloseSession();
+		
+		List<VFSMetadataRef> deletedRefs = revisionDao.getMetadataOfDeletedFiles();
+		Assert.assertNotNull(deletedRefs);
+		Assert.assertTrue(deletedRefs.contains(new VFSMetadataRefImpl(deletedMetadata.getKey())));
+	}
+	
+	@Test
+	public void getRevisionsOfDeletedFiles() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("rev-1");
+		VFSMetadata deletedMetadata = vfsMetadataDao.createMetadata(UUID.randomUUID().toString(), "test/revs", "text.txt",
+				new Date(), 10l, false, "file:///text.tx", "file", null);
+		VFSRevision deletedRevision = revisionDao.createRevision(author, "._oo_vr_1_text.txt", 1, 25l, new Date(), "A comment", deletedMetadata);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(deletedRevision);
+		// mark as deleted
+		((VFSMetadataImpl)deletedMetadata).setDeleted(true);
+		deletedMetadata = vfsMetadataDao.updateMetadata(deletedMetadata);
+		dbInstance.commitAndCloseSession();
+		
+		List<VFSRevision> deletedVersions = revisionDao.getRevisionsOfDeletedFiles();
+		Assert.assertNotNull(deletedVersions);
+		Assert.assertTrue(deletedVersions.contains(deletedRevision));
 	}
 	
 	@Test
@@ -185,5 +221,4 @@ public class VFSRevisionDAOTest extends OlatTestCase {
 		long size = revisionDao.calculateRevisionsSize();
 		Assert.assertTrue(size >= 25l);
 	}
-
 }

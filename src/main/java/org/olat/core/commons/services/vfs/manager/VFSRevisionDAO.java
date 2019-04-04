@@ -83,6 +83,20 @@ public class VFSRevisionDAO {
 		return rev;
 	}
 	
+	public VFSRevision loadRevision(Long revisionKey) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select rev from vfsrevision rev")
+		  .append(" left join fetch rev.author as author")
+		  .append(" left join fetch author.user as authorUser")
+		  .append(" inner join fetch rev.metadata meta")
+		  .append(" where rev.key=:revisionKey");
+		List<VFSRevision> revisions = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), VFSRevision.class)
+			.setParameter("revisionKey", revisionKey)
+			.getResultList();
+		return revisions == null || revisions.isEmpty() ? null : revisions.get(0);
+	}
+	
 	public List<VFSRevision> getRevisions(VFSMetadataRef metadata) {
 		if(metadata == null) return new ArrayList<>();
 		
@@ -114,13 +128,13 @@ public class VFSRevisionDAO {
 			.getResultList();
 	}
 	
-	public List<Long> getMetadataWithMoreThan(long numOfRevisions) {
+	public List<VFSMetadataRef> getMetadataWithMoreThan(long numOfRevisions) {
 		StringBuilder sb = new StringBuilder(256);
-		sb.append("select meta.key")
+		sb.append("select new org.olat.core.commons.services.vfs.model.VFSMetadataRefImpl(meta.key)")
 		  .append(" from filemetadata meta")
 		  .append(" where :numOfRevisions < (select count(rev.key) from vfsrevision rev where rev.metadata.key=meta.key)");
 		return dbInstance.getCurrentEntityManager()
-			.createQuery(sb.toString(), Long.class)
+			.createQuery(sb.toString(), VFSMetadataRef.class)
 			.setParameter("numOfRevisions", Long.valueOf(numOfRevisions))
 			.getResultList();
 	}
@@ -140,13 +154,28 @@ public class VFSRevisionDAO {
 	/**
 	 * @return A list of metadata of deleted files with revisions.
 	 */
-	public List<VFSMetadata> getMetadataOfDeletedFiles() {
+	public List<VFSMetadataRef> getMetadataOfDeletedFiles() {
 		StringBuilder sb = new StringBuilder(256);
-		sb.append("select sum(rev.size) from vfsrevision rev")
+		sb.append("select new org.olat.core.commons.services.vfs.model.VFSMetadataRefImpl(meta.key)")
+		  .append(" from vfsrevision rev")
 		  .append(" inner join rev.metadata meta")
 		  .append(" where meta.deleted=:deleted");
 		return dbInstance.getCurrentEntityManager()
-			.createQuery(sb.toString(), VFSMetadata.class)
+			.createQuery(sb.toString(), VFSMetadataRef.class)
+			.setParameter("deleted", Boolean.TRUE)
+			.getResultList();
+	}
+	
+	/**
+	 * @return A list of revisions of deleted files.
+	 */
+	public List<VFSRevision> getRevisionsOfDeletedFiles() {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select rev from vfsrevision rev")
+		  .append(" inner join fetch rev.metadata meta")
+		  .append(" where meta.deleted=:deleted");
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), VFSRevision.class)
 			.setParameter("deleted", Boolean.TRUE)
 			.getResultList();
 	}

@@ -186,11 +186,6 @@ public class VFSRevisionImpl implements Persistable, VFSRevision {
 	}
 	
 	@Override
-	public String getName() {
-		return null;
-	}
-	
-	@Override
 	public long getSize() {
 		return size;
 	}

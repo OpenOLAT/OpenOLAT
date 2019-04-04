@@ -19,9 +19,17 @@
  */
 package org.olat.core.commons.services.vfs.ui.version;
 
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
 import org.olat.admin.SystemAdminMainController;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
+import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.VFSMetadataRef;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
+import org.olat.core.commons.services.vfs.VFSRevision;
 import org.olat.core.commons.services.vfs.VFSVersionModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -39,6 +47,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.id.Identity;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
 import org.olat.core.util.async.ProgressDelegate;
@@ -58,16 +67,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class VersionMaintenanceForm extends FormBasicController implements ProgressDelegate {
 	
 	private FormLink pruneLink;
-	private FormLink orphanSize;
 	private FormLink cleanUpLink;
 	private FormLink showOrphanLink;
 	private StaticTextElement orphanSizeEl;
 	private StaticTextElement versionsSizeEl;
+	
 	private CloseableModalController cmc;
+	private ProgressController progressCtrl;
 	private DialogBoxController confirmPruneHistoryBox;
 	private DialogBoxController confirmDeleteOrphansBox;
-	private ProgressController progressCtrl;
+	private VersionsDeletedFileController orphansController; 
 	
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private VFSVersionModule versionsModule;
 	@Autowired
@@ -95,14 +107,11 @@ public class VersionMaintenanceForm extends FormBasicController implements Progr
 		FormLayoutContainer buttonsLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsLayout);
 		
-		orphanSize = uifactory.addFormLink("version.orphan.size.calc", buttonsLayout, Link.BUTTON);
 		showOrphanLink = uifactory.addFormLink("version.show.orphans", buttonsLayout, Link.BUTTON);
 		cleanUpLink = uifactory.addFormLink("version.clean.up", buttonsLayout, Link.BUTTON);
+		pruneLink = uifactory.addFormLink("version.prune.history", buttonsLayout, Link.BUTTON);
+
 		
-		FormLayoutContainer buttons2Layout = FormLayoutContainer.createButtonLayout("buttons2", getTranslator());
-		formLayout.add(buttons2Layout);
-		
-		pruneLink = uifactory.addFormLink("version.prune.history", buttons2Layout, Link.BUTTON);
 	}
 
 	@Override
@@ -119,10 +128,10 @@ public class VersionMaintenanceForm extends FormBasicController implements Progr
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		/* if(source == orphansController) {
+		if(source == orphansController) {
 			cmc.deactivate();
 			cleanup();
-		} else */ if(source == confirmDeleteOrphansBox) {
+		} else if(source == confirmDeleteOrphansBox) {
 			if (DialogBoxUIFactory.isYesEvent(event)) {
 				doDeleteOrphans(ureq);
 			}
@@ -137,7 +146,9 @@ public class VersionMaintenanceForm extends FormBasicController implements Progr
 	}
 	
 	private void cleanup() {
+		removeAsListenerAndDispose(orphansController);
 		removeAsListenerAndDispose(cmc);
+		orphansController = null;
 		cmc = null;
 	}
 
@@ -149,80 +160,115 @@ public class VersionMaintenanceForm extends FormBasicController implements Progr
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source == showOrphanLink) {
-			/*
-			List<OrphanVersion> orphans = new ArrayList<>();//TODO metadata versions versionsManager.orphans();
-			orphansController = new OrphanVersionsController(ureq, getWindowControl(), orphans);			
-			listenTo(orphansController);
-			cmc = new CloseableModalController(getWindowControl(), "close", orphansController.getInitialComponent());
-			cmc.activate();
-			*/
+			doOpenOrphansList(ureq);
 		} else if(source == cleanUpLink) {
 			String text = translate("confirm.delete.orphans");
 			confirmDeleteOrphansBox = activateYesNoDialog(ureq, null, text, confirmDeleteOrphansBox);
 		} else if(source == pruneLink) {
 			String text = translate("confirm.prune.history");
 			confirmPruneHistoryBox = activateYesNoDialog(ureq, null, text, confirmPruneHistoryBox);
-		} else if (source == orphanSize) {
-			orphanSizeEl.setValue(translate("version.orphan.size.calculating"));
-			taskExecutorManager.execute(new Runnable() {
-				public void run() {
-					calculateOrphanSize();
-				}
-			});
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
 	
+	private void doOpenOrphansList(UserRequest ureq) {
+		if(orphansController  != null) return;
+		
+		orphansController = new VersionsDeletedFileController(ureq, getWindowControl());			
+		listenTo(orphansController);
+		
+		String title = translate("version.show.orphans");
+		cmc = new CloseableModalController(getWindowControl(), "close", orphansController.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
 	private void doDeleteOrphans(UserRequest ureq) {
+		final List<VFSMetadataRef> deleted = vfsRepositoryService.getMetadataOfDeletedFiles();
+		
 		progressCtrl = new ProgressController(ureq, getWindowControl());
 		progressCtrl.setMessage(translate("version.clean.up"));
 		progressCtrl.setPercentagesEnabled(false);
-		progressCtrl.setUnitLabel("");
+		progressCtrl.setUnitLabel("%");
 		progressCtrl.setActual(0.0f);
 		progressCtrl.setMax(100.0f);
 		listenTo(progressCtrl);
 		
-		taskExecutorManager.execute(new Runnable() {
-			public void run() {
-				waitASecond();
-				//TODO metadata versions 
-				//versionsManager.deleteOrphans(VersionMaintenanceForm.this);
-			}
+		taskExecutorManager.execute(() -> {
+			waitASecond();
+			deletedDeletedFilesRevisions(deleted);
 		});
 
 		synchronized(this) {
 			if(progressCtrl != null) {
-				cmc = new CloseableModalController(getWindowControl(), null, progressCtrl.getInitialComponent(), true, null, false);
+				String title = translate("version.clean.up");
+				cmc = new CloseableModalController(getWindowControl(), null, progressCtrl.getInitialComponent(), true, title, false);
 				cmc.activate();
 				listenTo(cmc);
 			}
 		}
 	}
 	
+	private void deletedDeletedFilesRevisions(List<VFSMetadataRef> toDeleteList) {
+		try {
+			int count = 0;
+			for(VFSMetadataRef toDelete:toDeleteList) {
+				VFSMetadata meta = vfsRepositoryService.getMetadata(toDelete);
+				vfsRepositoryService.deleteMetadata(meta);
+				dbInstance.commitAndCloseSession();
+				setActual((++count / (float)toDeleteList.size()) * 100.0f);
+			}	
+		} catch (Exception e) {
+			dbInstance.closeSession();
+			logError("", e);
+		}
+		finished();
+	}
+	
 	private void doPruneHistory(UserRequest ureq) {
+		final int numOfVersions = getNumOfVersions();
+		final List<VFSMetadataRef> metadata = vfsRepositoryService.getMetadataWithMoreRevisionsThan(numOfVersions);
 		progressCtrl = new ProgressController(ureq, getWindowControl());
 		progressCtrl.setMessage(translate("version.prune.history"));
 		progressCtrl.setPercentagesEnabled(false);
-		progressCtrl.setUnitLabel("");
-		//progressCtrl.setMax(versionsManager.countDirectories());
+		progressCtrl.setUnitLabel("%");
+		progressCtrl.setMax(100.0f);
+		progressCtrl.setActual(0.0f);
 		listenTo(progressCtrl);
 
-		taskExecutorManager.execute(new Runnable() {
-			public void run() {
-				waitASecond();
-				int numOfVersions = getNumOfVersions();
-				//TODO metadata versions 
-				// versionsManager.pruneHistory(numOfVersions, VersionMaintenanceForm.this);
-			}
+		taskExecutorManager.execute(() -> {
+			waitASecond();
+			pruneRevisions(metadata, numOfVersions); 
 		});
 
 		synchronized(this) {
 			if(progressCtrl != null) {
-				cmc = new CloseableModalController(getWindowControl(), null, progressCtrl.getInitialComponent(), true, null, false);
+				String title = translate("version.prune.history");
+				cmc = new CloseableModalController(getWindowControl(), null, progressCtrl.getInitialComponent(),
+						true, title, false);
 				cmc.activate();
 				listenTo(cmc);
 			}
 		}
+	}
+	
+	private void pruneRevisions(final List<VFSMetadataRef> metadata, final int numOfVersions) {
+		try {
+			final Identity actingIdentity = getIdentity();
+			int count = 0;
+			for(VFSMetadataRef data:metadata) {
+				List<VFSRevision> revs = vfsRepositoryService.getRevisions(data);
+				Collections.sort(revs, new AscendingRevisionNrComparator());
+				List<VFSRevision> toDelete = revs.subList(0, revs.size() - numOfVersions);
+				vfsRepositoryService.deleteRevisions(actingIdentity, toDelete);
+				dbInstance.commitAndCloseSession();
+				setActual((++count / (float)metadata.size()) * 100.0f);
+			}
+		} catch (Exception e) {
+			dbInstance.closeSession();
+			logError("", e);
+		}
+		finished();
 	}
 	
 	private final void waitASecond() {
@@ -273,5 +319,14 @@ public class VersionMaintenanceForm extends FormBasicController implements Progr
 			cmc.deactivate();
 		}
 		cleanup();
+	}
+	
+	private static class AscendingRevisionNrComparator implements Comparator<VFSRevision> {
+		@Override
+		public int compare(VFSRevision o1, VFSRevision o2) {
+			int n1 = o1.getRevisionNr();
+			int n2 = o2.getRevisionNr();
+			return Integer.compare(n1, n2);
+		}
 	}
 }
