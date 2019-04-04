@@ -53,7 +53,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  * 
  * Description:<br>
  * This is an integration test of the EPArtefactManager to test the DB
- * TODO: epf: access the manager-methods over EPFrontendManager, as they are protected
  * 
  * <P>
  * Initial Date:  24 jun. 2010 <br>
@@ -113,7 +112,7 @@ public class EPArtefactManagerTest extends OlatTestCase {
 		epFrontendManager.addArtefactToStructure(ident1, artefact2, el);
 		assertTrue(epFrontendManager.getArtefacts(el).get(0).equalsByPersistableKey(artefact2));
 		epFrontendManager.deleteArtefact(artefact2);
-		assertEquals(epFrontendManager.getArtefacts(el).size(),0);
+		assertEquals(0, epFrontendManager.getArtefacts(el).size());
 	}
 		
 	@Test

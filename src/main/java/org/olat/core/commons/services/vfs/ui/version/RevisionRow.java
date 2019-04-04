@@ -49,6 +49,7 @@ public class RevisionRow {
 	public RevisionRow(VFSMetadata metadata, DownloadLink downloadLink) {
 		current = true;
 		this.metadata = metadata;
+		comment = metadata.getRevisionComment();
 		author = metadata.getAuthor();
 		this.downloadLink = downloadLink;
 	}
@@ -90,7 +91,7 @@ public class RevisionRow {
 		return author;
 	}
 	
-	public String getComment() {
+	public String getRevisionComment() {
 		return comment;
 	}
 	

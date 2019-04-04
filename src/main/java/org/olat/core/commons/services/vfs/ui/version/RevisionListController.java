@@ -130,7 +130,7 @@ public class RevisionListController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RevisionCols.nr));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RevisionCols.size, new BytesCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RevisionCols.author, new IdentityCellRenderer(userManager)));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RevisionCols.comment));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RevisionCols.revisionComment));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RevisionCols.date, new DateFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RevisionCols.download));
 		if(!readOnly) {

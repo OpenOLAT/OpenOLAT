@@ -67,8 +67,8 @@ implements SortableFlexiTableDataModel<RevisionRow> {
 			case nr: return row.getRevisionNr();
 			case size: return row.getSize();
 			case author: return row.getAuthor();
-			case comment: {
-				String comment = row.getComment();
+			case revisionComment: {
+				String comment = row.getRevisionComment();
 				if(!StringHelper.containsNonWhitespace(comment) && row.getRevisionNr() <= 1) {
 					comment = translator.translate("version.initialRevision");
 				}
@@ -93,7 +93,7 @@ implements SortableFlexiTableDataModel<RevisionRow> {
 		nr("table.header.nr"),
 		size("table.header.size"),
 		author("table.header.author"),
-		comment("table.header.comment"),
+		revisionComment("table.header.comment"),
 		date("table.header.date"),
 		download("download"),
 		restore("version.restore"),

@@ -29,8 +29,11 @@ package org.olat.core.util.vfs;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -289,7 +292,21 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 	private VFSStatus deleteBasefile() {
 		VFSStatus status = VFSConstants.NO;
 		try {
-			Files.delete(getBasefile().toPath());
+			// walk tree make sure the directory is deleted once all files,
+			// versions files and others are properly deleted
+			Files.walkFileTree(getBasefile().toPath(), new SimpleFileVisitor<Path>() {
+				@Override
+				public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+					Files.delete(file);
+					return FileVisitResult.CONTINUE;
+				}
+
+				@Override
+				public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+					Files.delete(dir);
+					return FileVisitResult.CONTINUE;
+				}
+			});
 			status = VFSConstants.YES;
 		} catch(IOException e) {
 			log.error("Cannot delete base file: " + this, e);

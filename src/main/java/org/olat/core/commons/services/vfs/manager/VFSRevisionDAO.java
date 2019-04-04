@@ -46,7 +46,7 @@ public class VFSRevisionDAO {
 	private DB dbInstance;
 	
 	public VFSRevision createRevision(Identity author, String filename, int revisionNr, long size, Date fileLastModified,
-			String comment, VFSMetadata metadata) {
+			String revisionComment, VFSMetadata metadata) {
 		VFSRevisionImpl rev = new VFSRevisionImpl();
 		rev.setCreationDate(new Date());
 		rev.setLastModified(rev.getCreationDate());
@@ -58,7 +58,7 @@ public class VFSRevisionDAO {
 			rev.setFileLastModified(fileLastModified);
 		}
 		rev.setSize(size);
-		rev.setRevisionComment(comment);
+		rev.setRevisionComment(revisionComment);
 		rev.copyValues(metadata);
 		rev.setAuthor(author);
 		rev.setMetadata(metadata);

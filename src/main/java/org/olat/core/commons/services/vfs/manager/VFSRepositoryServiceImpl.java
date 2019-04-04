@@ -393,7 +393,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		
 		VFSMetadataImpl metadata = (VFSMetadataImpl)getMetadataFor(item);
 		metadata.setDeleted(true);
-		if(item instanceof VFSLeaf && item.canMeta() == VFSConstants.YES) {
+		if(item instanceof VFSLeaf && item.canVersion() == VFSConstants.YES) {
 			addToRevisions((VFSLeaf)item, metadata, author, "", true);
 		}
 		metadataDao.updateMetadata(metadata);
@@ -695,6 +695,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	public boolean restoreRevision(Identity identity, VFSRevision revision, String comment) {
 		VFSMetadata metadata = ((VFSRevisionImpl)revision).getMetadata();
 
+		boolean allOk = false;
 		File currentFile = toFile(metadata);
 		if(!currentFile.exists()) {
 			// restore a deleted file
@@ -705,7 +706,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 				VFSLeaf revFile = getRevisionLeaf(metadata, ((VFSRevisionImpl)revision));
 				if (FileUtils.copyToFile(revFile.getInputStream(), currentFile, "Restore")) {
 					deleteRevisions(metadata, Collections.singletonList(revision));
-					return true;
+					allOk = true;
 				}
 			} catch (IOException e) {
 				log.error("", e);
@@ -722,22 +723,25 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 				// copy the content of the new file to the old
 				VFSLeaf revFile = getRevisionLeaf(metadata, ((VFSRevisionImpl)revision));
 				if (VFSManager.copyContent(revFile.getInputStream(), currentLeaf)) {
-					return true;
-				}
-				
-				// prune revisions now
-				int maxNumOfVersions = versionModule.getMaxNumberOfVersions();
-				List<VFSRevision> revisions = revisionDao.getRevisions(metadata);
-				if(maxNumOfVersions >= 0 && revisions.size() > maxNumOfVersions) {
-					int numOfVersionsToDelete = Math.min(revisions.size(), (revisions.size() - maxNumOfVersions));
-					if(numOfVersionsToDelete > 0) {
-						List<VFSRevision> versionsToDelete = new ArrayList<>(revisions.subList(0, numOfVersionsToDelete));
-						deleteRevisions(metadata, revisions, versionsToDelete);
+					metadata = metadataDao.loadMetadata(metadata.getKey());
+					((VFSMetadataImpl)metadata).copyValues((VFSRevisionImpl)revision);
+					metadata = metadataDao.updateMetadata(metadata);
+
+					// prune revisions now
+					int maxNumOfVersions = versionModule.getMaxNumberOfVersions();
+					List<VFSRevision> revisions = revisionDao.getRevisions(metadata);
+					if(maxNumOfVersions >= 0 && revisions.size() > maxNumOfVersions) {
+						int numOfVersionsToDelete = Math.min(revisions.size(), (revisions.size() - maxNumOfVersions));
+						if(numOfVersionsToDelete > 0) {
+							List<VFSRevision> versionsToDelete = new ArrayList<>(revisions.subList(0, numOfVersionsToDelete));
+							deleteRevisions(metadata, revisions, versionsToDelete);
+						}
 					}
-				}
+					allOk = true;
+				}	
 			}
 		}
-		return false;
+		return allOk;
 	}
 	
 	@Override

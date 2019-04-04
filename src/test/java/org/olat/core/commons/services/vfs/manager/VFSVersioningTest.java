@@ -641,6 +641,65 @@ public class VFSVersioningTest extends OlatTestCase {
 		Assert.assertEquals("Hello", restoredData);
 	}
 	
+	@Test
+	public void restore_metadata() throws IOException {
+		//create a file
+		VFSContainer rootTest = VFSManager.olatRootContainer("/ver" + UUID.randomUUID(), null);
+		String filename = UUID.randomUUID().toString() + ".txt";
+		VFSLeaf file = rootTest.createChildLeaf(filename);
+		int byteCopied = copyTestTxt(file);
+		Assert.assertFalse(byteCopied == 0);
+		Assert.assertEquals(VFSConstants.YES, file.canMeta());
+		
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("vers-12");
+		
+		// set metadata
+		VFSMetadata metadata = vfsRepositoryService.getMetadataFor(file);
+		metadata.setComment("Initital version 0");
+		metadata.setPublisher("frentix GmbH");
+		vfsRepositoryService.updateMetadata(metadata);
+		dbInstance.commitAndCloseSession();
+		
+		//save a first version -> id
+		InputStream in1 = new ByteArrayInputStream("Hello 1".getBytes());
+		vfsRepositoryService.addVersion(file, id, "Version 1", in1);
+		in1.close();
+		dbInstance.commitAndCloseSession();
+		
+		// set metadata for version 1
+		metadata = vfsRepositoryService.getMetadataFor(file);
+		metadata.setComment("Initital version 1");
+		metadata.setPublisher("OpenOLAT org.");
+		vfsRepositoryService.updateMetadata(metadata);
+		dbInstance.commitAndCloseSession();
+		
+		// save version 2
+		InputStream in2 = new ByteArrayInputStream("Hello 2".getBytes());
+		vfsRepositoryService.addVersion(file, id, "Version 2", in2);
+		in2.close();
+		dbInstance.commitAndCloseSession();
+		// save version 3
+		InputStream in3 = new ByteArrayInputStream("Hello 3".getBytes());
+		vfsRepositoryService.addVersion(file, id, "Version 3", in3);
+		in3.close();
+		dbInstance.commitAndCloseSession();
+		
+		// get the revisions
+		metadata = vfsRepositoryService.getMetadataFor(file);
+		List<VFSRevision> revisions = vfsRepositoryService.getRevisions(metadata);
+		
+		// restore the original file
+		VFSRevision toRestore = revisions.get(0);
+		boolean restored = vfsRepositoryService.restoreRevision(id, toRestore, "Restore");
+		Assert.assertTrue(restored);
+		dbInstance.commitAndCloseSession();
+		
+		// check the restored metadata
+		VFSMetadata restoredMetadata = vfsRepositoryService.getMetadataFor(file);
+		Assert.assertNotNull(restoredMetadata);
+		Assert.assertEquals("Initital version 0", restoredMetadata.getComment());
+	}
+	
 	private int copyTestTxt(VFSLeaf file) {
 		try(OutputStream out = file.getOutputStream(false);
 				InputStream in = VFSVersioningTest.class.getResourceAsStream("test.txt")) {

@@ -548,6 +548,24 @@ public class VFSMetadataImpl implements Persistable, VFSMetadata {
 		setLicensor(fromMeta.getLicensor());
 		setLicenseText(fromMeta.getLicenseText());
 	}
+	
+	public void copyValues(VFSRevisionImpl fromMeta) {
+		setAuthor(fromMeta.getAuthor());
+		setComment(fromMeta.getComment());
+		setCity(fromMeta.getCity());
+		setCreator(fromMeta.getCreator());
+		setLanguage(fromMeta.getLanguage());
+		setPages(fromMeta.getPages());
+		setPublicationDate(fromMeta.getPubMonth(), fromMeta.getPubYear());
+		setPublisher(fromMeta.getPublisher());
+		setSource(fromMeta.getSource());
+		setTitle(fromMeta.getTitle());
+		setUrl(fromMeta.getUrl());
+		setLicenseType(fromMeta.getLicenseType());
+		setLicenseTypeName(fromMeta.getLicenseTypeName());
+		setLicensor(fromMeta.getLicensor());
+		setLicenseText(fromMeta.getLicenseText());
+	}
 
 	@Override
 	public int hashCode() {

@@ -111,6 +111,9 @@ public class CmdViewRevisions extends BasicController implements FolderCommand {
 	
 	@Override
 	public String getModalTitle() {
+		if(currentItem != null) {
+			return translate("versions.revisions.of", new String[] { currentItem.getName() });
+		}
 		return translate("versions.revisions");
 	}
 

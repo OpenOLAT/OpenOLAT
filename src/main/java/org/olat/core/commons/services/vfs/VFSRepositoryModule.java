@@ -87,6 +87,7 @@ public class VFSRepositoryModule extends AbstractSpringModule {
 					&& !bFile.startsWith(bcRoot.resolve("certificates"))
 					&& !bFile.startsWith(bcRoot.resolve("qtiassessment"))
 					&& !bFile.startsWith(bcRoot.resolve("transcodedVideos"))
+					&& !bFile.startsWith(bcRoot.resolve("qpool"))
 					? VFSConstants.YES : VFSConstants.NO;
 		}
 		return canMeta;
