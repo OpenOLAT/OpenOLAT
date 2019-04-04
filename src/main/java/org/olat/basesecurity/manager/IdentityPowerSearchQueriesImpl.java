@@ -544,9 +544,6 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 		}
 		
 		if(params.getIdAndExternalIds() != null) {
-		}
-		
-		if(params.getIdAndExternalIds() != null) {
 			if(StringHelper.isLong(params.getIdAndExternalIds())) {
 				dbq.setParameter("idKey", Long.valueOf(params.getIdAndExternalIds()));
 			}
