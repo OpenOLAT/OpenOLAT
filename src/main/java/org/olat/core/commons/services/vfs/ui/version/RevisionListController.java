@@ -35,6 +35,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.commons.services.vfs.VFSRevision;
+import org.olat.core.commons.services.vfs.ui.component.BytesCellRenderer;
 import org.olat.core.commons.services.vfs.ui.media.VFSRevisionMediaResource;
 import org.olat.core.commons.services.vfs.ui.version.RevisionListDataModel.RevisionCols;
 import org.olat.core.gui.UserRequest;
@@ -127,6 +128,7 @@ public class RevisionListController extends FormBasicController {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, RevisionCols.id));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RevisionCols.nr));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RevisionCols.size, new BytesCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RevisionCols.author, new IdentityCellRenderer(userManager)));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RevisionCols.comment));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RevisionCols.date, new DateFlexiCellRenderer(getLocale())));

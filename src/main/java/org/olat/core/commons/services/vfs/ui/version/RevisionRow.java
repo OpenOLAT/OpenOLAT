@@ -38,6 +38,7 @@ public class RevisionRow {
 	private boolean current;
 	
 	private int revisionNr;
+	private long revisionSize;
 	private Identity author;
 	private String comment;
 	
@@ -57,6 +58,7 @@ public class RevisionRow {
 		revisionNr = revision.getRevisionNr();
 		author = revision.getAuthor();
 		comment = revision.getRevisionComment();
+		revisionSize = revision.getSize();
 		this.revision = revision;
 		this.downloadLink = downloadLink;
 	}
@@ -78,6 +80,10 @@ public class RevisionRow {
 	
 	public int getRevisionNr() {
 		return current ? metadata.getRevisionNr() : revisionNr;
+	}
+	
+	public long getSize() {
+		return current ? metadata.getFileSize() : revisionSize;
 	}
 	
 	public Identity getAuthor() {

@@ -199,7 +199,16 @@ public interface VFSRepositoryService {
 	 */
 	public List<VFSMetadataRef> getMetadataWithMoreRevisionsThan(long numOfRevs);
 	
-	
+	/**
+	 * The current file will be added in the version history. The content of the
+	 * specified input stream will replace the content in the current file.
+	 * 
+	 * @param currentFile The file
+	 * @param identity The acting identity
+	 * @param comment A comment
+	 * @param newFile The new content for the current file
+	 * @return true if successful
+	 */
 	public boolean addVersion(VFSLeaf currentFile, Identity identity, String comment, InputStream newFile);
 
 	/**

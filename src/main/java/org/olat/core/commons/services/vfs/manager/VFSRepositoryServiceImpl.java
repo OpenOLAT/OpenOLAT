@@ -19,9 +19,13 @@
  */
 package org.olat.core.commons.services.vfs.manager;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -390,7 +394,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		VFSMetadataImpl metadata = (VFSMetadataImpl)getMetadataFor(item);
 		metadata.setDeleted(true);
 		if(item instanceof VFSLeaf && item.canMeta() == VFSConstants.YES) {
-			addToRevisions((VFSLeaf)item, metadata, author, "");
+			addToRevisions((VFSLeaf)item, metadata, author, "", true);
 		}
 		metadataDao.updateMetadata(metadata);
 	}
@@ -708,14 +712,28 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 			}
 		} else {
 		
-			String fileRelativePath = getRelativePath(currentFile);
-			VFSLeaf currentLeaf = VFSManager.olatRootLeaf(fileRelativePath);
+			String olatLeafRelativePath = getRelativePath(currentFile);
+			if(!olatLeafRelativePath.startsWith("/")) { // make the path starts with a "/"
+				olatLeafRelativePath = "/".concat(olatLeafRelativePath);
+			}
+			VFSLeaf currentLeaf = VFSManager.olatRootLeaf(olatLeafRelativePath);
 			// add current version to versions file
-			if (addToRevisions(currentLeaf, metadata, identity, comment)) {
+			if (addToRevisions(currentLeaf, metadata, identity, comment, false)) {
 				// copy the content of the new file to the old
 				VFSLeaf revFile = getRevisionLeaf(metadata, ((VFSRevisionImpl)revision));
 				if (VFSManager.copyContent(revFile.getInputStream(), currentLeaf)) {
 					return true;
+				}
+				
+				// prune revisions now
+				int maxNumOfVersions = versionModule.getMaxNumberOfVersions();
+				List<VFSRevision> revisions = revisionDao.getRevisions(metadata);
+				if(maxNumOfVersions >= 0 && revisions.size() > maxNumOfVersions) {
+					int numOfVersionsToDelete = Math.min(revisions.size(), (revisions.size() - maxNumOfVersions));
+					if(numOfVersionsToDelete > 0) {
+						List<VFSRevision> versionsToDelete = new ArrayList<>(revisions.subList(0, numOfVersionsToDelete));
+						deleteRevisions(metadata, revisions, versionsToDelete);
+					}
 				}
 			}
 		}
@@ -726,7 +744,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	public boolean addVersion(VFSLeaf currentFile, Identity identity, String comment, InputStream newFile) {
 		boolean allOk = false;
 		VFSMetadata metadata = getMetadataFor(currentFile);
-		if (addToRevisions(currentFile, metadata, identity, comment)) {
+		if (addToRevisions(currentFile, metadata, identity, comment, true)) {
 			// copy the content of the new file to the old
 			if(newFile instanceof net.sf.jazzlib.ZipInputStream || newFile instanceof java.util.zip.ZipInputStream) {
 				newFile = new ShieldInputStream(newFile);
@@ -739,14 +757,15 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		return allOk;
 	}
 	
-	public boolean addToRevisions(VFSLeaf currentLeaf, VFSMetadata metadata, Identity identity, String comment) {
+	public boolean addToRevisions(VFSLeaf currentLeaf, VFSMetadata metadata, Identity identity, String comment, boolean pruneRevision) {
 		int maxNumOfVersions = versionModule.getMaxNumberOfVersions();
 		if(maxNumOfVersions == 0) {
 			return true;//deactivated, return all ok
 		}
-
 		File currentFile = toFile(currentLeaf);
-		VFSContainer versionContainer = currentLeaf.getParentContainer();
+		if(currentFile == null) {
+			return false;
+		}
 
 		// read from the
 		List<VFSRevision> revisions = revisionDao.getRevisions(metadata);
@@ -774,11 +793,12 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 			resetThumbnails(currentLeaf);
 		}
 
-		if (sameFile || VFSManager.copyContent(currentLeaf, versionContainer.createChildLeaf(uuid), false)) {
-			if(maxNumOfVersions >= 0 && revisions.size() > maxNumOfVersions) {
+		File revFile = new File(currentFile.getParentFile(), uuid);
+		if (sameFile || copyContent(currentFile, revFile)) {
+			if(pruneRevision && maxNumOfVersions >= 0 && revisions.size() > maxNumOfVersions) {
 				int numOfVersionsToDelete = Math.min(revisions.size(), (revisions.size() - maxNumOfVersions));
 				if(numOfVersionsToDelete > 0) {
-					List<VFSRevision> versionsToDelete = revisions.subList(0, numOfVersionsToDelete);
+					List<VFSRevision> versionsToDelete = new ArrayList<>(revisions.subList(0, numOfVersionsToDelete));
 					deleteRevisions(metadata, revisions, versionsToDelete);
 				}
 			}
@@ -791,6 +811,25 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 			log.error("Cannot create a version of this file: " + currentLeaf);
 		}
 		return false;
+	}
+	
+	/**
+	 * The method only copy and overwrite the file.
+	 * 
+	 * @param currentFile The file to copy
+	 * @param targetFile The target
+	 * @return true if successful
+	 */
+	private boolean copyContent(File currentFile, File targetFile) {
+		try(InputStream in = new FileInputStream(currentFile);
+				OutputStream out = new FileOutputStream(targetFile);
+				OutputStream bout = new BufferedOutputStream(out)) {
+			FileUtils.cpio(in, bout, "Copy revisions");
+			return true;
+		} catch(IOException e) {
+			log.error("", e);
+			return false;
+		}
 	}
 	
 	@Override

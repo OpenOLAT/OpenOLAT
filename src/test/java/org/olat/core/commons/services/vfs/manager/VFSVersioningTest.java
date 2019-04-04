@@ -42,6 +42,8 @@ import org.olat.core.commons.services.vfs.VFSRevision;
 import org.olat.core.commons.services.vfs.VFSVersionModule;
 import org.olat.core.commons.services.vfs.model.VFSRevisionImpl;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -59,6 +61,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class VFSVersioningTest extends OlatTestCase {
+	
+	private static final OLog log = Tracing.createLoggerFor(VFSVersioningTest.class);
 	
 	@Autowired
 	private DB dbInstance;
@@ -588,6 +592,53 @@ public class VFSVersioningTest extends OlatTestCase {
 		//current
 		assertEquals(id1.getName(), metadataCopy.getCreator());
 		assertEquals(id2, metadataCopy.getAuthor());
+	}
+	
+	@Test
+	public void restore() throws IOException {
+		//create a file
+		VFSContainer rootTest = VFSManager.olatRootContainer("/ver" + UUID.randomUUID(), null);
+		String filename = UUID.randomUUID().toString() + ".txt";
+		VFSLeaf file = rootTest.createChildLeaf(filename);
+		int byteCopied = copyTestTxt(file);
+		Assert.assertFalse(byteCopied == 0);
+		Assert.assertEquals(VFSConstants.YES, file.canMeta());
+		
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("vers-12");
+		
+		//save a first version -> id
+		InputStream in1 = new ByteArrayInputStream("Hello 1".getBytes());
+		vfsRepositoryService.addVersion(file, id, "Version 1", in1);
+		in1.close();
+		dbInstance.commitAndCloseSession();
+		// save version 2
+		InputStream in2 = new ByteArrayInputStream("Hello 2".getBytes());
+		vfsRepositoryService.addVersion(file, id, "Version 2", in2);
+		in2.close();
+		dbInstance.commitAndCloseSession();
+		// save version 3
+		InputStream in3 = new ByteArrayInputStream("Hello 3".getBytes());
+		vfsRepositoryService.addVersion(file, id, "Version 3", in3);
+		in3.close();
+		dbInstance.commitAndCloseSession();
+		
+		// get the revisions
+		VFSMetadata metadata = vfsRepositoryService.getMetadataFor(file);
+		List<VFSRevision> revisions = vfsRepositoryService.getRevisions(metadata);
+		
+		// restore the original file
+		VFSRevision toRestore = revisions.get(0);
+		boolean restored = vfsRepositoryService.restoreRevision(id, toRestore, "Restore");
+		Assert.assertTrue(restored);
+		
+		String restoredData = null;
+		try(InputStream in = file.getInputStream()) {
+			restoredData = IOUtils.toString(in, "UTF-8");
+		} catch(IOException e) {
+			log.error("", e);
+		}
+		Assert.assertNotNull(restoredData);
+		Assert.assertEquals("Hello", restoredData);
 	}
 	
 	private int copyTestTxt(VFSLeaf file) {

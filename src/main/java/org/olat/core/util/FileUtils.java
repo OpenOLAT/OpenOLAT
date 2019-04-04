@@ -640,8 +640,8 @@ public class FileUtils {
 	 * @param encoding
 	 */
 	public static void save(File target, String data, String encoding) {
-		try {
-			save(new FileOutputStream(target), data, StringHelper.check4xMacRoman(encoding));
+		try(OutputStream out=new FileOutputStream(target)) {
+			save(out, data, StringHelper.check4xMacRoman(encoding));
 		} catch (IOException e) {
 			throw new OLATRuntimeException(FileUtils.class, "could not save file", e);
 		}

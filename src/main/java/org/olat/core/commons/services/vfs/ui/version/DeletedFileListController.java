@@ -31,6 +31,8 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.commons.services.vfs.VFSRevision;
+import org.olat.core.commons.services.vfs.ui.component.BytesCellRenderer;
+import org.olat.core.commons.services.vfs.ui.component.FileIconCellRenderer;
 import org.olat.core.commons.services.vfs.ui.media.VFSRevisionMediaResource;
 import org.olat.core.commons.services.vfs.ui.version.DeletedFileListDataModel.DeletedCols;
 import org.olat.core.commons.services.vfs.ui.version.RevisionListDataModel.RevisionCols;
@@ -106,7 +108,9 @@ public class DeletedFileListController extends FormBasicController {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, DeletedCols.id));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DeletedCols.nr));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DeletedCols.css, new FileIconCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DeletedCols.filename));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DeletedCols.size, new BytesCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DeletedCols.deletedBy, new IdentityCellRenderer(userManager)));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DeletedCols.date, new DateFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DeletedCols.download));

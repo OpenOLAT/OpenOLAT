@@ -64,7 +64,9 @@ implements SortableFlexiTableDataModel<DeletedFileRow> {
 		switch(DeletedCols.values()[col]) {
 			case id: return row.getMetadata().getKey();
 			case nr: return row.getMetadata().getRevisionNr();
+			case css: return row.getFilename();
 			case filename: return row.getFilename();
+			case size: return row.getMetadata().getFileSize();
 			case deletedBy: return row.getDeletedBy();
 			case date: return row.getDate();
 			case download: return row.getDownloadLink();
@@ -81,8 +83,10 @@ implements SortableFlexiTableDataModel<DeletedFileRow> {
 	public enum DeletedCols implements FlexiSortableColumnDef {
 		
 		id("table.header.id"),
+		css("table.header.css"),
 		nr("table.header.nr"),
 		filename("table.header.file"),
+		size("table.header.size"),
 		deletedBy("version.deletedBy"),
 		date("table.header.date"),
 		download("download"),
