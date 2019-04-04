@@ -187,6 +187,8 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 	public SearchIdentityParams getSearchIdentityParams() {
 		// get user attributes from form
 		String idVal = getStringValue("id");
+		idVal = (idVal.equals("") ? null : idVal);
+
 		String loginVal = getStringValue("login");
 		// when searching for deleted users, add wildcard to match with backup prefix
 		List<Integer> statusList = getStatus();
