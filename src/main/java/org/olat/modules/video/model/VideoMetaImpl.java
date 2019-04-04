@@ -176,7 +176,7 @@ public class VideoMetaImpl implements VideoMeta, Persistable, ModifiedInfo {
 	@Override
 	public VideoFormat getVideoFormat() {
 		if(StringHelper.containsNonWhitespace(format)) {
-			return VideoFormat.valueOf(format);
+			return VideoFormat.secureValueOf(format);
 		}
 		return null;
 	}
