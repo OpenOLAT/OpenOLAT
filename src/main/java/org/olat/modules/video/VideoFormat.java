@@ -54,6 +54,19 @@ public enum VideoFormat {
 		return mimeType;
 	}
 	
+	public static VideoFormat secureValueOf(String val) {
+		if("zip".equals(val)) {
+			return VideoFormat.mp4;// why was zip a format???
+		}
+		
+		for(VideoFormat format:values()) {
+			if(format.name().equals(val)) {
+				return format;
+			}
+		}
+		return null;
+	}
+	
 	public static VideoFormat valueOfFilename(String filename) {
 		String extension = FilenameUtils.getExtension(filename);
 		if("mp4".equalsIgnoreCase(extension) || "m4v".equalsIgnoreCase(extension) || "mov".equalsIgnoreCase(extension)) {

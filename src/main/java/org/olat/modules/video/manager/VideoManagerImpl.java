@@ -71,7 +71,7 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSStatus;
-import org.olat.core.util.vfs.filters.VFSItemSuffixFilter;
+import org.olat.core.util.vfs.filters.VFSItemFilter;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ResourceEvaluation;
@@ -221,7 +221,7 @@ public class VideoManagerImpl implements VideoManager {
 	@Override
 	public void removeTrack(OLATResource videoResource, String lang){
 		VFSContainer vfsContainer = getMasterContainer(videoResource);
-		for (VFSItem item : vfsContainer.getItems(new VFSItemSuffixFilter(new String[]{FILETYPE_SRT}))) {
+		for (VFSItem item : vfsContainer.getItems(new TrackFilter())) {
 			if (item.getName().contains(lang)) {
 				item.delete();
 			}
@@ -235,7 +235,8 @@ public class VideoManagerImpl implements VideoManager {
 	public Map<String, VFSLeaf> getAllTracks(OLATResource videoResource) {
 		Map<String, VFSLeaf> tracks = new HashMap<>();
 		VFSContainer vfsContainer = getMasterContainer(videoResource);
-		for (VFSItem item : vfsContainer.getItems(new VFSItemSuffixFilter(new String[]{FILETYPE_SRT}))) {
+		List<VFSItem> trackItems = vfsContainer.getItems(new TrackFilter());
+		for (VFSItem item : trackItems) {
 			String itemname = item.getName();
 			String key = itemname.substring(itemname.indexOf('_') + 1, itemname.indexOf('.'));
 			tracks.put(key, resolveFromMasterContainer(videoResource, itemname));
@@ -1161,5 +1162,18 @@ public class VideoManagerImpl implements VideoManager {
 		LocalFileImpl videoFile = (LocalFileImpl) masterContainer.resolve(FILENAME_VIDEO_MP4);	
 		return videoFile != null && videoFile.exists();
 	}
-
+	
+	private static class TrackFilter implements VFSItemFilter {
+		@Override
+		public boolean accept(VFSItem vfsItem) {
+			if(vfsItem instanceof VFSLeaf) { 
+				String name = vfsItem.getName().toLowerCase();
+				int idx = name.lastIndexOf('.');
+				if (idx >= 0 && !name.startsWith(".")) { 
+					return VideoManager.FILETYPE_SRT.equals(name.substring(idx + 1));
+				}
+			}
+			return false;
+		}
+	}
 }
