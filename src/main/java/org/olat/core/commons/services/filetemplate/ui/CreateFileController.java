@@ -79,8 +79,6 @@ public class CreateFileController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		formLayout.setElementCssClass("o_sel_folder_new_file");
-		
 		FormLayoutContainer fileCont = FormLayoutContainer.createDefaultFormLayout("file", getTranslator());
 		formLayout.add(fileCont);
 		
