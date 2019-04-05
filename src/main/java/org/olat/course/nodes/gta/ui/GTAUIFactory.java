@@ -68,6 +68,9 @@ class GTAUIFactory {
 		if (vfsService.hasEditor("xlsx", EDIT)) {
 			builder.addXlsx();
 		}
+		if (vfsService.hasEditor("pptx", EDIT)) {
+			builder.addPptx();
+		}
 		return builder.build();
 	}
 

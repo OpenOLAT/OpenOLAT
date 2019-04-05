@@ -21,6 +21,7 @@ package org.olat.core.commons.services.filetemplate;
 
 import static org.olat.core.commons.services.filetemplate.ContentProviderFactory.empty;
 import static org.olat.core.commons.services.filetemplate.ContentProviderFactory.emptyDocx;
+import static org.olat.core.commons.services.filetemplate.ContentProviderFactory.emptyPptx;
 import static org.olat.core.commons.services.filetemplate.ContentProviderFactory.emptyXlsx;
 import static org.olat.core.commons.services.vfs.VFSLeafEditor.Mode.EDIT;
 
@@ -76,6 +77,9 @@ public class FileTypes {
 		if (vfsService.hasEditor("xlsx", EDIT)) {
 			builder.addXlsx();
 		}
+		if (vfsService.hasEditor("pptx", EDIT)) {
+			builder.addPptx();
+		}
 			
 		return builder;
 	}
@@ -114,6 +118,11 @@ public class FileTypes {
 		
 		public Builder addXlsx() {
 			fileTypes.add(FileType.of("xlsx", translate("file.type.xlsx"), emptyXlsx()));
+			return this;
+		}
+		
+		public Builder addPptx() {
+			fileTypes.add(FileType.of("pptx", translate("file.type.pptx"), emptyPptx()));
 			return this;
 		}
 

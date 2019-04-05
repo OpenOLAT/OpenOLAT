@@ -49,6 +49,9 @@ public class CreateFileHandler extends FileHandler {
 		if (vfsService.hasEditor("xlsx", EDIT)) {
 			builder.addXlsx();
 		}
+		if (vfsService.hasEditor("pptx", EDIT)) {
+			builder.addPptx();
+		}
 		return builder.build();
 	}
 	

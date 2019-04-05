@@ -21,8 +21,11 @@ package org.olat.core.commons.services.filetemplate;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.zip.ZipOutputStream;
 
 import org.olat.core.logging.OLog;
@@ -44,6 +47,7 @@ public class ContentProviderFactory {
 	private static final ContentProvider EMPTY = new EmptyContentProvider();
 	private static final ContentProvider DOCX = new DocxContentProvider();
 	private static final ContentProvider XLSX = new XlsxContentProvider();
+	private static final ContentProvider PPTX = new PptxContentProvider();
 	
 	public static ContentProvider empty() {
 		return EMPTY;
@@ -55,6 +59,10 @@ public class ContentProviderFactory {
 	
 	public static ContentProvider emptyXlsx() {
 		return XLSX;
+	}
+	
+	public static ContentProvider emptyPptx() {
+		return PPTX;
 	}
 	
 	private static final class EmptyContentProvider implements ContentProvider {
@@ -107,6 +115,20 @@ public class ContentProviderFactory {
 				log.error("", e);
 			}
 			return new ByteArrayInputStream(out.toByteArray());
+		}
+	}
+	
+	private static final class PptxContentProvider implements ContentProvider {
+
+		@Override
+		public InputStream getContent() {
+			URL url = PptxContentProvider.class.getResource("empty.pptx");
+			try {
+				return new FileInputStream(url.getFile());
+			} catch (FileNotFoundException e) {
+				log.error("", e);
+			}
+			return new EmptyContentProvider().getContent();
 		}
 	}
 
