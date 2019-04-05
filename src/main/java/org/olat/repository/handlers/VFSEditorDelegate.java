@@ -114,7 +114,7 @@ public class VFSEditorDelegate implements WebDocumentCreateDelegate, WebDocument
 		for(VFSItem item:fResourceFileroot.getItems(new VFSSystemItemFilter())) {
 			if(item instanceof VFSLeaf && item instanceof LocalImpl) {
 				document = (LocalFileImpl)item;
-			}	
+			}
 		}
 		
 		if (document == null) {

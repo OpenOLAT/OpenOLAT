@@ -1331,12 +1331,13 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 				.findFirst()
 				.isPresent();
 	}
-	
+
 	@Override
-	public boolean hasEditor(VFSLeaf vfsLeaf, Mode mode) {
-		String suffix = getSuffix(vfsLeaf);
-		return hasEditor(suffix, mode);
-		
+	public List<VFSLeafEditor> getEditors(String suffix, Mode mode) {
+		return vfsLeafEditors.stream()
+				.filter(VFSLeafEditor::isEnable)
+				.filter(editor -> editor.isSupportingFormat(suffix, mode))
+				.collect(Collectors.toList());
 	}
 
 	@Override
@@ -1346,19 +1347,19 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 				.filter(editor -> editor.getType().equals(editorType))
 				.findFirst();
 	}
-
+	
 	@Override
-	public List<VFSLeafEditor> getEditors(VFSLeaf vfsLeaf, Mode mode) {
-		String suffix = getSuffix(vfsLeaf);
+	public boolean hasEditor(VFSLeaf vfsLeaf, Mode mode, Identity identity) {
+		if (mode == null) return false;
+		
+		String suffix = FileUtils.getFileSuffix(vfsLeaf.getName());
 		return vfsLeafEditors.stream()
 				.filter(VFSLeafEditor::isEnable)
 				.filter(editor -> editor.isSupportingFormat(suffix, mode))
-				.collect(Collectors.toList());
+				.filter(editor -> !editor.isLockedForMe(vfsLeaf, mode, identity))
+				.findFirst()
+				.isPresent();
+		
 	}
 
-	private String getSuffix(VFSLeaf vfsLeaf) {
-		String fileName = vfsLeaf.getName();
-		String suffix = FileUtils.getFileSuffix(fileName).toLowerCase();
-		return suffix;
-	}
 }

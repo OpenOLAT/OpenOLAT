@@ -31,7 +31,6 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.modules.wopi.Access;
 import org.olat.modules.wopi.collabora.ui.CollaboraEditorController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -72,10 +71,17 @@ public class CollaboraEditor implements VFSLeafEditor {
 	}
 
 	@Override
+	public boolean isLockedForMe(VFSLeaf vfsLeaf, Mode mode, Identity identity) {
+		if (collaboraService.isLockNeeded(mode)) {
+			return collaboraService.isLockedForMe(vfsLeaf, identity);
+		}
+		return false;
+	}
+
+	@Override
 	public Controller getRunController(UserRequest ureq, WindowControl wControl, Identity identity, VFSLeaf vfsLeaf,
 			VFSLeafEditorSecurityCallback securityCallback, VFSLeafEditorConfigs configs) {
-		Access access = collaboraService.createAccess(vfsLeaf.getMetaInfo(), identity, securityCallback);
-		return new CollaboraEditorController(ureq, wControl, access);
+		return new CollaboraEditorController(ureq, wControl, vfsLeaf, securityCallback);
 	}
 
 }

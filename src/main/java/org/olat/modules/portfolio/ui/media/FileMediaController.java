@@ -140,7 +140,7 @@ public class FileMediaController extends BasicController implements PageElementE
 		
 		if (vfsLeaf != null && !hints.isToPdf()) {
 			Mode mode = getOpenMode();
-			if (vfsService.hasEditor(vfsLeaf, mode)) {
+			if (vfsService.hasEditor(vfsLeaf, mode, getIdentity())) {
 				editLink = LinkFactory.createCustomLink("edit", "edit", "", Link.NONTRANSLATED | Link.LINK, mainVC,
 						this);
 				String editIcon = Mode.EDIT.equals(mode)? "o_icon_edit": "o_icon_preview";
@@ -164,9 +164,9 @@ public class FileMediaController extends BasicController implements PageElementE
 	private Mode getOpenMode() {
 		if (isEditingExcluded()) {
 			return null;
-		} else if (editMode && vfsService.hasEditor(vfsLeaf, Mode.EDIT)) {
+		} else if (editMode && vfsService.hasEditor(vfsLeaf, Mode.EDIT, getIdentity())) {
 			return Mode.EDIT;
-		} else if (vfsService.hasEditor(vfsLeaf, Mode.VIEW)) {
+		} else if (vfsService.hasEditor(vfsLeaf, Mode.VIEW, getIdentity())) {
 			return Mode.VIEW;
 		}
 		return null;

@@ -27,6 +27,8 @@ import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.lock.LockResult;
 import org.olat.modules.wopi.Access;
 import org.olat.modules.wopi.Discovery;
 
@@ -47,7 +49,7 @@ public interface CollaboraService {
 
 	VFSMetadata getMetadata(String fileId);
 	
-	Access createAccess(VFSMetadata vfsMetadata, Identity identity, VFSLeafEditorSecurityCallback securityCallback);
+	Access createAccess(VFSMetadata vfsMetadata, Identity identity, VFSLeafEditorSecurityCallback secCallback);
 
 	Access getAccess(String accessToken);
 	
@@ -58,5 +60,13 @@ public interface CollaboraService {
 	String getEditorBaseUrl(File file);
 	
 	boolean accepts(String suffix, Mode mode);
+	
+	boolean isLockNeeded(Mode mode);
+
+	boolean isLockedForMe(VFSLeaf vfsLeaf, Identity identity);
+
+	LockResult lock(VFSLeaf vfsLeaf, Identity identity);
+
+	void unlock(VFSLeaf vfsLeaf, Identity identity, LockResult lock);
 
 }

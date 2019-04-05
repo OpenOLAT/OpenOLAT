@@ -65,6 +65,12 @@ public class VFSLeafEditorSecurityCallbackBuilder {
 		return new VFSLeafEditorSecurityCallbackBuilder();
 	}
 	
+	public static VFSLeafEditorSecurityCallbackBuilder clone(VFSLeafEditorSecurityCallback secCallback) {
+		return builder()
+				.withMode(secCallback.getMode())
+				.canClose(secCallback.canClose());
+	}
+	
 	private VFSLeafEditorSecurityCallbackBuilder() {
 	}
 	

@@ -33,6 +33,10 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSLockApplicationType;
+import org.olat.core.util.vfs.VFSLockManager;
+import org.olat.core.util.vfs.lock.LockResult;
 import org.olat.modules.wopi.Access;
 import org.olat.modules.wopi.Action;
 import org.olat.modules.wopi.Discovery;
@@ -63,6 +67,8 @@ public class CollaboraServiceImpl implements CollaboraService, GenericEventListe
 	private WopiService wopiService;
 	@Autowired
 	private WopiDiscoveryClient discoveryClient;
+	@Autowired
+	private VFSLockManager lockManager;
 	
 	@PostConstruct
 	private void init() {
@@ -96,6 +102,8 @@ public class CollaboraServiceImpl implements CollaboraService, GenericEventListe
 
 	@Override
 	public void deleteAccess(Access access) {
+		if (access == null) return;
+		
 		wopiService.deleteAccess(access.getToken());
 	}
 
@@ -142,6 +150,28 @@ public class CollaboraServiceImpl implements CollaboraService, GenericEventListe
 			accepts = wopiService.hasAction(getDiscovery(), "view", suffix);
 		}
 		return accepts;
+	}
+
+	@Override
+	public boolean isLockNeeded(Mode mode) {
+		return Mode.EDIT.equals(mode);
+	}
+
+	@Override
+	public boolean isLockedForMe(VFSLeaf vfsLeaf, Identity identity) {
+		return lockManager.isLockedForMe(vfsLeaf, identity, VFSLockApplicationType.collaboration, "collabora");
+	}
+
+	@Override
+	public LockResult lock(VFSLeaf vfsLeaf, Identity identity) {
+		return lockManager.lock(vfsLeaf, identity, VFSLockApplicationType.collaboration, "collabora");
+	}
+
+	@Override
+	public void unlock(VFSLeaf vfsLeaf, Identity identity, LockResult lock) {
+		if (lock == null) return;
+		
+		lockManager.unlock(vfsLeaf, identity, lock);
 	}
 
 }

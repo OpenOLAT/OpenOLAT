@@ -19,6 +19,9 @@
  */
 package org.olat.modules.wopi.collabora.ui;
 
+import org.olat.core.commons.services.vfs.VFSLeafEditor.Mode;
+import org.olat.core.commons.services.vfs.VFSLeafEditorSecurityCallback;
+import org.olat.core.commons.services.vfs.VFSLeafEditorSecurityCallbackBuilder;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -26,6 +29,8 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.lock.LockResult;
 import org.olat.modules.wopi.Access;
 import org.olat.modules.wopi.collabora.CollaboraService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,14 +43,31 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CollaboraEditorController extends BasicController {
 	
-	private final Access access;
+	private final VFSLeaf vfsLeaf;
+	private VFSLeafEditorSecurityCallback secCallback;
+	private LockResult lock;
+	private Access access;
 
 	@Autowired
 	private CollaboraService collaboraService;
-	
-	public CollaboraEditorController(UserRequest ureq, WindowControl wControl, Access access) {
+
+	public CollaboraEditorController(UserRequest ureq, WindowControl wControl, VFSLeaf vfsLeaf,
+			final VFSLeafEditorSecurityCallback securityCallback) {
 		super(ureq, wControl);
-		this.access = access;
+		this.vfsLeaf = vfsLeaf;
+		this.secCallback = securityCallback;
+	
+		if (collaboraService.isLockNeeded(securityCallback.getMode())) {
+			if (collaboraService.isLockedForMe(vfsLeaf, getIdentity())) {
+				this.secCallback = VFSLeafEditorSecurityCallbackBuilder.clone(securityCallback)
+						.withMode(Mode.VIEW)
+						.build();
+				showWarning("editor.warning.locked");
+			} else {
+				lock = collaboraService.lock(vfsLeaf, getIdentity());
+			}
+		}
+		this.access = collaboraService.createAccess(vfsLeaf.getMetaInfo(), getIdentity(), secCallback);
 		
 		VelocityContainer mainVC = createVelocityContainer("collabora");
 		
@@ -60,7 +82,7 @@ public class CollaboraEditorController extends BasicController {
 		
 		putInitialPanel(mainVC);
 	}
-	
+
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if ("close".equals(event.getCommand())) {
@@ -73,6 +95,7 @@ public class CollaboraEditorController extends BasicController {
 
 	@Override
 	protected void doDispose() {
+		collaboraService.unlock(vfsLeaf, getIdentity(), lock);
 		collaboraService.deleteAccess(access);
 	}
 

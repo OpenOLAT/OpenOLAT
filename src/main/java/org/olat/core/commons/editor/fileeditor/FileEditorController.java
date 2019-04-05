@@ -36,7 +36,6 @@ import org.olat.core.commons.services.vfs.VFSLeafEditor.Mode;
 import org.olat.core.commons.services.vfs.VFSLeafEditorConfigs;
 import org.olat.core.commons.services.vfs.VFSLeafEditorConfigs.Config;
 import org.olat.core.commons.services.vfs.VFSLeafEditorSecurityCallback;
-import org.olat.core.commons.services.vfs.ui.version.VersionCommentController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -45,8 +44,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.controller.BlankController;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -58,34 +55,33 @@ public class FileEditorController extends BasicController {
 
 	private static final OLog log = Tracing.createLoggerFor(FileEditorController.class);
 
-	private VFSLeaf vfsLeaf;
 	private Controller editCtrl;
-	private DialogBoxController lockedFiledCtr;
 
-	private VersionCommentController unlockCtr;
-	private CloseableModalController unlockDialogBox;
+	private VFSLeaf vfsLeaf;
+	private boolean temporaryLock;
 	
 	@Autowired
 	private VFSLockManager vfsLockManager;
-	
+
 	protected FileEditorController(UserRequest ureq, WindowControl wControl, VFSLeaf vfsLeaf,
 			VFSLeafEditorSecurityCallback secCallback, VFSLeafEditorConfigs configs) {
 		super(ureq, wControl);
 		this.vfsLeaf = vfsLeaf;
 		
-		//TODO uh lock, move i18n from modules/bc/
-//		if(vfsLockManager.isLockedForMe(vfsLeaf, ureq.getIdentity(), ureq.getUserSession().getRoles())) {
-//			List<String> lockedFiles = Collections.singletonList(vfsLeaf.getName());
-//			String msg = FolderCommandHelper.renderLockedMessageAsHtml(getTranslator(), lockedFiles);
-//			List<String> buttonLabels = Collections.singletonList(getTranslator().translate("ok"));
-//			lockedFiledCtr = activateGenericDialog(ureq, getTranslator().translate("lock.title"), msg, buttonLabels, lockedFiledCtr);
-//			return null;
-//		}
-		
-
-		
-		// launch plaintext or html editor depending on file type
 		boolean isEdit = Mode.EDIT.equals(secCallback.getMode());
+		if (isEdit) {
+			if(vfsLockManager.isLockedForMe(vfsLeaf, ureq.getIdentity(), VFSLockApplicationType.vfs, null)) {
+				// It the file is locked by someone other, show it in preview mode
+				isEdit = false;
+			} else {
+				boolean notLocked = !vfsLockManager.isLocked(vfsLeaf, VFSLockApplicationType.vfs, null);
+				if (notLocked) {
+					vfsLockManager.lock(vfsLeaf, getIdentity(), VFSLockApplicationType.vfs, null);
+					temporaryLock = true;
+				}
+			}
+		}
+		
 		if (vfsLeaf.getName().endsWith(".html") || vfsLeaf.getName().endsWith(".htm")) {
 			Config configObj = configs.getConfig(HTMLEditorConfig.TYPE);
 			HTMLEditorConfig config = null;
@@ -136,42 +132,20 @@ public class FileEditorController extends BasicController {
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == editCtrl) {
-			if (event == Event.DONE_EVENT) {
-				boolean lock = vfsLockManager.isLocked(vfsLeaf, VFSLockApplicationType.vfs, null);
-				if(lock) {
-					unlockCtr = new VersionCommentController(ureq,getWindowControl(), true, false);
-					listenTo(unlockCtr);
-					unlockDialogBox = new CloseableModalController(getWindowControl(), translate("ok"), unlockCtr.getInitialComponent());
-					unlockDialogBox.activate();
-				} else {
-					fireEvent(ureq, Event.DONE_EVENT);
-				}
-			} else {
-				fireEvent(ureq, Event.CANCELLED_EVENT);
-			}
-		} else if (source == lockedFiledCtr) {
-			fireEvent(ureq, Event.CANCELLED_EVENT);
-		} else if (source == unlockCtr) {
-			if(!unlockCtr.keepLocked()) {
-				vfsLockManager.unlock(vfsLeaf, getIdentity(), VFSLockApplicationType.vfs);
-			}
-			cleanUpUnlockDialog();
-			fireEvent(ureq, Event.DONE_EVENT);
+			fireEvent(ureq, event);
 		}
 	}
 
-	private void cleanUpUnlockDialog() {
-		if(unlockDialogBox != null) {
-			unlockDialogBox.deactivate();
-			removeAsListenerAndDispose(unlockCtr);
-			unlockDialogBox = null;
-			unlockCtr = null;
-		}
-	}
-	
 	@Override
 	protected void doDispose() {
+		doUnlock();
 		removeAsListenerAndDispose(editCtrl);
 		editCtrl = null;
+	}
+	
+	private void doUnlock() {
+		if (temporaryLock) {
+			vfsLockManager.unlock(vfsLeaf, getIdentity(), VFSLockApplicationType.vfs);
+		}
 	}
 }

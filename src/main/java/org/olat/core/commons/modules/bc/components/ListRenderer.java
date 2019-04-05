@@ -51,6 +51,7 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.gui.util.CSSHelper;
+import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
@@ -403,15 +404,16 @@ public class ListRenderer {
 			if (canVersion && revisions != null) {
 				sb.append("<span class='text-muted small'>")
 				  .append(metadata.getRevisionNr())
-				  .append("</span>");					
+				  .append("</span>");
 			}
 			sb.append("</td><td>");
 		}
 		
 		//locked
 		boolean locked = lockManager.isLocked(child, metadata, VFSLockApplicationType.vfs, null);
+		LockInfo lock = null;
 		if(locked) {
-			LockInfo lock = lockManager.getLock(child);
+			lock = lockManager.getLock(child);
 			sb.append("<i class=\"o_icon o_icon_locked\" title=\"");
 			if(lock != null && lock.getLockedBy() != null) {
 				String fullname = userManager.getUserDisplayName(lock.getLockedBy());
@@ -423,7 +425,7 @@ public class ListRenderer {
 				if(lock.isWebDAVLock()) {
 					msg += " (WebDAV)";
 				} else if(lock.isCollaborationLock()) {
-					msg += " (<i class='o_icon o_icon_edit'> </i>)";
+					msg += " (" + lock.getAppName() + ")";
 					
 				}
 				sb.append(msg);
@@ -434,7 +436,8 @@ public class ListRenderer {
 		
 		// open
 		if (!xssErrors) {
-			String openIcon = getOpenIconCss(child, canWrite);
+			Identity identity = fc.getIdentityEnvironnement().getIdentity();
+			String openIcon = getOpenIconCss(child, canWrite, identity);
 			if (openIcon != null) {
 				sb.append("<a ");
 				ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, false, false,
@@ -497,12 +500,12 @@ public class ListRenderer {
 		sb.append("</td></tr>");
 	}
 	
-	private String getOpenIconCss(VFSItem child, boolean canWrite) {
+	private String getOpenIconCss(VFSItem child, boolean canWrite, Identity identity) {
 		if (child instanceof VFSLeaf) {
 			VFSLeaf vfsLeaf = (VFSLeaf) child;
-			if (canWrite && vfsRepositoryService.hasEditor(vfsLeaf, Mode.EDIT)) {
+			if (canWrite && vfsRepositoryService.hasEditor(vfsLeaf, Mode.EDIT, identity)) {
 				return "o_icon_edit";
-			} else if (vfsRepositoryService.hasEditor(vfsLeaf, Mode.VIEW)) {
+			} else if (vfsRepositoryService.hasEditor(vfsLeaf, Mode.VIEW, identity)) {
 				return "o_icon_preview";
 			}
 		}

@@ -49,7 +49,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -171,15 +170,9 @@ public class GTASampleSolutionsEditController extends FormBasicController {
 	}
 	
 	private Mode getOpenMode(VFSLeaf vfsLeaf) {
-		if (FileUtils.getFileSuffix(vfsLeaf.getName()).equals("html")) {
-			if (!readOnly) {
-				return Mode.EDIT;
-			}
-			return Mode.VIEW;
-		}
-		if (!readOnly && vfsService.hasEditor(vfsLeaf, Mode.EDIT)) {
+		if (!readOnly && vfsService.hasEditor(vfsLeaf, Mode.EDIT, getIdentity())) {
 			return Mode.EDIT;
-		} else if (vfsService.hasEditor(vfsLeaf, Mode.VIEW)) {
+		} else if (vfsService.hasEditor(vfsLeaf, Mode.VIEW, getIdentity())) {
 			return Mode.VIEW;
 		}
 		return null;

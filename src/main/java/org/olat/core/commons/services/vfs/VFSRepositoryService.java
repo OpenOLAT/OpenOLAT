@@ -250,19 +250,44 @@ public interface VFSRepositoryService {
 	
 	public License getOrCreateLicense(VFSMetadata meta, Identity itentity);
 	
-
-	public boolean hasEditor(VFSLeaf vfsLeaf, Mode mode);
 	
+	/**
+	 * Check if file with a specific suffix is supported by any enabled editor.
+	 *
+	 * @param suffix
+	 * @param mode
+	 * @return
+	 */
 	public boolean hasEditor(String suffix, Mode mode);
 	
+	/**
+	 * Get all enabled editors which support a file with a specific suffix. Support means usually edit or read.
+	 *
+	 * @param suffix
+	 * @param mode
+	 * @return
+	 */
+	public List<VFSLeafEditor> getEditors(String suffix, Mode mode);
+	
+	/**
+	 * Get the editor of a specific type.
+	 * 
+	 * @param editorType
+	 * @return
+	 */
 	public Optional<VFSLeafEditor> getEditor(String editorType);
 	
 	/**
-	 * Get all enabled editors which support the file of the vfsLeaf. Support means usually edit or read.
+	 * Checks whether a vfsLeaf can be opened in any editor by a user and in a
+	 * specific mode. This method checks not only if a file format is supported but
+	 * also if the vfsLeaf is not locked by an other editor or user.
 	 *
 	 * @param vfsLeaf
+	 * @param mode
+	 * @param identity
 	 * @return
 	 */
-	public List<VFSLeafEditor> getEditors(VFSLeaf vfsLeaf, Mode mode);
+	public boolean hasEditor(VFSLeaf vfsLeaf, Mode mode, Identity identity);
+
 
 }

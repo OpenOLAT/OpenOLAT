@@ -119,7 +119,7 @@ public class CmdOpenContent extends BasicController implements FolderCommand {
 	}
 	
 	private VFSLeafEditor.Mode getMode(VFSLeaf vfsLeaf, boolean canWrite) {
-		if (canWrite && vfsService.hasEditor(vfsLeaf, VFSLeafEditor.Mode.EDIT)) {
+		if (canWrite && vfsService.hasEditor(vfsLeaf, VFSLeafEditor.Mode.EDIT, getIdentity())) {
 			return VFSLeafEditor.Mode.EDIT;
 		}
 		return VFSLeafEditor.Mode.VIEW;

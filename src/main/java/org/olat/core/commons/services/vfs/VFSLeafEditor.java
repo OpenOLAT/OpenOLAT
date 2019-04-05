@@ -43,9 +43,27 @@ public interface VFSLeafEditor {
 	
 	String getDisplayName(Locale locale);
 	
+	/**
+	 * Indicates whether the editor supports the format with that suffix in the appropriate mode.
+	 *
+	 * @param suffix
+	 * @param mode
+	 * @return
+	 */
 	boolean isSupportingFormat(String suffix, Mode mode);
+	
+	/**
+	 * Checks whether a file is locked for this identity and editor.
+	 * 
+	 * @param vfsLeaf
+	 * @param mode
+	 * @param identity
+	 * @return true if the file is locked and therefore the identity is not able to edit the vfsLeaf with this editor.
+	 */
+	boolean isLockedForMe(VFSLeaf vfsLeaf, Mode mode, Identity identity);
 	
 	Controller getRunController(UserRequest ureq, WindowControl wControl, Identity identity, VFSLeaf vfsLeaf,
 			VFSLeafEditorSecurityCallback securityCallback, VFSLeafEditorConfigs configs);
+
 
 }

@@ -33,6 +33,9 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSLockApplicationType;
+import org.olat.core.util.vfs.VFSLockManager;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -46,6 +49,9 @@ public class FileEditor implements VFSLeafEditor {
 	
 	private static final List<String> HTML_EDITOR_SUFFIX = Arrays.asList("html", "htm");
 	private static final List<String> TEXT_EDITOR_SUFFIX = Arrays.asList("txt", "css", "csv");
+	
+	@Autowired
+	private VFSLockManager lockManager;
 
 	@Override
 	public boolean isEnable() {
@@ -67,6 +73,14 @@ public class FileEditor implements VFSLeafEditor {
 	public boolean isSupportingFormat(String suffix, Mode mode) {
 		// Both the HTML editor and the text editor supports view and edit
 		return HTML_EDITOR_SUFFIX.contains(suffix) || TEXT_EDITOR_SUFFIX.contains(suffix)? true: false;
+	}
+
+	@Override
+	public boolean isLockedForMe(VFSLeaf vfsLeaf, Mode mode, Identity identity) {
+		if (Mode.EDIT.equals(mode)) {
+			return lockManager.isLockedForMe(vfsLeaf, identity, VFSLockApplicationType.vfs, null);
+		}
+		return false;
 	}
 
 	@Override

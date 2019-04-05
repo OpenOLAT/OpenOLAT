@@ -55,6 +55,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.AssertException;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
@@ -179,7 +180,8 @@ public class CmdCreateFile extends BasicController implements FolderCommand {
 	}
 	
 	private void doEdit(UserRequest ureq) {
-		List<VFSLeafEditor> editors = vfsRepositoryService.getEditors(vfsLeaf, VFSLeafEditor.Mode.EDIT);
+		String suffix = FileUtils.getFileSuffix(vfsLeaf.getName());
+		List<VFSLeafEditor> editors = vfsRepositoryService.getEditors(suffix, VFSLeafEditor.Mode.EDIT);
 		// Not able to decide which editor to use -> show the folder list
 		if (editors.size() != 1) {
 			fireEvent(ureq, new FolderEvent(FolderEvent.NEW_FILE_EVENT, fileName));

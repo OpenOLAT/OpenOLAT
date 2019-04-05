@@ -59,7 +59,6 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -181,15 +180,9 @@ abstract class AbstractAssignmentEditController extends FormBasicController {
 	}
 	
 	private Mode getOpenMode(VFSLeaf vfsLeaf) {
-		if (FileUtils.getFileSuffix(vfsLeaf.getName()).equals("html")) {
-			if (!readOnly) {
-				return Mode.EDIT;
-			}
-			return Mode.VIEW;
-		}
-		if (!readOnly && vfsService.hasEditor(vfsLeaf, Mode.EDIT)) {
+		if (!readOnly && vfsService.hasEditor(vfsLeaf, Mode.EDIT, getIdentity())) {
 			return Mode.EDIT;
-		} else if (vfsService.hasEditor(vfsLeaf, Mode.VIEW)) {
+		} else if (vfsService.hasEditor(vfsLeaf, Mode.VIEW, getIdentity())) {
 			return Mode.VIEW;
 		}
 		return null;
