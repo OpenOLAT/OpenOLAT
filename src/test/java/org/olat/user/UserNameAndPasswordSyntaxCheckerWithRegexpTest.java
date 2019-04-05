@@ -63,10 +63,34 @@ public class UserNameAndPasswordSyntaxCheckerWithRegexpTest {
 
 		Assert.assertTrue(checker.syntaxCheckOlatPassword("Kanu#010"));
 		Assert.assertTrue(checker.syntaxCheckOlatPassword("?Ryomou#010"));
+		Assert.assertTrue(checker.syntaxCheckOlatPassword("?Ryo ou#010"));
 		
 		Assert.assertFalse(checker.syntaxCheckOlatPassword("Kanuunc1"));
 		Assert.assertFalse(checker.syntaxCheckOlatPassword("Kanu#10"));//less than 8 characters
 		Assert.assertFalse(checker.syntaxCheckOlatPassword("Kanuunch"));//no number
 		Assert.assertFalse(checker.syntaxCheckOlatPassword("kanu8#10"));
 	}
+	
+	/**
+	 * Min. 12 characters, at least one uppercase, one lowercase, one number and only
+	 * alphanumeric characters allowed (no space, no underscore, no Umlaut)
+	 */
+	@Test
+	public void customPasswordCheck_upperLowerCase_number_noUmlaut() {
+		UserNameAndPasswordSyntaxCheckerWithRegexp checker = new UserNameAndPasswordSyntaxCheckerWithRegexp();
+		checker.setPasswordRegExp("(?=^.{12,}$)(?=^[a-zA-Z0-9]+$)(?=.*[0-9])(?=.*[A-Z])(?=.*[a-z]).*$");
+
+		Assert.assertTrue(checker.syntaxCheckOlatPassword("Kanu1asdfghj"));
+		Assert.assertTrue(checker.syntaxCheckOlatPassword("KASD123DFGHJj"));
+		Assert.assertFalse(checker.syntaxCheckOlatPassword("Kanuhasdfghj"));
+		Assert.assertFalse(checker.syntaxCheckOlatPassword("kanu1asdfghj"));
+		Assert.assertFalse(checker.syntaxCheckOlatPassword("kanugasdfghj"));
+		Assert.assertFalse(checker.syntaxCheckOlatPassword("Kanu1as fghj"));
+		Assert.assertFalse(checker.syntaxCheckOlatPassword("Kanu1as_fghj"));
+		Assert.assertFalse(checker.syntaxCheckOlatPassword("kanugasdfgh"));
+		Assert.assertFalse(checker.syntaxCheckOlatPassword("JAHDFKL1DFSGJHG"));
+		Assert.assertFalse(checker.syntaxCheckOlatPassword("Kan\u00E41asdfghj"));
+	}
+
+	
 }

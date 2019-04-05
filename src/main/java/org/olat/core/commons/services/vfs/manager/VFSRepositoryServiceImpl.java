@@ -350,6 +350,8 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 
 	@Override
 	public void deleteMetadata(VFSMetadata data) {
+		if(data == null) return; // nothing to do
+		
 		List<VFSThumbnailMetadata> thumbnails = thumbnailDao.loadByMetadata(data);
 		for(VFSThumbnailMetadata thumbnail:thumbnails) {
 			VFSItem item = VFSManager.olatRootLeaf("/" + data.getRelativePath(), thumbnail.getFilename());
@@ -392,11 +394,13 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		if(item.canMeta() != VFSConstants.YES) return;
 		
 		VFSMetadataImpl metadata = (VFSMetadataImpl)getMetadataFor(item);
-		metadata.setDeleted(true);
-		if(item instanceof VFSLeaf && item.canVersion() == VFSConstants.YES) {
-			addToRevisions((VFSLeaf)item, metadata, author, "", true);
+		if(metadata != null) { // concurrent delete possible
+			metadata.setDeleted(true);
+			if(item instanceof VFSLeaf && item.canVersion() == VFSConstants.YES) {
+				addToRevisions((VFSLeaf)item, metadata, author, "", true);
+			}
+			metadataDao.updateMetadata(metadata);
 		}
-		metadataDao.updateMetadata(metadata);
 	}
 
 	@Override
