@@ -227,6 +227,55 @@ public class VFSLockManagerTest extends OlatTestCase {
 	}
 	
 	/**
+	 * A shared lock for collaboration with 3 users, 2 which coll
+	 */
+	@Test
+	public void lockUnlockCollaboration_realCollaboration() {
+		Identity collabId1 = JunitTestHelper.createAndPersistIdentityAsRndUser("lock-col-3");
+		Identity collabId2 = JunitTestHelper.createAndPersistIdentityAsRndUser("lock-col-4");
+		Identity webdavId = JunitTestHelper.createAndPersistIdentityAsRndUser("lock-dav-4");
+		
+		//create a file
+		String relativePath = "lock" + UUID.randomUUID();
+		VFSContainer rootTest = VFSManager.olatRootContainer("/" + relativePath, null);
+		String filename = "lock.txt";
+		VFSLeaf file = rootTest.createChildLeaf(filename);
+		
+		// lock the file
+		LockResult lockResult = lockManager.lock(file, collabId1, VFSLockApplicationType.collaboration, "oo-collaboration");
+		Assert.assertTrue(lockResult.isAcquired());
+		// but other can if the same app
+		boolean lockedOther = lockManager.isLockedForMe(file, collabId2, VFSLockApplicationType.collaboration, "oo-collaboration");
+		Assert.assertFalse(lockedOther);
+		// do it
+		LockResult lockOtherResult = lockManager.lock(file, collabId2, VFSLockApplicationType.collaboration, "oo-collaboration");
+		Assert.assertTrue(lockOtherResult.isAcquired());
+		
+		// others cannot
+		boolean lockedWebdav = lockManager.isLockedForMe(file, webdavId, VFSLockApplicationType.webdav, null);
+		Assert.assertTrue(lockedWebdav);
+		boolean lockedVfs = lockManager.isLockedForMe(file, webdavId, VFSLockApplicationType.vfs, null);
+		Assert.assertTrue(lockedVfs);
+		boolean lockedAlienCollab = lockManager.isLockedForMe(file, webdavId, VFSLockApplicationType.collaboration, "alien-collaboration");
+		Assert.assertTrue(lockedAlienCollab);
+		
+		// first unlock the file
+		boolean unlockResult = lockManager.unlock(file, lockResult);
+		Assert.assertFalse(unlockResult);
+		// still lock by 2
+		boolean lockedRetryCollab = lockManager.isLockedForMe(file, webdavId, VFSLockApplicationType.collaboration, "alien-collaboration");
+		Assert.assertTrue(lockedRetryCollab);
+		
+		// 2 unlock
+		boolean unlock2Result = lockManager.unlock(file, lockOtherResult);
+		Assert.assertTrue(unlock2Result);
+		
+		// it's free
+		boolean lockFreeVfs = lockManager.isLockedForMe(file, webdavId, VFSLockApplicationType.vfs, null);
+		Assert.assertFalse(lockFreeVfs);
+	}
+	
+	/**
 	 * A shared lock for collaboration
 	 */
 	@Test

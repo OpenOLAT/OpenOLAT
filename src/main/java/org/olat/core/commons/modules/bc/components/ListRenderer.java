@@ -44,7 +44,7 @@ import org.olat.core.commons.services.license.ui.LicenseRenderer;
 import org.olat.core.commons.services.vfs.VFSLeafEditor.Mode;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
-import org.olat.core.commons.services.vfs.VFSRevision;
+import org.olat.core.commons.services.vfs.VFSVersionModule;
 import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
 import org.olat.core.gui.control.winmgr.AJAXFlags;
 import org.olat.core.gui.render.StringOutput;
@@ -94,6 +94,7 @@ public class ListRenderer {
 	public static final String PARAM_SERV_THUMBNAIL = "servthumb";
 
 	private VFSRepositoryService vfsRepositoryService;
+	private VFSVersionModule vfsVersionModule;
 	private VFSLockManager lockManager;
 	private UserManager userManager;
 	boolean licensesEnabled ;
@@ -125,6 +126,9 @@ public class ListRenderer {
 		if(vfsRepositoryService == null) {
 			vfsRepositoryService = CoreSpringFactory.getImpl(VFSRepositoryService.class);
 		}
+		if(vfsVersionModule == null) {
+			vfsVersionModule = CoreSpringFactory.getImpl(VFSVersionModule.class);
+		}
 		
 		LicenseModule licenseModule = CoreSpringFactory.getImpl(LicenseModule.class);
 		LicenseHandler licenseHandler = CoreSpringFactory.getImpl(FolderLicenseHandler.class);
@@ -140,7 +144,7 @@ public class ListRenderer {
 		}
 
 		VFSContainer currentContainer = fc.getCurrentContainer();
-		boolean canVersion = currentContainer.canVersion() == VFSConstants.YES;
+		boolean canVersion = vfsVersionModule.isEnabled() && currentContainer.canVersion() == VFSConstants.YES;
 		String sortOrder = fc.getCurrentSortOrder();
 		boolean sortAsc = fc.isCurrentSortAsc();
 		String sortCss = (sortAsc ? "o_orderby_asc" : "o_orderby_desc");
@@ -220,11 +224,12 @@ public class ListRenderer {
 		canWrite = canWrite && !(fc.getCurrentContainer() instanceof VirtualContainer);
 		boolean isAbstract = (child instanceof AbstractVirtualContainer);
 
-		List<VFSRevision> revisions = null;
-		if(canContainerVersion && child.canVersion() == VFSConstants.YES) {
-			revisions = vfsRepositoryService.getRevisions(metadata);
+		int revisionNr = 0;
+		boolean canVersion = false;// more are version visible
+		if(canContainerVersion && vfsVersionModule.isEnabled() && child.canVersion() == VFSConstants.YES) {
+			revisionNr = metadata.getRevisionNr();
+			canVersion = revisionNr > 1;
 		}
-		boolean canVersion = revisions != null && !revisions.isEmpty();
 
 		VFSLeaf leaf = null;
 		if (child instanceof VFSLeaf) {
@@ -401,7 +406,7 @@ public class ListRenderer {
 		}
 
 		if(canContainerVersion) {
-			if (canVersion && revisions != null) {
+			if (canVersion && revisionNr > 1) {
 				sb.append("<span class='text-muted small'>")
 				  .append(metadata.getRevisionNr())
 				  .append("</span>");

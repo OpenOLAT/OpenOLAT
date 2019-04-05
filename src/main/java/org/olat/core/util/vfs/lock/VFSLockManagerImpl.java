@@ -342,6 +342,13 @@ public class VFSLockManagerImpl implements VFSLockManager {
 			lockAcquired = false;
 		} else if(lockInfo.isLocked()) {
 			lockAcquired = !isLockedForMe(lockInfo, identity, type, appName);
+			// add a new token 
+			if(lockAcquired && VFSLockApplicationType.collaboration == type && generatedToken.getToken() == null) {
+				String token = generateLockToken(lockInfo, identity);
+				generatedToken.setToken(token);
+				lockInfo.addToken(token);
+			}
+			
 		} else {
 			lockAcquired = false;
 		}

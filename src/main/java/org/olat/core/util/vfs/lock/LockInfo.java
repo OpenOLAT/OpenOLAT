@@ -185,7 +185,9 @@ public class LockInfo {
 	}
 	
 	public synchronized void addToken(String token) {
-		tokens.add(token);
+		if(!tokens.contains(token)) {
+			tokens.add(token);
+		}
 	}
 	
 	public synchronized void removeToken(String token) {
