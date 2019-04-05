@@ -21,12 +21,10 @@ package org.olat.modules.wopi.collabora.restapi;
 
 import static org.olat.modules.wopi.WopiRestHelper.getAsIso6801;
 import static org.olat.modules.wopi.WopiRestHelper.getFirstRequestHeader;
-import static org.olat.modules.wopi.WopiRestHelper.getLastModifiedAsIso6801;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
+import java.util.Date;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.UUID;
@@ -182,26 +180,34 @@ public class FilesWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
+		boolean canUpdate = collaboraService.canUpdateContent(fileId, access);
+		if (!canUpdate) {
+			log.debug("Access has not right to update file. File ID: " + fileId + ", token: " + accessToken);
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		
 		// Further Headers see: https://github.com/LibreOffice/online/blob/master/wsd/reference.md#putfile-headers
 		String timestamp = getFirstRequestHeader(httpHeaders, "X-LOOL-WOPI-Timestamp");
 		log.debug("File changed at " + timestamp + ". File ID: " + fileId + ", token: " + accessToken);
 		
 		try {
-			File file = collaboraService.getFile(fileId);
-			Files.deleteIfExists(file.toPath());
-			Files.copy(fileInputStream, file.toPath());
-			
-			PutFileVO putFileVO = PutFileVO.builder()
-				.withLastModifiedTime(getLastModifiedAsIso6801(file))
-				.build();
-			logPutFileResponse(putFileVO);
-			
-			return Response
-					.ok(putFileVO)
-					.type(MediaType.APPLICATION_JSON)
+			boolean updated = collaboraService.updateContent(fileId, fileInputStream);
+			if (updated) {
+				PutFileVO putFileVO = PutFileVO.builder()
+					.withLastModifiedTime(getAsIso6801(new Date()))
 					.build();
-			
-		} catch (IOException e) {
+				logPutFileResponse(putFileVO);
+				
+				return Response
+						.ok(putFileVO)
+						.type(MediaType.APPLICATION_JSON)
+						.build();
+			}
+			return Response
+					.serverError()
+					.status(Status.INTERNAL_SERVER_ERROR)
+					.build();
+		} catch (Exception e) {
 			return Response
 					.serverError()
 					.status(Status.INTERNAL_SERVER_ERROR)

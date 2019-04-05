@@ -20,6 +20,7 @@
 package org.olat.modules.wopi.collabora.manager;
 
 import java.io.File;
+import java.io.InputStream;
 
 import javax.annotation.PostConstruct;
 
@@ -36,6 +37,8 @@ import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSLockApplicationType;
 import org.olat.core.util.vfs.VFSLockManager;
+import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.vfs.lock.LockInfo;
 import org.olat.core.util.vfs.lock.LockResult;
 import org.olat.modules.wopi.Access;
 import org.olat.modules.wopi.Action;
@@ -105,6 +108,34 @@ public class CollaboraServiceImpl implements CollaboraService, GenericEventListe
 		if (access == null) return;
 		
 		wopiService.deleteAccess(access.getToken());
+	}
+
+	@Override
+	public boolean canUpdateContent(String fileId, Access access) {
+		if (!fileId.equals(access.getFileId())) {
+			return false;
+		}
+		VFSLeaf vfsLeaf = wopiService.getVfsLeaf(fileId);
+		return !isLockedForMe(vfsLeaf, access.getIdentity());
+	}
+
+	@Override
+	public boolean updateContent(String fileId, InputStream fileInputStream) {
+		VFSLeaf vfsLeaf = wopiService.getVfsLeaf(fileId);
+		boolean updated = VFSManager.copyContent(fileInputStream, vfsLeaf);
+		if (updated) {
+			refreshLock(fileId);
+		}
+		return updated;
+	}
+
+	private void refreshLock(String fileId) {
+		VFSLeaf vfsLeaf = wopiService.getVfsLeaf(fileId);
+		LockInfo lock = lockManager.getLock(vfsLeaf);
+		if (lock != null) {
+			long inADay = System.currentTimeMillis() + (24 * 60 * 60 * 1000);
+			lock.setExpiresAt(inADay);
+		}
 	}
 
 	@Override

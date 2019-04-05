@@ -20,6 +20,7 @@
 package org.olat.modules.wopi.collabora;
 
 import java.io.File;
+import java.io.InputStream;
 
 import org.olat.core.commons.services.vfs.VFSLeafEditor.Mode;
 import org.olat.core.commons.services.vfs.VFSLeafEditorSecurityCallback;
@@ -54,6 +55,10 @@ public interface CollaboraService {
 	Access getAccess(String accessToken);
 	
 	void deleteAccess(Access access);
+	
+	boolean canUpdateContent(String fileId, Access access);
+
+	boolean updateContent(String fileId, InputStream fileInputStream);
 	
 	Discovery getDiscovery();
 	

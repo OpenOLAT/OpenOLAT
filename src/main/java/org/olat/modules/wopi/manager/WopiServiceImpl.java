@@ -78,9 +78,8 @@ public class WopiServiceImpl implements WopiService {
 
 	@Override
 	public File getFile(String fileId) {
-		VFSItem item = vfsService.getItemFor(fileId);
-		if (item instanceof VFSLeaf) {
-			VFSLeaf vfsLeaf = (VFSLeaf) item;
+		VFSLeaf vfsLeaf = getVfsLeaf(fileId);
+		if (vfsLeaf != null) {
 			String uri = vfsLeaf.getMetaInfo().getUri();
 			try {
 				return Paths.get(new URL(uri).toURI()).toFile();
@@ -92,9 +91,18 @@ public class WopiServiceImpl implements WopiService {
 	}
 
 	@Override
+	public VFSLeaf getVfsLeaf(String fileId) {
+		VFSItem item = vfsService.getItemFor(fileId);
+		if (item instanceof VFSLeaf) {
+			return (VFSLeaf) item;
+		}
+		return null;
+	}
+
+	@Override
 	public VFSMetadata getMetadata(String fileId) {
-		File file = getFile(fileId);
-		return vfsService.getMetadataFor(file);
+		VFSLeaf vfsLeaf = getVfsLeaf(fileId);
+		return vfsService.getMetadataFor(vfsLeaf);
 	}
 
 	@Override

@@ -24,6 +24,7 @@ import java.io.File;
 import org.olat.core.commons.services.vfs.VFSLeafEditorSecurityCallback;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.id.Identity;
+import org.olat.core.util.vfs.VFSLeaf;
 
 /**
  * 
@@ -36,6 +37,8 @@ public interface WopiService {
 	boolean fileExists(String fileId);
 
 	File getFile(String fileId);
+
+	VFSLeaf getVfsLeaf(String fileId);
 
 	VFSMetadata getMetadata(String fileId);
 
