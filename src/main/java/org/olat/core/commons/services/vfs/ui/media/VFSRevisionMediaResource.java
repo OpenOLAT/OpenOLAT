@@ -50,7 +50,6 @@ public class VFSRevisionMediaResource implements MediaResource {
 	private static final String MIME_TYPE_OCTET_STREAM = "application/octet-stream";
 	private static final OLog log = Tracing.createLoggerFor(VFSRevisionMediaResource.class);
 
-	private String encoding;
 	private final VFSRevision revision;
 	private final VFSMetadata metadata;
 
@@ -74,11 +73,6 @@ public class VFSRevisionMediaResource implements MediaResource {
 		String mimeType = WebappHelper.getMimeType(metadata.getFilename());
 		if (mimeType == null) {
 			mimeType = MIME_TYPE_OCTET_STREAM;
-		} else {
-			// if any encoding is set, append it for the browser
-			if (encoding != null) {
-				mimeType = mimeType + ";charset=" + encoding;
-			}
 		}
 		return mimeType;
 	}

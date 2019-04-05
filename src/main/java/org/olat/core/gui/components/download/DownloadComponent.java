@@ -97,6 +97,24 @@ public class DownloadComponent extends AbstractComponent {
 		this.setDomReplacementWrapperRequired(false);
 	}
 	
+	/**
+	 * @param name The component name
+	 * @param downloadItem The resource to download
+	 * @param linkText An optional link text
+	 * @param linkToolTip An optional tool tip
+	 * @param linkCssIconClass An optional icon class
+	 */
+	public DownloadComponent(String name, MediaResource downloadItem, String linkText,
+			String linkToolTip, String linkCssIconClass) {
+		super(name);
+		setMediaResource(downloadItem);
+		setLinkText(linkText);
+		setLinkToolTip(linkToolTip);
+		setLinkCssIconClass(linkCssIconClass);
+		// renderer puts dispatch ID in a tag
+		this.setDomReplacementWrapperRequired(false);
+	}
+	
 	public DownloadLink getFormItem() {
 		return delegate;
 	}

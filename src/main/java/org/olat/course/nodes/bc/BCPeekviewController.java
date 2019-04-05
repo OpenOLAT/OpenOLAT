@@ -24,9 +24,10 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderModule;
-import org.olat.core.commons.modules.bc.components.FolderComponent;
+import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
+import org.olat.core.commons.services.vfs.ui.media.VFSMetadataMediaResource;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.download.DownloadComponent;
@@ -39,12 +40,11 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.util.CSSHelper;
-import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.filters.VFSItemExcludePrefixFilter;
-import org.olat.core.util.vfs.filters.VFSItemFilter;
+import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * <h3>Description:</h3> The folder peekview controller displays the configurable
@@ -60,16 +60,17 @@ import org.olat.core.util.vfs.filters.VFSItemFilter;
  * @author gnaegi, gnaegi@frentix.com, www.frentix.com
  */
 public class BCPeekviewController extends BasicController implements Controller {
-	// comparator to sort the messages list by creation date
-	private static final Comparator<VFSLeaf> dateSortingComparator = new Comparator<VFSLeaf>(){
-		public int compare(final VFSLeaf leaf1, final VFSLeaf leaf2) {
-			return Long.valueOf(leaf2.getLastModified()).compareTo(leaf1.getLastModified()); //last first
-		}};
-	// the current course node id
-	private final String nodeId;
 	
-	private static final VFSItemFilter attachmentExcludeFilter = new VFSItemExcludePrefixFilter(FolderComponent.ATTACHMENT_EXCLUDE_PREFIXES);
+	private int count = 0;
+	private final String nodeId;
+	private final boolean forceDownload;
+	
+	private final VelocityContainer mainVC;
 
+	@Autowired
+	private FolderModule folderModule;
+	@Autowired
+	private VFSRepositoryService vfsRepositoryService;
 
 	/**
 	 * Constructor
@@ -82,46 +83,27 @@ public class BCPeekviewController extends BasicController implements Controller 
 	public BCPeekviewController(UserRequest ureq, WindowControl wControl, VFSContainer rootFolder, String nodeId, int itemsToDisplay) {		
 		super(ureq, wControl);
 		this.nodeId = nodeId;
-	
-		VelocityContainer peekviewVC = createVelocityContainer("peekview");
-		// add items, only as many as configured
-		List<VFSLeaf> allLeafs = new ArrayList<VFSLeaf>();
-		addItems(rootFolder, allLeafs);
-		// Sort messages by last modified date
-		Collections.sort(allLeafs, dateSortingComparator);
-		boolean forceDownload = CoreSpringFactory.getImpl(FolderModule.class).isForceDownload();
+		mainVC = createVelocityContainer("peekview");
+		forceDownload = folderModule.isForceDownload();
 		
-		// only take the configured amount of messages
-		List<VFSLeaf> leafs = new ArrayList<VFSLeaf>();
-		for (int i = 0; i < allLeafs.size(); i++) {
-			if (leafs.size() == itemsToDisplay) {
-				break;
-			}
-			VFSLeaf leaf = allLeafs.get(i);
-			leafs.add(leaf);
-			// add link to item
-			// Add link to jump to course node
-			if (leaf instanceof LocalFileImpl) {
-				DownloadComponent dlComp = new DownloadComponent("nodeLinkDL_"+(i+1), leaf, forceDownload,
-						leaf.getName(), translate("preview.downloadfile"),
-						CSSHelper.createFiletypeIconCssClassFor(leaf.getName()));
-				dlComp.setElementCssClass("o_gotoNode");
-				peekviewVC.put("nodeLinkDL_"+(i+1),dlComp);
-			} else {
-				// hu? don't konw how to work with non-local impls
-			}
+		List<DownloadComponent> links = new ArrayList<>(itemsToDisplay);
+		
+		VFSMetadata metadata = vfsRepositoryService.getMetadataFor(rootFolder);
+		// don't force migration here to prevent overloading big OpenOLAT instances
+		if("migrated".equals(metadata.getMigrated())) {
+			fileMetadata(links, metadata, itemsToDisplay);
+		} else {
+			fileFallback(links, rootFolder, itemsToDisplay);
 		}
-		peekviewVC.contextPut("leafs", leafs);
+		mainVC.contextPut("links", links);
+		
 		// Add link to show all items (go to node)
-		Link allItemsLink = LinkFactory.createLink("peekview.allItemsLink", peekviewVC, this);
+		Link allItemsLink = LinkFactory.createLink("peekview.allItemsLink", mainVC, this);
 		allItemsLink.setIconRightCSS("o_icon o_icon_start");
 		allItemsLink.setElementCssClass("pull-right");
-		putInitialPanel(peekviewVC);
+		putInitialPanel(mainVC);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source instanceof Link) {
@@ -135,12 +117,47 @@ public class BCPeekviewController extends BasicController implements Controller 
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose()
-	 */
 	@Override
 	protected void doDispose() {
 		// nothing to dispose
+	}
+	
+	private void fileMetadata(List<DownloadComponent> links, VFSMetadata metadata, int itemsToDisplay) {
+		List<VFSMetadata> newestData = vfsRepositoryService.getNewest(metadata, itemsToDisplay);
+		for(VFSMetadata newData:newestData) {
+			String name = "nodeLinkDL_"+ (count++);
+			VFSMetadataMediaResource media = new VFSMetadataMediaResource(newData);
+			media.setDownloadable(forceDownload);
+			DownloadComponent dlComp = new DownloadComponent(name, media, newData.getFilename(),
+					translate("preview.downloadfile"), CSSHelper.createFiletypeIconCssClassFor(newData.getFilename()));
+			dlComp.setElementCssClass("o_gotoNode");
+			mainVC.put(name, dlComp);
+			links.add(dlComp);
+		}
+	}
+	
+	private void fileFallback(List<DownloadComponent> links, VFSContainer rootFolder, int itemsToDisplay) {
+		List<VFSLeaf> leafs = collectFiles(rootFolder, itemsToDisplay);
+		for(VFSLeaf leaf:leafs) {
+			String name = "nodeLinkDL_"+ (count++);
+			DownloadComponent dlComp = new DownloadComponent(name, leaf, forceDownload, leaf.getName(),
+					translate("preview.downloadfile"), CSSHelper.createFiletypeIconCssClassFor(leaf.getName()));
+			dlComp.setElementCssClass("o_gotoNode");
+			mainVC.put(name, dlComp);
+			links.add(dlComp);
+		}
+	}
+	
+	private List<VFSLeaf> collectFiles(VFSContainer rootFolder, int itemsToDisplay) {
+		// add items, only as many as configured
+		List<VFSLeaf> allLeafs = new ArrayList<>();
+		addItems(rootFolder, allLeafs);
+		// Sort messages by last modified date
+		Collections.sort(allLeafs, new LastModifiedcomparator());
+		
+		int size = Math.min(allLeafs.size(), itemsToDisplay);
+		List<VFSLeaf> lastLeafs = allLeafs.subList(0, size);
+		return new ArrayList<>(lastLeafs);
 	}
 
 	/**
@@ -149,19 +166,20 @@ public class BCPeekviewController extends BasicController implements Controller 
 	 * @param allLeafs
 	 */
 	private void addItems(VFSContainer container, List<VFSLeaf> allLeafs) {
-		// exclude files which are also excluded in FolderComponent
-		for (VFSItem vfsItem : container.getItems(attachmentExcludeFilter)) {
+		for (VFSItem vfsItem : container.getItems(new VFSSystemItemFilter())) {
 			if (vfsItem instanceof VFSLeaf) {
-				// add leaf to our list
-				VFSLeaf leaf = (VFSLeaf) vfsItem;
-				allLeafs.add(leaf);
+				allLeafs.add((VFSLeaf)vfsItem);
 			} else if (vfsItem instanceof VFSContainer) {
-				// do it recursively for all children
 				VFSContainer childContainer = (VFSContainer) vfsItem;
 				addItems(childContainer, allLeafs);
-			} else {
-				// hu?
 			}
+		}
+	}
+	
+	private static class LastModifiedcomparator implements Comparator<VFSLeaf> {
+		@Override
+		public int compare(final VFSLeaf leaf1, final VFSLeaf leaf2) {
+			return Long.compare(leaf2.getLastModified(), leaf1.getLastModified());
 		}
 	}
 }

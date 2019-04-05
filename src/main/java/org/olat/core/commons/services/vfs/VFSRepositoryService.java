@@ -71,6 +71,14 @@ public interface VFSRepositoryService {
 	
 	public List<VFSMetadata> getMostDownloaded(VFSMetadata ancestorMetadata, int maxResults);
 	
+	/**
+	 * 
+	 * @param ancestorMetadata
+	 * @param maxResults
+	 * @return
+	 */
+	public List<VFSMetadata> getNewest(VFSMetadata ancestorMetadata, int maxResults);
+	
 	public void itemSaved(VFSLeaf leaf);
 	
 	public VFSMetadata updateMetadata(VFSMetadata data);

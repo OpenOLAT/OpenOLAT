@@ -289,6 +289,11 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	}
 
 	@Override
+	public List<VFSMetadata> getNewest(VFSMetadata ancestorMetadata, int maxResults) {
+		return metadataDao.getNewest(ancestorMetadata.getRelativePath(), maxResults);
+	}
+
+	@Override
 	public List<VFSMetadata> getMostDownloaded(VFSMetadata ancestorMetadata, int maxResults) {
 		return metadataDao.getMostDownloaded(ancestorMetadata.getRelativePath(), maxResults);
 	}
