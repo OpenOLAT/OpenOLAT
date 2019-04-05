@@ -27,7 +27,6 @@ import java.io.InputStream;
 import java.util.Date;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.ws.rs.Consumes;
@@ -107,7 +106,7 @@ public class FilesWebService {
 				.withSize(metadata.getFileSize())
 				.withUserId(access.getIdentity().getKey().toString())
 				.withUserFriendlyName(userManager.getUserDisplayName(access.getIdentity()))
-				.withVersion(UUID.randomUUID().toString())
+				.withVersion(String.valueOf(metadata.getRevisionNr()))
 				.withLastModifiedTime(getAsIso6801(metadata.getLastModified()))
 				.withUserCanWrite(access.canEdit())
 				.withDisablePrint(Boolean.FALSE)
@@ -180,7 +179,7 @@ public class FilesWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
-		boolean canUpdate = collaboraService.canUpdateContent(fileId, access);
+		boolean canUpdate = collaboraService.canUpdateContent(access, fileId);
 		if (!canUpdate) {
 			log.debug("Access has not right to update file. File ID: " + fileId + ", token: " + accessToken);
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
@@ -191,7 +190,7 @@ public class FilesWebService {
 		log.debug("File changed at " + timestamp + ". File ID: " + fileId + ", token: " + accessToken);
 		
 		try {
-			boolean updated = collaboraService.updateContent(fileId, fileInputStream);
+			boolean updated = collaboraService.updateContent(access, fileInputStream);
 			if (updated) {
 				PutFileVO putFileVO = PutFileVO.builder()
 					.withLastModifiedTime(getAsIso6801(new Date()))

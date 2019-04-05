@@ -30,6 +30,8 @@ import org.olat.core.commons.services.vfs.VFSLeafEditor.Mode;
 public interface VFSLeafEditorSecurityCallback {
 	
 	Mode getMode();
+	
+	boolean isVersionControlled();
 
 	boolean canClose();
 	

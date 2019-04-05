@@ -191,7 +191,7 @@ public class CmdCreateFile extends BasicController implements FolderCommand {
 		
 		VFSLeafEditorSecurityCallback secCallback = VFSLeafEditorSecurityCallbackBuilder.builder()
 				.withMode(VFSLeafEditor.Mode.EDIT)
-				.canClose(true)
+				.withVersionControlled(true)
 				.build();
 		HTMLEditorConfig htmlEditorConfig = getHtmlEditorConfig();
 		VFSLeafEditorConfigs configs = VFSLeafEditorConfigs.builder()

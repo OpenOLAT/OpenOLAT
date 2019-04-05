@@ -45,11 +45,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 18 Mar 2019<br>
+ * 
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
 public class TextEditorController extends FormBasicController {
-	
+
 	private TextElement contentEl;
 	private FormLink saveLink;
 	private FormLink saveCloseLink;
@@ -58,47 +59,49 @@ public class TextEditorController extends FormBasicController {
 	private final VFSLeaf vfsLeaf;
 	private final String encoding;
 	private final boolean readonly;
-	
+	private final boolean versionControlled;
+
 	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
 
-	public TextEditorController(UserRequest ureq, WindowControl wControl, VFSLeaf vfsLeaf, String encoding, boolean readonly) {
+	public TextEditorController(UserRequest ureq, WindowControl wControl, VFSLeaf vfsLeaf, String encoding,
+			boolean readonly, boolean versionControlled) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
 		this.vfsLeaf = vfsLeaf;
 		this.encoding = encoding;
 		this.readonly = readonly;
-		
+		this.versionControlled = versionControlled;
+
 		initForm(ureq);
 	}
-	
+
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		contentEl = uifactory.addTextAreaElement("textarea", "textarea", -1, 25, 100, true, false, "", formLayout);
-		
+
 		FormLayoutContainer buttonCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonCont.setElementCssClass("o_button_group");
 		formLayout.add("buttons", buttonCont);
 
-		long size = vfsLeaf.getSize(); //bytes
+		long size = vfsLeaf.getSize(); // bytes
 		if (size > FolderConfig.getMaxEditSizeLimit()) {
-			setFormWarning("plaintext.error.tolarge", new String[]{
-					String.valueOf(size / 1000),
+			setFormWarning("plaintext.error.tolarge", new String[] { String.valueOf(size / 1000),
 					String.valueOf(FolderConfig.getMaxEditSizeLimit() / 1000) });
 		} else {
-			String content = FileUtils.load(vfsLeaf.getInputStream(),encoding);
+			String content = FileUtils.load(vfsLeaf.getInputStream(), encoding);
 			contentEl.setValue(content);
 			contentEl.setLabel("file.name", new String[] { vfsLeaf.getName() });
 			contentEl.setEnabled(!readonly);
-			
+
 			saveLink = uifactory.addFormLink("save", buttonCont, Link.BUTTON);
 			saveLink.setVisible(!readonly);
 			saveCloseLink = uifactory.addFormLink("save.close", buttonCont, Link.BUTTON);
 			saveCloseLink.setVisible(!readonly);
 		}
-		
+
 		closeLink = uifactory.addFormLink("close", buttonCont, Link.BUTTON);
 	}
-	
+
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == saveLink) {
@@ -114,16 +117,16 @@ public class TextEditorController extends FormBasicController {
 
 	private void doSave() {
 		String content = contentEl.getValue();
-		if(vfsLeaf.canVersion() == VFSConstants.YES) {
+		if (versionControlled && vfsLeaf.canVersion() == VFSConstants.YES) {
 			try (InputStream inStream = FileUtils.getInputStream(content, encoding)) {
 				vfsRepositoryService.addVersion(vfsLeaf, getIdentity(), "", inStream);
 			} catch (IOException e) {
 				logError("", e);
 			}
 		} else {
-			try(OutputStream out = vfsLeaf.getOutputStream(false)) {
+			try (OutputStream out = vfsLeaf.getOutputStream(false)) {
 				FileUtils.save(out, content, encoding);
-			} catch(IOException e) {
+			} catch (IOException e) {
 				logError("", e);
 			}
 		}

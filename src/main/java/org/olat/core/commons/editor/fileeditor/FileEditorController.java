@@ -96,11 +96,11 @@ public class FileEditorController extends BasicController {
 				CustomLinkTreeModel customLinkTreeModel = config.getCustomLinkTreeModel();
 				if (customLinkTreeModel != null) {
 					htmlCtrl = WysiwygFactory.createWysiwygControllerWithInternalLink(ureq, getWindowControl(),
-							config.getVfsContainer(), config.getFilePath(), true, customLinkTreeModel,
+							config.getVfsContainer(), config.getFilePath(), true, secCallback.isVersionControlled(), customLinkTreeModel,
 							config.getEdusharingProvider());
 				} else {
 					htmlCtrl = WysiwygFactory.createWysiwygController(ureq, getWindowControl(), config.getVfsContainer(),
-							config.getFilePath(), config.getMediaPath(), true, true, config.getEdusharingProvider());
+							config.getFilePath(), config.getMediaPath(), true, secCallback.isVersionControlled(), config.getEdusharingProvider());
 				}
 				
 				htmlCtrl.setNewFile(false);
@@ -115,7 +115,7 @@ public class FileEditorController extends BasicController {
 			}
 		}
 		else {
-			editCtrl = new TextEditorController(ureq, getWindowControl(), vfsLeaf, "utf-8", !isEdit);
+			editCtrl = new TextEditorController(ureq, getWindowControl(), vfsLeaf, "utf-8", !isEdit, secCallback.isVersionControlled());
 		}
 		listenTo(editCtrl);
 		

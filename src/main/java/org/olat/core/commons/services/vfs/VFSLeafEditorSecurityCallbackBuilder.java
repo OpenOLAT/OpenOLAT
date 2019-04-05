@@ -30,6 +30,7 @@ import org.olat.core.commons.services.vfs.VFSLeafEditor.Mode;
 public class VFSLeafEditorSecurityCallbackBuilder {
 	
 	private Mode mode = Mode.VIEW;
+	private boolean versionControlled = false;
 	private boolean canClose = true;
 	
 	/**
@@ -40,6 +41,17 @@ public class VFSLeafEditorSecurityCallbackBuilder {
 	 */
 	public VFSLeafEditorSecurityCallbackBuilder withMode(Mode mode) {
 		this.mode = mode;
+		return this;
+	}
+	
+	/**
+	 * Default: false
+	 *
+	 * @param versionControlled
+	 * @return
+	 */
+	public VFSLeafEditorSecurityCallbackBuilder withVersionControlled(boolean versionControlled) {
+		this.versionControlled = versionControlled;
 		return this;
 	}
 	
@@ -57,6 +69,7 @@ public class VFSLeafEditorSecurityCallbackBuilder {
 	public VFSLeafEditorSecurityCallback build() {
 		VFSLeafEditorSecurityCallbackImpl secCallback = new VFSLeafEditorSecurityCallbackImpl();
 		secCallback.setMode(this.mode);
+		secCallback.setVersionControlled(this.versionControlled);
 		secCallback.setCanClose(this.canClose);
 		return secCallback;
 	}
@@ -68,6 +81,7 @@ public class VFSLeafEditorSecurityCallbackBuilder {
 	public static VFSLeafEditorSecurityCallbackBuilder clone(VFSLeafEditorSecurityCallback secCallback) {
 		return builder()
 				.withMode(secCallback.getMode())
+				.withVersionControlled(secCallback.isVersionControlled())
 				.canClose(secCallback.canClose());
 	}
 	
@@ -77,6 +91,7 @@ public class VFSLeafEditorSecurityCallbackBuilder {
 	private static class VFSLeafEditorSecurityCallbackImpl implements VFSLeafEditorSecurityCallback {
 
 		private Mode mode;
+		private boolean versionControlled;
 		private boolean canClose;
 
 		@Override
@@ -84,8 +99,17 @@ public class VFSLeafEditorSecurityCallbackBuilder {
 			return mode;
 		}
 
-		public void setMode(Mode mode) {
+		private void setMode(Mode mode) {
 			this.mode = mode;
+		}
+
+		@Override
+		public boolean isVersionControlled() {
+			return versionControlled;
+		}
+
+		private void setVersionControlled(boolean versionControlled) {
+			this.versionControlled = versionControlled;
 		}
 
 		@Override

@@ -27,6 +27,7 @@ import javax.annotation.PostConstruct;
 import org.olat.core.commons.services.vfs.VFSLeafEditor.Mode;
 import org.olat.core.commons.services.vfs.VFSLeafEditorSecurityCallback;
 import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
@@ -34,6 +35,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
+import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSLockApplicationType;
 import org.olat.core.util.vfs.VFSLockManager;
@@ -70,6 +72,8 @@ public class CollaboraServiceImpl implements CollaboraService, GenericEventListe
 	private WopiService wopiService;
 	@Autowired
 	private WopiDiscoveryClient discoveryClient;
+	@Autowired
+	private VFSRepositoryService vfsRepositoryService;
 	@Autowired
 	private VFSLockManager lockManager;
 	
@@ -111,7 +115,7 @@ public class CollaboraServiceImpl implements CollaboraService, GenericEventListe
 	}
 
 	@Override
-	public boolean canUpdateContent(String fileId, Access access) {
+	public boolean canUpdateContent(Access access, String fileId) {
 		if (!fileId.equals(access.getFileId())) {
 			return false;
 		}
@@ -120,17 +124,26 @@ public class CollaboraServiceImpl implements CollaboraService, GenericEventListe
 	}
 
 	@Override
-	public boolean updateContent(String fileId, InputStream fileInputStream) {
-		VFSLeaf vfsLeaf = wopiService.getVfsLeaf(fileId);
-		boolean updated = VFSManager.copyContent(fileInputStream, vfsLeaf);
+	public boolean updateContent(Access access, InputStream fileInputStream) {
+		VFSLeaf vfsLeaf = wopiService.getVfsLeaf(access.getFileId());
+		boolean updated = false;
+		try {
+			if(access.isVersionControlled() && vfsLeaf.canVersion() == VFSConstants.YES) {
+				updated = vfsRepositoryService.addVersion(vfsLeaf, access.getIdentity(), "Collabora Office",
+						fileInputStream);
+			} else {
+				updated = VFSManager.copyContent(fileInputStream, vfsLeaf);
+			}
+		} catch(Exception e) {
+			log.error("", e);
+		}
 		if (updated) {
-			refreshLock(fileId);
+			refreshLock(vfsLeaf);
 		}
 		return updated;
 	}
 
-	private void refreshLock(String fileId) {
-		VFSLeaf vfsLeaf = wopiService.getVfsLeaf(fileId);
+	private void refreshLock(VFSLeaf vfsLeaf) {
 		LockInfo lock = lockManager.getLock(vfsLeaf);
 		if (lock != null) {
 			long inADay = System.currentTimeMillis() + (24 * 60 * 60 * 1000);

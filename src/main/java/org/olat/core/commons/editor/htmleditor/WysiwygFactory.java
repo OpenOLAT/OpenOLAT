@@ -120,15 +120,24 @@ public class WysiwygFactory {
 			UserRequest ureq, WindowControl wControl, VFSContainer baseContainer,
 			String relFilePath, boolean editorCheckEnabled,
 			CustomLinkTreeModel customLinkTreeModel) {
-		return createWysiwygControllerWithInternalLink(ureq, wControl, baseContainer, relFilePath, editorCheckEnabled, customLinkTreeModel, null);
+		return createWysiwygControllerWithInternalLink(ureq, wControl, baseContainer, relFilePath, editorCheckEnabled,
+				customLinkTreeModel, null);
 	}
 	
 	public static HTMLEditorController createWysiwygControllerWithInternalLink(
 			UserRequest ureq, WindowControl wControl, VFSContainer baseContainer,
 			String relFilePath, boolean editorCheckEnabled,
 			CustomLinkTreeModel customLinkTreeModel, VFSEdusharingProvider edusharingProvider) {
+		return createWysiwygControllerWithInternalLink(ureq, wControl, baseContainer, relFilePath, editorCheckEnabled,
+				true, customLinkTreeModel, edusharingProvider);
+	}
+	
+	public static HTMLEditorController createWysiwygControllerWithInternalLink(
+			UserRequest ureq, WindowControl wControl, VFSContainer baseContainer,
+			String relFilePath, boolean editorCheckEnabled, boolean version,
+			CustomLinkTreeModel customLinkTreeModel, VFSEdusharingProvider edusharingProvider) {
 		return new HTMLEditorController(ureq, wControl, baseContainer, relFilePath,
-				customLinkTreeModel, null, editorCheckEnabled, true, edusharingProvider);
+				customLinkTreeModel, null, editorCheckEnabled, version, edusharingProvider);
 	}
 
 	/**

@@ -39,6 +39,8 @@ public interface Access {
 	VFSMetadata getVfsMetadata();
 	
 	boolean canEdit();
+	
+	boolean isVersionControlled();
 
 	boolean canClose();
 

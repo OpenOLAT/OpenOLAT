@@ -56,9 +56,9 @@ public interface CollaboraService {
 	
 	void deleteAccess(Access access);
 	
-	boolean canUpdateContent(String fileId, Access access);
+	boolean canUpdateContent(Access access, String fileId);
 
-	boolean updateContent(String fileId, InputStream fileInputStream);
+	boolean updateContent(Access access, InputStream fileInputStream);
 	
 	Discovery getDiscovery();
 	

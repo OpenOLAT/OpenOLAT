@@ -35,6 +35,7 @@ public class AccessImpl implements Access {
 	private String token;
 	private Identity identity;
 	private boolean canEdit;
+	private boolean versionControlled;
 	private boolean canClose;
 	private VFSMetadata vfsMetadata;
 
@@ -72,6 +73,15 @@ public class AccessImpl implements Access {
 
 	public void setCanEdit(boolean canEdit) {
 		this.canEdit = canEdit;
+	}
+
+	@Override
+	public boolean isVersionControlled() {
+		return versionControlled;
+	}
+
+	public void setVersionControlled(boolean versionControlled) {
+		this.versionControlled = versionControlled;
 	}
 
 	@Override

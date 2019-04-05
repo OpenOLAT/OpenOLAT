@@ -107,6 +107,7 @@ public class CmdOpenContent extends BasicController implements FolderCommand {
 		VFSSecurityCallback containerSecCallback = container.getLocalSecurityCallback();
 		VFSLeafEditorSecurityCallback secCallback = VFSLeafEditorSecurityCallbackBuilder.builder()
 				.withMode(getMode(vfsLeaf, containerSecCallback.canWrite()))
+				.withVersionControlled(true)
 				.build();
 		HTMLEditorConfig htmlEditorConfig = getHtmlEditorConfig(vfsLeaf);
 		VFSLeafEditorConfigs configs = VFSLeafEditorConfigs.builder()
