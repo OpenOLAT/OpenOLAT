@@ -275,6 +275,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.taxonomy.manager.TaxonomyLevelTypeDAOTest.class,
 	org.olat.modules.taxonomy.manager.TaxonomyCompetenceDAOTest.class,
 	org.olat.modules.taxonomy.manager.TaxonomyCompetenceAuditLogDAOTest.class,
+	org.olat.modules.video.VideoFormatTest.class,
 	org.olat.modules.video.manager.VideoTranscodingDAOTest.class,
 	org.olat.modules.video.manager.VideoMetadataDAOTest.class,
 	org.olat.modules.video.manager.VideoXStreamTest.class,

@@ -25,6 +25,7 @@ import java.net.URL;
 import org.apache.commons.io.FilenameUtils;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 
 /**
  * 
@@ -55,14 +56,14 @@ public enum VideoFormat {
 	}
 	
 	public static VideoFormat secureValueOf(String val) {
-		if("zip".equals(val)) {
-			return VideoFormat.mp4;// why was zip a format???
-		}
-		
 		for(VideoFormat format:values()) {
 			if(format.name().equals(val)) {
 				return format;
 			}
+		}
+		// catch zip, mov and other exotic format
+		if(StringHelper.containsNonWhitespace(val)) {
+			return VideoFormat.mp4;// convert at the end all unkown format
 		}
 		return null;
 	}
