@@ -42,6 +42,7 @@ import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.vfs.meta.MetaInfo;
 import org.olat.core.util.vfs.version.Versionable;
 import org.olat.core.util.vfs.version.Versions;
 import org.olat.core.util.vfs.version.VersionsManager;
@@ -162,7 +163,10 @@ public class LocalFileImpl extends LocalImpl implements VFSLeaf, Versionable {
 		}
 		// Versioning makes a copy of the metadata, delete metadata after it
 		if(canMeta() == VFSConstants.YES) {
-			getMetaInfo().delete();
+			MetaInfo meta = getMetaInfo();
+			if(meta != null) {// Meta can be null if the file is already deleted
+				meta.delete();
+			}
 		}
 		return deleteBasefile();
 	}
@@ -170,7 +174,10 @@ public class LocalFileImpl extends LocalImpl implements VFSLeaf, Versionable {
 	@Override
 	public VFSStatus deleteSilently() {
 		if(canMeta() == VFSConstants.YES) {
-			getMetaInfo().delete();
+			MetaInfo meta = getMetaInfo();
+			if(meta != null) {
+				meta.delete();
+			}
 		}
 		CoreSpringFactory.getImpl(VersionsManager.class).delete(this, true);
 		return deleteBasefile();
