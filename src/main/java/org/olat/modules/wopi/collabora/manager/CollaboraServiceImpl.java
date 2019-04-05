@@ -168,10 +168,10 @@ public class CollaboraServiceImpl implements CollaboraService, GenericEventListe
 	}
 
 	@Override
-	public void unlock(VFSLeaf vfsLeaf, Identity identity, LockResult lock) {
+	public void unlock(VFSLeaf vfsLeaf, LockResult lock) {
 		if (lock == null) return;
 		
-		lockManager.unlock(vfsLeaf, identity, lock);
+		lockManager.unlock(vfsLeaf, lock);
 	}
 
 }

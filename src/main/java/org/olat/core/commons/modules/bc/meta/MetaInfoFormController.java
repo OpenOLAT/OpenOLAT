@@ -485,7 +485,7 @@ public class MetaInfoFormController extends FormBasicController {
 				if(currentlyLocked) {
 					vfsLockManager.lock(item, getIdentity(), VFSLockApplicationType.vfs, null);
 				} else {
-					vfsLockManager.unlock(item, getIdentity(), VFSLockApplicationType.vfs);
+					vfsLockManager.unlock(item, VFSLockApplicationType.vfs);
 				}
 			}
 		}

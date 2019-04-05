@@ -86,13 +86,12 @@ public interface VFSLockManager {
 	 * Unlock the VFS lock only. It doesn't change the WebdAV lock.
 	 * 
 	 * @param item
-	 * @param identity
-	 * @param roles
+	 * @param type
 	 * @return True if and only if the VFS lock was unlocked and there isn't any WedDAV lock
 	 */
-	public boolean unlock(VFSItem item, Identity identity, VFSLockApplicationType type);
+	public boolean unlock(VFSItem item, VFSLockApplicationType type);
 	
-	public boolean unlock(VFSItem item, Identity identity, LockResult result);
+	public boolean unlock(VFSItem item, LockResult result);
 	
 	/**
 	 * Method the generate the Lock-Token

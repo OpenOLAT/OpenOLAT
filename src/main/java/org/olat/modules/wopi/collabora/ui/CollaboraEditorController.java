@@ -95,7 +95,7 @@ public class CollaboraEditorController extends BasicController {
 
 	@Override
 	protected void doDispose() {
-		collaboraService.unlock(vfsLeaf, getIdentity(), lock);
+		collaboraService.unlock(vfsLeaf, lock);
 		collaboraService.deleteAccess(access);
 	}
 

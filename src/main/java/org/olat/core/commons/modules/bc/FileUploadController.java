@@ -409,7 +409,7 @@ public class FileUploadController extends FormBasicController {
 			// Overwrite...
 			String fileName = existingVFSItem.getName();
 			if(!unlockCtr.keepLocked()) {
-				vfsLockManager.unlock(existingVFSItem, getIdentity(), VFSLockApplicationType.vfs);
+				vfsLockManager.unlock(existingVFSItem, VFSLockApplicationType.vfs);
 			}
 			unlockDialogBox.deactivate();
 			
@@ -488,7 +488,7 @@ public class FileUploadController extends FormBasicController {
 		Roles roles = ureq.getUserSession().getRoles();
 		boolean locked = vfsLockManager.isLocked(existingVFSItem, VFSLockApplicationType.vfs, null);
 		if(locked && !commentVersionCtr.keepLocked()) {
-			vfsLockManager.unlock(existingVFSItem, getIdentity(), VFSLockApplicationType.vfs);
+			vfsLockManager.unlock(existingVFSItem, VFSLockApplicationType.vfs);
 		}
 		
 		commentVersionDialogBox.deactivate();

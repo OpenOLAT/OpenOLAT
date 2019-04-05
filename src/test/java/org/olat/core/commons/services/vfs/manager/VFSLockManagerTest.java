@@ -149,7 +149,7 @@ public class VFSLockManagerTest extends OlatTestCase {
 		Assert.assertTrue(lockedOther);
 		
 		// first unlock it
-		boolean unlocked = lockManager.unlock(file, id, VFSLockApplicationType.vfs);
+		boolean unlocked = lockManager.unlock(file, VFSLockApplicationType.vfs);
 		Assert.assertTrue(unlocked);
 		
 		// other can now
@@ -183,7 +183,7 @@ public class VFSLockManagerTest extends OlatTestCase {
 		Assert.assertTrue(locked.isAcquired());
 
 		// first unlock it
-		boolean unlocked = lockManager.unlock(file, id, VFSLockApplicationType.vfs);
+		boolean unlocked = lockManager.unlock(file, VFSLockApplicationType.vfs);
 		Assert.assertTrue(unlocked);
 		
 		// check the metadata loose the lock informations
@@ -218,7 +218,7 @@ public class VFSLockManagerTest extends OlatTestCase {
 		Assert.assertTrue(lockedOtherApp);
 		
 		// first unlock it
-		boolean unlocked = lockManager.unlock(file, id, locked);
+		boolean unlocked = lockManager.unlock(file, locked);
 		Assert.assertTrue(unlocked);
 		
 		// other can now

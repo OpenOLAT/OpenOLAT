@@ -542,7 +542,7 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		Assert.assertEquals(1, lock.getTokensSize());
 		
 		//try to unlock which should not be possible
-		boolean unlocked = lockManager.unlock(item, user, VFSLockApplicationType.vfs);
+		boolean unlocked = lockManager.unlock(item, VFSLockApplicationType.vfs);
 		Assert.assertFalse(unlocked);
 		//check that nothing changed
 		LockInfo lockAfterUnlock = lockManager.getLock(item);

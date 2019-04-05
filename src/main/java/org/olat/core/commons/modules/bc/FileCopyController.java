@@ -219,7 +219,7 @@ public class FileCopyController extends LinkChooserController {
 			String comment = commentVersionCtr.getComment();
 			boolean locked = vfsLockManager.isLocked(existingVFSItem, VFSLockApplicationType.vfs, null);
 			if(locked && !commentVersionCtr.keepLocked()) {
-				vfsLockManager.unlock(existingVFSItem, getIdentity(), VFSLockApplicationType.vfs);
+				vfsLockManager.unlock(existingVFSItem, VFSLockApplicationType.vfs);
 			}
 			
 			commentVersionDialogBox.deactivate();
@@ -236,7 +236,7 @@ public class FileCopyController extends LinkChooserController {
 		} else if (source == unlockCtr) {
 			// Overwrite...
 			if(!unlockCtr.keepLocked()) {
-				vfsLockManager.unlock(existingVFSItem, getIdentity(), VFSLockApplicationType.vfs);
+				vfsLockManager.unlock(existingVFSItem, VFSLockApplicationType.vfs);
 			}
 			
 			unlockDialogBox.deactivate();

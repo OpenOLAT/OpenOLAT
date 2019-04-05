@@ -145,7 +145,7 @@ public class FileEditorController extends BasicController {
 	
 	private void doUnlock() {
 		if (temporaryLock) {
-			vfsLockManager.unlock(vfsLeaf, getIdentity(), VFSLockApplicationType.vfs);
+			vfsLockManager.unlock(vfsLeaf, VFSLockApplicationType.vfs);
 		}
 	}
 }

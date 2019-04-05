@@ -67,6 +67,6 @@ public interface CollaboraService {
 
 	LockResult lock(VFSLeaf vfsLeaf, Identity identity);
 
-	void unlock(VFSLeaf vfsLeaf, Identity identity, LockResult lock);
+	void unlock(VFSLeaf vfsLeaf, LockResult lock);
 
 }

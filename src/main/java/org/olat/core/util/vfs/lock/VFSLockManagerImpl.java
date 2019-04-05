@@ -374,7 +374,7 @@ public class VFSLockManagerImpl implements VFSLockManager {
      * 
      */
 	@Override
-	public boolean unlock(VFSItem item, Identity identity, VFSLockApplicationType type) {
+	public boolean unlock(VFSItem item, VFSLockApplicationType type) {
 		if (item != null && item.canMeta() == VFSConstants.YES) {
 			VFSMetadata info = item.getMetaInfo();
 			if(info == null) return false;
@@ -384,7 +384,7 @@ public class VFSLockManagerImpl implements VFSLockManager {
 	}
 	
 	@Override
-	public boolean unlock(VFSItem item, Identity identity, LockResult result) {
+	public boolean unlock(VFSItem item, LockResult result) {
 		if (item != null && item.canMeta() == VFSConstants.YES) {
 			VFSMetadata info = item.getMetaInfo();
 			if(info == null) return false;
