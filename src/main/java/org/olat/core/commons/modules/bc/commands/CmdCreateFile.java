@@ -31,21 +31,18 @@ import org.olat.core.commons.editor.htmleditor.HTMLEditorConfig;
 import org.olat.core.commons.modules.bc.FolderEvent;
 import org.olat.core.commons.modules.bc.FolderLicenseHandler;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
-import org.olat.core.commons.services.doceditor.DocTemplates;
 import org.olat.core.commons.services.doceditor.DocEditor;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
 import org.olat.core.commons.services.doceditor.DocEditorSecurityCallback;
 import org.olat.core.commons.services.doceditor.DocEditorSecurityCallbackBuilder;
+import org.olat.core.commons.services.doceditor.DocTemplates;
 import org.olat.core.commons.services.doceditor.DocumentEditorService;
 import org.olat.core.commons.services.doceditor.ui.CreateDocumentController;
 import org.olat.core.commons.services.doceditor.ui.DocEditorFullscreenController;
-import org.olat.core.commons.services.license.License;
 import org.olat.core.commons.services.license.LicenseModule;
 import org.olat.core.commons.services.license.LicenseService;
-import org.olat.core.commons.services.license.ui.LicenseUIFactory;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
-import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -142,7 +139,6 @@ public class CmdCreateFile extends BasicController implements FolderCommand {
 					status = FolderCommandStatus.STATUS_FAILED;
 				} else {
 					fileName = vfsLeaf.getName();
-					addLicense(ureq);
 					doEdit(ureq);
 				}
 			} else {
@@ -153,21 +149,6 @@ public class CmdCreateFile extends BasicController implements FolderCommand {
 			fireEvent(ureq, FOLDERCOMMAND_FINISHED);
 			notifyFinished(ureq);
 			cleanUp();
-		}
-	}
-
-	private void addLicense(UserRequest ureq) {
-		if (vfsLeaf != null && vfsLeaf.canMeta() == VFSConstants.YES) {
-			VFSMetadata meta = vfsLeaf.getMetaInfo();
-			meta.setAuthor(ureq.getIdentity());
-			if (licenseModule.isEnabled(licenseHandler)) {
-				License license = licenseService.createDefaultLicense(licenseHandler, getIdentity());
-				meta.setLicenseType(license.getLicenseType());
-				meta.setLicenseTypeName(license.getLicenseType().getName());
-				meta.setLicensor(license.getLicensor());
-				meta.setLicenseText(LicenseUIFactory.getLicenseText(license));
-			}
-			vfsRepositoryService.updateMetadata(meta);
 		}
 	}
 
