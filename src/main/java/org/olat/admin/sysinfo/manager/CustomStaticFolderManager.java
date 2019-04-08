@@ -28,6 +28,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.callbacks.FullAccessCallback;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Service;
 
@@ -55,7 +56,9 @@ public class CustomStaticFolderManager implements InitializingBean, WebDAVProvid
 
 	public VFSContainer getRootContainer() {
 		File file = new File(WebappHelper.getUserDataRoot(), STATIC_FOLDER);
-		return new LocalFolderImpl(file);
+		VFSContainer rootContainer = new LocalFolderImpl(file);
+		rootContainer.setLocalSecurityCallback(new FullAccessCallback());
+		return rootContainer;
 	}
 	
 	public File getRootFile() {
