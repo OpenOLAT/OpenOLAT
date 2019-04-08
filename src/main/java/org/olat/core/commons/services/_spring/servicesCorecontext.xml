@@ -123,13 +123,13 @@
 		<property name="order" value="8256" />
 		<property name="actionController">	
 			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
-				<property name="className" value="org.olat.core.commons.services.doceditor.collabora.ui.CollaboraAdminController"/>
+				<property name="className" value="org.olat.core.commons.services.doceditor.ui.AdminDocEditorController"/>
 			</bean>
 		</property>
-		<property name="navigationKey" value="collabora" />
+		<property name="navigationKey" value="doceditor" />
 		<property name="i18nActionKey" value="admin.menu.title"/>
 		<property name="i18nDescriptionKey" value="admin.menu.title.alt"/>
-		<property name="translationPackage" value="org.olat.core.commons.services.doceditor.collabora.ui"/>
+		<property name="translationPackage" value="org.olat.core.commons.services.doceditor.ui"/>
 		<property name="parentTreeNodeIdentifier" value="externalToolsParent" /> 
 		<property name="extensionPoints">
 			<list>	

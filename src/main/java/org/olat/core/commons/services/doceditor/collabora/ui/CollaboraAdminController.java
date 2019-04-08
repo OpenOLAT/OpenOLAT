@@ -75,6 +75,7 @@ public class CollaboraAdminController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("admin.title");
+		setFormDescription("admin.desc");
 		
 		enabledEl = uifactory.addCheckboxesHorizontal("admin.enabled", formLayout, ENABLED_KEYS, translateAll(getTranslator(), ENABLED_KEYS));
 		enabledEl.select(ENABLED_KEYS[0], collaboraModule.isEnabled());
@@ -83,7 +84,8 @@ public class CollaboraAdminController extends FormBasicController {
 		baseUrlEl = uifactory.addTextElement("admin.url", 128, url, formLayout);
 		baseUrlEl.setMandatory(true);
 		
-		refreshDiscoveryLink = uifactory.addFormLink("admin.refresh.discovery", formLayout, Link.BUTTON);
+		refreshDiscoveryLink = uifactory.addFormLink("admin.refresh.discovery", "admin.refresh.discovery", "admin.refresh.discovery.label", formLayout, Link.BUTTON);
+		refreshDiscoveryLink.setHelpTextKey("admin.refresh.discovery.help", null);
 		
 		if (Settings.isDebuging()) {
 			testLink = uifactory.addFormLink("admin.test", formLayout, Link.BUTTON);
@@ -122,7 +124,11 @@ public class CollaboraAdminController extends FormBasicController {
 		
 		String url = baseUrlEl.getValue();
 		url = url.endsWith("/")? url: url + "/";
+		boolean urlChanged = !url.equals(collaboraModule.getBaseUrl());
 		collaboraModule.setBaseUrl(url);
+		if (urlChanged) {
+			doRefreshDiscovery();
+		}
 	}
 
 	@Override

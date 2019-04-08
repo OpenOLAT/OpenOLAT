@@ -24,8 +24,8 @@ import java.io.InputStream;
 
 import javax.annotation.PostConstruct;
 
-import org.olat.core.commons.services.doceditor.DocEditorSecurityCallback;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
+import org.olat.core.commons.services.doceditor.DocEditorSecurityCallback;
 import org.olat.core.commons.services.doceditor.collabora.CollaboraModule;
 import org.olat.core.commons.services.doceditor.collabora.CollaboraRefreshDiscoveryEvent;
 import org.olat.core.commons.services.doceditor.collabora.CollaboraService;
@@ -129,7 +129,7 @@ public class CollaboraServiceImpl implements CollaboraService, GenericEventListe
 		boolean updated = false;
 		try {
 			if(access.isVersionControlled() && vfsLeaf.canVersion() == VFSConstants.YES) {
-				updated = vfsRepositoryService.addVersion(vfsLeaf, access.getIdentity(), "Collabora Office",
+				updated = vfsRepositoryService.addVersion(vfsLeaf, access.getIdentity(), "Collabora Online",
 						fileInputStream);
 			} else {
 				updated = VFSManager.copyContent(fileInputStream, vfsLeaf);
