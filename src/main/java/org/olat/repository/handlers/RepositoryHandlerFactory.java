@@ -80,11 +80,11 @@ public class RepositoryHandlerFactory {
 		registerHandler(new PortfolioHandler(), 42);
 		
 		
-		VFSEditorDelegate wordDelegate = new VFSEditorDelegate(new WordVFSEditorDelegateType());
+		DocumentEditorDelegate wordDelegate = new DocumentEditorDelegate(new WordVFSEditorDelegateType());
 		registerHandler(new WebDocumentHandler(DocFileResource.TYPE_NAME, wordDelegate, wordDelegate), 10001);
-		VFSEditorDelegate excelDelegate = new VFSEditorDelegate(new ExcelVFSEditorDelegateType());
+		DocumentEditorDelegate excelDelegate = new DocumentEditorDelegate(new ExcelVFSEditorDelegateType());
 		registerHandler(new WebDocumentHandler(XlsFileResource.TYPE_NAME, excelDelegate, excelDelegate), 10002);
-		VFSEditorDelegate powerPointDelegate = new VFSEditorDelegate(new PowerPointVFSEditorDelegateType());
+		DocumentEditorDelegate powerPointDelegate = new DocumentEditorDelegate(new PowerPointVFSEditorDelegateType());
 		registerHandler(new WebDocumentHandler(PowerpointFileResource.TYPE_NAME, powerPointDelegate, powerPointDelegate), 10003);
 		registerHandler(new WebDocumentHandler(PdfFileResource.TYPE_NAME), 10010);
 		registerHandler(new WebDocumentHandler(ImageFileResource.TYPE_NAME), 10011);

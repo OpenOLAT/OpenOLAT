@@ -19,7 +19,7 @@
  */
 package org.olat.course.nodes.gta.ui;
 
-import org.olat.core.commons.services.vfs.VFSLeafEditor.Mode;
+import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.gui.components.form.flexible.elements.DownloadLink;
 import org.olat.course.nodes.gta.model.TaskDefinition;
 

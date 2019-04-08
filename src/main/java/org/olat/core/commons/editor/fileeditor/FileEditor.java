@@ -23,9 +23,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
-import org.olat.core.commons.services.vfs.VFSLeafEditor;
-import org.olat.core.commons.services.vfs.VFSLeafEditorConfigs;
-import org.olat.core.commons.services.vfs.VFSLeafEditorSecurityCallback;
+import org.olat.core.commons.services.doceditor.DocEditor;
+import org.olat.core.commons.services.doceditor.DocEditorConfigs;
+import org.olat.core.commons.services.doceditor.DocEditorSecurityCallback;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -45,7 +45,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class FileEditor implements VFSLeafEditor {
+public class FileEditor implements DocEditor {
 	
 	private static final List<String> HTML_EDITOR_SUFFIX = Arrays.asList("html", "htm");
 	private static final List<String> TEXT_EDITOR_SUFFIX = Arrays.asList("txt", "css", "csv");
@@ -85,7 +85,7 @@ public class FileEditor implements VFSLeafEditor {
 
 	@Override
 	public Controller getRunController(UserRequest ureq, WindowControl wControl, Identity identity, VFSLeaf vfsLeaf,
-			VFSLeafEditorSecurityCallback secCallback, VFSLeafEditorConfigs configs) {
+			DocEditorSecurityCallback secCallback, DocEditorConfigs configs) {
 		return new FileEditorController(ureq, wControl, vfsLeaf, secCallback, configs);
 	}
 

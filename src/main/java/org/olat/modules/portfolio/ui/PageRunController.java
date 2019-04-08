@@ -27,10 +27,10 @@ import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.ui.UserCommentsAndRatingsController;
-import org.olat.core.commons.services.filetemplate.FileType;
+import org.olat.core.commons.services.doceditor.DocEditor.Mode;
+import org.olat.core.commons.services.doceditor.DocTemplate;
+import org.olat.core.commons.services.doceditor.DocumentEditorService;
 import org.olat.core.commons.services.pdf.PdfModule;
-import org.olat.core.commons.services.vfs.VFSLeafEditor.Mode;
-import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.Dropdown;
@@ -158,7 +158,7 @@ public class PageRunController extends BasicController implements TooledControll
 	@Autowired
 	private PortfolioService portfolioService;
 	@Autowired
-	private VFSRepositoryService vfsRepositoryService;
+	private DocumentEditorService vfsRepositoryService;
 	
 	public PageRunController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			BinderSecurityCallback secCallback, Page page, boolean openEditMode) {
@@ -804,9 +804,9 @@ public class PageRunController extends BasicController implements TooledControll
 		}
 
 		private boolean isCreateFilePossible() {
-			List<FileType> editableFileTypes = CreateFileHandler.getEditableFileTypes(getLocale()).getFileTypes();
-			for (FileType fileType: editableFileTypes) {
-				if (vfsRepositoryService.hasEditor(fileType.getSuffix(), Mode.EDIT)) {
+			List<DocTemplate> editableTemplates = CreateFileHandler.getEditableTemplates(getLocale()).getTemplates();
+			for (DocTemplate docTemplate: editableTemplates) {
+				if (vfsRepositoryService.hasEditor(docTemplate.getSuffix(), Mode.EDIT)) {
 					return true;
 				}
 			}

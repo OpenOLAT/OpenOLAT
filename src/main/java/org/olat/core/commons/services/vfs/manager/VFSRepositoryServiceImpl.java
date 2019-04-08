@@ -42,10 +42,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 import java.util.zip.Adler32;
 import java.util.zip.Checksum;
 
@@ -62,8 +60,6 @@ import org.olat.core.commons.services.license.LicenseType;
 import org.olat.core.commons.services.thumbnail.CannotGenerateThumbnailException;
 import org.olat.core.commons.services.thumbnail.FinalSize;
 import org.olat.core.commons.services.thumbnail.ThumbnailService;
-import org.olat.core.commons.services.vfs.VFSLeafEditor;
-import org.olat.core.commons.services.vfs.VFSLeafEditor.Mode;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSMetadataRef;
 import org.olat.core.commons.services.vfs.VFSRepositoryModule;
@@ -138,8 +134,6 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	private CoordinatorManager coordinatorManager;
 	@Autowired
 	private BaseSecurity securityManager;
-	@Autowired
-	private List<VFSLeafEditor> vfsLeafEditors;
 	
 	@Override
 	public void afterPropertiesSet() throws Exception {
@@ -1328,47 +1322,6 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		File versionFolder = new File(FolderConfig.getCanonicalVersionRoot(), relPath);
 		File fVersion = new File(versionFolder.getParentFile(), file.getName() + ".xml");
 		return fVersion.exists() ? fVersion : null;
-	}
-
-	@Override
-	public boolean hasEditor(String suffix, Mode mode) {
-		if (mode == null) return false;
-		
-		return vfsLeafEditors.stream()
-				.filter(VFSLeafEditor::isEnable)
-				.filter(editor -> editor.isSupportingFormat(suffix, mode))
-				.findFirst()
-				.isPresent();
-	}
-
-	@Override
-	public List<VFSLeafEditor> getEditors(String suffix, Mode mode) {
-		return vfsLeafEditors.stream()
-				.filter(VFSLeafEditor::isEnable)
-				.filter(editor -> editor.isSupportingFormat(suffix, mode))
-				.collect(Collectors.toList());
-	}
-
-	@Override
-	public Optional<VFSLeafEditor> getEditor(String editorType) {
-		return vfsLeafEditors.stream()
-				.filter(VFSLeafEditor::isEnable)
-				.filter(editor -> editor.getType().equals(editorType))
-				.findFirst();
-	}
-	
-	@Override
-	public boolean hasEditor(VFSLeaf vfsLeaf, Mode mode, Identity identity) {
-		if (mode == null) return false;
-		
-		String suffix = FileUtils.getFileSuffix(vfsLeaf.getName());
-		return vfsLeafEditors.stream()
-				.filter(VFSLeafEditor::isEnable)
-				.filter(editor -> editor.isSupportingFormat(suffix, mode))
-				.filter(editor -> !editor.isLockedForMe(vfsLeaf, mode, identity))
-				.findFirst()
-				.isPresent();
-		
 	}
 
 }

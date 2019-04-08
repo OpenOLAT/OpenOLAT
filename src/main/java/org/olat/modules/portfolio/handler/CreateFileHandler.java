@@ -19,14 +19,14 @@
  */
 package org.olat.modules.portfolio.handler;
 
-import static org.olat.core.commons.services.vfs.VFSLeafEditor.Mode.EDIT;
+import static org.olat.core.commons.services.doceditor.DocEditor.Mode.EDIT;
 
 import java.util.Locale;
 
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.services.filetemplate.FileTypes;
-import org.olat.core.commons.services.filetemplate.FileTypes.Builder;
-import org.olat.core.commons.services.vfs.VFSRepositoryService;
+import org.olat.core.commons.services.doceditor.DocTemplates;
+import org.olat.core.commons.services.doceditor.DocumentEditorService;
+import org.olat.core.commons.services.doceditor.DocTemplates.Builder;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.ceditor.PageElementAddController;
@@ -40,16 +40,16 @@ import org.olat.modules.portfolio.ui.media.CreateFileMediaController;
  */
 public class CreateFileHandler extends FileHandler {
 	
-	public static FileTypes getEditableFileTypes(Locale locale) {
-		VFSRepositoryService vfsService = CoreSpringFactory.getImpl(VFSRepositoryService.class);
-		Builder builder = FileTypes.builder(locale);
-		if (vfsService.hasEditor("docx", EDIT)) {
+	public static DocTemplates getEditableTemplates(Locale locale) {
+		DocumentEditorService docEditorService = CoreSpringFactory.getImpl(DocumentEditorService.class);
+		Builder builder = DocTemplates.builder(locale);
+		if (docEditorService.hasEditor("docx", EDIT)) {
 			builder.addDocx();
 		}
-		if (vfsService.hasEditor("xlsx", EDIT)) {
+		if (docEditorService.hasEditor("xlsx", EDIT)) {
 			builder.addXlsx();
 		}
-		if (vfsService.hasEditor("pptx", EDIT)) {
+		if (docEditorService.hasEditor("pptx", EDIT)) {
 			builder.addPptx();
 		}
 		return builder.build();
@@ -62,7 +62,7 @@ public class CreateFileHandler extends FileHandler {
 	
 	@Override
 	public PageElementAddController getAddPageElementController(UserRequest ureq, WindowControl wControl) {
-		return new CreateFileMediaController(ureq, wControl, getEditableFileTypes(ureq.getLocale()));
+		return new CreateFileMediaController(ureq, wControl, getEditableTemplates(ureq.getLocale()));
 	}
 
 }

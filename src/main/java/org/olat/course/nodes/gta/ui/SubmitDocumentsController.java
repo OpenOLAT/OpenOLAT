@@ -19,7 +19,8 @@
  */
 package org.olat.course.nodes.gta.ui;
 
-import static org.olat.core.commons.services.vfs.VFSLeafEditor.Mode.EDIT;
+import static org.olat.core.commons.services.doceditor.DocEditor.Mode.EDIT;
+import static org.olat.course.nodes.gta.ui.GTAUIFactory.getOpenMode;
 import static org.olat.course.nodes.gta.ui.GTAUIFactory.htmlOffice;
 
 import java.io.File;
@@ -33,13 +34,13 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.core.commons.modules.singlepage.SinglePageController;
-import org.olat.core.commons.services.vfs.VFSLeafEditor.Mode;
-import org.olat.core.commons.services.vfs.VFSLeafEditorConfigs;
-import org.olat.core.commons.services.vfs.VFSLeafEditorSecurityCallback;
-import org.olat.core.commons.services.vfs.VFSLeafEditorSecurityCallbackBuilder;
+import org.olat.core.commons.services.doceditor.DocEditor.Mode;
+import org.olat.core.commons.services.doceditor.DocEditorConfigs;
+import org.olat.core.commons.services.doceditor.DocEditorSecurityCallback;
+import org.olat.core.commons.services.doceditor.DocEditorSecurityCallbackBuilder;
+import org.olat.core.commons.services.doceditor.ui.DocEditorFullscreenController;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
-import org.olat.core.commons.services.vfs.ui.editor.VFSLeafEditorFullscreenController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -92,7 +93,7 @@ class SubmitDocumentsController extends FormBasicController {
 	private DocumentUploadController uploadCtrl, replaceCtrl;
 	private DialogBoxController confirmDeleteCtrl;
 	private SinglePageController viewDocCtrl;
-	private VFSLeafEditorFullscreenController vfsLeafEditorCtrl;
+	private DocEditorFullscreenController docEditorCtrl;
 	
 	private final int maxDocs;
 	private final String docI18nKey;
@@ -112,7 +113,7 @@ class SubmitDocumentsController extends FormBasicController {
 	@Autowired
 	private UserManager userManager;
 	@Autowired
-	private VFSRepositoryService vfsService;
+	private VFSRepositoryService vfsRepositoryService;
 	
 	public SubmitDocumentsController(UserRequest ureq, WindowControl wControl, Task assignedTask,
 			File documentsDir, VFSContainer documentsContainer, int maxDocs, GTACourseNode cNode,
@@ -210,7 +211,7 @@ class SubmitDocumentsController extends FormBasicController {
 			
 			if(item instanceof VFSLeaf) {
 				VFSLeaf vfsLeaf = (VFSLeaf)item;
-				openMode = getOpenMode(vfsLeaf);
+				openMode = getOpenMode(vfsLeaf, getIdentity(), readOnly);
 			}
 			docList.add(new SubmittedSolution(document, uploadedBy, download, openMode));
 		}
@@ -237,15 +238,6 @@ class SubmitDocumentsController extends FormBasicController {
 		}
 		
 		flc.contextPut("hasDocuments", Boolean.valueOf(hasUploadDocuments()));
-	}
-	
-	private Mode getOpenMode(VFSLeaf vfsLeaf) {
-		if (!readOnly && vfsService.hasEditor(vfsLeaf, Mode.EDIT, getIdentity())) {
-			return Mode.EDIT;
-		} else if (vfsService.hasEditor(vfsLeaf, Mode.VIEW, getIdentity())) {
-			return Mode.VIEW;
-		}
-		return null;
 	}
 	
 	@Override
@@ -298,9 +290,9 @@ class SubmitDocumentsController extends FormBasicController {
 				updateModel();
 			} 
 			checkDeadline(ureq);
-		} else if (source == vfsLeafEditorCtrl) {
+		} else if (source == docEditorCtrl) {
 			if(event == Event.DONE_EVENT) {
-				fireEvent(ureq, new SubmitEvent(SubmitEvent.UPDATE, vfsLeafEditorCtrl.getVfsLeaf().getName()));
+				fireEvent(ureq, new SubmitEvent(SubmitEvent.UPDATE, docEditorCtrl.getVfsLeaf().getName()));
 				gtaManager.markNews(courseEnv, gtaNode);
 			}
 			updateModel();
@@ -314,13 +306,13 @@ class SubmitDocumentsController extends FormBasicController {
 	
 	private void cleanUp() {
 		removeAsListenerAndDispose(confirmDeleteCtrl);
-		removeAsListenerAndDispose(vfsLeafEditorCtrl);
+		removeAsListenerAndDispose(docEditorCtrl);
 		removeAsListenerAndDispose(viewDocCtrl);
 		removeAsListenerAndDispose(uploadCtrl);
 		removeAsListenerAndDispose(newDocCtrl);
 		removeAsListenerAndDispose(cmc);
 		confirmDeleteCtrl = null;
-		vfsLeafEditorCtrl = null;
+		docEditorCtrl = null;
 		viewDocCtrl = null;
 		uploadCtrl = null;
 		newDocCtrl = null;
@@ -410,12 +402,12 @@ class SubmitDocumentsController extends FormBasicController {
 		if(vfsItem == null || !(vfsItem instanceof VFSLeaf)) {
 			showError("error.missing.file");
 		} else {
-			VFSLeafEditorSecurityCallback secCallback = VFSLeafEditorSecurityCallbackBuilder.builder()
+			DocEditorSecurityCallback secCallback = DocEditorSecurityCallbackBuilder.builder()
 					.withMode(mode)
 					.build();
-			VFSLeafEditorConfigs configs = GTAUIFactory.getEditorConfig(documentsContainer, filename, null);
-			vfsLeafEditorCtrl = new VFSLeafEditorFullscreenController(ureq, getWindowControl(), (VFSLeaf)vfsItem, secCallback, configs);
-			listenTo(vfsLeafEditorCtrl);
+			DocEditorConfigs configs = GTAUIFactory.getEditorConfig(documentsContainer, filename, null);
+			docEditorCtrl = new DocEditorFullscreenController(ureq, getWindowControl(), (VFSLeaf)vfsItem, secCallback, configs);
+			listenTo(docEditorCtrl);
 		}
 	}
 	
@@ -446,7 +438,7 @@ class SubmitDocumentsController extends FormBasicController {
 			if(downloadedFile != null && downloadedFile.canMeta() == VFSConstants.YES) {
 				VFSMetadata  metadata = downloadedFile.getMetaInfo();
 				metadata.setAuthor(ureq.getIdentity());
-				vfsService.updateMetadata(metadata);
+				vfsRepositoryService.updateMetadata(metadata);
 			}
 		} catch (IOException e) {
 			logError("", e);

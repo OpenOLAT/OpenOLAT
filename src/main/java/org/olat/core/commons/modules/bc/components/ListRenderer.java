@@ -37,11 +37,12 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FileSelection;
 import org.olat.core.commons.modules.bc.FolderLicenseHandler;
 import org.olat.core.commons.modules.bc.FolderManager;
+import org.olat.core.commons.services.doceditor.DocEditor.Mode;
+import org.olat.core.commons.services.doceditor.DocumentEditorService;
 import org.olat.core.commons.services.license.License;
 import org.olat.core.commons.services.license.LicenseHandler;
 import org.olat.core.commons.services.license.LicenseModule;
 import org.olat.core.commons.services.license.ui.LicenseRenderer;
-import org.olat.core.commons.services.vfs.VFSLeafEditor.Mode;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.commons.services.vfs.VFSVersionModule;
@@ -96,6 +97,7 @@ public class ListRenderer {
 	private VFSRepositoryService vfsRepositoryService;
 	private VFSVersionModule vfsVersionModule;
 	private VFSLockManager lockManager;
+	private DocumentEditorService docEditorService;
 	private UserManager userManager;
 	boolean licensesEnabled ;
  	
@@ -128,6 +130,9 @@ public class ListRenderer {
 		}
 		if(vfsVersionModule == null) {
 			vfsVersionModule = CoreSpringFactory.getImpl(VFSVersionModule.class);
+		}
+		if (docEditorService == null) {
+			docEditorService = CoreSpringFactory.getImpl(DocumentEditorService.class);
 		}
 		
 		LicenseModule licenseModule = CoreSpringFactory.getImpl(LicenseModule.class);
@@ -508,9 +513,9 @@ public class ListRenderer {
 	private String getOpenIconCss(VFSItem child, boolean canWrite, Identity identity) {
 		if (child instanceof VFSLeaf) {
 			VFSLeaf vfsLeaf = (VFSLeaf) child;
-			if (canWrite && vfsRepositoryService.hasEditor(vfsLeaf, Mode.EDIT, identity)) {
+			if (canWrite && docEditorService.hasEditor(vfsLeaf, Mode.EDIT, identity)) {
 				return "o_icon_edit";
-			} else if (vfsRepositoryService.hasEditor(vfsLeaf, Mode.VIEW, identity)) {
+			} else if (docEditorService.hasEditor(vfsLeaf, Mode.VIEW, identity)) {
 				return "o_icon_preview";
 			}
 		}

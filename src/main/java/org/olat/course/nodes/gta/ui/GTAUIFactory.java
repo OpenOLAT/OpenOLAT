@@ -19,17 +19,20 @@
  */
 package org.olat.course.nodes.gta.ui;
 
-import static org.olat.core.commons.services.vfs.VFSLeafEditor.Mode.EDIT;
+import static org.olat.core.commons.services.doceditor.DocEditor.Mode.EDIT;
 
 import java.util.Locale;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.editor.htmleditor.HTMLEditorConfig;
-import org.olat.core.commons.services.filetemplate.FileTypes;
-import org.olat.core.commons.services.filetemplate.FileTypes.Builder;
-import org.olat.core.commons.services.vfs.VFSLeafEditorConfigs;
-import org.olat.core.commons.services.vfs.VFSRepositoryService;
+import org.olat.core.commons.services.doceditor.DocEditor.Mode;
+import org.olat.core.commons.services.doceditor.DocTemplates;
+import org.olat.core.commons.services.doceditor.DocEditorConfigs;
+import org.olat.core.commons.services.doceditor.DocumentEditorService;
+import org.olat.core.commons.services.doceditor.DocTemplates.Builder;
+import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.edusharing.VFSEdusharingProvider;
 import org.olat.repository.ui.settings.LazyRepositoryEdusharingProvider;
 
@@ -41,7 +44,17 @@ import org.olat.repository.ui.settings.LazyRepositoryEdusharingProvider;
  */
 class GTAUIFactory {
 	
-	static VFSLeafEditorConfigs getEditorConfig(VFSContainer vfsContainer, String filePath, Long courseRepoKey) {
+	static Mode getOpenMode(VFSLeaf vfsLeaf, Identity identity, boolean readOnly) {
+		DocumentEditorService docEditorService = CoreSpringFactory.getImpl(DocumentEditorService.class);
+		if (!readOnly && docEditorService.hasEditor(vfsLeaf, Mode.EDIT, identity)) {
+			return Mode.EDIT;
+		} else if (docEditorService.hasEditor(vfsLeaf, Mode.VIEW, identity)) {
+			return Mode.VIEW;
+		}
+		return null;
+	}
+	
+	static DocEditorConfigs getEditorConfig(VFSContainer vfsContainer, String filePath, Long courseRepoKey) {
 		VFSEdusharingProvider edusharingProvider = courseRepoKey != null
 				? new LazyRepositoryEdusharingProvider(courseRepoKey)
 				: null;
@@ -51,24 +64,24 @@ class GTAUIFactory {
 				.withDisableMedia(true)
 				.withEdusharingProvider(edusharingProvider)
 				.build();
-		 return VFSLeafEditorConfigs.builder()
+		 return DocEditorConfigs.builder()
 				.addConfig(htmlEditorConfig)
 				.build();
 	}
 	
-	static FileTypes htmlOffice(Locale locale) {
-		VFSRepositoryService vfsService = CoreSpringFactory.getImpl(VFSRepositoryService.class);
-		Builder builder = FileTypes.builder(locale);
-		if (vfsService.hasEditor("html", EDIT)) {
+	static DocTemplates htmlOffice(Locale locale) {
+		DocumentEditorService docEditorService = CoreSpringFactory.getImpl(DocumentEditorService.class);
+		Builder builder = DocTemplates.builder(locale);
+		if (docEditorService.hasEditor("html", EDIT)) {
 			builder.addHtml();
 		}
-		if (vfsService.hasEditor("docx", EDIT)) {
+		if (docEditorService.hasEditor("docx", EDIT)) {
 			builder.addDocx();
 		}
-		if (vfsService.hasEditor("xlsx", EDIT)) {
+		if (docEditorService.hasEditor("xlsx", EDIT)) {
 			builder.addXlsx();
 		}
-		if (vfsService.hasEditor("pptx", EDIT)) {
+		if (docEditorService.hasEditor("pptx", EDIT)) {
 			builder.addPptx();
 		}
 		return builder.build();

@@ -21,7 +21,7 @@ package org.olat.repository.handlers;
 
 import java.io.InputStream;
 
-import org.olat.core.commons.services.filetemplate.ContentProviderFactory;
+import org.olat.core.commons.services.doceditor.ContentProviderFactory;
 import org.olat.core.id.OLATResourceable;
 import org.olat.fileresource.types.DocFileResource;
 
@@ -31,7 +31,7 @@ import org.olat.fileresource.types.DocFileResource;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class WordVFSEditorDelegateType implements VFSEditorDelegateType {
+public class WordVFSEditorDelegateType implements DocumentEditorDelegateType {
 
 	@Override
 	public String getCreateLabelI18nKey() {

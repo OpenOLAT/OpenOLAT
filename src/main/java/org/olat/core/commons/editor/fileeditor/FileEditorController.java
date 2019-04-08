@@ -32,10 +32,10 @@ import org.olat.core.commons.editor.htmleditor.HTMLEditorController;
 import org.olat.core.commons.editor.htmleditor.HTMLReadOnlyController;
 import org.olat.core.commons.editor.htmleditor.WysiwygFactory;
 import org.olat.core.commons.editor.plaintexteditor.TextEditorController;
-import org.olat.core.commons.services.vfs.VFSLeafEditor.Mode;
-import org.olat.core.commons.services.vfs.VFSLeafEditorConfigs;
-import org.olat.core.commons.services.vfs.VFSLeafEditorConfigs.Config;
-import org.olat.core.commons.services.vfs.VFSLeafEditorSecurityCallback;
+import org.olat.core.commons.services.doceditor.DocEditorConfigs;
+import org.olat.core.commons.services.doceditor.DocEditorSecurityCallback;
+import org.olat.core.commons.services.doceditor.DocEditor.Mode;
+import org.olat.core.commons.services.doceditor.DocEditorConfigs.Config;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -64,7 +64,7 @@ public class FileEditorController extends BasicController {
 	private VFSLockManager vfsLockManager;
 
 	protected FileEditorController(UserRequest ureq, WindowControl wControl, VFSLeaf vfsLeaf,
-			VFSLeafEditorSecurityCallback secCallback, VFSLeafEditorConfigs configs) {
+			DocEditorSecurityCallback secCallback, DocEditorConfigs configs) {
 		super(ureq, wControl);
 		this.vfsLeaf = vfsLeaf;
 		

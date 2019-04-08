@@ -21,8 +21,8 @@ package org.olat.course.nodes.gta.ui;
 
 import java.util.List;
 
-import org.olat.core.commons.services.filetemplate.FileType;
-import org.olat.core.commons.services.filetemplate.FileTypes;
+import org.olat.core.commons.services.doceditor.DocTemplate;
+import org.olat.core.commons.services.doceditor.DocTemplates;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
@@ -53,17 +53,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class NewSolutionController extends FormBasicController {
 	
 	private TextElement filenameEl, titleEl;
-	private SingleSelection fileTypeEl;
+	private SingleSelection docTypeEl;
 	private final VFSContainer documentContainer;
-	private final List<FileType> fileTypes;
+	private final List<DocTemplate> templates;
 	
 	@Autowired
 	private VFSRepositoryService vfsService;
 	
-	public NewSolutionController(UserRequest ureq, WindowControl wControl, VFSContainer documentContainer, FileTypes fileTypes) {
+	public NewSolutionController(UserRequest ureq, WindowControl wControl, VFSContainer documentContainer, DocTemplates docTemplates) {
 		super(ureq, wControl);
 		this.documentContainer = documentContainer;
-		this.fileTypes = fileTypes.getFileTypes();
+		this.templates = docTemplates.getTemplates();
 		initForm(ureq);
 	}
 
@@ -75,21 +75,21 @@ public class NewSolutionController extends FormBasicController {
 		titleEl.setElementCssClass("o_sel_course_gta_upload_task_title");
 		titleEl.setMandatory(true);
 		
-		String[] fileTypeKeys = new String[fileTypes.size()];
-		String[] fileTypeValues = new String[fileTypes.size()];
-		String[] fileTypeSuffix = new String[fileTypes.size()];
-		for (int i = 0; i < fileTypes.size(); i++) {
-			FileType fileType = fileTypes.get(i);
-			String name = fileType.getName() + " (." + fileType.getSuffix() + ")";
+		String[] fileTypeKeys = new String[templates.size()];
+		String[] fileTypeValues = new String[templates.size()];
+		String[] fileTypeSuffix = new String[templates.size()];
+		for (int i = 0; i < templates.size(); i++) {
+			DocTemplate docTemplate = templates.get(i);
+			String name = docTemplate.getName() + " (." + docTemplate.getSuffix() + ")";
 			fileTypeKeys[i] = String.valueOf(i);
 			fileTypeValues[i] = name;
-			fileTypeSuffix[i] = fileType.getSuffix();
+			fileTypeSuffix[i] = docTemplate.getSuffix();
 		}
-		fileTypeEl = uifactory.addDropdownSingleselect("file.type", formLayout, fileTypeKeys, fileTypeValues, fileTypeSuffix);
-		fileTypeEl.setElementCssClass("o_sel_course_gta_doc_filetype");
-		fileTypeEl.setMandatory(true);
-		if (fileTypes.size() == 1) {
-			fileTypeEl.setVisible(false);
+		docTypeEl = uifactory.addDropdownSingleselect("file.type", formLayout, fileTypeKeys, fileTypeValues, fileTypeSuffix);
+		docTypeEl.setElementCssClass("o_sel_course_gta_doc_filetype");
+		docTypeEl.setMandatory(true);
+		if (templates.size() == 1) {
+			docTypeEl.setVisible(false);
 		}
 
 		filenameEl = uifactory.addTextElement("fileName", "file.name", -1, "", formLayout);
@@ -106,8 +106,8 @@ public class NewSolutionController extends FormBasicController {
 		String jsPage = velocity_root + "/new_task_js.html";
 		FormLayoutContainer jsCont = FormLayoutContainer.createCustomFormLayout("js", getTranslator(), jsPage);
 		jsCont.contextPut("titleId", titleEl.getFormDispatchId());
-		jsCont.contextPut("filetypeId", fileTypeEl.getFormDispatchId());
-		jsCont.contextPut("filetypeDefaultSuffix", fileTypes.get(0).getSuffix());
+		jsCont.contextPut("filetypeId", docTypeEl.getFormDispatchId());
+		jsCont.contextPut("filetypeDefaultSuffix", templates.get(0).getSuffix());
 		jsCont.contextPut("filenameId", filenameEl.getFormDispatchId());
 		formLayout.add(jsCont);
 	}
@@ -119,16 +119,16 @@ public class NewSolutionController extends FormBasicController {
 	
 	private String getFilename() {
 		String fileName = filenameEl.getValue().toLowerCase();
-		FileType fileType = getSelectedFileType();
-		String suffix = fileType != null? fileType.getSuffix(): "";
+		DocTemplate docTemplate = getSelectedTemplate();
+		String suffix = docTemplate != null? docTemplate.getSuffix(): "";
 		return fileName.endsWith("." + suffix)
 				? fileName
 				: fileName + "." + suffix;
 	}
 
-	private FileType getSelectedFileType() {
-		int index = fileTypeEl.getSelected();
-		return index >= 0? fileTypes.get(index): fileTypes.get(0);
+	private DocTemplate getSelectedTemplate() {
+		int index = docTypeEl.getSelected();
+		return index >= 0? templates.get(index): templates.get(0);
 	}
 	
 	public Solution getSolution() {
@@ -178,9 +178,9 @@ public class NewSolutionController extends FormBasicController {
 			documentName = VFSManager.rename(documentContainer, documentName);
 			vfsLeaf = documentContainer.createChildLeaf(documentName);
 		}
-		FileType fileType = getSelectedFileType();
-		if (fileType != null) {
-			VFSManager.copyContent(fileType.getContentProvider().getContent(), vfsLeaf);
+		DocTemplate docTemplate = getSelectedTemplate();
+		if (docTemplate != null) {
+			VFSManager.copyContent(docTemplate.getContentProvider().getContent(), vfsLeaf);
 		}
 		if(vfsLeaf.canMeta() == VFSConstants.YES) {
 			VFSMetadata metaInfo = vfsLeaf.getMetaInfo();

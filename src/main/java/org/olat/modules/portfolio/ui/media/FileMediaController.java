@@ -22,12 +22,12 @@ package org.olat.modules.portfolio.ui.media;
 import java.util.Arrays;
 import java.util.List;
 
-import org.olat.core.commons.services.vfs.VFSLeafEditor.Mode;
-import org.olat.core.commons.services.vfs.VFSLeafEditorConfigs;
-import org.olat.core.commons.services.vfs.VFSLeafEditorSecurityCallback;
-import org.olat.core.commons.services.vfs.VFSLeafEditorSecurityCallbackBuilder;
-import org.olat.core.commons.services.vfs.VFSRepositoryService;
-import org.olat.core.commons.services.vfs.ui.editor.VFSLeafEditorFullscreenController;
+import org.olat.core.commons.services.doceditor.DocEditor.Mode;
+import org.olat.core.commons.services.doceditor.DocEditorConfigs;
+import org.olat.core.commons.services.doceditor.DocEditorSecurityCallback;
+import org.olat.core.commons.services.doceditor.DocEditorSecurityCallbackBuilder;
+import org.olat.core.commons.services.doceditor.DocumentEditorService;
+import org.olat.core.commons.services.doceditor.ui.DocEditorFullscreenController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -70,7 +70,7 @@ public class FileMediaController extends BasicController implements PageElementE
 	private VelocityContainer mainVC;
 	private Link editLink;
 
-	private VFSLeafEditorFullscreenController vfsLeafEditorCtrl;
+	private DocEditorFullscreenController docEditorCtrl;
 
 	private final Media media;
 	private final MediaRenderingHints hints;
@@ -83,7 +83,8 @@ public class FileMediaController extends BasicController implements PageElementE
 	@Autowired
 	private UserManager userManager;
 	@Autowired
-	private VFSRepositoryService vfsService;
+	private DocumentEditorService docEditorService;
+	
 	public FileMediaController(UserRequest ureq, WindowControl wControl, Media media, MediaRenderingHints hints) {
 		super(ureq, wControl);
 		this.media = media;
@@ -140,7 +141,7 @@ public class FileMediaController extends BasicController implements PageElementE
 		
 		if (vfsLeaf != null && !hints.isToPdf()) {
 			Mode mode = getOpenMode();
-			if (vfsService.hasEditor(vfsLeaf, mode, getIdentity())) {
+			if (docEditorService.hasEditor(vfsLeaf, mode, getIdentity())) {
 				editLink = LinkFactory.createCustomLink("edit", "edit", "", Link.NONTRANSLATED | Link.LINK, mainVC,
 						this);
 				String editIcon = Mode.EDIT.equals(mode)? "o_icon_edit": "o_icon_preview";
@@ -164,9 +165,9 @@ public class FileMediaController extends BasicController implements PageElementE
 	private Mode getOpenMode() {
 		if (isEditingExcluded()) {
 			return null;
-		} else if (editMode && vfsService.hasEditor(vfsLeaf, Mode.EDIT, getIdentity())) {
+		} else if (editMode && docEditorService.hasEditor(vfsLeaf, Mode.EDIT, getIdentity())) {
 			return Mode.EDIT;
-		} else if (vfsService.hasEditor(vfsLeaf, Mode.VIEW, getIdentity())) {
+		} else if (docEditorService.hasEditor(vfsLeaf, Mode.VIEW, getIdentity())) {
 			return Mode.VIEW;
 		}
 		return null;
@@ -187,7 +188,7 @@ public class FileMediaController extends BasicController implements PageElementE
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == vfsLeafEditorCtrl) {
+		if (source == docEditorCtrl) {
 			if(event == Event.DONE_EVENT) {
 				cleanUp();
 			}
@@ -196,8 +197,8 @@ public class FileMediaController extends BasicController implements PageElementE
 	}
 	
 	private void cleanUp() {
-		removeAsListenerAndDispose(vfsLeafEditorCtrl);
-		vfsLeafEditorCtrl = null;
+		removeAsListenerAndDispose(docEditorCtrl);
+		docEditorCtrl = null;
 	}
 
 	private void doOpen(UserRequest ureq, Mode mode) {
@@ -206,12 +207,12 @@ public class FileMediaController extends BasicController implements PageElementE
 		if(vfsItem == null || !(vfsItem instanceof VFSLeaf)) {
 			showError("error.missing.file");
 		} else {
-			VFSLeafEditorSecurityCallback secCallback = VFSLeafEditorSecurityCallbackBuilder.builder()
+			DocEditorSecurityCallback secCallback = DocEditorSecurityCallbackBuilder.builder()
 					.withMode(mode)
 					.build();
-			VFSLeafEditorConfigs configs = VFSLeafEditorConfigs.builder().build();
-			vfsLeafEditorCtrl = new VFSLeafEditorFullscreenController(ureq, getWindowControl(), (VFSLeaf)vfsItem, secCallback, configs);
-			listenTo(vfsLeafEditorCtrl);
+			DocEditorConfigs configs = DocEditorConfigs.builder().build();
+			docEditorCtrl = new DocEditorFullscreenController(ureq, getWindowControl(), (VFSLeaf)vfsItem, secCallback, configs);
+			listenTo(docEditorCtrl);
 		}
 	}
 

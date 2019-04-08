@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 
 import org.olat.core.commons.persistence.SortKey;
-import org.olat.core.commons.services.filetemplate.FileTypes;
+import org.olat.core.commons.services.doceditor.DocTemplates;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
@@ -117,7 +117,7 @@ public class MediaCenterController extends FormBasicController
 	
 	private int counter = 0;
 	private final boolean select;
-	private final FileTypes editableFileTypes;
+	private final DocTemplates editableFileTypes;
 	private List<FormLink> tagLinks;
 	private final TooledStackedPanel stackPanel;
 
@@ -144,7 +144,7 @@ public class MediaCenterController extends FormBasicController
 		super(ureq, wControl, "medias");
 		this.stackPanel = null;
 		this.select = true;
-		this.editableFileTypes = CreateFileHandler.getEditableFileTypes(getLocale());
+		this.editableFileTypes = CreateFileHandler.getEditableTemplates(getLocale());
 		 
 		initForm(ureq);
 		loadModel();
@@ -154,7 +154,7 @@ public class MediaCenterController extends FormBasicController
 		super(ureq, wControl, "medias");
 		this.stackPanel = stackPanel;
 		this.select = false;
-		this.editableFileTypes = CreateFileHandler.getEditableFileTypes(getLocale());
+		this.editableFileTypes = CreateFileHandler.getEditableTemplates(getLocale());
 		 
 		initForm(ureq);
 		loadModel();

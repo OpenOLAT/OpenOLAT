@@ -429,6 +429,8 @@ import org.junit.runners.Suite;
 	/**
 	 * Pure JUnit test without need of framework
 	 */
+	org.olat.core.commons.services.doceditor.wopi.manager.WopiServiceImplTest.class,
+	org.olat.core.commons.services.doceditor.wopi.manager.WopiXStreamTest.class,
 	org.olat.core.commons.services.commentAndRating.manager.CommentAndRatingServiceTest.class,
 	org.olat.core.commons.services.license.ui.LicenseSelectionConfigTest.class,
 	org.olat.core.gui.components.form.flexible.impl.elements.richText.TextModeTest.class,
@@ -455,8 +457,6 @@ import org.junit.runners.Suite;
 	org.olat.modules.quality.manager.QualityServiceImplTest.class,
 	org.olat.modules.webFeed.manager.FeedManagerImplTest.class,
 	org.olat.modules.webFeed.manager.RomeFeedFetcherTest.class,
-	org.olat.modules.wopi.manager.WopiServiceImplTest.class,
-	org.olat.modules.wopi.manager.WopiXStreamTest.class,
 	org.olat.resource.accesscontrol.provider.auto.manager.AutoAccessManagerImplTest.class,
 	org.olat.resource.accesscontrol.provider.auto.manager.ExternalIdHandlerTest.class,
 	org.olat.resource.accesscontrol.provider.auto.manager.ExternalRefHandlerTest.class,

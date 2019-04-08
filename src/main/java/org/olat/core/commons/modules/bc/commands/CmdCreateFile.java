@@ -31,21 +31,22 @@ import org.olat.core.commons.editor.htmleditor.HTMLEditorConfig;
 import org.olat.core.commons.modules.bc.FolderEvent;
 import org.olat.core.commons.modules.bc.FolderLicenseHandler;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
-import org.olat.core.commons.services.filetemplate.FileTypes;
-import org.olat.core.commons.services.filetemplate.ui.CreateFileController;
+import org.olat.core.commons.services.doceditor.DocTemplates;
+import org.olat.core.commons.services.doceditor.DocEditor;
+import org.olat.core.commons.services.doceditor.DocEditorConfigs;
+import org.olat.core.commons.services.doceditor.DocEditorSecurityCallback;
+import org.olat.core.commons.services.doceditor.DocEditorSecurityCallbackBuilder;
+import org.olat.core.commons.services.doceditor.DocumentEditorService;
+import org.olat.core.commons.services.doceditor.ui.CreateDocumentController;
+import org.olat.core.commons.services.doceditor.ui.DocEditorFullscreenController;
 import org.olat.core.commons.services.license.License;
 import org.olat.core.commons.services.license.LicenseModule;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.license.ui.LicenseUIFactory;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
-import org.olat.core.commons.services.vfs.VFSLeafEditor;
-import org.olat.core.commons.services.vfs.VFSLeafEditorConfigs;
-import org.olat.core.commons.services.vfs.VFSLeafEditorSecurityCallback;
-import org.olat.core.commons.services.vfs.VFSLeafEditorSecurityCallbackBuilder;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
-import org.olat.core.commons.services.vfs.ui.editor.VFSLeafEditorFullscreenController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.Controller;
@@ -77,7 +78,7 @@ public class CmdCreateFile extends BasicController implements FolderCommand {
 	private String fileName;
 	
 	private CloseableModalController cmc;
-	private CreateFileController createCtrl;
+	private CreateDocumentController createCtrl;
 	private Controller editorCtr;
 	private FolderComponent folderComponent;
 	
@@ -91,6 +92,8 @@ public class CmdCreateFile extends BasicController implements FolderCommand {
 	private FolderLicenseHandler licenseHandler;
 	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
+	@Autowired
+	private DocumentEditorService docEditorService;
 
 	protected CmdCreateFile(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -113,8 +116,8 @@ public class CmdCreateFile extends BasicController implements FolderCommand {
 			return null;
 		}
 		
-		FileTypes fileTypes = FileTypes.editables(getLocale()).build();
-		createCtrl = new CreateFileController(ureq, wControl, folderComponent.getCurrentContainer(), fileTypes);
+		DocTemplates docTemplates = DocTemplates.editables(getLocale()).build();
+		createCtrl = new CreateDocumentController(ureq, wControl, folderComponent.getCurrentContainer(), docTemplates);
 		listenTo(createCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), createCtrl.getInitialComponent(),
@@ -181,7 +184,7 @@ public class CmdCreateFile extends BasicController implements FolderCommand {
 	
 	private void doEdit(UserRequest ureq) {
 		String suffix = FileUtils.getFileSuffix(vfsLeaf.getName());
-		List<VFSLeafEditor> editors = vfsRepositoryService.getEditors(suffix, VFSLeafEditor.Mode.EDIT);
+		List<DocEditor> editors = docEditorService.getEditors(suffix, DocEditor.Mode.EDIT);
 		// Not able to decide which editor to use -> show the folder list
 		if (editors.size() != 1) {
 			fireEvent(ureq, new FolderEvent(FolderEvent.NEW_FILE_EVENT, fileName));
@@ -189,15 +192,15 @@ public class CmdCreateFile extends BasicController implements FolderCommand {
 			return;
 		}
 		
-		VFSLeafEditorSecurityCallback secCallback = VFSLeafEditorSecurityCallbackBuilder.builder()
-				.withMode(VFSLeafEditor.Mode.EDIT)
+		DocEditorSecurityCallback secCallback = DocEditorSecurityCallbackBuilder.builder()
+				.withMode(DocEditor.Mode.EDIT)
 				.withVersionControlled(true)
 				.build();
 		HTMLEditorConfig htmlEditorConfig = getHtmlEditorConfig();
-		VFSLeafEditorConfigs configs = VFSLeafEditorConfigs.builder()
+		DocEditorConfigs configs = DocEditorConfigs.builder()
 				.addConfig(htmlEditorConfig)
 				.build();
-		editorCtr = new VFSLeafEditorFullscreenController(ureq, getWindowControl(), vfsLeaf, secCallback, configs);
+		editorCtr = new DocEditorFullscreenController(ureq, getWindowControl(), vfsLeaf, secCallback, configs);
 		listenTo(editorCtr);
 	}
 

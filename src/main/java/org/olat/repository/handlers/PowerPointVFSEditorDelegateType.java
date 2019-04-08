@@ -21,7 +21,7 @@ package org.olat.repository.handlers;
 
 import java.io.InputStream;
 
-import org.olat.core.commons.services.filetemplate.ContentProviderFactory;
+import org.olat.core.commons.services.doceditor.ContentProviderFactory;
 import org.olat.core.id.OLATResourceable;
 import org.olat.fileresource.types.XlsFileResource;
 
@@ -31,7 +31,7 @@ import org.olat.fileresource.types.XlsFileResource;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class PowerPointVFSEditorDelegateType implements VFSEditorDelegateType  {
+public class PowerPointVFSEditorDelegateType implements DocumentEditorDelegateType  {
 
 	@Override
 	public OLATResourceable getOLATResourceable() {

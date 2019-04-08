@@ -19,19 +19,19 @@
  */
 package org.olat.course.nodes.gta.ui;
 
+import static org.olat.course.nodes.gta.ui.GTAUIFactory.getOpenMode;
 import static org.olat.course.nodes.gta.ui.GTAUIFactory.htmlOffice;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.core.commons.services.vfs.VFSLeafEditor.Mode;
-import org.olat.core.commons.services.vfs.VFSLeafEditorConfigs;
-import org.olat.core.commons.services.vfs.VFSLeafEditorSecurityCallback;
-import org.olat.core.commons.services.vfs.VFSLeafEditorSecurityCallbackBuilder;
+import org.olat.core.commons.services.doceditor.DocEditor.Mode;
+import org.olat.core.commons.services.doceditor.DocEditorConfigs;
+import org.olat.core.commons.services.doceditor.DocEditorSecurityCallback;
+import org.olat.core.commons.services.doceditor.DocEditorSecurityCallbackBuilder;
+import org.olat.core.commons.services.doceditor.ui.DocEditorFullscreenController;
 import org.olat.core.commons.services.vfs.VFSMetadata;
-import org.olat.core.commons.services.vfs.VFSRepositoryService;
-import org.olat.core.commons.services.vfs.ui.editor.VFSLeafEditorFullscreenController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -79,7 +79,7 @@ public class GTASampleSolutionsEditController extends FormBasicController {
 	private EditSolutionController addSolutionCtrl;
 	private EditSolutionController editSolutionCtrl;
 	private NewSolutionController newSolutionCtrl;
-	private VFSLeafEditorFullscreenController vfsLeafEditorCtrl;
+	private DocEditorFullscreenController docEditorCtrl;
 	
 	private final File solutionDir;
 	private final boolean readOnly;
@@ -94,8 +94,6 @@ public class GTASampleSolutionsEditController extends FormBasicController {
 	private UserManager userManager;
 	@Autowired
 	private GTAManager gtaManager;
-	@Autowired
-	private VFSRepositoryService vfsService;
 	
 	public GTASampleSolutionsEditController(UserRequest ureq, WindowControl wControl, GTACourseNode gtaNode,
 			CourseEnvironment courseEnv, boolean readOnly) {
@@ -160,22 +158,13 @@ public class GTASampleSolutionsEditController extends FormBasicController {
 				VFSLeaf vfsLeaf = (VFSLeaf)item;
 				downloadLink = uifactory
 					.addDownloadLink("file_" + (++linkCounter), filename, null, vfsLeaf, solutionTable);
-				openMode = getOpenMode(vfsLeaf);
+				openMode = getOpenMode(vfsLeaf, getIdentity(), readOnly);
 			}
 
 			rows.add(new SolutionRow(solution, author, downloadLink, openMode));
 		}
 		solutionModel.setObjects(rows);
 		solutionTable.reset();
-	}
-	
-	private Mode getOpenMode(VFSLeaf vfsLeaf) {
-		if (!readOnly && vfsService.hasEditor(vfsLeaf, Mode.EDIT, getIdentity())) {
-			return Mode.EDIT;
-		} else if (vfsService.hasEditor(vfsLeaf, Mode.VIEW, getIdentity())) {
-			return Mode.VIEW;
-		}
-		return null;
 	}
 	
 	@Override
@@ -215,7 +204,7 @@ public class GTASampleSolutionsEditController extends FormBasicController {
 				updateModel();
 				gtaManager.markNews(courseEnv, gtaNode);
 			}
-		} else if (source == vfsLeafEditorCtrl) {
+		} else if (source == docEditorCtrl) {
 			if(event == Event.DONE_EVENT) {
 				gtaManager.markNews(courseEnv, gtaNode);
 				updateModel();
@@ -228,11 +217,11 @@ public class GTASampleSolutionsEditController extends FormBasicController {
 	}
 	
 	private void cleanUp() {
-		removeAsListenerAndDispose(vfsLeafEditorCtrl);
+		removeAsListenerAndDispose(docEditorCtrl);
 		removeAsListenerAndDispose(editSolutionCtrl);
 		removeAsListenerAndDispose(addSolutionCtrl);
 		removeAsListenerAndDispose(cmc);
-		vfsLeafEditorCtrl = null;
+		docEditorCtrl = null;
 		editSolutionCtrl = null;
 		addSolutionCtrl = null;
 		cmc = null;
@@ -270,12 +259,12 @@ public class GTASampleSolutionsEditController extends FormBasicController {
 		if(vfsItem == null || !(vfsItem instanceof VFSLeaf)) {
 			showError("error.missing.file");
 		} else {
-			VFSLeafEditorSecurityCallback secCallback = VFSLeafEditorSecurityCallbackBuilder.builder()
+			DocEditorSecurityCallback secCallback = DocEditorSecurityCallbackBuilder.builder()
 					.withMode(mode)
 					.build();
-			VFSLeafEditorConfigs configs = GTAUIFactory.getEditorConfig(solutionContainer, solution.getFilename(), courseRepoKey);
-			vfsLeafEditorCtrl = new VFSLeafEditorFullscreenController(ureq, getWindowControl(), (VFSLeaf)vfsItem, secCallback, configs);
-			listenTo(vfsLeafEditorCtrl);
+			DocEditorConfigs configs = GTAUIFactory.getEditorConfig(solutionContainer, solution.getFilename(), courseRepoKey);
+			docEditorCtrl = new DocEditorFullscreenController(ureq, getWindowControl(), (VFSLeaf)vfsItem, secCallback, configs);
+			listenTo(docEditorCtrl);
 		}
 	}
 

@@ -28,8 +28,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import org.olat.core.commons.services.filetemplate.FileType;
-import org.olat.core.commons.services.filetemplate.FileTypes;
+import org.olat.core.commons.services.doceditor.DocTemplate;
+import org.olat.core.commons.services.doceditor.DocTemplates;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
@@ -78,7 +78,7 @@ public class CreateFileMediaController extends FormBasicController implements Pa
 	private Media mediaReference;
 	private Map<String,String> categories = new HashMap<>();
 	
-	private final List<FileType> fileTypes;
+	private final List<DocTemplate> docTemplates;
 	private final String businessPath;
 	private AddElementInfos userObject;
 	
@@ -87,9 +87,9 @@ public class CreateFileMediaController extends FormBasicController implements Pa
 	@Autowired
 	private PortfolioService portfolioService;
 
-	public CreateFileMediaController(UserRequest ureq, WindowControl wControl, FileTypes fileTypes) {
+	public CreateFileMediaController(UserRequest ureq, WindowControl wControl, DocTemplates docTemplates) {
 		super(ureq, wControl);
-		this.fileTypes = fileTypes.getFileTypes();
+		this.docTemplates = docTemplates.getTemplates();
 		setTranslator(Util.createPackageTranslator(PortfolioHomeController.class, getLocale(), getTranslator()));
 		businessPath = "[HomeSite:" + getIdentity().getKey() + "][PortfolioV2:0][MediaCenter:0]";
 		initForm(ureq);
@@ -129,9 +129,9 @@ public class CreateFileMediaController extends FormBasicController implements Pa
 		descriptionEl.getEditorConfiguration().setPathInStatusBar(false);
 		
 		KeyValues fileTypeKV = new KeyValues();
-		for (int i = 0; i < fileTypes.size(); i++) {
-			FileType fileType = fileTypes.get(i);
-			String name = fileType.getName() + " (." + fileType.getSuffix() + ")";
+		for (int i = 0; i < docTemplates.size(); i++) {
+			DocTemplate docTemplate = docTemplates.get(i);
+			String name = docTemplate.getName() + " (." + docTemplate.getSuffix() + ")";
 			fileTypeKV.add(entry(String.valueOf(i), name));
 		}
 		fileTypeEl = uifactory.addDropdownSingleselect("create.file.type", formLayout, fileTypeKV.keys(), fileTypeKV.values());
@@ -199,16 +199,16 @@ public class CreateFileMediaController extends FormBasicController implements Pa
 	
 	private String getFileName() {
 		String fileName = fileNameEl.getValue();
-		FileType fileType = getSelectedFileType();
-		String suffix = fileType != null? fileType.getSuffix(): "";
+		DocTemplate docTemplate = getSelectedFileType();
+		String suffix = docTemplate != null? docTemplate.getSuffix(): "";
 		return fileName.endsWith("." + suffix)
 				? fileName
 				: fileName + "." + suffix;
 	}
 
-	private FileType getSelectedFileType() {
+	private DocTemplate getSelectedFileType() {
 		int index = fileTypeEl.getSelected();
-		return index > -1? fileTypes.get(index): null;
+		return index > -1? docTemplates.get(index): null;
 	}
 
 	@Override
@@ -235,9 +235,9 @@ public class CreateFileMediaController extends FormBasicController implements Pa
 
 	private void createContent(File file) {
 		VFSLeaf vfsLeaf = new LocalFileImpl(file);
-		FileType fileType = getSelectedFileType();
-		if (fileType != null) {
-			VFSManager.copyContent(fileType.getContentProvider().getContent(), vfsLeaf);
+		DocTemplate docTemplate = getSelectedFileType();
+		if (docTemplate != null) {
+			VFSManager.copyContent(docTemplate.getContentProvider().getContent(), vfsLeaf);
 		}
 	}
 

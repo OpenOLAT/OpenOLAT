@@ -22,14 +22,14 @@ package org.olat.core.commons.modules.bc.commands;
 import org.olat.core.commons.editor.htmleditor.HTMLEditorConfig;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
 import org.olat.core.commons.modules.bc.components.ListRenderer;
+import org.olat.core.commons.services.doceditor.DocEditor;
+import org.olat.core.commons.services.doceditor.DocEditorConfigs;
+import org.olat.core.commons.services.doceditor.DocEditorSecurityCallback;
+import org.olat.core.commons.services.doceditor.DocEditorSecurityCallbackBuilder;
+import org.olat.core.commons.services.doceditor.DocumentEditorService;
+import org.olat.core.commons.services.doceditor.ui.DocEditorFullscreenController;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
-import org.olat.core.commons.services.vfs.VFSLeafEditor;
-import org.olat.core.commons.services.vfs.VFSLeafEditorConfigs;
-import org.olat.core.commons.services.vfs.VFSLeafEditorSecurityCallback;
-import org.olat.core.commons.services.vfs.VFSLeafEditorSecurityCallbackBuilder;
-import org.olat.core.commons.services.vfs.VFSRepositoryService;
-import org.olat.core.commons.services.vfs.ui.editor.VFSLeafEditorFullscreenController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.Controller;
@@ -61,7 +61,7 @@ public class CmdOpenContent extends BasicController implements FolderCommand {
 	private Controller editCtrl;
 	
 	@Autowired
-	private VFSRepositoryService vfsService;
+	private DocumentEditorService docEditorService;
 	
 	protected CmdOpenContent(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -105,25 +105,25 @@ public class CmdOpenContent extends BasicController implements FolderCommand {
 		VFSLeaf vfsLeaf = (VFSLeaf) currentItem;
 		VFSContainer container = VFSManager.findInheritingSecurityCallbackContainer(folderComponent.getCurrentContainer());
 		VFSSecurityCallback containerSecCallback = container.getLocalSecurityCallback();
-		VFSLeafEditorSecurityCallback secCallback = VFSLeafEditorSecurityCallbackBuilder.builder()
+		DocEditorSecurityCallback secCallback = DocEditorSecurityCallbackBuilder.builder()
 				.withMode(getMode(vfsLeaf, containerSecCallback.canWrite()))
 				.withVersionControlled(true)
 				.build();
 		HTMLEditorConfig htmlEditorConfig = getHtmlEditorConfig(vfsLeaf);
-		VFSLeafEditorConfigs configs = VFSLeafEditorConfigs.builder()
+		DocEditorConfigs configs = DocEditorConfigs.builder()
 				.addConfig(htmlEditorConfig)
 				.build();
-		editCtrl = new VFSLeafEditorFullscreenController(ureq, getWindowControl(), vfsLeaf, secCallback, configs);
+		editCtrl = new DocEditorFullscreenController(ureq, getWindowControl(), vfsLeaf, secCallback, configs);
 		listenTo(editCtrl);
 		
 		return this;
 	}
 	
-	private VFSLeafEditor.Mode getMode(VFSLeaf vfsLeaf, boolean canWrite) {
-		if (canWrite && vfsService.hasEditor(vfsLeaf, VFSLeafEditor.Mode.EDIT, getIdentity())) {
-			return VFSLeafEditor.Mode.EDIT;
+	private DocEditor.Mode getMode(VFSLeaf vfsLeaf, boolean canWrite) {
+		if (canWrite && docEditorService.hasEditor(vfsLeaf, DocEditor.Mode.EDIT, getIdentity())) {
+			return DocEditor.Mode.EDIT;
 		}
-		return VFSLeafEditor.Mode.VIEW;
+		return DocEditor.Mode.VIEW;
 	}
 	
 	private HTMLEditorConfig getHtmlEditorConfig(VFSLeaf vfsLeaf) {

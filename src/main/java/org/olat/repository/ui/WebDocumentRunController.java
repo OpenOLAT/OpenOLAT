@@ -19,16 +19,16 @@
  */
 package org.olat.repository.ui;
 
-import static org.olat.core.commons.services.vfs.VFSLeafEditorConfigs.none;
+import static org.olat.core.commons.services.doceditor.DocEditorConfigs.none;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.olat.core.commons.services.doceditor.DocEditor.Mode;
+import org.olat.core.commons.services.doceditor.DocEditorSecurityCallback;
+import org.olat.core.commons.services.doceditor.DocEditorSecurityCallbackBuilder;
+import org.olat.core.commons.services.doceditor.DocumentEditorService;
+import org.olat.core.commons.services.doceditor.ui.DocEditorController;
 import org.olat.core.commons.services.image.Size;
-import org.olat.core.commons.services.vfs.VFSLeafEditor.Mode;
-import org.olat.core.commons.services.vfs.VFSLeafEditorSecurityCallback;
-import org.olat.core.commons.services.vfs.VFSLeafEditorSecurityCallbackBuilder;
-import org.olat.core.commons.services.vfs.VFSRepositoryService;
-import org.olat.core.commons.services.vfs.ui.editor.VFSLeafEditorController;
 import org.olat.core.commons.services.video.MovieService;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
@@ -65,7 +65,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class WebDocumentRunController extends BasicController {
 
 	@Autowired
-	private VFSRepositoryService vfsService;
+	private DocumentEditorService docEditorService;
 	@Autowired
 	private MovieService movieService;
 
@@ -102,12 +102,12 @@ public class WebDocumentRunController extends BasicController {
 					mainVC.contextPut("height", 480);
 					mainVC.contextPut("width", 640);
 				}
-			} else if (vfsService.hasEditor(extension, Mode.VIEW)) {
-				VFSLeafEditorSecurityCallback secCallback = VFSLeafEditorSecurityCallbackBuilder.builder()
+			} else if (docEditorService.hasEditor(extension, Mode.VIEW)) {
+				DocEditorSecurityCallback secCallback = DocEditorSecurityCallbackBuilder.builder()
 						.withMode(Mode.VIEW)
 						.canClose(false)
 						.build();
-				Controller editCtrl = new VFSLeafEditorController(ureq, wControl, document, secCallback, none(), "o_web_document");
+				Controller editCtrl = new DocEditorController(ureq, wControl, document, secCallback, none(), "o_web_document");
 				listenTo(editCtrl);
 				mainVC.put("content", editCtrl.getInitialComponent());
 			} else {

@@ -20,7 +20,7 @@
 package org.olat.core.commons.editor.htmleditor;
 
 import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
-import org.olat.core.commons.services.vfs.VFSLeafEditorConfigs;
+import org.olat.core.commons.services.doceditor.DocEditorConfigs;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.modules.edusharing.VFSEdusharingProvider;
 
@@ -30,7 +30,7 @@ import org.olat.modules.edusharing.VFSEdusharingProvider;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class HTMLEditorConfig implements VFSLeafEditorConfigs.Config {
+public class HTMLEditorConfig implements DocEditorConfigs.Config {
 
 	public static final String TYPE = "oo-html-editor";
 	
