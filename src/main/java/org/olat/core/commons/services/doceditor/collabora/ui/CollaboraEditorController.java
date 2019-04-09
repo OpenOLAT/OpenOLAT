@@ -19,11 +19,12 @@
  */
 package org.olat.core.commons.services.doceditor.collabora.ui;
 
+import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorSecurityCallback;
 import org.olat.core.commons.services.doceditor.DocEditorSecurityCallbackBuilder;
-import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.collabora.CollaboraService;
 import org.olat.core.commons.services.doceditor.wopi.Access;
+import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -67,18 +68,22 @@ public class CollaboraEditorController extends BasicController {
 				lock = collaboraService.lock(vfsLeaf, getIdentity());
 			}
 		}
-		this.access = collaboraService.createAccess(vfsLeaf.getMetaInfo(), getIdentity(), secCallback);
-		
 		VelocityContainer mainVC = createVelocityContainer("collabora");
-		
-		String url = CollaboraEditorUrlBuilder
-				.builder(access.getFileId(), access.getToken())
-				.withLang(ureq.getLocale().getLanguage())
-				.withCloseButton(access.canClose())
-				.build();
-		
-		mainVC.contextPut("id", "o_" + CodeHelper.getRAMUniqueID());
-		mainVC.contextPut("url", url);
+
+		VFSMetadata vfsMetadata = vfsLeaf.getMetaInfo();
+		if (vfsMetadata == null) {
+			mainVC.contextPut("warning", translate("editor.warning.no.metadata"));
+		} else {
+			this.access = collaboraService.createAccess(vfsMetadata, getIdentity(), secCallback);
+			String url = CollaboraEditorUrlBuilder
+					.builder(access.getFileId(), access.getToken())
+					.withLang(ureq.getLocale().getLanguage())
+					.withCloseButton(access.canClose())
+					.build();
+			
+			mainVC.contextPut("id", "o_" + CodeHelper.getRAMUniqueID());
+			mainVC.contextPut("url", url);
+		}
 		
 		putInitialPanel(mainVC);
 	}

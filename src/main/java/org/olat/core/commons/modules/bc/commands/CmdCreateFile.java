@@ -29,7 +29,6 @@ import java.util.List;
 
 import org.olat.core.commons.editor.htmleditor.HTMLEditorConfig;
 import org.olat.core.commons.modules.bc.FolderEvent;
-import org.olat.core.commons.modules.bc.FolderLicenseHandler;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
 import org.olat.core.commons.services.doceditor.DocEditor;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
@@ -39,11 +38,8 @@ import org.olat.core.commons.services.doceditor.DocTemplates;
 import org.olat.core.commons.services.doceditor.DocumentEditorService;
 import org.olat.core.commons.services.doceditor.ui.CreateDocumentController;
 import org.olat.core.commons.services.doceditor.ui.DocEditorFullscreenController;
-import org.olat.core.commons.services.license.LicenseModule;
-import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
-import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.Controller;
@@ -82,14 +78,6 @@ public class CmdCreateFile extends BasicController implements FolderCommand {
 	private VFSLeaf vfsLeaf;
 	
 	@Autowired
-	private LicenseService licenseService;
-	@Autowired
-	private LicenseModule licenseModule;
-	@Autowired
-	private FolderLicenseHandler licenseHandler;
-	@Autowired
-	private VFSRepositoryService vfsRepositoryService;
-	@Autowired
 	private DocumentEditorService docEditorService;
 
 	protected CmdCreateFile(UserRequest ureq, WindowControl wControl) {
@@ -113,7 +101,8 @@ public class CmdCreateFile extends BasicController implements FolderCommand {
 			return null;
 		}
 		
-		DocTemplates docTemplates = DocTemplates.editables(getLocale()).build();
+		boolean hasMeta = folderComponent.getCurrentContainer().canMeta() == VFSConstants.YES;
+		DocTemplates docTemplates = DocTemplates.editables(getLocale(), hasMeta).build();
 		createCtrl = new CreateDocumentController(ureq, wControl, folderComponent.getCurrentContainer(), docTemplates);
 		listenTo(createCtrl);
 		
@@ -164,8 +153,11 @@ public class CmdCreateFile extends BasicController implements FolderCommand {
 	}
 	
 	private void doEdit(UserRequest ureq) {
+		VFSContainer currentContainer = folderComponent.getCurrentContainer();
+		boolean hasMeta = currentContainer.canMeta() == VFSConstants.YES;
+		
 		String suffix = FileUtils.getFileSuffix(vfsLeaf.getName());
-		List<DocEditor> editors = docEditorService.getEditors(suffix, DocEditor.Mode.EDIT);
+		List<DocEditor> editors = docEditorService.getEditors(suffix, DocEditor.Mode.EDIT, hasMeta);
 		// Not able to decide which editor to use -> show the folder list
 		if (editors.size() != 1) {
 			fireEvent(ureq, new FolderEvent(FolderEvent.NEW_FILE_EVENT, fileName));
@@ -175,6 +167,7 @@ public class CmdCreateFile extends BasicController implements FolderCommand {
 		
 		DocEditorSecurityCallback secCallback = DocEditorSecurityCallbackBuilder.builder()
 				.withMode(DocEditor.Mode.EDIT)
+				.withHasMeta(hasMeta)
 				.withVersionControlled(true)
 				.build();
 		HTMLEditorConfig htmlEditorConfig = getHtmlEditorConfig();

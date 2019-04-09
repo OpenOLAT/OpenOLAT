@@ -66,12 +66,12 @@ public class CollaboraEditor implements DocEditor {
 	}
 
 	@Override
-	public boolean isSupportingFormat(String suffix, Mode mode) {
-		return collaboraService.accepts(suffix, mode);
+	public boolean isSupportingFormat(String suffix, Mode mode, boolean hasMeta) {
+		return hasMeta && collaboraService.accepts(suffix, mode);
 	}
 
 	@Override
-	public boolean isLockedForMe(VFSLeaf vfsLeaf, Mode mode, Identity identity) {
+	public boolean isLockedForMe(VFSLeaf vfsLeaf, Identity identity, Mode mode) {
 		if (collaboraService.isLockNeeded(mode)) {
 			return collaboraService.isLockedForMe(vfsLeaf, identity);
 		}

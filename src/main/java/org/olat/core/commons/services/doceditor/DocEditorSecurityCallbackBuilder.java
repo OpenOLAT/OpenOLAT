@@ -30,6 +30,7 @@ import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 public class DocEditorSecurityCallbackBuilder {
 	
 	private Mode mode = Mode.VIEW;
+	private boolean hasMeta = true;
 	private boolean versionControlled = false;
 	private boolean canClose = true;
 	
@@ -41,6 +42,17 @@ public class DocEditorSecurityCallbackBuilder {
 	 */
 	public DocEditorSecurityCallbackBuilder withMode(Mode mode) {
 		this.mode = mode;
+		return this;
+	}
+	
+	/**
+	 * Default: true
+	 *
+	 * @param hasMeta
+	 * @return
+	 */
+	public DocEditorSecurityCallbackBuilder withHasMeta(boolean hasMeta) {
+		this.hasMeta = hasMeta;
 		return this;
 	}
 	
@@ -69,6 +81,7 @@ public class DocEditorSecurityCallbackBuilder {
 	public DocEditorSecurityCallback build() {
 		VFSLeafEditorSecurityCallbackImpl secCallback = new VFSLeafEditorSecurityCallbackImpl();
 		secCallback.setMode(this.mode);
+		secCallback.setHasMeta(this.hasMeta);
 		secCallback.setVersionControlled(this.versionControlled);
 		secCallback.setCanClose(this.canClose);
 		return secCallback;
@@ -81,6 +94,7 @@ public class DocEditorSecurityCallbackBuilder {
 	public static DocEditorSecurityCallbackBuilder clone(DocEditorSecurityCallback secCallback) {
 		return builder()
 				.withMode(secCallback.getMode())
+				.withHasMeta(secCallback.hasMeta())
 				.withVersionControlled(secCallback.isVersionControlled())
 				.canClose(secCallback.canClose());
 	}
@@ -91,6 +105,7 @@ public class DocEditorSecurityCallbackBuilder {
 	private static class VFSLeafEditorSecurityCallbackImpl implements DocEditorSecurityCallback {
 
 		private Mode mode;
+		private boolean hasMeta;
 		private boolean versionControlled;
 		private boolean canClose;
 
@@ -101,6 +116,15 @@ public class DocEditorSecurityCallbackBuilder {
 
 		private void setMode(Mode mode) {
 			this.mode = mode;
+		}
+
+		@Override
+		public boolean hasMeta() {
+			return hasMeta;
+		}
+		
+		private void setHasMeta(boolean hasMeta) {
+			this.hasMeta = hasMeta;
 		}
 
 		@Override

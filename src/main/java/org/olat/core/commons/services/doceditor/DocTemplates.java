@@ -56,27 +56,27 @@ public class DocTemplates {
 		return docTemplates.isEmpty();
 	}
 	
-	public static Builder editables(Locale locale) {
+	public static Builder editables(Locale locale, boolean hasMeta) {
 		Builder builder = new Builder(locale);
 		
 		DocumentEditorService docEditorService = CoreSpringFactory.getImpl(DocumentEditorService.class);
 		
-		if (docEditorService.hasEditor("txt", EDIT)) {
+		if (docEditorService.hasEditor("txt", EDIT, hasMeta)) {
 			builder.addTxt();
 		}
-		if (docEditorService.hasEditor("html", EDIT)) {
+		if (docEditorService.hasEditor("html", EDIT, hasMeta)) {
 			builder.addHtml();
 		}
-		if (docEditorService.hasEditor("css", EDIT)) {
+		if (docEditorService.hasEditor("css", EDIT, hasMeta)) {
 			builder.addCss();
 		}
-		if (docEditorService.hasEditor("docx", EDIT)) {
+		if (docEditorService.hasEditor("docx", EDIT, hasMeta)) {
 			builder.addDocx();
 		}
-		if (docEditorService.hasEditor("xlsx", EDIT)) {
+		if (docEditorService.hasEditor("xlsx", EDIT, hasMeta)) {
 			builder.addXlsx();
 		}
-		if (docEditorService.hasEditor("pptx", EDIT)) {
+		if (docEditorService.hasEditor("pptx", EDIT, hasMeta)) {
 			builder.addPptx();
 		}
 			

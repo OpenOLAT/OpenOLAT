@@ -43,13 +43,13 @@ public class CreateFileHandler extends FileHandler {
 	public static DocTemplates getEditableTemplates(Locale locale) {
 		DocumentEditorService docEditorService = CoreSpringFactory.getImpl(DocumentEditorService.class);
 		Builder builder = DocTemplates.builder(locale);
-		if (docEditorService.hasEditor("docx", EDIT)) {
+		if (docEditorService.hasEditor("docx", EDIT, true)) {
 			builder.addDocx();
 		}
-		if (docEditorService.hasEditor("xlsx", EDIT)) {
+		if (docEditorService.hasEditor("xlsx", EDIT, true)) {
 			builder.addXlsx();
 		}
-		if (docEditorService.hasEditor("pptx", EDIT)) {
+		if (docEditorService.hasEditor("pptx", EDIT, true)) {
 			builder.addPptx();
 		}
 		return builder.build();

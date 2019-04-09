@@ -48,19 +48,20 @@ public interface DocEditor {
 	 *
 	 * @param suffix
 	 * @param mode
+	 * @param hasMeta 
 	 * @return
 	 */
-	boolean isSupportingFormat(String suffix, Mode mode);
+	boolean isSupportingFormat(String suffix, Mode mode, boolean hasMeta);
 	
 	/**
 	 * Checks whether a file is locked for this identity and editor.
 	 * 
 	 * @param vfsLeaf
-	 * @param mode
 	 * @param identity
+	 * @param mode
 	 * @return true if the file is locked and therefore the identity is not able to edit the vfsLeaf with this editor.
 	 */
-	boolean isLockedForMe(VFSLeaf vfsLeaf, Mode mode, Identity identity);
+	boolean isLockedForMe(VFSLeaf vfsLeaf, Identity identity, Mode mode);
 	
 	Controller getRunController(UserRequest ureq, WindowControl wControl, Identity identity, VFSLeaf vfsLeaf,
 			DocEditorSecurityCallback securityCallback, DocEditorConfigs configs);

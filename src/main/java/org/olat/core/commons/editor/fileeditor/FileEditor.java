@@ -70,13 +70,13 @@ public class FileEditor implements DocEditor {
 	}
 
 	@Override
-	public boolean isSupportingFormat(String suffix, Mode mode) {
+	public boolean isSupportingFormat(String suffix, Mode mode, boolean hasMeta) {
 		// Both the HTML editor and the text editor supports view and edit
 		return HTML_EDITOR_SUFFIX.contains(suffix) || TEXT_EDITOR_SUFFIX.contains(suffix)? true: false;
 	}
 
 	@Override
-	public boolean isLockedForMe(VFSLeaf vfsLeaf, Mode mode, Identity identity) {
+	public boolean isLockedForMe(VFSLeaf vfsLeaf, Identity identity, Mode mode) {
 		if (Mode.EDIT.equals(mode)) {
 			return lockManager.isLockedForMe(vfsLeaf, identity, VFSLockApplicationType.vfs, null);
 		}

@@ -30,9 +30,11 @@ import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 public interface DocEditorSecurityCallback {
 	
 	Mode getMode();
+
+	boolean hasMeta();
 	
 	boolean isVersionControlled();
-
+	
 	boolean canClose();
 	
 }

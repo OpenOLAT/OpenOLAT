@@ -38,6 +38,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -103,12 +104,8 @@ public class CmdOpenContent extends BasicController implements FolderCommand {
 		}
 		
 		VFSLeaf vfsLeaf = (VFSLeaf) currentItem;
-		VFSContainer container = VFSManager.findInheritingSecurityCallbackContainer(folderComponent.getCurrentContainer());
-		VFSSecurityCallback containerSecCallback = container.getLocalSecurityCallback();
-		DocEditorSecurityCallback secCallback = DocEditorSecurityCallbackBuilder.builder()
-				.withMode(getMode(vfsLeaf, containerSecCallback.canWrite()))
-				.withVersionControlled(true)
-				.build();
+		
+		DocEditorSecurityCallback secCallback = getDocEditorSecCallback(vfsLeaf);
 		HTMLEditorConfig htmlEditorConfig = getHtmlEditorConfig(vfsLeaf);
 		DocEditorConfigs configs = DocEditorConfigs.builder()
 				.addConfig(htmlEditorConfig)
@@ -119,9 +116,26 @@ public class CmdOpenContent extends BasicController implements FolderCommand {
 		return this;
 	}
 	
-	private DocEditor.Mode getMode(VFSLeaf vfsLeaf, boolean canWrite) {
-		if (canWrite && docEditorService.hasEditor(vfsLeaf, DocEditor.Mode.EDIT, getIdentity())) {
-			return DocEditor.Mode.EDIT;
+	private DocEditorSecurityCallback getDocEditorSecCallback(VFSLeaf vfsLeaf) {
+		VFSContainer currentContainer = folderComponent.getCurrentContainer();
+		boolean hasMeta = currentContainer.canMeta() == VFSConstants.YES;
+		VFSContainer container = VFSManager.findInheritingSecurityCallbackContainer(currentContainer);
+		boolean canWrite = container.getLocalSecurityCallback().canWrite();
+		
+		DocEditorSecurityCallbackBuilder secCallbackBuilder = DocEditorSecurityCallbackBuilder.builder()
+				.withVersionControlled(true)
+				.withHasMeta(hasMeta);
+		DocEditor.Mode mode = getMode(vfsLeaf, canWrite, secCallbackBuilder);
+		secCallbackBuilder.withMode(mode);
+		return secCallbackBuilder.build();
+	}
+	
+	private DocEditor.Mode getMode(VFSLeaf vfsLeaf, boolean canWrite, DocEditorSecurityCallbackBuilder secCallbackBuilder) {
+		if (canWrite) {
+			DocEditorSecurityCallback editSecCallback = secCallbackBuilder.withMode(DocEditor.Mode.EDIT).build();
+			if (docEditorService.hasEditor(vfsLeaf, getIdentity(), editSecCallback)) {
+				return DocEditor.Mode.EDIT;
+			}
 		}
 		return DocEditor.Mode.VIEW;
 	}

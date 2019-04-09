@@ -102,7 +102,7 @@ public class WebDocumentRunController extends BasicController {
 					mainVC.contextPut("height", 480);
 					mainVC.contextPut("width", 640);
 				}
-			} else if (docEditorService.hasEditor(extension, Mode.VIEW)) {
+			} else if (docEditorService.hasEditor(extension, Mode.VIEW, true)) {
 				DocEditorSecurityCallback secCallback = DocEditorSecurityCallbackBuilder.builder()
 						.withMode(Mode.VIEW)
 						.canClose(false)

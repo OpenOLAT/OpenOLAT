@@ -24,8 +24,9 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.olat.core.commons.services.doceditor.DocEditor;
-import org.olat.core.commons.services.doceditor.DocumentEditorService;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
+import org.olat.core.commons.services.doceditor.DocEditorSecurityCallback;
+import org.olat.core.commons.services.doceditor.DocumentEditorService;
 import org.olat.core.id.Identity;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -45,21 +46,21 @@ public class DocumentEditorServiceImpl implements DocumentEditorService {
 	private List<DocEditor> editors;
 	
 	@Override
-	public boolean hasEditor(String suffix, Mode mode) {
+	public boolean hasEditor(String suffix, Mode mode, boolean hasMeta) {
 		if (mode == null) return false;
 		
 		return editors.stream()
 				.filter(DocEditor::isEnable)
-				.filter(editor -> editor.isSupportingFormat(suffix, mode))
+				.filter(editor -> editor.isSupportingFormat(suffix, mode, hasMeta))
 				.findFirst()
 				.isPresent();
 	}
 
 	@Override
-	public List<DocEditor> getEditors(String suffix, Mode mode) {
+	public List<DocEditor> getEditors(String suffix, Mode mode, boolean hasMeta) {
 		return editors.stream()
 				.filter(DocEditor::isEnable)
-				.filter(editor -> editor.isSupportingFormat(suffix, mode))
+				.filter(editor -> editor.isSupportingFormat(suffix, mode, hasMeta))
 				.collect(Collectors.toList());
 	}
 
@@ -72,17 +73,14 @@ public class DocumentEditorServiceImpl implements DocumentEditorService {
 	}
 	
 	@Override
-	public boolean hasEditor(VFSLeaf vfsLeaf, Mode mode, Identity identity) {
-		if (mode == null) return false;
-		
+	public boolean hasEditor(VFSLeaf vfsLeaf, Identity identity, DocEditorSecurityCallback secCallback) {
 		String suffix = FileUtils.getFileSuffix(vfsLeaf.getName());
 		return editors.stream()
 				.filter(DocEditor::isEnable)
-				.filter(editor -> editor.isSupportingFormat(suffix, mode))
-				.filter(editor -> !editor.isLockedForMe(vfsLeaf, mode, identity))
+				.filter(editor -> editor.isSupportingFormat(suffix, secCallback.getMode(), secCallback.hasMeta()))
+				.filter(editor -> !editor.isLockedForMe(vfsLeaf, identity, secCallback.getMode()))
 				.findFirst()
 				.isPresent();
-		
 	}
 
 }

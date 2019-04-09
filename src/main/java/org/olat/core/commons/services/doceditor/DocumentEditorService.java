@@ -39,18 +39,20 @@ public interface DocumentEditorService {
 	 *
 	 * @param suffix
 	 * @param mode
+	 * @param hasMeta
 	 * @return
 	 */
-	public boolean hasEditor(String suffix, Mode mode);
+	public boolean hasEditor(String suffix, Mode mode, boolean hasMeta);
 	
 	/**
-	 * Get all enabled editors which support a file with a specific suffix. Support means usually edit or read.
+	 * Get all enabled editors which support a file with a specific suffix.
 	 *
 	 * @param suffix
 	 * @param mode
+	 * @param hasMeta
 	 * @return
 	 */
-	public List<DocEditor> getEditors(String suffix, Mode mode);
+	public List<DocEditor> getEditors(String suffix, Mode mode, boolean hasMeta);
 	
 	/**
 	 * Get the editor of a specific type.
@@ -63,13 +65,13 @@ public interface DocumentEditorService {
 	/**
 	 * Checks whether a vfsLeaf can be opened in any editor by a user and in a
 	 * specific mode. This method checks not only if a file format is supported but
-	 * also if the vfsLeaf is not locked by an other editor or user.
+	 * also e.g. if the vfsLeaf is not locked by an other editor or user.
 	 *
 	 * @param vfsLeaf
-	 * @param mode
 	 * @param identity
+	 * @param secCallback
 	 * @return
 	 */
-	public boolean hasEditor(VFSLeaf vfsLeaf, Mode mode, Identity identity);
+	public boolean hasEditor(VFSLeaf vfsLeaf, Identity identity, DocEditorSecurityCallback secCallback);
 	
 }
