@@ -27,8 +27,8 @@ import java.util.UUID;
 
 import javax.annotation.PostConstruct;
 
-import org.olat.core.commons.services.doceditor.DocEditorSecurityCallback;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
+import org.olat.core.commons.services.doceditor.DocEditorSecurityCallback;
 import org.olat.core.commons.services.doceditor.wopi.Access;
 import org.olat.core.commons.services.doceditor.wopi.Action;
 import org.olat.core.commons.services.doceditor.wopi.App;
@@ -62,6 +62,8 @@ public class WopiServiceImpl implements WopiService {
 	private CacheWrapper<String, Access> accessCache;
 	
 	@Autowired
+	private WopiDiscoveryClient dicoveryClient;
+	@Autowired
 	private CoordinatorManager coordinator;
 	@Autowired
 	private VFSRepositoryService vfsService;
@@ -69,6 +71,16 @@ public class WopiServiceImpl implements WopiService {
 	@PostConstruct
 	public void init() {
 		accessCache = coordinator.getCoordinator().getCacher().getCache(WopiService.class.getSimpleName(), "access");
+	}
+
+	@Override
+	public String getRegularDiscoveryPath() {
+		return dicoveryClient.getRegularDiscoveryPath();
+	}
+
+	@Override
+	public Discovery getDiscovery(String discoveryUrl) {
+		return dicoveryClient.getDiscovery(discoveryUrl);
 	}
 	
 	@Override

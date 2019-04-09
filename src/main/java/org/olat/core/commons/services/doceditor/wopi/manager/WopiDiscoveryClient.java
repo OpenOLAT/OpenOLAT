@@ -27,7 +27,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.olat.core.commons.services.doceditor.wopi.Discovery;
-import org.olat.core.commons.services.doceditor.wopi.WopiDiscoveryClient;
 import org.olat.core.commons.services.doceditor.wopi.model.DiscoveryImpl;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -40,9 +39,9 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class WopiDiscoveryClientImpl implements WopiDiscoveryClient {
+class WopiDiscoveryClient {
 	
-	private static final OLog log = Tracing.createLoggerFor(WopiDiscoveryClientImpl.class);
+	private static final OLog log = Tracing.createLoggerFor(WopiDiscoveryClient.class);
 	
 	private static final int TIMEOUT_5000_MILLIS = 5000;
 	private static final RequestConfig REQUEST_CONFIG = RequestConfig.custom()
@@ -51,13 +50,11 @@ public class WopiDiscoveryClientImpl implements WopiDiscoveryClient {
 			.setConnectionRequestTimeout(TIMEOUT_5000_MILLIS)
 			.build();
 
-	@Override
-	public String getRegularDiscoveryPath() {
+	String getRegularDiscoveryPath() {
 		return "hosting/discovery";
 	}
 	
-	@Override
-	public Discovery getDiscovery(String discoveryUrl) {
+	Discovery getDiscovery(String discoveryUrl) {
 		HttpGet request = new HttpGet(discoveryUrl);
 		request.setConfig(REQUEST_CONFIG);
 		

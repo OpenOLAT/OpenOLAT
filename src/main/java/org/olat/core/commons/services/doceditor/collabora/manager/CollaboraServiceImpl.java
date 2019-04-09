@@ -32,7 +32,6 @@ import org.olat.core.commons.services.doceditor.collabora.CollaboraService;
 import org.olat.core.commons.services.doceditor.wopi.Access;
 import org.olat.core.commons.services.doceditor.wopi.Action;
 import org.olat.core.commons.services.doceditor.wopi.Discovery;
-import org.olat.core.commons.services.doceditor.wopi.WopiDiscoveryClient;
 import org.olat.core.commons.services.doceditor.wopi.WopiService;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
@@ -70,8 +69,6 @@ public class CollaboraServiceImpl implements CollaboraService, GenericEventListe
 	private CollaboraModule collaboraModule;
 	@Autowired
 	private WopiService wopiService;
-	@Autowired
-	private WopiDiscoveryClient discoveryClient;
 	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
 	@Autowired
@@ -155,14 +152,14 @@ public class CollaboraServiceImpl implements CollaboraService, GenericEventListe
 	public Discovery getDiscovery() {
 		if (discovery == null) {
 			String discoveryUrl = getDiscoveryUrl();
-			discovery = discoveryClient.getDiscovery(discoveryUrl);
+			discovery = wopiService.getDiscovery(discoveryUrl);
 			log.info("Recieved new WOPI discovery from " + discoveryUrl);
 		}
 		return discovery;
 	}
 
 	private String getDiscoveryUrl() {
-		return collaboraModule.getBaseUrl() + discoveryClient.getRegularDiscoveryPath();
+		return collaboraModule.getBaseUrl() + wopiService.getRegularDiscoveryPath();
 	}
 	
 	@Override

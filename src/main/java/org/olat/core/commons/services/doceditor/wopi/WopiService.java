@@ -33,6 +33,16 @@ import org.olat.core.util.vfs.VFSLeaf;
  *
  */
 public interface WopiService {
+	
+	public String getRegularDiscoveryPath();
+
+	/**
+	 * Download the discovery file from the WOPI client.
+	 *
+	 * @param discoveryUrl
+	 * @return
+	 */
+	public Discovery getDiscovery(String discoveryUrl);
 
 	boolean fileExists(String fileId);
 
