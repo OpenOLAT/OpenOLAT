@@ -441,6 +441,9 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 			case "username":
 				sb.append(" order by lower(ident.name) ").append(orderBy.isAsc() ? "asc" : "desc");
 				break;
+			case "status":
+				sb.append(" order by ident.status ").append(orderBy.isAsc() ? "asc" : "desc");
+				break;
 			default:
 				sb.append(" order by lower(user.").append(orderBy.getKey()).append(") ").append(orderBy.isAsc() ? "asc" : "desc");
 				break;
