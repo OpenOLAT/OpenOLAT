@@ -41,6 +41,7 @@ import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.vfs.VFSItem;
@@ -135,12 +136,17 @@ public class WopiServiceImpl implements WopiService {
 
 	@Override
 	public Access getAccess(String accessToken) {
-		return accessCache.get(accessToken);
+		if (StringHelper.containsNonWhitespace(accessToken)) {
+			return accessCache.get(accessToken);
+		}
+		return null;
 	}
 	
 	@Override
 	public void deleteAccess(String accessToken) {
-		accessCache.remove(accessToken);
+		if (StringHelper.containsNonWhitespace(accessToken)) {
+			accessCache.remove(accessToken);
+		}
 	}
 
 	@Override

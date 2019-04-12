@@ -447,6 +447,7 @@ public class RestApiLoginFilter implements Filter {
 			urls.add(context + "/registration");
 			urls.add(context + "/openmeetings");
 			urls.add(context + "/collabora");
+			urls.add(context + "/onlyoffice");
 			openUrls = urls;
 		}
 		return openUrls;
