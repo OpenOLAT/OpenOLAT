@@ -37,7 +37,7 @@ import org.springframework.stereotype.Service;
 public class CollaboraModule extends AbstractSpringModule implements ConfigOnOff {
 
 	private static final String COLLABORA_ENABLED = "collabora.enabled";
-	private static final String COLLABORA_BASE_URL = "edusharing.baseUrl";
+	private static final String COLLABORA_BASE_URL = "collabora.baseUrl";
 	
 	@Value("${collabora.enabled:false}")
 	private boolean enabled;
