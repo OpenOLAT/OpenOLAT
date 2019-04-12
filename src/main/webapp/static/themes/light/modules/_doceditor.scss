@@ -29,8 +29,8 @@
 	}
 	
 	
-	/**  Collabora Online **/
-	.o_collabora {
+	/**  Collabora Online and OnlyOffice**/
+	.o_collabora, .o_onlyoffice {
 		iframe {
 			width: 100%;
 			height: calc(100vh - 183px);
@@ -41,7 +41,7 @@
 	}
 	
 	&.o_web_document {
-		.o_collabora {
+		.o_collabora, .o_onlyoffice  {
 			iframe {
 				width: 100%;
 				height: calc(100vh - 355px);  // editor selection is not taken
@@ -51,7 +51,7 @@
 		}
 	}
 	&.o_web_document_edit {
-		.o_collabora {
+		.o_collabora, .o_onlyoffice {
 			iframe {
 				width: 100%;
 				height: calc(100vh - 310px); // editor selection is not taken
