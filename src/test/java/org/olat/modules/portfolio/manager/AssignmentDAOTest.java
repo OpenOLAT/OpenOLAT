@@ -28,6 +28,7 @@ import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.modules.forms.manager.EvaluationFormTestsHelper;
 import org.olat.modules.portfolio.Assignment;
 import org.olat.modules.portfolio.AssignmentStatus;
 import org.olat.modules.portfolio.AssignmentType;
@@ -64,6 +65,8 @@ public class AssignmentDAOTest extends OlatTestCase {
 	private RepositoryService repositoryService;
 	@Autowired
 	private OrganisationService organisationService;
+	@Autowired
+	private EvaluationFormTestsHelper evaTestHelper;
 	
 	@Test
 	public void createBinderWithAssignment() {
@@ -310,6 +313,38 @@ public class AssignmentDAOTest extends OlatTestCase {
 		// check the method
 		boolean assignmentInUse = assignmentDao.isAssignmentInUse(assignment);
 		Assert.assertTrue(assignmentInUse);
+	}
+	
+	@Test
+	public void isFormEntryInUse() {
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("port-u-10");
+		RepositoryEntry templateEntry = createTemplate(owner, "Template", "TE");
+		RepositoryEntry formEntry = evaTestHelper.createSurvey().getFormEntry();
+		dbInstance.commitAndCloseSession();
+		
+		//1 section
+		Binder templateBinder = portfolioService.getBinderByResource(templateEntry.getOlatResource());
+		SectionRef sectionRef = portfolioService.getSections(templateBinder).get(0);
+		dbInstance.commit();
+		
+		//make 1 assignment
+		Section templateSection = portfolioService.getSection(sectionRef);
+		portfolioService.addAssignment("1 Assignment", "", "", AssignmentType.essay, false, templateSection, null, false, false, false, formEntry);
+		dbInstance.commit();
+		
+		// check the method
+		boolean formEntryNotInUse = assignmentDao.isFormEntryInUse(formEntry);
+		Assert.assertTrue(formEntryNotInUse);
+	}
+	
+	@Test
+	public void isFormEntryInUse_notUsed() {
+		RepositoryEntry notUsedFormEntry = evaTestHelper.createSurvey().getFormEntry();
+		dbInstance.commitAndCloseSession();
+
+		// check the method
+		boolean formEntryNotInUse = assignmentDao.isFormEntryInUse(notUsedFormEntry);
+		Assert.assertFalse(formEntryNotInUse);
 	}
 	
 	@Test

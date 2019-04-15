@@ -49,6 +49,7 @@ import org.olat.modules.portfolio.model.BinderImpl;
 import org.olat.modules.portfolio.model.EvaluationFormPart;
 import org.olat.modules.portfolio.model.SectionImpl;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -370,7 +371,7 @@ public class AssignmentDAO {
 	}
 	
 	public Assignment loadAssignment(PageBody body) {
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(256);
 		sb.append("select assignment from pfassignment as assignment")
 		  .append(" inner join fetch assignment.page as page")
 		  .append(" left join fetch assignment.formEntry as formEntry")
@@ -385,7 +386,7 @@ public class AssignmentDAO {
 	}
 	
 	public boolean isAssignmentInUse(Assignment assignment) {
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(128);
 		sb.append("select assignment.key from pfassignment as assignment")
 		  .append(" where assignment.templateReference.key=:assignmentKey");
 
@@ -395,7 +396,21 @@ public class AssignmentDAO {
 			.setFirstResult(0)
 			.setMaxResults(1)
 			.getResultList();
-		return counts != null && counts.size() > 0 && counts.get(0) != null && counts.get(0).intValue() >= 0;
+		return counts != null && !counts.isEmpty() && counts.get(0) != null && counts.get(0).intValue() >= 0;
+	}
+	
+	public boolean isFormEntryInUse(RepositoryEntryRef formEntry) {
+		StringBuilder sb = new StringBuilder(128);
+		sb.append("select assignment.key from pfassignment as assignment")
+		  .append(" where assignment.formEntry.key=:formEntryKey");
+
+		List<Long> counts = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Long.class)
+			.setParameter("formEntryKey", formEntry.getKey())
+			.setFirstResult(0)
+			.setMaxResults(1)
+			.getResultList();
+		return counts != null && !counts.isEmpty() && counts.get(0) != null && counts.get(0).intValue() >= 0;
 	}
 	
 	public int deleteAssignmentReference(Assignment assignment) {

@@ -35,6 +35,7 @@ import org.olat.modules.quality.generator.QualityGeneratorRef;
 import org.olat.modules.quality.generator.QualityGeneratorSearchParams;
 import org.olat.modules.quality.generator.QualityGeneratorView;
 import org.olat.modules.quality.generator.model.QualityGeneratorImpl;
+import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -92,7 +93,21 @@ public class QualityGeneratorDAO {
 				.createQuery(sb.toString(), QualityGenerator.class)
 				.getResultList();
 	}
-
+	
+	boolean isFormEntryInUse(RepositoryEntryRef formEntry) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select generator.key");
+		sb.append("  from qualitygenerator as generator");
+		sb.append(" where generator.formEntry.key=:formEntryKey");
+		
+		List<Long> keys = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.setParameter("formEntryKey", formEntry.getKey())
+				.getResultList();
+		return keys != null && !keys.isEmpty() && keys.get(0) != null && keys.get(0).longValue() > 0;
+	}
 
 	void delete(QualityGeneratorRef generatorRef) {
 		if (generatorRef == null || generatorRef.getKey() == null) return;
