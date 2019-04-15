@@ -21,14 +21,13 @@ package org.olat.course.nodes.pf.manager;
 
 import java.util.List;
 
-import org.olat.core.commons.modules.bc.components.FolderComponent;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
-import org.olat.core.util.vfs.filters.VFSItemExcludePrefixFilter;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
+import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 /**
 *
 * @author Fabian Kiefer, fabian.kiefer@frentix.com, http://www.frentix.com
@@ -36,7 +35,7 @@ import org.olat.core.util.vfs.filters.VFSItemFilter;
 */
 public class CountingCallback implements VFSSecurityCallback {
 	
-	private static final VFSItemFilter attachmentExcludeFilter = new VFSItemExcludePrefixFilter(FolderComponent.ATTACHMENT_EXCLUDE_PREFIXES);
+	private static final VFSItemFilter attachmentExcludeFilter = new VFSSystemItemFilter();
 
 	private SubscriptionContext subsContext;
 	private VFSContainer dropbox;

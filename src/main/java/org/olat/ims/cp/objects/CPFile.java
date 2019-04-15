@@ -36,8 +36,8 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
-import org.olat.core.util.vfs.filters.VFSItemExcludePrefixFilter;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
+import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.ims.cp.CPCore;
 
@@ -169,8 +169,7 @@ public class CPFile extends DefaultElement implements CPNode {
 	 * @param parentContainer
 	 */
 	private void deleteIfEmpty(VFSContainer container) {
-		String[] unwantedPrefixes = { "." };
-		VFSItemFilter filter = new VFSItemExcludePrefixFilter(unwantedPrefixes);
+		VFSItemFilter filter = new VFSSystemItemFilter();
 		if (container != null) {
 			List<VFSItem> items = container.getItems(filter);
 			if (items == null || items.isEmpty()) {

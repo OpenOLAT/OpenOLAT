@@ -37,8 +37,8 @@ import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.LocalImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
-import org.olat.core.util.vfs.filters.VFSItemExcludePrefixFilter;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
+import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 
 /**
  * Description:<br>
@@ -68,7 +68,7 @@ public class GuiDemoFileChooserController extends BasicController {
 		webappRootFile = new File(WebappHelper.getContextRealPath("/static"));
 		VFSContainer webappRoot = new LocalFolderImpl(webappRootFile);	
 		// don't show cvs and hidden files meta files
-		VFSItemFilter filter = new VFSItemExcludePrefixFilter(new String[]{"CVS","cvs", "."});
+		VFSItemFilter filter = new VFSSystemItemFilter();
 		// create file chooser with the filter and the web app root
 		chooserCtr = FileChooserUIFactory.createFileChooserController(ureq, getWindowControl(), webappRoot, filter, false);
 		listenTo(chooserCtr);		

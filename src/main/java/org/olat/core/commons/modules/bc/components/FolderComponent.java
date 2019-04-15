@@ -59,7 +59,6 @@ import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.filters.VFSItemExcludePrefixFilter;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 
@@ -76,15 +75,6 @@ public class FolderComponent extends AbstractComponent {
 	public static final String SORT_DATE = "date";
 	public static final String SORT_REV = "revision";
 	public static final String SORT_LOCK = "lock";
-	
-	// see MessagesEditController
-	// see OLAT-4182/OLAT-4219 and OLAT-4259
-	// the filtering of .nfs is sort of temporary until we make sure that we no longer reference
-	// attached files anywhere at the time of deleting it
-	// likely to be resolved after user logs out, caches get cleared - and if not the server
-	// restart overnight definitely removes those .nfs files.
-	// fxdiff: FXOLAT-333 hide all shadow-files per default
-	public static final String[] ATTACHMENT_EXCLUDE_PREFIXES = new String[]{"."};
 
 	protected boolean sortAsc = true;													// asc or desc?
 	protected String sortCol = "";  													// column to sort
@@ -103,7 +93,7 @@ public class FolderComponent extends AbstractComponent {
 	protected Translator translator;
 	private VFSItemFilter filter;
 	private final DateFormat dateTimeFormat;
-	private VFSItemExcludePrefixFilter exclFilter;
+	private VFSItemFilter exclFilter;
 	private CustomLinkTreeModel customLinkTreeModel;
 	private final VFSContainer externContainerForCopy;
 	
@@ -142,7 +132,7 @@ public class FolderComponent extends AbstractComponent {
 		this.filter = filter;
 		this.customLinkTreeModel = customLinkTreeModel;
 		this.externContainerForCopy = externContainerForCopy;
-		exclFilter = new VFSItemExcludePrefixFilter(ATTACHMENT_EXCLUDE_PREFIXES);
+		exclFilter = new VFSSystemItemFilter();
 		Locale locale = ureq.getLocale();
 		collator = Collator.getInstance(locale);
 		translator = Util.createPackageTranslator(FolderRunController.class, locale);

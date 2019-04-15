@@ -26,8 +26,8 @@
 
 package org.olat.core.util.vfs.filters;
 
-import java.util.Enumeration;
-import java.util.Hashtable;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.olat.core.util.vfs.VFSItem;
 
@@ -41,13 +41,15 @@ import org.olat.core.util.vfs.VFSItem;
  */
 public class VFSItemExcludePrefixFilter implements VFSItemFilter {
 
-	private Hashtable<String,String> excludedPrefixes = new Hashtable<String,String>();
-
+	private final boolean excludeSystemFiles;
+	private final Map<String,String> excludedPrefixes = new HashMap<>();
+	
 	/**
 	 * Constrtuctor
 	 * @param prefixes 
 	 */
-	public VFSItemExcludePrefixFilter(String[] prefixes) {
+	public VFSItemExcludePrefixFilter(String[] prefixes, boolean excludeSystemFiles) {
+		this.excludeSystemFiles = excludeSystemFiles;
 		for (int i = 0; i < prefixes.length; i++) {
 			addExcludedPrefix(prefixes[i]);
 		}
@@ -68,19 +70,18 @@ public class VFSItemExcludePrefixFilter implements VFSItemFilter {
 		excludedPrefixes.remove(prefix.toLowerCase());
 	}
 
-	/**
-	 * @see org.olat.core.util.vfs.filters.VFSItemFilter#accept(org.olat.core.util.vfs.VFSItem)
-	 */
+	@Override
 	public boolean accept(VFSItem vfsItem) {
 		String name = vfsItem.getName().toLowerCase();
-		Enumeration<String> elements = excludedPrefixes.elements();
-		while (elements.hasMoreElements() ) {
-			String excludedPrefix = elements.nextElement();
+		if(excludeSystemFiles && name.startsWith(".")) {
+			return false;
+		}
+		
+		for(String excludedPrefix : excludedPrefixes.keySet()) {
 			if (name.startsWith(excludedPrefix)) {
 				return false;
 			}
 		}
 		return true;
 	}
-
 }

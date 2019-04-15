@@ -48,8 +48,8 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
-import org.olat.core.util.vfs.filters.VFSItemExcludePrefixFilter;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
+import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.ims.cp.CPManager;
 import org.olat.ims.cp.ContentPackage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,8 +66,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CPFileImportController extends FormBasicController {
 	private static final String ALL = "all";
-	private static final String[] prefixes = new String[] { "." };
-	private static final VFSItemFilter excludeMetaFilesFilter = new VFSItemExcludePrefixFilter(prefixes);
+	private static final VFSItemFilter excludeMetaFilesFilter = new VFSSystemItemFilter();
 
 	private FileElement file;
 	private FormLink cancelButton;

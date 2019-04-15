@@ -27,7 +27,6 @@ import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderModule;
-import org.olat.core.commons.modules.bc.components.FolderComponent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.download.DownloadComponent;
@@ -44,8 +43,8 @@ import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.filters.VFSItemExcludePrefixFilter;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
+import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 /**
 *
 * @author Fabian Kiefer, fabian.kiefer@frentix.com, http://www.frentix.com
@@ -61,7 +60,7 @@ public class PFPeekviewController extends BasicController implements Controller 
 	// the current course node id
 	private final String nodeId;
 
-	private static final VFSItemFilter attachmentExcludeFilter = new VFSItemExcludePrefixFilter(FolderComponent.ATTACHMENT_EXCLUDE_PREFIXES);
+	private static final VFSItemFilter attachmentExcludeFilter = new VFSSystemItemFilter();
 
 	public PFPeekviewController(UserRequest ureq, WindowControl wControl, VFSContainer rootFolder, String nodeId, int itemsToDisplay) {
 		super(ureq, wControl);
@@ -69,14 +68,14 @@ public class PFPeekviewController extends BasicController implements Controller 
 
 		VelocityContainer peekviewVC = createVelocityContainer("peekview");
 		// add items, only as many as configured
-		List<VFSLeaf> allLeafs = new ArrayList<VFSLeaf>();
+		List<VFSLeaf> allLeafs = new ArrayList<>();
 		addItems(rootFolder, allLeafs);
 		// Sort messages by last modified date
 		Collections.sort(allLeafs, dateSortingComparator);
 		boolean forceDownload = CoreSpringFactory.getImpl(FolderModule.class).isForceDownload();
 		
 		// only take the configured amount of messages
-		List<VFSLeaf> leafs = new ArrayList<VFSLeaf>();
+		List<VFSLeaf> leafs = new ArrayList<>();
 		for (int i = 0; i < allLeafs.size(); i++) {
 			if (leafs.size() == itemsToDisplay) {
 				break;
@@ -103,8 +102,6 @@ public class PFPeekviewController extends BasicController implements Controller 
 		putInitialPanel(peekviewVC);
 	}
 
-	
-
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source instanceof Link) {
@@ -120,7 +117,7 @@ public class PFPeekviewController extends BasicController implements Controller 
 
 	@Override
 	protected void doDispose() {
-
+		//
 	}
 	
 	private void addItems(VFSContainer container, List<VFSLeaf> allLeafs) {
@@ -139,6 +136,4 @@ public class PFPeekviewController extends BasicController implements Controller 
 			}
 		}
 	}
-
-
 }

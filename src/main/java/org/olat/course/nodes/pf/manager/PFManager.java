@@ -37,7 +37,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.basesecurity.GroupRoles;
-import org.olat.core.commons.modules.bc.components.FolderComponent;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -54,8 +53,8 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VirtualContainer;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
-import org.olat.core.util.vfs.filters.VFSItemExcludePrefixFilter;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
+import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.course.CourseModule;
 import org.olat.course.nodes.PFCourseNode;
 import org.olat.course.nodes.pf.ui.DropBoxRow;
@@ -86,7 +85,7 @@ import org.springframework.stereotype.Service;
 public class PFManager {
 	
 	private static final OLog log = Tracing.createLoggerFor(PFManager.class);
-	private static final VFSItemFilter attachmentExcludeFilter = new VFSItemExcludePrefixFilter(FolderComponent.ATTACHMENT_EXCLUDE_PREFIXES);
+	private static final VFSItemFilter attachmentExcludeFilter = new VFSSystemItemFilter();
 
 	public static final String FILENAME_PARTICIPANTFOLDER = "participantfolder";
 	public static final String FILENAME_RETURNBOX = "returnbox";

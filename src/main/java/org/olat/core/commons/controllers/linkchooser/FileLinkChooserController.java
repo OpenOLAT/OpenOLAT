@@ -128,14 +128,16 @@ public class FileLinkChooserController extends BasicController {
 		// create directory filter combined with suffix filter
 		String[] dirFilters = { "_courseelementdata" };
 		VFSItemFilter customFilter = null;
-		VFSItemFilter dirFilter = new VFSItemExcludePrefixFilter(dirFilters);
+		VFSItemFilter dirFilter = new VFSItemExcludePrefixFilter(dirFilters, true);
 		if (suffixes != null) {
-			VFSItemFileTypeFilter typeFilter = new VFSItemFileTypeFilter(suffixes, uriValidation);
+			VFSItemFileTypeFilter typeFilter = new VFSItemFileTypeFilter(suffixes, true, uriValidation);
 			typeFilter.setCompositeFilter(dirFilter);
 			customFilter = typeFilter;
 		} else {
 			customFilter = dirFilter;
 		}
+		
+		
 		// hide file chooser title, we have our own title
 		fileChooserController = FileChooserUIFactory
 				.createFileChooserControllerWithoutTitle(ureq, getWindowControl(), rootDir,
