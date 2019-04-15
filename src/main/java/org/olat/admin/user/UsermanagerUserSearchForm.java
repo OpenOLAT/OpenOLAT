@@ -351,7 +351,7 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 		
 		Roles uroles = ureq.getUserSession().getRoles();
 		TextElement id = uifactory.addTextElement("id", "search.form.id", 128, "", formLayout);
-		id.setVisible(isAdministrativeUser || uroles.isAdministrator() || uroles.isSystemAdmin());
+		id.setVisible(uroles.isAdministrator() || uroles.isSystemAdmin());
 		id.setElementCssClass("o_sel_user_search_id");
 		items.put("id", id);
 	

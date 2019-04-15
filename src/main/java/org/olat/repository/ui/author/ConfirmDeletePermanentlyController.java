@@ -100,7 +100,7 @@ public class ConfirmDeletePermanentlyController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layout = (FormLayoutContainer)formLayout;
-			layout.contextPut("notAllDeleteable", new Boolean(notAllDeleteable));
+			layout.contextPut("notAllDeleteable", Boolean.valueOf(notAllDeleteable));
 			layout.contextPut("numOfMembers", Integer.toString(numOfMembers));
 
 			FormLayoutContainer layoutCont = FormLayoutContainer.createDefaultFormLayout("confirm", getTranslator());
@@ -247,7 +247,7 @@ public class ConfirmDeletePermanentlyController extends FormBasicController {
 			Collection<String> selectedKeys = referencesEl.getSelectedKeys();
 			List<RepositoryEntry> referencesToDelete = new ArrayList<>(selectedKeys.size());
 			for(String selectedRefKey:selectedKeys) {
-				Long key = new Long(selectedRefKey);
+				Long key = Long.valueOf(selectedRefKey);
 				ReferenceInfos refInfos = referencesMap.get(key);
 				if(refInfos != null && refInfos.isOrphan() && refInfos.isOwner() && !refInfos.isManaged()) {
 					referencesToDelete.add(referencesMap.get(key).getEntry());

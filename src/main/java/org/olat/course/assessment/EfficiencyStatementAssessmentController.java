@@ -74,7 +74,7 @@ public class EfficiencyStatementAssessmentController extends FormBasicController
 			boolean enabled = course.getCourseEnvironment().getCourseConfig().isEfficencyStatementEnabled();
 			String enableStr = this.translate(enabled ? "efficiencystatement.config.on" : "efficiencystatement.config.off");
 			container.contextPut("enabledStr", enableStr);
-			container.contextPut("enabled", new Boolean(enabled));
+			container.contextPut("enabled", Boolean.valueOf(enabled));
 			
 			configButton = uifactory.addFormLink("config", "efficiencystatement.config", null, container, Link.BUTTON);
 			recalculateButton = uifactory.addFormLink("recalculate", "efficiencystatement.recalculate", null, container, Link.BUTTON);
@@ -124,7 +124,7 @@ public class EfficiencyStatementAssessmentController extends FormBasicController
 	}
 
 	private void openConfiguration(UserRequest ureq) {
-		String resourceUrl = "[RepositoryEntry:" + courseEntry.getKey() + "][CertificationSettings:0]";
+		String resourceUrl = "[RepositoryEntry:" + courseEntry.getKey() + "][Settings:0][Certificates:0]";
 		BusinessControl bc = BusinessControlFactory.getInstance().createFromString(resourceUrl);
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, getWindowControl());
 		NewControllerFactory.getInstance().launch(ureq, bwControl);

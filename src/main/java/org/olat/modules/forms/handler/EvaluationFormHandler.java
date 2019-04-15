@@ -32,7 +32,9 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Locale;
+import java.util.Map;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
@@ -56,6 +58,7 @@ import org.olat.core.util.PathUtils.YesMatcher;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
+import org.olat.core.util.resource.OLATResourceableJustBeforeDeletedEvent;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.fileresource.FileResourceManager;
@@ -63,6 +66,7 @@ import org.olat.fileresource.types.FileResource;
 import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.forms.EvaluationFormManager;
+import org.olat.modules.forms.EvaluationFormReadyToDelete;
 import org.olat.modules.forms.EvaluationFormsModule;
 import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.model.xml.FormXStream;
@@ -79,6 +83,7 @@ import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
+import org.olat.resource.references.ReferenceManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -95,6 +100,8 @@ public class EvaluationFormHandler implements RepositoryHandler {
 
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private ReferenceManager referenceManager;
 	@Autowired
 	private EvaluationFormsModule formsModule;
 	@Autowired
@@ -234,12 +241,27 @@ public class EvaluationFormHandler implements RepositoryHandler {
 
 	@Override
 	public boolean readyToDelete(RepositoryEntry entry, Identity identity, Roles roles, Locale locale, ErrorList errors) {
-		return false;
+		String referencesSummary = referenceManager.getReferencesToSummary(entry.getOlatResource(), locale);
+		if (referencesSummary != null) {
+			Translator translator = Util.createPackageTranslator(RepositoryManager.class, locale);
+			errors.setError(translator.translate("details.delete.error.references",
+					new String[] { entry.getDisplayname() }));
+			return false;
+		}
+		
+		boolean delete = true;
+		Map<String,EvaluationFormReadyToDelete> deleteDelegates = CoreSpringFactory.getBeansOfType(EvaluationFormReadyToDelete.class);
+		for(EvaluationFormReadyToDelete delegate:deleteDelegates.values()) {
+			delete &= delegate.readyToDelete(entry, locale, errors);
+		}
+		return delete;
 	}
 
 	@Override
 	public boolean cleanupOnDelete(RepositoryEntry entry, OLATResourceable res) {
-		return false;
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(new OLATResourceableJustBeforeDeletedEvent(res), res);
+		FileResourceManager.getInstance().deleteFileResource(res);
+		return true;
 	}
 
 	/**
