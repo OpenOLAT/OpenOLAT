@@ -87,7 +87,7 @@ public class FolderPage {
 		browser.findElement(newFileBy).click();
 		OOGraphene.waitBusy(browser);
 		
-		By typeBy = By.cssSelector(".o_sel_folder_new_file_type select");
+		By typeBy = By.cssSelector(".o_sel_folder_new_doc_type select");
 		OOGraphene.waitElement(typeBy, browser);
 		Select selectType = new Select(browser.findElement(typeBy));
 		List<WebElement> typeEls = selectType.getOptions();
@@ -98,8 +98,10 @@ public class FolderPage {
 			}
 		}
 		
-		By filenameBy = By.cssSelector(".o_sel_folder_new_file_name input[type='text']");
+		By filenameBy = By.cssSelector(".o_sel_folder_new_doc_name input[type='text']");
 		browser.findElement(filenameBy).sendKeys(name);
+		
+		
 		
 		By createBy = By.cssSelector(".o_sel_folder_new_file button.btn-primary");
 		browser.findElement(createBy).click();
