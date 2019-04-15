@@ -227,9 +227,9 @@ public class SystemRolesAndRightsController extends FormBasicController {
 	
 	private void initFormRoles(FormItemContainer formLayout, Organisation organisation) {
 		boolean admin = managerRoles.hasRoleInParentLine(organisation, OrganisationRoles.administrator)
-				|| managerRoles.hasRoleInParentLine(organisation, OrganisationRoles.rolesmanager)
 				|| managerRoles.isSystemAdmin(); 
 		boolean userManager = managerRoles.hasRoleInParentLine(organisation, OrganisationRoles.usermanager); 
+		boolean rolesManager = managerRoles.hasRoleInParentLine(organisation, OrganisationRoles.rolesmanager); 
 		
 		List<String> roleKeys = new ArrayList<>();
 		List<String> roleValues = new ArrayList<>();
@@ -300,8 +300,26 @@ public class SystemRolesAndRightsController extends FormBasicController {
 			Set<String> disabled = new HashSet<>(roleKeys);
 			disabled.removeAll(enabled);
 			rolesEl.setEnabled(disabled, false);
+		} else if(rolesManager) {
+			Set<String> enabled = new HashSet<>();
+			enabled.add(OrganisationRoles.invitee.name());
+			enabled.add(OrganisationRoles.user.name());
+			enabled.add(OrganisationRoles.author.name());
+			enabled.add(OrganisationRoles.curriculummanager.name());
+			enabled.add(OrganisationRoles.groupmanager.name());
+			enabled.add(OrganisationRoles.learnresourcemanager.name());
+			enabled.add(OrganisationRoles.lecturemanager.name());
+			enabled.add(OrganisationRoles.linemanager.name());
+			enabled.add(OrganisationRoles.poolmanager.name());
+			enabled.add(OrganisationRoles.qualitymanager.name());
+			enabled.add(OrganisationRoles.rolesmanager.name());
+			enabled.add(OrganisationRoles.usermanager.name());
+			rolesEl.setEnabled(enabled, true);
+			Set<String> disabled = new HashSet<>(roleKeys);
+			disabled.removeAll(enabled);
+			rolesEl.setEnabled(disabled, false);
 		} else {
-			rolesEl.setEnabled(new HashSet<>(roleKeys), false);
+			rolesEl.setEnabled(new HashSet<>(), false);
 		}
 		
 		rolesEls.add(rolesEl);
@@ -533,8 +551,8 @@ public class SystemRolesAndRightsController extends FormBasicController {
 	private void saveOrganisationRolesFormData(RolesElement wrapper) {
 		Organisation organisation = wrapper.getOrganisation();
 		boolean iAmUserManager = managerRoles.hasRoleInParentLine(organisation, OrganisationRoles.usermanager);
+		boolean iAmRolesManager = managerRoles.hasRoleInParentLine(organisation, OrganisationRoles.rolesmanager);
 		boolean iAmAdmin = managerRoles.hasRoleInParentLine(organisation, OrganisationRoles.administrator)
-				|| managerRoles.hasRoleInParentLine(organisation, OrganisationRoles.rolesmanager)
 				|| managerRoles.isSystemAdmin();
 
 		// 2) system roles
@@ -547,19 +565,23 @@ public class SystemRolesAndRightsController extends FormBasicController {
 		if (iAmAdmin || iAmUserManager) {
 			wrapper.commit(OrganisationRoles.author, rolesToAdd, rolesToRemove);
 		}
-
-		// manager roles, only allowed by administrator and roles manager
-		if (iAmAdmin) {
+		
+		// managers
+		if (iAmAdmin || iAmRolesManager) {
 			wrapper.commit(OrganisationRoles.groupmanager, rolesToAdd, rolesToRemove);
 			wrapper.commit(OrganisationRoles.poolmanager, rolesToAdd, rolesToRemove);
 			wrapper.commit(OrganisationRoles.curriculummanager, rolesToAdd, rolesToRemove);
-			wrapper.commit(OrganisationRoles.principal, rolesToAdd, rolesToRemove);
 			wrapper.commit(OrganisationRoles.linemanager, rolesToAdd, rolesToRemove);
 			wrapper.commit(OrganisationRoles.qualitymanager, rolesToAdd, rolesToRemove);
 			wrapper.commit(OrganisationRoles.lecturemanager, rolesToAdd, rolesToRemove);
 			wrapper.commit(OrganisationRoles.usermanager, rolesToAdd, rolesToRemove);
 			wrapper.commit(OrganisationRoles.rolesmanager, rolesToAdd, rolesToRemove);
 			wrapper.commit(OrganisationRoles.learnresourcemanager, rolesToAdd, rolesToRemove);
+		}
+
+		// administration roles, only allowed by administrator
+		if (iAmAdmin) {
+			wrapper.commit(OrganisationRoles.principal, rolesToAdd, rolesToRemove);
 			wrapper.commit(OrganisationRoles.administrator, rolesToAdd, rolesToRemove);
 			wrapper.commit(OrganisationRoles.sysadmin, rolesToAdd, rolesToRemove);
 		}
