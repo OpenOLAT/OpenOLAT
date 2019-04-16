@@ -42,12 +42,15 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
+import org.olat.core.id.User;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.mail.ContactList;
@@ -67,6 +70,7 @@ import org.olat.resource.accesscontrol.ResourceReservation;
 import org.olat.resource.accesscontrol.manager.ACReservationDAO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -86,6 +90,8 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 	@Autowired
 	private ACService acService;
 	@Autowired
+	private UserManager userManager;
+	@Autowired
 	private ACReservationDAO reservationDao;
 	@Autowired
 	private BaseSecurity securityManager;
@@ -95,6 +101,8 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 	private BusinessGroupModule businessGroupModule;
 	@Autowired
 	private BusinessGroupService businessGroupService;
+	@Autowired
+	private OrganisationService organisationService;
 	@Autowired
 	private MailModule mailModule;
 	
@@ -1143,6 +1151,46 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 			Assert.assertNotNull(roles);
 			Assert.assertTrue(roles.isAdministrator());
 		}
+	}
+	
+	@Test
+	public void allowToLeavingBusinessGroup_subOrganisation() {
+		// a special
+		String uuid = UUID.randomUUID().toString();
+		Organisation organisation = organisationService.getDefaultOrganisation();
+		Organisation subOrganisation = organisationService
+				.createOrganisation("Sub-organisation", uuid, "", organisation, null);
+		
+		// create an administrator
+		String adminName = "admin" + uuid;
+		User adminUser = userManager.createUser("Admin", "Istrator", uuid + "admin@openolat.org");
+		Identity adminIdentity = securityManager.createAndPersistIdentityAndUser(adminName, null, adminUser, null, adminName);
+		organisationService.addMember(subOrganisation, adminIdentity, OrganisationRoles.user);
+		organisationService.addMember(subOrganisation, adminIdentity, OrganisationRoles.administrator);
+		//create a user
+		String userName = "user" + uuid;
+		User user = userManager.createUser("Us", "er", uuid + "user@openolat.org");
+		Identity userIdentity = securityManager.createAndPersistIdentityAndUser(userName, null, user, null, userName);
+		organisationService.addMember(subOrganisation, userIdentity, OrganisationRoles.user);
+		dbInstance.commitAndCloseSession();
+		
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "Leaving group", "But you cannot leave :-(", new Integer(0), new Integer(2), false, false, null);
+		businessGroupRelationDao.addRole(userIdentity, group, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+		
+		//set to not allowed to leave
+		group = businessGroupService.updateAllowToLeaveBusinessGroup(group, false);
+		dbInstance.commitAndCloseSession();
+
+		//check the authors group leaving option
+		LeaveOption optionToLeave = businessGroupService.isAllowToLeaveBusinessGroup(userIdentity, group);
+		Assert.assertNotNull(optionToLeave);
+		Assert.assertFalse(optionToLeave.isAllowToLeave());
+		ContactList contacts = optionToLeave.getContacts();
+		Collection<Identity> contactList = contacts.getIdentiEmails().values();
+		Assert.assertNotNull(contactList);
+		Assert.assertFalse(contactList.isEmpty());
+		Assert.assertTrue(contactList.contains(adminIdentity));
 	}
 	
 	@Ignore @Test
