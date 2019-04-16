@@ -172,8 +172,12 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 		hasAreas = areaManager.countBGAreasInContext(cev.getCourseGroupManager().getCourseResource()) > 0;
 		hasGroups = businessGroupService.countBusinessGroups(null, cev.getCourseGroupManager().getCourseEntry()) > 0;
 		//4. multiple groups flag
-		int enrollCount = multipleEnrollCount.getIntValue();
-		if(!allowMultipleEnroll.isSelected(0)) enrollCount=1; 
+		int enrollCount;
+		if(allowMultipleEnroll.isSelected(0)) {
+			enrollCount = multipleEnrollCount.getIntValue();
+		} else {
+			enrollCount = 1; 
+		}
 		moduleConfig.set(ENCourseNode.CONFIG_ALLOW_MULTIPLE_ENROLL_COUNT, enrollCount);
 		// Inform all listeners about the changed condition
 		fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
