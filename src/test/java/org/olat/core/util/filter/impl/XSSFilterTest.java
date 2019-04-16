@@ -235,6 +235,16 @@ public class XSSFilterTest {
 //		t("<span style=\"font-family: serif, arial;\">preformated</span>", "<span style=\"font-family: courier new , courier;\">preformated</span>");
 		t("<span class=\"schoen\">irgendwas</span>", "<span class=\"schoen\">irgendwas</span>");
 	}
+	
+	/**
+	 * This checks a bug in Batik
+	 */
+	@Test
+	public void test_style_rgb(){
+		t("<p style=\"background-color: rgb(0%,0,0);\">background</p>", "<p>background</p>");
+		t("<p style=\"background-color: rgba(100%,0,0);\">background</p>", "<p style=\"\">background</p>");
+		t("<p style=\"background-color: rgb(100,50,50);\">background</p>", "<p style=\"background-color: rgb(100,50,50);\">background</p>");
+	}
 
 	@Test
 	public void test_tiny_lists(){
