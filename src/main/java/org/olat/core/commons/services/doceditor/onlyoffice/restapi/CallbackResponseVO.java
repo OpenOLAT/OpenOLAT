@@ -17,13 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.commons.services.doceditor.onlyoffice;
-
-import java.io.File;
-
-import org.olat.core.commons.services.doceditor.DocEditor.Mode;
-import org.olat.core.commons.services.vfs.VFSMetadata;
-import org.olat.core.id.Identity;
+package org.olat.core.commons.services.doceditor.onlyoffice.restapi;
 
 /**
  * 
@@ -31,21 +25,27 @@ import org.olat.core.id.Identity;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface OnlyOfficeService {
-
-	boolean fileExists(String fileId);
-
-	File getFile(String fileId);
-
-	boolean canUpdateContent(String fileId, Identity identity);
-
-	boolean updateContent(String fileId, Identity identity, String url);
+public class CallbackResponseVO {
 	
-	boolean isSupportedFormat(String suffix, Mode mode);
+	private static final CallbackResponseVO SUCCESS = new CallbackResponseVO(0);
+	private static final CallbackResponseVO ERROR = new CallbackResponseVO(1);
+	
+	private final int error;
+	
+	static CallbackResponseVO success() {
+		return SUCCESS;
+	}
+	
+	static CallbackResponseVO error() {
+		return ERROR;
+	}
+	
+	private CallbackResponseVO(int error) {
+		this.error = error;
+	}
 
-	String getEditorDocumentType(String suffix);
+	public int getError() {
+		return error;
+	}
 
-	String getDocumentKey(VFSMetadata metadata);
-
-	Identity getIdentity(String identityId);
 }

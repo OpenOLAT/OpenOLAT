@@ -9,17 +9,7 @@
 		<script type="text/javascript">
 		/* <![CDATA[ */
 			jQuery('$id').ready(function(){
-				new DocsAPI.DocEditor("$id", {
-					"document": {
-						"fileType": "docx",
-						"key": "$key",
-						"title": "Example Document Title.docx",
-						"url": "https://limmat.frentix.com/olat/restapi/onlyoffice/files/$fileId/contents?access_token=$accessToken"
-					},
-					"width": "100%",
-					"height": "100%",
-					"documentType": "text"
-				});
+				new DocsAPI.DocEditor("$id", $apiConfig);
 			});
 		/* ]]> */
 		</script>

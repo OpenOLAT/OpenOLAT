@@ -46,6 +46,8 @@ public class OnlyOfficeEditor implements DocEditor {
 	
 	@Autowired
 	private OnlyOfficeModule onlyOfficeModule;
+	@Autowired
+	private OnlyOfficeService onlyOfficeService;
 
 	@Override
 	public boolean isEnable() {
@@ -65,8 +67,7 @@ public class OnlyOfficeEditor implements DocEditor {
 
 	@Override
 	public boolean isSupportingFormat(String suffix, Mode mode, boolean hasMeta) {
-		// TODO uh Auto-generated method stub
-		return "docx".equals(suffix);
+		return hasMeta && onlyOfficeService.isSupportedFormat(suffix, mode);
 	}
 
 	@Override

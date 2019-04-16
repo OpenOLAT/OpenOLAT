@@ -19,16 +19,21 @@
  */
 package org.olat.core.commons.services.doceditor.onlyoffice.restapi;
 
+import static org.olat.core.commons.services.doceditor.onlyoffice.restapi.CallbackResponseVO.error;
+import static org.olat.core.commons.services.doceditor.onlyoffice.restapi.CallbackResponseVO.success;
+import static org.olat.core.commons.services.doceditor.onlyoffice.restapi.CallbackVO.STATUS_READY_FOR_SAVING;
+
 import java.io.File;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -37,7 +42,7 @@ import javax.ws.rs.core.Response.Status;
 
 import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeModule;
 import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeService;
-import org.olat.core.commons.services.doceditor.wopi.Access;
+import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,12 +65,60 @@ public class OnlyOfficeWebService {
 	@Autowired 
 	private OnlyOfficeService onlyOfficeService;
 	
-	@GET
 	@POST
+	@Path("/callback")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response postCallback(
+			@PathParam("fileId") String fileId,
+			CallbackVO callbackVO,
+			@Context HttpHeaders httpHeaders) {
+		log.debug("OnlyOffice REST post callback request for File ID: " + fileId);
+		logRequestHeaders(httpHeaders);
+		log.debug("OnlyOffice REST post callback " + callbackVO);
+		
+		if (!onlyOfficeModule.isEnabled()) {
+			return Response.serverError().status(Status.FORBIDDEN).build();
+		}
+		
+		if (!onlyOfficeService.fileExists(fileId)) {
+			log.debug("File not found. File ID: " + fileId);
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		
+		CallbackResponseVO responseVO;
+		switch(callbackVO.getStatus()) {
+		case STATUS_READY_FOR_SAVING:
+			responseVO = updateContent(fileId, callbackVO);
+			break;
+		default:
+			// nothing to do
+			responseVO = success();
+		}
+		
+		return Response.ok(responseVO).build();
+	}
+
+	private CallbackResponseVO updateContent(String fileId, CallbackVO callbackVO) {
+		String IdentityId = callbackVO.getUsers()[0];
+		Identity identity = onlyOfficeService.getIdentity(IdentityId);
+		if (identity == null) {
+			return error();
+		}
+		
+		boolean canUpdate = onlyOfficeService.canUpdateContent(fileId, identity);
+		if (!canUpdate) {
+			log.debug("Access has not right to update file. File ID: " + fileId + ", identity: " + IdentityId);
+			return error();
+		}
+		boolean updated = onlyOfficeService.updateContent(fileId, identity, callbackVO.getUrl());
+		return updated? success(): error();
+	}
+	
+	@GET
 	@Path("/contents")
 	public Response getFile(
 			@PathParam("fileId") String fileId,
-			@QueryParam("access_token") String accessToken,
 			@Context HttpHeaders httpHeaders) {
 		log.debug("OnlyOffice REST get file contents request for File ID: " + fileId);
 		logRequestHeaders(httpHeaders);
@@ -79,12 +132,6 @@ public class OnlyOfficeWebService {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		
-		Access access = onlyOfficeService.getAccess(accessToken);
-		if (access == null) {
-			log.debug("No access for token. File ID: " + fileId + ", token: " + accessToken);
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
-		}
-		
 		File file = onlyOfficeService.getFile(fileId);
 		return Response
 				.ok(file)
@@ -95,7 +142,7 @@ public class OnlyOfficeWebService {
 
 	private void logRequestHeaders(HttpHeaders httpHeaders) {
 		if (log.isDebug()) {
-			log.debug("WOPI Resquest headers:");
+			log.debug("REST Resquest headers:");
 			for (Entry<String, List<String>> entry : httpHeaders.getRequestHeaders().entrySet()) {
 				String name = entry.getKey();
 				String value = entry.getValue().stream().collect(Collectors.joining(", "));

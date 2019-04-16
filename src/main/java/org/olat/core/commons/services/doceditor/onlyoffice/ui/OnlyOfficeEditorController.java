@@ -19,10 +19,9 @@
  */
 package org.olat.core.commons.services.doceditor.onlyoffice.ui;
 
+import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorSecurityCallback;
 import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeModule;
-import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeService;
-import org.olat.core.commons.services.doceditor.wopi.Access;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -30,6 +29,8 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,20 +43,14 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class OnlyOfficeEditorController extends BasicController {
 
-	private final VFSLeaf vfsLeaf;
-	private DocEditorSecurityCallback secCallback;
-	private Access access;
+	private static final OLog log = Tracing.createLoggerFor(OnlyOfficeEditorController.class);
 	
 	@Autowired
 	private OnlyOfficeModule onlyOfficeModule;
-	@Autowired
-	private OnlyOfficeService onlyOfficeService;
 
 	public OnlyOfficeEditorController(UserRequest ureq, WindowControl wControl, VFSLeaf vfsLeaf,
 			final DocEditorSecurityCallback securityCallback) {
 		super(ureq, wControl);
-		this.vfsLeaf = vfsLeaf;
-		this.secCallback = securityCallback;
 		
 		VelocityContainer mainVC = createVelocityContainer("editor");
 		
@@ -63,12 +58,18 @@ public class OnlyOfficeEditorController extends BasicController {
 		if (vfsMetadata == null) {
 			mainVC.contextPut("warning", translate("editor.warning.no.metadata"));
 		} else {
-			this.access = onlyOfficeService.createAccess(vfsMetadata, getIdentity(), secCallback);
-			mainVC.contextPut("key", access.getToken());
-			mainVC.contextPut("fileId", access.getFileId());
-			mainVC.contextPut("accessToken", access.getToken());
-			mainVC.contextPut("id", "o_" + CodeHelper.getRAMUniqueID());
-			mainVC.contextPut("apiUrl", onlyOfficeModule.getApiUrl());
+			String apiConfig = ApiConfigBuilder.builder(vfsMetadata, getIdentity())
+					.withEdit(Mode.EDIT.equals(securityCallback.getMode()))
+					.buildJson();
+			log.debug("OnlyOffice ApiConfig: " + apiConfig);
+			
+			if (apiConfig == null) {
+				mainVC.contextPut("warning", translate("editor.warning.no.api.configs"));
+			} else {
+				mainVC.contextPut("id", "o_" + CodeHelper.getRAMUniqueID());
+				mainVC.contextPut("apiUrl", onlyOfficeModule.getApiUrl());
+				mainVC.contextPut("apiConfig", apiConfig);
+			}
 		}
 		
 		putInitialPanel(mainVC);
@@ -81,7 +82,7 @@ public class OnlyOfficeEditorController extends BasicController {
 
 	@Override
 	protected void doDispose() {
-		onlyOfficeService.deleteAccess(access);
+		//
 	}
 
 }
