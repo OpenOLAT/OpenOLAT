@@ -210,7 +210,7 @@ public class ItemContext implements Serializable {
 		for (Iterator<Node> responses = el_labels.iterator(); responses.hasNext();) {
 			Element response = (Element) responses.next();
 			Element parent = response.getParent();
-			int pos = parent.indexOf(response);
+			int pos = parent.elements().indexOf(response);
 			posList[j++] = pos;
 			respList.add((Element)response.clone()); // need to use clones so they are not
 			// attached anymore
@@ -224,9 +224,9 @@ public class ItemContext implements Serializable {
 			Element child = respList.get(i);
 			List<Element> elements = parent.elements();
 			if(pos < elements.size()) {
-				parent.elements().set(pos, child);
+				elements.set(pos, child);
 			} else {
-				parent.elements().add(child);
+				elements.add(child);
 			}
 		}
 		return shuffleItem;

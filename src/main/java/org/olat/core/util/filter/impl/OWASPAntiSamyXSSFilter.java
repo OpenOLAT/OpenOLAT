@@ -19,11 +19,14 @@
  */
 package org.olat.core.util.filter.impl;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 
+import org.cyberneko.html.parsers.SAXParser;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -34,6 +37,10 @@ import org.owasp.validator.html.CleanResults;
 import org.owasp.validator.html.Policy;
 import org.owasp.validator.html.PolicyException;
 import org.owasp.validator.html.ScanException;
+import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * Description:<br>
@@ -137,7 +144,7 @@ public class OWASPAntiSamyXSSFilter implements Filter {
 		ore.printStackTrace(printWriter);
 	}
 	
-	private String getCleanHTML(String original)	{
+	private String getCleanHTML(String original) {
 		Policy policy;
 		if(variant == Variant.wiki) {
 			if(entityEncodeIntlChars) {
@@ -167,7 +174,10 @@ public class OWASPAntiSamyXSSFilter implements Filter {
 		} catch (PolicyException e) {
             log.error("XSS Filter policy error", e);
             printOriginStackTrace();
-        } 
+        } catch (IllegalStateException e) {
+        	//Bug in Batik with rgb values in percent: rgb(100%,20%,0%)
+        	getCleanHTMLFromBatikBug(original, policy);
+        }
         String output; 
         try {
             output = cr.getCleanHTML();
@@ -182,6 +192,37 @@ public class OWASPAntiSamyXSSFilter implements Filter {
 		return output;
 	}
 	
+	private void getCleanHTMLFromBatikBug(String original, Policy policy) {
+		cr = null;
+		try {
+			String rgbCleanedOriginal = cleanHtml(original);
+			AntiSamy as = new AntiSamy();
+			cr = as.scan(rgbCleanedOriginal, policy);
+		} catch (ScanException e) {
+			log.error("XSS Filter scan error", e);
+			printOriginStackTrace();
+		} catch (PolicyException e) {
+            log.error("XSS Filter policy error", e);
+            printOriginStackTrace();
+        } catch (IllegalStateException e) {
+            log.error("XSS Filter policy dramatic Batik error", e);
+            printOriginStackTrace();
+        }
+	}
+	
+	private String cleanHtml(String original) {
+		try {
+			HTMLCleanerHandler handler = new HTMLCleanerHandler();
+			SAXParser parser = new SAXParser();
+			parser.setContentHandler(handler);
+			parser.parse(new InputSource(new StringReader(original)));
+			return handler.toString();
+		} catch (SAXException | IOException e) {
+			log.error("", e);
+			return "";
+		}
+	}
+	
 	public int getNumOfErrors() {
 		if (cr != null) {
 			return cr.getNumberOfErrors();
@@ -191,7 +232,7 @@ public class OWASPAntiSamyXSSFilter implements Filter {
 
 	/**
 	 * get Errors/Messages from filter. 
-	 * This have not to be "errors", its what has been filtered and gets reported.
+	 * This have not to be "errors", its whatR has been filtered and gets reported.
 	 * @return
 	 */
 	public String getOrPrintErrorMessages(){
@@ -209,5 +250,64 @@ public class OWASPAntiSamyXSSFilter implements Filter {
 		tinyMce,
 		wiki
 		
+	}
+	
+	/**
+	 * The handler will remove style attributes if it detects a RGB value
+	 * to prevent: https://issues.apache.org/jira/browse/BATIK-1149<br>
+	 * This is a bug in Batik which doesn't understand rgb values in percent.
+	 * 
+	 * Initial date: 16 avr. 2019<br>
+	 * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+	 *
+	 */
+	private static class HTMLCleanerHandler extends DefaultHandler {
+		
+		private final StringBuilder output = new StringBuilder(4096);
+
+		@Override
+		public void startElement(String uri, String localName, String qName, Attributes attributes) {
+			output.append("<").append(localName);
+			int numOfAttributes = attributes.getLength();
+			for(int i=0; i<numOfAttributes; i++) {
+				String attrName = attributes.getLocalName(i);
+				String attrValue = attributes.getValue(i);
+				if(attrValue.contains("rgb")) {
+					continue;
+				}
+				
+				output.append(' ').append(attrName).append("=");
+				boolean useSingle =  attrValue.indexOf('"') >= 0;
+				if(useSingle) {
+					output.append('\'');
+				} else {
+					output.append('"');
+				}
+				output.append(attrValue);
+				if(useSingle) {
+					output.append('\'');
+				} else {
+					output.append('"');
+				}
+			}
+			output.append(">");	
+		}
+
+		@Override
+		public void characters(char[] ch, int start, int length) throws SAXException {
+			if(output != null) {
+				output.append(ch, start, length);
+			}
+		}
+
+		@Override
+		public void endElement(String uri, String localName, String qName) {
+			output.append("</").append(localName).append(">");
+		}
+		
+		@Override
+		public String toString() {
+			return output.toString();
+		}
 	}
 }

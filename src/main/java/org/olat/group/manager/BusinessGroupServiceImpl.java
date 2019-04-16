@@ -41,6 +41,7 @@ import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.SearchIdentityParams;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.commons.info.InfoMessageFrontendManager;
@@ -48,6 +49,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.DBRuntimeException;
 import org.olat.core.logging.KnownIssueException;
@@ -1036,13 +1038,13 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 			if(group.isAllowToLeave()) {
 				opt = new LeaveOption();
 			} else {
-				ContactList list = getAdminContactList(group);
+				ContactList list = getAdminContactList(identity, group);
 				opt = new LeaveOption(false, list);
 			}
 		} else if(groupModule.isAllowLeavingGroupCreatedByAuthors() && groupModule.isAllowLeavingGroupCreatedByLearners()) {
 			opt = new LeaveOption();
 		} else if(!groupModule.isAllowLeavingGroupCreatedByAuthors() && !groupModule.isAllowLeavingGroupCreatedByLearners()) {
-			ContactList list = getAdminContactList(group);
+			ContactList list = getAdminContactList(identity, group);
 			opt = new LeaveOption(false, list);
 		} else {
 			int numOfCoaches = countMembers(group, GroupRoles.coach.name());
@@ -1053,7 +1055,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 					if(groupModule.isAllowLeavingGroupCreatedByAuthors()) {
 						opt = new LeaveOption();
 					} else {
-						ContactList list = getAdminContactList(group);
+						ContactList list = getAdminContactList(identity, group);
 						opt = new LeaveOption(false, list);
 					}
 
@@ -1061,7 +1063,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 				} else if(groupModule.isAllowLeavingGroupCreatedByLearners()) {
 					opt = new LeaveOption();
 				} else {
-					ContactList list = getAdminContactList(group);
+					ContactList list = getAdminContactList(identity, group);
 					opt = new LeaveOption(false, list);
 				}
 			} else {
@@ -1070,13 +1072,13 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 					if(groupModule.isAllowLeavingGroupCreatedByAuthors()) {
 						opt = new LeaveOption();
 					} else {
-						ContactList list = getAdminContactList(group);
+						ContactList list = getAdminContactList(identity, group);
 						opt = new LeaveOption(false, list);
 					}
 				} else if(groupModule.isAllowLeavingGroupCreatedByLearners()) {
 					opt = new LeaveOption();
 				} else {
-					ContactList list = getAdminContactList(group);
+					ContactList list = getAdminContactList(identity, group);
 					opt = new LeaveOption(false, list);
 				}	
 			}
@@ -1084,7 +1086,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 		return opt;
 	}
 	
-	public ContactList getAdminContactList(BusinessGroup group) {
+	private ContactList getAdminContactList(Identity identity, BusinessGroup group) {
 		ContactList list = new ContactList("Contact");
 		List<Identity> coaches = getMembers(group, GroupRoles.coach.name());
 		if(coaches.isEmpty()) {
@@ -1093,10 +1095,14 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 			coaches.addAll(repositoryService.getMembers(entries, RepositoryEntryRelationType.all, GroupRoles.coach.name()));
 			
 			if(coaches.isEmpty()) {
-				//get system administrators
-				OrganisationRoles[] adminRoles = { OrganisationRoles.administrator };
-				List<Identity> admins = securityManager.getIdentitiesByPowerSearch(null, null, false, adminRoles,
-						null, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT);
+				//get system administrators of the user's organisations
+				Roles roles = securityManager.getRoles(identity);
+				List<OrganisationRef> identityOrgs = roles.getOrganisationsWithRole(OrganisationRoles.user);
+				SearchIdentityParams identityParams = new SearchIdentityParams();
+				identityParams.setOrganisations(identityOrgs);
+				identityParams.setRoles(new OrganisationRoles[]{ OrganisationRoles.administrator });
+				identityParams.setStatus(Identity.STATUS_VISIBLE_LIMIT);
+				List<Identity> admins = securityManager.getIdentitiesByPowerSearch(identityParams, 0, -1);
 				list.addAllIdentites(admins);
 			}
 		}
