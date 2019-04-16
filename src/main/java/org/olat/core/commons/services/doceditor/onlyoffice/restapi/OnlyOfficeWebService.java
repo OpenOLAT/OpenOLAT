@@ -21,7 +21,6 @@ package org.olat.core.commons.services.doceditor.onlyoffice.restapi;
 
 import static org.olat.core.commons.services.doceditor.onlyoffice.restapi.CallbackResponseVO.error;
 import static org.olat.core.commons.services.doceditor.onlyoffice.restapi.CallbackResponseVO.success;
-import static org.olat.core.commons.services.doceditor.onlyoffice.restapi.CallbackVO.STATUS_READY_FOR_SAVING;
 
 import java.io.File;
 import java.util.List;
@@ -45,6 +44,8 @@ import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeService;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.lock.LockResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -87,9 +88,36 @@ public class OnlyOfficeWebService {
 		}
 		
 		CallbackResponseVO responseVO;
-		switch(callbackVO.getStatus()) {
-		case STATUS_READY_FOR_SAVING:
+		CallbackStatus status = CallbackStatus.valueOf(callbackVO.getStatus());
+		switch(status) {
+		case Editing:
+			responseVO = lock(fileId, callbackVO);
+			break;
+		case ClosedWithoutChanges:
+			// This callback is called
+			//     A) if a user closes a document without changes.
+			//     B) if a user does not edit a document for about one minute.
+			// Case B) results in a opened, unlocked file. If the user starts to edit the file again callback "Editing" is called and the file is locked again.
+			// However, is is possible to edit the file in the meantime in another editor and all changes made in ONLYOFFICE are lost!
+			// (This is the same implementation like in Alfresco, ownCloud, Nextcloud etc.)
+			responseVO = unlock(fileId, callbackVO);
+			break;
+		case MustSave:
+		case MustForceSave:
 			responseVO = updateContent(fileId, callbackVO);
+			break;
+		case ErrorCorrupted:
+			log.warn("ONLYOFFICE has reported that saving the document has failed. File ID: " + fileId);
+			responseVO = success();
+			break;
+		case ErrorCorruptedForce:
+			log.warn("ONLYOFFICE has reported that saving the document has failed. File ID: " + fileId);
+			responseVO = success();
+			break;
+		case ErrorDocumentNotFound:
+			// I never get that status, so I do not know, how to reproduce it.
+			log.warn("ONLYOFFICE has reported that no doc with the specified key can be found. File ID: " + fileId);
+			responseVO = success();
 			break;
 		default:
 			// nothing to do
@@ -99,19 +127,53 @@ public class OnlyOfficeWebService {
 		return Response.ok(responseVO).build();
 	}
 
-	private CallbackResponseVO updateContent(String fileId, CallbackVO callbackVO) {
+	private CallbackResponseVO lock(String fileId, CallbackVO callbackVO) {
 		String IdentityId = callbackVO.getUsers()[0];
 		Identity identity = onlyOfficeService.getIdentity(IdentityId);
-		if (identity == null) {
+		if (identity == null) return error();
+		
+		VFSLeaf vfsLeaf = onlyOfficeService.getVfsLeaf(fileId);
+		if (vfsLeaf == null) return error();
+		
+		boolean isLockedForMe = onlyOfficeService.isLockedForMe(vfsLeaf, identity);
+		if (isLockedForMe) return error();
+		
+		boolean canUpdate = onlyOfficeService.canUpdateContent(vfsLeaf, identity, callbackVO.getKey());
+		if (!canUpdate) {
+			log.debug("ONLYOFFICE has no right to update file. File ID: " + fileId + ", identity: " + IdentityId);
 			return error();
 		}
 		
-		boolean canUpdate = onlyOfficeService.canUpdateContent(fileId, identity);
+		LockResult lock = onlyOfficeService.lock(vfsLeaf, identity);
+		return lock != null? success(): error();
+	}
+
+	private CallbackResponseVO unlock(String fileId, CallbackVO callbackVO) {
+		VFSLeaf vfsLeaf = onlyOfficeService.getVfsLeaf(fileId);
+		if (vfsLeaf == null) return error();
+		
+		boolean lastUser = callbackVO.getUsers() == null || callbackVO.getUsers().length == 0;
+		if (lastUser) {
+			onlyOfficeService.unlock(vfsLeaf);
+		}
+		return success();
+	}
+
+	private CallbackResponseVO updateContent(String fileId, CallbackVO callbackVO) {
+		String IdentityId = callbackVO.getUsers()[0];
+		Identity identity = onlyOfficeService.getIdentity(IdentityId);
+		if (identity == null) return error();
+		
+		VFSLeaf vfsLeaf = onlyOfficeService.getVfsLeaf(fileId);
+		if (vfsLeaf == null) return error();
+		
+		boolean canUpdate = onlyOfficeService.canUpdateContent(vfsLeaf, identity, callbackVO.getKey());
 		if (!canUpdate) {
-			log.debug("Access has not right to update file. File ID: " + fileId + ", identity: " + IdentityId);
+			log.debug("ONLYOFFICE has no right to update file. File ID: " + fileId + ", identity: " + IdentityId);
 			return error();
 		}
-		boolean updated = onlyOfficeService.updateContent(fileId, identity, callbackVO.getUrl());
+		boolean updated = onlyOfficeService.updateContent(vfsLeaf, identity, callbackVO.getUrl());
+		onlyOfficeService.unlock(vfsLeaf);
 		return updated? success(): error();
 	}
 	

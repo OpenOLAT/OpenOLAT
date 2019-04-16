@@ -402,11 +402,10 @@ public class ApiConfigBuilder {
 		private String mode;
 		private User user;
 		// not implemented yet
+		// private Customization customization;
 		// private Object recent;
-//		private String createUrl;
-		// private Customization costumisazion;
+		// private String createUrl;
 		// private Embedded embedded;
-		// private Customization costumisazion;
 		
 		public String getCallbackUrl() {
 			return callbackUrl;

@@ -24,6 +24,8 @@ import java.io.File;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.id.Identity;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.lock.LockResult;
 
 /**
  * 
@@ -37,9 +39,19 @@ public interface OnlyOfficeService {
 
 	File getFile(String fileId);
 
-	boolean canUpdateContent(String fileId, Identity identity);
+	VFSLeaf getVfsLeaf(String fileId);
 
-	boolean updateContent(String fileId, Identity identity, String url);
+	boolean canUpdateContent(VFSLeaf vfsLeaf, Identity identity, String documentKey);
+
+	boolean updateContent(VFSLeaf vfsLeaf, Identity identity, String url);
+	
+	boolean isLockNeeded(Mode mode);
+
+	boolean isLockedForMe(VFSLeaf vfsLeaf, Identity identity);
+
+	LockResult lock(VFSLeaf vfsLeaf, Identity identity);
+
+	void unlock(VFSLeaf vfsLeaf);
 	
 	boolean isSupportedFormat(String suffix, Mode mode);
 

@@ -72,7 +72,9 @@ public class OnlyOfficeEditor implements DocEditor {
 
 	@Override
 	public boolean isLockedForMe(VFSLeaf vfsLeaf, Identity identity, Mode mode) {
-		// TODO uh Auto-generated method stub
+		if (onlyOfficeService.isLockNeeded(mode)) {
+			return onlyOfficeService.isLockedForMe(vfsLeaf, identity);
+		}
 		return false;
 	}
 

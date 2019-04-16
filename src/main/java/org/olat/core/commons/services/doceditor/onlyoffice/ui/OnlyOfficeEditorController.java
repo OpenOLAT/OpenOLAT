@@ -21,7 +21,9 @@ package org.olat.core.commons.services.doceditor.onlyoffice.ui;
 
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorSecurityCallback;
+import org.olat.core.commons.services.doceditor.DocEditorSecurityCallbackBuilder;
 import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeModule;
+import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeService;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -47,11 +49,25 @@ public class OnlyOfficeEditorController extends BasicController {
 	
 	@Autowired
 	private OnlyOfficeModule onlyOfficeModule;
+	@Autowired
+	private OnlyOfficeService onlyOfficeService;
 
 	public OnlyOfficeEditorController(UserRequest ureq, WindowControl wControl, VFSLeaf vfsLeaf,
 			final DocEditorSecurityCallback securityCallback) {
 		super(ureq, wControl);
+
+		DocEditorSecurityCallback secCallback = securityCallback;
 		
+		if (onlyOfficeService.isLockNeeded(secCallback.getMode())) {
+			if (onlyOfficeService.isLockedForMe(vfsLeaf, getIdentity())) {
+				secCallback = DocEditorSecurityCallbackBuilder.clone(secCallback)
+						.withMode(Mode.VIEW)
+						.build();
+				showWarning("editor.warning.locked");
+			} else {
+				onlyOfficeService.lock(vfsLeaf, getIdentity());
+			}
+		}
 		VelocityContainer mainVC = createVelocityContainer("editor");
 		
 		VFSMetadata vfsMetadata = vfsLeaf.getMetaInfo();
@@ -59,7 +75,7 @@ public class OnlyOfficeEditorController extends BasicController {
 			mainVC.contextPut("warning", translate("editor.warning.no.metadata"));
 		} else {
 			String apiConfig = ApiConfigBuilder.builder(vfsMetadata, getIdentity())
-					.withEdit(Mode.EDIT.equals(securityCallback.getMode()))
+					.withEdit(Mode.EDIT.equals(secCallback.getMode()))
 					.buildJson();
 			log.debug("OnlyOffice ApiConfig: " + apiConfig);
 			

@@ -35,8 +35,6 @@ public class CallbackVO {
 	
 	// see https://api.onlyoffice.com/editors/callback
 	
-	static final int STATUS_READY_FOR_SAVING = 2;
-	
 	private List<Action> actions;
 	private Integer forcesavetype;
 	private String key;
