@@ -299,6 +299,15 @@ i.mce-ico.mce-i-help:before {
 	background-color: $alert-danger-bg;
 }
 
+// Show ok / cancel button on very small devices
+@media (max-width: 470px) {
+	.mce-foot {
+		.mce-container-body.mce-abs-layout {
+			left: -337px;
+		}
+	}
+}
+
 /*
  * Overwrite some class of typehead needed by the flexi table
  */
