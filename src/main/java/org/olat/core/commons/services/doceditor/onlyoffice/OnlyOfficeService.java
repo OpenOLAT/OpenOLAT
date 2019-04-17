@@ -43,7 +43,7 @@ public interface OnlyOfficeService {
 
 	boolean canUpdateContent(VFSLeaf vfsLeaf, Identity identity, String documentKey);
 
-	boolean updateContent(VFSLeaf vfsLeaf, Identity identity, String url);
+	boolean updateContent(VFSLeaf vfsLeaf, Identity identity, String url, boolean versionControlled);
 	
 	boolean isLockNeeded(Mode mode);
 

@@ -102,12 +102,10 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 	}
 
 	@Override
-	public boolean updateContent(VFSLeaf vfsLeaf, Identity identity, String url) {
+	public boolean updateContent(VFSLeaf vfsLeaf, Identity identity, String url, boolean versionControlled) {
 		boolean updated = false;
 		try (InputStream in = new URL(url).openStream()) {
-			//TODO uh versionCntrolled
-			if(//access.isVersionControlled() && 
-					vfsLeaf.canVersion() == VFSConstants.YES) {
+			if(versionControlled && vfsLeaf.canVersion() == VFSConstants.YES) {
 				updated = vfsRepositoryService.addVersion(vfsLeaf, identity, "OnlyOffice", in);
 			} else {
 				updated = VFSManager.copyContent(in, vfsLeaf);

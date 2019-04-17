@@ -76,6 +76,7 @@ public class OnlyOfficeEditorController extends BasicController {
 		} else {
 			String apiConfig = ApiConfigBuilder.builder(vfsMetadata, getIdentity())
 					.withEdit(Mode.EDIT.equals(secCallback.getMode()))
+					.withVersionControlled(secCallback.isVersionControlled())
 					.buildJson();
 			log.debug("OnlyOffice ApiConfig: " + apiConfig);
 			

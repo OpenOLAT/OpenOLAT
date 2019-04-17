@@ -48,7 +48,8 @@ public class ApiConfigBuilder {
 	
 	private final VFSMetadata vfsMetadata;
 	private final Identity identity;
-	private boolean edit;
+	private boolean edit = true;
+	private boolean versionControlled = false;
 	
 	private static ObjectMapper mapper = new ObjectMapper();
 	
@@ -75,6 +76,17 @@ public class ApiConfigBuilder {
 	 */
 	public ApiConfigBuilder withEdit(boolean edit) {
 		this.edit = edit;
+		return this;
+	}
+	
+	/**
+	 * Default: false
+	 *
+	 * @param versionControlled
+	 * @return
+	 */
+	public ApiConfigBuilder withVersionControlled(boolean versionControlled) {
+		this.versionControlled = versionControlled;
 		return this;
 	}
 	
@@ -151,6 +163,9 @@ public class ApiConfigBuilder {
 	private String getCallbackUrl() {
 		StringBuilder fileUrl = getFileUrl();
 		fileUrl.append("callback");
+		if (versionControlled) {
+			fileUrl.append("?versionControlled=true");
+		}
 		return fileUrl.toString();
 	}
 
