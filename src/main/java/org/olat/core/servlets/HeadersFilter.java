@@ -24,6 +24,7 @@ import org.olat.core.commons.services.analytics.AnalyticsSPI;
 import org.olat.core.commons.services.analytics.spi.GoogleAnalyticsSPI;
 import org.olat.core.commons.services.analytics.spi.MatomoSPI;
 import org.olat.core.commons.services.csp.CSPModule;
+import org.olat.core.commons.services.doceditor.collabora.CollaboraModule;
 import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeModule;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.OLog;
@@ -54,6 +55,8 @@ public class HeadersFilter implements Filter {
 	private EdubaseModule edubaseModule;
 	@Autowired
 	private AnalyticsModule analyticsModule;
+	@Autowired
+	private CollaboraModule collaboraModule;
 	@Autowired
 	private EdusharingModule edusharingModule;
 	@Autowired
@@ -225,6 +228,7 @@ public class HeadersFilter implements Filter {
 		appendEdubaseUrl(sb);
 		appendEdusharingUrl(sb);
 		appendOnlyOfficeUrl(sb);
+		appendCollaboraUrl(sb);
 		appendViteroUrl(sb);
 		sb.append(";");
 	}
@@ -288,6 +292,12 @@ public class HeadersFilter implements Filter {
 	private void appendEdusharingUrl(StringBuilder sb) {
 		if(edusharingModule != null && edusharingModule.isEnabled()) {
 			appendUrl(sb, edusharingModule.getBaseUrl());
+		}
+	}
+	
+	private void appendCollaboraUrl(StringBuilder sb) {
+		if(collaboraModule != null && collaboraModule.isEnabled()) {
+			appendUrl(sb, collaboraModule.getBaseUrl());
 		}
 	}
 	
