@@ -164,6 +164,8 @@
 		<class>org.olat.ims.qti21.model.jpa.AssessmentTestSessionImpl</class>
 		<class>org.olat.ims.qti21.model.jpa.AssessmentTestSessionExtraTime</class>
 		<class>org.olat.ims.qti21.model.jpa.AssessmentTestMarksImpl</class>
+		<class>org.olat.modules.adobeconnect.model.AdobeConnectUserImpl</class>
+		<class>org.olat.modules.adobeconnect.model.AdobeConnectMeetingImpl</class>
 		<class>org.olat.modules.assessment.model.AssessmentEntryImpl</class>
 		<class>org.olat.modules.curriculum.model.CurriculumImpl</class>
 		<class>org.olat.modules.curriculum.model.CurriculumElementImpl</class>
@@ -269,7 +271,7 @@
 			<property name="hibernate.query.in_clause_parameter_padding" value="true"/>
 			<property name="hibernate.connection.handling_mode" value="DELAYED_ACQUISITION_AND_RELEASE_AFTER_TRANSACTION"/>
 			<property name="hibernate.session_factory.interceptor" value="org.olat.core.commons.persistence.AuditInterceptor"/>
-			<property name="jboss.as.jpa.providerModule" value="org.hibernate:5.3" />
+			<property name="jboss.as.jpa.providerModule" value="org.hibernate:5.4" />
 		</properties>
 	</persistence-unit>
 </persistence>

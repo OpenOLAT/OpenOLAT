@@ -131,7 +131,7 @@ public class GoToMeetingsController extends FormBasicController {
 		pastTableModel.setObjects(pastMeetings);
 		pastTableEl.reloadData();
 		pastTableEl.reset();
-		pastTableEl.setVisible(pastMeetings.size() > 0);
+		pastTableEl.setVisible(!pastMeetings.isEmpty());
 	}
 
 	@Override

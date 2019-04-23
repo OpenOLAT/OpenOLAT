@@ -50,7 +50,7 @@ public class OpenMeetingsEditController extends ActivateableTabbableDefaultContr
 
 	private static final String PANE_TAB_ACCESSIBILITY = "pane.tab.accessibility";
 	public static final String PANE_TAB_VCCONFIG = "pane.tab.vcconfig";
-	final static String[] paneKeys = { PANE_TAB_VCCONFIG, PANE_TAB_ACCESSIBILITY };
+	private static final String[] paneKeys = { PANE_TAB_VCCONFIG, PANE_TAB_ACCESSIBILITY };
 
 	public static final String CONFIG_ROOM_NAME = "roomName";
 	public static final String CONFIG_ROOM_SIZE = "roomSize";

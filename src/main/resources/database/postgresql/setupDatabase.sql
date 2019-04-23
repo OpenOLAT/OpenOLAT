@@ -1180,6 +1180,32 @@ create table o_om_room_reference (
    primary key (id)
 );
 
+-- Adobe Connect
+create table o_aconnect_meeting (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   a_sco_id varchar(128) default null,
+   a_env_name varchar(128) default null,
+   a_name varchar(128) not null,
+   a_description varchar(2000) default null,
+   a_start_date timestamp default null,
+   a_end_date timestamp default null,
+   fk_entry_id int8 default null,
+   a_sub_ident varchar(64) default null,
+   fk_group_id int8 default null,
+   primary key (id)
+);
+
+create table o_aconnect_user (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   a_principal_id varchar(128) default null,
+   fk_identity_id int8 default null,
+   primary key (id)
+);
+
 -- efficiency statments
 create table o_as_eff_statement (
    id int8 not null,
@@ -3364,10 +3390,19 @@ create index o_co_db_course_idx on o_co_db_entry (courseid);
 create index o_co_db_cat_idx on o_co_db_entry (category);
 create index o_co_db_name_idx on o_co_db_entry (name);
 
--- open meeting
+-- openmeeting
 alter table o_om_room_reference  add constraint idx_omroom_to_bgroup foreign key (businessgroup) references o_gp_business (group_id);
 create index idx_omroom_group_idx on o_om_room_reference (businessgroup);
 create index idx_omroom_residname on o_om_room_reference (resourcetypename,resourcetypeid);
+
+-- Adobe Connect
+alter table o_aconnect_meeting add constraint aconnect_meet_entry_idx foreign key (fk_entry_id) references o_repositoryentry (repositoryentry_id);
+create index idx_aconnect_meet_entry_idx on o_aconnect_meeting(fk_entry_id);
+alter table o_aconnect_meeting add constraint aconnect_meet_grp_idx foreign key (fk_group_id) references o_gp_business (group_id);
+create index idx_aconnect_meet_grp_idx on o_aconnect_meeting(fk_group_id);
+
+alter table o_aconnect_user add constraint aconn_ident_idx foreign key (fk_identity_id) references o_bs_identity (id);
+create index idx_aconn_ident_idx on o_aconnect_user (fk_identity_id);
 
 -- eportfolio
 alter table o_ep_artefact add constraint FKF26C8375236F28X foreign key (fk_artefact_auth_id) references o_bs_identity (id);

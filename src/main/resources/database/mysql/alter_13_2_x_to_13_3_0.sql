@@ -109,4 +109,39 @@ alter table o_vfs_revision add constraint fvers_to_meta_idx foreign key (fk_meta
 alter table o_vfs_metadata add constraint fvers_to_lic_type_idx foreign key (fk_license_type) references o_lic_license_type (id);
 
 
+-- Adobe Connect
+create table o_aconnect_meeting (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   a_sco_id varchar(128) default null,
+   a_env_name varchar(128) default null,
+   a_name varchar(128) not null,
+   a_description varchar(2000) default null,
+   a_start_date datetime default null,
+   a_end_date datetime default null,
+   fk_entry_id bigint default null,
+   a_sub_ident varchar(64) default null,
+   fk_group_id bigint default null,
+   primary key (id)
+);
+
+alter table o_aconnect_meeting ENGINE = InnoDB;
+
+alter table o_aconnect_meeting add constraint aconnect_meet_entry_idx foreign key (fk_entry_id) references o_repositoryentry (repositoryentry_id);
+alter table o_aconnect_meeting add constraint aconnect_meet_grp_idx foreign key (fk_group_id) references o_gp_business (group_id);
+
+
+create table o_aconnect_user (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   a_principal_id varchar(128) default null,
+   fk_identity_id bigint default null,
+   primary key (id)
+);
+
+alter table o_aconnect_user ENGINE = InnoDB;
+
+alter table o_aconnect_user add constraint aconn_ident_idx foreign key (fk_identity_id) references o_bs_identity (id);
 

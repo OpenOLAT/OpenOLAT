@@ -61,7 +61,7 @@ public class OpenMeetingsConfigurationController extends FormBasicController {
 	private MultipleSelectionElement moduleEnabled;
 
 	private static final String[] enabledKeys = new String[]{"on"};
-	private String[] enabledValues;
+	private final String[] enabledValues;
 	
 	private String replacedValue;
 	
@@ -150,7 +150,7 @@ public class OpenMeetingsConfigurationController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		//validate only if the module is enabled
 		if(openMeetingsModule.isEnabled()) {
@@ -179,7 +179,7 @@ public class OpenMeetingsConfigurationController extends FormBasicController {
 			}
 		}
 		
-		return allOk && super.validateFormLogic(ureq);
+		return allOk;
 	}
 	
 	private boolean validateURL() {

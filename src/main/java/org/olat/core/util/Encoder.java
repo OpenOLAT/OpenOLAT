@@ -34,6 +34,8 @@ import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 
@@ -84,7 +86,12 @@ public class Encoder {
 		/**
 		 * SHA-256 with one iteration no salted
 		 */
-		sha256Exam("SHA-256", 1, false, null);
+		sha256Exam("SHA-256", 1, false, null),
+		/**
+		 * AES
+		 */
+		aes("AES", 2000, true, null);
+		
 
 		private final boolean salted;
 		private final int iterations;
@@ -172,7 +179,16 @@ public class Encoder {
 				return digest(s, salt, algorithm);
 			case pbkdf2:
 				return secretKey(s, salt, algorithm);
+			case aes:
+				return encodeAes(s, "rk6R9pQy7dg3usJk", salt, algorithm.getIterations());
 			default: return md5(s, salt, algorithm.getCharset());
+		}
+	}
+	
+	public static String decrypt(String s, String salt, Algorithm algorithm) {
+		switch(algorithm) {
+			case aes: return decodeAes(s, "rk6R9pQy7dg3usJk", salt, algorithm.getIterations());
+			default: return null;
 		}
 	}
 
@@ -241,4 +257,57 @@ public class Encoder {
 	public static String byteToBase64(byte[] data){
 		return StringHelper.encodeBase64(data);
 	}
+	
+	public static String encodeAes(String password, String secretKey, String salt, int iteration) {
+		try {
+			Cipher cipher = Cipher.getInstance("AES/CTR/NOPADDING");
+			cipher.init(Cipher.ENCRYPT_MODE, generateKey(secretKey, salt, iteration));
+			byte[] encrypted = cipher.doFinal(password.getBytes("UTF-8"));
+			return asHexString(encrypted);
+		} catch (Exception e) {
+			log.error("", e);
+			return null;
+		}
+	}
+	
+	public static String decodeAes(String password, String secretKey, String salt, int iteration) {
+		try {
+			Cipher cipher = Cipher.getInstance("AES/CTR/NOPADDING");
+			cipher.init(Cipher.DECRYPT_MODE, generateKey(secretKey, salt, iteration));
+			byte[] encrypted = cipher.doFinal(toByteArray(password));
+			return new String(encrypted);
+		} catch (Exception e) {
+			log.error("", e);
+			return null;
+		}
+	}
+	
+	private static SecretKey generateKey(String passphrase, String salt, int iteration) throws Exception {
+		PBEKeySpec keySpec = new PBEKeySpec(passphrase.toCharArray(), salt.getBytes(), iteration, 128);
+		SecretKeyFactory keyFactory = SecretKeyFactory.getInstance("PBEWITHSHA256AND128BITAES-CBC-BC");
+		return keyFactory.generateSecret(keySpec);
+	}
+	
+    private static final String asHexString(byte buf[]) {
+        StringBuilder strbuf = new StringBuilder(buf.length * 2);
+        int i;
+        for (i = 0; i < buf.length; i++) {
+            if (((int) buf[i] & 0xff) < 0x10) {
+                strbuf.append("0");
+            }
+            strbuf.append(Long.toString((int) buf[i] & 0xff, 16));
+        }
+        return strbuf.toString();
+    }
+    
+    private static final byte[] toByteArray(String hexString) {
+        int arrLength = hexString.length() >> 1;
+        byte buf[] = new byte[arrLength];
+        for (int ii = 0; ii < arrLength; ii++) {
+            int index = ii << 1;
+            String l_digit = hexString.substring(index, index + 2);
+            buf[ii] = (byte) Integer.parseInt(l_digit, 16);
+        }
+        return buf;
+    }
 }

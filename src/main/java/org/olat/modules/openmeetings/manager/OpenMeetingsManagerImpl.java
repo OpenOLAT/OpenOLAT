@@ -76,7 +76,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDeletable, DeletableGroupData {
 	
-	private final static OLog log = Tracing.createLoggerFor(OpenMeetingsManagerImpl.class);
+	private static final OLog log = Tracing.createLoggerFor(OpenMeetingsManagerImpl.class);
 	
 	@Autowired
 	private OpenMeetingsDAO openMeetingsDao;
@@ -141,7 +141,7 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 						}
 					}
 					info.setNumOfUsers(numOfUsers);
-					realRooms.put(new Long(roomRet.getRoomId()), info);
+					realRooms.put(Long.valueOf(roomRet.getRoomId()), info);
 				}
 			}
 
@@ -151,7 +151,7 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 
 			List<OpenMeetingsRoom> rooms = new ArrayList<>();
 			for(OpenMeetingsRoomReference prop:props) {
-				Long roomId = new Long(prop.getRoomId());
+				Long roomId = Long.valueOf(prop.getRoomId());
 				RoomReturnInfo infos = realRooms.get(roomId);
 				if(infos != null) {
 					OpenMeetingsRoom room = openMeetingsDao.deserializeRoom(prop.getConfig());
@@ -232,8 +232,8 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 			String username = identity.getName();
 			
 			String hashedUrl = userWs.setUserObjectAndGenerateRoomHashByURLAndRecFlag(sid,
-	        username, firstname, lastname, profilePictureUrl, email, externalUserId, externalUserType,
-	        roomId, becomeModeratorAsInt, 0, 1);
+					username, firstname, lastname, profilePictureUrl, email, externalUserId, externalUserType,
+					roomId, becomeModeratorAsInt, 0, 1);
 			if(hashedUrl.startsWith("-") && hashedUrl.length() < 5) {
 				throw new OpenMeetingsException(parseErrorCode(hashedUrl));
 			}
@@ -443,7 +443,7 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 						rec.setFilename(recording.getName());
 						rec.setDownloadName(recording.getFlvName());
 						rec.setDownloadNameAlt(recording.getAviName());
-						//rec.setPreviewImage(recording.getPreviewImage());
+						// preview image?
 						rec.setWidth(recording.getWidth());
 						rec.setHeight(recording.getHeight());
 						recList.add(rec);

@@ -187,6 +187,9 @@ import org.junit.runners.Suite;
 	org.olat.course.groupsandrights.CourseGroupManagementTest.class,
 	org.olat.course.editor.PublishProcessTest.class,
 	org.olat.course.CourseXStreamAliasesTest.class,
+	org.olat.modules.adobeconnect.manager.AdobeConnectProviderTest.class,
+	org.olat.modules.adobeconnect.manager.AdobeConnectUserDAOTest.class,
+	org.olat.modules.adobeconnect.manager.AdobeConnectMeetingDAOTest.class,
 	org.olat.modules.iq.IQManagerTest.class,
 	org.olat.modules.fo.ForumManagerTest.class,//fail
 	org.olat.modules.wiki.WikiUnitTest.class,

@@ -70,7 +70,7 @@ public class PeekViewWrapperController extends BasicController {
 		peekViewWrapperVC.setDomReplacementWrapperRequired(false); // we provide our own DOM replacement ID
 		// Add course node to get title etc
 		peekViewWrapperVC.contextPut("coursenode", courseNode);
-		peekViewWrapperVC.contextPut("accessible", new Boolean(accessible));
+		peekViewWrapperVC.contextPut("accessible", Boolean.valueOf(accessible));
 		// Add link to jump to course node
 		nodeLink = LinkFactory.createLink("nodeLink", peekViewWrapperVC, this);
 		nodeLink.setCustomDisplayText(StringHelper.escapeHtml(courseNode.getShortTitle()));

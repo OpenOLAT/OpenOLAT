@@ -41,7 +41,7 @@ public class RedirectMediaResource implements MediaResource {
 	
 	private static final OLog log = Tracing.createLoggerFor(RedirectMediaResource.class);
 
-	private String redirectURL;
+	private final String redirectURL;
 
 	/**
 	 * @param redirectURL
@@ -84,22 +84,13 @@ public class RedirectMediaResource implements MediaResource {
 	public void prepare(HttpServletResponse hres) {
 		try {
 			hres.sendRedirect(redirectURL);
-		} catch (IOException e) {
-			// if redirect failed, we do nothing; the browser may have stopped the
-			// tcp/ip or whatever
-			log.error("redirect failed: url=" + redirectURL, e);
-		} catch (IllegalStateException ise){
-			// redirect failed, to find out more about the strange null null exception
-			// FIXME:pb:a decide if this catch has to be removed again, after finding problem.
+		} catch (IOException | IllegalStateException ise){
 			log.error("redirect failed: url=" + redirectURL, ise);
-			//introduced only more debug information but behavior is still the same
-			throw(ise);
 		}
 	}
 
 	@Override
 	public void release() {
-	// nothing to do
+		// nothing to do
 	}
-
 }

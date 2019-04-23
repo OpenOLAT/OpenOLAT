@@ -19,11 +19,13 @@
  */
 package org.olat.core.util;
 
+import java.security.Security;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.services.webdav.manager.WebDAVManagerImpl;
@@ -36,6 +38,10 @@ import org.olat.core.util.Encoder.Algorithm;
  *
  */
 public class EncoderTest {
+	
+	static {
+		Security.insertProviderAt(new BouncyCastleProvider(), 1);
+	}
 	
 	@Test
 	public void testCompatibility() {
@@ -117,6 +123,30 @@ public class EncoderTest {
 		
 		String shaOutput = Encoder.encrypt(password, salt, Algorithm.sha512);
 		Assert.assertEquals(hash, shaOutput);
+	}
+	
+	@Test
+	public void testAes() {
+		String password = "openolat#19";
+		String key = "6afs6873l--q3ruiah";
+		String salt = "Y4nY4VFWaiSnM6qe88ZxbQ==";
+		int iteration = 2000;
+		
+		String aesOutput = Encoder.encodeAes(password, key, salt, iteration);
+		Assert.assertNotNull(aesOutput);
+		String decodedPassword = Encoder.decodeAes(aesOutput, key, salt, iteration);
+		Assert.assertEquals(password, decodedPassword);
+	}
+	
+	@Test
+	public void testAes_alt() {
+		String password = "openolat#19";
+		String salt = "Y4nY4VFWaiSnM6qe88ZxbQ==";
+		
+		String aesOutput = Encoder.encrypt(password, salt, Algorithm.aes);
+		Assert.assertNotNull(aesOutput);
+		String decodedPassword = Encoder.decrypt(aesOutput, salt, Algorithm.aes);
+		Assert.assertEquals(password, decodedPassword);
 	}
 	
 	@Test

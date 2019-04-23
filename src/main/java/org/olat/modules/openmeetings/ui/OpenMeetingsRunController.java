@@ -19,7 +19,6 @@
  */
 package org.olat.modules.openmeetings.ui;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.download.DisplayOrDownloadComponent;
@@ -39,6 +38,7 @@ import org.olat.modules.openmeetings.OpenMeetingsModule;
 import org.olat.modules.openmeetings.manager.OpenMeetingsException;
 import org.olat.modules.openmeetings.manager.OpenMeetingsManager;
 import org.olat.modules.openmeetings.model.OpenMeetingsRoom;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -64,12 +64,14 @@ public class OpenMeetingsRunController extends BasicController {
 	private final boolean moderator;
 	private final boolean readOnly;
 	private OpenMeetingsRoom room;
-	private final OpenMeetingsModule openMeetingsModule;
-	private final OpenMeetingsManager openMeetingsManager;
-	
 	private final BusinessGroup group;
 	private final OLATResourceable ores;
 	private final String subIdentifier;
+	
+	@Autowired
+	private OpenMeetingsModule openMeetingsModule;
+	@Autowired
+	private OpenMeetingsManager openMeetingsManager;
 
 	public OpenMeetingsRunController(UserRequest ureq, WindowControl wControl, BusinessGroup group, OLATResourceable ores,
 			String subIdentifier, boolean admin, boolean moderator, boolean readOnly) {
@@ -81,9 +83,6 @@ public class OpenMeetingsRunController extends BasicController {
 		this.group = group;
 		this.ores = ores;
 		this.subIdentifier = subIdentifier;
-
-		openMeetingsModule = CoreSpringFactory.getImpl(OpenMeetingsModule.class);
-		openMeetingsManager = CoreSpringFactory.getImpl(OpenMeetingsManager.class);
 
 		try {
 			room = openMeetingsManager.getRoom(group, ores, subIdentifier);

@@ -36,6 +36,7 @@ import org.olat.course.condition.operators.IsNotInAttributeOperator;
 import org.olat.course.condition.operators.LowerThanEqualsOperator;
 import org.olat.course.condition.operators.LowerThanOperator;
 import org.olat.course.config.CourseConfig;
+import org.olat.course.nodes.AdobeConnectCourseNode;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.nodes.BasicLTICourseNode;
@@ -63,6 +64,9 @@ import org.olat.course.nodes.TACourseNode;
 import org.olat.course.nodes.TUCourseNode;
 import org.olat.course.nodes.ViteroCourseNode;
 import org.olat.course.nodes.WikiCourseNode;
+import org.olat.course.nodes.adobeconnect.compatibility.AdobeConnectCompatibilityConfiguration;
+import org.olat.course.nodes.adobeconnect.compatibility.MeetingCompatibilityDate;
+import org.olat.course.nodes.adobeconnect.compatibility.WimbaClassroomCompatibilityConfiguration;
 import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.modules.edubase.model.BookSectionImpl;
@@ -135,6 +139,12 @@ public class CourseXStreamAliases {
 		readXstream.alias("ExtendedCondition", ExtendedCondition.class);
 		readXstream.alias("Condition", Condition.class);
 		
+		// vc node to new adobe connect cours element
+		readXstream.alias("de.bps.course.nodes.VCCourseNode", AdobeConnectCourseNode.class);
+		readXstream.alias("de.bps.course.nodes.vc.MeetingDate", MeetingCompatibilityDate.class);
+		readXstream.alias("de.bps.course.nodes.vc.provider.adobe.AdobeConnectConfiguration", AdobeConnectCompatibilityConfiguration.class);
+		readXstream.alias("de.bps.course.nodes.vc.provider.wimba.WimbaClassroomConfiguration", WimbaClassroomCompatibilityConfiguration.class);
+
 		// conditions can hold operators and they get serialized as well. So we need all of the as aliases
 		readXstream.alias("IsInAttributeOperator", IsInAttributeOperator.class);
 		readXstream.alias("EqualsOperator", EqualsOperator.class);

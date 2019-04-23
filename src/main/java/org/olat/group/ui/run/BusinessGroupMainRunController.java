@@ -90,6 +90,7 @@ import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
 import org.olat.instantMessaging.CloseInstantMessagingEvent;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.InstantMessagingService;
+import org.olat.modules.adobeconnect.AdobeConnectModule;
 import org.olat.modules.co.ContactFormController;
 import org.olat.modules.openmeetings.OpenMeetingsModule;
 import org.olat.modules.portfolio.PortfolioV2Module;
@@ -138,37 +139,40 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	public static final OLATResourceable ORES_TOOLPORTFOLIO = OresHelper.createOLATResourceableType("toolportfolio");
 	public static final OLATResourceable ORES_TOOLBOOKING = OresHelper.createOLATResourceableType("toolbooking");
 	public static final OLATResourceable ORES_TOOLOPENMEETINGS = OresHelper.createOLATResourceableType("toolopenmeetings");
+	public static final OLATResourceable ORES_TOOLADOBECONNECT = OresHelper.createOLATResourceableType("tooladobeconnect");
 	public static final OLATResourceable ORES_TOOLWIKI = OresHelper.createOLATResourceableType(WikiManager.WIKI_RESOURCE_FOLDER_NAME);
 
-	// activity identifyers are used as menu user objects and for the user
+	// activity identifiers are used as menu user objects and for the user
 	// activity events
 	// change value with care, used in logfiles etc!!
-	/** activity identitfyer: user selected overview in menu * */
+	/** activity identifier: user selected overview in menu * */
 	public static final String ACTIVITY_MENUSELECT_OVERVIEW = "MENU_OVERVIEW";
-	/** activity identitfyer: user selected information in menu * */
+	/** activity identifier: user selected information in menu * */
 	public static final String ACTIVITY_MENUSELECT_INFORMATION = "MENU_INFORMATION";
-	/** activity identitfyer: user selected memberlist in menu * */
+	/** activity identifier: user selected memberlist in menu * */
 	public static final String ACTIVITY_MENUSELECT_MEMBERSLIST = "MENU_MEMBERLIST";
-	/** activity identitfyer: user selected contactform in menu * */
+	/** activity identifier: user selected contactform in menu * */
 	public static final String ACTIVITY_MENUSELECT_CONTACTFORM = "MENU_CONTACTFORM";
-	/** activity identitfyer: user selected forum in menu * */
+	/** activity identifier: user selected forum in menu * */
 	public static final String ACTIVITY_MENUSELECT_FORUM = "MENU_FORUM";
-	/** activity identitfyer: user selected folder in menu * */
+	/** activity identifier: user selected folder in menu * */
 	public static final String ACTIVITY_MENUSELECT_FOLDER = "MENU_FOLDER";
-	/** activity identitfyer: user selected chat in menu * */
+	/** activity identifier: user selected chat in menu * */
 	public static final String ACTIVITY_MENUSELECT_CHAT = "MENU_CHAT";
-	/** activity identitfyer: user selected calendar in menu * */
+	/** activity identifier: user selected calendar in menu * */
 	public static final String ACTIVITY_MENUSELECT_CALENDAR = "MENU_CALENDAR";
-	/** activity identitfyer: user selected administration in menu * */
+	/** activity identifier: user selected administration in menu * */
 	public static final String ACTIVITY_MENUSELECT_ADMINISTRATION = "MENU_ADMINISTRATION";
-	/** activity identitfyer: user selected show resources in menu * */
+	/** activity identifier: user selected show resources in menu * */
 	public static final String ACTIVITY_MENUSELECT_SHOW_RESOURCES = "MENU_SHOW_RESOURCES";
 	public static final String ACTIVITY_MENUSELECT_WIKI = "MENU_SHOW_WIKI";
-	/* activity identitfyer: user selected show portoflio in menu */
+	/* activity identifier: user selected show portoflio in menu */
 	public static final String ACTIVITY_MENUSELECT_PORTFOLIO = "MENU_SHOW_PORTFOLIO";
-	/* activity identifyer: user selected show OPENMEETINGS in menu */
+	/* activity identifier: user selected show OPENMEETINGS in menu */
 	public static final String ACTIVITY_MENUSELECT_OPENMEETINGS = "MENU_SHOW_OPENMEETINGS";
-	/* activity identitfyer: user selected show access control in menu */
+	/* activity identifier: user selected show OPENMEETINGS in menu */
+	public static final String ACTIVITY_MENUSELECT_ADOBECONNECT = "MENU_SHOW_ADOBECONNECT";
+	/* activity identifier: user selected show access control in menu */
 	/* access control of resources */
 	public static final String ACTIVITY_MENUSELECT_AC = "MENU_SHOW_AC";
 
@@ -206,7 +210,13 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 
 	// not null indicates tool is enabled
 	private final String nodeIdPrefix;
-	private GenericTreeNode nodeFolder, nodeForum, nodeWiki, nodeCal, nodePortfolio, nodeOpenMeetings;
+	private GenericTreeNode nodeFolder;
+	private GenericTreeNode nodeForum;
+	private GenericTreeNode nodeWiki;
+	private GenericTreeNode nodeCal;
+	private GenericTreeNode nodePortfolio;
+	private GenericTreeNode nodeOpenMeetings;
+	private GenericTreeNode nodeAdobeConnect;
 	private GenericTreeNode nodeContact, nodeGroupOwners, nodeResources, nodeInformation, nodeAdmin;
 	private boolean groupRunDisabled;
 	private OLATResourceable assessmentEventOres;
@@ -227,7 +237,11 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	@Autowired
 	private PortfolioV2Module portfolioV2Module;
 	@Autowired
-	private BusinessGroupService businessGroupService;
+	private OpenMeetingsModule openMeetingsModule;
+	@Autowired
+	private AdobeConnectModule adobeConnectModule;
+	@Autowired
+	private BusinessGroupService businessGroupService;	
 
 	/**
 	 * Do not use this constructor! Use the BGControllerFactory instead!
@@ -356,7 +370,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			AccessResult acResult = acService.isAccessible(businessGroup, getIdentity(), false);
 			if(acResult.isAccessible()) {
 				needActivation = false;
-			}  else if (businessGroup != null && acResult.getAvailableMethods().size() > 0) {
+			}  else if (businessGroup != null && !acResult.getAvailableMethods().isEmpty()) {
 				accessController = new AccessListController(ureq, getWindowControl(), acResult.getAvailableMethods());
 				listenTo(accessController);
 				mainPanel.setContent(accessController.getInitialComponent());
@@ -412,10 +426,6 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		main.contextPut("hasOwners", Boolean.TRUE);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		// events from menutree
@@ -443,10 +453,6 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == bgEditCntrllr) {
@@ -526,7 +532,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	}
 
 	/**
-	 * generates the email adress list.
+	 * Generates the email address list.
 	 * 
 	 * @param ureq
 	 * @return a contact form controller for this group
@@ -675,7 +681,9 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			doPortfolio(ureq);
 		} else if (ACTIVITY_MENUSELECT_OPENMEETINGS.equals(cmd)) {
 			doOpenMeetings(ureq);
-		}  else if (ACTIVITY_MENUSELECT_AC.equals(cmd)) {
+		} else if (ACTIVITY_MENUSELECT_ADOBECONNECT.equals(cmd)) {
+			doAdobeConnect(ureq);
+		} else if (ACTIVITY_MENUSELECT_AC.equals(cmd)) {
 			doAccessControlHistory(ureq);
 		} 
 		
@@ -812,6 +820,20 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		
 		CollaborationTools collabTools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(businessGroup);
 		collabToolCtr = collabTools.createOpenMeetingsController(ureq, bwControl, businessGroup, isAdmin);
+		listenTo(collabToolCtr);
+		mainPanel.setContent(collabToolCtr.getInitialComponent());
+	}
+	
+	private void doAdobeConnect(UserRequest ureq) {
+		addLoggingResourceable(LoggingResourceable.wrap(ORES_TOOLADOBECONNECT, OlatResourceableType.adobeconnect));
+		
+		ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(ORES_TOOLADOBECONNECT);
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ce, getWindowControl());
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapPortfolioOres(ce.getOLATResourceable()));
+		addToHistory(ureq, bwControl);
+		
+		CollaborationTools collabTools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(businessGroup);
+		collabToolCtr = collabTools.createAdobeConnectController(ureq, bwControl, businessGroup, isAdmin);
 		listenTo(collabToolCtr);
 		mainPanel.setContent(collabToolCtr.getInitialComponent());
 	}
@@ -961,6 +983,16 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			if (nodeOpenMeetings != null) {
 				doOpenMeetings(ureq);
 				bgTree.setSelectedNode(nodeOpenMeetings);
+			} else if(mainPanel != null) { // not enabled
+				String text = translate("warn.portfolionotavailable");
+				Controller mc = MessageUIFactory.createInfoMessage(ureq, getWindowControl(), null, text);
+				listenTo(mc); // cleanup on dispose
+				mainPanel.setContent(mc.getInitialComponent());
+			}
+		} else if (OresHelper.equals(ores, ORES_TOOLADOBECONNECT)) {
+			if (nodeAdobeConnect != null) {
+				doAdobeConnect(ureq);
+				bgTree.setSelectedNode(nodeAdobeConnect);
 			} else if(mainPanel != null) { // not enabled
 				String text = translate("warn.portfolionotavailable");
 				Controller mc = MessageUIFactory.createInfoMessage(ureq, getWindowControl(), null, text);
@@ -1202,8 +1234,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			root.addChild(gtnChild);
 			nodePortfolio = gtnChild;
 		}
-		
-		OpenMeetingsModule openMeetingsModule = CoreSpringFactory.getImpl(OpenMeetingsModule.class);		
+			
 		if (openMeetingsModule.isEnabled() && collabTools.isToolEnabled(CollaborationTools.TOOL_OPENMEETINGS)) {
 			gtnChild = new GenericTreeNode(nodeIdPrefix.concat("meetings"));
 			gtnChild.setTitle(translate("menutree.openmeetings"));
@@ -1212,6 +1243,16 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			gtnChild.setIconCssClass("o_openmeetings_icon");
 			root.addChild(gtnChild);
 			nodeOpenMeetings = gtnChild;
+		}
+		
+		if(adobeConnectModule.isEnabled() && collabTools.isToolEnabled(CollaborationTools.TOOL_ADOBECONNECT)) {
+			gtnChild = new GenericTreeNode(nodeIdPrefix.concat("adobeconnect"));
+			gtnChild.setTitle(translate("menutree.adobeconnect"));
+			gtnChild.setUserObject(ACTIVITY_MENUSELECT_ADOBECONNECT);
+			gtnChild.setAltText(translate("menutree.adobeconnect.alt"));
+			gtnChild.setIconCssClass("o_vc_icon");
+			root.addChild(gtnChild);
+			nodeAdobeConnect = gtnChild;
 		}
 
 		if (isAdmin) {

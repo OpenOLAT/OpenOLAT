@@ -48,7 +48,7 @@ public class ObjectCloner {
 	 * @return copied object
 	 * @throws RuntimeException
 	 */
-	static public Object deepCopy(Object oldObj) throws RuntimeException {
+	public static Object deepCopy(Object oldObj) throws RuntimeException {
 		ObjectOutputStream oos = null;
 		ObjectInputStream ois = null;
 		try {
@@ -62,6 +62,7 @@ public class ObjectCloner {
 			// return the new object
 			return ois.readObject();
 		} catch (Exception e) {
+			e.printStackTrace();
 			throw new RuntimeException("Exception in ObjectCloner = ", e);
 		} finally {
 			try {
@@ -72,34 +73,4 @@ public class ObjectCloner {
 			}
 		}
 	}
-		
-	/**
-   * Determines the size of an object in bytes when it is serialized.
-   * <br>
-   * This should not be used for anything other than optimization
-   * testing since it can be memory and processor intensive.
-   * <br>
-   * @author http://churchillobjects.com/c/13029.html
-   */
-  public static int getObjectSize(Object object){
-    if(object==null){
-      return -1;
-    }
-    try{
-      ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      ObjectOutputStream oos = new ObjectOutputStream(baos);
-      oos.writeObject(object);
-      byte[] bytes = baos.toByteArray();
-      oos.close();
-      baos.close();
-      return bytes.length;
-    }
-    catch(Exception e){
-      e.printStackTrace();
-    }
-    return -1;
-  }  
-	
-	
-	
 }

@@ -38,6 +38,7 @@ import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.group.BusinessGroup;
 import org.olat.instantMessaging.InstantMessagingModule;
+import org.olat.modules.adobeconnect.AdobeConnectModule;
 import org.olat.modules.openmeetings.OpenMeetingsModule;
 import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.wiki.WikiModule;
@@ -105,6 +106,10 @@ public class CollaborationToolsFactory {
 		OpenMeetingsModule openMeetingsModule = CoreSpringFactory.getImpl(OpenMeetingsModule.class);
 		if(openMeetingsModule.isEnabled()) {
 			toolArr.add(CollaborationTools.TOOL_OPENMEETINGS);
+		}
+		AdobeConnectModule adobeConnectModule = CoreSpringFactory.getImpl(AdobeConnectModule.class);
+		if(adobeConnectModule.isEnabled()) {
+			toolArr.add(CollaborationTools.TOOL_ADOBECONNECT);
 		}
 		TOOLS = ArrayHelper.toArray(toolArr);				
 	}

@@ -85,6 +85,8 @@ import org.olat.group.BusinessGroupService;
 import org.olat.group.ui.run.InfoGroupRunController;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.ui.ChatToolController;
+import org.olat.modules.adobeconnect.ui.AdobeConnectMeetingDefaultConfiguration;
+import org.olat.modules.adobeconnect.ui.AdobeConnectRunController;
 import org.olat.modules.co.ContactFormController;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.ForumCallback;
@@ -155,6 +157,7 @@ public class CollaborationTools implements Serializable {
 	public static final String KEY_FORUM = "forumKey";
 	public static final String KEY_PORTFOLIO = "portfolioMapKey";
 	public static final String KEY_OPENMEETINGS = "openMeetingsKey";
+	public static final String KEY_ACONNECTMEETINGS = "adobeConnectKey";
 
 	/**
 	 * <code>PROP_CAT_BG_COLLABTOOLS</code> identifies properties concerning
@@ -199,6 +202,10 @@ public class CollaborationTools implements Serializable {
 	 * constant used to identify the open meetings for a group
 	 */
 	public static final String TOOL_OPENMEETINGS = "hasOpenMeetings";
+	/**
+	 * constant used to identify the open meetings for a group
+	 */
+	public static final String TOOL_ADOBECONNECT = "hasAdobeConnect";
 	
 	/**
 	 * Only owners have write access to the calendar.
@@ -609,6 +616,11 @@ public class CollaborationTools implements Serializable {
 	
 	public Controller createOpenMeetingsController(final UserRequest ureq, WindowControl wControl, final BusinessGroup group, boolean admin) {
 		return new OpenMeetingsRunController(ureq, wControl, group, null, null, admin, admin, false);
+	}
+	
+	public Controller createAdobeConnectController(final UserRequest ureq, WindowControl wControl, final BusinessGroup group, boolean admin) {
+		AdobeConnectMeetingDefaultConfiguration configuration = new AdobeConnectMeetingDefaultConfiguration(true);
+		return new AdobeConnectRunController(ureq, wControl, null, null, group, configuration, admin, admin, false);
 	}
 
 	/**

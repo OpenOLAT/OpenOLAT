@@ -54,8 +54,7 @@ public class OpenMeetingsLanguages extends DefaultHandler {
 	
 	
 	public void read() {
-		try {
-			InputStream in = OpenMeetingsLanguages.class.getResourceAsStream("languages.xml");
+		try(InputStream in = OpenMeetingsLanguages.class.getResourceAsStream("languages.xml")) {
 			SAXParser saxParser = SAXParserFactory.newInstance().newSAXParser();
 			saxParser.parse(in, this);
 		} catch (Exception e) {
