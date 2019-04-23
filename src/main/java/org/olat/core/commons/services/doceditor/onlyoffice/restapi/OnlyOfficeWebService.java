@@ -103,6 +103,7 @@ public class OnlyOfficeWebService {
 			log.debug("Error while converting JWT token to callback. File ID: " + fileId);
 			return Response.serverError().status(Status.BAD_REQUEST).build();
 		}
+		if (log.isDebug()) log.debug("Callback: " + callback);
 		
 		CallbackResponseVO responseVO;
 		CallbackStatus status = CallbackStatus.valueOf(callback.getStatus());

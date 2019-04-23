@@ -97,7 +97,7 @@ public class CallbackImpl implements Callback {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("CallbackVO [actions=");
+		builder.append("CallbackImpl [actions=");
 		builder.append(actions);
 		builder.append(", forcesavetype=");
 		builder.append(forcesavetype);
