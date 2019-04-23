@@ -45,7 +45,7 @@ public class OnlyOfficeAdminController extends FormBasicController {
 	private static final String[] ENABLED_KEYS = new String[]{"on"};
 	
 	private MultipleSelectionElement enabledEl;
-	private TextElement apiUrlEl;
+	private TextElement baseUrlEl;
 	private TextElement jwtSecretEl;
 
 	@Autowired
@@ -66,10 +66,9 @@ public class OnlyOfficeAdminController extends FormBasicController {
 		enabledEl = uifactory.addCheckboxesHorizontal("admin.enabled", formLayout, ENABLED_KEYS, translateAll(getTranslator(), ENABLED_KEYS));
 		enabledEl.select(ENABLED_KEYS[0], onlyOfficeModule.isEnabled());
 		
-		String url = onlyOfficeModule.getApiUrl();
-		apiUrlEl = uifactory.addTextElement("admin.api.url", 128, url, formLayout);
-		apiUrlEl.setExampleKey("admin.api.url.example", null);
-		apiUrlEl.setMandatory(true);
+		String url = onlyOfficeModule.getBaseUrl();
+		baseUrlEl = uifactory.addTextElement("admin.base.url", 128, url, formLayout);
+		baseUrlEl.setMandatory(true);
 		
 		String secret = onlyOfficeModule.getJwtSecret();
 		jwtSecretEl = uifactory.addTextElement("admin.jwt.secret", 128, secret, formLayout);
@@ -85,7 +84,7 @@ public class OnlyOfficeAdminController extends FormBasicController {
 		boolean allOk = true;
 		
 		if (enabledEl.isAtLeastSelected(1)) {
-			allOk &= validateIsMandatory(apiUrlEl);
+			allOk &= validateIsMandatory(baseUrlEl);
 			
 			boolean jwtSecretOk = validateIsMandatory(jwtSecretEl);
 			if (jwtSecretOk && !onlyOfficeSecurityService.isValidSecret(jwtSecretEl.getValue())) {
@@ -103,8 +102,9 @@ public class OnlyOfficeAdminController extends FormBasicController {
 		boolean enabled = enabledEl.isAtLeastSelected(1);
 		onlyOfficeModule.setEnabled(enabled);
 		
-		String url = apiUrlEl.getValue();
-		onlyOfficeModule.setApiUrl(url);
+		String url = baseUrlEl.getValue();
+		url = url.endsWith("/")? url: url + "/";
+		onlyOfficeModule.setBaseUrl(url);
 		
 		String jwtSecret = jwtSecretEl.getValue();
 		onlyOfficeModule.setJwtSecret(jwtSecret);

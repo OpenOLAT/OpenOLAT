@@ -43,14 +43,17 @@ import io.jsonwebtoken.security.Keys;
 public class OnlyOfficeModule extends AbstractSpringModule implements ConfigOnOff {
 
 	private static final OLog log = Tracing.createLoggerFor(OnlyOfficeModule.class);
-
+	
 	private static final String ONLYOFFICE_ENABLED = "onlyoffice.enabled";
-	private static final String ONLYOFFICE_API_URL = "onlyoffice.apiUrl";
+	private static final String ONLYOFFICE_BASE_URL = "onlyoffice.baseUrl";
 	private static final String ONLYOFFICE_JWT_SECRET = "onlyoffice.jwt.secret";
 	
 	@Value("${onlyoffice.enabled:false}")
 	private boolean enabled;
-	@Value("${onlyoffice.apiUrl}")
+	@Value("${onlyoffice.baseUrl}")
+	private String baseUrl;
+	@Value("${onlyoffice.api.path}")
+	private String apiPath;
 	private String apiUrl;
 	private String jwtSecret;
 	private Key jwtSignKey;
@@ -76,9 +79,10 @@ public class OnlyOfficeModule extends AbstractSpringModule implements ConfigOnOf
 			enabled = "true".equals(enabledObj);
 		}
 		
-		String apiUrlObj = getStringPropertyValue(ONLYOFFICE_API_URL, true);
-		if(StringHelper.containsNonWhitespace(apiUrlObj)) {
-			apiUrl = apiUrlObj;
+		String baseUrlObj = getStringPropertyValue(ONLYOFFICE_BASE_URL, true);
+		if(StringHelper.containsNonWhitespace(baseUrlObj)) {
+			baseUrl = baseUrlObj;
+			resetApiUrl();
 		}
 		
 		String jwtSecretObj = getStringPropertyValue(ONLYOFFICE_JWT_SECRET, true);
@@ -97,21 +101,31 @@ public class OnlyOfficeModule extends AbstractSpringModule implements ConfigOnOf
 		setStringProperty(ONLYOFFICE_ENABLED, Boolean.toString(enabled), true);
 	}
 	
+	public String getBaseUrl() {
+		return baseUrl;
+	}
+
+	public void setBaseUrl(String baseUrl) {
+		this.baseUrl = baseUrl;
+		setStringProperty(ONLYOFFICE_BASE_URL, baseUrl, true);
+		resetApiUrl();
+	}
+	
 	public String getApiUrl() {
 		return apiUrl;
 	}
-
-	public void setApiUrl(String apiUrl) {
-		this.apiUrl = apiUrl;
-		setStringProperty(ONLYOFFICE_API_URL, apiUrl, true);
+	
+	private void resetApiUrl() {
+		this.apiUrl = baseUrl + apiPath;
 	}
-
+	
 	public String getJwtSecret() {
 		return jwtSecret;
 	}
 
 	public void setJwtSecret(String jwtSecret) {
 		this.jwtSecret = jwtSecret;
+		this.jwtSignKey = null;
 		setStringProperty(ONLYOFFICE_JWT_SECRET, jwtSecret, true);
 	}
 
