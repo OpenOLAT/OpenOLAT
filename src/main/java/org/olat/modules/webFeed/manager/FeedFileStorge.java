@@ -121,6 +121,20 @@ public class FeedFileStorge {
 	public LocalFolderImpl getResourceContainer(OLATResourceable ores) {
 		return fileResourceManager.getFileResourceRootImpl(ores);
 	}
+	
+	public VFSContainer getOrCreateResourceMediaContainer(OLATResourceable ores) {
+		VFSContainer mediaContainer = null;
+
+		if (ores != null) {
+			VFSContainer resourceDir = getResourceContainer(ores);
+			mediaContainer = (VFSContainer) resourceDir.resolve(MEDIA_DIR);
+			if (mediaContainer == null) {
+				mediaContainer = resourceDir.createChildContainer(MEDIA_DIR);
+			}
+		}
+
+		return mediaContainer;
+	}
 
 	/**
 	 * Get the top most folder of a feed.

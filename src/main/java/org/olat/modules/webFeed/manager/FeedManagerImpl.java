@@ -653,6 +653,10 @@ public class FeedManagerImpl extends FeedManager {
 		try {
 			VFSItem item =feedFileStorage.getOrCreateFeedMediaContainer(feed);
 			item = item.resolve(fileName);
+			if (item  == null) {
+				item = feedFileStorage.getOrCreateResourceMediaContainer(feed);
+				item = item.resolve(fileName);
+			}
 			if (thumbnailSize != null && thumbnailSize.getHeight() > 0 && thumbnailSize.getWidth() > 0
 					&& item.canMeta() == VFSConstants.YES) {
 				item = item.getMetaInfo().getThumbnail(thumbnailSize.getWidth(),
