@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
-import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -40,11 +39,14 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.olat.core.commons.services.doceditor.onlyoffice.Callback;
 import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeModule;
+import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeSecurityService;
 import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeService;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.lock.LockResult;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,19 +68,18 @@ public class OnlyOfficeWebService {
 	private OnlyOfficeModule onlyOfficeModule;
 	@Autowired 
 	private OnlyOfficeService onlyOfficeService;
+	@Autowired 
+	private OnlyOfficeSecurityService onlyOfficeSecurityService;
 	
 	@POST
 	@Path("/callback")
-	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response postCallback(
 			@PathParam("fileId") String fileId,
 			@QueryParam("versionControlled") boolean versionControlled,
-			CallbackVO callbackVO,
 			@Context HttpHeaders httpHeaders) {
-		log.debug("OnlyOffice REST post callback request for File ID: " + fileId);
+		log.debug("ONLYOFFICE REST post callback request for File ID: " + fileId);
 		logRequestHeaders(httpHeaders);
-		log.debug("OnlyOffice REST post callback " + callbackVO);
 		
 		if (!onlyOfficeModule.isEnabled()) {
 			return Response.serverError().status(Status.FORBIDDEN).build();
@@ -89,12 +90,26 @@ public class OnlyOfficeWebService {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		
+		String autorisazion = httpHeaders.getHeaderString("Authorization");
+		if (!StringHelper.containsNonWhitespace(autorisazion) || !autorisazion.startsWith("Bearer")) {
+			log.debug("Missing or invalid authorization header. File ID: " + fileId);
+			return Response.serverError().status(Status.BAD_REQUEST).build();
+		}
+		
+		String jwtToken = autorisazion.substring(7); // The part after "Bearer "
+		log.debug("JWT token: " + jwtToken);
+		Callback callback = onlyOfficeSecurityService.getCallback(jwtToken);
+		if (callback == null) {
+			log.debug("Error while converting JWT token to callback. File ID: " + fileId);
+			return Response.serverError().status(Status.BAD_REQUEST).build();
+		}
+		
 		CallbackResponseVO responseVO;
-		CallbackStatus status = CallbackStatus.valueOf(callbackVO.getStatus());
+		CallbackStatus status = CallbackStatus.valueOf(callback.getStatus());
 		switch(status) {
 		case Editing:
 			// If a document is opened in view mode, ONLYOFFICE does not send an editing callback and therefore the document won't be locked.
-			responseVO = lock(fileId, callbackVO);
+			responseVO = lock(fileId, callback);
 			break;
 		case ClosedWithoutChanges:
 			// This callback is called
@@ -103,11 +118,11 @@ public class OnlyOfficeWebService {
 			// Case B) results in a opened, unlocked file. If the user starts to edit the file again callback "Editing" is called and the file is locked again.
 			// However, is is possible to edit the file in the meantime in another editor and all changes made in ONLYOFFICE are lost!
 			// (This is the same implementation like in Alfresco, ownCloud, Nextcloud etc.)
-			responseVO = unlock(fileId, callbackVO);
+			responseVO = unlock(fileId, callback);
 			break;
 		case MustSave:
 		case MustForceSave:
-			responseVO = updateContent(fileId, callbackVO, versionControlled);
+			responseVO = updateContent(fileId, callback, versionControlled);
 			break;
 		case ErrorCorrupted:
 			log.warn("ONLYOFFICE has reported that saving the document has failed. File ID: " + fileId);
@@ -130,8 +145,8 @@ public class OnlyOfficeWebService {
 		return Response.ok(responseVO).build();
 	}
 
-	private CallbackResponseVO lock(String fileId, CallbackVO callbackVO) {
-		String IdentityId = callbackVO.getUsers()[0];
+	private CallbackResponseVO lock(String fileId, Callback callback) {
+		String IdentityId = callback.getUsers()[0];
 		Identity identity = onlyOfficeService.getIdentity(IdentityId);
 		if (identity == null) return error();
 		
@@ -141,7 +156,7 @@ public class OnlyOfficeWebService {
 		boolean isLockedForMe = onlyOfficeService.isLockedForMe(vfsLeaf, identity);
 		if (isLockedForMe) return error();
 		
-		boolean canUpdate = onlyOfficeService.canUpdateContent(vfsLeaf, identity, callbackVO.getKey());
+		boolean canUpdate = onlyOfficeService.canUpdateContent(vfsLeaf, identity, callback.getKey());
 		if (!canUpdate) {
 			log.debug("ONLYOFFICE has no right to update file. File ID: " + fileId + ", identity: " + IdentityId);
 			return error();
@@ -151,34 +166,34 @@ public class OnlyOfficeWebService {
 		return lock != null? success(): error();
 	}
 
-	private CallbackResponseVO unlock(String fileId, CallbackVO callbackVO) {
+	private CallbackResponseVO unlock(String fileId, Callback callback) {
 		VFSLeaf vfsLeaf = onlyOfficeService.getVfsLeaf(fileId);
 		if (vfsLeaf == null) return error();
 		
 		// Every user which opens the document sets a lock, i.e. adds a new token to the lock.
 		// Because we are not able to get the LockInfo at that place, we do not unlock for every user who closes the document.
 		// We let all lock (tokens) until the last user closes the document and then we remove the lock and all its tokens.
-		boolean lastUser = callbackVO.getUsers() == null || callbackVO.getUsers().length == 0;
+		boolean lastUser = callback.getUsers() == null || callback.getUsers().length == 0;
 		if (lastUser) {
 			onlyOfficeService.unlock(vfsLeaf);
 		}
 		return success();
 	}
 
-	private CallbackResponseVO updateContent(String fileId, CallbackVO callbackVO, boolean versionControlled) {
-		String IdentityId = callbackVO.getUsers()[0];
+	private CallbackResponseVO updateContent(String fileId, Callback callback, boolean versionControlled) {
+		String IdentityId = callback.getUsers()[0];
 		Identity identity = onlyOfficeService.getIdentity(IdentityId);
 		if (identity == null) return error();
 		
 		VFSLeaf vfsLeaf = onlyOfficeService.getVfsLeaf(fileId);
 		if (vfsLeaf == null) return error();
 		
-		boolean canUpdate = onlyOfficeService.canUpdateContent(vfsLeaf, identity, callbackVO.getKey());
+		boolean canUpdate = onlyOfficeService.canUpdateContent(vfsLeaf, identity, callback.getKey());
 		if (!canUpdate) {
 			log.debug("ONLYOFFICE has no right to update file. File ID: " + fileId + ", identity: " + IdentityId);
 			return error();
 		}
-		boolean updated = onlyOfficeService.updateContent(vfsLeaf, identity, callbackVO.getUrl(), versionControlled);
+		boolean updated = onlyOfficeService.updateContent(vfsLeaf, identity, callback.getUrl(), versionControlled);
 		onlyOfficeService.unlock(vfsLeaf);
 		return updated? success(): error();
 	}
@@ -188,7 +203,7 @@ public class OnlyOfficeWebService {
 	public Response getFile(
 			@PathParam("fileId") String fileId,
 			@Context HttpHeaders httpHeaders) {
-		log.debug("OnlyOffice REST get file contents request for File ID: " + fileId);
+		log.debug("ONLYOFFICE REST get file contents request for File ID: " + fileId);
 		logRequestHeaders(httpHeaders);
 		
 		if (!onlyOfficeModule.isEnabled()) {

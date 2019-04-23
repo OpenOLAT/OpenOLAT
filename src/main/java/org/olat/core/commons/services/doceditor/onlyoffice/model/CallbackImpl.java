@@ -17,12 +17,13 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.commons.services.doceditor.onlyoffice.restapi;
+package org.olat.core.commons.services.doceditor.onlyoffice.model;
 
 import java.util.Arrays;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import org.olat.core.commons.services.doceditor.onlyoffice.Action;
+import org.olat.core.commons.services.doceditor.onlyoffice.Callback;
 
 /**
  * 
@@ -30,26 +31,25 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-@JsonIgnoreProperties(ignoreUnknown = true)
-public class CallbackVO {
+public class CallbackImpl implements Callback {
 	
-	// see https://api.onlyoffice.com/editors/callback
-	
-	private List<Action> actions;
+	private List<ActionImpl> actions;
 	private Integer forcesavetype;
 	private String key;
-	private Integer status;
+	private int status;
 	private String url;
 	private String[] users;
 	
-	public List<Action> getActions() {
+	@Override
+	public List<? extends Action> getActions() {
 		return actions;
 	}
 
-	public void setActions(List<Action> actions) {
+	public void setActions(List<ActionImpl> actions) {
 		this.actions = actions;
 	}
 
+	@Override
 	public Integer getForcesavetype() {
 		return forcesavetype;
 	}
@@ -58,6 +58,7 @@ public class CallbackVO {
 		this.forcesavetype = forcesavetype;
 	}
 
+	@Override
 	public String getKey() {
 		return key;
 	}
@@ -66,14 +67,16 @@ public class CallbackVO {
 		this.key = key;
 	}
 
-	public Integer getStatus() {
+	@Override
+	public int getStatus() {
 		return status;
 	}
 
-	public void setStatus(Integer status) {
+	public void setStatus(int status) {
 		this.status = status;
 	}
 
+	@Override
 	public String getUrl() {
 		return url;
 	}
@@ -82,6 +85,7 @@ public class CallbackVO {
 		this.url = url;
 	}
 
+	@Override
 	public String[] getUsers() {
 		return users;
 	}
@@ -107,37 +111,6 @@ public class CallbackVO {
 		builder.append(Arrays.toString(users));
 		builder.append("]");
 		return builder.toString();
-	}
-
-	public static class Action {
-		
-		private Integer type;
-		private String userid;
-		
-		public Integer getType() {
-			return type;
-		}
-		public void setType(Integer type) {
-			this.type = type;
-		}
-		public String getUserid() {
-			return userid;
-		}
-		public void setUserid(String userid) {
-			this.userid = userid;
-		}
-		
-		@Override
-		public String toString() {
-			StringBuilder builder = new StringBuilder();
-			builder.append("Action [type=");
-			builder.append(type);
-			builder.append(", userid=");
-			builder.append(userid);
-			builder.append("]");
-			return builder.toString();
-		}
-		
 	}
 	
 }

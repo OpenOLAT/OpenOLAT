@@ -22,6 +22,7 @@ package org.olat.core.commons.services.doceditor.onlyoffice.ui;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorSecurityCallback;
 import org.olat.core.commons.services.doceditor.DocEditorSecurityCallbackBuilder;
+import org.olat.core.commons.services.doceditor.onlyoffice.ApiConfig;
 import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeModule;
 import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeService;
 import org.olat.core.commons.services.vfs.VFSMetadata;
@@ -74,18 +75,16 @@ public class OnlyOfficeEditorController extends BasicController {
 		if (vfsMetadata == null) {
 			mainVC.contextPut("warning", translate("editor.warning.no.metadata"));
 		} else {
-			String apiConfig = ApiConfigBuilder.builder(vfsMetadata, getIdentity())
-					.withEdit(Mode.EDIT.equals(secCallback.getMode()))
-					.withVersionControlled(secCallback.isVersionControlled())
-					.buildJson();
-			log.debug("OnlyOffice ApiConfig: " + apiConfig);
+			ApiConfig apiConfig = onlyOfficeService.getApiConfig(vfsMetadata, getIdentity(), secCallback);
+			String apiConfigJson = onlyOfficeService.toJson(apiConfig);
+			log.debug("OnlyOffice ApiConfig: " + apiConfigJson);
 			
 			if (apiConfig == null) {
 				mainVC.contextPut("warning", translate("editor.warning.no.api.configs"));
 			} else {
 				mainVC.contextPut("id", "o_" + CodeHelper.getRAMUniqueID());
 				mainVC.contextPut("apiUrl", onlyOfficeModule.getApiUrl());
-				mainVC.contextPut("apiConfig", apiConfig);
+				mainVC.contextPut("apiConfig", apiConfigJson);
 			}
 		}
 		

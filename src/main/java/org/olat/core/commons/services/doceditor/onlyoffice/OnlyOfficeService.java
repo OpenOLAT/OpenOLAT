@@ -22,6 +22,7 @@ package org.olat.core.commons.services.doceditor.onlyoffice;
 import java.io.File;
 
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
+import org.olat.core.commons.services.doceditor.DocEditorSecurityCallback;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -41,6 +42,10 @@ public interface OnlyOfficeService {
 
 	VFSLeaf getVfsLeaf(String fileId);
 
+	ApiConfig getApiConfig(VFSMetadata vfsMetadata, Identity identity, DocEditorSecurityCallback secCallback);
+
+	String toJson(ApiConfig apiConfig);
+	
 	boolean canUpdateContent(VFSLeaf vfsLeaf, Identity identity, String documentKey);
 
 	boolean updateContent(VFSLeaf vfsLeaf, Identity identity, String url, boolean versionControlled);
@@ -55,9 +60,6 @@ public interface OnlyOfficeService {
 	
 	boolean isSupportedFormat(String suffix, Mode mode);
 
-	String getEditorDocumentType(String suffix);
-
-	String getDocumentKey(VFSMetadata metadata);
-
 	Identity getIdentity(String identityId);
+
 }

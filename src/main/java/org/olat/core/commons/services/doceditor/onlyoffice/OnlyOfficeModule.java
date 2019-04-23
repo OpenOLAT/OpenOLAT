@@ -19,6 +19,8 @@
  */
 package org.olat.core.commons.services.doceditor.onlyoffice;
 
+import java.security.Key;
+
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.configuration.ConfigOnOff;
 import org.olat.core.util.StringHelper;
@@ -26,6 +28,8 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import io.jsonwebtoken.security.Keys;
 
 /**
  * 
@@ -38,11 +42,14 @@ public class OnlyOfficeModule extends AbstractSpringModule implements ConfigOnOf
 
 	private static final String ONLYOFFICE_ENABLED = "onlyoffice.enabled";
 	private static final String ONLYOFFICE_API_URL = "onlyoffice.apiUrl";
+	private static final String ONLYOFFICE_JWT_SECRET = "onlyoffice.jwt.secret";
 	
 	@Value("${onlyoffice.enabled:false}")
 	private boolean enabled;
 	@Value("${onlyoffice.apiUrl}")
 	private String apiUrl;
+	private String jwtSecret;
+	private Key jwtSignKey;
 	
 	@Autowired
 	private OnlyOfficeModule(CoordinatorManager coordinateManager) {
@@ -65,9 +72,15 @@ public class OnlyOfficeModule extends AbstractSpringModule implements ConfigOnOf
 			enabled = "true".equals(enabledObj);
 		}
 		
-		String baseUrlObj = getStringPropertyValue(ONLYOFFICE_API_URL, true);
-		if(StringHelper.containsNonWhitespace(baseUrlObj)) {
-			apiUrl = baseUrlObj;
+		String apiUrlObj = getStringPropertyValue(ONLYOFFICE_API_URL, true);
+		if(StringHelper.containsNonWhitespace(apiUrlObj)) {
+			apiUrl = apiUrlObj;
+		}
+		
+		String jwtSecretObj = getStringPropertyValue(ONLYOFFICE_JWT_SECRET, true);
+		if(StringHelper.containsNonWhitespace(jwtSecretObj)) {
+			jwtSecret = jwtSecretObj;
+			jwtSignKey = Keys.hmacShaKeyFor(jwtSecret.getBytes());
 		}
 	}
 
@@ -88,6 +101,20 @@ public class OnlyOfficeModule extends AbstractSpringModule implements ConfigOnOf
 	public void setApiUrl(String apiUrl) {
 		this.apiUrl = apiUrl;
 		setStringProperty(ONLYOFFICE_API_URL, apiUrl, true);
+	}
+
+	public String getJwtSecret() {
+		return jwtSecret;
+	}
+
+	public void setJwtSecret(String jwtSecret) {
+		this.jwtSecret = jwtSecret;
+		this.jwtSignKey = Keys.hmacShaKeyFor(jwtSecret.getBytes());
+		setStringProperty(ONLYOFFICE_JWT_SECRET, jwtSecret, true);
+	}
+
+	public Key getJwtSignKey() {
+		return jwtSignKey;
 	}
 
 }

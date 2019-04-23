@@ -26,14 +26,29 @@ import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
+import org.olat.core.commons.services.doceditor.DocEditorSecurityCallback;
+import org.olat.core.commons.services.doceditor.onlyoffice.ApiConfig;
+import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeSecurityService;
 import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeService;
+import org.olat.core.commons.services.doceditor.onlyoffice.model.ApiConfigImpl;
+import org.olat.core.commons.services.doceditor.onlyoffice.model.DocumentImpl;
+import org.olat.core.commons.services.doceditor.onlyoffice.model.EditorConfigImpl;
+import org.olat.core.commons.services.doceditor.onlyoffice.model.InfoImpl;
+import org.olat.core.commons.services.doceditor.onlyoffice.model.PermissionsImpl;
+import org.olat.core.commons.services.doceditor.onlyoffice.model.UserImpl;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
+import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -42,8 +57,13 @@ import org.olat.core.util.vfs.VFSLockManager;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.lock.LockInfo;
 import org.olat.core.util.vfs.lock.LockResult;
+import org.olat.restapi.security.RestSecurityHelper;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * 
@@ -57,15 +77,20 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 	private static final OLog log = Tracing.createLoggerFor(OnlyOfficeServiceImpl.class);
 	
 	private static final String LOCK_APP_NAME = "onlyoffice";
+	private static final DateFormat LAST_MODIFIED = new SimpleDateFormat("yyyyMMddHHmmSS");
+	
+	private static ObjectMapper mapper = new ObjectMapper();
 
-	private static DateFormat LAST_MODIFIED = new SimpleDateFormat("yyyyMMddHHmmSS");
-
+	@Autowired
+	private OnlyOfficeSecurityService onlyOfficeSecurityService;
 	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
 	@Autowired
 	private VFSLockManager lockManager;
 	@Autowired
 	private BaseSecurityManager securityManager;
+	@Autowired
+	private UserManager userManager;
 
 	@Override
 	public boolean fileExists(String fileId) {
@@ -96,6 +121,109 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 	}
 
 	@Override
+	public ApiConfig getApiConfig(VFSMetadata vfsMetadata, Identity identity, DocEditorSecurityCallback secCallback) {
+		String fileName = vfsMetadata.getFilename();
+
+		ApiConfigImpl apiConfig = new ApiConfigImpl();
+		apiConfig.setWidth("100%");
+		apiConfig.setHeight("100%");
+		apiConfig.setType("desktop");
+		String suffix = FileUtils.getFileSuffix(fileName);
+		String documentType = getEditorDocumentType(suffix);
+		apiConfig.setDocumentType(documentType);
+		
+		DocumentImpl document = new DocumentImpl();
+		document.setFileType(suffix);
+		String key = getDocumentKey(vfsMetadata);
+		document.setKey(key);
+		document.setTitle(fileName);
+		document.setUrl(getContentUrl(vfsMetadata));
+		apiConfig.setDocument(document);
+		
+		InfoImpl info = new InfoImpl();
+		String author = vfsMetadata.getAuthor() != null
+				? userManager.getUserDisplayName(vfsMetadata.getAuthor())
+				: null;
+		info.setAuthor(author);
+		info.setCreated(null); // not in metadata
+		info.setFolder(null); // is often a hidden folder, so we do not want to show
+		document.setInfo(info);
+		
+		PermissionsImpl permissions = new PermissionsImpl();
+		boolean edit = Mode.EDIT.equals(secCallback.getMode());
+		permissions.setEdit(edit);
+		permissions.setComment(true);
+		permissions.setDownload(true);
+		permissions.setFollForms(true);
+		permissions.setPrint(true);
+		permissions.setReview(true);
+		document.setPermissions(permissions);
+		
+		EditorConfigImpl editorConfig = new EditorConfigImpl();
+		String callbackUrl = getCallbackUrl(vfsMetadata, secCallback.isVersionControlled());
+		editorConfig.setCallbackUrl(callbackUrl);
+		String mode = edit? "edit": "view";
+		editorConfig.setMode(mode);
+		editorConfig.setLang(identity.getUser().getPreferences().getLanguage());
+		apiConfig.setEditor(editorConfig);
+		
+		UserImpl user = new UserImpl();
+		String name = userManager.getUserDisplayName(identity);
+		user.setName(name);
+		user.setId(identity.getKey().toString());
+		editorConfig.setUser(user);
+		
+		String token = onlyOfficeSecurityService.getApiConfigToken(document, editorConfig);
+		apiConfig.setToken(token);
+		
+		return apiConfig;
+	}
+	
+	private String getContentUrl(VFSMetadata vfsMetadata) {
+		StringBuilder fileUrl = getFileUrl(vfsMetadata);
+		fileUrl.append("contents");
+		return fileUrl.toString();
+	}
+
+	private String getCallbackUrl(VFSMetadata vfsMetadata, boolean versionControlled) {
+		StringBuilder fileUrl = getFileUrl(vfsMetadata);
+		fileUrl.append("callback");
+		if (versionControlled) {
+			fileUrl.append("?versionControlled=true");
+		}
+		return fileUrl.toString();
+	}
+
+	private StringBuilder getFileUrl(VFSMetadata vfsMetadata) {
+		StringBuilder fileUrl = new StringBuilder();
+		fileUrl.append(Settings.getServerContextPathURI());
+		fileUrl.append(RestSecurityHelper.SUB_CONTEXT);
+		fileUrl.append("/onlyoffice/files/");
+		fileUrl.append(vfsMetadata.getUuid());
+		fileUrl.append("/");
+		return fileUrl;
+	}
+
+	private String getEditorDocumentType(String suffix) {
+		return Formats.getEditorType(suffix);
+	}
+
+	private String getDocumentKey(VFSMetadata metadata) {
+		String lastModified = LAST_MODIFIED.format(metadata.getLastModified());
+		return metadata.getUuid() + "-" + lastModified;
+	}
+	
+	@Override
+	public String toJson(ApiConfig apiConfig) {
+		try {
+			return mapper.writeValueAsString(apiConfig);
+		} catch (JsonProcessingException e) {
+			log.error("", e);
+		}
+		return null;
+	}
+
+	@Override
 	public boolean canUpdateContent(VFSLeaf vfsLeaf, Identity identity, String documentKey) {
 		String currentDocumentKey = getDocumentKey(vfsLeaf.getMetaInfo());
 		return currentDocumentKey.equals(documentKey) && !isLockedForMe(vfsLeaf, identity);
@@ -103,20 +231,34 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 
 	@Override
 	public boolean updateContent(VFSLeaf vfsLeaf, Identity identity, String url, boolean versionControlled) {
+		log.debug("Update content from ONLYOFICE: " + url);
 		boolean updated = false;
-		try (InputStream in = new URL(url).openStream()) {
-			if(versionControlled && vfsLeaf.canVersion() == VFSConstants.YES) {
-				updated = vfsRepositoryService.addVersion(vfsLeaf, identity, "OnlyOffice", in);
+		
+		String token = onlyOfficeSecurityService.getFileDonwloadToken();
+		String autorization = "Bearer " + token;
+		HttpGet request = new HttpGet(url);
+		request.addHeader("Authorization", autorization);
+		try (CloseableHttpClient httpClient = HttpClients.createDefault();
+				CloseableHttpResponse httpResponse = httpClient.execute(request);) {
+			if (httpResponse.getStatusLine().getStatusCode() == 200) {
+				InputStream content = httpResponse.getEntity().getContent();
+				if (versionControlled && vfsLeaf.canVersion() == VFSConstants.YES) {
+					updated = vfsRepositoryService.addVersion(vfsLeaf, identity, "OnlyOffice", content);
+				} else {
+					updated = VFSManager.copyContent(content, vfsLeaf);
+				}
 			} else {
-				updated = VFSManager.copyContent(in, vfsLeaf);
+				log.warn("Update content from ONLYOFICE failed. URL: " + url);
 			}
-		} catch(Exception e) {
+		} catch (Exception e) {
 			log.error("", e);
 		}
+		
 		if (updated) {
 			log.debug("File updated. File name: " + vfsLeaf.getName());
 			refreshLock(vfsLeaf);
 		}
+		
 		return updated;
 	}
 	
@@ -158,17 +300,6 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 	@Override
 	public boolean isSupportedFormat(String suffix, Mode mode) {
 		return Formats.isSupportedFormat(suffix, mode);
-	}
-
-	@Override
-	public String getEditorDocumentType(String suffix) {
-		return Formats.getEditorType(suffix);
-	}
-
-	@Override
-	public String getDocumentKey(VFSMetadata metadata) {
-		String lastModified = LAST_MODIFIED.format(metadata.getLastModified());
-		return metadata.getUuid() + "-" + lastModified;
 	}
 
 	@Override

@@ -23,6 +23,7 @@ import static org.olat.core.commons.services.doceditor.onlyoffice.ui.OnlyOfficeU
 import static org.olat.core.gui.translator.TranslatorHelper.translateAll;
 
 import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeModule;
+import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeSecurityService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
@@ -44,10 +45,13 @@ public class OnlyOfficeAdminController extends FormBasicController {
 	private static final String[] ENABLED_KEYS = new String[]{"on"};
 	
 	private MultipleSelectionElement enabledEl;
-	private TextElement baseUrlEl;
+	private TextElement apiUrlEl;
+	private TextElement jwtSecretEl;
 
 	@Autowired
 	private OnlyOfficeModule onlyOfficeModule;
+	@Autowired
+	private OnlyOfficeSecurityService onlyOfficeSecurityService;
 
 	public OnlyOfficeAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -63,9 +67,13 @@ public class OnlyOfficeAdminController extends FormBasicController {
 		enabledEl.select(ENABLED_KEYS[0], onlyOfficeModule.isEnabled());
 		
 		String url = onlyOfficeModule.getApiUrl();
-		baseUrlEl = uifactory.addTextElement("admin.api.url", 128, url, formLayout);
-		baseUrlEl.setExampleKey("admin.api.url.example", null);
-		baseUrlEl.setMandatory(true);
+		apiUrlEl = uifactory.addTextElement("admin.api.url", 128, url, formLayout);
+		apiUrlEl.setExampleKey("admin.api.url.example", null);
+		apiUrlEl.setMandatory(true);
+		
+		String secret = onlyOfficeModule.getJwtSecret();
+		jwtSecretEl = uifactory.addTextElement("admin.jwt.secret", 128, secret, formLayout);
+		jwtSecretEl.setMandatory(true);
 		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add("buttons", buttonLayout);
@@ -77,7 +85,14 @@ public class OnlyOfficeAdminController extends FormBasicController {
 		boolean allOk = true;
 		
 		if (enabledEl.isAtLeastSelected(1)) {
-			allOk &= validateIsMandatory(baseUrlEl);
+			allOk &= validateIsMandatory(apiUrlEl);
+			
+			boolean jwtSecretOk = validateIsMandatory(jwtSecretEl);
+			if (jwtSecretOk && !onlyOfficeSecurityService.isValidSecret(jwtSecretEl.getValue())) {
+				jwtSecretEl.setErrorKey("admin.jwt.secret.invalid", null);
+				jwtSecretOk = false;
+			}
+			allOk &= jwtSecretOk;
 		}
 		
 		return allOk & super.validateFormLogic(ureq);
@@ -88,8 +103,11 @@ public class OnlyOfficeAdminController extends FormBasicController {
 		boolean enabled = enabledEl.isAtLeastSelected(1);
 		onlyOfficeModule.setEnabled(enabled);
 		
-		String url = baseUrlEl.getValue();
+		String url = apiUrlEl.getValue();
 		onlyOfficeModule.setApiUrl(url);
+		
+		String jwtSecret = jwtSecretEl.getValue();
+		onlyOfficeModule.setJwtSecret(jwtSecret);
 	}
 
 	@Override
