@@ -23,6 +23,8 @@ import java.security.Key;
 
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.configuration.ConfigOnOff;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +41,8 @@ import io.jsonwebtoken.security.Keys;
  */
 @Service
 public class OnlyOfficeModule extends AbstractSpringModule implements ConfigOnOff {
+
+	private static final OLog log = Tracing.createLoggerFor(OnlyOfficeModule.class);
 
 	private static final String ONLYOFFICE_ENABLED = "onlyoffice.enabled";
 	private static final String ONLYOFFICE_API_URL = "onlyoffice.apiUrl";
@@ -80,7 +84,6 @@ public class OnlyOfficeModule extends AbstractSpringModule implements ConfigOnOf
 		String jwtSecretObj = getStringPropertyValue(ONLYOFFICE_JWT_SECRET, true);
 		if(StringHelper.containsNonWhitespace(jwtSecretObj)) {
 			jwtSecret = jwtSecretObj;
-			jwtSignKey = Keys.hmacShaKeyFor(jwtSecret.getBytes());
 		}
 	}
 
@@ -109,11 +112,17 @@ public class OnlyOfficeModule extends AbstractSpringModule implements ConfigOnOf
 
 	public void setJwtSecret(String jwtSecret) {
 		this.jwtSecret = jwtSecret;
-		this.jwtSignKey = Keys.hmacShaKeyFor(jwtSecret.getBytes());
 		setStringProperty(ONLYOFFICE_JWT_SECRET, jwtSecret, true);
 	}
 
 	public Key getJwtSignKey() {
+		if (jwtSignKey == null) {
+			try {
+				jwtSignKey = Keys.hmacShaKeyFor(jwtSecret.getBytes());
+			} catch (Exception e) {
+				log.error("", e);
+			}
+		}
 		return jwtSignKey;
 	}
 
