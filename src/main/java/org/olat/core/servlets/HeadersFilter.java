@@ -24,6 +24,7 @@ import org.olat.core.commons.services.analytics.AnalyticsSPI;
 import org.olat.core.commons.services.analytics.spi.GoogleAnalyticsSPI;
 import org.olat.core.commons.services.analytics.spi.MatomoSPI;
 import org.olat.core.commons.services.csp.CSPModule;
+import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeModule;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -55,6 +56,8 @@ public class HeadersFilter implements Filter {
 	private AnalyticsModule analyticsModule;
 	@Autowired
 	private EdusharingModule edusharingModule;
+	@Autowired
+	private OnlyOfficeModule onlyOfficeModule;
 	@Autowired
 	private Card2BrainModule card2BrainModule;
 	@Autowired
@@ -184,6 +187,7 @@ public class HeadersFilter implements Filter {
 		appendMathJaxUrl(sb);
 		appendAnalyticsUrl(sb);
 		appendEdusharingUrl(sb);
+		appendOnlyOfficeUrl(sb);
 		sb.append(";");
 	}
 	
@@ -220,6 +224,7 @@ public class HeadersFilter implements Filter {
 		appendCard2BrainUrl(sb);
 		appendEdubaseUrl(sb);
 		appendEdusharingUrl(sb);
+		appendOnlyOfficeUrl(sb);
 		appendViteroUrl(sb);
 		sb.append(";");
 	}
@@ -283,6 +288,12 @@ public class HeadersFilter implements Filter {
 	private void appendEdusharingUrl(StringBuilder sb) {
 		if(edusharingModule != null && edusharingModule.isEnabled()) {
 			appendUrl(sb, edusharingModule.getBaseUrl());
+		}
+	}
+	
+	private void appendOnlyOfficeUrl(StringBuilder sb) {
+		if(onlyOfficeModule != null && onlyOfficeModule.isEnabled()) {
+			appendUrl(sb, onlyOfficeModule.getBaseUrl());
 		}
 	}
 	
