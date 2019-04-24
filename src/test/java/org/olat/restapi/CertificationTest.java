@@ -49,6 +49,7 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificateStatus;
 import org.olat.course.certificate.CertificatesManager;
+import org.olat.course.certificate.model.CertificateConfig;
 import org.olat.course.certificate.model.CertificateInfos;
 import org.olat.repository.RepositoryEntry;
 import org.olat.restapi.support.ObjectFactory;
@@ -81,7 +82,8 @@ public class CertificationTest extends OlatJerseyTestCase {
 		dbInstance.commitAndCloseSession();
 
 		CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, 2.0f, true);
-		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, entry, null, false);
+		CertificateConfig config = CertificateConfig.builder().withSendModuleEmail(false).build();
+		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, entry, null, config);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(certificate);
 		sleep(1000);
@@ -120,7 +122,8 @@ public class CertificationTest extends OlatJerseyTestCase {
 		dbInstance.commitAndCloseSession();
 
 		CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, 2.0f, true);
-		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, entry, null, false);
+		CertificateConfig config = CertificateConfig.builder().build();
+		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, entry, null, config);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(certificate);
 		sleep(1000);
@@ -275,7 +278,8 @@ public class CertificationTest extends OlatJerseyTestCase {
 		dbInstance.commitAndCloseSession();
 
 		CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, 2.0f, true);
-		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, entry, null, false);
+		CertificateConfig config = CertificateConfig.builder().build();
+		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, entry, null, config);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(certificate);
 		sleep(1000);

@@ -72,7 +72,7 @@ public class CourseConfig implements Serializable, Cloneable {
 	/**
 	 * current config file version
 	 */
-	private static final transient int CURRENTVERSION = 13;
+	private static final transient int CURRENTVERSION = 14;
 	/**
 	 * Log levels
 	 */
@@ -96,6 +96,9 @@ public class CourseConfig implements Serializable, Cloneable {
 	public static final transient String CERTIFICATE_AUTO_ENABLED = "CERTIFICATE_AUTO";
 	public static final transient String CERTIFICATE_MANUAL_ENABLED = "CERTIFICATE_MANUAL";
 	public static final transient String CERTIFICATE_TEMPLATE = "CERTIFICATE_TEMPLATE";
+	public static final transient String CERTIFICATE_CUSTOM1 = "CERTIFICATE_CUSTOM1";
+	public static final transient String CERTIFICATE_CUSTOM2 = "CERTIFICATE_CUSTOM2";
+	public static final transient String CERTIFICATE_CUSTOM3 = "CERTIFICATE_CUSTOM3";
 	public static final transient String RECERTIFICATION_ENABLED = "RECERTIFICATION_ENABLED";
 	public static final transient String RECERTIFICATION_TIMELAPSE = "RECERTIFICATION_TIMELAPSE";
 	public static final transient String RECERTIFICATION_TIMELAPSE_UNIT = "RECERTIFICATION_TIMELAPSE_UNIT";
@@ -282,6 +285,14 @@ public class CourseConfig implements Serializable, Cloneable {
 				if (!configuration.containsKey(BREADCRUMB_ENABLED)) configuration.put(BREADCRUMB_ENABLED, Boolean.TRUE);
 				this.version = 13;
 			}
+			
+			if (version == 13) {
+				if (!configuration.containsKey(CERTIFICATE_CUSTOM1)) configuration.put(CERTIFICATE_CUSTOM1, "");
+				if (!configuration.containsKey(CERTIFICATE_CUSTOM2)) configuration.put(CERTIFICATE_CUSTOM2, "");
+				if (!configuration.containsKey(CERTIFICATE_CUSTOM3)) configuration.put(CERTIFICATE_CUSTOM3, "");
+				
+				this.version = 14;
+			}
 
 			
 			/*
@@ -461,6 +472,30 @@ public class CourseConfig implements Serializable, Cloneable {
 		return templateId;
 	}
 	
+	public String getCertificateCustom1() {
+		return (String) configuration.get(CERTIFICATE_CUSTOM1);
+	}
+	
+	public void setCertificateCustom1(String custom1) {
+		configuration.put(CERTIFICATE_CUSTOM1, custom1);
+	}
+	
+	public String getCertificateCustom2() {
+		return (String) configuration.get(CERTIFICATE_CUSTOM2);
+	}
+	
+	public void setCertificateCustom2(String custom2) {
+		configuration.put(CERTIFICATE_CUSTOM2, custom2);
+	}
+	
+	public String getCertificateCustom3() {
+		return (String) configuration.get(CERTIFICATE_CUSTOM3);
+	}
+	
+	public void setCertificateCustom3(String custom3) {
+		configuration.put(CERTIFICATE_CUSTOM3, custom3);
+	}
+	
 	/**
 	 * @param b
 	 */
@@ -608,6 +643,9 @@ public class CourseConfig implements Serializable, Cloneable {
 		clone.setAutomaticCertificationEnabled(isAutomaticCertificationEnabled());
 		clone.setManualCertificationEnabled(isManualCertificationEnabled());
 		clone.setCertificateTemplate(getCertificateTemplate());
+		clone.setCertificateCustom1(getCertificateCustom1());
+		clone.setCertificateCustom2(getCertificateCustom2());
+		clone.setCertificateCustom3(getCertificateCustom3());
 		clone.setRecertificationEnabled(isRecertificationEnabled());
 		clone.setRecertificationTimelapse(getRecertificationTimelapse());
 		clone.setRecertificationTimelapseUnit(getRecertificationTimelapseUnit());

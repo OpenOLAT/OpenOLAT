@@ -61,6 +61,7 @@ import org.olat.course.assessment.manager.EfficiencyStatementManager;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.certificate.CertificateTemplate;
 import org.olat.course.certificate.CertificatesManager;
+import org.olat.course.certificate.model.CertificateConfig;
 import org.olat.course.certificate.model.CertificateInfos;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
@@ -426,6 +427,7 @@ public class NewCachePersistingAssessmentManager {
 		ICourse course = CourseFactory.loadCourse(ores);
 		final CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
 		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(createOLATResourceableForLocking(assessedIdentity), new SyncerExecutor(){
+			@Override
 			public void execute() {
 				Property attemptsProperty = cpm.findCourseNodeProperty(courseNode, assessedIdentity, null, ATTEMPTS);
 				if (attemptsProperty == null) {
@@ -497,6 +499,7 @@ public class NewCachePersistingAssessmentManager {
 		ICourse course = CourseFactory.loadCourse(ores);
 		final CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
 		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(createOLATResourceableForLocking(assessedIdentity), new SyncerExecutor(){
+			@Override
 			public void execute() {
 				Property commentProperty = cpm.findCourseNodeProperty(courseNode, assessedIdentity, null, COMMENT);
 				if (commentProperty == null) {
@@ -533,6 +536,7 @@ public class NewCachePersistingAssessmentManager {
 		ICourse course = CourseFactory.loadCourse(ores);
 		final CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
 		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(createOLATResourceableForLocking(assessedIdentity), new SyncerExecutor(){
+			@Override
 			public void execute() {
 				Property commentProperty = cpm.findCourseNodeProperty(courseNode, assessedIdentity, null, COACH_COMMENT);
 				if (commentProperty == null) {
@@ -579,6 +583,7 @@ public class NewCachePersistingAssessmentManager {
 		ICourse course = CourseFactory.loadCourse(ores);
 		final CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
 		long attempts = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(createOLATResourceableForLocking(identity), new SyncerCallback<Long>(){
+			@Override
 			public Long execute() {
 				long attempts = incrementNodeAttemptsProperty(courseNode, identity, cpm);
 				if(courseNode instanceof AssessableCourseNode) {
@@ -864,6 +869,7 @@ public class NewCachePersistingAssessmentManager {
 		// we could also sync on the assessedIdentity.
 		
 		Long attempts = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(createOLATResourceableForLocking(assessedIdentity), new SyncerCallback<Long>(){
+			@Override
 			public Long execute() {
 				Long attempts = null;
 				Float score = scoreEvaluation.getScore();
@@ -891,7 +897,13 @@ public class NewCachePersistingAssessmentManager {
 							template = certificatesManager.getTemplateById(templateId);
 						}
 						CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, score, passed);
-						certificatesManager.generateCertificate(certificateInfos, courseEntry, template, true);
+						CertificateConfig config = CertificateConfig.builder()
+								.withCustom1(course.getCourseConfig().getCertificateCustom1())
+								.withCustom2(course.getCourseConfig().getCertificateCustom2())
+								.withCustom3(course.getCourseConfig().getCertificateCustom3())
+								.withSendModuleEmail(true)
+								.build();
+						certificatesManager.generateCertificate(certificateInfos, courseEntry, template, config);
 					}
 				}
 				

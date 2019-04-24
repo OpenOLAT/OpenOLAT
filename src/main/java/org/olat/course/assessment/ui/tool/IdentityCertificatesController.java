@@ -49,6 +49,7 @@ import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificateEvent;
 import org.olat.course.certificate.CertificateTemplate;
 import org.olat.course.certificate.CertificatesManager;
+import org.olat.course.certificate.model.CertificateConfig;
 import org.olat.course.certificate.model.CertificateInfos;
 import org.olat.course.certificate.ui.DownloadCertificateCellRenderer;
 import org.olat.course.config.CourseConfig;
@@ -236,7 +237,13 @@ public class IdentityCertificatesController extends BasicController implements G
 		Float score = scoreEval == null ? null : scoreEval.getScore();
 		Boolean passed = scoreEval == null ? null : scoreEval.getPassed();
 		CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, score, passed);
-		certificatesManager.generateCertificate(certificateInfos, courseEntry, template, true);
+		CertificateConfig config = CertificateConfig.builder()
+				.withCustom1(course.getCourseConfig().getCertificateCustom1())
+				.withCustom2(course.getCourseConfig().getCertificateCustom2())
+				.withCustom3(course.getCourseConfig().getCertificateCustom3())
+				.withSendModuleEmail(true)
+				.build();
+		certificatesManager.generateCertificate(certificateInfos, courseEntry, template, config);
 		loadList();
 		showInfo("msg.certificate.pending");
 		fireEvent(ureq, Event.CHANGED_EVENT);

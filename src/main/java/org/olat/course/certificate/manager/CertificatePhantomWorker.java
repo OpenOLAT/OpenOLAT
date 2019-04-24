@@ -68,20 +68,26 @@ public class CertificatePhantomWorker {
 	private final RepositoryEntry entry;
 	private final String certificateURL;
 
-	private Date dateCertification;
-	private Date dateFirstCertification;
-	private Date dateNextRecertification;
+	private final Date dateCertification;
+	private final Date dateFirstCertification;
+	private final Date dateNextRecertification;
+	private final String custom1;
+	private final String custom2;
+	private final String custom3;
 
 	private final Locale locale;
 	private final UserManager userManager;
 	private final CertificatesManagerImpl certificatesManager;
 
-	public CertificatePhantomWorker(Identity identity, RepositoryEntry entry,
-			Float score, Boolean passed, Date dateCertification,
-			Date dateFirstCertification, Date nextRecertificationDate, String certificateURL, Locale locale,
-			UserManager userManager, CertificatesManagerImpl certificatesManager) {
+	public CertificatePhantomWorker(Identity identity, RepositoryEntry entry, Float score, Boolean passed,
+			Date dateCertification, Date dateFirstCertification, Date nextRecertificationDate, String custom1,
+			String custom2, String custom3, String certificateURL, Locale locale, UserManager userManager,
+			CertificatesManagerImpl certificatesManager) {
 		this.entry = entry;
 		this.score = score;
+		this.custom1 = custom1;
+		this.custom2 = custom2;
+		this.custom3 = custom3;
 		this.locale = locale;
 		this.passed = passed;
 		this.identity = identity;
@@ -269,6 +275,9 @@ public class CertificatePhantomWorker {
 	}
 	
 	private void fillMetaInfos(VelocityContext context) {
+		context.put("custom1", custom1);
+		context.put("custom2", custom2);
+		context.put("custom3", custom3);
 		context.put("certificateVerificationUrl", certificateURL);
 	}
 	

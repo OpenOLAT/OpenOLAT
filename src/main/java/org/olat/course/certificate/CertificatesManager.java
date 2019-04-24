@@ -33,6 +33,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.ICourse;
+import org.olat.course.certificate.model.CertificateConfig;
 import org.olat.course.certificate.model.CertificateInfos;
 import org.olat.group.BusinessGroup;
 import org.olat.repository.RepositoryEntry;
@@ -161,15 +162,15 @@ public interface CertificatesManager {
 	 */
 	public Date getDateNextRecertification(Certificate certificate, RepositoryEntry entry);
 	
-	public File previewCertificate(CertificateTemplate template, RepositoryEntry entry, Locale locale);
+	public File previewCertificate(CertificateTemplate template, RepositoryEntry entry, Locale locale, String custom1, String custom2, String custom3);
 
 	public Certificate uploadCertificate(Identity identity, Date creationDate, OLATResource resource, File certificateFile);
 	
 	public Certificate uploadStandaloneCertificate(Identity identity, Date creationDate, String courseTitle, Long resourceKey, File certificateFile);
 	
-	public void generateCertificates(List<CertificateInfos> identities, RepositoryEntry entry, CertificateTemplate template, boolean sendMail);
+	public void generateCertificates(List<CertificateInfos> infos, RepositoryEntry entry, CertificateTemplate template, CertificateConfig config);
 
-	public Certificate generateCertificate(CertificateInfos identity, RepositoryEntry entry, CertificateTemplate template, boolean sendMail);
+	public Certificate generateCertificate(CertificateInfos infos, RepositoryEntry entry, CertificateTemplate template, CertificateConfig config);
 	
 	public void deleteCertificate(Certificate certificate);
 

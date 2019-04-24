@@ -56,6 +56,7 @@ import org.olat.course.assessment.model.AssessmentNodesLastModified;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.certificate.CertificateTemplate;
 import org.olat.course.certificate.CertificatesManager;
+import org.olat.course.certificate.model.CertificateConfig;
 import org.olat.course.certificate.model.CertificateInfos;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.AssessableCourseNode;
@@ -522,7 +523,13 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 					template = certificatesManager.getTemplateById(templateId);
 				}
 				CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, rootEval.getScore(), rootEval.getPassed());
-				certificatesManager.generateCertificate(certificateInfos, cgm.getCourseEntry(), template, true);
+				CertificateConfig config = CertificateConfig.builder()
+						.withCustom1(course.getCourseConfig().getCertificateCustom1())
+						.withCustom2(course.getCourseConfig().getCertificateCustom2())
+						.withCustom3(course.getCourseConfig().getCertificateCustom3())
+						.withSendModuleEmail(true)
+						.build();
+				certificatesManager.generateCertificate(certificateInfos, cgm.getCourseEntry(), template, config);
 			}
 		}
 	}
