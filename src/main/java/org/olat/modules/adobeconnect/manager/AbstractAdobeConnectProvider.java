@@ -29,7 +29,6 @@ import java.util.Locale;
 
 import javax.ws.rs.core.UriBuilder;
 
-import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -52,10 +51,8 @@ import org.olat.modules.adobeconnect.model.AdobeConnectSco;
 import org.olat.modules.adobeconnect.model.BreezeSession;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.w3c.dom.CharacterData;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
@@ -123,8 +120,7 @@ public abstract class AbstractAdobeConnectProvider implements AdobeConnectSPI {
 				.queryParam("date-end", formatDate(endDate));
 		}
 		
-		URI createUri = builder.build();
-		List<AdobeConnectSco> createdScos = sendScoRequest(createUri, error);
+		List<AdobeConnectSco> createdScos = sendScoRequest(builder, error);
 		return createdScos == null || createdScos.isEmpty() ? null : createdScos.get(0);
 	}
 	
@@ -153,8 +149,7 @@ public abstract class AbstractAdobeConnectProvider implements AdobeConnectSPI {
 			.queryParam("type", "folder")
 			.queryParam("name", name)
 			.queryParam("folder-id", folderScoId);
-		URI createUri = builder.build();
-		List<AdobeConnectSco> createdScos = sendScoRequest(createUri, errors);
+		List<AdobeConnectSco> createdScos = sendScoRequest(builder, errors);
 		return createdScos == null || createdScos.isEmpty() ? null : createdScos.get(0);
 	}
 	
@@ -167,8 +162,7 @@ public abstract class AbstractAdobeConnectProvider implements AdobeConnectSPI {
 			.queryParam("sco-id", folderScoId)
 			.queryParam("filter-type", "folder")
 			.queryParam("filter-name", name);
-		URI createUri = builder.build();
-		return sendScoRequest(createUri, errors);
+		return sendScoRequest(builder, errors);
 	}
 
 	@Override
@@ -200,7 +194,7 @@ public abstract class AbstractAdobeConnectProvider implements AdobeConnectSPI {
 				CloseableHttpResponse response = httpClient.execute(get)) {
 			int statusCode = response.getStatusLine().getStatusCode();
 			if(statusCode == 200 || statusCode == 201) {
-				ok = AdobeConnectDOMHelper.isStatusOk(response.getEntity());
+				ok = AdobeConnectUtils.isStatusOk(response.getEntity());
 			} else {
 				EntityUtils.consume(response.getEntity());
 			}
@@ -241,19 +235,19 @@ public abstract class AbstractAdobeConnectProvider implements AdobeConnectSPI {
 		builder
 			.queryParam("action", "sco-contents")
 			.queryParam("sco-id", scoId);
-		URI createUri = builder.build();
-		return sendScoRequest(createUri, error);
+		return sendScoRequest(builder, error);
 	}
 	
 	@Override
-	public AdobeConnectSco getScoMeeting(String scoId, AdobeConnectErrors error) {
+	public AdobeConnectSco getScoMeeting(AdobeConnectMeeting meeting, AdobeConnectErrors error) {
+		if(meeting == null || !StringHelper.containsNonWhitespace(meeting.getScoId())) return null;
+		
 		UriBuilder builder = adobeConnectModule.getAdobeConnectUriBuilder();
 		builder
 			.queryParam("action", "sco-info")
-			.queryParam("sco-id", scoId);
-		URI createUri = builder.build();
-		List<AdobeConnectSco> createdScos = sendScoRequest(createUri, error);
-		return createdScos == null || createdScos.isEmpty() ? null : createdScos.get(0);
+			.queryParam("sco-id", meeting.getScoId());
+		List<AdobeConnectSco> scos = sendScoRequest(builder, error);
+		return scos == null || scos.isEmpty() ? null : scos.get(0);
 	}
 	
 	@Override
@@ -273,7 +267,7 @@ public abstract class AbstractAdobeConnectProvider implements AdobeConnectSPI {
 				CloseableHttpResponse response = httpClient.execute(get)) {
 			int statusCode = response.getStatusLine().getStatusCode();
 			if(statusCode >= 200 && statusCode < 400) {
-				ok = AdobeConnectDOMHelper.isStatusOk(response.getEntity());
+				ok = AdobeConnectUtils.isStatusOk(response.getEntity());
 			} else {
 				EntityUtils.consume(response.getEntity());
 			}
@@ -471,8 +465,8 @@ public abstract class AbstractAdobeConnectProvider implements AdobeConnectSPI {
 	protected List<AdobeConnectSco> parseScos(HttpEntity entity, AdobeConnectErrors errors) {
 		List<AdobeConnectSco> scos = new ArrayList<>();
 		try {
-			Document doc = AdobeConnectDOMHelper.getDocumentFromEntity(entity);
-			if(AdobeConnectDOMHelper.isStatusOk(doc)) {
+			Document doc = AdobeConnectUtils.getDocumentFromEntity(entity);
+			if(AdobeConnectUtils.isStatusOk(doc)) {
 				NodeList nodes = doc.getElementsByTagName("sco");
 				int numOfNodes = nodes.getLength();
 				for(int i=0; i<numOfNodes; i++) {
@@ -482,21 +476,21 @@ public abstract class AbstractAdobeConnectProvider implements AdobeConnectSPI {
 					connectSco.setScoId(sco.getAttribute("sco-id"));
 					connectSco.setType(sco.getAttribute("type"));
 					connectSco.setIcon(sco.getAttribute("icon"));
-					String urlPath = getFirstElementValue(sco, "url-path");
+					String urlPath = AdobeConnectUtils.getFirstElementValue(sco, "url-path");
 					connectSco.setUrlPath(urlPath);
-					String name = getFirstElementValue(sco, "name");
+					String name = AdobeConnectUtils.getFirstElementValue(sco, "name");
 					connectSco.setName(name);
-					connectSco.setDateBegin(parseIsoDate(getFirstElementValue(sco, "date-begin")));
-					connectSco.setDateEnd(parseIsoDate(getFirstElementValue(sco, "date-end")));
-					connectSco.setDateCreated(parseIsoDate(getFirstElementValue(sco, "date-created")));
-					connectSco.setDateModified(parseIsoDate(getFirstElementValue(sco, "date-modified")));
+					connectSco.setDateBegin(parseIsoDate(AdobeConnectUtils.getFirstElementValue(sco, "date-begin")));
+					connectSco.setDateEnd(parseIsoDate(AdobeConnectUtils.getFirstElementValue(sco, "date-end")));
+					connectSco.setDateCreated(parseIsoDate(AdobeConnectUtils.getFirstElementValue(sco, "date-created")));
+					connectSco.setDateModified(parseIsoDate(AdobeConnectUtils.getFirstElementValue(sco, "date-modified")));
 					
 	            	scos.add(connectSco);
 	            }
-				AdobeConnectDOMHelper.print(doc);
+				AdobeConnectUtils.print(doc);
 			} else {
-				AdobeConnectDOMHelper.print(doc);
-				AdobeConnectDOMHelper.error(doc, errors);
+				AdobeConnectUtils.print(doc);
+				AdobeConnectUtils.error(doc, errors);
 			}
 		} catch(Exception e) {
 			log.error("", e);
@@ -504,26 +498,7 @@ public abstract class AbstractAdobeConnectProvider implements AdobeConnectSPI {
 		return scos;
 	}
 	
-    private String getFirstElementValue(Element parent, String tagName) {
-        Element element = getFirstElement(parent, tagName);
-        return (element == null) ? "" : getCharacterDataFromElement(element);
-    }
-    
-    private Element getFirstElement(Element parent, String tagName) {
-        NodeList nodes = parent.getElementsByTagName(tagName);
-        return (nodes != null && nodes.getLength() > 0) ? (Element) (nodes.item(0)) : null;
-    }
-    
-    private String getCharacterDataFromElement(Element e) {
-    	StringBuilder sb = new StringBuilder();
-    	for(Node child = e.getFirstChild(); child != null; child = child.getNextSibling()) {
-    		if (child instanceof CharacterData) {
-            	CharacterData cd = (CharacterData)child;
-                sb.append(cd.getData());
-            }
-    	}
-        return sb.toString();
-    }
+
 
 	/**
 	 * https://server/lmsapi/xml?action=login
@@ -547,10 +522,9 @@ public abstract class AbstractAdobeConnectProvider implements AdobeConnectSPI {
 			CloseableHttpResponse response = httpClient.execute(getInfo)) {
 			int statusCode = response.getStatusLine().getStatusCode();
 			if(statusCode == 200) {
-				Header header = response.getFirstHeader("Set-Cookie");
-				session = BreezeSession.valueOf(header);
+				session = AdobeConnectUtils.getBreezeSession(response);
 			}
-			EntityUtils.consume(response.getEntity());
+			EntityUtils.consumeQuietly(response.getEntity());
 		} catch(Exception e) {
 			log.error("", e);
 		}
@@ -567,9 +541,7 @@ public abstract class AbstractAdobeConnectProvider implements AdobeConnectSPI {
 		try(CloseableHttpClient httpClient = HttpClientBuilder.create().build();
 			CloseableHttpResponse response = httpClient.execute(getLogin)) {
 			int statusCode = response.getStatusLine().getStatusCode();
-			if(statusCode == 200 && AdobeConnectDOMHelper.isStatusOk(response.getEntity())) {
-				Header header = response.getFirstHeader("Set-Cookie");
-				session = BreezeSession.valueOf(header);
+			if(statusCode == 200 && AdobeConnectUtils.isStatusOk(response.getEntity())) {
 				currentSession = session;
 			}
 			EntityUtils.consumeQuietly(response.getEntity());
@@ -579,9 +551,9 @@ public abstract class AbstractAdobeConnectProvider implements AdobeConnectSPI {
 		return session;
 	}
 	
-	protected List<AdobeConnectSco> sendScoRequest(URI uri, AdobeConnectErrors errors) {
+	protected List<AdobeConnectSco> sendScoRequest(UriBuilder builder, AdobeConnectErrors errors) {
 		List<AdobeConnectSco> scos = null;
-		HttpGet get = createAdminMethod(uri, errors);
+		HttpGet get = createAdminMethod(builder, errors);
 		try(CloseableHttpClient httpClient = HttpClientBuilder.create().build();
 				CloseableHttpResponse response = httpClient.execute(get)) {
 			int statusCode = response.getStatusLine().getStatusCode();
@@ -596,9 +568,9 @@ public abstract class AbstractAdobeConnectProvider implements AdobeConnectSPI {
 		return scos;
 	}
 	
-	protected List<AdobeConnectPrincipal> sendPrincipalRequest(URI uri, AdobeConnectErrors errors) {
+	protected List<AdobeConnectPrincipal> sendPrincipalRequest(UriBuilder builder, AdobeConnectErrors errors) {
 		List<AdobeConnectPrincipal> users = null;
-		HttpGet get = createAdminMethod(uri, errors);
+		HttpGet get = createAdminMethod(builder, errors);
 		try(CloseableHttpClient httpClient = HttpClientBuilder.create().build();
 				CloseableHttpResponse response = httpClient.execute(get)) {
 			int statusCode = response.getStatusLine().getStatusCode();
@@ -616,8 +588,9 @@ public abstract class AbstractAdobeConnectProvider implements AdobeConnectSPI {
 	protected List<AdobeConnectPrincipal> parsePrincipals(HttpEntity entity, AdobeConnectErrors errors) {
 		List<AdobeConnectPrincipal> users = new ArrayList<>();
 		try {
-			Document doc = AdobeConnectDOMHelper.getDocumentFromEntity(entity);
-			if(AdobeConnectDOMHelper.isStatusOk(doc)) {
+			Document doc = AdobeConnectUtils.getDocumentFromEntity(entity);
+			AdobeConnectUtils.print(doc);
+			if(AdobeConnectUtils.isStatusOk(doc)) {
 				NodeList userList = doc.getElementsByTagName("principal");
 				int numOfElements = userList.getLength();
 				for(int i=0; i<numOfElements; i++) {
@@ -627,7 +600,7 @@ public abstract class AbstractAdobeConnectProvider implements AdobeConnectSPI {
 					users.add(user);
 				}
 			} else {
-				AdobeConnectDOMHelper.error(doc, errors);
+				AdobeConnectUtils.error(doc, errors);
 			}
 		} catch (Exception e) {
 			log.error("", e);
@@ -638,8 +611,9 @@ public abstract class AbstractAdobeConnectProvider implements AdobeConnectSPI {
 	protected AdobeConnectPrincipal parseCommonInfo(HttpEntity entity, AdobeConnectErrors errors) {
 		AdobeConnectPrincipal user = null;
 		try {
-			Document doc = AdobeConnectDOMHelper.getDocumentFromEntity(entity);
-			if(AdobeConnectDOMHelper.isStatusOk(doc)) {
+			Document doc = AdobeConnectUtils.getDocumentFromEntity(entity);
+			AdobeConnectUtils.print(doc);
+			if(AdobeConnectUtils.isStatusOk(doc)) {
 				NodeList userList = doc.getElementsByTagName("user");
 				if(userList.getLength() == 1) {
 					Element userEl = (Element)userList.item(0);
@@ -647,7 +621,7 @@ public abstract class AbstractAdobeConnectProvider implements AdobeConnectSPI {
 					user.setPrincipalId(userEl.getAttribute("user-id"));
 				}
 			} else {
-				AdobeConnectDOMHelper.error(doc, errors);
+				AdobeConnectUtils.error(doc, errors);
 			}
 		} catch (Exception e) {
 			log.error("", e);
@@ -658,8 +632,9 @@ public abstract class AbstractAdobeConnectProvider implements AdobeConnectSPI {
 	protected List<AdobeConnectPermission> parsePermissions(HttpEntity entity, AdobeConnectErrors errors) {
 		List<AdobeConnectPermission> permissions = new ArrayList<>();
 		try {
-			Document doc = AdobeConnectDOMHelper.getDocumentFromEntity(entity);
-			if(AdobeConnectDOMHelper.isStatusOk(doc)) {
+			Document doc = AdobeConnectUtils.getDocumentFromEntity(entity);
+			AdobeConnectUtils.print(doc);
+			if(AdobeConnectUtils.isStatusOk(doc)) {
 				NodeList permissionList = doc.getElementsByTagName("permission");
 				int numOfElements = permissionList.getLength();
 				for(int i=0; i<numOfElements; i++) {
@@ -671,7 +646,7 @@ public abstract class AbstractAdobeConnectProvider implements AdobeConnectSPI {
 					permissions.add(permission);
 				}
 			} else {
-				AdobeConnectDOMHelper.error(doc, errors);
+				AdobeConnectUtils.error(doc, errors);
 			}
 		} catch (Exception e) {
 			log.error("", e);
@@ -680,12 +655,9 @@ public abstract class AbstractAdobeConnectProvider implements AdobeConnectSPI {
 	}
 	
 	protected HttpGet createAdminMethod(UriBuilder builder, AdobeConnectErrors errors) {
-		return createAdminMethod(builder.build(), errors);
-	}
-	
-	protected HttpGet createAdminMethod(URI uri, AdobeConnectErrors errors) {
 		BreezeSession session = getAdminSession(errors);
-		HttpGet get = new HttpGet(uri);
+		builder.queryParam("session", session.getSession());
+		HttpGet get = new HttpGet(builder.build());
 		get.setHeader(new BasicHeader("Cookie", COOKIE + session.getSession()));
 		return get;
 	}

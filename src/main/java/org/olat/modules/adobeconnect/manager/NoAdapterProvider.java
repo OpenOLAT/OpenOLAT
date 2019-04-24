@@ -68,7 +68,7 @@ public class NoAdapterProvider implements AdobeConnectSPI {
 	}
 
 	@Override
-	public AdobeConnectSco getScoMeeting(String scoId, AdobeConnectErrors error) {
+	public AdobeConnectSco getScoMeeting(AdobeConnectMeeting meeting, AdobeConnectErrors error) {
 		error.append(new AdobeConnectError(AdobeConnectErrorCodes.serverNotAvailable));
 		return null;
 	}

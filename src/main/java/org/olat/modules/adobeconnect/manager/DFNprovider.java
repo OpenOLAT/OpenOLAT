@@ -19,12 +19,10 @@
  */
 package org.olat.modules.adobeconnect.manager;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.ws.rs.core.UriBuilder;
 
-import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -34,13 +32,13 @@ import org.olat.basesecurity.Authentication;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
+import org.olat.modules.adobeconnect.AdobeConnectMeeting;
 import org.olat.modules.adobeconnect.model.AdobeConnectErrors;
 import org.olat.modules.adobeconnect.model.AdobeConnectPrincipal;
+import org.olat.modules.adobeconnect.model.AdobeConnectSco;
 import org.olat.modules.adobeconnect.model.BreezeSession;
 import org.springframework.stereotype.Service;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 
 /**
  * 
@@ -76,7 +74,7 @@ public class DFNprovider extends AbstractAdobeConnectProvider {
 				CloseableHttpResponse response = httpClient.execute(get)) {
 			int statusCode = response.getStatusLine().getStatusCode();
 			if(statusCode == 200 || statusCode == 201) {
-				users = parseUsers(response.getEntity(), errors);
+				users = parsePrincipals(response.getEntity(), errors);
 			} else {
 				EntityUtils.consume(response.getEntity());
 			}
@@ -129,7 +127,7 @@ public class DFNprovider extends AbstractAdobeConnectProvider {
 				CloseableHttpResponse response = httpClient.execute(get)) {
 			int statusCode = response.getStatusLine().getStatusCode();
 			if(statusCode == 200) {
-				session = null;//TODO adobe extract cookie
+				session = AdobeConnectUtils.getBreezeSessionFromXml(response);
 			} else {
 				EntityUtils.consume(response.getEntity());
 			}
@@ -139,27 +137,18 @@ public class DFNprovider extends AbstractAdobeConnectProvider {
 		return session;
 	}
 	
-	protected List<AdobeConnectPrincipal> parseUsers(HttpEntity entity, AdobeConnectErrors errors) {
-		List<AdobeConnectPrincipal> users = new ArrayList<>();
-		try {
-			Document doc = AdobeConnectDOMHelper.getDocumentFromEntity(entity);
-			if(AdobeConnectDOMHelper.isStatusOk(doc)) {
-				AdobeConnectDOMHelper.print(doc);
-				NodeList userList = doc.getElementsByTagName("user");
-				int numOfElements = userList.getLength();
-				for(int i=0; i<numOfElements; i++) {
-					Element userEl = (Element)userList.item(i);
-					AdobeConnectPrincipal user = new AdobeConnectPrincipal();
-					user.setPrincipalId(userEl.getAttribute("principal-id"));
-					users.add(user);
-				}
-			} else {
-				AdobeConnectDOMHelper.print(doc);
-				AdobeConnectDOMHelper.error(doc, errors);
-			}
-		} catch (Exception e) {
-			log.error("", e);
-		}
-		return users;
+	@Override
+	public AdobeConnectSco getScoMeeting(AdobeConnectMeeting meeting, AdobeConnectErrors error) {
+		if(meeting == null || !StringHelper.containsNonWhitespace(meeting.getScoId())) return null;
+		
+		UriBuilder builder = adobeConnectModule.getAdobeConnectUriBuilder();
+		builder.replacePath("/api/xml");
+		builder
+			.queryParam("action", "sco-info")
+			.queryParam("sco-id", meeting.getScoId())
+			.queryParam("filter-sco-id", meeting.getScoId())
+			.queryParam("filter-type", "meeting");
+		List<AdobeConnectSco> scos = sendScoRequest(builder, error);
+		return scos == null || scos.isEmpty() ? null : scos.get(0);
 	}
 }

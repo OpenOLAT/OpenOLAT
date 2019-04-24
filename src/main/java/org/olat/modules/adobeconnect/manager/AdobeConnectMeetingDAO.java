@@ -48,7 +48,8 @@ public class AdobeConnectMeetingDAO {
 	@Autowired
 	private DB dbInstance;
 	
-	public AdobeConnectMeeting createMeeting(String name, String description, Date start, Date end, String scoId, String envName,
+	public AdobeConnectMeeting createMeeting(String name, String description, Date start, Date end,
+			String scoId, String folderId, String envName,
 			RepositoryEntry entry, String subIdent, BusinessGroup businessGroup) {
 		AdobeConnectMeetingImpl meeting = new AdobeConnectMeetingImpl();
 		meeting.setCreationDate(new Date());
@@ -58,6 +59,7 @@ public class AdobeConnectMeetingDAO {
 		meeting.setStartDate(cleanDate(start));
 		meeting.setEndDate(cleanDate(end));
 		meeting.setScoId(scoId);
+		meeting.setFolderId(folderId);
 		meeting.setEnvName(envName);
 		if(entry != null) {
 			meeting.setEntry(entry);

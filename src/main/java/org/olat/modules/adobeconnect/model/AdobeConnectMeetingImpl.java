@@ -74,6 +74,8 @@ public class AdobeConnectMeetingImpl implements Persistable, AdobeConnectMeeting
 	
 	@Column(name="a_sco_id", nullable=true, insertable=true, updatable=false)
 	private String scoId;
+	@Column(name="a_folder_id", nullable=true, insertable=true, updatable=false)
+	private String folderId;
 	@Column(name="a_env_name", nullable=true, insertable=true, updatable=false)
 	private String envName;
 
@@ -123,6 +125,15 @@ public class AdobeConnectMeetingImpl implements Persistable, AdobeConnectMeeting
 
 	public void setScoId(String scoId) {
 		this.scoId = scoId;
+	}
+
+	@Override
+	public String getFolderId() {
+		return folderId;
+	}
+
+	public void setFolderId(String folderId) {
+		this.folderId = folderId;
 	}
 
 	@Override

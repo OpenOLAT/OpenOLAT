@@ -150,16 +150,26 @@ public class AdobeConnectManagerImpl implements AdobeConnectManager, DeletableGr
 		if(sco != null) {
 			getAdapter().setPermissions(sco.getScoId(), true, error);
 			AdobeConnectPrincipal admin = getAdapter().adminCommonInfo(error);
-			getAdapter().setMember(sco.getScoId(), admin.getPrincipalId(), AdobeConnectMeetingPermission.host.permission(), error);
-			
+			if(admin != null) {
+				getAdapter().setMember(sco.getScoId(), admin.getPrincipalId(), AdobeConnectMeetingPermission.host.permission(), error);
+			}
+
 			String actingUser = getOrCreateUser(actingIdentity, true, error);
 			if(actingUser != null) {
 				getAdapter().setMember(sco.getScoId(), actingUser, AdobeConnectMeetingPermission.host.permission(), error);
 			}
 			
+			// try harder if the meeting hasn't a single host
+			if(actingUser == null && admin == null) {
+				admin = getAdapter().getPrincipalByLogin(adobeConnectModule.getAdminLogin(), error);
+				if(admin != null) {
+					getAdapter().setMember(sco.getScoId(), admin.getPrincipalId(), AdobeConnectMeetingPermission.host.permission(), error);
+				}
+			}
+			
 			String scoId = sco.getScoId();
 			String envName = null;
-			adobeConnectMeetingDao.createMeeting(name, description, start, end, scoId, envName, entry, subIdent, businessGroup);
+			adobeConnectMeetingDao.createMeeting(name, description, start, end, scoId, folder.getScoId(), envName, entry, subIdent, businessGroup);
 		}
 	}
 	
@@ -219,7 +229,7 @@ public class AdobeConnectManagerImpl implements AdobeConnectManager, DeletableGr
 	public String join(AdobeConnectMeeting meeting, Identity identity, AdobeConnectErrors error) {
 		String actingUser = getOrCreateUser(identity, false, error);
 		if(actingUser != null) {
-			AdobeConnectSco sco = getAdapter().getScoMeeting(meeting.getScoId(), error);
+			AdobeConnectSco sco = getAdapter().getScoMeeting(meeting, error);
 			String urlPath = sco.getUrlPath();
 			UriBuilder builder = adobeConnectModule
 					.getAdobeConnectHostUriBuilder()
@@ -365,12 +375,13 @@ public class AdobeConnectManagerImpl implements AdobeConnectManager, DeletableGr
 		String request = buildUrl(url, null) + "?action=login&login=" + login + "&password=" + password;
 		HttpGet get = new HttpGet(request);
 		if(session != null) {
+			request += "&session" + session.getSession();
 			get.setHeader(new BasicHeader("Cookie", AbstractAdobeConnectProvider.COOKIE + session.getSession()));
 		}
 		try(CloseableHttpClient httpClient = HttpClientBuilder.create().build();
 			CloseableHttpResponse response = httpClient.execute(get)) {
 			int statusCode = response.getStatusLine().getStatusCode();
-			if(statusCode == 200 && AdobeConnectDOMHelper.isStatusOk(response.getEntity())) {
+			if(statusCode == 200 && AdobeConnectUtils.isStatusOk(response.getEntity())) {
 				allOk = true;
 			}
 		} catch(Exception e) {

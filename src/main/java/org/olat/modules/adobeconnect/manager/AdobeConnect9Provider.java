@@ -66,10 +66,8 @@ public class AdobeConnect9Provider extends AbstractAdobeConnectProvider {
 		UriBuilder builder = adobeConnectModule.getAdobeConnectUriBuilder();
 		builder
 			.queryParam("action", "principal-list")
-			.queryParam("filter-login", login)
-			;
-		URI principalUri = builder.build();
-		List<AdobeConnectPrincipal> users = sendPrincipalRequest(principalUri, error);
+			.queryParam("filter-login", login);
+		List<AdobeConnectPrincipal> users = sendPrincipalRequest(builder, error);
 		return users != null && !users.isEmpty() ? users.get(0) : null;
 	}
 
@@ -97,10 +95,8 @@ public class AdobeConnect9Provider extends AbstractAdobeConnectProvider {
 			.queryParam("password", password)
 			.queryParam("type", "user")
 			.queryParam("send-email", "false")
-			.queryParam("has-children", "0")
-			;
-		URI principalUri = builder.build();
-		List<AdobeConnectPrincipal> users = sendPrincipalRequest(principalUri, error);
+			.queryParam("has-children", "0");
+		List<AdobeConnectPrincipal> users = sendPrincipalRequest(builder, error);
 		return users != null && !users.isEmpty() ? users.get(0) : null;
 	}
 
@@ -123,7 +119,7 @@ public class AdobeConnect9Provider extends AbstractAdobeConnectProvider {
 		try(CloseableHttpClient httpClient = HttpClientBuilder.create().build();
 			CloseableHttpResponse response = httpClient.execute(getInfo)) {
 			int statusCode = response.getStatusLine().getStatusCode();
-			if(statusCode == 200 && AdobeConnectDOMHelper.isStatusOk(response.getEntity())) {
+			if(statusCode == 200 && AdobeConnectUtils.isStatusOk(response.getEntity())) {
 				Header header = response.getFirstHeader("Set-Cookie");
 				session = BreezeSession.valueOf(header);
 			} else {

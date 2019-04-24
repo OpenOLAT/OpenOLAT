@@ -54,6 +54,8 @@ public interface AdobeConnectMeeting extends ModifiedInfo, CreateInfo {
 	
 	public String getScoId();
 	
+	public String getFolderId();
+	
 	public String getEnvName();
 	
 	public RepositoryEntry getEntry();

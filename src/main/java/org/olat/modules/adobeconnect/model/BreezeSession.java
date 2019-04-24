@@ -32,18 +32,12 @@ public class BreezeSession {
 	
 	private static final long EXPIRATION_NS = 5l * 60l * 1000l * 1000l * 1000l;// % Minutes in nanoseconds
 	
-	private final String cookie;
 	private final String session;
 	private final long creationTime;
 	
-	private BreezeSession(String cookie, String session) {
-		this.cookie = cookie;
+	private BreezeSession(String session) {
 		this.session = session;
 		creationTime = System.nanoTime();
-	}
-
-	public String getCookie() {
-		return cookie;
 	}
 
 	public String getSession() {
@@ -60,12 +54,15 @@ public class BreezeSession {
 	 * @return
 	 */
 	public static BreezeSession valueOf(Header header) {
-		String value = header.getValue();
-		String cookie = value;
+		String cookie = header.getValue();
 		int index = cookie.indexOf(AbstractAdobeConnectProvider.COOKIE) + AbstractAdobeConnectProvider.COOKIE.length();
 		int lastIndex = cookie.indexOf(';', index);
 		String session = cookie.substring(index, lastIndex);
-		return new BreezeSession(cookie, session);
+		return new BreezeSession(session);
+	}
+	
+	public static BreezeSession valueOf(String session) {
+		return new BreezeSession(session);
 	}
 
 }

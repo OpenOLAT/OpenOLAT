@@ -30,14 +30,20 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.apache.http.Header;
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.util.EntityUtils;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.adobeconnect.model.AdobeConnectError;
 import org.olat.modules.adobeconnect.model.AdobeConnectErrorCodes;
 import org.olat.modules.adobeconnect.model.AdobeConnectErrors;
+import org.olat.modules.adobeconnect.model.BreezeSession;
+import org.w3c.dom.CharacterData;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
@@ -46,18 +52,48 @@ import org.w3c.dom.NodeList;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AdobeConnectDOMHelper {
+public class AdobeConnectUtils {
 	
-	private static final OLog log = Tracing.createLoggerFor(AdobeConnectDOMHelper.class);
+	private static final OLog log = Tracing.createLoggerFor(AdobeConnectUtils.class);
 	
-	protected  static boolean isStatusOk(HttpEntity entity) {
+	protected static boolean isStatusOk(HttpEntity entity) {
 		try {
 			Document doc = getDocumentFromEntity(entity);
-			return AdobeConnectDOMHelper.isStatusOk(doc);
+			return AdobeConnectUtils.isStatusOk(doc);
 		} catch (Exception e) {
 			log.error("", e);
 			return false;
 		}
+	}
+	
+	protected static BreezeSession getBreezeSession(HttpResponse response) {
+		BreezeSession session = null;
+		try {
+			Header header = response.getFirstHeader("Set-Cookie");
+			if(header != null) {
+				session = BreezeSession.valueOf(header);
+				EntityUtils.consume(response.getEntity());
+			} else {
+				Document doc = getDocumentFromEntity(response.getEntity());
+				String cookie = getFirstElementValue(doc.getDocumentElement(), "cookie");
+				session = BreezeSession.valueOf(cookie);
+			}
+		} catch (Exception e) {
+			log.error("", e);
+		}
+		return session;
+	}
+	
+	protected static BreezeSession getBreezeSessionFromXml(HttpResponse response) {
+		BreezeSession session = null;
+		try {
+			Document doc = getDocumentFromEntity(response.getEntity());
+			String cookie = getFirstElementValue(doc.getDocumentElement(), "cookie");
+			session = BreezeSession.valueOf(cookie);
+		} catch (Exception e) {
+			log.error("", e);
+		}
+		return session;
 	}
 	
     protected static Document getDocumentFromEntity(HttpEntity entity) throws Exception {
@@ -68,6 +104,27 @@ public class AdobeConnectDOMHelper {
     	} catch(Exception e) {
     		throw e;
     	}
+    }
+    
+    protected static String getFirstElementValue(Element parent, String tagName) {
+        Element element = getFirstElement(parent, tagName);
+        return (element == null) ? "" : getCharacterDataFromElement(element);
+    }
+    
+    protected static Element getFirstElement(Element parent, String tagName) {
+        NodeList nodes = parent.getElementsByTagName(tagName);
+        return (nodes != null && nodes.getLength() > 0) ? (Element) (nodes.item(0)) : null;
+    }
+    
+    protected static String getCharacterDataFromElement(Element e) {
+    	StringBuilder sb = new StringBuilder();
+    	for(Node child = e.getFirstChild(); child != null; child = child.getNextSibling()) {
+    		if (child instanceof CharacterData) {
+            	CharacterData cd = (CharacterData)child;
+                sb.append(cd.getData());
+            }
+    	}
+        return sb.toString();
     }
 	
 	protected static final boolean isStatusOk(Document doc) {
@@ -124,7 +181,7 @@ public class AdobeConnectDOMHelper {
 	}
 	
 	protected static void print(Document document) {
-		if(log.isDebug()) {
+		if(log.isDebug() || true) {
 		    try(StringWriter writer = new StringWriter()) {
 				Transformer transformer = TransformerFactory.newInstance().newTransformer();
 				Source source = new DOMSource(document);

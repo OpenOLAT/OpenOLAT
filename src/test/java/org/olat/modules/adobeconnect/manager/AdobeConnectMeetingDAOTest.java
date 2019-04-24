@@ -51,7 +51,7 @@ public class AdobeConnectMeetingDAOTest extends OlatTestCase {
 	
 	@Test
 	public void createMeeting() {
-		AdobeConnectMeeting meeting = adobeConnectMeetingDao.createMeeting("New meeting", "Very interessant", new Date(), new Date(), "sco-id", "DFN", null, null, null);
+		AdobeConnectMeeting meeting = adobeConnectMeetingDao.createMeeting("New meeting", "Very interessant", new Date(), new Date(), "sco-id", "folder-id", "DFN", null, null, null);
 		dbInstance.commit();
 		Assert.assertNotNull(meeting);
 		Assert.assertNotNull(meeting.getKey());
@@ -70,7 +70,7 @@ public class AdobeConnectMeetingDAOTest extends OlatTestCase {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String subIdent = UUID.randomUUID().toString();
 		
-		AdobeConnectMeeting meeting = adobeConnectMeetingDao.createMeeting("Course meeting", "Annoying", new Date(), new Date(), "sco-id", "DFN", entry, subIdent, null);
+		AdobeConnectMeeting meeting = adobeConnectMeetingDao.createMeeting("Course meeting", "Annoying", new Date(), new Date(), "sco-id", "folder-id", "DFN", entry, subIdent, null);
 		dbInstance.commit();
 		Assert.assertNotNull(meeting);
 		Assert.assertNotNull(meeting.getKey());
@@ -92,7 +92,7 @@ public class AdobeConnectMeetingDAOTest extends OlatTestCase {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String subIdent = UUID.randomUUID().toString();
 		
-		AdobeConnectMeeting meeting = adobeConnectMeetingDao.createMeeting("Key meeting", "Primary", new Date(), new Date(), "sco-pid", null, entry, subIdent, null);
+		AdobeConnectMeeting meeting = adobeConnectMeetingDao.createMeeting("Key meeting", "Primary", new Date(), new Date(), "sco-pid", "folder-id", null, entry, subIdent, null);
 		dbInstance.commitAndCloseSession();
 		
 		// load the meeting
@@ -118,8 +118,8 @@ public class AdobeConnectMeetingDAOTest extends OlatTestCase {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String subIdent = UUID.randomUUID().toString();
 		
-		AdobeConnectMeeting meeting1 = adobeConnectMeetingDao.createMeeting("Course A", "Primary", new Date(), new Date(), "sco-cid-1", null, entry, subIdent, null);
-		AdobeConnectMeeting meeting2 = adobeConnectMeetingDao.createMeeting("Course A", "Primary", new Date(), new Date(), "sco-cid-2", null, entry, subIdent, null);
+		AdobeConnectMeeting meeting1 = adobeConnectMeetingDao.createMeeting("Course A", "Primary", new Date(), new Date(), "sco-cid-1", "folder-id", null, entry, subIdent, null);
+		AdobeConnectMeeting meeting2 = adobeConnectMeetingDao.createMeeting("Course A", "Primary", new Date(), new Date(), "sco-cid-2", "folder-id", null, entry, subIdent, null);
 		dbInstance.commitAndCloseSession();
 		
 		// load meetings
@@ -134,8 +134,8 @@ public class AdobeConnectMeetingDAOTest extends OlatTestCase {
 		BusinessGroup group = businessGroupDao.createAndPersist(null, "Connected group", "Adobe connected group", -1, -1, false, false, false, false, false);
 		dbInstance.commit();
 		
-		AdobeConnectMeeting meeting1 = adobeConnectMeetingDao.createMeeting("Course A", "Primary", new Date(), new Date(), "sco-cid-1", null, null, null, group);
-		AdobeConnectMeeting meeting2 = adobeConnectMeetingDao.createMeeting("Course A", "Primary", new Date(), new Date(), "sco-cid-2", null, null, null, group);
+		AdobeConnectMeeting meeting1 = adobeConnectMeetingDao.createMeeting("Course A", "Primary", new Date(), new Date(), "sco-cid-1", "folder-id", null, null, null, group);
+		AdobeConnectMeeting meeting2 = adobeConnectMeetingDao.createMeeting("Course A", "Primary", new Date(), new Date(), "sco-cid-2", "folder-id", null, null, null, group);
 		dbInstance.commitAndCloseSession();
 		
 		// load meetings

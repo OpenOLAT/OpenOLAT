@@ -50,7 +50,7 @@ public interface AdobeConnectSPI {
 	public boolean updateScoMeeting(String scoId, String name, String description,
 			String templateId, Date startDate, Date endDate, AdobeConnectErrors error);
 	
-	public AdobeConnectSco getScoMeeting(String scoId, AdobeConnectErrors error);
+	public AdobeConnectSco getScoMeeting(AdobeConnectMeeting meeting, AdobeConnectErrors error);
 	
 	public boolean deleteScoMeeting(AdobeConnectMeeting meeting, AdobeConnectErrors error);
 	

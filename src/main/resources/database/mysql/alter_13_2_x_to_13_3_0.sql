@@ -115,6 +115,7 @@ create table o_aconnect_meeting (
    creationdate datetime not null,
    lastmodified datetime not null,
    a_sco_id varchar(128) default null,
+   a_folder_id varchar(128) default null,
    a_env_name varchar(128) default null,
    a_name varchar(128) not null,
    a_description varchar(2000) default null,
