@@ -35,16 +35,16 @@ public class JmsCertificateWork implements Serializable {
 	private Boolean passed;
 	private Long templateKey;
 	private Long certificateKey;
-	private boolean sendMail;
+	private CertificateConfig config;
 	
 	public JmsCertificateWork() {
 		//
 	}
 	
-	public JmsCertificateWork(Long certificateKey, Long templateKey, Float score, Boolean passed, boolean sendMail) {
+	public JmsCertificateWork(Long certificateKey, Long templateKey, Float score, Boolean passed, CertificateConfig config) {
 		this.score = score;
 		this.passed = passed;
-		this.sendMail = sendMail;
+		this.config = config;
 		this.templateKey = templateKey;
 		this.certificateKey = certificateKey;
 	}
@@ -65,12 +65,12 @@ public class JmsCertificateWork implements Serializable {
 		this.passed = passed;
 	}
 
-	public boolean isSendMail() {
-		return sendMail;
+	public CertificateConfig getConfig() {
+		return config;
 	}
 
-	public void setSendMail(boolean sendMail) {
-		this.sendMail = sendMail;
+	public void setConfig(CertificateConfig config) {
+		this.config = config;
 	}
 
 	public Long getTemplateKey() {

@@ -41,6 +41,7 @@ import org.olat.course.certificate.CertificateLight;
 import org.olat.course.certificate.CertificateStatus;
 import org.olat.course.certificate.CertificateTemplate;
 import org.olat.course.certificate.CertificatesManager;
+import org.olat.course.certificate.model.CertificateConfig;
 import org.olat.course.certificate.model.CertificateImpl;
 import org.olat.course.certificate.model.CertificateInfos;
 import org.olat.group.BusinessGroup;
@@ -99,7 +100,8 @@ public class CertificatesManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		CertificateInfos certificateInfos = new CertificateInfos(identity, null, null);
-		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, entry, null, false);
+		CertificateConfig config = CertificateConfig.builder().build();
+		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, entry, null, config);
 		Assert.assertNotNull(certificate);
 		Assert.assertNotNull(certificate.getKey());
 		Assert.assertNotNull(certificate.getUuid());
@@ -122,7 +124,8 @@ public class CertificatesManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		CertificateInfos certificateInfos = new CertificateInfos(identity, 5.0f, Boolean.TRUE);
-		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, entry, null, false);
+		CertificateConfig config = CertificateConfig.builder().build();
+		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, entry, null, config);
 		Assert.assertNotNull(certificate);
 		dbInstance.commitAndCloseSession();
 		
@@ -162,7 +165,8 @@ public class CertificatesManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		CertificateInfos certificateInfos = new CertificateInfos(identity, 5.0f, Boolean.TRUE);
-		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, entry, null, false);
+		CertificateConfig config = CertificateConfig.builder().build();
+		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, entry, null, config);
 		Assert.assertNotNull(certificate);
 		dbInstance.commitAndCloseSession();
 		
@@ -195,10 +199,11 @@ public class CertificatesManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		CertificateInfos certificateInfos1 = new CertificateInfos(participant1, null, null);
-		Certificate certificate1 = certificatesManager.generateCertificate(certificateInfos1, entry, null, false);
+		CertificateConfig config = CertificateConfig.builder().build();
+		Certificate certificate1 = certificatesManager.generateCertificate(certificateInfos1, entry, null, config);
 		Assert.assertNotNull(certificate1);
 		CertificateInfos certificateInfos2 = new CertificateInfos(participant2, null, null);
-		Certificate certificate2 = certificatesManager.generateCertificate(certificateInfos2, entry, null, false);
+		Certificate certificate2 = certificatesManager.generateCertificate(certificateInfos2, entry, null, config);
 		Assert.assertNotNull(certificate2);
 		dbInstance.commitAndCloseSession();
 		
@@ -237,10 +242,11 @@ public class CertificatesManagerTest extends OlatTestCase {
 		
 		//make a certificate
 		CertificateInfos certificateInfos1 = new CertificateInfos(participant1, null, null);
-		Certificate certificate1 = certificatesManager.generateCertificate(certificateInfos1, entry, null, false);
+		CertificateConfig config = CertificateConfig.builder().build();
+		Certificate certificate1 = certificatesManager.generateCertificate(certificateInfos1, entry, null, config);
 		Assert.assertNotNull(certificate1);
 		CertificateInfos certificateInfos2 = new CertificateInfos(participant2, null, null);
-		Certificate certificate2 = certificatesManager.generateCertificate(certificateInfos2, entry, null, false);
+		Certificate certificate2 = certificatesManager.generateCertificate(certificateInfos2, entry, null, config);
 		Assert.assertNotNull(certificate2);
 		dbInstance.commitAndCloseSession();
 		

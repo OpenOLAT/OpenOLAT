@@ -66,21 +66,27 @@ public class CertificatePDFFormWorker {
 	private final Identity identity;
 	private final RepositoryEntry entry;
 
-	private Date dateCertification;
-	private Date dateFirstCertification;
-	private Date dateNextRecertification;
+	private final Date dateCertification;
+	private final Date dateFirstCertification;
+	private final Date dateNextRecertification;
+	private final String custom1;
+	private final String custom2;
+	private final String custom3;
 	private final String certificateURL;
 
 	private final Locale locale;
 	private final UserManager userManager;
 	private final CertificatesManagerImpl certificatesManager;
 
-	public CertificatePDFFormWorker(Identity identity, RepositoryEntry entry,
-			Float score, Boolean passed, Date dateCertification, Date dateFirstCertification,
-			Date dateNextRecertification, String certificateURL, Locale locale, UserManager userManager,
+	public CertificatePDFFormWorker(Identity identity, RepositoryEntry entry, Float score, Boolean passed,
+			Date dateCertification, Date dateFirstCertification, Date dateNextRecertification, String custom1,
+			String custom2, String custom3, String certificateURL, Locale locale, UserManager userManager,
 			CertificatesManagerImpl certificatesManager) {
 		this.entry = entry;
 		this.score = score;
+		this.custom1 = custom1;
+		this.custom2 = custom2;
+		this.custom3 = custom3;
 		this.locale = locale;
 		this.passed = passed;
 		this.identity = identity;
@@ -244,6 +250,9 @@ public class CertificatePDFFormWorker {
 	
 	
 	private void fillMetaInfos(PDAcroForm acroForm) throws IOException {
+		fillField("custom1", custom1, acroForm);
+		fillField("custom2", custom2, acroForm);
+		fillField("custom3", custom3, acroForm);
 		fillField("certificateVerificationUrl", certificateURL, acroForm);
 	}
 

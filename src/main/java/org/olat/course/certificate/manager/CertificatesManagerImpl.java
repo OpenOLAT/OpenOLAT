@@ -97,6 +97,7 @@ import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.CertificatesModule;
 import org.olat.course.certificate.EmailStatus;
 import org.olat.course.certificate.RecertificationTimeUnit;
+import org.olat.course.certificate.model.CertificateConfig;
 import org.olat.course.certificate.model.CertificateImpl;
 import org.olat.course.certificate.model.CertificateInfos;
 import org.olat.course.certificate.model.CertificateStandalone;
@@ -587,9 +588,8 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 				case year: cal.add(Calendar.YEAR, time); break;
 			}
 			return cal.getTime();
-		} else {
-			return null;
 		}		
+		return null;
 	}
 
 	
@@ -706,10 +706,10 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 
 	@Override
 	public void generateCertificates(List<CertificateInfos> certificateInfos, RepositoryEntry entry,
-			CertificateTemplate template, boolean sendMail) {
+			CertificateTemplate template, CertificateConfig config) {
 		int count = 0;
 		for(CertificateInfos certificateInfo:certificateInfos) {
-			generateCertificate(certificateInfo, entry, template, sendMail);
+			generateCertificate(certificateInfo, entry, template, config);
 			if(++count % 10 == 0) {
 				dbInstance.commitAndCloseSession();
 			}
@@ -718,7 +718,8 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	}
 
 	@Override
-	public File previewCertificate(CertificateTemplate template, RepositoryEntry entry, Locale locale) {
+	public File previewCertificate(CertificateTemplate template, RepositoryEntry entry, Locale locale, String custom1,
+			String custom2, String custom3) {
 		Identity identity = getPreviewIdentity();
 		
 		File certificateFile;
@@ -732,20 +733,20 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		
 		if(template == null) {
 			CertificatePDFFormWorker worker = new CertificatePDFFormWorker(identity, entry, 2.0f, true,
-					new Date(), new Date(), new Date(), certUrl, locale, userManager, this);
+					new Date(), new Date(), new Date(), custom1, custom2, custom3, certUrl, locale, userManager, this);
 			certificateFile = worker.fill(null, dirFile, "Certificate.pdf");
 		} else if(template.getPath().toLowerCase().endsWith("pdf")) {
 			CertificatePDFFormWorker worker = new CertificatePDFFormWorker(identity, entry, 2.0f, true,
-					new Date(), new Date(), new Date(), certUrl, locale, userManager, this);
+					new Date(), new Date(), new Date(), custom1, custom2, custom3, certUrl, locale, userManager, this);
 			certificateFile = worker.fill(template, dirFile, "Certificate.pdf");
 		} else if (pdfModule.isEnabled()) {
 			CertificatePdfServiceWorker worker = new CertificatePdfServiceWorker(identity, entry, 2.0f, true,
-					new Date(), new Date(),new Date(), certUrl, locale,
+					new Date(), new Date(),new Date(), custom1, custom2, custom3, certUrl, locale,
 					userManager, this, pdfService);
 			certificateFile = worker.fill(template, dirFile, "Certificate.pdf");
 		} else {
-			CertificatePhantomWorker worker = new CertificatePhantomWorker(identity, entry, 2.0f, true,
-					new Date(), new Date(),new Date(), certUrl, locale, userManager, this);
+			CertificatePhantomWorker worker = new CertificatePhantomWorker(identity, entry, 2.0f, true, new Date(),
+					new Date(), new Date(), custom1, custom2, custom3, certUrl, locale, userManager, this);
 			certificateFile = worker.fill(template, dirFile, "Certificate.pdf");
 		}
 		return certificateFile;
@@ -767,14 +768,14 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 
 	@Override
 	public Certificate generateCertificate(CertificateInfos certificateInfos, RepositoryEntry entry,
-			CertificateTemplate template, boolean sendMail) {
-		Certificate certificate = persistCertificate(certificateInfos, entry, template, sendMail);
+			CertificateTemplate template, CertificateConfig config) {
+		Certificate certificate = persistCertificate(certificateInfos, entry, template, config);
 		markPublisherNews(null, entry.getOlatResource());
 		return certificate;
 	}
 
 	private Certificate persistCertificate(CertificateInfos certificateInfos, RepositoryEntry entry,
-			CertificateTemplate template, boolean sendMail) {
+			CertificateTemplate template, CertificateConfig config) {
 		OLATResource resource = entry.getOlatResource();
 		Identity identity = certificateInfos.getAssessedIdentity();
 		
@@ -800,7 +801,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		dbInstance.commit();
 		
 		//send message
-		sendJmsCertificateFile(certificate, template, certificateInfos.getScore(), certificateInfos.getPassed(), sendMail);
+		sendJmsCertificateFile(certificate, template, certificateInfos.getScore(), certificateInfos.getPassed(), config);
 
 		return certificate;
 	}
@@ -809,7 +810,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		return velocityEngine;
 	}
 	
-	private void sendJmsCertificateFile(Certificate certificate, CertificateTemplate template, Float score, Boolean passed, boolean sendMail) {
+	private void sendJmsCertificateFile(Certificate certificate, CertificateTemplate template, Float score, Boolean passed, CertificateConfig config) {
 		QueueSender sender;
 		QueueSession session = null;
 		try  {
@@ -820,16 +821,16 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 			}
 			workUnit.setPassed(passed);
 			workUnit.setScore(score);
-			workUnit.setSendMail(sendMail);
+			workUnit.setConfig(config);
 			
-			session = connection.createQueueSession(false, QueueSession.AUTO_ACKNOWLEDGE );
+			session = connection.createQueueSession(false, QueueSession.AUTO_ACKNOWLEDGE);
 			ObjectMessage message = session.createObjectMessage();
 			message.setObject(workUnit);
 
 			sender = session.createSender(getJmsQueue());
 			sender.send( message );
 		} catch (JMSException e) {
-			log.error("", e );
+			log.error("", e);
 		} finally {
 			if(session != null) {
 				try {
@@ -878,6 +879,9 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		Date dateCertification = certificate.getCreationDate();
 		Date dateFirstCertification = getDateFirstCertification(identity, resource.getKey());
 		Date dateNextRecertification = certificate.getNextRecertificationDate();
+		String custom1 = workUnit.getConfig().getCustom1();
+		String custom2 = workUnit.getConfig().getCustom2();
+		String custom3 = workUnit.getConfig().getCustom3();
 		
 		File certificateFile;
 		// File name with user name
@@ -895,8 +899,8 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		
 		if(template == null || template.getPath().toLowerCase().endsWith("pdf")) {
 			CertificatePDFFormWorker worker = new CertificatePDFFormWorker(identity, entry, score, passed,
-					dateCertification, dateFirstCertification, dateNextRecertification, certUrl, locale,
-					userManager, this);
+					dateCertification, dateFirstCertification, dateNextRecertification, custom1, custom2, custom3,
+					certUrl, locale, userManager, this);
 			certificateFile = worker.fill(template, dirFile, filename);
 			if(certificateFile == null) {
 				certificate.setStatus(CertificateStatus.error);
@@ -906,13 +910,13 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		} else {
 			if(pdfModule.isEnabled()) {
 				CertificatePdfServiceWorker worker = new CertificatePdfServiceWorker(identity, entry, score, passed,
-						dateCertification, dateFirstCertification, dateNextRecertification, certUrl, locale,
-						userManager, this, pdfService);
+						dateCertification, dateFirstCertification, dateNextRecertification, custom1, custom2, custom3,
+						certUrl, locale, userManager, this, pdfService);
 				certificateFile = worker.fill(template, dirFile, filename);
 			} else {
 				CertificatePhantomWorker worker = new CertificatePhantomWorker(identity, entry, score, passed,
-						dateCertification, dateFirstCertification, dateNextRecertification, certUrl, locale,
-						userManager, this);
+						dateCertification, dateFirstCertification, dateNextRecertification, custom1, custom2, custom3,
+						certUrl, locale, userManager, this);
 				certificateFile = worker.fill(template, dirFile, filename);
 			}
 			if(certificateFile == null) {

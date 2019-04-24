@@ -54,6 +54,7 @@ import org.olat.course.ICourse;
 import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificateTemplate;
 import org.olat.course.certificate.CertificatesManager;
+import org.olat.course.certificate.model.CertificateConfig;
 import org.olat.course.certificate.model.CertificateInfos;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
@@ -217,27 +218,33 @@ public class CertificationWebService {
 		
 		if(resource == null) {	
 			return Response.serverError().status(Response.Status.NOT_FOUND).build();
-		} else {
-			ICourse course = CourseFactory.loadCourse(resource);
-			RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		}
+		
+		ICourse course = CourseFactory.loadCourse(resource);
+		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 
-			CertificateTemplate template = null;
-			Long templateId = course.getCourseConfig().getCertificateTemplate();
-			if(templateId != null) {
-				template = certificatesManager.getTemplateById(templateId);
-			}
-			
-			CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, score, passed);
-			if(StringHelper.containsNonWhitespace(creationDate)) {
-				Date date = ObjectFactory.parseDate(creationDate);
-				certificateInfos.setCreationDate(date);
-			}
-			Certificate certificate = certificatesManager.generateCertificate(certificateInfos, entry, template, false);
-			if(certificate != null) {
-				return Response.ok().build();
-			}
-			return Response.serverError().status(Response.Status.INTERNAL_SERVER_ERROR).build();
-		}	
+		CertificateTemplate template = null;
+		Long templateId = course.getCourseConfig().getCertificateTemplate();
+		if(templateId != null) {
+			template = certificatesManager.getTemplateById(templateId);
+		}
+		
+		CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, score, passed);
+		if(StringHelper.containsNonWhitespace(creationDate)) {
+			Date date = ObjectFactory.parseDate(creationDate);
+			certificateInfos.setCreationDate(date);
+		}
+		CertificateConfig config = CertificateConfig.builder()
+				.withCustom1(course.getCourseConfig().getCertificateCustom1())
+				.withCustom2(course.getCourseConfig().getCertificateCustom2())
+				.withCustom3(course.getCourseConfig().getCertificateCustom3())
+				.withSendModuleEmail(false)
+				.build();
+		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, entry, template, config);
+		if(certificate != null) {
+			return Response.ok().build();
+		}
+		return Response.serverError().status(Response.Status.INTERNAL_SERVER_ERROR).build();
 	}
 
 	/**
