@@ -115,6 +115,7 @@ This product uses software based on the Apache Software License like
 * Hikari CP (Apache Software License, Version 2.0) [https://github.com/brettwooldridge/HikariCP]
 * flv.js (Apache Software License, Version 2.0) [https://github.com/Bilibili/flv.js]
 * hls.js (Apache Software License, Version 2.0) [https://github.com/video-dev/hls.js]
+* JJWT (Apache Software License, Version 2.0) [https://github.com/jwtk/jjwt]
 
 -----------------------------------------------------------------------
 This produce uses software based on the MIT License
