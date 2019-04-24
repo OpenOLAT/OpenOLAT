@@ -23,11 +23,13 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -35,6 +37,7 @@ import java.util.UUID;
 
 import org.apache.velocity.VelocityContext;
 import org.olat.core.commons.services.pdf.PdfService;
+import org.olat.core.gui.render.StringOutput;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
@@ -45,6 +48,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.certificate.CertificateTemplate;
+import org.olat.course.certificate.CertificatesManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -105,6 +109,14 @@ public class CertificatePdfServiceWorker {
 		File certificateFile = new File(destinationDir, filename);
 		File templateFile = certificatesManager.getTemplateFile(template);
 		File htmlCertificateFile = copyAndEnrichTemplate(templateFile);
+		File qrCodeScriptFile = new File(htmlCertificateFile.getParent(), "qrcode.min.js");
+		if(!qrCodeScriptFile.exists()) {
+			try(InputStream inQRCodeLib = CertificatesManager.class.getResourceAsStream("qrcode.min.js")) {
+				Files.copy(inQRCodeLib, qrCodeScriptFile.toPath(), StandardCopyOption.REPLACE_EXISTING);	
+			} catch(Exception e) {
+				log.error("Can not read qrcode.min.js for QR Code PDF generation", e);
+			}
+		}
 
 		try(OutputStream out = new FileOutputStream(certificateFile)) {
 			pdfService.convert(htmlCertificateFile.getParentFile(), htmlCertificateFile.getName(), out);
@@ -122,17 +134,65 @@ public class CertificatePdfServiceWorker {
 	}
 	
 	private File copyAndEnrichTemplate(File templateFile) {
-		VelocityContext context = getContext();
 		boolean result = false;
 		File htmlCertificate = new File(templateFile.getParent(), "c" + UUID.randomUUID() + ".html");
+		
 		try(Reader in = Files.newBufferedReader(templateFile.toPath(), Charset.forName("UTF-8"));
-			Writer output = new FileWriter(htmlCertificate)) {
-			result = certificatesManager.getVelocityEngine().evaluate(context, output, "mailTemplate", in);
+				StringOutput content = new StringOutput(32000);
+				Writer output = new FileWriter(htmlCertificate)) {
+			VelocityContext context = getContext();
+			result = certificatesManager.getVelocityEngine().evaluate(context, content, "mailTemplate", in);
+			content.flush();
+			
+			if(hasQRCode(content)) {
+				injectQRCodeScript(content);
+			}
+			
+			output.write(content.toString());
 			output.flush();
+			result = true;
 		} catch(Exception e) {
 			log.error("", e);
 		}
 		return result ? htmlCertificate : null;
+	}
+	
+	private boolean hasQRCode(StringOutput content) {
+		return content.contains("o_qrcode");
+	}
+	
+	private void injectQRCodeScript(StringOutput content) {
+		int injectionIndex = injectionPoint(content);
+		
+		StringBuilder qr = new StringBuilder(512);
+		qr.append("<script src='qrcode.min.js'></script>\n")
+		  .append("<script>\n")
+		  .append("/* <![CDATA[ */ \n")
+		  .append("document.addEventListener('load', new function() {\n")
+		  .append("  var qrcodes = document.querySelectorAll('.o_qrcode');\n")
+		  .append("  for (var i=0; i<qrcodes.length; i++) {\n")
+		  .append("    var qrcode = qrcodes[i];\n")
+		  .append("    var val = qrcode.textContent;\n")
+		  .append("    while (qrcode.firstChild) {\n")
+		  .append("      qrcode.removeChild(qrcode.firstChild);\n")
+		  .append("    }\n")
+		  .append("    new QRCode(qrcode, val);\n")
+		  .append("  }\n")
+		  .append("});\n")
+		  .append("/* ]]> */\n")
+		  .append("</script>");
+		content.insert(injectionIndex, qr.toString());	
+	}
+	
+	private int injectionPoint(StringOutput content) {
+		String[] anchors = new String[] { "</body", "</ body", "</BODY", "</ BODY", "</html", "</HTML" };
+		for(String anchor:anchors) {
+			int bodyIndex = content.indexOf(anchor);
+			if(bodyIndex > 0) {
+				return bodyIndex;
+			}
+		}
+		return content.length();// last hope
 	}
 	
 	private VelocityContext getContext() {

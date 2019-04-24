@@ -190,6 +190,11 @@ public class StringOutput extends Writer {
 		return this;
 	}
 	
+	public StringOutput insert(int offset, String str) {
+		sb.insert(offset, str);
+		return this;
+	}
+	
 	/**
 	 * Generate the following html code: onclick="call" onkeyup="if(event.which == 13 || event.keyCode){ call }"
 	 * @param call The JavaScript method to envelop
@@ -223,12 +228,20 @@ public class StringOutput extends Writer {
 		return sb.indexOf(str) >= 0;
 	}
 	
+	public int indexOf(String str) {
+		return sb.indexOf(str);
+	}
+	
+	public StringBuilder getBuffer() {
+		return sb;
+	}
+	
 	public Reader getReader() {
 		return new StringOutputReader();
 	}
 	
 	@Override
-	public void flush() throws IOException {
+	public void flush() {
 		//
 	}
 
@@ -237,9 +250,6 @@ public class StringOutput extends Writer {
 		//
 	}
 
-	/**
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public String toString() {
 		return sb.toString();
@@ -247,109 +257,118 @@ public class StringOutput extends Writer {
 	
 	private class StringOutputReader extends Reader {
 		
-    private int length;
-    private int next = 0;
-    private int mark = 0;
-    /**
-     * Creates a new string reader.
-     *
-     * @param s  String providing the character stream.
-     */
-    public StringOutputReader() {
-    	this.length = sb.length();
-    }
+		private int length;
+		private int next = 0;
+		private int mark = 0;
+		
+		/**
+		 * Creates a new string reader.
+		 *
+		 * @param s  String providing the character stream.
+		 */
+		public StringOutputReader() {
+			this.length = sb.length();
+		}
 
-    /**
-     * Reads a single character.
-     *
-     * @return     The character read, or -1 if the end of the stream has been
-     *             reached
-     *
-     * @exception  IOException  If an I/O error occurs
-     */
-    public int read() throws IOException {
-    	synchronized (lock) {
-		    if (next >= length)
-		    	return -1;
-		    
-		    char[] dst = new char[1];
-		    sb.getChars(next++, next, dst, 0);
-		    return dst[0];
-    	}
-    }
+		/**
+		 * Reads a single character.
+		 *
+		 * @return     The character read, or -1 if the end of the stream has been
+		 *             reached
+		 *
+		 * @exception  IOException  If an I/O error occurs
+		 */
+		@Override
+		public int read() throws IOException {
+			synchronized (lock) {
+			    if (next >= length)
+			    	return -1;
+			    
+			    char[] dst = new char[1];
+			    sb.getChars(next++, next, dst, 0);
+			    return dst[0];
+			}
+		}
 
-    public int read(char cbuf[], int off, int len) throws IOException {
-    	synchronized (lock) {
-        if ((off < 0) || (off > cbuf.length) || (len < 0) ||
-            ((off + len) > cbuf.length) || ((off + len) < 0)) {
-        	throw new IndexOutOfBoundsException();
-        } else if (len == 0) {
-        	return 0;
-        }
-		    if (next >= length) return -1;
-		    
-		    int n = Math.min(length - next, len);
-		    sb.getChars(next, next + n, cbuf, off);
-		    next += n;
-		    return n;
-    	}
-    }
+		@Override
+		public int read(char[] cbuf, int off, int len) throws IOException {
+			synchronized (lock) {
+		    if ((off < 0) || (off > cbuf.length) || (len < 0) ||
+		        ((off + len) > cbuf.length) || ((off + len) < 0)) {
+		    	throw new IndexOutOfBoundsException();
+		    } else if (len == 0) {
+		    	return 0;
+		    }
+			    if (next >= length) return -1;
+			    
+			    int n = Math.min(length - next, len);
+			    sb.getChars(next, next + n, cbuf, off);
+			    next += n;
+			    return n;
+			}
+		}
 
-    /**
-     * Skips the specified number of characters in the stream. Returns
-     * the number of characters that were skipped.
-     *
-     * <p>The <code>ns</code> parameter may be negative, even though the
-     * <code>skip</code> method of the {@link Reader} superclass throws
-     * an exception in this case. Negative values of <code>ns</code> cause the
-     * stream to skip backwards. Negative return values indicate a skip
-     * backwards. It is not possible to skip backwards past the beginning of
-     * the string.
-     *
-     * <p>If the entire string has been read or skipped, then this method has
-     * no effect and always returns 0.
-     *
-     * @exception  IOException  If an I/O error occurs
-     */
-    public long skip(long ns) throws IOException {
-    	synchronized (lock) {
-        if (next >= length)
-            return 0;
-        // Bound skip by beginning and end of the source
-        long n = Math.min(length - next, ns);
-        n = Math.max(-next, n);
-        next += n;
-        return n;
-       }
-    }
+		/**
+		 * Skips the specified number of characters in the stream. Returns
+		 * the number of characters that were skipped.
+		 *
+		 * <p>The <code>ns</code> parameter may be negative, even though the
+		 * <code>skip</code> method of the {@link Reader} superclass throws
+		 * an exception in this case. Negative values of <code>ns</code> cause the
+		 * stream to skip backwards. Negative return values indicate a skip
+		 * backwards. It is not possible to skip backwards past the beginning of
+		 * the string.
+		 *
+		 * <p>If the entire string has been read or skipped, then this method has
+		 * no effect and always returns 0.
+		 *
+		 * @exception  IOException  If an I/O error occurs
+		 */
+		@Override
+		public long skip(long ns) throws IOException {
+			synchronized (lock) {
+				if (next >= length)
+					return 0;
+				// Bound skip by beginning and end of the source
+				long n = Math.min(length - next, ns);
+				n = Math.max(-next, n);
+				next += n;
+				return n;
+			}
+		}
 
-    public boolean ready() throws IOException {
-    	synchronized (lock) {
-        return true;
-      }
-    }
+		@Override
+		public boolean ready() throws IOException {
+			synchronized (lock) {
+				return true;
+			}
+		}
 
-    public boolean markSupported() {
-    	return true;
-    }
+		@Override
+		public boolean markSupported() {
+			return true;
+		}
 
-    public void mark(int readAheadLimit) throws IOException {
-    	if (readAheadLimit < 0) {
-    		throw new IllegalArgumentException("Read-ahead limit < 0");
-    	}
-    	synchronized (lock) {
-    		mark = next;
-    	}
-    }
+		@Override
+		public void mark(int readAheadLimit) throws IOException {
+			if (readAheadLimit < 0) {
+				throw new IllegalArgumentException("Read-ahead limit < 0");
+			}
+			synchronized (lock) {
+				mark = next;
+			}
+		}
 
-    public void reset() throws IOException {
-    	synchronized (lock) {
-    		next = mark;
-    	}
-    }
+		@Override
+		public void reset() throws IOException {
+			synchronized (lock) {
+				next = mark;
+			}
+		}
 
-    public void close() {
-    	//
-    }
+    	@Override
+	    public void close() throws IOException {
+	    	//
+	    }
 	}
 }
