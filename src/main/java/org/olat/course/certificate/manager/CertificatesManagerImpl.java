@@ -259,6 +259,10 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 
 	@Override
 	public boolean isHTMLTemplateAllowed() {
+		return pdfModule.isEnabled() || isPhantomAvailable();
+	}
+
+	private boolean isPhantomAvailable() {
 		if(phantomAvailable == null) {
 			phantomAvailable = CertificatePhantomWorker.checkPhantomJSAvailabilty();
 		}
@@ -988,6 +992,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 				.getResultList();
 	}
 	
+	@Override
 	public CertificateTemplate getTemplateById(Long key) {
 		String sb = "select template from certificatetemplate template where template.key=:templateKey";
 		List<CertificateTemplate> templates = dbInstance.getCurrentEntityManager()
@@ -1126,6 +1131,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		return templateItem instanceof VFSLeaf ? (VFSLeaf)templateItem : null;
 	}
 	
+	@Override
 	public InputStream getDefaultTemplate() {
 		return CertificatesManager.class.getResourceAsStream("template.pdf");
 	}
