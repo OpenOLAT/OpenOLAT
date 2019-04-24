@@ -1771,7 +1771,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				if(glossary != null) {
 					ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
 					CourseConfig cc = course.getCourseEnvironment().getCourseConfig();
-					glossary.setVisible(cc.hasGlossary());
+					glossary.setVisible(cc.hasGlossary() && cc.isGlossaryEnabled());
 					toolbarPanel.setDirty(true);
 				}
 				break;
