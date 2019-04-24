@@ -48,6 +48,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.EntryChangedEvent.Change;
@@ -94,6 +95,8 @@ public class RepositoryEntrySettingsController extends BasicController implement
 	protected RepositoryEntry entry;
 	private List<OrganisationRef> organisations;
 	
+	@Autowired
+	private RepositoryModule repositoryModule;
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
@@ -178,10 +181,12 @@ public class RepositoryEntrySettingsController extends BasicController implement
 		accessLink = LinkFactory.createLink("details.access", getTranslator(), this);
 		accessLink.setElementCssClass("o_sel_access");
 		buttonsGroup.addButton(accessLink, false);
-		
-		catalogLink = LinkFactory.createLink("details.catalog", getTranslator(), this);
-		catalogLink.setElementCssClass("o_sel_catalog");
-		buttonsGroup.addButton(catalogLink, false);
+	
+		if (repositoryModule.isCatalogEnabled()) {
+			catalogLink = LinkFactory.createLink("details.catalog", getTranslator(), this);
+			catalogLink.setElementCssClass("o_sel_catalog");
+			buttonsGroup.addButton(catalogLink, false);
+		}
 	}
 	
 	protected void initOptions() {
