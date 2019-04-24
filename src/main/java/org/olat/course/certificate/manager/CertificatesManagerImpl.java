@@ -723,10 +723,13 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		
 		File certificateFile;
 		File dirFile = new File(WebappHelper.getTmpDir(), UUID.randomUUID().toString());
+		dirFile.mkdirs();
+		
 		StringBuilder sb = new StringBuilder();
 		sb.append(Settings.getServerContextPathURI()).append("/certificate/")
 		  .append(UUID.randomUUID()).append("/preview.pdf");
-		 String certUrl = sb.toString();
+		String certUrl = sb.toString();
+		
 		if(template == null) {
 			CertificatePDFFormWorker worker = new CertificatePDFFormWorker(identity, entry, 2.0f, true,
 					new Date(), new Date(), new Date(), certUrl, locale, userManager, this);
@@ -735,9 +738,14 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 			CertificatePDFFormWorker worker = new CertificatePDFFormWorker(identity, entry, 2.0f, true,
 					new Date(), new Date(), new Date(), certUrl, locale, userManager, this);
 			certificateFile = worker.fill(template, dirFile, "Certificate.pdf");
+		} else if (pdfModule.isEnabled()) {
+			CertificatePdfServiceWorker worker = new CertificatePdfServiceWorker(identity, entry, 2.0f, true,
+					new Date(), new Date(),new Date(), certUrl, locale,
+					userManager, this, pdfService);
+			certificateFile = worker.fill(template, dirFile, "Certificate.pdf");
 		} else {
 			CertificatePhantomWorker worker = new CertificatePhantomWorker(identity, entry, 2.0f, true,
-					new Date(), new Date(),new Date(),  certUrl, locale, userManager, this);
+					new Date(), new Date(),new Date(), certUrl, locale, userManager, this);
 			certificateFile = worker.fill(template, dirFile, "Certificate.pdf");
 		}
 		return certificateFile;
