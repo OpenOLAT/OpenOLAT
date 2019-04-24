@@ -54,6 +54,8 @@ import org.olat.admin.user.imp.TransientIdentity;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.SearchIdentityParams;
 import org.olat.core.commons.modules.bc.FolderModule;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.notifications.NotificationsManager;
@@ -64,6 +66,7 @@ import org.olat.core.commons.services.pdf.PdfService;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.OLog;
@@ -931,7 +934,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 			//not the first certification, reset the last of the others certificates
 			removeLastFlag(identity, resource.getKey());
 		}
-		MailerResult result = sendCertificate(identity, entry, certificateFile);
+		MailerResult result = sendCertificate(identity, entry, certificateFile, workUnit.getConfig());
 		if(result.isSuccessful()) {
 			certificate.setEmailStatus(EmailStatus.ok);
 		} else {
@@ -944,17 +947,25 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		coordinatorManager.getCoordinator().getEventBus().fireEventToListenersOf(event, ORES_CERTIFICATE_EVENT);
 	}
 	
-	private MailerResult sendCertificate(Identity to, RepositoryEntry entry, File certificateFile) {
+	private MailerResult sendCertificate(Identity to, RepositoryEntry entry, File certificateFile, CertificateConfig config) {
 		MailBundle bundle = new MailBundle();
 		bundle.setToId(to);
 		bundle.setFrom(WebappHelper.getMailConfig("mailReplyTo"));
 		
 		List<String> bccs = certificatesModule.getCertificatesBccEmails();
-		if(bccs.size() > 0) {
+		List<ContactList> contactLists = new ArrayList<>(3);
+		if(config.isSendEmailBcc() && bccs.size() > 0) {
 			ContactList bcc = new ContactList();
 			bccs.forEach(email -> { bcc.add(email); });
-			bundle.setContactList(bcc);
+			contactLists.add(bcc);
 		}
+		if (certificatesModule.isCertificateLinemanager() && config.isSendEmailLinemanager()) {
+			ContactList linemanagerContactList = new ContactList();
+			List<Identity> linemanagers = getLinemanagers(to);
+			linemanagers.forEach(lm -> { linemanagerContactList.add(lm); });
+			contactLists.add(linemanagerContactList);
+		}
+		bundle.setContactLists(contactLists);
 
 		String[] args = new String[] {
 			entry.getDisplayname(),
@@ -970,6 +981,16 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		return mailManager.sendMessage(bundle);
 	}
 	
+	private List<Identity> getLinemanagers(Identity identity) {
+		Roles roles = securityManager.getRoles(identity);
+		List<OrganisationRef> identityOrgs = roles.getOrganisationsWithRole(OrganisationRoles.user);
+		SearchIdentityParams identityParams = new SearchIdentityParams();
+		identityParams.setOrganisations(identityOrgs);
+		identityParams.setRoles(new OrganisationRoles[]{ OrganisationRoles.linemanager });
+		identityParams.setStatus(Identity.STATUS_VISIBLE_LIMIT);
+		return securityManager.getIdentitiesByPowerSearch(identityParams, 0, -1);
+	}
+
 	private Date getDateFirstCertification(Identity identity, Long resourceKey) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select cer.creationDate from certificate cer")

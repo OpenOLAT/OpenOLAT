@@ -238,7 +238,8 @@ public class CertificationWebService {
 				.withCustom1(course.getCourseConfig().getCertificateCustom1())
 				.withCustom2(course.getCourseConfig().getCertificateCustom2())
 				.withCustom3(course.getCourseConfig().getCertificateCustom3())
-				.withSendModuleEmail(false)
+				.withSendEmailBcc(false)
+				.withSendEmailLinemanager(false)
 				.build();
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, entry, template, config);
 		if(certificate != null) {

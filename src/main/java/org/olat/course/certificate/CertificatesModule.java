@@ -39,9 +39,12 @@ import org.springframework.stereotype.Service;
 public class CertificatesModule extends AbstractSpringModule {
 	
 	private static final String CERTIFICATE_BCC = "certificate.bcc";
+	private static final String CERTIFICATE_LINEMANAGER = "certificate.linemanager";
 	
 	@Value("${certificate.bcc}")
 	private String certificateBcc;
+	@Value("${certificate.linemanager:false}")
+	private boolean certificateLinemanager;
 
 	@Autowired
 	public CertificatesModule(CoordinatorManager coordinatorManager) {
@@ -53,6 +56,11 @@ public class CertificatesModule extends AbstractSpringModule {
 		String bccObj = getStringPropertyValue(CERTIFICATE_BCC, true);
 		if(StringHelper.containsNonWhitespace(bccObj)) {
 			certificateBcc = bccObj;
+		}
+		
+		String linemangerObj = getStringPropertyValue(CERTIFICATE_LINEMANAGER, true);
+		if(StringHelper.containsNonWhitespace(linemangerObj)) {
+			certificateLinemanager = "true".equals(linemangerObj);
 		}
 	}
 
@@ -84,4 +92,14 @@ public class CertificatesModule extends AbstractSpringModule {
 		}
 		return emailList;
 	}
+
+	public boolean isCertificateLinemanager() {
+		return certificateLinemanager;
+	}
+
+	public void setCertificateLinemanager(boolean certificateLinemanager) {
+		this.certificateLinemanager = certificateLinemanager;
+		setStringProperty(CERTIFICATE_LINEMANAGER, Boolean.toString(certificateLinemanager), true);
+	}
+	
 }

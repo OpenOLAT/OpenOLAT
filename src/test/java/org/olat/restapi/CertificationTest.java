@@ -82,7 +82,7 @@ public class CertificationTest extends OlatJerseyTestCase {
 		dbInstance.commitAndCloseSession();
 
 		CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, 2.0f, true);
-		CertificateConfig config = CertificateConfig.builder().withSendModuleEmail(false).build();
+		CertificateConfig config = CertificateConfig.builder().withSendEmailBcc(false).build();
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, entry, null, config);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(certificate);

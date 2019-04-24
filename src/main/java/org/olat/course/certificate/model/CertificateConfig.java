@@ -31,16 +31,18 @@ public class CertificateConfig implements Serializable {
 	
 	private static final long serialVersionUID = 8837808595823549502L;
 	
-	private String custom1;
-	private String custom2;
-	private String custom3;
-	private boolean sendModuleEmail;
+	private final String custom1;
+	private final String custom2;
+	private final String custom3;
+	private final boolean sendEmailBcc;
+	private final boolean sendEmailLinemanager;
 
 	private CertificateConfig(Builder builder) {
 		this.custom1 = builder.custom1;
 		this.custom2 = builder.custom2;
 		this.custom3 = builder.custom3;
-		this.sendModuleEmail = builder.sendModuleEmail;
+		this.sendEmailBcc = builder.sendEmailBcc;
+		this.sendEmailLinemanager = builder.sendEmailLinemanager;
 	}
 	
 	public String getCustom1() {
@@ -55,8 +57,12 @@ public class CertificateConfig implements Serializable {
 		return custom3;
 	}
 
-	public boolean isSendModuleEmail() {
-		return sendModuleEmail;
+	public boolean isSendEmailBcc() {
+		return sendEmailBcc;
+	}
+
+	public boolean isSendEmailLinemanager() {
+		return sendEmailLinemanager;
 	}
 
 	public static Builder builder() {
@@ -67,7 +73,8 @@ public class CertificateConfig implements Serializable {
 		private String custom1;
 		private String custom2;
 		private String custom3;
-		private boolean sendModuleEmail;
+		private boolean sendEmailBcc;
+		private boolean sendEmailLinemanager;
 
 		private Builder() {
 		}
@@ -87,8 +94,13 @@ public class CertificateConfig implements Serializable {
 			return this;
 		}
 
-		public Builder withSendModuleEmail(boolean sendModuleEmail) {
-			this.sendModuleEmail = sendModuleEmail;
+		public Builder withSendEmailBcc(boolean sendEmailBcc) {
+			this.sendEmailBcc = sendEmailBcc;
+			return this;
+		}
+
+		public Builder withSendEmailLinemanager(boolean sendEmailLinemanager) {
+			this.sendEmailLinemanager = sendEmailLinemanager;
 			return this;
 		}
 

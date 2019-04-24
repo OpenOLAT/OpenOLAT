@@ -45,10 +45,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class CertificatesSettingsAdminController extends FormBasicController {
 	
 	private static final String[] onKeys = new String[]{ "on" };
-	private static final String[] onValues = new String[]{ "" };
+	private static final String[] onValues = new String[]{ "on" };
 
 	private TextElement bccEl;
 	private MultipleSelectionElement enableBccEl;
+	private MultipleSelectionElement enableLinemanagerEl;
 	
 	@Autowired
 	private CertificatesModule certificatesModule;
@@ -70,10 +71,10 @@ public class CertificatesSettingsAdminController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("admin.certificates.options.title");
-		setFormDescription("admin.certificates.options.descr", null);
 
 		String bcc = certificatesModule.getCertificateBcc();
 		enableBccEl = uifactory.addCheckboxesHorizontal("enableBcc", "admin.certificates.bcc.enable", formLayout, onKeys, onValues);
+		enableBccEl.setHelpText(translate("admin.certificates.bcc.enable.help"));
 		enableBccEl.addActionListener(FormEvent.ONCHANGE);
 		if(StringHelper.containsNonWhitespace(bcc)) {
 			enableBccEl.select(onKeys[0], true);
@@ -81,6 +82,9 @@ public class CertificatesSettingsAdminController extends FormBasicController {
 		
 		bccEl = uifactory.addTextElement("bcc", "admin.certificates.bcc", 1024, bcc, formLayout);
 		bccEl.setVisible(enableBccEl.isAtLeastSelected(1));
+		
+		enableLinemanagerEl = uifactory.addCheckboxesHorizontal("admin.certificates.linemanager", formLayout, onKeys, onValues);
+		enableLinemanagerEl.select(onKeys[0], certificatesModule.isCertificateLinemanager());
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
@@ -126,5 +130,8 @@ public class CertificatesSettingsAdminController extends FormBasicController {
 		} else {
 			certificatesModule.setCertificateBcc("");
 		}
+		
+		boolean linemanager = enableLinemanagerEl.isAtLeastSelected(1);
+		certificatesModule.setCertificateLinemanager(linemanager);
 	}
 }
