@@ -82,6 +82,14 @@ public interface CurriculumService {
 	public List<Curriculum> getMyCurriculums(Identity identity);
 	
 	/**
+	 * The list of curriculums the identity participates.
+	 * 
+	 * @param identity The identity
+	 * @return A list of curriculums
+	 */
+	public List<CurriculumRef> getMyActiveCurriculumRefs(Identity identity);
+	
+	/**
 	 * Get the list of members of the specified curriculum with their roles.
 	 * 
 	 * @param curriculum The curriculum

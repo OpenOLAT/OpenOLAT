@@ -19,6 +19,7 @@
  */
 package org.olat.modules.curriculum.ui;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,6 +27,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
@@ -41,8 +43,10 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.ui.CurriculumManagerDataModel.CurriculumCols;
+import org.olat.modules.curriculum.ui.component.CurriculumActiveCellRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -81,6 +85,7 @@ public class CurriculumListController extends FormBasicController implements Act
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CurriculumCols.key));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumCols.active, new CurriculumActiveCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumCols.displayName, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumCols.identifier, "select"));
 		DefaultFlexiColumnModel toolsCol = new DefaultFlexiColumnModel(CurriculumCols.tools);
@@ -92,15 +97,29 @@ public class CurriculumListController extends FormBasicController implements Act
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(true);
 		tableEl.setEmtpyTableMessageKey("table.curriculum.empty");
-		tableEl.setAndLoadPersistedPreferences(ureq, "cur-curriculum-list");
+		tableEl.setFilters("activity", getFilters(), false);
+		tableEl.setSelectedFilterKey("active");
+		tableEl.setAndLoadPersistedPreferences(ureq, "cur-curriculum-list-v2");
+	}
+	
+	private List<FlexiTableFilter> getFilters() {
+		List<FlexiTableFilter> filters = new ArrayList<>(5);
+		filters.add(new FlexiTableFilter(translate("filter.active"), "active"));
+		filters.add(new FlexiTableFilter(translate("filter.inactive"), "inactive"));
+		filters.add(FlexiTableFilter.SPACER);
+		filters.add(new FlexiTableFilter(translate("show.all"), "all", true));
+		return filters;
 	}
 	
 	private void loadModel() {
 		List<Curriculum> curriculums = curriculumService.getMyCurriculums(getIdentity());
+		List<CurriculumRef> activeRefs = curriculumService.getMyActiveCurriculumRefs(getIdentity());
+		List<Long> activeKeys = activeRefs.stream().map(CurriculumRef::getKey).collect(Collectors.toList());
 		List<CurriculumRow> rows = curriculums.stream()
-				.map(CurriculumRow::new).collect(Collectors.toList());
+				.map(c -> new CurriculumRow(c, activeKeys.contains(c.getKey())))
+				.collect(Collectors.toList());
 		tableModel.setObjects(rows);
-		tableEl.reset(false, false, true);
+		tableEl.reset(true, true, true);
 	}
 
 	@Override

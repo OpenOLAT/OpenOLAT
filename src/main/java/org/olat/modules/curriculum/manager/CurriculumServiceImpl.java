@@ -28,6 +28,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.basesecurity.GroupMembershipInheritance;
 import org.olat.basesecurity.GroupRoles;
@@ -68,6 +69,7 @@ import org.olat.modules.curriculum.model.CurriculumElementSearchParams;
 import org.olat.modules.curriculum.model.CurriculumElementWebDAVInfos;
 import org.olat.modules.curriculum.model.CurriculumInfos;
 import org.olat.modules.curriculum.model.CurriculumMember;
+import org.olat.modules.curriculum.model.CurriculumRefImpl;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
 import org.olat.modules.curriculum.model.SearchMemberParameters;
 import org.olat.modules.taxonomy.TaxonomyLevel;
@@ -254,6 +256,12 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	@Override
 	public List<Curriculum> getMyCurriculums(Identity identity) {
 		return curriculumDao.getMyCurriculums(identity);
+	}
+
+	@Override
+	public List<CurriculumRef> getMyActiveCurriculumRefs(Identity identity) {
+		List<Long> curriculumKeys = curriculumDao.getMyActiveCurriculumKeys(identity);
+		return curriculumKeys.stream().map(CurriculumRefImpl::new).collect(Collectors.toList());
 	}
 
 	@Override
