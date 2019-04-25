@@ -25,6 +25,9 @@
 */ 
 package org.olat.core.gui.components.form.flexible.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -40,6 +43,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLoggerInstaller;
+import org.olat.core.util.ValidationStatus;
 
 /**
  * Description:<br>
@@ -615,6 +619,13 @@ public abstract class FormBasicController extends BasicController {
 	 */
 	protected boolean validateFormLogic(UserRequest ureq) {
 		return true;
+	}
+	
+	protected boolean validateFormItem(FormItem item) {
+		if(!item.isEnabled() || !item.isVisible()) return true;
+		List<ValidationStatus> validationResults = new ArrayList<>(2);
+		item.validate(validationResults);
+		return validationResults.isEmpty();
 	}
 
 	/**
