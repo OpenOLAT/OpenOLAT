@@ -800,7 +800,7 @@ public class FileUtils {
 	 * @return true if filename valid
 	 */
 	public static boolean validateFilename(String filename) {
-		if(filename==null) {
+		if(!StringHelper.containsNonWhitespace(filename)) {
 			return false;
 		}
 
