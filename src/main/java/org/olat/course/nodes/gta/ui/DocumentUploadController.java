@@ -93,7 +93,7 @@ public class DocumentUploadController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 
 		fileEl.clearError();
 		if(fileEl.getInitialFile() == null && fileEl.getUploadFile() == null) {
@@ -102,9 +102,12 @@ public class DocumentUploadController extends FormBasicController {
 		} else if (fileEl.getUploadFile() != null && !FileUtils.validateFilename(fileEl.getUploadFileName())) {
 			fileEl.setErrorKey("error.file.invalid", null);
 			allOk = false;
+		} else if (fileEl.getUploadFile() != null && fileEl.getUploadFile().length() == 0) {
+			fileEl.setErrorKey("error.file.empty", null);
+			allOk = false;
 		}
 
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override
