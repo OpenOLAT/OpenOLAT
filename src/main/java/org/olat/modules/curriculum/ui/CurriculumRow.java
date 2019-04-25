@@ -35,11 +35,13 @@ public class CurriculumRow implements CurriculumRef {
 	private final Curriculum curriculum;
 	private final long numOfElements;
 	private final boolean canManage;
+	private final boolean active;
 	
 	private final FormLink toolsLink;
 	
-	public CurriculumRow(Curriculum curriculum) {
+	public CurriculumRow(Curriculum curriculum, boolean active) {
 		this.curriculum = curriculum;
+		this.active = active;
 		numOfElements = -1l;
 		toolsLink = null;
 		canManage = false;
@@ -50,6 +52,7 @@ public class CurriculumRow implements CurriculumRef {
 		numOfElements = infos.getNumOfElements();
 		toolsLink = null;
 		canManage = false;
+		active = false;
 	}
 	
 	public CurriculumRow(CurriculumInfos infos, FormLink toolsLink, boolean canManage) {
@@ -57,6 +60,7 @@ public class CurriculumRow implements CurriculumRef {
 		numOfElements = infos.getNumOfElements();
 		this.toolsLink = toolsLink;
 		this.canManage = canManage;
+		active = false;
 	}
 	
 	@Override
@@ -86,6 +90,15 @@ public class CurriculumRow implements CurriculumRef {
 	
 	public boolean canManage() {
 		return canManage;
+	}
+	
+	/**
+	 * The value must be explicitly loaded.
+	 * 
+	 * @return True if active
+	 */
+	public boolean isActive() {
+		return active;
 	}
 
 	@Override

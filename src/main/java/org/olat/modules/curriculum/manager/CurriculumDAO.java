@@ -45,6 +45,7 @@ import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.model.CurriculumImpl;
 import org.olat.modules.curriculum.model.CurriculumInfos;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -118,6 +119,23 @@ public class CurriculumDAO {
 	
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Curriculum.class)
+				.setParameter("memberKey", identity.getKey())
+				.getResultList();
+	}
+	
+	public List<Long> getMyActiveCurriculumKeys(IdentityRef identity) {
+		QueryBuilder sb = new QueryBuilder(256);
+		sb.append("select curElement.curriculum.key from curriculumelement curElement")
+		  .append(" inner join curElement.group as bGroup")
+		  .append(" inner join bGroup.members membership")
+		  .append(" where membership.identity.key=:memberKey and membership.role ").in(CurriculumRoles.participant, CurriculumRoles.coach, CurriculumRoles.owner)
+		  .append(" and curElement.status='active' and exists (select v from repoentrytogroup as rel")
+		  .append("  inner join rel.entry as v")
+		  .append("  where curElement.group.key=rel.group.key and v.status ").in(RepositoryEntryStatusEnum.published)
+		  .append(" )");
+	
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
 				.setParameter("memberKey", identity.getKey())
 				.getResultList();
 	}

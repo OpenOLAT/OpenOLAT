@@ -19,11 +19,15 @@
  */
 package org.olat.modules.curriculum.ui;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FilterableFlexiTableModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
@@ -35,9 +39,10 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
  *
  */
 public class CurriculumManagerDataModel extends DefaultFlexiTableDataModel<CurriculumRow>
-implements SortableFlexiTableDataModel<CurriculumRow> {
+implements SortableFlexiTableDataModel<CurriculumRow>, FilterableFlexiTableModel {
 	
 	private final Locale locale;
+	private List<CurriculumRow> backups;
 	
 	public CurriculumManagerDataModel(FlexiTableColumnModel columnsModel, Locale locale) {
 		super(columnsModel);
@@ -51,7 +56,29 @@ implements SortableFlexiTableDataModel<CurriculumRow> {
 			super.setObjects(rows);
 		}
 	}
-	
+
+	@Override
+	public void filter(String searchString, List<FlexiTableFilter> filters) {
+		FlexiTableFilter filter = filters == null || filters.isEmpty() || filters.get(0) == null ? null : filters.get(0);
+		if(filter != null && !filter.isShowAll()) {
+			List<CurriculumRow> filteredRows;
+			if("active".equals(filter.getFilter())) {
+				filteredRows = backups.stream()
+						.filter(CurriculumRow::isActive)
+						.collect(Collectors.toList());
+			} else if("inactive".equals(filter.getFilter())) {
+				filteredRows = backups.stream()
+						.filter(node -> !node.isActive())
+						.collect(Collectors.toList());
+			} else {
+				filteredRows = new ArrayList<>(backups);
+			}
+			super.setObjects(filteredRows);
+		} else {
+			super.setObjects(backups);
+		}
+	}
+
 	@Override
 	public Object getValueAt(int row, int col) {
 		CurriculumRow curriculum = getObject(row);
@@ -62,6 +89,7 @@ implements SortableFlexiTableDataModel<CurriculumRow> {
 	public Object getValueAt(CurriculumRow row, int col) {
 		switch(CurriculumCols.values()[col]) {
 			case key: return row.getKey();
+			case active: return row.isActive();
 			case displayName: return row.getDisplayName();
 			case identifier: return row.getIdentifier();
 			case externalId: return row.getExternalId();
@@ -71,6 +99,12 @@ implements SortableFlexiTableDataModel<CurriculumRow> {
 			default: return "ERROR";
 		}
 	}
+	
+	@Override
+	public void setObjects(List<CurriculumRow> objects) {
+		super.setObjects(objects);
+		backups = objects;
+	}
 
 	@Override
 	public CurriculumManagerDataModel createCopyWithEmptyList() {
@@ -79,6 +113,7 @@ implements SortableFlexiTableDataModel<CurriculumRow> {
 	
 	public enum CurriculumCols implements FlexiSortableColumnDef {
 		key("table.header.key"),
+		active("table.header.active"),
 		displayName("table.header.displayName"),
 		identifier("table.header.identifier"),
 		externalId("table.header.external.id"),
