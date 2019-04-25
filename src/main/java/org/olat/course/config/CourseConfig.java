@@ -477,7 +477,11 @@ public class CourseConfig implements Serializable, Cloneable {
 	}
 	
 	public void setCertificateCustom1(String custom1) {
-		configuration.put(CERTIFICATE_CUSTOM1, custom1);
+		if(custom1 != null) {
+			configuration.put(CERTIFICATE_CUSTOM1, custom1);
+		} else {
+			configuration.remove(CERTIFICATE_CUSTOM1);
+		}
 	}
 	
 	public String getCertificateCustom2() {
@@ -485,7 +489,11 @@ public class CourseConfig implements Serializable, Cloneable {
 	}
 	
 	public void setCertificateCustom2(String custom2) {
-		configuration.put(CERTIFICATE_CUSTOM2, custom2);
+		if(custom2 != null) {
+			configuration.put(CERTIFICATE_CUSTOM2, custom2);
+		} else {
+			configuration.remove(CERTIFICATE_CUSTOM2);
+		}
 	}
 	
 	public String getCertificateCustom3() {
@@ -493,7 +501,11 @@ public class CourseConfig implements Serializable, Cloneable {
 	}
 	
 	public void setCertificateCustom3(String custom3) {
-		configuration.put(CERTIFICATE_CUSTOM3, custom3);
+		if(custom3 != null) {
+			configuration.put(CERTIFICATE_CUSTOM3, custom3);
+		} else {
+			configuration.remove(CERTIFICATE_CUSTOM3);
+		}
 	}
 	
 	/**
