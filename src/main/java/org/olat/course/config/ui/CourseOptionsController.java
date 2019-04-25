@@ -210,7 +210,8 @@ public class CourseOptionsController extends FormBasicController {
 
 		glossaryNameEl = uifactory.addStaticTextElement("glossaryName", "glossary.isconfigured",
 				translate("glossary.no.glossary"), glossaryCont);
-
+		glossaryNameEl.setExampleKey("chkbx.glossary.inverse.explain", null);
+		
 		boolean managedGlossary = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.glossary);
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		glossaryCont.add(buttonsCont);
