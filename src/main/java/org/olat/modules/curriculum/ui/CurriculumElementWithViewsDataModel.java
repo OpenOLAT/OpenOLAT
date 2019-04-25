@@ -126,7 +126,7 @@ public class CurriculumElementWithViewsDataModel extends DefaultFlexiTreeTableDa
 		displayName("table.header.curriculum.element.displayName"),
 		identifier("table.header.curriculum.element.identifier"),
 		mark("table.header.mark"),
-		select("table.header.details"),
+		select("table.header.displayName"),
 		details("table.header.details"),
 		start("table.header.start"),
 		calendars("table.header.calendars");
