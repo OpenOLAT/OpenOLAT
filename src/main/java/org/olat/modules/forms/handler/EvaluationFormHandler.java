@@ -245,7 +245,7 @@ public class EvaluationFormHandler implements RepositoryHandler {
 		if (referencesSummary != null) {
 			Translator translator = Util.createPackageTranslator(RepositoryManager.class, locale);
 			errors.setError(translator.translate("details.delete.error.references",
-					new String[] { entry.getDisplayname() }));
+					new String[] { referencesSummary, entry.getDisplayname() }));
 			return false;
 		}
 		
