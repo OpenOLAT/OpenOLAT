@@ -529,6 +529,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 						.withCustom3(course.getCourseConfig().getCertificateCustom3())
 						.withSendEmailBcc(true)
 						.withSendEmailLinemanager(true)
+						.withSendEmailIdentityRelations(true)
 						.build();
 				certificatesManager.generateCertificate(certificateInfos, cgm.getCourseEntry(), template, config);
 			}

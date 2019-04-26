@@ -901,8 +901,9 @@ public class NewCachePersistingAssessmentManager {
 								.withCustom1(course.getCourseConfig().getCertificateCustom1())
 								.withCustom2(course.getCourseConfig().getCertificateCustom2())
 								.withCustom3(course.getCourseConfig().getCertificateCustom3())
-								.withSendEmailBcc(true)
-								.withSendEmailLinemanager(true)
+								.withSendEmailBcc(false)
+								.withSendEmailLinemanager(false)
+								.withSendEmailIdentityRelations(false)
 								.build();
 						certificatesManager.generateCertificate(certificateInfos, courseEntry, template, config);
 					}

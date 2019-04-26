@@ -19,13 +19,17 @@
  */
 package org.olat.basesecurity.manager;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.olat.test.JunitTestHelper.random;
+
 import java.util.List;
-import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.IdentityToIdentityRelation;
+import org.olat.basesecurity.RelationRight;
 import org.olat.basesecurity.RelationRole;
+import org.olat.basesecurity.RelationSearchParams;
 import org.olat.basesecurity.model.IdentityToIdentityRelationImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
@@ -46,11 +50,13 @@ public class IdentityToIdentityRelationDAOTest extends OlatTestCase {
 	@Autowired
 	private RelationRoleDAO relationRoleDao;
 	@Autowired
+	private RelationRightDAO relationRightDao;
+	@Autowired
 	private IdentityToIdentityRelationDAO identityToIdentityRelationDao;
 	
 	@Test
 	public void createIdentityToIdentityRelation() {
-		String role = UUID.randomUUID().toString();
+		String role = random();
 		RelationRole relationRole = relationRoleDao.createRelationRole(role, null, null, null);
 		Identity idSource = JunitTestHelper.createAndPersistIdentityAsRndUser("id-2-id-1");
 		Identity idTarget = JunitTestHelper.createAndPersistIdentityAsRndUser("id-2-id-2");
@@ -69,7 +75,7 @@ public class IdentityToIdentityRelationDAOTest extends OlatTestCase {
 	
 	@Test
 	public void isUsed_yes() {
-		String role = UUID.randomUUID().toString();
+		String role = random();
 		RelationRole relationRole = relationRoleDao.createRelationRole(role, null, null, null);
 		Identity idSource = JunitTestHelper.createAndPersistIdentityAsRndUser("id-2-id-1");
 		Identity idTarget = JunitTestHelper.createAndPersistIdentityAsRndUser("id-2-id-2");
@@ -83,7 +89,7 @@ public class IdentityToIdentityRelationDAOTest extends OlatTestCase {
 	
 	@Test
 	public void isUsed_no() {
-		String role = UUID.randomUUID().toString();
+		String role = random();
 		RelationRole relationRole = relationRoleDao.createRelationRole(role, null, null, null);
 		dbInstance.commitAndCloseSession();
 		
@@ -93,7 +99,7 @@ public class IdentityToIdentityRelationDAOTest extends OlatTestCase {
 	
 	@Test
 	public void hasRelation() {
-		String role = UUID.randomUUID().toString();
+		String role = random();
 		RelationRole relationRole = relationRoleDao.createRelationRole(role, null, null, null);
 		Identity idSource = JunitTestHelper.createAndPersistIdentityAsRndUser("id-2-id-1");
 		Identity idTarget = JunitTestHelper.createAndPersistIdentityAsRndUser("id-2-id-2");
@@ -113,7 +119,7 @@ public class IdentityToIdentityRelationDAOTest extends OlatTestCase {
 	
 	@Test
 	public void getRelation() {
-		String role = UUID.randomUUID().toString();
+		String role = random();
 		RelationRole relationRole = relationRoleDao.createRelationRole(role, null, null, null);
 		Identity idSource = JunitTestHelper.createAndPersistIdentityAsRndUser("id-2-id-1");
 		Identity idTarget = JunitTestHelper.createAndPersistIdentityAsRndUser("id-2-id-2");
@@ -134,7 +140,7 @@ public class IdentityToIdentityRelationDAOTest extends OlatTestCase {
 	
 	@Test
 	public void getRelationsAsSource() {
-		String role = UUID.randomUUID().toString();
+		String role = random();
 		RelationRole relationRole = relationRoleDao.createRelationRole(role, null, null, null);
 		Identity idSource = JunitTestHelper.createAndPersistIdentityAsRndUser("id-2-id-1");
 		Identity idTarget = JunitTestHelper.createAndPersistIdentityAsRndUser("id-2-id-2");
@@ -155,7 +161,7 @@ public class IdentityToIdentityRelationDAOTest extends OlatTestCase {
 	
 	@Test
 	public void getRelationsAsTarget() {
-		String role = UUID.randomUUID().toString();
+		String role = random();
 		RelationRole relationRole = relationRoleDao.createRelationRole(role, null, null, null);
 		Identity idSource = JunitTestHelper.createAndPersistIdentityAsRndUser("id-2-id-1");
 		Identity idTarget = JunitTestHelper.createAndPersistIdentityAsRndUser("id-2-id-2");
@@ -163,15 +169,57 @@ public class IdentityToIdentityRelationDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(relation);
 		
-		List<IdentityToIdentityRelation> relations = identityToIdentityRelationDao.getRelationsAsTarget(idTarget);
+		RelationSearchParams searchParams = new RelationSearchParams();
+		List<IdentityToIdentityRelation> relations = identityToIdentityRelationDao.getRelationsAsTarget(idTarget, searchParams);
 		Assert.assertNotNull(relations);
 		Assert.assertEquals(1, relations.size());
 		Assert.assertEquals(relation, relations.get(0));
 		
 		// direction is important
-		List<IdentityToIdentityRelation> reversedRelations = identityToIdentityRelationDao.getRelationsAsTarget(idSource);
+		List<IdentityToIdentityRelation> reversedRelations = identityToIdentityRelationDao.getRelationsAsTarget(idSource, searchParams);
 		Assert.assertNotNull(reversedRelations);
 		Assert.assertTrue(reversedRelations.isEmpty());
+	}
+	
+	@Test
+	public void getRelationsAsTarget_filterRight() {
+		// Init roles
+		RelationRole roleA = relationRoleDao.createRelationRole(random(), null, null, null);
+		RelationRole roleB = relationRoleDao.createRelationRole(random(), null, null, null);
+		RelationRole roleNoRight = relationRoleDao.createRelationRole(random(), null, null, null);
+		// Init rights
+		relationRightDao.ensureRightExists("testRight");
+		RelationRight right = relationRightDao.loadRelationRightByRight("testRight");
+		relationRightDao.ensureRightExists("testRightOther");
+		RelationRight rightOther = relationRightDao.loadRelationRightByRight("testRightOther");
+		relationRoleDao.addRight(roleA, right);
+		relationRoleDao.addRight(roleB, right);
+		relationRoleDao.addRight(roleNoRight, rightOther);
+		// Init identities and relations
+		Identity idTarget = JunitTestHelper.createAndPersistIdentityAsRndUser("target");
+		Identity idSourceRoleA = JunitTestHelper.createAndPersistIdentityAsRndUser("idSourceA");
+		identityToIdentityRelationDao.createRelation(idSourceRoleA, idTarget, roleA, null, null);
+		Identity idSourceRoleB = JunitTestHelper.createAndPersistIdentityAsRndUser("idSourceB");
+		identityToIdentityRelationDao.createRelation(idSourceRoleB, idTarget, roleB, null, null);
+		Identity idSourceRoleOtherNoRight = JunitTestHelper.createAndPersistIdentityAsRndUser("idSourceRoleNoRight");
+		identityToIdentityRelationDao.createRelation(idSourceRoleOtherNoRight, idTarget, roleNoRight, null, null);
+		Identity idSourceOtherTarget = JunitTestHelper.createAndPersistIdentityAsRndUser("idSourceB");
+		Identity idTargetOther = JunitTestHelper.createAndPersistIdentityAsRndUser("targetOther");
+		identityToIdentityRelationDao.createRelation(idSourceOtherTarget, idTargetOther, roleA, null, null);
+		dbInstance.commitAndCloseSession();
+		
+		RelationSearchParams searchParams = new RelationSearchParams();
+		searchParams.setRight(right);
+		List<IdentityToIdentityRelation> relations = identityToIdentityRelationDao.getRelationsAsTarget(idTarget, searchParams);
+		
+		assertThat(relations)
+				.extracting(IdentityToIdentityRelation:: getSource)
+				.containsExactlyInAnyOrder(
+						idSourceRoleA,
+						idSourceRoleB)
+				.doesNotContain(
+						idSourceRoleOtherNoRight,
+						idSourceOtherTarget);
 	}
 
 }

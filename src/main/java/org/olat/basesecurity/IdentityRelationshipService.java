@@ -33,6 +33,8 @@ import org.olat.core.id.Identity;
  */
 public interface IdentityRelationshipService {
 	
+	public RelationRight getRelationRightByRight(String right);
+	
 	public RelationRole createRole(String role, List<RelationRight> rights);
 	
 	public RelationRole createRole(String role, String externalId, String externalRef,
@@ -72,6 +74,6 @@ public interface IdentityRelationshipService {
 	 */
 	public List<IdentityToIdentityRelation> getRelationsAsSource(IdentityRef asSource);
 	
-	public List<IdentityToIdentityRelation> getRelationsAsTarget(IdentityRef asTarget);
+	public List<IdentityToIdentityRelation> getRelationsAsTarget(IdentityRef asTarget, RelationSearchParams searchParams);
 
 }

@@ -32,6 +32,7 @@ import org.olat.basesecurity.RelationRight;
 import org.olat.basesecurity.RelationRightProvider;
 import org.olat.basesecurity.RelationRole;
 import org.olat.basesecurity.RelationRoleManagedFlag;
+import org.olat.basesecurity.RelationSearchParams;
 import org.olat.core.id.Identity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -60,6 +61,11 @@ public class IdentityRelationshipServiceImpl implements IdentityRelationshipServ
 		for (RelationRightProvider relationRightProvider : relationRightProviders) {
 			relationRightDao.ensureRightExists(relationRightProvider.getRight());
 		}
+	}
+	
+	@Override
+	public RelationRight getRelationRightByRight(String right) {
+		return relationRightDao.loadRelationRightByRight(right);
 	}
 	
 	@Override
@@ -154,8 +160,8 @@ public class IdentityRelationshipServiceImpl implements IdentityRelationshipServ
 	}
 
 	@Override
-	public List<IdentityToIdentityRelation> getRelationsAsTarget(IdentityRef asTarget) {
-		return identityRelationshipDao.getRelationsAsTarget(asTarget);
+	public List<IdentityToIdentityRelation> getRelationsAsTarget(IdentityRef asTarget, RelationSearchParams searchParams) {
+		return identityRelationshipDao.getRelationsAsTarget(asTarget, searchParams);
 	}
 
 	@Override

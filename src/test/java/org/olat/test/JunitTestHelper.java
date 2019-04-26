@@ -88,6 +88,10 @@ public class JunitTestHelper {
 			maildomain = "mytrashmail.com";
 		}
 	}
+
+	public static final String random() {
+		return UUID.randomUUID().toString();
+	}
 	
 	public static final OLATResource createRandomResource() {
 		String resName = UUID.randomUUID().toString().replace("-", "");

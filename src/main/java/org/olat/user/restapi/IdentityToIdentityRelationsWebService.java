@@ -39,6 +39,7 @@ import org.olat.basesecurity.IdentityRelationshipService;
 import org.olat.basesecurity.IdentityToIdentityRelation;
 import org.olat.basesecurity.IdentityToIdentityRelationManagedFlag;
 import org.olat.basesecurity.RelationRole;
+import org.olat.basesecurity.RelationSearchParams;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -100,7 +101,8 @@ public class IdentityToIdentityRelationsWebService {
 	@Path("target")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getRelationsAsTarget() {
-		List<IdentityToIdentityRelation> relations = identityRelationshipService.getRelationsAsTarget(identity);
+		RelationSearchParams searchParams = new RelationSearchParams();
+		List<IdentityToIdentityRelation> relations = identityRelationshipService.getRelationsAsTarget(identity, searchParams);
 		IdentityToIdentityRelationVO[] relationVOes = toArrayOfVOes(relations);
 		return Response.ok(relationVOes).build();
 	}

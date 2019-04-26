@@ -52,9 +52,14 @@ import javax.persistence.TypedQuery;
 import org.apache.velocity.app.VelocityEngine;
 import org.olat.admin.user.imp.TransientIdentity;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.IdentityRelationshipService;
+import org.olat.basesecurity.IdentityToIdentityRelation;
 import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.RelationRight;
+import org.olat.basesecurity.RelationSearchParams;
 import org.olat.basesecurity.SearchIdentityParams;
 import org.olat.core.commons.modules.bc.FolderModule;
 import org.olat.core.commons.persistence.DB;
@@ -92,6 +97,7 @@ import org.olat.course.CorruptedCourseException;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.certificate.Certificate;
+import org.olat.course.certificate.CertificateEmailRightProvider;
 import org.olat.course.certificate.CertificateEvent;
 import org.olat.course.certificate.CertificateLight;
 import org.olat.course.certificate.CertificateStatus;
@@ -157,6 +163,10 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	private UserManager userManager;
 	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private BaseSecurityModule baseSecurityModule;
+	@Autowired
+	private IdentityRelationshipService identityRelationshipService;
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
@@ -959,11 +969,20 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 			bccs.forEach(email -> { bcc.add(email); });
 			contactLists.add(bcc);
 		}
-		if (certificatesModule.isCertificateLinemanager() && config.isSendEmailLinemanager()) {
-			ContactList linemanagerContactList = new ContactList();
+		if (config.isSendEmailLinemanager() && certificatesModule.isCertificateLinemanager()) {
 			List<Identity> linemanagers = getLinemanagers(to);
+			ContactList linemanagerContactList = new ContactList();
 			linemanagers.forEach(lm -> { linemanagerContactList.add(lm); });
 			contactLists.add(linemanagerContactList);
+		}
+		if (config.isSendEmailIdentityRelations() && baseSecurityModule.isRelationRoleEnabled()) {
+			RelationSearchParams searchParams = new RelationSearchParams();
+			RelationRight right = identityRelationshipService.getRelationRightByRight(CertificateEmailRightProvider.RELATION_RIGHT);
+			searchParams.setRight(right);
+			List<IdentityToIdentityRelation> relationTargets = identityRelationshipService.getRelationsAsTarget(to, searchParams);
+			ContactList relationTargetsList = new ContactList();
+			relationTargets.forEach(target -> { relationTargetsList.add( target.getSource()); });
+			contactLists.add(relationTargetsList);
 		}
 		bundle.setContactLists(contactLists);
 

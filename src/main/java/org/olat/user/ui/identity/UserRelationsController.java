@@ -27,6 +27,7 @@ import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.IdentityRelationshipService;
 import org.olat.basesecurity.IdentityToIdentityRelation;
 import org.olat.basesecurity.IdentityToIdentityRelationManagedFlag;
+import org.olat.basesecurity.RelationSearchParams;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -165,7 +166,8 @@ public class UserRelationsController extends FormBasicController {
 	
 	protected void loadModel() {
 		List<IdentityToIdentityRelation> asSourceRelations = identityRelationsService.getRelationsAsSource(editedIdentity);
-		List<IdentityToIdentityRelation> asTargetRelations = identityRelationsService.getRelationsAsTarget(editedIdentity);
+		RelationSearchParams searchParams = new RelationSearchParams();
+		List<IdentityToIdentityRelation> asTargetRelations = identityRelationsService.getRelationsAsTarget(editedIdentity, searchParams);
 		List<IdentityRelationRow> rows = new ArrayList<>(asSourceRelations.size() + asTargetRelations.size());
 		for(IdentityToIdentityRelation rel:asSourceRelations) {
 			String relationName = RelationRolesAndRightsUIFactory

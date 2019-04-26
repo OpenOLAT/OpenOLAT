@@ -217,6 +217,7 @@ public class AssessedIdentityCertificatesController extends BasicController impl
 				.withCustom3(course.getCourseConfig().getCertificateCustom3())
 				.withSendEmailBcc(true)
 				.withSendEmailLinemanager(true)
+				.withSendEmailIdentityRelations(true)
 				.build();
 		certificatesManager.generateCertificate(certificateInfos, courseEntry, template, config);
 		loadList();

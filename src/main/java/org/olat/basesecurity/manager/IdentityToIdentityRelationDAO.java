@@ -22,11 +22,15 @@ package org.olat.basesecurity.manager;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.TypedQuery;
+
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.IdentityToIdentityRelation;
 import org.olat.basesecurity.RelationRole;
+import org.olat.basesecurity.RelationSearchParams;
 import org.olat.basesecurity.model.IdentityToIdentityRelationImpl;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -133,18 +137,28 @@ public class IdentityToIdentityRelationDAO {
 				.getResultList();
 	}
 	
-	public List<IdentityToIdentityRelation> getRelationsAsTarget(IdentityRef target) {
-		StringBuilder sb = new StringBuilder(256);
+	public List<IdentityToIdentityRelation> getRelationsAsTarget(IdentityRef target, RelationSearchParams searchParams) {
+		QueryBuilder sb = new QueryBuilder(256);
 		sb.append("select identRel from identitytoidentity as identRel")
 		  .append(" inner join fetch identRel.role as relRol")
 		  .append(" inner join fetch identRel.source as identSource")
-		  .append(" inner join fetch identSource.user as userSource")
-		  .append(" where identRel.target.key=:targetKey");
+		  .append(" inner join fetch identSource.user as userSource");
+		if (searchParams.getRight() != null) {
+			sb.append(" inner join relationroletoright roleToRight");
+			sb.append("    on roleToRight.role.key = relRol.key");
+		}
+		sb.and().append("identRel.target.key=:targetKey");
+		if (searchParams.getRight() != null) {
+			sb.and().append("roleToRight.right.key = :rightKey");
+		}
 		
-		return dbInstance.getCurrentEntityManager()
+		TypedQuery<IdentityToIdentityRelation> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), IdentityToIdentityRelation.class)
-				.setParameter("targetKey", target.getKey())
-				.getResultList();
+				.setParameter("targetKey", target.getKey());
+		if (searchParams.getRight() != null) {
+			query.setParameter("rightKey", searchParams.getRight().getKey());
+		}
+		return query.getResultList();
 	}
 	
 	public void removeRelation(IdentityToIdentityRelation relation) {

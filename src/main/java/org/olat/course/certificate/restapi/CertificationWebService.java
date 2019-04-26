@@ -240,6 +240,7 @@ public class CertificationWebService {
 				.withCustom3(course.getCourseConfig().getCertificateCustom3())
 				.withSendEmailBcc(false)
 				.withSendEmailLinemanager(false)
+				.withSendEmailIdentityRelations(false)
 				.build();
 		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, entry, template, config);
 		if(certificate != null) {
