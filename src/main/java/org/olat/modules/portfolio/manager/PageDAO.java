@@ -55,6 +55,7 @@ import org.olat.modules.portfolio.SectionRef;
 import org.olat.modules.portfolio.model.AbstractPart;
 import org.olat.modules.portfolio.model.PageBodyImpl;
 import org.olat.modules.portfolio.model.PageImpl;
+import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -340,6 +341,20 @@ public class PageDAO {
 			.setParameter("bodyKey", key)
 			.getResultList();
 		return bodies == null || bodies.isEmpty() ? null : bodies.get(0);
+	}
+	
+	public boolean isFormEntryInUse(RepositoryEntryRef formEntry) {
+		StringBuilder sb = new StringBuilder(128);
+		sb.append("select part.key from pfformpart as part")
+		  .append(" where part.formEntry.key=:formEntryKey");
+
+		List<Long> counts = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Long.class)
+			.setParameter("formEntryKey", formEntry.getKey())
+			.setFirstResult(0)
+			.setMaxResults(1)
+			.getResultList();
+		return counts != null && !counts.isEmpty() && counts.get(0) != null && counts.get(0).intValue() >= 0;
 	}
 	
 	public List<Page> getLastPages(IdentityRef owner, int maxResults) {
