@@ -40,11 +40,13 @@ import org.springframework.stereotype.Service;
 public class AssignmentFormReadyToDelete implements EvaluationFormReadyToDelete {
 	
 	@Autowired
+	private PageDAO pageDoa;
+	@Autowired
 	private AssignmentDAO assignmentDao;
 
 	@Override
 	public boolean readyToDelete(RepositoryEntry entry, Locale locale, ErrorList errors) {
-		if(assignmentDao.isFormEntryInUse(entry)) {
+		if(assignmentDao.isFormEntryInUse(entry) || pageDoa.isFormEntryInUse(entry)) {
 			Translator translator = Util.createPackageTranslator(BinderRuntimeController.class, locale);
 			errors.setError(translator.translate("details.delete.error.assignments", new String[] { entry.getDisplayname() }));
 			return false;
