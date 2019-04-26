@@ -208,6 +208,8 @@ public class MembersMailController extends FormBasicController {
 		bodyEl = uifactory.addRichTextElementForStringDataMinimalistic("body", "mail.body", "", 15, 8, formLayout, getWindowControl());
 		bodyEl.setElementCssClass("o_sel_cmembers_mail_body");
 		bodyEl.setMandatory(true);
+		bodyEl.getEditorConfiguration().setRelativeUrls(false);
+		bodyEl.getEditorConfiguration().setRemoveScriptHost(false);
 		
 		attachmentEl = uifactory.addFileElement(getWindowControl(), "file_upload_1", "contact.attachment", formLayout);
 		attachmentEl.addActionListener(FormEvent.ONCHANGE);
