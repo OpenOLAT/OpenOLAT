@@ -55,6 +55,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.control.generic.dtabs.DTabs;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
@@ -140,7 +141,7 @@ public class UserInfoMainController extends MainLayoutBasicController implements
 			List<HistoryPoint> stack = session.getHistoryStack();
 			for(int i=stack.size() - 2; i-->0; ) {
 				HistoryPoint point = stack.get(stack.size() - 2);
-				if(point.getEntries().size() > 0) {
+				if(!point.getEntries().isEmpty()) {
 					OLATResourceable ores = point.getEntries().get(0).getOLATResourceable();
 					if(!chosenIdentity.getKey().equals(ores.getResourceableId())) {
 						launchedFromPoint = point;
@@ -238,7 +239,7 @@ public class UserInfoMainController extends MainLayoutBasicController implements
 	 * @param firstLastName
 	 */
 	private GenericTreeModel buildTreeModel(String name) {
-		GenericTreeNode root, gtn;
+		GenericTreeNode root;
 
 		GenericTreeModel gtm = new GenericTreeModel();
 		root = new GenericTreeNode();
@@ -247,7 +248,7 @@ public class UserInfoMainController extends MainLayoutBasicController implements
 		root.setAccessible(false);
 		gtm.setRootNode(root);
 
-		gtn = new GenericTreeNode();
+		GenericTreeNode gtn = new GenericTreeNode();
 		gtn.setTitle(translate("menu.homepage"));
 		gtn.setUserObject(CMD_HOMEPAGE);
 		gtn.setAltText(translate("menu.homepage.alt"));
@@ -399,7 +400,14 @@ public class UserInfoMainController extends MainLayoutBasicController implements
 	}
 	
 	protected final void doClose(UserRequest ureq) {
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance("HomeSite", chosenIdentity.getKey());
-		getWindowControl().getWindowBackOffice().getWindow().getDTabs().closeDTab(ureq, ores, launchedFromPoint);
+		// there are 2 paths for this page
+		OLATResourceable oresPage = OresHelper.createOLATResourceableInstance("HomePage", chosenIdentity.getKey());
+		DTabs dTabs = getWindowControl().getWindowBackOffice().getWindow().getDTabs();
+		if(dTabs.getDTab(oresPage) != null) {
+			getWindowControl().getWindowBackOffice().getWindow().getDTabs().closeDTab(ureq, oresPage, launchedFromPoint);
+		} else {
+			OLATResourceable oresSite = OresHelper.createOLATResourceableInstance("HomeSite", chosenIdentity.getKey());
+			getWindowControl().getWindowBackOffice().getWindow().getDTabs().closeDTab(ureq, oresSite, launchedFromPoint);
+		}
 	}
 }
