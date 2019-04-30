@@ -130,4 +130,9 @@ public class AdobeConnect9Provider extends AbstractAdobeConnectProvider {
 		}
 		return session;
 	}
+	
+	@Override
+	public boolean isManagedPassword() {
+		return true;
+	}
 }

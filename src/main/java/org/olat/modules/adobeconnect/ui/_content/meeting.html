@@ -11,6 +11,10 @@
 #if($r.isTrue($ended))
 	<div class="o_block_large o_warning">$r.translate("meeting.ended")</div>
 #end
+#if($r.isFalse($validMeeting))
+	<div class="o_block_large o_error">$r.translate("error.invalid.meeting")</div>
+#end
+
 <div class="o_button_group">
 #if($r.available("meeting.start.button") && $r.visible("meeting.start.button"))
 	$r.render("meeting.start.button")

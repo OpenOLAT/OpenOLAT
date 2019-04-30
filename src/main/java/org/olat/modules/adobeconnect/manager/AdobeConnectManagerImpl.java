@@ -168,7 +168,7 @@ public class AdobeConnectManagerImpl implements AdobeConnectManager, DeletableGr
 			}
 			
 			String scoId = sco.getScoId();
-			String envName = null;
+			String envName = adobeConnectModule.getBaseUrl();
 			adobeConnectMeetingDao.createMeeting(name, description, start, end, scoId, folder.getScoId(), envName, entry, subIdent, businessGroup);
 		}
 	}
@@ -312,29 +312,31 @@ public class AdobeConnectManagerImpl implements AdobeConnectManager, DeletableGr
 	}
 	
 	private String getOrCreateUser(Identity identity, boolean create, AdobeConnectErrors error) {
-		AdobeConnectUser user = adobeConnectUserDao.getUser(identity);
+		String envName = adobeConnectModule.getBaseUrl();
+		AdobeConnectUser user = adobeConnectUserDao.getUser(identity, envName);
 		if(user == null && create) {
 			String login = identity.getUser().getEmail();
 			AdobeConnectPrincipal aUser = getAdapter().getPrincipalByLogin(login, error);
 			
 			String creds = null;
 			if(aUser == null) {
-				creds = UUID.randomUUID().toString().replace("-", "");
-				if(creds.length() > 32) {
-					creds = creds.substring(0, 32);
+				if(getAdapter().isManagedPassword()) {
+					creds = UUID.randomUUID().toString().replace("-", "");
+					if(creds.length() > 32) {
+						creds = creds.substring(0, 32);
+					}
 				}
 				aUser = getAdapter().createPrincipal(identity, login, creds, error);
 			}
 			
 			if(aUser != null && StringHelper.containsNonWhitespace(aUser.getPrincipalId())) {
-				user = adobeConnectUserDao.createUser(aUser.getPrincipalId(), identity);
-				if(creds != null) {
-					Authentication authentication = securityManager.findAuthentication(identity, ACONNECT_PROVIDER);
-					if(authentication == null) {
-						securityManager.createAndPersistAuthentication(identity, ACONNECT_PROVIDER, login, creds, Encoder.Algorithm.aes);
-					} else {
-						securityManager.updateCredentials(authentication, creds, Encoder.Algorithm.aes);
-					}
+				user = adobeConnectUserDao.createUser(aUser.getPrincipalId(), envName, identity);
+				
+				Authentication authentication = securityManager.findAuthentication(identity, ACONNECT_PROVIDER);
+				if(authentication == null) {
+					securityManager.createAndPersistAuthentication(identity, ACONNECT_PROVIDER, login, creds, Encoder.Algorithm.aes);
+				} else if(creds != null) {
+					securityManager.updateCredentials(authentication, creds, Encoder.Algorithm.aes);
 				}
 			}
 		}

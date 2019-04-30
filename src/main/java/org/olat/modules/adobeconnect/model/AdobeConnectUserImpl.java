@@ -47,7 +47,7 @@ import org.olat.modules.adobeconnect.AdobeConnectUser;
  */
 @Entity(name="adobeconnectuser")
 @Table(name="o_aconnect_user")
-@NamedQuery(name="loadAdobeConnectUserByIdentity", query="select auser from adobeconnectuser as auser where auser.identity.key=:identityKey")
+@NamedQuery(name="loadAdobeConnectUserByIdentity", query="select auser from adobeconnectuser as auser where auser.identity.key=:identityKey and auser.envName=:envName")
 public class AdobeConnectUserImpl implements Persistable, AdobeConnectUser {
 
 	private static final long serialVersionUID = -6067251741329673819L;
@@ -66,6 +66,8 @@ public class AdobeConnectUserImpl implements Persistable, AdobeConnectUser {
 	
 	@Column(name="a_principal_id", nullable=false, insertable=true, updatable=true)
 	private String principalId;
+	@Column(name="a_env_name", nullable=true, insertable=true, updatable=false)
+	private String envName;
 	
 	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=true)
 	@JoinColumn(name="fk_identity_id", nullable=true, insertable=true, updatable=false)
@@ -102,6 +104,15 @@ public class AdobeConnectUserImpl implements Persistable, AdobeConnectUser {
 
 	public void setPrincipalId(String principalId) {
 		this.principalId = principalId;
+	}
+
+	@Override
+	public String getEnvName() {
+		return envName;
+	}
+
+	public void setEnvName(String envName) {
+		this.envName = envName;
 	}
 
 	@Override

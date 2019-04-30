@@ -181,7 +181,7 @@ public class AdobeConnectUtils {
 	}
 	
 	protected static void print(Document document) {
-		if(log.isDebug() || true) {
+		if(log.isDebug()) {
 		    try(StringWriter writer = new StringWriter()) {
 				Transformer transformer = TransformerFactory.newInstance().newTransformer();
 				Source source = new DOMSource(document);

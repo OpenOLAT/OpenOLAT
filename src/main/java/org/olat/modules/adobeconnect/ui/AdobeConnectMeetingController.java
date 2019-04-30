@@ -49,6 +49,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.adobeconnect.AdobeConnectManager;
 import org.olat.modules.adobeconnect.AdobeConnectMeeting;
 import org.olat.modules.adobeconnect.AdobeConnectMeetingPermission;
+import org.olat.modules.adobeconnect.AdobeConnectModule;
 import org.olat.modules.adobeconnect.model.AdobeConnectErrors;
 import org.olat.modules.adobeconnect.model.AdobeConnectSco;
 import org.olat.modules.adobeconnect.ui.AdobeConnectContentTableModel.ACContentsCols;
@@ -68,6 +69,7 @@ public class AdobeConnectMeetingController extends FormBasicController {
 	private final AdobeConnectMeeting meeting;
 	
 	private boolean registered;
+	private final boolean validMeeting;
 
 	private int counter;
 	private Link joinButton;
@@ -75,6 +77,8 @@ public class AdobeConnectMeetingController extends FormBasicController {
 	private FlexiTableElement contentTableEl;
 	private AdobeConnectContentTableModel contentModel;
 	
+	@Autowired
+	private AdobeConnectModule adobeConnectModule;
 	@Autowired
 	private AdobeConnectManager adobeConnectManager;
 	
@@ -87,11 +91,13 @@ public class AdobeConnectMeetingController extends FormBasicController {
 		this.administrator = administrator;
 		initForm(ureq);
 		
-		AdobeConnectErrors error = new AdobeConnectErrors();
-		registered = adobeConnectManager.isRegistered(meeting, getIdentity(), getPermission(), error);
+		validMeeting = adobeConnectModule.getBaseUrl().equals(meeting.getEnvName());
+		if(validMeeting) {
+			AdobeConnectErrors error = new AdobeConnectErrors();
+			registered = adobeConnectManager.isRegistered(meeting, getIdentity(), getPermission(), error);
+			loadModel();
+		}
 		updateButtons();
-		
-		loadModel();
 	}
 
 	@Override
@@ -113,6 +119,8 @@ public class AdobeConnectMeetingController extends FormBasicController {
 					layoutCont.contextPut("ended", Boolean.TRUE);
 				}
 			}
+
+			layoutCont.contextPut("validMeeting", Boolean.valueOf(validMeeting));
 		}
 
 		registerButton = uifactory.addFormLink("meeting.register.button", flc, Link.BUTTON);
@@ -155,9 +163,9 @@ public class AdobeConnectMeetingController extends FormBasicController {
 	}
 	
 	private void updateButtons() {
-		registerButton.setVisible(!registered && !readOnly);
+		registerButton.setVisible(!registered && !readOnly && validMeeting);
 		joinButton.setVisible(registered);
-		joinButton.setEnabled(!readOnly);
+		joinButton.setEnabled(!readOnly && validMeeting);
 	}
 
 	@Override

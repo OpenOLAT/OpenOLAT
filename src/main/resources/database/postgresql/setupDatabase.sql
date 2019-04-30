@@ -1203,6 +1203,7 @@ create table o_aconnect_user (
    creationdate timestamp not null,
    lastmodified timestamp not null,
    a_principal_id varchar(128) default null,
+   a_env_name varchar(128) default null,
    fk_identity_id int8 default null,
    primary key (id)
 );

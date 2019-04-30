@@ -19,6 +19,8 @@
  */
 package org.olat.modules.adobeconnect.ui;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -31,6 +33,10 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.adobeconnect.AdobeConnectMeeting;
 import org.olat.repository.RepositoryEntry;
@@ -41,7 +47,7 @@ import org.olat.repository.RepositoryEntry;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AdobeConnectRunController extends BasicController {
+public class AdobeConnectRunController extends BasicController implements Activateable2 {
 	
 	private Link adminLink;
 	private Link meetingsLink;
@@ -59,6 +65,7 @@ public class AdobeConnectRunController extends BasicController {
 	private final RepositoryEntry entry;
 	private final AdobeConnectMeetingDefaultConfiguration configuration;
 	
+	private final boolean canView;
 	private final boolean readOnly;
 	private final boolean moderator;
 	private final boolean administrator;
@@ -75,8 +82,10 @@ public class AdobeConnectRunController extends BasicController {
 		this.administrator = admin;
 		this.moderator = moderator;
 		this.readOnly = readOnly;
+		
+		canView = !ureq.getUserSession().getRoles().isGuestOnly();
 
-		if(ureq.getUserSession().getRoles().isGuestOnly()) {
+		if(!canView) {
 			//no accessible to guests
 			mainVC = createVelocityContainer("run");
 		} else if(administrator) {
@@ -104,6 +113,30 @@ public class AdobeConnectRunController extends BasicController {
 	@Override
 	protected void doDispose() {
 		//
+	}
+
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if("Meetings".equalsIgnoreCase(type)) {
+			if(canView) {
+				doOpenMeetings(ureq);
+			}
+		} else if("Administration".equalsIgnoreCase(type)) {
+			if(administrator) {
+				doOpenAdmin(ureq);
+			}
+		} else if("Meeting".equalsIgnoreCase(type)) {
+			if(canView) {
+				doOpenMeetings(ureq);
+				Long meetingKey = entries.get(0).getOLATResourceable().getResourceableId();
+				if(meetingsCtrl.hasMeetingByKey(meetingKey)) {
+					doSelectMeeting(ureq, meetingsCtrl.getMeetingByKey(meetingKey));
+				}
+			}
+		}
 	}
 
 	@Override
@@ -138,29 +171,34 @@ public class AdobeConnectRunController extends BasicController {
 	
 	private void doOpenMeetings(UserRequest ureq) {
 		if(meetingsCtrl == null) {
-			meetingsCtrl = new AdobeConnectMeetingsController(ureq, getWindowControl(),
+			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("Meetings", 0l), null);
+			meetingsCtrl = new AdobeConnectMeetingsController(ureq, bwControl,
 					entry, subIdent, group);
 			listenTo(meetingsCtrl);
-		} else if(adminCtrl != null) {
+		} else {
 			meetingsCtrl.updateModel();
+			addToHistory(ureq, meetingsCtrl);
 		}
 		mainVC.put("segmentCmp", meetingsCtrl.getInitialComponent());
 	}
 	
 	private void doOpenAdmin(UserRequest ureq) {
 		if(adminCtrl == null) {
-			adminCtrl = new AdobeConnectEditMeetingsController(ureq, getWindowControl(),
+			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("Administration", 0l), null);
+			adminCtrl = new AdobeConnectEditMeetingsController(ureq, bwControl,
 					entry, subIdent, group, configuration, readOnly);
 			listenTo(adminCtrl);
-		} 
+		} else {
+			addToHistory(ureq, adminCtrl);
+		}
 		mainVC.put("segmentCmp", adminCtrl.getInitialComponent());
 	}
 	
 	private void doSelectMeeting(UserRequest ureq, AdobeConnectMeeting meeting) {
 		removeAsListenerAndDispose(meetingCtrl);
-		
-		meetingCtrl = new AdobeConnectMeetingController(ureq, getWindowControl(),
-				meeting, administrator, moderator, readOnly);
+
+		WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("Meeting", meeting.getKey()), null);
+		meetingCtrl = new AdobeConnectMeetingController(ureq, bwControl, meeting, administrator, moderator, readOnly);
 		listenTo(meetingCtrl);
 		mainVC.put("meeting", meetingCtrl.getInitialComponent());
 	}

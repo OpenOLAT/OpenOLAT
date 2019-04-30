@@ -138,6 +138,7 @@ create table o_aconnect_user (
    creationdate datetime not null,
    lastmodified datetime not null,
    a_principal_id varchar(128) default null,
+   a_env_name varchar(128) default null,
    fk_identity_id bigint default null,
    primary key (id)
 );

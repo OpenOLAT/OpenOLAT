@@ -71,6 +71,11 @@ public interface AdobeConnectSPI {
 	public List<AdobeConnectSco> getRecordings(AdobeConnectMeeting meeting, AdobeConnectErrors error);
 	
 	public boolean setPermissions(String scoId, boolean allAccess, AdobeConnectErrors error);
+	
+	/**
+	 * @return true if OpenOLAT need to manage the password of the user to Adobe Connect.
+	 */
+	public boolean isManagedPassword();
 
 	public boolean isMember(String scoId, String principalId, String permission, AdobeConnectErrors error);
 	

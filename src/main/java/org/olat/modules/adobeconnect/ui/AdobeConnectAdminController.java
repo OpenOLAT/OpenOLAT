@@ -19,6 +19,8 @@
  */
 package org.olat.modules.adobeconnect.ui;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -30,6 +32,10 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.resource.OresHelper;
 
 /**
  * 
@@ -37,7 +43,7 @@ import org.olat.core.gui.control.controller.BasicController;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AdobeConnectAdminController extends BasicController {
+public class AdobeConnectAdminController extends BasicController implements Activateable2 {
 	
 	private final Link meetingsLink;
 	private final Link configurationLink;
@@ -70,6 +76,20 @@ public class AdobeConnectAdminController extends BasicController {
 	}
 
 	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+
+		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if("Configuration".equalsIgnoreCase(type)) {
+			doOpenConfiguration(ureq);
+			segmentView.select(configurationLink);
+		} else if("Meetings".equalsIgnoreCase(type)) {
+			doOpenMeetings(ureq);
+			segmentView.select(meetingsLink);
+		}
+	}
+
+	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(source == segmentView) {
 			if(event instanceof SegmentViewEvent) {
@@ -87,18 +107,23 @@ public class AdobeConnectAdminController extends BasicController {
 	
 	private void doOpenConfiguration(UserRequest ureq) {
 		if(configController == null) {
-			configController = new AdobeConnectConfigurationController(ureq, getWindowControl());
+			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("Configuration", 0l), null);
+			configController = new AdobeConnectConfigurationController(ureq, bwControl);
 			listenTo(configController);
-		} 
+		} else {
+			addToHistory(ureq, configController);
+		}
 		mainVC.put("segmentCmp", configController.getInitialComponent());
 	}
 	
 	private void doOpenMeetings(UserRequest ureq) {
 		if(meetingsController == null) {
-			meetingsController = new AdobeConnectAdminMeetingsController(ureq, getWindowControl());
+			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("Meetings", 0l), null);
+			meetingsController = new AdobeConnectAdminMeetingsController(ureq, bwControl);
 			listenTo(meetingsController);
-		} 
+		} else {
+			addToHistory(ureq, meetingsController);
+		}
 		mainVC.put("segmentCmp", meetingsController.getInitialComponent());
 	}
-
 }

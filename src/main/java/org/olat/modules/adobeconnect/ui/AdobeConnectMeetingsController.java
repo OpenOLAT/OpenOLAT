@@ -22,6 +22,7 @@ package org.olat.modules.adobeconnect.ui;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
@@ -134,6 +135,23 @@ public class AdobeConnectMeetingsController extends FormBasicController {
 		pastTableModel.setObjects(pastMeetings);
 		pastTableEl.reset(true, true, true);
 		pastTableEl.setVisible(!pastMeetings.isEmpty());
+	}
+	
+	public boolean hasMeetingByKey(Long meetingKey) {
+		boolean has = upcomingTableModel.getObjects().stream()
+			.anyMatch(m -> meetingKey.equals(m.getKey()));
+		return has || pastTableModel.getObjects().stream()
+				.anyMatch(m -> meetingKey.equals(m.getKey()));
+	}
+	
+	public AdobeConnectMeeting getMeetingByKey(Long meetingKey) {
+		Optional<AdobeConnectMeeting> has = upcomingTableModel.getObjects().stream()
+				.filter(m -> meetingKey.equals(m.getKey())).findFirst();
+		if(!has.isPresent()) {
+			has = pastTableModel.getObjects().stream()
+					.filter(m -> meetingKey.equals(m.getKey())).findFirst();
+		}
+		return has.isPresent() ? has.get() : null;
 	}
 
 	@Override

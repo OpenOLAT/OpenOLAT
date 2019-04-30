@@ -31,6 +31,8 @@ public interface AdobeConnectUser {
 	
 	public String getPrincipalId();
 	
+	public String getEnvName();
+	
 	public Identity getIdentity();
 
 }

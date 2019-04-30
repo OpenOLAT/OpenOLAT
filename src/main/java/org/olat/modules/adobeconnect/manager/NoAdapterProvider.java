@@ -109,6 +109,11 @@ public class NoAdapterProvider implements AdobeConnectSPI {
 	}
 
 	@Override
+	public boolean isManagedPassword() {
+		return false;
+	}
+
+	@Override
 	public boolean isMember(String scoId, String principalId, String permission, AdobeConnectErrors error) {
 		error.append(new AdobeConnectError(AdobeConnectErrorCodes.serverNotAvailable));
 		return false;

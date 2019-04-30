@@ -151,4 +151,9 @@ public class DFNprovider extends AbstractAdobeConnectProvider {
 		List<AdobeConnectSco> scos = sendScoRequest(builder, error);
 		return scos == null || scos.isEmpty() ? null : scos.get(0);
 	}
+
+	@Override
+	public boolean isManagedPassword() {
+		return false;
+	}
 }

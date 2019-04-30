@@ -42,20 +42,22 @@ public class AdobeConnectUserDAO {
 	@Autowired
 	private DB dbInstance;
 	
-	public AdobeConnectUser createUser(String principalId, Identity identity) {
+	public AdobeConnectUser createUser(String principalId, String envName, Identity identity) {
 		AdobeConnectUserImpl user = new AdobeConnectUserImpl();
 		user.setCreationDate(new Date());
 		user.setLastModified(user.getCreationDate());
 		user.setPrincipalId(principalId);
+		user.setEnvName(envName);
 		user.setIdentity(identity);
 		dbInstance.getCurrentEntityManager().persist(user);
 		return user;
 	}
 	
-	public AdobeConnectUser getUser(IdentityRef identity) {
+	public AdobeConnectUser getUser(IdentityRef identity, String envName) {
 		List<AdobeConnectUser> users = dbInstance.getCurrentEntityManager()
 			.createNamedQuery("loadAdobeConnectUserByIdentity", AdobeConnectUser.class)
 			.setParameter("identityKey", identity.getKey())
+			.setParameter("envName", envName)
 			.getResultList();
 		return users == null || users.isEmpty() ? null : users.get(0);
 	}
