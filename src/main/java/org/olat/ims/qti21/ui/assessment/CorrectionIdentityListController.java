@@ -206,17 +206,19 @@ public class CorrectionIdentityListController extends FormBasicController {
 		List<CorrectionIdentityRow> rows = new ArrayList<>(model.getNumberOfAssessedIdentities());
 		Map<Identity, CorrectionIdentityRow> identityToRows = new HashMap<>();
 		for(Map.Entry<Identity, AssessmentTestSession> entry:model.getLastSessions().entrySet()) {
-			String user = translate("number.assessed.identity", new String[]{ Integer.toString(++count) });
-			CorrectionIdentityRow row = new CorrectionIdentityRow(user, entry.getKey(), entry.getValue(), userPropertyHandlers, getLocale());
-			rows.add(row);
-			identityToRows.put(entry.getKey(), row);
-			
 			TestSessionState testSessionState = model.getTestSessionStates().get(entry.getKey());
-			for(Map.Entry<TestPlanNodeKey, ItemSessionState> itemEntry:testSessionState.getItemSessionStates().entrySet()) {
-				String itemRefIdentifier = itemEntry.getKey().getIdentifier().toString();
-				AssessmentItemRef itemRef = identifierToItemRefMap.get(itemRefIdentifier);
-				AssessmentItemSession itemSession = itemSessionMap.get(new ItemSessionKey(entry.getValue().getKey(), itemRefIdentifier));
-				appendStatistics(row, itemSession, itemEntry.getValue(), itemRef);
+			if(testSessionState != null) {
+				String user = translate("number.assessed.identity", new String[]{ Integer.toString(++count) });
+				CorrectionIdentityRow row = new CorrectionIdentityRow(user, entry.getKey(), entry.getValue(), userPropertyHandlers, getLocale());
+				rows.add(row);
+				identityToRows.put(entry.getKey(), row);
+				
+				for(Map.Entry<TestPlanNodeKey, ItemSessionState> itemEntry:testSessionState.getItemSessionStates().entrySet()) {
+					String itemRefIdentifier = itemEntry.getKey().getIdentifier().toString();
+					AssessmentItemRef itemRef = identifierToItemRefMap.get(itemRefIdentifier);
+					AssessmentItemSession itemSession = itemSessionMap.get(new ItemSessionKey(entry.getValue().getKey(), itemRefIdentifier));
+					appendStatistics(row, itemSession, itemEntry.getValue(), itemRef);
+				}
 			}
 		}
 		
