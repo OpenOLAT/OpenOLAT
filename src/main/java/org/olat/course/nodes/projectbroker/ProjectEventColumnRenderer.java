@@ -68,17 +68,19 @@ public class ProjectEventColumnRenderer implements CustomCellRenderer {
 			// if no renderer is set, then we assume it's a table export - in which case we don't want the htmls (<br/>)
 			if (projectEvent.getStartDate() != null) {
 				sb.append(translator.translate("table.event.start.label"));
-				sb.append(projectEvent.getFormattedStartDate());
 				sb.append(" ");
+				sb.append(projectEvent.getFormattedStartDate());
 			}
 			if (projectEvent.getEndDate() != null) {
 				sb.append(translator.translate("table.event.end.label"));
+				sb.append(" ");
 				sb.append(projectEvent.getFormattedEndDate());
 			}
 		} else {
 			// add <br> between the dates
 			if (projectEvent.getStartDate() != null) {
 				sb.append(translator.translate("table.event.start.label"));
+				sb.append(" ");
 				sb.append(projectEvent.getFormattedStartDate());
 				if (projectEvent.getEndDate() != null) {
 					sb.append("<br>");
@@ -86,6 +88,7 @@ public class ProjectEventColumnRenderer implements CustomCellRenderer {
 			}
 			if (projectEvent.getEndDate() != null) {
 				sb.append(translator.translate("table.event.end.label"));
+				sb.append(" ");
 				sb.append(projectEvent.getFormattedEndDate());
 			}
 		}
