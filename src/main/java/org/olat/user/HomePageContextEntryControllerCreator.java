@@ -83,7 +83,7 @@ public class HomePageContextEntryControllerCreator extends DefaultContextEntryCo
 	private Identity extractIdentity(ContextEntry ce) {
 		OLATResourceable resource = ce.getOLATResourceable();
 		Long key = resource.getResourceableId();
-		if (key == null || key.equals(0)) {
+		if (key == null || key.equals(0l)) {
 			log.error("Can not load identity with key::" + key);
 			return null;
 		}

@@ -44,6 +44,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.control.generic.dtabs.DTabs;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
@@ -263,7 +264,14 @@ public class UserInfoMainController extends AbstractUserInfoMainController imple
 	}
 
 	protected final void doClose(UserRequest ureq) {
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance("HomeSite", chosenIdentity.getKey());
-		getWindowControl().getWindowBackOffice().getWindow().getDTabs().closeDTab(ureq, ores, launchedFromPoint);
+		// there are 2 paths for this page
+		OLATResourceable oresPage = OresHelper.createOLATResourceableInstance("HomePage", chosenIdentity.getKey());
+		DTabs dTabs = getWindowControl().getWindowBackOffice().getWindow().getDTabs();
+		if(dTabs.getDTab(oresPage) != null) {
+			getWindowControl().getWindowBackOffice().getWindow().getDTabs().closeDTab(ureq, oresPage, launchedFromPoint);
+		} else {
+			OLATResourceable oresSite = OresHelper.createOLATResourceableInstance("HomeSite", chosenIdentity.getKey());
+			getWindowControl().getWindowBackOffice().getWindow().getDTabs().closeDTab(ureq, oresSite, launchedFromPoint);
+		}
 	}
 }
