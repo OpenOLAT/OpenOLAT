@@ -534,7 +534,7 @@ public class PublishProcess {
 		File exportFile = new File(exportDirectory, archiveName);
 		try(FileOutputStream fileStream = new FileOutputStream(exportFile);
 				ZipOutputStream exportStream = new ZipOutputStream(fileStream)) {
-			oldCn.archiveNodeData(locale, course, null, exportStream, charset);
+			oldCn.archiveNodeData(locale, course, null, exportStream, "", charset);
 		} catch (IOException e) {
 			log.error("", e);
 		}

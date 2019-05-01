@@ -52,7 +52,7 @@ import org.olat.core.util.i18n.I18nManager;
  */
 public class GenericActionExtension extends AbstractExtension implements ActionExtension {
 
-	private Map<String, ExtensionElement> elements = new HashMap<String, ExtensionElement>();
+	private Map<String, ExtensionElement> elements = new HashMap<>();
 	private ControllerCreator actionControllerCreator;
 	private String i18nActionKey;
 	private String i18nDescriptionKey;
@@ -82,10 +82,7 @@ public class GenericActionExtension extends AbstractExtension implements ActionE
 		}
 	}
 	
-	/**
-	 * 
-	 * @see org.olat.core.extensions.action.ActionExtension#createMenuNode(org.olat.core.gui.UserRequest)
-	 */
+	@Override
 	public GenericTreeNode createMenuNode(UserRequest ureq){
 		GenericTreeNode node = new GenericTreeNode();
 		node.setAltText(getDescription(ureq.getLocale()));
@@ -99,7 +96,7 @@ public class GenericActionExtension extends AbstractExtension implements ActionE
 	
 	@Override
 	public String getUniqueExtensionID(){
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(128);
 		if (extensionPoints != null){
 			for(String ext: extensionPoints)
 				sb.append(ext).append(":");
@@ -112,33 +109,25 @@ public class GenericActionExtension extends AbstractExtension implements ActionE
 		  .append(":").append(getNavigationKey());
 		return sb.toString();	
 	}
-	
-	/**
-	 * @see org.olat.core.extensions.action.ActionExtension#createController(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl, java.lang.Object)
-	 */
 	@Override
 	public Controller createController(UserRequest ureq, WindowControl wControl, Object arg) {
 		return actionControllerCreator.createController(ureq, wControl);
 	}
 
+	@Override
 	public ExtensionElement getExtensionFor(String extensionPoint) {
 		if (isEnabled()) return elements.get(extensionPoint);
 		else return null;
 	}
 
-	/**
-	 * @see org.olat.core.extensions.action.ActionExtension#getActionText(java.util.Locale)
-	 */
+	@Override
 	public String getActionText(Locale loc) {
 		Translator translator = createPackageTranslator(loc);
 		if (i18nActionKey == null) i18nActionKey = getClassNameOfCorrespondingController() + ".menu.title";
 		return translator.translate(i18nActionKey);
 	}
 
-	/**
-	 * @see org.olat.core.extensions.action.ActionExtension#getDescription(java.util.Locale)
-	 */
+	@Override
 	public String getDescription(Locale loc) {
 		Translator translator = createPackageTranslator(loc);
 		if (i18nDescriptionKey == null) i18nDescriptionKey = getClassNameOfCorrespondingController() + ".menu.title.alt";
@@ -162,8 +151,7 @@ public class GenericActionExtension extends AbstractExtension implements ActionE
 		if (translationPackageName==null){
 			translationPackageName = translationPackageNameDerived;
 		}
-		Translator translator = new PackageTranslator(translationPackageName, loc);
-		return translator;
+		return new PackageTranslator(translationPackageName, loc);
 	}
 	
 	/**
@@ -243,15 +231,13 @@ public class GenericActionExtension extends AbstractExtension implements ActionE
 		iconCssClass = icon;
 	}
 
+	@Override
 	public String toString(){
-		StringBuilder sb = new StringBuilder();
-	//	sb.append(super.toString());
-		//sb.append(" controllerCreator: ").append(actionControllerCreator);
+		StringBuilder sb = new StringBuilder(512);
 		sb.append(" controller: ").append(contentControllerClassName);
 		sb.append(" actionKey: ").append(i18nActionKey);
 		sb.append(" order: ").append(getOrder());
 		sb.append(" navigationKey: ").append(navigationKey);
 		return sb.toString();
 	}
-	
 }

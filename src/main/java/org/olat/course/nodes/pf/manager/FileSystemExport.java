@@ -109,12 +109,9 @@ public class FileSystemExport implements MediaResource {
 	public void prepare(HttpServletResponse hres) {
 		try (ZipOutputStream zout = new ZipOutputStream(hres.getOutputStream())) {
 			zout.setLevel(9);
-			
 			Path relPath = Paths.get(courseEnv.getCourseBaseContainer().getBasefile().getAbsolutePath(),
 					PFManager.FILENAME_PARTICIPANTFOLDER, pfNode.getIdent()); 
-						
-			fsToZip(zout, relPath, pfNode, identities, translator);			
-			
+			fsToZip(zout, "", relPath, pfNode, identities, translator);			
 		} catch (IOException e) {
 			log.error("", e);
 		}
@@ -135,10 +132,19 @@ public class FileSystemExport implements MediaResource {
 	 * @param translator
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
-	public static boolean fsToZip(ZipOutputStream zout, final Path sourceFolder, PFCourseNode pfNode,
+	public static boolean fsToZip(ZipOutputStream zout, String zipPath, final Path sourceFolder, PFCourseNode pfNode,
 			List<Identity> identities, Translator translator) {
-		String targetPath = translator.translate("participant.folder") + "/";
-		UserManager userManager = CoreSpringFactory.getImpl(UserManager.class);
+		
+		if(StringHelper.containsNonWhitespace(zipPath)) {
+			if(!zipPath.endsWith("/")) {
+				zipPath += "/";
+			}
+		} else {
+			zipPath = "";
+		}
+		
+		final String targetPath = zipPath + translator.translate("participant.folder") + "/";
+		final UserManager userManager = CoreSpringFactory.getImpl(UserManager.class);
 		Set<String> idKeys = new HashSet<>();
 		if (identities != null) {
 			for (Identity identity : identities) {

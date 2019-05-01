@@ -40,14 +40,14 @@ import org.olat.group.BusinessGroup;
  */
 public class ChooseGroupController extends FormBasicController {
 	
-	private final CourseNode courseNode;
+	private final List<CourseNode> courseNodes;
 	private final List<BusinessGroup> relatedGroups;
 	private SingleSelection selectGroupEl;
 	
 	public ChooseGroupController(UserRequest ureq, WindowControl wControl,
-			CourseNode courseNode, List<BusinessGroup> relatedGroups) {
+			List<CourseNode> courseNodes, List<BusinessGroup> relatedGroups) {
 		super(ureq, wControl);
-		this.courseNode = courseNode;
+		this.courseNodes = courseNodes;
 		this.relatedGroups = relatedGroups;
 		initForm(ureq);
 	}
@@ -69,8 +69,8 @@ public class ChooseGroupController extends FormBasicController {
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
 		formLayout.add(buttonLayout);
 		buttonLayout.setRootForm(mainForm);
-		uifactory.addFormSubmitButton("ok", buttonLayout);
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
+		uifactory.addFormSubmitButton("ok", buttonLayout);
 	}
 	
 	@Override
@@ -92,8 +92,8 @@ public class ChooseGroupController extends FormBasicController {
 		return null;
 	}
 
-	public CourseNode getCourseNode() {
-		return courseNode;
+	public List<CourseNode> getCourseNodes() {
+		return courseNodes;
 	}
 
 	@Override

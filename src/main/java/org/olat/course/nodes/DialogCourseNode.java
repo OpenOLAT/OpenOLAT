@@ -85,11 +85,6 @@ public class DialogCourseNode extends AbstractAccessableCourseNode {
 		updateModuleConfigDefaults(true);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.GenericCourseNode#createEditController(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl, org.olat.course.ICourse,
-	 *      org.olat.course.run.userview.UserCourseEnvironment)
-	 */
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, UserCourseEnvironment euce) {
 		updateModuleConfigDefaults(false);
@@ -98,12 +93,6 @@ public class DialogCourseNode extends AbstractAccessableCourseNode {
 		return new NodeEditController(ureq, wControl, course.getEditorTreeModel(), course, chosenNode, euce, childTabCntrllr);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.GenericCourseNode#createNodeRunConstructionResult(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl,
-	 *      org.olat.course.run.userview.UserCourseEnvironment,
-	 *      org.olat.course.run.userview.NodeEvaluation, java.lang.String)
-	 */
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
@@ -112,9 +101,7 @@ public class DialogCourseNode extends AbstractAccessableCourseNode {
 		return new NodeRunConstructionResult(wrappedCtrl);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.GenericCourseNode#isConfigValid(org.olat.course.editor.CourseEditorEnv)
-	 */
+	@Override
 	public StatusDescription[] isConfigValid(CourseEditorEnv cev) {
 		oneClickStatusCache = null;
 		// only here we know which translator to take for translating condition
@@ -125,23 +112,17 @@ public class DialogCourseNode extends AbstractAccessableCourseNode {
 		return oneClickStatusCache;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#getReferencedRepositoryEntry()
-	 */
+	@Override
 	public RepositoryEntry getReferencedRepositoryEntry() {
 		return null;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#needsReferenceToARepositoryEntry()
-	 */
+	@Override
 	public boolean needsReferenceToARepositoryEntry() {
 		return false;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#isConfigValid()
-	 */
+	@Override
 	public StatusDescription isConfigValid() {
 		/*
 		 * first check the one click cache
@@ -159,6 +140,7 @@ public class DialogCourseNode extends AbstractAccessableCourseNode {
 	 *          from previous node configuration version, set default to maintain
 	 *          previous behaviour
 	 */
+	@Override
 	public void updateModuleConfigDefaults(boolean isNewNode) {
 		ModuleConfiguration config = getModuleConfiguration();
 		if (isNewNode) {
@@ -185,6 +167,7 @@ public class DialogCourseNode extends AbstractAccessableCourseNode {
 		postExportCondition(preConditionReader, envMapper, backwardsCompatible);
 	}
 
+	@Override
 	public String informOnDelete(Locale locale, ICourse course) {
 		return null;
 	}
@@ -233,14 +216,15 @@ public class DialogCourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	@Override
-	public boolean archiveNodeData(Locale locale, ICourse course, ArchiveOptions options, ZipOutputStream exportStream, String charset) {
+	public boolean archiveNodeData(Locale locale, ICourse course, ArchiveOptions options,
+			ZipOutputStream exportStream, String archivePath, String charset) {
 		boolean dataFound = false;
 		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		List<DialogElement> list = CoreSpringFactory.getImpl(DialogElementsManager.class)
 				.getDialogElements(entry, getIdent());
-		if(list.size() > 0) {
+		if(!list.isEmpty()) {
 			for (DialogElement element:list) {
-				doArchiveElement(element, exportStream, locale);
+				doArchiveElement(element, exportStream, archivePath, locale);
 				dataFound = true;
 			}
 		}
@@ -252,11 +236,12 @@ public class DialogCourseNode extends AbstractAccessableCourseNode {
 	 * @param element
 	 * @param exportDirectory
 	 */
-	public void doArchiveElement(DialogElement element, ZipOutputStream exportStream, Locale locale) {
+	public void doArchiveElement(DialogElement element, ZipOutputStream exportStream, String archivePath, Locale locale) {
 		DialogElementsManager depm = CoreSpringFactory.getImpl(DialogElementsManager.class);
 		String exportDirName = Formatter.makeStringFilesystemSave(getShortTitle())
 				+ "_" + element.getForum().getKey()
 				+ "_" + Formatter.formatDatetimeFilesystemSave(new Date());
+		exportDirName = ZipUtil.concat(archivePath, exportDirName);
 		
 		VFSContainer forumContainer =  depm.getDialogContainer(element);
 		for(VFSItem item: forumContainer.getItems(new VFSLeafFilter())) {

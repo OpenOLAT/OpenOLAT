@@ -64,7 +64,7 @@ class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer implements Co
 		if(ftE.isMultiSelect()) {
 			// render as checkbox icon to minimize used space for header
 			String choice = translator.translate("table.header.choice");
-			target.append("<th><i class='o_icon o_icon_checkbox_checked o_icon-lg' title=\"").append(choice).append("\"> </i></th>");
+			target.append("<th class='o_multiselect'><i class='o_icon o_icon_checkbox_checked o_icon-lg' title=\"").append(choice).append("\"> </i></th>");
 		}
 		
 		int cols = columnModel.getColumnCount();
@@ -164,7 +164,7 @@ class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer implements Co
 		target.append(">");
 				
 		if(ftE.isMultiSelect()) {
-			target.append("<td>")
+			target.append("<td class='o_multiselect'>")
 			      .append("<input type='checkbox' name='tb_ms' value='").append(rowIdPrefix).append(row).append("'")
 			      .append(" onclick=\"javascript:")
 			      .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, false, false, false,

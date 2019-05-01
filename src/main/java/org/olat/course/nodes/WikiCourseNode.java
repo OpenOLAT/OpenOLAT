@@ -207,7 +207,8 @@ public class WikiCourseNode extends AbstractAccessableCourseNode {
 	}
 
 	@Override
-	public boolean archiveNodeData(Locale locale, ICourse course, ArchiveOptions options, ZipOutputStream exportStream, String charset) {
+	public boolean archiveNodeData(Locale locale, ICourse course, ArchiveOptions options,
+			ZipOutputStream exportStream, String archivePath, String charset) {
 		String repoRef = (String)getModuleConfiguration().get("reporef");
 		OLATResourceable ores = RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(repoRef, true).getOlatResource();
 		
@@ -217,9 +218,14 @@ public class WikiCourseNode extends AbstractAccessableCourseNode {
 		}
 		 
 		//OK, there is something to archive 
-		String currentPath = "wiki_"
-				+ StringHelper.transformDisplayNameToFileSystemName(getShortName())
-				+ "_" + Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis()));
+		String currentPath;
+		if(StringHelper.containsNonWhitespace(archivePath)) {
+			currentPath = archivePath;
+		} else {
+			currentPath = "wiki_"
+					+ StringHelper.transformDisplayNameToFileSystemName(getShortName())
+					+ "_" + Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis()));
+		}
 		
 		VFSContainer container = WikiManager.getInstance().getWikiContainer(ores, WikiManager.WIKI_RESOURCE_FOLDER_NAME);
 		if(container != null) { //the container could be null if the wiki is an old empty one - so nothing to archive

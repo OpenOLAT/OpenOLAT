@@ -520,7 +520,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Persi
 	}
 
 	@Override
-	public boolean archiveNodeData(Locale locale, ICourse course, ArchiveOptions options, ZipOutputStream exportStream, String charset) {
+	public boolean archiveNodeData(Locale locale, ICourse course, ArchiveOptions options, ZipOutputStream exportStream, String path, String charset) {
 		final GTAManager gtaManager = CoreSpringFactory.getImpl(GTAManager.class);
 		final ModuleConfiguration config =  getModuleConfiguration();
 
@@ -531,9 +531,14 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Persi
 			prefix = "ita_";
 		}
 	
-		String dirName = prefix
+		String dirName;
+		if(StringHelper.containsNonWhitespace(path)) {
+			dirName = path;
+		} else {
+			dirName = prefix
 				+ StringHelper.transformDisplayNameToFileSystemName(getShortName())
 				+ "_" + Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis()));
+		}
 		
 		TaskList taskList = gtaManager.getTaskList(course.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), this);
 

@@ -87,8 +87,8 @@ public class QTI12ResultsExportMediaResource implements MediaResource {
 	private String title, exportFolderName;
 	private Translator translator;
 
-	public QTI12ResultsExportMediaResource(CourseEnvironment courseEnv, Locale locale, List<Identity> identities,
-			QTICourseNode courseNode) {
+	public QTI12ResultsExportMediaResource(CourseEnvironment courseEnv, List<Identity> identities,
+			QTICourseNode courseNode, String archivePath, Locale locale) {
 		this.courseNode = courseNode;
 		this.courseEnv = courseEnv;
 		this.locale = locale;
@@ -97,7 +97,7 @@ public class QTI12ResultsExportMediaResource implements MediaResource {
 		velocityHelper = VelocityHelper.getInstance();
 		
 		translator = Util.createPackageTranslator(QTI12ResultsExportMediaResource.class, locale);
-		exportFolderName = translator.translate("export.folder.name");
+		exportFolderName = ZipUtil.concat(archivePath, translator.translate("export.folder.name"));
 		
 		qtiResultManager = QTIResultManager.getInstance();
 	}
@@ -257,9 +257,8 @@ public class QTI12ResultsExportMediaResource implements MediaResource {
 	
 	
 	private String createPassedIcons(boolean passed) {
-		String icon = passed ? "<i class='o_icon o_passed o_icon_passed text-success'></i>"
+		return passed ? "<i class='o_icon o_passed o_icon_passed text-success'></i>"
 				: "<i class='o_icon o_failed o_icon_failed text-danger'></i>";
-		return icon;
 	}
 	
 	private String createResultHTML (String results){

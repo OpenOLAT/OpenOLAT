@@ -109,7 +109,7 @@ public class ConfirmChangeResourceController extends FormBasicController {
 		
 		try(OutputStream out= new FileOutputStream(archiveFile);
 				ZipOutputStream exportStream = new ZipOutputStream(out)) {
-			courseNode.archiveNodeData(getLocale(), course, null, exportStream, "UTF8");
+			courseNode.archiveNodeData(getLocale(), course, null, exportStream, "", "UTF8");
 			return archiveFile;
 		} catch(Exception e) {
 			logError("", e);

@@ -228,7 +228,7 @@ public class QTI21ResetDataController extends FormBasicController {
 		try(FileOutputStream fileStream = new FileOutputStream(exportFile);
 			ZipOutputStream exportStream = new ZipOutputStream(fileStream)) {
 			
-			courseNode.archiveNodeData(getLocale(), course, archiveOptions, exportStream, "UTF-8");
+			courseNode.archiveNodeData(getLocale(), course, archiveOptions, exportStream, "", "UTF-8");
 		} catch (IOException e) {
 			logError("", e);
 		}

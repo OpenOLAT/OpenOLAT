@@ -1039,7 +1039,7 @@ public class CourseFactory {
 			File exportFile = new File(exportPath, archiveName);
 			try(FileOutputStream fileStream = new FileOutputStream(exportFile);
 					ZipOutputStream exportStream = new ZipOutputStream(fileStream);) {
-				cn.archiveNodeData(locale, course, null, exportStream, charset);
+				cn.archiveNodeData(locale, course, null, exportStream, "", charset);
 			} catch (IOException e) {
 				log.error("", e);
 			}

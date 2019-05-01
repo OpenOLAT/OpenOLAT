@@ -487,11 +487,16 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 	 */
 	@Override
 	public boolean archiveNodeData(Locale locale, ICourse course, ArchiveOptions options,
-			ZipOutputStream exportStream, String charset) {
+			ZipOutputStream exportStream, String archivePath, String charset) {
 		
-		String dirName = "cl_"
-				+ StringHelper.transformDisplayNameToFileSystemName(getShortName())
-				+ "_" + Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis()));
+		String dirName;
+		if(StringHelper.containsNonWhitespace(archivePath)) {
+			dirName = archivePath;
+		} else {
+			dirName = "cl_"
+					+ StringHelper.transformDisplayNameToFileSystemName(getShortName())
+					+ "_" + Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis()));
+		}
 		
 		ModuleConfiguration config = getModuleConfiguration();
 		CheckboxList list = (CheckboxList)config.get(CONFIG_KEY_CHECKBOX);
@@ -544,7 +549,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 			}
 		}
 
-		return super.archiveNodeData(locale, course, options, exportStream, charset);
+		return super.archiveNodeData(locale, course, options, exportStream, archivePath, charset);
 	}
 
 	@Override

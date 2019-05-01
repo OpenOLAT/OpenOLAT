@@ -58,11 +58,11 @@ import org.olat.course.nodes.AssessableCourseNode;
  */
 public class ScoreAccountingArchiveController extends BasicController {
 
-	private OLATResourceable ores;
+	private final OLATResourceable ores;
 	private StackedPanel myPanel;
 	private VelocityContainer myContent;
-	private VelocityContainer vcFeedback;
-	private Link startButton, downloadButton;
+	private Link startButton;
+	private Link downloadButton;
 	
 
 	/**
@@ -77,7 +77,7 @@ public class ScoreAccountingArchiveController extends BasicController {
 
 		myPanel = putInitialPanel(myPanel);
 		myContent = createVelocityContainer("start");
-		startButton = LinkFactory.createButtonSmall("cmd.start", myContent, this);
+		startButton = LinkFactory.createButton("cmd.start", myContent, this);
 		myPanel.setContent(myContent);
 	}
 
@@ -111,7 +111,7 @@ public class ScoreAccountingArchiveController extends BasicController {
 			logError("", e);
 		}
 
-		vcFeedback = createVelocityContainer("feedback");
+		VelocityContainer vcFeedback = createVelocityContainer("feedback");
 		vcFeedback.contextPut("body", translate("course.res.feedback", new String[] { downloadFile.getName() }));
 		downloadButton = LinkFactory.createButtonSmall("cmd.download", vcFeedback, this);
 		downloadButton.setUserObject(downloadFile);

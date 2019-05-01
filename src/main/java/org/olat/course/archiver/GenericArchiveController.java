@@ -26,104 +26,160 @@
 package org.olat.course.archiver;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.panel.Panel;
-import org.olat.core.gui.components.table.ColumnDescriptor;
-import org.olat.core.gui.components.table.CustomRenderColumnDescriptor;
-import org.olat.core.gui.components.table.DefaultColumnDescriptor;
-import org.olat.core.gui.components.table.Table;
-import org.olat.core.gui.components.table.TableController;
-import org.olat.core.gui.components.table.TableEvent;
-import org.olat.core.gui.components.table.TableGuiConfiguration;
-import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.OLATResourceable;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.course.archiver.NodeTableDataModel.NodeCols;
 import org.olat.course.assessment.IndentedNodeRenderer;
 import org.olat.course.assessment.model.AssessmentNodeData;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.ArchiveOptions;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.TACourseNode;
 import org.olat.group.BusinessGroup;
+
 
 /**
  * @author schnider Comment: Archives the User selected wiki's to the personal
  *         folder of this user.
  * @author fkiefer
  */
-public class GenericArchiveController extends BasicController {
+public class GenericArchiveController extends FormBasicController {
 	
-	private static final String CMD_SELECT_NODE = "cmd.select.node";
-	
-	private final Panel main;
-	private final VelocityContainer nodeChoose;
-	private TableController nodeListCtr;
+	private FormLink selectButton;
+	private FlexiTableElement tableEl;
 	private NodeTableDataModel nodeTableModel;
+	private FormLink downloadOptionsButton;
+	
 	private CloseableModalController cmc;
 	private ChooseGroupController chooseGroupCtrl;
+	private ExportOptionsController exportOptionsCtrl; 
 	
-	private boolean hideTitle;
 	private ArchiveOptions options;
-	
-	private final CourseNode[] nodeTypes;
+	private final boolean withOptions;
 	private final OLATResourceable ores;
+	private final CourseNode[] nodeTypes;
 
 	/**
 	 * Constructor for the assessment tool controller.
 	 * 
-	 * @param ureq
-	 * @param wControl
-	 * @param course
+	 * @param ureq The user request
+	 * @param wControl The window control	
+	 * @param ores The resourceable of the course
+	 * @param options Allow to configure the archive options
+	 * @param nodeTypes The node types to export
 	 */
-	public GenericArchiveController(UserRequest ureq, WindowControl wControl, OLATResourceable ores, CourseNode... nodeTypes) {
-		super(ureq, wControl);
-
+	public GenericArchiveController(UserRequest ureq, WindowControl wControl, OLATResourceable ores, boolean withOptions,  CourseNode... nodeTypes) {
+		super(ureq, wControl, "nodechoose");
 		this.ores = ores;
 		this.nodeTypes = nodeTypes;
-		
-		main = new Panel("main");
-		nodeChoose = createVelocityContainer("nodechoose");
-		nodeChoose.contextPut("nodeType", nodeTypes[0].getType());
-		
+		this.withOptions = withOptions;
 		options = new ArchiveOptions();
-
-		doNodeChoose(ureq, nodeChoose);		
-		putInitialPanel(main);
+		initForm(ureq);
+		loadModel();
 	}
 
 	@Override
-	public void event(UserRequest ureq, Component source, Event event) {
-		// no interesting events
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		if(formLayout instanceof FormLayoutContainer) {
+			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+			layoutCont.contextPut("nodeType", nodeTypes[0].getType());
+			String cssClass = CourseNodeFactory.getInstance()
+					.getCourseNodeConfigurationEvenForDisabledBB(nodeTypes[0].getType()).getIconCSSClass();
+			layoutCont.contextPut("iconCss", cssClass);
+
+			FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.data, new IndentedNodeRenderer()));
+			DefaultFlexiColumnModel selectColumn = new DefaultFlexiColumnModel("archive", NodeCols.select.ordinal(), "select",
+					new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("archive"), "select"), null));	
+			columnsModel.addFlexiColumnModel(selectColumn);
+			
+			nodeTableModel = new NodeTableDataModel(columnsModel, getTranslator());
+			
+			tableEl = uifactory.addTableElement(getWindowControl(), "nodeTable", nodeTableModel, 1024, false, getTranslator(), layoutCont);
+			tableEl.setExportEnabled(false);
+			tableEl.setNumOfRowsEnabled(false);
+			tableEl.setCustomizeColumns(false);
+			tableEl.setMultiSelect(true);
+			tableEl.setSelectAllEnable(true);
+			tableEl.setEmtpyTableMessageKey("nodesoverview.nonodes");
+			
+			selectButton = uifactory.addFormLink("archive", formLayout, Link.BUTTON);
+			if(withOptions) {
+				downloadOptionsButton = uifactory.addFormLink("download.options", layoutCont, Link.BUTTON_SMALL);
+				downloadOptionsButton.setIconLeftCSS("o_icon o_icon_tools");
+			}
+		}
+	}
+
+	@Override
+	protected void doDispose() {
+		//
+	}
+
+	@Override
+	protected void formOK(UserRequest ureq) {
+		//
+	}
+	
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source == tableEl) {
+			if (event instanceof SelectionEvent) {
+				SelectionEvent se = (SelectionEvent)event;
+				if ("select".equals(se.getCommand())) {
+					AssessmentNodeData nodeData = nodeTableModel.getObject(se.getIndex());
+					doSelectNode(ureq, nodeData);
+				}
+			}
+		} else if(source == selectButton) {
+			doMultiSelectNodes(ureq);
+		} else if (source == downloadOptionsButton) {
+			doOpenExportOptios(ureq);
+		}
+		super.formInnerEvent(ureq, source, event);
 	}
 
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
-		if (source == nodeListCtr) {
-			if (event.getCommand().equals(Table.COMMANDLINK_ROWACTION_CLICKED)) {
-				TableEvent te = (TableEvent)event;
-				String actionid = te.getActionId();
-				if (actionid.equals(CMD_SELECT_NODE)) {
-					AssessmentNodeData nodeData = nodeTableModel.getObject(te.getRowId());
-					doSelectNode(ureq, nodeData);
-				}
-			}
-		} else if(source == chooseGroupCtrl) {
+		if(source == chooseGroupCtrl) {
 			cmc.deactivate();
-			CourseNode courseNode = chooseGroupCtrl.getCourseNode();
+			List<CourseNode> courseNodes = chooseGroupCtrl.getCourseNodes();
 			BusinessGroup group = chooseGroupCtrl.getSelectedGroup();
 			cleanUpPopups();
 			if(Event.DONE_EVENT == event) {
-				archiveNode(ureq, courseNode, group);
+				archiveNode(ureq, courseNodes, group);
 			}
+		} else if (source == exportOptionsCtrl) {
+			if (event == Event.DONE_EVENT) {
+				setOptions(FormatConfigHelper.getArchiveOptions(ureq));
+			}
+			cmc.deactivate();
+			cleanUpPopups();
 		} else if (source == cmc) {
 			cleanUpPopups();
 		}
@@ -133,51 +189,21 @@ public class GenericArchiveController extends BasicController {
 	 * Aggressive clean up all popup controllers
 	 */
 	protected void cleanUpPopups() {
+		removeAsListenerAndDispose(exportOptionsCtrl);
 		removeAsListenerAndDispose(chooseGroupCtrl);
 		removeAsListenerAndDispose(cmc);
+		exportOptionsCtrl = null;
 		chooseGroupCtrl = null;
 		cmc = null;
 	}
-
-	/**
-	 * @param ureq
-	 */
-	private void doNodeChoose(UserRequest ureq, VelocityContainer nodeChoose) {
-		// table configuraton
-		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
-		tableConfig.setTableEmptyMessage(translate("nodesoverview.nonodes"));
-		tableConfig.setDownloadOffered(false);
-		tableConfig.setSortingEnabled(false);
-		tableConfig.setDisplayTableHeader(true);
-		tableConfig.setDisplayRowCount(false);
-		tableConfig.setPageingEnabled(false);
-
-		removeAsListenerAndDispose(nodeListCtr);
-		nodeListCtr = new TableController(tableConfig, ureq, getWindowControl(), getTranslator());
-		listenTo(nodeListCtr);
-		
-		// table columns
-		nodeListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor("table.header.node", 0, null, getLocale(),
-				ColumnDescriptor.ALIGNMENT_LEFT, new IndentedNodeRenderer()));
-		nodeListCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.action.select", 1, CMD_SELECT_NODE, getLocale()));
-
-		// get list of course node data and populate table data model
+	
+	private void loadModel() {
 		ICourse course = CourseFactory.loadCourse(ores);
 		CourseNode rootNode = course.getRunStructure().getRootNode();
 		List<AssessmentNodeData> nodesTableObjectArrayList = addNodesAndParentsToList(0, rootNode);
-
-		// only populate data model if data available
-		if (nodesTableObjectArrayList == null) {
-			nodeChoose.contextPut("hasNodes", Boolean.FALSE);
-		} else {
-			nodeChoose.contextPut("hasNodes", Boolean.TRUE);
-			nodeTableModel = new NodeTableDataModel(nodesTableObjectArrayList, getTranslator());
-			nodeListCtr.setTableDataModel(nodeTableModel);
-			nodeChoose.put("nodeTable", nodeListCtr.getInitialComponent());
-		}
-
-		// set main content to nodechoose, do not use wrapper
-		main.setContent(nodeChoose);
+		flc.contextPut("hasNodes", Boolean.valueOf(!nodesTableObjectArrayList.isEmpty()));
+		nodeTableModel.setObjects(nodesTableObjectArrayList);
+		tableEl.reset(true, true, true);
 	}
 
 	/**
@@ -199,7 +225,7 @@ public class GenericArchiveController extends BasicController {
 		}
 
 		boolean matchType = matchTypes(courseNode);
-		if (childrenData.size() > 0 || matchType) {
+		if (!childrenData.isEmpty() || matchType) {
 			// Store node data in map. This map array serves as data model for
 			// the tasks overview table. Leave user data empty since not used in
 			// this table. (use only node data)
@@ -211,7 +237,7 @@ public class GenericArchiveController extends BasicController {
 			nodeAndChildren.addAll(childrenData);
 			return nodeAndChildren;
 		}
-		return null;
+		return new ArrayList<>();
 	}
 	
 	private boolean matchTypes(CourseNode courseNode) {
@@ -222,25 +248,53 @@ public class GenericArchiveController extends BasicController {
 		return match;
 	}
 	
+	private void doMultiSelectNodes(UserRequest ureq) {
+		ICourse course = CourseFactory.loadCourse(ores);
+		Set<Integer> selectedIndex = tableEl.getMultiSelectedIndex();
+		List<CourseNode> nodes = new ArrayList<>(selectedIndex.size());
+		for(Integer index:selectedIndex) {
+			AssessmentNodeData nodeData = nodeTableModel.getObject(index.intValue());
+			CourseNode node = course.getRunStructure().getNode(nodeData.getIdent());
+			if(matchTypes(node)) {
+				nodes.add(node);
+			}
+		}
+		
+		if(nodes.isEmpty()) {
+			showWarning("warning.atleast.node");
+		} if(nodes.get(0) instanceof TACourseNode) {
+			CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
+			List<BusinessGroup> relatedGroups = cgm.getAllBusinessGroups();
+			if(relatedGroups.isEmpty()) {
+				archiveNode(ureq, nodes, null);
+			} else {
+				doSelectBusinessGroup(ureq, nodes, relatedGroups);
+			}
+		} else {
+			archiveNode(ureq, nodes, null);
+		}
+	}
+	
 	private void doSelectNode(UserRequest ureq, AssessmentNodeData nodeData) {
 		ICourse course = CourseFactory.loadCourse(ores);
 		CourseNode node = course.getRunStructure().getNode(nodeData.getIdent());
+		List<CourseNode> nodes = Collections.singletonList(node);
 		//some node can limit the archive to a business group
 		if(node instanceof TACourseNode) {
 			CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
 			List<BusinessGroup> relatedGroups = cgm.getAllBusinessGroups();
 			if(relatedGroups.isEmpty()) {
-				archiveNode(ureq, node, null);
+				archiveNode(ureq, nodes, null);
 			} else {
-				doSelectBusinessGroup(ureq, node, relatedGroups);
+				doSelectBusinessGroup(ureq, nodes, relatedGroups);
 			}
 		} else {
-			archiveNode(ureq, node, null);
+			archiveNode(ureq, nodes, null);
 		}
 	}
 	
-	private void doSelectBusinessGroup(UserRequest ureq, CourseNode node, List<BusinessGroup> relatedGroups) {
-		chooseGroupCtrl = new ChooseGroupController(ureq, getWindowControl(), node, relatedGroups);
+	private void doSelectBusinessGroup(UserRequest ureq, List<CourseNode> nodes, List<BusinessGroup> relatedGroups) {
+		chooseGroupCtrl = new ChooseGroupController(ureq, getWindowControl(), nodes, relatedGroups);
 		listenTo(chooseGroupCtrl);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), chooseGroupCtrl.getInitialComponent(),
 				true, translate("select.group"));
@@ -248,26 +302,19 @@ public class GenericArchiveController extends BasicController {
 		listenTo(cmc);
 	}
 
-	private void archiveNode(UserRequest ureq, CourseNode node, BusinessGroup group) {
+	private void archiveNode(UserRequest ureq, List<CourseNode> nodes, BusinessGroup group) {
 		options.setGroup(group);
-		ArchiveResource aResource = new ArchiveResource(node, ores, options, getLocale());
+		ArchiveResource aResource = new ArchiveResource(nodes, ores, options, getLocale());
 		ureq.getDispatchResult().setResultingMediaResource(aResource);
 	}
-
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
-	protected void doDispose() {
-		//
-	}
-
-	public boolean isHideTitle() {
-		return hideTitle;
-	}
-
-	public void setHideTitle(boolean hideTitle) {
-		this.hideTitle = hideTitle;
-		nodeChoose.contextPut("hideTitle", hideTitle);
+	
+	private void doOpenExportOptios(UserRequest ureq) {
+		exportOptionsCtrl = new ExportOptionsController(ureq, getWindowControl());
+		listenTo(exportOptionsCtrl);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), exportOptionsCtrl.getInitialComponent(),
+				true, translate("download.options"));
+		cmc.activate();
+		listenTo(cmc);
 	}
 
 	public void setOptions(ArchiveOptions options) {

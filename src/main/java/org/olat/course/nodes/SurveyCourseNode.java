@@ -253,8 +253,8 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 	}
 
 	@Override
-	public boolean archiveNodeData(Locale locale, ICourse course, ArchiveOptions options, ZipOutputStream exportStream,
-			String charset) {
+	public boolean archiveNodeData(Locale locale, ICourse course, ArchiveOptions options,
+			ZipOutputStream exportStream, String archivePath, String charset) {
 		EvaluationFormManager evaluationFormManager = CoreSpringFactory.getImpl(EvaluationFormManager.class);
 		
 		RepositoryEntry ores = RepositoryManager.getInstance().lookupRepositoryEntry(course, true);
@@ -268,7 +268,7 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 		EvaluationFormExcelExport evaluationFormExport = new EvaluationFormExcelExport(form, filter, reportHelper,
 				getShortName());
 		try {
-			evaluationFormExport.export(exportStream);
+			evaluationFormExport.export(exportStream, archivePath);
 		} catch (IOException e) {
 			log.error("", e);
 			return false;

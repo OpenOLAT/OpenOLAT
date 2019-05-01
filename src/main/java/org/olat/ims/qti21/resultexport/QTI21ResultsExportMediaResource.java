@@ -114,7 +114,7 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 	private final QTI21Service qtiService;
 	
 	public QTI21ResultsExportMediaResource(CourseEnvironment courseEnv, List<Identity> identities,
-			QTICourseNode courseNode, Locale locale) {	
+			QTICourseNode courseNode, String archivePath, Locale locale) {	
 		this.courseNode = courseNode;
 		this.identities = identities;
 		this.courseEnv = courseEnv;
@@ -127,7 +127,7 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		entry = courseEnv.getCourseGroupManager().getCourseEntry();
 		translator = Util.createPackageTranslator(QTI21ResultsExportMediaResource.class, locale);
-		exportFolderName = translator.translate("export.folder.name");
+		exportFolderName = ZipUtil.concat(archivePath, translator.translate("export.folder.name"));
 	}
 
 	@Override

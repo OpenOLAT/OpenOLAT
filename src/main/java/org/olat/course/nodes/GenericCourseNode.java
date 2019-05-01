@@ -409,7 +409,8 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	 *      org.olat.course.ICourse, java.util.zip.ZipOutputStream, String charset)
 	 */
 	@Override
-	public boolean archiveNodeData(Locale locale, ICourse course, ArchiveOptions options, ZipOutputStream exportStream, String charset) {
+	public boolean archiveNodeData(Locale locale, ICourse course, ArchiveOptions options,
+			ZipOutputStream exportStream, String path, String charset) {
 		// nothing to do in default implementation
 		return true;
 	}

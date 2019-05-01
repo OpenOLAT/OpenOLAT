@@ -323,12 +323,14 @@ public interface CourseNode extends INode, ShortName {
 	 * 
 	 * @param locale The users locale
 	 * @param course The course
+	 * @param options The options to generate the archive
 	 * @param exportStream The directory where the exported files should be
 	 *          put. This directory must exist prior to calling this method.
-	 * @param value of charset property of current user
-	 * @return true if any data to be archived was found, false otherwise.
+	 * @param path The path in the zip archive (without trailing /) or an empty string
+	 * @param charset The charset property of current user
+	 * @return true If any data to be archived was found, false otherwise.
 	 */
-	public boolean archiveNodeData(Locale locale, ICourse course, ArchiveOptions options, ZipOutputStream out, String charset);
+	public boolean archiveNodeData(Locale locale, ICourse course, ArchiveOptions options, ZipOutputStream exportStream, String path, String charset);
 
 	/**
 	 * Export all node user data to the given directory. This might be one file or

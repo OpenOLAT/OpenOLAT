@@ -257,7 +257,8 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 	}
 
 	@Override
-	public boolean archiveNodeData(Locale locale, ICourse course, ArchiveOptions options, ZipOutputStream exportStream, String charset) {
+	public boolean archiveNodeData(Locale locale, ICourse course, ArchiveOptions options,
+			ZipOutputStream exportStream, String archivePath, String charset) {
 		String repositorySoftKey = (String) getModuleConfiguration().get(IQEditController.CONFIG_KEY_REPOSITORY_SOFTKEY);
 		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(repositorySoftKey, true);
 		
@@ -266,7 +267,7 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 				RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 				QTI21StatisticSearchParams searchParams = new QTI21StatisticSearchParams(options, re, courseEntry, getIdent());
 				QTI21ArchiveFormat qaf = new QTI21ArchiveFormat(locale, searchParams);
-				qaf.exportCourseElement(exportStream);
+				qaf.exportCourseElement(exportStream, archivePath);
 				return true;	
 			} else {
 				QTIExportManager qem = QTIExportManager.getInstance();
@@ -281,7 +282,7 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 					}
 					qef.setMapWithExportItemConfigs(itemConfigs);
 				}
-				return qem.selectAndExportResults(qef, course.getResourceableId(), getShortTitle(), getIdent(), re, exportStream, locale, ".xls");
+				return qem.selectAndExportResults(qef, course.getResourceableId(), getShortTitle(), getIdent(), re, exportStream, archivePath, locale, ".xls");
 			}
 		} catch (IOException e) {
 			log.error("", e);

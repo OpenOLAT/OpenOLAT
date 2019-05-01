@@ -16,6 +16,10 @@
 		tfoot {
 			border-top:solid $table-border-color 2px;
 		}
+		
+		.o_multiselect {
+			width: 20px;
+		}
 	}
 	
 	&.o_table_edit table tbody {

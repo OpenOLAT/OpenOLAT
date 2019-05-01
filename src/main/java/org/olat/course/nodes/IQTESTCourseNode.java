@@ -704,7 +704,9 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 	}
 
 	@Override
-	public boolean archiveNodeData(Locale locale, ICourse course, ArchiveOptions options, ZipOutputStream exportStream, String charset) {
+	public boolean archiveNodeData(Locale locale, ICourse course, ArchiveOptions options,
+			ZipOutputStream exportStream, String archivePath, String charset) {
+		
 		String repositorySoftKey = (String)getModuleConfiguration().get(IQEditController.CONFIG_KEY_REPOSITORY_SOFTKEY);
 		Long courseResourceableId = course.getResourceableId();
 
@@ -718,17 +720,17 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 			} else if(ImsQTI21Resource.TYPE_NAME.equals(re.getOlatResource().getResourceableTypeName())) {
 				// 2a) create export resource
 				List<Identity> identities = ScoreAccountingHelper.loadUsers(courseEnv, options);
-				new QTI21ResultsExportMediaResource(courseEnv, identities, this, locale).exportTestResults(exportStream);
+				new QTI21ResultsExportMediaResource(courseEnv, identities, this, archivePath, locale).exportTestResults(exportStream);
 				// excel results
 				RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 				QTI21StatisticSearchParams searchParams = new QTI21StatisticSearchParams(options, re, courseEntry, getIdent());
 				QTI21ArchiveFormat qaf = new QTI21ArchiveFormat(locale, searchParams);
-				qaf.exportCourseElement(exportStream);
+				qaf.exportCourseElement(exportStream, archivePath);
 				return true;	
 			} else {
 				// 2b) create export resource
 				List<Identity> identities = ScoreAccountingHelper.loadUsers(courseEnv, options);
-				new QTI12ResultsExportMediaResource(courseEnv, locale, identities, this).exportTestResults(exportStream);
+				new QTI12ResultsExportMediaResource(courseEnv, identities, this, archivePath, locale).exportTestResults(exportStream);
 				// excel results
 				String shortTitle = getShortTitle();
 				QTIExportManager qem = QTIExportManager.getInstance();
@@ -742,7 +744,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 					}
 					qef.setMapWithExportItemConfigs(itemConfigs);
 				}
-				return qem.selectAndExportResults(qef, courseResourceableId, shortTitle, getIdent(), re, exportStream, locale, ".xls");
+				return qem.selectAndExportResults(qef, courseResourceableId, shortTitle, getIdent(), re, exportStream, archivePath, locale, ".xls");
 			}
 		} catch (IOException e) {
 			log.error("", e);

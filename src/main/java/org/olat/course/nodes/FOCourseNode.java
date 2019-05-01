@@ -49,6 +49,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
+import org.olat.core.util.ZipUtil;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.SyncerCallback;
 import org.olat.core.util.resource.OresHelper;
@@ -412,7 +413,8 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 	}
 
 	@Override
-	public boolean archiveNodeData(Locale locale, ICourse course, ArchiveOptions options, ZipOutputStream exportStream, String charset) {
+	public boolean archiveNodeData(Locale locale, ICourse course, ArchiveOptions options,
+			ZipOutputStream exportStream, String archivePath, String charset) {
 		CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
 		Property forumKeyProperty = cpm.findCourseNodeProperty(this, null, null, FORUM_KEY);
 		if(forumKeyProperty == null) {
@@ -425,6 +427,7 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 		
 		String forumName = "forum_" + Formatter.makeStringFilesystemSave(getShortTitle())
 				+ "_" + Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis()));
+		forumName = ZipUtil.concat(archivePath, forumName);
 		ForumStreamedRTFFormatter rtff = new ForumStreamedRTFFormatter(exportStream, forumName, false, locale);	
 		CoreSpringFactory.getImpl(ForumArchiveManager.class).applyFormatter(rtff, forumKey, null);
 		return true;

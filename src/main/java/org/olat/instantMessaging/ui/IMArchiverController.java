@@ -19,7 +19,6 @@
  */
 package org.olat.instantMessaging.ui;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -35,6 +34,7 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.OLATResourceable;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.instantMessaging.manager.ChatLogHelper;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -44,18 +44,20 @@ import org.olat.instantMessaging.manager.ChatLogHelper;
  */
 public class IMArchiverController extends BasicController {
 	
-	private final Link exportLink, deleteLink;
+	private final Link exportLink;
+	private final Link deleteLink;
 	private DialogBoxController deleteDialogCtr;
 	
 	private final OLATResourceable chatResource;
-	private final ChatLogHelper helper;
-	private final InstantMessagingService imService;
 	private final VelocityContainer mainVC;
+	
+	@Autowired
+	private ChatLogHelper helper;
+	@Autowired
+	private InstantMessagingService imService;
 	
 	public IMArchiverController(UserRequest ureq, WindowControl wControl, OLATResourceable chatResource) {
 		super(ureq, wControl);
-		helper = CoreSpringFactory.getImpl(ChatLogHelper.class);
-		imService = CoreSpringFactory.getImpl(InstantMessagingService.class);
 		this.chatResource = chatResource;
 		
 		mainVC = createVelocityContainer("archive");

@@ -276,13 +276,13 @@ public class PFCourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	@Override
-	public boolean archiveNodeData(Locale locale, ICourse course, ArchiveOptions options, ZipOutputStream exportStream,
-			String charset) {
+	public boolean archiveNodeData(Locale locale, ICourse course, ArchiveOptions options,
+			ZipOutputStream exportStream, String archivePath, String charset) {
 		CourseEnvironment courseEnv = course.getCourseEnvironment();
 		Path sourceFolder = Paths.get(courseEnv.getCourseBaseContainer().getBasefile().getAbsolutePath(),
 				PFManager.FILENAME_PARTICIPANTFOLDER, getIdent()); 
 		Translator translator = Util.createPackageTranslator(PFRunController.class, locale);
-		return FileSystemExport.fsToZip(exportStream, sourceFolder, this, null, translator);		
+		return FileSystemExport.fsToZip(exportStream, archivePath, sourceFolder, this, null, translator);		
 	}
 
 	@Override

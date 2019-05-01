@@ -84,6 +84,19 @@ public class ZipUtil {
 	private static final String DIR_NAME__MACOSX = "__MACOSX/";
 	
 	private static final OLog log = Tracing.createLoggerFor(ZipUtil.class);
+	
+	public static String concat(String dirName, String name) {
+		if(StringHelper.containsNonWhitespace(dirName)) {
+			StringBuilder sb = new StringBuilder(dirName.length() + name.length() + 2);
+			sb.append(dirName);
+			if(!dirName.endsWith("/")) {
+				sb.append("/");
+			}
+			sb.append(name);
+			return sb.toString();
+		}
+		return name;
+	}
 
 	/**
 	 * Unzip a file to a directory

@@ -1,12 +1,15 @@
-#if (!$hideTitle) 
-	<h4>$r.translate("$nodeType")</h4>
-#end
+<div class="o_header_with_buttons">
+	<h4><i class="o_icon $iconCss"> </i> $r.translate("$nodeType")</h4>
+	#if($r.available("download.options"))
+		<div class="o_button_group">$r.render("download.options")</div>
+	#end
+</div>
 #if($hasNodes)
 	#if (!$hideTitle)
-	<p>$r.translate("nodechoose.intro.$nodeType")</p>
+	<p class="o_info">$r.translate("nodechoose.intro.$nodeType")</p>
 	#end
-	<p>$r.render("nodeTable")</p>
+	$r.render("nodeTable")
+	<div class="o_button_group">$r.render("archive")</div>
 #else
-	<p>$r.translate("overview.nonodes.$nodeType")</p>
+	<p class="o_warning">$r.translate("overview.nonodes.$nodeType")</p>
 #end
-

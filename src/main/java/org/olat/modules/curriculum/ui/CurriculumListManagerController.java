@@ -120,7 +120,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CurriculumCols.externalId, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumCols.numOfElements));
 		DefaultFlexiColumnModel editCol = new DefaultFlexiColumnModel("edit.icon", CurriculumCols.edit.ordinal(), "edit",
-				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("edit"), "edit"), null));		
+				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("edit"), "edit"), null));	
 		editCol.setExportable(false);
 		columnsModel.addFlexiColumnModel(editCol);
 		if(secCallback.canEditCurriculum()) {

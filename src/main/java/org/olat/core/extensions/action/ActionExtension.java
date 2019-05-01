@@ -38,8 +38,6 @@ import org.olat.core.gui.control.WindowControl;
  * Description:<br>
  * Initial Date:  02.08.2005 <br>
  * 
- * @deprecated  
- * 
  * do not directly implement this interface. Subclass GenericActionExtension instead!
  * 
  * @author Felix

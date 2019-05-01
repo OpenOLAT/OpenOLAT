@@ -45,6 +45,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.ZipUtil;
 import org.olat.core.util.io.ShieldOutputStream;
 import org.olat.core.util.openxml.OpenXMLWorkbook;
 import org.olat.core.util.openxml.OpenXMLWorkbookResource;
@@ -210,13 +211,14 @@ public class QTI21ArchiveFormat {
 	 * 
 	 * @param exportStream
 	 */
-	public void exportCourseElement(ZipOutputStream exportStream) {
+	public void exportCourseElement(ZipOutputStream exportStream, String currentPath) {
 		ICourse course = CourseFactory.loadCourse(searchParams.getCourseEntry());
 		courseNode = course.getRunStructure().getNode(searchParams.getNodeIdent());
 		String label = StringHelper.transformDisplayNameToFileSystemName(courseNode.getShortName())
 				+ "_" + Formatter.formatDatetimeWithMinutes(new Date())
 				+ ".xlsx";
-		exportCourseElement(label, exportStream);
+		String path = ZipUtil.concat(currentPath, label);
+		exportCourseElement(path, exportStream);
 	}
 	
 	public void exportCourseElement(String label, ZipOutputStream exportStream) {

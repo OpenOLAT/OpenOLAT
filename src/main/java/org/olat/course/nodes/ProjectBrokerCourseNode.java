@@ -946,7 +946,8 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Persis
 	
 	
 	@Override
-	public boolean archiveNodeData(Locale locale, ICourse course, ArchiveOptions options, ZipOutputStream exportStream, String charset) {
+	public boolean archiveNodeData(Locale locale, ICourse course, ArchiveOptions options,
+			ZipOutputStream exportStream, String archivePath, String charset) {
 		boolean dataFound = false;
 		String dropboxPath = DropboxController.getDropboxPathRelToFolderRoot(course.getCourseEnvironment(),this);
 		VFSContainer dropboxDir = VFSManager.olatRootContainer(dropboxPath, null);
@@ -958,6 +959,7 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Persis
 		
 		String exportDirName = "projectbroker_" + Formatter.makeStringFilesystemSave(getShortName())
 				  + "_" + Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis()));
+		exportDirName = ZipUtil.concat(archivePath, exportDirName);
 
 		try {
 			String projectBrokerTableExport = ProjectBrokerExportGenerator.createCourseResultsOverviewTable(this, course, locale);
