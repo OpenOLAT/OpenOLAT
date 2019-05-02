@@ -19,13 +19,9 @@
  */
 package org.olat.core.commons.services.doceditor.wopi.manager;
 
-import java.io.File;
-import java.net.URL;
-import java.nio.file.Paths;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
-
-import javax.annotation.PostConstruct;
 
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorSecurityCallback;
@@ -35,15 +31,9 @@ import org.olat.core.commons.services.doceditor.wopi.App;
 import org.olat.core.commons.services.doceditor.wopi.Discovery;
 import org.olat.core.commons.services.doceditor.wopi.NetZone;
 import org.olat.core.commons.services.doceditor.wopi.WopiService;
-import org.olat.core.commons.services.doceditor.wopi.model.AccessImpl;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
-import org.olat.core.util.StringHelper;
-import org.olat.core.util.cache.CacheWrapper;
-import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,21 +48,12 @@ import org.springframework.stereotype.Service;
 @Service
 public class WopiServiceImpl implements WopiService {
 	
-	private static final OLog log = Tracing.createLoggerFor(WopiServiceImpl.class);
-	
-	private CacheWrapper<String, Access> accessCache;
-	
 	@Autowired
 	private WopiDiscoveryClient dicoveryClient;
 	@Autowired
-	private CoordinatorManager coordinator;
+	private AccessDAO accessDao;
 	@Autowired
 	private VFSRepositoryService vfsService;
-
-	@PostConstruct
-	public void init() {
-		accessCache = coordinator.getCoordinator().getCacher().getCache(WopiService.class.getSimpleName(), "access");
-	}
 
 	@Override
 	public String getRegularDiscoveryPath() {
@@ -82,71 +63,6 @@ public class WopiServiceImpl implements WopiService {
 	@Override
 	public Discovery getDiscovery(String discoveryUrl) {
 		return dicoveryClient.getDiscovery(discoveryUrl);
-	}
-	
-	@Override
-	public boolean fileExists(String fileId) {
-		return vfsService.getItemFor(fileId) != null? true: false;
-	}
-
-	@Override
-	public File getFile(String fileId) {
-		VFSLeaf vfsLeaf = getVfsLeaf(fileId);
-		if (vfsLeaf != null) {
-			String uri = vfsLeaf.getMetaInfo().getUri();
-			try {
-				return Paths.get(new URL(uri).toURI()).toFile();
-			} catch (Exception e) {
-				log.error("", e);
-			}
-		}
-		return null;
-	}
-
-	@Override
-	public VFSLeaf getVfsLeaf(String fileId) {
-		VFSItem item = vfsService.getItemFor(fileId);
-		if (item instanceof VFSLeaf) {
-			return (VFSLeaf) item;
-		}
-		return null;
-	}
-
-	@Override
-	public VFSMetadata getMetadata(String fileId) {
-		VFSLeaf vfsLeaf = getVfsLeaf(fileId);
-		return vfsService.getMetadataFor(vfsLeaf);
-	}
-
-	@Override
-	public Access createAccess(VFSMetadata vfsMetadata, Identity identity, DocEditorSecurityCallback secCallback) {
-		String token = UUID.randomUUID().toString().replaceAll("-", "");
-		String fileId = vfsMetadata.getUuid();
-		
-		AccessImpl access = new AccessImpl();
-		access.setToken(token);
-		access.setFileId(fileId);
-		access.setIdentity(identity);
-		access.setCanEdit(Mode.EDIT.equals(secCallback.getMode()));
-		access.setVersionControlled(secCallback.isVersionControlled());
-		access.setCanClose(secCallback.canClose());
-		accessCache.put(token, access);
-		return access;
-	}
-
-	@Override
-	public Access getAccess(String accessToken) {
-		if (StringHelper.containsNonWhitespace(accessToken)) {
-			return accessCache.get(accessToken);
-		}
-		return null;
-	}
-	
-	@Override
-	public void deleteAccess(String accessToken) {
-		if (StringHelper.containsNonWhitespace(accessToken)) {
-			accessCache.remove(accessToken);
-		}
 	}
 
 	@Override
@@ -176,6 +92,63 @@ public class WopiServiceImpl implements WopiService {
 			}
 		}
 		return null;
+	}
+
+	@Override
+	public Access getOrCreateAccess(VFSMetadata vfsMetadata, Identity identity, DocEditorSecurityCallback secCallback, Date expiresAt) {
+		Access access = accessDao.loadAccess(vfsMetadata, identity);
+		if (access != null) {
+			if (accessUnchanged(access, secCallback) && !expired(access)) {
+				access = accessDao.updateExpiresAt(access, expiresAt);
+				return access;
+			}
+			accessDao.deleteAccess(access.getToken());
+		}
+		
+		return accessDao.createAccess(vfsMetadata, identity, createToke(), getCanEdit(secCallback), secCallback.canClose(), secCallback.isVersionControlled(), expiresAt);
+	}
+
+	private boolean accessUnchanged(Access access, DocEditorSecurityCallback secCallback) {
+		if (access.isCanEdit() != getCanEdit(secCallback)) return false;
+		if (access.isCanClose() != secCallback.canClose()) return false;
+		if (access.isVersionControlled() != secCallback.isVersionControlled()) return false;
+		return true;
+	}
+
+	private String createToke() {
+		return UUID.randomUUID().toString().replaceAll("-", "");
+	}
+
+	private boolean getCanEdit(DocEditorSecurityCallback secCallback) {
+		return Mode.EDIT.equals(secCallback.getMode());
+	}
+
+	@Override
+	public Access getAccess(String accessToken) {
+		Access access = accessDao.loadAccess(accessToken);
+		if (expired(access)) {
+			accessDao.deleteAccess(accessToken);
+			access = null;
+		}
+		return access;
+	}
+
+	private boolean expired(Access access) {
+		return access != null && access.getExpiresAt() != null && access.getExpiresAt().before(new Date());
+	}
+	
+	@Override
+	public VFSLeaf getVfsLeaf(Access access) {
+		VFSItem item = vfsService.getItemFor(access.getMetadata());
+		if (item instanceof VFSLeaf) {
+			return (VFSLeaf) item;
+		}
+		return null;
+	}
+	
+	@Override
+	public void deleteAccess(String accessToken) {
+		accessDao.deleteAccess(accessToken);
 	}
 
 }

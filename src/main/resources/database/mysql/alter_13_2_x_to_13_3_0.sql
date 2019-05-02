@@ -109,6 +109,27 @@ alter table o_vfs_revision add constraint fvers_to_meta_idx foreign key (fk_meta
 alter table o_vfs_metadata add constraint fvers_to_lic_type_idx foreign key (fk_license_type) references o_lic_license_type (id);
 
 
+-- WOPI
+create table o_wopi_access (
+   id bigint not null auto_increment,
+   creationdate datetime not null
+   lastmodified datetime not null,
+   o_token varchar(64) not null,
+   o_expires_at datetime,
+   o_can_edit bool not null,
+   o_can_close bool not null,
+   o_version_controlles bool not null,
+   fk_metadata bigint not null,
+   fk_identity bigint not null,
+   primary key (id)
+);
+
+alter table o_wopi_access ENGINE = InnoDB;
+
+create unique index idx_wopi_token_idx on o_wopi_access(o_token);
+create unique index idx_wopi_meta_ident_idx on o_wopi_access(fk_metadata, fk_identity);
+
+
 -- Adobe Connect
 create table o_aconnect_meeting (
    id bigint not null auto_increment,

@@ -110,6 +110,25 @@ alter table o_vfs_revision add constraint fvers_to_lic_type_idx foreign key (fk_
 create index idx_fvers_to_lic_type_idx on o_vfs_revision (fk_license_type);
 
 
+-- WOPI
+create table o_wopi_access (
+   id number(20) generated always as identity,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   o_token varchar(64) not null,
+   o_expires_at timestamp,
+   o_can_edit number default 0 not null,
+   o_can_close number default 0 not null,
+   o_version_controlles number default 0 not null,
+   fk_metadata number(20) not null,
+   fk_identity number(20) not null,
+   primary key (id)
+);
+
+create unique index idx_wopi_token_idx on o_wopi_access(o_token);
+create unique index idx_wopi_meta_ident_idx on o_wopi_access(fk_metadata, fk_identity);
+
+
 -- Adobe Connect
 create table o_aconnect_meeting (
    id number(20) generated always as identity,

@@ -22,7 +22,6 @@ package org.olat.core.commons.services.doceditor.collabora.restapi;
 import static org.olat.core.commons.services.doceditor.wopi.WopiRestHelper.getAsIso6801;
 import static org.olat.core.commons.services.doceditor.wopi.WopiRestHelper.getFirstRequestHeader;
 
-import java.io.File;
 import java.io.InputStream;
 import java.util.Date;
 import java.util.List;
@@ -48,6 +47,7 @@ import org.olat.core.commons.services.doceditor.wopi.Access;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -87,18 +87,19 @@ public class FilesWebService {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
-		if (!collaboraService.fileExists(fileId)) {
-			log.debug("File not found. File ID: " + fileId);
-			return Response.serverError().status(Status.NOT_FOUND).build();
-		}
-		
 		Access access = collaboraService.getAccess(accessToken);
 		if (access == null) {
 			log.debug("No access for token. File ID: " + fileId + ", token: " + accessToken);
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
-		VFSMetadata metadata = collaboraService.getMetadata(fileId);
+		VFSLeaf vfsLeaf = collaboraService.getVfsLeaf(access);
+		if (vfsLeaf == null) {
+			log.debug("File not found. File ID: " + fileId);
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		
+		VFSMetadata metadata = access.getMetadata();
 		String ownerId = metadata.getAuthor() != null? metadata.getAuthor().getKey().toString(): null;
 		CheckFileInfoVO checkFileInfoVO = CheckFileInfoVO.builder()
 				.withBaseFileName(metadata.getFilename()) // suffix is mandatory
@@ -108,7 +109,7 @@ public class FilesWebService {
 				.withUserFriendlyName(userManager.getUserDisplayName(access.getIdentity()))
 				.withVersion(String.valueOf(metadata.getRevisionNr()))
 				.withLastModifiedTime(getAsIso6801(metadata.getLastModified()))
-				.withUserCanWrite(access.canEdit())
+				.withUserCanWrite(access.isCanEdit())
 				.withDisablePrint(Boolean.FALSE)
 				.withUserCanNotWriteRelative(Boolean.TRUE)
 				.build();
@@ -133,20 +134,20 @@ public class FilesWebService {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
-		if (!collaboraService.fileExists(fileId)) {
-			log.debug("File not found. File ID: " + fileId);
-			return Response.serverError().status(Status.NOT_FOUND).build();
-		}
-		
 		Access access = collaboraService.getAccess(accessToken);
 		if (access == null) {
 			log.debug("No access for token. File ID: " + fileId + ", token: " + accessToken);
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
-		File file = collaboraService.getFile(fileId);
+		VFSLeaf vfsLeaf = collaboraService.getVfsLeaf(access);
+		if (vfsLeaf == null) {
+			log.debug("File not found. File ID: " + fileId);
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		
 		return Response
-				.ok(file)
+				.ok(vfsLeaf.getInputStream())
 				.type(MediaType.APPLICATION_OCTET_STREAM)
 				.header("Content-Disposition", "attachment;")
 				.build();
@@ -168,15 +169,16 @@ public class FilesWebService {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
-		if (!collaboraService.fileExists(fileId)) {
-			log.debug("File not found. File ID: " + fileId);
-			return Response.serverError().status(Status.NOT_FOUND).build();
-		}
-		
 		Access access = collaboraService.getAccess(accessToken);
 		if (access == null) {
 			log.debug("No access for token. File ID: " + fileId + ", token: " + accessToken);
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		
+		VFSLeaf vfsLeaf = collaboraService.getVfsLeaf(access);
+		if (vfsLeaf == null) {
+			log.debug("File not found. File ID: " + fileId);
+			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		
 		boolean canUpdate = collaboraService.canUpdateContent(access, fileId);

@@ -17,17 +17,21 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.commons.services.doceditor.collabora.manager;
+package org.olat.core.commons.services.doceditor.office365.manager;
 
 import java.io.InputStream;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Calendar;
+import java.util.Date;
 
 import javax.annotation.PostConstruct;
 
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorSecurityCallback;
-import org.olat.core.commons.services.doceditor.collabora.CollaboraModule;
-import org.olat.core.commons.services.doceditor.collabora.CollaboraRefreshDiscoveryEvent;
-import org.olat.core.commons.services.doceditor.collabora.CollaboraService;
+import org.olat.core.commons.services.doceditor.office365.Office365Module;
+import org.olat.core.commons.services.doceditor.office365.Office365RefreshDiscoveryEvent;
+import org.olat.core.commons.services.doceditor.office365.Office365Service;
 import org.olat.core.commons.services.doceditor.wopi.Access;
 import org.olat.core.commons.services.doceditor.wopi.Action;
 import org.olat.core.commons.services.doceditor.wopi.Discovery;
@@ -35,10 +39,12 @@ import org.olat.core.commons.services.doceditor.wopi.WopiService;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.control.Event;
+import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.vfs.VFSConstants;
@@ -47,25 +53,27 @@ import org.olat.core.util.vfs.VFSLockApplicationType;
 import org.olat.core.util.vfs.VFSLockManager;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.lock.LockInfo;
-import org.olat.core.util.vfs.lock.LockResult;
+import org.olat.restapi.security.RestSecurityHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
  * 
- * Initial date: 5 Mar 2019<br>
+ * Initial date: 26.04.2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
 @Service
-public class CollaboraServiceImpl implements CollaboraService, GenericEventListener {
+public class Office365ServiceImpl implements Office365Service, GenericEventListener {
 
-	private static final OLog log = Tracing.createLoggerFor(CollaboraServiceImpl.class);
+	private static final OLog log = Tracing.createLoggerFor(Office365ServiceImpl.class);
+
+	private static final String LOCK_APP = "office365";
 	
 	private Discovery discovery;
 	
 	@Autowired
-	private CollaboraModule collaboraModule;
+	private Office365Module office365Module;
 	@Autowired
 	private WopiService wopiService;
 	@Autowired
@@ -77,7 +85,7 @@ public class CollaboraServiceImpl implements CollaboraService, GenericEventListe
 	private void init() {
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, null, REFRESH_EVENT_ORES);
 	}
-	
+
 	@Override
 	public VFSLeaf getVfsLeaf(Access access) {
 		return wopiService.getVfsLeaf(access);
@@ -85,7 +93,8 @@ public class CollaboraServiceImpl implements CollaboraService, GenericEventListe
 
 	@Override
 	public Access createAccess(VFSMetadata vfsMetadata, Identity identity, DocEditorSecurityCallback secCallback) {
-		return wopiService.getOrCreateAccess(vfsMetadata, identity, secCallback, null);
+		Date expiresIn24Hours = Date.from(Instant.now().plus(Duration.ofHours(24)));
+		return wopiService.getOrCreateAccess(vfsMetadata, identity, secCallback, expiresIn24Hours);
 	}
 
 	@Override
@@ -101,21 +110,12 @@ public class CollaboraServiceImpl implements CollaboraService, GenericEventListe
 	}
 
 	@Override
-	public boolean canUpdateContent(Access access, String fileId) {
-		if (!fileId.equals(access.getMetadata().getUuid())) {
-			return false;
-		}
-		VFSLeaf vfsLeaf = wopiService.getVfsLeaf(access);
-		return !isLockedForMe(vfsLeaf, access.getIdentity());
-	}
-
-	@Override
 	public boolean updateContent(Access access, InputStream fileInputStream) {
 		VFSLeaf vfsLeaf = wopiService.getVfsLeaf(access);
 		boolean updated = false;
 		try {
 			if(access.isVersionControlled() && vfsLeaf.canVersion() == VFSConstants.YES) {
-				updated = vfsRepositoryService.addVersion(vfsLeaf, access.getIdentity(), "Collabora Online",
+				updated = vfsRepositoryService.addVersion(vfsLeaf, access.getIdentity(), "Office 365",
 						fileInputStream);
 			} else {
 				updated = VFSManager.copyContent(fileInputStream, vfsLeaf);
@@ -136,9 +136,15 @@ public class CollaboraServiceImpl implements CollaboraService, GenericEventListe
 			lock.setExpiresAt(inADay);
 		}
 	}
-
+	
 	@Override
-	public Discovery getDiscovery() {
+	public void event(Event event) {
+		if (event instanceof Office365RefreshDiscoveryEvent) {
+			deleteDiscovery();
+		}
+	}
+
+	private Discovery getDiscovery() {
 		if (discovery == null) {
 			String discoveryUrl = getDiscoveryUrl();
 			discovery = wopiService.getDiscovery(discoveryUrl);
@@ -148,14 +154,7 @@ public class CollaboraServiceImpl implements CollaboraService, GenericEventListe
 	}
 
 	private String getDiscoveryUrl() {
-		return collaboraModule.getBaseUrl() + wopiService.getRegularDiscoveryPath();
-	}
-	
-	@Override
-	public void event(Event event) {
-		if (event instanceof CollaboraRefreshDiscoveryEvent) {
-			deleteDiscovery();
-		}
+		return office365Module.getBaseUrl() + wopiService.getRegularDiscoveryPath();
 	}
 
 	private void deleteDiscovery() {
@@ -164,17 +163,37 @@ public class CollaboraServiceImpl implements CollaboraService, GenericEventListe
 	}
 
 	@Override
-	public String getEditorBaseUrl(VFSMetadata vfsMetadata) {
+	public String getEditorActionUrl(VFSMetadata vfsMetadata) {
+		StringBuilder wopiPath = new StringBuilder();
+		wopiPath.append(Settings.getServerContextPathURI());
+		wopiPath.append(RestSecurityHelper.SUB_CONTEXT);
+		wopiPath.append("/office365/wopi/files/");
+		wopiPath.append(vfsMetadata.getUuid());
+
+		StringBuilder urlSb = new StringBuilder();
+		urlSb.append(getEditorBaseUrl(vfsMetadata));
+		urlSb.append("WOPISrc=");
+		urlSb.append(StringHelper.urlEncodeUTF8(wopiPath.toString()));
+		String url = urlSb.toString();
+		log.debug("Editor action URL: " + url);
+		return url;
+	}
+
+	private String getEditorBaseUrl(VFSMetadata vfsMetadata) {
 		String suffix = FileUtils.getFileSuffix(vfsMetadata.getFilename());
 		Action action = wopiService.getAction(getDiscovery(), "edit", suffix);
 		if (action == null) {
 			action = wopiService.getAction(getDiscovery(), "view", suffix);
 		}
-		return action != null? action.getUrlSrc(): null;
+
+		String url = action != null? action.getUrlSrc(): null;
+		// replace all url query parameters
+		url = url!= null? url.substring(0, url.indexOf("?") + 1): null;
+		return url;
 	}
 
 	@Override
-	public boolean accepts(String suffix, Mode mode) {
+	public boolean isSupportingFormat(String suffix, Mode mode) {
 		boolean accepts = wopiService.hasAction(getDiscovery(), "edit", suffix);
 		if (!accepts && Mode.VIEW.equals(mode)) {
 			accepts = wopiService.hasAction(getDiscovery(), "view", suffix);
@@ -189,19 +208,73 @@ public class CollaboraServiceImpl implements CollaboraService, GenericEventListe
 
 	@Override
 	public boolean isLockedForMe(VFSLeaf vfsLeaf, Identity identity) {
-		return lockManager.isLockedForMe(vfsLeaf, identity, VFSLockApplicationType.collaboration, "collabora");
+		return lockManager.isLockedForMe(vfsLeaf, identity, VFSLockApplicationType.collaboration, LOCK_APP);
 	}
 
 	@Override
-	public LockResult lock(VFSLeaf vfsLeaf, Identity identity) {
-		return lockManager.lock(vfsLeaf, identity, VFSLockApplicationType.collaboration, "collabora");
+	public String getLockToken(VFSLeaf vfsLeaf) {
+		LockInfo lock = lockManager.getLock(vfsLeaf);
+		if (lock != null && lock.getTokensSize() >= 1) {
+			return lock.getTokens().get(0);
+		}
+		return null;
 	}
 
 	@Override
-	public void unlock(VFSLeaf vfsLeaf, LockResult lock) {
-		if (lock == null) return;
-		
-		lockManager.unlock(vfsLeaf, lock);
+	public void lock(VFSLeaf vfsLeaf, Identity identity, String lockToken) {
+		LockInfo lock = lockManager.getLock(vfsLeaf);
+		if (lock == null) {
+			lockManager.lock(vfsLeaf, identity, VFSLockApplicationType.collaboration, LOCK_APP);
+			lock = lockManager.getLock(vfsLeaf);
+			lock.getTokens().clear(); // the generated, internal token for the identity
+			
+			refreshLock(lock);
+		}
+		lock.getTokens().add(lockToken);
+	}
+
+	@Override
+	public boolean canUnlock(VFSLeaf vfsLeaf, String lockToken) {
+		LockInfo lock = lockManager.getLock(vfsLeaf);
+		if (lock != null && lock.getTokens() != null) {
+			for (String token : lock.getTokens()) {
+				if (token.equals(lockToken)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	@Override
+	public void unlock(VFSLeaf vfsLeaf, String lockToken) {
+		LockInfo lock = lockManager.getLock(vfsLeaf);
+		if (lock != null && lock.getTokens() != null) {
+			lock.getTokens().removeIf(token -> token.equals(lockToken));
+			if (lock.getTokens().isEmpty()) {
+				lockManager.unlock(vfsLeaf, VFSLockApplicationType.collaboration);
+			}
+		}
+	}
+
+	@Override
+	public void refreshLock(VFSLeaf vfsLeaf, String lockToken) {
+		LockInfo lock = lockManager.getLock(vfsLeaf);
+		if (lock != null && lock.getTokens() != null) {
+			for (String token : lock.getTokens()) {
+				if (token.equals(lockToken)) {
+					refreshLock(lock);
+				}
+			}
+		}
+	}
+
+	private void refreshLock(LockInfo lock) {
+		// https://wopi.readthedocs.io/projects/wopirest/en/latest/files/RefreshLock.html
+		Calendar now = Calendar.getInstance();
+		now.add(Calendar.MINUTE, 30);
+		Date in30Mins = now.getTime();
+		lock.setExpiresAt(in30Mins.getTime());
 	}
 
 }

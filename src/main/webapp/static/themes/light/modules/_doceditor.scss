@@ -29,8 +29,8 @@
 	}
 	
 	
-	/**  Collabora Online and OnlyOffice**/
-	.o_collabora, .o_onlyoffice {
+	/**  Collabora Online and OnlyOffice and Office 365  **/
+	.o_collabora, .o_onlyoffice, .o_office365 {
 		iframe {
 			width: 100%;
 			height: calc(100vh - 183px);
@@ -41,7 +41,7 @@
 	}
 	
 	&.o_web_document {
-		.o_collabora, .o_onlyoffice  {
+		.o_collabora, .o_onlyoffice, .o_office365 {
 			iframe {
 				width: 100%;
 				height: calc(100vh - 355px);  // editor selection is not taken
@@ -51,7 +51,7 @@
 		}
 	}
 	&.o_web_document_edit {
-		.o_collabora, .o_onlyoffice {
+		.o_collabora, .o_onlyoffice, .o_office365 {
 			iframe {
 				width: 100%;
 				height: calc(100vh - 310px); // editor selection is not taken

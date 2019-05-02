@@ -1688,6 +1688,21 @@ create table o_vfs_revision (
    primary key (id)
 );
 
+-- WOPI
+create table o_wopi_access (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   o_token varchar(64) not null,
+   o_expires_at timestamp,
+   o_can_edit bool not null,
+   o_can_close bool not null,
+   o_version_controlles bool not null,
+   fk_metadata bigint not null,
+   fk_identity bigint not null,
+   primary key (id)
+);
+
 -- portfolio
 create table o_pf_binder (
    id bigserial,
@@ -3666,6 +3681,10 @@ alter table o_vfs_revision add constraint fvers_to_meta_idx foreign key (fk_meta
 create index idx_fvers_to_meta_idx on o_vfs_revision (fk_metadata);
 alter table o_vfs_revision add constraint fvers_to_lic_type_idx foreign key (fk_license_type) references o_lic_license_type (id);
 create index idx_fvers_to_lic_type_idx on o_vfs_revision (fk_license_type);
+
+-- WOPI
+create unique index idx_wopi_token_idx on o_wopi_access(o_token);
+create unique index idx_wopi_meta_ident_idx on o_wopi_access(fk_metadata, fk_identity);
 
 -- evaluation form
 alter table o_eva_form_survey add constraint eva_surv_to_surv_idx foreign key (fk_series_previous) references o_eva_form_survey (id);

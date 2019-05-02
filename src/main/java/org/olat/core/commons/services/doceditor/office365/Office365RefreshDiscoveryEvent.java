@@ -17,35 +17,22 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.commons.services.doceditor.wopi;
+package org.olat.core.commons.services.doceditor.office365;
 
-import java.util.Date;
-
-import org.olat.core.commons.services.vfs.VFSMetadata;
-import org.olat.core.id.CreateInfo;
-import org.olat.core.id.Identity;
-import org.olat.core.id.ModifiedInfo;
+import org.olat.core.util.event.MultiUserEvent;
 
 /**
  * 
- * Initial date: 6 Mar 2019<br>
+ * Initial date: 26.04.2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface Access extends ModifiedInfo, CreateInfo {
-
-	String getToken();
-
-	Date getExpiresAt();
+public class Office365RefreshDiscoveryEvent extends MultiUserEvent {
 	
-	boolean isCanEdit();
+	private static final long serialVersionUID = 243206509106217949L;
 
-	boolean isCanClose();
-	
-	boolean isVersionControlled();
-
-	VFSMetadata getMetadata();
-	
-	Identity getIdentity();
+	public Office365RefreshDiscoveryEvent() {
+		super("office365-refresh-discovery");
+	}
 
 }

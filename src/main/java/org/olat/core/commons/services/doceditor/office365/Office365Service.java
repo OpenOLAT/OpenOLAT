@@ -17,31 +17,29 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.commons.services.doceditor.collabora;
+package org.olat.core.commons.services.doceditor.office365;
 
 import java.io.InputStream;
 
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorSecurityCallback;
 import org.olat.core.commons.services.doceditor.wopi.Access;
-import org.olat.core.commons.services.doceditor.wopi.Discovery;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.lock.LockResult;
 
 /**
  * 
- * Initial date: 6 Mar 2019<br>
+ * Initial date: 26.04.2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface CollaboraService {
+public interface Office365Service {
 	
 	public static final OLATResourceable REFRESH_EVENT_ORES = OresHelper
-			.createOLATResourceableType(CollaboraRefreshDiscoveryEvent.class.getSimpleName() + ":RefreshDiscovery");
+			.createOLATResourceableType(Office365RefreshDiscoveryEvent.class.getSimpleName() + ":RefreshDiscovery");
 
 	VFSLeaf getVfsLeaf(Access access);
 	
@@ -51,22 +49,24 @@ public interface CollaboraService {
 	
 	void deleteAccess(Access access);
 	
-	boolean canUpdateContent(Access access, String fileId);
-
 	boolean updateContent(Access access, InputStream fileInputStream);
 	
-	Discovery getDiscovery();
+	String getEditorActionUrl(VFSMetadata vfsMetadata);
 	
-	String getEditorBaseUrl(VFSMetadata vfsMetadata);
-	
-	boolean accepts(String suffix, Mode mode);
+	boolean isSupportingFormat(String suffix, Mode mode);
 	
 	boolean isLockNeeded(Mode mode);
 
 	boolean isLockedForMe(VFSLeaf vfsLeaf, Identity identity);
 
-	LockResult lock(VFSLeaf vfsLeaf, Identity identity);
+	String getLockToken(VFSLeaf vfsLeaf);
 
-	void unlock(VFSLeaf vfsLeaf, LockResult lock);
+	void lock(VFSLeaf vfsLeaf, Identity identity, String lockToken);
+
+	boolean canUnlock(VFSLeaf vfsLeaf, String lockToken);
+
+	void unlock(VFSLeaf vfsLeaf, String lockToken);
+
+	void refreshLock(VFSLeaf vfsLeaf, String lockToken);
 
 }

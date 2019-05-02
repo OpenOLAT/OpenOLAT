@@ -99,6 +99,8 @@ import org.junit.runners.Suite;
 	org.olat.commons.coordinate.cluster.lock.LockTest.class,
 	org.olat.commons.coordinate.CoordinatorTest.class,
 	org.olat.core.commons.services.csp.manager.CSPManagerTest.class,
+	org.olat.core.commons.services.doceditor.wopi.manager.AccessDAOTest.class,
+	org.olat.core.commons.services.doceditor.wopi.manager.WopiServiceTest.class,
 	org.olat.core.commons.services.vfs.manager.VFSXStreamTest.class,
 	org.olat.core.commons.services.vfs.manager.VFSMetadataDAOTest.class,
 	org.olat.core.commons.services.vfs.manager.VFSRevisionDAOTest.class,

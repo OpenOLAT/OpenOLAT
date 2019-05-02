@@ -19,7 +19,7 @@
  */
 package org.olat.core.commons.services.doceditor.wopi;
 
-import java.io.File;
+import java.util.Date;
 
 import org.olat.core.commons.services.doceditor.DocEditorSecurityCallback;
 import org.olat.core.commons.services.vfs.VFSMetadata;
@@ -44,22 +44,29 @@ public interface WopiService {
 	 */
 	public Discovery getDiscovery(String discoveryUrl);
 
-	boolean fileExists(String fileId);
-
-	File getFile(String fileId);
-
-	VFSLeaf getVfsLeaf(String fileId);
-
-	VFSMetadata getMetadata(String fileId);
-
-	Access createAccess(VFSMetadata vfsMetadata, Identity identity, DocEditorSecurityCallback secCallback);
-
-	Access getAccess(String accessToken);
-	
-	void deleteAccess(String accessToken);
-
 	boolean hasAction(Discovery discovery, String actionName, String suffix);
 
 	Action getAction(Discovery discovery, String actionName, String suffix);
+
+	/**
+	 * Get an access for a file and user. A new access is created if
+	 *  - no access for the file and user exists
+	 *  - the old access is expired
+	 *  - if the user rights of the file changed
+	 *  If a new access is created, the old one is deleted.
+	 *
+	 * @param vfsMetadata
+	 * @param identity
+	 * @param secCallback
+	 * @param expiresAt (optional) date when the access expires
+	 * @return
+	 */
+	Access getOrCreateAccess(VFSMetadata vfsMetadata, Identity identity, DocEditorSecurityCallback secCallback, Date expiresAt);
+
+	Access getAccess(String accessToken);
+
+	VFSLeaf getVfsLeaf(Access access);
+	
+	void deleteAccess(String accessToken);
 
 }

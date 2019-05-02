@@ -19,10 +19,9 @@
  */
 package org.olat.core.commons.services.doceditor.collabora.ui;
 
-import java.io.File;
-
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.doceditor.collabora.CollaboraService;
+import org.olat.core.commons.services.doceditor.wopi.Access;
 import org.olat.core.helpers.Settings;
 import org.olat.core.util.StringHelper;
 import org.olat.restapi.security.RestSecurityHelper;
@@ -38,8 +37,7 @@ class CollaboraEditorUrlBuilder {
 	
 	// Source: https://github.com/LibreOffice/online/blob/master/loleaflet/src/main.js
 	
-	private final String fileId;
-	private final String accessToken;
+	private final Access access;
 	private String lang;
 	private String permission;
 	private boolean closeButton = false;
@@ -48,13 +46,12 @@ class CollaboraEditorUrlBuilder {
 	@Autowired
 	private CollaboraService collaboraService;
 
-	static CollaboraEditorUrlBuilder builder(String fileId, String accessToken) {
-		return new CollaboraEditorUrlBuilder(fileId, accessToken);
+	static CollaboraEditorUrlBuilder builder(Access access) {
+		return new CollaboraEditorUrlBuilder(access);
 	}
 	
-	private CollaboraEditorUrlBuilder(String fileId, String accessToken) {
-		this.fileId = fileId;
-		this.accessToken = accessToken;
+	private CollaboraEditorUrlBuilder(Access access) {
+		this.access = access;
 		CoreSpringFactory.autowireObject(this);
 	}
 	
@@ -80,19 +77,18 @@ class CollaboraEditorUrlBuilder {
 	
 	String build() {
 		StringBuilder url = new StringBuilder();
-		File file = collaboraService.getFile(fileId);
-		String editorBaseUrl = collaboraService.getEditorBaseUrl(file);
+		String editorBaseUrl = collaboraService.getEditorBaseUrl(access.getMetadata());
 		url.append(editorBaseUrl);
 		
 		StringBuilder wopiPath = new StringBuilder();
 		wopiPath.append(Settings.getServerContextPathURI());
 		wopiPath.append(RestSecurityHelper.SUB_CONTEXT);
 		wopiPath.append("/collabora/wopi/files/");
-		wopiPath.append(fileId);
+		wopiPath.append(access.getMetadata().getUuid());
 		url.append("WOPISrc=");
 		url.append(StringHelper.urlEncodeUTF8(wopiPath.toString()));
 		
-		url.append("&access_token=").append(accessToken);
+		url.append("&access_token=").append(access.getToken());
 		
 		if (StringHelper.containsNonWhitespace(lang)) {
 			url.append("&lang=").append(lang);

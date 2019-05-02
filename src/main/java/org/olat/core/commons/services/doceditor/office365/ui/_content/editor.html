@@ -1,0 +1,31 @@
+<div class="o_office365">
+	#if($r.notNull($warning))
+		<div class="o_warning">
+			$warning
+		</div>
+	#else
+		<form id="office_form" name="office_form" target="office_frame" action="$actionUrl" method="post">
+			<input name="access_token" value="$accessToken" type="hidden"/>
+			<input name="access_token_ttl" value="$accessTokenTtl" type="hidden"/>
+		</form>
+		<span id="frameholder"></span>
+		
+		## see https://github.com/Microsoft/Office-Online-Test-Tools-and-Documentation/blob/master/samples/SampleHostPage.html
+		<script type="text/javascript">
+		/* <![CDATA[ */
+			jQuery(document).ready(function(){
+				var frameholder = document.getElementById('frameholder');
+				var office_frame = document.createElement('iframe');
+				office_frame.name = 'office_frame';
+				office_frame.id ='office_frame';
+				office_frame.title = 'Office Online Frame';
+				office_frame.setAttribute('allowfullscreen', 'true');
+				// The sandbox attribute is needed to allow automatic redirection to the O365 sign-in page in the business user flow
+				office_frame.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation allow-popups-to-escape-sandbox');
+				frameholder.appendChild(office_frame);
+				document.getElementById('office_form').submit();
+			});
+		/* ]]> */
+		</script>
+	#end
+</div>
