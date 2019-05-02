@@ -118,7 +118,7 @@ create table o_wopi_access (
    o_expires_at datetime,
    o_can_edit bool not null,
    o_can_close bool not null,
-   o_version_controlles bool not null,
+   o_version_controlled bool not null,
    fk_metadata bigint not null,
    fk_identity bigint not null,
    primary key (id)

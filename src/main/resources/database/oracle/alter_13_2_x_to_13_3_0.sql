@@ -119,7 +119,7 @@ create table o_wopi_access (
    o_expires_at timestamp,
    o_can_edit number default 0 not null,
    o_can_close number default 0 not null,
-   o_version_controlles number default 0 not null,
+   o_version_controlled number default 0 not null,
    fk_metadata number(20) not null,
    fk_identity number(20) not null,
    primary key (id)

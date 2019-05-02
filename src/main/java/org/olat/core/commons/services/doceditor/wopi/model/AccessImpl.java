@@ -72,7 +72,7 @@ public class AccessImpl implements Access, Persistable {
 	private boolean canEdit;
 	@Column(name="o_can_close", nullable=false, insertable=true, updatable=false)
 	private boolean canClose;
-	@Column(name="o_version_controlles", nullable=false, insertable=true, updatable=false)
+	@Column(name="o_version_controlled", nullable=false, insertable=true, updatable=false)
 	private boolean versionControlled;
 	
 	@ManyToOne(targetEntity=VFSMetadataImpl.class,fetch=FetchType.LAZY,optional=false)
