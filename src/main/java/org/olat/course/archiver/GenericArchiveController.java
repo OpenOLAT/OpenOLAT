@@ -262,7 +262,7 @@ public class GenericArchiveController extends FormBasicController {
 		
 		if(nodes.isEmpty()) {
 			showWarning("warning.atleast.node");
-		} if(nodes.get(0) instanceof TACourseNode) {
+		} else if(nodes.get(0) instanceof TACourseNode) {
 			CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
 			List<BusinessGroup> relatedGroups = cgm.getAllBusinessGroups();
 			if(relatedGroups.isEmpty()) {
