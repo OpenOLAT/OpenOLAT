@@ -22,6 +22,7 @@ package org.olat.core.commons.services.doceditor.ui;
 import java.util.List;
 
 import org.olat.core.commons.services.doceditor.collabora.ui.CollaboraAdminController;
+import org.olat.core.commons.services.doceditor.office365.ui.Office365AdminController;
 import org.olat.core.commons.services.doceditor.onlyoffice.ui.OnlyOfficeAdminController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -49,14 +50,17 @@ public class AdminDocEditorController extends BasicController implements Activat
 
 	private static final String COLLABORA_RES_TYPE = "Collabora";
 	private static final String ONLY_OFFICE_RES_TYPE = "OnlyOffice";
+	private static final String OFFICE365_RES_TYPE = "Office365";
 
 	private VelocityContainer mainVC;
 	private final Link collaboraLink;
 	private final Link onlyOfficeLink;
+	private final Link office365Link;
 	private final SegmentViewComponent segmentView;
 	
 	private CollaboraAdminController collaboraCtrl;
 	private OnlyOfficeAdminController onlyOfficeCtrl;
+	private Office365AdminController office365Ctrl;
 
 	public AdminDocEditorController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -68,6 +72,8 @@ public class AdminDocEditorController extends BasicController implements Activat
 		segmentView.addSegment(collaboraLink, true);
 		onlyOfficeLink = LinkFactory.createLink("admin.onlyoffice", mainVC, this);
 		segmentView.addSegment(onlyOfficeLink, false);
+		office365Link = LinkFactory.createLink("admin.office365", mainVC, this);
+		segmentView.addSegment(office365Link, false);
 
 		doOpenCollabora(ureq);
 		putInitialPanel(mainVC);
@@ -84,6 +90,9 @@ public class AdminDocEditorController extends BasicController implements Activat
 		} else if(ONLY_OFFICE_RES_TYPE.equalsIgnoreCase(type)) {
 			doOpenOnlyOffice(ureq);
 			segmentView.select(onlyOfficeLink);
+		} else if(OFFICE365_RES_TYPE.equalsIgnoreCase(type)) {
+			doOpenOffice365(ureq);
+			segmentView.select(office365Link);
 		}
 	}
 
@@ -98,6 +107,8 @@ public class AdminDocEditorController extends BasicController implements Activat
 					doOpenCollabora(ureq);
 				} else if (clickedLink == onlyOfficeLink) {
 					doOpenOnlyOffice(ureq);
+				} else if (clickedLink == office365Link) {
+					doOpenOffice365(ureq);
 				}
 			}
 		}
@@ -124,6 +135,18 @@ public class AdminDocEditorController extends BasicController implements Activat
 		}
 		mainVC.put("segmentCmp", onlyOfficeCtrl.getInitialComponent());
 	}
+	
+	private void doOpenOffice365(UserRequest ureq) {
+		if(office365Ctrl == null) {
+			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(OFFICE365_RES_TYPE), null);
+			office365Ctrl = new Office365AdminController(ureq, swControl);
+			listenTo(office365Ctrl);
+		} else {
+			addToHistory(ureq, office365Ctrl);
+		}
+		mainVC.put("segmentCmp", office365Ctrl.getInitialComponent());
+	}
+	
 	
 	@Override
 	protected void doDispose() {
