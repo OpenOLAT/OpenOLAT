@@ -19,6 +19,8 @@
  */
 package org.olat.core.commons.services.doceditor.wopi.manager;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -92,6 +94,28 @@ public class WopiServiceImpl implements WopiService {
 			}
 		}
 		return null;
+	}
+
+	@Override
+	public Collection<Action> getActions(Discovery discovery) {
+		List<Action> allActions = new ArrayList<>();
+		if (discovery != null) {
+			List<NetZone> netZones = discovery.getNetZones();
+			if (netZones != null && !netZones.isEmpty()) {
+				List<App> apps = netZones.get(0).getApps();
+				if (apps != null) {
+					for (App app: apps) {
+						List<Action> actions = app.getActions();
+						if (actions != null) {
+							for (Action action : actions) {
+								allActions.add(action);
+							}
+						}
+					}
+				}
+			}
+		}
+		return allActions;
 	}
 
 	@Override

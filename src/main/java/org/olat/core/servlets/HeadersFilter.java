@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.util.Collection;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -25,6 +26,8 @@ import org.olat.core.commons.services.analytics.spi.GoogleAnalyticsSPI;
 import org.olat.core.commons.services.analytics.spi.MatomoSPI;
 import org.olat.core.commons.services.csp.CSPModule;
 import org.olat.core.commons.services.doceditor.collabora.CollaboraModule;
+import org.olat.core.commons.services.doceditor.office365.Office365Module;
+import org.olat.core.commons.services.doceditor.office365.Office365Service;
 import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeModule;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.OLog;
@@ -57,6 +60,10 @@ public class HeadersFilter implements Filter {
 	private AnalyticsModule analyticsModule;
 	@Autowired
 	private CollaboraModule collaboraModule;
+	@Autowired
+	private Office365Module office365Module;
+	@Autowired
+	private Office365Service office365Service;
 	@Autowired
 	private EdusharingModule edusharingModule;
 	@Autowired
@@ -229,6 +236,7 @@ public class HeadersFilter implements Filter {
 		appendEdusharingUrl(sb);
 		appendOnlyOfficeUrl(sb);
 		appendCollaboraUrl(sb);
+		appendOffice365Urls(sb);
 		appendViteroUrl(sb);
 		sb.append(";");
 	}
@@ -298,6 +306,15 @@ public class HeadersFilter implements Filter {
 	private void appendCollaboraUrl(StringBuilder sb) {
 		if(collaboraModule != null && collaboraModule.isEnabled()) {
 			appendUrl(sb, collaboraModule.getBaseUrl());
+		}
+	}
+	
+	private void appendOffice365Urls(StringBuilder sb) {
+		if(office365Module != null && office365Module.isEnabled()) {
+			Collection<String> contentSecurityPolicyUrls = office365Service.getContentSecurityPolicyUrls();
+			for (String url : contentSecurityPolicyUrls) {
+				appendUrl(sb, url);
+			}
 		}
 	}
 	

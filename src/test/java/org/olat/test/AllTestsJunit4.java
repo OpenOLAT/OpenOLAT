@@ -435,6 +435,7 @@ import org.junit.runners.Suite;
 	/**
 	 * Pure JUnit test without need of framework
 	 */
+	org.olat.core.commons.services.doceditor.office365.manager.UrlParserTest.class,
 	org.olat.core.commons.services.doceditor.onlyoffice.manager.OnlyOfficeSecurityServiceImplTest.class,
 	org.olat.core.commons.services.doceditor.wopi.manager.WopiServiceImplTest.class,
 	org.olat.core.commons.services.doceditor.wopi.manager.WopiXStreamTest.class,

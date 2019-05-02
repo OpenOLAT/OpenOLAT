@@ -19,6 +19,7 @@
  */
 package org.olat.core.commons.services.doceditor.wopi;
 
+import java.util.Collection;
 import java.util.Date;
 
 import org.olat.core.commons.services.doceditor.DocEditorSecurityCallback;
@@ -47,6 +48,8 @@ public interface WopiService {
 	boolean hasAction(Discovery discovery, String actionName, String suffix);
 
 	Action getAction(Discovery discovery, String actionName, String suffix);
+	
+	Collection<Action> getActions(Discovery discovery);
 
 	/**
 	 * Get an access for a file and user. A new access is created if

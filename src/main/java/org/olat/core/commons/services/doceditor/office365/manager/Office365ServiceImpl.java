@@ -23,7 +23,10 @@ import java.io.InputStream;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
@@ -71,11 +74,14 @@ public class Office365ServiceImpl implements Office365Service, GenericEventListe
 	private static final String LOCK_APP = "office365";
 	
 	private Discovery discovery;
+	private Collection<String> cspUrls;
 	
 	@Autowired
 	private Office365Module office365Module;
 	@Autowired
 	private WopiService wopiService;
+	@Autowired
+	private UrlParser urlParser;
 	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
 	@Autowired
@@ -159,7 +165,22 @@ public class Office365ServiceImpl implements Office365Service, GenericEventListe
 
 	private void deleteDiscovery() {
 		discovery = null;
+		cspUrls = null;
 		log.info("Deleted WOPI discovery. It will be refreshed with the next access.");
+	}
+
+	@Override
+	public Collection<String> getContentSecurityPolicyUrls() {
+		if (cspUrls == null) {
+			Collection<Action> actions = wopiService.getActions(getDiscovery());
+			Set<String> urls = new HashSet<>();
+			for (Action action : actions) {
+				String protocolAndDomain = urlParser.getProtocolAndDomain(action.getUrlSrc());
+				urls.add(protocolAndDomain);
+			}
+			cspUrls = urls;
+		}
+		return cspUrls;
 	}
 
 	@Override
