@@ -22,6 +22,7 @@ package org.olat.user;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.basesecurity.model.QueryUserHelper;
 import org.olat.core.id.Identity;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -39,11 +40,17 @@ public class UserPropertiesRow {
 	private final String identityName;
 	private final String[] identityProps;
 	
-
-	public UserPropertiesRow(Long identityKey, String identityName, String[] identityProps) {
+	public UserPropertiesRow(Long identityKey, String identityName, List<UserPropertyHandler> userPropertyHandlers, String[] identityProps, Locale locale) {
 		this.identityKey = identityKey;
 		this.identityName = identityName;
 		this.identityProps = identityProps;
+		if(identityProps != null) {
+			QueryUserHelper user = new QueryUserHelper();
+			for(int i=userPropertyHandlers.size(); i-->0; ) {
+				user.setUserProperty(identityProps[i]);
+				identityProps[i] = userPropertyHandlers.get(i).getUserProperty(user, locale);
+			}
+		}
 	}
 	
 	public UserPropertiesRow(Identity identity, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {

@@ -92,7 +92,8 @@ public class SMSPhoneController extends FormBasicController implements SupportsA
 
 	@Override
 	public boolean isUserInteractionRequired(UserRequest ureq) {
-		return messageModule.isEnabled() && messageModule.isResetPasswordEnabled()
+		return messageModule.isEnabled()
+				&& messageModule.isResetPasswordEnabled() && messageModule.isAskByFirstLogin()
 				&& !ureq.getUserSession().getRoles().isGuestOnly()
 				&& !ureq.getUserSession().getRoles().isInvitee()
 				&& !messageService.validate(ureq.getIdentity().getUser().getProperty(UserConstants.SMSTELMOBILE, getLocale()));
@@ -100,7 +101,7 @@ public class SMSPhoneController extends FormBasicController implements SupportsA
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		phoneEl.clearError();
 		if(phoneEl.isVisible()) {
@@ -125,7 +126,7 @@ public class SMSPhoneController extends FormBasicController implements SupportsA
 			}
 		}
 		
-		return allOk &= super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override

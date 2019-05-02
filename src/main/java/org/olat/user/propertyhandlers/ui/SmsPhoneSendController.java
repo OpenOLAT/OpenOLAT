@@ -98,7 +98,7 @@ public class SmsPhoneSendController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 
 		newPhoneEl.clearError();
 		if(!StringHelper.containsNonWhitespace(newPhoneEl.getValue())) {
@@ -109,7 +109,7 @@ public class SmsPhoneSendController extends FormBasicController {
 			allOk &= false;
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override

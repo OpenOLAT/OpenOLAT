@@ -29,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -46,9 +47,11 @@ public class SimpleMessageServiceAdminConfigurationController extends FormBasicC
 	
 	private static final String[] onKeys = new String[]{ "on" };
 	
+	private SpacerElement spacer;
 	private SingleSelection serviceEl;
 	private MultipleSelectionElement enableEl;
 	private MultipleSelectionElement resetPasswordEl;
+	private MultipleSelectionElement askByFirstLoginEl;
 	
 	private AbstractSMSConfigurationController providerConfigCtrl;
 	
@@ -61,8 +64,7 @@ public class SimpleMessageServiceAdminConfigurationController extends FormBasicC
 		super(ureq, wControl, "admin_configuration");
 		
 		initForm(ureq);
-		updateEnableDisable();
-		updateProviderConfiguration(ureq);
+		updateEnableDisable(ureq);
 	}
 
 	@Override
@@ -99,11 +101,24 @@ public class SimpleMessageServiceAdminConfigurationController extends FormBasicC
 				}
 			}
 		}
+		
+		FormLayoutContainer serviceOptionsCont = FormLayoutContainer.createDefaultFormLayout("serviceOptions", getTranslator());
+		formLayout.add(serviceOptionsCont);
+		
+		spacer = uifactory.addSpacerElement("space", serviceOptionsCont, false);
 
 		String[] resetPasswordValues = new String[]{ translate("on.sms") };
-		resetPasswordEl = uifactory.addCheckboxesHorizontal("reset.password", "reset.password", serviceCont, onKeys, resetPasswordValues);
+		resetPasswordEl = uifactory.addCheckboxesHorizontal("reset.password", "reset.password", serviceOptionsCont, onKeys, resetPasswordValues);
+		resetPasswordEl.addActionListener(FormEvent.ONCHANGE);
 		if(messageModule.isResetPasswordEnabled()) {
 			resetPasswordEl.select(onKeys[0], true);
+		}
+
+		String[] askByFirstLoginValues = new String[]{ translate("on.first.login") };
+		askByFirstLoginEl = uifactory.addCheckboxesHorizontal("ask.by.first.login", "ask.by.first.login", serviceOptionsCont, onKeys, askByFirstLoginValues);
+		askByFirstLoginEl.setVisible(resetPasswordEl.isAtLeastSelected(1));
+		if(messageModule.isAskByFirstLogin()) {
+			askByFirstLoginEl.select(onKeys[0], true);
 		}
 		
 		FormLayoutContainer buttonCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
@@ -131,12 +146,21 @@ public class SimpleMessageServiceAdminConfigurationController extends FormBasicC
 		}
 	}
 	
-	private void updateEnableDisable() {
+	private void updateEnableDisable(UserRequest ureq) {
 		boolean enabled = enableEl.isAtLeastSelected(1);
 		serviceEl.setVisible(enabled);
+		spacer.setVisible(enabled);
 		resetPasswordEl.setVisible(enabled);
-		
+		askByFirstLoginEl.setVisible(enabled && resetPasswordEl.isAtLeastSelected(1));
 		serviceEl.clearError();
+		if(enabled) {
+			FormItem config = flc.getFormComponent("configuration");
+			if(config == null) {
+				updateProviderConfiguration(ureq);
+			}
+		} else {
+			flc.remove("configuration");
+		}
 		if(serviceEl.isOneSelected()) {
 			String serviceId = serviceEl.getSelectedKey();
 			MessagesSPI spi = messagesService.getMessagesSpi(serviceId);
@@ -162,18 +186,20 @@ public class SimpleMessageServiceAdminConfigurationController extends FormBasicC
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(enableEl == source) {
-			updateEnableDisable();
+		if(enableEl == source || resetPasswordEl == source) {
+			updateEnableDisable(ureq);
 		} else if(serviceEl == source) {
 			updateProviderConfiguration(ureq);
 		}
-		super.formInnerEvent(ureq, source, event);
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		messageModule.setEnabled(enableEl.isAtLeastSelected(1));
-		messageModule.setResetPasswordEnabled(resetPasswordEl.isAtLeastSelected(1));
+		boolean enabled = enableEl.isAtLeastSelected(1);
+		messageModule.setEnabled(enabled);
+		boolean resetPasswordEnabled = enabled && resetPasswordEl.isAtLeastSelected(1);
+		messageModule.setResetPasswordEnabled(resetPasswordEnabled);
+		messageModule.setAskByFirstLogin(resetPasswordEnabled && askByFirstLoginEl.isAtLeastSelected(1));
 		messageModule.setProviderId(serviceEl.getSelectedKey());
 		if(providerConfigCtrl != null) {
 			providerConfigCtrl.formOK(ureq);

@@ -34,13 +34,14 @@ import org.olat.core.logging.AssertException;
 /**
  * @author Christian Guretzki
  */
-abstract public class AbstractExtension extends AbstractConfigOnOff implements Extension {
+public abstract class AbstractExtension extends AbstractConfigOnOff implements Extension {
 
 	private int order = 0;
 	private String secCallbackName = null;
 	private String nodeIdentifierIfParent;
 	private String parentTreeNodeIdentifier;
-	
+
+	@Override
 	public int getOrder() {
 		return order;
 	}
@@ -56,11 +57,8 @@ abstract public class AbstractExtension extends AbstractConfigOnOff implements E
 		if(getOrder() > o.getOrder()) return 1;
 		return 0;
 	}
-	
-	/**
-	 * @overrides
-	 * @see org.olat.core.extensions.Extension#getUniqueExtensionID()
-	 */
+
+	@Override
 	public String getUniqueExtensionID(){
 		StringBuilder sb = new StringBuilder();
 		sb.append(this.getClass().getName()).append(":").append(order).append(":");

@@ -44,12 +44,15 @@ public class SimpleMessageModule extends AbstractSpringModule implements ConfigO
 	
 	private static final String SMS_ENABLED = "message.enabled";
 	private static final String PROVIDER_ID = "message.provider.id";
+	private static final String ASK_BY_FIRST_LOGIN_ENABLED = "message.ask.by.first.login";
 	private static final String RESET_PASSWORD_ENABLED = "message.reset.password.enabled";
 	
 	@Value("${message.enabled:false}")
 	private boolean enabled;
 	@Value("${message.reset.password.enabled:true}")
 	private boolean resetPassword;
+	@Value("${message.ask.by.first.login:true}")
+	private boolean askByFirstLogin;
 	@Value("${message.provider:WebSMS}")
 	private String providerId;
 	
@@ -72,6 +75,11 @@ public class SimpleMessageModule extends AbstractSpringModule implements ConfigO
 		String resetEnabledObj = getStringPropertyValue(RESET_PASSWORD_ENABLED, true);
 		if(StringHelper.containsNonWhitespace(resetEnabledObj)) {
 			resetPassword = "true".equals(resetEnabledObj);
+		}
+		
+		String askByFirstLoginEnabledObj = getStringPropertyValue(ASK_BY_FIRST_LOGIN_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(askByFirstLoginEnabledObj)) {
+			askByFirstLogin = "true".equals(askByFirstLoginEnabledObj);
 		}
 		
 		providerId = getStringPropertyValue(PROVIDER_ID, providerId);
@@ -132,6 +140,15 @@ public class SimpleMessageModule extends AbstractSpringModule implements ConfigO
 		setStringProperty(RESET_PASSWORD_ENABLED, Boolean.toString(resetPassword), true);
 	}
 	
+	public boolean isAskByFirstLogin() {
+		return askByFirstLogin;
+	}
+
+	public void setAskByFirstLogin(boolean askByFirstLogin) {
+		this.askByFirstLogin = askByFirstLogin;
+		setStringProperty(ASK_BY_FIRST_LOGIN_ENABLED, Boolean.toString(askByFirstLogin), true);
+	}
+
 	public String getProviderId() {
 		return providerId == null ? null : providerId.toLowerCase();
 	}

@@ -37,6 +37,7 @@ import org.olat.basesecurity.IdentityPowerSearchQueries;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.SearchIdentityParams;
 import org.olat.basesecurity.model.IdentityPropertiesRow;
+import org.olat.basesecurity.model.QueryUserHelper;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
@@ -108,22 +109,24 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 		List<Object[]> rawList = dbq.getResultList();
 		List<IdentityPropertiesRow> rows = new  ArrayList<>(rawList.size());
 		int numOfProperties = userPropertyHandlers.size();
-		for(Object rawObject:rawList) {
-			Object[] rawStat = (Object[])rawObject;
+		QueryUserHelper user = new QueryUserHelper();
+		for(Object[] rawObject:rawList) {
 			int pos = 0;
 			
-			Long identityKey = ((Number)rawStat[pos++]).longValue();
-			String identityName = (String)rawStat[pos++];
-			Date creationDate = (Date)rawStat[pos++];
-			Date lastLogin = (Date)rawStat[pos++];
-			Integer status = (Integer)rawStat[pos++];
+			Long identityKey = ((Number)rawObject[pos++]).longValue();
+			String identityName = (String)rawObject[pos++];
+			Date creationDate = (Date)rawObject[pos++];
+			Date lastLogin = (Date)rawObject[pos++];
+			Integer status = (Integer)rawObject[pos++];
 
 			String[] userProperties = new String[numOfProperties];
 			for(int i=0; i<numOfProperties; i++) {
-				userProperties[i] = (String)rawStat[pos++];
+				String userProperty = (String)rawObject[pos++];
+				user.setUserProperty(userProperty);
+				userProperties[i] = userPropertyHandlers.get(i).getUserProperty(user, locale);
 			}
 
-			rows.add(new IdentityPropertiesRow(identityKey, identityName, creationDate, lastLogin, status, userProperties));
+			rows.add(new IdentityPropertiesRow(identityKey, identityName, creationDate, lastLogin, status, userPropertyHandlers, userProperties, locale));
 		}
 		return rows;
 	}

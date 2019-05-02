@@ -104,16 +104,13 @@ public class UsrPropContextEditController extends FormBasicController {
 	 * 
 	 */
 	private void buildPropertyHandlerListFromContext() {
-		rowToggleButtonsMap = new HashMap<String, List<FormItem>>();
+		rowToggleButtonsMap = new HashMap<>();
 		
 		// add form components for each row
-		List<UserPropertyHandler> handlerList = new ArrayList<UserPropertyHandler>();
+		List<UserPropertyHandler> handlerList = new ArrayList<>();
 
 		// loop over the handlers within this context
 		for (UserPropertyHandler handler : context.getPropertyHandlers()) {
-			// final boolean isActive =
-			// usrPropCfgMng.getUserPropertiesConfigObject().isActiveHandler(handler);
-			// if (!isActive) continue;
 			handlerList.add(handler);
 			addTableRowComponents(handler, true);
 		}
@@ -136,7 +133,7 @@ public class UsrPropContextEditController extends FormBasicController {
 	 * @param moveable if true, additional "up"/"down" Links will be rendered
 	 */
 	private void addTableRowComponents(UserPropertyHandler handler, boolean moveable) {
-		List<FormItem> rowFormItemComponents = new ArrayList<FormItem>();
+		List<FormItem> rowFormItemComponents = new ArrayList<>();
 		final String handlername = handler.getName();
 		final boolean isIncluded = context.contains(handler);
 		final boolean isMandatory = context.isMandatoryUserProperty(handler);
@@ -188,25 +185,25 @@ public class UsrPropContextEditController extends FormBasicController {
 
 		// up/down links
 
-		FormLink fl_up = uifactory.addFormLink(FT_NAME_PREFIX_MUP + handlername, " ", null, contTableFlc, Link.NONTRANSLATED);
-		fl_up.setIconLeftCSS("o_icon o_icon_move_up o_icon-lg");
-		fl_up.setUserObject(handler);
+		FormLink upLink = uifactory.addFormLink(FT_NAME_PREFIX_MUP + handlername, " ", null, contTableFlc, Link.NONTRANSLATED);
+		upLink.setIconLeftCSS("o_icon o_icon_move_up o_icon-lg");
+		upLink.setUserObject(handler);
 		
-		FormLink fl_down = uifactory.addFormLink(FT_NAME_PREFIX_MDN + handlername, " ", null, contTableFlc, Link.NONTRANSLATED);
-		fl_down.setIconRightCSS("o_icon o_icon_move_down o_icon-lg");
-		fl_down.setUserObject(handler);
+		FormLink downLink = uifactory.addFormLink(FT_NAME_PREFIX_MDN + handlername, " ", null, contTableFlc, Link.NONTRANSLATED);
+		downLink.setIconRightCSS("o_icon o_icon_move_down o_icon-lg");
+		downLink.setUserObject(handler);
 		if (!moveable) {
-			fl_up.setEnabled(false);
-			fl_up.setVisible(false);
-			fl_down.setEnabled(false);
-			fl_down.setVisible(false);
+			upLink.setEnabled(false);
+			upLink.setVisible(false);
+			downLink.setEnabled(false);
+			downLink.setVisible(false);
 		}
 
 		rowFormItemComponents.add(ftMandatory);
 		rowFormItemComponents.add(ftAdminonly);
 		rowFormItemComponents.add(ftUserreadonly);
-		rowFormItemComponents.add(fl_up);
-		rowFormItemComponents.add(fl_down);
+		rowFormItemComponents.add(upLink);
+		rowFormItemComponents.add(downLink);
 
 		rowToggleButtonsMap.put(handlername, rowFormItemComponents);
 	}
@@ -215,7 +212,6 @@ public class UsrPropContextEditController extends FormBasicController {
 	@SuppressWarnings("unused")
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source instanceof FormToggle) {
-			int activeCount = 0;
 			FormToggle sourceToggle = (FormToggle) source;
 			UserPropertyHandler handler = (UserPropertyHandler) sourceToggle.getUserObject();
 

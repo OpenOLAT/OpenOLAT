@@ -26,6 +26,7 @@ import org.olat.core.gui.components.form.ValidationError;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.FormUIFactory;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.User;
 import org.olat.core.util.StringHelper;
@@ -56,12 +57,11 @@ public class GenderPropertyHandler extends AbstractUserPropertyHandler {
 	
 	private String[] getTranslatedValues(Locale locale) {
 		Translator trans = Util.createPackageTranslator(this.getClass(), locale);
-		String[] values = new String[] { 
+		return new String[] { 
 				trans.translate(i18nFormElementLabelKey() + "." +keys[0]), 
 				trans.translate(i18nFormElementLabelKey() + "." +keys[1]),
 				trans.translate(i18nFormElementLabelKey() + "." +keys[2])
 		};
-		return values;
 	}
 
 	@Override
@@ -76,9 +76,6 @@ public class GenderPropertyHandler extends AbstractUserPropertyHandler {
 		super.setUserProperty(user, value);
 	}
 
-	/**
-	 * @see org.olat.user.AbstractUserPropertyHandler#getUserProperty(org.olat.core.id.User, java.util.Locale)
-	 */
 	@Override
 	public String getUserProperty(User user, Locale locale) {
 		Translator myTrans;
@@ -88,30 +85,20 @@ public class GenderPropertyHandler extends AbstractUserPropertyHandler {
 			myTrans = Util.createPackageTranslator(this.getClass(), locale);
 		}
 		String internalValue = getInternalValue(user);
-		String displayValue = myTrans.translate("form.name.gender." + internalValue);
-		return displayValue;
+		return myTrans.translate("form.name.gender." + internalValue);
 	}
 
-	/**
-	 * @see org.olat.user.propertyhandlers.UserPropertyHandler#updateUserFromFormItem(org.olat.core.id.User, org.olat.core.gui.components.form.flexible.FormItem)
-	 */
 	@Override
 	public void updateUserFromFormItem(User user, FormItem formItem) {
 		String internalValue = getStringValue(formItem);
 		setInternalValue(user, internalValue);
 	}
 
-	/**
-	 * @see org.olat.user.propertyhandlers.UserPropertyHandler#getStringValue(org.olat.core.gui.components.form.flexible.FormItem)
-	 */
 	@Override
 	public String getStringValue(FormItem formItem) {
 		return ((org.olat.core.gui.components.form.flexible.elements.SingleSelection) formItem).getSelectedKey();
 	}
 
-	/**
-	 * @see org.olat.user.propertyhandlers.UserPropertyHandler#getStringValue(java.lang.String, java.util.Locale)
-	 */
 	@Override
 	public String getStringValue(String displayValue, Locale locale) {
 		// This should be refactored, but currently the bulk change does not work
@@ -122,16 +109,9 @@ public class GenderPropertyHandler extends AbstractUserPropertyHandler {
 		return displayValue;
 	}
 
-
-	/**
-	 *  
-	 * @see org.olat.user.propertyhandlers.UserPropertyHandler#addFormItem(java.util.Locale, org.olat.core.id.User, java.lang.String, boolean, org.olat.core.gui.components.form.flexible.FormItemContainer)
-	 */
 	@Override
 	public FormItem addFormItem(Locale locale, User user, String usageIdentifyer, boolean isAdministrativeUser,	FormItemContainer formItemContainer) {
-		org.olat.core.gui.components.form.flexible.elements.SingleSelection	genderElem = null;
-		//genderElem = FormUIFactory.getInstance().addDropdownSingleselect(getName(), i18nFormElementLabelKey(), formItemContainer, keys, getTranslatedValues(locale), null);
-		genderElem = FormUIFactory.getInstance().addRadiosVertical(getName(), i18nFormElementLabelKey(), formItemContainer, keys, getTranslatedValues(locale));
+		SingleSelection	genderElem = FormUIFactory.getInstance().addRadiosVertical(getName(), i18nFormElementLabelKey(), formItemContainer, keys, getTranslatedValues(locale));
 		String key = user == null ? "-" : getInternalValue(user);
 		for(int i=keys.length; i-->0; ) {
 			if(keys[i].equals(key)) {
@@ -148,19 +128,13 @@ public class GenderPropertyHandler extends AbstractUserPropertyHandler {
 		}
 		return genderElem;
 	}
-	
-	/**
-	 * @see org.olat.user.AbstractUserPropertyHandler#getInternalValue(org.olat.core.id.User)
-	 */
+
 	@Override
 	public String getInternalValue(User user) {
 		String value = super.getInternalValue(user);
 		return (StringHelper.containsNonWhitespace(value) ? value : "-"); // default		
 	}
-	
-	/**
-	 * @see org.olat.user.propertyhandlers.UserPropertyHandler#isValid(org.olat.core.gui.components.form.flexible.FormItem, java.util.Map)
-	 */
+
 	@Override
 	public boolean isValid(User user, FormItem formItem, Map<String,String> formContext) {
 		if (formItem.isMandatory()) {
@@ -174,10 +148,6 @@ public class GenderPropertyHandler extends AbstractUserPropertyHandler {
 		return true;
 	}
 
-
-	/**
-	 * @see org.olat.user.propertyhandlers.UserPropertyHandler#isValidValue(java.lang.String, org.olat.core.gui.components.form.ValidationError, java.util.Locale)
-	 */
 	@Override
 	public boolean isValidValue(User user, String value, ValidationError validationError, Locale locale) {
 		if (value != null) {
@@ -193,5 +163,4 @@ public class GenderPropertyHandler extends AbstractUserPropertyHandler {
 		// null values are ok
 		return true;
 	}
-
 }

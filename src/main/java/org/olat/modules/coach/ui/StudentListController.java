@@ -164,7 +164,7 @@ public class StudentListController extends FormBasicController implements Activa
 	}
 	
 	private void loadModel() {
-		List<StudentStatEntry> students = coachingService.getStudentsStatistics(getIdentity(), userPropertyHandlers);
+		List<StudentStatEntry> students = coachingService.getStudentsStatistics(getIdentity(), userPropertyHandlers, getLocale());
 		model.setObjects(students);
 		tableEl.reset();
 		tableEl.reloadData();

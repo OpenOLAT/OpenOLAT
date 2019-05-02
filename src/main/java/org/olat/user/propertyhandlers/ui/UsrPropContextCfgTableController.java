@@ -80,7 +80,7 @@ public class UsrPropContextCfgTableController extends BasicController {
 		listenTo(contextTableCtr);
 
 		Map<String, UserPropertyUsageContext> contexts = usrPropCfgMng.getUserPropertiesConfigObject().getUsageContexts();
-		List<Entry<String, UserPropertyUsageContext>> contextsList = new ArrayList<Entry<String, UserPropertyUsageContext>>(contexts.entrySet());
+		List<Entry<String, UserPropertyUsageContext>> contextsList = new ArrayList<>(contexts.entrySet());
 
 		contTblModel = new UsrPropContextCfgTableModel(contextsList);
 		contextTableCtr.setTableDataModel(contTblModel);
@@ -92,7 +92,7 @@ public class UsrPropContextCfgTableController extends BasicController {
 	 */
 	private void refreshView(){
 		Map<String, UserPropertyUsageContext> contexts = usrPropCfgMng.getUserPropertiesConfigObject().getUsageContexts();
-		List<Entry<String, UserPropertyUsageContext>> contextsList = new ArrayList<Entry<String, UserPropertyUsageContext>>(contexts.entrySet());
+		List<Entry<String, UserPropertyUsageContext>> contextsList = new ArrayList<>(contexts.entrySet());
 
 		contTblModel = new UsrPropContextCfgTableModel(contextsList);
 		contextTableCtr.setTableDataModel(contTblModel);

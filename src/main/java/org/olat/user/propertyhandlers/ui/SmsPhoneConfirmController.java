@@ -65,7 +65,7 @@ public class SmsPhoneConfirmController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		if(StringHelper.containsNonWhitespace(tokenEl.getValue())) {
 			if(!tokenEl.getValue().equals(token)) {
@@ -76,7 +76,7 @@ public class SmsPhoneConfirmController extends FormBasicController {
 			tokenEl.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;
 		}
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override

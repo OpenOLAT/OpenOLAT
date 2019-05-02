@@ -49,10 +49,10 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class UsrPropCfgResetController extends FormBasicController {
 
-	private static String PRESET_KEY_OLATDEF = "upc.reset.config.olatdefault";
-	private static String PRESET_KEY_MINIMAL = "upc.reset.config.minimal";
-	private static String PRESET_KEY_SCHOOL = "upc.reset.config.school";
-	private static String PRESET_KEY_BUSINESS = "upc.reset.config.business";
+	private static final String PRESET_KEY_OLATDEF = "upc.reset.config.olatdefault";
+	private static final String PRESET_KEY_MINIMAL = "upc.reset.config.minimal";
+	private static final String PRESET_KEY_SCHOOL = "upc.reset.config.school";
+	private static final String PRESET_KEY_BUSINESS = "upc.reset.config.business";
 
 	private SingleSelection resetDropdown;
 
@@ -86,8 +86,7 @@ public class UsrPropCfgResetController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		String propertyFileName = "_static/" + resetDropdown.getSelectedKey() + ".properties";
-		InputStream is = this.getClass().getResourceAsStream(propertyFileName);
-		try {
+		try(InputStream is = this.getClass().getResourceAsStream(propertyFileName)) {
 			Properties p = new Properties();
 			p.load(is);
 			usrPropCfgMng.resetToPresetConfig(p);

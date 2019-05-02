@@ -153,15 +153,16 @@ public class WebSMSProvider extends AbstractSpringModule implements MessagesSPI 
 	@Override
 	public boolean send(String messageId, String text, String recipient) {
 		HttpPost send = new HttpPost(url);
+		
+		String phone = recipient.replace("+", "").replace(" ", "");
+		String objectStr = jsonPayload(messageId, text, Long.valueOf(phone));
+		HttpEntity smsEntity = new StringEntity(objectStr, ContentType.APPLICATION_JSON);
+		send.setEntity(smsEntity);
+		
 		try(CloseableHttpClient httpclient = HttpClientBuilder.create()
 				.setDefaultCredentialsProvider(provider)
-				.build()) {
-			
-			String phone = recipient.replace("+", "").replace(" ", "");
-			String objectStr = jsonPayload(messageId, text, Long.valueOf(phone));
-			HttpEntity smsEntity = new StringEntity(objectStr, ContentType.APPLICATION_JSON);
-			send.setEntity(smsEntity);
-			CloseableHttpResponse response = httpclient.execute(send);
+				.build();
+				CloseableHttpResponse response = httpclient.execute(send)) {
 			int returnCode = response.getStatusLine().getStatusCode();
 			String responseString = EntityUtils.toString(response.getEntity());
 			if(returnCode == 200 || returnCode >= 2000) {

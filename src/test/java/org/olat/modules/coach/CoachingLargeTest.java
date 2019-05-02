@@ -274,7 +274,7 @@ public class CoachingLargeTest extends OlatTestCase {
 	
 	@Test
 	public void getStudentsStatistics() {
-		List<StudentStatEntry> statEntries = coachingService.getStudentsStatistics(coach10, userPropertyHandlers);
+		List<StudentStatEntry> statEntries = coachingService.getStudentsStatistics(coach10, userPropertyHandlers, Locale.ENGLISH);
 		Assert.assertNotNull(statEntries);
 	}
 	
@@ -348,7 +348,7 @@ public class CoachingLargeTest extends OlatTestCase {
 		SearchCoachedIdentityParams params = new SearchCoachedIdentityParams();
 		params.setLogin(aStudent.getName());
 		
-		List<StudentStatEntry> statEntries = coachingService.getUsersStatistics(params, userPropertyHandlers);
+		List<StudentStatEntry> statEntries = coachingService.getUsersStatistics(params, userPropertyHandlers, Locale.ENGLISH);
 		Assert.assertNotNull(statEntries);
 		Assert.assertEquals(1, statEntries.size());
 		

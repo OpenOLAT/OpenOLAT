@@ -131,13 +131,14 @@ public class BulkSMSProvider extends AbstractSpringModule implements MessagesSPI
 		String token = StringHelper.encodeBase64(tokenId + ":" + tokenSecret);
 		send.setHeader(new BasicHeader("Authorization", "Basic " + token));
 		send.setHeader(new BasicHeader("Content-Type", "application/json"));
-		try(CloseableHttpClient httpclient = HttpClientBuilder.create().build()) {
-			
-			String phone = recipient.replace("+", "").replace(" ", "");
-			String objectStr = jsonPayload(text, phone);
-			HttpEntity smsEntity = new StringEntity(objectStr, ContentType.APPLICATION_JSON);
-			send.setEntity(smsEntity);
-			CloseableHttpResponse response = httpclient.execute(send);
+		
+		String phone = recipient.replace("+", "").replace(" ", "");
+		String objectStr = jsonPayload(text, phone);
+		HttpEntity smsEntity = new StringEntity(objectStr, ContentType.APPLICATION_JSON);
+		send.setEntity(smsEntity);
+		
+		try(CloseableHttpClient httpclient = HttpClientBuilder.create().build();
+				CloseableHttpResponse response = httpclient.execute(send)) {
 			int returnCode = response.getStatusLine().getStatusCode();
 			String responseString = EntityUtils.toString(response.getEntity());
 			if(returnCode == 200 || returnCode == 201) {

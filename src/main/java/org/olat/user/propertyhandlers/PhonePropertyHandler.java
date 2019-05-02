@@ -26,6 +26,7 @@ import java.util.regex.Pattern;
 import org.olat.core.gui.components.form.ValidationError;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.id.User;
 import org.olat.core.util.StringHelper;
 
@@ -42,13 +43,10 @@ public class PhonePropertyHandler extends Generic127CharTextPropertyHandler {
 	// Regexp to define valid phone numbers
 	private static final Pattern VALID_PHONE_PATTERN_IP = Pattern.compile( "[0-9/\\-+'\\(\\)\\. e(ext\\.*)(extension)]+" );
 	
-	/* (non-Javadoc)
-	 * @see org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler#addFormItem(java.util.Locale, org.olat.core.id.User, java.lang.String, boolean, org.olat.core.gui.components.form.flexible.FormItemContainer)
-	 */
 	@Override
 	public FormItem addFormItem(Locale locale, User user, String usageIdentifyer, boolean isAdministrativeUser,
 			FormItemContainer formItemContainer) {
-		org.olat.core.gui.components.form.flexible.elements.TextElement textElement = (org.olat.core.gui.components.form.flexible.elements.TextElement)super.addFormItem(locale, user, usageIdentifyer, isAdministrativeUser, formItemContainer);
+		TextElement textElement = (TextElement)super.addFormItem(locale, user, usageIdentifyer, isAdministrativeUser, formItemContainer);
 		textElement.setExampleKey("form.example.phone", null);
 		return textElement;
 	}
@@ -61,7 +59,7 @@ public class PhonePropertyHandler extends Generic127CharTextPropertyHandler {
 		String phonenr = getUserProperty(user, locale);
 		if (StringHelper.containsNonWhitespace(phonenr)) {
 			phonenr = StringHelper.escapeHtml(phonenr);
-			StringBuffer sb = new StringBuffer();
+			StringBuilder sb = new StringBuilder(64);
 			sb.append("<a href=\"tel:")
 			  .append(normalizePhonenumber(phonenr)).append("\"><i class='o_icon o_icon_phone'> </i> ")
 			  .append(phonenr).append("</a>");
@@ -76,20 +74,16 @@ public class PhonePropertyHandler extends Generic127CharTextPropertyHandler {
 		phonenr=phonenr.replaceAll("[\\s/'\\-\\.,]", ""); //remove bad chars
 		return phonenr;
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler#isValid(org.olat.core.gui.components.form.flexible.FormItem, java.util.Map)
-	 */
+
 	@Override
 	public boolean isValid(User user, FormItem formItem, Map<String,String> formContext) {
 		// check parent rules first: check if mandatory and empty
-		if (! super.isValid(user, formItem, formContext)) {
+		if (!super.isValid(user, formItem, formContext)) {
 			return false;
 		} 
 		
-		org.olat.core.gui.components.form.flexible.elements.TextElement textElement = (org.olat.core.gui.components.form.flexible.elements.TextElement) formItem;
+		TextElement textElement = (TextElement)formItem;
 		String value = textElement.getValue();
-		
 		if (StringHelper.containsNonWhitespace(value)) {
 			// check phone address syntax
 			if (!VALID_PHONE_PATTERN_IP.matcher(value.toLowerCase()).matches()) {
@@ -100,10 +94,7 @@ public class PhonePropertyHandler extends Generic127CharTextPropertyHandler {
 		// everthing ok
 		return true;
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler#isValidValue(java.lang.String, org.olat.core.gui.components.form.ValidationError, java.util.Locale)
-	 */
+
 	@Override
 	public boolean isValidValue(User user, String value, ValidationError validationError, Locale locale) {
 		if ( ! super.isValidValue(user, value, validationError, locale)) return false;

@@ -22,10 +22,13 @@ package org.olat.user.propertyhandlers;
 import java.util.Locale;
 import java.util.Map;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.form.ValidationError;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.id.User;
+import org.olat.core.util.StringHelper;
+import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.ui.SmsPhoneElement;
 
 /**
@@ -43,6 +46,14 @@ public class SmsPhonePropertyHandler extends PhonePropertyHandler {
 		SmsPhoneElement phoneEl = new SmsPhoneElement(name, this, user, locale);
 		phoneEl.setLabel("form.name." + name, null);
 		formItemContainer.add(phoneEl);
+		
+		UserManager um = CoreSpringFactory.getImpl(UserManager.class);
+		if(um.isUserViewReadOnly(usageIdentifyer, this)) {
+			phoneEl.setEnabled(false);
+		}
+		if(um.isMandatoryUserProperty(usageIdentifyer, this)) {
+			phoneEl.setMandatory(true);
+		}
 		return phoneEl;
 	}
 	
@@ -55,10 +66,13 @@ public class SmsPhonePropertyHandler extends PhonePropertyHandler {
 	public boolean isValidValue(User user, String value, ValidationError validationError, Locale locale) {
 		return true;
 	}
-	
-	@Override
-	public String getStringValue(FormItem formItem) {
-		return ((SmsPhoneElement) formItem).getPhone();
-	}
 
+	@Override
+	public String getUserProperty(User user, Locale locale) {
+		String internalValue = getInternalValue(user);
+		if(StringHelper.containsNonWhitespace(internalValue) && internalValue.length() > 3) {
+			return "*****" + internalValue.substring(internalValue.length() - 3, internalValue.length());
+		}
+		return internalValue;
+	}
 }

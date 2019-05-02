@@ -73,13 +73,14 @@ public class CoachingServiceImpl implements CoachingService {
 	}
 	
 	@Override
-	public List<StudentStatEntry> getUsersStatistics(SearchCoachedIdentityParams params, List<UserPropertyHandler> userPropertyHandlers) {
-		return coachingDao.getUsersStatisticsNative(params, userPropertyHandlers);
+	public List<StudentStatEntry> getUsersStatistics(SearchCoachedIdentityParams params,
+			List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
+		return coachingDao.getUsersStatisticsNative(params, userPropertyHandlers, locale);
 	}
 
 	@Override
-	public List<StudentStatEntry> getStudentsStatistics(Identity coach, List<UserPropertyHandler> userPropertyHandlers) {
-		return coachingDao.getStudentsStatisticsNative(coach, userPropertyHandlers);
+	public List<StudentStatEntry> getStudentsStatistics(Identity coach, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
+		return coachingDao.getStudentsStatisticsNative(coach, userPropertyHandlers, locale);
 	}
 
 	@Override

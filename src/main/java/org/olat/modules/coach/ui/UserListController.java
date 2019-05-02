@@ -145,7 +145,7 @@ public class UserListController extends FormBasicController implements Activatea
 	}
 	
 	private void loadModel() {
-		List<StudentStatEntry> stats = coachingService.getUsersStatistics(searchParams, userPropertyHandlers);
+		List<StudentStatEntry> stats = coachingService.getUsersStatistics(searchParams, userPropertyHandlers, getLocale());
 		model.setObjects(stats);
 		tableEl.reset();
 		tableEl.reloadData();

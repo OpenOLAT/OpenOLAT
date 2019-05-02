@@ -47,10 +47,10 @@ public interface CoachingService {
 
 	public List<RepositoryEntry> getStudentsCourses(Identity coach, Identity student);
 	
-	public List<StudentStatEntry> getStudentsStatistics(Identity coach, List<UserPropertyHandler> userPropertyHandlers);
+	public List<StudentStatEntry> getStudentsStatistics(Identity coach, List<UserPropertyHandler> userPropertyHandlers, Locale locale);
 	
 	
-	public List<StudentStatEntry> getUsersStatistics(SearchCoachedIdentityParams params, List<UserPropertyHandler> userPropertyHandlers);
+	public List<StudentStatEntry> getUsersStatistics(SearchCoachedIdentityParams params, List<UserPropertyHandler> userPropertyHandlers, Locale locale);
 	
 	public List<RepositoryEntry> getUserCourses(Identity student);
 	

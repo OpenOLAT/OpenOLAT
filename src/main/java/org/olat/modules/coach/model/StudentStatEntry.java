@@ -20,9 +20,12 @@
 package org.olat.modules.coach.model;
 
 import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import org.olat.user.UserPropertiesRow;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 
 /**
@@ -42,8 +45,8 @@ public class StudentStatEntry extends UserPropertiesRow {
 	private Set<String> repoIds = new HashSet<>();
 	private Set<String> launchIds = new HashSet<>();
 	
-	public StudentStatEntry(Long identityKey, String identityName, String[] userProperties) {
-		super(identityKey, identityName, userProperties);
+	public StudentStatEntry(Long identityKey, String identityName, List<UserPropertyHandler> userPropertyHandlers, String[] userProperties, Locale locale) {
+		super(identityKey, identityName, userPropertyHandlers, userProperties, locale);
 	}
 	
 	public int getCountRepo() {

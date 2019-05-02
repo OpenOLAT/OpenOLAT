@@ -60,7 +60,8 @@ public class SmsPhoneElement extends FormItemImpl implements FormItemCollection,
 	private final User editedUser;
 	private final UserPropertyHandler handler;
 	
-	private FormLink editLink, removeLink;
+	private FormLink editLink;
+	private FormLink removeLink;
 	private SmsPhoneController smsPhoneCtrl;
 	private CloseableModalController cmc;
 	

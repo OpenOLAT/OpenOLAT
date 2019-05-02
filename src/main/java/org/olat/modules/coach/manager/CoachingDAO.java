@@ -544,14 +544,10 @@ public class CoachingDAO {
 		return !rawList.isEmpty();
 	}
 	
-	protected List<StudentStatEntry> getStudentsStatisticsNative(Identity coach, List<UserPropertyHandler> userPropertyHandlers) {
+	protected List<StudentStatEntry> getStudentsStatisticsNative(Identity coach, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		Map<Long, StudentStatEntry> map = new HashMap<>();
-		//long start1 = System.nanoTime();
-		boolean hasCoachedStudents = getStudentsStastisticInfosForCoach(coach, map, userPropertyHandlers);
-		//CodeHelper.printNanoTime(start1, "Coached infos");
-		//long start2 = System.nanoTime();
-		boolean hasOwnedStudents = getStudentsStastisticInfosForOwner(coach, map, userPropertyHandlers);
-		//CodeHelper.printNanoTime(start2, "Owned infos");
+		boolean hasCoachedStudents = getStudentsStastisticInfosForCoach(coach, map, userPropertyHandlers, locale);
+		boolean hasOwnedStudents = getStudentsStastisticInfosForOwner(coach, map, userPropertyHandlers, locale);
 		if(hasOwnedStudents || hasCoachedStudents) {
 			for(StudentStatEntry entry:map.values()) {
 				entry.setCountRepo(entry.getRepoIds().size());
@@ -559,9 +555,7 @@ public class CoachingDAO {
 				entry.setInitialLaunch(entry.getLaunchIds().size());
 				entry.setLaunchIds(null);
 			}
-			//long start3 = System.nanoTime();
 			getStudentsStatisticStatement(coach, hasCoachedStudents, hasOwnedStudents, map);
-			//CodeHelper.printNanoTime(start3, "Statistics students");
 			for(StudentStatEntry entry:map.values()) {
 				int notAttempted = entry.getCountRepo() - entry.getCountPassed() - entry.getCountFailed();
 				entry.setCountNotAttempted(notAttempted);
@@ -570,7 +564,7 @@ public class CoachingDAO {
 		return new ArrayList<>(map.values());
 	}
 	
-	private boolean getStudentsStastisticInfosForCoach(IdentityRef coach, Map<Long, StudentStatEntry> map, List<UserPropertyHandler> userPropertyHandlers) {
+	private boolean getStudentsStastisticInfosForCoach(IdentityRef coach, Map<Long, StudentStatEntry> map, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		NativeQueryBuilder sb = new NativeQueryBuilder(1024, dbInstance);
 		sb.append("select")
 		  .append("  sg_participant_id.id as part_id,")
@@ -614,7 +608,7 @@ public class CoachingDAO {
 				userProperties[i] = (String)rawStat[pos++];
 			}
 			
-			StudentStatEntry entry = new StudentStatEntry(identityKey, identityName, userProperties);
+			StudentStatEntry entry = new StudentStatEntry(identityKey, identityName, userPropertyHandlers, userProperties, locale);
 			appendArrayToSet(rawStat[pos++], entry.getRepoIds());
 			appendArrayToSet(rawStat[pos++], entry.getLaunchIds());
 			map.put(entry.getIdentityKey(), entry);
@@ -636,7 +630,7 @@ public class CoachingDAO {
 		}	
 	}
 	
-	private boolean getStudentsStastisticInfosForOwner(IdentityRef coach, Map<Long, StudentStatEntry> map, List<UserPropertyHandler> userPropertyHandlers) {
+	private boolean getStudentsStastisticInfosForOwner(IdentityRef coach, Map<Long, StudentStatEntry> map, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		NativeQueryBuilder sb = new NativeQueryBuilder(1024, dbInstance);
 		sb.append("select")
 		  .append("  sg_participant_id.id as part_id,")
@@ -689,7 +683,7 @@ public class CoachingDAO {
 				for(int i=0; i<numOfProperties; i++) {
 					userProperties[i] = (String)rawStat[pos++];
 				}
-				entry = new StudentStatEntry(identityKey, identityName, userProperties);
+				entry = new StudentStatEntry(identityKey, identityName, userPropertyHandlers, userProperties, locale);
 				
 				map.put(identityKey, entry);
 			}
@@ -795,16 +789,17 @@ public class CoachingDAO {
 	 * @param params
 	 * @return The list of statistics
 	 */
-	protected List<StudentStatEntry> getUsersStatisticsNative(SearchCoachedIdentityParams params, List<UserPropertyHandler> userPropertyHandlers) {
+	protected List<StudentStatEntry> getUsersStatisticsNative(SearchCoachedIdentityParams params, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		Map<Long,StudentStatEntry> map = new HashMap<>();
-		boolean hasUsers = getUsersStatisticsInfos(params, map, userPropertyHandlers);
+		boolean hasUsers = getUsersStatisticsInfos(params, map, userPropertyHandlers, locale);
 		if(hasUsers) {
 			getUsersStatisticsStatements(params, map);
 		}
 		return new ArrayList<>(map.values());
 	}
 	
-	private boolean getUsersStatisticsInfos(SearchCoachedIdentityParams params, Map<Long, StudentStatEntry> map, List<UserPropertyHandler> userPropertyHandlers) {
+	private boolean getUsersStatisticsInfos(SearchCoachedIdentityParams params, Map<Long, StudentStatEntry> map,
+			List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		NativeQueryBuilder sb = new NativeQueryBuilder(1024, dbInstance);
 		Map<String,Object> queryParams = new HashMap<>();
 		sb.append("select ")
@@ -852,7 +847,7 @@ public class CoachingDAO {
 			for(int i=0; i<numOfProperties; i++) {
 				userProperties[i] = (String)rawStat[pos++];
 			}
-			StudentStatEntry entry = new StudentStatEntry(identityKey, identityName, userProperties);
+			StudentStatEntry entry = new StudentStatEntry(identityKey, identityName, userPropertyHandlers, userProperties, locale);
 			entry.setCountRepo(((Number)rawStat[pos++]).intValue());
 			entry.setInitialLaunch(((Number)rawStat[pos++]).intValue());
 			map.put(identityKey, entry);

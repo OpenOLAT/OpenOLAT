@@ -165,7 +165,7 @@ public class ResumeSessionController extends BasicController {
 	}
 	
 	public boolean userInteractionNeeded() {
-		return interceptors.size() > 0;
+		return !interceptors.isEmpty();
 	}
 	
 	@Override
@@ -272,7 +272,6 @@ public class ResumeSessionController extends BasicController {
 			}
 			
 			if(wizardCtrl != null) {
-				//actualCtrNr = ctrNr;
 				wizardCtrl.setCurStep(nextCtrlIndex + 1);
 			}
 
@@ -454,7 +453,7 @@ public class ResumeSessionController extends BasicController {
 		 */
 		public String getFormattedRedirectUrl() {
 			String bc = redirectUrl;
-			if(bc.indexOf("]") < 0) {
+			if(bc.indexOf(']') < 0) {
 				bc = BusinessControlFactory.getInstance().formatFromURI(bc);
 			}
 			return bc;

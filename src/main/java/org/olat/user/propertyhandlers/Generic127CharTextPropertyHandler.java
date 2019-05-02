@@ -28,7 +28,6 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.FormUIFactory;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
-import org.olat.core.gui.components.form.flexible.impl.elements.ItemValidatorProvider;
 import org.olat.core.id.User;
 import org.olat.user.AbstractUserPropertyHandler;
 import org.olat.user.UserManager;
@@ -50,49 +49,32 @@ public class Generic127CharTextPropertyHandler extends AbstractUserPropertyHandl
 	private Pattern regExp;
 	private String regExpMsgKey;
 
-	/**
-	 * @see org.olat.user.propertyhandlers.UserPropertyHandler#updateUserFromFormItem(org.olat.core.id.User, org.olat.core.gui.components.form.flexible.FormItem)
-	 */
 	@Override
 	public void updateUserFromFormItem(User user, FormItem formItem) {
 		String internalValue = getStringValue(formItem);
 		setInternalValue(user, internalValue);
 	}
 
-	/**
-	 * @see org.olat.user.propertyhandlers.UserPropertyHandler#getStringValue(org.olat.core.gui.formelements.FORMELEMENTOLD)
-	 */
 	@Override
 	public String getStringValue(FormItem formItem) {
-		return ((org.olat.core.gui.components.form.flexible.elements.TextElement) formItem).getValue();
+		return ((TextElement)formItem).getValue();
 	}
 
-	/**
-	 * @see org.olat.user.propertyhandlers.UserPropertyHandler#getStringValue(java.lang.String, java.util.Locale)
-	 */
 	@Override
 	public String getStringValue(String displayValue, Locale locale) {
 		// default implementation is to use same as displayValue
 		return displayValue;
 	}
-	
-	/**
-	 *  
-	 * @see org.olat.user.propertyhandlers.UserPropertyHandler#addFormItem(java.util.Locale, org.olat.core.id.User, java.lang.String, boolean, org.olat.core.gui.components.form.flexible.FormItemContainer)
-	 */
+
 	@Override
 	public FormItem addFormItem(Locale locale, final User user, String usageIdentifyer, boolean isAdministrativeUser,	FormItemContainer formItemContainer) {
-		org.olat.core.gui.components.form.flexible.elements.TextElement tElem = null;
-		tElem = FormUIFactory.getInstance().addTextElement(getName(), i18nFormElementLabelKey(), 127, getInternalValue(user), formItemContainer);
-		tElem.setItemValidatorProvider(new ItemValidatorProvider() {
-			@Override
-			public boolean isValidValue(String value, ValidationError validationError, Locale llocale) {
-				return Generic127CharTextPropertyHandler.this.isValidValue(user, value, validationError, llocale);
-			}
-		});
+		TextElement tElem = FormUIFactory.getInstance().addTextElement(getName(), i18nFormElementLabelKey(), 127, getInternalValue(user), formItemContainer);
+		tElem.setItemValidatorProvider((value, validationError, llocale) -> 
+			Generic127CharTextPropertyHandler.this.isValidValue(user, value, validationError, llocale)
+		);
 		tElem.setLabel(i18nFormElementLabelKey(), null);
 		UserManager um = UserManager.getInstance();
-		if ( um.isUserViewReadOnly(usageIdentifyer, this) && ! isAdministrativeUser) {
+		if (um.isUserViewReadOnly(usageIdentifyer, this) && !isAdministrativeUser) {
 			tElem.setEnabled(false);
 		}
 		if (um.isMandatoryUserProperty(usageIdentifyer, this)) {
@@ -100,10 +82,7 @@ public class Generic127CharTextPropertyHandler extends AbstractUserPropertyHandl
 		}
 		return tElem;
 	}
-	
-	/**
-	 * @see org.olat.user.propertyhandlers.UserPropertyHandler#isValid(org.olat.core.gui.components.form.flexible.FormItem, java.util.Map)
-	 */
+
 	@Override
 	public boolean isValid(User user, FormItem formItem, Map<String,String> formContext) {
 		TextElement textElemItem = (TextElement) formItem;
@@ -120,16 +99,9 @@ public class Generic127CharTextPropertyHandler extends AbstractUserPropertyHandl
 		if (regExp != null) {
 			return regExp.matcher(textElemItem.getValue()).matches();
 		}
-		
-		//TODO unique user property (doesn't bulk change unique property)
-		
 		return true;
 	}
 
-	
-	/**
-	 * @see org.olat.user.propertyhandlers.UserPropertyHandler#isValidValue(java.lang.String, org.olat.core.gui.components.form.ValidationError, java.util.Locale)
-	 */
 	@Override
 	public boolean isValidValue(User user, String value, ValidationError validationError, Locale locale) {
 		if (value != null && value.length() > 127) {
@@ -137,13 +109,10 @@ public class Generic127CharTextPropertyHandler extends AbstractUserPropertyHandl
 			return false;
 		}
 		
-		if (regExp != null) {
-			if (!regExp.matcher(value).matches()) {
-				validationError.setErrorKey(regExpMsgKey);
-				return false;
-			}
+		if (regExp != null && !regExp.matcher(value).matches()) {
+			validationError.setErrorKey(regExpMsgKey);
+			return false;
 		}
-		
 		return true;
 	}
 	

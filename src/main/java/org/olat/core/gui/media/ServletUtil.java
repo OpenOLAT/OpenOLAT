@@ -530,7 +530,7 @@ public class ServletUtil {
 
 		try {
 			long rstart = 0;
-			if (isDebug || true) {
+			if (isDebug) {
 				rstart = System.currentTimeMillis();
 			}
 			// make a ByteArrayOutputStream to be able to determine the length.

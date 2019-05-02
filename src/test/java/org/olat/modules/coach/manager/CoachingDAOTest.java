@@ -24,20 +24,18 @@ import java.net.URL;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
-import org.olat.core.util.CodeHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.manager.EfficiencyStatementManager;
@@ -76,8 +74,6 @@ public class CoachingDAOTest extends OlatTestCase {
 	private CoachingDAO coachingDAO;
 	@Autowired
 	private UserManager userManager;
-	@Autowired
-	private BaseSecurity securityManager;
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
@@ -154,7 +150,7 @@ public class CoachingDAOTest extends OlatTestCase {
 
 		
 		//user native
-		List<StudentStatEntry> nativeUserStats = coachingDAO.getStudentsStatisticsNative(coach, userPropertyHandlers);
+		List<StudentStatEntry> nativeUserStats = coachingDAO.getStudentsStatisticsNative(coach, userPropertyHandlers, Locale.ENGLISH);
 		Assert.assertNotNull(nativeUserStats);
 		Assert.assertEquals(2, nativeUserStats.size());
 		//participant1
@@ -284,7 +280,7 @@ public class CoachingDAOTest extends OlatTestCase {
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, false);
 		
 		//user native
-		List<StudentStatEntry> nativeUserStats = coachingDAO.getStudentsStatisticsNative(coach, userPropertyHandlers);
+		List<StudentStatEntry> nativeUserStats = coachingDAO.getStudentsStatisticsNative(coach, userPropertyHandlers, Locale.ENGLISH);
 		Assert.assertNotNull(nativeUserStats);
 		Assert.assertEquals(2, nativeUserStats.size());
 		//participant1
@@ -425,7 +421,7 @@ public class CoachingDAOTest extends OlatTestCase {
 		
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, false);
 		//user native
-		List<StudentStatEntry> nativeUserStats = coachingDAO.getStudentsStatisticsNative(coach, userPropertyHandlers);
+		List<StudentStatEntry> nativeUserStats = coachingDAO.getStudentsStatisticsNative(coach, userPropertyHandlers, Locale.ENGLISH);
 		Assert.assertNotNull(nativeUserStats);
 	
 		Assert.assertEquals(4, nativeUserStats.size());
@@ -605,7 +601,7 @@ public class CoachingDAOTest extends OlatTestCase {
 	
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, false);
 		//user native
-		List<StudentStatEntry> courseCoachUserStats = coachingDAO.getStudentsStatisticsNative(courseCoach, userPropertyHandlers);
+		List<StudentStatEntry> courseCoachUserStats = coachingDAO.getStudentsStatisticsNative(courseCoach, userPropertyHandlers, Locale.ENGLISH);
 		Assert.assertNotNull(courseCoachUserStats);
 		Assert.assertEquals(2, courseCoachUserStats.size());
 		//participant3 is only in re 1
@@ -626,7 +622,7 @@ public class CoachingDAOTest extends OlatTestCase {
 		Assert.assertEquals(1, entryParticipant31.getCountRepo());
 		
 		//group coach
-		List<StudentStatEntry> groupCoachUserStats = coachingDAO.getStudentsStatisticsNative(groupCoach, userPropertyHandlers);
+		List<StudentStatEntry> groupCoachUserStats = coachingDAO.getStudentsStatisticsNative(groupCoach, userPropertyHandlers, Locale.ENGLISH);
 		Assert.assertNotNull(groupCoachUserStats);
 		Assert.assertEquals(2, groupCoachUserStats.size());
 
@@ -710,7 +706,7 @@ public class CoachingDAOTest extends OlatTestCase {
 
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, false);
 		//user native
-		List<StudentStatEntry> nativeUserStats = coachingDAO.getStudentsStatisticsNative(coach, userPropertyHandlers);
+		List<StudentStatEntry> nativeUserStats = coachingDAO.getStudentsStatisticsNative(coach, userPropertyHandlers, Locale.ENGLISH);
 		Assert.assertNotNull(nativeUserStats);
 		Assert.assertEquals(4, nativeUserStats.size());
 		//participants have all the same statistics
@@ -761,7 +757,7 @@ public class CoachingDAOTest extends OlatTestCase {
 		
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, false);
 		//user native
-		List<StudentStatEntry> nativeUserStats = coachingDAO.getStudentsStatisticsNative(coach, userPropertyHandlers);
+		List<StudentStatEntry> nativeUserStats = coachingDAO.getStudentsStatisticsNative(coach, userPropertyHandlers, Locale.ENGLISH);
 		Assert.assertNotNull(nativeUserStats);
 		Assert.assertEquals(0, nativeUserStats.size());
 	}
@@ -814,7 +810,7 @@ public class CoachingDAOTest extends OlatTestCase {
 		Map<String,String> props = new HashMap<>();
 		props.put(UserConstants.FIRSTNAME, "re");
 		params.setUserProperties(props);
-		List<StudentStatEntry> stats = coachingDAO.getUsersStatisticsNative(params, userPropertyHandlers);
+		List<StudentStatEntry> stats = coachingDAO.getUsersStatisticsNative(params, userPropertyHandlers, Locale.ENGLISH);
 		Assert.assertNotNull(stats);
 		Assert.assertFalse(stats.isEmpty());
 		
@@ -831,7 +827,7 @@ public class CoachingDAOTest extends OlatTestCase {
 		//search by user name
 		SearchCoachedIdentityParams loginParams = new SearchCoachedIdentityParams();
 		loginParams.setLogin(participant.getName());
-		List<StudentStatEntry> loginStats = coachingDAO.getUsersStatisticsNative(loginParams, userPropertyHandlers);
+		List<StudentStatEntry> loginStats = coachingDAO.getUsersStatisticsNative(loginParams, userPropertyHandlers, Locale.ENGLISH);
 		Assert.assertNotNull(loginStats);
 		Assert.assertEquals(1, loginStats.size());
 		
@@ -1015,29 +1011,5 @@ public class CoachingDAOTest extends OlatTestCase {
 			}
 		}
 		return entry;
-	}
-	
-	/**
-	 * To test performance against an external database ( of a customer ).
-	 */
-	@Test
-	@Ignore
-	public void testExtern() {
-		Identity coach = securityManager.loadIdentityByKey(46268418l);
-		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, false);
-		
-		if(coach != null) {
-			long start = System.nanoTime();
-			coachingDAO.getCoursesStatisticsNative(coach);
-			CodeHelper.printMilliSecondTime(start, "Courses");
-			
-			start = System.nanoTime();
-			coachingDAO.getGroupsStatisticsNative(coach);
-			CodeHelper.printMilliSecondTime(start, "Groups");
-			
-			start = System.nanoTime();
-			coachingDAO.getStudentsStatisticsNative(coach, userPropertyHandlers);
-			CodeHelper.printMilliSecondTime(start, "Students");
-		}
 	}
 }
