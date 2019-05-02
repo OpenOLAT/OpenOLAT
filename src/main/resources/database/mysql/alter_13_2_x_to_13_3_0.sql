@@ -112,7 +112,7 @@ alter table o_vfs_metadata add constraint fvers_to_lic_type_idx foreign key (fk_
 -- WOPI
 create table o_wopi_access (
    id bigint not null auto_increment,
-   creationdate datetime not null
+   creationdate datetime not null,
    lastmodified datetime not null,
    o_token varchar(64) not null,
    o_expires_at datetime,
