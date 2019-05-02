@@ -36,6 +36,7 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.UriInfo;
 
 import org.olat.core.commons.services.doceditor.office365.Office365Module;
 import org.olat.core.commons.services.doceditor.office365.Office365Service;
@@ -78,12 +79,23 @@ public class Office365WebService {
 	public Response checkFileInfo(
 			@PathParam("fileId") String fileId,
 			@QueryParam("access_token") String accessToken,
+			@Context UriInfo uriInfo,
 			@Context HttpHeaders httpHeaders) {
 		log.debug("WOPI REST CheckFileInfo request for file: " + fileId);
 		logRequestHeaders(httpHeaders);
 		
 		if (!office365Module.isEnabled()) {
 			return Response.serverError().status(Status.FORBIDDEN).build();
+		}
+		
+		String requestUrl = uriInfo.getRequestUri().toString();
+		String timeStamp = httpHeaders.getHeaderString("X-WOPI-TimeStamp");
+		String proofKey = httpHeaders.getHeaderString("X-WOPI-Proof");
+		String oldProofKey = httpHeaders.getHeaderString("X-WOPI-ProofOld");
+		boolean proofVerified = office365Service.verifyProofKey(requestUrl, accessToken, timeStamp, proofKey, oldProofKey);
+		if (!proofVerified) {
+			log.debug("Proof not verified. File ID: " + fileId + ", token: " + accessToken);
+			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
 		}
 		
 		Access access = office365Service.getAccess(accessToken);
@@ -126,12 +138,23 @@ public class Office365WebService {
 	public Response post(
 			@PathParam("fileId") String fileId,
 			@QueryParam("access_token") String accessToken,
+			@Context UriInfo uriInfo,
 			@Context HttpHeaders httpHeaders) {
 		log.debug("WOPI REST post request for file: " + fileId);
 		logRequestHeaders(httpHeaders);
 		
 		if (!office365Module.isEnabled()) {
 			return Response.serverError().status(Status.FORBIDDEN).build();
+		}
+		
+		String requestUrl = uriInfo.getRequestUri().toString();
+		String timeStamp = httpHeaders.getHeaderString("X-WOPI-TimeStamp");
+		String proofKey = httpHeaders.getHeaderString("X-WOPI-Proof");
+		String oldProofKey = httpHeaders.getHeaderString("X-WOPI-ProofOld");
+		boolean proofVerified = office365Service.verifyProofKey(requestUrl, accessToken, timeStamp, proofKey, oldProofKey);
+		if (!proofVerified) {
+			log.debug("Proof not verified. File ID: " + fileId + ", token: " + accessToken);
+			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
 		}
 		
 		Access access = office365Service.getAccess(accessToken);
@@ -275,6 +298,7 @@ public class Office365WebService {
 	public Response getFile(
 			@PathParam("fileId") String fileId,
 			@QueryParam("access_token") String accessToken,
+			@Context UriInfo uriInfo,
 			@Context HttpHeaders httpHeaders) {
 		log.debug("WOPI REST GetFile request for file: " + fileId);
 		logRequestHeaders(httpHeaders);
@@ -282,6 +306,17 @@ public class Office365WebService {
 		if (!office365Module.isEnabled()) {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
+		
+		String requestUrl = uriInfo.getRequestUri().toString();
+		String timeStamp = httpHeaders.getHeaderString("X-WOPI-TimeStamp");
+		String proofKey = httpHeaders.getHeaderString("X-WOPI-Proof");
+		String oldProofKey = httpHeaders.getHeaderString("X-WOPI-ProofOld");
+		boolean proofVerified = office365Service.verifyProofKey(requestUrl, accessToken, timeStamp, proofKey, oldProofKey);
+		if (!proofVerified) {
+			log.debug("Proof not verified. File ID: " + fileId + ", token: " + accessToken);
+			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
+		}
+		
 		Access access = office365Service.getAccess(accessToken);
 		if (access == null) {
 			log.debug("No access for token. File ID: " + fileId + ", token: " + accessToken);
@@ -310,6 +345,7 @@ public class Office365WebService {
 	public Response putFile(
 			@PathParam("fileId") String fileId,
 			@QueryParam("access_token") String accessToken,
+			@Context UriInfo uriInfo,
 			@Context HttpHeaders httpHeaders,
 			InputStream fileInputStream) {
 		log.debug("WOPI REST PutFile request for file: " + fileId);
@@ -317,6 +353,16 @@ public class Office365WebService {
 		
 		if (!office365Module.isEnabled()) {
 			return Response.serverError().status(Status.FORBIDDEN).build();
+		}
+		
+		String requestUrl = uriInfo.getRequestUri().toString();
+		String timeStamp = httpHeaders.getHeaderString("X-WOPI-TimeStamp");
+		String proofKey = httpHeaders.getHeaderString("X-WOPI-Proof");
+		String oldProofKey = httpHeaders.getHeaderString("X-WOPI-ProofOld");
+		boolean proofVerified = office365Service.verifyProofKey(requestUrl, accessToken, timeStamp, proofKey, oldProofKey);
+		if (!proofVerified) {
+			log.debug("Proof not verified. File ID: " + fileId + ", token: " + accessToken);
+			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
 		}
 		
 		Access access = office365Service.getAccess(accessToken);

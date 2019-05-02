@@ -170,13 +170,70 @@ public class Office365ServiceImpl implements Office365Service, GenericEventListe
 	}
 
 	@Override
+	public boolean verifyProofKey(String requestUrl, String accessToken, String timeStamp, String proofKey, String oldProofKey) {
+		if (!StringHelper.containsNonWhitespace(requestUrl)) return false;
+		if (!StringHelper.containsNonWhitespace(accessToken)) return false;
+		if (!StringHelper.containsNonWhitespace(timeStamp)) return false;
+		if (!StringHelper.containsNonWhitespace(proofKey)) return false;
+		
+		if (isTimestampOlderThan20Min(timeStamp)) return false;
+		
+		boolean verified = false;
+		try {
+			byte[] expectedProofArray = ProofKeyTester.getExpectedProofBytes(requestUrl, accessToken, timeStamp);
+			verified = ProofKeyTester.verifyProofKey(getModulus(), getExponent(), proofKey, expectedProofArray)
+				|| ProofKeyTester.verifyProofKey(getModulus(), getExponent(), oldProofKey, expectedProofArray);
+			if (!verified) {
+				verified = ProofKeyTester.verifyProofKey(getOldModulus(), getOldExponent(), proofKey, expectedProofArray);
+				// It's time to update the discovery to get the new proof key values
+				// https://wopi.readthedocs.io/en/latest/discovery.html
+				deleteDiscovery();
+			}
+		} catch (Exception e) {
+			log.warn("Exception while verifiing prrok key.", e);
+		}
+		return verified;
+	}
+	
+	private boolean isTimestampOlderThan20Min(String timeStamp) {
+		boolean isTimestampOlderThan20Min = true;
+		try {
+			Long utcTicks = Long.valueOf(timeStamp);
+			Date requestTimestamp = DateHelper.ticksToDate(utcTicks);
+			Date twentyMinutesAgo = Date.from(Instant.now().minus(Duration.ofMinutes(20)));
+			isTimestampOlderThan20Min = twentyMinutesAgo.after(requestTimestamp);
+		} catch (Exception e) {
+			log.warn("Exception while checking proof timestamp.", e);
+		}
+		return isTimestampOlderThan20Min;
+	}
+
+	private String getExponent() {
+		return getDiscovery().getProofKey().getExponent();
+	}
+
+	private String getModulus() {
+		return getDiscovery().getProofKey().getModulus();
+	}
+	
+	private String getOldExponent() {
+		return getDiscovery().getProofKey().getOldExponent();
+	}
+
+	private String getOldModulus() {
+		return getDiscovery().getProofKey().getOldModulus();
+	}
+	
+	@Override
 	public Collection<String> getContentSecurityPolicyUrls() {
 		if (cspUrls == null) {
 			Collection<Action> actions = wopiService.getActions(getDiscovery());
 			Set<String> urls = new HashSet<>();
 			for (Action action : actions) {
 				String protocolAndDomain = urlParser.getProtocolAndDomain(action.getUrlSrc());
-				urls.add(protocolAndDomain);
+				if (protocolAndDomain != null) {
+					urls.add(protocolAndDomain);
+				}
 			}
 			cspUrls = urls;
 		}

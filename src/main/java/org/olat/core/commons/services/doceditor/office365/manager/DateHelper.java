@@ -19,11 +19,7 @@
  */
 package org.olat.core.commons.services.doceditor.office365.manager;
 
-import java.net.URI;
-
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
-import org.springframework.stereotype.Service;
+import java.util.Date;
 
 /**
  * 
@@ -31,26 +27,15 @@ import org.springframework.stereotype.Service;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-@Service
-class UrlParser {
+public class DateHelper {
+	
+	// Source https://stackoverflow.com/a/44028583
 
-	private static final OLog log = Tracing.createLoggerFor(UrlParser.class);
+	private static final long TICKS_AT_EPOCH = 621355968000000000L;
+	private static final long TICKS_PER_MILLISECOND = 10000;
 
-	String getProtocolAndDomain(String url) {
-		try {
-			String stripped = stripQuery(url);
-			if (stripped != null) {
-				URI uri = new URI(stripped);
-				return uri.getScheme() + "://" + uri.getHost();
-			}
-		} catch (Exception e) {
-			log.error("", e);
-		}
-		return null;
+	public static Date ticksToDate(long utcTicks){
+		return new Date((utcTicks - TICKS_AT_EPOCH) / TICKS_PER_MILLISECOND);
 	}
-
-	private String stripQuery(String url) {
-		return url!= null && url.indexOf("?") > -1? url.substring(0, url.indexOf("?")): null;
-	}
-
+	
 }

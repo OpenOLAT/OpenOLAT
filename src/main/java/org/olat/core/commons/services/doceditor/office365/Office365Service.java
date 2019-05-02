@@ -52,6 +52,8 @@ public interface Office365Service {
 	
 	boolean updateContent(Access access, InputStream fileInputStream);
 	
+	boolean verifyProofKey(String requestUrl, String accessToken, String timeStamp, String proofKey, String oldProofKey);
+	
 	Collection<String> getContentSecurityPolicyUrls();
 
 	String getEditorActionUrl(VFSMetadata vfsMetadata);
