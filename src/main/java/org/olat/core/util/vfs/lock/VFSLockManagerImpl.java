@@ -136,7 +136,8 @@ public class VFSLockManagerImpl implements VFSLockManager {
 			if(lock.isWebDAVLock()) {
 				locked = (type == VFSLockApplicationType.vfs || type == VFSLockApplicationType.collaboration);
 			} else if(lock.isCollaborationLock()) {
-				locked = (type == VFSLockApplicationType.vfs || type == VFSLockApplicationType.webdav);
+				locked = (type == VFSLockApplicationType.vfs || type == VFSLockApplicationType.webdav
+						|| (type == VFSLockApplicationType.collaboration && !lock.getAppName().equals(appName)));
 			} else if(lock.isVfsLock()) {
 				locked = (type == VFSLockApplicationType.webdav || type == VFSLockApplicationType.collaboration);
 			} else {

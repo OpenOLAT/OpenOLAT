@@ -307,7 +307,34 @@ public class VFSLockManagerTest extends OlatTestCase {
 		boolean lockedVfs = lockManager.isLockedForMe(file, otherId, VFSLockApplicationType.vfs, null);
 		Assert.assertTrue(lockedVfs);
 	}
-	
+
+	/**
+	 * A shared lock for collaboration wwith myself
+	 */
+	@Test
+	public void lockVfsAgainstCollaborationAndMe() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("lock-7");
+		
+		//create a file
+		String relativePath = "lock" + UUID.randomUUID();
+		VFSContainer rootTest = VFSManager.olatRootContainer("/" + relativePath, null);
+		String filename = "lock.txt";
+		VFSLeaf file = rootTest.createChildLeaf(filename);
+
+		// Locked for one app. 
+		boolean lockedCollaboration = lockManager.isLockedForMe(file, id, VFSLockApplicationType.collaboration, "oo-collaboration");
+		Assert.assertFalse(lockedCollaboration);
+		// Locked it
+		LockResult locked = lockManager.lock(file, id, VFSLockApplicationType.collaboration, "oo-collaboration");
+		Assert.assertTrue(locked.isAcquired());
+		
+		// Try to lock it with an other app.
+		boolean lockedOtherApp = lockManager.isLockedForMe(file, id, VFSLockApplicationType.collaboration, "other-collaboration");
+		Assert.assertTrue(lockedOtherApp);
+		// Try harder
+		LockResult lockedOther = lockManager.lock(file, id, VFSLockApplicationType.collaboration, "other-collaboration");
+		Assert.assertFalse(lockedOther.isAcquired());
+	}
 	
 	
 }
