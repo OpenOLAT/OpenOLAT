@@ -35,6 +35,7 @@ public class QualityDataCollectionViewSearchParams {
 	private QualityDataCollectionRef dataCollectionRef;
 	private Collection<? extends OrganisationRef> organsationRefs;
 	private IdentityRef reportAccessIdentity;
+	private boolean ignoreReportAccessRelationRole;
 
 	public QualityDataCollectionRef getDataCollectionRef() {
 		return dataCollectionRef;
@@ -58,6 +59,14 @@ public class QualityDataCollectionViewSearchParams {
 
 	public void setReportAccessIdentity(IdentityRef identityRef) {
 		this.reportAccessIdentity = identityRef;
+	}
+
+	public boolean isIgnoreReportAccessRelationRole() {
+		return ignoreReportAccessRelationRole;
+	}
+
+	public void setIgnoreReportAccessRelationRole(boolean ignoreReportAccessRelationRole) {
+		this.ignoreReportAccessRelationRole = ignoreReportAccessRelationRole;
 	}
 
 }

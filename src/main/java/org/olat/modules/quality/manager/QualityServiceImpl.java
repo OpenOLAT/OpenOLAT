@@ -34,6 +34,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
@@ -149,6 +150,8 @@ public class QualityServiceImpl
 	private OrganisationModule organisationModule;
 	@Autowired
 	private OrganisationService organisationService;
+	@Autowired
+	private BaseSecurityModule securityModule;
 	@Autowired
 	private BaseSecurityManager securityManager;
 	
@@ -307,13 +310,21 @@ public class QualityServiceImpl
 		
 		for (QualityReportAccess reportAccess : reportAccesses) {
 			EmailTrigger emailTrigger = reportAccess.getEmailTrigger();
-			if (containsTrigger(rubricStatistics, emailTrigger)) {
+			if (accessEnabled(reportAccess) && containsTrigger(rubricStatistics, emailTrigger)) {
 				List<Identity> identities = reportAccessDao.loadRecipients(reportAccess);
 				recipients.addAll(identities);
 			}
 		}
 		
 		return recipients;
+	}
+
+	private boolean accessEnabled(QualityReportAccess reportAccess) {
+		if (QualityReportAccess.Type.RelationRole.equals(reportAccess.getType())
+				&& !securityModule.isRelationRoleEnabled()) {
+			return false;
+		}
+		return true;
 	}
 
 	private boolean containsTrigger(List<RubricStatistic> rubricStatistics, EmailTrigger emailTrigger) {

@@ -61,6 +61,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.forms.EvaluationFormParticipationStatus;
+import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityReportAccess;
 import org.olat.modules.quality.QualityReportAccess.EmailTrigger;
 import org.olat.modules.quality.QualityReportAccess.Type;
@@ -106,6 +107,7 @@ public abstract class ReportAccessController extends FormBasicController {
 	
 	private QualityReportAccessReference reference;
 	private QualityReportAccessSearchParams searchParams;
+	private String topicIdentityName;
 	private final boolean isAdministrativeUser;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private List<QualityReportAccess> reportAccesses;
@@ -125,6 +127,13 @@ public abstract class ReportAccessController extends FormBasicController {
 		this.reference = reference;
 		this.searchParams = new QualityReportAccessSearchParams();
 		this.searchParams.setReference(reference);
+		
+		if (reference.isDataCollectionRef()) {
+			QualityDataCollection dataCollection = qualityService.loadDataCollectionByKey(reference.getDataCollectionRef());
+			if (dataCollection != null && dataCollection.getTopicIdentity() != null) {
+				topicIdentityName = userManager.getUserDisplayName(dataCollection.getTopicIdentity());
+			}
+		}
 		
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
@@ -189,13 +198,24 @@ public abstract class ReportAccessController extends FormBasicController {
 		rows.add(createRow(translate("report.access.name.participants.done"), Type.Participants, EvaluationFormParticipationStatus.done.name()));
 		rows.add(createRow(translate("report.access.name.repo.owner"), Type.GroupRoles, GroupRoles.owner.name()));
 		rows.add(createRow(translate("report.access.name.repo.coach"), Type.GroupRoles, GroupRoles.coach.name()));
-		rows.add(createRow(translate("report.access.name.topic.identity"), Type.TopicIdentity, null));
 		
-		List<RelationRole> roles = identityRelationshipService.getRolesByRight(QualityReportAccessRightProvider.RELATION_RIGHT);
-		for (RelationRole role : roles) {
-			String roleName = RelationRolesAndRightsUIFactory.getTranslatedRole(role, getLocale());
-			roleName = translate("report.access.name.topic.identity.relation", new String[]{ roleName });
-			rows.add(createRow(roleName, Type.RelationRole, role.getKey().toString()));
+		String topicIdentityRowName = StringHelper.containsNonWhitespace(topicIdentityName)
+				? translate("report.access.name.topic.identity.name", new String[] {topicIdentityName})
+				: translate("report.access.name.topic.identity");
+		rows.add(createRow(topicIdentityRowName, Type.TopicIdentity, null));
+		
+		if (securityModule.isRelationRoleEnabled()) {
+			List<RelationRole> roles = identityRelationshipService.getRolesByRight(QualityReportAccessRightProvider.RELATION_RIGHT);
+			if (!roles.isEmpty()) {
+				String relationRoleIdentityName = StringHelper.containsNonWhitespace(topicIdentityName)
+						? topicIdentityName
+						: "\"" + translate("report.access.name.topic.identity") + "\"";
+				for (RelationRole role : roles) {
+					String roleDescription = RelationRolesAndRightsUIFactory.getTranslatedRoleDescription(role, getLocale());
+					String roleName = roleDescription + " " + relationRoleIdentityName;
+					rows.add(createRow(roleName, Type.RelationRole, role.getKey().toString()));
+				}
+			}
 		}
 
 		rows.add(createRow(translate("report.access.name.members"), Type.ReportMember, null));
