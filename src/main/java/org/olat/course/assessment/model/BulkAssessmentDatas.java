@@ -22,6 +22,8 @@ package org.olat.course.assessment.model;
 import java.io.Serializable;
 import java.util.List;
 
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
+
 /**
  * 
  * Initial date: 20.11.2013<br>
@@ -31,9 +33,13 @@ import java.util.List;
 public class BulkAssessmentDatas implements Serializable {
 
 	private static final long serialVersionUID = 8109609348537626355L;
+	
 	private List<BulkAssessmentRow> rows;
 	private String returnFiles;
 	private String dataBackupFile;
+	private Boolean visibility;
+	private Boolean acceptSubmission;
+	private AssessmentEntryStatus status;
 	private BulkAssessmentColumnSettings columnsSettings;
 
 	public BulkAssessmentColumnSettings getColumnsSettings() {
@@ -70,5 +76,29 @@ public class BulkAssessmentDatas implements Serializable {
 
 	public void setDataBackupFile(String dataBackupFile) {
 		this.dataBackupFile = dataBackupFile;
+	}
+
+	public Boolean getVisibility() {
+		return visibility;
+	}
+
+	public void setVisibility(Boolean visibility) {
+		this.visibility = visibility;
+	}
+
+	public AssessmentEntryStatus getStatus() {
+		return status;
+	}
+
+	public void setStatus(AssessmentEntryStatus status) {
+		this.status = status;
+	}
+
+	public Boolean getAcceptSubmission() {
+		return acceptSubmission;
+	}
+
+	public void setAcceptSubmission(Boolean acceptSubmission) {
+		this.acceptSubmission = acceptSubmission;
 	}
 }

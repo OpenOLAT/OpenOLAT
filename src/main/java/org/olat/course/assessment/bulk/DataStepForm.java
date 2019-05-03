@@ -21,7 +21,6 @@ package org.olat.course.assessment.bulk;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -62,6 +61,8 @@ import org.olat.course.assessment.model.BulkAssessmentDatas;
 import org.olat.course.assessment.model.BulkAssessmentRow;
 import org.olat.course.assessment.model.BulkAssessmentSettings;
 import org.olat.course.nodes.AssessableCourseNode;
+import org.olat.course.nodes.GTACourseNode;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 
 /**
  *
@@ -71,11 +72,17 @@ import org.olat.course.nodes.AssessableCourseNode;
  */
 public class DataStepForm extends StepFormBasicController {
 
-	private static final String[] keys = new String[] {"tab","comma"};
+	private static final String[] keys = new String[] { "tab", "comma" };
+	private static final String[] statusKeys = new String[] { AssessmentEntryStatus.done.name(), AssessmentEntryStatus.inReview.name(), "not" };
+	private static final String[] visibilityKeys = new String[] { "visible", "notvisible", "notchanged" };
+	private static final String[] submissionKeys = new String[] { "accept", "notchanged" };
 
 	private TextElement dataEl;
 	private FileElement returnFileEl;
 	private SingleSelection delimiter;
+	private SingleSelection statusEl;
+	private SingleSelection visibilityEl;
+	private SingleSelection acceptSubmissionEl;
 
 	private VFSLeaf targetArchive;
 	private BulkAssessmentDatas savedDatas;
@@ -130,12 +137,34 @@ public class DataStepForm extends StepFormBasicController {
 		String[] values = new String[] {translate("form.step3.delimiter.tab"),translate("form.step3.delimiter.comma")};
 		delimiter = uifactory.addRadiosVertical("delimiter", "form.step3.delimiter", formLayout, keys, values);
 		// preset delimiter type to first appearance of either tab or comma when data is available, default to tab for no data
-		int firstComma = dataVal.indexOf(",");
-		int firstTab = dataVal.indexOf("\t");
+		int firstComma = dataVal.indexOf(',');
+		int firstTab = dataVal.indexOf('\t');
 		if (firstComma > -1 && (firstTab == -1 || firstTab > firstComma )) {
 			delimiter.select("comma", true);
 		} else {
 			delimiter.select("tab", true);
+		}
+		
+		String[] statusValues = new String[] {
+				translate("form.step3.status.assessed"), translate("form.step3.status.review"),
+				translate("form.step3.status.dont.change")
+		};
+		statusEl = uifactory.addRadiosVertical("form.step3.status", "form.step3.status", formLayout, statusKeys, statusValues);
+		statusEl.select(statusKeys[statusKeys.length - 1], true);
+		String[] visibilityValues = new String[] {
+				translate("form.step3.visibility.visible"), translate("form.step3.visibility.notvisible"),
+				translate("form.step3.visibility.dont.change")
+		};
+		visibilityEl = uifactory.addRadiosVertical("form.step3.visibility", "form.step3.visibility", formLayout, visibilityKeys, visibilityValues);
+		visibilityEl.select(visibilityKeys[visibilityKeys.length - 1], true);
+		
+		if(courseNode instanceof GTACourseNode) {
+			String[] submissionValues = new String[] {
+				translate("form.step3.submission.accept"), translate("form.step3.submission.dont.change")
+			};
+			acceptSubmissionEl = uifactory.addRadiosVertical("form.step3.submission", "form.step3.submission", formLayout, submissionKeys, submissionValues);
+			acceptSubmissionEl.select(submissionKeys[submissionKeys.length - 1], true);
+			acceptSubmissionEl.setHelpTextKey("form.step3.submission.help", null);
 		}
 
 		// hide data input field in case the element does not have any score, passed or comment field enabled
@@ -176,6 +205,26 @@ public class DataStepForm extends StepFormBasicController {
 		BulkAssessmentDatas datas = (BulkAssessmentDatas)getFromRunContext("datas");
 		if(datas == null) {
 			datas = new BulkAssessmentDatas();
+		}
+		
+		if(statusEl.isOneSelected()) {
+			String selectedStatus = statusEl.getSelectedKey();
+			if(AssessmentEntryStatus.isValueOf(selectedStatus)) {
+				datas.setStatus(AssessmentEntryStatus.valueOf(selectedStatus));
+			}
+		}
+		
+		if(visibilityEl.isOneSelected()) {
+			String selectedVisibility = visibilityEl.getSelectedKey();
+			if("visible".equals(selectedVisibility)) {
+				datas.setVisibility(Boolean.TRUE);
+			} else if("notvisible".equals(selectedVisibility)) {
+				datas.setVisibility(Boolean.FALSE);
+			}
+		}
+		
+		if(acceptSubmissionEl != null && acceptSubmissionEl.isOneSelected()) {
+			datas.setAcceptSubmission(acceptSubmissionEl.isSelected(0));
 		}
 
 		if(bulkAssessmentTmpDir == null) {
@@ -264,18 +313,26 @@ public class DataStepForm extends StepFormBasicController {
 					}
 
 					targetArchive = tmpDir.createChildLeaf(uploadedFilename);
-					FileInputStream inStream = new FileInputStream(uploadedFile);
-					if(VFSManager.copyContent(inStream, targetArchive)) {
-						datas.setReturnFiles(targetArchive.getRelPath());
-						processReturnFiles(targetArchive, rows);
-					}
+					copyUploadFile(datas, uploadedFile, rows);
 				} else {
 					datas.setReturnFiles(targetArchive.getRelPath());
 					processReturnFiles(targetArchive, rows);
 				}
-			} catch (FileNotFoundException e) {
+			} catch (IOException e) {
 				logError("", e);
 			}
+		}
+	}
+	
+	private void copyUploadFile(BulkAssessmentDatas datas, File uploadedFile, List<BulkAssessmentRow> rows) throws IOException {
+		try(FileInputStream inStream = new FileInputStream(uploadedFile)) {
+			if(VFSManager.copyContent(inStream, targetArchive)) {
+				datas.setReturnFiles(targetArchive.getRelPath());
+				processReturnFiles(targetArchive, rows);
+			}
+		} catch(IOException e) {
+			logError("", e);
+			throw e;
 		}
 	}
 
@@ -302,12 +359,11 @@ public class DataStepForm extends StepFormBasicController {
 		}
 
 		if(target.exists()) {
-			InputStream is = target.getInputStream();
 			File parentTarget = ((LocalImpl)target).getBasefile().getParentFile();
-			ZipInputStream zis = new ZipInputStream(is);
 
 			ZipEntry entry;
-			try {
+			try(InputStream is = target.getInputStream();
+					ZipInputStream zis = new ZipInputStream(is)) {
 				byte[] b = new byte[FileUtils.BSIZE];
 				while ((entry = zis.getNextEntry()) != null) {
 					if(!entry.isDirectory()) {
@@ -316,7 +372,7 @@ public class DataStepForm extends StepFormBasicController {
 						}
 
 						Path op = new File(parentTarget, entry.getName()).toPath();
-						if(!Files.isHidden(op) && !Files.isDirectory(op)) {
+						if(!Files.isHidden(op) && !op.toFile().isDirectory()) {
 							Path parentDir = op.getParent();
 							String assessedId = parentDir.getFileName().toString();
 							String filename = op.getFileName().toString();
@@ -340,9 +396,6 @@ public class DataStepForm extends StepFormBasicController {
 				}
 			} catch(Exception e) {
 				logError("", e);
-			} finally {
-				IOUtils.closeQuietly(is);
-				IOUtils.closeQuietly(zis);
 			}
 		}
 	}

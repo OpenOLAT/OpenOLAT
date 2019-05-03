@@ -561,13 +561,9 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(revisionDocumentsCtrl == source) {
-			cleanUpProcess();
-			process(ureq);
-		} else if(participantGradingCtrl == source) {
-			cleanUpProcess();
-			process(ureq);
-		} else if(groupGradingCtrl == source) {
+		if(revisionDocumentsCtrl == source
+				|| participantGradingCtrl == source
+				|| groupGradingCtrl == source) {
 			cleanUpProcess();
 			process(ureq);
 		} else if(submitCorrectionsCtrl == source) {
@@ -667,11 +663,11 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 		//go to solution, grading or graded
 		if(task == null) {
 			TaskProcess firstStep = gtaManager.firstStep(gtaNode);
-			TaskList taskList = gtaManager.getTaskList(courseEnv.getCourseGroupManager().getCourseEntry(), gtaNode);
-			task = gtaManager.createAndPersistTask(null, taskList, firstStep, assessedGroup, assessedIdentity, gtaNode);
+			TaskList reloadedTaskList = gtaManager.getTaskList(courseEnv.getCourseGroupManager().getCourseEntry(), gtaNode);
+			task = gtaManager.createAndPersistTask(null, reloadedTaskList, firstStep, assessedGroup, assessedIdentity, gtaNode);
 		}
 		
-		gtaManager.reviewedTask(task, gtaNode);
+		gtaManager.reviewedTask(task, gtaNode, Role.coach);
 		showInfo("coach.documents.successfully.reviewed");
 		gtaManager.log("Review", "documents reviewed", task, getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode, Role.coach);
 		
@@ -825,7 +821,7 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 			contactList.add(assessedIdentity);			
 		}
 		// open dialog with mail form
-		if (contactList != null && contactList.getEmailsAsStrings().size() > 0) {
+		if (contactList != null && !contactList.getEmailsAsStrings().isEmpty()) {
 			removeAsListenerAndDispose(emailController);
 			
 			ContactMessage cmsg = new ContactMessage(ureq.getIdentity());

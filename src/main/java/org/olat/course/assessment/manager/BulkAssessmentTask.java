@@ -21,7 +21,7 @@ package org.olat.course.assessment.manager;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
@@ -241,7 +241,7 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable, Sequ
 		mail.setToId(creator);
 		mail.setFrom(WebappHelper.getMailConfig("mailReplyTo"));
 		List<Identity> modifiers = taskManager.getModifiers(task);
-		if(modifiers.size() > 0) {
+		if(!modifiers.isEmpty()) {
 			ContactList cc = new ContactList("CC");
 			cc.addAllIdentites(modifiers);
 			mail.setContactList(cc);
@@ -363,29 +363,32 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable, Sequ
 				//esm.updateUserEfficiencyStatement(uce);
 			}
 			
+			boolean statusVisibilitySet = false;
+			
 			//update score
 			Float score = row.getScore();
-			if(hasScore && score != null){
+			if(hasScore && score != null) {
 				// score < minimum score
 				if ((min != null && score.floatValue() < min.floatValue()) || (score.floatValue() < AssessmentHelper.MIN_SCORE_SUPPORTED)) {
-					//"bulk.action.lessThanMin";
+					// "bulk.action.lessThanMin";
 				}
 				// score > maximum score
 				else if ((max != null && score.floatValue() > max.floatValue())
 						|| (score.floatValue() > AssessmentHelper.MAX_SCORE_SUPPORTED)) {
-					//"bulk.action.greaterThanMax";
+					// "bulk.action.greaterThanMax";
 				} else {
 					// score between minimum and maximum score
 					ScoreEvaluation se;
 					if (hasPassed && cut != null){
 						Boolean passed = (score.floatValue() >= cut.floatValue()) ? Boolean.TRUE	: Boolean.FALSE;
-						se = new ScoreEvaluation(score, passed);
+						se = new ScoreEvaluation(score, passed, datas.getStatus(), datas.getVisibility(), null, null, null, null);
 					} else {
-						se = new ScoreEvaluation(score, null);
+						se = new ScoreEvaluation(score, null, datas.getStatus(), datas.getVisibility(), null, null, null, null);
 					}
 					
 					// Update score,passed properties in db, and the user's efficiency statement
 					courseNode.updateUserScoreEvaluation(se, uce, coachIdentity, false, Role.auto);
+					statusVisibilitySet = true;
 				}
 			}
 			
@@ -393,14 +396,15 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable, Sequ
 			if (hasPassed && passed != null && cut == null) { // Configuration of manual assessment --> Display passed/not passed: yes, Type of display: Manual by tutor
 				ScoreEvaluation seOld = courseNode.getUserScoreEvaluation(uce);
 				Float oldScore = seOld.getScore();
-				ScoreEvaluation se = new ScoreEvaluation(oldScore, passed);
+				ScoreEvaluation se = new ScoreEvaluation(oldScore, passed, datas.getStatus(), datas.getVisibility(), null, null, null, null);
 				// Update score,passed properties in db, and the user's efficiency statement
 				boolean incrementAttempts = false;
 				courseNode.updateUserScoreEvaluation(se, uce, coachIdentity, incrementAttempts, Role.auto);
+				statusVisibilitySet = true;
 			}
 			
 			boolean identityHasReturnFile = false;
-			if(hasReturnFiles && row.getReturnFiles() != null && row.getReturnFiles().size() > 0) {
+			if(hasReturnFiles && row.getReturnFiles() != null && !row.getReturnFiles().isEmpty()) {
 				String assessedId = row.getAssessedId();
 				File assessedFolder = new File(unzipped, assessedId);
 				identityHasReturnFile = assessedFolder.exists();
@@ -410,15 +414,27 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable, Sequ
 			}
 			
 			if(courseNode instanceof GTACourseNode) {
+				boolean acceptSubmission = datas.getAcceptSubmission() != null && datas.getAcceptSubmission().booleanValue();
+
 				//push the state further
 				GTACourseNode gtaNode = (GTACourseNode)courseNode;
 				if((hasScore && score != null) || (hasPassed && passed != null)) {
 					//pushed to graded
-					updateTasksState(gtaNode, uce, TaskProcess.grading);
+					updateTasksState(gtaNode, uce, TaskProcess.grading, acceptSubmission);
 				} else if(hasReturnFiles) {
 					//push to revised
-					updateTasksState(gtaNode, uce, TaskProcess.correction);
+					updateTasksState(gtaNode, uce, TaskProcess.correction, acceptSubmission);
 				}
+			}
+			
+			if(!statusVisibilitySet && (datas.getStatus() != null || datas.getVisibility() != null)) {
+				ScoreEvaluation seOld = courseNode.getUserScoreEvaluation(uce);
+				ScoreEvaluation se = new ScoreEvaluation(seOld.getScore(), seOld.getPassed(),
+						datas.getStatus(), datas.getVisibility(), seOld.getFullyAssessed(),
+						seOld.getCurrentRunCompletion(), seOld.getCurrentRunStatus(), seOld.getAssessmentID());
+				// Update score,passed properties in db, and the user's efficiency statement
+				boolean incrementAttempts = false;
+				courseNode.updateUserScoreEvaluation(se, uce, coachIdentity, incrementAttempts, Role.auto);
 			}
 			
 			if(count++ % 5 == 0) {
@@ -429,7 +445,7 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable, Sequ
 		}
 	}
 	
-	private void updateTasksState(GTACourseNode courseNode, UserCourseEnvironment uce, TaskProcess status) {
+	private void updateTasksState(GTACourseNode courseNode, UserCourseEnvironment uce, TaskProcess status, boolean acceptSubmission) {
 		final GTAManager gtaManager = CoreSpringFactory.getImpl(GTAManager.class);
 		Identity identity = uce.getIdentityEnvironment().getIdentity();
 		RepositoryEntry entry = uce.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
@@ -442,13 +458,25 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable, Sequ
 		} else {
 			gtaTask = gtaManager.getTask(identity, taskList);
 			if(gtaTask == null) {
-				gtaManager.createTask(null, taskList, status, null, identity, courseNode);
+				gtaTask = gtaManager.createTask(null, taskList, status, null, identity, courseNode);
 			}
 		}
 		
-		gtaManager.nextStep(status, courseNode);
+		if(gtaTask == null) {
+			log.error("GTA Task is null by bulk assessment for: " + identity + " in entry:" + entry + " " + courseNode.getIdent());
+		} else if(status == TaskProcess.correction) {
+			int iteration = gtaTask.getRevisionLoop() <= 0 ? 1 : gtaTask.getRevisionLoop() + 1;
+			gtaManager.updateTask(gtaTask, status, iteration, courseNode, Role.auto);
+		} else if(status == TaskProcess.grading && acceptSubmission) {
+			if(gtaTask.getTaskStatus() == TaskProcess.review
+					|| gtaTask.getTaskStatus() == TaskProcess.correction
+					|| gtaTask.getTaskStatus() == TaskProcess.revision) {
+				gtaTask = gtaManager.reviewedTask(gtaTask, courseNode, Role.auto);
+			}
+			TaskProcess nextStep = gtaManager.nextStep(status, courseNode);
+			gtaManager.updateTask(gtaTask, nextStep, courseNode, Role.auto);
+		}
 	}
-	
 	
 	private void processReturnFile(AssessableCourseNode courseNode, BulkAssessmentRow row, UserCourseEnvironment uce, File assessedFolder) {
 		String assessedId = row.getAssessedId();
@@ -465,10 +493,9 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable, Sequ
 
 				VFSLeaf returnLeaf = returnBox.createChildLeaf(returnFilename);
 				if(returnFile.exists()) {
-					try {
-						InputStream inStream = new FileInputStream(returnFile);
+					try(InputStream inStream = new FileInputStream(returnFile)) {
 						VFSManager.copyContent(inStream, returnLeaf);
-					} catch (FileNotFoundException e) {
+					} catch (IOException e) {
 						log.error("Cannot copy return file " + returnFilename + " from " + assessedId, e);
 					}
 				}

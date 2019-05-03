@@ -1573,11 +1573,11 @@ public class GTAManagerImpl implements GTAManager {
 	}
 	
 	@Override
-	public Task reviewedTask(Task task, GTACourseNode cNode) {
+	public Task reviewedTask(Task task, GTACourseNode cNode, Role by) {
 		TaskProcess solution = nextStep(TaskProcess.correction, cNode);
 		TaskImpl taskImpl = (TaskImpl)task;
 		taskImpl.setAcceptationDate(new Date());
-		return updateTask(taskImpl, solution, cNode, Role.coach);
+		return updateTask(taskImpl, solution, cNode, by);
 	}
 
 	@Override
