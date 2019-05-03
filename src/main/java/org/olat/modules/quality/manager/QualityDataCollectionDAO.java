@@ -517,22 +517,24 @@ public class QualityDataCollectionDAO {
 					sb.append("   and collection.status = '").append(QualityDataCollectionStatus.FINISHED).append("'");
 					sb.append("   and membership.identity.key = :reportAccessIdentityKey");
 					sb.append(")");
-					sb.append(" or ");
-					sb.append("exists (");
-					sb.append("select collection.key");
-					sb.append("  from qualityreportaccess as ra");
-					sb.append("     , identitytoidentity as identRel");
-					sb.append("     , relationroletoright as roleRel");
-					sb.append(" where ra.dataCollection.key = collection.key");
-					sb.append("   and ra.online = true");
-					sb.append("   and ra.type = '").append(QualityReportAccess.Type.RelationRole).append("'");
-					sb.append("   and collection.status = '").append(QualityDataCollectionStatus.FINISHED).append("'");
-					sb.append("   and identRel.target.key = collection.topicIdentity.key");
-					sb.append("   and cast(identRel.role.key as string) = ra.role");
-					sb.append("   and identRel.role.key = roleRel.role.key");
-					sb.append("   and roleRel.right.right = '").append(QualityReportAccessRightProvider.RELATION_RIGHT).append("'");
-					sb.append("   and identRel.source.key = :reportAccessIdentityKey");
-					sb.append(")");
+					if (!searchParams.isIgnoreReportAccessRelationRole()) {
+						sb.append(" or ");
+						sb.append("exists (");
+						sb.append("select collection.key");
+						sb.append("  from qualityreportaccess as ra");
+						sb.append("     , identitytoidentity as identRel");
+						sb.append("     , relationroletoright as roleRel");
+						sb.append(" where ra.dataCollection.key = collection.key");
+						sb.append("   and ra.online = true");
+						sb.append("   and ra.type = '").append(QualityReportAccess.Type.RelationRole).append("'");
+						sb.append("   and collection.status = '").append(QualityDataCollectionStatus.FINISHED).append("'");
+						sb.append("   and identRel.target.key = collection.topicIdentity.key");
+						sb.append("   and cast(identRel.role.key as string) = ra.role");
+						sb.append("   and identRel.role.key = roleRel.role.key");
+						sb.append("   and roleRel.right.right = '").append(QualityReportAccessRightProvider.RELATION_RIGHT).append("'");
+						sb.append("   and identRel.source.key = :reportAccessIdentityKey");
+						sb.append(")");
+					}
 				}
 				sb.append(")");
 			}

@@ -1096,6 +1096,51 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 						);
 	}
 	
+	@Test
+	public void shouldFilterDataCollectionsByIgnoreRelationRoles() {
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsUser("c");
+		Identity executor = JunitTestHelper.createAndPersistIdentityAsUser("rt");
+		List<RelationRight> rights = identityRelationshipService.getAvailableRights();
+		RelationRight right = rights.get(0);
+		RelationRole role = identityRelationshipService.createRole(random(), singletonList(right));
+		
+		// Type relation role
+		identityRelationshipService.addRelation(executor, coach, role, null, null);
+		QualityDataCollection dcRelationRole = qualityTestHelper.createDataCollection();
+		dcRelationRole.setTopicIdentity(coach);
+		dcRelationRole = qualityService.updateDataCollection(dcRelationRole);
+		dcRelationRole = qualityService.updateDataCollectionStatus(dcRelationRole, QualityDataCollectionStatus.FINISHED);
+		QualityReportAccess raRelationRole = qualityService.createReportAccess(of(dcRelationRole), QualityReportAccess.Type.RelationRole, role.getKey().toString());
+		raRelationRole.setOnline(true);
+		qualityService.updateReportAccess(raRelationRole);
+		
+		// Type all participants
+		QualityDataCollection dcTypeAll = qualityTestHelper.createDataCollection();
+		dcTypeAll = qualityService.updateDataCollectionStatus(dcTypeAll, QualityDataCollectionStatus.FINISHED);
+		EvaluationFormParticipation participationFinished = qualityService.addParticipations(dcTypeAll, singletonList(executor)).get(0);
+		EvaluationFormSession session = evaluationFormManager.createSession(participationFinished);
+		evaluationFormManager.finishSession(session);
+		QualityReportAccess raTypeAll = qualityService.createReportAccess(of(dcTypeAll), QualityReportAccess.Type.Participants, null);
+		raTypeAll.setOnline(true);
+		qualityService.updateReportAccess(raTypeAll);
+		
+		dbInstance.commitAndCloseSession();
+		
+		QualityDataCollectionViewSearchParams searchParams = new QualityDataCollectionViewSearchParams();
+		searchParams.setOrgansationRefs(Collections.emptyList());
+		searchParams.setReportAccessIdentity(executor);
+		searchParams.setIgnoreReportAccessRelationRole(true);
+		List<QualityDataCollectionView> dataCollections = sut.loadDataCollections(TRANSLATOR, searchParams, 0, -1);
+		
+		assertThat(dataCollections)
+				.extracting(QualityDataCollectionView::getKey)
+				.containsExactlyInAnyOrder(
+						dcTypeAll.getKey())
+				.doesNotContain(
+						dcRelationRole.getKey()
+						);
+	}
+	
 	private String random() {
 		return UUID.randomUUID().toString();
 	}

@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DefaultResultInfos;
@@ -51,14 +52,17 @@ public class DataCollectionDataSource implements FlexiTableDataSourceDelegate<Da
 	
 	@Autowired
 	private QualityService qualityService;
+	@Autowired
+	private BaseSecurityModule securityModule;
 
 	public DataCollectionDataSource(Translator translator, Collection<? extends OrganisationRef> organsationRefs,
 			IdentityRef identityRef) {
 		this.translator = translator;
+		CoreSpringFactory.autowireObject(this);
 		searchParams = new QualityDataCollectionViewSearchParams();
 		searchParams.setOrgansationRefs(organsationRefs);
 		searchParams.setReportAccessIdentity(identityRef);
-		CoreSpringFactory.autowireObject(this);
+		searchParams.setIgnoreReportAccessRelationRole(!securityModule.isRelationRoleEnabled());
 	}
 
 	@Override

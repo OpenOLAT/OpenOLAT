@@ -191,11 +191,13 @@ public abstract class ReportAccessController extends FormBasicController {
 		rows.add(createRow(translate("report.access.name.repo.coach"), Type.GroupRoles, GroupRoles.coach.name()));
 		rows.add(createRow(translate("report.access.name.topic.identity"), Type.TopicIdentity, null));
 		
-		List<RelationRole> roles = identityRelationshipService.getRolesByRight(QualityReportAccessRightProvider.RELATION_RIGHT);
-		for (RelationRole role : roles) {
-			String roleName = RelationRolesAndRightsUIFactory.getTranslatedRole(role, getLocale());
-			roleName = translate("report.access.name.topic.identity.relation", new String[]{ roleName });
-			rows.add(createRow(roleName, Type.RelationRole, role.getKey().toString()));
+		if (securityModule.isRelationRoleEnabled()) {
+			List<RelationRole> roles = identityRelationshipService.getRolesByRight(QualityReportAccessRightProvider.RELATION_RIGHT);
+			for (RelationRole role : roles) {
+				String roleName = RelationRolesAndRightsUIFactory.getTranslatedRole(role, getLocale());
+				roleName = translate("report.access.name.topic.identity.relation", new String[]{ roleName });
+				rows.add(createRow(roleName, Type.RelationRole, role.getKey().toString()));
+			}
 		}
 
 		rows.add(createRow(translate("report.access.name.members"), Type.ReportMember, null));

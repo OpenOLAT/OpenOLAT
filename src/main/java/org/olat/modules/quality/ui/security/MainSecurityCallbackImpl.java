@@ -21,6 +21,7 @@ package org.olat.modules.quality.ui.security;
 
 import java.util.List;
 
+import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.OrganisationRef;
@@ -50,6 +51,8 @@ class MainSecurityCallbackImpl implements MainSecurityCallback {
 	private QualityModule qualityModule;
 	@Autowired
 	private QualityService qualityService;
+	@Autowired
+	private BaseSecurityModule securityModule;
 
 	public MainSecurityCallbackImpl(IdentityRef identityRef, boolean canView, boolean canEdit, List<OrganisationRef> viewerOrganisationRefs) {
 		this.canView = canView;
@@ -60,6 +63,7 @@ class MainSecurityCallbackImpl implements MainSecurityCallback {
 		reportAccessParams = new QualityDataCollectionViewSearchParams();
 		reportAccessParams.setOrgansationRefs(viewerOrganisationRefs);
 		reportAccessParams.setReportAccessIdentity(identityRef);
+		reportAccessParams.setIgnoreReportAccessRelationRole(!securityModule.isRelationRoleEnabled());
 	}
 
 	@Override
