@@ -65,7 +65,9 @@
 		<org.springframework.version>5.1.6.RELEASE</org.springframework.version>
 		<org.hibernate.version>5.4.2.Final</org.hibernate.version>
 		<com.sun.jersey.version>1.19.4</com.sun.jersey.version>
-		<apache.cxf>3.2.7</apache.cxf>
+		<apache.cxf>3.3.1</apache.cxf>
+		<apache.pdfbox>2.0.15</apache.pdfbox>
+		<apache.poi>4.1.0</apache.poi>
 		<jackson.version>2.9.8</jackson.version>
 		<org.mysql.version>5.1.46</org.mysql.version>
 		<org.postgresql.version>42.2.5</org.postgresql.version>
@@ -1879,17 +1881,17 @@
 		<dependency>
 			<groupId>org.apache.poi</groupId>
 			<artifactId>poi</artifactId>
-			<version>4.0.1</version>
+			<version>${apache.poi}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.poi</groupId>
 			<artifactId>poi-scratchpad</artifactId>
-			<version>4.0.1</version>
+			<version>${apache.poi}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.pdfbox</groupId>
 			<artifactId>pdfbox</artifactId>
-			<version>2.0.14</version>
+			<version>${apache.pdfbox}</version>
 			<exclusions>
 				<exclusion>
 					<groupId>commons-logging</groupId>
@@ -1900,7 +1902,7 @@
 		<dependency>
 			<groupId>org.apache.pdfbox</groupId>
 			<artifactId>xmpbox</artifactId>
-			<version>2.0.14</version>
+			<version>${apache.pdfbox}</version>
 			<exclusions>
 				<exclusion>
 					<groupId>commons-logging</groupId>
@@ -1943,7 +1945,7 @@
 		<dependency>
 			<groupId>jaxen</groupId>
 			<artifactId>jaxen</artifactId>
-			<version>1.1.4</version>
+			<version>1.2.0</version>
 			<exclusions>
 				<exclusion>
 					<groupId>com.ibm.icu</groupId>
@@ -2237,7 +2239,7 @@
 		<dependency>
 			<groupId>com.opencsv</groupId>
 			<artifactId>opencsv</artifactId>
-			<version>4.5</version>
+			<version>4.6</version>
 			<exclusions>
 				<exclusion>
 					<groupId>commons-logging</groupId>
