@@ -53,16 +53,6 @@ public class DocEditorFullscreenController extends BasicController {
 		doOpenEditor();
 	}
 	
-	public DocEditorFullscreenController(UserRequest ureq, WindowControl wControl, VFSLeaf vfsLeaf,
-			DocEditorSecurityCallback secCallback, DocEditorConfigs configs, String cssClass) {
-		super(ureq, wControl);
-		this.vfsLeaf = vfsLeaf;
-		
-		editorCtrl = new DocEditorController(ureq, wControl, vfsLeaf, secCallback, configs, cssClass);
-		listenTo(editorCtrl);
-		doOpenEditor();
-	}
-
 	public VFSLeaf getVfsLeaf() {
 		return vfsLeaf;
 	}
@@ -86,13 +76,16 @@ public class DocEditorFullscreenController extends BasicController {
 		ChiefController cc = getWindowControl().getWindowBackOffice().getChiefController();
 		String businessPath = editorCtrl.getWindowControlForDebug().getBusinessControl().getAsString();
 		cc.getScreenMode().setMode(Mode.full, businessPath);
+		cc.addBodyCssClass("o_doceditor_body");
 		getWindowControl().pushToMainArea(editorCtrl.getInitialComponent());
 	}
 	
 	private void doCloseEditor() {
 		getWindowControl().pop();
 		String businessPath = getWindowControl().getBusinessControl().getAsString();
-		getWindowControl().getWindowBackOffice().getChiefController().getScreenMode().setMode(Mode.standard, businessPath);
+		ChiefController cc = getWindowControl().getWindowBackOffice().getChiefController();
+		cc.getScreenMode().setMode(Mode.standard, businessPath);
+		cc.removeBodyCssClass("o_doceditor_body");
 		
 		removeAsListenerAndDispose(editorCtrl);
 		editorCtrl = null;

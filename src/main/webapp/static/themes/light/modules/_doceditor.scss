@@ -1,23 +1,44 @@
+// Remove all borders from main layout
+body.o_doceditor_body {
+	margin-bottom: 0px;
+	
+	.o_container_offcanvas {
+		max-width: 100%;
+	}
+	.container-fluid {
+		padding-left: 0px;
+		padding-right: 0px;
+		margin-left: 0px;
+		margin-right: 0px;
+	}
+	#o_toplink {
+		display: none;
+	}
+}
+
 .o_doceditor {
 	margin-top: 10px;
 	
 	.o_doceditor_config {
 		.nav {
 			button {
-				margin-top: 8px;
+				margin-top: 3px;
 			}
 		}
 	}
 	
 	// Avoid collapsing the navbar on small devices
+	.navbar-collapse {
+		border-top: 0 !important;
+	}
 	.navbar-collapse.collapse {
 		 display: block!important;
 	}
+	.navbar-nav {
+		margin: 0;
+	}
 	.navbar-nav>li, .navbar-nav {
 		float: left !important;
-	}
-	.navbar-nav.navbar-right:last-child {
-		margin-right: -15px !important;
 	}
 	.navbar-right {
 		float: right!important;
@@ -26,6 +47,13 @@
 		background-color: $navbar-default-bg;
 		border-color: $navbar-default-border;
 		position: absolute;
+		right: 0;
+		left: auto;
+	}
+	.navbar-nav > li > a {
+		padding-top: 10px !important;
+		padding-bottom: 10px !important;
+		line-height: 20px !important;
 	}
 	
 	
@@ -33,10 +61,9 @@
 	.o_collabora, .o_onlyoffice, .o_office365 {
 		iframe {
 			width: 100%;
-			height: calc(100vh - 183px);
+			height: calc(100vh - 65px);
 			margin-top: 10px;
-			margin-bottom: 20px;
-			border-width: 1px;
+			border-width: 0px;
 		}
 	}
 	
@@ -44,8 +71,9 @@
 		.o_collabora, .o_onlyoffice, .o_office365 {
 			iframe {
 				width: 100%;
-				height: calc(100vh - 355px);  // editor selection is not taken
+				height: calc(100vh - 321px);  // editor selection is not taken
 				margin-top: 10px;
+				margin-bottom: 10px;
 				border-width: 1px;
 			}
 		}
@@ -54,9 +82,9 @@
 		.o_collabora, .o_onlyoffice, .o_office365 {
 			iframe {
 				width: 100%;
-				height: calc(100vh - 310px); // editor selection is not taken
+				height: calc(100vh - 276px); // editor selection is not taken
 				margin-top: 10px;
-				margin-bottom: 35px;
+				margin-bottom: 25px;
 				border-width: 1px;
 			}
 		}
