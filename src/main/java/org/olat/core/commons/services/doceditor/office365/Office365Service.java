@@ -21,6 +21,7 @@ package org.olat.core.commons.services.doceditor.office365;
 
 import java.io.InputStream;
 import java.util.Collection;
+import java.util.Locale;
 
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorSecurityCallback;
@@ -56,7 +57,7 @@ public interface Office365Service {
 	
 	Collection<String> getContentSecurityPolicyUrls();
 
-	String getEditorActionUrl(VFSMetadata vfsMetadata);
+	String getEditorActionUrl(VFSMetadata vfsMetadata, Mode mode, Locale locale);
 	
 	boolean isSupportingFormat(String suffix, Mode mode);
 	

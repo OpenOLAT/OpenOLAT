@@ -66,10 +66,14 @@ public class Office365EditorController extends BasicController {
 			mainVC.contextPut("warning", translate("editor.warning.no.metadata"));
 		} else {
 			Access access = office365Service.createAccess(vfsMetadata, getIdentity(), secCallback);
-			String actionUrl = office365Service.getEditorActionUrl(vfsMetadata);
-			mainVC.contextPut("actionUrl", actionUrl);
-			mainVC.contextPut("accessToken", access.getToken());
-			mainVC.contextPut("accessTokenTtl", access.getExpiresAt().getTime());
+			String actionUrl = office365Service.getEditorActionUrl(vfsMetadata, secCallback.getMode(), getLocale());
+			if (actionUrl == null) {
+				mainVC.contextPut("warning", translate("editor.warning.no.metadata"));
+			} else {
+				mainVC.contextPut("actionUrl", actionUrl);
+				mainVC.contextPut("accessToken", access.getToken());
+				mainVC.contextPut("accessTokenTtl", access.getExpiresAt().getTime());
+			}
 		}
 		
 		putInitialPanel(mainVC);

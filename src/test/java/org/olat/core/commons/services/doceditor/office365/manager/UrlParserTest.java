@@ -41,5 +41,33 @@ public class UrlParserTest {
 		
 		assertThat(protocolAndDomain).isEqualTo("https://FFC-excel.officeapps.live.com");
 	}
+	
+	@Test
+	public void shouldStripQuery() {
+		String url = "https://FFC-excel.officeapps.live.com/x/_layouts/xlembed.aspx?<ui=UI_LLCC&><rs=DC_LLCC&><dchat=DISABLE_CHAT&><hid=HOST_SESSION_ID&><sc=SESSION_CONTEXT&><wopisrc=WOPI_SOURCE&>";
+		
+		String strippedUrl = sut.stripQuery(url);
+		
+		assertThat(strippedUrl).isEqualTo("https://FFC-excel.officeapps.live.com/x/_layouts/xlembed.aspx");
+	}
+	
+	@Test
+	public void shouldGetLanguageParameter() {
+		String url = "https://FFC-excel.officeapps.live.com/x/_layouts/xlembed.aspx?<ui=UI_LLCC&><rs=DC_LLCC&><dchat=DISABLE_CHAT&><hid=HOST_SESSION_ID&><sc=SESSION_CONTEXT&><wopisrc=WOPI_SOURCE&>";
+		
+		String languageParameter = sut.getLanguageParameter(url);
+		
+		assertThat(languageParameter).isEqualTo("ui");
+	}
+	
+	@Test
+	public void shouldGetLanguageParameterNotFound() {
+		String url = "https://FFC-excel.officeapps.live.com/x/_layouts/xlembed.aspx?<rs=DC_LLCC&><dchat=DISABLE_CHAT&><hid=HOST_SESSION_ID&><sc=SESSION_CONTEXT&><wopisrc=WOPI_SOURCE&>";
+		
+		String languageParameter = sut.getLanguageParameter(url);
+		
+		assertThat(languageParameter).isNull();
+	}
+
 
 }

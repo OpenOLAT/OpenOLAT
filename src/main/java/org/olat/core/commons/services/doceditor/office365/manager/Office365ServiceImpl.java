@@ -26,6 +26,7 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
@@ -241,33 +242,47 @@ public class Office365ServiceImpl implements Office365Service, GenericEventListe
 	}
 
 	@Override
-	public String getEditorActionUrl(VFSMetadata vfsMetadata) {
-		StringBuilder wopiPath = new StringBuilder();
-		wopiPath.append(Settings.getServerContextPathURI());
-		wopiPath.append(RestSecurityHelper.SUB_CONTEXT);
-		wopiPath.append("/office365/wopi/files/");
-		wopiPath.append(vfsMetadata.getUuid());
+	public String getEditorActionUrl(VFSMetadata vfsMetadata, Mode mode, Locale locale) {
+		String rawActionUrl = getRawActionUrl(vfsMetadata, mode);
+		String wopiSrcUrl = getWopiSrcUrl(vfsMetadata);
 
 		StringBuilder urlSb = new StringBuilder();
-		urlSb.append(getEditorBaseUrl(vfsMetadata));
-		urlSb.append("WOPISrc=");
-		urlSb.append(StringHelper.urlEncodeUTF8(wopiPath.toString()));
+		urlSb.append(urlParser.stripQuery(rawActionUrl));
+		urlSb.append("?");
+		urlSb.append("WOPISrc");
+		urlSb.append("=");
+		urlSb.append(StringHelper.urlEncodeUTF8(wopiSrcUrl));
+		String languageParameter = urlParser.getLanguageParameter(rawActionUrl);
+		if (languageParameter != null) {
+			urlSb.append("&");
+			urlSb.append(languageParameter);
+			urlSb.append("=");
+			urlSb.append(locale.toString());
+		}
+		
 		String url = urlSb.toString();
 		log.debug("Editor action URL: " + url);
 		return url;
 	}
 
-	private String getEditorBaseUrl(VFSMetadata vfsMetadata) {
+	private String getRawActionUrl(VFSMetadata vfsMetadata, Mode mode) {
 		String suffix = FileUtils.getFileSuffix(vfsMetadata.getFilename());
-		Action action = wopiService.getAction(getDiscovery(), "edit", suffix);
-		if (action == null) {
+		Action action = null;
+		if (Mode.EDIT.equals(mode)) {
+			action = wopiService.getAction(getDiscovery(), "edit", suffix);
+		} else if (Mode.VIEW.equals(mode)) {
 			action = wopiService.getAction(getDiscovery(), "view", suffix);
 		}
+		return action != null? action.getUrlSrc(): null;
+	}
 
-		String url = action != null? action.getUrlSrc(): null;
-		// replace all url query parameters
-		url = url!= null? url.substring(0, url.indexOf("?") + 1): null;
-		return url;
+	private String getWopiSrcUrl(VFSMetadata vfsMetadata) {
+		StringBuilder wopiPath = new StringBuilder();
+		wopiPath.append(Settings.getServerContextPathURI());
+		wopiPath.append(RestSecurityHelper.SUB_CONTEXT);
+		wopiPath.append("/office365/wopi/files/");
+		wopiPath.append(vfsMetadata.getUuid());
+		return wopiPath.toString();
 	}
 
 	@Override

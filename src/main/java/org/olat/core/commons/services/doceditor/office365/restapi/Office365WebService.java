@@ -19,6 +19,8 @@
  */
 package org.olat.core.commons.services.doceditor.office365.restapi;
 
+import static org.olat.core.commons.services.doceditor.wopi.WopiRestHelper.getAsIso8601;
+
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map.Entry;
@@ -119,6 +121,7 @@ public class Office365WebService {
 				.withUserId(access.getIdentity().getKey().toString())
 				.withUserFriendlyName(userManager.getUserDisplayName(access.getIdentity()))
 				.withVersion(String.valueOf(metadata.getRevisionNr()))
+				.withLastModifiedTime(getAsIso8601(metadata.getLastModified()))
 				.withSupportsGetLock(true)
 				.withSupportsLocks(true)
 				.withSupportsExtendedLockLength(true)

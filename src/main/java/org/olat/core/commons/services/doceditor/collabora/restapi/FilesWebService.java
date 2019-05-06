@@ -19,7 +19,7 @@
  */
 package org.olat.core.commons.services.doceditor.collabora.restapi;
 
-import static org.olat.core.commons.services.doceditor.wopi.WopiRestHelper.getAsIso6801;
+import static org.olat.core.commons.services.doceditor.wopi.WopiRestHelper.getAsIso8601;
 import static org.olat.core.commons.services.doceditor.wopi.WopiRestHelper.getFirstRequestHeader;
 
 import java.io.InputStream;
@@ -108,7 +108,7 @@ public class FilesWebService {
 				.withUserId(access.getIdentity().getKey().toString())
 				.withUserFriendlyName(userManager.getUserDisplayName(access.getIdentity()))
 				.withVersion(String.valueOf(metadata.getRevisionNr()))
-				.withLastModifiedTime(getAsIso6801(metadata.getLastModified()))
+				.withLastModifiedTime(getAsIso8601(metadata.getLastModified()))
 				.withUserCanWrite(access.isCanEdit())
 				.withDisablePrint(Boolean.FALSE)
 				.withUserCanNotWriteRelative(Boolean.TRUE)
@@ -195,7 +195,7 @@ public class FilesWebService {
 			boolean updated = collaboraService.updateContent(access, fileInputStream);
 			if (updated) {
 				PutFileVO putFileVO = PutFileVO.builder()
-					.withLastModifiedTime(getAsIso6801(new Date()))
+					.withLastModifiedTime(getAsIso8601(new Date()))
 					.build();
 				logPutFileResponse(putFileVO);
 				

@@ -35,6 +35,8 @@ import org.springframework.stereotype.Service;
 class UrlParser {
 
 	private static final OLog log = Tracing.createLoggerFor(UrlParser.class);
+	
+	private static final String LANGUAGE_PARAMETER = "UI_LLCC";
 
 	String getProtocolAndDomain(String url) {
 		try {
@@ -49,8 +51,22 @@ class UrlParser {
 		return null;
 	}
 
-	private String stripQuery(String url) {
-		return url!= null && url.indexOf("?") > -1? url.substring(0, url.indexOf("?")): null;
+	String stripQuery(String url) {
+		return url != null && url.indexOf("?") > -1? url.substring(0, url.indexOf("?")): null;
+	}
+
+	String getLanguageParameter(String url) {
+		int languageParameterIndey = url.indexOf(LANGUAGE_PARAMETER);
+		if (languageParameterIndey > -1) {
+			int start = url.lastIndexOf("<", languageParameterIndey);
+			if (start > -1) {
+				int end = url.lastIndexOf("=", languageParameterIndey);
+				if (end > -1) {
+					return url.substring(start + 1, end);
+				}
+			}
+		}
+		return null;
 	}
 
 }
