@@ -108,7 +108,7 @@ public class AccessDAOTest extends OlatTestCase {
 		Access createdAccess = createRandomAccess();
 		dbInstance.commitAndCloseSession();
 		
-		Access reloadedAccess = sut.loadAccess(createdAccess.getToken());
+		Access reloadedAccess = reload(createdAccess);
 		
 		assertThat(reloadedAccess).isEqualTo(createdAccess);
 	}
@@ -142,8 +142,37 @@ public class AccessDAOTest extends OlatTestCase {
 		sut.deleteAccess(createdAccess.getToken());
 		dbInstance.commitAndCloseSession();
 		
-		Access reloadedAccess = sut.loadAccess(createdAccess.getToken());
+		Access reloadedAccess = reload(createdAccess);
 		assertThat(reloadedAccess).isNull();
+	}
+	
+	@Test
+	public void shouldDeleteExpired() {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("wopi");
+		VFSMetadata vfsMetadata = vfsMetadataDAO.createMetadata(random(), "relPath", "file.name", new Date(), 1000l, false, "", "file", null);
+		Date twoDaysAgo = Date.from(Instant.now().minus(Duration.ofDays(2)));;
+		Access expiredTwoDaysAgo = sut.createAccess(vfsMetadata, identity, random(), random(), true, true, true, twoDaysAgo);
+		Date oneDayAgo = Date.from(Instant.now().minus(Duration.ofDays(1)));;
+		Access expiredOneDayAgo = sut.createAccess(vfsMetadata, identity, random(), random(), true, true, true, oneDayAgo);
+		Date inOneDay = Date.from(Instant.now().plus(Duration.ofDays(1)));;
+		Access expiresInOneDay = sut.createAccess(vfsMetadata, identity, random(), random(), true, true, true, inOneDay);
+		Access noExpiration = sut.createAccess(vfsMetadata, identity, random(), random(), true, true, true, null);
+		dbInstance.commitAndCloseSession();
+		
+		Date now = new Date();
+		sut.deleteExpired(now);
+		dbInstance.commitAndCloseSession();
+		
+		SoftAssertions softly = new SoftAssertions();
+		softly.assertThat(reload(expiredOneDayAgo)).isNull();
+		softly.assertThat(reload(expiredTwoDaysAgo)).isNull();
+		softly.assertThat(reload(expiresInOneDay)).isNotNull();
+		softly.assertThat(reload(noExpiration)).isNotNull();
+		softly.assertAll();
+	}
+
+	private Access reload(Access access) {
+		return sut.loadAccess(access.getToken());
 	}
 	
 	private Access createRandomAccess() {

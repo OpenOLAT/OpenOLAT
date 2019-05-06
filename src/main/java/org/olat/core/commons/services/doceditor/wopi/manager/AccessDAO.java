@@ -129,6 +129,19 @@ class AccessDAO {
 				.setParameter("token", token)
 				.executeUpdate();
 	}
+	
+	void deleteExpired(Date before) {
+		if (before == null) return;
+
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("delete from wopiaccess access");
+		sb.and().append("access.expiresAt < :before");
+		
+		dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString())
+				.setParameter("before", before)
+				.executeUpdate();
+	}
 
 	void deleteAll() {
 		dbInstance.getCurrentEntityManager()

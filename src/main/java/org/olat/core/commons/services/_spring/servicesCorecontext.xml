@@ -10,7 +10,7 @@
   
 	<context:component-scan base-package="org.olat.core.commons.services" />
 	
-  	<import resource="classpath:/org/olat/core/commons/services/jmx/_spring/jmxContext.xml"/>
+	<import resource="classpath:/org/olat/core/commons/services/jmx/_spring/jmxContext.xml"/>
 	<import resource="classpath:/org/olat/core/commons/services/scheduler/_spring/schedulerContext.xml"/>
 	<import resource="classpath:/org/olat/core/commons/services/taskexecutor/_spring/taskExecutorCorecontext.xml"/>
 	<import resource="classpath:/org/olat/core/commons/services/notifications/_spring/notificationsContext.xml"/>
@@ -47,13 +47,13 @@
 			</bean>
 		</property>
 		<property name="navigationKey" value="analytics" />
-		<property name="parentTreeNodeIdentifier" value="externalToolsParent" /> 
+		<property name="parentTreeNodeIdentifier" value="externalToolsParent" />
 		<property name="i18nActionKey" value="admin.menu.title"/>
 		<property name="i18nDescriptionKey" value="admin.menu.title.alt"/>
 		<property name="translationPackage" value="org.olat.core.commons.services.analytics.ui"/>
 		<property name="extensionPoints">
 			<list>	
-				<value>org.olat.admin.SystemAdminMainController</value>		
+				<value>org.olat.admin.SystemAdminMainController</value>
 			</list>
 		</property>
 	</bean>
@@ -67,13 +67,13 @@
 			</bean>
 		</property>
 		<property name="navigationKey" value="license" />
-		<property name="parentTreeNodeIdentifier" value="sysconfigParent" /> 
+		<property name="parentTreeNodeIdentifier" value="sysconfigParent" />
 		<property name="i18nActionKey" value="admin.menu.title"/>
 		<property name="i18nDescriptionKey" value="admin.menu.title.alt"/>
 		<property name="translationPackage" value="org.olat.core.commons.services.license.ui"/>
 		<property name="extensionPoints">
 			<list>	
-				<value>org.olat.admin.SystemAdminMainController</value>		
+				<value>org.olat.admin.SystemAdminMainController</value>
 			</list>
 		</property>
 	</bean>
@@ -90,10 +90,10 @@
 		<property name="translationPackage" value="org.olat.admin" />
 		<property name="i18nActionKey" value="menu.versions"/>
 		<property name="i18nDescriptionKey" value="menu.versions.alt"/>
-		<property name="parentTreeNodeIdentifier" value="sysconfigParent" /> 
+		<property name="parentTreeNodeIdentifier" value="sysconfigParent" />
 		<property name="extensionPoints">
 			<list>	
-				<value>org.olat.admin.SystemAdminMainController</value>		
+				<value>org.olat.admin.SystemAdminMainController</value>
 			</list>
 		</property>
 	</bean>
@@ -107,18 +107,18 @@
 			</bean>
 		</property>
 		<property name="navigationKey" value="pdfservice" />
-		<property name="parentTreeNodeIdentifier" value="externalToolsParent" /> 
+		<property name="parentTreeNodeIdentifier" value="externalToolsParent" />
 		<property name="i18nActionKey" value="admin.menu.title"/>
 		<property name="i18nDescriptionKey" value="admin.menu.title.alt"/>
 		<property name="translationPackage" value="org.olat.core.commons.services.pdf.ui"/>
 		<property name="extensionPoints">
 			<list>	
-				<value>org.olat.admin.SystemAdminMainController</value>		
+				<value>org.olat.admin.SystemAdminMainController</value>
 			</list>
 		</property>
 	</bean>
 	
-	<!-- Collabora admin. panel -->
+	<!-- Document editor admin. panel -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
 		<property name="order" value="8256" />
 		<property name="actionController">	
@@ -133,20 +133,31 @@
 		<property name="parentTreeNodeIdentifier" value="externalToolsParent" /> 
 		<property name="extensionPoints">
 			<list>	
-				<value>org.olat.admin.SystemAdminMainController</value>		
+				<value>org.olat.admin.SystemAdminMainController</value>
 			</list>
 		</property>
+	</bean>
+	
+		<!-- Cleaning job for WOPI access -->
+	<bean id="wopiDeleteExpiredAccessJob" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+		<property name="jobDetail">
+		<bean class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+					<property name="jobClass" value="org.olat.core.commons.services.doceditor.wopi.manager.WopiDeleteExpiredAccessJob" />
+				</bean>
+			</property>
+			<property name="cronExpression" value="0 23 4 * * ?"/>
+			<property name="startDelay" value="45000" />
 	</bean>
 	
 	<!-- Cleaning job for CSP reports -->
 	<bean id="cspCleanupJob" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
 		<property name="jobDetail">
-	    		<bean class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+				<bean class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
 					<property name="jobClass" value="org.olat.core.commons.services.csp.manager.CSPLogCleanup" />
 				</bean>
-	    	</property>
-	    	<property name="cronExpression" value="0 0 4 * * ?"/><!-- 2am, daily -->
-	    	<property name="startDelay" value="45000" />
+			</property>
+			<property name="cronExpression" value="0 0 4 * * ?"/><!-- 2am, daily -->
+			<property name="startDelay" value="45000" />
 	</bean>
 
 </beans>
