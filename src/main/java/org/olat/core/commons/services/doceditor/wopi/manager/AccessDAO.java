@@ -52,11 +52,12 @@ class AccessDAO {
 		dbInstance.commitAndCloseSession();
 	}
 
-	Access createAccess(VFSMetadata metadata, Identity identity, String token, boolean canEdit,
+	Access createAccess(VFSMetadata metadata, Identity identity, String app, String token, boolean canEdit,
 			boolean canClose, boolean versionControlled, Date expiresAt) {
 		AccessImpl access = new AccessImpl();
 		access.setCreationDate(new Date());
 		access.setLastModified(access.getCreationDate());
+		access.setApp(app);
 		access.setToken(token);
 		access.setCanEdit(canEdit);
 		access.setCanClose(canClose);
@@ -95,7 +96,7 @@ class AccessDAO {
 		return accesses.isEmpty() ? null : accesses.get(0);
 	}
 
-	Access loadAccess(VFSMetadata metadata, Identity identity) {
+	Access loadAccess(VFSMetadata metadata, Identity identity, String app) {
 		if (metadata == null || identity == null) return null;
 		
 		QueryBuilder sb = new QueryBuilder();
@@ -105,11 +106,13 @@ class AccessDAO {
 		sb.append("       join fetch access.identity identity");
 		sb.and().append("access.metadata.key = :metadataKey");
 		sb.and().append("access.identity.key = :identityKey");
+		sb.and().append("access.app = :app");
 
 		List<Access> accesses = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Access.class)
 				.setParameter("metadataKey", metadata.getKey())
 				.setParameter("identityKey", identity.getKey())
+				.setParameter("app", app)
 				.getResultList();
 		return accesses.isEmpty() ? null : accesses.get(0);
 	}

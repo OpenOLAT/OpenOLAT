@@ -101,7 +101,7 @@ public class Office365ServiceImpl implements Office365Service, GenericEventListe
 	@Override
 	public Access createAccess(VFSMetadata vfsMetadata, Identity identity, DocEditorSecurityCallback secCallback) {
 		Date expiresIn24Hours = Date.from(Instant.now().plus(Duration.ofHours(24)));
-		return wopiService.getOrCreateAccess(vfsMetadata, identity, secCallback, expiresIn24Hours);
+		return wopiService.getOrCreateAccess(vfsMetadata, identity, secCallback, LOCK_APP, expiresIn24Hours);
 	}
 
 	@Override

@@ -62,6 +62,8 @@ public class CollaboraServiceImpl implements CollaboraService, GenericEventListe
 
 	private static final OLog log = Tracing.createLoggerFor(CollaboraServiceImpl.class);
 	
+	private static final String LOCK_APP = "collabora";
+
 	private Discovery discovery;
 	
 	@Autowired
@@ -85,7 +87,7 @@ public class CollaboraServiceImpl implements CollaboraService, GenericEventListe
 
 	@Override
 	public Access createAccess(VFSMetadata vfsMetadata, Identity identity, DocEditorSecurityCallback secCallback) {
-		return wopiService.getOrCreateAccess(vfsMetadata, identity, secCallback, null);
+		return wopiService.getOrCreateAccess(vfsMetadata, identity, secCallback, LOCK_APP, null);
 	}
 
 	@Override
@@ -142,7 +144,10 @@ public class CollaboraServiceImpl implements CollaboraService, GenericEventListe
 		if (discovery == null) {
 			String discoveryUrl = getDiscoveryUrl();
 			discovery = wopiService.getDiscovery(discoveryUrl);
-			log.info("Recieved new WOPI discovery from " + discoveryUrl);
+			if (discovery != null) {
+				log.info("Recieved new WOPI discovery from " + discoveryUrl);
+			}
+				log.warn("Not able to fetch new WOPI discovery from " + discoveryUrl);
 		}
 		return discovery;
 	}
@@ -189,12 +194,12 @@ public class CollaboraServiceImpl implements CollaboraService, GenericEventListe
 
 	@Override
 	public boolean isLockedForMe(VFSLeaf vfsLeaf, Identity identity) {
-		return lockManager.isLockedForMe(vfsLeaf, identity, VFSLockApplicationType.collaboration, "collabora");
+		return lockManager.isLockedForMe(vfsLeaf, identity, VFSLockApplicationType.collaboration, LOCK_APP);
 	}
 
 	@Override
 	public LockResult lock(VFSLeaf vfsLeaf, Identity identity) {
-		return lockManager.lock(vfsLeaf, identity, VFSLockApplicationType.collaboration, "collabora");
+		return lockManager.lock(vfsLeaf, identity, VFSLockApplicationType.collaboration, LOCK_APP);
 	}
 
 	@Override

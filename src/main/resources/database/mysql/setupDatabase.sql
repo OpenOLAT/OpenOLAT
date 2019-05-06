@@ -1800,6 +1800,7 @@ create table o_wopi_access (
    id bigint not null auto_increment,
    creationdate datetime not null,
    lastmodified datetime not null,
+   o_app varchar(64) not null,
    o_token varchar(64) not null,
    o_expires_at datetime,
    o_can_edit bool not null,
@@ -3690,7 +3691,7 @@ alter table o_vfs_metadata add constraint fvers_to_lic_type_idx foreign key (fk_
 
 -- WOPI
 create unique index idx_wopi_token_idx on o_wopi_access(o_token);
-create unique index idx_wopi_meta_ident_idx on o_wopi_access(fk_metadata, fk_identity);
+create index idx_wopi_ident_meta_idx on o_wopi_access(fk_identity, fk_metadata);
 
 -- quality management
 alter table o_qual_data_collection add constraint qual_dc_to_gen_idx foreign key (fk_generator) references o_qual_generator (id);

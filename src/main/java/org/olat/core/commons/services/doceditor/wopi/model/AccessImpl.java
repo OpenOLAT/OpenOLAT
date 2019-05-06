@@ -66,6 +66,8 @@ public class AccessImpl implements Access, Persistable {
 
 	@Column(name="o_token", nullable=false, insertable=true, updatable=false)
 	private String token;
+	@Column(name="o_app", nullable=false, insertable=true, updatable=false)
+	private String app;
 	@Column(name="o_expires_at", nullable=true, insertable=true, updatable=true)
 	private Date expiresAt;
 	@Column(name="o_can_edit", nullable=false, insertable=true, updatable=false)
@@ -117,6 +119,14 @@ public class AccessImpl implements Access, Persistable {
 
 	public void setToken(String token) {
 		this.token = token;
+	}
+
+	public String getApp() {
+		return app;
+	}
+
+	public void setApp(String app) {
+		this.app = app;
 	}
 
 	@Override

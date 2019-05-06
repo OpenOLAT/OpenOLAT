@@ -64,13 +64,14 @@ public class AccessDAOTest extends OlatTestCase {
 	public void shouldCreateAccess() {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("wopi");
 		VFSMetadata vfsMetadata = vfsMetadataDAO.createMetadata(random(), "relPath", "file.name", new Date(), 1000l, false, "", "file", null);
+		String app = random();
 		String token = random();
 		boolean canEdit = false;
 		boolean canClose = true;
 		boolean versionControlled = true;
 		Date expiresAt = Date.from(Instant.now().plus(Duration.ofHours(23)));
 		
-		Access access = sut.createAccess(vfsMetadata, identity, token, canEdit, canClose, versionControlled, expiresAt);
+		Access access = sut.createAccess(vfsMetadata, identity, app, token, canEdit, canClose, versionControlled, expiresAt);
 		dbInstance.commitAndCloseSession();
 		
 		SoftAssertions softly = new SoftAssertions();
@@ -90,7 +91,7 @@ public class AccessDAOTest extends OlatTestCase {
 	public void shouldUpdateExpiresAt() {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("wopi");
 		VFSMetadata vfsMetadata = vfsMetadataDAO.createMetadata(random(), "relPath", "file.name", new Date(), 1000l, false, "", "file", null);
-		Access access = sut.createAccess(vfsMetadata, identity, random(), true, true, true, null);
+		Access access = sut.createAccess(vfsMetadata, identity, random(), random(), true, true, true, null);
 		dbInstance.commitAndCloseSession();
 		
 		Date expiresIn24Hours = Date.from(Instant.now().plus(Duration.ofHours(24)));
@@ -99,7 +100,6 @@ public class AccessDAOTest extends OlatTestCase {
 		
 		assertThat(access.getExpiresAt()).isCloseTo(expiresIn24Hours, 2000);
 	}
-
 	
 	@Test
 	public void shouldLoadAccessByToken() {
@@ -125,11 +125,12 @@ public class AccessDAOTest extends OlatTestCase {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("wopi");
 		Identity identity2 = JunitTestHelper.createAndPersistIdentityAsRndUser("wopi2");
 		VFSMetadata vfsMetadata = vfsMetadataDAO.createMetadata(random(), "relPath", "file.name", new Date(), 1000l, false, "", "file", null);
-		Access access = sut.createAccess(vfsMetadata, identity, random(), true, true, true, null);
-		sut.createAccess(vfsMetadata, identity2, random(), true, true, true, null);
+		String app = random();
+		Access access = sut.createAccess(vfsMetadata, identity, app, random(), true, true, true, null);
+		sut.createAccess(vfsMetadata, identity2, app, random(), true, true, true, null);
 		dbInstance.commitAndCloseSession();
 		
-		Access reloadedAccess = sut.loadAccess(vfsMetadata, identity);
+		Access reloadedAccess = sut.loadAccess(vfsMetadata, identity, app);
 		
 		assertThat(reloadedAccess).isEqualTo(access);
 	}
@@ -148,11 +149,12 @@ public class AccessDAOTest extends OlatTestCase {
 	private Access createRandomAccess() {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("wopi");
 		VFSMetadata vfsMetadata = vfsMetadataDAO.createMetadata(random(), "relPath", "file.name", new Date(), 1000l, false, "", "file", null);
+		String app = random();
 		String token = random();
 		boolean canEdit = false;
 		boolean canClose = true;
 		boolean versionControlled = true;
 		
-		return sut.createAccess(vfsMetadata, identity, token, canEdit, canClose, versionControlled, null);
+		return sut.createAccess(vfsMetadata, identity, app, token, canEdit, canClose, versionControlled, null);
 	}
 }

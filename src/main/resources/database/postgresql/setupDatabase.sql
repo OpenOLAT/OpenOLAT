@@ -1693,6 +1693,7 @@ create table o_wopi_access (
    id bigserial,
    creationdate timestamp not null,
    lastmodified timestamp not null,
+   o_app varchar(64) not null,
    o_token varchar(64) not null,
    o_expires_at timestamp,
    o_can_edit bool not null,
@@ -3684,7 +3685,7 @@ create index idx_fvers_to_lic_type_idx on o_vfs_revision (fk_license_type);
 
 -- WOPI
 create unique index idx_wopi_token_idx on o_wopi_access(o_token);
-create unique index idx_wopi_meta_ident_idx on o_wopi_access(fk_metadata, fk_identity);
+create index idx_wopi_ident_meta_idx on o_wopi_access(fk_identity, fk_metadata);
 
 -- evaluation form
 alter table o_eva_form_survey add constraint eva_surv_to_surv_idx foreign key (fk_series_previous) references o_eva_form_survey (id);

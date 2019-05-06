@@ -115,6 +115,7 @@ create table o_wopi_access (
    id number(20) generated always as identity,
    creationdate timestamp not null,
    lastmodified timestamp not null,
+   o_app varchar(64) not null,
    o_token varchar(64) not null,
    o_expires_at timestamp,
    o_can_edit number default 0 not null,
@@ -126,7 +127,7 @@ create table o_wopi_access (
 );
 
 create unique index idx_wopi_token_idx on o_wopi_access(o_token);
-create unique index idx_wopi_meta_ident_idx on o_wopi_access(fk_metadata, fk_identity);
+create index idx_wopi_ident_meta_idx on o_wopi_access(fk_identity, fk_metadata);
 
 
 -- Adobe Connect

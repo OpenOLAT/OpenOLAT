@@ -61,10 +61,12 @@ public interface WopiService {
 	 * @param vfsMetadata
 	 * @param identity
 	 * @param secCallback
+	 * @param app 
 	 * @param expiresAt (optional) date when the access expires
 	 * @return
 	 */
-	Access getOrCreateAccess(VFSMetadata vfsMetadata, Identity identity, DocEditorSecurityCallback secCallback, Date expiresAt);
+	Access getOrCreateAccess(VFSMetadata vfsMetadata, Identity identity, DocEditorSecurityCallback secCallback,
+			String app, Date expiresAt);
 
 	Access getAccess(String accessToken);
 
