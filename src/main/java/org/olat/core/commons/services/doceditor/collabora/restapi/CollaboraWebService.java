@@ -63,9 +63,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 @Service
 @Path("/collabora/wopi/files/{fileId}")
-public class FilesWebService {
+public class CollaboraWebService {
 
-	private static final OLog log = Tracing.createLoggerFor(FilesWebService.class);
+	private static final OLog log = Tracing.createLoggerFor(CollaboraWebService.class);
 	
 	@Autowired
 	private CollaboraModule collaboraModule;
@@ -222,7 +222,7 @@ public class FilesWebService {
 			for (Entry<String, List<String>> entry : httpHeaders.getRequestHeaders().entrySet()) {
 				String name = entry.getKey();
 				String value = entry.getValue().stream().collect(Collectors.joining(", "));
-				log.debug(name + ": " + value);
+				log.debug("  " + name + ": " + value);
 			}
 		}
 	}
