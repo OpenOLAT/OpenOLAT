@@ -22,17 +22,19 @@ package org.olat.login.oauth;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.util.UUID;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.olat.core.gui.media.MediaResource;
-import org.olat.core.helpers.Settings;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.scribe.builder.ServiceBuilder;
-import org.scribe.model.Token;
-import org.scribe.oauth.OAuthService;
+
+import com.github.scribejava.core.model.OAuth1RequestToken;
+import com.github.scribejava.core.oauth.OAuth10aService;
+import com.github.scribejava.core.oauth.OAuth20Service;
+import com.github.scribejava.core.oauth.OAuthService;
 
 /**
  * 
@@ -95,31 +97,22 @@ public class OAuthResource implements MediaResource {
 	public static void redirect(OAuthSPI oauthProvider, HttpServletResponse httpResponse, HttpSession httpSession) {
 		//Configure
 		try {
-			ServiceBuilder builder= new ServiceBuilder(); 
-			builder.provider(oauthProvider.getScribeProvider())
-					.apiKey(oauthProvider.getAppKey())
-					.apiSecret(oauthProvider.getAppSecret());
-			String[] scopes = oauthProvider.getScopes();
-			for(String scope:scopes) {
-				builder.scope(scope);
-			}
-
-			String callbackUrl = Settings.getServerContextPathURI() + OAuthConstants.CALLBACK_PATH;
-			OAuthService service = builder
-					.callback(callbackUrl)
-					.build(); //Now build the call
-			
+			@SuppressWarnings("resource") // this need to be used afeter the redirect
+			OAuthService service = oauthProvider.getScribeProvider();
 			httpSession.setAttribute(OAuthConstants.OAUTH_SERVICE, service);
 			httpSession.setAttribute(OAuthConstants.OAUTH_SPI, oauthProvider);
 			
-			if("2.0".equals(service.getVersion())) {
-				String redirectUrl = service.getAuthorizationUrl(null);
+			if(service instanceof OAuth20Service) {
+				OAuth20Service oauthService = (OAuth20Service)service;
+				String state = UUID.randomUUID().toString().replace("-", "");
+				String redirectUrl = oauthService.getAuthorizationUrl(state);
 				saveStateAndNonce(httpSession, redirectUrl);
 				httpResponse.sendRedirect(redirectUrl);
-			} else {
-				Token token = service.getRequestToken();
+			} else if(service instanceof OAuth10aService) {
+				OAuth10aService oauthService = (OAuth10aService)service;
+				OAuth1RequestToken token = oauthService.getRequestToken();
 				httpSession.setAttribute(OAuthConstants.REQUEST_TOKEN, token);
-				String redirectUrl = service.getAuthorizationUrl(token);
+				String redirectUrl = oauthService.getAuthorizationUrl(token);
 				httpResponse.sendRedirect(redirectUrl);
 			}
 		} catch (Exception e) {
@@ -132,7 +125,7 @@ public class OAuthResource implements MediaResource {
 			URL url = new URL(redirectUrl);
 			final String[] pairs = url.getQuery().split("&");
 			for (String pair : pairs) {
-				final int idx = pair.indexOf("=");
+				final int idx = pair.indexOf('=');
 				final String key = idx > 0 ? URLDecoder.decode(pair.substring(0, idx), "UTF-8") : pair;
 			    final String value = idx > 0 && pair.length() > idx + 1 ? URLDecoder.decode(pair.substring(idx + 1), "UTF-8") : null;
 			    

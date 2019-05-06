@@ -27,11 +27,13 @@ import org.olat.core.util.StringHelper;
 import org.olat.login.oauth.OAuthLoginModule;
 import org.olat.login.oauth.OAuthSPI;
 import org.olat.login.oauth.model.OAuthUser;
-import org.scribe.builder.api.Api;
-import org.scribe.model.Token;
-import org.scribe.oauth.OAuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.github.scribejava.core.builder.ServiceBuilder;
+import com.github.scribejava.core.model.OAuth2AccessToken;
+import com.github.scribejava.core.model.Token;
+import com.github.scribejava.core.oauth.OAuthService;
 
 /**
  * 
@@ -63,8 +65,17 @@ public class OpenIdConnectProvider implements OAuthSPI {
 	}
 
 	@Override
-	public Api getScribeProvider() {
-		return new OpenIdConnectApi();
+	public OAuthService getScribeProvider() {
+		return new ServiceBuilder(oauthModule.getOpenIdConnectIFApiKey())
+                .apiSecret(oauthModule.getOpenIdConnectIFApiSecret())
+                .callback(oauthModule.getCallbackUrl())
+                .defaultScope("openid email")
+                .responseType("id_token token")
+                .build(new OpenIdConnectApi(this));
+	}
+	
+	public String getEndPoint() {
+		return oauthModule.getOpenIdConnectIFAuthorizationEndPoint();
 	}
 
 	@Override
@@ -83,24 +94,9 @@ public class OpenIdConnectProvider implements OAuthSPI {
 	}
 
 	@Override
-	public String getAppKey() {
-		return oauthModule.getOpenIdConnectIFApiKey();
-	}
-
-	@Override
-	public String getAppSecret() {
-		return oauthModule.getOpenIdConnectIFApiSecret();
-	}
-
-	@Override
-	public String[] getScopes() {
-		return new String[] { "openid", "email" };
-	}
-
-	@Override
 	public OAuthUser getUser(OAuthService service, Token accessToken) {
 		try {
-			String idToken = accessToken.getToken();
+			String idToken = ((OAuth2AccessToken)accessToken).getAccessToken();
 			JSONWebToken token = JSONWebToken.parse(idToken);
 			return parseInfos(token.getPayload());
 		} catch (JSONException e) {

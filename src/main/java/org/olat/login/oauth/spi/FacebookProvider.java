@@ -19,6 +19,9 @@
  */
 package org.olat.login.oauth.spi;
 
+import java.io.IOException;
+import java.util.concurrent.ExecutionException;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.olat.core.logging.OLog;
@@ -27,17 +30,18 @@ import org.olat.core.util.StringHelper;
 import org.olat.login.oauth.OAuthLoginModule;
 import org.olat.login.oauth.OAuthSPI;
 import org.olat.login.oauth.model.OAuthUser;
-import org.scribe.builder.api.Api;
-import org.scribe.builder.api.FacebookApi;
-import org.scribe.extractors.AccessTokenExtractor;
-import org.scribe.extractors.JsonTokenExtractor;
-import org.scribe.model.OAuthRequest;
-import org.scribe.model.Response;
-import org.scribe.model.Token;
-import org.scribe.model.Verb;
-import org.scribe.oauth.OAuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.github.scribejava.apis.FacebookApi;
+import com.github.scribejava.core.builder.ServiceBuilder;
+import com.github.scribejava.core.model.OAuth2AccessToken;
+import com.github.scribejava.core.model.OAuthRequest;
+import com.github.scribejava.core.model.Response;
+import com.github.scribejava.core.model.Token;
+import com.github.scribejava.core.model.Verb;
+import com.github.scribejava.core.oauth.OAuth20Service;
+import com.github.scribejava.core.oauth.OAuthService;
 
 /**
  * 
@@ -69,13 +73,11 @@ public class FacebookProvider implements OAuthSPI {
 	}
 
 	@Override
-	public Api getScribeProvider() {
-		return new FacebookApi() {
-			@Override
-			public AccessTokenExtractor getAccessTokenExtractor() {
-				return new JsonTokenExtractor();
-			}
-		};
+	public OAuthService getScribeProvider() {
+		return new ServiceBuilder(oauthModule.getFacebookApiKey())
+                .apiSecret(oauthModule.getFacebookApiSecret())
+                .callback(oauthModule.getCallbackUrl())
+                .build(FacebookApi.instance());
 	}
 
 	@Override
@@ -94,25 +96,12 @@ public class FacebookProvider implements OAuthSPI {
 	}
 
 	@Override
-	public String getAppKey() {
-		return oauthModule.getFacebookApiKey();
-	}
-
-	@Override
-	public String getAppSecret() {
-		return oauthModule.getFacebookApiSecret();
-	}
-
-	@Override
-	public String[] getScopes() {
-		return new String[0];
-	}
-
-	@Override
-	public OAuthUser getUser(OAuthService service, Token accessToken) {
+	public OAuthUser getUser(OAuthService service, Token accessToken)
+			throws InterruptedException, ExecutionException, IOException {
+		OAuth20Service oauthService = (OAuth20Service)service;
 		OAuthRequest request = new OAuthRequest(Verb.GET, "https://graph.facebook.com/me");
-	    service.signRequest(accessToken, request);
-	    Response oauthResponse = request.send();
+		oauthService.signRequest((OAuth2AccessToken)accessToken, request);
+	    Response oauthResponse = oauthService.execute(request);
 	    String body = oauthResponse.getBody();
 		return parseInfos(body);
 	}

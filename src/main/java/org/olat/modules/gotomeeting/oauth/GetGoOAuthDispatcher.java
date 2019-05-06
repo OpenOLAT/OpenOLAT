@@ -42,10 +42,10 @@ import org.olat.login.oauth.OAuthConstants;
 import org.olat.modules.gotomeeting.GoToMeetingManager;
 import org.olat.modules.gotomeeting.manager.GoToJsonUtil;
 import org.olat.modules.gotomeeting.model.GoToOrganizerG2T;
-import org.scribe.model.Token;
-import org.scribe.model.Verifier;
-import org.scribe.oauth.OAuthService;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import com.github.scribejava.core.model.Token;
+import com.github.scribejava.core.oauth.OAuth20Service;
 
 /**
  * 
@@ -77,17 +77,11 @@ public class GetGoOAuthDispatcher implements Dispatcher {
 			return;
 		}
 		
-		try {
-			HttpSession sess = request.getSession();
-			//OAuth 2.0 hasn't any request token
-			Token requestToken = (Token)sess.getAttribute(OAuthConstants.REQUEST_TOKEN);
-			OAuthService service = (OAuthService)sess.getAttribute(OAuthConstants.OAUTH_SERVICE);
-
-			// request access token
+		HttpSession sess = request.getSession();
+		try(OAuth20Service service = (OAuth20Service)sess.getAttribute(OAuthConstants.OAUTH_SERVICE)) {
 			String code = request.getParameter("code");
-			Token accessToken = service.getAccessToken(requestToken, new Verifier(code));
-			String token = accessToken.getToken();
-			
+			Token accessToken = service.getAccessToken(code);
+			String token = accessToken.getRawResponse();
 			boolean success = false;
 			if(StringHelper.containsNonWhitespace(token)) {
 				String body = accessToken.getRawResponse();

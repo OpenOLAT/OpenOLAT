@@ -19,25 +19,27 @@
  */
 package org.olat.login.oauth.spi;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.olat.core.CoreSpringFactory;
-import org.olat.login.oauth.OAuthLoginModule;
-import org.scribe.builder.api.DefaultApi20;
-import org.scribe.extractors.AccessTokenExtractor;
-import org.scribe.model.OAuthConfig;
-import org.scribe.model.OAuthConstants;
-import org.scribe.model.OAuthRequest;
-import org.scribe.model.Response;
-import org.scribe.model.Token;
-import org.scribe.model.Verb;
-import org.scribe.model.Verifier;
-import org.scribe.oauth.OAuth20ServiceImpl;
-import org.scribe.oauth.OAuthService;
-import org.scribe.utils.OAuthEncoder;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
+
+import com.github.scribejava.core.builder.api.DefaultApi20;
+import com.github.scribejava.core.extractors.TokenExtractor;
+import com.github.scribejava.core.httpclient.HttpClient;
+import com.github.scribejava.core.httpclient.HttpClientConfig;
+import com.github.scribejava.core.model.OAuth2AccessToken;
+import com.github.scribejava.core.model.OAuthConstants;
+import com.github.scribejava.core.model.OAuthRequest;
+import com.github.scribejava.core.model.Response;
+import com.github.scribejava.core.model.Verb;
+import com.github.scribejava.core.oauth.OAuth20Service;
+import com.github.scribejava.core.utils.OAuthEncoder;
 
 /**
  * 
@@ -46,61 +48,69 @@ import org.scribe.utils.OAuthEncoder;
  *
  */
 public class TequilaApi extends DefaultApi20 {
-
-	@Override
-	public String getAccessTokenEndpoint() {
-		OAuthLoginModule oauthModule = CoreSpringFactory.getImpl(OAuthLoginModule.class);
-		String endpoint = oauthModule.getTequilaOAuth2Endpoint();
-		if(!endpoint.endsWith("/")) {
-			endpoint += "/";
-		}
-		endpoint += "token";
-		return endpoint;
-	}
-
-	@Override
-	public String getAuthorizationUrl(OAuthConfig config) {
-		OAuthLoginModule oauthModule = CoreSpringFactory.getImpl(OAuthLoginModule.class);
-		String endpoint = oauthModule.getTequilaOAuth2Endpoint();
-		if(!endpoint.endsWith("/")) {
-			endpoint += "/";
-		}
-		String url = endpoint + "auth?response_type=code" +
-                "&client_id=" + urlEncode(config.getApiKey()) +
-                "&scope=" + config.getScope() + 
-                "&redirect_uri=" + urlEncode(config.getCallback());
-		return url;
+	
+	private static final OLog log = Tracing.createLoggerFor(TequilaApi.class);
+	
+	private final String endPoint;
+	
+	protected TequilaApi(String endPoint) {
+		this.endPoint = endPoint;
 	}
 	
+	@Override
+	public String getAccessTokenEndpoint() {
+		String tokenEndPoint = endPoint;
+		if(!tokenEndPoint.endsWith("/")) {
+			tokenEndPoint += "/";
+		}
+		tokenEndPoint += "token";
+		return tokenEndPoint;
+	}
+
+	@Override
+	public String getAuthorizationBaseUrl() {
+		String baseUrl = endPoint;
+		if(!baseUrl.endsWith("/")) {
+			baseUrl += "/";
+		}
+		return baseUrl + "auth";
+	}
+
     @Override
-	public AccessTokenExtractor getAccessTokenExtractor() {
+	public TokenExtractor<OAuth2AccessToken> getAccessTokenExtractor() {
 		return new TequilaBearerExtractor();
 	}
     
 	@Override
-    public OAuthService createService(OAuthConfig config) {
-        return new TequilaAuth2Service(this, config);
+    public TequilaAuth2Service createService(String apiKey, String apiSecret, String callback, String defaultScope,
+            String responseType, String userAgent, HttpClientConfig httpClientConfig, HttpClient httpClient) {
+        return new TequilaAuth2Service(this, apiKey, apiSecret, callback, defaultScope, responseType, userAgent, httpClientConfig, httpClient);
     }
 	
-	public static class TequilaBearerExtractor implements AccessTokenExtractor {
+	public static class TequilaBearerExtractor implements TokenExtractor<OAuth2AccessToken> {
 		
 		private Pattern accessTokenPattern = Pattern.compile("\"access_token\":\\s*\"(\\S*?)\"");
 
 		@Override
-		public Token extract(String response) {
-			Matcher matcher = accessTokenPattern.matcher(response);
-			if(matcher.find()) {
-				return new Token(matcher.group(1), "", response);
-			}
-			if(response.contains("Bearer")) {
-				String t = "\"access_token\": \"Bearer ";
-				int index = response.indexOf(t);
-				if(index >= 0) {
-					int endIndex = response.indexOf("\"", index + t.length());
-					String token = response.substring(index + t.length(), endIndex);
-					String decodedToken = OAuthEncoder.decode(token);
-					return new Token(decodedToken, "", response);
+		public OAuth2AccessToken extract(Response response) {
+			try {
+				String bodyResponse = response.getBody();
+				Matcher matcher = accessTokenPattern.matcher(bodyResponse);
+				if(matcher.find()) {
+					return new OAuth2AccessToken(matcher.group(1), bodyResponse);
 				}
+				if(bodyResponse.contains("Bearer")) {
+					String t = "\"access_token\": \"Bearer ";
+					int index = bodyResponse.indexOf(t);
+					if(index >= 0) {
+						int endIndex = bodyResponse.indexOf('"', index + t.length());
+						String token = bodyResponse.substring(index + t.length(), endIndex);
+						String decodedToken = OAuthEncoder.decode(token);
+						return new OAuth2AccessToken(decodedToken, bodyResponse);
+					}
+				}
+			} catch (IOException e) {
+				log.error("", e);
 			}
 			return null;
 		}
@@ -114,37 +124,35 @@ public class TequilaApi extends DefaultApi20 {
         }
     }
     
-    private class TequilaAuth2Service extends OAuth20ServiceImpl {
+    private class TequilaAuth2Service extends OAuth20Service {
     	
         private static final String GRANT_TYPE_AUTHORIZATION_CODE = "authorization_code";
         private static final String GRANT_TYPE = "grant_type";
     	
 		private final TequilaApi api;
-		private OAuthConfig config;
     	
-        public TequilaAuth2Service(TequilaApi api, OAuthConfig config) {
-            super(api, config);
+        public TequilaAuth2Service(TequilaApi api, String apiKey, String apiSecret, String callback, String defaultScope,
+        	            String responseType, String userAgent, HttpClientConfig httpClientConfig, HttpClient httpClient) {
+            super(api, apiKey, apiSecret, callback, defaultScope, responseType, userAgent, httpClientConfig, httpClient);
             this.api = api;
-            this.config = config;
         }
 
 		@Override
-		public Token getAccessToken(Token requestToken, Verifier verifier) {
+		public OAuth2AccessToken getAccessToken(String code) throws IOException, InterruptedException, ExecutionException {
 			OAuthRequest request = new OAuthRequest(Verb.POST, api.getAccessTokenEndpoint());
-		    request.addBodyParameter(OAuthConstants.CLIENT_ID, config.getApiKey());
-            request.addBodyParameter(OAuthConstants.CLIENT_SECRET, config.getApiSecret());
-            request.addBodyParameter(OAuthConstants.CODE, verifier.getValue());
-            request.addBodyParameter(OAuthConstants.REDIRECT_URI, config.getCallback());
-            request.addBodyParameter(GRANT_TYPE, GRANT_TYPE_AUTHORIZATION_CODE);
-            	request.addBodyParameter(OAuthConstants.SCOPE, config.getScope());
-		    Response response = request.send();
-		    Token token = api.getAccessTokenExtractor().extract(response.getBody());
-		    return token;
+			request.addBodyParameter(OAuthConstants.CLIENT_ID, getApiKey());
+			request.addBodyParameter(OAuthConstants.CLIENT_SECRET, getApiSecret());
+			request.addBodyParameter(OAuthConstants.CODE, code);
+			request.addBodyParameter(OAuthConstants.REDIRECT_URI, getCallback());
+			request.addBodyParameter(GRANT_TYPE, GRANT_TYPE_AUTHORIZATION_CODE);
+			request.addBodyParameter(OAuthConstants.SCOPE, getDefaultScope());
+			Response response = execute(request);
+			return api.getAccessTokenExtractor().extract(response);
 		}
 
 		@Override
-		public void signRequest(Token accessToken, OAuthRequest request) {
-			request.addHeader(OAuthConstants.HEADER, "Bearer " + urlEncode(accessToken.getToken()));
+		public void signRequest(OAuth2AccessToken accessToken, OAuthRequest request) {
+			request.addHeader(OAuthConstants.HEADER, "Bearer " + urlEncode(accessToken.getAccessToken()));
 		}
     }
 }

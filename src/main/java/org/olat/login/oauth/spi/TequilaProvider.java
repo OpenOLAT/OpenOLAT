@@ -19,6 +19,9 @@
  */
 package org.olat.login.oauth.spi;
 
+import java.io.IOException;
+import java.util.concurrent.ExecutionException;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.olat.core.logging.OLog;
@@ -27,14 +30,17 @@ import org.olat.core.util.StringHelper;
 import org.olat.login.oauth.OAuthLoginModule;
 import org.olat.login.oauth.OAuthSPI;
 import org.olat.login.oauth.model.OAuthUser;
-import org.scribe.builder.api.Api;
-import org.scribe.model.OAuthRequest;
-import org.scribe.model.Response;
-import org.scribe.model.Token;
-import org.scribe.model.Verb;
-import org.scribe.oauth.OAuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.github.scribejava.core.builder.ServiceBuilder;
+import com.github.scribejava.core.model.OAuth2AccessToken;
+import com.github.scribejava.core.model.OAuthRequest;
+import com.github.scribejava.core.model.Response;
+import com.github.scribejava.core.model.Token;
+import com.github.scribejava.core.model.Verb;
+import com.github.scribejava.core.oauth.OAuth20Service;
+import com.github.scribejava.core.oauth.OAuthService;
 
 /**
  * 
@@ -58,8 +64,12 @@ public class TequilaProvider implements OAuthSPI {
 	}
 
 	@Override
-	public Api getScribeProvider() {
-		return new TequilaApi();
+	public OAuthService getScribeProvider() {
+		return new ServiceBuilder(oauthModule.getTequilaApiKey())
+                .apiSecret(oauthModule.getTequilaApiSecret())
+                .callback(oauthModule.getCallbackUrl())
+                .defaultScope(SCOPE)
+                .build(new TequilaApi(oauthModule.getTequilaOAuth2Endpoint()));
 	}
 
 	@Override
@@ -83,36 +93,23 @@ public class TequilaProvider implements OAuthSPI {
 	}
 
 	@Override
-	public String getAppKey() {
-		return oauthModule.getTequilaApiKey();
-	}
-
-	@Override
-	public String getAppSecret() {
-		return oauthModule.getTequilaApiSecret();
-	}
-
-	@Override
-	public String[] getScopes() {
-		return new String[] { SCOPE };
-	}
-
-	@Override
 	public boolean isImplicitWorkflow() {
 		return false;
 	}
 
 	@Override
-	public OAuthUser getUser(OAuthService service, Token accessToken) {
+	public OAuthUser getUser(OAuthService service, Token accessToken)
+	throws InterruptedException, ExecutionException, IOException {
 		String endpoint = oauthModule.getTequilaOAuth2Endpoint();
 		if(!endpoint.endsWith("/")) {
 			endpoint += "/";
 		}
 		
+		OAuth20Service oauthService = (OAuth20Service)service;
 		OAuthRequest request = new OAuthRequest(Verb.GET, endpoint + "userinfo");
-	    service.signRequest(accessToken, request);
+		oauthService.signRequest((OAuth2AccessToken)accessToken, request);
 	    request.addHeader("Accept", "application/json");
-	    Response oauthResponse = request.send();
+	    Response oauthResponse = oauthService.execute(request);
 	    String body = oauthResponse.getBody();
 		return parseResponse(body);
 	}

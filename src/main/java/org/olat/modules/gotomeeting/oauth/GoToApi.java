@@ -19,19 +19,20 @@
  */
 package org.olat.modules.gotomeeting.oauth;
 
+import java.io.IOException;
+import java.util.concurrent.ExecutionException;
+
 import org.olat.core.util.StringHelper;
-import org.scribe.builder.api.DefaultApi20;
-import org.scribe.extractors.AccessTokenExtractor;
-import org.scribe.extractors.JsonTokenExtractor;
-import org.scribe.model.OAuthConfig;
-import org.scribe.model.OAuthConstants;
-import org.scribe.model.OAuthRequest;
-import org.scribe.model.Response;
-import org.scribe.model.Token;
-import org.scribe.model.Verb;
-import org.scribe.model.Verifier;
-import org.scribe.oauth.OAuth20ServiceImpl;
-import org.scribe.oauth.OAuthService;
+
+import com.github.scribejava.core.builder.api.DefaultApi20;
+import com.github.scribejava.core.httpclient.HttpClient;
+import com.github.scribejava.core.httpclient.HttpClientConfig;
+import com.github.scribejava.core.model.OAuth2AccessToken;
+import com.github.scribejava.core.model.OAuthConstants;
+import com.github.scribejava.core.model.OAuthRequest;
+import com.github.scribejava.core.model.Response;
+import com.github.scribejava.core.model.Verb;
+import com.github.scribejava.core.oauth.OAuth20Service;
 
 /**
  * 
@@ -40,9 +41,9 @@ import org.scribe.oauth.OAuthService;
  *
  */
 public class GoToApi extends DefaultApi20 {
-	
+
 	public static final String GETGO_CALLBACK = "/getgocallback";
-	private static final String AUTHORIZE_URL = "https://api.getgo.com/oauth/v2/authorize?response_type=code&client_id=%s";
+	private static final String AUTHORIZE_URL = "https://api.getgo.com/oauth/v2/authorize";
 
 	@Override
 	public String getAccessTokenEndpoint() {
@@ -50,8 +51,8 @@ public class GoToApi extends DefaultApi20 {
 	}
 
 	@Override
-	public String getAuthorizationUrl(OAuthConfig config) {
-        return String.format(AUTHORIZE_URL, config.getApiKey());
+	public String getAuthorizationBaseUrl() {
+        return AUTHORIZE_URL;
 	}
 	
     @Override
@@ -60,42 +61,38 @@ public class GoToApi extends DefaultApi20 {
     }
     
     @Override
-    public AccessTokenExtractor getAccessTokenExtractor() {
-      return new JsonTokenExtractor();
+    public GoToOAuth2Service createService(String apiKey, String apiSecret, String callback, String defaultScope,
+            String responseType, String userAgent, HttpClientConfig httpClientConfig, HttpClient httpClient) {
+        return new GoToOAuth2Service(this, apiKey, apiSecret, callback, defaultScope, responseType, userAgent, httpClientConfig, httpClient);
     }
     
-    @Override
-    public OAuthService createService(OAuthConfig config) {
-        return new GoToOAuth2Service(this, config);
-    }
-    
-    private class GoToOAuth2Service extends OAuth20ServiceImpl {
+    private class GoToOAuth2Service extends OAuth20Service {
 
         private static final String GRANT_TYPE_AUTHORIZATION_CODE = "authorization_code";
         private static final String GRANT_TYPE = "grant_type";
         private GoToApi api;
-        private OAuthConfig config;
 
-        public GoToOAuth2Service(GoToApi api, OAuthConfig config) {
-            super(api, config);
+        public GoToOAuth2Service(GoToApi api, String apiKey, String apiSecret, String callback, String defaultScope,
+                String responseType, String userAgent, HttpClientConfig httpClientConfig, HttpClient httpClient) {
+            super(api, apiKey, apiSecret, callback, defaultScope, responseType, userAgent, httpClientConfig, httpClient);
             this.api = api;
-            this.config = config;
         }
         
         @Override
-        public Token getAccessToken(Token requestToken, Verifier verifier) {
+        public OAuth2AccessToken getAccessToken(String code)
+        throws InterruptedException, ExecutionException, IOException {
         	OAuthRequest request = new OAuthRequest(api.getAccessTokenVerb(), api.getAccessTokenEndpoint());
         	// header
         	request.addHeader("Content-Type", "application/x-www-form-urlencoded");
         	request.addHeader("Accept", "application/json");
-        	String authVal = config.getApiKey() + ":" +config.getApiSecret();
+        	String authVal = getApiKey() + ":" + getApiSecret();
         	request.addHeader("Authorization", "Basic " + StringHelper.encodeBase64(authVal));
         	// body
-            request.addBodyParameter(OAuthConstants.CODE, verifier.getValue());
-            request.addBodyParameter(OAuthConstants.REDIRECT_URI, config.getCallback());
+            request.addBodyParameter(OAuthConstants.CODE, code);
+            request.addBodyParameter(OAuthConstants.REDIRECT_URI, getCallback());
             request.addBodyParameter(GRANT_TYPE, GRANT_TYPE_AUTHORIZATION_CODE);
-            Response response = request.send();
-            return api.getAccessTokenExtractor().extract(response.getBody());
+            Response response = execute(request);
+            return api.getAccessTokenExtractor().extract(response);
         }
     }
 }

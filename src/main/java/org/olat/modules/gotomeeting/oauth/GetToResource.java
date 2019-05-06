@@ -22,18 +22,18 @@ package org.olat.modules.gotomeeting.oauth;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.util.UUID;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.olat.core.gui.media.MediaResource;
-import org.olat.core.helpers.Settings;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.login.oauth.OAuthConstants;
 import org.olat.login.oauth.OAuthSPI;
-import org.scribe.builder.ServiceBuilder;
-import org.scribe.oauth.OAuthService;
+
+import com.github.scribejava.core.oauth.OAuth20Service;
 
 /**
  * 
@@ -96,27 +96,14 @@ public class GetToResource implements MediaResource {
 	public static void redirect(OAuthSPI oauthProvider, HttpServletResponse httpResponse, HttpSession httpSession) {
 		//Configure
 		try {
-			ServiceBuilder builder= new ServiceBuilder(); 
-			builder.provider(oauthProvider.getScribeProvider())
-					.apiKey(oauthProvider.getAppKey())
-					.apiSecret(oauthProvider.getAppSecret());
-			String[] scopes = oauthProvider.getScopes();
-			for(String scope:scopes) {
-				builder.scope(scope);
-			}
-
-			String callbackUrl = Settings.getServerContextPathURI() + GoToApi.GETGO_CALLBACK;
-			OAuthService oauthService = builder
-					.callback(callbackUrl)
-					.build(); //Now build the call
-			
-			httpSession.setAttribute(OAuthConstants.OAUTH_SERVICE, oauthService);
+			@SuppressWarnings("resource")
+			OAuth20Service service = (OAuth20Service)oauthProvider.getScribeProvider();
+			httpSession.setAttribute(OAuthConstants.OAUTH_SERVICE, service);
 			httpSession.setAttribute(OAuthConstants.OAUTH_SPI, oauthProvider);
-			
-			String redirectUrl = oauthService.getAuthorizationUrl(null);
+			String state = UUID.randomUUID().toString().replace("-", "");
+			String redirectUrl = service.getAuthorizationUrl(state);
 			saveStateAndNonce(httpSession, redirectUrl);
 			httpResponse.sendRedirect(redirectUrl);
-
 		} catch (Exception e) {
 			log.error("", e);
 		}

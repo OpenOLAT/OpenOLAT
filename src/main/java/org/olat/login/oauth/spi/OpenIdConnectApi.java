@@ -27,15 +27,15 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.login.oauth.OAuthLoginModule;
-import org.scribe.builder.api.DefaultApi20;
-import org.scribe.extractors.AccessTokenExtractor;
-import org.scribe.model.OAuthConfig;
-import org.scribe.model.Token;
-import org.scribe.model.Verb;
-import org.scribe.model.Verifier;
-import org.scribe.oauth.OAuth20ServiceImpl;
-import org.scribe.oauth.OAuthService;
-import org.scribe.utils.OAuthEncoder;
+
+import com.github.scribejava.apis.openid.OpenIdJsonTokenExtractor;
+import com.github.scribejava.core.builder.api.DefaultApi20;
+import com.github.scribejava.core.extractors.TokenExtractor;
+import com.github.scribejava.core.httpclient.HttpClient;
+import com.github.scribejava.core.httpclient.HttpClientConfig;
+import com.github.scribejava.core.model.OAuth2AccessToken;
+import com.github.scribejava.core.model.Verb;
+import com.github.scribejava.core.oauth.OAuth20Service;
 
 /**
  * 
@@ -46,6 +46,12 @@ import org.scribe.utils.OAuthEncoder;
 public class OpenIdConnectApi extends DefaultApi20 {
 	
 	private static final OLog log = Tracing.createLoggerFor(OpenIdConnectApi.class);
+	
+	private final OpenIdConnectProvider provider;
+	
+	public OpenIdConnectApi(OpenIdConnectProvider provider) {
+		this.provider = provider;
+	}
 
     @Override
     public String getAccessTokenEndpoint() {
@@ -53,22 +59,16 @@ public class OpenIdConnectApi extends DefaultApi20 {
     }
     
     @Override
-    public AccessTokenExtractor getAccessTokenExtractor() {
-        return null;
-    }
+	public TokenExtractor<OAuth2AccessToken> getAccessTokenExtractor() {
+		return OpenIdJsonTokenExtractor.instance();
+	}
 
     @Override
-    public String getAuthorizationUrl(OAuthConfig config) {
-    	OAuthLoginModule oauthModule = CoreSpringFactory.getImpl(OAuthLoginModule.class);
-    	String url = oauthModule.getOpenIdConnectIFAuthorizationEndPoint();
+    public String getAuthorizationBaseUrl() {
+    	String url = provider.getEndPoint();
     	StringBuilder authorizeUrl = new StringBuilder();
     	authorizeUrl
     		.append(url).append("?")
-    		.append("response_type=").append(OAuthEncoder.encode("id_token token"))
-    		.append("&client_id=").append(config.getApiKey())
-    		.append("&redirect_uri=").append(OAuthEncoder.encode(config.getCallback()))
-    	    .append("&scope=").append(OAuthEncoder.encode("openid email"))
-    		.append("&state=").append(UUID.randomUUID().toString())
     		.append("&nonce=").append(UUID.randomUUID().toString());		
     	return authorizeUrl.toString();
     }
@@ -79,36 +79,33 @@ public class OpenIdConnectApi extends DefaultApi20 {
     }
     
     @Override
-    public OAuthService createService(OAuthConfig config) {
-        return new OpenIdConnectService(this, config);
+    public OAuth20Service createService(String apiKey, String apiSecret, String callback, String defaultScope,
+            String responseType, String userAgent, HttpClientConfig httpClientConfig, HttpClient httpClient) {
+        return new OpenIdConnectService(this, apiKey, apiSecret, callback, defaultScope, responseType, userAgent, httpClientConfig, httpClient);
     }
     
-    public class OpenIdConnectService extends OAuth20ServiceImpl {
+    public class OpenIdConnectService extends OAuth20Service {
 
-        public OpenIdConnectService(DefaultApi20 api, OAuthConfig config) {
-            super(api, config);
+        public OpenIdConnectService(DefaultApi20 api, String apiKey, String apiSecret, String callback, String defaultScope,
+                String responseType, String userAgent, HttpClientConfig httpClientConfig, HttpClient httpClient) {
+            super(api, apiKey, apiSecret, callback, defaultScope, responseType, userAgent, httpClientConfig, httpClient);
         }
         
-        @Override
-        public Token getAccessToken(Token requestToken, Verifier verifier) {
+        public OAuth2AccessToken getAccessToken(OpenIDVerifier oVerifier) {
         	OAuthLoginModule oauthModule = CoreSpringFactory.getImpl(OAuthLoginModule.class);
         	try {
-				OpenIDVerifier oVerifier = (OpenIDVerifier)verifier;
 				String idToken = oVerifier.getIdToken();
 				JSONObject idJson = JSONWebToken.parse(idToken).getJsonPayload();
 				JSONObject accessJson = JSONWebToken.parse(oVerifier.getAccessToken()).getJsonPayload();
 				
 				boolean allOk = true;
-				if(!oauthModule.getOpenIdConnectIFIssuer().equals(idJson.get("iss"))) {
-					allOk &= false;
-					log.error("iss don't match issuer");
-				}
-				if(!oauthModule.getOpenIdConnectIFIssuer().equals(accessJson.get("iss"))) {
+				if(!oauthModule.getOpenIdConnectIFIssuer().equals(idJson.get("iss"))
+						|| !oauthModule.getOpenIdConnectIFIssuer().equals(accessJson.get("iss"))) {
 					allOk &= false;
 					log.error("iss don't match issuer");
 				}
 				
-				if(!oauthModule.getOpenIdConnectIFApiKey().equals(idJson.get("aud"))) {
+				if(!getApiKey().equals(idJson.get("aud"))) {
 					allOk &= false;
 					log.error("aud don't match application key");
 				}
@@ -122,7 +119,7 @@ public class OpenIdConnectApi extends DefaultApi20 {
 					log.error("session nonce don't match verifier nonce");
 				}
 				
-				return allOk ? new Token(idToken, oVerifier.getState()) : null;
+				return allOk ? new OAuth2AccessToken(idToken, oVerifier.getState()) : null;
 			} catch (JSONException e) {
 				log.error("", e);
 				return null;

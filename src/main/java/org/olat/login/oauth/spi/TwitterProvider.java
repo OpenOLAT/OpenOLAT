@@ -19,6 +19,9 @@
  */
 package org.olat.login.oauth.spi;
 
+import java.io.IOException;
+import java.util.concurrent.ExecutionException;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.olat.core.logging.OLog;
@@ -27,15 +30,18 @@ import org.olat.core.util.StringHelper;
 import org.olat.login.oauth.OAuthLoginModule;
 import org.olat.login.oauth.OAuthSPI;
 import org.olat.login.oauth.model.OAuthUser;
-import org.scribe.builder.api.Api;
-import org.scribe.builder.api.TwitterApi;
-import org.scribe.model.OAuthRequest;
-import org.scribe.model.Response;
-import org.scribe.model.Token;
-import org.scribe.model.Verb;
-import org.scribe.oauth.OAuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.github.scribejava.apis.TwitterApi;
+import com.github.scribejava.core.builder.ServiceBuilder;
+import com.github.scribejava.core.model.OAuth1AccessToken;
+import com.github.scribejava.core.model.OAuthRequest;
+import com.github.scribejava.core.model.Response;
+import com.github.scribejava.core.model.Token;
+import com.github.scribejava.core.model.Verb;
+import com.github.scribejava.core.oauth.OAuth10aService;
+import com.github.scribejava.core.oauth.OAuthService;
 
 /**
  * 
@@ -67,8 +73,11 @@ public class TwitterProvider implements OAuthSPI {
 	}
 
 	@Override
-	public Api getScribeProvider() {
-		return new TwitterApi.SSL();
+	public OAuthService getScribeProvider() {
+		return new ServiceBuilder(oauthModule.getTwitterApiKey())
+                .apiSecret(oauthModule.getTwitterApiSecret())
+                .callback(oauthModule.getCallbackUrl())
+                .build(TwitterApi.instance());
 	}
 
 	@Override
@@ -87,26 +96,11 @@ public class TwitterProvider implements OAuthSPI {
 	}
 
 	@Override
-	public String getAppKey() {
-		return oauthModule.getTwitterApiKey();
-	}
-
-	@Override
-	public String getAppSecret() {
-		return oauthModule.getTwitterApiSecret();
-	}
-
-	@Override
-	public String[] getScopes() {
-		return new String[0];
-	}
-
-	@Override
-	public OAuthUser getUser(OAuthService service, Token accessToken) {
-		OAuthRequest oauthRequest = new OAuthRequest(Verb.GET, "https://api.twitter.com/1.1/account/verify_credentials.json");
-		service.signRequest(accessToken, oauthRequest);
-		Response oauthResponse = oauthRequest.send();
-		String body = oauthResponse.getBody();
+	public OAuthUser getUser(OAuthService service, Token accessToken) throws IOException, InterruptedException, ExecutionException {
+		OAuthRequest request = new OAuthRequest(Verb.GET, "https://api.twitter.com/1.1/account/verify_credentials.json");
+		((OAuth10aService)service).signRequest((OAuth1AccessToken)accessToken, request); // the access token from step 4
+		final Response response = service.execute(request);
+		String body = response.getBody();
 		return parseInfos(body);
 	}
 	

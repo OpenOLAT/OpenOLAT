@@ -19,6 +19,9 @@
  */
 package org.olat.login.oauth.spi;
 
+import java.io.IOException;
+import java.util.concurrent.ExecutionException;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.olat.core.logging.OLog;
@@ -27,14 +30,18 @@ import org.olat.core.util.StringHelper;
 import org.olat.login.oauth.OAuthLoginModule;
 import org.olat.login.oauth.OAuthSPI;
 import org.olat.login.oauth.model.OAuthUser;
-import org.scribe.builder.api.Api;
-import org.scribe.model.OAuthRequest;
-import org.scribe.model.Response;
-import org.scribe.model.Token;
-import org.scribe.model.Verb;
-import org.scribe.oauth.OAuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.github.scribejava.apis.GoogleApi20;
+import com.github.scribejava.core.builder.ServiceBuilder;
+import com.github.scribejava.core.model.OAuth2AccessToken;
+import com.github.scribejava.core.model.OAuthRequest;
+import com.github.scribejava.core.model.Response;
+import com.github.scribejava.core.model.Token;
+import com.github.scribejava.core.model.Verb;
+import com.github.scribejava.core.oauth.OAuth20Service;
+import com.github.scribejava.core.oauth.OAuthService;
 
 /**
  * 
@@ -46,6 +53,8 @@ import org.springframework.stereotype.Service;
 public class Google2Provider implements OAuthSPI {
 	
 	private static final OLog log = Tracing.createLoggerFor(Google2Provider.class);
+	
+	private static final String SCOPES = "https://www.googleapis.com/auth/plus.me https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile";
 
 	@Autowired
 	private OAuthLoginModule oauthModule;
@@ -66,8 +75,12 @@ public class Google2Provider implements OAuthSPI {
 	}
 
 	@Override
-	public Api getScribeProvider() {
-		return new Google2Api();
+	public OAuthService getScribeProvider() {
+		return new ServiceBuilder(oauthModule.getGoogleApiKey())
+                .apiSecret(oauthModule.getGoogleApiSecret())
+                .callback(oauthModule.getCallbackUrl())
+                .defaultScope(SCOPES)
+                .build(GoogleApi20.instance());
 	}
 
 	@Override
@@ -86,29 +99,12 @@ public class Google2Provider implements OAuthSPI {
 	}
 
 	@Override
-	public String getAppKey() {
-		return oauthModule.getGoogleApiKey();
-	}
-
-	@Override
-	public String getAppSecret() {
-		return oauthModule.getGoogleApiSecret();
-	}
-
-	@Override
-	public String[] getScopes() {
-		return new String[] {
-			"https://www.googleapis.com/auth/plus.me",
-			"https://www.googleapis.com/auth/userinfo.email",
-			"https://www.googleapis.com/auth/userinfo.profile"	
-		};
-	}
-
-	@Override
-	public OAuthUser getUser(OAuthService service, Token accessToken) {
+	public OAuthUser getUser(OAuthService service, Token accessToken)
+	throws InterruptedException, ExecutionException, IOException {
+		OAuth20Service oauthService = (OAuth20Service)service;
 		OAuthRequest oauthRequest = new OAuthRequest(Verb.GET, "https://www.googleapis.com/oauth2/v2/userinfo"); 
-		service.signRequest(accessToken, oauthRequest);
-		Response oauthResponse = oauthRequest.send();
+		oauthService.signRequest((OAuth2AccessToken)accessToken, oauthRequest);
+		Response oauthResponse = oauthService.execute(oauthRequest);
 		String body = oauthResponse.getBody();
 		return parseInfos(body);
 	}

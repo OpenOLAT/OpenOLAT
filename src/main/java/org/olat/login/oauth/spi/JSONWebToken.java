@@ -22,7 +22,8 @@ package org.olat.login.oauth.spi;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.olat.core.util.StringHelper;
-import org.scribe.model.Token;
+
+import com.github.scribejava.core.model.OAuth2AccessToken;
 
 /**
  * 
@@ -54,8 +55,9 @@ public class JSONWebToken {
 		return jsonPayload;
 	}
 
-	public static JSONWebToken parse(Token token) throws JSONException {
-		String accessToken = token.getToken();
+	public static JSONWebToken parse(OAuth2AccessToken token) throws JSONException {
+		String accessToken= token.getAccessToken();
+		
 		int firstIndex = accessToken.indexOf('.');
 		int secondIndex = accessToken.indexOf('.', firstIndex + 1);
 		

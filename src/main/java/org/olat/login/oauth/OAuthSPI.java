@@ -19,11 +19,14 @@
  */
 package org.olat.login.oauth;
 
+import java.io.IOException;
+import java.util.concurrent.ExecutionException;
+
 import org.olat.core.configuration.ConfigOnOff;
 import org.olat.login.oauth.model.OAuthUser;
-import org.scribe.builder.api.Api;
-import org.scribe.model.Token;
-import org.scribe.oauth.OAuthService;
+
+import com.github.scribejava.core.model.Token;
+import com.github.scribejava.core.oauth.OAuthService;
 
 /**
  * 
@@ -33,7 +36,7 @@ import org.scribe.oauth.OAuthService;
  */
 public interface OAuthSPI extends ConfigOnOff {
 	
-	public Api getScribeProvider();
+	public OAuthService getScribeProvider();
 	
 	public String getName();
 	
@@ -47,16 +50,12 @@ public interface OAuthSPI extends ConfigOnOff {
 	
 	public String getIconCSS();
 	
-	public String getAppKey();
-	
-	public String getAppSecret();
-	
-	public String[] getScopes();
-	
 	public boolean isImplicitWorkflow();
 	
-	public OAuthUser getUser(OAuthService service, Token accessToken);
-
 	public String getIssuerIdentifier();
+	
+	public OAuthUser getUser(OAuthService service, Token accessToken)
+			throws IOException, InterruptedException, ExecutionException;
+
 
 }

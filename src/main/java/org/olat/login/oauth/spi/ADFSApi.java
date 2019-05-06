@@ -19,22 +19,24 @@
  */
 package org.olat.login.oauth.spi;
 
+import java.io.IOException;
+import java.util.concurrent.ExecutionException;
+
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.helpers.Settings;
 import org.olat.login.oauth.OAuthLoginModule;
-import org.scribe.builder.api.DefaultApi20;
-import org.scribe.extractors.AccessTokenExtractor;
-import org.scribe.extractors.JsonTokenExtractor;
-import org.scribe.model.OAuthConfig;
-import org.scribe.model.OAuthConstants;
-import org.scribe.model.OAuthRequest;
-import org.scribe.model.Response;
-import org.scribe.model.Token;
-import org.scribe.model.Verb;
-import org.scribe.model.Verifier;
-import org.scribe.oauth.OAuth20ServiceImpl;
-import org.scribe.oauth.OAuthService;
-import org.scribe.utils.OAuthEncoder;
+
+import com.github.scribejava.core.builder.api.DefaultApi20;
+import com.github.scribejava.core.extractors.TokenExtractor;
+import com.github.scribejava.core.httpclient.HttpClient;
+import com.github.scribejava.core.httpclient.HttpClientConfig;
+import com.github.scribejava.core.model.OAuth2AccessToken;
+import com.github.scribejava.core.model.OAuthConstants;
+import com.github.scribejava.core.model.OAuthRequest;
+import com.github.scribejava.core.model.Response;
+import com.github.scribejava.core.model.Verb;
+import com.github.scribejava.core.oauth.OAuth20Service;
+import com.github.scribejava.core.utils.OAuthEncoder;
 
 /**
  * 
@@ -63,55 +65,54 @@ public class ADFSApi extends DefaultApi20 {
 	//https://adfs.hamilton.ch/adfs/oauth2/authorize?response_type=code&client_id=25e53ef4-659e-11e4-b116-123b93f75cba&redirect_uri=https://kivik.frentix.com/olat/oauthcallback&resource=https://kivik.frentix.com/olat
 
 	@Override
-	public String getAuthorizationUrl(OAuthConfig config) {
+	public String getAuthorizationBaseUrl() {
 		OAuthLoginModule oauthModule = CoreSpringFactory.getImpl(OAuthLoginModule.class);
 		String endpoint = oauthModule.getAdfsOAuth2Endpoint();
 		if(!endpoint.endsWith("/")) {
 			endpoint += "/";
 		}
-		String authorizationUrl = endpoint + "authorize?response_type=code&client_id=%s&redirect_uri=%s&resource=%s";
-		String resource = Settings.getServerContextPathURI();
-		String url = String.format(authorizationUrl, config.getApiKey(),
-				OAuthEncoder.encode(config.getCallback()),
-				OAuthEncoder.encode(resource)
-			);
-		return url;
+		
+		String authorizationUrl = endpoint + "authorize";
+		String resource = OAuthEncoder.encode(Settings.getServerContextPathURI());
+		return authorizationUrl + "?resource=" + resource;
 	}
-
+	
     @Override
-	public AccessTokenExtractor getAccessTokenExtractor() {
-		return new JsonTokenExtractor();
+	public TokenExtractor<OAuth2AccessToken> getAccessTokenExtractor() {
+		return super.getAccessTokenExtractor();
 	}
 
 	@Override
-    public OAuthService createService(OAuthConfig config) {
-        return new ADFSOAuth2Service(this, config);
+    public ADFSOAuth2Service createService(String apiKey, String apiSecret, String callback, String defaultScope,
+            String responseType, String userAgent, HttpClientConfig httpClientConfig, HttpClient httpClient) {
+        return new ADFSOAuth2Service(this, apiKey, apiSecret, callback, defaultScope, responseType, userAgent,
+                httpClientConfig, httpClient);
     }
     
-    private class ADFSOAuth2Service extends OAuth20ServiceImpl {
+    private class ADFSOAuth2Service extends OAuth20Service {
     	
         private static final String GRANT_TYPE_AUTHORIZATION_CODE = "authorization_code";
         private static final String GRANT_TYPE = "grant_type";
     	
 		private final ADFSApi api;
-		private OAuthConfig config;
     	
-        public ADFSOAuth2Service(ADFSApi api, OAuthConfig config) {
-            super(api, config);
+        public ADFSOAuth2Service(ADFSApi api, String apiKey, String apiSecret, String callback, String defaultScope,
+                String responseType, String userAgent, HttpClientConfig httpClientConfig, HttpClient httpClient) {
+            super(api, apiKey, apiSecret, callback, defaultScope, responseType, userAgent, httpClientConfig, httpClient);
             this.api = api;
-            this.config = config;
         }
 
 		@Override
-		public Token getAccessToken(Token requestToken, Verifier verifier) {
+		public OAuth2AccessToken getAccessToken(String code)
+		throws InterruptedException, ExecutionException, IOException {
 			OAuthRequest request = new OAuthRequest(Verb.POST, api.getAccessTokenEndpoint());
-		    request.addBodyParameter(OAuthConstants.CLIENT_ID, config.getApiKey());
-            request.addBodyParameter(OAuthConstants.CLIENT_SECRET, config.getApiSecret());
-            request.addBodyParameter(OAuthConstants.CODE, verifier.getValue());
-            request.addBodyParameter(OAuthConstants.REDIRECT_URI, config.getCallback());
+		    request.addBodyParameter(OAuthConstants.CLIENT_ID, getApiKey());
+            request.addBodyParameter(OAuthConstants.CLIENT_SECRET, getApiSecret());
+            request.addBodyParameter(OAuthConstants.CODE, code);
+            request.addBodyParameter(OAuthConstants.REDIRECT_URI, getCallback());
             request.addBodyParameter(GRANT_TYPE, GRANT_TYPE_AUTHORIZATION_CODE);
-		    Response response = request.send();
-		    return api.getAccessTokenExtractor().extract(response.getBody());
+		    Response response = execute(request);
+		    return api.getAccessTokenExtractor().extract(response);
 		}
     }
 }

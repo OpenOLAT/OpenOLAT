@@ -115,20 +115,15 @@ public class WebappHelper implements Initializable, Destroyable, ServletContextA
 		}
 		servletContextPath = servletContext.getContextPath();
 		
-		try {
-			InputStream meta = servletContext.getResourceAsStream("/META-INF/MANIFEST.MF");
+		try(InputStream meta = servletContext.getResourceAsStream("/META-INF/MANIFEST.MF")) {
 			if(meta != null) {
-				try {
-					Properties props = new Properties();
-					props.load(meta);
-					changeSet = props.getProperty("Build-Change-Set");
-					changeSetDate = props.getProperty("Build-Change-Set-Date");
-					revisionNumber = props.getProperty("Build-Revision-Number");
-					implementationVersion = props.getProperty("Implementation-Version");
-					buildJdk = props.getProperty("Build-Jdk");
-				} catch (IOException e) {
-					log.error("", e);
-				}
+				Properties props = new Properties();
+				props.load(meta);
+				changeSet = props.getProperty("Build-Change-Set");
+				changeSetDate = props.getProperty("Build-Change-Set-Date");
+				revisionNumber = props.getProperty("Build-Revision-Number");
+				implementationVersion = props.getProperty("Implementation-Version");
+				buildJdk = props.getProperty("Build-Jdk");
 			}
 		} catch (Exception e) {
 			log.warn("MANIFEST.MF not found", e);

@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.olat.core.configuration.AbstractSpringModule;
+import org.olat.core.helpers.Settings;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.login.oauth.spi.OpenIdConnectFullConfigurableProvider;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -180,16 +181,8 @@ public class OAuthLoginModule extends AbstractSpringModule {
 		String endPoint = getStringPropertyValue("openIdConnectIF." + providerName + ".AuthorizationEndPoint", true);
 		String displayName = getStringPropertyValue("openIdConnectIF." + providerName + ".DisplayName", true);
 		
-		OpenIdConnectFullConfigurableProvider provider = new OpenIdConnectFullConfigurableProvider();
-		provider.setRootEnabled(rootEnabled);
-		provider.setName(providerName);
-		provider.setDisplayName(displayName);
-		provider.setProviderName(providerName);
-		provider.setAppKey(apiKey);
-		provider.setAppSecret(apiSecret);
-		provider.setIssuer(issuer);
-		provider.setEndPoint(endPoint);
-		return provider;
+		return new OpenIdConnectFullConfigurableProvider(providerName, displayName, providerName,
+				apiKey, apiSecret, issuer, endPoint, rootEnabled, this);
 	}
 	
 	public List<OAuthSPI> getAllSPIs() {
@@ -267,6 +260,10 @@ public class OAuthLoginModule extends AbstractSpringModule {
 			}
 		}
 		return spi;
+	}
+	
+	public String getCallbackUrl() {
+		return Settings.getServerContextPathURI() + OAuthConstants.CALLBACK_PATH;
 	}
 
 	public boolean isAllowUserCreation() {

@@ -25,11 +25,14 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.login.oauth.OAuthDisplayName;
+import org.olat.login.oauth.OAuthLoginModule;
 import org.olat.login.oauth.OAuthSPI;
 import org.olat.login.oauth.model.OAuthUser;
-import org.scribe.builder.api.Api;
-import org.scribe.model.Token;
-import org.scribe.oauth.OAuthService;
+
+import com.github.scribejava.core.builder.ServiceBuilder;
+import com.github.scribejava.core.model.OAuth2AccessToken;
+import com.github.scribejava.core.model.Token;
+import com.github.scribejava.core.oauth.OAuthService;
 
 /**
  * 
@@ -41,15 +44,30 @@ public class OpenIdConnectFullConfigurableProvider implements OAuthSPI, OAuthDis
 	
 	private static final OLog log = Tracing.createLoggerFor(Google2Provider.class);
 
-	private String name;
-	private String displayName;
-	private String providerName;
-	private String appKey;
-	private String appSecret;
-	private String issuer;
-	private String endPoint;
+	private final String name;
+	private final String displayName;
+	private final String providerName;
+	private final String appKey;
+	private final String appSecret;
+	private final String issuer;
+	private final String endPoint;
 	
-	private boolean rootEnabled;
+	private final boolean rootEnabled;
+	
+	private final OAuthLoginModule oauthModule;
+	
+	public OpenIdConnectFullConfigurableProvider(String name, String displayName, String providerName,
+			String appKey, String appSecret, String issuer, String endPoint, boolean rootEnabled, OAuthLoginModule oauthModule) {
+		this.name = name;
+		this.displayName = displayName;
+		this.providerName = providerName;
+		this.appKey = appKey;
+		this.appSecret = appSecret;
+		this.issuer = issuer;
+		this.endPoint = endPoint;
+		this.rootEnabled = rootEnabled;
+		this.oauthModule = oauthModule;
+	}
 	
 	@Override
 	public boolean isEnabled() {
@@ -61,18 +79,19 @@ public class OpenIdConnectFullConfigurableProvider implements OAuthSPI, OAuthDis
 		return rootEnabled;
 	}
 	
-	public void setRootEnabled(boolean rootEnabled) {
-		this.rootEnabled = rootEnabled;
-	}
-	
 	@Override
 	public boolean isImplicitWorkflow() {
 		return true;
 	}
 
 	@Override
-	public Api getScribeProvider() {
-		return new OpenIdConnectFullConfigurableApi(this);
+	public OAuthService getScribeProvider() {
+		return new ServiceBuilder(getAppKey())
+                .apiSecret(getAppSecret())
+                .callback(oauthModule.getCallbackUrl())
+                .defaultScope("openid email")
+                .responseType("id_token token")
+                .build(new OpenIdConnectFullConfigurableApi(this));
 	}
 
 	@Override
@@ -80,26 +99,14 @@ public class OpenIdConnectFullConfigurableProvider implements OAuthSPI, OAuthDis
 		return name;
 	}
 
-	public void setName(String name) {
-		this.name = name;
-	}
-
 	@Override
 	public String getDisplayName() {
 		return displayName;
 	}
 
-	public void setDisplayName(String displayName) {
-		this.displayName = displayName;
-	}
-
 	@Override
 	public String getProviderName() {
 		return providerName;
-	}
-	
-	public void setProviderName(String providerName) {
-		this.providerName = providerName;
 	}
 
 	@Override
@@ -107,49 +114,26 @@ public class OpenIdConnectFullConfigurableProvider implements OAuthSPI, OAuthDis
 		return "o_icon o_icon_provider_" + name;
 	}
 
-	@Override
 	public String getAppKey() {
 		return appKey;
 	}
-	
-	public void setAppKey(String appKey) {
-		this.appKey = appKey;
-	}
 
-	@Override
 	public String getAppSecret() {
 		return appSecret;
-	}
-	
-	public void setAppSecret(String appSecret) {
-		this.appSecret = appSecret;
 	}
 
 	public String getIssuer() {
 		return issuer;
 	}
 
-	public void setIssuer(String issuer) {
-		this.issuer = issuer;
-	}
-
 	public String getEndPoint() {
 		return endPoint;
-	}
-
-	public void setEndPoint(String endPoint) {
-		this.endPoint = endPoint;
-	}
-
-	@Override
-	public String[] getScopes() {
-		return new String[] { "openid", "email" };
 	}
 
 	@Override
 	public OAuthUser getUser(OAuthService service, Token accessToken) {
 		try {
-			String idToken = accessToken.getToken();
+			String idToken = ((OAuth2AccessToken)accessToken).getAccessToken();
 			JSONWebToken token = JSONWebToken.parse(idToken);
 			return parseInfos(token.getPayload());
 		} catch (JSONException e) {

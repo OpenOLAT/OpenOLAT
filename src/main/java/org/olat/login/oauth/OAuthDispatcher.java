@@ -50,13 +50,18 @@ import org.olat.core.util.WebappHelper;
 import org.olat.login.oauth.model.OAuthRegistration;
 import org.olat.login.oauth.model.OAuthUser;
 import org.olat.login.oauth.spi.OpenIDVerifier;
+import org.olat.login.oauth.spi.OpenIdConnectApi.OpenIdConnectService;
+import org.olat.login.oauth.spi.OpenIdConnectFullConfigurableApi.OpenIdConnectFullConfigurableService;
 import org.olat.login.oauth.ui.JSRedirectWindowController;
 import org.olat.login.oauth.ui.OAuthAuthenticationController;
 import org.olat.user.UserManager;
-import org.scribe.model.Token;
-import org.scribe.model.Verifier;
-import org.scribe.oauth.OAuthService;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import com.github.scribejava.core.model.OAuth1RequestToken;
+import com.github.scribejava.core.model.Token;
+import com.github.scribejava.core.oauth.OAuth10aService;
+import com.github.scribejava.core.oauth.OAuth20Service;
+import com.github.scribejava.core.oauth.OAuthService;
 
 /**
  * Callback for OAuth 2
@@ -106,11 +111,11 @@ public class OAuthDispatcher implements Dispatcher {
 			return; 
 		}
 		
-		try {
-			HttpSession sess = request.getSession();
+		HttpSession sess = request.getSession();
+		try(OAuthService service = (OAuthService)sess.getAttribute(OAuthConstants.OAUTH_SERVICE)) {
+			
 			//OAuth 2.0 hasn't any request token
 			Token requestToken = (Token)sess.getAttribute(OAuthConstants.REQUEST_TOKEN);
-			OAuthService service = (OAuthService)sess.getAttribute(OAuthConstants.OAUTH_SERVICE);
 			OAuthSPI provider = (OAuthSPI)sess.getAttribute(OAuthConstants.OAUTH_SPI);
 
 			Token accessToken;
@@ -123,16 +128,29 @@ public class OAuthDispatcher implements Dispatcher {
 				if(idToken == null) {
 					redirectImplicitWorkflow(ureq);
 					return;
+				} else if(service instanceof OpenIdConnectFullConfigurableService) {
+					OpenIDVerifier verifier = OpenIDVerifier.create(ureq, sess);
+					accessToken = ((OpenIdConnectFullConfigurableService)service).getAccessToken(verifier);
+				} else if(service instanceof OpenIdConnectService) {
+					OpenIDVerifier verifier = OpenIDVerifier.create(ureq, sess);
+					accessToken = ((OpenIdConnectService)service).getAccessToken(verifier);
 				} else {
-					Verifier verifier = OpenIDVerifier.create(ureq, sess);
-					accessToken = service.getAccessToken(requestToken, verifier);
+					return;
 				}
-			} else {
+			} else if(service instanceof OAuth10aService) {
 				String requestVerifier = request.getParameter("oauth_verifier"); 
 				if(requestVerifier == null) {//OAuth 2.0 as a code
 					requestVerifier = request.getParameter("code");
 				}
-				accessToken = service.getAccessToken(requestToken, new Verifier(requestVerifier));
+				accessToken = ((OAuth10aService)service).getAccessToken((OAuth1RequestToken)requestToken, requestVerifier);
+			} else if(service instanceof OAuth20Service) {
+				String requestVerifier = request.getParameter("oauth_verifier"); 
+				if(requestVerifier == null) {//OAuth 2.0 as a code
+					requestVerifier = request.getParameter("code");
+				}
+				accessToken = ((OAuth20Service)service).getAccessToken(requestVerifier);
+			} else {
+				return;
 			}
 
 			OAuthUser infos = provider.getUser(service, accessToken);

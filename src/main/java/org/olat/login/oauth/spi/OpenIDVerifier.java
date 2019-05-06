@@ -23,7 +23,6 @@ import javax.servlet.http.HttpSession;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.login.oauth.OAuthConstants;
-import org.scribe.model.Verifier;
 
 /**
  * 
@@ -31,8 +30,9 @@ import org.scribe.model.Verifier;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class OpenIDVerifier extends Verifier {
+public class OpenIDVerifier {
 	
+	private final String state;
 	private final String idToken;
 	private final String accessToken;
 	
@@ -40,7 +40,7 @@ public class OpenIDVerifier extends Verifier {
 	private final String sessionNonce;
 	
 	public OpenIDVerifier(String state, String idToken, String accessToken, String sessionState, String sessionNonce) {
-		super(state);
+		this.state = state;
 		this.idToken = idToken;
 		this.accessToken = accessToken;
 		this.sessionState = sessionState;
@@ -48,7 +48,7 @@ public class OpenIDVerifier extends Verifier {
 	}
 	
 	public String getState() {
-		return getValue();
+		return state;
 	}
 
 	public String getIdToken() {

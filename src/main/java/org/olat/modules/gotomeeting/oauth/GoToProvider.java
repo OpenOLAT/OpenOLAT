@@ -19,14 +19,16 @@
  */
 package org.olat.modules.gotomeeting.oauth;
 
+import org.olat.core.helpers.Settings;
 import org.olat.login.oauth.OAuthSPI;
 import org.olat.login.oauth.model.OAuthUser;
 import org.olat.modules.gotomeeting.GoToMeetingModule;
-import org.scribe.builder.api.Api;
-import org.scribe.model.Token;
-import org.scribe.oauth.OAuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.github.scribejava.core.builder.ServiceBuilder;
+import com.github.scribejava.core.model.Token;
+import com.github.scribejava.core.oauth.OAuthService;
 
 /**
  * 
@@ -46,8 +48,11 @@ public class GoToProvider implements OAuthSPI {
 	}
 
 	@Override
-	public Api getScribeProvider() {
-		return new GoToApi();
+	public OAuthService getScribeProvider() {
+		return new ServiceBuilder(goToMeetingModule.getTrainingConsumerKey())
+                .apiSecret(goToMeetingModule.getTrainingConsumerSecret())
+                .callback(Settings.getServerContextPathURI() + GoToApi.GETGO_CALLBACK)
+                .build(new GoToApi());
 	}
 
 	@Override
@@ -70,20 +75,6 @@ public class GoToProvider implements OAuthSPI {
 		return "o_icon o_gotomeeting_icon";
 	}
 
-	@Override
-	public String getAppKey() {
-		return goToMeetingModule.getTrainingConsumerKey();
-	}
-
-	@Override
-	public String getAppSecret() {
-		return goToMeetingModule.getTrainingConsumerSecret();
-	}
-
-	@Override
-	public String[] getScopes() {
-		return new String[0];
-	}
 
 	@Override
 	public boolean isImplicitWorkflow() {
