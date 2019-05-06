@@ -3682,6 +3682,7 @@ create index f_m_path_keys_idx on o_vfs_metadata (f_m_path_keys(100));
 create index f_m_rel_path_idx on o_vfs_metadata (f_relative_path(255));
 create index f_m_filename_idx on o_vfs_metadata (f_filename(255));
 create index f_m_file_idx on o_vfs_metadata (f_relative_path(255),f_filename(255));
+create index f_m_uuid_idx on o_vfs_metadata (f_uuid);
 
 alter table o_vfs_thumbnail add constraint fthumb_to_meta_idx foreign key (fk_metadata) references o_vfs_metadata (id);
 
