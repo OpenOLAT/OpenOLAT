@@ -1,49 +1,4 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE definition [
-	<!ENTITY Agrave "&#192;">
-	<!ENTITY Aacute "&#193;">
-	<!ENTITY Acirc  "&#194;">
-	<!ENTITY Atilde "&#195;">
-	<!ENTITY Auml   "&#196;">
-	<!ENTITY Egrave "&#200;">
-	<!ENTITY Eacute "&#201;">
-	<!ENTITY Ecirc  "&#202;">
-	<!ENTITY Euml   "&#203;">
-	<!ENTITY Igrave "&#204;">
-	<!ENTITY Iacute "&#205;">
-	<!ENTITY Icirc  "&#206;">
-	<!ENTITY Iuml   "&#207;">
-	<!ENTITY Ograve "&#210;">
-	<!ENTITY Oacute "&#211;">
-	<!ENTITY Ocirc  "&#212;">
-	<!ENTITY Otilde "&#213;">
-	<!ENTITY Ouml   "&#214;">
-	<!ENTITY Ugrave "&#217;">
-	<!ENTITY Uacute "&#218;">
-	<!ENTITY Ucirc  "&#219;">
-	<!ENTITY Uuml   "&#220;">
-	<!ENTITY agrave "&#224;">
-	<!ENTITY aacute "&#225;">
-	<!ENTITY acirc  "&#226;">
-	<!ENTITY atilde "&#227;">
-	<!ENTITY auml   "&#228;">
-	<!ENTITY egrave "&#232;">
-	<!ENTITY eacute "&#233;">
-	<!ENTITY ecirc  "&#234;">
-	<!ENTITY euml   "&#235;">
-	<!ENTITY igrave "&#236;">
-	<!ENTITY iacute "&#237;">
-	<!ENTITY icirc  "&#238;">
-	<!ENTITY iuml   "&#239;">                        
-	<!ENTITY ograve "&#242;">
-	<!ENTITY oacute "&#243;">
-	<!ENTITY ocirc  "&#244;">
-	<!ENTITY ouml   "&#246;">                  
-	<!ENTITY ugrave "&#249;">
-	<!ENTITY uacute "&#250;">
-	<!ENTITY ucirc  "&#251;">
-	<!ENTITY uuml   "&#252;">
-]>
 <!--
 	TinyMCE policy download from trunk adapted for OLAT
 	Version found at 30.07.2009, Adaption made by frentix GmbH
@@ -83,14 +38,8 @@
 		<regexp name="onsiteURL"
 			value="([\p{L}\p{N}\p{Zs}/\.\?=&amp;\-~_#])+" />
 		
-		<!--  
 		<regexp name="offsiteURL"
-			value="^(?:(?:http(?:s)?|ftp)://)(?:\\\\S+(?::(?:\\\\S)*)?@)?(?:(?:[a-z0-9\\u00a1-\\uffff](?:-)*)*(?:[a-z0-9\\u00a1-\\uffff])+)(?:\\\\.(?:[a-z0-9\\u00a1-\\uffff](?:-)*)*(?:[a-z0-9\\u00a1-\\uffff])+)*(?:\\\\.(?:[a-z0-9\\u00a1-\\uffff]){2,})(?::(?:\\\\d){2,5})?(?:/(?:\\\\S)*)?$" />
-		-->
-		  
-		<regexp name="offsiteURL"
-			value="(\s)*(http(s?)://|mailto:)[A-Za-z0-9]+[~a-zA-Z0-9\u00a1-\uffff-_\.@#$% &amp;;&Agrave;;&Aacute;&Acirc;&Atilde;&Auml;&Egrave;&Eacute;&Ecirc;&Euml;&Igrave;&Iacute;&Icirc;&Iuml;&Ograve;&Oacute;&Ocirc;&Otilde;&Ouml;&Ugrave;&Uacute;&Ucirc;&Uuml;&agrave;&aacute;&acirc;&atilde;&auml;&egrave;&eacute;&ecirc;&euml;&igrave;&iacute;&icirc;&iuml;&ograve;&oacute;&ocirc;&ouml;&ugrave;&uacute;&ucirc;&uuml;;:,\?=/\+!]*(\s)*" />
-		
+			value="(\s)*((ht)tp(s?)://|mailto:)[\p{L}\p{N}]+[\p{L}\p{N}\p{Zs}\.\#@\$%\+&amp;;:\-_~,\?=/!\(\)]*(\s)*" />
 		<!-- 
 		<regexp name="offsiteURL"
 			value="(\s)*(http(s?)://|mailto:)[A-Za-z0-9]+[~a-zA-Z0-9-_\.@#$%&amp;;:,\?=/\+!]*(\s)*" />
