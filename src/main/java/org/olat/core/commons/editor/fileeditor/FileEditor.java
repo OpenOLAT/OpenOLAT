@@ -70,6 +70,11 @@ public class FileEditor implements DocEditor {
 	}
 
 	@Override
+	public boolean isDataTransferConfirmationEnabled() {
+		return false;
+	}
+
+	@Override
 	public boolean isSupportingFormat(String suffix, Mode mode, boolean hasMeta) {
 		// Both the HTML editor and the text editor supports view and edit
 		return HTML_EDITOR_SUFFIX.contains(suffix) || TEXT_EDITOR_SUFFIX.contains(suffix)? true: false;

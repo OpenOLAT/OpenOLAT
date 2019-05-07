@@ -24,6 +24,7 @@ import static org.olat.core.gui.translator.TranslatorHelper.translateAll;
 
 import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeModule;
 import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeSecurityService;
+import org.olat.core.commons.services.doceditor.ui.DocEditorController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
@@ -32,6 +33,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.Util;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -47,6 +49,7 @@ public class OnlyOfficeAdminController extends FormBasicController {
 	private MultipleSelectionElement enabledEl;
 	private TextElement baseUrlEl;
 	private TextElement jwtSecretEl;
+	private MultipleSelectionElement dataTransferConfirmationEnabledEl;
 
 	@Autowired
 	private OnlyOfficeModule onlyOfficeModule;
@@ -55,6 +58,7 @@ public class OnlyOfficeAdminController extends FormBasicController {
 
 	public OnlyOfficeAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(DocEditorController.class, getLocale(), getTranslator()));
 		initForm(ureq);
 	}
 
@@ -73,6 +77,11 @@ public class OnlyOfficeAdminController extends FormBasicController {
 		String secret = onlyOfficeModule.getJwtSecret();
 		jwtSecretEl = uifactory.addTextElement("admin.jwt.secret", 128, secret, formLayout);
 		jwtSecretEl.setMandatory(true);
+		
+		dataTransferConfirmationEnabledEl = uifactory.addCheckboxesHorizontal(
+				"admin.data.transfer.confirmation.enabled", formLayout, ENABLED_KEYS,
+				translateAll(getTranslator(), ENABLED_KEYS));
+		dataTransferConfirmationEnabledEl.select(ENABLED_KEYS[0], onlyOfficeModule.isDataTransferConfirmationEnabled());
 		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add("buttons", buttonLayout);
@@ -108,6 +117,9 @@ public class OnlyOfficeAdminController extends FormBasicController {
 		
 		String jwtSecret = jwtSecretEl.getValue();
 		onlyOfficeModule.setJwtSecret(jwtSecret);
+		
+		boolean dataTransferConfirmationEnabled = dataTransferConfirmationEnabledEl.isAtLeastSelected(1);
+		onlyOfficeModule.setDataTransferConfirmationEnabled(dataTransferConfirmationEnabled);
 	}
 
 	@Override

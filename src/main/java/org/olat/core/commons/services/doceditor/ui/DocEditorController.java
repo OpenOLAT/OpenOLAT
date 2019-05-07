@@ -30,15 +30,21 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.properties.Property;
+import org.olat.properties.PropertyManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
  * Initial date: 26 Mar 2019<br>
+ * 
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
 public class DocEditorController extends BasicController {
-	
+
+	private static final String PROPERTY_CATEGOTY = "doc.editor";
+
 	private VelocityContainer mainVC;
 	private DocEditorConfigController configCtrl;
 	private Controller editorCtrl;
@@ -46,27 +52,31 @@ public class DocEditorController extends BasicController {
 	private final VFSLeaf vfsLeaf;
 	private final DocEditorSecurityCallback secCallback;
 	private final DocEditorConfigs configs;
-	
+
+	@Autowired
+	private PropertyManager propertyManager;
+	private DataTransferConfirmationController dataTransferConfirmationCtrl;
+
 	public DocEditorController(UserRequest ureq, WindowControl wControl, VFSLeaf vfsLeaf,
 			DocEditorSecurityCallback secCallback, DocEditorConfigs configs) {
 		this(ureq, wControl, vfsLeaf, secCallback, configs, null);
 	}
-	
+
 	public DocEditorController(UserRequest ureq, WindowControl wControl, VFSLeaf vfsLeaf,
 			DocEditorSecurityCallback secCallback, DocEditorConfigs configs, String cssClass) {
 		super(ureq, wControl);
 		this.vfsLeaf = vfsLeaf;
 		this.secCallback = secCallback;
 		this.configs = configs;
-		
+
 		mainVC = createVelocityContainer("editor_main");
 		mainVC.contextPut("cssClass", cssClass);
-		
+
 		configCtrl = new DocEditorConfigController(ureq, wControl, vfsLeaf, secCallback);
 		listenTo(configCtrl);
 		mainVC.put("config", configCtrl.getInitialComponent());
 		configCtrl.activate(ureq, null, null);
-		
+
 		putInitialPanel(mainVC);
 	}
 
@@ -86,17 +96,56 @@ public class DocEditorController extends BasicController {
 			}
 		} else if (source == editorCtrl) {
 			fireEvent(ureq, event);
+		} else if (source == dataTransferConfirmationCtrl && Event.DONE_EVENT.equals(event)) {
+			DocEditor editor = dataTransferConfirmationCtrl.getEditor();
+			doDataTransferConfirmed(editor);
+			doOpenEditor(ureq, editor);
 		}
 		super.event(ureq, source, event);
 	}
 
 	private void doOpenEditor(UserRequest ureq, DocEditor editor) {
+		removeAsListenerAndDispose(dataTransferConfirmationCtrl);
 		removeAsListenerAndDispose(editorCtrl);
-		
-		if (editorCtrl != null) mainVC.remove("editor");
-		editorCtrl = editor.getRunController(ureq, getWindowControl(), getIdentity(), vfsLeaf, secCallback, configs);
-		listenTo(editorCtrl);
-		mainVC.put("editor", editorCtrl.getInitialComponent());
+		if (editorCtrl != null || dataTransferConfirmationCtrl != null) {
+			mainVC.remove("editor");
+		}
+
+		if (isDataTransferConfirmed(editor)) {
+			editorCtrl = editor.getRunController(ureq, getWindowControl(), getIdentity(), vfsLeaf, secCallback,
+					configs);
+			listenTo(editorCtrl);
+			mainVC.put("editor", editorCtrl.getInitialComponent());
+		} else {
+			dataTransferConfirmationCtrl = new DataTransferConfirmationController(ureq, getWindowControl(), editor);
+			listenTo(dataTransferConfirmationCtrl);
+			mainVC.put("editor", dataTransferConfirmationCtrl.getInitialComponent());
+		}
+	}
+
+	private boolean isDataTransferConfirmed(DocEditor editor) {
+		if (editor.isDataTransferConfirmationEnabled()) {
+			Property property = propertyManager.findUserProperty(getIdentity(), PROPERTY_CATEGOTY,
+					getDataTransferPropertyName(editor));
+			if (property == null || isNotConfirmedYet(property)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	private boolean isNotConfirmedYet(Property property) {
+		return !Boolean.valueOf(property.getStringValue());
+	}
+
+	private void doDataTransferConfirmed(DocEditor editor) {
+		Property property = propertyManager.createUserPropertyInstance(getIdentity(), PROPERTY_CATEGOTY,
+				getDataTransferPropertyName(editor), null, null, Boolean.TRUE.toString(), null);
+		propertyManager.saveProperty(property);
+	}
+
+	private String getDataTransferPropertyName(DocEditor editor) {
+		return editor.getType() + ".data.transfer.accepted";
 	}
 
 	@Override

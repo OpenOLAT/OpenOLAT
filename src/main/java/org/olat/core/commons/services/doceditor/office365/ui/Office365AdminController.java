@@ -25,6 +25,7 @@ import static org.olat.core.gui.translator.TranslatorHelper.translateAll;
 
 import org.olat.core.commons.services.doceditor.office365.Office365Module;
 import org.olat.core.commons.services.doceditor.office365.Office365RefreshDiscoveryEvent;
+import org.olat.core.commons.services.doceditor.ui.DocEditorController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -37,6 +38,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -53,12 +55,14 @@ public class Office365AdminController extends FormBasicController {
 	private MultipleSelectionElement enabledEl;
 	private TextElement baseUrlEl;
 	private FormLink refreshDiscoveryLink;
+	private MultipleSelectionElement dataTransferConfirmationEnabledEl;
 
 	@Autowired
 	private Office365Module office365Module;
 
 	public Office365AdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(DocEditorController.class, getLocale(), getTranslator()));
 		initForm(ureq);
 	}
 
@@ -76,6 +80,11 @@ public class Office365AdminController extends FormBasicController {
 		
 		refreshDiscoveryLink = uifactory.addFormLink("admin.refresh.discovery", "admin.refresh.discovery", "admin.refresh.discovery.label", formLayout, Link.BUTTON);
 		refreshDiscoveryLink.setHelpTextKey("admin.refresh.discovery.help", null);
+		
+		dataTransferConfirmationEnabledEl = uifactory.addCheckboxesHorizontal(
+				"admin.data.transfer.confirmation.enabled", formLayout, ENABLED_KEYS,
+				translateAll(getTranslator(), ENABLED_KEYS));
+		dataTransferConfirmationEnabledEl.select(ENABLED_KEYS[0], office365Module.isDataTransferConfirmationEnabled());
 		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add("buttons", buttonLayout);
@@ -113,6 +122,9 @@ public class Office365AdminController extends FormBasicController {
 		if (urlChanged) {
 			doRefreshDiscovery();
 		}
+		
+		boolean dataTransferConfirmationEnabled = dataTransferConfirmationEnabledEl.isAtLeastSelected(1);
+		office365Module.setDataTransferConfirmationEnabled(dataTransferConfirmationEnabled);
 	}
 
 	@Override

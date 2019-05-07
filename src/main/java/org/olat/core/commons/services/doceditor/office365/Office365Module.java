@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+* <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -38,11 +38,14 @@ public class Office365Module extends AbstractSpringModule implements ConfigOnOff
 
 	private static final String OFFICE365_ENABLED = "office365.enabled";
 	private static final String OFFICE365_BASE_URL = "office365.baseUrl";
+	private static final String OFFICE365_DATA_TRANSER_CONFIRMATION_ENABLED = "office365.data.transfer.confirmation.enabled";
 	
 	@Value("${office365.enabled:false}")
 	private boolean enabled;
 	@Value("${office365.baseUrl}")
 	private String baseUrl;
+	@Value("${office365.data.transfer.confirmation.enabled:false}")
+	private boolean dataTransferConfirmationEnabled;
 	
 	@Autowired
 	private Office365Module(CoordinatorManager coordinateManager) {
@@ -69,6 +72,11 @@ public class Office365Module extends AbstractSpringModule implements ConfigOnOff
 		if(StringHelper.containsNonWhitespace(baseUrlObj)) {
 			baseUrl = baseUrlObj;
 		}
+		
+		String dataTransferConfirmationEnabledObj = getStringPropertyValue(OFFICE365_DATA_TRANSER_CONFIRMATION_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(dataTransferConfirmationEnabledObj)) {
+			dataTransferConfirmationEnabled = "true".equals(dataTransferConfirmationEnabledObj);
+		}
 	}
 
 	@Override
@@ -88,5 +96,14 @@ public class Office365Module extends AbstractSpringModule implements ConfigOnOff
 	public void setBaseUrl(String baseUrl) {
 		this.baseUrl = baseUrl;
 		setStringProperty(OFFICE365_BASE_URL, baseUrl, true);
+	}
+
+	public boolean isDataTransferConfirmationEnabled() {
+		return dataTransferConfirmationEnabled;
+	}
+
+	public void setDataTransferConfirmationEnabled(boolean dataTransferConfirmationEnabled) {
+		this.dataTransferConfirmationEnabled = dataTransferConfirmationEnabled;
+		setStringProperty(OFFICE365_DATA_TRANSER_CONFIRMATION_ENABLED, Boolean.toString(dataTransferConfirmationEnabled), true);
 	}
 }

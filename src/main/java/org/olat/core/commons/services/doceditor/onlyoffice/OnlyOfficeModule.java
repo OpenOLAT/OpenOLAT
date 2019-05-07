@@ -47,6 +47,7 @@ public class OnlyOfficeModule extends AbstractSpringModule implements ConfigOnOf
 	private static final String ONLYOFFICE_ENABLED = "onlyoffice.enabled";
 	private static final String ONLYOFFICE_BASE_URL = "onlyoffice.baseUrl";
 	private static final String ONLYOFFICE_JWT_SECRET = "onlyoffice.jwt.secret";
+	private static final String ONLYOFFICE_DATA_TRANSER_CONFIRMATION_ENABLED = "onlyoffice.data.transfer.confirmation.enabled";
 	
 	@Value("${onlyoffice.enabled:false}")
 	private boolean enabled;
@@ -57,6 +58,8 @@ public class OnlyOfficeModule extends AbstractSpringModule implements ConfigOnOf
 	private String apiUrl;
 	private String jwtSecret;
 	private Key jwtSignKey;
+	@Value("${onlyoffice.data.transfer.confirmation.enabled:false}")
+	private boolean dataTransferConfirmationEnabled;
 	
 	@Autowired
 	private OnlyOfficeModule(CoordinatorManager coordinateManager) {
@@ -88,6 +91,11 @@ public class OnlyOfficeModule extends AbstractSpringModule implements ConfigOnOf
 		String jwtSecretObj = getStringPropertyValue(ONLYOFFICE_JWT_SECRET, true);
 		if(StringHelper.containsNonWhitespace(jwtSecretObj)) {
 			jwtSecret = jwtSecretObj;
+		}
+		
+		String dataTransferConfirmationEnabledObj = getStringPropertyValue(ONLYOFFICE_DATA_TRANSER_CONFIRMATION_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(dataTransferConfirmationEnabledObj)) {
+			dataTransferConfirmationEnabled = "true".equals(dataTransferConfirmationEnabledObj);
 		}
 	}
 
@@ -138,6 +146,15 @@ public class OnlyOfficeModule extends AbstractSpringModule implements ConfigOnOf
 			}
 		}
 		return jwtSignKey;
+	}
+
+	public boolean isDataTransferConfirmationEnabled() {
+		return dataTransferConfirmationEnabled;
+	}
+
+	public void setDataTransferConfirmationEnabled(boolean dataTransferConfirmationEnabled) {
+		this.dataTransferConfirmationEnabled = dataTransferConfirmationEnabled;
+		setStringProperty(ONLYOFFICE_DATA_TRANSER_CONFIRMATION_ENABLED, Boolean.toString(dataTransferConfirmationEnabled), true);
 	}
 
 }

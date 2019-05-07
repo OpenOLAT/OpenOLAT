@@ -66,6 +66,11 @@ public class OnlyOfficeEditor implements DocEditor {
 	}
 
 	@Override
+	public boolean isDataTransferConfirmationEnabled() {
+		return onlyOfficeModule.isDataTransferConfirmationEnabled();
+	}
+
+	@Override
 	public boolean isSupportingFormat(String suffix, Mode mode, boolean hasMeta) {
 		return hasMeta && onlyOfficeService.isSupportedFormat(suffix, mode);
 	}

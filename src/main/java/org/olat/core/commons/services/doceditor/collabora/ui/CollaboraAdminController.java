@@ -26,6 +26,7 @@ import static org.olat.core.gui.translator.TranslatorHelper.translateAll;
 import org.olat.core.commons.services.doceditor.collabora.CollaboraModule;
 import org.olat.core.commons.services.doceditor.collabora.CollaboraRefreshDiscoveryEvent;
 import org.olat.core.commons.services.doceditor.collabora.CollaboraService;
+import org.olat.core.commons.services.doceditor.ui.DocEditorController;
 import org.olat.core.commons.services.doceditor.wopi.Discovery;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -42,6 +43,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -61,6 +63,7 @@ public class CollaboraAdminController extends FormBasicController {
 	private TextElement baseUrlEl;
 	private FormLink refreshDiscoveryLink;
 	private FormLink testLink;
+	private MultipleSelectionElement dataTransferConfirmationEnabledEl;
 
 	@Autowired
 	private CollaboraModule collaboraModule;
@@ -69,6 +72,7 @@ public class CollaboraAdminController extends FormBasicController {
 
 	public CollaboraAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(DocEditorController.class, getLocale(), getTranslator()));
 		initForm(ureq);
 	}
 
@@ -86,6 +90,11 @@ public class CollaboraAdminController extends FormBasicController {
 		
 		refreshDiscoveryLink = uifactory.addFormLink("admin.refresh.discovery", "admin.refresh.discovery", "admin.refresh.discovery.label", formLayout, Link.BUTTON);
 		refreshDiscoveryLink.setHelpTextKey("admin.refresh.discovery.help", null);
+		
+		dataTransferConfirmationEnabledEl = uifactory.addCheckboxesHorizontal(
+				"admin.data.transfer.confirmation.enabled", formLayout, ENABLED_KEYS,
+				translateAll(getTranslator(), ENABLED_KEYS));
+		dataTransferConfirmationEnabledEl.select(ENABLED_KEYS[0], collaboraModule.isDataTransferConfirmationEnabled());
 		
 		if (Settings.isDebuging()) {
 			testLink = uifactory.addFormLink("admin.test", formLayout, Link.BUTTON);
@@ -129,6 +138,9 @@ public class CollaboraAdminController extends FormBasicController {
 		if (urlChanged) {
 			doRefreshDiscovery();
 		}
+		
+		boolean dataTransferConfirmationEnabled = dataTransferConfirmationEnabledEl.isAtLeastSelected(1);
+		collaboraModule.setDataTransferConfirmationEnabled(dataTransferConfirmationEnabled);
 	}
 
 	@Override

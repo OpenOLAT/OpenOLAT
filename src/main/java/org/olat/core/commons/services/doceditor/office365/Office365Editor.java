@@ -66,6 +66,11 @@ public class Office365Editor implements DocEditor {
 	}
 
 	@Override
+	public boolean isDataTransferConfirmationEnabled() {
+		return office365Module.isDataTransferConfirmationEnabled();
+	}
+
+	@Override
 	public boolean isSupportingFormat(String suffix, Mode mode, boolean hasMeta) {
 		return hasMeta && office365Service.isSupportingFormat(suffix, mode);
 	}

@@ -42,6 +42,8 @@ public interface DocEditor {
 	String getType();
 	
 	String getDisplayName(Locale locale);
+
+	boolean isDataTransferConfirmationEnabled();
 	
 	/**
 	 * Indicates whether the editor supports the format with that suffix in the appropriate mode.

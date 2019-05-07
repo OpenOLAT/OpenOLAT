@@ -38,11 +38,14 @@ public class CollaboraModule extends AbstractSpringModule implements ConfigOnOff
 
 	private static final String COLLABORA_ENABLED = "collabora.enabled";
 	private static final String COLLABORA_BASE_URL = "collabora.baseUrl";
+	private static final String COLLABORA_DATA_TRANSER_CONFIRMATION_ENABLED = "collabora.data.transfer.confirmation.enabled";
 	
 	@Value("${collabora.enabled:false}")
 	private boolean enabled;
 	@Value("${collabora.baseUrl}")
 	private String baseUrl;
+	@Value("${collabora.data.transfer.confirmation.enabled:false}")
+	private boolean dataTransferConfirmationEnabled;
 	
 	@Autowired
 	private CollaboraModule(CoordinatorManager coordinateManager) {
@@ -69,6 +72,11 @@ public class CollaboraModule extends AbstractSpringModule implements ConfigOnOff
 		if(StringHelper.containsNonWhitespace(baseUrlObj)) {
 			baseUrl = baseUrlObj;
 		}
+		
+		String dataTransferConfirmationEnabledObj = getStringPropertyValue(COLLABORA_DATA_TRANSER_CONFIRMATION_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(dataTransferConfirmationEnabledObj)) {
+			dataTransferConfirmationEnabled = "true".equals(dataTransferConfirmationEnabledObj);
+		}
 	}
 
 	@Override
@@ -88,5 +96,14 @@ public class CollaboraModule extends AbstractSpringModule implements ConfigOnOff
 	public void setBaseUrl(String baseUrl) {
 		this.baseUrl = baseUrl;
 		setStringProperty(COLLABORA_BASE_URL, baseUrl, true);
+	}
+
+	public boolean isDataTransferConfirmationEnabled() {
+		return dataTransferConfirmationEnabled;
+	}
+
+	public void setDataTransferConfirmationEnabled(boolean dataTransferConfirmationEnabled) {
+		this.dataTransferConfirmationEnabled = dataTransferConfirmationEnabled;
+		setStringProperty(COLLABORA_DATA_TRANSER_CONFIRMATION_ENABLED, Boolean.toString(dataTransferConfirmationEnabled), true);
 	}
 }

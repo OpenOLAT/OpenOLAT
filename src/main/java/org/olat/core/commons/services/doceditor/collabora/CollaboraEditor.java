@@ -66,6 +66,11 @@ public class CollaboraEditor implements DocEditor {
 	}
 
 	@Override
+	public boolean isDataTransferConfirmationEnabled() {
+		return collaboraModule.isDataTransferConfirmationEnabled();
+	}
+
+	@Override
 	public boolean isSupportingFormat(String suffix, Mode mode, boolean hasMeta) {
 		return hasMeta && collaboraService.accepts(suffix, mode);
 	}
