@@ -126,6 +126,7 @@ public class Office365WebService {
 				.withSupportsLocks(true)
 				.withSupportsExtendedLockLength(true)
 				.withSupportsUpdate(true)
+				.withSupportsRename(false)
 				.withUserCanWrite(access.isCanEdit())
 				.withUserCanNotWriteRelative(true)
 				.build();

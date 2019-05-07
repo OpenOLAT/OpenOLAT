@@ -46,6 +46,7 @@ public class CheckFileInfoVO {
 	private final Boolean supportsLocks;
 	private final Boolean supportsExtendedLockLength;
 	private final Boolean supportsUpdate;
+	private final Boolean supportsRename;
 	
 	private final Boolean readOnly;
 	private final Boolean userCanWrite;
@@ -65,6 +66,7 @@ public class CheckFileInfoVO {
 		this.supportsLocks = builder.supportsLocks;
 		this.supportsExtendedLockLength = builder.supportsExtendedLockLength;
 		this.supportsUpdate = builder.supportsUpdate;
+		this.supportsRename = builder.supportsRename;
 		this.readOnly = builder.readOnly;
 		this.userCanWrite = builder.userCanWrite;
 		this.userCanNotWriteRelative = builder.userCanNotWriteRelative;
@@ -109,6 +111,10 @@ public class CheckFileInfoVO {
 		return supportsUpdate;
 	}
 
+	public Boolean getSupportsRename() {
+		return supportsRename;
+	}
+
 	public Boolean getReadOnly() {
 		return readOnly;
 	}
@@ -147,6 +153,7 @@ public class CheckFileInfoVO {
 		private Boolean supportsLocks;
 		private Boolean supportsExtendedLockLength;
 		private Boolean supportsUpdate;
+		private Boolean supportsRename;
 		private Boolean readOnly;
 		private Boolean userCanWrite;
 		private Boolean userCanNotWriteRelative;
@@ -199,6 +206,11 @@ public class CheckFileInfoVO {
 
 		public Builder withSupportsUpdate(Boolean supportsUpdate) {
 			this.supportsUpdate = supportsUpdate;
+			return this;
+		}
+
+		public Builder withSupportsRename(Boolean supportsRename) {
+			this.supportsRename = supportsRename;
 			return this;
 		}
 
