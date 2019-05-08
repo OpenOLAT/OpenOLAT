@@ -131,6 +131,26 @@ public class VFSMetadataDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void setDownloadCounter() {
+		String uuid = UUID.randomUUID().toString();
+		String relativePath = "/bcroot/hello/world/";
+		String filename = uuid + ".pdf";
+		String uri = "file:///Users/frentix/Documents/bcroot/hello/world/image_alt.jpg";
+		String uriProtocol = "file";
+		VFSMetadata metadata = vfsMetadataDao.createMetadata(uuid, relativePath, filename, new Date(), 18l, false, uri, uriProtocol, null);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(metadata);
+		
+		vfsMetadataDao.setDownloadCount(metadata, 8);
+		dbInstance.commitAndCloseSession();
+		
+		VFSMetadata loadedMetadata = vfsMetadataDao.loadMetadata(metadata.getKey());
+		
+		Assert.assertEquals(metadata, loadedMetadata);
+		Assert.assertEquals(8, loadedMetadata.getDownloadCount());
+	}
+	
+	@Test
 	public void updateFileSize() {
 		String uuid = UUID.randomUUID().toString();
 		String relativePath = "/bcroot/hello/world/";

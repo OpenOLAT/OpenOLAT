@@ -89,8 +89,8 @@ public class CmdServeResource implements FolderCommand {
 			// update download counter
 			if(vfsItem == null) {
 				folderComponent.updateChildren();
-			} else if (vfsItem.canMeta() == VFSConstants.YES) {
-				CoreSpringFactory.getImpl(VFSRepositoryService.class).increaseDownloadCount(vfsItem);
+			} else if (vfsItem instanceof VFSLeaf && vfsItem.canMeta() == VFSConstants.YES) {
+				CoreSpringFactory.getImpl(VFSRepositoryService.class).increaseDownloadCount((VFSLeaf)vfsItem);
 			}
 		}
 

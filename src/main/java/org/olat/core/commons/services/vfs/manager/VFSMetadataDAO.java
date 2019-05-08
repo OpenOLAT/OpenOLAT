@@ -279,6 +279,15 @@ public class VFSMetadataDAO {
 			.executeUpdate();
 	}
 	
+	public void setDownloadCount(VFSMetadata metadata, int count) {
+		String updateQuery = "update vfsmetadatadownloadcount set downloadCount=:count where key=:key";
+		dbInstance.getCurrentEntityManager()
+			.createQuery(updateQuery)
+			.setParameter("count", count)
+			.setParameter("key", metadata.getKey())
+			.executeUpdate();
+	}
+	
 	public void updateMetadata(long fileSize, Date lastModified, String relativePath, String filename) {
 		String updateQuery = "update vfsmetadatafilesaved set fileLastModified=:lastModified, fileSize=:fileSize where filename=:filename and relativePath=:relativePath";
 		dbInstance.getCurrentEntityManager()

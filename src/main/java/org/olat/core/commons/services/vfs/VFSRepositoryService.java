@@ -123,7 +123,7 @@ public interface VFSRepositoryService {
 	 */
 	public VFSMetadata rename(VFSItem item, String newName);
 	
-	public void increaseDownloadCount(VFSItem item);
+	public void increaseDownloadCount(VFSLeaf item);
 	
 	/**
 	 * Copy the binaries data saved in ZIP files.

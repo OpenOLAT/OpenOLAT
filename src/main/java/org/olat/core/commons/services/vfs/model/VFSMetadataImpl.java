@@ -86,7 +86,7 @@ public class VFSMetadataImpl implements Persistable, VFSMetadata {
 
 	@Column(name="f_cannot_thumbnails", nullable=true, insertable=true, updatable=true)
 	private Boolean cannotGenerateThumbnails;
-	@Column(name="f_download_count", nullable=true, insertable=true, updatable=true)
+	@Column(name="f_download_count", nullable=true, insertable=false, updatable=false)
 	private int downloadCount;
 	
 	@Column(name="f_comment", nullable=true, insertable=true, updatable=true)

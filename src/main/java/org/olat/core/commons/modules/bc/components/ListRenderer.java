@@ -234,7 +234,7 @@ public class ListRenderer {
 		int revisionNr = 0;
 		boolean canVersion = false;// more are version visible
 		if(canContainerVersion && vfsVersionModule.isEnabled() && child.canVersion() == VFSConstants.YES) {
-			revisionNr = metadata.getRevisionNr();
+			revisionNr = metadata == null ? 0 : metadata.getRevisionNr();
 			canVersion = revisionNr > 1;
 		}
 

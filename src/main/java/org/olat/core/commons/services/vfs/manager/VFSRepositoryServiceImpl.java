@@ -479,8 +479,8 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	}
 
 	@Override
-	public void increaseDownloadCount(VFSItem item) {
-		String relPath = item.getRelPath();
+	public void increaseDownloadCount(VFSLeaf item) {
+		String relPath = getContainerRelativePath(item);
 		if(StringHelper.containsNonWhitespace(relPath)) {
 			metadataDao.increaseDownloadCount(relPath, item.getName());
 		}
@@ -1169,6 +1169,9 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 				if(metadata == null) {
 					metadata = metadataDao.createMetadata(xmlMetadata, relativePath, file.getName(), fileLastModified,
 							size, directory, file.toURI().toString(), "file", parent);
+					if(xmlMetadata.getDownloadCount() > 0) {
+						metadataDao.setDownloadCount(metadata, xmlMetadata.getDownloadCount());
+					}
 				}
 				migrateThumbnails(metadata, file, thumbnails);
 				

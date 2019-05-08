@@ -152,7 +152,7 @@ public class VFSResource implements WebResource {
 	public void increaseDownloadCount() {
 		try {
 			if (item instanceof VFSLeaf && item.canMeta() == VFSConstants.YES) {
-				CoreSpringFactory.getImpl(VFSRepositoryService.class).increaseDownloadCount(item);
+				CoreSpringFactory.getImpl(VFSRepositoryService.class).increaseDownloadCount((VFSLeaf)item);
 			}
 		} catch (Exception e) {
 			log.error("Cannot increase download counter: " + item, e);

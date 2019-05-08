@@ -177,6 +177,7 @@ public class CmdDownloadZip implements FolderCommand {
 		}
 		
 		private void prepareZip(HttpServletResponse hres, List<String> selectedFiles) {
+			VFSRepositoryService vfsRepositoryService = CoreSpringFactory.getImpl(VFSRepositoryService.class);
 			try(ZipOutputStream zout = new ZipOutputStream(hres.getOutputStream())) {
 				zout.setLevel(9);
 				
@@ -186,8 +187,8 @@ public class CmdDownloadZip implements FolderCommand {
 					if (item != null) {
 						vfsFiles.add(item);
 						// update download counter
-						if (item.canMeta() == VFSConstants.YES) {
-							CoreSpringFactory.getImpl(VFSRepositoryService.class).increaseDownloadCount(item);
+						if (item instanceof VFSLeaf && item.canMeta() == VFSConstants.YES) {
+							vfsRepositoryService.increaseDownloadCount((VFSLeaf)item);
 						}
 					}
 				}
