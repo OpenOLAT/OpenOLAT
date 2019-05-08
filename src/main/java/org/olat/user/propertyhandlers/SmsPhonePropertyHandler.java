@@ -58,6 +58,11 @@ public class SmsPhonePropertyHandler extends PhonePropertyHandler {
 	}
 	
 	@Override
+	public void updateUserFromFormItem(User user, FormItem formItem) {
+		//update is done during confirmation
+	}
+	
+	@Override
 	public boolean isValid(User user, FormItem formItem, Map<String,String> formContext) {
 		return true;
 	}
