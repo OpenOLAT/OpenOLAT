@@ -203,9 +203,7 @@ public class VideoHandler extends FileHandler {
 		videoManager.createVideoMetadata(repoEntry, url, format);
 		dbInstance.commit();
 		
-		if(format == VideoFormat.mp4 || format == VideoFormat.panopto) {
-			repoEntry = videoManager.updateVideoMetadata(repoEntry, url);
-		}
+		repoEntry = videoManager.updateVideoMetadata(repoEntry, url, format);
 		return repoEntry;
 	}
 

@@ -29,6 +29,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.RootEvent;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
@@ -105,6 +106,16 @@ public class VideoRuntimeController extends RepositoryEntryRuntimeController {
 			super.event(ureq, source, event);
 		}
 		doRefreshVideoPosterIfEntryAdmin();		
+	}
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(source instanceof VideoResourceEditController) {
+			if(event == Event.CHANGED_EVENT) {
+				VideoDisplayController videoDisplayCtr = (VideoDisplayController)getRuntimeController();
+				videoDisplayCtr.reloadVideo(ureq);
+			}
+		}
 	}
 	
 	private void doReplaceVideo (UserRequest ureq) {

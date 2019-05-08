@@ -14,11 +14,11 @@
 				<div id="desc_${confController.link.key}" style="display:none;"><div>$r.xssScan($desc)</div></div>
 			#end
 			<div class="pull-right">
-			#if($r.available("edit_$confController.link.key")) 
-				$r.render("edit_$confController.link.key") 
+			#if($r.available($confController.editButton.component.componentName)) 
+				$r.render($confController.editButton) 
 			#end
-			#if($r.available("del_$confController.link.key")) 
-				$r.render("del_$confController.link.key") 
+			#if($r.available($confController.deleteButton.component.componentName)) 
+				$r.render($confController.deleteButton) 
 			#end
 			</div>
 		</div>

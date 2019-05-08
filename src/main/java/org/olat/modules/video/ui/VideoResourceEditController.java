@@ -24,18 +24,22 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.video.MovieService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
@@ -46,13 +50,15 @@ import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.VideoTranscoding;
 import org.olat.modules.video.manager.VideoManagerImpl;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
 /**
  * The Class VideoResourceEditController. 
- * @autor fkiefer fabian.kiefer@frentix.com
  * this class replaces an an existing video resource with another,
  * deletes existing transcodings and recreates them considering the new resolution
+ * 
+ * @autor fkiefer fabian.kiefer@frentix.com
  */
 public class VideoResourceEditController extends FormBasicController {
 
@@ -63,33 +69,39 @@ public class VideoResourceEditController extends FormBasicController {
 	}
 	private static final String VIDEO_RESOURCE = "video.mp4";
 	
+	private VideoMeta meta;
 	private VFSContainer vfsContainer;
 	private OLATResource videoResource;
 	private RepositoryEntry entry;
 	
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private VideoManager videoManager;
 	@Autowired
 	private VideoModule videoModule;
 	@Autowired
 	private MovieService movieService;
+	@Autowired
+	private RepositoryManager repositoryManager;
 	
+	private TextElement urlEl;
 	private StaticTextElement typeEl;
 	private FileElement uploadFileEl;
-
 	
 	public VideoResourceEditController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry){
 		super(ureq, wControl);
 		this.entry = entry;
 		this.videoResource = entry.getOlatResource();
 		vfsContainer = videoManager.getMasterContainer(videoResource);
+		meta = videoManager.getVideoMetadata(videoResource);
 
 		initForm(ureq);
 	}
 	
 	@Override
 	protected void doDispose() {
-
+		//
 	}
 
 	@Override
@@ -98,23 +110,42 @@ public class VideoResourceEditController extends FormBasicController {
 		setFormDescription("video.replace.desc");
 		setFormContextHelp("ok");
 		
-		uploadFileEl = uifactory.addFileElement(getWindowControl(), "upload", "video.replace.upload", formLayout);
-		uploadFileEl.addActionListener(FormEvent.ONCHANGE);
-		uploadFileEl.limitToMimeType(videoMimeTypes, "video.mime.type.error", null);
-		
+		if(StringHelper.containsNonWhitespace(meta.getUrl())) {
+			urlEl = uifactory.addTextElement("video.config.url", 512, meta.getUrl(), formLayout);
+		} else {
+			uploadFileEl = uifactory.addFileElement(getWindowControl(), "upload", "video.replace.upload", formLayout);
+			uploadFileEl.addActionListener(FormEvent.ONCHANGE);
+			uploadFileEl.limitToMimeType(videoMimeTypes, "video.mime.type.error", null);
+		}
 		typeEl = uifactory.addStaticTextElement("video.mime.type", "video.mime.type", "", formLayout);
-		typeEl.setVisible(false);		
+		typeEl.setVisible(false);
 	
 		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonGroupLayout);
 		uifactory.addFormSubmitButton("submit", "tab.video.exchange", buttonGroupLayout);
 
 	}
+	
+	private void doReplaceURLAndUpdateMetadata() {
+		String url = urlEl.getValue();
+		VideoFormat format = VideoFormat.valueOfUrl(url);
+		if(format == null) {
+			return;// cannot understand the URL
+		}
+		if(format == VideoFormat.panopto) {
+			url = videoManager.toPodcastVideoUrl(url);
+		}
+
+		RepositoryEntry repoEntry = repositoryManager.lookupRepositoryEntry(videoResource, true);
+		videoManager.updateVideoMetadata(repoEntry, url, format);
+		dbInstance.commit();
+		meta = videoManager.getVideoMetadata(videoResource);
+	}
 
 	private int doReplaceFileAndUpdateMetadata() {
 		VFSLeaf video = (VFSLeaf) vfsContainer.resolve(VIDEO_RESOURCE);		
 		File uploadFile = uploadFileEl.getUploadFile();
-		VideoMeta meta = videoManager.getVideoMetadata(videoResource);
+		meta = videoManager.getVideoMetadata(videoResource);
 		if (uploadFileEl.getUploadSize() > 0 && uploadFile.exists()){
 			video.delete();
 			VFSLeaf uploadVideo = vfsContainer.createChildLeaf(VIDEO_RESOURCE);
@@ -161,8 +192,28 @@ public class VideoResourceEditController extends FormBasicController {
 	}
 	
 	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = super.validateFormLogic(ureq);
+		
+		if(urlEl != null) {
+			urlEl.clearError();
+			if(!StringHelper.containsNonWhitespace(urlEl.getValue())) {
+				urlEl.setErrorKey("form.legende.mandatory", null);
+				allOk &= false;
+			} else if(VideoFormat.valueOfUrl(urlEl.getValue()) == null) {
+				urlEl.setErrorKey("error.format.not.supported", null);
+				allOk &= false;
+			}
+		}
+
+		return allOk;
+	}
+
+	@Override
 	protected void formOK(UserRequest ureq) {
-		if (uploadFileEl.getUploadFile() != null && uploadFileEl.isUploadSuccess()) {
+		if(urlEl != null) {
+			doReplaceURLAndUpdateMetadata();
+		} else if (uploadFileEl != null && uploadFileEl.getUploadFile() != null && uploadFileEl.isUploadSuccess()) {
 			queueDeleteTranscoding();
 			int height = doReplaceFileAndUpdateMetadata();
 			queueCreateTranscoding(height);
@@ -173,5 +224,6 @@ public class VideoResourceEditController extends FormBasicController {
 			typeEl.setVisible(false);
 			showWarning("video.not.replaced");
 		}
+		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 }

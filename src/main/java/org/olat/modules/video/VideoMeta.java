@@ -49,6 +49,8 @@ public interface VideoMeta extends CreateInfo {
 	 */
 	public String getUrl();
 	
+	public void setUrl(String url);
+	
 	/**
 	 * @return width of transcoded video in pixel
 	 */
