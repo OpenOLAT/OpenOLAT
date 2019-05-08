@@ -518,7 +518,7 @@ public class ServletUtil {
 		}
 	}
 
-	public static void serveStringResource(HttpServletResponse response, StringOutput result) {
+	public static boolean serveStringResource(HttpServletResponse response, StringOutput result) {
 		setStringResourceHeaders(response);
 
 		// log the response headers prior to sending the output
@@ -528,30 +528,32 @@ public class ServletUtil {
 					+ response.getCharacterEncoding() + "\nlocale:" + response.getLocale());
 		}
 
-		try {
-			long rstart = 0;
-			if (isDebug || true) {
-				rstart = System.currentTimeMillis();
-			}
+		try(PrintWriter os = response.getWriter();
+				Reader reader = result.getReader()) {
 			// make a ByteArrayOutputStream to be able to determine the length.
 			// buffer size: assume average length of a char in bytes is max 2
-			int encLen = result.length();
-			Reader reader = result.getReader();
-			//response.setContentLength(encLen); set the number of characters, must be number of bytes
-			
-			PrintWriter os = response.getWriter();
 			IOUtils.copy(reader, os);
-			os.close();
-			
-			if (isDebug) {
-				log.debug("time to serve inline-resource " + result.length() + " chars / " + encLen + " bytes: " 
-					+ (System.currentTimeMillis() - rstart));
-			}
+		} catch (IllegalStateException e) {
+			debugIllegalGetOutputStream(response, result);
+			log.error("Illegal getWriter", e);
+			return false;
 		} catch (IOException e) {
 			if (isDebug) {
 				log.warn("client browser abort when serving inline", e);
 			}
 		}
+		return true;
+	}
+	
+	private static void debugIllegalGetOutputStream(HttpServletResponse response, StringOutput result) {
+		try {
+			for(String header:response.getHeaderNames()) {
+				log.error("Illegal getWriter: " + header + " :: " + response.getHeader(header));
+			}
+		} catch (Exception e) {
+			log.error("Illegal getWriter: ", e);
+		}
+		log.error(result.toString());
 	}
 	
 	public static void setStringResourceHeaders(HttpServletResponse response) {
