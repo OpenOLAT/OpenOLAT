@@ -30,9 +30,11 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.annotation.Resource;
@@ -83,7 +85,6 @@ import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.i18n.I18nManager;
-import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailerResult;
@@ -958,34 +959,16 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	}
 	
 	private MailerResult sendCertificate(Identity to, RepositoryEntry entry, File certificateFile, CertificateConfig config) {
+		MailerResult mailerResult = sendCertificate(to, entry, certificateFile);
+		sendCertificateCopies(to, entry, certificateFile, config);
+		return mailerResult;
+	}
+
+	private MailerResult sendCertificate(Identity to, RepositoryEntry entry, File certificateFile) {
 		MailBundle bundle = new MailBundle();
 		bundle.setToId(to);
 		bundle.setFrom(WebappHelper.getMailConfig("mailReplyTo"));
 		
-		List<String> bccs = certificatesModule.getCertificatesBccEmails();
-		List<ContactList> contactLists = new ArrayList<>(3);
-		if(config.isSendEmailBcc() && bccs.size() > 0) {
-			ContactList bcc = new ContactList();
-			bccs.forEach(email -> { bcc.add(email); });
-			contactLists.add(bcc);
-		}
-		if (config.isSendEmailLinemanager() && certificatesModule.isCertificateLinemanager()) {
-			List<Identity> linemanagers = getLinemanagers(to);
-			ContactList linemanagerContactList = new ContactList();
-			linemanagers.forEach(lm -> { linemanagerContactList.add(lm); });
-			contactLists.add(linemanagerContactList);
-		}
-		if (config.isSendEmailIdentityRelations() && baseSecurityModule.isRelationRoleEnabled()) {
-			RelationSearchParams searchParams = new RelationSearchParams();
-			RelationRight right = identityRelationshipService.getRelationRightByRight(CertificateEmailRightProvider.RELATION_RIGHT);
-			searchParams.setRight(right);
-			List<IdentityToIdentityRelation> relationTargets = identityRelationshipService.getRelationsAsTarget(to, searchParams);
-			ContactList relationTargetsList = new ContactList();
-			relationTargets.forEach(target -> { relationTargetsList.add( target.getSource()); });
-			contactLists.add(relationTargetsList);
-		}
-		bundle.setContactLists(contactLists);
-
 		String[] args = new String[] {
 			entry.getDisplayname(),
 			userManager.getUserDisplayName(to)
@@ -998,6 +981,61 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		String body = translator.translate("certification.email.body", args);
 		bundle.setContent(subject, body, certificateFile);
 		return mailManager.sendMessage(bundle);
+	}
+	
+	private void sendCertificateCopies(Identity to, RepositoryEntry entry, File certificateFile, CertificateConfig config) {
+		String entryDisplayName = entry.getDisplayname();
+		String toDisplayName = userManager.getUserDisplayName(to);
+		String toUserLanguage = to.getUser().getPreferences().getLanguage();
+
+		List<MailBundle> mailBundles = new ArrayList<>();
+		List<String> bccs = certificatesModule.getCertificatesBccEmails();
+		if(config.isSendEmailBcc()) {
+			for (String bcc : bccs) {
+				MailBundle bundle = createCopyMailBundle(certificateFile, toUserLanguage, entryDisplayName, toDisplayName);
+				bundle.setTo(bcc);
+				mailBundles.add(bundle);
+			}
+		}
+		
+		Set<Identity> copiesTo = new HashSet<>();
+		if (config.isSendEmailLinemanager() && certificatesModule.isCertificateLinemanager()) {
+			List<Identity> linemanagers = getLinemanagers(to);
+			copiesTo.addAll(linemanagers);
+		}
+		if (config.isSendEmailIdentityRelations() && baseSecurityModule.isRelationRoleEnabled()) {
+			RelationSearchParams searchParams = new RelationSearchParams();
+			RelationRight right = identityRelationshipService.getRelationRightByRight(CertificateEmailRightProvider.RELATION_RIGHT);
+			searchParams.setRight(right);
+			List<IdentityToIdentityRelation> relationTargets = identityRelationshipService.getRelationsAsTarget(to, searchParams);
+			relationTargets.forEach(target -> { copiesTo.add( target.getSource()); });
+		}
+		
+		for (Identity copyTo : copiesTo) {
+			String language = copyTo.getUser().getPreferences().getLanguage();
+			MailBundle bundle = createCopyMailBundle(certificateFile, language, entryDisplayName, toDisplayName);
+			bundle.setToId(copyTo);
+			mailBundles.add(bundle);
+		}
+		
+		for (MailBundle mailBundle : mailBundles) {
+			mailManager.sendMessage(mailBundle);
+		}
+	}
+
+	private MailBundle createCopyMailBundle(File certificateFile, String language, String entryDisplayName, String toDisplayName) {
+		String[] args = new String[] {
+				entryDisplayName,
+				toDisplayName
+		};
+		MailBundle bundle = new MailBundle();
+		bundle.setFrom(WebappHelper.getMailConfig("mailReplyTo"));
+		Locale locale = i18nManager.getLocaleOrDefault(language);
+		Translator translator = Util.createPackageTranslator(CertificateController.class, locale);
+		String subject = translator.translate("certification.email.copy.subject", args);
+		String body = translator.translate("certification.email.copy.body", args);
+		bundle.setContent(subject, body, certificateFile);
+		return bundle;
 	}
 	
 	private List<Identity> getLinemanagers(Identity identity) {
