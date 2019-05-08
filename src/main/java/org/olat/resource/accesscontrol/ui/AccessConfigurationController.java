@@ -69,6 +69,7 @@ public class AccessConfigurationController extends FormBasicController {
 	private MultipleSelectionElement confirmationEmailEl;
 	private final List<FormLink> addMethods = new ArrayList<>();
 	
+	private int counter = 0;
 	private final String displayName;
 	private final OLATResource resource;
 
@@ -200,6 +201,7 @@ public class AccessConfigurationController extends FormBasicController {
 			if(event.equals(Event.DONE_EVENT)) {
 				OfferAccess newLink = newMethodCtrl.commitChanges();
 				addConfiguration(newLink);
+				confControllerContainer.setDirty(true);
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 			cmc.deactivate();
@@ -286,15 +288,17 @@ public class AccessConfigurationController extends FormBasicController {
 		confControllers.add(infos);
 
 		if(editable) {
-			FormLink editLink = uifactory.addFormLink("edit_" + link.getKey(), "edit", "edit", null, confControllerContainer, Link.BUTTON_SMALL);
+			FormLink editLink = uifactory.addFormLink("edit_" + (++counter), "edit", "edit", null, confControllerContainer, Link.BUTTON_SMALL);
 			editLink.setUserObject(infos);
 			editLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
 			confControllerContainer.add(editLink.getName(), editLink);
+			infos.setEditButton(editLink);
 
-			FormLink delLink = uifactory.addFormLink("del_" + link.getKey(), "delete", "delete", null, confControllerContainer, Link.BUTTON_SMALL);
+			FormLink delLink = uifactory.addFormLink("del_" + (++counter), "delete", "delete", null, confControllerContainer, Link.BUTTON_SMALL);
 			delLink.setUserObject(infos);
 			delLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
 			confControllerContainer.add(delLink.getName(), delLink);
+			infos.setDeleteButton(delLink);
 		}
 		
 		updateConfirmationEmail();
@@ -398,6 +402,9 @@ public class AccessConfigurationController extends FormBasicController {
 		private String dates;
 		private OfferAccess link;
 		private final boolean paymentMethod;
+		
+		private FormLink editButton;
+		private FormLink deleteButton;
 
 		public AccessInfo(String name, boolean paymentMethod, String infos, OfferAccess link) {
 			this.name = name;
@@ -468,6 +475,22 @@ public class AccessConfigurationController extends FormBasicController {
 		public void setLink(OfferAccess link) {
 			this.link = link;
 			this.dates = null;
+		}
+
+		public FormLink getEditButton() {
+			return editButton;
+		}
+
+		public void setEditButton(FormLink editButton) {
+			this.editButton = editButton;
+		}
+
+		public FormLink getDeleteButton() {
+			return deleteButton;
+		}
+
+		public void setDeleteButton(FormLink deleteButton) {
+			this.deleteButton = deleteButton;
 		}
 	}
 }
