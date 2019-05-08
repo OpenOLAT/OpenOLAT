@@ -419,7 +419,7 @@ public interface VideoManager {
 	 * @param videoResource
 	 * @param url
 	 */
-	public RepositoryEntry updateVideoMetadata(RepositoryEntry entry, String url);
+	public RepositoryEntry updateVideoMetadata(RepositoryEntry entry, String url, VideoFormat format);
 	
 	/**
 	 * Update the duration of the video, in repository entry as expenditure of work
@@ -430,6 +430,8 @@ public interface VideoManager {
 	 * @return The updated repository entry
 	 */
 	public RepositoryEntry updateVideoMetadata(RepositoryEntry entry, Long durationInSeconds);
+	
+	public VideoMeta updateVideoMetadata(VideoMeta meta);
 	
 	/**
 	 * Gets the all video repo entries.

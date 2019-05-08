@@ -718,6 +718,11 @@ public class VideoManagerImpl implements VideoManager {
 	}
 	
 	@Override
+	public VideoMeta updateVideoMetadata(VideoMeta meta) {
+		return videoMetadataDao.updateVideoMetadata(meta);
+	}
+
+	@Override
 	public void updateVideoMetadata (OLATResource videoResource,VFSLeaf uploadVideo) {	
 		VideoMeta meta = getVideoMetadata(videoResource);
 
@@ -755,31 +760,43 @@ public class VideoManagerImpl implements VideoManager {
 	}
 
 	@Override
-	public RepositoryEntry updateVideoMetadata(RepositoryEntry entry, String url) {
+	public RepositoryEntry updateVideoMetadata(RepositoryEntry entry, String url, VideoFormat format) {
 		OLATResource videoResource = entry.getOlatResource();
-		VFSLeaf videoFile = downloadTmpVideo(videoResource, url);
-		if(videoFile.exists() && videoFile.getSize() > 0) {
-			VideoMeta meta = videoMetadataDao.getVideoMetadata(videoResource);
-			meta.setSize(videoFile.getSize());
-
-			Size dimensions = movieService.getSize(videoFile, "mp4");
-			if(dimensions != null) {
-				meta.setWidth(dimensions.getWidth());
-				meta.setHeight(dimensions.getHeight());
+		VideoMeta meta = videoMetadataDao.getVideoMetadata(videoResource);
+		meta.setUrl(url);
+		meta.setVideoFormat(format);
+		if(format == VideoFormat.mp4 || format == VideoFormat.panopto) {
+			VFSLeaf videoFile = downloadTmpVideo(videoResource, url);
+			if(videoFile.exists() && videoFile.getSize() > 0) {
+				meta.setSize(videoFile.getSize());
+	
+				Size dimensions = movieService.getSize(videoFile, "mp4");
+				if(dimensions != null) {
+					meta.setWidth(dimensions.getWidth());
+					meta.setHeight(dimensions.getHeight());
+				}
+				
+				long duration = movieService.getDuration(videoFile, "mp4");
+				if(duration > 0) {
+					String length = Formatter.formatTimecode(duration);
+					meta.setLength(length);
+					entry = repositoryManager.setExpenditureOfWork(entry, length);
+				}
+			} else {
+				meta.setSize(0l);
+				meta.setWidth(800);
+				meta.setHeight(600);
 			}
 			
-			long duration = movieService.getDuration(videoFile, "mp4");
-			if(duration > 0) {
-				String length = Formatter.formatTimecode(duration);
-				meta.setLength(length);
-				entry = repositoryManager.setExpenditureOfWork(entry, length);
+			if(videoFile.exists()) {
+				videoFile.deleteSilently();
 			}
-			videoMetadataDao.updateVideoMetadata(meta);
+		} else {
+			meta.setSize(0l);
+			meta.setWidth(800);
+			meta.setHeight(600);
 		}
-
-		if(videoFile.exists()) {
-			videoFile.deleteSilently();
-		}
+		videoMetadataDao.updateVideoMetadata(meta);
 		return entry;
 	}
 	

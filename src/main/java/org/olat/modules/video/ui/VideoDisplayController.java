@@ -248,7 +248,8 @@ public class VideoDisplayController extends BasicController {
 	 * @param currentTime The start time in seconds (optional)
 	 */
 	protected void reloadVideo(UserRequest ureq) {
-		if(StringHelper.containsNonWhitespace(this.videoMetadata.getUrl())) {
+		videoMetadata = videoManager.getVideoMetadata(videoEntry.getOlatResource());
+		if(StringHelper.containsNonWhitespace(videoMetadata.getUrl())) {
 			loadVideo(ureq, videoMetadata.getUrl(), videoMetadata.getVideoFormat());
 		} else {
 			//load video as VFSLeaf
