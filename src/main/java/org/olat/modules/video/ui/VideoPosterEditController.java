@@ -32,7 +32,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.helpers.Settings;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.video.VideoFormat;
@@ -49,6 +48,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class VideoPosterEditController extends FormBasicController {
 
+	private FormLink deleteImage;
 	private FormLink uploadImage;
 	private FormLink replaceImage;
 	private FormLayoutContainer displayContainer;
@@ -68,6 +68,7 @@ public class VideoPosterEditController extends FormBasicController {
 		this.videoResource = videoResource;
 		videoMetadata = videoManager.getVideoMetadata(videoResource);
 		initForm(ureq);
+		updatePosterImage(ureq, videoResource);
 	}
 
 	@Override
@@ -79,7 +80,6 @@ public class VideoPosterEditController extends FormBasicController {
 
 		displayContainer.contextPut("hint", translate("video.config.poster.hint"));
 
-		updatePosterImage(ureq, videoResource);
 		displayContainer.setLabel("video.config.poster", null);
 		formLayout.add(displayContainer);
 
@@ -93,6 +93,8 @@ public class VideoPosterEditController extends FormBasicController {
 
 		uploadImage = uifactory.addFormLink("uploadImage", "video.config.poster.upload", null, buttonGroupLayout, Link.BUTTON);
 		uploadImage.setIconLeftCSS("o_icon o_icon_upload o_icon-f");
+		
+		deleteImage = uifactory.addFormLink("deleteImage", "delete", null, buttonGroupLayout, Link.BUTTON);
 	}
 
 	@Override
@@ -103,9 +105,11 @@ public class VideoPosterEditController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == replaceImage) {
-			doReplaceVideo(ureq);
+			doReplacePoster(ureq);
 		} else if (source == uploadImage) {
-			doUploadVideo(ureq);
+			doUploadPoster(ureq);
+		} else if (source == deleteImage) {
+			doDeletePoster(ureq);
 		}
 	}
 	@Override
@@ -142,7 +146,7 @@ public class VideoPosterEditController extends FormBasicController {
 		cmc = null;
 	}
 
-	private void doReplaceVideo(UserRequest ureq){
+	private void doReplacePoster(UserRequest ureq){
 		posterSelectionForm = new VideoPosterSelectionForm(ureq, getWindowControl(), videoResource, videoMetadata);
 		listenTo(posterSelectionForm);
 		
@@ -157,7 +161,7 @@ public class VideoPosterEditController extends FormBasicController {
 		}
 	}
 
-	private void doUploadVideo(UserRequest ureq){
+	private void doUploadPoster(UserRequest ureq){
 		posterUploadForm = new VideoPosterUploadForm(ureq, getWindowControl(), videoResource);
 		listenTo(posterUploadForm);
 		
@@ -167,17 +171,24 @@ public class VideoPosterEditController extends FormBasicController {
 		listenTo(cmc);
 		cmc.activate();
 	}
+	
+	private void doDeletePoster(UserRequest ureq){
+		videoManager.deletePosterframe(videoResource);
+		updatePosterImage(ureq, videoResource);
+	}
 
-	private void updatePosterImage(UserRequest ureq, OLATResource video){
+	private boolean updatePosterImage(UserRequest ureq, OLATResource video){
 		VFSLeaf posterFile = videoManager.getPosterframe(video);
 		if(posterFile != null) {
 			VFSContainer masterContainer = posterFile.getParentContainer();
 			VideoMediaMapper mediaMapper = new VideoMediaMapper(masterContainer);
 			String mediaUrl = registerMapper(ureq, mediaMapper);
-			String serverUrl = Settings.createServerURI();
-			displayContainer.contextPut("serverUrl", serverUrl);
 			displayContainer.contextPut("mediaUrl", mediaUrl);
-			displayContainer.setDirty(true);
+		} else {
+			displayContainer.contextRemove("mediaUrl");
 		}
+		displayContainer.setDirty(true);
+		deleteImage.setVisible(posterFile != null);
+		return posterFile != null;
 	}
 }

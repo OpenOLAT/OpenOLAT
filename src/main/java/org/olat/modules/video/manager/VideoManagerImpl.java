@@ -191,7 +191,9 @@ public class VideoManagerImpl implements VideoManager {
 				&& posterRes.getHeight() >= videoMetadata.getHeight() 
 				&& posterRes.getWidth() >= videoMetadata.getWidth()) {
 			VFSLeaf oldPosterFile = getPosterframe(videoResource);
-			oldPosterFile.delete();
+			if(oldPosterFile != null) {
+				oldPosterFile.delete();
+			}
 			VFSContainer masterContainer = getMasterContainer(videoResource);
 			LocalFileImpl newPoster = (LocalFileImpl) masterContainer.createChildLeaf(FILENAME_POSTER_JPG);
 			// to shrink image file, resolution ratio needs to be equal, otherwise crop from top left corner
@@ -204,6 +206,16 @@ public class VideoManagerImpl implements VideoManager {
 		} else {
 			setPosterframe(videoResource, newPosterFile);
 		}
+	}
+
+	@Override
+	public void deletePosterframe(OLATResource videoResource) {
+		VFSLeaf oldPosterFile = getPosterframe(videoResource);
+		if(oldPosterFile != null) {
+			oldPosterFile.delete();
+		}
+		RepositoryEntry repoEntry = repositoryManager.lookupRepositoryEntry(videoResource, true);
+		repositoryManager.deleteImage(repoEntry);
 	}
 
 	/**

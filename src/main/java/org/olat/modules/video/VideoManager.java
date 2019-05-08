@@ -84,6 +84,8 @@ public interface VideoManager {
 	 * @param newPosterFile the new poster file
 	 */
 	public void setPosterframeResizeUploadfile(OLATResource videoResource, VFSLeaf newPosterFile);
+	
+	public void deletePosterframe(OLATResource videoResource);
 
 	/**
 	 * get all available Tracks of given videoResource
