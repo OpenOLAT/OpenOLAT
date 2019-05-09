@@ -19,6 +19,10 @@
  */
 package org.olat.modules.gotomeeting.ui;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -72,9 +76,8 @@ public class GoToConfigurationController extends FormBasicController {
 		String consumerSecret = goToMeetingModule.getTrainingConsumerSecret();
 		trainingConsumerSecretEl = uifactory.addTextElement("training.consumersecret", "training.consumersecret", 128, consumerSecret, formLayout);
 		
-		timeZoneEls = uifactory.addDropdownSingleselect("timezone.ids", "timezone.id", formLayout,
-				GoToTimezoneIDs.TIMEZONE_IDS, GoToTimezoneIDs.TIMEZONE_IDS, null);
-		timeZoneEls.addActionListener(FormEvent.ONCHANGE);
+		String[] timezoneIds = orderedTimezoneIds();
+		timeZoneEls = uifactory.addDropdownSingleselect("timezone.ids", "timezone.id", formLayout, timezoneIds, timezoneIds, null);
 		String timeZoneId = goToMeetingModule.getGoToTimeZoneId();
 		for(String key: GoToTimezoneIDs.TIMEZONE_IDS) {
 			if(key.equals(timeZoneId)) {
@@ -88,9 +91,17 @@ public class GoToConfigurationController extends FormBasicController {
 		uifactory.addFormSubmitButton("save", buttonLayout);
 	}
 	
+	private String[] orderedTimezoneIds() {
+		String[] timezoneIds = GoToTimezoneIDs.TIMEZONE_IDS;
+		List<String> timezoneIdList = Arrays.asList(timezoneIds);
+		Collections.sort(timezoneIdList);
+		return timezoneIdList.toArray(new String[timezoneIdList.size()]);
+	}
+	
 	private void updateEnabled() {
 		boolean enabled = enabledEl.isAtLeastSelected(1);
 		trainingConsumerKeyEl.setVisible(enabled);
+		trainingConsumerSecretEl.setVisible(enabled);
 		timeZoneEls.setVisible(enabled);
 	}
 
@@ -102,23 +113,25 @@ public class GoToConfigurationController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(enabledEl == source) {
-			goToMeetingModule.setEnabled(enabledEl.isAtLeastSelected(1));
 			updateEnabled();
-		} else if(timeZoneEls == source) {
-			String selectedTimeZoneId = timeZoneEls.getSelectedKey();
-			goToMeetingModule.setGoToTimeZoneId(selectedTimeZoneId);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		String trainingConsumerKey = trainingConsumerKeyEl.getValue();
-		goToMeetingModule.setTrainingConsumerKey(trainingConsumerKey);
-		String trainingConsumerSecret = trainingConsumerSecretEl.getValue();
-		goToMeetingModule.setTrainingConsumerSecret(trainingConsumerSecret);
-		
-		String selectedTimeZoneId = timeZoneEls.getSelectedKey();
-		goToMeetingModule.setGoToTimeZoneId(selectedTimeZoneId);
+		goToMeetingModule.setEnabled(enabledEl.isAtLeastSelected(1));
+		if(enabledEl.isAtLeastSelected(1)) {
+			String trainingConsumerKey = trainingConsumerKeyEl.getValue();
+			goToMeetingModule.setTrainingConsumerKey(trainingConsumerKey);
+			String trainingConsumerSecret = trainingConsumerSecretEl.getValue();
+			goToMeetingModule.setTrainingConsumerSecret(trainingConsumerSecret);
+			String selectedTimeZoneId = timeZoneEls.getSelectedKey();
+			goToMeetingModule.setGoToTimeZoneId(selectedTimeZoneId);
+		} else {
+			goToMeetingModule.setTrainingConsumerKey(null);
+			goToMeetingModule.setTrainingConsumerSecret(null);
+			goToMeetingModule.setGoToTimeZoneId(null);
+		}
 	}
 }

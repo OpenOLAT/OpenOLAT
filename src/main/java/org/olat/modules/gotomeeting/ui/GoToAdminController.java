@@ -84,11 +84,14 @@ public class GoToAdminController extends BasicController implements Activateable
 		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
 		if("Configuration".equalsIgnoreCase(type)) {
 			doOpenAccountSettings(ureq);
+			segmentView.select(accountLink);
 		} else if("Organizers".equalsIgnoreCase(type)) {
 			List<ContextEntry> subEntries = entries.subList(1, entries.size());
 			doOpenOrganizersList(ureq).activate(ureq, subEntries, entries.get(0).getTransientState());
+			segmentView.select(organizersLink);
 		} else if("Meetings".equalsIgnoreCase(type)) {
 			doOpenMeetingsList(ureq);
+			segmentView.select(meetingsLink);
 		}
 	}
 
