@@ -33,6 +33,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.FormUIFactory;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.InlineElement;
 import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.control.Controller;
@@ -434,8 +435,13 @@ public abstract class FormBasicController extends BasicController {
 	
 	protected void propagateDirtinessToContainer(FormItem fiSrc, @SuppressWarnings("unused") FormEvent fe) {
 		// check for InlineElments remove as the tag library has been replaced
-		if(fiSrc instanceof InlineElement){
-			if(!((InlineElement) fiSrc).isInlineEditingElement()){ //OO-137
+		if(fiSrc instanceof FormLink) {
+			FormLink link = (FormLink)fiSrc;
+			if(!link.isPopup() && !link.isNewWindow()) {
+				flc.setDirty(true);
+			}
+		} else if(fiSrc instanceof InlineElement) {
+			if(!((InlineElement) fiSrc).isInlineEditingElement()) {
 				//the container need to be redrawn because every form item element
 				//is made of severals components. If a form item is set to invisible
 				//the layout which glue the different components stay visible
@@ -653,17 +659,13 @@ public abstract class FormBasicController extends BasicController {
 	@Override
 	public void dispose() {
 		super.dispose();
-		ThreadLocalUserActivityLoggerInstaller.runWithUserActivityLogger(new Runnable() {
-			@Override
-			public void run() {
-				// Dispose also disposable form items (such as file uploads that needs to
-				// cleanup temporary files)
-				Iterable<FormItem> formItems = FormBasicController.this.flc.getFormItems();
-				for (FormItem formItem : formItems) {
-					if (formItem instanceof Disposable) {
-						Disposable disposableFormItem = (Disposable) formItem;
-						disposableFormItem.dispose();				
-					}
+		ThreadLocalUserActivityLoggerInstaller.runWithUserActivityLogger(() -> {
+			// Dispose also disposable form items (such as file uploads that needs to
+			// cleanup temporary files)
+			for (FormItem formItem : FormBasicController.this.flc.getFormItems()) {
+				if (formItem instanceof Disposable) {
+					Disposable disposableFormItem = (Disposable) formItem;
+					disposableFormItem.dispose();				
 				}
 			}
 		}, getUserActivityLogger());

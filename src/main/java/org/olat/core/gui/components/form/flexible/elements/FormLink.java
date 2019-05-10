@@ -26,6 +26,7 @@ package org.olat.core.gui.components.form.flexible.elements;
 
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkPopupSettings;
 
 public interface FormLink extends FormItem {
 	
@@ -33,6 +34,28 @@ public interface FormLink extends FormItem {
 	
 	@Override
 	public Link getComponent();
+	
+	public boolean isNewWindow();
+	
+	/**
+	 * Use this with caution! A link which opens in a new window
+	 * will not commit the form changes.
+	 * 
+	 * @param true/false
+	 */
+	public void setNewWindow(boolean openInNewWindow);
+	
+	public boolean isPopup();
+	
+	public LinkPopupSettings getPopup();
+	
+	/**
+	 * Use this with caution! A link which opens in a new window
+	 * will not commit the form changes.
+	 * 
+	 * @param true/false
+	 */
+	public void setPopup(LinkPopupSettings popup);
 
 	/**
 	 * @param customEnabledLinkCSS The customEnabledLinkCSS to set.

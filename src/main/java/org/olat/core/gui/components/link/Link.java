@@ -31,6 +31,8 @@ import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentEventListener;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.badge.Badge;
+import org.olat.core.gui.components.form.flexible.FormBaseComponentIdProvider;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.logging.AssertException;
@@ -82,7 +84,7 @@ public class Link extends AbstractComponent {
 	private boolean focus;
 	private String i18n;
 	private String title;
-	private String elementId;
+	private final String elementId;
 	private String textReasonForDisabling;
 	private String customDisplayText;
 	private String customEnabledLinkCSS;
@@ -90,7 +92,7 @@ public class Link extends AbstractComponent {
 	private String iconLeftCSS;
 	private String iconRightCSS;
 	private String target;
-	private Object internalAttachedObj;
+	private FormLink flexiLink;
 	private Object userObject;
 	private String accessKey;
 	private boolean active = false;
@@ -148,10 +150,16 @@ public class Link extends AbstractComponent {
 	 * @param presentation
 	 * @param internalAttachedObj
 	 */
-	protected Link(String id, String name, String command, String i18n, int presentation, Object internalAttachedObj){
+	public Link(String id, String name, String command, String i18n, int presentation, FormLink flexiLink) {
 		super(id, name);
-		this.internalAttachedObj = internalAttachedObj;
+		this.flexiLink = flexiLink;
 		this.command = command;
+		// Directly use the dispatch ID for DOM replacement to minimize DOM tree
+		if(flexiLink == null) {
+			elementId = "o_c".concat(getDispatchID());
+		} else {
+			elementId = FormBaseComponentIdProvider.DISPPREFIX.concat(getDispatchID());
+		}
 		if ( this.command == null || this.command.equals(""))  throw new AssertException("command string must be a valid string and not null");
 		this.i18n = i18n;
 		this.presentation = presentation;
@@ -166,14 +174,9 @@ public class Link extends AbstractComponent {
 		// use span wrappers - if the custom layout needs div wrappers this flag has
 		// to be set manually
 		setSpanAsDomReplaceable(true);
-		// Directly use the dispatch ID for DOM replacement to minimize DOM tree
-		setElementId("o_c" + getDispatchID());
 		setDomReplacementWrapperRequired(false);
 	}
-	
-	/**
-	 * @see org.olat.core.gui.components.Component#dispatchRequest(org.olat.core.gui.UserRequest)
-	 */
+
 	@Override
 	protected void doDispatchRequest(UserRequest ureq) {
 		setDirty(true);
@@ -186,7 +189,6 @@ public class Link extends AbstractComponent {
 		}
 		
 		dispatch(ureq, command);
-		
 	}
 
 	/**
@@ -197,13 +199,11 @@ public class Link extends AbstractComponent {
 		if(!command.equals(cmd)){
 			throw new AssertException("hack attempt! command does not match the one from the UserRequest! Command recieved: " + cmd + " expected: " + command);
 		}
+		
 		if (registerForMousePositionEvent) setXYOffest(ureq);
 		fireEvent(ureq, new Event(cmd));
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.Component#getHTMLRendererSingleton()
-	 */
 	@Override
 	public ComponentRenderer getHTMLRendererSingleton() {
 		return RENDERER;
@@ -292,8 +292,8 @@ public class Link extends AbstractComponent {
 		return title;
 	}
 	
-	Object getInternalAttachedObject(){
-		return internalAttachedObj;
+	FormLink getFlexiForm() {
+		return flexiLink;
 	}
 	
 	MouseEvent getMouseEvent() {
@@ -325,7 +325,7 @@ public class Link extends AbstractComponent {
 	 * @return returns the custom setted element id
 	 */
 	protected String getElementId() {
-		return this.elementId;
+		return elementId;
 	}
 
 	public boolean isHasTooltip() {
@@ -354,9 +354,6 @@ public class Link extends AbstractComponent {
 	 * @return the custom CSS class used for a disabled link
 	 */
 	public String getCustomDisabledLinkCSS() {
-		//if (presentation % NONTRANSLATED != LINK_CUSTOM_CSS) {
-		//	throw new AssertException("Tried to get custom link CSS class but presentation mode is not set to LINK_CUSTOM_CSS");
-		//}
 		return customDisabledLinkCSS;
 	}
 
@@ -364,9 +361,6 @@ public class Link extends AbstractComponent {
 	 * @param customDisabledLinkCSS the custom CSS class used for a disabled link
 	 */
 	public void setCustomDisabledLinkCSS(String customDisabledLinkCSS) {
-		//if (presentation % NONTRANSLATED != LINK_CUSTOM_CSS) {
-		//	throw new AssertException("Tried to set custom link CSS class but presentation mode is not set to LINK_CUSTOM_CSS");
-		//}
 		this.customDisabledLinkCSS = customDisabledLinkCSS;
 		
 		//check if it is a flexi.form link with custom css
@@ -392,9 +386,6 @@ public class Link extends AbstractComponent {
 	 * @return the custom CSS class used for a enabled link
 	 */
 	public String getCustomEnabledLinkCSS() {
-		//if (presentation % NONTRANSLATED != LINK_CUSTOM_CSS) {
-		//	throw new AssertException("Tried to get custom link CSS class but presentation mode is not set to LINK_CUSTOM_CSS");
-		//}
 		return customEnabledLinkCSS;
 	}
 
@@ -402,9 +393,6 @@ public class Link extends AbstractComponent {
 	 * @param customEnabledLinkCSS the custom CSS class used for a enabled link
 	 */
 	public void setCustomEnabledLinkCSS(String customEnabledLinkCSS) {
-		//if (presentation % NONTRANSLATED != LINK_CUSTOM_CSS) {
-		//	throw new AssertException("Tried to set custom link CSS class but presentation mode is not set to LINK_CUSTOM_CSS");
-		//}
 		this.customEnabledLinkCSS = customEnabledLinkCSS;
 
 		//check if it is a flexi.form link with custom css
@@ -452,13 +440,6 @@ public class Link extends AbstractComponent {
 
 	public void setUserObject(Object userObject) {
 		this.userObject = userObject;
-	}
-	/*
-	 * this method should not be public, it is restricted to the link package. ID's must
-	 * be unique and follow the requirements for html id names.
-	 */
-	void setElementId(String elementID) {
-		this.elementId = elementID;		
 	}
 
 	protected String getAccessKey() {
@@ -539,7 +520,6 @@ public class Link extends AbstractComponent {
 	
 	/**
 	 * register a javascript function to an event of this link
-	 * TODO:gs:b may pass the event and the link element to the function as arguments
 	 * <br>
 	 * Uses prototype.js
 	 * @param event
@@ -562,9 +542,9 @@ public class Link extends AbstractComponent {
 		if(xyOffset != null) {
 			try {
 				offsetX = Integer.parseInt(xyOffset.substring(1, xyOffset
-						.indexOf("y")));
+						.indexOf('y')));
 				offsetY = Integer.parseInt(xyOffset.substring(xyOffset
-						.indexOf("y") + 1, xyOffset.length()));
+						.indexOf('y') + 1, xyOffset.length()));
 			} catch (NumberFormatException e) {
 				offsetX = 0;
 				offsetY = 0;

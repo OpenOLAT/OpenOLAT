@@ -791,6 +791,14 @@ function o_openPopUp(url, windowname, width, height, menubar) {
 	}
 }
 
+function o_openTab(url) {
+	var win = window.open(url, '_blank');
+	win.focus();
+	if (o_info.linkbusy) {
+		o_afterserver();
+	}
+}
+
 function b_handleFileUploadFormChange(fileInputElement, fakeInputElement, saveButton) {
 
 	fileInputElement.setCustomValidity('');

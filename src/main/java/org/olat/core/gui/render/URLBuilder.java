@@ -26,6 +26,7 @@
 
 package org.olat.core.gui.render;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.regex.Pattern;
@@ -36,6 +37,8 @@ import org.olat.core.gui.components.Window;
 import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
 import org.olat.core.gui.control.winmgr.AJAXFlags;
 import org.olat.core.logging.AssertException;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 
 /**
@@ -43,6 +46,8 @@ import org.olat.core.util.StringHelper;
  * @author Felix Jost
  */
 public class URLBuilder {
+	
+	private static final OLog log = Tracing.createLoggerFor(URLBuilder.class);
 	
 	private static final Pattern p1 = Pattern.compile("\\+");
 	private static final Pattern p2 = Pattern.compile("%2F");
@@ -94,32 +99,39 @@ public class URLBuilder {
 	 * @param mode indicates what kind of link it is (0 normal, 1 into background-iframe, ...)
 	 */
 	public void buildURI(StringOutput buf, String[] keys, String[] values, String modURI, int mode) {
-		StringOutput result = new StringOutput(100);
-		result.append(uriPrefix);
-		encodeParams(result, mode);
-		
-		if (keys != null) {
-			for (int i = 0; i < keys.length; i++) {
-				result.append(UserRequest.PARAM_DELIM);
-				result.append(keys[i]);
-				result.append(UserRequest.PARAM_DELIM);
-				result.append(values[i]);
+		try(StringOutput result = new StringOutput(100)) {
+			result.append(uriPrefix);
+			encodeParams(result, mode);
+			
+			if (keys != null) {
+				for (int i = 0; i < keys.length; i++) {
+					result.append(UserRequest.PARAM_DELIM)
+					      .append(keys[i])
+					      .append(UserRequest.PARAM_DELIM)
+					      .append(values[i]);
+				}
 			}
+			
+			result.append("/");
+			if (modURI != null) {
+				result.append(modURI);
+			}
+			buf.append(encodeUrl(result.toString()));
+		} catch(IOException e) {
+			log.error("", e);
 		}
-		
-		result.append("/");
-		if (modURI != null) {
-			result.append(modURI);
-		}
-		buf.append(encodeUrl(result.toString()));
 	}
 	
 	public String getJavascriptURI() {
-		StringOutput result = new StringOutput(100);
-		result.append(uriPrefix);
-		encodeParams(result, AJAXFlags.MODE_TOBGIFRAME);
-		result.append("/");
-		return result.toString();
+		try(StringOutput result = new StringOutput(100)) {
+			result.append(uriPrefix);
+			encodeParams(result, AJAXFlags.MODE_TOBGIFRAME);
+			result.append("/");
+			return result.toString();
+		} catch(IOException e) {
+			log.error("", e);
+			return null;
+		}
 	}
 	
 

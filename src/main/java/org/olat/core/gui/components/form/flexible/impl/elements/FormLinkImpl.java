@@ -32,8 +32,8 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
-import org.olat.core.gui.components.link.FormLinkFactory;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkPopupSettings;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
@@ -58,12 +58,14 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 
 	private Link component;
 	private int presentation = Link.LINK;
-	private String i18n = null;
-	private String cmd = null;
+	private String i18n;
+	private String cmd;
 	private boolean hasCustomEnabledCss = false;
 	private boolean hasCustomDisabledCss = false;
 	private boolean domReplacementWrapperRequired = false;
 	private boolean ownDirtyFormWarning = false;
+	private boolean newWindow;
+	private LinkPopupSettings popup;
 	private String iconLeftCSS;
 	private String iconRightCSS;
 	private String customEnabledLinkCSS;
@@ -133,6 +135,34 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 	}
 
 	@Override
+	public boolean isNewWindow() {
+		return newWindow;
+	}
+
+	@Override
+	public void setNewWindow(boolean openInNewWindow) {
+		newWindow = openInNewWindow;
+	}
+
+	@Override
+	public boolean isPopup() {
+		return popup != null;
+	}
+
+	@Override
+	public LinkPopupSettings getPopup() {
+		return popup;
+	}
+
+	@Override
+	public void setPopup(LinkPopupSettings popup) {
+		this.popup = popup;
+		if(component != null) {
+			component.setPopup(popup);
+		}
+	}
+
+	@Override
 	public boolean isForceOwnDirtyFormWarning() {
 		return ownDirtyFormWarning;
 	}
@@ -157,7 +187,7 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 		cmd = cmd == null ? name : cmd;
 		i18n = i18n == null ? name : i18n;
 		if(hasCustomEnabledCss || hasCustomDisabledCss){
-			component = FormLinkFactory.createCustomFormLink(name, cmd, i18n, presentation, this.getRootForm());
+			component = new Link(null, name, cmd, i18n, presentation + Link.FLEXIBLEFORMLNK, this);
 			if(customEnabledLinkCSS != null){
 				component.setCustomEnabledLinkCSS(customEnabledLinkCSS);
 			}
@@ -169,7 +199,7 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 				component.setCustomDisplayText(i18n);					
 			}
 		} else {
-			component = FormLinkFactory.createFormLink(name, this.getRootForm());
+			component = new Link(null, name, name, name,  Link.LINK + Link.FLEXIBLEFORMLNK, this);
 			// set link text
 			if ((presentation - Link.FLEXIBLEFORMLNK - Link.NONTRANSLATED) >= 0) {
 				// don't translate non-tranlated links
@@ -231,8 +261,8 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 
 	@Override
 	public void setTranslator(Translator translator) {
-		if(this.component != null) {
-			this.component.setTranslator(translator);
+		if(component != null) {
+			component.setTranslator(translator);
 		}
 		super.setTranslator(translator);
 	}
