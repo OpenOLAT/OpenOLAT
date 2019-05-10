@@ -123,7 +123,17 @@ public class DefaultFlexiColumnModel implements FlexiColumnModel {
 	 * @param action
 	 */
 	public DefaultFlexiColumnModel(String headerKey, String label, String action) {
-		this(true, true, headerKey, -1, action, false, null, FlexiColumnModel.ALIGNMENT_LEFT, new StaticFlexiCellRenderer(label, action));
+		this(headerKey, label, action, false);
+	}
+	
+	/**
+	 * Always visible
+	 * @param headerKey
+	 * @param label
+	 * @param action
+	 */
+	public DefaultFlexiColumnModel(String headerKey, String label, String action, boolean newWindow) {
+		this(true, true, headerKey, -1, action, false, null, FlexiColumnModel.ALIGNMENT_LEFT, new StaticFlexiCellRenderer(label, action, newWindow));
 	}
 	
 	public DefaultFlexiColumnModel(String headerKey, int columnIndex, boolean sortable, String sortKey) {
