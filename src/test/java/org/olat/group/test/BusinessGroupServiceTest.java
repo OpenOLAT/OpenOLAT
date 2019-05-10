@@ -65,6 +65,7 @@ import org.olat.group.model.LeaveOption;
 import org.olat.group.model.MembershipModification;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.ResourceReservation;
 import org.olat.resource.accesscontrol.manager.ACReservationDAO;
@@ -92,11 +93,13 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 	@Autowired
 	private UserManager userManager;
 	@Autowired
-	private ACReservationDAO reservationDao;
-	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
+	private ACReservationDAO reservationDao;
+	@Autowired
 	private BusinessGroupRelationDAO businessGroupRelationDao;
+	@Autowired
+	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 	@Autowired
 	private BusinessGroupModule businessGroupModule;
 	@Autowired
@@ -1151,6 +1154,38 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 			Assert.assertNotNull(roles);
 			Assert.assertTrue(roles.isAdministrator());
 		}
+	}
+	
+	@Test
+	public void allowToLeavingBusinessGroup_withCourse_andGroups() {
+		//authors group
+		RepositoryEntry resource = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity coachCourse = JunitTestHelper.createAndPersistIdentityAsRndUser("leave-bg-8-");
+		Identity coachGroup = JunitTestHelper.createAndPersistIdentityAsRndUser("leave-bg-8-");
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("leave-bg-8-");
+		BusinessGroup group1 = businessGroupService.createBusinessGroup(null, "Leaving group 8a", "But you cannot leave :-(", Integer.valueOf(0), Integer.valueOf(2), false, false, resource);
+		BusinessGroup group2 = businessGroupService.createBusinessGroup(null, "Leaving group 8b", "But you cannot leave :-(", Integer.valueOf(0), Integer.valueOf(2), false, false, resource);
+		repositoryEntryRelationDao.addRole(coachCourse, resource, GroupRoles.coach.name());
+		businessGroupRelationDao.addRole(coachGroup, group2, GroupRoles.coach.name());
+		businessGroupRelationDao.addRole(participant, group1, GroupRoles.participant.name());
+
+		dbInstance.commitAndCloseSession();
+		
+		//set to not allowed to leave
+		group1 = businessGroupService.updateAllowToLeaveBusinessGroup(group1, false);
+		dbInstance.commitAndCloseSession();
+
+		//check the authors group leaving option
+		LeaveOption optionToLeave = businessGroupService.isAllowToLeaveBusinessGroup(participant, group1);
+		Assert.assertNotNull(optionToLeave);
+		Assert.assertFalse(optionToLeave.isAllowToLeave());
+		ContactList contacts = optionToLeave.getContacts();
+		Collection<Identity> contactList = contacts.getIdentiEmails().values();
+		Assert.assertNotNull(contactList);
+		Assert.assertFalse(contactList.isEmpty());
+		Assert.assertEquals(1, contactList.size());
+		Assert.assertTrue(contactList.contains(coachCourse));
+		Assert.assertFalse(contactList.contains(coachGroup));// coach of other group doesn't receive an email
 	}
 	
 	@Test
