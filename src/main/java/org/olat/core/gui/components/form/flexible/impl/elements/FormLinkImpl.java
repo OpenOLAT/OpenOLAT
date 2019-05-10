@@ -142,6 +142,9 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 	@Override
 	public void setNewWindow(boolean openInNewWindow) {
 		newWindow = openInNewWindow;
+		if(component != null) {
+			component.setNewWindow(openInNewWindow);
+		}
 	}
 
 	@Override
@@ -219,6 +222,8 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 		component.setElementCssClass(getElementCssClass());
 		component.setTitle(title);
 		component.setForceFlexiDirtyFormWarning(ownDirtyFormWarning);
+		component.setPopup(popup);
+		component.setNewWindow(newWindow);
 		if(textReasonForDisabling != null) {
 			component.setTextReasonForDisabling(textReasonForDisabling);
 		}

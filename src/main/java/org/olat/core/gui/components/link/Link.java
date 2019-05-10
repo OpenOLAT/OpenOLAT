@@ -109,6 +109,7 @@ public class Link extends AbstractComponent {
 	private boolean forceFlexiDirtyFormWarning = false;
 
 	private Badge badge;
+	private boolean newWindow;
 	private LinkPopupSettings popup;
 
 	/**
@@ -263,6 +264,14 @@ public class Link extends AbstractComponent {
 		this.popup = popup;
 	}
 	
+	public boolean isNewWindow() {
+		return newWindow;
+	}
+
+	public void setNewWindow(boolean newWindow) {
+		this.newWindow = newWindow;
+	}
+
 	public Badge getBadge() {
 		return badge;
 	}

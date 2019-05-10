@@ -198,6 +198,13 @@ public class LinkRenderer extends DefaultComponentRenderer {
 				} catch(IOException e) {
 					log.error("", e);
 				}
+			} else if(link.isNewWindow()) {
+				try(StringOutput href = new StringOutput()) {
+					ubu.buildURI(href, new String[] { VelocityContainer.COMMAND_ID }, new String[] { command }, null, AJAXFlags.MODE_NORMAL);
+					sb.append("href=\"javascript:;\" onclick=\"o_openTab('").append(href).append("'); return false;\" ");
+				} catch(IOException e) {
+					log.error("", e);
+				}
 			} else {
 				 // a link may force a non ajax-mode and a custom targ
 				boolean iframePostEnabled = flags.isIframePostEnabled() && link.isAjaxEnabled() && link.getTarget() == null;
