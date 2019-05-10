@@ -1092,7 +1092,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 		if(coaches.isEmpty()) {
 			Collection<BusinessGroup> groups = Collections.singletonList(group);
 			List<RepositoryEntry> entries = businessGroupRelationDAO.findRepositoryEntries(groups, 0, -1);
-			coaches.addAll(repositoryService.getMembers(entries, RepositoryEntryRelationType.all, GroupRoles.coach.name()));
+			coaches.addAll(repositoryService.getMembers(entries, RepositoryEntryRelationType.defaultGroup, GroupRoles.coach.name()));
 			
 			if(coaches.isEmpty()) {
 				//get system administrators of the user's organisations
