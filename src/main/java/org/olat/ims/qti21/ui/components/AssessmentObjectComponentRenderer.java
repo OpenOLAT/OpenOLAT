@@ -1016,6 +1016,8 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		ctx.put("isItemSessionOpen", component.isItemSessionOpen(itemSessionState, renderer.isSolutionMode()));
 		ctx.put("isItemSessionEnded", component.isItemSessionEnded(itemSessionState, renderer.isSolutionMode()));
 		ctx.put("isCorrectionHelp", component.isCorrectionHelp());
+		ctx.put("isCorrectionSolution", component.isCorrectionSolution());
+		ctx.put("isSolutionMode", renderer.isSolutionMode());
 
 		Renderer fr = Renderer.getInstance(component, translator, ubu, new RenderResult(), renderer.getGlobalSettings());
 		AssessmentRenderer fHints = renderer.newHints(fr);
