@@ -123,6 +123,14 @@ public abstract class AssessmentObjectFormItem extends FormItemImpl implements F
 		getComponent().setCorrectionHelp(enable);
 	}
 	
+	public boolean isCorrectionSolution() {
+		return getComponent().isCorrectionSolution();
+	}
+
+	public void setCorrectionSolution(boolean correctionSolution) {
+		getComponent().setCorrectionSolution(correctionSolution);
+	}
+	
 	protected Map<Identifier, StringResponseData> extractStringResponseData() {
         final Map<Identifier, StringResponseData> responseMap = new HashMap<>();
 

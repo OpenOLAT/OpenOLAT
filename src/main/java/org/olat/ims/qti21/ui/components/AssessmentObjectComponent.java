@@ -59,6 +59,7 @@ public abstract class AssessmentObjectComponent extends AbstractComponent implem
 	private final boolean mathAssess;
 	private boolean hideFeedbacks = false;
 	private boolean correctionHelp = false;
+	private boolean correctionSolution = false;
 	private boolean maxScoreAssessmentItem = false;
 	
 	private String mapperUri;
@@ -125,6 +126,14 @@ public abstract class AssessmentObjectComponent extends AbstractComponent implem
 
 	public void setCorrectionHelp(boolean correctionHelp) {
 		this.correctionHelp = correctionHelp;
+	}
+	
+	public boolean isCorrectionSolution() {
+		return correctionSolution;
+	}
+
+	public void setCorrectionSolution(boolean correctionSolution) {
+		this.correctionSolution = correctionSolution;
 	}
 
 	public abstract String getResponseUniqueIdentifier(ItemSessionState itemSessionState, Interaction interaction);

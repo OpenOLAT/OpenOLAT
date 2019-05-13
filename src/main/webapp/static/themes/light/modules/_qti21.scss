@@ -205,6 +205,14 @@ img.o_hotspot_responsive[usemap] {
 	margin-bottom: 3px;
 }
 
+.o_qti_gaptext_alternatives {
+	background-color: $gray-lighter;
+	color: $gray;
+	border: 1px solid $gray-lighter;
+	border-radius: $border-radius-base;
+	padding: 2px 5px;
+}
+
 /* Essay extended text */
 .o_qti_item_body .extendedTextInteraction {
 	margin: 15px 0;
