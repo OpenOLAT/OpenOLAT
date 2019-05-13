@@ -177,14 +177,14 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 		AssessmentTestSession testSession = correction.getTestSession();
 		TestSessionState testSessionState = correction.getTestSessionState();
 		
-		answerItem = initFormInteraction(testPlanNodeKey, testSessionState, testSession, formLayout, true);	
+		answerItem = initFormInteraction(testPlanNodeKey, testSessionState, testSession, formLayout, true, false);	
 		formLayout.add("answer", answerItem);
 		
 		viewSolutionButton = uifactory.addFormLink("view.solution", formLayout);
 		viewSolutionButton.setIconLeftCSS("o_icon o_icon_open_togglebox");
 		viewSolutionButton.setVisible(hasSolution());
 		
-		solutionItem = initFormInteraction(testPlanNodeKey, testSessionState, testSession, formLayout, false);	
+		solutionItem = initFormInteraction(testPlanNodeKey, testSessionState, testSession, formLayout, false, true);	
 		solutionItem.setVisible(false);
 		solutionItem.setShowSolution(true);
 		formLayout.add("solution", solutionItem);
@@ -347,7 +347,7 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 	
 	private ItemBodyResultFormItem initFormInteraction(TestPlanNodeKey testPlanNodeKey,
 			TestSessionState testSessionState, AssessmentTestSession assessmentTestSession,
-			FormItemContainer layoutCont, boolean correctionHelp) {
+			FormItemContainer layoutCont, boolean correctionHelp, boolean correctionSolution) {
 		
 		ItemSessionState sessionState = testSessionState.getItemSessionStates().get(testPlanNodeKey);
 
@@ -360,6 +360,7 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 		responseFormItem.setAssessmentObjectUri(assessmentObjectUri);
 		responseFormItem.setMapperUri(mapperUri);
 		responseFormItem.setCorrectionHelp(correctionHelp);
+		responseFormItem.setCorrectionSolution(correctionSolution);
 		layoutCont.add(responseFormItem);
 		return responseFormItem;
 	}
